@@ -1,0 +1,16 @@
+--- a/src/event_fixture.rs
++++ b/src/event_fixture.rs
+@@ -262,10 +262,10 @@
+ fn event_after_io<I, N>(packet: &[u8], generation: &[u8; 32], scope: ScopeRequest,
+                        current: &Stats, baseline: &Stats, io: I, clock: N) -> TestResult<()>
+ where I: FnOnce() -> TestResult<()>, N: FnOnce() -> TestResult<u64> {
++    // NEGATIVE CONTROL ONLY: restore the reviewed stale clock order.
++    let completed = clock()?;
+     io()?;
+-    // No health, poll, output or metadata I/O follows this completion clock
+-    // inside the event decision. Parent journaling is a later trial gate.
+-    validate_frame(packet, generation, scope, clock()?)?;
++    validate_frame(packet, generation, scope, completed)?;
+     validate_correlation(current, baseline)
+ }
+ fn take_packet(fd: &OwnedFd) -> TestResult<Option<[u8; 128]>> {

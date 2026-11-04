@@ -1,0 +1,39 @@
+{
+  "schema": "pocket4-native-source-series-v1",
+  "upstream_repository": "https://github.com/denialwm/teto.git",
+  "upstream_commit": "917021cf3ecd077eb1581146a79d2265011755b8",
+  "license": "Apache-2.0",
+  "source_layers": [
+    {
+      "revision": "r14",
+      "manifest": "manifests/r14-raw-source.json",
+      "patch": "patches/0001-upstream-to-r14.patch",
+      "patch_sha256": "9731bd35a4519129c1e6f0cbca3538710a657c80a21156590f073eb31505dd9f",
+      "source_commit": "1f961de88621af76b0d9e8c1f3c8ad7f7ca4c965",
+      "files": 906,
+      "scope": "Complete inherited raw source precondition"
+    },
+    {
+      "revision": "r15",
+      "manifest": "manifests/r15-raw-source.json",
+      "patch": "patches/0002-r15-alarm-disposition.patch",
+      "patch_sha256": "0dd1d98aed78e5874e097cf1e36a7621be35308c9f4c9a778c71668fb45b1624",
+      "source_commit": "a2cbf8072a580fb1949924e3dda858a6ba6ed984",
+      "files": 907,
+      "scope": "Preserve process-wide SIGALRM disposition and pending signals when claiming host fault signals"
+    },
+    {
+      "revision": "r16",
+      "manifest": "manifests/r16-raw-source.json",
+      "patch": "patches/0003-r16-proc-maps-offset.patch",
+      "patch_sha256": "33f92f0c2aaa4dd112afa09106c857e1dd7edc9274be3d1097062f489e203914",
+      "source_commit": "a9496d886a85752ba407b76509952c06cd79ddb8",
+      "files": 908,
+      "scope": "Advance offsets for file-backed VMA chunks; preserve anonymous and unsplit offsets"
+    }
+  ],
+  "final_sources_under": "source/",
+  "builder_source_lock": "builder/source-lock.json",
+  "raw_and_effective_source_are_distinct": true,
+  "production_ready": false
+}

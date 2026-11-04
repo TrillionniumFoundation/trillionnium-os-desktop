@@ -1,0 +1,18 @@
+{
+  "scope": "Local real socket transport plus wrapped clock semantic negative control; no PSI/cell/pressure",
+  "baseline_source_sha256": "ae4903ef0020d14325e16ff27a7afad23baa5f85d44467146cf23065fc774e70",
+  "baseline": {
+    "chunk_id": "0b3823",
+    "wall_time_seconds": 0.000039539,
+    "exit_code": 2,
+    "original_token_count": 69,
+    "output": "FAIL entry-fresh event expires exactly at I/O completion\nFAIL kernel-side delay cannot reuse entry-time freshness\nPASS completion before exact expiry remains valid\nFAIL completion clock rollback revokes\nFAIL completion clock read failure revokes\nRESULT completion-clock FAIL\n"
+  },
+  "candidate": {
+    "chunk_id": "4cea30",
+    "wall_time_seconds": 0.000025549,
+    "exit_code": 0,
+    "original_token_count": 69,
+    "output": "PASS entry-fresh event expires exactly at I/O completion\nPASS kernel-side delay cannot reuse entry-time freshness\nPASS completion before exact expiry remains valid\nPASS completion clock rollback revokes\nPASS completion clock read failure revokes\nRESULT completion-clock PASS\n"
+  }
+}

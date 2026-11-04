@@ -1,0 +1,75 @@
+{
+  "schema": "pocket4-native-independent-cleanup-reviews-v1",
+  "reviews": [
+    {
+      "arm": "r14",
+      "original_review_sha256": "e3986f2a49fb6006f2e638592dcac6688c29ffd9cf1ab4660598fc1758d92caf",
+      "reviewer_sha256": "48da7871e2a3396d4d1365ae5007bba298a8395dff5907690fb7a36bc86a569a",
+      "classification": "PASS_ARCHIVED_CLEANUP_COMPLETENESS",
+      "counts": {
+        "after_packages": 143,
+        "before_packages": 143,
+        "exact_host_and_actual_namespace_paths": 16,
+        "in_memory_incomplete_evidence_negative_controls_rejected": 6,
+        "owned_packages_and_uids_absent": 4,
+        "owned_resource_records_oom_zero": 5,
+        "third_party_packages": 2,
+        "uid_records": 143
+      },
+      "scope": "Independent read-only archived evidence consistency/cleanup; no runtime action",
+      "original_files_unchanged": true,
+      "default_owner_sampling_limit": "R15/R16 dying owner not independently sampled for start ticks/maps; prior same-arm live controls bind engine.",
+      "summary_basis": "Actual successful reviewer stdout and persisted receipt hash; full original retained privately"
+    },
+    {
+      "arm": "r15",
+      "original_review_sha256": "2ab3e7f2a337313fcc82973de36c70a6fe49687e1720a97eaf6d0cf4278ffc09",
+      "reviewer_sha256": "48da7871e2a3396d4d1365ae5007bba298a8395dff5907690fb7a36bc86a569a",
+      "classification": "PASS_ARCHIVED_CLEANUP_COMPLETENESS",
+      "counts": {
+        "after_packages": 143,
+        "before_packages": 143,
+        "exact_host_and_actual_namespace_paths": 16,
+        "in_memory_incomplete_evidence_negative_controls_rejected": 6,
+        "owned_packages_and_uids_absent": 4,
+        "owned_resource_records_oom_zero": 5,
+        "third_party_packages": 2,
+        "uid_records": 143
+      },
+      "scope": "Independent read-only archived evidence consistency/cleanup; no runtime action",
+      "original_files_unchanged": true,
+      "default_owner_sampling_limit": "R15/R16 dying owner not independently sampled for start ticks/maps; prior same-arm live controls bind engine.",
+      "summary_basis": "Actual successful reviewer stdout and persisted receipt hash; full original retained privately"
+    },
+    {
+      "arm": "r16",
+      "original_review_sha256": "f61c966375d08fdefad5ce3d9a4e7016b32497ea33aee275dd95ae49f620d932",
+      "reviewer_sha256": "48da7871e2a3396d4d1365ae5007bba298a8395dff5907690fb7a36bc86a569a",
+      "classification": "PASS_ARCHIVED_CLEANUP_COMPLETENESS",
+      "counts": {
+        "after_packages": 143,
+        "before_packages": 143,
+        "exact_host_and_actual_namespace_paths": 16,
+        "in_memory_incomplete_evidence_negative_controls_rejected": 6,
+        "owned_packages_and_uids_absent": 4,
+        "owned_resource_records_oom_zero": 5,
+        "third_party_packages": 2,
+        "uid_records": 143
+      },
+      "scope": "Independent read-only archived evidence consistency/cleanup; no runtime action",
+      "original_files_unchanged": true,
+      "default_owner_sampling_limit": "R15/R16 dying owner not independently sampled for start ticks/maps; prior same-arm live controls bind engine.",
+      "summary_basis": "Complete saved review object"
+    }
+  ],
+  "common_assertions": [
+    "Full before/after and third-party package sets equal",
+    "UID registry names exactly cover the full after set",
+    "Four owned package names and UIDs absent",
+    "Sixteen exact host/actual-namespace code/data paths absent; exact ENOENT, rc1 and empty stdout",
+    "Five owned resource records have zero OOM events",
+    "Frozen sources/APK/boot engine and live-control mappings match",
+    "Six incomplete-evidence negative controls rejected"
+  ],
+  "production_ready": false
+}

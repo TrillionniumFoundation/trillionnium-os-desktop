@@ -1,0 +1,1 @@
+package com.android.camera.util;import android.hardware.camera2.CameraManager;public class AndroidServices {public static AndroidServices instance(){return new AndroidServices();}public CameraManager provideCameraManager(){return new CameraManager();}}

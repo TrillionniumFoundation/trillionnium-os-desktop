@@ -1,0 +1,111 @@
+{
+  "schema": "pocket4-marriott-main-metadata-diagnostic-v1",
+  "status": "FAIL_NATIVE_SIG11_WITH_OBSERVED_VIRTUAL_PROC_FD_PATH_MISMATCH",
+  "date_utc": "2026-11-04",
+  "window_utc": {
+    "native_completed": "2026-11-04T11:16:15.888366Z",
+    "guest_exit_record": "2026-11-04T11:16:10.144Z"
+  },
+  "package": "com.marriott.mrt",
+  "runtime": {
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "engine_build_id": "eae778923ec4e6be224913a9f71b5681",
+    "presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "epoch_preserved": true,
+    "resource_limits_unchanged": true,
+    "oom_kill_delta": 0
+  },
+  "launch": {
+    "explicit_new_diagnostic": true,
+    "attempts": 1,
+    "native_returncode": 1,
+    "native_timed_out": false,
+    "flow_returncode": 2,
+    "old_unknown_task_acknowledgement_preserved": true,
+    "business_success_verified": false
+  },
+  "observation": {
+    "source_sha256": "fe3cab719c0182fd8253bdb43021b9e4f398904029d89606cc4f76e42ce81c41",
+    "orchestrator_sha256": "00602f98778d639e892af5122b6487c8bd8d362a13b7fc0a794afd217fefbcc0",
+    "qualified_owned_control": 10,
+    "probe_type": "rawtracepoint sys_enter/sys_exit",
+    "target_event_count": 1305,
+    "target_process_count": 1,
+    "scope": "package UID and pinned Main PID namespace; process birth and actual cgroup recorded",
+    "independent_cgroup_membership_matched": true,
+    "health_process_excluded_from_target_events": true,
+    "stderr_bytes": 0,
+    "observer_and_owned_health_child_exited": true,
+    "observed_app_signals_sent": false,
+    "file_payloads_captured": false
+  },
+  "observed_sequence": [
+    {
+      "order": 1,
+      "action": "Native open of /proc/self/maps",
+      "result": "success"
+    },
+    {
+      "order": 2,
+      "action": "Translation layer creates its virtual maps memfd",
+      "result": "descriptor 78"
+    },
+    {
+      "order": 3,
+      "action": "readlinkat /proc/self/fd/78",
+      "result": "40 bytes: /memfd:[guest /proc/self/maps] (deleted)"
+    },
+    {
+      "order": 4,
+      "action": "close virtual maps descriptor",
+      "result": "close entry observed"
+    },
+    {
+      "order": 5,
+      "action": "mprotect(address=0,length=0,PROT_WRITE)",
+      "result": "kernel return 0"
+    },
+    {
+      "order": 6,
+      "action": "Natural App crash at the corresponding loader store",
+      "result": "SIGSEGV, status 11; unchanged R16 build ID"
+    }
+  ],
+  "static_correlation": {
+    "cached_loader_sha256": "d8c8c233986094cd46a8dda39953d88e6b6ab6b43411c4b6dd609f4643c575c8",
+    "cached_loader_size": 8141808,
+    "cached_loader_rehashed_after_diagnostic": true,
+    "loader_store_offset": "0x36c9f0",
+    "analysis": "The reviewed loader checks a maps descriptor's resolved path before parsing mapping data. The observed memfd path and subsequent zero-length mprotect match the previously identified failure path.",
+    "causal_scope": "Strongly supported immediate compatibility defect; an A/B-qualified corrected runtime and business-flow success are still required."
+  },
+  "limitations": [
+    "The observer records syscall metadata, not App payloads or every user-space call stack.",
+    "The read counters track observed descriptor numbers and do not prove open-file-description identity across dup2/close_range or other alias changes.",
+    "Isolated UIDs are excluded.",
+    "This diagnostic proves neither full Marriott functionality nor production readiness."
+  ],
+  "cleanup": {
+    "app_already_exited": true,
+    "app_force_stop_or_data_clear": false,
+    "task_ids_after": [
+      851
+    ],
+    "other_tasks_preserved": true,
+    "main_restart": false
+  },
+  "private_evidence_sha256": {
+    "result": "75aed22063d2776140561b46ab5afc1c1a167119dfdab3422a7d9b08941f8087",
+    "target_events": "8efdea19d6d475a056e82813dfe7a1224674bf6a3ff4279bedb3a43e4929ac22",
+    "membership": "fe27d7aa1e7e699c55cdfbf58e3bd19330dc0153019ce31e763d9de07b9b9491",
+    "fresh_exit_info": "768f60d963105e2ef2e53e2e3d708920e0b23cb9d35ed6c39e4dc0a1db885abf",
+    "uid_logs": "ae68920c2df4edf3762d6011a83d85a8f84194b74260ffac9ad3749e27740a5e",
+    "analysis": "ac119b1003b6552ed61ef4bc4bd0edce7a601f1b0e86a167653a42a31425651f",
+    "native_and_loader_binding": "d333baeb8e96313c225120536c161446fa019c18f31fb53f2eefd2d899c0284b",
+    "native_result": "88ea8683cc021ebc54c72c3f552a454a6b3fab810d0995fc4254afac7777dd83",
+    "observer_stdout": "214f53202b8f94df50d56641199343d6192256521872adb0d5beeb51cf550434",
+    "memory_before": "b6d455c9d8abd6efc239e1787ddb03a3780ec21add780fcbb4f071b750035d88",
+    "memory_after": "d796d84e52af4b3a1040a893c056b02684fa3d7ef796bc52231cd0b6e699b33f"
+  }
+}

@@ -1,0 +1,1 @@
+package com.android.camera.one.v2; import android.hardware.camera2.CameraCharacteristics; import com.android.camera.one.OneCameraCharacteristics; public class OneCameraCharacteristicsImpl implements OneCameraCharacteristics{public final CameraCharacteristics raw;public OneCameraCharacteristicsImpl(CameraCharacteristics c){raw=c;}}

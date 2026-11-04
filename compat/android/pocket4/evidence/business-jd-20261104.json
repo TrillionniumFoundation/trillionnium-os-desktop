@@ -1,0 +1,124 @@
+{
+  "schema": "pocket4-owned-app-business-flow-v1",
+  "app": "JD.COM",
+  "package": "com.jingdong.app.mall",
+  "date_utc": "2026-11-04",
+  "flow": "jd-01",
+  "status": "BLOCKED_LOGIN_AFTER_QUERY",
+  "production_ready": false,
+  "runtime": {
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_after_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "epoch_preserved": true,
+    "actual_frontmost_engine_mapping_verified": true
+  },
+  "verified_subset": {
+    "single_native_launch_acknowledged": true,
+    "home_and_search_semantics_loaded": true,
+    "query": "笔记本电脑",
+    "unicode_query_exact_readback": true,
+    "matching_query_suggestions_loaded": true,
+    "search_submit_acknowledged": true,
+    "login_form_semantics_loaded_after_query": true,
+    "normal_owned_task_close_verified": true
+  },
+  "blocker": {
+    "visible_semantic_page": "Phone-number login",
+    "account_login_performed": false,
+    "verification_code_requested": false,
+    "product_results_verified": false,
+    "product_detail_verified": false,
+    "hidden_product_list_activity_is_not_proof_of_results": true
+  },
+  "screenshot": {
+    "capture_visually_inspected": true,
+    "capture_all_black": true,
+    "original_rgb_extrema": [
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ],
+      [
+        0,
+        0
+      ]
+    ],
+    "foreground_window_flag_secure_observed": true,
+    "foreground_window_shown_drawn_visible_observed": true,
+    "login_page_visual_contents_verified": false,
+    "classification": "PROTECTED_CAPTURE_LIMITATION",
+    "screenshot_protection_bypassed": false,
+    "black_capture_is_not_used_as_evidence_of_render_failure": true,
+    "window_metadata_captured_at_utc": "2026-11-04T12:42:17.585186Z",
+    "window_dump_sha256": "ae09dc4825ef4c6f5e3ab0858b069ddf350c891fc3f5ca2c58534f087780aa0c"
+  },
+  "unqualified": {
+    "product_results": false,
+    "product_detail": false,
+    "in_app_return_from_detail": false,
+    "reopen": false,
+    "authenticated_behavior": false,
+    "checkout_or_purchase": false,
+    "extended_stability": false,
+    "cold_start": false
+  },
+  "exit_evidence": {
+    "captured_at_utc": "2026-11-04T12:44:48.844685+00:00",
+    "new_exact_main_process_exit_observed": false,
+    "latest_exact_main_exit_at_utc": "2026-11-04T10:33:41.037Z",
+    "latest_package_child_exit_at_utc": "2026-11-04T10:34:40.994Z",
+    "latest_exits_predate_this_flow": true,
+    "raw_sha256": "9f83b0c4fc044acc6c68de6429954d7a84fb236110419506437992a8e981270b"
+  },
+  "cleanup": {
+    "completed_at_utc": "2026-11-04T12:46:21.319019+00:00",
+    "returncode": 0,
+    "outcome_unknown": false,
+    "new_owned_leaf_removed": true,
+    "preexisting_home_preserved": true,
+    "other_tasks_preserved": true,
+    "force_stop_or_data_clear": false,
+    "main_restart": false
+  },
+  "resource_observations": {
+    "memory_current_after_close_bytes": 3190358016,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "memory_high_events_after_close": 14902,
+    "pressure_as_cause_inferred": false,
+    "resource_limit_changes_performed": false
+  },
+  "independent_archive_review": {
+    "sha256": "b62b2562d541a279b5593ae1a0478c7f85693c6278244ccb2196d91b196e3dfc",
+    "step_receipts": 12,
+    "command_stdout_stderr_pairs_rehashed": 33,
+    "original_pngs_rehashed": 1,
+    "private_screenshots_visually_inspected": 1,
+    "raw_ui_images_or_logs_published": false
+  },
+  "transport_reconciliation": {
+    "init_request_timeout_reconciled_with_identical_request_and_idempotency_key": true,
+    "query_read_transport_timeout_reconciled_by_reading_same_durable_job": true,
+    "ui_actions_replayed": false
+  },
+  "evidence_sha256": {
+    "launch_receipt": "d5d041928d75cff07fd8df05fc6e73a510c69d72a8a8bab949b9ce4869902dcf",
+    "native_launch_stdout": "d86b5315298206ad07a8828248a00cf8376487d08362bba8125c1b0ee2e8675c",
+    "search_entry_receipt": "4ab1db8ca65ba6bb9ab73c8db9a6ddfec48909c3cc082bbc549f916b21a2dd80",
+    "set_query_receipt": "243b92b3dc179218e746b36388fb94c450ee7adf0aa24d892cbe8d222dc93ba6",
+    "query_readback_receipt": "c5f4a9560f1480963f9a47f6f804e145d0f690eed71aaa5d8f6f3c9be24ddbd1",
+    "submit_query_receipt": "85382be7c0182efa3120211f500b1766a511ee1e6351411ee99780592b1ec84c",
+    "login_semantics_observe_receipt": "300b7f4f55f9db0a593948394c433b53672bb928f44019b446d47792df379d4d",
+    "actual_engine_diagnostic_receipt": "11d7779f3f85f3e26dd9394187ac47a970464568b5091128705dca4663a767a7",
+    "close_receipt": "4525b70ee9b862815ee75c273ad551bacf1c5a83857c2fb76fde75a3c0596bc2",
+    "private_original_png": "86b55554e041948b5df98aeab6134417b49f9c9af487e30d8cd05ba49dc3e5a0"
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "schema": "pocket4-current-business-flow-public-summary-v1",
+  "app": "Amazon",
+  "package": "com.amazon.mShop.android.shopping",
+  "flow": "amazon-01",
+  "evidence_date_utc": "2026-11-04",
+  "started_utc": "2026-11-04T12:52:23.983483Z",
+  "completed_utc": "2026-11-04T13:20:26.369942Z",
+  "status": "PARTIAL_QUERY_SUGGESTIONS_RETURN_VERIFIED_PRODUCT_SEARCH_NOT_COMPLETED",
+  "production_ready": false,
+  "runtime": {
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+    "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
+  },
+  "evidence_basis": "Publication agent executed the frozen guarded flow, inspected the private suggestions screenshot, checked actual frontmost engine mapping, and rehashed saved receipts. Private UI, existing delivery information and raw logs are excluded.",
+  "verified": {
+    "one_native_launch": true,
+    "exact_query_readback": "usb c cable",
+    "dynamic_matching_suggestions": true,
+    "actual_frontmost_r16_engine_mapping": true,
+    "back_returned_to_home_content": true,
+    "normal_owned_task_close": true,
+    "other_tasks_preserved": true,
+    "framework_epoch_preserved": true
+  },
+  "search_navigation": {
+    "accessibility_click": {
+      "explicitly_attempted_once": true,
+      "helper_returncode": 0,
+      "outcome_unknown": false,
+      "acknowledged": true,
+      "screen_changed": false,
+      "receipt_sha256": "ce08893c9e4b0b25c45e1236bfc5a79b3f62bbee88decfeaf79914469d16f9a8",
+      "helper_stdout_sha256": "1b29500b5435cbb0a9477169e3354b5dc3b438f97c135f90a1d189db3483773c"
+    },
+    "mouse_click": {
+      "explicitly_attempted_once_after_fresh_observation": true,
+      "installed_helper_method_verified": true,
+      "helper_returncode": 0,
+      "outcome_unknown": false,
+      "acknowledged": true,
+      "receipt_sha256": "3b0a6203d56571572d608d181f8b12847f53a24de3c6b4500b4379242efeac53",
+      "helper_stdout_sha256": "2f0b2fac34066e03e0a4fd043340f0768ebca32554897d27b2d63e1526bb930b"
+    },
+    "later_observations": "Both observations still show the same query and matching suggestions. The two complete PNG files are byte-identical. Product results were not observed.",
+    "observed_suggestion_semantics": "A visible clickable suggestion button was selected, distinct from the append-suggestion button. A separate keyboard or search submission control was not visible in the inspected page.",
+    "search_submission_verified": false,
+    "business_result_verified": false,
+    "cause_established": false,
+    "unknown_action_replayed": false
+  },
+  "private_visual_evidence": {
+    "original_png_sha256": "4b2187ed8be30bc5a3d3365591cc47c77a8a4ecb4e31a9c1a98a976c57d7255d",
+    "bytes": 64042,
+    "observation_steps": [
+      "08-results-observe",
+      "11-after-pointer-observe"
+    ],
+    "first_observation_visually_inspected": true,
+    "second_observation_byte_identical_to_first": true,
+    "raw_image_published": false
+  },
+  "exit_info": {
+    "before_close_sha256": "fd0810fc0d40ce883737e8055fff1e29341e8bec55176d1eef0bbe3553af1725",
+    "latest_main_exit_utc": "2026-11-04T00:50:27.253Z",
+    "latest_main_exit": "Historical remove-task; predates this flow",
+    "fresh_exact_app_exit_observed": false
+  },
+  "health": {
+    "after_close_memory_current_bytes": 3962265600,
+    "memory_high_event_counter_before_and_after": 14902,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0
+  },
+  "archive_audit": {
+    "sha256": "64b9165616751021281ceeb1c57c38e068f9d693deba9e0a97dfac419595d959",
+    "step_receipts": 15,
+    "raw_command_stdout_stderr_pairs": 44,
+    "png_files": 2,
+    "all_rehashes_passed": true,
+    "normal_close_receipt_sha256": "e3ca711ebefd236fd1e99077c1db99d4eeffb32f2f5023e3fa4040815d2e8afe"
+  },
+  "receipts": {
+    "native_launch": "1bd38add02f7b4f50a05e16d8397efeb8139560ba9cb2a67cf3bd6e81e37bcba",
+    "exact_query": "0266ea65d3cb079c736f4e8d4990a31af688d14f216a10f4b83e2e9e012f65cf",
+    "first_after_click_observation": "d896ffc2f065214cb0adc9aaf75f8f04f142368c04150a0eccbc3b781496cf7d",
+    "actual_engine_diagnostic": "757a62763ed8a92d89866edb6b27ca6273ba45f973c0358c23f1cde45f04bfed",
+    "second_after_click_observation": "9c59710baa0f7f77587ca0f5637a506ba5f08c5140684c07546e3ef4185b744f",
+    "back": "d51b1b4131b24ba1271d7ee515ad3ad859fb1eb7426f7bb42d46c1867ad877a8",
+    "return_readback": "bb7c1d99fb927da6601b26b09a068c0a344f025bf5fa71022e4038791e8543db",
+    "exit_before_close": "f74756ca7e03c70667d69c9728a87f3103c48b1cd50023bf029a35b270ea59a3"
+  },
+  "unqualified": {
+    "cold_start": false,
+    "product_results": false,
+    "matching_product_detail": false,
+    "cart_or_checkout": false,
+    "authenticated_behavior": false,
+    "normal_reopen": false,
+    "search_failure_cause": false
+  },
+  "limitations": [
+    "Helper click acknowledgement is not evidence of search submission or business success.",
+    "The selected suggestions did not lead to an observed product-results page; this alone does not identify an App, network, WebView or input-delivery root cause.",
+    "The visible Back control did return to populated home content. This observation does not qualify product details.",
+    "No login, purchase, account change, data reset or runtime change was performed."
+  ]
+}
+

@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "status": "HOST_AUTHENTICATION_AND_REVOCATION_CONTROLS_PASS; NOT_PSI_CANARY_QUALIFIED; DO_NOT_DEPLOY",
+  "reference_source_only": true,
+  "installed_supervisor_binary_to_source_verified": false,
+  "scope": {
+    "host_only": true,
+    "android_or_private_cell_created": false,
+    "child_mount_namespace_only": true,
+    "child_projection_read_only": true,
+    "psi_trigger_registered": false,
+    "pressure_generated": false,
+    "main_read_or_changed": false,
+    "cgroup_membership_or_budgets_changed": false
+  },
+  "limits": {
+    "memory.max": "536870912",
+    "cpu.max": "100000 100000"
+  },
+  "at": "2026-11-04T10:29:22.906083+00:00",
+  "at_end": "2026-11-04T10:29:26.118923+00:00",
+  "source_sha256": {
+    "Cargo.toml": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+    "Cargo.lock": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+    "src/lib.rs": "902e34f201315d9e8794b37b2e68ebc8029df36cab060fc8b24d80cdb93b4ca6",
+    "src/bin/owned_ipc_controls.rs": "d0ff0e62268591ccbb89b8aece8bc37418b6ab1ee8d893a5adcc42aefedcbc4e"
+  },
+  "binary_sha256": "5910be43c822e995e7edc0f5c6be4f0cb5b43a07d2cb066b7dade37f79c3270b",
+  "build": {
+    "return_code": 0,
+    "argv": [
+      "cargo",
+      "build",
+      "--locked",
+      "--offline",
+      "-j",
+      "1",
+      "--bin",
+      "owned-ipc-controls"
+    ],
+    "rustflags": "-Ccodegen-units=1 -Dwarnings",
+    "external_crates_exactly_pinned": true,
+    "hermetic_build_claimed": false
+  },
+  "host_negative": {
+    "return_code": 0,
+    "stdout": "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified\nPASS kernel accepted credentials reject wrong UID\nPASS kernel accepted credentials reject wrong GID\nPASS pinned executable rejects a different trusted file\nPASS SO_PEERPIDFD retains dead connection generation after normal exit and reap\nPASS ordinary host child fails the required exact cgroup projection gate\nPASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged\nRESULT PASS mode=host-negative-controls\n",
+    "stderr": ""
+  },
+  "private_projection": {
+    "return_code": 0,
+    "stdout": "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified\nPASS kernel accepted credentials reject wrong UID\nPASS kernel accepted credentials reject wrong GID\nPASS pinned executable rejects a different trusted file\nPASS SO_PEERPIDFD retains dead connection generation after normal exit and reap\nPASS actual private mount namespace rejects host namespace expectation\nPASS full authenticated owned host capability: explicit-retire\nPASS full authenticated owned host capability: peer-exit\nPASS full authenticated owned host capability: unexpected-data\nPASS full authenticated owned host capability: slot-limit\nPASS full authenticated owned host capability: generation-change\nPASS full authenticated owned host capability: state-change\nPASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged\nRESULT PASS mode=private-host-mount-only\n",
+    "readonly_projection_proofs": 11,
+    "each_proof": {
+      "same_path_mount_records": 2,
+      "statx_visible_mount_matches": 1,
+      "readonly": true,
+      "cgroup2": true,
+      "private_propagation": true,
+      "unchanged_membership": true
+    },
+    "peer_exit_revocation_requires_caller_refresh": false,
+    "unexpected_data_revocation_requires_caller_refresh": false
+  },
+  "cleanup": {
+    "runner_membership_preserved": true,
+    "remaining_direct_children_empty": true,
+    "owned_worker_joined": true,
+    "owned_peer_children_reaped": true,
+    "fd_count_returned_to_baseline": true,
+    "owned_socket_removed": true,
+    "parent_namespace_mount_projection_and_membership_preserved": true
+  },
+  "memory_events_before": {
+    "low": "0",
+    "high": "0",
+    "max": "0",
+    "oom": "0",
+    "oom_kill": "0",
+    "oom_group_kill": "0",
+    "sock_throttled": "0"
+  },
+  "memory_events_after": {
+    "low": "0",
+    "high": "0",
+    "max": "0",
+    "oom": "0",
+    "oom_kill": "0",
+    "oom_group_kill": "0",
+    "sock_throttled": "0"
+  },
+  "original_result_stdout_sha256": "230b64066ed8874ac0602f423c8476e4c7502abe71bc8f1fb9b88cc70bf0a21c",
+  "retained_failures": [
+    {
+      "attempt": 1,
+      "outcome": "-Dwarnings rejected unused test import; no IPC ran"
+    },
+    {
+      "attempt": 2,
+      "outcome": "compile and UID/GID negatives passed; fixed test executable was a symlink and O_NOFOLLOW rejected it"
+    },
+    {
+      "attempt": 4,
+      "outcome": "ordinary host negatives passed; mountinfo same-path-count assertion rejected a legitimate covering bind before authentication"
+    }
+  ],
+  "test_count_note": "Reported PASS lines include setup and cleanup. The ordinary and private arms repeat credential/executable/dead-peer controls; do not count them as independent scenarios.",
+  "not_qualified": [
+    "installed supervisor source/binary provenance",
+    "PSI registration and real poll relay",
+    "Android enrollment/grant client and FD transfer",
+    "foreign time/user/PID namespaces and other cgroup generations under a real cell",
+    "real pressure, host stall and retirement under resource pressure",
+    "native LMKD watchdog/regular lease gate integration",
+    "cached-only kill with surviving foreground/protected fixtures; r7/r8 failures remain"
+  ]
+}

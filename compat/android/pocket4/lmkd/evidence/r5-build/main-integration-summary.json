@@ -1,0 +1,51 @@
+{
+  "actual_service": {
+    "cgroup_env_present": false,
+    "declared_behavior": "drain process score updates and acknowledge synchronous commands; never kill a process",
+    "executable": "/vendor/bin/droidloom-lmkd-compat",
+    "observed": true,
+    "selected_env": {
+      "DROIDLOOM_CELL": "1"
+    }
+  },
+  "deployment_prerequisites": [
+    "Real LMKD selection and foreground-safety canaries must pass before Main activation.",
+    "Service executable and exact environment must be changed and verified deliberately; system/bin file hash alone is insufficient.",
+    "Pressure monitor access needs a separately reviewed scoped design retaining namespace isolation, resource limits, and LMKD membership in the pressured domain.",
+    "Do not disable nsdelegate, broaden visible cgroup scope, move LMKD outside pressure, or relax limits to pass."
+  ],
+  "file_sha256": {
+    "system/bin/lmkd": "96c2652ffd9d1330fe088c304cf336e1e94de52f49146dea524b0a0b0d1d62c7",
+    "system/etc/init/hw/init.rc": "86d9d3a995a5bb70ea89431dca096bf21fa2310221c1cab90a4f23664e1a791b",
+    "system/etc/init/lmkd.rc": "ae02e6e01d907b6a0a28e56d01ed9120c2072b9c2f313b415bc0ba28f3b3a710",
+    "vendor/bin/droidloom-lmkd-compat": "96c2652ffd9d1330fe088c304cf336e1e94de52f49146dea524b0a0b0d1d62c7"
+  },
+  "kernel_source_check": {
+    "condition": "cgroup_file_write returns EPERM for non-delegatable files at a non-initial cgroup namespace root when nsdelegate is set; memory.pressure has no CFTYPE_NS_DELEGATABLE flag.",
+    "git_blob": "4ca3cb993da299aa10174cc619268840b7984049",
+    "inference": "The observed layout matches the upstream Linux v7.0 denial condition for in-namespace root memory.pressure trigger registration. No Main write was attempted, and this is not a runtime EPERM receipt or a claim about uninspected downstream kernel changes.",
+    "url": "https://github.com/torvalds/linux/blob/v7.0/kernel/cgroup/cgroup.c"
+  },
+  "main_mutated": false,
+  "namespace_observation": {
+    "cgroup2": true,
+    "mount_rw": true,
+    "namespace_root_is_monitored_service_cgroup": true,
+    "nsdelegate": true,
+    "pressure_trigger_write_attempted": false,
+    "target_membership_from_own_cgroup_namespace": "0::/"
+  },
+  "observed_at": "2026-11-04T08:57:11.209905+00:00",
+  "original_receipt_relative_path": "main-integration-readonly-02/result.json",
+  "original_receipt_sha256": "abbea5fa06584749df373288b3ee2f7806aea7e3bb748e0f8239ebadfb45bb72",
+  "personal_identifiers_removed": true,
+  "resource_limits": {
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max"
+  },
+  "same_init_identity_before_after": true,
+  "schema": "pocket4-lmkd-public-main-integration-summary-v1",
+  "scope": "Read-only service, selected environment, cgroup files, and a short-lived observer entering only the existing cgroup namespace to read target membership. No Main write or process migration.",
+  "system_lmkd_and_compat_same_binary": true
+}

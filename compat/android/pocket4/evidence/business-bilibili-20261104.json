@@ -1,0 +1,119 @@
+{
+  "schema": "pocket4-business-flow-public-summary-v1",
+  "app": "Bilibili",
+  "package": "tv.danmaku.bili",
+  "flow": "r10/business-flows/bili-01",
+  "evidence_date_utc": "2026-11-04",
+  "status": "PASS_SCOPED_SEARCH_VISUAL_PLAYBACK_AND_OWNED_CLOSE",
+  "production_ready": false,
+  "runtime_binding": {
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+    "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
+  },
+  "evidence_basis": "Parent executed the flow. Publication agent independently rehashed the archived records and visually inspected three private resized JPEG derivatives; no new App execution was performed during that review.",
+  "original_archive_audit_sha256": "a1b08b48e83f75fa3d6ef09891ffe847007cd2c7b15869c046540e9500a1b8aa",
+  "recorded_steps": 16,
+  "command_stdout_stderr_pairs_rehashed": 40,
+  "actual_engine_mapping": {
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "exact_uid_and_dev_inode": true,
+    "mapping_rows": 4,
+    "sha256": "fc341441a902ed1836109f437fb156c177ed713d2018310afeb114300dcfcc63",
+    "step": "05-engine-maps"
+  },
+  "query": "微积分",
+  "selected_public_title": "很水的微积分000：课程介绍",
+  "unicode_query_readback_verified": true,
+  "matching_public_search_results_verified": true,
+  "actual_visual_content_progression_verified": true,
+  "visual_observations": [
+    {
+      "step": "13-player-observe",
+      "description": "Course introduction title card."
+    },
+    {
+      "step": "14-player-later",
+      "description": "Video has progressed to an instructor and desktop/handwritten-note layout."
+    },
+    {
+      "step": "15-final-observe",
+      "description": "Video has advanced to a textbook page headed 第1章 极限和连续 with additional handwritten content."
+    }
+  ],
+  "original_private_pngs": [
+    {
+      "step": "13-player-observe",
+      "sha256": "6d344797293d181b830a229ffa495f63a9a394775e806eb2cb82d303bb47a325",
+      "bytes": 682258,
+      "dimensions": [
+        1200,
+        1520
+      ]
+    },
+    {
+      "step": "14-player-later",
+      "sha256": "bbdc9f417c812dae8dd7bd815c537e1890c84a3175c9a47090e33a4dcc6b7db5",
+      "bytes": 690577,
+      "dimensions": [
+        1200,
+        1520
+      ]
+    },
+    {
+      "step": "15-final-observe",
+      "sha256": "f075542a2056ab2ef860fc0d87fbdbd4782d8c92a7e6ae667b61d5ce2d9c5078",
+      "bytes": 658750,
+      "dimensions": [
+        1200,
+        1520
+      ]
+    }
+  ],
+  "images_published": false,
+  "media_session": {
+    "basis": "Parent read-only observation at approximately 09:23 UTC",
+    "state": "PLAYING",
+    "position_field": 0,
+    "position_used_as_progress_proof": false
+  },
+  "audio_listened": false,
+  "seek_pause_verified": false,
+  "in_app_back_verified": false,
+  "reopen_verified": false,
+  "cold_start_verified": false,
+  "initial_readonly_failure": {
+    "step": "02-dump",
+    "at_utc": "2026-11-04T09:06:12.006335+00:00",
+    "error": "FOREGROUND_PACKAGE_MISMATCH during launch transition; recorder reported COMMAND_FAILED_OR_TIMED_OUT",
+    "action_attempted": false,
+    "outcome_unknown": false,
+    "retained": true
+  },
+  "later_actions_succeeded_without_replay": true,
+  "close": {
+    "at_utc": "2026-11-04T09:28:31.309575+00:00",
+    "new_owned_leaf_removed": true,
+    "other_tasks_preserved": true,
+    "only_preexisting_home_remained": true,
+    "outcome_unknown": false
+  },
+  "exit_history": {
+    "basis": "Parent same-flow pre-close exact-package readback",
+    "fresh_exit_observed": false,
+    "latest_record_still_historical": true
+  },
+  "resource_observation": {
+    "basis": "Parent post-close readback before the next App",
+    "memory_current_bytes": 5058826240,
+    "oom": 0
+  },
+  "claim_limits": [
+    "This qualifies the observed public search and visual playback subset, not the whole App.",
+    "No causal before/after trial establishes that R16 alone fixed Bilibili.",
+    "The earlier interrupted old-epoch trial remains failed/unknown in its separate record."
+  ]
+}

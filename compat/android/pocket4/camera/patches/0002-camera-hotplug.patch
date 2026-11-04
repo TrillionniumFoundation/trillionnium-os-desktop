@@ -1,0 +1,93 @@
+--- a/packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java
++++ b/packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java
+@@ -138,11 +138,34 @@
+     public CameraCharacteristics getCameraCharacteristics(
+           @Nonnull CameraId key)
+           throws OneCameraAccessException {
+-        try {
+-            return mCameraManager.getCameraCharacteristics(key.getValue());
+-        } catch (CameraAccessException ex) {
++        if (key == null || key.getValue() == null) {
++            mCameraFacingCache.clear();
++            throw new OneCameraAccessException("Camera is no longer available");
++        }
++        try {
++            CameraCharacteristics characteristics =
++                    mCameraManager.getCameraCharacteristics(key.getValue());
++            if (characteristics == null) {
++                mCameraFacingCache.clear();
++                throw new OneCameraAccessException("Camera characteristics are unavailable");
++            }
++            return characteristics;
++        } catch (CameraAccessException | IllegalArgumentException ex) {
++            // A removable camera can disappear after its ID was enumerated.
++            // Use the same checked failure path as a disconnected camera service.
++            mCameraFacingCache.clear();
+             throw new OneCameraAccessException("Unable to get camera characteristics", ex);
+         }
++    }
++
++    @Override
++    public void onCameraAvailable(String cameraId) {
++        mCameraFacingCache.clear();
++    }
++
++    @Override
++    public void onCameraUnavailable(String cameraId) {
++        mCameraFacingCache.clear();
+     }
+ 
+     @Override
+@@ -157,7 +180,21 @@
+     private String findCameraId(Facing facing) {
+         String id = mCameraFacingCache.get(facing);
+         if (id != null) {
+-            return id;
++            try {
++                String[] currentIds = mCameraManager.getCameraIdList();
++                if (currentIds != null) {
++                    for (String currentId : currentIds) {
++                        if (id.equals(currentId)) {
++                            return id;
++                        }
++                    }
++                }
++            } catch (CameraAccessException ex) {
++                mCameraFacingCache.remove(facing);
++                Log.w(TAG, "Unable to validate cached camera ID", ex);
++                return null;
++            }
++            mCameraFacingCache.remove(facing);
+         }
+ 
+         if (facing == Facing.FRONT) {
+@@ -205,11 +242,25 @@
+     private String findFirstCameraIdFacing(int facing) {
+         try {
+             String[] cameraIds = mCameraManager.getCameraIdList();
++            if (cameraIds == null) {
++                return null;
++            }
+             for (String cameraId : cameraIds) {
+-                CameraCharacteristics characteristics = mCameraManager
+-                      .getCameraCharacteristics(cameraId);
+-                if (characteristics.get(CameraCharacteristics.LENS_FACING) == facing) {
+-                    return cameraId;
++                if (cameraId == null) {
++                    continue;
++                }
++                try {
++                    CameraCharacteristics characteristics =
++                            mCameraManager.getCameraCharacteristics(cameraId);
++                    Integer lensFacing = characteristics == null ? null
++                            : characteristics.get(CameraCharacteristics.LENS_FACING);
++                    if (lensFacing != null && lensFacing == facing) {
++                        return cameraId;
++                    }
++                } catch (IllegalArgumentException ex) {
++                    // Device removal can race this individual metadata query.
++                    // Keep looking so another connected camera remains usable.
++                    Log.w(TAG, "Camera disappeared during enumeration", ex);
+                 }
+             }
+         } catch (CameraAccessException ex) {

@@ -1,0 +1,39 @@
+{
+  "schema": "pocket4-lmkd-source-lock-v1",
+  "upstream": {
+    "url": "https://android.googlesource.com/platform/system/memory/lmkd",
+    "commit": "c3601e823bd07c9c190f67e2f9bc7486e4978328"
+  },
+  "stages": {
+    "r3": {
+      "manifest": "manifests/r3-source.json",
+      "purpose": "Historical negative baseline reconstructed by reversing r3-to-r4 delta"
+    },
+    "r4": {
+      "manifest": "manifests/r4-source.json",
+      "full_patch": "patches/0001-upstream-to-r4.patch",
+      "patch_sha256": "f53eda00f0b91d40ab8abcc23e164199e6f3be147e9b948be6eceadac4f8cf9a",
+      "android_target_sha256": "b09939386d2f3e128d827701ede4da7594f9b333c92e296ddc1f7bbc50782c8f",
+      "main_deployment_allowed": false,
+      "pressure_qualified": false
+    },
+    "r5": {
+      "manifest": "manifests/r5-source.json",
+      "patch": "patches/0002-r4-to-r5-pending-evidence.patch",
+      "patch_sha256": "b38c1978da4227edec73b92898f540a4bc9959c851286b24ba4216fbe9b506e3",
+      "state": "BUILT_NOT_CANARY_QUALIFIED",
+      "android_built": true,
+      "pressure_qualified": false,
+      "main_deployed": false,
+      "android_target_sha256": "c6d49d95c16d1ce6d94293313ae9f6f683a079ebd4cc821338a701dfe5b2cf6f",
+      "build_summary": "evidence/r5-build/build-summary.json"
+    }
+  },
+  "negative_baseline_delta": {
+    "path": "patches/r3-to-r4-negative-baseline.patch",
+    "sha256": "8d47f156b502fc10172f09b217bb025175de36f89fe08a45f809a8ed86e31168"
+  },
+  "scope": "31 regular files per source stage are fully reconstructed; one unchanged public upstream external formatter symlink is separately verified as metadata and not dereferenced. Android binary reproduction remains conditional on external/unclosed inputs.",
+  "production_ready": false,
+  "upstream_symlink_metadata": "manifests/upstream-symlinks.json"
+}

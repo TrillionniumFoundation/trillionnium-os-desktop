@@ -1,0 +1,47 @@
+--- a/pressure_relay.cpp
++++ b/pressure_relay.cpp
+@@ -28,6 +28,15 @@
+ }
+ bool Nonzero(const Bytes32& value) {
+     return std::any_of(value.begin(), value.end(), [](uint8_t x) { return x != 0; });
++}
++bool MonotonicNow(uint64_t* value) {
++    timespec now{};
++    if (clock_gettime(CLOCK_MONOTONIC, &now) || now.tv_sec < 0 || now.tv_nsec < 0 ||
++        now.tv_nsec >= 1000000000 ||
++        uint64_t(now.tv_sec) > (std::numeric_limits<uint64_t>::max() - uint64_t(now.tv_nsec)) / 1000000000)
++        return false;
++    *value = uint64_t(now.tv_sec) * 1000000000 + uint64_t(now.tv_nsec);
++    return *value != 0;
+ }
+ bool SocketInt(int fd, int option, int* value) {
+     socklen_t size = sizeof(*value);
+@@ -178,12 +187,23 @@
+     return {Status::Revoked, error, 0, 0, 0};
+ }
+ Result Monitor::Consume(const Scope& scope) {
+-    timespec now{};
+-    if (clock_gettime(CLOCK_MONOTONIC, &now) || now.tv_sec < 0 || now.tv_nsec < 0 ||
+-        now.tv_nsec >= 1000000000 ||
+-        uint64_t(now.tv_sec) > (std::numeric_limits<uint64_t>::max() - uint64_t(now.tv_nsec)) / 1000000000)
++    uint64_t before = 0, after = 0;
++    if (!MonotonicNow(&before)) return Fail(Error::ClockInvalid);
++    Result result = ConsumeAt(scope, before);
++    if (result.status == Status::Revoked) return result;
++    // Nonblocking I/O can still fault or stall on a kernel memory charge. A
++    // fresh entry timestamp cannot certify an event after such a delay.
++    if (!MonotonicNow(&after) || after < before || after < last_local_ns_)
+         return Fail(Error::ClockInvalid);
+-    return ConsumeAt(scope, uint64_t(now.tv_sec) * 1000000000 + uint64_t(now.tv_nsec));
++    last_local_ns_ = after;
++    short readiness = 0;
++    if (!TransportHealthy(&readiness)) return Fail(Error::Transport);
++    if (result.status == Status::Event &&
++        after - result.observed_monotonic_ns >= config_.window_us * 1000) {
++        result.status = Status::Stale;
++        ++result.stale_records;
++    }
++    return result;
+ }
+ #ifdef DROIDLOOM_RELAY_TEST
+ Result Monitor::ConsumeAtForTest(const Scope& scope, uint64_t now_ns) {

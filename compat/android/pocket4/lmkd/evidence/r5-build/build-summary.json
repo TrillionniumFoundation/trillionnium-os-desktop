@@ -1,0 +1,153 @@
+{
+  "controls": {
+    "adapter_assertions_passed": 57,
+    "count_note": "326 includes setup/assertions, not 326 distinct scenarios.",
+    "pending_state_assertions_passed": 326,
+    "reader_assertions_passed": 20,
+    "real_reader_sequence_candidate": {
+      "medium_assertions_passed": 18,
+      "poll_assertions_passed": 18
+    },
+    "real_reader_sequence_negative_control": {
+      "baseline_medium_exit": 2,
+      "baseline_poll_exit": 2,
+      "expected_failure": "fresh high observation survives intermediate wakeup until critical decision"
+    },
+    "selection_count_note": "The same 15 selection/registration controls were checked against r4 identity and separately against pinned upstream; do not count them as 30 distinct cases.",
+    "stdout": {
+      "host-controls": "adapter RESULT 57 passed\nreader RESULT 20 passed\npending RESULT 326 passed\nactual_sequence baseline medium rc 2 PASS critical notification reads same current count and unchanged budget FAIL fresh high observation survives intermediate wakeup until critical decision\nbaseline poll rc 2 PASS critical notification reads same current count and unchanged budget FAIL fresh high observation survives intermediate wakeup until critical decision\ncandidate medium rc 0 RESULT 18 passed \ncandidate poll rc 0 RESULT 18 passed \n\nstock_selection PASS small cached process chosen before large foreground/protected\nPASS no eligible cached process causes no action\nPASS negative-adj protected processes excluded\nPASS stale record skipped\nPASS heaviest selection confined to equal adj\nPASS heaviest flag still respects importance\nPASS valid score written and registered\nPASS out-of-range score rejected\nPASS out-of-range score rejected\nPASS valid protected score retained\nPASS valid upper score retained\nPASS invalid process type rejected\nPASS nonleader pid rejected\nPASS failed kernel score write cannot register success\nPASS AOSP lmkd-only priority contract retained\nRESULT 15 passed\n\n",
+      "upstream-selection": "PASS small cached process chosen before large foreground/protected\nPASS no eligible cached process causes no action\nPASS negative-adj protected processes excluded\nPASS stale record skipped\nPASS heaviest selection confined to equal adj\nPASS heaviest flag still respects importance\nPASS valid score written and registered\nPASS out-of-range score rejected\nPASS out-of-range score rejected\nPASS valid protected score retained\nPASS valid upper score retained\nPASS invalid process type rejected\nPASS nonleader pid rejected\nPASS failed kernel score write cannot register success\nPASS AOSP lmkd-only priority contract retained\nRESULT 15 passed\n"
+    },
+    "stock_selection_assertions_passed": 15,
+    "upstream_selection_assertions_passed": 15
+  },
+  "dependency_evidence": {
+    "actual_md_manifest_sha256": "38f4964c1962b4a34552ae92c8a0dcd85f6cd548fd02e0bb37f51750a101c9e4",
+    "all_actual_new_md_records_pre_pinned": true,
+    "declared_and_builtin_include_search_inputs": 3533,
+    "inputs_unchanged": true,
+    "new_compile_emitted_md_records_union": 976,
+    "pre_pinned_files": 3586,
+    "reused_object_provenance_limit": "four reused objects are pinned by hash; their historical -MMD records omit system headers",
+    "scope": "Two newly compiled translation units use -MD, including emitted system-header dependencies. Counts are file/dependency records, not all headers and not a complete closure for reused objects."
+  },
+  "elf_contract": {
+    "dt_needed_identical_to_b099": true,
+    "readelf_header_program_headers_and_notes_rc": 0,
+    "runtime_load_not_tested_in_this_build": true,
+    "undefined_symbol_contract_identical_to_b099": true
+  },
+  "new_objects": {
+    "lmkd.cpp.o": "566c7aa75ea219ce00c95d8c01ca352d07c2e8bbc16292ec640ccca2fb266398",
+    "memory_cgroup.cpp.o": "5b06d54e5d03c135c375f844d61f8ef5d43b5b178b94466e0799ee02ae4088cf"
+  },
+  "normalized_commands": {
+    "file": "build-commands.json",
+    "sha256": "fde7ea1fb8696382e7d187ba2ce0c25e18be74cf12a475f91ad9eeaa7a241649"
+  },
+  "original_result_relative_path": "android-link-05-pending-evidence/result.json",
+  "original_result_sha256": "102193826e7c78f2a64ffe475a58bcdb9e4d7ef7aa5c087846ae0e6246b41478",
+  "plan_sha256": "b5b7a85100b836ca1c2cf49a6fa6f2861b202eb4524d876cb6711418ef92d3f0",
+  "qualification": {
+    "main_deployed": false,
+    "production_group_kill_and_pid_reuse_unqualified": true,
+    "production_ready": false,
+    "r5_pressure_canary_run": false,
+    "r5_protocol_canary_run": false,
+    "r7_b099_foreground_failure_preserved": true,
+    "r8_b099_guard_abort_preserved": true,
+    "required_future_gate": "Exactly one cached victim with real notification/count, foreground/protected/sentinels alive, zero OOM, original limits/admission, complete Main framework identity fence and empty owned cleanup."
+  },
+  "resource_limits": {
+    "affinity": [
+      4,
+      5
+    ],
+    "cpu_max": [
+      "200000",
+      "100000"
+    ],
+    "lld_threads": 2,
+    "memory_max_bytes": 2147483648,
+    "parallel_compile_jobs": 1
+  },
+  "reused_object_sha256": {
+    "liblmkd_utils.cpp.o": "a5e1d063c8dfeebba72d1856fc3228424856afe6f2faae85c262ce7f4ca16ea0",
+    "reaper.cpp.o": "ffccccb74ea7765cd3f17b0cc366f99a5b4cfb2a6353467d47200abd3a1bb5a6",
+    "statslog.cpp.o": "5e62e434715db740765dc3f5039f6249f9d6061baafeb676238fad17ae750074",
+    "watchdog.cpp.o": "85ee897ae62611a253bcd8ac0dfec3aac06fe8c893efbc2c4d95b7b491037a93"
+  },
+  "schema": "pocket4-lmkd-r5-public-build-summary-v1",
+  "scope": "isolated incremental build only; never deployment, Android UI, or real pressure",
+  "source_manifest_sha256": "798d9c9e7ed305ce0af6fde6943e0f787c5ec1340cf9ce206a29e12001cec895",
+  "source_patches": {
+    "r4_to_r5": "b38c1978da4227edec73b92898f540a4bc9959c851286b24ba4216fbe9b506e3",
+    "upstream_to_r4": "f53eda00f0b91d40ab8abcc23e164199e6f3be147e9b948be6eceadac4f8cf9a"
+  },
+  "source_sha256": {
+    "Android.bp": "116a7e647f614a66fb7af408286b576bba76f0c54e90ec6bda3bccf9b75f71bd",
+    "lmkd.cpp": "124038970d49604f9d04fc1c4e48d999f12195f2832742bb32138e39ca8ae1c4",
+    "memory_cgroup.cpp": "dbd3132d47cd629d7acbab61d77795deed2b5c4d9d063dbbe35f0cab614cf4bd",
+    "memory_cgroup.h": "1f3b277b9e3c349f60cf9264ea92fc6bead2c46825d8a5bb7d093ca80f657fcf"
+  },
+  "started_at": "2026-11-04T08:56:24.398730+00:00",
+  "status": "BUILT_NOT_CANARY_QUALIFIED",
+  "steps": [
+    {
+      "label": "host-controls",
+      "rc": 0,
+      "seconds": 5.29147103393916
+    },
+    {
+      "label": "upstream-selection",
+      "rc": 0,
+      "seconds": 0.34933666803408414
+    },
+    {
+      "label": "memory_cgroup.cpp-android",
+      "rc": 0,
+      "seconds": 0.45564713096246123
+    },
+    {
+      "label": "lmkd.cpp-android",
+      "rc": 0,
+      "seconds": 1.113139214925468
+    },
+    {
+      "label": "link-android",
+      "rc": 0,
+      "seconds": 0.016497839940711856
+    },
+    {
+      "label": "baseline-dynamic",
+      "rc": 0,
+      "seconds": 0.0037290690233930945
+    },
+    {
+      "label": "candidate-dynamic",
+      "rc": 0,
+      "seconds": 0.0018478119745850563
+    },
+    {
+      "label": "baseline-dynsym",
+      "rc": 0,
+      "seconds": 0.002019179053604603
+    },
+    {
+      "label": "candidate-dynsym",
+      "rc": 0,
+      "seconds": 0.0019646160071715713
+    },
+    {
+      "label": "candidate-elf",
+      "rc": 0,
+      "seconds": 0.0018132060067728162
+    }
+  ],
+  "target": {
+    "bytes": 131640,
+    "relative_path": "android-link-05-pending-evidence/lmkd-cgroup",
+    "sha256": "c6d49d95c16d1ce6d94293313ae9f6f683a079ebd4cc821338a701dfe5b2cf6f"
+  },
+  "upstream_commit": "c3601e823bd07c9c190f67e2f9bc7486e4978328"
+}

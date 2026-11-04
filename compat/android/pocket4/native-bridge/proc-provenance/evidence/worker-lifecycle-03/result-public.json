@@ -1,0 +1,115 @@
+{
+  "authoritative_terminal": {
+    "automatic_retry": false,
+    "exit_code": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "timed_out": false
+  },
+  "cases": [
+    {
+      "actual_pdeathsig_before_parent_exit": 9,
+      "cleanup_errors": [],
+      "client_no_output_or_rights_published": true,
+      "mode": "parent-exit",
+      "parent_exit": {
+        "code": 1,
+        "pidfd_reaped": true,
+        "status": 0
+      },
+      "parent_exit_interpretation": "CLD_EXITED / exit 0",
+      "status": "PASS",
+      "trusted_worker_birth_bound_before_source_go": true,
+      "worker_adopted_by_owned_subreaper": true,
+      "worker_exit": {
+        "code": 2,
+        "pidfd_reaped": true,
+        "status": 9
+      },
+      "worker_exit_interpretation": "CLD_KILLED / SIGKILL after real parent exit"
+    },
+    {
+      "actual_listener_refused_new_connection": true,
+      "cleanup_errors": [],
+      "lease_reaped_and_fds_closed": true,
+      "mode": "unresolved-reap",
+      "original_handle_refused_new_work": true,
+      "output_descriptor_closed_before_reconciliation": true,
+      "parent_exit": {
+        "code": 1,
+        "pidfd_reaped": true,
+        "status": 0
+      },
+      "published": false,
+      "real_pidfd_and_cgroup_lease_retained": true,
+      "status": "PASS",
+      "waitid_wnowait_proved_exact_worker_already_exited_normally": true,
+      "waitpid_results_withheld": 51,
+      "worker_reaped_by_original_lease": true
+    }
+  ],
+  "cleanup": {
+    "baseline_preserved": true,
+    "cleanup_passed": true,
+    "descriptor_count_preserved": true,
+    "events_controllers_preserved": true,
+    "hierarchy_preserved": true,
+    "job_process_generations_preserved": true,
+    "membership_preserved": true,
+    "owned_scope_preserved": true,
+    "remaining_owned_children": [],
+    "subreaper_flag_restored": true
+  },
+  "finished_utc": "2026-11-04T13:59:15.268125+00:00",
+  "limits_after": {
+    "cpu.max": "100000 100000\n",
+    "memory.high": "max\n",
+    "memory.max": "536870912\n",
+    "memory.swap.max": "max\n",
+    "pids.max": "30053\n"
+  },
+  "limits_before": {
+    "cpu.max": "100000 100000\n",
+    "memory.high": "max\n",
+    "memory.max": "536870912\n",
+    "memory.swap.max": "max\n",
+    "pids.max": "30053\n"
+  },
+  "original_result_bytes": 7835,
+  "original_result_sha256": "48cb49c73543161741aa6714373f612dfb45404e78da0a7855262125186f094a",
+  "qualification": {
+    "actual_parent_exit_and_kernel_pdeathsig": true,
+    "android_or_private_cell_tested": false,
+    "historical02_failure_preserved": true,
+    "main_accessed": false,
+    "native_fault_or_signal_regression_run": false,
+    "normal_owned_host_lifecycle_only": true,
+    "only_exact_naturally_exited_worker_waitpid_delivery_instrumented": true,
+    "production_peer_and_worker_body_substituted": true,
+    "production_peer_authorization_tested": false,
+    "production_ready": false,
+    "psi_or_pressure_actions": false,
+    "real_d_state_tested": false
+  },
+  "runtime_evidence_limits": [
+    "Actual control substituted a trusted owned caller adapter for production Peer and a tiny normal sealed-FD worker body; factory run_worker, handle, serve and WorkerLease.reap retained their original implementations.",
+    "Unresolved-reap is deliberate waitpid result visibility delay for a real normally exited worker, not a claim of real uninterruptible kernel sleep.",
+    "Raw intent stores before values; source compared complete after snapshot and descriptor count in-process. Results report equality booleans, not an independently persisted raw after snapshot or numeric before/after descriptor count.",
+    "The original inherited memory.swap.max was max and remained unchanged. No allocation-pressure or swap test was performed.",
+    "Original lifecycle02 failed before worker/listener creation on an observer method collision and cleanup EOF framing; it remains a distinct failed run."
+  ],
+  "schema": "pocket4-owned-broker-worker-lifecycle-result-v3",
+  "source_manifest_sha256": "3b6a2959d491f260e78829a4278f7511d2681eeb4adafcd44dc73f4a00ca430d",
+  "source_sha256": {
+    "02-to-03.patch": "b548541cff1f2f97c623d2b06559e9ea04f6a1f9feda6c73a6b1eeefccecf07a",
+    "PLAN.md": "487bdf2dcea770ce5cca3ba0f16fb4a9b4991780852908d4b78f12e324537c01",
+    "factory-reference.py": "fed96dcd56ed429c35d412a3047eadf29b5784e3393054c44dfbbd93aa59fc75",
+    "lifecycle02-failure-public.json": "318602e7808862b96e61fa2b940cf0bfc5d50a201d1c888ef9643c1464f6a720",
+    "local-controls.json": "5ec78760eed4dec938fa9ebe60f049f86b3c6ddbb4d5b21b691dc819bca65633",
+    "owned_worker_lifecycle.py": "1182b96e2b97b9a85b8ba378972ca99b5c16cccf4acbf9542ae42ae85bf8b5df",
+    "test_local_adapter_controls.py": "9c8ab41e33bbea2ffa4415d7642a70eb4dc9accf4d959c09a587a9c587544553"
+  },
+  "started_utc": "2026-11-04T13:59:14.902335+00:00",
+  "status": "PASS_OWNED_LIFECYCLE_ONLY",
+  "terminal_status_sha256": "3039018aa362a48dc7d22937a7fd5e135bf77cbd14fd51a563de088ebfd6db8b"
+}

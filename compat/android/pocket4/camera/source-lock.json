@@ -1,0 +1,99 @@
+{
+  "schema": "pocket4-camera-source-lock-v1",
+  "scope": "Pocket4 Linux / Android 17 / DroidLoom. This is not Asterinas kernel qualification.",
+  "observed_at_utc": "2026-11-04",
+  "source_binding": "Runtime source-lock identifies upstream revisions. Equivalence to the original installed APK before these local builds was not established.",
+  "upstream": [
+    {
+      "path": "packages/apps/Camera2",
+      "url": "https://android.googlesource.com/platform/packages/apps/Camera2",
+      "commit": "3adb5275b9791c2128e78969579a69f03fe1ac00"
+    },
+    {
+      "path": "frameworks/ex",
+      "url": "https://android.googlesource.com/platform/frameworks/ex",
+      "commit": "4080c2d3e5a6387e0d064ce5744d56fc6a7c9bb7"
+    }
+  ],
+  "files": {
+    "frameworks/ex/camera2/portability/src/com/android/ex/camera2/portability/AndroidCameraAgentImpl.java": {
+      "upstream_sha256": "36ce8fb1ffc36d752018f7529fa3055ed2ca9f5f6c977a7905a96b7162406e32",
+      "after_zero_device_sha256": "163ebc77289491740161e0e9be3f67267727dd2a5c2b03e514b3a7688c2028f2",
+      "final_sha256": "163ebc77289491740161e0e9be3f67267727dd2a5c2b03e514b3a7688c2028f2"
+    },
+    "packages/apps/Camera2/src/com/android/camera/CameraActivity.java": {
+      "upstream_sha256": "b25515cba3d1373b69cc9560fa694487cc6e68fa97682ac8cd7548e72cf7151c",
+      "after_zero_device_sha256": "2928977f5e7f4a3c293f7e74ca99ea3d1c837f18e4cbbf2ae7050a46eac6f68c",
+      "final_sha256": "2928977f5e7f4a3c293f7e74ca99ea3d1c837f18e4cbbf2ae7050a46eac6f68c"
+    },
+    "packages/apps/Camera2/src/com/android/camera/CaptureModule.java": {
+      "upstream_sha256": "a4edf76e6037fc62a97c5cc6c4cae24505c2c1e117b214cfbb93b65561c0bea6",
+      "after_zero_device_sha256": "8f2c94f9bcc0694948b74301e03d80b74f4a3fb3611456e33badf4269314e38c",
+      "final_sha256": "8f2c94f9bcc0694948b74301e03d80b74f4a3fb3611456e33badf4269314e38c"
+    },
+    "packages/apps/Camera2/src/com/android/camera/app/CameraController.java": {
+      "upstream_sha256": "8241555d7b50238660afa523071ffaf314bb19cda1cd4db67967384b8b9bf138",
+      "after_zero_device_sha256": "23f79ae26a46de7bad11df9bb350d465b9061f9ff8622dc23acff16f3c80c305",
+      "final_sha256": "23f79ae26a46de7bad11df9bb350d465b9061f9ff8622dc23acff16f3c80c305"
+    },
+    "packages/apps/Camera2/src/com/android/camera/one/OneCameraManager.java": {
+      "upstream_sha256": "fb63280b46191c3d1605af9622b1ad8e11931c0951595cab51d4710c9a2fbfae",
+      "after_zero_device_sha256": "92e3de8a44a9b45a2623b032d0dcf3e0bc9227a9db2e9e16a674349c93326657",
+      "final_sha256": "92e3de8a44a9b45a2623b032d0dcf3e0bc9227a9db2e9e16a674349c93326657"
+    },
+    "packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java": {
+      "upstream_sha256": "3fed869dc71da4c7bf3c85a80e9c891de16b12c17207ef3b2333c3a829398f23",
+      "after_zero_device_sha256": "2019878f9f838e1985367d26c4d0e0c497907235a47d15ccc34d5968d4858ca8",
+      "final_sha256": "2b112a02eadd4c2db0a642c3263207cfc55ad9930e1a4399c06c219c480e2bca"
+    }
+  },
+  "patches": [
+    {
+      "path": "patches/0001-zero-camera-and-teardown.patch",
+      "sha256": "81af5c5bef8a715c0fdf5aee01e9c8ad92bd32b497483c1a1b4c165a8720a180",
+      "scope": "Six-file zero-device and callback/executor teardown prerequisite."
+    },
+    {
+      "path": "patches/0002-camera-hotplug.patch",
+      "sha256": "237095a4f719f3dabd845ea6e54362d874afb4b4c8b8008a41f5067e3f899f7a",
+      "scope": "Checked hotplug failure, stale facing cache invalidation, and defensive metadata enumeration."
+    }
+  ],
+  "reviewed_source": {
+    "path": "source/packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java",
+    "sha256": "2b112a02eadd4c2db0a642c3263207cfc55ad9930e1a4399c06c219c480e2bca"
+  },
+  "negative_control": {
+    "path": "tests/fixtures/zero-device/Camera2OneCameraManagerImpl.java",
+    "sha256": "2019878f9f838e1985367d26c4d0e0c497907235a47d15ccc34d5968d4858ca8"
+  },
+  "original_receipt_hashes": {
+    "upstream_source_receipt_sha256": "813564e6775eea3fa4205a4d65a7f0a337ded73dcd2c611a7a5b70194649a947",
+    "zero_device_manifest_sha256": "819ffcabebc1bb07f1bcdbe89260f3cb23128f1e5a9cbf4a5edfc0fd8c0d3141",
+    "hotplug_manifest_sha256": "355648da8e6555e201b1c1775a1ecd56aea558e29c84bb94c6df8ab06d2b3ffe",
+    "original_release07_script_sha256": "0b5a2352daaf9ddf396265feec603b9c1afe49a43f77f90c380188a66f5183a3",
+    "original_host_regression_sha256": "d088b8bc9e24b68b961400ef1bf0de03cc66f8d8e251b2ab54d753f1977d8b89"
+  },
+  "host_test_bindings": {
+    "tests/bindings/HotplugRegression.java": "79e4ce94738d726af61a759320a706cec1607950c24a8cb0d495d0a53cb70e39",
+    "tests/bindings/android/annotation/TargetApi.java": "e06de47d53cb05022273b3b63fa6c69bd2ba94461c42c3b89898435cf7f4e67b",
+    "tests/bindings/android/hardware/camera2/CameraAccessException.java": "26364552d4d4fe4e213f2410de07ce6da735bab1885e1ec3847f38de9ef6659e",
+    "tests/bindings/android/hardware/camera2/CameraCharacteristics.java": "950014d4fb741f9d7dd0a0e5d71354624e2e886b8dbc101f83ee1b00dd27528c",
+    "tests/bindings/android/hardware/camera2/CameraManager.java": "9c97e0ab36fefaf04f93d334f0cff70f3f6af9ef567fb31a1c96bdffcdc34cbe",
+    "tests/bindings/android/os/Build.java": "cbf80247ae5d93e5b6c89649c7d36d7b686a9d9f4cd2ffb2d85f9f75ade63f13",
+    "tests/bindings/android/os/Handler.java": "507561fc20b3128bd08ff1d9cc1a396f568493d4d4e4a309979b773bebab239c",
+    "tests/bindings/com/android/camera/debug/Log.java": "ee9a51f964c71b53cfa5f7e437d7537600209f5b8bcba30ac70f52f10cf80b95",
+    "tests/bindings/com/android/camera/device/CameraId.java": "e8dd58c5cea816142b78da00d2f391301e4ee1fc603a2e9cb1b57457dad7e9c5",
+    "tests/bindings/com/android/camera/one/OneCamera.java": "7f139ca8960a045b51943a1827f85d029d3010e78d1465ec09591a33baff2cf8",
+    "tests/bindings/com/android/camera/one/OneCameraAccessException.java": "de3a99557fc7053615ecd68dc7d970293932a770f35b080daf8a05654f5085d1",
+    "tests/bindings/com/android/camera/one/OneCameraCharacteristics.java": "f6088337b8db89e06f0350711eb432353332f74428073057be1fb3b7cf808c40",
+    "tests/bindings/com/android/camera/one/OneCameraManager.java": "4381baa19fe10e0b3be3a7b669bbae51a31c30e48af2c16dd17fab62ad84c9d1",
+    "tests/bindings/com/android/camera/one/v2/OneCameraCharacteristicsImpl.java": "ffe5343bf7fe5143721e1f381cea3a952e2618adf0c3735c20a6d139f80b6356",
+    "tests/bindings/com/android/camera/util/AndroidServices.java": "22821deceed95daacebc4556515cb63ce70ec8a1546bba1b5ac873c0a8417fda",
+    "tests/bindings/com/android/camera/util/ApiHelper.java": "701bd723b8f299978049774eca7e5c2a151919db2a08e6e89e30d720173d9b29",
+    "tests/bindings/com/google/common/base/Optional.java": "7283ac440c2b03005f7e614a65c02240457d955affcf5856071149097ef66d6f",
+    "tests/bindings/javax/annotation/Nonnull.java": "c82a4ade11808ff953d9b82cd0b1c62e58341f74c16b67ae3f05578b02e49e1b"
+  },
+  "release_readiness": "NO-GO",
+  "clean_full_apk_reproduction_verified": false
+}

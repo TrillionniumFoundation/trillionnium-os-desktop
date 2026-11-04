@@ -1,0 +1,178 @@
+{
+  "schema": "pocket4-relay-event07b-public-adaptation-v1",
+  "status": "PUBLIC_ADAPTED_SOURCE_NOT_RUNTIME_EXECUTED_NOT_DEPLOYABLE",
+  "original_frozen_manifest_sha256": "665f8136e633375b5a0dc42f2469d4ad0015dace1d198b1cee3742cd75276e51",
+  "original_prepared_manifest_unchanged": true,
+  "original_event_evidence_manifest_sha256": "303b12e6563cd8ae042506fcc72177c9eda8e2ed7e9637f6225766d9f785813c",
+  "runtime_authorization_transfers": false,
+  "local_checks": [
+    "18 original inputs matched frozen SHA and size",
+    "18 original-to-public mapped outputs",
+    "Python AST parse only; no imported or executed runtime code",
+    "no private home/workspace root literals in public output"
+  ],
+  "mapping": [
+    {
+      "original_relative_path": "Cargo.toml",
+      "original_sha256": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+      "original_bytes": 379,
+      "public_relative_path": "Cargo.toml",
+      "public_sha256": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+      "public_bytes": 379,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "Cargo.lock",
+      "original_sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+      "original_bytes": 2433,
+      "public_relative_path": "Cargo.lock",
+      "public_sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+      "public_bytes": 2433,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "src/lib.rs",
+      "original_sha256": "063a54453e2062b2094ccf702d26a072e8e2d4518c00144cee90992e39ee97d9",
+      "original_bytes": 40370,
+      "public_relative_path": "src/lib.rs",
+      "public_sha256": "063a54453e2062b2094ccf702d26a072e8e2d4518c00144cee90992e39ee97d9",
+      "public_bytes": 40370,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "src/psi.rs",
+      "original_sha256": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+      "original_bytes": 13156,
+      "public_relative_path": "src/psi.rs",
+      "public_sha256": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+      "public_bytes": 13156,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "src/bin/owned_ipc_controls.rs",
+      "original_sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0",
+      "original_bytes": 28935,
+      "public_relative_path": "src/bin/owned_ipc_controls.rs",
+      "public_sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0",
+      "public_bytes": 28935,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "src/event_fixture.rs",
+      "original_sha256": "429361324cbe45b27d897f9ae8e291b7197ae55046de7be131668e86959d4c70",
+      "original_bytes": 29336,
+      "public_relative_path": "src/event_fixture.rs",
+      "public_sha256": "429361324cbe45b27d897f9ae8e291b7197ae55046de7be131668e86959d4c70",
+      "public_bytes": 29336,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "event_guard.py",
+      "original_sha256": "5dcab85e8021aa14b8555af2b2ff761e56a7938d692f67b1d7b9fac59a1b2012",
+      "original_bytes": 10114,
+      "public_relative_path": "event_guard.py",
+      "public_sha256": "df7fa6cee3c39c954fd97bb41c69f42ad1720e453d5f6d25926b8c631c997221",
+      "public_bytes": 10282,
+      "transformation": "Parameterize private activation and epoch-module paths; retain exact formal epoch/source SHA pins; bind parameterized predecessor SHA separately."
+    },
+    {
+      "original_relative_path": "owned_event_fixture.py",
+      "original_sha256": "8c15d2ccca80f3f919997717bb937419b151514114efac7da186a9d5ced26cdf",
+      "original_bytes": 28259,
+      "public_relative_path": "owned_event_fixture.py",
+      "public_sha256": "8c15d2ccca80f3f919997717bb937419b151514114efac7da186a9d5ced26cdf",
+      "public_bytes": 28259,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "test_event_guard.py",
+      "original_sha256": "966bf1e553bcc08905878bbea3608831d22d4df8ac4e4492d0c81657a0d3f328",
+      "original_bytes": 5696,
+      "public_relative_path": "test_event_guard.py",
+      "public_sha256": "966bf1e553bcc08905878bbea3608831d22d4df8ac4e4492d0c81657a0d3f328",
+      "public_bytes": 5696,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "test_event_orchestrator.py",
+      "original_sha256": "53ea08bfe6f8997ec7db1588e31cd8780e50571652628fb3f4e97d55edb6a18d",
+      "original_bytes": 9340,
+      "public_relative_path": "test_event_orchestrator.py",
+      "public_sha256": "53ea08bfe6f8997ec7db1588e31cd8780e50571652628fb3f4e97d55edb6a18d",
+      "public_bytes": 9340,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "prior_run_fixture.py",
+      "original_sha256": "f1fc129b862dc924969164638f606e11c49293338039cbe61952797d0c603daf",
+      "original_bytes": 40371,
+      "public_relative_path": "prior_run_fixture.py",
+      "public_sha256": "62243c0841577eaa1cca97deeffd7fcc0ced3d244a0fb83242bb504bd8ba92b8",
+      "public_bytes": 40375,
+      "transformation": "Parameterize private predecessor root; all original thresholds and identity predicates unchanged."
+    },
+    {
+      "original_relative_path": "run_event_trial.py",
+      "original_sha256": "ecb17458af2bafb44dadae5dcfbb1e367cc66bb6f03b7d757c53bfb83f36a646",
+      "original_bytes": 5694,
+      "public_relative_path": "run_event_trial.py",
+      "public_sha256": "858041bf8a0861e3b2b9a612407bb86e09c527ec3f6132d704058eaaae36e819",
+      "public_bytes": 6312,
+      "transformation": "Parameterize source/output paths and require a new operation key; update only adapted source hashes. Original historical binary pin remains unavailable and unqualified for public paths."
+    },
+    {
+      "original_relative_path": "negative-controls/old_driver.py",
+      "original_sha256": "516b55426cb1c708e545bc3fa4a1947a0ca5a22ae89d51a9c5c4eca51c31868e",
+      "original_bytes": 24570,
+      "public_relative_path": "negative-controls/old_driver.py",
+      "public_sha256": "516b55426cb1c708e545bc3fa4a1947a0ca5a22ae89d51a9c5c4eca51c31868e",
+      "public_bytes": 24570,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "negative-controls/old-clock-order.patch",
+      "original_sha256": "c49d7683e4c75be7402c16fafddc46b2c97c404f011288c6f81722399be2109c",
+      "original_bytes": 825,
+      "public_relative_path": "negative-controls/old-clock-order.patch",
+      "public_sha256": "c49d7683e4c75be7402c16fafddc46b2c97c404f011288c6f81722399be2109c",
+      "public_bytes": 825,
+      "transformation": "byte-identical"
+    },
+    {
+      "original_relative_path": "build-01.json",
+      "original_sha256": "1878fc5c2faabaf3d4924d183c0a703bc8b602fb490d28a5656dd8fc7be79454",
+      "original_bytes": 5141,
+      "public_relative_path": "evidence/build-01-summary.json",
+      "public_sha256": "aa39211d00aa4a8fca749708b7a9ced79eb0d23092b0d35d19f6dda1ba64307a",
+      "public_bytes": 6290,
+      "transformation": "Structured original build summary; no raw stderr/stdout, private paths, or test PID lines."
+    },
+    {
+      "original_relative_path": "build-02.json",
+      "original_sha256": "fc7622429c877d8cbbe3943256878a7b43fbde595214b19cbd76ad942603eaf8",
+      "original_bytes": 5153,
+      "public_relative_path": "evidence/build-02-summary.json",
+      "public_sha256": "f5242f0cd337ca27045166dcc3c66465ddcb7b8200b6d6289875d50271af4467",
+      "public_bytes": 6304,
+      "transformation": "Structured original build summary; no raw stderr/stdout, private paths, or test PID lines."
+    },
+    {
+      "original_relative_path": "build-03.json",
+      "original_sha256": "ad9c656d53e6152cf4d6412a2f2a268064e89113ab849f0484bebff047742c00",
+      "original_bytes": 12822,
+      "public_relative_path": "evidence/build-03-summary.json",
+      "public_sha256": "68ed1d7d5cad0eec43f227eee97b069390736d96d6b219478fc7785e54719f95",
+      "public_bytes": 11325,
+      "transformation": "Structured original build summary; no raw stderr/stdout, private paths, or test PID lines."
+    },
+    {
+      "original_relative_path": "README.md",
+      "original_sha256": "b277bdfe45db7ee8a000750b587951318461151d4c71780cba5b631284aa16f7",
+      "original_bytes": 10331,
+      "public_relative_path": "README.md",
+      "public_sha256": "d4613e74575e23652d562dc688e5ddff797c1d55f2e848801f8b0c13ec8743d4",
+      "public_bytes": 12977,
+      "transformation": "Add public-adaptation scope and missing-input limitations; preserve original historical preparation notes verbatim."
+    }
+  ]
+}

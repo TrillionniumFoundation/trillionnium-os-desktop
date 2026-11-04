@@ -1,0 +1,84 @@
+{
+  "schema": "pocket4-framework-restart-evidence-v1",
+  "recorded_at_utc": "2026-11-04",
+  "overall_status": "NO-GO",
+  "platform": "Pocket4 Linux, DroidLoom Android 17",
+  "timeline_utc": [
+    {
+      "at": "2026-11-04T05:46:46.426Z",
+      "event": "Bilibili Unicode query exact readback and matching public search results verified"
+    },
+    {
+      "at": "2026-11-04T05:48:03.369465Z",
+      "event": "DroidLoom Denial event loop fatal"
+    },
+    {
+      "at": "2026-11-04T05:48:03.369607Z",
+      "event": "presentation timestamp 0 precedes 796749643838000"
+    },
+    {
+      "at": "2026-11-04T05:48:03.374439Z",
+      "event": "Android composer service exits with status 1"
+    },
+    {
+      "at": "2026-11-04T05:48:03.377452Z",
+      "event": "init kills SurfaceFlinger"
+    },
+    {
+      "at": "2026-11-04T05:48:03.387635Z",
+      "event": "init kills zygote"
+    },
+    {
+      "at": "2026-11-04T05:48:03.924736Z",
+      "event": "old system_server killed with zygote process group"
+    },
+    {
+      "at": "2026-11-04T05:48:33.512104Z",
+      "event": "Video-open attempt begins after the framework restart, based on a stale prior UI observation"
+    },
+    {
+      "at": "2026-11-04T05:49:38.740684Z",
+      "event": "Action helper returns TIMEOUT, outcome_unknown=true, automatic_retry=false"
+    },
+    {
+      "at": "2026-11-04T05:49:44.208Z",
+      "event": "Readback returns FOREGROUND_PACKAGE_MISMATCH"
+    }
+  ],
+  "conclusions": {
+    "framework_restart_confirmed": true,
+    "outer_cell_and_init_survived": true,
+    "old_app_tasks_cannot_be_used_as_current_preconditions": true,
+    "search_observation_valid_in_prior_framework_epoch": true,
+    "playback_verified": false,
+    "fresh_exact_bilibili_crash_proven": false,
+    "memory_pressure_as_restart_cause_proven": false,
+    "underlying_zero_feedback_cause": "Presentation feedback validation under investigation; no repaired runtime claim in this evidence snapshot"
+  },
+  "deployed_components": {
+    "android_composer_sha256": "a657ac25be3e64ce0b639313cf392747589a946314744b0b65c1f98415d7a06b",
+    "host_wayland_presenter_sha256": "b6f704b87b0f68e9ca6e0709f8f45a56be93bed733603da76f7872305a206f2e"
+  },
+  "helper_boundary": {
+    "android_app_sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+    "observe_helper_sha256": "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae",
+    "runner": "local.pocket4.actions.v2/.ActionRunner",
+    "runner_apk_sha256": "a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058",
+    "outer_timeout_seconds": 70,
+    "inner_timeout_seconds": 65,
+    "kill_grace_seconds": 2,
+    "old_identity_checks": "Cell and init were bound, but zygote/system_server/SurfaceFlinger generations were not.",
+    "runner_java_source_recovered": false,
+    "runner_wait_implementation_claimed": false
+  },
+  "evidence": {
+    "kernel_audit_sha256": "9a92c25e1de98876f53f3730e51c8c882460496a76f1e82bac9a4d4a91f67958",
+    "fatal_context_sha256": "ee2d69953771d9d712969ce0a82d85623e242af17a04763aa7112dc223d086c8",
+    "publication": "Deidentified findings only; raw device logs and UI withheld"
+  },
+  "next_gates": [
+    "Fix and test presentation feedback handling while preserving the deployed presenter guards.",
+    "Qualify the new runtime with a fresh framework epoch and fresh UI observations.",
+    "Verify actual Bilibili playback/progress, back navigation and reopen; do not replay the unknown action."
+  ]
+}

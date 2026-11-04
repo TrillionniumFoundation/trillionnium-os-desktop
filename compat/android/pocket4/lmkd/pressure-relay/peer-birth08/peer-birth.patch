@@ -1,0 +1,263 @@
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -386,7 +386,14 @@
+     }
+ }
+ 
+-pub struct RolePolicy { pub uid: u32, pub gid: u32, pub namespaces: NamespacePins, pub executable: ExecutablePin }
++pub struct RolePolicy {
++    pub uid: u32, pub gid: u32, pub namespaces: NamespacePins, pub executable: ExecutablePin,
++    /// The exact process generation already owned by trusted lifecycle code.
++    /// This must be pinned before enrollment, independently of the request,
++    /// accepted socket, and discovered callers. Shared namespaces and an
++    /// identical UID/executable do not identify the intended process.
++    pub expected_peer: ProcessPin,
++}
+ /// Constructed only by trusted lifecycle code from its already held handles.
+ /// A request can provide neither a cgroup path nor any of these authorities.
+ pub struct CellAuthority {
+@@ -418,6 +425,7 @@
+     pub fn validate(&self) -> Result<()> {
+         self.owner.live()?;
+         self.init.live()?;
++        self.role.expected_peer.live()?;
+         self.owner_snapshot.matches(&self.owner)?;
+         self.init_snapshot.matches(&self.init)?;
+         if FileId::of(&self.root)? != self.root_id || Budget::read(&self.root)? != self.budget {
+@@ -425,6 +433,14 @@
+         }
+         if executable_stamp(&self.role.executable.file)? != self.role.executable.stamp {
+             return Err(Error::Reject("lifecycle executable pin changed"));
++        }
++        Ok(())
++    }
++    fn require_expected_peer(&self, actual: &ProcessPin) -> Result<()> {
++        self.role.expected_peer.live()?;
++        actual.live()?;
++        if actual.pid != self.role.expected_peer.pid || actual.start != self.role.expected_peer.start {
++            return Err(Error::Reject("accepted peer is not lifecycle-pinned process generation"));
+         }
+         Ok(())
+     }
+@@ -512,7 +528,7 @@
+ impl HostContext {
+     fn snapshot(&self, pin: &ProcessPin, authority: &CellAuthority, hash: bool) -> Result<PeerSnapshot> {
+         self.validate_host_view()?;
+-        pin.live()?;
++        authority.require_expected_peer(pin)?;
+         let status = parse_status(&read_at(&pin.proc_dir, "status", MAX_PROC_BYTES)?, pin.pid)?;
+         if status.uids != [authority.role.uid; 4] || status.gids != [authority.role.gid; 4] { return Err(Error::Reject("peer real/effective/saved/fs credentials differ")); }
+         let namespaces = NamespacePins::capture(&pin.proc_dir)?;
+@@ -526,7 +542,7 @@
+         let projection = beneath_dir(&root, "sys/fs/cgroup")?;
+         require_fs(&projection, CGROUP2_MAGIC)?;
+         if FileId::of(&projection)? != authority.root_id { return Err(Error::Reject("peer cgroup projection differs")); }
+-        pin.live()?;
++        authority.require_expected_peer(pin)?;
+         authority.validate()?;
+         self.validate_host_view()?;
+         Ok(PeerSnapshot { status, namespaces, executable, root, membership, projection })
+--- a/src/bin/owned_ipc_controls.rs
++++ b/src/bin/owned_ipc_controls.rs
+@@ -13,6 +13,7 @@
+ use std::os::fd::{AsRawFd, FromRawFd, OwnedFd};
+ use std::os::unix::ffi::OsStrExt;
+ use std::os::unix::fs::{MetadataExt, OpenOptionsExt, PermissionsExt};
++use std::os::unix::process::CommandExt;
+ use std::path::Path;
+ use std::process::{Child, Command, Stdio};
+ use std::sync::Arc;
+@@ -135,6 +136,32 @@
+         cmd.arg("--psi-peer").arg(path).arg(target);
+         Self::spawn_command(cmd)
+     }
++    fn spawn_in_owned_mount(path: &Path, expected: &ProcessPin) -> TestResult<Self> {
++        // Only the parent's already owned and unreaped Child supplies this
++        // namespace. No PID, namespace descriptor or path comes from a peer.
++        expected.live()?;
++        let namespaces = expected.namespace_pins()?;
++        let mount = OpenOptions::new().read(true).custom_flags(libc::O_CLOEXEC)
++            .open(format!("/proc/{}/ns/mnt", expected.pid()))?;
++        let m = mount.metadata()?;
++        checked(namespaces.identity("mnt") == Some(FileId { device: m.dev(), inode: m.ino() }), "owned mount namespace changed before clone")?;
++        expected.live()?;
++        let mut cmd = Command::new(std::env::current_exe()?);
++        cmd.arg("--peer").arg(path);
++        // This affects only the newly forked, directly owned child. The
++        // namespace is already private and has a read-only exact projection.
++        unsafe {
++            cmd.pre_exec(move || {
++                if libc::setns(mount.as_raw_fd(), libc::CLONE_NEWNS) < 0 {
++                    return Err(io::Error::last_os_error());
++                }
++                Ok(())
++            });
++        }
++        let child = Self::spawn_command(cmd)?;
++        expected.live()?;
++        Ok(child)
++    }
+     fn spawn_command(mut cmd: Command) -> TestResult<Self> {
+         let mut process = cmd.stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::inherit()).spawn()?;
+         let output = BufReader::new(process.stdout.take().ok_or("missing owned stdout")?);
+@@ -188,7 +215,7 @@
+     let file = OpenOptions::new().read(true).custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC).open(path)?;
+     let sha = ExecutablePin::hash_file_for_receipt(&file)?;
+     let executable = ExecutablePin::from_lifecycle(file, sha)?;
+-    let role = RolePolicy { uid, gid, namespaces, executable };
++    let role = RolePolicy { uid, gid, namespaces, executable, expected_peer: peer_pin };
+     Ok(CellAuthority::from_lifecycle(root, host.pin_self()?, host.pin_self()?, role)?)
+ }
+ fn rejected(result: Result<VerifiedPeer>, expected: &str) -> TestResult<()> {
+@@ -217,7 +244,74 @@
+     if raw < 0 { return Err(io::Error::last_os_error().into()); }
+     Ok(unsafe { OwnedFd::from_raw_fd(raw) })
+ }
+-fn test_run(private_projection: bool) -> TestResult<()> {
++#[derive(Debug, Eq, PartialEq)]
++struct SameClass {
++    uids: String, gids: String, namespaces: Vec<FileId>, executable: FileId,
++    root: FileId, membership: String, projection: FileId,
++}
++fn same_class(pin: &ProcessPin) -> TestResult<SameClass> {
++    pin.live()?;
++    let proc = Path::new("/proc").join(pin.pid().to_string());
++    let status = fs::read_to_string(proc.join("status"))?;
++    let field = |prefix: &str| -> TestResult<String> {
++        let mut found = status.lines().filter_map(|line| line.strip_prefix(prefix));
++        let value = found.next().ok_or("missing real proc credentials")?.trim().to_owned();
++        checked(found.next().is_none(), "duplicate proc credentials")?;
++        Ok(value)
++    };
++    let id = |path: &Path| -> TestResult<FileId> {
++        let m = fs::metadata(path)?;
++        Ok(FileId { device: m.dev(), inode: m.ino() })
++    };
++    let pins = pin.namespace_pins()?;
++    let namespaces = ["pid", "pid_for_children", "mnt", "cgroup", "user", "net", "ipc", "uts", "time", "time_for_children"]
++        .iter().map(|name| pins.identity(name).ok_or_else(|| "missing held namespace".into())).collect::<TestResult<Vec<_>>>()?;
++    let snapshot = SameClass {
++        uids: field("Uid:")?, gids: field("Gid:")?, namespaces,
++        executable: id(&proc.join("exe"))?, root: id(&proc.join("root"))?,
++        membership: fs::read_to_string(proc.join("cgroup"))?,
++        projection: id(&proc.join("root/sys/fs/cgroup"))?,
++    };
++    pin.live()?;
++    Ok(snapshot)
++}
++fn peer_birth_control(host: &HostContext, listener: &Listener, path: &Path, projection: &Path, uid: u32, gid: u32) -> TestResult<()> {
++    let mut expected_child = PeerChild::spawn(path, Some(projection))?;
++    // Capture policy before accepting the connection. The accepted caller is
++    // never used to fill in the expected process or namespaces retrospectively.
++    let authority = authority(host, &mut expected_child, uid, gid, false, false)?;
++    let expected_pin = host.pin_owned_child(&mut expected_child.process)?;
++    let legitimate = host.authenticate(accept(listener)?, &authority)?;
++    checked((legitimate.credentials().pid, legitimate.birth()) == (expected_pin.pid(), expected_pin.birth()), "legitimate process birth differs")?;
++    legitimate.revalidate(host, &authority)?;
++    let expected_class = same_class(&expected_pin)?;
++    let mut other_child = PeerChild::spawn_in_owned_mount(path, &expected_pin)?;
++    let other_pin = host.pin_owned_child(&mut other_child.process)?;
++    checked((expected_pin.pid(), expected_pin.birth()) != (other_pin.pid(), other_pin.birth()), "negative control reused intended process generation")?;
++    checked(same_class(&other_pin)? == expected_class && same_class(&expected_pin)? == expected_class,
++        "negative control does not share all ten namespaces, UID/GID, executable, root, cgroup and projection")?;
++    emit("owned second process shares all ten namespaces, UID/GID, executable, root, cgroup and projection; birth tuple differs");
++    let accepted = host.authenticate(accept(listener)?, &authority);
++    let decision: TestResult<()> = match accepted {
++        Err(Error::Reject("accepted peer is not lifecycle-pinned process generation")) => Ok(()),
++        Err(error) => Err(format!("wrong-caller rejected by unrelated gate: {error}").into()),
++        Ok(incorrect) => {
++            // The old-source negative must pass all of its actual metadata
++            // gates, not merely miss the new branch due to a fixture defect.
++            incorrect.revalidate(host, &authority)?;
++            Err("BIRTH_BINDING_MISSING: same-class different owned process authenticated".into())
++        },
++    };
++    other_child.finish()?;
++    legitimate.revalidate(host, &authority)?;
++    expected_child.finish()?;
++    // Always normal-close both owned children before reporting the deliberate
++    // old-source negative. The outer suite verifies all descriptors and scope.
++    decision?;
++    emit("lifecycle-pinned peer authenticates; same-class different owned caller rejected; legitimate peer survives rejection");
++    Ok(())
++}
++fn test_run(private_projection: bool, birth_only: bool) -> TestResult<()> {
+     let host = Arc::new(HostContext::open()?);
+     emit("host proc PID namespace matches getpid; proc and cgroup2 filesystems verified");
+     let uid = unsafe { libc::geteuid() };
+@@ -242,8 +336,12 @@
+     };
+     let original_mount_records = selected_mounts()?;
+     let before_fds = fd_count()?;
+-    {
++    let controls = (|| -> TestResult<()> {
+         let listener = Listener::bind(&path)?;
++        if birth_only {
++            checked(private_projection, "birth control requires private projection")?;
++            return peer_birth_control(&host, &listener, &path, &projection_path, uid, gid);
++        }
+         for (name, uid_value, gid_value, wrong_exe, reason) in [
+             ("kernel accepted credentials reject wrong UID", uid.wrapping_add(1), gid, false, "accepted peer credentials differ"),
+             ("kernel accepted credentials reject wrong GID", uid, gid.wrapping_add(1), false, "accepted peer credentials differ"),
+@@ -260,8 +358,19 @@
+             let expected = authority(&host, &mut peer, uid, gid, false, false)?;
+             let accepted = accept(&listener)?;
+             peer.finish()?;
+-            rejected(host.authenticate(accepted, &expected), "dead peer before proc open")?;
+-            emit("SO_PEERPIDFD retains dead connection generation after normal exit and reap");
++            rejected(host.authenticate(accepted, &expected), "process generation is dead")?;
++            emit("lifecycle-pinned expected peer exit rejects stale enrollment after normal reap");
++        }
++        {
++            let mut expected_child = PeerChild::spawn(&path, projection)?;
++            let expected = authority(&host, &mut expected_child, uid, gid, false, false)?;
++            let _held_expected_connection = accept(&listener)?;
++            let mut departed_child = PeerChild::spawn(&path, projection)?;
++            let departed_connection = accept(&listener)?;
++            departed_child.finish()?;
++            rejected(host.authenticate(departed_connection, &expected), "dead peer before proc open")?;
++            expected_child.finish()?;
++            emit("SO_PEERPIDFD retains dead connection generation while expected lifecycle peer remains alive");
+         }
+         if private_projection {
+             let mut peer = PeerChild::spawn(&path, projection)?;
+@@ -277,6 +386,7 @@
+             emit("ordinary host child fails the required exact cgroup projection gate");
+         }
+         if private_projection {
++            peer_birth_control(&host, &listener, &path, &projection_path, uid, gid)?;
+             for mode in ["explicit-retire", "peer-exit", "unexpected-data", "slot-limit", "generation-change", "state-change"] {
+                 let mut peer = PeerChild::spawn(&path, projection)?;
+                 let expected = Arc::new(authority(&host, &mut peer, uid, gid, false, false)?);
+@@ -315,7 +425,8 @@
+                 emit(&format!("full authenticated owned host capability: {mode}"));
+             }
+         }
+-    }
++        Ok(())
++    })();
+     checked(fd_count()? == before_fds, "owned descriptor leak")?;
+     checked(!path.exists(), "owned socket was not removed")?;
+     checked(fs::metadata("/proc/self/ns/mnt")?.ino() == original_mount_ns.ino(), "parent mount namespace changed")?;
+@@ -326,7 +437,8 @@
+     checked(member_now.dev() == original_cgroup.dev() && member_now.ino() == original_cgroup.ino() && fs::read_to_string("/proc/self/cgroup")? == membership, "test migrated out of original job cgroup")?;
+     fs::remove_dir(&base)?;
+     emit("owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged");
+-    println!("RESULT PASS mode={}", if private_projection { "private-host-mount-only" } else { "host-negative-controls" });
++    controls?;
++    println!("RESULT PASS mode={}", if birth_only { "owned-same-class-peer-birth" } else if private_projection { "private-host-mount-only" } else { "host-negative-controls" });
+     Ok(())
+ }
+ fn psi_peer(path: &Path, target: &Path) -> TestResult<()> {
+@@ -444,8 +556,9 @@
+     else if args.len() == 5 && args[1] == "--psi-suite" { psi_suite(Path::new(&args[2]), Path::new(&args[3]), Path::new(&args[4])) }
+     else if args.len() == 3 && args[1] == "--psi-event-suite" { event_fixture::run(Path::new(&args[2])) }
+     else if args.len() == 4 && args[1] == "--owned-workload" { event_fixture::workload(Path::new(&args[2]), args[3].to_str().unwrap_or("")) }
+-    else if args.len() == 1 { test_run(false) }
+-    else if args.len() == 2 && args[1] == "--private-projection" { test_run(true) }
++    else if args.len() == 1 { test_run(false, false) }
++    else if args.len() == 2 && args[1] == "--private-projection" { test_run(true, false) }
++    else if args.len() == 2 && args[1] == "--peer-birth-only" { test_run(true, true) }
+     else { Err("unsupported control arguments".into()) };
+     if let Err(error) = result { eprintln!("RESULT FAIL: {error}"); std::process::exit(2); }
+ }

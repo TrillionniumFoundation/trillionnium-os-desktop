@@ -1,0 +1,56 @@
+{
+  "schema": "pocket4-native-dependencies-v1",
+  "builder_public_source_lock": "builder/source-lock.json",
+  "builder_cargo_lock_sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62",
+  "aosp_source_lock_sha256": "4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178",
+  "aosp_source_lock_location_in_reconstructed_builder": "android/manifest/m2-sparse-source-lock.json",
+  "aosp_project_count": 214,
+  "compiler_project": {
+    "commit": "29182889399818f97baa65ea238c80e8117981eb",
+    "name": "platform/prebuilts/clang/host/linux-x86",
+    "path": "prebuilts/clang/host/linux-x86",
+    "purpose": "Pinned Android target compiler",
+    "sparse_paths": [
+      "Android.bp",
+      "clang-r584948b/lib/clang/22/include",
+      "clang-r584948b/lib/clang/22/lib/linux",
+      "soong",
+      "clang-r584948b"
+    ]
+  },
+  "compiler_revision": "clang-r584948b",
+  "compiler_entry_sha256": "15261046b6ea9504da0ae57b9d65ebc869ab1942aecb1af2819762b9b5251957",
+  "superproject": {
+    "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+    "name": "platform/superproject",
+    "ref": "refs/heads/android-17.0.0_r1"
+  },
+  "compiled_input_manifests": {
+    "r15": "manifests/r15-compiled-inputs.json",
+    "r16": "manifests/r16-compiled-inputs.json"
+  },
+  "source_binding": {
+    "r15_raw_files": 907,
+    "r16_raw_files": 908,
+    "raw_to_effective_changed_files_per_revision": 22,
+    "changed_file_kinds": "21 Android.bp build descriptions and interpreter/arm64/interpreter.h",
+    "new_signal_cpp_rewritten": false,
+    "new_maps_cpp_rewritten": false
+  },
+  "external_binary_inputs_not_distributed": [
+    {
+      "module": "droidloom_native_bridge_host_libandroid",
+      "origin": "frozen base-system/system/lib64/libandroid.so",
+      "sha256": "ce601e9536fb971a53bcdf17acd0bf25ee0ac54b1c4e03f83904514667bfb25e",
+      "existing_provider_elf_dependency_check_disabled": true,
+      "installed_runtime_compatibility_verified": false
+    }
+  ],
+  "missing_or_local_only_inputs": [
+    "Materialized prepared AOSP workspace and build caches are not included; project revisions and sparse paths are pinned by the reconstructed builder's source lock.",
+    "Frozen base-system libandroid.so with the listed SHA-256 is a local-only link reference; its complete baseline image production recipe is not provided by this bundle.",
+    "The installed host toolchain, system libraries and complete build environment are not archived.",
+    "Focused predecessor regression runs used a previously prepared real-provider recipe and ABI fixture header; the receipts pin that recipe, but this delivery does not reconstruct that separate preparation from an empty directory."
+  ],
+  "reproducibility_claim": "The complete public raw translator and builder source states can be reconstructed and hash-verified. An independent clean Android binary build from this repository alone, byte-identical binaries, or runtime compatibility are not claimed."
+}

@@ -1,0 +1,302 @@
+{
+  "schema": "pocket4-native-three-arm-public-summary-v1",
+  "original_receipt_sha256": "e9213a03acf9a6d995040a08488a1ee073c3a8fa46e1b40a78ee1e056137d371",
+  "qualifier_sha256": "c27fe38177bc36a71b4c0289c4cebce1a279dbe038080575bc37122bf1aacc50",
+  "state": "PASS_THREE_ARM_OWNED_NATIVE_SEMANTICS",
+  "arms": [
+    {
+      "arm": "r14",
+      "started_utc": "2026-11-04T08:33:03.729510+00:00",
+      "finished_utc": "2026-11-04T08:36:27.138519+00:00",
+      "status": "PASS_WITH_EXPECTED_BASELINE_NEGATIVES",
+      "engine_sha256": "a74cba50358ab473b4261e33daee98107fb45fcc78110f71599ad38b63822d2c",
+      "v8_apk_sha256": "dc1777871e32681a823253c36dba0a553ef596a464a3c4d7a282d3f9a6bafa67",
+      "source_contract": {
+        "files": {
+          "assess-default-once.py": "6cd85a2e6c58ec39cdaf38eb1fbbab87d3960ba4459b49977d6174edd3ade766",
+          "assess-v2.py": "c3d88977418a8a8a522db604d4b6930eefaf5dddbf406ddb2175c5b748356f0c",
+          "run_arm-v5-once.py": "895ecbfec6d04170adf0dbc16a0fd18d3de0b78317efec86de1846295dfcddb8"
+        },
+        "inventory_sha256": "590d32e10c5a86934afbd18eebd620d5a07f0e13a4c4af2e4094fac801dc5c62",
+        "manifest_sha256": "72d3151d28485f536b9f28b9575b248da92c6b289998e28066a82a8a2f776f67"
+      },
+      "controls": {
+        "v4": {
+          "classification": "PASS_V4_MRS_CPUINFO",
+          "hwcap": 507,
+          "expected_cpu_count": 24,
+          "openat2_observation": {
+            "expectation": "observe_only",
+            "value": "-904",
+            "matches_actual_auxv": false
+          }
+        },
+        "v5": {
+          "cases": 1,
+          "classification": "PASS_V5_ACTUAL_SIGNAL_RECORDS",
+          "events": 5
+        },
+        "v6": {
+          "cases": 16,
+          "classification": "PASS_V6_ACTUAL_SIGNAL_RECORDS",
+          "events": 50
+        },
+        "v8": {
+          "classification": "EXPECTED_R14_MAPS_OFFSET_NEGATIVE_WITH_SIGNAL_CONTROL_PASS",
+          "initial_alarm": 1,
+          "map_statuses": [
+            32,
+            32,
+            0,
+            0
+          ],
+          "signal_status": 0
+        }
+      },
+      "default_alarm": "SIG_IGN_returned_and_survived",
+      "at_most_once": {
+        "host_launches": 1,
+        "native_executors": 1,
+        "activity_manager_processes": 1,
+        "nonce_processes": 1,
+        "framework_relaunches_refused": 0,
+        "all_processes_accounted_for": true,
+        "refusers_native_probe_not_mapped": true
+      },
+      "default_owner_independently_sampled": true,
+      "all_owned_oom_events_zero": true,
+      "all_owned_units_empty": true,
+      "owned_package_uid_list_complete": true,
+      "owned_code_data_absent_in_actual_namespace": true,
+      "adbd": "stopped",
+      "receipts_sha256": {
+        "bootstrap-ready.json": "6a5c7a4767cf6f39b5fcffbf6721d402e56a2976db7ff8eb2edcfa7892378eaf",
+        "cpu-inventory-observed.json": "dc9909a63b25689a4ec0c275bf61deefa9b0bdec8cf38692e5d8f9cff24bcccd",
+        "owned-code-data-cleanup.json": "f53fbd6f8662b60b28aeec51fce004a63d5b289140a6ad37e639e9bf8d677954",
+        "package-set-comparison.json": "fd7ed9c15e97626b351448b2989d7b92982e379ec16a14f7a7b02e3aabcb36e8",
+        "package-uids-after.txt": "a160a1fed616212c329fdc28cacc8aaf7f0a9551dd799385b22c9947363ba23f",
+        "packages-after-third-party.txt": "82b90e50ef567d078cb6861765227d50cb6291155417fc53c04a9b0324a2bd21",
+        "packages-after.txt": "0e483a7a441bcbee7f5d7b070f8f37d14d00876f8d72524f54cb66eeb65f27fb",
+        "packages-before-third-party.txt": "82b90e50ef567d078cb6861765227d50cb6291155417fc53c04a9b0324a2bd21",
+        "packages-before.txt": "0e483a7a441bcbee7f5d7b070f8f37d14d00876f8d72524f54cb66eeb65f27fb",
+        "prepared.json": "0b8b69404aa3bf9d35741523bfa31ed9fc54a91e89acbca4ef6b5ed0680ce128",
+        "private-framework-epoch.json": "6b53a13d092413127a03c44a7127c4909db6964e25d43597a7a0121256f25f61",
+        "resources-before-cleanup.json": "17cf116a96e6705e97089fb6e09c41f6184bd2481a990068be5f86441f468bc0",
+        "runtime-result.json": "3a0259d274af2cc44b86e1feef247b6b9c30ba8d800faf051bd949004e75745c",
+        "v8-default-after-owned-stop-exit-info.txt": "c1013c51a7a8e45617c5e62cf6ee771da6563300335696b66170b09bb055ec20",
+        "v8-default-after-owned-stop.log": "6d8e3f24c18137dfdd83900fa84a738bb832fced640545fabfe0f3df8890d392",
+        "v8-default-claim.json": "11218fd2dd5f6f8bf5afbfdd7248a60e0c9b299d4b7fcf4ee71f7d4b919474f0",
+        "v8-default-claim.raw": "95954f5dfda8c10414b78493da0f77eb0988bf6bc9f491cb81595bcfb40f7c8a",
+        "v8-default-final-claim.json": "11218fd2dd5f6f8bf5afbfdd7248a60e0c9b299d4b7fcf4ee71f7d4b919474f0",
+        "v8-default-final-claim.raw": "95954f5dfda8c10414b78493da0f77eb0988bf6bc9f491cb81595bcfb40f7c8a",
+        "v8-default-log.txt": "b72ebea95a768cd56e6589f774739a876de4fcc945a4db99bb6f7c2bd4a841d8",
+        "v8-default-owned-stop-boundary.json": "c28efdea9cad1d5f6f25c2c81c0f6812f71761d00614b3f4eff40f3a939c02bb",
+        "v8-default-single-launch-command.json": "452f496f8f1478ce67e5798bff0890a3a5280626a684a43fb8c04b3423f300f1"
+      }
+    },
+    {
+      "arm": "r15",
+      "started_utc": "2026-11-04T08:37:01.084679+00:00",
+      "finished_utc": "2026-11-04T08:40:12.984628+00:00",
+      "status": "PASS_WITH_EXPECTED_BASELINE_NEGATIVES",
+      "engine_sha256": "a770eda38e27d072f10568b7dee164a429f9eb05261667f7cb3c6f1c10e0d535",
+      "v8_apk_sha256": "dc1777871e32681a823253c36dba0a553ef596a464a3c4d7a282d3f9a6bafa67",
+      "source_contract": {
+        "files": {
+          "assess-default-once.py": "6cd85a2e6c58ec39cdaf38eb1fbbab87d3960ba4459b49977d6174edd3ade766",
+          "assess-v2.py": "c3d88977418a8a8a522db604d4b6930eefaf5dddbf406ddb2175c5b748356f0c",
+          "run_arm-v5-once.py": "895ecbfec6d04170adf0dbc16a0fd18d3de0b78317efec86de1846295dfcddb8"
+        },
+        "inventory_sha256": "590d32e10c5a86934afbd18eebd620d5a07f0e13a4c4af2e4094fac801dc5c62",
+        "manifest_sha256": "72d3151d28485f536b9f28b9575b248da92c6b289998e28066a82a8a2f776f67"
+      },
+      "controls": {
+        "v4": {
+          "classification": "PASS_V4_MRS_CPUINFO",
+          "hwcap": 507,
+          "expected_cpu_count": 24,
+          "openat2_observation": {
+            "expectation": "observe_only",
+            "value": "-904",
+            "matches_actual_auxv": false
+          }
+        },
+        "v5": {
+          "cases": 1,
+          "classification": "PASS_V5_ACTUAL_SIGNAL_RECORDS",
+          "events": 5
+        },
+        "v6": {
+          "cases": 16,
+          "classification": "PASS_V6_ACTUAL_SIGNAL_RECORDS",
+          "events": 50
+        },
+        "v8": {
+          "classification": "EXPECTED_R15_MAPS_OFFSET_NEGATIVE_WITH_SIGNAL_CONTROL_PASS",
+          "initial_alarm": 0,
+          "map_statuses": [
+            32,
+            32,
+            0,
+            0
+          ],
+          "signal_status": 0
+        }
+      },
+      "default_alarm": "SIGNALED_14",
+      "at_most_once": {
+        "host_launches": 1,
+        "native_executors": 1,
+        "activity_manager_processes": 2,
+        "nonce_processes": 2,
+        "framework_relaunches_refused": 1,
+        "all_processes_accounted_for": true,
+        "refusers_native_probe_not_mapped": true
+      },
+      "default_owner_independently_sampled": false,
+      "all_owned_oom_events_zero": true,
+      "all_owned_units_empty": true,
+      "owned_package_uid_list_complete": true,
+      "owned_code_data_absent_in_actual_namespace": true,
+      "adbd": "stopped",
+      "receipts_sha256": {
+        "bootstrap-ready.json": "5b3c0c5d66f70ff1ffc70cf0273d6114455572c3621a595e71560eac422bf336",
+        "cpu-inventory-observed.json": "dc9909a63b25689a4ec0c275bf61deefa9b0bdec8cf38692e5d8f9cff24bcccd",
+        "owned-code-data-cleanup.json": "d703e1cd9514f3108b962dbffdde8214f6c16d0089178634fe5f2e68be9144b8",
+        "package-set-comparison.json": "fd7ed9c15e97626b351448b2989d7b92982e379ec16a14f7a7b02e3aabcb36e8",
+        "package-uids-after.txt": "1b949a10c46558f9e08d0cfa3f7543a9d93d88b4f32af9ebcdc0a8724e0d9e7a",
+        "packages-after-third-party.txt": "82b90e50ef567d078cb6861765227d50cb6291155417fc53c04a9b0324a2bd21",
+        "packages-after.txt": "0e483a7a441bcbee7f5d7b070f8f37d14d00876f8d72524f54cb66eeb65f27fb",
+        "packages-before-third-party.txt": "82b90e50ef567d078cb6861765227d50cb6291155417fc53c04a9b0324a2bd21",
+        "packages-before.txt": "0e483a7a441bcbee7f5d7b070f8f37d14d00876f8d72524f54cb66eeb65f27fb",
+        "prepared.json": "44c96f9d8686122c0c911ab68e7067c8a7f009c6b4c1bb1bb57f21a9653fe1c2",
+        "private-framework-epoch.json": "65954501b218a30b7035587e7b920457d996d36dfc5a2eac056346e8227ae3e4",
+        "resources-before-cleanup.json": "882a7637bf7934bf2daf513cab647024a461ef760dbbe4e8a95ed41a5c6d4498",
+        "runtime-result.json": "0530da3cb52eeed1ee9f7405e6f459dba3fddffe1d55c84de749633427bb1cfb",
+        "v8-default-after-owned-stop-exit-info.txt": "18a0199b91f54e53679b27b64d6e81d77c9a68a20fb69ee60064f0830a5ccde9",
+        "v8-default-after-owned-stop.log": "41408b7860a003369413e09d55047a747d1e7f64ee95cfe3188006c4ea57930b",
+        "v8-default-claim.json": "818c0e49871cb385c38afbd5c33db698548b662295584e77d598dd42ef64a66e",
+        "v8-default-claim.raw": "3375950136cff000d112ebe3175c903279b52594a59ed18c38d510c610181813",
+        "v8-default-exit-info.txt": "f498a643b0155b56feba6ada976cb2044445adf00f05fe95757a6edd956d7ac1",
+        "v8-default-final-claim.json": "818c0e49871cb385c38afbd5c33db698548b662295584e77d598dd42ef64a66e",
+        "v8-default-final-claim.raw": "3375950136cff000d112ebe3175c903279b52594a59ed18c38d510c610181813",
+        "v8-default-log.txt": "0bf322ec20bbc989750d15405dc11a56239fde8e0891615c70f077f55c23c3ee",
+        "v8-default-owned-stop-boundary.json": "c71e6018529f78e909bc5a867f7b24952f2bfba5b3853dd52bdbdb64726787e8",
+        "v8-default-single-launch-command.json": "790f6716d6a4bafd1bda9d969cb9fcae1c452fd61ba2290f6352dc7779e7ee5a"
+      }
+    },
+    {
+      "arm": "r16",
+      "started_utc": "2026-11-04T08:40:57.588540+00:00",
+      "finished_utc": "2026-11-04T08:44:09.289285+00:00",
+      "status": "PASS_OWNED_NATIVE_SEMANTICS",
+      "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+      "v8_apk_sha256": "dc1777871e32681a823253c36dba0a553ef596a464a3c4d7a282d3f9a6bafa67",
+      "source_contract": {
+        "files": {
+          "assess-default-once.py": "6cd85a2e6c58ec39cdaf38eb1fbbab87d3960ba4459b49977d6174edd3ade766",
+          "assess-v2.py": "c3d88977418a8a8a522db604d4b6930eefaf5dddbf406ddb2175c5b748356f0c",
+          "run_arm-v5-once.py": "895ecbfec6d04170adf0dbc16a0fd18d3de0b78317efec86de1846295dfcddb8"
+        },
+        "inventory_sha256": "590d32e10c5a86934afbd18eebd620d5a07f0e13a4c4af2e4094fac801dc5c62",
+        "manifest_sha256": "72d3151d28485f536b9f28b9575b248da92c6b289998e28066a82a8a2f776f67"
+      },
+      "controls": {
+        "v4": {
+          "classification": "PASS_V4_MRS_CPUINFO",
+          "hwcap": 507,
+          "expected_cpu_count": 24,
+          "openat2_observation": {
+            "expectation": "observe_only",
+            "value": "-904",
+            "matches_actual_auxv": false
+          }
+        },
+        "v5": {
+          "cases": 1,
+          "classification": "PASS_V5_ACTUAL_SIGNAL_RECORDS",
+          "events": 5
+        },
+        "v6": {
+          "cases": 16,
+          "classification": "PASS_V6_ACTUAL_SIGNAL_RECORDS",
+          "events": 50
+        },
+        "v8": {
+          "classification": "PASS_V8_MAPS_AND_SIGNAL_CONTROL",
+          "initial_alarm": 0,
+          "map_statuses": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "signal_status": 0
+        }
+      },
+      "default_alarm": "SIGNALED_14",
+      "at_most_once": {
+        "host_launches": 1,
+        "native_executors": 1,
+        "activity_manager_processes": 2,
+        "nonce_processes": 2,
+        "framework_relaunches_refused": 1,
+        "all_processes_accounted_for": true,
+        "refusers_native_probe_not_mapped": true
+      },
+      "default_owner_independently_sampled": false,
+      "all_owned_oom_events_zero": true,
+      "all_owned_units_empty": true,
+      "owned_package_uid_list_complete": true,
+      "owned_code_data_absent_in_actual_namespace": true,
+      "adbd": "stopped",
+      "receipts_sha256": {
+        "bootstrap-ready.json": "1150e2469f6e159d4bdae67bd83e695aaf045e52f848cbfd0f6109c258bf5c3b",
+        "cpu-inventory-observed.json": "dc9909a63b25689a4ec0c275bf61deefa9b0bdec8cf38692e5d8f9cff24bcccd",
+        "owned-code-data-cleanup.json": "2cec484a8076cfad6eb24c7721786b2b13c81a0607659fcf63c0d905da048f5b",
+        "package-set-comparison.json": "fd7ed9c15e97626b351448b2989d7b92982e379ec16a14f7a7b02e3aabcb36e8",
+        "package-uids-after.txt": "6ff25d3817d95beca0237d92da86127660793f34b1f65c6cbc8eb86bed761ffb",
+        "packages-after-third-party.txt": "82b90e50ef567d078cb6861765227d50cb6291155417fc53c04a9b0324a2bd21",
+        "packages-after.txt": "0e483a7a441bcbee7f5d7b070f8f37d14d00876f8d72524f54cb66eeb65f27fb",
+        "packages-before-third-party.txt": "82b90e50ef567d078cb6861765227d50cb6291155417fc53c04a9b0324a2bd21",
+        "packages-before.txt": "0e483a7a441bcbee7f5d7b070f8f37d14d00876f8d72524f54cb66eeb65f27fb",
+        "prepared.json": "f3a50439c540763dc74645dd577952474c24cadc3eaae5bfebe2cbfd0f57ff27",
+        "private-framework-epoch.json": "5825ba7c29d7a5af26be0f4626cdcd7f3dd54cc07c8726013669196102b9f4c6",
+        "resources-before-cleanup.json": "56dd6adf403c46b443b28d66a093064476287946b43ee7af27009e6fdc1d6b34",
+        "runtime-result.json": "e3bfa2c023f27ad01089899bd52cc28d5a262d62061c3bf9faa2a984d845cf98",
+        "v8-default-after-owned-stop-exit-info.txt": "770402656cfeb25d10c5e75f8b2aca19813b3f74d5fafa5d173d50ed23c92c2f",
+        "v8-default-after-owned-stop.log": "1db54bd7ecc06a307a670adc575d8d61a601565017a1ab0c44c050246d9dacd6",
+        "v8-default-claim.json": "c3aaa7cb249c5ac31cb3d509bc9d2a63a0503c3aa0860ea7d9a107c499dfe566",
+        "v8-default-claim.raw": "48c090d6be5857d682ebac5c7d9acd48ede29cc4976307830edb05e1872597ad",
+        "v8-default-exit-info.txt": "a3068b9221501c4169d91bc97dad6bf100802f66078ce0057749be339f0638fd",
+        "v8-default-final-claim.json": "c3aaa7cb249c5ac31cb3d509bc9d2a63a0503c3aa0860ea7d9a107c499dfe566",
+        "v8-default-final-claim.raw": "48c090d6be5857d682ebac5c7d9acd48ede29cc4976307830edb05e1872597ad",
+        "v8-default-log.txt": "e36b2112d06aec5f2c44d9d1000cec92436880d6aff25d61e7b3c012ecdb245c",
+        "v8-default-owned-stop-boundary.json": "2c6e3aefbf425308968f74df026f465695cedf6984426b80ded72aa3c96836f5",
+        "v8-default-single-launch-command.json": "f6ce484e2d1f48bf1efb351adc9a2de006d468d7faaff2d1d112eccf717e9571"
+      }
+    }
+  ],
+  "fixed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+  "owned_v8_apk_sha256": "dc1777871e32681a823253c36dba0a553ef596a464a3c4d7a282d3f9a6bafa67",
+  "main_limits_preserved": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "main_deployment_performed_by_qualification": false,
+  "publisher_application_qualification": false,
+  "limitations": [
+    "Native engine and owned probes only; no Marriott or other publisher app compatibility inference.",
+    "R15/R16 default-termination process start ticks are recorded by the app before load into a durable claim, but were not independently sampled by the host before death. All nonce PID/UID/claim events and ApplicationExitInfo establish SIG14; engine maps were independently observed in each preceding live owned control process.",
+    "Bootstrap loop has a 120-second entry deadline plus bounded final-command timeouts; it is not a strict total wallclock budget.",
+    "Original R14 CPU8/package-bootstrap failures, v3 R15 lifecycle attribution failure, the diagnostic-only repeated-Activity run, failed first once-APK compile, and non-root launcher preflight failure remain unmodified. Only r14-r4/r15-r2/r16-r2 use the same complete v5 once contract."
+  ],
+  "additional_independent_checks": [
+    "UID registry package names equal full after package inventory; rejects empty or truncated UID list.",
+    "Every actual namespace absence result is rc1, empty stdout, exact checked path, and ENOENT text."
+  ],
+  "redaction": "Raw logs, process identities, nonces, unit names and private filesystem paths omitted."
+}

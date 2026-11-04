@@ -1,0 +1,48 @@
+{
+  "schema": "pocket4-native-retained-attempts-v1",
+  "old_failures_reclassified": false,
+  "attempts": [
+    {
+      "attempt": "initial R14",
+      "outcome": "FAIL",
+      "reason": "Assessor assumed CPU count 8; actual inventory is 24; a 200% quota does not change count."
+    },
+    {
+      "attempt": "R14-r2 cleanup envelope",
+      "outcome": "FAIL",
+      "reason": "Home bootstrapped after baseline; raw after list missing. Later readiness gate is a new attempt, not a whitelist/reclassification."
+    },
+    {
+      "attempt": "v3 R15",
+      "outcome": "FAIL",
+      "reason": "Parser asserted on multiple same-nonce PIDs before raw persistence."
+    },
+    {
+      "attempt": "R15 default-only diagnostic",
+      "outcome": "DIAGNOSTIC_ONLY",
+      "one_host_launch": true,
+      "actual_sig14_records": 14,
+      "before_stop_intent": 12,
+      "during_cleanup_interval": 2,
+      "separate_force_stop_excluded": true,
+      "raw_log_sha256": "b60c060f37ae21b802a38b7c8c6626ae65210491765aed3d83c7897deddd2a8c",
+      "raw_exit_info_sha256": "04e61f63ca5426edc0b9f0336bc2c8b9d87a1c4164ce291949cf365d6dd53143",
+      "independent_review_sha256": "a96ea865b33b78d27aa08b8ba196da98357d84617dc8427638832b627db17d1d"
+    },
+    {
+      "attempt": "first once Java",
+      "outcome": "FAILED_COMPILE",
+      "reason": "Pinned public SDK lacks O_DIRECTORY; new r2 validates directory fd with fstat S_ISDIR and own UID."
+    },
+    {
+      "attempt": "non-root launcher preflight",
+      "outcome": "FAIL_BEFORE_RUNTIME",
+      "reason": "Retained; final v5 uses reviewed private root runner."
+    }
+  ],
+  "final_same_contract_arms": [
+    "r14-r4",
+    "r15-r2",
+    "r16-r2"
+  ]
+}

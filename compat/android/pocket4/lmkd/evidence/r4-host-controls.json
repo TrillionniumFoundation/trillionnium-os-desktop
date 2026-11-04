@@ -1,0 +1,81 @@
+{
+  "schema": "pocket4-lmkd-r4-host-controls-v1",
+  "scope": "Host adapter/Reader/guard/selection controls; not a real-pressure qualification",
+  "counts": {
+    "adapter_assertions": 57,
+    "reader_assertions": 20,
+    "actual_guard_cases": 10,
+    "stock_selection_controls": 15
+  },
+  "total_reported_checks": 102,
+  "original_guard_negative_control": "Expected failure for a current high-throttled critical event; remaining original guard controls retained.",
+  "tests": {
+    "test_memory_cgroup-run.json": {
+      "original_sha256": "7fe4bd8c6bfc1a05d49bb08d309f1e1370014be082ecb1d6e87ae37999e2a51c",
+      "record": {
+        "label": "test_memory_cgroup-run",
+        "argv": [
+          "LMKD_WORK/android-build-04-high-events/test_memory_cgroup"
+        ],
+        "rc": 0,
+        "seconds": 0.0021993820555508137,
+        "stdout": "PASS bytes preserve 64-bit precision\nPASS signed values rejected\nPASS trailing data rejected\nPASS signed arithmetic overflow rejected\nPASS unlimited explicit\nPASS unknown limit rejected\nPASS all required stat fields\nPASS future fields permitted\nPASS duplicate field rejected\nPASS missing required stat rejected\nPASS negative accounting rejected\nPASS real high counter parsed\nPASS zero high and future events accepted\nPASS missing high rejected\nPASS duplicate high rejected\nPASS signed high rejected\nPASS high overflow rejected\nPASS trailing high data rejected\nPASS truncated event rejected\nPASS host values converted once\nPASS duplicate host field rejected\nPASS units and missing host values rejected\nPASS cell hard cap bounds free capacity\nPASS no host25GiB credit at 5GiB cell use\nPASS limit lowered below current saturates\nPASS host shortage further limits headroom\nPASS zero hard limit rejected\nPASS high above max rejected\nPASS capacity exceeding physical backing rejected\nPASS unlimited high is not unlimited hard budget\nPASS unlimited swap bounded by shared backing\nPASS finite swap counts only remaining quota\nPASS lowered swap quota saturates\nPASS swapless host truthful\nPASS file and shmem not credited twice\nPASS soft-high reserve preserves kernel proportions\nPASS dynamic high reflected immediately\nPASS unlimited high still scales to 6GiB\nPASS unknown watermark rejected\nPASS reclaim counter increment valid\nPASS counter reset rejected\nPASS high counter rollback rejected\nPASS new high throttle above finite unchanged boundary\nPASS historical high counter not current evidence\nPASS counter rollback not current evidence\nPASS equal high without current excess is quiet\nPASS usage below high is quiet despite event increment\nPASS unlimited high cannot throttle\nPASS new finite high establishes a fresh baseline\nPASS changed high cannot reuse old events\nPASS changed hard budget cannot reuse old events\nPASS changed swap budget cannot reuse old events\nPASS changed swap mode cannot reuse old events\nPASS unopened reader cannot publish success\nPASS unopened reader cannot create PSI trigger\nPASS regular fixture directory cannot masquerade as cgroup\nPASS failed open cannot become monitor\nRESULT 57 passed\n",
+        "stderr": ""
+      }
+    },
+    "test_reader_events-run.json": {
+      "original_sha256": "9daa7fa51b3594936a56a7dd97bcbe1c25168d5ffe2d20ce8ee434d0b197efd8",
+      "record": {
+        "label": "test_reader_events-run",
+        "argv": [
+          "LMKD_WORK/android-build-04-high-events/test_reader_events"
+        ],
+        "rc": 0,
+        "seconds": 0.001980277942493558,
+        "stdout": "PASS reader pins event descriptor in owned cgroup\nPASS first cumulative count is only baseline\nPASS real throttle progresses without any page scans\nPASS same cumulative event is consumed once\nPASS event increment cannot act after usage reaches high\nPASS changed boundary restarts interval\nPASS new event after stable changed boundary is valid\nPASS event I/O failure publishes no partial snapshot\nPASS successful read after failure cannot reuse old interval\nPASS subsequent coherent increment restores evidence\nPASS budget race rejects whole sample\nPASS budget race also invalidates event interval\nPASS new stable interval after race works\nPASS missing high refuses snapshot\nPASS malformed input cannot leave pending high evidence\nPASS unlimited high has no throttle evidence\nPASS new reader baseline\nPASS injected failed sample\nPASS read failure does not erase counter rollback protection\nPASS counter rollback permanently fails reader closed\nRESULT 20 passed\n",
+        "stderr": ""
+      }
+    },
+    "reclaim-guard.json": {
+      "original_sha256": "6cca782096fa826c09091cbb7bfd33f0cb72326e935e8b7794f53092fd5d288a",
+      "record": {
+        "label": "reclaim-guard",
+        "argv": [
+          "/usr/bin/python3",
+          "LMKD_WORK/review-r4/test_reclaim_guard.py",
+          "--source",
+          "LMKD_WORK/source-r4/lmkd.cpp",
+          "--baseline",
+          "LMKD_WORK/source-r3/lmkd.cpp",
+          "--out-dir",
+          "LMKD_WORK/android-build-04-high-events/guard"
+        ],
+        "rc": 0,
+        "seconds": 0.16672891902271658,
+        "stdout": "baseline: PASS host mode gets no cell exception\nPASS historical or absent high event cannot bypass guard\nPASS polling cannot turn old PSI into critical notification\nPASS partial PSI retains original no-scan guard\nPASS low PSI retains original no-scan guard\nPASS real direct reclaim remains on original path\nPASS real kswapd reclaim remains on original path\nPASS real refault remains on original path\nPASS vendor path unchanged\nFAIL current high throttling and actual critical PSI reach existing policy\ncandidate: PASS host mode gets no cell exception\nPASS historical or absent high event cannot bypass guard\nPASS polling cannot turn old PSI into critical notification\nPASS partial PSI retains original no-scan guard\nPASS low PSI retains original no-scan guard\nPASS real direct reclaim remains on original path\nPASS real kswapd reclaim remains on original path\nPASS real refault remains on original path\nPASS vendor path unchanged\nPASS current high throttling and actual critical PSI reach existing policy\nRESULT 10 passed\n",
+        "stderr": ""
+      }
+    },
+    "aosp-selection.json": {
+      "original_sha256": "784d184aa4ee97d1701e71be02b10793385cb8d638e782702f0d6c706faabdb3",
+      "record": {
+        "label": "aosp-selection",
+        "argv": [
+          "/usr/bin/python3",
+          "LMKD_WORK/review-r4/test_aosp_selection.py",
+          "--source",
+          "LMKD_WORK/source-r4/lmkd.cpp",
+          "--upstream",
+          "LMKD_WORK/upstream-lmkd/lmkd.cpp",
+          "--out-dir",
+          "LMKD_WORK/android-build-04-high-events/selection"
+        ],
+        "rc": 0,
+        "seconds": 0.40040665201377124,
+        "stdout": "PASS small cached process chosen before large foreground/protected\nPASS no eligible cached process causes no action\nPASS negative-adj protected processes excluded\nPASS stale record skipped\nPASS heaviest selection confined to equal adj\nPASS heaviest flag still respects importance\nPASS valid score written and registered\nPASS out-of-range score rejected\nPASS out-of-range score rejected\nPASS valid protected score retained\nPASS valid upper score retained\nPASS invalid process type rejected\nPASS nonleader pid rejected\nPASS failed kernel score write cannot register success\nPASS AOSP lmkd-only priority contract retained\nRESULT 15 passed\n",
+        "stderr": ""
+      }
+    }
+  },
+  "production_ready": false
+}

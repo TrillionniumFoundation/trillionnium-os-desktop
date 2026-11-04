@@ -1,0 +1,178 @@
+// Copyright (C) 2026 The Android Open Source Project
+// SPDX-License-Identifier: Apache-2.0
+
+#include <gtest/gtest.h>
+
+#include <sys/mman.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+
+#include <cerrno>
+#include <cinttypes>
+#include <cstdio>
+#include <string>
+#include <vector>
+
+#include "berberis/guest_os_primitives/guest_map_shadow.h"
+#include "berberis/guest_state/guest_addr.h"
+#include "berberis/kernel_api/open_emulation.h"
+#include "berberis/runtime/berberis.h"
+
+namespace berberis {
+namespace {
+
+class OwnedMapping {
+ public:
+  OwnedMapping() : page_(static_cast<size_t>(getpagesize())) { InitBerberis(); }
+  ~OwnedMapping() {
+    if (allocation_ != MAP_FAILED) {
+      GuestMapShadow::GetInstance()->ClearExecutable(ToGuestAddr(start_), 3 * page_);
+      munmap(allocation_, allocation_size_);
+    }
+    if (fd_ >= 0) close(fd_);
+  }
+
+  bool File(uint64_t offset) {
+    fd_ = static_cast<int>(syscall(SYS_memfd_create, "berberis-proc-maps-offset", 0u));
+    if (fd_ < 0 || ftruncate(fd_, static_cast<off_t>(offset + 3 * page_)) != 0) return false;
+    allocation_size_ = 3 * page_;
+    allocation_ = mmap(nullptr, allocation_size_, PROT_READ, MAP_PRIVATE,
+                       fd_, static_cast<off_t>(offset));
+    if (allocation_ == MAP_FAILED) return false;
+    start_ = static_cast<uint8_t*>(allocation_);
+    GuestMapShadow::GetInstance()->ClearExecutable(ToGuestAddr(start_), 3 * page_);
+    return true;
+  }
+
+  bool Anonymous() {
+    allocation_size_ = 5 * page_;
+    allocation_ = mmap(nullptr, allocation_size_, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (allocation_ == MAP_FAILED) return false;
+    start_ = static_cast<uint8_t*>(allocation_) + page_;
+    if (mprotect(start_, 3 * page_, PROT_READ) != 0) return false;
+    GuestMapShadow::GetInstance()->ClearExecutable(ToGuestAddr(start_), 3 * page_);
+    return true;
+  }
+
+  void MakeMiddleGuestExecutable() {
+    // Only the guest execute bit changes. The real host mapping remains one
+    // read-only VMA, so the production maps exporter must split its record.
+    GuestMapShadow::GetInstance()->SetExecutable(ToGuestAddr(start_ + page_), page_);
+  }
+
+  uintptr_t start() const { return reinterpret_cast<uintptr_t>(start_); }
+  size_t page() const { return page_; }
+
+ private:
+  const size_t page_;
+  int fd_ = -1;
+  void* allocation_ = MAP_FAILED;
+  size_t allocation_size_ = 0;
+  uint8_t* start_ = nullptr;
+};
+
+std::string ReadGuestMaps() {
+  const int fd = OpenatForGuest(AT_FDCWD, "/proc/self/maps", O_RDONLY, 0);
+  if (fd < 0) {
+    ADD_FAILURE() << "OpenatForGuest failed: " << errno;
+    return {};
+  }
+  std::string content;
+  char buffer[4096];
+  for (;;) {
+    const ssize_t size = read(fd, buffer, sizeof(buffer));
+    if (size > 0) {
+      content.append(buffer, static_cast<size_t>(size));
+    } else if (size == 0) {
+      break;
+    } else if (errno != EINTR) {
+      ADD_FAILURE() << "read failed: " << errno;
+      break;
+    }
+  }
+  CloseEmulatedProcSelfMapsFileDescriptor(fd);
+  close(fd);
+  return content;
+}
+
+struct MappingRow {
+  uintptr_t start;
+  uintptr_t end;
+  uint64_t offset;
+  uint64_t inode;
+  std::string permissions;
+};
+
+std::vector<MappingRow> RowsFor(const OwnedMapping& mapping) {
+  const std::string maps = ReadGuestMaps();
+  std::vector<MappingRow> rows;
+  size_t position = 0;
+  while (position < maps.size()) {
+    size_t end = maps.find('\n', position);
+    if (end == std::string::npos) end = maps.size();
+    const std::string line = maps.substr(position, end - position);
+    MappingRow row{};
+    char permissions[5]{};
+    unsigned device_major, device_minor;
+    if (sscanf(line.c_str(), "%" SCNxPTR "-%" SCNxPTR " %4s %" SCNx64
+               " %x:%x %" SCNu64, &row.start, &row.end, permissions, &row.offset,
+               &device_major, &device_minor, &row.inode) == 7 &&
+        row.end > mapping.start() && row.start < mapping.start() + 3 * mapping.page()) {
+      row.permissions = permissions;
+      rows.push_back(row);
+    }
+    position = end + 1;
+  }
+  return rows;
+}
+
+void ExpectSplit(const OwnedMapping& mapping, uint64_t offset, bool file_backed) {
+  const auto rows = RowsFor(mapping);
+  ASSERT_EQ(rows.size(), 3u);
+  for (size_t index = 0; index < rows.size(); ++index) {
+    EXPECT_EQ(rows[index].start, mapping.start() + index * mapping.page());
+    EXPECT_EQ(rows[index].end, mapping.start() + (index + 1) * mapping.page());
+    EXPECT_EQ(rows[index].offset, file_backed ? offset + index * mapping.page() : 0);
+    EXPECT_EQ(rows[index].permissions, index == 1 ? "r-xp" : "r--p");
+    EXPECT_EQ(rows[index].inode != 0, file_backed);
+  }
+}
+
+TEST(ProcMapsFileOffset, SplitFileMappingAdvancesOffsets) {
+  OwnedMapping mapping;
+  const uint64_t offset = 2 * mapping.page();
+  ASSERT_TRUE(mapping.File(offset));
+  mapping.MakeMiddleGuestExecutable();
+  ExpectSplit(mapping, offset, true);
+}
+
+TEST(ProcMapsFileOffset, SplitLargeFileMappingPreservesHighOffsetBits) {
+  OwnedMapping mapping;
+  const uint64_t offset = (uint64_t{1} << 32) + 2 * mapping.page();
+  ASSERT_TRUE(mapping.File(offset));
+  mapping.MakeMiddleGuestExecutable();
+  ExpectSplit(mapping, offset, true);
+}
+
+TEST(ProcMapsFileOffset, UnsplitFileMappingPreservesOffset) {
+  OwnedMapping mapping;
+  const uint64_t offset = 2 * mapping.page();
+  ASSERT_TRUE(mapping.File(offset));
+  const auto rows = RowsFor(mapping);
+  ASSERT_EQ(rows.size(), 1u);
+  EXPECT_EQ(rows[0].start, mapping.start());
+  EXPECT_EQ(rows[0].end, mapping.start() + 3 * mapping.page());
+  EXPECT_EQ(rows[0].offset, offset);
+  EXPECT_EQ(rows[0].permissions, "r--p");
+  EXPECT_NE(rows[0].inode, 0u);
+}
+
+TEST(ProcMapsFileOffset, SplitAnonymousMappingKeepsZeroOffsets) {
+  OwnedMapping mapping;
+  ASSERT_TRUE(mapping.Anonymous());
+  mapping.MakeMiddleGuestExecutable();
+  ExpectSplit(mapping, 0, false);
+}
+
+}  // namespace
+}  // namespace berberis
