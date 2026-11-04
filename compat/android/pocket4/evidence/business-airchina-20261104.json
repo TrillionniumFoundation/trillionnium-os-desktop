@@ -1,0 +1,114 @@
+{
+  "activity_events": {
+    "activity_finish_reason": "starting-proc-removed",
+    "app_death_utc": "2026-11-04T14:40:33.083Z",
+    "app_start_utc": "2026-11-04T14:40:31.863Z",
+    "description": "The App process started and died before the native launcher could return an unambiguous completed task. This identifies the failed startup sequence, not the origin of SIGKILL.",
+    "event_log_sha256": "d0e0f4a6e5c607d922d3bb0654cabce3c9716ea197f080aae47cecd5d30b7af1",
+    "source_bytes": 164948,
+    "temporary_task_removed_by_framework": true
+  },
+  "app": "Air China",
+  "archive_audit": {
+    "all_rehashes_passed": true,
+    "corrected_archive_extraction_is_separate_receipt": true,
+    "raw_command_stdout_stderr_pairs": 11,
+    "sha256": "47e0481eb0fe388643e59169c6db69085fe571c759e1bc5921311e3853535b9c",
+    "step_receipts": 3
+  },
+  "closure": {
+    "framework_epoch_preserved": true,
+    "no_completed_launch_scope": true,
+    "only_preexisting_home_task_remained": true,
+    "original_unknown_preserved": true,
+    "read_only": true,
+    "receipt_sha256": "1bf22fd583e1ce99279c9f7ebd8436ec1efa112f7029e292dc669fa02ca77c4d",
+    "task_removal_attempted": false
+  },
+  "completed_utc": "2026-11-04T14:44:31.337053+00:00",
+  "diagnostics": {
+    "corrected_read_only_archive_extraction": {
+      "line_count": 118,
+      "original_closure_receipt_unchanged": true,
+      "original_uid_log_sha256": "15e8a42ac15a9c9ce60d7474104587b0f4ef6789276e52b6e752f184df3d9959",
+      "receipt_sha256": "3f24ca9f5eea1ed675b6e869038a3b81ec09f37f535a3c206efc9140d69ab98f",
+      "signal_sender_not_resolved": true
+    },
+    "current_activity_sha256": "bdce96919041f33037714c4ebc4275894492176992c4f565bd437d0be78e11a1",
+    "matching_crash_buffer_entries": 0,
+    "original_closure_uid_excerpt_parser_matched_no_command": true,
+    "package_metadata_sha256": "8b7a9b409aff6376b64a0352a409f7a79b58709c51e9fffc056acd17388bf7b1",
+    "receipt_sha256": "a779ba1c48c8a91d023c8dbf24e5f100d367eecc0fae109fc763b5a212c3fe35",
+    "uid_log_bytes": 15822,
+    "uid_log_sha256": "15e8a42ac15a9c9ce60d7474104587b0f4ef6789276e52b6e752f184df3d9959"
+  },
+  "evidence_basis": "Publication agent executed one guarded native launch and inspected exact-package exit information plus App-start/death/activity events. Raw UI, process identities and logs are excluded.",
+  "evidence_date_utc": "2026-11-04",
+  "flow": "airchina-01",
+  "fresh_exit": {
+    "anr_record_observed": false,
+    "cause_established": false,
+    "fresh_within_this_launch": true,
+    "main_oom_observed": false,
+    "reason": 2,
+    "reason_name": "SIGNALED",
+    "signal": "SIGKILL",
+    "signal_sender_established": false,
+    "source_sha256": "430bf72693928fd14954b77db83d1eb900bd93bd8ba57000a0133a49c6aa5d07",
+    "status": 9,
+    "timestamp_utc": "2026-11-04T14:40:33.086Z"
+  },
+  "health": {
+    "final_memory_current_bytes": 2953158656,
+    "main_full_avg10": 0,
+    "memory_high_event_counter_before_and_after": 14902,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0
+  },
+  "launch": {
+    "attempts": 1,
+    "completed_task_receipt_obtained": false,
+    "native_command_returncode": 1,
+    "native_seconds": 7.033562827971764,
+    "native_stderr_sha256": "6eca99b5b5df5ee15a2972cfb1e4d6cd339ca7994e507bc1ab5b07da5e8c2331",
+    "native_stdout_sha256": "41a3a2bba87e2014f7d0383515cc73be1fdb47fe429e9876f0ad2ec3bb9b9fb0",
+    "native_timed_out": false,
+    "original_outcome_unknown": true,
+    "original_receipt_sha256": "400243d9d6144f7c078947325d685d549f14449df988dda7c3dba46fdc4f21db",
+    "original_recorder_returncode": 2,
+    "original_unknown_preserved": true,
+    "relaunch_attempted": false
+  },
+  "limitations": [
+    "The deployed engine is pinned by Main activation. This App died before an actual-App maps receipt could be captured; that stronger binding is not claimed.",
+    "Zero Main OOM counters do not establish who sent SIGKILL.",
+    "A later read-only archive extractor corrected its path-name filter; the original failed extractor and original launch unknown remain unmodified.",
+    "No retry, task-removal mutation, login, booking, account change, data reset or runtime change was performed."
+  ],
+  "package": "com.rytong.airchina",
+  "production_ready": false,
+  "runtime": {
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b"
+  },
+  "schema": "pocket4-current-business-flow-public-summary-v1",
+  "started_utc": "2026-11-04T14:40:31.615046+00:00",
+  "status": "FAIL_STARTUP_SIGKILL_NO_COMPLETED_TASK",
+  "unqualified": {
+    "actual_app_engine_mapping": false,
+    "authentication": false,
+    "booking": false,
+    "flight_detail": false,
+    "normal_reopen": false,
+    "public_flight_search": false,
+    "rendered_home": false,
+    "signal_sender_or_root_cause": false
+  },
+  "version_code": 75201,
+  "version_name": "7.52.1"
+}

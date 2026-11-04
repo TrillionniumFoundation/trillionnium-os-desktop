@@ -1,0 +1,143 @@
+{
+  "abi": "arm64-v8a",
+  "app": "WeChat",
+  "archive_audit": {
+    "all_rehashes_passed": true,
+    "batch_report_sha256": "100dc41769ceeb52ef1d41a6efecb15cd6b1bec0a944699aa0af151016fd9023",
+    "png_files": 1,
+    "raw_command_stdout_stderr_pairs": 21,
+    "sha256": "f1a6da99028039582829bc829ab45c1a83fb323b6cb06acd66428151f1f851db",
+    "step_receipts": 6
+  },
+  "cleanup": {
+    "cleanup_not_replayed": true,
+    "executed_image_wrapper_source_sha256": "34de2a828c99293071635aaa926614b50a2cda2d514861684b0c8583b9ea20a8",
+    "frozen_outcome_unknown": false,
+    "frozen_recorder_returncode": 0,
+    "frozen_result_ok": true,
+    "nested_wrapper_stderr_persisted": false,
+    "only_preexisting_home_preserved": true,
+    "original_records_unchanged": true,
+    "outer_screenshot_wrapper_returncode": 1,
+    "owned_leaf_removed": true,
+    "postflow_archive_review_sha256": "bf33751b4117b3a56a89894c544abd1c39b22bbef4f6eccf6e7ee71c5a836e6d",
+    "receipt_sha256": "bc36b8ef8f7ae7f29611003259df44a0874500fa300aed1d0c72de23888e63e6",
+    "wrapper_error_identification": "Static inspection of the executed wrapper plus the persisted outer return code; the nested wrapper stderr was not retained.",
+    "wrapper_source_error": "The post-cleanup image-derivative code reused p for a Path, then the final sys.exit(p.returncode) referred to that Path."
+  },
+  "completed_utc": "2026-11-04T15:07:13.089527+00:00",
+  "evidence_basis": "Publication agent executed a single guarded native launch, inspected the private captured main screen, and verified the frozen owned-task cleanup plus archive hashes. No chat/account content, private image or raw log is published.",
+  "evidence_date_utc": "2026-11-04",
+  "flow": "wechat-01",
+  "health": {
+    "actual_peak_not_established": true,
+    "full_avg10_at_saved_samples": 0,
+    "high_event_cause_not_established": true,
+    "high_events_after": 15620,
+    "high_events_before": 14902,
+    "high_events_increase": 718,
+    "largest_sampled_memory_current_bytes": 5092937728,
+    "memory_current_after_launch_bytes": 4497833984,
+    "memory_current_after_normal_close_bytes": 3291443200,
+    "memory_current_before_launch_bytes": 3261009920,
+    "new_app_launches_paused_at_reduced_headroom": true,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0
+  },
+  "limitations": [
+    "Visual main-screen content does not qualify search, messaging, calls or other App business behavior. No chat was opened and no message or call was sent.",
+    "The empty semantic tree is an observation/testing limitation; its cause is unresolved and it is not presented as a rendering defect.",
+    "A :support SIGKILL record is separate from the still-resumed main process. Its sender/cause and relationship to the semantic-tree observation are not established.",
+    "The high-event increase and changing memory samples are recorded without assigning a causal mechanism. Only sampled values, not the actual peak, are reported.",
+    "The outer post-cleanup wrapper failure is retained separately from the proven successful frozen cleanup. No false zero exit or replay is substituted.",
+    "No login, account change, data reset, forced stop or runtime change was performed."
+  ],
+  "min_sdk": 24,
+  "observations": {
+    "final_observe": {
+      "ended_utc": "2026-11-04T15:07:11.742035+00:00",
+      "helper_stdout_sha256": "cc1740ef3ba457718e7fd54f1615be2e41a2475fb8786a34f1a47e757f93b09c",
+      "original_png_bytes": 122685,
+      "original_png_sha256": "bfe12eb8dfdf599e5bdf460f31ed4e069f6d822c7aa8e97272a6788702eaa9db",
+      "raw_image_published": false,
+      "receipt_sha256": "0fb0aafebb0289627ff7bc076c2454d75df4bf5a91d3891ec9b4424958e80b43",
+      "tree_status": "app_exposed_empty_root",
+      "visible_nodes": 0,
+      "visual_result": "A populated main App screen and navigation controls are visible. Empty accessibility semantics are not interpreted as a blank render."
+    },
+    "initial_read_only_foreground_mismatch": {
+      "action_attempted": false,
+      "helper_native_returncode": 1,
+      "helper_timed_out": false,
+      "receipt_sha256": "3b3ec191153bd4e627cb6e4848a1d3f8283e051a42f68ddbb4ff96305fd9adaa",
+      "retained": true
+    },
+    "later_read_only_dump": {
+      "receipt_sha256": "89c2abb2747894eae1885ff38da3fb3d3a1cf75c5287ea7c5acabd06ff798b1d",
+      "root_package": "com.tencent.mm",
+      "tree_status": "app_exposed_empty_root",
+      "visible_nodes": 0
+    },
+    "resumed_activity": "com.tencent.mm.ui.LauncherUI"
+  },
+  "package": "com.tencent.mm",
+  "process_exit_evidence": {
+    "archive_review_sha256": "bf33751b4117b3a56a89894c544abd1c39b22bbef4f6eccf6e7ee71c5a836e6d",
+    "fresh_main_process_exit_observed": false,
+    "fresh_secondary_process_exits": [
+      {
+        "process_suffix": ":support",
+        "reason": 2,
+        "signal": "SIGKILL",
+        "status": 9,
+        "timestamp_utc": "2026-11-04T14:59:39.003Z"
+      }
+    ],
+    "matching_crash_buffer_entries": 0,
+    "preclose_exit_info_sha256": "8c6a2818389e08e5e19329b3e9e876bc70bd8484950e3d9c7fb69293a1f3d533",
+    "secondary_exit_not_labeled_as_main_crash": true,
+    "secondary_signal_sender_established": false
+  },
+  "production_ready": false,
+  "receipts": {
+    "activity": "693d55e99905a0abd5912a2ee8e2247a156b66a3e954a3fec2841766c92305ee",
+    "native_launch": "bfbc94ed3b7ab8861c532db0cdb964e0f61a5c0d48b28aa1b906b5497e015502",
+    "native_stdout": "cd4294aec7ec245289640a9ce2ca4912f53f25fc04cc3db80ed822dd1ff1c698",
+    "package_metadata": "fac8ca25d77ff0c6acc71061c73b41804bd076db655f2e4ebeaa41c1d92ab1ab",
+    "preclose_diagnostics": "dee86a28449860548ae384d88225d974c4ddee9020c53f580c50c3b97e40f571",
+    "window": "fa2cb81d4a2986448593beeabc01bfa34c946d9edfae219a9e2a1ad628d5a55f"
+  },
+  "runtime": {
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b"
+  },
+  "schema": "pocket4-current-business-flow-public-summary-v1",
+  "started_utc": "2026-11-04T14:59:01.735118+00:00",
+  "status": "PARTIAL_POPULATED_HOME_VISUAL_ONLY_INTERACTION_UNQUALIFIED",
+  "target_sdk": 34,
+  "unverified": {
+    "actual_app_engine_mapping": true,
+    "authentication_behavior": true,
+    "calls": true,
+    "chat_interaction": true,
+    "cold_start": true,
+    "message_send_receive": true,
+    "normal_reopen": true,
+    "public_search": true
+  },
+  "verified": {
+    "framework_epoch_preserved": true,
+    "main_screen_navigation_visible": true,
+    "normal_owned_task_close": true,
+    "one_native_launch_acknowledged": true,
+    "other_tasks_preserved": true,
+    "populated_main_screen_visually_inspected": true
+  },
+  "version_code": 3200,
+  "version_name": "8.0.79"
+}

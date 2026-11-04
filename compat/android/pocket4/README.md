@@ -1,6 +1,6 @@
 # Pocket4 Android application repair snapshot
 
-Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Business acceptance is in progress: Bilibili public search and visual playback passed; Marriott still has a fresh native crash, Beike reaches a blank login router, and Meituan repeatedly exits during startup. Douyin has a verified public-browsing subset; StreetEasy remains blocked by a connection alert and JD.COM by login after query. Amazon verified query suggestions and return, but product search did not complete. LMKD integration remains unqualified.
+Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Business acceptance is in progress: Bilibili public search and visual playback passed; Marriott still has a fresh native crash, Beike reaches a blank login router, and Meituan repeatedly exits during startup. Douyin has a verified public-browsing subset; StreetEasy remains blocked by a connection alert and JD.COM by login after query. Amazon verified query suggestions and return, but product search did not complete. CEAir stayed in flight-query loading; Air China exited on SIGKILL and Hyatt failed JNI loading. WeChat showed populated home content, with interaction still unqualified. A later Pinduoduo attempt was stopped before launch by a conservative audit resource gate. LMKD integration remains unqualified.
 
 This directory preserves repair source and dated evidence for Android 17 in DroidLoom on the Pocket4 Linux host. These results do not qualify Android on this repository's Asterinas kernel.
 
@@ -20,7 +20,7 @@ The [LMKD bundle](lmkd/README.md) reconstructs r3/r4/r5 sources, includes scoped
 
 The [pressure relay bundle](lmkd/pressure-relay/README.md) separates registration controls, one real bounded host PSI event, and the later expected-process-birth repair. The actual old-library negative proves that the earlier owner could accept a different same-class process. The new owner has host identity controls but no PSI requalification. These stages do not compose into Android LMKD qualification; the r7 foreground-survival failure and b099 deployment prohibition remain.
 
-The [proc-FD host receipt](native-bridge/proc-provenance/README.md) preserves real factory/accounting, C++ metadata and nested-namespace controls plus a full-FD-table regression. Final Android source/build and App A/B gates remain separate.
+The [proc-FD host receipt](native-bridge/proc-provenance/README.md) preserves real factory/accounting, C++ metadata and nested-namespace controls plus a full-FD-table regression. A separate [owned worker-lifecycle receipt](native-bridge/proc-provenance/evidence/worker-lifecycle-03/result-public.json) verifies actual parent exit/PDEATHSIG and delayed waitpid-result reconciliation for a normally exited worker. It does not cover real D-state, production peer authority or Android lifecycle. Final Android source/build and App A/B gates remain separate.
 
 ## Current business observations
 
@@ -37,6 +37,11 @@ The current records are bound to the verified post-activation framework epoch. [
 | JD.COM | Exact 笔记本电脑 readback, matching suggestions and search-submit acknowledgment passed. The App then presented phone-login semantics; normal close preserved Home. | Product results/detail/return were not verified. LoginActivity was visible and SECURE; the inspected capture was all black, recorded as a protected-capture limitation without bypass or a rendering-failure claim. |
 | Amazon | Exact query and matching suggestions; actual R16 mapping; Back returns to populated home; owned close. | Two acknowledged suggestion-delivery methods did not produce observed results. Product details and the cause remain unqualified. |
 | Hertz | One acknowledged native launch on the current epoch; fresh exact-app exit evidence. | SIGSEGV shortly after startup; no business flow, no causal stack in the captured buffers. |
+| CEAir | Home and calendar visibly rendered; the selected future date was verified; actual R16 mapping and normal owned close passed. | One Shanghai–Beijing query remained on a loading dialog through 270.355 seconds. Results/details and cause remain unqualified. The original notification unknown remains, with separate current-state reconciliation. |
+| Air China | One launch attempt; fresh exact-package and lifecycle evidence; only Home remained without a cleanup mutation. | SIGKILL during startup before a completed-task receipt. Sender/cause are unknown; zero Main OOM does not identify them. |
+| Hyatt | Fresh exact startup exception and the installed base plus two split APK hashes were retained. | JNI_OnLoad from libdexprotector.so returned -500. The internal reason, Android correction and same-APK private A/B remain unqualified. |
+| WeChat | A populated main screen and navigation were visually confirmed; normal owned close restored memory headroom. | The accessibility root exposed no semantic nodes. No search, chat, message or call was tested. A :support SIGKILL is separate from the resumed main process. |
+| Pinduoduo | A prelaunch audit admission record only. | The wrapper required 8 GiB host-available memory and observed slightly less. No flow initialization or App launch occurred; this is not an App failure. |
 
 ## Acceptance scope
 

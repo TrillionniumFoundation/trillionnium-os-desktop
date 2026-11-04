@@ -1,0 +1,184 @@
+{
+  "app": "China Eastern Airlines",
+  "archive_audit": {
+    "all_rehashes_passed": true,
+    "normal_close_receipt_sha256": "1212d74365caa6ad967d96a05e7d22e8e45cc33dbd6e4d95b3e2fe075ab67582",
+    "png_files": 4,
+    "raw_command_stdout_stderr_pairs": 71,
+    "sha256": "b1189b5b33357dfb945999e783897392912d9e4e7b43cd8397ad08f305058645",
+    "step_receipts": 21
+  },
+  "completed_utc": "2026-11-04T14:39:07.492119Z",
+  "date_display": {
+    "calendar_selected_date": "2026-11-07",
+    "calendar_visual_selection_confirmed": true,
+    "cause_established": false,
+    "home_text_after_calendar_close": "11月07日",
+    "initial_display_inconsistency_preserved": true,
+    "initial_home_text": "11月07Sun.",
+    "initial_weekday_text": "周六",
+    "weekday_after_close": "周六"
+  },
+  "diagnostic_receipts": {
+    "activity": "236b2cdd5b5ba1fb92aae8b33297acc5c01968c6adad7110c068610da02d11bb",
+    "exit_info": "b315ddacbb3ffaf96d65160997674bbfa6e07c7b6ba248d9754b79a117eed908",
+    "query_diagnostics": "f0490004d5f70a1b1097dd475822db0a3fb11ee35795e79c936632170dcc0b78",
+    "uid_log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "uid_log_bytes": 0,
+    "window": "25d10e9c8bbbd91bc66e5158796cded4f7ac95b7e2a03d4972f6fa6872d41a16"
+  },
+  "evidence_basis": "Publication agent executed one guarded native launch, inspected the private home/calendar/loading images, checked the actual frontmost engine mapping, and rehashed all saved flow receipts. No private images or raw UI/logs are published.",
+  "evidence_date_utc": "2026-11-04",
+  "flow": "ceair-01",
+  "health": {
+    "after_close_memory_current_bytes": 2714341376,
+    "main_full_avg10_at_observations": 0,
+    "memory_high_event_counter_before_and_after": 14902,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0
+  },
+  "limitations": [
+    "One public flight search stayed in loading state through the final observation; this does not identify a network, server, App or native-engine root cause.",
+    "The earlier same-day SIGILL exit predates this flow and is not evidence of a fresh crash during this attempt or of a resolved historical defect.",
+    "Notification denial acknowledgement and the separate current-state reconciliation are retained as different facts; the original unknown result was not rewritten.",
+    "No booking, payment, login code, account change, data reset or runtime change was performed."
+  ],
+  "notification": {
+    "current_notification_granted": false,
+    "helper_acknowledged_click": true,
+    "native_returncode": 0,
+    "native_stdout_sha256": "c53b8fc72a230fbbd66c14ee11cbfe4414f76310b492d01842d28722623c493d",
+    "one_deny_action_attempted": true,
+    "optional_notification_prompt": true,
+    "original_action_outcome_unknown": true,
+    "original_receipt_unchanged": true,
+    "original_result_sha256": "603bd08a88f1103c818647aa62fbc915a308fd4b9353245f69c06aa2e8aaacd4",
+    "reconciliation": {
+      "purpose": "Establish a current known App home state for new decisions. It does not establish the old action outcome or business success.",
+      "read_only": true,
+      "receipt_sha256": "4726d38be099f08842417b1c777304ae50daad08c091f8ef572accb31dd2b685",
+      "source_evidence_hash_count": 55,
+      "source_sha256": "07d044ddaa803bbe9fdff7639d11c516a6298c2ed881dc57e7221a9e981d0c9d",
+      "standard_flow_reconcile_executed": false,
+      "type": "owned-permissioncontroller-notification-v1"
+    },
+    "subsequent_home_observation_sha256": "c6337b0523956f2cc8e3aaac95f8bebd45e595ff7b40fecf91d26b1ae150c859",
+    "timed_out": false
+  },
+  "package": "com.rytong.ceair",
+  "private_visual_evidence": {
+    "final_observation_is_cropped_loading_dialog": true,
+    "inspected_steps": [
+      "08-current-observe",
+      "13-calendar-observe",
+      "20-final-query-observe"
+    ],
+    "original_pngs": {
+      "08-current-observe": {
+        "bytes": 339862,
+        "sha256": "6c7b0cc3b6b35b6f7250122e91cf70839669f9d166b0734b85ee17d82ec0d492"
+      },
+      "13-calendar-observe": {
+        "bytes": 199119,
+        "sha256": "39d2451115b8fcb41ee3626032312d4db8cd2b8bdbf2d33df0e65506ac553fa0"
+      },
+      "17-flight-results-observe": {
+        "bytes": 4736,
+        "sha256": "2762b69f195cbd1ea755f2bf966567c8d958b2b44d13b736354d462d8eb8957b"
+      },
+      "20-final-query-observe": {
+        "bytes": 3507,
+        "sha256": "2c1cf6054be7d2fb736b4f3db5c0335ab7a216148f1e1275ffa97b114ba042cd"
+      }
+    },
+    "raw_images_published": false
+  },
+  "production_ready": false,
+  "query": {
+    "cause_established": false,
+    "elapsed_seconds_to_final_observation": 270.355,
+    "first_actual_query_ended_utc": "2026-11-04T14:33:09.763100+00:00",
+    "flight_results_observed": false,
+    "helper_stdout_sha256": "1e76c3defe1bed18c7d824ce9bc94b2b3338b3dbbe4faa35f8497cad6d02fddb",
+    "initial_batch_stop_reason": "Closing the calendar changed the date text from 11月07Sun. to 11月07日; the exact old-text precondition rejected submission.",
+    "initial_conditional_batch_attempted_query": false,
+    "loading_text": "加载中请稍候…",
+    "matching_detail_observed": false,
+    "native_helper_acknowledged": true,
+    "observations": [
+      {
+        "ended_utc": "2026-11-04T14:33:12.132815+00:00",
+        "receipt_sha256": "ffaef1e5752cd718cc2bd32f011218c5646f17ff7a0311a0f2e46fca0b1197c5",
+        "step": "17-flight-results-observe"
+      },
+      {
+        "ended_utc": "2026-11-04T14:33:58.310859+00:00",
+        "receipt_sha256": "1cbd27b4416aaca2e515c210858818be8c053c13accb8c4fd8d845ed1cc5fdb6",
+        "step": "18-flight-results-ready-dump"
+      },
+      {
+        "ended_utc": "2026-11-04T14:37:40.118731+00:00",
+        "receipt_sha256": "56575629f0a1ad967a87fb69ad77bc1e6d02e02ad81e34967581e5d8b49faa32",
+        "step": "20-final-query-observe"
+      }
+    ],
+    "outcome_scope": "Known recorder/action acknowledgement only; no flight results or business success was observed.",
+    "outcome_unknown": false,
+    "query_receipt_sha256": "3f5167c030dbddded9266e6d7da463d5341f9c33e2f7d106738e1258781b69fd",
+    "request_replayed": false,
+    "resumed_activity": "com.ceair.module_main.ver_4_0.flight.activity.FlightListSiActivity"
+  },
+  "retained_failures": {
+    "anr_record_observed": false,
+    "fresh_exact_app_exit_observed": false,
+    "historical_exit": {
+      "not_claimed_fixed": true,
+      "predates_this_flow": true,
+      "reason": "APP_CRASH_NATIVE",
+      "signal": 4,
+      "timestamp_utc": "2026-11-04T12:06:33.021Z"
+    },
+    "initial_read_only_foreground_mismatches": true,
+    "later_read_only_frontmost_mapping_receipt_sha256": "3c4b7a2fa8ec887b49d105076b7dda3b8642a5f1546e25f9c9be95ea9be6a7d5",
+    "optional_permission_dialog_ownership_later_verified": true,
+    "original_notification_action_unknown": true,
+    "strict_unique_process_guard_failure": "NO_UNIQUE_LIVE_MAIN_APP_PROCESS"
+  },
+  "runtime": {
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b"
+  },
+  "schema": "pocket4-current-business-flow-public-summary-v1",
+  "started_utc": "2026-11-04T13:42:15.897496Z",
+  "status": "QUERY_STUCK_LOADING_RESULTS_NOT_OBSERVED",
+  "unqualified": {
+    "authentication": false,
+    "booking_or_payment": false,
+    "cold_start": false,
+    "flight_detail": false,
+    "flight_results": false,
+    "normal_reopen": false,
+    "query_failure_cause": false
+  },
+  "verified": {
+    "actual_frontmost_r16_engine_mapping": true,
+    "calendar_visually_rendered": true,
+    "framework_epoch_preserved": true,
+    "home_visually_rendered": true,
+    "normal_owned_task_close": true,
+    "one_native_launch": true,
+    "other_tasks_preserved": true,
+    "route": {
+      "destination": "Beijing",
+      "origin": "Shanghai"
+    },
+    "selected_future_date": "2026-11-07"
+  },
+  "version_code": 238,
+  "version_name": "9.5.15"
+}
