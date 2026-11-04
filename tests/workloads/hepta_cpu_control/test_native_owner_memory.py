@@ -26,13 +26,14 @@ class Lifecycle:
     def sample(self, stage, role, generation, free):
         self.sequence += 1
         self.minimum = min(self.minimum, free)
-        workload = role == "workload"
+        process = role != "none"
+        limit = 16384 if role == "workload" else memory.UNLIMITED_USER_PAGES if process else 0
         pid = 0 if role == "none" else self.roles.get(role, 9) + generation * 10
         self.lines.append(
             f"{memory.PREFIX} schema=1 sample={self.sequence} stage={stage} generation={generation} "
             f"role={role} pid={pid} ordinary_free_bytes={free} sampled_min_free_bytes={self.minimum} "
-            f"slab_backing_bytes=8192000 account_present={'true' if workload else 'false'} "
-            f"selected_user_pages={5100 if workload else 0} selected_user_limit_pages={16384 if workload else 0} "
+            f"slab_backing_bytes=8192000 account_present={'true' if process else 'false'} "
+            f"selected_user_pages={4926 if process else 0} selected_user_limit_pages={limit} "
             "complete_peak=false global_memory_reserve=false")
 
     def result(self):
@@ -54,7 +55,13 @@ class LifecycleMemoryTests(unittest.TestCase):
         self.assertFalse(result["continuous_peak_verified"])
         self.assertFalse(result["global_memory_reserve"])
         self.assertFalse(result["whole_process_tree_memory_verified"])
-        self.assertEqual([entry["role"] for entry in result["samples"] if entry["account_present"]], ["workload"])
+        accounts = [entry for entry in result["samples"] if entry["account_present"]]
+        self.assertEqual([entry["role"] for entry in accounts],
+                         ["root", "manager", "workload", "recovery", "manager", "recovery", "history"])
+        self.assertTrue(all(entry["selected_user_pages"] == 4926 for entry in accounts))
+        self.assertEqual([entry["role"] for entry in accounts
+                          if entry["selected_user_limit_pages"] != memory.UNLIMITED_USER_PAGES],
+                         ["workload"])
 
     def test_incomplete_initial_or_successor_evidence_is_not_accepted(self):
         missing = Lifecycle()
@@ -77,7 +84,7 @@ class LifecycleMemoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "actual initial Process"):
             changed.result()
 
-    def test_sample_minimum_and_unaccounted_roles_cannot_be_relabelled(self):
+    def test_sample_minimum_and_system_records_cannot_be_relabelled(self):
         original = Lifecycle()
         for before, after in (("sampled_min_free_bytes=400000000", "sampled_min_free_bytes=399999999"),
                               ("complete_peak=false", "complete_peak=true"),
@@ -86,6 +93,24 @@ class LifecycleMemoryTests(unittest.TestCase):
             fixture = copy.deepcopy(original)
             fixture.lines[0] = fixture.lines[0].replace(before, after)
             with self.subTest(change=after), self.assertRaises(ValueError):
+                fixture.result()
+
+    def test_process_accounts_preserve_original_finite_and_unlimited_bounds(self):
+        original = Lifecycle()
+        for role, before, after in (
+                ("root", "account_present=true", "account_present=false"),
+                ("manager", f"selected_user_limit_pages={memory.UNLIMITED_USER_PAGES}",
+                 "selected_user_limit_pages=16384"),
+                ("recovery", f"selected_user_limit_pages={memory.UNLIMITED_USER_PAGES}",
+                 "selected_user_limit_pages=0"),
+                ("workload", "selected_user_limit_pages=16384",
+                 f"selected_user_limit_pages={memory.UNLIMITED_USER_PAGES}"),
+                ("workload", "selected_user_pages=4926", "selected_user_pages=16385")):
+            fixture = copy.deepcopy(original)
+            position = next(index for index, line in enumerate(fixture.lines)
+                            if f"role={role} " in line)
+            fixture.lines[position] = fixture.lines[position].replace(before, after)
+            with self.subTest(role=role, change=after), self.assertRaises(ValueError):
                 fixture.result()
 
     def test_legacy_owner_evidence_does_not_accept_new_memory_records(self):

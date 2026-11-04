@@ -3,6 +3,7 @@
 import re
 
 PREFIX = "[hepta-g2-memory]"
+UNLIMITED_USER_PAGES = (1 << 64) - 1
 LINE = re.compile(
     r"^\[hepta-g2-memory\] schema=1 sample=([0-9]+) stage=([a-z_]+) generation=([0-9]+) "
     r"role=([a-z]+) pid=([0-9]+) ordinary_free_bytes=([0-9]+) sampled_min_free_bytes=([0-9]+) "
@@ -47,10 +48,14 @@ def evaluate(lines, role_pids, image_indices, activation_index, first_owner_even
             require(value["account_present"] and value["selected_user_limit_pages"] == 16_384
                     and value["selected_user_pages"] <= value["selected_user_limit_pages"],
                     "original workload account differs from its unchanged selected-frame bound")
+        elif value["role"] != "none":
+            require(value["account_present"]
+                    and value["selected_user_limit_pages"] == UNLIMITED_USER_PAGES,
+                    "original non-workload VMAR account differs from its unlimited bound")
         else:
             require(not value["account_present"] and value["selected_user_pages"] == 0
                     and value["selected_user_limit_pages"] == 0,
-                    "unaccounted original role was relabelled as having a fixed account")
+                    "system observation was relabelled as having a process account")
         value["serial_line_index"] = index
         records.append(value)
     require(7 <= len(records) <= 64, "initial lifecycle observations are incomplete")

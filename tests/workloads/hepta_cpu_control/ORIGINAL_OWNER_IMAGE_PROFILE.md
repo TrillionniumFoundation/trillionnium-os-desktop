@@ -217,9 +217,22 @@ legacy profiles compile without this observation module.
 Each record includes its sequence, phase, generation, role/PID, approximate
 ordinary allocator free bytes, slab backing bytes, and the minimum free bytes
 among those retained samples. A role observation also reads its original
-selected-user-frame account. Root, Manager and Recovery currently report
-`account_present=false`; their zero account fields must not be read as zero
-memory usage. Workload retains its original 16,384-page selected-frame limit.
+selected-user-frame account. Every prepared process VMAR owns an account:
+the original `Vmar::new` supplies `UserMemoryAccount::new(usize::MAX)` when
+its caller does not supply a finite account. Root, Manager, Recovery and
+later History therefore report `account_present=true` and the original
+64-bit unlimited value `18446744073709551615`. This is accounting, not a
+fixed resource cap. Workload retains its original 16,384-page selected-frame
+limit. System observations (`role=none`) alone report no process account
+and zero account fields; those fields do not describe system memory usage.
+
+The actual 00d1 guest logs contain seven initial observations, with each of
+the four role images using 4,926 selected user pages and the last ordinary
+free observation at 327,901,184 bytes. Both positive boots then failed before
+an original-owner state change. Those retained observations exposed the
+old parser's incorrect assumption that non-Workload process accounts were
+absent. Correcting that classification does not qualify either failed boot,
+an owner event, a complete scenario, or a memory reserve.
 
 `native_owner_memory.py` checks the exact record schema, bounded consecutive
 sequence, initial role PIDs, causal placement relative to original image and
@@ -263,3 +276,27 @@ source/target/output scope and run the original finite owner scenarios with the
 matching source pair. Retain failures and source/profile identities separately.
 Do not expand the original limits, remove default owner capabilities, or
 substitute earlier F1/ordinary-Store receipts if this experiment fails.
+
+## Exact-profile initial filesystem assembly
+
+The first actual 00d1 positive boots both exited with QEMU status 65 before any
+writer effect. The original a39 Root, Manager and Recovery open
+/dev/hepta-control before owner activation. Direct rdinit=/test/hepta-g2-owner
+bypasses the pinned base /init, which normally mounts devtmpfs, procfs and
+sysfs. The unchanged fixed CPIO also contains no /run directory.
+
+The exact g2-original-owner-a39-v1 profile now mounts the existing devtmpfs in
+first-process initialization, creates the missing root-owned mode-0755 /run,
+and mounts the registered procfs and sysfs at their existing fixed mountpoints.
+This completes before console initialization and before Root's original startup
+hook releases any prepared child. Existing ordinary and legacy profile initramfs
+behavior is unchanged. No device node is synthesized, no native grant is added,
+and the original owner still authenticates its own control descriptor and
+performs its own state/cgroup/bind mounts, credential changes and private runtime
+setup. Mount failures stop initial startup; no fallback substitutes an owner.
+
+This source change is not a successful native run. The 00d1 failed receipts stay
+failed. A successor source requires new original owner/kernel receipts and the
+same normal startup checks and two positive scenarios. The seven initial memory
+samples precede first-process filesystem assembly and do not measure these mount
+allocations or a whole-guest peak; global memory reserve remains unverified.
