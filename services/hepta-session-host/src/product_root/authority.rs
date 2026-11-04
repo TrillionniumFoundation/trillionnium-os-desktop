@@ -1,11 +1,10 @@
 //! Product explicit Root administration through the ORIGINAL authority factories.
-use super::{Result, config::Inputs, fs, geometry::Product};
+use super::{Result, config::Inputs, fs, geometry::Product, seed::ThreadSeed};
 use codex_hepta_agentd::{
     AgentdIdentity, DeploymentFinalUseIssuer, DeploymentGrantPolicy, HostAuthorityBootstrap,
     HostAuthorityConsumerConfig, HostAuthorityConsumersConfig, HostAuthorityRegistration,
     HostAuthorityServiceConfig, HostAuthoritySocketPaths, HostAuthorityWriterRegistration,
-    HostIssuerRecordProfile, NotesThreadSeedReceipt, initialize_host_authority,
-    register_host_writer_authorization,
+    HostIssuerRecordProfile, initialize_host_authority, register_host_writer_authorization,
 };
 use codex_hepta_contracts::authority_lease::{
     AuthorityLease, AuthorityLeaseBinding, AuthorityLeaseFrontier, AuthorityLeaseRegistry,
@@ -13,7 +12,7 @@ use codex_hepta_contracts::authority_lease::{
 use codex_hepta_contracts::{
     AuthorityClock, HostAuthorityClock, HostAuthorityFrontierStore, RootAuthorityDirectory,
 };
-use codex_hepta_memory::NotesTargetIdentity;
+use codex_hepta_memory::{CalculatorTargetIdentity, NotesTargetIdentity};
 use codex_hepta_types::Digest32;
 use serde_json::json;
 use std::path::PathBuf;
@@ -52,11 +51,29 @@ pub(super) fn initialize(
     inputs: &Inputs,
     fresh: &Product,
     registration: &HostAuthorityRegistration,
-    seed: &NotesThreadSeedReceipt,
+    seed: &ThreadSeed,
     target: &NotesTargetIdentity,
+    calculator: Option<&CalculatorTargetIdentity>,
 ) -> Result<RegistrationFiles> {
     if !fresh.mounted() {
         return Err("original Root bind changed".into());
+    }
+    if inputs.is_desktop() != seed.is_desktop() || inputs.is_desktop() != calculator.is_some() {
+        return Err(
+            "original seed and actual targets differ from the explicit Root profile".into(),
+        );
+    }
+    if let Some(calculator) = calculator {
+        calculator.validate()?;
+        if target.task_id != 1
+            || calculator.task_id != 2
+            || target.session_instance != calculator.session_instance
+            || target.incarnation == calculator.incarnation
+        {
+            return Err(
+                "joint Root policies require the same actual Session and distinct Apps".into(),
+            );
+        }
     }
     let actual = identity(registration, fresh);
     let signer_id = format!("desktop-root-{}", fresh.agent.as_str());
@@ -64,7 +81,7 @@ pub(super) fn initialize(
     let artifacts = artifacts(inputs)?;
     let artifact_set = Digest32::of_bytes(&serde_json::to_vec(&artifacts)?);
     fs::json_new(&fresh.admin.join("actual-artifacts.json"), &artifacts)?;
-    let policies = vec![
+    let mut policies = vec![
         DeploymentGrantPolicy {
             subject_id: fresh.agent.to_string(),
             destination_id: DeploymentFinalUseIssuer::OBJECTIVE_DESTINATION.into(),
@@ -73,7 +90,7 @@ pub(super) fn initialize(
         },
         DeploymentGrantPolicy {
             subject_id: fresh.agent.to_string(),
-            destination_id: DeploymentFinalUseIssuer::text_destination(&seed.thread_id)?,
+            destination_id: DeploymentFinalUseIssuer::text_destination(seed.thread_id())?,
             scope_sha256: DeploymentFinalUseIssuer::text_scope(&fresh.agent),
             lifetime_ms: inputs.grant_lifetime_ms,
         },
@@ -84,6 +101,14 @@ pub(super) fn initialize(
             lifetime_ms: inputs.grant_lifetime_ms,
         },
     ];
+    if let Some(calculator) = calculator {
+        policies.push(DeploymentGrantPolicy {
+            subject_id: fresh.agent.to_string(),
+            destination_id: calculator.destination_id(),
+            scope_sha256: calculator.scope_digest().into_array(),
+            lifetime_ms: inputs.grant_lifetime_ms,
+        });
+    }
     let root_binding = AuthorityLeaseBinding {
         principal_id: fresh.agent.to_string(),
         operation_class: "runtime.agentd.root_issuer".into(),
@@ -190,13 +215,23 @@ pub(super) fn initialize(
         control_socket: actual.control_socket.clone(),
         agent_id: actual.agent_id.clone(),
         spawn_generation: actual.spawn_generation,
-        thread_id: seed.thread_id.clone(),
-        app_server_session_id: seed.app_server_session_id.clone(),
+        thread_id: seed.thread_id().to_owned(),
+        app_server_session_id: seed.app_server_session_id().to_owned(),
         codex_home: actual.home_root.clone(),
     };
-    let principal_scope = "organ.desktop.notes";
+    let (principal_scope, scope_domain) = if inputs.is_desktop() {
+        (
+            "organ.desktop.notes_calculator",
+            "trill.desktop.original-notes-calculator-scope.v1",
+        )
+    } else {
+        (
+            "organ.desktop.notes",
+            "trill.desktop.original-notes-scope.v1",
+        )
+    };
     let principal_scope_digest = Digest32::of_bytes(&serde_json::to_vec(&(
-        "trill.desktop.original-notes-scope.v1",
+        scope_domain,
         fresh.agent.as_str(),
         &signer_id,
     ))?);
@@ -204,30 +239,45 @@ pub(super) fn initialize(
         .record
         .layout
         .home_root()
-        .join("notes-thread-profile.json");
-    let admission = codex_hepta_objective::thread_notes_admission_profile_json_v1(
-        principal_scope,
-        principal_scope_digest,
-        &signer_id,
-    )
+        .join(inputs.objective_profile_name());
+    let admission = if inputs.is_desktop() {
+        codex_hepta_objective::desktop_thread_admission_profile_json_v1(
+            principal_scope,
+            principal_scope_digest,
+            &signer_id,
+        )
+    } else {
+        codex_hepta_objective::thread_notes_admission_profile_json_v1(
+            principal_scope,
+            principal_scope_digest,
+            &signer_id,
+        )
+    }
     .map_err(std::io::Error::other)?;
     fs::write_new(&objective, admission.as_bytes())?;
-    let profile = fresh.admin.join("notes-startup.json");
-    fs::json_new(
-        &profile,
-        &json!({
-            "schema":"hepta.root.notes_launch_profile.v1", "grant_lifetime_ms": inputs.grant_lifetime_ms,
-            "interaction":{"kind":"original_thread_tool_v1", "route":&route, "seed":seed},
-            "bindings": { "principal_scope":principal_scope,
-                "principal_scope_digest": principal_scope_digest.to_string(), "issuer_id":&signer_id,
-                "policy_generation":1, "locale":&inputs.locale,
-                "runtime_body_digest":fs::digest(&inputs.sources.runtime_body)?,
-                "preference_state_digest":fs::digest(&inputs.sources.preferences)?,
-                "model_tuple_digest":seed.model_tuple_digest()?.to_string(),
-                "prompt_registry_digest":fs::digest(&inputs.sources.prompt_registry)?,
-                "artifact_set_digest":artifact_set.to_string() }
-        }),
-    )?;
+    let profile = fresh.admin.join(if inputs.is_desktop() {
+        "desktop-startup.json"
+    } else {
+        "notes-startup.json"
+    });
+    let mut launch_profile = json!({
+        "schema":"hepta.root.notes_launch_profile.v1", "grant_lifetime_ms": inputs.grant_lifetime_ms,
+        "interaction":{"kind":"original_thread_tool_v1", "route":&route, "seed":seed},
+        "bindings": { "principal_scope":principal_scope,
+            "principal_scope_digest": principal_scope_digest.to_string(), "issuer_id":&signer_id,
+            "policy_generation":1, "locale":&inputs.locale,
+            "runtime_body_digest":fs::digest(&inputs.sources.runtime_body)?,
+            "preference_state_digest":fs::digest(&inputs.sources.preferences)?,
+            "model_tuple_digest":seed.model_tuple_digest()?.to_string(),
+            "prompt_registry_digest":fs::digest(&inputs.sources.prompt_registry)?,
+            "artifact_set_digest":artifact_set.to_string() }
+    });
+    if inputs.is_desktop() {
+        launch_profile["schema"] = "hepta.root.desktop_launch_profile.v1".into();
+        launch_profile["profile"] = "notes_calculator_v1".into();
+        launch_profile["interaction"]["kind"] = "original_desktop_thread_tool_v1".into();
+    }
+    fs::json_new(&profile, &launch_profile)?;
     Ok(RegistrationFiles {
         config: config_path,
         registration: registration_path,

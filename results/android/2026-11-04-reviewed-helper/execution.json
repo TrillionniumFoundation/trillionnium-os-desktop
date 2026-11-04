@@ -1,0 +1,175 @@
+{
+  "schema": "trill.android.reviewed-helper-validation.v1",
+  "status": "passed",
+  "base": "f5fbc7e1a533e5bec588575ab56312a3203f6d8c",
+  "candidate_tree": "5e3b9f66ad07d428e994a5526fb63b030b475066",
+  "commands": [
+    {
+      "name": "diff-check",
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "started_unix_ms": 1793794083088,
+      "exit_code": 0,
+      "seconds": 0.03258981998078525,
+      "stdout": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/diff-check.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/diff-check.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "receiver-and-readonly-normal",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "-m",
+        "unittest",
+        "tests.workloads.android.test_bound_receiver",
+        "tests.workloads.android.test_device_organ",
+        "tests.workloads.android.test_receiver_effect_boundary",
+        "tests.workloads.android.test_receiver_qualification",
+        "tests.workloads.android.test_source_integrity",
+        "-v"
+      ],
+      "started_unix_ms": 1793794083122,
+      "exit_code": 0,
+      "seconds": 9.640785140916705,
+      "stdout": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/receiver-and-readonly-normal.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/receiver-and-readonly-normal.stderr.log",
+        "bytes": 15197,
+        "sha256": "bb9f28643184efc43d5da839efe5b6465427af1b98ac60f9ce0e493e54b82cf2"
+      }
+    },
+    {
+      "name": "receiver-and-readonly-optimized",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "-O",
+        "-m",
+        "unittest",
+        "tests.workloads.android.test_bound_receiver",
+        "tests.workloads.android.test_device_organ",
+        "tests.workloads.android.test_receiver_effect_boundary",
+        "tests.workloads.android.test_receiver_qualification",
+        "tests.workloads.android.test_source_integrity",
+        "-v"
+      ],
+      "started_unix_ms": 1793794092776,
+      "exit_code": 0,
+      "seconds": 10.742639579926617,
+      "stdout": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/receiver-and-readonly-optimized.stdout.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/receiver-and-readonly-optimized.stderr.log",
+        "bytes": 15197,
+        "sha256": "e46a2fd341353fe32c4d7519456f338baa54c39c9871d45414f57ca779f98a7f"
+      }
+    },
+    {
+      "name": "source-integrity",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "support/android/verify_source_integrity.py"
+      ],
+      "started_unix_ms": 1793794103527,
+      "exit_code": 0,
+      "seconds": 0.2656566029181704,
+      "stdout": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/source-integrity.stdout.log",
+        "bytes": 202,
+        "sha256": "91a47d9f3205ebf357e9b5fffbb641c52d7d13f612e690ac33180bc2df1630be"
+      },
+      "stderr": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/source-integrity.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "actual-sdk35-javac",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "support/android/receiver/qualify_receiver.py",
+        "java",
+        "--output",
+        "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/java",
+        "--sdk",
+        "/opt/android-sdk"
+      ],
+      "started_unix_ms": 1793794103794,
+      "exit_code": 0,
+      "seconds": 2.621697928989306,
+      "stdout": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/actual-sdk35-javac.stdout.log",
+        "bytes": 2494,
+        "sha256": "a090a9211570cb4da0be57dedc7ed5356da10fd9f534b712fd1d57c2e92e363c"
+      },
+      "stderr": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/actual-sdk35-javac.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "actual-unsigned-apk",
+      "argv": [
+        "/usr/bin/python3",
+        "-B",
+        "support/android/receiver/build_receiver.py",
+        "--output",
+        "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/unsigned",
+        "--compile",
+        "--sdk",
+        "/opt/android-sdk",
+        "--reuse-original-resources",
+        "--original-apk",
+        "/data/trill-android-current-20261104-v1/inputs/original-actions-v2.apk"
+      ],
+      "started_unix_ms": 1793794106428,
+      "exit_code": 0,
+      "seconds": 7.56009919999633,
+      "stdout": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/actual-unsigned-apk.stdout.log",
+        "bytes": 2744,
+        "sha256": "95631f2ec25c5b508fa14c3b175ed0987e22ba5c6d42c73ed7f7e0246f874e5f"
+      },
+      "stderr": {
+        "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/actual-unsigned-apk.stderr.log",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "device_mutations": 0,
+  "signed_candidate": false,
+  "installed": false,
+  "production_qualified": false,
+  "source_tree_unchanged": true,
+  "unsigned_build_record": {
+    "path": "/home/qian-qi/work/trill-android-live-helper-verification-20261104-v1/unsigned/build-record.json",
+    "bytes": 2744,
+    "sha256": "95631f2ec25c5b508fa14c3b175ed0987e22ba5c6d42c73ed7f7e0246f874e5f"
+  },
+  "java_build_record": null,
+  "finished_unix_ms": 1793794115635
+}

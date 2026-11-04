@@ -141,6 +141,7 @@ impl Fixture {
             expected_peer_pid: std::process::id(),
             endpoint_identity: path.to_str().unwrap().to_owned(),
             original_notes_thread: None,
+            original_desktop_thread: None,
         };
         let original = serde_json::to_string(&json!({
             "issuer_id": "test-only-original-issuer", "key_epoch": 3,

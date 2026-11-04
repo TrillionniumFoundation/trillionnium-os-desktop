@@ -4,16 +4,23 @@ use codex_app_server_client::{
     RemoteAppServerClient, RemoteAppServerConnectArgs, RemoteAppServerEndpoint,
 };
 use codex_hepta_agentd::{
-    NotesThreadSeedOptions, NotesThreadSeedReceipt, ORIGINAL_NOTES_THREAD_ENVIRONMENTS_CONFIG,
-    ORIGINAL_NOTES_THREAD_EXECUTION_CONFIG, seed_original_notes_thread,
+    DesktopThreadSeedOptions, DesktopThreadSeedReceipt, NotesThreadSeedOptions,
+    NotesThreadSeedReceipt, ORIGINAL_DESKTOP_THREAD_ENVIRONMENTS_CONFIG,
+    ORIGINAL_DESKTOP_THREAD_EXECUTION_CONFIG, ORIGINAL_NOTES_THREAD_ENVIRONMENTS_CONFIG,
+    ORIGINAL_NOTES_THREAD_EXECUTION_CONFIG, seed_original_desktop_thread,
+    seed_original_notes_thread,
 };
 use codex_utils_absolute_path::AbsolutePathBuf;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::os::fd::AsRawFd;
 use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
+
+#[cfg(test)]
+#[path = "seed_tests.rs"]
+mod tests;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -31,15 +38,80 @@ struct PromptRegistry {
     developer_instructions: String,
 }
 
-pub(super) async fn create(inputs: &Inputs, fresh: &Product) -> Result<NotesThreadSeedReceipt> {
+/// The selected receipt keeps its original JSON shape, but is never deserialized
+/// through an untagged enum: Notes and Desktop metadata have overlapping fields.
+#[derive(Serialize)]
+#[serde(untagged)]
+pub(super) enum ThreadSeed {
+    Notes(NotesThreadSeedReceipt),
+    Desktop(DesktopThreadSeedReceipt),
+}
+
+impl ThreadSeed {
+    pub(super) fn is_desktop(&self) -> bool {
+        matches!(self, Self::Desktop(_))
+    }
+
+    pub(super) fn thread_id(&self) -> &str {
+        match self {
+            Self::Notes(seed) => &seed.thread_id,
+            Self::Desktop(seed) => &seed.thread_id,
+        }
+    }
+
+    pub(super) fn app_server_session_id(&self) -> &str {
+        match self {
+            Self::Notes(seed) => &seed.app_server_session_id,
+            Self::Desktop(seed) => &seed.app_server_session_id,
+        }
+    }
+
+    fn model(&self) -> &str {
+        match self {
+            Self::Notes(seed) => &seed.model,
+            Self::Desktop(seed) => &seed.model,
+        }
+    }
+
+    fn model_provider(&self) -> &str {
+        match self {
+            Self::Notes(seed) => &seed.model_provider,
+            Self::Desktop(seed) => &seed.model_provider,
+        }
+    }
+
+    pub(super) fn model_tuple_digest(&self) -> Result<codex_hepta_types::Digest32> {
+        Ok(match self {
+            Self::Notes(seed) => seed.model_tuple_digest()?,
+            Self::Desktop(seed) => seed.model_tuple_digest()?,
+        })
+    }
+}
+
+pub(super) async fn create(inputs: &Inputs, fresh: &Product) -> Result<ThreadSeed> {
     let home = fresh.record.layout.home_root();
     let preferences: Preferences = fs::read_root_document(&inputs.sources.preferences)?;
     let prompts: PromptRegistry = fs::read_root_document(&inputs.sources.prompt_registry)?;
-    if preferences.schema != "trill.original-notes-preferences.v1"
+    let (preferences_schema, prompts_schema, execution, environments) = if inputs.is_desktop() {
+        (
+            "trill.original-desktop-preferences.v1",
+            "trill.original-desktop-prompts.v1",
+            ORIGINAL_DESKTOP_THREAD_EXECUTION_CONFIG,
+            ORIGINAL_DESKTOP_THREAD_ENVIRONMENTS_CONFIG,
+        )
+    } else {
+        (
+            "trill.original-notes-preferences.v1",
+            "trill.original-notes-prompts.v1",
+            ORIGINAL_NOTES_THREAD_EXECUTION_CONFIG,
+            ORIGINAL_NOTES_THREAD_ENVIRONMENTS_CONFIG,
+        )
+    };
+    if preferences.schema != preferences_schema
         || preferences.locale != inputs.locale
         || preferences.model != "qwen38-flash-next-uc"
         || preferences.model_provider != "hepta_local"
-        || prompts.schema != "trill.original-notes-prompts.v1"
+        || prompts.schema != prompts_schema
         || prompts.developer_instructions.is_empty()
         || prompts.developer_instructions.len() > 512
         || prompts.developer_instructions.contains('\0')
@@ -53,13 +125,10 @@ pub(super) async fn create(inputs: &Inputs, fresh: &Product) -> Result<NotesThre
     // This is public, fixed product configuration in a genuinely new Core
     // home. It neither reads nor copies existing provider credentials.
     let config = format!(
-        "model = \"qwen38-flash-next-uc\"\nmodel_provider = \"hepta_local\"\n{ORIGINAL_NOTES_THREAD_EXECUTION_CONFIG}\n[model_providers.hepta_local]\nname = \"Hepta local Responses\"\nbase_url = \"http://127.0.0.1:18083/v1\"\nwire_api = \"responses\"\nrequires_openai_auth = false\n"
+        "model = \"qwen38-flash-next-uc\"\nmodel_provider = \"hepta_local\"\n{execution}\n[model_providers.hepta_local]\nname = \"Hepta local Responses\"\nbase_url = \"http://127.0.0.1:18083/v1\"\nwire_api = \"responses\"\nrequires_openai_auth = false\n"
     );
     fs::write_new(&home.join("config.toml"), config.as_bytes())?;
-    fs::write_new(
-        &home.join("environments.toml"),
-        ORIGINAL_NOTES_THREAD_ENVIRONMENTS_CONFIG.as_bytes(),
-    )?;
+    fs::write_new(&home.join("environments.toml"), environments.as_bytes())?;
     let path = fresh.prefix.join("seed.sock");
     if std::fs::symlink_metadata(&path).is_ok() {
         return Err("seed socket already exists".into());
@@ -120,18 +189,38 @@ pub(super) async fn create(inputs: &Inputs, fresh: &Product) -> Result<NotesThre
             Err(_) => return Err("original AppServer seed connection timed out".into()),
         }
     };
-    let receipt = seed_original_notes_thread(
-        &client,
-        home,
-        NotesThreadSeedOptions {
-            model: Some(preferences.model.clone()),
-            model_provider: Some(preferences.model_provider.clone()),
-            cwd: Some(fresh.record.manifest.workspace.as_path().to_path_buf()),
-            developer_instructions: Some(prompts.developer_instructions),
-        },
-    )
-    .await?;
-    if receipt.model != preferences.model || receipt.model_provider != preferences.model_provider {
+    let receipt = if inputs.is_desktop() {
+        ThreadSeed::Desktop(
+            seed_original_desktop_thread(
+                &client,
+                home,
+                DesktopThreadSeedOptions {
+                    model: Some(preferences.model.clone()),
+                    model_provider: Some(preferences.model_provider.clone()),
+                    cwd: Some(fresh.record.manifest.workspace.as_path().to_path_buf()),
+                    developer_instructions: Some(prompts.developer_instructions),
+                },
+            )
+            .await?,
+        )
+    } else {
+        ThreadSeed::Notes(
+            seed_original_notes_thread(
+                &client,
+                home,
+                NotesThreadSeedOptions {
+                    model: Some(preferences.model.clone()),
+                    model_provider: Some(preferences.model_provider.clone()),
+                    cwd: Some(fresh.record.manifest.workspace.as_path().to_path_buf()),
+                    developer_instructions: Some(prompts.developer_instructions),
+                },
+            )
+            .await?,
+        )
+    };
+    if receipt.model() != preferences.model
+        || receipt.model_provider() != preferences.model_provider
+    {
         return Err("actual Start result differs from the explicit product model/provider".into());
     }
     client.shutdown().await?;

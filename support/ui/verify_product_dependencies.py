@@ -15,6 +15,8 @@ import tomllib
 # cached helper must not replace the reviewed mandatory-source policy.
 require_root_admin_sources = runpy.run_path(
     str(Path(__file__).with_name("root_admin_sources.py")))["require_root_admin_sources"]
+require_desktop_organ_sources = runpy.run_path(
+    str(Path(__file__).with_name("desktop_organ_sources.py")))["require_desktop_organ_sources"]
 
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = "support/ui/HEPTA_SHARED_PRESENTER.json"
@@ -414,6 +416,7 @@ def verify(root=ROOT, hepta_root=None, *, source_only=False):
     require(REQUIRED_FILES <= {entry["path"] for entry in source["files"]},
             "Source contract omits the shared literal Notes compiler or original composer transaction")
     require_root_admin_sources(source["files"])
+    require_desktop_organ_sources(source["files"])
     files = {entry["path"]: entry for entry in source["files"]}
     require(len(files) == len(source["files"]), "Duplicate original source identity")
     for original, local in MIRRORED_FIXTURES.items():

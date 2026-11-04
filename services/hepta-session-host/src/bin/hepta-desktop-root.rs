@@ -14,11 +14,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let flag = args.next();
         let path = args.next();
         if flag.as_deref() != Some(std::ffi::OsStr::new("--config")) || path.is_none() {
-            return Err("expected initialize --config <Root0600-input> or recover --config <same-input> (--operation-id <original-id> | --latest-original-notes)".into());
+            return Err("expected initialize --config <Notes-Root0600-input>, initialize-desktop --config <joint-v2-Root0600-input>, or recover --config <same-Notes-input> (--operation-id <original-id> | --latest-original-notes)".into());
         }
         let path = std::path::Path::new(path.as_ref().ok_or("missing config")?);
         match action.as_deref().and_then(std::ffi::OsStr::to_str) {
             Some("initialize") if args.next().is_none() => product_root::initialize(path),
+            Some("initialize-desktop") if args.next().is_none() => {
+                product_root::initialize_desktop(path)
+            }
             Some("recover") => {
                 let selection = product_root::RecoverySelection::from_arguments(args)?;
                 product_root::recover(path, selection)
