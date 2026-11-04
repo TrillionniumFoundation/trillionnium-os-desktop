@@ -1,0 +1,56 @@
+{
+  "schema": 1,
+  "scope": "six held host namespaces; own process only",
+  "Main_namespace_entered": false,
+  "helper_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+  "returncode": 0,
+  "stdout": "{\"mnt\": \"mnt:[4026531832]\", \"pid\": \"pid:[4026531836]\", \"uts\": \"uts:[4026531838]\", \"ipc\": \"ipc:[4026531839]\", \"net\": \"net:[4026531833]\", \"cgroup\": \"cgroup:[4026531835]\"}\n",
+  "stderr": "",
+  "expected": {
+    "host_pid": 210487,
+    "start_ticks": 83918854,
+    "namespaces": {
+      "mnt": "mnt:[4026531832]",
+      "pid": "pid:[4026531836]",
+      "uts": "uts:[4026531838]",
+      "ipc": "ipc:[4026531839]",
+      "net": "net:[4026531833]",
+      "cgroup": "cgroup:[4026531835]"
+    },
+    "namespace_inode_pairs": {
+      "mnt": [
+        5,
+        4026531832
+      ],
+      "pid": [
+        5,
+        4026531836
+      ],
+      "uts": [
+        5,
+        4026531838
+      ],
+      "ipc": [
+        5,
+        4026531839
+      ],
+      "net": [
+        5,
+        4026531833
+      ],
+      "cgroup": [
+        5,
+        4026531835
+      ]
+    },
+    "root_inode_pair": [
+      66306,
+      2
+    ],
+    "numeric_pid_used_for_namespace_entry": false,
+    "descriptor_authorities_cloexec_before_command": true,
+    "helper_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+  },
+  "passed": true,
+  "finished_utc": "2026-11-04T17:31:19.311146+00:00"
+}

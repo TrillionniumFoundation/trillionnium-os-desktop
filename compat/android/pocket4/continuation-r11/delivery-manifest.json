@@ -1,36 +1,143 @@
 {
-  "schema": "pocket4-r11-public-checkpoint-v4",
-  "base_commit": "cea412e65c4809bc803332b3071e9df194b20b6a",
-  "base_tree": "dc7d820d03031126de75701cb63e59667451eedf",
+  "schema": "pocket4-r11-public-checkpoint-v5",
+  "checkpoint": "05",
+  "base_commit": "4af46935a44ecb5e19ddc65fa39558ddf1f0b733",
+  "base_tree": "a61ced35e29dd398d2d073ea92f5224db0e3f9e6",
   "branch": "fix/pocket4-android-production-20261104-r11",
   "pull_request": 292,
-  "previous_manifest_sha256": "5b6baa0423e150d583e733470d589b081e4d90b7aa88d46bf87e1760574ed76a",
+  "previous_manifest_sha256": "e0c58ef49a0c23e44e0f954cff6b5521aa139a3d0770d51ce87092726a4c6d71",
   "frozen": true,
-  "pushed": false,
+  "inherited_payload_files": 741,
+  "inherited_payloads_modified": 0,
+  "new_payload_files": 649,
   "commercial_apps_production_ready": 0,
   "launcher_apps_in_scope": 45,
   "all_apps_production_ready": false,
-  "Main_runtime": "R16_unchanged",
-  "candidate_signal_engine": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
-  "signal_Android_attempt01": "ACTUAL_BOOT_COMPLETE_THEN_FRAMEWORK_ROLE_CAPTURE_FAILED_BEFORE_PROBES;EXACT_CLEANUP",
-  "signal_Android_attempt02": "ACTUAL_VERIFIER_ORIGIN_REJECTION_BEFORE_DATA_PREPARATION;ABSENCE_READBACK_PASS;R2_REVIEW_CORRECTED",
-  "signal_runtime_r3": "ORIGINAL_R1_VERIFIER_CONTEXT_LOADING_FIX_REVIEWED;FRESH_A03_DEVICE_GATES_PENDING",
-  "FD_r16_actual": "FAIL_CHILD_PTHREAD_EAGAIN_UNDER_AS1;ALL_CHILDREN_REAPED;OWNED_PACKAGE_REMOVED",
-  "FD_r17_actual": "FIXED_RAW_METADATA_PRIMITIVE_8_EXPECTED_BEHAVIORS_OBSERVED;KNOWN_NOFILE0_EMFILE_REMAINS;NO_PRODUCTION_PROJECTION",
-  "supervisor_cleanup01": "ACTUAL_91_TESTS_3_DEBUG_BINS_AND_ROOT_REVIEW_PASS;NO_DEPLOYMENT_OR_LIFECYCLE_HOOK",
-  "LMKD_pressure07": "SOURCE_REVIEW_BLOCKED_DESCENDANT_RETIREMENT_GAP",
-  "LMKD_pressure08_positive": "WHOLE_OWNED_INVOCATION_PASS_REAL_DEFAULT_CRITICAL_PSI_CACHED_ONLY_KILL_AND_EXACT_CLEANUP",
-  "LMKD_pressure08_stale": "ACTUAL_RAMP_TOTAL_DEADLINE_FAILURE_BEFORE_AGE_RESUME;EXACT_CLEANUP;NOT_QUALIFIED",
-  "LMKD_pressure09": "FROZEN_STALE_RAMP_AND_CRITICAL_QUALIFIER_FIX;ACTUAL_MATCHING_BUILD_20_RUST_7_IPC_23_PYTHON_PASS;FRESH_RUNTIME_PENDING",
+  "Main_runtime": {
+    "new_deployment": false,
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "original_package_count": 182,
+    "metadata_owned_uids_removed": [
+      10160,
+      10161,
+      10162
+    ]
+  },
+  "FD_r18_actual": {
+    "result": "FAIL_AT_METADATA_CONSISTENCY_GATE",
+    "expected_cases": 12,
+    "observed_cases": 12,
+    "mask": "0x840",
+    "ten_wrapper_paths_not_reached": true,
+    "all_direct_and_nested_children_reaped": true,
+    "exact_owned_package_removed": true
+  },
+  "FD_r19_actual": {
+    "result": "DIAGNOSTIC_FAIL_PRESERVED",
+    "mask": "0x840",
+    "ten_failures_same_statfs_flags_only": {
+      "native": 0,
+      "raw": 32
+    },
+    "original_comparisons_unchanged": true,
+    "all_direct_and_nested_children_reaped": true,
+    "exact_owned_package_removed": true
+  },
+  "FD_r20_actual": {
+    "result": "TWELVE_EXPECTED_HOST_LIBC_BEHAVIORS_OBSERVED",
+    "mask": "0xfff",
+    "source_pins_sha256": "6e6c806a9560b34435a937ae8d9dab241f3139f63106f93da108b06dc0584cbb",
+    "apk_sha256": "c056d2c116abc0bca4ec6606defb6810ba53d960fd6164a0595cac9cc8ed06f0",
+    "direct_children_reaped": 12,
+    "nested_children_reaped": 2,
+    "timeout": false,
+    "explicit_clear_tid_restart_rounds": 12,
+    "known_NOFILE0_EMFILE_remains": true,
+    "guest_raw_syscall_ABI_qualified": false,
+    "trusted_factory_positive_qualified": false,
+    "runtime_hooks_installed": false,
+    "candidate_production_ready": false,
+    "summary_sha256": "b20e61c513393be5b3de1b9c86be1c155a6207b060e2f041017dcd9acc43fd62"
+  },
+  "signal_a03": {
+    "result": "ACTUAL_FIRST_INSTRUMENT_EXIT_134_BEFORE_NATIVE_VERDICT",
+    "cause": "Missing BOOTCLASSPATH and DEX2OATBOOTCLASSPATH in harness environment",
+    "native_verdicts": 0,
+    "exact_cleanup": true,
+    "report_sha256": "9144d58297c97a1b42b4cb51d63b6b6ce8f6144ec0db5d7e9514512168394a96"
+  },
+  "signal_r4": {
+    "source_frozen": true,
+    "owned_host_controls": 35,
+    "original_controls": 13,
+    "retained_AST_functions": 18,
+    "static_external_qualification_controls": 4,
+    "new_Android_canary_started": false,
+    "admission": "BLOCKED_PENDING_R5",
+    "blockers": [
+      "evidence-write exception skips retirement",
+      "root cgroup.procs/MainPID do not prove hierarchical retirement",
+      "zygote/init mount-view classpath correspondence unproven"
+    ],
+    "root_review_sha256": "e0c2f1037319999d095d83b0cc8535328863af0857a265df3087f8def8843df2"
+  },
+  "namespace_entry": {
+    "qualified_for_held_namespace_entry": true,
+    "host_controls": 14,
+    "six_namespace_host_control": true,
+    "Main_readonly_control": true,
+    "qualification_sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+    "whole_process_tree_cleanup_qualified": false
+  },
+  "LMKD_revision09": {
+    "positive": "PASS_WHOLE_OWNED_INVOCATION",
+    "stale": "FAIL_NEW_STALLS_DURING_QUIET_AGING",
+    "historical_failure_preserved": true,
+    "exact_cleanup_and_Main_fences": true
+  },
+  "LMKD_revision10": {
+    "matching_build": "20_RUST_7_IPC_28_PYTHON_AND_STRICT_ACTOR_PASS",
+    "coordinator_controls": 8,
+    "positive": "PASS_WHOLE_OWNED_CRITICAL_INVOCATION",
+    "stale_relief_critical_qualified": true,
+    "stale_test_scope": "relieved-domain-aged-critical-queue",
+    "stale_qualified": false,
+    "stale_critical_qualified": false,
+    "native_stale_drop_observed": false,
+    "above_high_stale_zero_kill_verified": false,
+    "exact_cleanup_and_Main_fences": true,
+    "production_cgroup_kill_qualified": false,
+    "installed_supervisor_recovery_qualified": false
+  },
+  "native_R8": {
+    "source": "PARTIAL_EXPLICIT_ART_ENGINE_GENERATION_DELTA_DEFAULT_OFF",
+    "first_host_capability_failure_preserved": true,
+    "owned_child_capabilities_cleared_without_production_gate_change": true,
+    "host_controls_passed": 11,
+    "passing_exec_translation_units": 3,
+    "full_engine_link_qualified": false,
+    "full_ART_link_qualified": false,
+    "old_R7_full_freeze_restored": false
+  },
+  "updater_pair": {
+    "changed_files": 4,
+    "owned_tests_passed": 9,
+    "actual_ART_APEX_built": false,
+    "APEX_signature_verification_performed": false,
+    "installed_pair_qualified": false
+  },
   "pending": [
-    "Fresh a03 isolated Android signal preparation/check and four-case qualification using reviewed r3 verifier origin fix.",
-    "Pressure09 fresh matching positive/stale critical qualification; matching build has passed.",
-    "Fixed raw metadata production projection and lifecycle integration.",
-    "Release supervisor cleanup build, real lifecycle integration and recovery qualification.",
+    "R5 cleanup/classpath source, meaningful controls, independent review and fresh a04 canary.",
+    "Separate raw guest statfs representation, real adapters and trusted factory server/build/service closure.",
+    "Complete new source overlay, paired ART/engine build and APEX signature/runtime qualification.",
+    "Installed finite-domain/broker/init-peer lifecycle and daemon-loss recovery.",
+    "Independent native stale-drop observation, above-high stale behavior, production cgroup.kill and PID-reuse qualification.",
     "All 45 whole-app business acceptance gates."
   ],
-  "files_excluding_manifest": 741,
-  "bytes_excluding_manifest": 7652602,
+  "files_excluding_manifest": 1390,
+  "bytes_excluding_manifest": 13050022,
   "files": [
     {
       "path": "README.md",
@@ -3633,6 +3740,12 @@
       "encoding": "utf-8"
     },
     {
+      "path": "checkpoint-04/lmkd-work/supervisor-cleanup-freeze-01/source-manifest.json",
+      "sha256": "425840a7a9ca3c9763e9884198c6d8bebd709cfcb6ff0202c43dc4be92f6872e",
+      "bytes": 8164,
+      "encoding": "utf-8"
+    },
+    {
       "path": "checkpoint-04/lmkd-work/supervisor-cleanup-freeze-01/source/AGENTS.md",
       "sha256": "eac22deaa59d6906afe7eef3dfc9696fbacf20e71a90590608d744b096a8ff46",
       "bytes": 4088,
@@ -3780,12 +3893,6 @@
       "path": "checkpoint-04/lmkd-work/supervisor-cleanup-freeze-01/source/rust-toolchain.toml",
       "sha256": "8bc51ecab82415fddd8489604f2424e137d71856e7f65cbdcfaa48850d794b46",
       "bytes": 86,
-      "encoding": "utf-8"
-    },
-    {
-      "path": "checkpoint-04/lmkd-work/supervisor-cleanup-freeze-01/source-manifest.json",
-      "sha256": "425840a7a9ca3c9763e9884198c6d8bebd709cfcb6ff0202c43dc4be92f6872e",
-      "bytes": 8164,
       "encoding": "utf-8"
     },
     {
@@ -4335,6 +4442,2496 @@
       "encoding": "utf-8"
     },
     {
+      "path": "checkpoint-05/README.md",
+      "sha256": "7f67e4efd61a52ea78212f31a225103d57b256b531995cd9adf9f5283fe8fe89",
+      "bytes": 10216,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/client-integrity-verification.json",
+      "sha256": "f94ee200734f536ea6c16544c8f864d8e40468dcc0d4aee4b68b29dda0a87ade",
+      "bytes": 3708,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/build-result.json",
+      "sha256": "cd0b2b3e60120ee2c36fc1d5a4347f60ea8e435509f74b17ce8086ece0a89614",
+      "bytes": 1756,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/controller-terminals.json",
+      "sha256": "962c444e37ca49230ac5e9332fa653a2bdd568fe79d1b276111acc80b08e3cfa",
+      "bytes": 3278,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/evidence/host14.json",
+      "sha256": "fee7951c5d7e617150f541830aa5d589d6571abfb8927b4b7d04597b33d24c4f",
+      "bytes": 2725,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/evidence/main_readonly.json",
+      "sha256": "ed030d8a0ea288e79960e505d1f759791184cebe146155d21418fc0d5353f220",
+      "bytes": 2515,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/evidence/sixns.json",
+      "sha256": "12d87ec548cf05916224bd1fa2621d60469ecc7b82f5c1837f583818a7d1a2bf",
+      "bytes": 1433,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/native-r18-root-manual-review.json",
+      "sha256": "dcfed44d778a97bf46718a6bbc6be0b07de0c9b04a6c659b7658571dddfeb1d4",
+      "bytes": 2971,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/qualification.json",
+      "sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+      "bytes": 4663,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/runner-assembly-result.json",
+      "sha256": "32ce1331206be817eab77b299c033afad859fd40bc065e1d7d9a752c13c1053c",
+      "bytes": 1355,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/source/README.md",
+      "sha256": "0c9404eb8cb311d11f3e192ca6677410c88e30a4ea6beaaec49c50824d0f8844",
+      "bytes": 1524,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/source/held_namespace_entry.rs",
+      "sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c",
+      "bytes": 6653,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/source/held_target.py",
+      "sha256": "7b4fc0de8aa35ea128147139a99fee495ec368c9065b66825038c668dd4f08fd",
+      "bytes": 8214,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/source/run-r3-preimage.py",
+      "sha256": "69e7be92a77e4dc3def4f0602f398b4ea93b68f0b15fdc2a0dd26ec36036f73b",
+      "bytes": 8021,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/source/run-r4.py",
+      "sha256": "c16015f7a51f857d114d92691dbf4ac4d0ccf758c2f99c7c541653ce1957ea62",
+      "bytes": 8711,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/namespace-entry-r4/source/runner-r3-to-r4.patch",
+      "sha256": "23f416367442d496d07e4f09d4bae4af8e842831ce139ccc935dfd6ae9be33bb",
+      "bytes": 4815,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/MANIFEST.json",
+      "sha256": "5fa9ccccc5fc58fda806be1ac7faf8935f269e76e54d5ab50e4e62a4dd2bf80d",
+      "bytes": 77869,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/README.md",
+      "sha256": "23d2bf22006eb8a157468029ba72c25f5db34ac39d9c893b24e2731b1e8a0dc4",
+      "bytes": 4668,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/overlay-gaps.json",
+      "sha256": "04c0585af51b68d001aa78403db32c153d02db6e451b27b2f6eeb717b5c41c41",
+      "bytes": 3654,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/published-reference/cp03-delivery-manifest.json",
+      "sha256": "5b6baa0423e150d583e733470d589b081e4d90b7aa88d46bf87e1760574ed76a",
+      "bytes": 89150,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/published-reference/cp04-next-native-manifest.json",
+      "sha256": "ef3f130567fe06b7d5cf7d3e1e9c74c18e8faee5a5851e4417a1f76132451665",
+      "bytes": 18683,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/published-reference/cp04/probes/r16/actual/kernel_api/berberis/kernel_api/proc_maps_open.h",
+      "sha256": "2fb3a518994aaf1c67a1355ecc8dd27177e28eea8ea89dade7d3c933988260bc",
+      "bytes": 1399,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/published-reference/cp04/probes/r16/actual/kernel_api/proc_maps_open.cc",
+      "sha256": "04abd180090fbe86fddce1e5365067ceaa41dab114da99c32f13c13b54c68a62",
+      "bytes": 3268,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/published-reference/cp04/references/r16/r16-exact-runtime-source-binding.json",
+      "sha256": "584195ecc29fb9dc3ae9ce0973bbc858a59eeaa9c17a3167ded18a091b730ce1",
+      "bytes": 1590,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/published-reference/cp04/references/r16/r16-frozen-artifacts.json",
+      "sha256": "d48450009ff025909b97e87df39ea4596178aa93e5acaa0cc0afa40438ca12a0",
+      "bytes": 2027,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/published-reference/cp04/references/r16/r16-native-build.json",
+      "sha256": "5e9cfde151d08ff42c8e0250bff13cae3f7be644623176c0e60efe7114aa0581",
+      "bytes": 3001,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/published-reference/cp04/references/r16/r16-source-receipt.json",
+      "sha256": "c0ce80f350685ba93459b5ab851153942a2c9e4e7a59a5dabb34bf97ff76dc2d",
+      "bytes": 864,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r16-additional-preimages/kernel_api/arm64/syscall_emulation_arch.cc",
+      "sha256": "70b04d74016efb5cc547d3edbd6f28d9c4718eb60f995af3a13123fa901ba1a3",
+      "bytes": 3087,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r16-additional-preimages/kernel_api/include/berberis/kernel_api/open_emulation.h",
+      "sha256": "55bc42b6b5438423d1a3e9856cde57544ab570f3b66b2489ca297ca377409f8f",
+      "bytes": 2116,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r16-additional-preimages/kernel_api/include/berberis/kernel_api/syscall_emulation_common.h",
+      "sha256": "66bb24fc320ca68fd814b7916ae6e73d87c9a1bd8281a40853eb3ea3a250a234",
+      "bytes": 12553,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r16-additional-preimages/kernel_api/open_emulation.cc",
+      "sha256": "90515622bd3837d34c70b92a122fa77ae119e36237ff2226c1df2e6dbc03543c",
+      "bytes": 17474,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r16-additional-preimages/kernel_api/unistd_emulation.cc",
+      "sha256": "de0398e847a5e1010de27f788d47e19558524f5236fdab34d09088e4ad5e3b88",
+      "bytes": 1747,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/audit/audit.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/audit/audit.stdout",
+      "sha256": "090ff5d8a5836a340e05614b95ed9526a3c4b305eae64f61679899136e2ae57c",
+      "bytes": 3818,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/audit/build-result.json",
+      "sha256": "5d15e154208b97cc03d3432a2156b929f9f7f1787d1b48a240334838dcf7f608",
+      "bytes": 14504,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/audit/receipt.json",
+      "sha256": "2f082862debae528f401e161226f0187cac15168e61419540a1b2bcb7c696f9c",
+      "bytes": 10316,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/audit/root-manual-review.json",
+      "sha256": "dcfed44d778a97bf46718a6bbc6be0b07de0c9b04a6c659b7658571dddfeb1d4",
+      "bytes": 2971,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/audit/start-trampoline-disassembly.txt",
+      "sha256": "6e7573a1b456a7c57354f28946bb05cd393b492df48098b2bda20a8450f90d22",
+      "bytes": 19188,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/audit/worker-audit.json",
+      "sha256": "b126c462be21243725b8a0d4c2173dde1900a7bb46312dbd110a79794279e553",
+      "bytes": 4076,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/audit/worker-relevant-disassembly.txt",
+      "sha256": "279411d710f4faf226fbfc7f9d06c697054fe025a748e9863e653d4cbb2c3573",
+      "bytes": 62022,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/build/build-result.json",
+      "sha256": "5d15e154208b97cc03d3432a2156b929f9f7f1787d1b48a240334838dcf7f608",
+      "bytes": 14504,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/build/coordinator-result.json",
+      "sha256": "4f34dbccb61830a66f5a15401bc59bbe7d82edbe054107bb9a8a4ca4dcdcd080",
+      "bytes": 1153,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/AndroidManifest.xml",
+      "sha256": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+      "bytes": 599,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/CASE_PLAN.json",
+      "sha256": "441886424cc61c86855686a22067282531d64d1b0224985df7d6fdfd43daf7a8",
+      "bytes": 2446,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/SOURCE_PINS.json",
+      "sha256": "73d6277c0924f23d97834bafcd41a246de238f07714ad719cf01524007bf337e",
+      "bytes": 1929,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/actual/berberis/kernel_api/proc_maps_fd_owner.h",
+      "sha256": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+      "bytes": 3884,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/actual/berberis/kernel_api/proc_maps_path.h",
+      "sha256": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+      "bytes": 1314,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/actual/berberis/kernel_api/proc_maps_provenance.h",
+      "sha256": "fe5fc2fb9e2deb5a08d437c331a765bd4eeb2d5d7d01a9b6bcc96dd2c926b884",
+      "bytes": 7542,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h",
+      "sha256": "0be9a6dd88a4a2e6ff569a46cff33fb1a4f4f09ed9e467313ac9a06f85b9eb35",
+      "bytes": 2564,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/actual/proc_maps_fd_owner.cc",
+      "sha256": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+      "bytes": 20933,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/actual/proc_maps_path.cc",
+      "sha256": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+      "bytes": 7026,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/actual/proc_maps_provenance.cc",
+      "sha256": "73a5c2c7b3e2b1c70c6970b7c63bc7ef7568986754efd638550bfb16775bc596",
+      "bytes": 35984,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/actual/proc_maps_raw_metadata_owner.cc",
+      "sha256": "d9d0930bd3e7e863516c28805b954c684a0f832e28a0dac785230e7c92fd984e",
+      "bytes": 22532,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/audit_worker_binary.py",
+      "sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+      "bytes": 5841,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/metadata_raw_cases.cc",
+      "sha256": "e593369934ab023751cde8ec2f94b7f07f08e68f00d396b5c55ff6d1d6348b55",
+      "bytes": 14922,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/owner_probe.cpp",
+      "sha256": "086bdb3ac988eb6dfb9f6f61b08204776a8259360a901e5ef37d5a41feaa9f79",
+      "bytes": 6484,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r18/source/src/local/pocket4/fdownerprobe/ProbeInstrumentation.java",
+      "sha256": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+      "bytes": 1875,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/audit/audit-receipt.json",
+      "sha256": "e84b21ecb155e89651906eb7f2b4399bda82bb332f959b65226b7ced9aa41c5b",
+      "bytes": 3564,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/audit/audit.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/audit/audit.stdout",
+      "sha256": "0b58c36e7efd812c8a6fc0a064e63b02f212d924c9f5ef4494cfd113adc01fa7",
+      "bytes": 3818,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/audit/relevant-disassembly.txt",
+      "sha256": "df592a9a99f952212aee19e940947c50097ad80519e4c67111f25424c90871cd",
+      "bytes": 80597,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/audit/root-manual-review.json",
+      "sha256": "af132bcb4a6850571ae116e564afe2b3bd9dceeded39ee26a635bae252d5d856",
+      "bytes": 3511,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/audit/start-trampoline-exact.txt",
+      "sha256": "997f7cd7cb4d98d9635e687d9eab50843acc0b69e087f2639f18f769f5886503",
+      "bytes": 19187,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/audit/start-trampoline-part-1.txt",
+      "sha256": "a7b28884282e27f0d42b00570bb6c2bad2dbd6a4b76cf4c186eb9c9ae72b67b7",
+      "bytes": 12000,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/audit/start-trampoline-part-2.txt",
+      "sha256": "8a6518bf2472b3af3eed134744a6041aa9540245276dd67e98e88022725e9e49",
+      "bytes": 7187,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/audit/start-trampoline-slice.json",
+      "sha256": "96d7a0880ac21cb49a4e377f9dc644ce75f568036e3862851664b4b056022e5d",
+      "bytes": 1464,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/audit/worker-audit.json",
+      "sha256": "a08de9109c7411a5d889a81460da272523e432684665f13e7bae609b74b8edec",
+      "bytes": 4076,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/build/build-result.json",
+      "sha256": "2215a7baaaa9c0e701bf935d7b72d54d8908f0c26cfe6abfb1cad08b4753b046",
+      "bytes": 14504,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/build/coordinator-result.json",
+      "sha256": "0bb9c93decbda9304d579e414d1a83275468a880f96550ed6674d7064861e1f0",
+      "bytes": 3328,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/host-source-freeze/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/host-source-freeze/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/host-source-freeze/diagnostic-only.patch",
+      "sha256": "d4265a203606329fb998306ee585306abbc62f99ce85a78bfc2b094df8f54634",
+      "bytes": 12313,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/host-source-freeze/host-control.cc",
+      "sha256": "310bc7ab5ef5378b40286220282b131dff6d90615711dc2d88fe3f9365501a46",
+      "bytes": 447,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/host-source-freeze/report.json",
+      "sha256": "13d8ab74d8e68c3a3835bf1cd06002fae925fff536acad2842b088f3d0aa4bef",
+      "bytes": 6733,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/host-source-freeze/run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/host-source-freeze/run.stdout.json",
+      "sha256": "ecce545d351433c2878e106fb80e561cfefcf31548ca7c7ce874975686256fe9",
+      "bytes": 36573,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/AndroidManifest.xml",
+      "sha256": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+      "bytes": 599,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/CASE_PLAN.json",
+      "sha256": "44d0b5720e43552fb61a0d5b8ed86862070becf9b44c78d16b37d0f775a10f18",
+      "bytes": 3020,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/SOURCE_PINS.json",
+      "sha256": "db7fdee71088cce1c2a8efe6ac5ba28c6d49810fcb5d5e0edd17fb8aa2297236",
+      "bytes": 1741,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/actual/berberis/kernel_api/proc_maps_fd_owner.h",
+      "sha256": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+      "bytes": 3884,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/actual/berberis/kernel_api/proc_maps_path.h",
+      "sha256": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+      "bytes": 1314,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/actual/berberis/kernel_api/proc_maps_provenance.h",
+      "sha256": "fe5fc2fb9e2deb5a08d437c331a765bd4eeb2d5d7d01a9b6bcc96dd2c926b884",
+      "bytes": 7542,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h",
+      "sha256": "0be9a6dd88a4a2e6ff569a46cff33fb1a4f4f09ed9e467313ac9a06f85b9eb35",
+      "bytes": 2564,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/actual/proc_maps_fd_owner.cc",
+      "sha256": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+      "bytes": 20933,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/actual/proc_maps_path.cc",
+      "sha256": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+      "bytes": 7026,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/actual/proc_maps_provenance.cc",
+      "sha256": "73a5c2c7b3e2b1c70c6970b7c63bc7ef7568986754efd638550bfb16775bc596",
+      "bytes": 35984,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/actual/proc_maps_raw_metadata_owner.cc",
+      "sha256": "d9d0930bd3e7e863516c28805b954c684a0f832e28a0dac785230e7c92fd984e",
+      "bytes": 22532,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/audit_worker_binary.py",
+      "sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+      "bytes": 5841,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/metadata_raw_cases.cc",
+      "sha256": "2799e1fd9917e6377ec04e67ca7d56c1036a3821f7678765553af494430e59ee",
+      "bytes": 16828,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/owner_probe.cpp",
+      "sha256": "3ee1b305e48479026e9a5b02f0289e9632879000f2527b6eb98c8a4929dcc583",
+      "bytes": 10788,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r19/source/src/local/pocket4/fdownerprobe/ProbeInstrumentation.java",
+      "sha256": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+      "bytes": 1875,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/audit-receipt.json",
+      "sha256": "4db3d1736597844dfeccf09646591db92201dece70b2231d769ac8f2b08cee33",
+      "bytes": 3662,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/audit.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/audit.stdout",
+      "sha256": "1ef2759cd863cdd833bdfd8502a2fa5f4d61235109d862a3d12dccb482ba6ba9",
+      "bytes": 3818,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/entry-read-slices.json",
+      "sha256": "f9048a7947ca224beb02dc8ca9170e9475c886325dd4a12bb6c507f34d75cb74",
+      "bytes": 1253,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/read-publication-exact-part-1.txt",
+      "sha256": "0e0449599cfc00fbfd6666d1d4d5484ac072c29c09dba25b79d4bfd6209d6255",
+      "bytes": 12000,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/read-publication-exact-part-2.txt",
+      "sha256": "2408e5a93fd99de372b0603125753b57fbe263794f145babf381454a8a0869f0",
+      "bytes": 7666,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/read-publication-exact.txt",
+      "sha256": "74289dbfb77c1f8439b7c2baeaa194c8a768b775bd9f8a975441f8315d01e2cd",
+      "bytes": 19666,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/relevant-disassembly.txt",
+      "sha256": "36969ca1dfa4fdad331be7dea1735dc4d3f9f1aa361b0018fe61c4e7a0b73bf4",
+      "bytes": 80597,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/start-trampoline-exact-part-1.txt",
+      "sha256": "bb03ade3927570a73c56a1c2b6dcaab6143dc0468cb010a696f0319a6d6f7b94",
+      "bytes": 12000,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/start-trampoline-exact-part-2.txt",
+      "sha256": "c2cd00c52601e7cabfdada79f9d6f06900c3e997f4fb4d9dff6e84dde00e5384",
+      "bytes": 7188,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/start-trampoline-exact.txt",
+      "sha256": "f8bc000748d1f25fd43e31275fb4f4f934d699acfe485424dbcb312f105acec3",
+      "bytes": 19188,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/audit/worker-audit.json",
+      "sha256": "74256faa7106d0ad05d750aa16ceb7012e6d78ea5a6c0afcb36e1d6fa7d9eecc",
+      "bytes": 4076,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/build/build-result.json",
+      "sha256": "09a8a5ab25c897405b70bebdeb6c75c98d94ec9124365fdb51956b35df96db43",
+      "bytes": 14504,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/build/coordinator-result.json",
+      "sha256": "a048e12502d6ad43b7bb43b611123ac0a357cefb81e1e37a1aafc4fba5d53863",
+      "bytes": 3444,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-source-freeze/baseline-bionic-compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-source-freeze/baseline-bionic-compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-source-freeze/baseline-bionic-run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-source-freeze/baseline-bionic-run.stdout",
+      "sha256": "2d8b3b1314ae172eecc25813048a9da546984a0a834037f2555959a506ca6850",
+      "bytes": 36613,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-source-freeze/bionic-host-control.cc",
+      "sha256": "99862d322f8c2fc59f642bace2bc2e4238aea4da7d403f9eee06315a4d566ee8",
+      "bytes": 1366,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-source-freeze/bionic-statfs-boundary.patch",
+      "sha256": "c177db8704754ecc47bfba83293f255862e6e36df5bb6d36053964bd5c6f0344",
+      "bytes": 700,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-source-freeze/host-control.cc",
+      "sha256": "310bc7ab5ef5378b40286220282b131dff6d90615711dc2d88fe3f9365501a46",
+      "bytes": 447,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-source-freeze/report.json",
+      "sha256": "2ef6045857c90a08dd07a18e9f6a2ef2ab7b1b3d7b8ccd59f484f3d5e71a9da4",
+      "bytes": 4261,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-source-freeze/source-delta.patch",
+      "sha256": "55220197b64a9d6cffd2544a52f0a42d94fd1868bce4db89ba5022e23f8ec85b",
+      "bytes": 4780,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-validation-attempt-02/draft_source_pins.json",
+      "sha256": "437c21503fd1c930ed2557f6cc7d9a74938bc38320ec40d8459eef7684c66a67",
+      "bytes": 2090,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-validation-attempt-02/fixed-bionic-compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-validation-attempt-02/fixed-bionic-compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-validation-attempt-02/fixed-bionic-run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-validation-attempt-02/fixed-bionic-run.stdout",
+      "sha256": "f437f0c6c220f97b533c2287a0c6d29db062bc0ec297ec0504c71e5a71ed20f6",
+      "bytes": 36560,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-validation-attempt-02/fixed-glibc-compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-validation-attempt-02/fixed-glibc-compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-validation-attempt-02/fixed-glibc-run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-validation-attempt-02/fixed-glibc-run.stdout",
+      "sha256": "8631155a2288fdce49714ecd099f022ccbc073ab8c03394dc306e1b070329546",
+      "bytes": 36580,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/host-validation-attempt-02/report.json",
+      "sha256": "85dea2d739305e3602d9e2c247dcac1791272b60a43da04dfafa1aeea2f4b106",
+      "bytes": 9601,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/peer-review-host-libc-only.json",
+      "sha256": "8e04285d89f15e9ffbb67cc54c331db275f9c2614c0bdd540f08baf2e268a942",
+      "bytes": 1242,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/reference/sys_statfs.cpp",
+      "sha256": "6c5bcca8eaa973bb826a0f2892f1de1ae019f10e743cc626929d51a790e0b2c7",
+      "bytes": 1825,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/AndroidManifest.xml",
+      "sha256": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+      "bytes": 599,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/CASE_PLAN.json",
+      "sha256": "f8cbfbf1f53a45a8cc0a76314b4d734b9aaec43fc309d3411967c0aacad89e92",
+      "bytes": 4064,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/SOURCE_PINS.json",
+      "sha256": "6e6c806a9560b34435a937ae8d9dab241f3139f63106f93da108b06dc0584cbb",
+      "bytes": 2194,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/actual/berberis/kernel_api/proc_maps_fd_owner.h",
+      "sha256": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+      "bytes": 3884,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/actual/berberis/kernel_api/proc_maps_path.h",
+      "sha256": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+      "bytes": 1314,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/actual/berberis/kernel_api/proc_maps_provenance.h",
+      "sha256": "fe5fc2fb9e2deb5a08d437c331a765bd4eeb2d5d7d01a9b6bcc96dd2c926b884",
+      "bytes": 7542,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h",
+      "sha256": "0be9a6dd88a4a2e6ff569a46cff33fb1a4f4f09ed9e467313ac9a06f85b9eb35",
+      "bytes": 2564,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/actual/proc_maps_fd_owner.cc",
+      "sha256": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+      "bytes": 20933,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/actual/proc_maps_path.cc",
+      "sha256": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+      "bytes": 7026,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/actual/proc_maps_provenance.cc",
+      "sha256": "73a5c2c7b3e2b1c70c6970b7c63bc7ef7568986754efd638550bfb16775bc596",
+      "bytes": 35984,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/actual/proc_maps_raw_metadata_owner.cc",
+      "sha256": "8a5812793ec5b569ef03d7a159871d74e27baccaf17d3e8fe6c9998e348e28a8",
+      "bytes": 22904,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/audit_worker_binary.py",
+      "sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+      "bytes": 5841,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/metadata_raw_cases.cc",
+      "sha256": "2799e1fd9917e6377ec04e67ca7d56c1036a3821f7678765553af494430e59ee",
+      "bytes": 16828,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/owner_probe.cpp",
+      "sha256": "fecc54e5af3c2318ee2469b140a98ba088f0e504e6c284d527eb36a2cfddbda1",
+      "bytes": 10802,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r20/source/src/local/pocket4/fdownerprobe/ProbeInstrumentation.java",
+      "sha256": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+      "bytes": 1875,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/art-bridge-candidate-0.stderr",
+      "sha256": "831ca5ef2487e2a2480de93b2ca82ec39090634e5ad59d55e537f1edfe1bdbb0",
+      "bytes": 280,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/art-bridge-candidate-0.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/art-bridge-candidate-1.stderr",
+      "sha256": "831ca5ef2487e2a2480de93b2ca82ec39090634e5ad59d55e537f1edfe1bdbb0",
+      "bytes": 280,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/art-bridge-candidate-1.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/art-bridge-preimage.stderr",
+      "sha256": "ff7283c7c2d955c43dd17c84c7f411f786a6593a9f18bcf02d4250293957a690",
+      "bytes": 274,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/art-bridge-preimage.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/dispatcher-candidate-0.stderr",
+      "sha256": "fc582bf3ab42dbd4149cd958957670f86006d6f6f438fea895e1d7868aac0b69",
+      "bytes": 711,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/dispatcher-candidate-0.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/dispatcher-candidate-1.stderr",
+      "sha256": "fc582bf3ab42dbd4149cd958957670f86006d6f6f438fea895e1d7868aac0b69",
+      "bytes": 711,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/dispatcher-candidate-1.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/dispatcher-preimage.stderr",
+      "sha256": "1b2c7ec6cc662d4b3c134ea5ab9d002b114f758a8f010332f49e1199601c09a6",
+      "bytes": 680,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/dispatcher-preimage.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/exec-candidate-0.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/exec-candidate-0.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/exec-candidate-1.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/exec-candidate-1.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/exec-preimage.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/exec-preimage.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/android-tu-attempt02/report.json",
+      "sha256": "c350cb7822419c9590b15585032f278d90803f0a962b9a890d4c11eaf823dab0",
+      "bytes": 36243,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/cap-diagnostic-01/compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/cap-diagnostic-01/compile.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/cap-diagnostic-01/diagnostic.cc",
+      "sha256": "12a2d14f51b60b7667209527356bd919a7565d3a4eaf1306aeec63ee7ca02f68",
+      "bytes": 4166,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/cap-diagnostic-01/report.json",
+      "sha256": "127389cf30a3df9ae89f912b7a6156032fb9638352ef70d216a21cb924a0fa37",
+      "bytes": 1225,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/cap-diagnostic-01/run.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/cap-diagnostic-01/run.stdout",
+      "sha256": "7395a99f70e41d1d0a54396f37110e7d405335416861f0f1f9ab558fd0cca528",
+      "bytes": 823,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/engine-generation-delta-complete.patch",
+      "sha256": "117705e253e2bca833969cdedd3e0941fb30e2c66ba847b99f3b3216003fdb4c",
+      "bytes": 17412,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/evidence/compile-engine-disabled.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/evidence/compile-engine-disabled.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/evidence/compile-engine-enabled.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/evidence/compile-engine-enabled.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/evidence/compile-old-engine.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/evidence/compile-old-engine.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/evidence/compile-platform-control.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/evidence/compile-platform-control.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/evidence/host-controls.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/evidence/host-controls.stdout",
+      "sha256": "ef4fca097da7854bea6a135a922d401b3966c22c838d9564987dbbb4f15117a8",
+      "bytes": 2596,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/generation_host_control.cc",
+      "sha256": "7d3c818f4855cb33c9aa1d94274321639fbffafb21b3361e257ba2fd9e8d835e",
+      "bytes": 8206,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision01/report.json",
+      "sha256": "1d12cf88a93d4b6ada306eefb9f2608b83e9d6dc420904c8c33b77a25f4a2fbd",
+      "bytes": 12647,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/audit-worker.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/audit-worker.stdout",
+      "sha256": "de9b53bfe1f7f85ed3a7488b2363f7ce737e7be74be46fd1fbef3f873ce267a7",
+      "bytes": 4797,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/compile-engine-disabled.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/compile-engine-disabled.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/compile-engine-enabled.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/compile-engine-enabled.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/compile-old-engine.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/compile-old-engine.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/compile-platform-control.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/compile-platform-control.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/host-controls.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/host-controls.stdout",
+      "sha256": "ce04caac18479cccff9ad445fb01f854939b904436db9cea9f15d1d818638945",
+      "bytes": 2796,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/host-worker-audit.disassembly.txt",
+      "sha256": "eb52052bf80ca86587525bb681221d1df043c2f8d939a2294f2435be6e4f7e73",
+      "bytes": 127219,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/evidence/host-worker-audit.json",
+      "sha256": "0aa11540a514cc282c16424201610af4a94d5ca0a6096ae817742560809a870c",
+      "bytes": 5151,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/generation_host_control.cc",
+      "sha256": "afff6a6eefff7f95ec2f6edc9a867618e7ea15f0da98962468af58b7f31d7121",
+      "bytes": 8918,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/host-revision02/report.json",
+      "sha256": "8fd51586e746ce4c17f4ff008332a0168aa1398942e953c48904cb0a10522acc",
+      "bytes": 10346,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/platform-generation-delta-complete.patch",
+      "sha256": "f5931a49d49aeb439ec21e51967a3fc3c6724ee94f2ed7785e79edbe1cd94713",
+      "bytes": 11219,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/preimages/revision03/engine/kernel_api/arm64/syscall_emulation.cc",
+      "sha256": "5dd20992b4db8df4131ac088b08fad2e38acd2665121cff3c65f57bb2bc197e5",
+      "bytes": 14529,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/preimages/root/engine/guest_os_primitives/guest_thread_clone.cc",
+      "sha256": "e286a2e54eebf0e8a65f3f64c90ac56ec72ecba0838a454db6f7c24f5ffcd3e4",
+      "bytes": 8201,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/preimages/root/engine/kernel_api/exec_emulation.cc",
+      "sha256": "71a1b7311be877d4420204d48ff37ce5b8082d8a50cd52d7b8982912bea40b7a",
+      "bytes": 3174,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/preimages/root/engine/native_bridge/native_bridge.cc",
+      "sha256": "07a73332ad90aaf787543c73ad7dbc867d681f8f6b8b109f06546ecbea9ae0ed",
+      "bytes": 36056,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/preimages/root/platform/art/libnativebridge/include/nativebridge/native_bridge.h",
+      "sha256": "81df946fd09fbe2fd0f2f62fa468ff2644c94402d2bec4448730d2cb5e8a4847",
+      "bytes": 20631,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/preimages/root/platform/art/libnativebridge/libnativebridge.map.txt",
+      "sha256": "042f46700b00252dda6423b5833c7601a4d420e13feb9feefed004ee0fde2203",
+      "bytes": 1012,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/preimages/root/platform/art/libnativebridge/native_bridge.cc",
+      "sha256": "88664f8af6dbc4c16210b4d286fd855f2dc36c7e88ab438c7424072cc4b195a2",
+      "bytes": 22550,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/preimages/root/platform/art/runtime/native_bridge_art_interface.cc",
+      "sha256": "d555f5bfa7c01820fe75ec3150981a0eace739cf5e14d3e8b6742bbed3fc21ae",
+      "bytes": 5114,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/art-nativebridge-candidate-0.stderr",
+      "sha256": "bfe3aab12d0c1ce61850342dcc8c50efa2b7f92b96b56b4f4a65756dd54ec6f6",
+      "bytes": 492,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/art-nativebridge-candidate-0.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/art-nativebridge-candidate-1.stderr",
+      "sha256": "bfe3aab12d0c1ce61850342dcc8c50efa2b7f92b96b56b4f4a65756dd54ec6f6",
+      "bytes": 492,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/art-nativebridge-candidate-1.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/dispatcher-candidate-0.stderr",
+      "sha256": "67167c399b73dceabb4f4daacc00f0b5cbd5f82553b224526e9aa7b9ef166a0e",
+      "bytes": 453,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/dispatcher-candidate-0.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/dispatcher-candidate-1.stderr",
+      "sha256": "67167c399b73dceabb4f4daacc00f0b5cbd5f82553b224526e9aa7b9ef166a0e",
+      "bytes": 453,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/dispatcher-candidate-1.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/dispatcher-preimage.stderr",
+      "sha256": "7a613cb68bcd6d48800ea0b47ef225e9c1165d44717c464fdbb9fa5acd394932",
+      "bytes": 422,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/dispatcher-preimage.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/exec-candidate-0.stderr",
+      "sha256": "e8f419c8399d9d127a272cc2abdf69b392dfec5f0e1d8e3b7d797386a57cd4e8",
+      "bytes": 1154,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/exec-candidate-0.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/exec-candidate-1.stderr",
+      "sha256": "e8f419c8399d9d127a272cc2abdf69b392dfec5f0e1d8e3b7d797386a57cd4e8",
+      "bytes": 1154,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/exec-candidate-1.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/exec-preimage.stderr",
+      "sha256": "8c28f09c1f09407535929c3117d2f6b17e6afee586c1ae49f1f467df57281b32",
+      "bytes": 1123,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/evidence/exec-preimage.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/revision03/report.json",
+      "sha256": "31d61cc19a2e995fb7533f60b79cbd39e16df5d2896c2e3e1a05648eba222eea",
+      "bytes": 31392,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/guest_os_primitives/Android.bp",
+      "sha256": "85d9214ba731584627fbd48969cfd382ae8996700881b16cfa9be2e3b319c3f1",
+      "bytes": 10039,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/guest_os_primitives/guest_thread_clone.cc",
+      "sha256": "b31cea6a61691d94a2389d217355b0e19d9e724f039083e2b7903fe6d284b6b9",
+      "bytes": 8585,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/Android.bp",
+      "sha256": "b202597a1b13691a339fa3395dc480e58f52de4daaeaab4277831d20ba06821c",
+      "bytes": 6699,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/arm64/syscall_emulation.cc",
+      "sha256": "d80f455e2cd2b03937fa4180628ba49005943528c5a15d63a507e64bdfac3348",
+      "bytes": 15059,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/exec_emulation.cc",
+      "sha256": "588b6acd73ea7dce10873860626f45cddd192ceff08e14e9375c8d894229534e",
+      "bytes": 3591,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h",
+      "sha256": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+      "bytes": 3884,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/include/berberis/kernel_api/proc_maps_generation.h",
+      "sha256": "c3230c03864d196459fe605109d3b651edf1f0c439af16616192baef4cbdbe2a",
+      "bytes": 1154,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/include/berberis/kernel_api/proc_maps_generation_protocol.h",
+      "sha256": "dff5201412d022cfedf99ece3334115b5a67dccd6d95b37786f875023e180624",
+      "bytes": 1110,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/include/berberis/kernel_api/proc_maps_path.h",
+      "sha256": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+      "bytes": 1314,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/include/berberis/kernel_api/proc_maps_provenance.h",
+      "sha256": "fe5fc2fb9e2deb5a08d437c331a765bd4eeb2d5d7d01a9b6bcc96dd2c926b884",
+      "bytes": 7542,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/include/berberis/kernel_api/proc_maps_raw_metadata_owner.h",
+      "sha256": "0be9a6dd88a4a2e6ff569a46cff33fb1a4f4f09ed9e467313ac9a06f85b9eb35",
+      "bytes": 2564,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/proc_maps_fd_owner.cc",
+      "sha256": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+      "bytes": 20933,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/proc_maps_generation.cc",
+      "sha256": "dc50268c7bde589818cf7a52a2bb93123569ee3952175a19f5b68e71bda021b0",
+      "bytes": 9016,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/proc_maps_path.cc",
+      "sha256": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+      "bytes": 7026,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/proc_maps_provenance.cc",
+      "sha256": "73a5c2c7b3e2b1c70c6970b7c63bc7ef7568986754efd638550bfb16775bc596",
+      "bytes": 35984,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/kernel_api/proc_maps_raw_metadata_owner.cc",
+      "sha256": "d9d0930bd3e7e863516c28805b954c684a0f832e28a0dac785230e7c92fd984e",
+      "bytes": 22532,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/native_bridge/Android.bp",
+      "sha256": "0e64166163f7dbc7094a6fcc634aeca631ed73c5caf9a019939c5a322fbbf410",
+      "bytes": 3517,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/engine/native_bridge/native_bridge.cc",
+      "sha256": "f7fb8d4824ab26cca6bea81ed46383e454068594c499edf71ef88756880e7ea3",
+      "bytes": 36362,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/platform/art/libnativebridge/Android.bp",
+      "sha256": "6760ba7590f6966158e6456efd3388aadd2d37b2aac2aa7465e06ae1f08e44fb",
+      "bytes": 2706,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/platform/art/libnativebridge/droidloom_generation.cc",
+      "sha256": "d1debfcde191a0253994130cb9ba77ad813670ccf3dd8bcc886530b21ad98b67",
+      "bytes": 2462,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/platform/art/libnativebridge/droidloom_generation.h",
+      "sha256": "28facfdf31818b2dd7e4f08b3ca0359dae0e5fdb2f5b243dc7455ac3edd966fe",
+      "bytes": 410,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/platform/art/libnativebridge/include/nativebridge/droidloom_generation_protocol.h",
+      "sha256": "dff5201412d022cfedf99ece3334115b5a67dccd6d95b37786f875023e180624",
+      "bytes": 1110,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/platform/art/libnativebridge/include/nativebridge/native_bridge.h",
+      "sha256": "664dd6ed2a71d90f4bc3f84ab621d7ebbdedc148284c452d6ca2f8e8d9888760",
+      "bytes": 20874,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/platform/art/libnativebridge/libnativebridge.map.txt",
+      "sha256": "5b64217bcc16eba7083942783b920da59de9e16255ba5a3adb92e8ce7428de31",
+      "bytes": 1062,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/platform/art/libnativebridge/native_bridge.cc",
+      "sha256": "4fc33d917915886fccabaf76dbf7a6bee949cf08cd6b8ac9be429dc8614706a4",
+      "bytes": 24851,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/platform/art/runtime/native_bridge_art_interface.cc",
+      "sha256": "228f09d60bbcf1f82520ecfea2a6532f7bd66d6fb451d8a86c1ee75ccc08bc41",
+      "bytes": 5919,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/tests/audit_worker_binary.py",
+      "sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+      "bytes": 5841,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/tests/generation_host_control.cc",
+      "sha256": "afff6a6eefff7f95ec2f6edc9a867618e7ea15f0da98962468af58b7f31d7121",
+      "bytes": 8918,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/tests/old_engine.cc",
+      "sha256": "e6926c03d6d802c048953d7480325586954ee976e0c9924cfa0e31e5ac092e45",
+      "bytes": 43,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/r8/source/tests/test_adapter.cc",
+      "sha256": "5b484a582d2a3724ed2a573c1b9a82b28ef73b24b5740a318bbd34691a873ef1",
+      "bytes": 843,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/cargo-test.stderr",
+      "sha256": "085f3eae510fdcde91fea476b94ce417785460caebe0f12ef8181c6a0ece7b26",
+      "bytes": 9148,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/cargo-test.stdout",
+      "sha256": "c607fd65671e968d2928bfd07acbeb6d73c36192f402c386159d20dc3b83d2d4",
+      "bytes": 2393,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/native-generation-pair.patch",
+      "sha256": "a0cd9b93c39b0f8d867bc5387b880bf8342d3c032d72cc8b4f9dfe8fee5d4671",
+      "bytes": 20355,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/preimage-manifest.json",
+      "sha256": "1f21a1e1d69113ad9ff440a92fa3277ea004f909765f39624b70c253f658a5b5",
+      "bytes": 47363,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/preimages/tools/droidloom-update/Cargo.toml",
+      "sha256": "37b7d95f831bcd75902bf728fba7231e515bbe042066129c72712c9787bd8e05",
+      "bytes": 443,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/preimages/tools/droidloom-update/src/bundle.rs",
+      "sha256": "346af8f7abc8c242c79d47094116408d4f970d8108d58d88fa47c1d5021b446d",
+      "bytes": 14471,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/preimages/tools/droidloom-update/src/image_policy.rs",
+      "sha256": "89b67df01bb4ff320738df527af4a654a27cb29dd493a21e2d71aa48880af4bd",
+      "bytes": 10435,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/preimages/tools/droidloom-update/src/main.rs",
+      "sha256": "7a17d5b3fbf067efad68022595009a59b381041c769b85c9c36b967ea635ff61",
+      "bytes": 17860,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/preimages/tools/droidloom-update/src/native_bridge.rs",
+      "sha256": "1e2489c3fc2e579cee1bdbbf2557fe6483b5720a854d2e5e4b55dccf76e0405d",
+      "bytes": 37579,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/preimages/tools/droidloom-update/src/util.rs",
+      "sha256": "ac8e63e0355d8f2b98c2bf4bc12fd6fbfc295ae3244bb51816c394189440d969",
+      "bytes": 7802,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/report.json",
+      "sha256": "d1d7ff01ea40fb3c58f16e5a1b9293e403fc7fdda31042a9edc18160dc90bfaf",
+      "bytes": 12475,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/source/tools/droidloom-update/src/bundle.rs",
+      "sha256": "3ee0ec4c91a4b24e0886577760b441e3dd0f8ddd0d8811f90044cf7f8d07e868",
+      "bytes": 14523,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/source/tools/droidloom-update/src/main.rs",
+      "sha256": "15a9573f5c5fc8f596a8629bf6de51e5050b64c84ba6e19b129c5873bfe2445f",
+      "bytes": 17883,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/source/tools/droidloom-update/src/native_bridge.rs",
+      "sha256": "dbdc2047120c3ce607a3127ac261c4ffd9218c09acd5f490f835fae3b79827e0",
+      "bytes": 37984,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-repair/updater/source/tools/droidloom-update/src/native_generation.rs",
+      "sha256": "2419d4fa5df7e97d22399470a6a33f1c65b5954870e88dc636dbee3b8513cf6c",
+      "bytes": 18522,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/controller-terminal.json",
+      "sha256": "1de42f3f747f8719c910a6e7948aa290bbff3c3a8199bee6ed615364b9812824",
+      "bytes": 734,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/01-install-coordinator.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/01-install-coordinator.stdout",
+      "sha256": "3a5e0086149ab9a2b413aa9da2a27b806de9373ad42b91850a09e53ef261ccf3",
+      "bytes": 2155,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/01-install/result.json",
+      "sha256": "94222aed4778cc9ea7001273b06b53e12667c145817b3a4ce527a00e7a234b5c",
+      "bytes": 2767,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/02-run-coordinator.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/02-run-coordinator.stdout",
+      "sha256": "2f5702d3f0b76d014337430079cff27d0fa730a19a5f8254ded36a39252454ae",
+      "bytes": 14800,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/02-run/instrument.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/02-run/instrument.stdout",
+      "sha256": "4a98594bb622c53501d47cf3d12068e170537158a0d9418793512179a7b98c03",
+      "bytes": 11124,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/02-run/result.json",
+      "sha256": "bbfade47d28da0f4c312e9e552bf9195bd5e9f28316cad12def6b356eec70531",
+      "bytes": 15478,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/03-remove-coordinator.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/03-remove-coordinator.stdout",
+      "sha256": "957f36602089ad4400aa076a2d99775267888c3b758c147b5182f302dc1b8fc9",
+      "bytes": 2446,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/03-remove/result.json",
+      "sha256": "293e9bc48dce6b4b04ae26060ec05e5c70103fbd2c73916bd2357ddc9551279d",
+      "bytes": 3106,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/coordinator-claim.json",
+      "sha256": "4c0e88a564cb62653db1b16af3081186e362ecb245646a938cbb5e7d0c67815e",
+      "bytes": 683,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/coordinator-result.json",
+      "sha256": "b21a1263b7cc7d399aad74261797548abf2dd748ff703bf118cbda8ac69f9c4d",
+      "bytes": 25026,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/evidence/install-verified.json",
+      "sha256": "cf624d00bbf74c5d762c92e91a81e90bf82743e64a4a4cefd637c36b77d5a6f6",
+      "bytes": 2699,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/summary.json",
+      "sha256": "f996896e89b7a8e11c984c3e7fd7a77c69f777021d83a04acc5282645af8a45c",
+      "bytes": 6024,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/tooling/controller-admission.json",
+      "sha256": "ccc6c921cb9e8fcaea65735c2094683430ba130ef258bd12a5c3d743dfd4b436",
+      "bytes": 1248,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r18/tooling/coordinator-once.py",
+      "sha256": "c51a5e9a676f381b59fc6ef9dd5d9b7acb50f86d899fc46fa797619217639678",
+      "bytes": 4811,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/controller-terminal.json",
+      "sha256": "d584576db0dbf12c5205dc0e83093c4ec2afde30310a54234c9ce45ef184a10a",
+      "bytes": 734,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/01-install-coordinator.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/01-install-coordinator.stdout",
+      "sha256": "e7956b80c42845be0d8695d8c1605eccdbd06edd27f456e58c41dff4385b97aa",
+      "bytes": 2155,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/01-install/result.json",
+      "sha256": "e24b8d09753bc069204b1156391149cdffa0ee260cf10ccda92c9946cb01114a",
+      "bytes": 2767,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/02-run-coordinator.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/02-run-coordinator.stdout",
+      "sha256": "7bf3c1ecfa82a0ed9f0afe417dbfed20da7878d5c8ce5be6e1017751fd0cad6e",
+      "bytes": 42046,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/02-run/instrument.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/02-run/instrument.stdout",
+      "sha256": "ba36da4336bd82d2e6344ca0a5f19ec434c4654b0a8b013bf38f0bc749ee988b",
+      "bytes": 37010,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/02-run/result.json",
+      "sha256": "493a33f97e17f8d55f2349d38149a32043a440b691e6179c5366cf638ab741d7",
+      "bytes": 42724,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/03-remove-coordinator.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/03-remove-coordinator.stdout",
+      "sha256": "541484f625a6f3d542abd4a954268ec6243a2ace033204c0bdf958cd64f132b1",
+      "bytes": 2446,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/03-remove/result.json",
+      "sha256": "f982d15624881cea78fb59e23bf0785d6c28ec861af86d5f41ab12e1e91c09f6",
+      "bytes": 3106,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/coordinator-claim.json",
+      "sha256": "bbbb10b94b3a5c35c135f7ed0f2b1753a53ce97a4cc46d41fe882c564db63fcf",
+      "bytes": 671,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/coordinator-result.json",
+      "sha256": "aa1c064ef1079d88fb6e525c316b9d56920dd1000c72f8e778d9579666bdfced",
+      "bytes": 52276,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/evidence/install-verified.json",
+      "sha256": "e1846c50be04d1f7073d6ffcd006b18fd59db4cd5d9e97c8a11a72d6e1a9e683",
+      "bytes": 2699,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/root-review/root-manual-review.json",
+      "sha256": "af132bcb4a6850571ae116e564afe2b3bd9dceeded39ee26a635bae252d5d856",
+      "bytes": 3511,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/root-review/start-entry-root-extract.txt",
+      "sha256": "508b9e07d512e4469f1da1cf1139c4c2ea8a2384fc7f85683c30ff4c6375edaf",
+      "bytes": 19188,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/summary.json",
+      "sha256": "90c9d1f5d9d16415994add043ae385c61e298a7754544630a079a46f35b067ee",
+      "bytes": 10679,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/tooling/controller-admission.json",
+      "sha256": "de7040db25029d64ec0af41824402786d45c82316f584ecbdf87f1fe984e8217",
+      "bytes": 1020,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r19/tooling/coordinator-once.py",
+      "sha256": "305092412d3a6b2fbca0b7ae124b1511aab521ada3ce3bfcb27ea16edea4d1cc",
+      "bytes": 5937,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/controller-terminal.json",
+      "sha256": "79922487719a1f66f2d8ab7e44661b864147830b4ada5badbf2b9546dfdaeb07",
+      "bytes": 734,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/01-install-coordinator.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/01-install-coordinator.stdout",
+      "sha256": "9e8d2e8eb4f0c91b258315e4dc7b56eb5067d5d926252127e39c8763e337dad0",
+      "bytes": 2155,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/01-install/result.json",
+      "sha256": "b81baa0cb08e5c3dab13ccfc50fa60bebffc7eceab485a85fb4408e0f73e6494",
+      "bytes": 2767,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/02-run-coordinator.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/02-run-coordinator.stdout",
+      "sha256": "73a8caf09a6e6fdae74a58b6fd1c2cbf8b27c94f3ad7712652ab69e857e96ca0",
+      "bytes": 41963,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/02-run/instrument.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/02-run/instrument.stdout",
+      "sha256": "2e3b30521ef785d3459753d0ef6f84926a0a9aba1179fc14a1fbf99c84594724",
+      "bytes": 36925,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/02-run/result.json",
+      "sha256": "ca1e986b52998e4d17bdc502ba164cc1bf917b46ac3fb013889a78ad3ed305f3",
+      "bytes": 42641,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/03-remove-coordinator.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/03-remove-coordinator.stdout",
+      "sha256": "7fa064360b84e46b6f89c041793a208de413d6ba92c83a7be9d7e2b010c46add",
+      "bytes": 2446,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/03-remove/result.json",
+      "sha256": "1c12957d032acdbfb2905acdd6b5ffe52e2d89c84e6fb54082a92d5d4fe74c15",
+      "bytes": 3106,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/coordinator-claim.json",
+      "sha256": "a581a3f95e15f5cbfaaa775d4740c7019daab840351643699439fd8cba0e2b56",
+      "bytes": 696,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/coordinator-result.json",
+      "sha256": "67a70a0ea1c50f2f622081376b9045874ad8d911afc17a69bc443fccb38861ca",
+      "bytes": 52195,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/evidence/install-verified.json",
+      "sha256": "fd025b478444d9a753d974832c26d118600e793a269e7f190d07b9d91b544f20",
+      "bytes": 2699,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/root-review/actual-source-and-elf-read.json",
+      "sha256": "ec56180d572df6db5247e6dc794f56a3108b23d4f5639bb407bbc07e315d966a",
+      "bytes": 17558,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/root-review/root-manual-review.json",
+      "sha256": "b174dd5085b7f591e2bec7a377f4c3d4404e13f0dc4fa190073a405aa6c8866a",
+      "bytes": 3675,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/summary.json",
+      "sha256": "b20e61c513393be5b3de1b9c86be1c155a6207b060e2f041017dcd9acc43fd62",
+      "bytes": 23668,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/tooling/controller-admission.json",
+      "sha256": "4752475257b0bb5ae8c9228781997161e38deb825671c571cacef9e89ac1034e",
+      "bytes": 1021,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/native-runtime-r20/tooling/coordinator-once.py",
+      "sha256": "5df808dd1b963a47f994b2be3159eed35ddc2a68ba6ea8ca58bf01f08acde07a",
+      "bytes": 6643,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/previous-delivery-manifest.json",
+      "sha256": "e0c58ef49a0c23e44e0f954cff6b5521aa139a3d0770d51ce87092726a4c6d71",
+      "bytes": 177715,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/admission-loader.result.json",
+      "sha256": "d5e888655cc3dbe6a829fe375a120c48a875decfbbce91042d04d1608f736a3a",
+      "bytes": 2141,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/admission-loader.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/admission-loader.stdout.json",
+      "sha256": "4b28945a0f6345af5de371682deb06ec4276759683175c6cd2cf6adb10394ee0",
+      "bytes": 4859,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/authoritative-terminal.json",
+      "sha256": "034b403f81cf3c749d650ddbb36f2bfc32feea5f4f3d76491db1eaeac95461d5",
+      "bytes": 1448,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/owned-host-r4.result.json",
+      "sha256": "d56e6809f96f1ae7c0d5d08d32111e67beda850ef7e035ab1b13abe43bdfebfc",
+      "bytes": 1859,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/owned-host-r4.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/owned-host-r4.stdout.json",
+      "sha256": "60e283200cafb4485911eba6f8154b14a753257a9d7933f8d6b35c79013b828f",
+      "bytes": 10124,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/prepare-external-gates.result.json",
+      "sha256": "7b09316b7c99e2b092f52011ec60a520bdc192ee830b96bbf9e0e60f129ef6c5",
+      "bytes": 2094,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/prepare-external-gates.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/prepare-external-gates.stdout.json",
+      "sha256": "54be187b421680f0f45998ada8f4aab2fbb7dc6950bc826c0d987d8089ea2a54",
+      "bytes": 2718,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/result.json",
+      "sha256": "42b32e1dc5a51a54947853be1d8940b17cd0e4f051ab08bde3b0a04980e9bf86",
+      "bytes": 10724,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/retained-ast.result.json",
+      "sha256": "ec7b7a7acb88ba5b720ad80c9e275f9d310e998177875a53767bfc30106c3732",
+      "bytes": 1866,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/retained-ast.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/retained-ast.stdout.json",
+      "sha256": "ce92ee22c2cc19b68bfb7897ce606ea06ade491d2a95f3102032a415db81a1bc",
+      "bytes": 938,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/finalization/runtime-r4.patch",
+      "sha256": "ab720988f26e057a215778ca3fe65c61736fa905a15b57a4b7ab37255dfc7fb0",
+      "bytes": 61820,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/reviews/native-peer-r4-baseline-review.json",
+      "sha256": "ef3ff90bdd4e58d1bbc62248d6d44fdb95eebab3d9dab0dbffb2c4cc0aef1cfe",
+      "bytes": 5398,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/reviews/root-r4-admission-blocked.json",
+      "sha256": "e0c2f1037319999d095d83b0cc8535328863af0857a265df3087f8def8843df2",
+      "bytes": 3678,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/REVISION.md",
+      "sha256": "436ea46065195941a6e9e3795d99eb269c0d2cadb502088e213d2b0f4107b67f",
+      "bytes": 4815,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/RUNTIME.md",
+      "sha256": "a8b2dc5bec64db8e411fb93c04584d4c2d75b3205b60fc21a01a6d627847fb20",
+      "bytes": 13818,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/a03-report.json",
+      "sha256": "9144d58297c97a1b42b4cb51d63b6b6ce8f6144ec0db5d7e9514512168394a96",
+      "bytes": 8356,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/controls-run-01/failed-fixture-verify_r4.py",
+      "sha256": "459c1c4cdfa2151e664f18e05f87994b6bb0e937bf2e13751313b49a17cfcffd",
+      "bytes": 17611,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/controls-run-01/result.json",
+      "sha256": "d3a5eae41abdf027eb50e5e458860d88f5af743b5c96f2bb954cdabda50ef651",
+      "bytes": 1230,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/controls-run-01/stderr.txt",
+      "sha256": "934a31b948256b2345a19a1933bdeb7f260a5e8f81f8aa361c9bfcfe605ba242",
+      "bytes": 702,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/controls-run-01/stdout.json",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/controls-run-02/result.json",
+      "sha256": "23c46658cd01639a8a72f253a48fc6e9acba5538f1c6aee404acabc96e6d45cd",
+      "bytes": 1376,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/controls-run-02/stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/controls-run-02/stdout.json",
+      "sha256": "ea06daca42b7ab0a063b79222aa6c87b8ac86b8268b1cd3439a890d93e1851a2",
+      "bytes": 9746,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/final-controls/admission-loader.result.json",
+      "sha256": "d5e888655cc3dbe6a829fe375a120c48a875decfbbce91042d04d1608f736a3a",
+      "bytes": 2141,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/final-controls/admission-loader.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/final-controls/admission-loader.stdout.json",
+      "sha256": "4b28945a0f6345af5de371682deb06ec4276759683175c6cd2cf6adb10394ee0",
+      "bytes": 4859,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/final-controls/owned-host-r4.result.json",
+      "sha256": "d56e6809f96f1ae7c0d5d08d32111e67beda850ef7e035ab1b13abe43bdfebfc",
+      "bytes": 1859,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/final-controls/owned-host-r4.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/final-controls/owned-host-r4.stdout.json",
+      "sha256": "60e283200cafb4485911eba6f8154b14a753257a9d7933f8d6b35c79013b828f",
+      "bytes": 10124,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/final-controls/retained-ast.result.json",
+      "sha256": "ec7b7a7acb88ba5b720ad80c9e275f9d310e998177875a53767bfc30106c3732",
+      "bytes": 1866,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/final-controls/retained-ast.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/final-controls/retained-ast.stdout.json",
+      "sha256": "ce92ee22c2cc19b68bfb7897ce606ea06ade491d2a95f3102032a415db81a1bc",
+      "bytes": 938,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/held-entry-independent-review-r1.json",
+      "sha256": "c98a1e6cb1bf2235bb8549d751863ab4550e7161815c3b6bd2ccbcb67d48bb95",
+      "bytes": 2654,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/host-controls-34-source/failure_evidence.py",
+      "sha256": "5ebd74e2765c7f23df6f847ffa92abd6723ee73d0e31a6753938c871d3d5c82a",
+      "bytes": 7769,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/host-controls-34-source/held_runtime.py",
+      "sha256": "eff78261dfd154e223a084e04b5fa8af63d0275735d17b29cf8b6f511cc37039",
+      "bytes": 17048,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/host-controls-34-source/run.py",
+      "sha256": "2de643533cc5539cc67a7589ec4c76ddd5745fac49857070f5d7844529c5906a",
+      "bytes": 45855,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/host-controls-34-source/verify_r4.py",
+      "sha256": "bbc063dfebdcee66a67c7aace7037124e92e2f83222ae795dc5e2ef86278b744",
+      "bytes": 17822,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/loader-controls-run-01/admission-loader.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/loader-controls-run-01/admission-loader.stdout.json",
+      "sha256": "4b28945a0f6345af5de371682deb06ec4276759683175c6cd2cf6adb10394ee0",
+      "bytes": 4859,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/loader-controls-run-01/result.json",
+      "sha256": "811a8c452662364a82450aa2bddda9999325a5004fe6b5a26e3f3aae8e05f143",
+      "bytes": 2267,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/loader-controls-run-01/retained-ast.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/loader-controls-run-01/retained-ast.stdout.json",
+      "sha256": "ce92ee22c2cc19b68bfb7897ce606ea06ade491d2a95f3102032a415db81a1bc",
+      "bytes": 938,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/evidence/shared-entry-qualification.json",
+      "sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+      "bytes": 4663,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/external-evidence-pins.json",
+      "sha256": "c05c528cec44be5513c6412fafaa556b2aff9b8305e3fbe79aa27d0afd42513b",
+      "bytes": 1100,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/failure_evidence.py",
+      "sha256": "3f10ff4d991c9d69a9c867ef9ab29b109d0d19cee85854489dc41162e0fd6f97",
+      "bytes": 8972,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/framework_census.py",
+      "sha256": "9a88368e65b3157a7cb6238eb3de94194929f6cc55d658b33c5171d52ddd30a1",
+      "bytes": 14723,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/held_namespace_entry.rs",
+      "sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c",
+      "bytes": 6653,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/held_runtime.py",
+      "sha256": "7ce058ed5c423598b75b60395fc360c07154ff18d9bbdd7a0902e29a6e1e8f17",
+      "bytes": 17359,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/host-baseline-inputs-template.json",
+      "sha256": "51e6138efa80568fd67578ad018e1de775a37617ba3aabc4ccb0683d665a8a4f",
+      "bytes": 1377,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/host-candidate-inputs-template.json",
+      "sha256": "4f14a4e9c472153c9c246687b35ccc573059f43bf4966b36a0c1b12e82c8c9b1",
+      "bytes": 1696,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/host-launch-inputs.json",
+      "sha256": "c313ea1f0d03474b05ee2ee8ae3bb74d0131d57469fb9dbf454d03745e3002fb",
+      "bytes": 518,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/host-test-contract.json",
+      "sha256": "5e6fce662b8e08b8c0397b09df7425e60f522dde86847f2c86b899f38f24fc41",
+      "bytes": 223064,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/host_suite.py",
+      "sha256": "5c405e08e6c12ddc69e04927b708d006f4eb8039af06649f75e8df63fc94c848",
+      "bytes": 30776,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/local-census-controls.json",
+      "sha256": "513bd7b6b8fed33e6d4f334ad40b11e841468eb20a0d87ff8c333140a217324a",
+      "bytes": 3400,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/local-host-binding-controls.json",
+      "sha256": "9124b4d71ce14d09374a15068d22a40d8afb372ead4e49dd3866a2e788dace30",
+      "bytes": 1406,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/local-host-parser-controls.json",
+      "sha256": "19573a95106fd43d97e9ad473eee03ecc64905dc111e0c4f78947496b3e07d65",
+      "bytes": 4332,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/local-runtime-controls.json",
+      "sha256": "4b28945a0f6345af5de371682deb06ec4276759683175c6cd2cf6adb10394ee0",
+      "bytes": 4859,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/parent-runtime-r1-manifest.json",
+      "sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5",
+      "bytes": 2703,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/parent-runtime-r2-manifest.json",
+      "sha256": "edbc982ada938b847c270c8aabeb6749922c00c92d9dc02202f18e6eee135937",
+      "bytes": 3373,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/parent-runtime-r3-manifest.json",
+      "sha256": "546b68b714b0f9c5721e6a9c03acbc68bafc63abe0cacd1d7c4e268bfcda24fe",
+      "bytes": 3929,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/prepare_runtime.py",
+      "sha256": "1eaaf28edfbbd14352b86d1a6e33f146ceb56797d54f28ec438f3fc6fac28521",
+      "bytes": 7330,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/r16-host-layout.json",
+      "sha256": "e369b6bce365bd2553be7193bdeea22975d0e26d13d4bb73e826f10b6be78cd2",
+      "bytes": 1467,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/android-input-a03.json",
+      "sha256": "48830abbdf42313576ecdfba9891ab4b93e6599bd938d6978713dfc9c0114492",
+      "bytes": 6080,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/device-inputs/0-cell.json",
+      "sha256": "944110b00770d948de050b92efe46d510f7afc142cf2c5742d4d2a898fad00ce",
+      "bytes": 9185,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/device-inputs/1-media-canary-manifest.json",
+      "sha256": "31885dffa33fe30b0249d37acf437c00b348a0ac1020f8c56b427a8dac743183",
+      "bytes": 115071,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/device-inputs/4-cpu-inventory-v2.json",
+      "sha256": "590d32e10c5a86934afbd18eebd620d5a07f0e13a4c4af2e4094fac801dc5c62",
+      "bytes": 684,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/preparation-r1/PREPARATION.md",
+      "sha256": "1984b9d6f2ed011b2bb7a94ad9998dccaba322cc8ed94c1e6a258c68007ad9f7",
+      "bytes": 6333,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/preparation-r1/assess.py",
+      "sha256": "125547744b86686f80278bb7730fdb4352b4f3378376f03ea10f7553f879ec97",
+      "bytes": 6240,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/preparation-r1/inputs-template.json",
+      "sha256": "0ff2b67cd602a0afb24bf96360d84d0e21ba03b92fbd05984d1b71141bb4d2c5",
+      "bytes": 5252,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/preparation-r1/local-controls.json",
+      "sha256": "7c3ca0fb5cfd350f0939480d68f52599b96337dfd317ac457f66869d0d458139",
+      "bytes": 3116,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/preparation-r1/prepare.py",
+      "sha256": "738924ea138e0fc5fb5e7d5a6f90bf1fffbc4c7555ce4d0b5c519346aae6e734",
+      "bytes": 29145,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/preparation-r1/source-manifest.json",
+      "sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103",
+      "bytes": 1940,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/preparation-r1/v5_original.py",
+      "sha256": "895ecbfec6d04170adf0dbc16a0fd18d3de0b78317efec86de1846295dfcddb8",
+      "bytes": 45214,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/preparation-r1/verify_local.py",
+      "sha256": "c016209182abc8de42430ded089ef187bfd2a77eb36cb49352837a1f37944e1f",
+      "bytes": 7421,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/references/runtime-r3-run.py",
+      "sha256": "fe2536e3ac510b811c3b079e5791ecb2eb015bec4163b5a0fb73b8e85542c8e7",
+      "bytes": 35490,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/run.py",
+      "sha256": "2de643533cc5539cc67a7589ec4c76ddd5745fac49857070f5d7844529c5906a",
+      "bytes": 45855,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/runtime-interface.json",
+      "sha256": "55df91ce79f926c9c2929d57543d7553632dee4c3805647b6cd5b96cbf9b6390",
+      "bytes": 1572,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/source-manifest.json",
+      "sha256": "b51efedefd1c458fae0cdf0fe1b353cf9c69db3429fa3c07bdc549d10dec0ed4",
+      "bytes": 12017,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/verify_census_local.py",
+      "sha256": "e8f1981dfc267f517dc2f763c1ec99c2e87dca58a45724afe556e2a903c9f5ce",
+      "bytes": 11258,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/verify_cleanup_ast.py",
+      "sha256": "1e020fdde771163d112dbf08ee5fdc880d5317c2e0c27427e34c746d83ac12c6",
+      "bytes": 3863,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/verify_host_binding_local.py",
+      "sha256": "13957a6774856184b5d11707a403b012a2aa3878c4ff3f7ed692f1f4fbc5f48f",
+      "bytes": 3405,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/verify_host_local.py",
+      "sha256": "4f9a962694dbf1a6530e7c5ca0c94d4939a6340736f9a9164aa9a06222ef7685",
+      "bytes": 4875,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/verify_local_runtime.py",
+      "sha256": "121720dae736255cf46300075d21b484cf0845a78b075a97e8a78e02d08dbad4",
+      "bytes": 7220,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/verify_prepare_gate.py",
+      "sha256": "b645680bcd2c8c3de28547a24b8ca330816b6747ee069c71d254b6a20174b6de",
+      "bytes": 3610,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/source/verify_r4.py",
+      "sha256": "fb6c3ae91c8b850231563100a755ffe49b102360ff3f29c63b6e93f991a70de5",
+      "bytes": 20165,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-05/signal-runtime-r4/transport/bundle-index.json",
+      "sha256": "0568856d6207d51a51234e3f553faddc0de23f55e9dbf8ddf7585b65787d809a",
+      "bytes": 6603,
+      "encoding": "utf-8"
+    },
+    {
       "path": "evidence/ceair-current-r16-native-summary.json",
       "sha256": "5ca48f14d9fb238fea03b13beb889399188e30cdcf18e2aa8193c08b7089e204",
       "bytes": 2523,
@@ -4398,6 +6995,1410 @@
       "path": "evidence/signal-svc-current-r16.json",
       "sha256": "4af07cf759762013a6cf4011b8654cd744e10d8bbb1f59bbf4dfc673bc26fcdd",
       "bytes": 6481,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/README.md",
+      "sha256": "fe07746592d02f8e8bb4e5c16be267cbef4b622d66e7997ac3081e74e203c6b2",
+      "bytes": 6116,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/artifact-index.json",
+      "sha256": "9fd1dd931987a59edd337f5ae6b65f4ce188e1db9728c15817bd33568a9dde3b",
+      "bytes": 73710,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/audits/revision09-raw-archive-audit.json",
+      "sha256": "284323b77fde5ee349ae218dfee9b978c648b3b626a815861313dc6cf45eab49",
+      "bytes": 15191,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/audits/revision10-raw-archive-audit.json",
+      "sha256": "be19e8ea7db991bf8fe0201868b0351a239cf2322f254ad4c15a5c9722dad267",
+      "bytes": 23626,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/README.md",
+      "sha256": "2e8e651e78cfde442ff4c8f78dd4780f41057e40cd331017fdd0e54c9200a374",
+      "bytes": 1680,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/controls-result.json",
+      "sha256": "a8957fbd75871048c6fb182e44042186997122bac24db495f9c03f5c15cebe17",
+      "bytes": 3108,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/coordinator10.diff",
+      "sha256": "3ac0890af59fbbc19771cb412bf892df859b187c889337f756a09838a3316d01",
+      "bytes": 21509,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/export.py",
+      "sha256": "1c2825ada027452b2da524af9934ceda72e9655e8e9a6a0f84e0ca3fdc3f3f70",
+      "bytes": 6608,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/once.py",
+      "sha256": "01d153c4b9c363754a10adbcaa109025cdbb28dbeac2a31629096ee3cf51559a",
+      "bytes": 25022,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/parent/export.py",
+      "sha256": "f7d7c6020004bb5acff7536b3f2d9fbc77418b7c318327c0e1d941d37eabb649",
+      "bytes": 6190,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/parent/once.py",
+      "sha256": "c699848a1a6315a6daf398f2962c4d5c27a705e47900987da2835926133744e2",
+      "bytes": 23518,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/parent/prepare.py",
+      "sha256": "801764f0d640e027f709e6e0c21e2b79a3d4e3168107ba5f3cf532020c35c08c",
+      "bytes": 8114,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/prepare.py",
+      "sha256": "3e4c2efa86c26163274c32112b4308a2b9c75c498d840339a12c850b0be54a0a",
+      "bytes": 8422,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/source-manifest.json",
+      "sha256": "a84523a1ecf22396a9e0c3d2b52caaea3aea26aa3ef8633e1791c6174a33d63f",
+      "bytes": 1730,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/coordinator10/test_coordinator.py",
+      "sha256": "7921b5b1a8f825c3e77eb5bebd5cd2d34e28e685ea701622e8b8f92aad5080c0",
+      "bytes": 8077,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/delivery-manifest.json",
+      "sha256": "1f5afb60f5959c2c75939fcdb0cb076c6dde4a0bdd37fec99ae7a27bcefa780a",
+      "bytes": 40475,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/coordinator/01-prepare/claim.json",
+      "sha256": "00a0625074f39a2569f09521f970c09644e001eb72c1cbe1f60e4ce1e722db95",
+      "bytes": 1141,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/coordinator/01-prepare/result.json",
+      "sha256": "f71d86e9858b54dfb17bbb5468c794c2a8b32b5f9bb742adcff95f4231c5b2fb",
+      "bytes": 2398,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/coordinator/02-pressure-once/claim.json",
+      "sha256": "7f206dac76ea012ed22fbf0478d8b7058334fbca4c15d4f085540d64b3ca5692",
+      "bytes": 1237,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/coordinator/02-pressure-once/dispatch-attempt.json",
+      "sha256": "912bec000833cefdd23a403a574abce62a1a165b01be557c75aafb1b2cf5b9d6",
+      "bytes": 2065,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/coordinator/02-pressure-once/invocation.json",
+      "sha256": "39004040ba32335ef4887f097c8c7a8d16a5dc2f33f0635cef6ca7ab316dcefe",
+      "bytes": 1364,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/coordinator/02-pressure-once/outer-first.json",
+      "sha256": "1fac4190c57f950319ce07a4f1d7d8a35ef03ed72c8de02d617322c978fcd25e",
+      "bytes": 601,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/coordinator/02-pressure-once/qualification.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/coordinator/02-pressure-once/qualification.stdout",
+      "sha256": "993f1384cc9b533417a910ab0ceaefee78d1d56104fdc7bcbae69b0a625510eb",
+      "bytes": 1578,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/coordinator/02-pressure-once/result.json",
+      "sha256": "cf081ede4d6d757b522bd35b6280bda03a27e5517e0119e9dabb219cbd13e98a",
+      "bytes": 20568,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/after-relay-hup.json",
+      "sha256": "52266a7ed7f104451495ea5b6a302dc2916c75662c11bdfc9011ee6cf2382561",
+      "bytes": 1534,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/broker-active.json",
+      "sha256": "8a431d74cf94a35b1fe37d03ebe458b6da23951931c23da801d9be759d6d09d4",
+      "bytes": 374,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/broker-pressure-audit.json",
+      "sha256": "215c551a34997c41b066c03d2f04d457818e565bef6800d848f54ba29116aa0f",
+      "bytes": 1272,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/broker-ready.json",
+      "sha256": "05774df63ead68ab55618a8571d35071260a329b1c3a83d27797d1d587337c49",
+      "bytes": 374,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/broker-retired.json",
+      "sha256": "493cd293a4e7fe0a8ca5f0260bda8ef4059c574de99bdd4d3b7a7851c9a59a09",
+      "bytes": 375,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/cached-exit.json",
+      "sha256": "c4e6e075aaeeed74d4a440ea5b61a22ba13bc0c6ec05f60b0c0469cd96f241b1",
+      "bytes": 92,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/cached-kill-diagnostic.json",
+      "sha256": "6a1da14f0b6dbe46bc2f94ebf7d8ff65e1ed9e7e2985a1f0a1617dcbb895e01e",
+      "bytes": 222,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/cached-kill-notification.json",
+      "sha256": "02bce3f352b9cf70029f52efc0304d6fc1e0aab05de2592af64899ad312eeb2a",
+      "bytes": 100,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/driver-result.json",
+      "sha256": "52deb89b00339ad89f7a58f23fd95f34a2241ba930332e1b9ab01cab5fcc130a",
+      "bytes": 505,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/identities.json",
+      "sha256": "68589386da94209356df3851e1e023fff276732f57ec823e3b68bbf355dc952e",
+      "bytes": 494,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/inner-preflight.json",
+      "sha256": "4e3977127826bdd9800d78d89151633bac3f242998ea1bc47e1dc7442343fe95",
+      "bytes": 537,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/lmkd-fds.txt",
+      "sha256": "715e00d2600cf7b5cae024631c6d6353cd596f7f6ab22ef1606c825f16fc254e",
+      "bytes": 863,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/lmkd-maps.txt",
+      "sha256": "5bad17c6e0c18cbe079c275d0efcbf1ac188161b9616c5cf187f4b8e30914f16",
+      "bytes": 4014,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/lmkd-post-registration-fds.txt",
+      "sha256": "01fdd497cd1cf88d4402568d24152c46928a51b848063b645a07eff304122b4a",
+      "bytes": 929,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/lmkd-post-registration-maps.txt",
+      "sha256": "5bad17c6e0c18cbe079c275d0efcbf1ac188161b9616c5cf187f4b8e30914f16",
+      "bytes": 4014,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/lmkd-post-registration-pressure-file.json",
+      "sha256": "a21a0e2aa3148751b945bbe56c4d8d192833992b9fea7f91a6d8a14e1a71cf50",
+      "bytes": 91,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/lmkd-post-registration-status.txt",
+      "sha256": "4fe61c9f863bcee0fa31f3e14184054c42154128487ebaef2fa0f48751f0e494",
+      "bytes": 1494,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/lmkd-pressure-file.json",
+      "sha256": "a21a0e2aa3148751b945bbe56c4d8d192833992b9fea7f91a6d8a14e1a71cf50",
+      "bytes": 91,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/lmkd-status.txt",
+      "sha256": "7fca7f0551c3c4d70100ff9006551732e0833016c16fb84889118431595beb5e",
+      "bytes": 1493,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/outer-final.json",
+      "sha256": "fa2bd5e7ff66c0331d48c7beb7854be8256ab103e02c581dacbacbc440356ab8",
+      "bytes": 812,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/outer-preflight.json",
+      "sha256": "77e2214f27acb0722bf7ea2f7479fc8928582a82fee8261a9c4b35e1daf45239",
+      "bytes": 297,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/phase-result.json",
+      "sha256": "b65533b378087324d5c670cbe53b65b2bf8bc8c9ba1434b2ea7111cb31081a30",
+      "bytes": 354,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/pressure-after.json",
+      "sha256": "0ca66deebeddad096608da25ddbab9fb39c23ac812b2fe1c1d1ad6fa969f7cf1",
+      "bytes": 1534,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/pressure-before.json",
+      "sha256": "6a8fe173fe89b63356b76bc8acebd04c4bfe595cf0f40c7f9779be5899373047",
+      "bytes": 1522,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/pressure-workload.json",
+      "sha256": "2a9191d7e418cea0d4c2fa0782315212a4291cd56d224ac360c3975110d9e739",
+      "bytes": 898,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/protocol-complete.json",
+      "sha256": "853715f98aacec24f97e38923a218940c5dca815e78cbb88c675290f4ec47bb0",
+      "bytes": 1515,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/qualification-inputs.json",
+      "sha256": "c216ee6a57187fb5c276d6cf29ea65b53b3a8fb025b594b0d562bdb1b7479526",
+      "bytes": 4174,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/quiet-after.json",
+      "sha256": "6a8fe173fe89b63356b76bc8acebd04c4bfe595cf0f40c7f9779be5899373047",
+      "bytes": 1522,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/quiet-before.json",
+      "sha256": "138b146445c4f8ffb81ebc9d4f12e732c2714f73f76ab66ffca8a0c7b26b963d",
+      "bytes": 1522,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/relay-projection.json",
+      "sha256": "ad0900ab92e81f94e98594666b1e997b78f8fec974c9e5e859672c05bd1ba624",
+      "bytes": 62,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/staging-result.json",
+      "sha256": "68e1dac7591a9c63f293f98f39c8780e2c50244c86fcd4a070b3d0e6ee64428a",
+      "bytes": 315,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/evidence/target-cleanup.json",
+      "sha256": "52c59e2ccf23eada805fb10e7871699656a2876ae327fa491cdccc8e9173d9da",
+      "bytes": 641,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/export-manifest.json",
+      "sha256": "184b0db208fd06cda07c1b2ae9a73fee31f5c12c058050266f9536cf6b4d790a",
+      "bytes": 7514,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/source/matching-build-result.json",
+      "sha256": "087a22519b0619be5a38440549a4730305bbfede6a046bbac347516dea0e962b",
+      "bytes": 23309,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/source/source-manifest.json",
+      "sha256": "c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5",
+      "bytes": 6627,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/unit/unit.stderr",
+      "sha256": "f34a1a0051bee87042ed275ae7fcf51e69b63c8248c687404def478440c59c0e",
+      "bytes": 214,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/pressure/unit/unit.stdout",
+      "sha256": "39356e2ce71e593ce591c2c51561826f14a08a5db0fe9628fe323234be299f0e",
+      "bytes": 62,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/coordinator/01-prepare/claim.json",
+      "sha256": "6d9d781febadf6c8c8cc7fd0f536bffb6ac381839ac4cd7a406bbe6267d49df6",
+      "bytes": 1378,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/coordinator/01-prepare/result.json",
+      "sha256": "d5bef0e178a497985797cc17691f6e2c8aacb2f23fd8fc6125fc2abba3681956",
+      "bytes": 2626,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/coordinator/02-stale-once/claim.json",
+      "sha256": "8cc43442845a1ea51c2210c3360650b2cc27e552c443017f45f66968eeecfb48",
+      "bytes": 1225,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/coordinator/02-stale-once/dispatch-attempt.json",
+      "sha256": "f8686c3dd77b6589741d14ae9ce077a7b3cc50aed5e6ae0c9c3aa9dcf1d96df3",
+      "bytes": 2038,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/coordinator/02-stale-once/invocation.json",
+      "sha256": "ce1e9a53ddab14a291e6b98da8914ec42b94a3949744c8d51a5781e6a429a461",
+      "bytes": 1346,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/coordinator/02-stale-once/outer-first.json",
+      "sha256": "3d3b3f9e9a543e7d8e66f6c0457eb027efe0034c41b2378595a5fec434009092",
+      "bytes": 601,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/coordinator/02-stale-once/result.json",
+      "sha256": "f028dd348031341f3ef8ed1f8f26b8e1ff87d8e560e919ddb5a807b07e9cc663",
+      "bytes": 10036,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/broker-active.json",
+      "sha256": "62ea86a5b0fd35c6dc3b0b8b6269b17cd6a58cdbe13979cd85c0478109b0a601",
+      "bytes": 374,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/broker-ready.json",
+      "sha256": "4dc92e9734b450808511f23897813470f10fd5fc48993e3b4d4563f16d3e30ae",
+      "bytes": 374,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/identities.json",
+      "sha256": "94246e7f543b341396726e52913bd9431c2fae5bf933a8479e4a55a61bf9bcd8",
+      "bytes": 494,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/inner-preflight.json",
+      "sha256": "a9993516bfb13f1918fe35c3c166ca878a1ed57b3c2449ee382e43afcfd50bc9",
+      "bytes": 537,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/lmkd-fds.txt",
+      "sha256": "349f800dcaa5110939bc761c554595f3de83480a6b92137e98efedf839339c89",
+      "bytes": 857,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/lmkd-maps.txt",
+      "sha256": "0cb0b071ebbd8662e99b17d4efae39134fbcf534d61b1cf5ef9bceadb979a814",
+      "bytes": 4014,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/lmkd-post-registration-fds.txt",
+      "sha256": "2d652fe7ab71ee93d1e0d4a47415303eec50f091abda511113131745296fb5de",
+      "bytes": 923,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/lmkd-post-registration-maps.txt",
+      "sha256": "0cb0b071ebbd8662e99b17d4efae39134fbcf534d61b1cf5ef9bceadb979a814",
+      "bytes": 4014,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/lmkd-post-registration-pressure-file.json",
+      "sha256": "b97727c8c338ffa95e8dee43fdf3de641efa0b0c065747c43b2214b50d2bc2a1",
+      "bytes": 91,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/lmkd-post-registration-status.txt",
+      "sha256": "3ff7817b7d3e0b67100ac3048c2b90ab115ca4297a84e66feb795671ca203173",
+      "bytes": 1494,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/lmkd-pressure-file.json",
+      "sha256": "b97727c8c338ffa95e8dee43fdf3de641efa0b0c065747c43b2214b50d2bc2a1",
+      "bytes": 91,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/lmkd-status.txt",
+      "sha256": "d68f0cfa92168b3f15f9482b4d3d007f6af141ecdf43e059d28fce0090daa578",
+      "bytes": 1493,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/outer-preflight.json",
+      "sha256": "3ce4d5bd1bf1e520b734aceb5988fb294836507016bd31b4f34ad8fbcc2b4cc8",
+      "bytes": 294,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/phase-failure.json",
+      "sha256": "2aa1947baf31ded6bdf1b3a2e228c7149f7688541a59d7eca3022146cad46985",
+      "bytes": 1562,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/pressure-before.json",
+      "sha256": "e8b75da5634dc5dcd14033a0ad43d3ee70908718c7c75faf360d84f1cc8e667a",
+      "bytes": 1537,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/protocol-complete.json",
+      "sha256": "d32807bf11def38a595783310bf96323849dd81fd61dd079471052ba04c27edf",
+      "bytes": 1530,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/quiet-after.json",
+      "sha256": "ba630bce969bc29174027f03d7e5b5c9a0533990deee5bf04d81d51fedfb3769",
+      "bytes": 1537,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/quiet-before.json",
+      "sha256": "7b845ac74c4797832abaa3408111b58ca60c72748f0e6eeab00e9dd7be8a3814",
+      "bytes": 1537,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/relay-projection.json",
+      "sha256": "9587f9df0cf47fa42c67d18f0dd0de2ca8e03f9bbc8549a7d9a90728f23aa909",
+      "bytes": 62,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/evidence/staging-result.json",
+      "sha256": "68e1dac7591a9c63f293f98f39c8780e2c50244c86fcd4a070b3d0e6ee64428a",
+      "bytes": 315,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/export-manifest.json",
+      "sha256": "99644b1eda1606096319950141665c6430496f28096286a6bd399cb2b62eb0e9",
+      "bytes": 5353,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/source/matching-build-result.json",
+      "sha256": "087a22519b0619be5a38440549a4730305bbfede6a046bbac347516dea0e962b",
+      "bytes": 23309,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/source/source-manifest.json",
+      "sha256": "c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5",
+      "bytes": 6627,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/unit/unit.stderr",
+      "sha256": "c01e93bbcaef14103bd92f9f22659a289997a5225af7a628b34280abe9391e1b",
+      "bytes": 416,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision09/stale/unit/unit.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/coordinator/01-prepare/claim.json",
+      "sha256": "c8fbfc88596c492f335642678c4bed223fe2ea15cdf5890b938a72d97af26eb3",
+      "bytes": 1141,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/coordinator/01-prepare/result.json",
+      "sha256": "152627a612a852d4bc3c3c8d59ffce82fc42ddb0d48f04dc3c2f4a46b55000fc",
+      "bytes": 2398,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/coordinator/02-pressure-once/claim.json",
+      "sha256": "7654e696a0882f60cfa2b8a08672c5679c155ec5f07aeee8d62c51096ab8097f",
+      "bytes": 1237,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/coordinator/02-pressure-once/dispatch-attempt.json",
+      "sha256": "975fd2cc071dced53285401dca3948010997cace249ce7d9e87eed2c852c0496",
+      "bytes": 2065,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/coordinator/02-pressure-once/invocation.json",
+      "sha256": "8597259b59adb031e5c48e1dcb42bf3ab3fdf6a12ea074f240ca1fd273e16a6c",
+      "bytes": 1364,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/coordinator/02-pressure-once/outer-first.json",
+      "sha256": "54e31d3793db7327bf7b877679364e7f26f2371a25400c63fcc08f909de33009",
+      "bytes": 601,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/coordinator/02-pressure-once/qualification.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/coordinator/02-pressure-once/qualification.stdout",
+      "sha256": "8c7a4dc11c8bb6e6ba324b91c5341f370f6960471af2833aedf8b57ac6aa41b5",
+      "bytes": 1737,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/coordinator/02-pressure-once/result.json",
+      "sha256": "158ec28a6c0cd05c36314f30a14feec6a93d7a793e34790fe5b957d3b9f5c67e",
+      "bytes": 20910,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/after-relay-hup.json",
+      "sha256": "eba1d6c8c8cbf8cf6f241daced18dbf8a102df400b8a7f77409ac65bb9e49d25",
+      "bytes": 1534,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/broker-active.json",
+      "sha256": "a1a17bec64ed56c63aec696e16c0e2950e5967d46eff37835c670c1dfeba2451",
+      "bytes": 374,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/broker-pressure-audit.json",
+      "sha256": "6267971f2b62c38dff2b11bc9ccc4d7fbee0cc65920901b405bccad5fb5f902a",
+      "bytes": 1272,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/broker-ready.json",
+      "sha256": "4ad635c1e956040ecf6da91b3133348e11349e9d857ff349535f15653b2a0290",
+      "bytes": 374,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/broker-retired.json",
+      "sha256": "d9d047a466ed87966904a306d0f61874e4d7c8d1d15d3dfb694bd99e163b0bad",
+      "bytes": 375,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/cached-exit.json",
+      "sha256": "9d7f6abb36e568850a286f9ad0de66e2cf7b22f77c5aa3b8e0ad4913811dd477",
+      "bytes": 92,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/cached-kill-diagnostic.json",
+      "sha256": "d086586fe7c448280138485f36c145d11970309f3dc4e61351f7cf006b72d262",
+      "bytes": 222,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/cached-kill-notification.json",
+      "sha256": "a35a68c9f6521c9ce374aad23c522ccbe0d708083a2df58c54adf69722d18caf",
+      "bytes": 100,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/driver-result.json",
+      "sha256": "8b26ebf8c50070b7032b69ef51e96bbad91d130097bc8c3a95f827cb39ef1d9d",
+      "bytes": 505,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/identities.json",
+      "sha256": "fa876da611fed10ee645c55f3065558cd45fb59328d1a0bbdd33f5d696b44e72",
+      "bytes": 494,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/inner-preflight.json",
+      "sha256": "fbd5c02ce91eaeaac3c3e7180e1cb51cea14a14806f2c0d76c9d526ffa2ecc63",
+      "bytes": 537,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/lmkd-fds.txt",
+      "sha256": "0b9bab29552104331673e7bb46b93a1b704d6f09708ca8d6c4966f5bbed037aa",
+      "bytes": 863,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/lmkd-maps.txt",
+      "sha256": "b9d01fc0459baecdd1cc4bc70688db31976949fab6dc7baedb778caed958aa51",
+      "bytes": 4020,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/lmkd-post-registration-fds.txt",
+      "sha256": "e1af79a654ea4663909c586ed653210da8893c837d541deff27c1061ff633968",
+      "bytes": 929,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/lmkd-post-registration-maps.txt",
+      "sha256": "b9d01fc0459baecdd1cc4bc70688db31976949fab6dc7baedb778caed958aa51",
+      "bytes": 4020,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/lmkd-post-registration-pressure-file.json",
+      "sha256": "6e45b433b7ae6337b2fa377bcb52aea833313c2635808fef46cebfa474ebc510",
+      "bytes": 91,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/lmkd-post-registration-status.txt",
+      "sha256": "86403f6829474986c57cdc65479846b829a6c21b49aa3e8074fefed8d2841366",
+      "bytes": 1494,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/lmkd-pressure-file.json",
+      "sha256": "6e45b433b7ae6337b2fa377bcb52aea833313c2635808fef46cebfa474ebc510",
+      "bytes": 91,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/lmkd-status.txt",
+      "sha256": "07e3211a30683bb8a90a1419fa2ab5854ae07083901d65bb77ff2ebc9fd0dbd8",
+      "bytes": 1493,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/outer-final.json",
+      "sha256": "f1b202c86db97f2ded3f60518b1a94da1036ce483d3b4943c7a03476ed476c59",
+      "bytes": 812,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/outer-preflight.json",
+      "sha256": "4ec62e2baf0ae46a0fc273e14532d6fc3cc637c776d2d9b7fbbc7a685c45a38c",
+      "bytes": 297,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/phase-result.json",
+      "sha256": "b65533b378087324d5c670cbe53b65b2bf8bc8c9ba1434b2ea7111cb31081a30",
+      "bytes": 354,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/pressure-after.json",
+      "sha256": "146eff71cd9b5886800a2ffa17de3495293186e365c67fbd35e43e933fc9df9d",
+      "bytes": 1534,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/pressure-before.json",
+      "sha256": "3c4d9f942bbb8cae7eaef10ac1c9c3c3916fc2592f88a968742e1569e881f651",
+      "bytes": 1522,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/pressure-workload.json",
+      "sha256": "c3d7d71f86a1404755709ee260f79fada245b7e9abf6b5c42f21c807bc309785",
+      "bytes": 898,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/protocol-complete.json",
+      "sha256": "8bfe32a25d3d8549978b8bb1d9df7eacf2ce888c87b1842f0eb06a86e6f2f3e3",
+      "bytes": 1515,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/qualification-inputs.json",
+      "sha256": "cbfabf0134e9ba30fd601bed69912bfbd8efe00eb078ef4218e35068988a144b",
+      "bytes": 4174,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/quiet-after.json",
+      "sha256": "bb87c988281154a2589bcfe68ff7d1df283f39cdffe2313668e4ff77454d7092",
+      "bytes": 1522,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/quiet-before.json",
+      "sha256": "de3c09d5f2f836e489718f8ea43a271ad0ec1462dbaa6198810d77b26a91f634",
+      "bytes": 1522,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/relay-projection.json",
+      "sha256": "39dfbc4d0e1255d4a02dd971302432d2ba9f734fec5bf51ae18663cc496a3c0a",
+      "bytes": 62,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/staging-result.json",
+      "sha256": "4045ad85e9a18cef02a2330603329fac58120f1aef9570af6ceefed45e9992ed",
+      "bytes": 315,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/evidence/target-cleanup.json",
+      "sha256": "288075048d82866d9a4f97d33407333b3e6f95bf71a0197a459e287222737c3a",
+      "bytes": 641,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/export-manifest.json",
+      "sha256": "0a155907521f48d6c52af7fb71a0705b3c1ac00f5bf677da98d5a3f8efc47002",
+      "bytes": 7514,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/source/matching-build-result.json",
+      "sha256": "153c08dd7744149e0a1ff67f035d6a42cb218800521baca229f4950715076d46",
+      "bytes": 24815,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/source/source-manifest.json",
+      "sha256": "bc996fe6c763b0270de97d85c0f7ace71fd3804ca432c49d79f05ec21edec9e5",
+      "bytes": 7275,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/unit/unit.stderr",
+      "sha256": "f34a1a0051bee87042ed275ae7fcf51e69b63c8248c687404def478440c59c0e",
+      "bytes": 214,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/pressure/unit/unit.stdout",
+      "sha256": "39356e2ce71e593ce591c2c51561826f14a08a5db0fe9628fe323234be299f0e",
+      "bytes": 62,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/coordinator/01-prepare/claim.json",
+      "sha256": "42a8538a005476657ad4bc038c96a4a97a1e7fc2dcee4ef3ac2190032906b767",
+      "bytes": 1378,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/coordinator/01-prepare/result.json",
+      "sha256": "64fc293058478d1cd93c7219dd2f4d704370dec3a032450ea3532d08a2863ae0",
+      "bytes": 2626,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/coordinator/02-stale-once/claim.json",
+      "sha256": "988729c80f7f1aec67ba9864723e45ec9509d69444ddb14899d64c127efa276f",
+      "bytes": 1225,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/coordinator/02-stale-once/dispatch-attempt.json",
+      "sha256": "52d4c6b093f9d9e143fac914ae6786604a0cbf6ba65efc2a282469408cf71f18",
+      "bytes": 2038,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/coordinator/02-stale-once/invocation.json",
+      "sha256": "547b2c2a14e3413d7142d9c5175027144a33880140d6d1e5a5ca0effc4cf8d2c",
+      "bytes": 1346,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/coordinator/02-stale-once/outer-first.json",
+      "sha256": "c12cae4f21ddab1d0f6ae9f0b288536457b7c4ccd1a34044b1915f6ee7dca5af",
+      "bytes": 601,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/coordinator/02-stale-once/qualification.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/coordinator/02-stale-once/qualification.stdout",
+      "sha256": "a8ee2e7fa07eace8778d4a8f437e4688d08493057b47df1ad60cdbc845eb73c5",
+      "bytes": 1760,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/coordinator/02-stale-once/result.json",
+      "sha256": "8e1099ca1f0491ce4a59c04cef93bb460ee8ad8612d2d8084748899e6b089893",
+      "bytes": 21633,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/after-relay-hup.json",
+      "sha256": "98875bedd8f25753dede632a3bc55abf3e3d7f5bb4aded76acba7ebcc1581347",
+      "bytes": 1535,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/broker-active.json",
+      "sha256": "032c897c968ab04ebec852f0e1c5b6177b41a61c55cb7c401add3bf0fa9baa3a",
+      "bytes": 374,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/broker-pressure-audit.json",
+      "sha256": "eaadf638f06db21848beb2e34045b4ca3c21c331ba87cc3523c568657ef97d75",
+      "bytes": 1363,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/broker-ready.json",
+      "sha256": "4f0b796f48136ccdca616971cc26db206af67a2efd2c86f0673c951c31935441",
+      "bytes": 374,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/broker-retired.json",
+      "sha256": "0bdf4529f6e0580f311033d7b1aa92a74617f451b1db1b370bdf8f97eb3453aa",
+      "bytes": 375,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/driver-result.json",
+      "sha256": "8ceceaf8ed1782ba219511c0d7d2dae24d2f17307c116b4750bc602ec49d80b0",
+      "bytes": 502,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/identities.json",
+      "sha256": "9b23bc4833e640997baf8a512b5d3dc73347b1e8a3fe8bf62dfb8488127ca8c0",
+      "bytes": 494,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/inner-preflight.json",
+      "sha256": "b4397a23e7e56d7743f329d49d6e90c743f812082f9565d56929802792febf81",
+      "bytes": 537,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/lmkd-fds.txt",
+      "sha256": "5cd7f41a58fcbc534ef563ced5be3e1a2db9847664ac76f3da18d82b1da27eb0",
+      "bytes": 857,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/lmkd-maps.txt",
+      "sha256": "20907046ea6ad026133c32cebdfc7f86495d084ac54e314d41fec51d767955ae",
+      "bytes": 4014,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/lmkd-post-registration-fds.txt",
+      "sha256": "a55bd5a4d2537c8865b68bf494079445d364d774a555cba0cb1d357ff7b96382",
+      "bytes": 923,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/lmkd-post-registration-maps.txt",
+      "sha256": "20907046ea6ad026133c32cebdfc7f86495d084ac54e314d41fec51d767955ae",
+      "bytes": 4014,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/lmkd-post-registration-pressure-file.json",
+      "sha256": "da3d0c4ee3fcf5df4210119e35fdf85f807065f94ea27fa2d26ef2e7347d5572",
+      "bytes": 91,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/lmkd-post-registration-status.txt",
+      "sha256": "73208a4a50444c06fe8e662a264eee002d0da25bba60ed9200d387a88472966f",
+      "bytes": 1494,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/lmkd-pressure-file.json",
+      "sha256": "da3d0c4ee3fcf5df4210119e35fdf85f807065f94ea27fa2d26ef2e7347d5572",
+      "bytes": 91,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/lmkd-status.txt",
+      "sha256": "5d7a47cbb01590b9ada6271526bd988d20fba8770a062660a0e8eabaca117a12",
+      "bytes": 1493,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/outer-final.json",
+      "sha256": "81d4b3c35e6b2269f2f4f2867799c19509a5ad4ab26e1607d32be4f1110cbcc0",
+      "bytes": 806,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/outer-preflight.json",
+      "sha256": "ba183607e1d223fbe5714bbd025a6974704780f40fb08261e77db3f408c88d65",
+      "bytes": 294,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/phase-result.json",
+      "sha256": "c6172f1c0495e4e1b65a5d875d06c06c8ac2ad2c8ec9bb9d2f674842a2d78b1d",
+      "bytes": 351,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/pressure-before.json",
+      "sha256": "6a8540fef58194ec4a38219a45c39a10c43cba4bbbbcb1e90f19d83a2e3a64f5",
+      "bytes": 1522,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/pressure-relief.json",
+      "sha256": "14173e20690e394029379647c2e2c283db95450107d11c2afb52f25911d5efe6",
+      "bytes": 744,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/pressure-workload.json",
+      "sha256": "75ac9bfc383365cef31027fe34283ff1f4d04ae233bf28dce9869864c4a7ba0d",
+      "bytes": 1316,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/protocol-complete.json",
+      "sha256": "f26cb28897b4609e6de060a8fd1ca731799d1a27237256ad250ef5209be7fbe3",
+      "bytes": 1515,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/qualification-inputs.json",
+      "sha256": "902b8b6cbe88cf0291ce6c5bc5626229e1677dc018bfee2def63c81d14ac99ea",
+      "bytes": 4000,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/quiet-after.json",
+      "sha256": "4a57d11fd1bbe18f620a59784068bada4dda4bdb3eab61614efb86c30cf1bdf1",
+      "bytes": 1522,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/quiet-before.json",
+      "sha256": "c72b24b2275458add3cf86cb691bfffc35aba8174fffdffb1532f854bd87a82b",
+      "bytes": 1522,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/relay-projection.json",
+      "sha256": "777694b8836ea18fa548622f8281424f95909581830e5437fc564b78cb31002c",
+      "bytes": 62,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/staging-result.json",
+      "sha256": "4045ad85e9a18cef02a2330603329fac58120f1aef9570af6ceefed45e9992ed",
+      "bytes": 315,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/stale-after.json",
+      "sha256": "35c65d6bebcdeceee8bd44fc34f35854a3f8ca89338b514a2a22e575e94cdeb5",
+      "bytes": 1535,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/stale-aging.json",
+      "sha256": "e3f883e44ee362b74226a6904a0652395cb9d31bd06a6bc86a99b2aca53ea435",
+      "bytes": 452,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/evidence/target-cleanup.json",
+      "sha256": "0087ae7afcd369cf50a003113606b1ccb5974507147156dc2b9f554581410eed",
+      "bytes": 641,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/export-manifest.json",
+      "sha256": "8d9af25ca53b577a0afc40166bc45531fc7de13e065eb6203664a5b3d51b1fdc",
+      "bytes": 7324,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/source/matching-build-result.json",
+      "sha256": "153c08dd7744149e0a1ff67f035d6a42cb218800521baca229f4950715076d46",
+      "bytes": 24815,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/source/source-manifest.json",
+      "sha256": "bc996fe6c763b0270de97d85c0f7ace71fd3804ca432c49d79f05ec21edec9e5",
+      "bytes": 7275,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/unit/unit.stderr",
+      "sha256": "f34a1a0051bee87042ed275ae7fcf51e69b63c8248c687404def478440c59c0e",
+      "bytes": 214,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/evidence/revision10/stale/unit/unit.stdout",
+      "sha256": "f49b4e6b7bc6c3ebf9d5edb48a2725a17e228e7b3a28ac3c6359addeef482c9f",
+      "bytes": 59,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/matching/build-result.json",
+      "sha256": "153c08dd7744149e0a1ff67f035d6a42cb218800521baca229f4950715076d46",
+      "bytes": 24815,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/provenance/execution-and-client-transfer.json",
+      "sha256": "27b7d5700b7872c26e5d7aaeb01ae4ff1d3957a4863f3cd451a5ce7316e0ff39",
+      "bytes": 7608,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/publication-omissions.json",
+      "sha256": "2ab72afb31ff4cf8e395bf2004573ec46af5b568e2e10c87d88d8d68e42ec686",
+      "bytes": 1422,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/reviews/root-pressure10-review.json",
+      "sha256": "76b30f2226e06be84c6ec33e47d93850010e567e9aff2004ab5d8f09b3a13ec8",
+      "bytes": 3287,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/reviews/source09-to-source10.diff",
+      "sha256": "58b646d6b55a1204960652e119eb1450d1168fef47014e48dbd8119d2ecb25c9",
+      "bytes": 40143,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/BOOTSTRAP.md",
+      "sha256": "fb3516922ccb27a8adc196c26fe2012e2585174c317a3c429b3ece0df7e35604",
+      "bytes": 10588,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/Cargo.lock",
+      "sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+      "bytes": 2433,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/Cargo.toml",
+      "sha256": "6da7eb91c9b965cfc8f2442b018602bf1548e64ab7cb4936d0657f355d433005",
+      "bytes": 533,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/OUTER-RETIREMENT.md",
+      "sha256": "4281d3241e43fb19b8f0c760ee1a52b59bf794e45dd849db8130af761cf14001",
+      "bytes": 3353,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/PLAN.md",
+      "sha256": "f1a60e56a173e3d331de3b58f153384b33167b992951b85838bb99702e93d5c3",
+      "bytes": 6464,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/REVIEW-CHANGES.md",
+      "sha256": "e66a65eae1e56c770e4c75caf6053f436562badaf1d1214aca24873f30c35a20",
+      "bytes": 6640,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/ancestor-bootstrap04-manifest.json",
+      "sha256": "0a2926b79240eaf5fd5556fd5c7d3bfd6058119b379b83996618097d9e06838d",
+      "bytes": 3353,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/ancestor-pressure05-manifest.json",
+      "sha256": "cec434f1e868248f70dbc8a4eea7c924193e9ba633bba61dcf6cea90b642ab29",
+      "bytes": 4648,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/ancestor-pressure06-manifest.json",
+      "sha256": "9f0472e7aea77cd2f628d38e8378f9148b9db60d4353315d6067a3c271f8325f",
+      "bytes": 5044,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/ancestry/pressure06-qualifier-controls-local.json",
+      "sha256": "6005b45ef9f2d1c72a3e2b8bcaf80b18aebbf73b6e5b4ff172d75bff48ba7e2b",
+      "bytes": 3247,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/ancestry/pressure07-qualifier-controls-local.json",
+      "sha256": "45914a311a1b657b595cfff9e75a3eb6cd4338395e9c68c8cb254ef264edb33a",
+      "bytes": 3648,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/ancestry/pressure07-source-manifest.json",
+      "sha256": "0dd3901441c9d61948dbe04523995a5c7855882868cdfeeb1234dad61bf89ea5",
+      "bytes": 5543,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/ancestry/pressure08-source-manifest.json",
+      "sha256": "ffe555f1913e2d3f540ec115298580ddb95849e797926511e13acb0eab126de6",
+      "bytes": 6007,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/ancestry/pressure09-actor-compile-local.json",
+      "sha256": "9f33327910888083f78c84551d95ed7956fe2a00bb6ef151ec6193f58a197eec",
+      "bytes": 854,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/ancestry/pressure09-stale-qualifier-controls-local.json",
+      "sha256": "cea31240081a8db0931cf253a8e6ee16e402a779c87dd42e9377510ae4ccdf71",
+      "bytes": 4372,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/owned-relay/CANARY.md",
+      "sha256": "1384946eb719b74ac5ef5c414c66d1193085b59387d2eabf992c098aee1e0ffd",
+      "bytes": 9824,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/owned-relay/PRESSURE.md",
+      "sha256": "def1f63d8c72b000ad0b9bc23a5c4a0a636deff02a1b84aa0b8bcfa409746141",
+      "bytes": 19052,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/owned-relay/fixture_init.cpp",
+      "sha256": "d6bf440a8b5434bd05befb2fbfd0b0842090ceba8731f8247326adb932cfe353",
+      "bytes": 57575,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/owned-relay/include/lmkd.h",
+      "sha256": "458e8c6f6aa145dc89903c0c91f36ea790138443d6b2d46fc38e7f3909282033",
+      "bytes": 13562,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/owned-relay/library-source-receipt.json",
+      "sha256": "fcf360d1ff3a57d6f9e92f99e4470e7aa7e106169fa37f6016b03e11827cdf44",
+      "bytes": 679,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/owned-relay/minimal-root-libraries.tsv",
+      "sha256": "784f627d79602deb3b94026cf384b6637cf1c20daefdd2ac7476dbde9588fe61",
+      "bytes": 2779,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/owned-relay/outer-qualifier-controls-local.json",
+      "sha256": "2fd9f4947cd94743711e8c65edf8acddfbfd45b7cd0dcb0ca6aa4844f43e4e3e",
+      "bytes": 3834,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/owned-relay/pre-freeze-controls-device.json",
+      "sha256": "93e94d8d8a9cd006cda04f0b12f84a5fa767cd3d37216251ca0855fb4fc86314",
+      "bytes": 18374,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/owned-relay/qualify_pressure.py",
+      "sha256": "73a7405d3b663138e5a321257197ae073a01302631a9c21044076cb211651c31",
+      "bytes": 29014,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/owned-relay/test_qualify_pressure.py",
+      "sha256": "1ea6eb9b518640d9f60caed453e8b2ba238b410546e933da6518d885143860fa",
+      "bytes": 27828,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/parent-source-manifest.json",
+      "sha256": "c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5",
+      "bytes": 6627,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/source-manifest.json",
+      "sha256": "bc996fe6c763b0270de97d85c0f7ace71fd3804ca432c49d79f05ec21edec9e5",
+      "bytes": 7275,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/src/bin/droidloom_psi_owner.rs",
+      "sha256": "e3ca5039c82bd472c8c7e30471085b24a4a681299d8cd1624e101d9f18edddb8",
+      "bytes": 769,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/src/bin/owned_ipc_controls.rs",
+      "sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0",
+      "bytes": 28935,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/src/bin/owned_relay_canary.rs",
+      "sha256": "188be4f035bad7fe47fd88e176f83efb72832825f522d1eef947e383e6f04135",
+      "bytes": 27936,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/src/enrollment.rs",
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363",
+      "bytes": 19506,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/src/event_fixture.rs",
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54",
+      "bytes": 23424,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/src/lib.rs",
+      "sha256": "0c682f01c368211dd30b4307b509a0891e360bd21a7cb9dfad67761027400670",
+      "bytes": 43408,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/src/lifecycle_bootstrap.rs",
+      "sha256": "85abcc95923e8333b2e8fdeef5a8e8086b453cc8e80a59f2473918420ec2403b",
+      "bytes": 47843,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/src/lifecycle_relay.rs",
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a",
+      "bytes": 16229,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/src/pressure_audit.rs",
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c",
+      "bytes": 20193,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/src/psi.rs",
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2",
+      "bytes": 16179,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/tests/data/grant.hex",
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29",
+      "bytes": 353,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/source10/tests/data/request.hex",
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede",
+      "bytes": 289,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/status.json",
+      "sha256": "f9a5f3503c84066022868ac798e4802872eeb8fe4c5c93db9a793321f6e9818d",
+      "bytes": 1382,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/tooling/executed-archive-audit09.py",
+      "sha256": "e72e4e844f40365e994777f1321a568022a6ea6f04f83658ae95bb402f450ebe",
+      "bytes": 7330,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/tooling/executed-archive-audit10.py",
+      "sha256": "d9bcfece0046e12de0539f18f9ee5e289a821f1dc9b2a9824a78b51d5f2c89ec",
+      "bytes": 7816,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/tooling/executed-matching-build10.py",
+      "sha256": "7d85072490af131a70362d418c0ec6e56fa0302c4bbb8bdd1e0b439482e616c4",
+      "bytes": 11065,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "pressure10-checkpoint05/validation.json",
+      "sha256": "33f56055636476fba22b160db684f4aea0b5410326f98122686bde129ca7e994",
+      "bytes": 1652,
       "encoding": "utf-8"
     },
     {

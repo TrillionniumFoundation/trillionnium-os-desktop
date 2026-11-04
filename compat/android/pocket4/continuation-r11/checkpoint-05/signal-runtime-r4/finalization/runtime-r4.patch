@@ -1,0 +1,1115 @@
+--- runtime-r3/run.py
++++ runtime-r4/run.py
+@@ -32,6 +32,9 @@
+     "ctl", "discover_init", "atext", "current_guest_epoch", "engine_loaded", "bootstrap_ready", "run", "cleanup",
+ )
+ CASES = (("r2", "svc"), ("r2", "smc-handler"), ("r2", "smc-default"), ("r3", "smc-mask-edit"))
++HELPER_SOURCE_SHA = "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c"
++HELPER_BINARY_SHA = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
++HELPER_QUALIFICATION_SHA = "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3"
+ 
+ 
+ def need(value, message):
+@@ -130,6 +133,37 @@
+     return load_module(Path(manifest_path).parent / "host_suite.py", "pinned_signal_host_suite")
+ 
+ 
++def verify_helper_qualification(path, expected):
++    need(expected == HELPER_QUALIFICATION_SHA and sha(path) == expected,
++         "external namespace-entry qualification pin differs")
++    value = json.loads(Path(path).read_text())
++    need(value.get("schema") == 1 and value.get("protocol") == "owned-held-namespace-entry-v1"
++         and value.get("helper_source_sha256") == HELPER_SOURCE_SHA
++         and value.get("helper_binary_sha256") == HELPER_BINARY_SHA
++         and value.get("qualified_for_owned_namespace_entry") is True
++         and value.get("host_controls_passed") == 14
++         and value.get("six_namespace_host_entry_passed") is True
++         and value.get("Main_readonly_entry_passed") is True
++         and value.get("qualified_for_whole_process_tree_cleanup") is False
++         and value.get("candidate_production_ready") is False,
++         "namespace helper qualification scope or result differs")
++    need(set(value.get("evidence", {})) == {"host14", "sixns", "main_readonly"},
++         "namespace helper evidence set differs")
++    for record in value["evidence"].values():
++        need(sha(record["path"]) == record["sha256"], "actual helper control receipt changed")
++        terminal = record["terminal"]
++        need(terminal["state"] == "succeeded" and terminal["exit_code"] == 0
++             and terminal["cancelled"] is False and terminal["timed_out"] is False
++             and terminal["output_complete"] is True and terminal["output_durable"] is True
++             and terminal["terminal_publication_confirmed"] is True,
++             "helper control does not have a complete successful terminal")
++    return {"path": str(path), "sha256": expected,
++            "helper_source_sha256": HELPER_SOURCE_SHA, "helper_binary_sha256": HELPER_BINARY_SHA,
++            "qualification_binding_module_sha256": value["binding_module_sha256"],
++            "scope": "shared entry helper mechanism; this private runtime FD/classpath adapter is separately qualified",
++            "whole_process_tree_cleanup_qualified": False}
++
++
+ def admit(args):
+     need(sys.flags.optimize == 0, "optimized Python is prohibited")
+     source = Path(args.preparation_source).resolve(strict=True)
+@@ -137,14 +171,26 @@
+     verify_manifest(original_manifest, PREPARATION_MANIFEST_SHA)
+     program_manifest = verify_manifest(args.source_manifest, args.source_manifest_sha256)
+     need(Path(args.source_manifest).parent.resolve() == Path(__file__).parent.resolve(), "runtime manifest directory differs")
+-    need(program_manifest["artifact"] == "isolated-signal-canary-runtime-r3" and
+-         {"run.py", "host_suite.py", "framework_census.py"}.issubset(program_manifest["files"]), "incomplete runtime source contract")
++    need(program_manifest["artifact"] == "isolated-signal-canary-runtime-r4" and
++         {"run.py", "host_suite.py", "framework_census.py", "held_runtime.py",
++          "failure_evidence.py", "held_namespace_entry.rs"}.issubset(program_manifest["files"]), "incomplete runtime source contract")
+     # The native binary and full 3793-registration suite already passed using
+     # the exact frozen r1 host wrapper.  Bind that independent qualification;
+     # a diagnostic-only Android runner revision must not relabel its source.
+     host_suite = qualified_host_wrapper(program_manifest, args.host_wrapper_source_manifest)
+     prep = load_module(source / "prepare.py", "pinned_signal_preparation")
+     assess = load_module(source / "assess.py", "pinned_signal_assessment")
++    need(args.namespace_helper_sha256 == HELPER_BINARY_SHA and
++         args.namespace_helper_source_sha256 == HELPER_SOURCE_SHA, "unqualified namespace helper pin")
++    need(program_manifest["files"]["held_namespace_entry.rs"]["sha256"] == HELPER_SOURCE_SHA,
++         "namespace helper source differs from reviewed runtime source")
++    for path, digest, executable in ((args.namespace_helper, args.namespace_helper_sha256, True),
++                                    (args.namespace_helper_source, args.namespace_helper_source_sha256, False)):
++        prep.pinned_file({"path": path, "sha256": digest}, executable=executable)
++        info = Path(path).lstat()
++        need(stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_mode & 0o022 == 0,
++             "namespace helper source/binary is aliased or writable by others")
++    verify_helper_qualification(args.namespace_helper_qualification, args.namespace_helper_qualification_sha256)
+     config = prep.load_inputs(Path(args.inputs), args.inputs_sha256)
+     need(Path(config["runner_manifest"]["path"]).resolve() == original_manifest and
+          config["runner_manifest"]["sha256"] == PREPARATION_MANIFEST_SHA,
+@@ -182,6 +228,19 @@
+     tree = ast.parse(path.read_text())
+     selected = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in RETAINED_FUNCTIONS]
+     need({node.name for node in selected} == set(RETAINED_FUNCTIONS), "original v5 function set changed")
++    # Release the private mount/root references after final Android readback
++    # and before the original exact daemon/cell teardown. The original file
++    # remains immutable; this is the sole retained-function AST insertion.
++    cleanup_node = next(node for node in selected if node.name == "cleanup")
++    anchors = [i for i, node in enumerate(cleanup_node.body)
++               if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
++               and isinstance(node.value.func, ast.Name) and node.value.func.id == "save"
++               and node.value.args and isinstance(node.value.args[0], ast.Constant)
++               and node.value.args[0].value == "resources-before-cleanup.json"]
++    need(len(anchors) == 1, "exact cleanup FD-release anchor changed")
++    cleanup_node.body.insert(anchors[0] + 1,
++        ast.Expr(value=ast.Call(func=ast.Name(id="release_held_binding", ctx=ast.Load()),
++                               args=[ast.Name(id="failures", ctx=ast.Load())], keywords=[])))
+     bootstrap = [node for node in tree.body if isinstance(node, ast.Assign) and
+                  any(isinstance(t, ast.Name) and t.id == "BOOTSTRAP_ARTIFACTS" for t in node.targets)]
+     need(len(bootstrap) == 1, "original bootstrap constant missing")
+@@ -198,11 +257,11 @@
+              "CPU_INVENTORY": prep.read_json(config["cpu_inventory"], prep.CPU_INVENTORY_SHA),
+              "EPOCH_GUARD": prep.load_guard(config),
+              "BOOTSTRAP_ARTIFACTS": ast.literal_eval(bootstrap[0].value),
+-             "RESULT": {"schema": "isolated-owned-signal-runtime-r3", "arm": prepared["arm"],
++             "RESULT": {"schema": "isolated-owned-signal-runtime-r4", "arm": prepared["arm"],
+                         "production_ready": False, "commercial_app_claim": False}}
+     # Function definitions only. The old module's top-level source loaders,
+     # hardcoded Main discovery and Activity/default-alarm flows never execute.
+-    exec(compile(ast.Module(body=selected, type_ignores=[]), str(path), "exec"), scope)
++    exec(compile(ast.fix_missing_locations(ast.Module(body=selected, type_ignores=[])), str(path), "exec"), scope)
+     scope["main_snapshot"] = lambda: prep.main_snapshot(config, scope["EPOCH_GUARD"])
+     scope["main_resources"] = lambda: prep.main_snapshot(config, scope["EPOCH_GUARD"])["resources"]
+     return scope
+@@ -215,6 +274,48 @@
+         self.installed = {}
+         self.before = None
+         self.mutation_attempted = False
++        self.target = None
++        self.classpath_env = None
++        self.sampler = None
++        self.failure_labels = set()
++
++    def discover_init(self):
++        need(self.target is None, "private init binding cannot be replaced")
++        value = self.s["discover_init_original"]()
++        self.target = self.s["HELD_API"].HeldTarget(value, self.s["NAMESPACE_HELPER"],
++                                                   self.s["NAMESPACE_HELPER_SHA"])
++        self.s["save"]("private-held-entry.json", self.target.record)
++        return value
++
++    def release_bindings(self, failures):
++        report = {"before_private_cell_stop": True, "all_commands_joined": False,
++                  "all_samplers_joined": self.sampler is None or not self.sampler.is_alive()}
++        try:
++            if self.target is not None:
++                if not report["all_samplers_joined"]:
++                    self.target.seal_admission()
++                    raise RuntimeError("sampler still active; authority FDs retained until controller exit")
++                self.target.close()
++                report["all_commands_joined"] = True
++                report["released"] = True
++            else:
++                report["released"] = True
++                report["never_acquired"] = True
++        except BaseException as error:
++            failures.append("held-entry-release: " + repr(error))
++            report["error"] = repr(error)
++            report["released"] = False
++        try:
++            self.s["save"]("private-held-entry-release.json", report)
++        except BaseException as error:
++            failures.append("held-entry-release-receipt: " + repr(error))
++
++    def bind_environment(self):
++        need(self.classpath_env is None, "private classpath cannot be replaced")
++        values, receipt = self.s["HELD_API"].bind_classpaths(self.target, self.s["PRIVATE_EPOCH"],
++            self.s["EPOCH_GUARD"]["process_identity"], self.guard)
++        self.classpath_env = values
++        self.s["save"]("private-classpath-admission.json", receipt)
+ 
+     def guard(self, attempted=False):
+         s = self.s
+@@ -225,19 +326,31 @@
+             s["EPOCH_GUARD"]["require_unchanged"](s["PRIVATE_EPOCH"], action_attempted=attempted)
+         need(s["INIT"] is not None and s["proc"](s["INIT"]["pid"]) == s["INIT"], "private init generation changed")
+         s["owned"](next(row for row in s["ROWS"] if row["role"] == "daemon"))
+-
+-    def argv(self, args, uid, timeout):
+-        init = self.s["INIT"]["pid"]
++        if self.target is not None:
++            self.target.verify()
++
++    def guest_command(self, args, uid, timeout):
+         env = ["PATH=/system/bin:/system/xbin:/apex/com.android.art/bin", "ANDROID_ROOT=/system", "ANDROID_DATA=/data",
+                "ANDROID_ART_ROOT=/apex/com.android.art", "ANDROID_I18N_ROOT=/apex/com.android.i18n",
+                "ANDROID_TZDATA_ROOT=/apex/com.android.tzdata", "EXTERNAL_STORAGE=/sdcard"]
+-        return ["/usr/bin/nsenter", "--target", str(init), "--mount", "--pid", "--uts", "--ipc", "--net", "--cgroup",
+-                "--root", "--wd", "--", "/system/bin/env", "-i", *env, "/system/bin/timeout", "-k", "2",
++        if list(args[:2]) == ["/system/bin/am", "instrument"]:
++            need(self.classpath_env is not None and
++                 set(self.classpath_env) == set(self.s["HELD_API"].REQUIRED_CLASSPATHS) and
++                 all(self.classpath_env.values()), "private classpath admission required before instrumentation")
++        if self.classpath_env is not None:
++            env += [key + "=" + self.classpath_env[key] for key in self.s["HELD_API"].REQUIRED_CLASSPATHS]
++        return ["/system/bin/env", "-i", *env, "/system/bin/timeout", "-k", "2",
+                 str(max(1, timeout - 5)), "/system/xbin/su", str(uid), *map(str, args)]
++
++    def argv(self, args, uid, timeout):
++        need(self.target is not None, "held private namespace/root binding is required")
++        return self.target.entry(self.guest_command(args, uid, timeout))
+ 
+     def android(self, args, uid=2000, timeout=35, check=True):
+         self.guard()
+-        p = subprocess.run(self.argv(args, uid, timeout), capture_output=True, timeout=timeout, env=self.s["ENV"])
++        with self.argv(args, uid, timeout) as (argv, authorities):
++            p = subprocess.run(argv, capture_output=True, timeout=timeout, env=self.s["ENV"],
++                               close_fds=True, pass_fds=authorities)
+         self.guard()
+         if check:
+             need(p.returncode == 0, "private read command failed: " + repr(args[:3]))
+@@ -251,21 +364,28 @@
+                 "automatic_retry": False})
+             self.mutation_attempted = True
+         try:
+-            p = subprocess.run(self.argv(args, 2000, timeout), input=data, capture_output=True,
+-                               timeout=timeout, env=self.s["ENV"])
++            with self.argv(args, 2000, timeout) as (argv, authorities):
++                p = subprocess.run(argv, input=data, capture_output=True, timeout=timeout,
++                                   env=self.s["ENV"], close_fds=True, pass_fds=authorities)
+         except subprocess.TimeoutExpired as error:
+             self.s["save"](label + ".stdout", error.stdout or b"")
+             self.s["save"](label + ".stderr", error.stderr or b"")
+             self.s["save"](label + "-terminal.json", {"returncode": None, "timed_out": True,
+                 "outcome_unknown": True, "automatic_retry": False})
++            if mutation:
++                self.s["RESULT"].setdefault("primary_command_failure", {"label": label, "returncode": None,
++                    "timed_out": True, "outcome_unknown": True, "automatic_retry": False})
+             raise
+         self.s["save"](label + ".stdout", p.stdout)
+         self.s["save"](label + ".stderr", p.stderr)
+         self.s["save"](label + "-terminal.json", {"returncode": p.returncode, "timed_out": False,
+             "mutation_attempted": mutation, "automatic_retry": False})
++        if mutation and p.returncode != 0:
++            self.s["RESULT"].setdefault("primary_command_failure", {"label": label, "returncode": p.returncode,
++                "timed_out": False, "automatic_retry": False})
+         self.guard(self.mutation_attempted)
+         if check:
+-            need(p.returncode == 0, "private command failed: " + label)
++            need(p.returncode == 0, "private command failed: " + label + " status=" + str(p.returncode))
+         return p
+ 
+     def packages(self, label):
+@@ -284,8 +404,17 @@
+         need(len(lines) == 1 and lines[0].startswith("package:/data/app/"), "owned APK path is ambiguous")
+         path = Path(lines[0].removeprefix("package:"))
+         need(".." not in path.parts and row["package"] in path.parent.name, "owned APK path differs")
+-        actual = Path("/proc") / str(self.s["INIT"]["pid"]) / "root" / str(path).lstrip("/")
+-        need(sha(actual) == row["sha256"], "installed owned APK hash differs")
++        fd = self.target.open_root(str(path), os.O_RDONLY | os.O_NOFOLLOW)
++        with os.fdopen(fd, "rb") as actual:
++            before = os.fstat(actual.fileno())
++            need(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and before.st_size == row["bytes"],
++                 "installed owned APK metadata differs")
++            need(hashlib.file_digest(actual, "sha256").hexdigest() == row["sha256"],
++                 "installed owned APK hash differs")
++            after = os.fstat(actual.fileno())
++            need((before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) ==
++                 (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns),
++                 "installed APK changed during held-root read")
+         binding = {"package": row["package"], **identity, "apk_path": str(path), "apk_sha256": row["sha256"]}
+         if revision in self.installed:
+             need(binding == self.installed[revision], "installed owned package identity changed")
+@@ -362,8 +491,8 @@
+ 
+     def instrument_with_mapping(self, label, row, binding, case, nonce):
+         s = self.s
+-        engine_path = Path("/proc") / str(s["INIT"]["pid"]) / "root/system/lib64/libberberis_arm64.so"
+-        with engine_path.open("rb") as held:
++        engine_path = "/system/lib64/libberberis_arm64.so"
++        with os.fdopen(self.target.open_root(engine_path, os.O_RDONLY | os.O_NOFOLLOW), "rb") as held:
+             metadata = os.fstat(held.fileno())
+             pin = {"device": metadata.st_dev, "inode": metadata.st_ino, "bytes": metadata.st_size,
+                    "sha256": hashlib.file_digest(held, "sha256").hexdigest()}
+@@ -371,6 +500,7 @@
+             stop, mappings, errors = threading.Event(), [], []
+             sampler = threading.Thread(target=self.sample_engine,
+                 args=(row["package"], binding["uid"], pin, stop, mappings, errors), daemon=True)
++            self.sampler = sampler
+             sampler.start()
+             try:
+                 result = self.command(label + "-instrument", ["/system/bin/am", "instrument", "-w", "-r", "-e", "case", case,
+@@ -382,7 +512,11 @@
+             need(not sampler.is_alive() and not errors, "probe engine sampler did not complete cleanly")
+             held.seek(0)
+             need(hashlib.file_digest(held, "sha256").hexdigest() == pin["sha256"], "held candidate engine changed during case")
+-            after = engine_path.stat()
++            after_fd = self.target.open_root(engine_path, os.O_RDONLY | os.O_NOFOLLOW)
++            try:
++                after = os.fstat(after_fd)
++            finally:
++                os.close(after_fd)
+             need((after.st_dev, after.st_ino, after.st_size) == (pin["device"], pin["inode"], pin["bytes"]),
+                  "private engine mount changed during case")
+             s["save"](label + "-engine-pin-after.json", pin)
+@@ -403,28 +537,37 @@
+                 break
+             need(time.monotonic() < deadline, "previous owned probe process did not stop")
+             time.sleep(.05)
+-        root = Path("/proc") / str(s["INIT"]["pid"]) / "root"
+-        directory = root / "data/user/0" / row["package"] / "files/signal-probe"
+-        claim, final = directory / (nonce + ".claim"), directory / (nonce + ".json")
+-        need(not claim.exists() and not claim.is_symlink() and not final.exists() and not final.is_symlink(), "nonce was already claimed")
++        directory = "/data/user/0/" + row["package"] + "/files/signal-probe/"
++        claim, final = directory + nonce + ".claim", directory + nonce + ".json"
++        need(not self.target.exists(claim) and not self.target.exists(final), "nonce was already claimed")
+         s["save"](label + "-case-claim.json", {"nonce": nonce, "case": case, "binding": binding,
+             "engine_sha256": s["P"]["engine_sha256"], "invocations_allowed": 1})
+-        result, mappings = self.instrument_with_mapping(label, row, binding, case, nonce)
+-        self.guard(True)
+-        for path in (claim, final):
+-            metadata = path.lstat()
+-            need(stat.S_ISREG(metadata.st_mode) and metadata.st_nlink == 1, "owned durable result is not a regular file")
+-        claim_bytes, final_bytes = claim.read_bytes(), final.read_bytes()
+-        s["save"](label + "-durable.claim", claim_bytes)
+-        s["save"](label + "-durable.json", final_bytes)
+-        outcome = self.a.assess_case(result.stdout, final_bytes, claim_bytes, row["package"], case, nonce, result.returncode)
+-        bound = [m for m in mappings if m["process"]["namespace_pids"][-1] == outcome["guest_pid"]]
+-        need(len(bound) == 1, "exact probe process candidate engine mapping was not observed")
+-        need(len(mappings) == 1, "multiple probe process generations observed for one invocation")
+-        outcome["actual_mapped_engine"] = bound[0]
+-        s["save"](label + "-assessment.json", outcome)
+-        self.package_binding(revision, label + "-after")
+-        s["RESULT"].setdefault("cases", []).append(outcome)
++        try:
++            result, mappings = self.instrument_with_mapping(label, row, binding, case, nonce)
++            self.guard(True)
++            need(result.returncode == 0, "owned instrumentation command failed: " + label + " status=" + str(result.returncode))
++            claim_bytes, claim_meta = self.target.read_file(claim, 16384, single_link=True)
++            final_bytes, final_meta = self.target.read_file(final, 256 * 1024, single_link=True)
++            need(claim_meta["uid"] == binding["uid"] and final_meta["uid"] == binding["uid"],
++                 "owned durable result UID differs")
++            s["save"](label + "-durable.claim", claim_bytes)
++            s["save"](label + "-durable.json", final_bytes)
++            outcome = self.a.assess_case(result.stdout, final_bytes, claim_bytes, row["package"], case, nonce, result.returncode)
++            bound = [m for m in mappings if m["process"]["namespace_pids"][-1] == outcome["guest_pid"]]
++            need(len(bound) == 1, "exact probe process candidate engine mapping was not observed")
++            need(len(mappings) == 1, "multiple probe process generations observed for one invocation")
++            outcome["actual_mapped_engine"] = bound[0]
++            s["save"](label + "-assessment.json", outcome)
++            self.package_binding(revision, label + "-after")
++            s["RESULT"].setdefault("cases", []).append(outcome)
++        except BaseException as error:
++            if label not in self.failure_labels:
++                self.failure_labels.add(label)
++                try:
++                    self.s["FAILURE_EVIDENCE"].capture(self, label, row, binding, nonce, error)
++                except BaseException as capture_error:
++                    s["RESULT"].setdefault("failure_evidence_errors", []).append(repr(capture_error))
++            raise
+ 
+     def cleanup_packages(self):
+         if self.before is None:
+@@ -441,13 +584,12 @@
+                 self.s["save"](revision + "-cleanup-exact-identity.json", binding)
+                 result = self.command(revision + "-uninstall", ["/system/bin/cmd", "package", "uninstall", "--user", "0", row["package"]], mutation=True, timeout=45)
+                 need(result.stdout.strip() == b"Success", "owned package removal not confirmed")
+-                root = Path("/proc") / str(self.s["INIT"]["pid"]) / "root"
+                 targets = [str(Path(binding["apk_path"]).parent), "/data/data/" + row["package"],
+                            "/data/user/0/" + row["package"], "/data/user_de/0/" + row["package"]]
+                 deadline = time.monotonic() + 10
+                 while True:
+                     self.guard(True)
+-                    remaining = [p for p in targets if os.path.lexists(root / p.lstrip("/"))]
++                    remaining = [p for p in targets if self.target.exists(p)]
+                     if not remaining or time.monotonic() >= deadline:
+                         break
+                     time.sleep(.2)
+@@ -469,6 +611,7 @@
+         need(self.before is None and not self.installed and not self.mutation_attempted,
+              "initial framework capture is prohibited after any probe action")
+         s["FRAMEWORK_CENSUS"].capture_initial(s, self.guard)
++        self.bind_environment()
+         s["bootstrap_ready"]()
+         self.before = self.packages("private-packages-baseline")
+         need(set(s["BOOTSTRAP_ARTIFACTS"]).issubset(self.before), "private bootstrap is incomplete")
+@@ -489,7 +632,9 @@
+     parser.add_argument("phase", choices=("check", "run"))
+     for name in ("inputs", "inputs-sha256", "prepared-sha256", "preparation-source", "source-manifest",
+                  "source-manifest-sha256", "host-suite-receipt", "host-suite-sha256", "host-launch-inputs", "host-launch-inputs-sha256",
+-                 "host-wrapper-source-manifest"):
++                 "host-wrapper-source-manifest", "namespace-helper", "namespace-helper-sha256",
++                 "namespace-helper-source", "namespace-helper-source-sha256",
++                 "namespace-helper-qualification", "namespace-helper-qualification-sha256"):
+         parser.add_argument("--" + name, required=True)
+     args = parser.parse_args()
+     os.umask(0o077)
+@@ -504,7 +649,14 @@
+         return 0
+     scope = original_runtime(prep, config, prepared, Path(args.preparation_source))
+     scope["FRAMEWORK_CENSUS"] = load_module(Path(__file__).with_name("framework_census.py"), "pinned_signal_framework_census_r2")
++    scope["HELD_API"] = load_module(Path(__file__).with_name("held_runtime.py"), "pinned_signal_held_runtime_r4")
++    scope["FAILURE_EVIDENCE"] = load_module(Path(__file__).with_name("failure_evidence.py"), "pinned_signal_failure_evidence_r4")
++    scope["NAMESPACE_HELPER"] = args.namespace_helper
++    scope["NAMESPACE_HELPER_SHA"] = args.namespace_helper_sha256
+     flow = ProbeFlow(scope, assess)
++    scope["discover_init_original"] = scope["discover_init"]
++    scope["discover_init"] = flow.discover_init
++    scope["release_held_binding"] = flow.release_bindings
+     scope["android"] = flow.android
+     scope["run_probes"] = flow.run
+ 
+@@ -518,16 +670,23 @@
+         for tool, digest in {**config["tools"], **helpers["tools"]}.items():
+             need(sha(tool) == digest, "host tool changed")
+         need(sha(args.host_suite_receipt) == args.host_suite_sha256, "host suite receipt changed")
++        verify_helper_qualification(args.namespace_helper_qualification, args.namespace_helper_qualification_sha256)
++        need(sha(args.namespace_helper) == HELPER_BINARY_SHA and
++             sha(args.namespace_helper_source) == HELPER_SOURCE_SHA, "namespace helper source/binary changed")
+         return {"runtime_manifest_sha256": args.source_manifest_sha256, "preparation_manifest_sha256": PREPARATION_MANIFEST_SHA,
+                 "host_qualification_wrapper_manifest_sha256": HOST_WRAPPER_MANIFEST_SHA,
+                 "input_sha256": args.inputs_sha256, "prepared_sha256": args.prepared_sha256,
+-                "host_suite_sha256": args.host_suite_sha256, "host_launch_inputs_sha256": args.host_launch_inputs_sha256}
++                "host_suite_sha256": args.host_suite_sha256, "host_launch_inputs_sha256": args.host_launch_inputs_sha256,
++                "namespace_helper_sha256": HELPER_BINARY_SHA, "namespace_helper_source_sha256": HELPER_SOURCE_SHA,
++                "namespace_helper_qualification_sha256": HELPER_QUALIFICATION_SHA}
+ 
+     scope["source_contract"] = source_contract
+     prep.write_new(Path(prepared["evidence"]) / "run.claim.json", {"started_utc": scope["now"](),
+         **source_contract(), "nonces": prepared["nonces"], "automatic_retry": False})
+     result = scope["RESULT"]
+     result["host_suite"] = suite
++    result["namespace_entry_qualification"] = verify_helper_qualification(
++        args.namespace_helper_qualification, args.namespace_helper_qualification_sha256)
+     try:
+         scope["run"]()
+         result["run_returned"] = True
+--- runtime-r3/held_runtime.py
++++ runtime-r4/held_runtime.py
+@@ -0,0 +1,373 @@
++"""Descriptor-bound namespace entry and private Android classpath admission.
++
++No numeric PID is used by the command entry helper. The caller keeps the
++original Main/private epoch guards and owns full cell/process-tree cleanup.
++"""
++from contextlib import contextmanager
++import ctypes
++import errno
++import fcntl
++import hashlib
++import os
++from pathlib import PurePosixPath
++import re
++import select
++import stat
++import threading
++import time
++
++NS_TYPES = {"mnt": 0x00020000, "pid": 0x20000000, "uts": 0x04000000,
++            "ipc": 0x08000000, "net": 0x40000000, "cgroup": 0x02000000}
++REQUIRED_CLASSPATHS = ("BOOTCLASSPATH", "DEX2OATBOOTCLASSPATH")
++ENV_LIMIT = 256 * 1024
++PATH_COUNT_LIMIT = 256
++PATH_BYTES_LIMIT = 32768
++FILE_LIMIT = 128 * 1024 * 1024
++TOTAL_FILE_LIMIT = 768 * 1024 * 1024
++CLASSPATH_SECONDS = 45
++HELPER_SOURCE_SHA = "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c"
++HELPER_BINARY_SHA = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
++
++class BindingError(RuntimeError):
++    pass
++
++def require(value, message):
++    if not value:
++        raise BindingError(message)
++
++def deadline_check(deadline):
++    require(time.monotonic() <= deadline, "bounded read deadline exceeded")
++
++def fd_record(fd):
++    value = os.fstat(fd)
++    return {"device": value.st_dev, "inode": value.st_ino, "mode": value.st_mode,
++            "uid": value.st_uid, "gid": value.st_gid, "bytes": value.st_size,
++            "mtime_ns": value.st_mtime_ns, "nlink": value.st_nlink}
++
++def read_fd(fd, limit, deadline):
++    chunks = []
++    count = 0
++    while True:
++        deadline_check(deadline)
++        part = os.read(fd, min(65536, limit + 1 - count))
++        if not part:
++            return b"".join(chunks)
++        count += len(part)
++        require(count <= limit, "bounded read byte limit exceeded")
++        chunks.append(part)
++
++def read_at(directory_fd, relative, limit, deadline):
++    require(not relative.startswith("/") and ".." not in relative.split("/"),
++            "proc relative path is invalid")
++    fd = os.open(relative, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW,
++                 dir_fd=directory_fd)
++    try:
++        return read_fd(fd, limit, deadline)
++    finally:
++        os.close(fd)
++
++def proc_identity_at(proc_fd, pid, deadline):
++    raw = read_at(proc_fd, "stat", 8192, deadline).decode("utf-8", "strict")
++    status_raw = read_at(proc_fd, "status", 65536, deadline).decode("utf-8", "strict")
++    status = dict(line.split(":", 1) for line in status_raw.splitlines() if ":" in line)
++    require(raw.split("(", 1)[0].strip() == str(pid), "held proc PID differs")
++    fields = raw.rsplit(")", 1)[1].split()
++    namespaces = {name: os.readlink("ns/" + name, dir_fd=proc_fd) for name in NS_TYPES}
++    return {"pid": pid, "start": fields[19], "uid": status["Uid"].split(),
++            "nspid": status.get("NSpid", "").split(), "ppid": int(status["PPid"]),
++            "ns": namespaces, "exe": os.readlink("exe", dir_fd=proc_fd),
++            "cgroup": read_at(proc_fd, "cgroup", 16384, deadline).decode("utf-8", "strict")}
++
++def pidfd_alive(fd):
++    poller = select.poll()
++    poller.register(fd, select.POLLIN | select.POLLHUP | select.POLLERR)
++    return not poller.poll(0)
++
++class OpenHow(ctypes.Structure):
++    _fields_ = [("flags", ctypes.c_uint64), ("mode", ctypes.c_uint64),
++                ("resolve", ctypes.c_uint64)]
++
++def guest_path(path):
++    require(isinstance(path, str) and path.startswith("/") and not path.startswith("//")
++            and "\x00" not in path and len(path.encode("utf-8")) <= 4096,
++            "guest path is not a bounded absolute path")
++    require(path == "/" or all(part not in ("", ".", "..") for part in path[1:].split("/")),
++            "guest path contains an empty or dot component")
++    return path
++
++def open_in_root(root_fd, path, flags=os.O_RDONLY):
++    path = guest_path(path)
++    require(os.uname().machine == "x86_64", "qualified openat2 entry is x86_64 only")
++    # IN_ROOT resolves absolute symlinks inside the held Android root.
++    # NO_MAGICLINKS excludes proc magic-link escape. APEX mount crossings are
++    # expected, so NO_XDEV and BENEATH are intentionally absent.
++    how = OpenHow(flags | os.O_CLOEXEC, 0, 0x10 | 0x02)
++    libc = ctypes.CDLL(None, use_errno=True)
++    syscall = libc.syscall
++    syscall.restype = ctypes.c_long
++    result = syscall(ctypes.c_long(437), ctypes.c_int(root_fd),
++                     ctypes.c_char_p(path.encode("utf-8")),
++                     ctypes.byref(how), ctypes.c_size_t(ctypes.sizeof(how)))
++    if result < 0:
++        error = ctypes.get_errno()
++        raise OSError(error, os.strerror(error), path)
++    return int(result)
++
++class HeldTarget:
++    """One immutable init generation; no rebind after acquisition or close."""
++    def __init__(self, expected, helper_path, helper_sha256=HELPER_BINARY_SHA):
++        self.expected = expected
++        self.helper_path = str(helper_path)
++        self.helper_sha256 = helper_sha256
++        self._lock = threading.RLock()
++        self._active = 0
++        self._unjoined_command = False
++        self._admission_closed = False
++        self._closed = False
++        self._fds = []
++        self.proc_fd = self.pid_fd = self.root_fd = -1
++        self.namespaces = {}
++        try:
++            require(set(expected["ns"]) == set(NS_TYPES), "complete six-namespace identity required")
++            pid = expected["pid"]
++            self.proc_fd = self._own(os.open("/proc/" + str(pid),
++                os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW))
++            self.pid_fd = self._own(os.pidfd_open(pid, 0))
++            self._verify_proc()
++            for name, kind in NS_TYPES.items():
++                fd = self._own(os.open("ns/" + name, os.O_RDONLY | os.O_CLOEXEC,
++                                       dir_fd=self.proc_fd))
++                require(fcntl.ioctl(fd, 0xb703) == kind, "namespace FD has incorrect type: " + name)
++                match = re.fullmatch(re.escape(name) + r":\[(\d+)\]", expected["ns"][name])
++                require(match is not None and os.fstat(fd).st_ino == int(match[1]),
++                        "namespace FD differs from held proc identity: " + name)
++                self.namespaces[name] = fd
++            self.root_fd = self._own(os.open("root", os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC,
++                                            dir_fd=self.proc_fd))
++            require(os.readlink("cwd", dir_fd=self.proc_fd) == "/", "init cwd is not root")
++            self.root_record = fd_record(self.root_fd)
++            require(stat.S_ISDIR(self.root_record["mode"]), "held root is not a directory")
++            self._verify_proc()
++            self.record = {"init": expected, "proc": fd_record(self.proc_fd),
++                           "root": self.root_record,
++                           "namespaces": {name: fd_record(fd) for name, fd in self.namespaces.items()},
++                           "pidfd_held": True, "numeric_target_used_for_entry": False,
++                           "helper_sha256": helper_sha256}
++        except BaseException:
++            for fd in reversed(self._fds):
++                os.close(fd)
++            self._fds.clear()
++            self._closed = True
++            raise
++
++    def _own(self, fd):
++        if fd < 3:
++            os.close(fd)
++            raise BindingError("authority descriptor would alias a standard stream")
++        self._fds.append(fd)
++        return fd
++
++    def _verify_proc(self):
++        require(not self._closed and pidfd_alive(self.pid_fd), "original init pidfd is no longer alive")
++        require(proc_identity_at(self.proc_fd, self.expected["pid"], time.monotonic() + 3)
++                == self.expected, "held init identity changed")
++        require(pidfd_alive(self.pid_fd), "original init exited during verification")
++        if self.root_fd >= 0:
++            current = os.open("root", os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC, dir_fd=self.proc_fd)
++            try:
++                a, b = os.fstat(current), os.fstat(self.root_fd)
++                require((a.st_dev, a.st_ino) == (b.st_dev, b.st_ino), "init changed its root")
++            finally:
++                os.close(current)
++
++    def verify(self):
++        with self._lock:
++            require(not self._admission_closed, "held entry admission is closed")
++            self._verify_proc()
++            root = os.fstat(self.root_fd)
++            require((root.st_dev, root.st_ino) == (self.root_record["device"], self.root_record["inode"]),
++                    "held root inode changed")
++
++    @contextmanager
++    def lease(self):
++        with self._lock:
++            require(not self._admission_closed, "held entry admission is closed")
++            self._verify_proc()
++            self._active += 1
++        try:
++            yield
++        finally:
++            with self._lock:
++                self._active -= 1
++                require(self._active >= 0, "held entry lease accounting failed")
++
++    @contextmanager
++    def entry(self, command):
++        with self.lease():
++            require(command and str(command[0]).startswith("/"), "entry command must be absolute")
++            authority = (self.root_fd, *self.namespaces.values())
++            require(len(set(authority)) == 7 and all(fd >= 3 for fd in authority),
++                    "complete unique held authority set required")
++            argv = [self.helper_path, "--parent-pid=" + str(os.getpid()),
++                    "--root-fd=" + str(self.root_fd)]
++            argv += ["--" + name + "-fd=" + str(fd) for name, fd in self.namespaces.items()]
++            argv += ["--", *map(str, command)]
++            # The procdir and init pidfd are not passed. The helper reasserts
++            # CLOEXEC on precisely these authorities before the final exec.
++            yield argv, authority
++
++    def open_root(self, path, flags=os.O_RDONLY):
++        with self.lease():
++            return open_in_root(self.root_fd, path, flags)
++
++    def read_file(self, path, limit, *, single_link=False, deadline=None):
++        deadline = deadline or time.monotonic() + 5
++        fd = self.open_root(path, os.O_RDONLY | os.O_NOFOLLOW)
++        try:
++            before = fd_record(fd)
++            require(stat.S_ISREG(before["mode"]) and before["bytes"] <= limit,
++                    "owned file is not bounded and regular")
++            require(not single_link or before["nlink"] == 1, "owned file has multiple hard links")
++            value = read_fd(fd, limit, deadline)
++            require(fd_record(fd) == before and len(value) == before["bytes"],
++                    "owned file changed during read")
++            return value, before
++        finally:
++            os.close(fd)
++
++    def exists(self, path):
++        try:
++            fd = self.open_root(path, os.O_PATH | os.O_NOFOLLOW)
++        except FileNotFoundError:
++            return False
++        else:
++            os.close(fd)
++            return True
++
++    def poison_unjoined_command(self):
++        with self._lock:
++            self._admission_closed = True
++            self._unjoined_command = True
++
++    def seal_admission(self):
++        with self._lock:
++            self._admission_closed = True
++
++    def close(self):
++        with self._lock:
++            self._admission_closed = True
++            require(self._active == 0, "held entry still has active commands/readers")
++            require(not self._unjoined_command, "unjoined diagnostic child; authority FDs retained until controller exit")
++            if self._closed:
++                return
++            errors = []
++            for fd in reversed(self._fds):
++                try:
++                    os.close(fd)
++                except OSError as error:
++                    errors.append(repr(error))
++            self._fds.clear()
++            self._closed = True
++            require(not errors, "authority FD release failed: " + repr(errors))
++
++def selected_classpaths(raw):
++    require(len(raw) <= ENV_LIMIT and raw.endswith(b"\0"), "zygote environ is incomplete or oversized")
++    result = {}
++    for entry in raw.split(b"\0"):
++        name, separator, value = entry.partition(b"=")
++        if name.decode("ascii", "ignore") not in REQUIRED_CLASSPATHS:
++            continue
++        require(separator and name in (b"BOOTCLASSPATH", b"DEX2OATBOOTCLASSPATH"),
++                "required classpath key is not exact ASCII")
++        key = name.decode("ascii")
++        require(key not in result, "duplicate required classpath key")
++        require(value and len(value) <= PATH_BYTES_LIMIT, "required classpath is empty or oversized")
++        text = value.decode("ascii", "strict")
++        parts = text.split(":")
++        require(0 < len(parts) <= PATH_COUNT_LIMIT, "classpath entry count exceeded")
++        for path in parts:
++            guest_path(path)
++            require(path.endswith(".jar") and all(ord(c) >= 33 and ord(c) < 127 for c in path),
++                    "classpath entry is not a plain absolute jar path")
++        require(len(set(parts)) == len(parts), "duplicate path in one classpath")
++        result[key] = text
++    require(set(result) == set(REQUIRED_CLASSPATHS), "required private zygote classpath keys are missing")
++    return result
++
++def hash_classpaths(target, values, deadline):
++    unique = list(dict.fromkeys(path for key in REQUIRED_CLASSPATHS for path in values[key].split(":")))
++    require(len(unique) <= PATH_COUNT_LIMIT, "combined classpath count exceeded")
++    files = []
++    total = 0
++    for path in unique:
++        deadline_check(deadline)
++        fd = target.open_root(path, os.O_RDONLY)
++        try:
++            before = fd_record(fd)
++            require(stat.S_ISREG(before["mode"]) and 0 < before["bytes"] <= FILE_LIMIT,
++                    "classpath file is absent, empty, non-regular or oversized")
++            total += before["bytes"]
++            require(total <= TOTAL_FILE_LIMIT, "combined classpath byte budget exceeded")
++            digest = hashlib.sha256()
++            count = 0
++            while True:
++                deadline_check(deadline)
++                block = os.read(fd, min(131072, before["bytes"] + 1 - count))
++                if not block:
++                    break
++                count += len(block)
++                require(count <= before["bytes"], "classpath grew during hashing")
++                digest.update(block)
++            require(count == before["bytes"] and fd_record(fd) == before, "classpath changed during hashing")
++            files.append({"path": path, **before, "sha256": digest.hexdigest()})
++        finally:
++            os.close(fd)
++    return files, total
++
++def bind_classpaths(target, epoch, process_identity, guard_check):
++    """Read only selected environment keys from the exact private zygote."""
++    guard_check()
++    expected = epoch["binding"]["processes"]["zygote64"]
++    require(expected["namespaces"]["pid"] == target.expected["ns"]["pid"],
++            "zygote is not in the private init PID namespace")
++    require(process_identity(expected["host_pid"]) == expected, "private zygote changed before environment read")
++    proc_fd = os.open("/proc/" + str(expected["host_pid"]),
++                     os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
++    pid_fd = -1
++    deadline = time.monotonic() + CLASSPATH_SECONDS
++    try:
++        pid_fd = os.pidfd_open(expected["host_pid"], 0)
++        require(pidfd_alive(pid_fd), "private zygote exited before environment read")
++        held = proc_identity_at(proc_fd, expected["host_pid"], deadline)
++        require(int(held["start"]) == expected["start_ticks"] and
++                held["uid"] == [str(x) for x in expected["uids"]] and
++                held["ns"]["pid"] == expected["namespaces"]["pid"] and
++                held["ns"]["mnt"] == expected["namespaces"]["mnt"] and
++                held["exe"] == expected["executable"] and
++                held["ppid"] == expected["parent_host_pid"] and
++                [int(x) for x in held["nspid"]] == expected["namespace_pids"] and
++                held["cgroup"].splitlines() == expected["cgroup"],
++                "held zygote procdir differs from the fixed epoch")
++        raw = read_at(proc_fd, "environ", ENV_LIMIT, deadline)
++        values = selected_classpaths(raw)
++        # Do not retain the rest of the process environment.
++        del raw
++        files, total = hash_classpaths(target, values, deadline)
++        again = selected_classpaths(read_at(proc_fd, "environ", ENV_LIMIT, deadline))
++        require(again == values and proc_identity_at(proc_fd, expected["host_pid"], deadline) == held
++                and pidfd_alive(pid_fd), "private zygote or classpath changed during admission")
++        require(process_identity(expected["host_pid"]) == expected,
++                "private zygote generation changed after environment admission")
++        target.verify()
++        guard_check()
++        return values, {"schema": 1, "source": "fixed private zygote held procdir only",
++            "zygote": expected, "required_keys": list(REQUIRED_CLASSPATHS),
++            "values": values, "files": files, "total_bytes": total,
++            "limits": {"environ_bytes": ENV_LIMIT, "path_count": PATH_COUNT_LIMIT,
++                       "per_file_bytes": FILE_LIMIT, "total_file_bytes": TOTAL_FILE_LIMIT,
++                       "deadline_seconds": CLASSPATH_SECONDS},
++            "root": target.root_record, "main_classpath_read": False}
++    finally:
++        if pid_fd >= 0:
++            os.close(pid_fd)
++        os.close(proc_fd)
+--- runtime-r3/failure_evidence.py
++++ runtime-r4/failure_evidence.py
+@@ -0,0 +1,183 @@
++"""Bounded diagnostics for a failed, once-only owned instrumentation command.
++
++This module never reruns a test. It reads only the held fresh cell. Diagnostic
++failure cannot replace the original command error or turn a failed run into PASS.
++"""
++import hashlib
++import os
++import re
++import selectors
++import stat
++import subprocess
++import time
++
++LOG_LIMIT = 512 * 1024
++ERROR_LIMIT = 64 * 1024
++TOMBSTONE_LIMIT = 2 * 1024 * 1024
++TOMBSTONE_TOTAL = 8 * 1024 * 1024
++TOMBSTONE_COUNT = 4
++
++def bounded_command(target, command, env, timeout=12):
++    out = {"stdout": bytearray(), "stderr": bytearray()}
++    limits = {"stdout": LOG_LIMIT, "stderr": ERROR_LIMIT}
++    stopped = None
++    cleanup_errors = []
++    deadline = time.monotonic() + timeout
++    with target.entry(command) as (argv, authorities):
++        # A selector allocation failure occurs before any child is launched.
++        selector = selectors.DefaultSelector()
++        process = None
++        try:
++            process = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
++                                       stderr=subprocess.PIPE, env=env, close_fds=True,
++                                       pass_fds=authorities)
++            for name, stream in (("stdout", process.stdout), ("stderr", process.stderr)):
++                os.set_blocking(stream.fileno(), False)
++                selector.register(stream, selectors.EVENT_READ, name)
++            while selector.get_map():
++                remaining = deadline - time.monotonic()
++                if remaining <= 0:
++                    stopped = "diagnostic-timeout"
++                    break
++                for key, _ in selector.select(min(.1, remaining)):
++                    name = key.data
++                    try:
++                        block = os.read(key.fd, min(65536, limits[name] + 1 - len(out[name])))
++                    except BlockingIOError:
++                        continue
++                    if not block:
++                        selector.unregister(key.fileobj)
++                        key.fileobj.close()
++                        continue
++                    out[name].extend(block)
++                    if len(out[name]) > limits[name]:
++                        del out[name][limits[name]:]
++                        stopped = "diagnostic-output-limit"
++                        break
++                if stopped:
++                    break
++        finally:
++            try:
++                selector.close()
++            except BaseException as error:
++                cleanup_errors.append("selector-close: " + repr(error))
++            if process is not None:
++                try:
++                    if stopped is None and process.poll() is None:
++                        process.wait(timeout=max(.001, deadline - time.monotonic()))
++                except subprocess.TimeoutExpired:
++                    stopped = "diagnostic-timeout"
++                except BaseException as error:
++                    cleanup_errors.append("initial-wait: " + repr(error))
++                try:
++                    if process.poll() is None:
++                        process.kill()  # Only this exact Popen child.
++                except BaseException as error:
++                    cleanup_errors.append("own-child-kill: " + repr(error))
++                for stream in (process.stdout, process.stderr):
++                    try:
++                        if stream is not None:
++                            stream.close()
++                    except BaseException as error:
++                        cleanup_errors.append("stream-close: " + repr(error))
++                try:
++                    process.wait(timeout=5)
++                except BaseException as error:
++                    stopped = "diagnostic-child-not-reaped"
++                    cleanup_errors.append("final-wait: " + repr(error))
++                if process.returncode is None:
++                    # A lease ending does not prove its process was reaped.
++                    # Permanently forbid entry and FD release; the controller
++                    # exit closes these FDs after exact cell/systemd cleanup.
++                    target.poison_unjoined_command()
++        return {"returncode": process.returncode, "stopped": stopped,
++                "cleanup_errors": cleanup_errors,
++                "stdout": bytes(out["stdout"]), "stderr": bytes(out["stderr"]),
++                "stdout_limit": LOG_LIMIT, "stderr_limit": ERROR_LIMIT,
++                "deadline_seconds": timeout, "child_reaped": process.returncode is not None}
++
++def inspect_tombstones(target, label, package, uid, nonce, save):
++    deadline = time.monotonic() + 10
++    directory = target.open_root("/data/tombstones", os.O_RDONLY | os.O_DIRECTORY)
++    rows = []
++    total = 0
++    try:
++        names = []
++        with os.scandir(directory) as entries:
++            for entry in entries:
++                names.append(entry.name)
++                if len(names) > 256:
++                    raise RuntimeError("owned tombstone directory bound exceeded")
++        for name in sorted(names):
++            if not re.fullmatch(r"tombstone_[0-9]{2,3}", name):
++                continue
++            if time.monotonic() > deadline:
++                raise RuntimeError("owned tombstone deadline exceeded")
++            fd = os.open(name, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=directory)
++            try:
++                before = os.fstat(fd)
++                if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or before.st_size > TOMBSTONE_LIMIT:
++                    continue
++                head = os.read(fd, 4096)
++                text = head.decode("utf-8", "replace")
++                cmdline = next((line.removeprefix("Cmdline: ") for line in text.splitlines()
++                                if line.startswith("Cmdline: ")), "")
++                uid_match = re.search(r"^uid: ([0-9]+)$", text, re.M)
++                owned = ((" nonce " + nonce + " ") in (" " + cmdline + " ") or
++                         cmdline.split(" ", 1)[0] == package)
++                if not owned or uid_match is None or int(uid_match[1]) not in (2000, uid):
++                    continue
++                if len(rows) >= TOMBSTONE_COUNT or total + before.st_size > TOMBSTONE_TOTAL:
++                    raise RuntimeError("owned tombstone total bound exceeded")
++                data = bytearray(head)
++                while len(data) <= before.st_size:
++                    if time.monotonic() > deadline:
++                        raise RuntimeError("owned tombstone deadline exceeded")
++                    block = os.read(fd, min(65536, before.st_size + 1 - len(data)))
++                    if not block:
++                        break
++                    data.extend(block)
++                after = os.fstat(fd)
++                if ((before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) !=
++                    (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns)
++                    or len(data) != before.st_size):
++                    raise RuntimeError("owned tombstone changed while reading")
++                raw = bytes(data)
++                output = label + "-failure-" + name + ".txt"
++                save(output, raw)
++                total += len(raw)
++                rows.append({"name": name, "output": output, "bytes": len(raw),
++                             "sha256": hashlib.sha256(raw).hexdigest(),
++                             "device": before.st_dev, "inode": before.st_ino,
++                             "cmdline": cmdline, "uid": int(uid_match[1])})
++            finally:
++                os.close(fd)
++    finally:
++        os.close(directory)
++    return {"files": rows, "bytes": total, "file_limit": TOMBSTONE_LIMIT,
++            "total_limit": TOMBSTONE_TOTAL, "count_limit": TOMBSTONE_COUNT,
++            "deadline_seconds": 10}
++
++def capture(flow, label, row, binding, nonce, first_error):
++    report = {"schema": 1, "scope": "held fresh private cell only",
++              "first_error": str(first_error), "automatic_retry": False,
++              "errors": [], "native_verdict_inferred": False}
++    try:
++        flow.guard(True)
++        command = flow.guest_command(["/system/bin/logcat", "-b", "all", "-d", "-t", "128"], 0, 12)
++        result = bounded_command(flow.target, command, flow.s["ENV"], timeout=12)
++        flow.s["save"](label + "-failure-logcat.stdout", result.pop("stdout"))
++        flow.s["save"](label + "-failure-logcat.stderr", result.pop("stderr"))
++        report["logcat"] = result
++        flow.guard(True)
++    except BaseException as error:
++        report["errors"].append("logcat: " + repr(error))
++    try:
++        flow.guard(True)
++        report["tombstones"] = inspect_tombstones(flow.target, label, row["package"],
++                                                 binding["uid"], nonce, flow.s["save"])
++        flow.guard(True)
++    except BaseException as error:
++        report["errors"].append("tombstones: " + repr(error))
++    flow.s["save"](label + "-failure-evidence.json", report)
++    return report
+--- runtime-r3/prepare_runtime.py
++++ runtime-r4/prepare_runtime.py
+@@ -0,0 +1,134 @@
++#!/usr/bin/env python3
++"""Verify r4's external qualifications before fresh preparation; never start services."""
++import argparse
++import hashlib
++import importlib.util
++import json
++import os
++from pathlib import Path
++import re
++import stat
++import sys
++import traceback
++
++sys.dont_write_bytecode = True
++HERE = Path(__file__).parent
++
++def need(value, message):
++    if not value:
++        raise RuntimeError(message)
++
++def sha(path):
++    with Path(path).open("rb") as stream:
++        return hashlib.file_digest(stream, "sha256").hexdigest()
++
++def manifest(path, expected):
++    path = Path(path)
++    need(path.is_absolute() and re.fullmatch(r"[0-9a-f]{64}", expected or ""), "explicit source manifest pin required")
++    need(sha(path) == expected, "source manifest changed")
++    result = json.loads(path.read_text())
++    for name, row in result["files"].items():
++        rel = Path(name)
++        need(not rel.is_absolute() and ".." not in rel.parts, "bad source manifest path")
++        source = path.parent / rel
++        info = source.lstat()
++        need(stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_size == row["bytes"]
++             and sha(source) == row["sha256"], "source payload changed: " + name)
++    return result
++
++def load(path, name):
++    spec = importlib.util.spec_from_file_location(name, path)
++    value = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(value)
++    return value
++
++def qualify(args):
++    current = manifest(args.source_manifest, args.source_manifest_sha256)
++    need(Path(args.source_manifest).parent.resolve() == HERE.resolve()
++         and current["artifact"] == "isolated-signal-canary-runtime-r4"
++         and {"run.py", "prepare_runtime.py", "held_runtime.py", "failure_evidence.py",
++              "held_namespace_entry.rs"}.issubset(current["files"]),
++         "wrong or incomplete preparation coordinator source")
++    runtime = load(HERE / "run.py", "qualified_private_runtime_r4")
++    source = Path(args.preparation_source).resolve(strict=True)
++    manifest(source / "source-manifest.json", runtime.PREPARATION_MANIFEST_SHA)
++    prep = load(source / "prepare.py", "qualified_original_preparation_r1")
++    host = runtime.qualified_host_wrapper(current, args.host_wrapper_source_manifest)
++    helper = runtime.verify_helper_qualification(args.namespace_helper_qualification,
++                                                args.namespace_helper_qualification_sha256)
++    need(args.namespace_helper_sha256 == runtime.HELPER_BINARY_SHA
++         and args.namespace_helper_source_sha256 == runtime.HELPER_SOURCE_SHA,
++         "namespace helper pin differs")
++    for path, digest, executable in ((args.namespace_helper, args.namespace_helper_sha256, True),
++                                    (args.namespace_helper_source, args.namespace_helper_source_sha256, False)):
++        prep.pinned_file({"path": path, "sha256": digest}, executable=executable)
++        info = Path(path).lstat()
++        need(stat.S_ISREG(info.st_mode) and info.st_nlink == 1 and info.st_mode & 0o022 == 0,
++             "namespace helper input is aliased or writable by others")
++    config = prep.load_inputs(Path(args.inputs), args.inputs_sha256)
++    need(Path(config["runner_manifest"]["path"]).resolve() == source / "source-manifest.json"
++         and config["runner_manifest"]["sha256"] == runtime.PREPARATION_MANIFEST_SHA,
++         "input selects a different preparation source")
++    suite = host.verify_report(Path(args.host_suite_receipt), args.host_suite_sha256,
++                               config["candidate_build_receipt"], config["engine"],
++                               runtime.HOST_WRAPPER_MANIFEST_SHA)
++    helper_inputs = prep.read_json({"path": args.host_launch_inputs,
++                                   "sha256": args.host_launch_inputs_sha256})
++    need(helper_inputs["schema"] == 1 and set(helper_inputs["tools"]) == {
++        "/usr/local/libexec/droidloom-compat/unshare", "/usr/bin/unshare", "/usr/bin/ip", "/usr/bin/python3"},
++        "complete host launch input set required")
++    for path, digest in helper_inputs["tools"].items():
++        prep.pinned_file({"path": path, "sha256": digest}, executable=True)
++    base = prep.read_json(config["base"]["manifest"], prep.BASE_MANIFEST_SHA)
++    need(helper_inputs["tools"]["/usr/local/libexec/droidloom-compat/unshare"] == base["host_compat_wrapper_sha256"]
++         and helper_inputs["tools"]["/usr/bin/unshare"] == base["host_unshare_sha256"],
++         "original launch tool binding changed")
++    contract = {"schema": 1, "runtime_manifest_sha256": args.source_manifest_sha256,
++                "input_sha256": args.inputs_sha256, "host_suite_sha256": args.host_suite_sha256,
++                "host_wrapper_manifest_sha256": runtime.HOST_WRAPPER_MANIFEST_SHA,
++                "preparation_manifest_sha256": runtime.PREPARATION_MANIFEST_SHA,
++                "namespace_entry_qualification": helper,
++                "namespace_helper_sha256": runtime.HELPER_BINARY_SHA,
++                "namespace_helper_source_sha256": runtime.HELPER_SOURCE_SHA,
++                "host_launch_inputs_sha256": args.host_launch_inputs_sha256,
++                "services_started": False, "old_data_read": False}
++    return prep, config, contract
++
++def main():
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("phase", choices=("check-inputs", "prepare"))
++    for name in ("inputs", "inputs-sha256", "preparation-source", "source-manifest",
++                 "source-manifest-sha256", "host-wrapper-source-manifest", "host-suite-receipt",
++                 "host-suite-sha256", "host-launch-inputs", "host-launch-inputs-sha256",
++                 "namespace-helper", "namespace-helper-sha256", "namespace-helper-source",
++                 "namespace-helper-source-sha256", "namespace-helper-qualification",
++                 "namespace-helper-qualification-sha256"):
++        parser.add_argument("--" + name, required=True)
++    args = parser.parse_args()
++    os.umask(0o077)
++    need(sys.flags.optimize == 0, "optimized Python is prohibited")
++    prep, config, contract = qualify(args)
++    if args.phase == "check-inputs":
++        validated = prep.validate_inputs(config)
++        print(json.dumps({"state": "QUALIFIED_INPUTS_CHECKED_NO_ACTIONS",
++                          "main_epoch_sha256": validated["main"]["framework_sha256"], **contract}))
++        return 0
++    # All qualifications above are read-only. Only the original, exact
++    # preparation implementation creates the fresh stage/data/nonce set.
++    status = prep.prepare(config, Path(args.inputs), args.inputs_sha256)
++    need(status["status"] == "PREPARED_NOT_STARTED", "original preparation did not finish")
++    contract["prepared_sha256"] = status["prepared_sha256"]
++    contract["state"] = "QUALIFIED_PREPARED_NOT_STARTED"
++    evidence = prep.paths(config)["evidence"]
++    prep.write_new(evidence / "preparation-entry-contract-r4.json", contract)
++    print(json.dumps(contract))
++    return 0
++
++if __name__ == "__main__":
++    try:
++        raise SystemExit(main())
++    except Exception as error:
++        print(json.dumps({"state": "PREPARATION_GATE_OR_STAGE_FAILED_NO_RETRY",
++                          "error": repr(error), "traceback": traceback.format_exc(),
++                          "services_started": False, "automatic_retry": False}))
++        raise SystemExit(1)

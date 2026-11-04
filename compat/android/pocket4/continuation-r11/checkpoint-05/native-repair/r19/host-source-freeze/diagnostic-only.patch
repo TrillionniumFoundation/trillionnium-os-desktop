@@ -1,0 +1,239 @@
+--- a/metadata_raw_cases.cc
++++ b/metadata_raw_cases.cc
+@@ -5,6 +5,7 @@
+ #include <cerrno>
+ #include <cstdio>
+ #include <cstring>
++#include <cstddef>
+ #include <fcntl.h>
+ #include <linux/memfd.h>
+ #include <pthread.h>
+@@ -26,7 +27,14 @@
+ namespace raw_owner=berberis::proc_maps_provenance::raw_metadata_owner;
+ namespace provenance=berberis::proc_maps_provenance;
+ 
++struct MetadataDiagnostic {
++  int captured=0,stage=0,raw_valid=0,tagged=-99,stat_equal=-1,fs_equal=-1;
++  int native_fs_available=0;
++  struct stat native_stat{},raw_stat{};
++  struct statfs native_fs{},raw_fs{};
++};
+ struct MetadataDetails {
++  MetadataDiagnostic diagnostic{};
+   int setup=0,start=-99,start_error=0,read=-99,read_error=0,stop=-99;
+   int native_stat=-99,native_fs=-99,projected_stat=-99,projected_fs=-99,lookup=-99;
+   int errno_preserved=0,mask_preserved=0,ordinary_tag_rejected=0;
+@@ -92,6 +100,26 @@
+          a.f_frsize==b.f_frsize && a.f_flags==b.f_flags &&
+          memcmp(&a.f_fsid,&b.f_fsid,sizeof(a.f_fsid))==0;
+ }
++
++static void CaptureMetadataDiagnostic(const struct stat& expected,
++                                      const struct statfs& expected_fs,
++                                      const raw_owner::Snapshot& value,
++                                      int raw_result,bool preserved,int stage=1) {
++  // Caller-only recording. It neither edits the fixed worker nor changes
++  // the pre-existing SameStat/SameFs assertions.
++  MetadataDiagnostic& out=details->diagnostic;
++  if(out.captured)return;
++  out.captured=1;out.stage=stage;out.raw_valid=raw_result==0;
++  out.tagged=value.tagged;out.native_stat=expected;out.native_fs=expected_fs;
++  out.raw_stat=value.identity;out.raw_fs=value.filesystem;out.native_fs_available=1;
++  out.stat_equal=SameStat(expected,value.identity);
++  out.fs_equal=SameFs(expected_fs,value.filesystem);
++  if(raw_result<0)out.stage=2;
++  else if(!preserved)out.stage=3;
++  else if(value.tagged!=0)out.stage=4;
++  else if(!out.stat_equal)out.stage=5;
++  else if(!out.fs_equal)out.stage=6;
++}
+ static bool Start() {
+   errno=0;details->start=raw_owner::Start();details->start_error=errno;
+   details->worker_tid=raw_owner::state.tid.load(std::memory_order_acquire);
+@@ -110,6 +138,7 @@
+   raw_owner::Snapshot snapshot{};errno=113;
+   details->read=raw_owner::Read(fd,&snapshot);details->read_error=errno;
+   details->errno_preserved=errno==113;
++  CaptureMetadataDiagnostic(expected,expected_fs,snapshot,details->read,details->errno_preserved);
+   if(details->read<0 || !details->errno_preserved || snapshot.tagged!=0 ||
+      !SameStat(expected,snapshot.identity) || !SameFs(expected_fs,snapshot.filesystem))return false;
+   details->caller_uid=static_cast<int>(getuid());
+@@ -239,6 +268,16 @@
+   }
+   struct stat own{};raw_owner::Snapshot value{};
+   const bool passed=fstat(argument->fd,&own)==0 && raw_owner::Read(argument->fd,&value)==0 &&
++                    ([&]() {
++                      // This case has an additional comparison before Check().
++                      // Capture that same observation before its original assertion.
++                      struct statfs observed_fs{};
++                      const int saved=errno;
++                      if(fstatfs(argument->fd,&observed_fs)==0)
++                        CaptureMetadataDiagnostic(own,observed_fs,value,0,true,7);
++                      errno=saved;
++                      return true;
++                    })() &&
+                     own.st_ino!=argument->original.st_ino && SameStat(own,value.identity) &&
+                     Check(argument->fd);
+   details->thread_fdtable_checked=passed;
+--- a/owner_probe.cpp
++++ b/owner_probe.cpp
+@@ -4,7 +4,7 @@
+ #include <cstdio>
+ #include "metadata_raw_cases.cc"
+ 
+-static char probe_result[32768];
++static char probe_result[65536];
+ static size_t result_used;
+ static bool result_overflow;
+ static void Append(const char* format,...) {
+@@ -17,6 +17,76 @@
+   }
+   result_used+=static_cast<size_t>(count);
+ }
++
++static void AppendBytes(const void* address,size_t size) {
++  const auto* bytes=static_cast<const unsigned char*>(address);
++  Append("\"");
++  for(size_t i=0;i<size;++i)Append("%02x",static_cast<unsigned>(bytes[i]));
++  Append("\"");
++}
++static void AppendStatPair(const struct stat& native,const struct stat& raw) {
++  Append("{");
++#define PAIR_U(field) Append("\"" #field "\":[%llu,%llu],", \
++  static_cast<unsigned long long>(native.field),static_cast<unsigned long long>(raw.field))
++#define PAIR_S(field) Append("\"" #field "\":[%lld,%lld],", \
++  static_cast<long long>(native.field),static_cast<long long>(raw.field))
++  PAIR_U(st_dev);PAIR_U(st_ino);PAIR_U(st_nlink);PAIR_U(st_mode);PAIR_U(st_uid);
++  PAIR_U(st_gid);PAIR_U(st_rdev);PAIR_S(st_size);PAIR_S(st_blksize);PAIR_S(st_blocks);
++  PAIR_S(st_atim.tv_sec);PAIR_S(st_atim.tv_nsec);PAIR_S(st_mtim.tv_sec);
++  PAIR_S(st_mtim.tv_nsec);PAIR_S(st_ctim.tv_sec);PAIR_S(st_ctim.tv_nsec);
++#undef PAIR_U
++#undef PAIR_S
++  Append("\"native_bytes\":");AppendBytes(&native,sizeof(native));
++  Append(",\"raw_bytes\":");AppendBytes(&raw,sizeof(raw));Append("}");
++}
++static void AppendFsPair(const struct statfs& native,const struct statfs& raw) {
++  Append("{");
++#define PAIR(field) Append("\"" #field "\":[%llu,%llu],", \
++  static_cast<unsigned long long>(native.field),static_cast<unsigned long long>(raw.field))
++  PAIR(f_type);PAIR(f_bsize);PAIR(f_blocks);PAIR(f_bfree);PAIR(f_bavail);
++  PAIR(f_files);PAIR(f_ffree);PAIR(f_namelen);PAIR(f_frsize);PAIR(f_flags);
++#undef PAIR
++  Append("\"f_fsid_bytes\":[");AppendBytes(&native.f_fsid,sizeof(native.f_fsid));
++  Append(",");AppendBytes(&raw.f_fsid,sizeof(raw.f_fsid));Append("],");
++  Append("\"f_spare_bytes\":[");AppendBytes(&native.f_spare,sizeof(native.f_spare));
++  Append(",");AppendBytes(&raw.f_spare,sizeof(raw.f_spare));Append("],");
++  Append("\"native_bytes\":");AppendBytes(&native,sizeof(native));
++  Append(",\"raw_bytes\":");AppendBytes(&raw,sizeof(raw));Append("}");
++}
++static void AppendDiagnostic(const MetadataDiagnostic& d) {
++  Append(",\"diagnostic\":{\"captured\":%d,\"stage\":%d,\"raw_valid\":%d,"
++         "\"tagged\":%d,\"same_stat\":%d,\"same_fs\":%d,"
++         "\"native_fs_available\":%d,\"pair_order\":[\"native\",\"raw\"],\"stat\":",
++         d.captured,d.stage,d.raw_valid,d.tagged,d.stat_equal,d.fs_equal,d.native_fs_available);
++  AppendStatPair(d.native_stat,d.raw_stat);Append(",\"statfs\":");
++  AppendFsPair(d.native_fs,d.raw_fs);Append("}");
++}
++static void AppendMetadataLayout() {
++  Append("\"metadata_layout\":{\"stat_size\":%zu,\"stat_align\":%zu,"
++         "\"statfs_size\":%zu,\"statfs_align\":%zu,\"snapshot_size\":%zu,"
++         "\"stat_offsets\":{",sizeof(struct stat),alignof(struct stat),
++         sizeof(struct statfs),alignof(struct statfs),sizeof(raw_owner::Snapshot));
++#define STAT_OFFSET(field) Append("\"" #field "\":%zu,",offsetof(struct stat,field))
++  STAT_OFFSET(st_dev);STAT_OFFSET(st_ino);STAT_OFFSET(st_nlink);STAT_OFFSET(st_mode);
++  STAT_OFFSET(st_uid);STAT_OFFSET(st_gid);STAT_OFFSET(st_rdev);STAT_OFFSET(st_size);
++  STAT_OFFSET(st_blksize);STAT_OFFSET(st_blocks);STAT_OFFSET(st_atim);
++  STAT_OFFSET(st_mtim);
++#undef STAT_OFFSET
++  Append("\"st_ctim\":%zu},\"statfs_offsets\":{",offsetof(struct stat,st_ctim));
++#define FS_OFFSET(field) Append("\"" #field "\":%zu,",offsetof(struct statfs,field))
++  FS_OFFSET(f_type);FS_OFFSET(f_bsize);FS_OFFSET(f_blocks);FS_OFFSET(f_bfree);
++  FS_OFFSET(f_bavail);FS_OFFSET(f_files);FS_OFFSET(f_ffree);FS_OFFSET(f_fsid);
++  FS_OFFSET(f_namelen);FS_OFFSET(f_frsize);FS_OFFSET(f_flags);
++#undef FS_OFFSET
++  Append("\"f_spare\":%zu},\"field_sizes\":{\"f_type\":%zu,\"f_bsize\":%zu,"
++         "\"f_blocks\":%zu,\"f_fsid\":%zu,\"f_namelen\":%zu,\"f_frsize\":%zu,"
++         "\"f_flags\":%zu,\"f_spare\":%zu}},",offsetof(struct statfs,f_spare),
++         sizeof(((struct statfs*)nullptr)->f_type),sizeof(((struct statfs*)nullptr)->f_bsize),
++         sizeof(((struct statfs*)nullptr)->f_blocks),sizeof(((struct statfs*)nullptr)->f_fsid),
++         sizeof(((struct statfs*)nullptr)->f_namelen),sizeof(((struct statfs*)nullptr)->f_frsize),
++         sizeof(((struct statfs*)nullptr)->f_flags),sizeof(((struct statfs*)nullptr)->f_spare));
++}
++
+ static int RunOwnedMetadata() {
+   struct sigaction action{};
+   if(sigaction(SIGCHLD,nullptr,&action)<0 || action.sa_handler!=SIG_DFL ||
+@@ -30,7 +100,9 @@
+   bool all=true,any_timeout=false,total_timeout=false;
+   const int64_t began=Now();if(began<0)return 82;
+   result_used=0;result_overflow=false;
+-  Append("{\"probe\":\"owned_real_metadata_r18\",\"cases\":[");
++  Append("{\"probe\":\"owned_real_metadata_r19_diagnostic\",");
++  AppendMetadataLayout();
++  Append("\"cases\":[");
+   for(const MetadataCase& test:kMetadataCases) {
+     const int64_t now=Now();
+     if(now<0 || now-began>=15000){all=false;total_timeout=true;break;}
+@@ -56,7 +128,7 @@
+            "\"nested_child_started\":%d,\"nested_child_reaped\":%d,\"nested_timeout\":%d,"
+            "\"nested_status\":%d,\"parent_read\":%d,\"parent_stop\":%d,\"parent_fd_survived\":%d,"
+            "\"rounds\":%d,\"quiesce\":%d,\"restart\":%d,\"restart_errno\":%d,"
+-           "\"thread_error\":%d,\"thread_fdtable_checked\":%d,\"shared_vm_rejected\":%d}",
++           "\"thread_error\":%d,\"thread_fdtable_checked\":%d,\"shared_vm_rejected\":%d",
+            observed?",":"",test.name,passed?"true":"false",test.known_red?"true":"false",
+            reaped?"true":"false",timeout?"true":"false",
+            reaped&&WIFSIGNALED(status)?WTERMSIG(status):0,
+@@ -67,6 +139,7 @@
+            d.inherited_stack,d.child_finished,d.nested_started,d.child_reaped,d.child_timeout,
+            d.child_status,d.parent_read,d.parent_stop,d.parent_fd_survived,d.rounds,d.quiesce,
+            d.restart,d.restart_error,d.thread_error,d.thread_fdtable_checked,d.shared_vm_rejected);
++    AppendDiagnostic(d.diagnostic);Append("}");
+     ++observed;all=all&&passed;any_timeout=any_timeout||timeout||d.child_timeout;
+     if(timeout || !reaped)break;
+   }
+@@ -100,6 +173,6 @@
+ Java_local_pocket4_fdownerprobe_ProbeInstrumentation_runProbe(JNIEnv* env,jclass) {
+   probe_result[0]=0;const int result=RunOwnedMetadata();
+   if(result_overflow || probe_result[0]==0)
+-    snprintf(probe_result,sizeof(probe_result),"{\"probe\":\"owned_real_metadata_r18\",\"pass\":false,\"early_rc\":%d}",result);
++    snprintf(probe_result,sizeof(probe_result),"{\"probe\":\"owned_real_metadata_r19_diagnostic\",\"pass\":false,\"early_rc\":%d}",result);
+   return env->NewStringUTF(probe_result);
+ }
+--- a/CASE_PLAN.json
++++ b/CASE_PLAN.json
+@@ -1,6 +1,6 @@
+ {
+   "schema": 1,
+-  "probe": "owned_real_metadata_r18",
++  "probe": "owned_real_metadata_r19_diagnostic",
+   "actual_sources": true,
+   "raw_worker_only_fixed_snapshot": true,
+   "default_source_feature": 0,
+@@ -48,12 +48,25 @@
+     "manual_start_only_fixed_worker_null_context_required": true
+   },
+   "limitations": [
+-    "Current host maps only UID 0; real nonroot startup has not yet run for R7",
++    "R18 actual Android failed metadata comparison; R19 diagnosis has not run until separate receipt.",
+     "Explicit Start/Stop and direct raw-fork reset are probe calls; ART integration is not installed",
+     "Initial user namespace authority is PIDFD_THREAD namespace ioctl; startup can fail if actual platform lacks it",
+     "Per-request caller/worker snapshots do not prove arbitrary concurrent host-native root/mount/credential transitions",
+     "Supplementary groups limited to 128; larger set rejects qualification",
+     "No same-process resume after Quiesce; only a private-child reset permits a new generation",
+     "No original protected app files, network services, policies, or Main modifications"
+-  ]
++  ],
++  "inherits_r18_exact_core_sources": true,
++  "r18_actual_android_result": {
++    "passed": false,
++    "mask": "0x840",
++    "start_succeeded": true,
++    "raw_read_succeeded": true,
++    "first_metadata_comparison_failed": true
++  },
++  "diagnostic_only_change": {
++    "core_sources_modified": false,
++    "existing_comparisons_relaxed": false,
++    "details": "Capture tagged, every stat/statfs field and raw bytes, actual sizeof/offsetof, earliest comparison stage before unchanged checks. Private-table pre-Check comparison also captured."
++  }
+ }

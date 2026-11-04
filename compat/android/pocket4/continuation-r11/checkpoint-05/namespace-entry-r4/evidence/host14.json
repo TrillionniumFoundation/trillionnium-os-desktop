@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "scope": "Own host processes and temporary files only; no Main namespace entered",
+  "started_utc": "2026-11-04T17:25:45.334846+00:00",
+  "helper_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+  "module_sha256": "7b4fc0de8aa35ea128147139a99fee495ec368c9065b66825038c668dd4f08fd",
+  "actual_Main_mutation": false,
+  "kernel_PID_reuse_forced": false,
+  "checks": [
+    {
+      "name": "held_process_and_namespace_binding",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "actual_held_namespace_entry_exit0",
+      "passed": true,
+      "detail": {
+        "returncode": 0,
+        "stderr": ""
+      }
+    },
+    {
+      "name": "entered_exact_held_namespaces_and_root",
+      "passed": true,
+      "detail": {
+        "namespaces": {
+          "mnt": "mnt:[4026531832]",
+          "pid": "pid:[4026531836]",
+          "uts": "uts:[4026531838]",
+          "ipc": "ipc:[4026531839]"
+        },
+        "cwd": "/",
+        "root": [
+          66306,
+          2
+        ],
+        "fds": {
+          "0": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1a79862f4-fc05-2bdf/stdin.bin",
+          "1": "pipe:[456967453]",
+          "2": "pipe:[456967454]"
+        }
+      }
+    },
+    {
+      "name": "namespace_root_and_pidfd_authorities_not_inherited",
+      "passed": true,
+      "detail": {
+        "0": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1a79862f4-fc05-2bdf/stdin.bin",
+        "1": "pipe:[456967453]",
+        "2": "pipe:[456967454]"
+      }
+    },
+    {
+      "name": "wrong_namespace_type_rejected_before_entry",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "wrong_launcher_parent_rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "aliased_authority_rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "actual_anchored_regular_read",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "symlink_artifact_rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "oversize_artifact_rejected",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "explicit_close_releases_all_authorities",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "owned_target_child_reaped",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "dead_held_target_rejected_before_any_command",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "source_and_binary_unchanged",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "passed": true,
+  "owned_child_reaped_or_not_started": true,
+  "finished_utc": "2026-11-04T17:25:45.369715+00:00"
+}

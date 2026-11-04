@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "scope": "Main held namespace entry read-only preflight; no install/launch/uninstall",
+  "runner_sha256": "c16015f7a51f857d114d92691dbf4ac4d0ccf758c2f99c7c541653ce1957ea62",
+  "action_attempted": false,
+  "commands": [
+    {
+      "name": "identity",
+      "argv": [
+        "/system/bin/id"
+      ],
+      "returncode": 0,
+      "stdout": "uid=2000(shell) gid=2000(shell) groups=2000(shell),0(root)\n",
+      "stderr": ""
+    },
+    {
+      "name": "boot-completed",
+      "argv": [
+        "/system/bin/getprop",
+        "sys.boot_completed"
+      ],
+      "returncode": 0,
+      "stdout": "1\n",
+      "stderr": ""
+    },
+    {
+      "name": "namespace-labels",
+      "argv": [
+        "/system/bin/readlink",
+        "/proc/self/ns/pid",
+        "/proc/self/ns/mnt"
+      ],
+      "returncode": 0,
+      "stdout": "pid:[4026533288]\nmnt:[4026533284]\n",
+      "stderr": ""
+    }
+  ],
+  "started_utc": "2026-11-04T17:35:40.508543+00:00",
+  "held_target_binding": {
+    "host_pid": 3588093,
+    "start_ticks": 80797014,
+    "namespaces": {
+      "mnt": "mnt:[4026533284]",
+      "pid": "pid:[4026533288]",
+      "uts": "uts:[4026533285]",
+      "ipc": "ipc:[4026533286]"
+    },
+    "namespace_inode_pairs": {
+      "mnt": [
+        5,
+        4026533284
+      ],
+      "pid": [
+        5,
+        4026533288
+      ],
+      "uts": [
+        5,
+        4026533285
+      ],
+      "ipc": [
+        5,
+        4026533286
+      ]
+    },
+    "root_inode_pair": [
+      106,
+      1
+    ],
+    "numeric_pid_used_for_namespace_entry": false,
+    "descriptor_authorities_cloexec_before_command": true,
+    "helper_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+  },
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "required_classpath_nonempty": true,
+  "environment_keys": [
+    "ANDROID_ART_ROOT",
+    "ANDROID_ASSETS",
+    "ANDROID_BOOTLOGO",
+    "ANDROID_DATA",
+    "ANDROID_I18N_ROOT",
+    "ANDROID_ROOT",
+    "ANDROID_STORAGE",
+    "ANDROID_TZDATA_ROOT",
+    "ASEC_MOUNTPOINT",
+    "BOOTCLASSPATH",
+    "DEX2OATBOOTCLASSPATH",
+    "DOWNLOAD_CACHE",
+    "EXTERNAL_STORAGE",
+    "LANG",
+    "LOOP_MOUNTPOINT",
+    "PATH",
+    "STANDALONE_SYSTEMSERVER_JARS",
+    "SYSTEMSERVERCLASSPATH"
+  ],
+  "passed": true,
+  "Main_framework_unchanged": true,
+  "no_package_mutation": true,
+  "finished_utc": "2026-11-04T17:35:40.641266+00:00"
+}

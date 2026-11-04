@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "scope": "Independent root review of exact r18 Android fixed metadata worker ELF",
+  "source_pins_sha256": "73d6277c0924f23d97834bafcd41a246de238f07714ad719cf01524007bf337e",
+  "build_result_sha256": "5d15e154208b97cc03d3432a2156b929f9f7f1787d1b48a240334838dcf7f608",
+  "apk_sha256": "a0be875bdba992e5f4b96c4657916b7760ce28c62bc130331cdce7dc5eb3fe65",
+  "elf_sha256": "62c11a934a47e05b7f50a1fdde42a8407d1ef28091f979bdf89d8612d33be1e8",
+  "audit_receipt_sha256": "2f082862debae528f401e161226f0187cac15168e61419540a1b2bcb7c696f9c",
+  "worker_audit_sha256": "b126c462be21243725b8a0d4c2173dde1900a7bb46312dbd110a79794279e553",
+  "entry_disassembly_sha256": "6e7573a1b456a7c57354f28946bb05cd393b492df48098b2bda20a8450f90d22",
+  "findings": [
+    "Start at 0x3040 calls the own clone trampoline once at 0x33ca: Worker 0x3900, null context, flags 0x350900, identical parent/clear-tid address 0x1cd94.",
+    "The raw trampoline aligns the private stack, calls only its stored fixed entry and contains only clone/exit syscall sites.",
+    "The actual Android worker closure comprises Worker, ReadContext and SameContext; the recursive auditor reports no libc/PLT, TLS, canary/runtime or unresolved transfer.",
+    "Source review covers the fixed typed Snapshot lifetime, complete-as-last-request-access, explicit retirement and kernel clear-tid wait. Eight actual core files are byte-identical to frozen R7."
+  ],
+  "owned_android_probe_admissible": true,
+  "actual_android_probe_executed": false,
+  "candidate_production_ready": false,
+  "limitations": [
+    "R7 defaults off and ART/engine lifecycle hooks are not installed.",
+    "Known NOFILE0 EMFILE remains; trusted root factory and trusted O_PATH positives are absent.",
+    "Sampled caller/worker contexts do not prove arbitrary native credential/root/mount transitions.",
+    "The host namespace helper does not replace exact owned app cleanup or full cgroup cleanup."
+  ],
+  "entry_qualification_sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+  "Main_readonly_preflight_sha256": "ed030d8a0ea288e79960e505d1f759791184cebe146155d21418fc0d5353f220",
+  "audit_terminal": {
+    "at_unix_ms": 1793812244042,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1a78aa0a8-fc05-2bb1",
+    "launch_nonce": "10c37cde5306a613663054fdc8458ca3",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 613,
+        "stored": 613
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  }
+}

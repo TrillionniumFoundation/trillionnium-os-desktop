@@ -1,0 +1,235 @@
+{
+  "schema": 1,
+  "state": "SOURCE_FROZEN_HOST_PASS",
+  "scope": "Owned r19 diagnostic source only; core and original assertions retained",
+  "source_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r19/fd-owner-probe-r19-source",
+  "archive": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r19/fd-owner-probe-r19-source.tar.gz",
+  "archive_sha256": "e904ba08c961225271c0fb2e0a1832729010bc73e78bd22ba12912e55c558af3",
+  "archive_bytes": 39489,
+  "source_pins_sha256": "db7fdee71088cce1c2a8efe6ac5ba28c6d49810fcb5d5e0edd17fb8aa2297236",
+  "case_plan_sha256": "44d0b5720e43552fb61a0d5b8ed86862070becf9b44c78d16b37d0f775a10f18",
+  "patch_sha256": "d4265a203606329fb998306ee585306abbc62f99ce85a78bfc2b094df8f54634",
+  "actual_core_equal_r18": true,
+  "candidate_ready": false,
+  "actual_android_built": false,
+  "actual_android_executed": false,
+  "commands": [
+    {
+      "name": "host-compile",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-15",
+        "-std=c++17",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-pthread",
+        "-I",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r19/fd-owner-probe-r19-source",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/include",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/include/linux",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r19/host-control.cc",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r19/host-control"
+      ],
+      "returncode": 0,
+      "stderr": ""
+    },
+    {
+      "name": "host-run",
+      "returncode": 0,
+      "stdout_sha256": "ecce545d351433c2878e106fb80e561cfefcf31548ca7c7ce874975686256fe9",
+      "stdout_bytes": 36573
+    }
+  ],
+  "host_result": {
+    "pass": true,
+    "mask": "0x0000000000000fff",
+    "observed_cases": 12,
+    "child_reaped": true,
+    "output_json_valid": true,
+    "metadata_layout": {
+      "stat_size": 144,
+      "stat_align": 8,
+      "statfs_size": 120,
+      "statfs_align": 8,
+      "snapshot_size": 6872,
+      "stat_offsets": {
+        "st_dev": 0,
+        "st_ino": 8,
+        "st_nlink": 16,
+        "st_mode": 24,
+        "st_uid": 28,
+        "st_gid": 32,
+        "st_rdev": 40,
+        "st_size": 48,
+        "st_blksize": 56,
+        "st_blocks": 64,
+        "st_atim": 72,
+        "st_mtim": 88,
+        "st_ctim": 104
+      },
+      "statfs_offsets": {
+        "f_type": 0,
+        "f_bsize": 8,
+        "f_blocks": 16,
+        "f_bfree": 24,
+        "f_bavail": 32,
+        "f_files": 40,
+        "f_ffree": 48,
+        "f_fsid": 56,
+        "f_namelen": 64,
+        "f_frsize": 72,
+        "f_flags": 80,
+        "f_spare": 88
+      },
+      "field_sizes": {
+        "f_type": 8,
+        "f_bsize": 8,
+        "f_blocks": 8,
+        "f_fsid": 8,
+        "f_namelen": 8,
+        "f_frsize": 8,
+        "f_flags": 8,
+        "f_spare": 32
+      }
+    },
+    "first_case_diagnostic": {
+      "captured": 1,
+      "stage": 1,
+      "raw_valid": 1,
+      "tagged": 0,
+      "same_stat": 1,
+      "same_fs": 1,
+      "native_fs_available": 1,
+      "pair_order": [
+        "native",
+        "raw"
+      ],
+      "stat": {
+        "st_dev": [
+          1,
+          1
+        ],
+        "st_ino": [
+          2346628,
+          2346628
+        ],
+        "st_nlink": [
+          0,
+          0
+        ],
+        "st_mode": [
+          33060,
+          33060
+        ],
+        "st_uid": [
+          1000,
+          1000
+        ],
+        "st_gid": [
+          1000,
+          1000
+        ],
+        "st_rdev": [
+          0,
+          0
+        ],
+        "st_size": [
+          23,
+          23
+        ],
+        "st_blksize": [
+          4096,
+          4096
+        ],
+        "st_blocks": [
+          0,
+          0
+        ],
+        "st_atim.tv_sec": [
+          1793814472,
+          1793814472
+        ],
+        "st_atim.tv_nsec": [
+          371327454,
+          371327454
+        ],
+        "st_mtim.tv_sec": [
+          1793814472,
+          1793814472
+        ],
+        "st_mtim.tv_nsec": [
+          371327454,
+          371327454
+        ],
+        "st_ctim.tv_sec": [
+          1793814472,
+          1793814472
+        ],
+        "st_ctim.tv_nsec": [
+          371327454,
+          371327454
+        ],
+        "native_bytes": "010000000000000084ce230000000000000000000000000024810000e8030000e8030000000000000000000000000000170000000000000000100000000000000000000000000000c86feb6a00000000de01221600000000c86feb6a00000000de01221600000000c86feb6a00000000de01221600000000000000000000000000000000000000000000000000000000",
+        "raw_bytes": "010000000000000084ce230000000000000000000000000024810000e8030000e8030000000000000000000000000000170000000000000000100000000000000000000000000000c86feb6a00000000de01221600000000c86feb6a00000000de01221600000000c86feb6a00000000de01221600000000000000000000000000000000000000000000000000000000"
+      },
+      "statfs": {
+        "f_type": [
+          16914836,
+          16914836
+        ],
+        "f_bsize": [
+          4096,
+          4096
+        ],
+        "f_blocks": [
+          0,
+          0
+        ],
+        "f_bfree": [
+          0,
+          0
+        ],
+        "f_bavail": [
+          0,
+          0
+        ],
+        "f_files": [
+          0,
+          0
+        ],
+        "f_ffree": [
+          0,
+          0
+        ],
+        "f_namelen": [
+          255,
+          255
+        ],
+        "f_frsize": [
+          4096,
+          4096
+        ],
+        "f_flags": [
+          32,
+          32
+        ],
+        "f_fsid_bytes": [
+          "fe7ced50512d81f9",
+          "fe7ced50512d81f9"
+        ],
+        "f_spare_bytes": [
+          "0000000000000000000000000000000000000000000000000000000000000000",
+          "0000000000000000000000000000000000000000000000000000000000000000"
+        ],
+        "native_bytes": "9419020100000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000fe7ced50512d81f9ff00000000000000001000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "raw_bytes": "9419020100000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000fe7ced50512d81f9ff00000000000000001000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      }
+    }
+  }
+}

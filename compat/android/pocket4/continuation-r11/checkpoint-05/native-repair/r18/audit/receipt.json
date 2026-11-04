@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "scope": "Exact R7/r18 Android ELF fixed raw metadata closure only",
+  "qualified_for_owned_runtime_probe": true,
+  "candidate_production_ready": false,
+  "actual_android_executed_by_this_audit": false,
+  "source_modified": false,
+  "writes_confined_to_new_audit_root": "/home/alex/work/pocket4-owned-fd-capability-r18-audit-01",
+  "started_utc": "2026-11-04T17:10:43.859673+00:00",
+  "build_result_sha256": "5d15e154208b97cc03d3432a2156b929f9f7f1787d1b48a240334838dcf7f608",
+  "source_pins_sha256": "73d6277c0924f23d97834bafcd41a246de238f07714ad719cf01524007bf337e",
+  "source_files_verified": 15,
+  "source_sha256_before": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "CASE_PLAN.json": "441886424cc61c86855686a22067282531d64d1b0224985df7d6fdfd43daf7a8",
+    "actual/berberis/kernel_api/proc_maps_fd_owner.h": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+    "actual/berberis/kernel_api/proc_maps_path.h": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+    "actual/berberis/kernel_api/proc_maps_provenance.h": "fe5fc2fb9e2deb5a08d437c331a765bd4eeb2d5d7d01a9b6bcc96dd2c926b884",
+    "actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h": "0be9a6dd88a4a2e6ff569a46cff33fb1a4f4f09ed9e467313ac9a06f85b9eb35",
+    "actual/proc_maps_fd_owner.cc": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+    "actual/proc_maps_path.cc": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+    "actual/proc_maps_provenance.cc": "73a5c2c7b3e2b1c70c6970b7c63bc7ef7568986754efd638550bfb16775bc596",
+    "actual/proc_maps_raw_metadata_owner.cc": "d9d0930bd3e7e863516c28805b954c684a0f832e28a0dac785230e7c92fd984e",
+    "audit_worker_binary.py": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+    "metadata_raw_cases.cc": "e593369934ab023751cde8ec2f94b7f07f08e68f00d396b5c55ff6d1d6348b55",
+    "owner_probe.cpp": "086bdb3ac988eb6dfb9f6f61b08204776a8259360a901e5ef37d5a41feaa9f79",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+    "SOURCE_PINS.json": "73d6277c0924f23d97834bafcd41a246de238f07714ad719cf01524007bf337e"
+  },
+  "source_sha256_after": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "CASE_PLAN.json": "441886424cc61c86855686a22067282531d64d1b0224985df7d6fdfd43daf7a8",
+    "actual/berberis/kernel_api/proc_maps_fd_owner.h": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+    "actual/berberis/kernel_api/proc_maps_path.h": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+    "actual/berberis/kernel_api/proc_maps_provenance.h": "fe5fc2fb9e2deb5a08d437c331a765bd4eeb2d5d7d01a9b6bcc96dd2c926b884",
+    "actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h": "0be9a6dd88a4a2e6ff569a46cff33fb1a4f4f09ed9e467313ac9a06f85b9eb35",
+    "actual/proc_maps_fd_owner.cc": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+    "actual/proc_maps_path.cc": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+    "actual/proc_maps_provenance.cc": "73a5c2c7b3e2b1c70c6970b7c63bc7ef7568986754efd638550bfb16775bc596",
+    "actual/proc_maps_raw_metadata_owner.cc": "d9d0930bd3e7e863516c28805b954c684a0f832e28a0dac785230e7c92fd984e",
+    "audit_worker_binary.py": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+    "metadata_raw_cases.cc": "e593369934ab023751cde8ec2f94b7f07f08e68f00d396b5c55ff6d1d6348b55",
+    "owner_probe.cpp": "086bdb3ac988eb6dfb9f6f61b08204776a8259360a901e5ef37d5a41feaa9f79",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+    "SOURCE_PINS.json": "73d6277c0924f23d97834bafcd41a246de238f07714ad719cf01524007bf337e"
+  },
+  "auditor_sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+  "audit_argv": [
+    "/usr/bin/python3",
+    "-I",
+    "/home/alex/work/pocket4-owned-fd-capability-r18-apk-01/fd-owner-probe-r18-source/audit_worker_binary.py",
+    "/home/alex/work/pocket4-owned-fd-capability-r18-apk-01/fd-owner-probe-r18-source/build-attempt-1/lib/x86_64/libfdownerprobe.so",
+    "--objdump",
+    "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+    "--output",
+    "/home/alex/work/pocket4-owned-fd-capability-r18-audit-01/worker-audit.json"
+  ],
+  "audit_returncode": 0,
+  "objdump": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+  "objdump_sha256_before": "25a342ca878e88866e730541db585112de3b87a0b564215902221fbd28b02075",
+  "objdump_sha256_after": "25a342ca878e88866e730541db585112de3b87a0b564215902221fbd28b02075",
+  "objdump_matches_build_tool_pin": true,
+  "elf_sha256": "62c11a934a47e05b7f50a1fdde42a8407d1ef28091f979bdf89d8612d33be1e8",
+  "apk_sha256": "a0be875bdba992e5f4b96c4657916b7760ce28c62bc130331cdce7dc5eb3fe65",
+  "apk_embedded_elf_sha256": "62c11a934a47e05b7f50a1fdde42a8407d1ef28091f979bdf89d8612d33be1e8",
+  "artifact_hashes_unchanged": true,
+  "worker_audit_sha256": "b126c462be21243725b8a0d4c2173dde1900a7bb46312dbd110a79794279e553",
+  "worker_closure": {
+    "schema": 1,
+    "elf": "/home/alex/work/pocket4-owned-fd-capability-r18-apk-01/fd-owner-probe-r18-source/build-attempt-1/lib/x86_64/libfdownerprobe.so",
+    "elf_sha256": "62c11a934a47e05b7f50a1fdde42a8407d1ef28091f979bdf89d8612d33be1e8",
+    "objdump": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+    "qualified_worker_closure": true,
+    "worker_symbols": [
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+    ],
+    "reachable_functions": [
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)",
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)",
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+    ],
+    "edges": [
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+      }
+    ],
+    "clone_trampoline": {
+      "name": "berberis_proc_metadata_raw_clone_x86_64",
+      "syscall_sites": 2,
+      "indirect_fixed_entry_calls": [
+        "*(%rsp)"
+      ],
+      "source_binding_required": "Start's sole call passes Worker and null context."
+    },
+    "errors": [],
+    "limits": [
+      "This verifies the named final binary closure, not runtime credential or signal policy.",
+      "The inherited TLS pointer exists but the audited child closure must not dereference it.",
+      "No Bionic pthread registration is created. Credential transitions and host cancellation remain unqualified.",
+      "A host ELF result cannot substitute for auditing the actual Android ELF."
+    ]
+  },
+  "relevant_disassembly_sha256": "279411d710f4faf226fbfc7f9d06c697054fe025a748e9863e653d4cbb2c3573",
+  "relevant_disassembly_bytes": 62022,
+  "start_trampoline_disassembly_sha256": "6e7573a1b456a7c57354f28946bb05cd393b492df48098b2bda20a8450f90d22",
+  "start_trampoline_disassembly_bytes": 19188,
+  "runtime_requires_separate_manual_entry_review": true,
+  "limitations": [
+    "Actual ART/engine lifecycle hooks are not installed.",
+    "No credential/namespace transition guarantee from sampled contexts.",
+    "NOFILE0 and trusted root factory/O_PATH remain unqualified.",
+    "Owned APK behavior is not whole-app production qualification."
+  ],
+  "finished_utc": "2026-11-04T17:10:43.983280+00:00"
+}

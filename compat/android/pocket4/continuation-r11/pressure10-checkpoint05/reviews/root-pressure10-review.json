@@ -1,0 +1,53 @@
+{
+  "schema": 1,
+  "source_review": "Complete revision09-to-10 actor, qualifier, synthetic control and documentation delta",
+  "diff_sha256": "58b646d6b55a1204960652e119eb1450d1168fef47014e48dbd8119d2ecb25c9",
+  "source_manifest_sha256": "bc996fe6c763b0270de97d85c0f7ace71fd3804ca432c49d79f05ec21edec9e5",
+  "matching_build_receipt_sha256": "153c08dd7744149e0a1ff67f035d6a42cb218800521baca229f4950715076d46",
+  "independently_verified_build_receipt_bytes": true,
+  "source_inputs_before_after_identical": true,
+  "source_payload_count": 38,
+  "changes_from_published_revision09": [
+    "REVIEW-CHANGES.md",
+    "owned-relay/PRESSURE.md",
+    "owned-relay/fixture_init.cpp",
+    "owned-relay/qualify_pressure.py",
+    "owned-relay/test_qualify_pressure.py",
+    "parent-source-manifest.json"
+  ],
+  "added": [
+    "ancestry/pressure08-source-manifest.json",
+    "ancestry/pressure09-actor-compile-local.json",
+    "ancestry/pressure09-stale-qualifier-controls-local.json",
+    "owned-relay/pre-freeze-controls-device.json"
+  ],
+  "controls": {
+    "rust": 20,
+    "ordinary_ipc": 7,
+    "synthetic_python": 28
+  },
+  "new_actor_sha256": "cc610f548fc567ceab31695aacb3c80f4397321051b3a45459835854526c2011",
+  "coordinator_diff_sha256": "3ac0890af59fbbc19771cb412bf892df859b187c889337f756a09838a3316d01",
+  "coordinator_source_sha256": {
+    "prepare": "3e4c2efa86c26163274c32112b4308a2b9c75c498d840339a12c850b0be54a0a",
+    "once": "01d153c4b9c363754a10adbcaa109025cdbb28dbeac2a31629096ee3cf51559a",
+    "export": "1c2825ada027452b2da524af9934ceda72e9655e8e9a6a0f84e0ca3fdc3f3f70"
+  },
+  "coordinator_delta_review_passed": true,
+  "findings": [
+    "Only the exact owned allocator releases its own mappings while the exact LMKD remains stopped; peer targets and all original budgets/PSI thresholds remain unchanged.",
+    "Relief records target identity, acknowledged byte counts, current and PSI. Quiet aging begins only after relief and preserves the strict 2200ms monotonic interval and no-new-stall check.",
+    "All actually audited queued events must have both observed and send timestamps strictly more than one unchanged window before resume; an original level-2 event remains mandatory.",
+    "The scenario now measures an aged critical queue after pressure relief. Below-high accounting can also prevent kills, so it cannot independently qualify the native expiry branch.",
+    "The outer coordinator explicitly keeps stale_qualified/stale_critical_qualified/native_stale_drop_observed/above_high_stale_zero_kill_verified false and exposes only the new limited relief qualification.",
+    "Stale predecessor admission now requires a complete critical positive from the same revision, matching fixed unit and externally pinned result; medium-only partial cannot authorize it.",
+    "Existing outer cgroup identity, actual InvocationID/PID, monotonic coverage, resource peaks, precise cleanup and Main epoch gates are unchanged."
+  ],
+  "fresh_profile_order": [
+    "pressure04/coordinator06 complete source-matching positive and export/readback",
+    "stale03/coordinator07 only after positive external receipt pin is supplied"
+  ],
+  "actual_revision10_pressure_executed": false,
+  "production_lmkd_integration_qualified": false,
+  "original_stale_expiry_gate_qualified": false
+}

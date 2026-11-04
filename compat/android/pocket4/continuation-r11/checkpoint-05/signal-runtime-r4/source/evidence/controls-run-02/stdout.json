@@ -1,0 +1,323 @@
+{
+  "android_operations": 0,
+  "controls": [
+    {
+      "detail": true,
+      "name": "two-required-classpaths-selected-and-other-env-omitted",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "required private zygote classpath keys are missing",
+        "rejected": "BindingError"
+      },
+      "name": "reject-missing-boot",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "required private zygote classpath keys are missing",
+        "rejected": "BindingError"
+      },
+      "name": "reject-missing-dex2oat",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "required classpath is empty or oversized",
+        "rejected": "BindingError"
+      },
+      "name": "reject-empty-boot",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "duplicate required classpath key",
+        "rejected": "BindingError"
+      },
+      "name": "reject-duplicate-key",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "zygote environ is incomplete or oversized",
+        "rejected": "BindingError"
+      },
+      "name": "reject-unterminated-environ",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "guest path is not a bounded absolute path",
+        "rejected": "BindingError"
+      },
+      "name": "reject-relative-jar",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "guest path contains an empty or dot component",
+        "rejected": "BindingError"
+      },
+      "name": "reject-dotdot-jar",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "guest path is not a bounded absolute path",
+        "rejected": "BindingError"
+      },
+      "name": "reject-empty-classpath-component",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "classpath entry is not a plain absolute jar path",
+        "rejected": "BindingError"
+      },
+      "name": "reject-non-jar",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "duplicate path in one classpath",
+        "rejected": "BindingError"
+      },
+      "name": "reject-duplicate-path",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "zygote environ is incomplete or oversized",
+        "rejected": "BindingError"
+      },
+      "name": "reject-oversized-environ",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "classpath entry count exceeded",
+        "rejected": "BindingError"
+      },
+      "name": "reject-too-many-classpath-entries",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "absolute_apex_symlink_resolved_inside_root": true,
+        "count": 2,
+        "real_openat2": true,
+        "total_bytes": 14
+      },
+      "name": "real-classpath-files-and-absolute-apex-symlink",
+      "passed": true,
+      "scope": "real owned filesystem/openat2"
+    },
+    {
+      "detail": {
+        "message": "[Errno 2] No such file or directory: '/escape.jar'",
+        "rejected": "FileNotFoundError"
+      },
+      "name": "absolute-symlink-cannot-read-host-outside-root",
+      "passed": true,
+      "scope": "real owned filesystem/openat2"
+    },
+    {
+      "detail": {
+        "message": "guest path contains an empty or dot component",
+        "rejected": "BindingError"
+      },
+      "name": "guest-dotdot-path-rejected",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "bounded read deadline exceeded",
+        "rejected": "BindingError"
+      },
+      "name": "expired-classpath-deadline-fails-before-hashing",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "message": "classpath file is absent, empty, non-regular or oversized",
+        "rejected": "BindingError"
+      },
+      "name": "real-sparse-file-above-128MiB-rejected-before-read",
+      "passed": true,
+      "scope": "real owned sparse file; no pressure workload"
+    },
+    {
+      "detail": {
+        "message": "combined classpath byte budget exceeded",
+        "rejected": "BindingError"
+      },
+      "name": "scaled-total-budget-rejects-second-real-file",
+      "passed": true,
+      "scope": "real owned files with declared scaled total limit"
+    },
+    {
+      "detail": {
+        "baseline_correct_destination": false,
+        "fixed_correct_destination": true,
+        "real_directory_replacement": true,
+        "real_kernel_pid_reuse": false
+      },
+      "name": "old-path-slot-retargets-new-held-root-stays-original",
+      "passed": true,
+      "scope": "real filesystem object identity; declared PID-slot model"
+    },
+    {
+      "detail": {
+        "baseline_error": "FileNotFoundError(2, 'No such file or directory')",
+        "baseline_expected_behavior": false,
+        "diagnostic_attempts": 1,
+        "durable_reads_after_nonzero": 0,
+        "fixed_error": "RuntimeError('owned instrumentation command failed: r2-svc status=134')",
+        "fixed_expected_behavior": true
+      },
+      "name": "actual-r3-case-obscures-134-r4-case-preserves-first-cause",
+      "passed": true,
+      "scope": "both actual case implementations; declared command-result/path seams"
+    },
+    {
+      "detail": {
+        "message": "private classpath admission required before instrumentation",
+        "rejected": "RuntimeError"
+      },
+      "name": "instrumentation-refused-before-private-classpath-admission",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": true,
+      "name": "env-i-command-has-both-admitted-required-keys",
+      "passed": true,
+      "scope": "pure parser/source control"
+    },
+    {
+      "detail": {
+        "captured": 1,
+        "unrelated_ignored": true
+      },
+      "name": "failure-tombstone-filter-keeps-exact-owned-nonce-only",
+      "passed": true,
+      "scope": "real owned tombstone fixture, no Android tombstone generated"
+    },
+    {
+      "detail": {
+        "message": "[Errno 40] Too many levels of symbolic links: '/proc/self/fd/5'",
+        "rejected": "OSError"
+      },
+      "name": "real-proc-magic-link-rejected-by-openat2",
+      "passed": true,
+      "scope": "real openat2; only this control's own FD"
+    },
+    {
+      "detail": {
+        "authority_count": 7,
+        "commands_executed": 0,
+        "procdir_and_pidfd_not_passed": true
+      },
+      "name": "real-held-six-namespaces-and-root-build-no-numeric-entry",
+      "passed": true,
+      "scope": "real own process procdir/pidfd/namespace/root descriptors"
+    },
+    {
+      "detail": {
+        "message": "held entry still has active commands/readers",
+        "rejected": "BindingError"
+      },
+      "name": "release-while-active-seals-admission-without-closing-live-fds",
+      "passed": true,
+      "scope": "real descriptors and actual lease lifecycle"
+    },
+    {
+      "detail": true,
+      "name": "held-binding-releases-all-owned-fds",
+      "passed": true,
+      "scope": "real FD-table before/after"
+    },
+    {
+      "detail": {
+        "message": "original init pidfd is no longer alive",
+        "rejected": "BindingError"
+      },
+      "name": "dead-original-child-pidfd-refuses-new-admission",
+      "passed": true,
+      "scope": "real own child death/pidfd; exact child reaped"
+    },
+    {
+      "detail": {
+        "closed": false,
+        "failure_recorded": true,
+        "sealed": true
+      },
+      "name": "live-sampler-release-fails-without-reusing-authority-fds",
+      "passed": true,
+      "scope": "declared live-sampler lifecycle seam"
+    },
+    {
+      "detail": {
+        "child_reaped": true,
+        "returncode": 0
+      },
+      "name": "bounded-diagnostic-command-completes-and-reaps",
+      "passed": true,
+      "scope": "real owned subprocess; explicit direct-entry seam"
+    },
+    {
+      "detail": {
+        "captured_bytes": 524288,
+        "child_reaped": true
+      },
+      "name": "bounded-diagnostic-output-cap-kills-only-own-child-and-reaps",
+      "passed": true,
+      "scope": "real owned subprocess; actual 512KiB bound"
+    },
+    {
+      "detail": {
+        "child_reaped": true
+      },
+      "name": "bounded-diagnostic-timeout-reaps-own-child",
+      "passed": true,
+      "scope": "real owned subprocess; no namespace entry"
+    },
+    {
+      "detail": true,
+      "name": "retained-preimages-and-shared-helper-pins-unchanged",
+      "passed": true,
+      "scope": "actual SHA256 reads"
+    }
+  ],
+  "kernel_pid_reuse_experiment": false,
+  "namespace_entries": 0,
+  "passed": 34,
+  "private_Android_qualification": "NOT_RUN",
+  "production_ready": false,
+  "schema": 1,
+  "services_started": 0,
+  "shared_helper_namespace_execution": "qualified separately by parent receipt",
+  "source_pins": {
+    "failure_evidence.py": "5ebd74e2765c7f23df6f847ffa92abd6723ee73d0e31a6753938c871d3d5c82a",
+    "held_runtime.py": "eff78261dfd154e223a084e04b5fa8af63d0275735d17b29cf8b6f511cc37039",
+    "run.py": "2de643533cc5539cc67a7589ec4c76ddd5745fac49857070f5d7844529c5906a",
+    "verify_r4.py": "bbc063dfebdcee66a67c7aace7037124e92e2f83222ae795dc5e2ef86278b744"
+  },
+  "state": "OWNED_HOST_R4_CONTROLS_PASS"
+}

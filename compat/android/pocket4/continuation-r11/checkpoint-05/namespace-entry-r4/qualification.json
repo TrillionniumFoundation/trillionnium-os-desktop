@@ -1,0 +1,146 @@
+{
+  "schema": 1,
+  "protocol": "owned-held-namespace-entry-v1",
+  "qualified_for_owned_namespace_entry": true,
+  "helper_source_sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c",
+  "helper_binary_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+  "binding_module_sha256": "7b4fc0de8aa35ea128147139a99fee495ec368c9065b66825038c668dd4f08fd",
+  "owned_runner_sha256": "c16015f7a51f857d114d92691dbf4ac4d0ccf758c2f99c7c541653ce1957ea62",
+  "host_controls_passed": 14,
+  "six_namespace_host_entry_passed": true,
+  "Main_readonly_entry_passed": true,
+  "evidence": {
+    "host14": {
+      "path": "/home/alex/work/pocket4-owned-held-ns-runner-r4-controls-01/result.json",
+      "sha256": "fee7951c5d7e617150f541830aa5d589d6571abfb8927b4b7d04597b33d24c4f",
+      "terminal": {
+        "at_unix_ms": 1793813145396,
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1a79862f4-fc05-2bdf",
+        "launch_nonce": "cbccaec69c9d4f33d712eeacf56a4f6c",
+        "log_bytes": {
+          "stderr": {
+            "seen": 0,
+            "stored": 0
+          },
+          "stdout": {
+            "seen": 2089,
+            "stored": 2089
+          }
+        },
+        "log_errors": {
+          "stderr": null,
+          "stdout": null
+        },
+        "log_synced": {
+          "stderr": true,
+          "stdout": true
+        },
+        "log_truncated": {
+          "stderr": false,
+          "stdout": false
+        },
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "terminal_publication_confirmed": true,
+        "terminal_publication_protocol": 1,
+        "timed_out": false
+      }
+    },
+    "sixns": {
+      "path": "/home/alex/work/pocket4-owned-held-ns-runner-r4-sixns-01/result.json",
+      "sha256": "12d87ec548cf05916224bd1fa2621d60469ecc7b82f5c1837f583818a7d1a2bf",
+      "terminal": {
+        "at_unix_ms": 1793813479358,
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1a79d7ad5-fc05-2bf1",
+        "launch_nonce": "833e2637e8390f29cfca24c67db09d7f",
+        "log_bytes": {
+          "stderr": {
+            "seen": 0,
+            "stored": 0
+          },
+          "stdout": {
+            "seen": 1129,
+            "stored": 1129
+          }
+        },
+        "log_errors": {
+          "stderr": null,
+          "stdout": null
+        },
+        "log_synced": {
+          "stderr": true,
+          "stdout": true
+        },
+        "log_truncated": {
+          "stderr": false,
+          "stdout": false
+        },
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "terminal_publication_confirmed": true,
+        "terminal_publication_protocol": 1,
+        "timed_out": false
+      }
+    },
+    "main_readonly": {
+      "path": "/home/alex/work/pocket4-owned-held-ns-runner-r4-main-preflight-01/result.json",
+      "sha256": "ed030d8a0ea288e79960e505d1f759791184cebe146155d21418fc0d5353f220",
+      "terminal": {
+        "at_unix_ms": 1793813740683,
+        "audit_recorded": true,
+        "automatic_retry": false,
+        "cancelled": false,
+        "exit_code": 0,
+        "job_id": "1a1a7a17751-fc05-2c02",
+        "launch_nonce": "29ece6ceaceec58e25f0b8f6ce2464b2",
+        "log_bytes": {
+          "stderr": {
+            "seen": 0,
+            "stored": 0
+          },
+          "stdout": {
+            "seen": 2001,
+            "stored": 2001
+          }
+        },
+        "log_errors": {
+          "stderr": null,
+          "stdout": null
+        },
+        "log_synced": {
+          "stderr": true,
+          "stdout": true
+        },
+        "log_truncated": {
+          "stderr": false,
+          "stdout": false
+        },
+        "output_complete": true,
+        "output_durable": true,
+        "state": "succeeded",
+        "terminal_publication_confirmed": true,
+        "terminal_publication_protocol": 1,
+        "timed_out": false
+      }
+    }
+  },
+  "qualified_for_whole_process_tree_cleanup": false,
+  "candidate_production_ready": false,
+  "required_external_boundaries": [
+    "Every target process/namespace/root must be held and verified by the caller.",
+    "Keep command timeout, exact owned package cleanup and full cell/systemd cleanup/readback.",
+    "PDEATHSIG can be cleared by credential changes and is not inherited by forked descendants.",
+    "Main readonly proof is not a private-cell or commercial-app runtime verdict."
+  ],
+  "finished_utc": "2026-11-04T17:40:51.395716+00:00"
+}

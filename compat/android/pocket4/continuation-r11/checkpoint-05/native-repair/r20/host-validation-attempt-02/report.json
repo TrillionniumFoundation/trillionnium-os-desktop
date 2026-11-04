@@ -1,0 +1,261 @@
+{
+  "schema": 1,
+  "state": "SOURCE_FROZEN_HOST_ABI_CONTROLS_PASS",
+  "scope": "R20 Bionic successful statfs boundary; actual host sources, exact Bionic wrapper reference",
+  "source_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r20/fd-owner-probe-r20-source",
+  "source_files": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "CASE_PLAN.json": "f8cbfbf1f53a45a8cc0a76314b4d734b9aaec43fc309d3411967c0aacad89e92",
+    "actual/berberis/kernel_api/proc_maps_fd_owner.h": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+    "actual/berberis/kernel_api/proc_maps_path.h": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+    "actual/berberis/kernel_api/proc_maps_provenance.h": "fe5fc2fb9e2deb5a08d437c331a765bd4eeb2d5d7d01a9b6bcc96dd2c926b884",
+    "actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h": "0be9a6dd88a4a2e6ff569a46cff33fb1a4f4f09ed9e467313ac9a06f85b9eb35",
+    "actual/proc_maps_fd_owner.cc": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+    "actual/proc_maps_path.cc": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+    "actual/proc_maps_provenance.cc": "73a5c2c7b3e2b1c70c6970b7c63bc7ef7568986754efd638550bfb16775bc596",
+    "actual/proc_maps_raw_metadata_owner.cc": "8a5812793ec5b569ef03d7a159871d74e27baccaf17d3e8fe6c9998e348e28a8",
+    "audit_worker_binary.py": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+    "metadata_raw_cases.cc": "2799e1fd9917e6377ec04e67ca7d56c1036a3821f7678765553af494430e59ee",
+    "owner_probe.cpp": "fecc54e5af3c2318ee2469b140a98ba088f0e504e6c284d527eb36a2cfddbda1",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+    "SOURCE_PINS.json": "6e6c806a9560b34435a937ae8d9dab241f3139f63106f93da108b06dc0584cbb"
+  },
+  "prior_attempt_sha256": "2ef6045857c90a08dd07a18e9f6a2ef2ab7b1b3d7b8ccd59f484f3d5e71a9da4",
+  "prior_failure": "coordinator expected JSON key mask instead of exact expected_behavior_mask after baseline expected failure; no candidate runtime failure inferred",
+  "draft_pin_metadata_corrected": {
+    "probe_label": true,
+    "actual_core_changed": true,
+    "payload_bytes_changed": false
+  },
+  "production_ready": false,
+  "actual_android_executed": false,
+  "actual_android_built": false,
+  "core_comparisons_relaxed": false,
+  "commands": [
+    {
+      "name": "fixed-bionic-compile",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-15",
+        "-std=c++17",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-pthread",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/include",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/include/linux",
+        "-I",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r20/fd-owner-probe-r20-source",
+        "-D__BIONIC__=1",
+        "-Wl,--wrap=fstatfs",
+        "-Wl,--wrap=statfs",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r20/bionic-host-control.cc",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r20/validation-attempt-02/fixed-bionic"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_excerpt": ""
+    },
+    {
+      "name": "fixed-bionic-run",
+      "argv": [
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r20/validation-attempt-02/fixed-bionic"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "f437f0c6c220f97b533c2287a0c6d29db062bc0ec297ec0504c71e5a71ed20f6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_excerpt": ""
+    },
+    {
+      "name": "fixed-glibc-compile",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-15",
+        "-std=c++17",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-pthread",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/include",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/include/linux",
+        "-I",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r20/fd-owner-probe-r20-source",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r20/host-control.cc",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r20/validation-attempt-02/fixed-glibc"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_excerpt": ""
+    },
+    {
+      "name": "fixed-glibc-run",
+      "argv": [
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r20/validation-attempt-02/fixed-glibc"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "8631155a2288fdce49714ecd099f022ccbc073ab8c03394dc306e1b070329546",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_excerpt": ""
+    }
+  ],
+  "host_results": {
+    "baseline-bionic": {
+      "pass": false,
+      "expected_behavior_mask": "0x0000000000000840",
+      "observed_cases": 12,
+      "child_reaped": true,
+      "direct_started": 12,
+      "direct_reaped": 12,
+      "nested_started": 2,
+      "nested_reaped": 2,
+      "returncode": 1,
+      "stdout_sha256": "2d8b3b1314ae172eecc25813048a9da546984a0a834037f2555959a506ca6850",
+      "kind": "host exact Bionic wrapper ABI control",
+      "failures": [
+        {
+          "case": "real_metadata_three_entrypoints_same_app_context",
+          "stage": 6,
+          "f_flags": [
+            0,
+            32
+          ],
+          "stop": -99
+        },
+        {
+          "case": "forged_app_owned_tag_and_matching_name_stay_ordinary",
+          "stage": 6,
+          "f_flags": [
+            0,
+            32
+          ],
+          "stop": -99
+        },
+        {
+          "case": "ordinary_O_PATH_metadata",
+          "stage": 6,
+          "f_flags": [
+            0,
+            32
+          ],
+          "stop": -99
+        },
+        {
+          "case": "warm_metadata_AS_1_and_explicit_restart",
+          "stage": 6,
+          "f_flags": [
+            0,
+            32
+          ],
+          "stop": -99
+        },
+        {
+          "case": "raw_private_fork_AS_1_real_metadata",
+          "stage": 6,
+          "f_flags": [
+            0,
+            32
+          ],
+          "stop": -99
+        },
+        {
+          "case": "full_caller_fdtable_real_metadata",
+          "stage": 6,
+          "f_flags": [
+            0,
+            32
+          ],
+          "stop": -99
+        },
+        {
+          "case": "quiesce_closes_generation_and_rejects_restart",
+          "stage": 6,
+          "f_flags": [
+            0,
+            32
+          ],
+          "stop": -99
+        },
+        {
+          "case": "12_restart_kernel_clear_tid_rounds",
+          "stage": 6,
+          "f_flags": [
+            0,
+            32
+          ],
+          "stop": -99
+        },
+        {
+          "case": "actual_caller_TID_private_fdtable",
+          "stage": 6,
+          "f_flags": [
+            0,
+            32
+          ],
+          "stop": -99
+        },
+        {
+          "case": "shared_VM_new_TGID_refuses_without_reset",
+          "stage": 6,
+          "f_flags": [
+            0,
+            32
+          ],
+          "stop": -99
+        }
+      ]
+    },
+    "fixed-bionic": {
+      "pass": true,
+      "expected_behavior_mask": "0x0000000000000fff",
+      "observed_cases": 12,
+      "child_reaped": true,
+      "direct_started": 12,
+      "direct_reaped": 12,
+      "nested_started": 2,
+      "nested_reaped": 2,
+      "returncode": 0,
+      "stdout_sha256": "f437f0c6c220f97b533c2287a0c6d29db062bc0ec297ec0504c71e5a71ed20f6",
+      "kind": "host exact Bionic wrapper ABI control",
+      "first_case_f_flags": [
+        0,
+        0
+      ]
+    },
+    "fixed-glibc": {
+      "pass": true,
+      "expected_behavior_mask": "0x0000000000000fff",
+      "observed_cases": 12,
+      "child_reaped": true,
+      "direct_started": 12,
+      "direct_reaped": 12,
+      "nested_started": 2,
+      "nested_reaped": 2,
+      "returncode": 0,
+      "stdout_sha256": "8631155a2288fdce49714ecd099f022ccbc073ab8c03394dc306e1b070329546",
+      "kind": "native host glibc control",
+      "first_case_f_flags": [
+        32,
+        32
+      ]
+    }
+  },
+  "archive": {
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/probes/r20/fd-owner-probe-r20-source.tar.gz",
+    "sha256": "b02d28caba4794f11a1a38502dca0366aa39d9332620156adbf5add5ddf4d6a7",
+    "bytes": 40160,
+    "members": 15
+  },
+  "patch_sha256": "c177db8704754ecc47bfba83293f255862e6e36df5bb6d36053964bd5c6f0344"
+}

@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "audit": {
+    "schema": 1,
+    "state": "ACTUAL_ANDROID_ELF_AUDIT_PASSED_UNRUN",
+    "source_pins_sha256": "6e6c806a9560b34435a937ae8d9dab241f3139f63106f93da108b06dc0584cbb",
+    "source_files": {
+      "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+      "CASE_PLAN.json": "f8cbfbf1f53a45a8cc0a76314b4d734b9aaec43fc309d3411967c0aacad89e92",
+      "actual/berberis/kernel_api/proc_maps_fd_owner.h": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+      "actual/berberis/kernel_api/proc_maps_path.h": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+      "actual/berberis/kernel_api/proc_maps_provenance.h": "fe5fc2fb9e2deb5a08d437c331a765bd4eeb2d5d7d01a9b6bcc96dd2c926b884",
+      "actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h": "0be9a6dd88a4a2e6ff569a46cff33fb1a4f4f09ed9e467313ac9a06f85b9eb35",
+      "actual/proc_maps_fd_owner.cc": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+      "actual/proc_maps_path.cc": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+      "actual/proc_maps_provenance.cc": "73a5c2c7b3e2b1c70c6970b7c63bc7ef7568986754efd638550bfb16775bc596",
+      "actual/proc_maps_raw_metadata_owner.cc": "8a5812793ec5b569ef03d7a159871d74e27baccaf17d3e8fe6c9998e348e28a8",
+      "audit_worker_binary.py": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+      "metadata_raw_cases.cc": "2799e1fd9917e6377ec04e67ca7d56c1036a3821f7678765553af494430e59ee",
+      "owner_probe.cpp": "fecc54e5af3c2318ee2469b140a98ba088f0e504e6c284d527eb36a2cfddbda1",
+      "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+      "SOURCE_PINS.json": "6e6c806a9560b34435a937ae8d9dab241f3139f63106f93da108b06dc0584cbb"
+    },
+    "build_receipt_sha256": "09a8a5ab25c897405b70bebdeb6c75c98d94ec9124365fdb51956b35df96db43",
+    "APK": {
+      "path": "/home/alex/work/pocket4-owned-fd-capability-r20-apk-01/fd-owner-probe-r20-source/build-attempt-1/fdownerprobe.apk",
+      "sha256": "c056d2c116abc0bca4ec6606defb6810ba53d960fd6164a0595cac9cc8ed06f0",
+      "bytes": 94622
+    },
+    "ELF": {
+      "sha256": "c9ca14dff8e337e05dcf45fc3068cc8d8fe07a4acdc7080f30da206612604acc",
+      "needed": [
+        "libc.so"
+      ],
+      "NX_RELRO_NOW_no_WX": true
+    },
+    "apk_embedded_elf_exact_match": true,
+    "audit_script_sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+    "objdump": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+    "objdump_sha256_before_after": "25a342ca878e88866e730541db585112de3b87a0b564215902221fbd28b02075",
+    "worker_audit_sha256": "74256faa7106d0ad05d750aa16ceb7012e6d78ea5a6c0afcb36e1d6fa7d9eecc",
+    "relevant_disassembly_sha256": "36969ca1dfa4fdad331be7dea1735dc4d3f9f1aa361b0018fe61c4e7a0b73bf4",
+    "reachable_functions": [
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)",
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)",
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+    ],
+    "errors": [],
+    "manual_Start_only_Worker_review": "PENDING_ROOT",
+    "actual_android_executed": false,
+    "production_ready": false,
+    "entry_read_slices_sha256": "f9048a7947ca224beb02dc8ca9170e9475c886325dd4a12bb6c507f34d75cb74"
+  },
+  "worker_closure": {
+    "schema": 1,
+    "elf": "/home/alex/work/pocket4-owned-fd-capability-r20-apk-01/fd-owner-probe-r20-source/build-attempt-1/lib/x86_64/libfdownerprobe.so",
+    "elf_sha256": "c9ca14dff8e337e05dcf45fc3068cc8d8fe07a4acdc7080f30da206612604acc",
+    "objdump": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+    "qualified_worker_closure": true,
+    "worker_symbols": [
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+    ],
+    "reachable_functions": [
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)",
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)",
+      "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+    ],
+    "edges": [
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+      },
+      {
+        "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+        "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+      }
+    ],
+    "clone_trampoline": {
+      "name": "berberis_proc_metadata_raw_clone_x86_64",
+      "syscall_sites": 2,
+      "indirect_fixed_entry_calls": [
+        "*(%rsp)"
+      ],
+      "source_binding_required": "Start's sole call passes Worker and null context."
+    },
+    "errors": [],
+    "limits": [
+      "This verifies the named final binary closure, not runtime credential or signal policy.",
+      "The inherited TLS pointer exists but the audited child closure must not dereference it.",
+      "No Bionic pthread registration is created. Credential transitions and host cancellation remain unqualified.",
+      "A host ELF result cannot substitute for auditing the actual Android ELF."
+    ]
+  },
+  "core_patch": "--- a/actual/proc_maps_raw_metadata_owner.cc\n+++ b/actual/proc_maps_raw_metadata_owner.cc\n@@ -474,6 +474,13 @@\n                  (request.context_invalid && request.result<0?-request.result:ESTALE));\n   }\n   if(request.result<0)return Error(-request.result);\n+#if defined(__BIONIC__)\n+  // bionic/libc/bionic/sys_statfs.cpp removes the kernel-private ST_VALID\n+  // bit before returning a successful libc statfs result. Snapshot uses the\n+  // host libc structure and is also consumed by the ordinary Fstatfs path.\n+  // Keep glibc's existing behavior and every other field/flag unchanged.\n+  value.filesystem.f_flags &= ~0x0020;\n+#endif\n   *snapshot=value;\n   errno=before;return request.result;\n }\n",
+  "bionic_reference": "/*\n * Copyright (C) 2013 The Android Open Source Project\n *\n * Licensed under the Apache License, Version 2.0 (the \"License\");\n * you may not use this file except in compliance with the License.\n * You may obtain a copy of the License at\n *\n *      http://www.apache.org/licenses/LICENSE-2.0\n *\n * Unless required by applicable law or agreed to in writing, software\n * distributed under the License is distributed on an \"AS IS\" BASIS,\n * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n * See the License for the specific language governing permissions and\n * limitations under the License.\n */\n\n#include <sys/statfs.h>\n\n// Paper over the fact that 32-bit kernels use fstatfs64/statfs64 with\n// an extra argument, but 64-bit kernels don't have the \"64\" bit suffix or\n// the extra size_t argument.\n#if defined(__LP64__)\nextern \"C\" int __fstatfs(int, struct statfs*);\nextern \"C\" int __statfs(const char*, struct statfs*);\n#  define __fstatfs64(fd,size,buf) __fstatfs(fd,buf)\n#  define __statfs64(path,size,buf) __statfs(path,buf)\n#else\nextern \"C\" int __fstatfs64(int, size_t, struct statfs*);\nextern \"C\" int __statfs64(const char*, size_t, struct statfs*);\n#endif\n\n// The kernel sets a private ST_VALID flag to signal to the C library\n// whether the f_flags field is valid. This flag should not be exposed to\n// users of the C library.\n#define ST_VALID 0x0020\n\nint fstatfs(int fd, struct statfs* result) {\n  int rc = __fstatfs64(fd, sizeof(*result), result);\n  if (rc != 0) {\n    return rc;\n  }\n  result->f_flags &= ~ST_VALID;\n  return 0;\n}\n__strong_alias(fstatfs64, fstatfs);\n\nint statfs(const char* path, struct statfs* result) {\n  int rc = __statfs64(path, sizeof(*result), result);\n  if (rc != 0) {\n    return rc;\n  }\n  result->f_flags &= ~ST_VALID;\n  return 0;\n}\n__strong_alias(statfs64, statfs);\n",
+  "entry_excerpt": "0000000000003450 <berberis_proc_metadata_raw_clone_x86_64>:\n    3450:      \tandq\t$-0x10, %rsi\n    3454:      \tsubq\t$0x10, %rsi\n    3458:      \tmovq\t%rcx, (%rsi)\n    345b:      \tmovq\t%r8, 0x8(%rsi)\n    345f:      \tmovq\t%rdx, %r10\n    3462:      \txorl\t%r8d, %r8d\n    3465:      \tmovl\t$0x38, %eax\n    346a:      \tsyscall\n    346c:      \ttestq\t%rax, %rax\n    346f:      \tjne\t0x3486 <berberis_proc_metadata_raw_clone_x86_64+0x36>\n    3471:      \txorl\t%ebp, %ebp\n    3473:      \tmovq\t0x8(%rsp), %rdi\n    3478:      \tcallq\t*(%rsp)\n    347b:      \tmovl\t%eax, %edi\n    347d:      \tmovl\t$0x3c, %eax\n    3482:      \tsyscall\n    3484:      \tud2\n    3486:      \tretq\n    3487:      \tnopw\t(%rax,%rax)\n\n\n00000000000036e0 <berberis::proc_maps_provenance::raw_metadata_owner::Start()>:\n    3a06:      \tpopq\t%rbp\n    3a07:      \tretq\n    3a08:      \tcallq\t0x3610 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::PrepareStackLocked()>\n    3a0d:      \tmovl\t$0xffffffff, %r14d      # imm = 0xFFFFFFFF\n    3a13:      \ttestl\t%eax, %eax\n    3a15:      \tjs\t0x399e <berberis::proc_maps_provenance::raw_metadata_owner::Start()+0x2be>\n    3a17:      \tleaq\t0x226e2(%rip), %rdi     # 0x26100 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x48>\n    3a1e:      \tleaq\t-0x430(%rbp), %rsi\n    3a25:      \tmovl\t$0x3f0, %edx            # imm = 0x3F0\n    3a2a:      \tcallq\t0xd870 <memcpy@plt>\n    3a2f:      \tmovl\t$0x0, 0x22697(%rip)     # 0x260d0 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x18>\n    3a39:      \tmovl\t$0x0, 0x22689(%rip)     # 0x260cc <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x14>\n    3a43:      \tmovl\t$0x0, 0x22693(%rip)     # 0x260e0 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x28>\n    3a4d:      \tmovq\t0x2269c(%rip), %rsi     # 0x260f0 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x38>\n    3a54:      \tleaq\t0x22679(%rip), %rdx     # 0x260d4 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x1c>\n    3a5b:      \tleaq\t0x53e(%rip), %rcx       # 0x3fa0 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)>\n    3a62:      \tmovl\t$0x350900, %edi         # imm = 0x350900\n    3a67:      \txorl\t%r8d, %r8d\n    3a6a:      \tcallq\t0x3450 <berberis_proc_metadata_raw_clone_x86_64>\n    3a6f:      \ttestq\t%rax, %rax\n    3a72:      \tjs\t0x3adc <berberis::proc_maps_provenance::raw_metadata_owner::Start()+0x3fc>\n    3a74:      \tmovb\t$0x1, 0x2267d(%rip)     # 0x260f8 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x40>\n    3a7b:      \tmovl\t0x22647(%rip), %eax     # 0x260c8 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x10>\n    3a81:      \tmovl\t0x22649(%rip), %ecx     # 0x260d0 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x18>\n    3a87:      \ttestl\t%ecx, %ecx\n    3a89:      \tjne\t0x3aba <berberis::proc_maps_provenance::raw_metadata_owner::Start()+0x3da>\n    3a8b:      \tleaq\t0x22636(%rip), %rdi     # 0x260c8 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x10>\n    3a92:      \tmovl\t$0x80, %esi\n    3a97:      \tmovslq\t%eax, %rdx\n    3a9a:      \tmovl\t$0xca, %eax",
+  "read_and_excerpts": "\n    4c10:      \tmovl\t$0x1b0, %edx            # imm = 0x1B0\n    4c15:      \txorl\t%esi, %esi\n    4c17:      \tcallq\t0xd860 <memset@plt>\n    4c1c:      \tleaq\t-0x858(%rbp), %rdi\n    4c23:      \tcallq\t0x3c00 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)>\n    4c28:      \ttestl\t%eax, %eax\n    4c2a:      \tmovl\t-0x34(%rbp), %ebx\n    4c2d:      \tjs\t0x4cdb <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x4db>\n    4c33:      \tleaq\t-0x468(%rbp), %rdi\n    4c3a:      \tleaq\t-0x858(%rbp), %rsi\n    4c41:      \tcallq\t0x3e20 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)>\n    4c46:      \ttestb\t%al, %al\n    4c48:      \tje\t0x4d00 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x500>\n    4c4e:      \tcmpb\t$0x0, -0x44(%rbp)\n    4c52:      \tjne\t0x4d00 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x500>\n    4c58:      \tmovl\t-0x48(%rbp), %eax\n    4c5b:      \ttestl\t%eax, %eax\n    4c5d:      \tjs\t0x4db4 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x5b4>\n    4c63:      \tandb\t$-0x21, -0x21c0(%rbp)\n    4c6a:      \tleaq\t-0x2330(%rbp), %rsi\n    4c71:      \tmovl\t$0x1ad8, %edx           # imm = 0x1AD8\n    4c76:      \tmovq\t-0x78(%rbp), %rdi\n    4c7a:      \tcallq\t0xd870 <memcpy@plt>\n    4c7f:      \tmovq\t-0x30(%rbp), %rax\n    4c83:      \tmovl\t%ebx, (%rax)\n    4c85:      \tmovl\t-0x48(%rbp), %eax\n    4c88:      \ttestb\t$0x1, %r15b\n    4c8c:      \tjne\t0x4d4b <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x54b>\n    4c92:      \tjmp\t0x4d7a <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x57a>\n    4c97:      \tmovq\t-0x30(%rbp), %rax\n    4c9b:      \tmovl\t$0x6c, (%rax)\n    4ca1:      \tjmp\t0x4d40 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)+0x540>\n    4ca6:      \tmovb\t$0x1, 0x21410(%rip)     # 0x260bd <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x5>\n    4cad:      \tmovl\t$0x0, 0x21409(%rip)     # 0x260c0 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x8>\n    4cb7:      \tmovb\t$0x0, 0x213fe(%rip)     # 0x260bc <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::state+0x4>\n    4cbe:      \tcallq\t0x3f20 <berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::RetireLocked()>\n    4cc3:      \tmovl\t%r13d, %eax\n    4cc6:      \tnegl\t%eax\n    4cc8:      \ttestl\t%r13d, %r13d\n    4ccb:      \tmovl\t$0x74, %ecx",
+  "read_full_lines": 325,
+  "read_bitwise_instruction_count": 1
+}

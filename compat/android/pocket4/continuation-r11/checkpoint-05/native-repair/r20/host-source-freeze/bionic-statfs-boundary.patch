@@ -1,0 +1,16 @@
+--- a/actual/proc_maps_raw_metadata_owner.cc
++++ b/actual/proc_maps_raw_metadata_owner.cc
+@@ -474,6 +474,13 @@
+                  (request.context_invalid && request.result<0?-request.result:ESTALE));
+   }
+   if(request.result<0)return Error(-request.result);
++#if defined(__BIONIC__)
++  // bionic/libc/bionic/sys_statfs.cpp removes the kernel-private ST_VALID
++  // bit before returning a successful libc statfs result. Snapshot uses the
++  // host libc structure and is also consumed by the ordinary Fstatfs path.
++  // Keep glibc's existing behavior and every other field/flag unchanged.
++  value.filesystem.f_flags &= ~0x0020;
++#endif
+   *snapshot=value;
+   errno=before;return request.result;
+ }

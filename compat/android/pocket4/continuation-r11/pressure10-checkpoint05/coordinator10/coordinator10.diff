@@ -1,0 +1,270 @@
+--- revision09/prepare.py
++++ revision10/prepare.py
+@@ -1,21 +1,21 @@
+-"""Create-only staging for one explicitly selected revision09 owned cell."""
++"""Create-only staging for one explicitly selected revision10 owned cell."""
+ from pathlib import Path
+ import datetime, hashlib, json, os, re, stat, subprocess, sys, traceback, types
+ 
+ P = Path
+-SOURCE = 'c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5'
+-BUILD = '087a22519b0619be5a38440549a4730305bbfede6a046bbac347516dea0e962b'
+-BASE = P('/home/alex/work/pocket4-lmkd-host-pressure-r11-source-09')
++SOURCE = 'bc996fe6c763b0270de97d85c0f7ace71fd3804ca432c49d79f05ec21edec9e5'
++BUILD = '153c08dd7744149e0a1ff67f035d6a42cb218800521baca229f4950715076d46'
++BASE = P('/home/alex/work/pocket4-lmkd-host-pressure-r11-source-10')
+ ACT = P('/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json')
+ HELPER = P('/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py')
+ ACT_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+ HELPER_SHA = 'f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288'
+-BINS = {'actor':'e4a24055ff87b793cee0c8bfe11b1e9df48581cc0406024fbf93f2461b8cf06e',
++BINS = {'actor':'cc610f548fc567ceab31695aacb3c80f4397321051b3a45459835854526c2011',
+         'driver':'a9de6becc67b03ccc877ed54b64ee7c3c1b3398f546fb6464d9b52f707ebe00b',
+         'broker':'6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154',
+         'android_lmkd':'bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde'}
+-PROFILES = {'pressure':('p4-lmkd-relay-pressure-r11-03', 'pocket4-lmkd-pressure-r11-coordinator-04'),
+-            'stale':('p4-lmkd-relay-stale-r11-02', 'pocket4-lmkd-pressure-r11-coordinator-05')}
++PROFILES = {'pressure':('p4-lmkd-relay-pressure-r11-04', 'pocket4-lmkd-pressure-r11-coordinator-06'),
++            'stale':('p4-lmkd-relay-stale-r11-03', 'pocket4-lmkd-pressure-r11-coordinator-07')}
+ 
+ def need(value, message):
+     if not value: raise RuntimeError(message)
+@@ -30,7 +30,7 @@
+ 
+ def predecessor(pin):
+     need(re.fullmatch('[0-9a-f]{64}', pin) is not None, 'stale requires externally pinned completed positive receipt')
+-    path = P('/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-04/02-pressure-once/result.json')
++    path = P('/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-06/02-pressure-once/result.json')
+     need(sha(path) == pin, 'positive predecessor receipt pin changed')
+     r = json.loads(path.read_text())
+     need(r.get('phase') == 'pressure' and r.get('source_manifest_sha256') == SOURCE and r.get('matching_build_receipt_sha256') == BUILD,
+@@ -38,12 +38,15 @@
+     need(all(r.get(k) is True for k in ('ok', 'external_unit_binding_verified', 'exact_owned_cleanup_verified', 'main_epoch_unchanged_after_cleanup'))
+          and r.get('outcome_unknown') is False and r.get('forced_teardown') is False,
+          'positive predecessor did not complete exact normal cleanup and Main fence')
+-    need(r.get('pressure_qualified') is True or r.get('partial_medium_only') is True, 'positive predecessor is rejected/inconclusive')
++    need(r.get('pressure_qualified') is True and r.get('partial_medium_only') is False and
++         r.get('unit') == PROFILES['pressure'][0]+'.service' and
++         r.get('qualification',{}).get('critical_event_observed_in_phase') is True and
++         r.get('qualification',{}).get('fresh_critical_event_correlated_with_cached_exit') is True, 'stale requires same-revision complete critical positive; partial or another unit is insufficient')
+     return {'path':str(path), 'sha256':pin, 'partial_medium_only':r.get('partial_medium_only', False)}
+ 
+ def main():
+     out = None
+-    report = {'schema':1, 'ok':False, 'scope':'revision09 owned staging only',
++    report = {'schema':1, 'ok':False, 'scope':'revision10 owned staging only',
+               'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+               'pressure_executed':False, 'installed_files_changed':False}
+     try:
+@@ -61,19 +64,19 @@
+         act = json.loads(ACT.read_text()); epoch = types.ModuleType('epoch'); epoch.__file__ = str(HELPER)
+         exec(compile(HELPER.read_bytes(), str(HELPER), 'exec'), epoch.__dict__)
+         epoch.require_unchanged(act['framework_epoch'], action_attempted=False)
+-        need(sha(BASE/'source-manifest.json') == SOURCE and sha(BASE/'build-result.json') == BUILD, 'revision09 source/build receipt changed')
++        need(sha(BASE/'source-manifest.json') == SOURCE and sha(BASE/'build-result.json') == BUILD, 'revision10 source/build receipt changed')
+         manifest = json.loads((BASE/'source-manifest.json').read_text())
+-        need(len(manifest['files']) == 36, 'exact revision09 payload count required')
++        need(len(manifest['files']) == 38, 'exact revision10 payload count required')
+         for name, row in manifest['files'].items():
+             path = BASE/name; metadata = path.lstat()
+             need(stat.S_ISREG(metadata.st_mode) and metadata.st_size == row['bytes'] and sha(path) == row['sha256'], 'frozen source differs: '+name)
+         build = json.loads((BASE/'build-result.json').read_text())
+         need(build['success'] and build['rust_tests_passed'] == 20 and build['ordinary_ipc_passed'] == 7 and
+-             build['synthetic_python_tests_passed'] == 23 and not build['pressure_executed'], 'matching build/control gate failed')
++             build['synthetic_python_tests_passed'] == 28 and not build['pressure_executed'], 'matching build/control gate failed')
+         for row in build['binaries']:
+             need(sha(row['path']) == row['sha256'], 'matching output changed: '+row['path'])
+         for relative, role in [('target/debug/owned-relay-canary','driver'), ('target/debug/droidloom-psi-owner','broker'), ('owned-relay/fixture-init','actor')]:
+-            need(sha(BASE/relative) == BINS[role], 'fixed revision09 binary pin differs: '+role)
++            need(sha(BASE/relative) == BINS[role], 'fixed revision10 binary pin differs: '+role)
+         need(not root.exists() and not state.exists() and not stage.exists(), 'fresh root/state/stage only; no same-cell retry')
+         shown = subprocess.run(['/usr/bin/systemctl','show',unit,'--property=LoadState'], capture_output=True, text=True, timeout=10)
+         need(shown.returncode == 0 and 'LoadState=not-found' in shown.stdout, 'owned unit must be absent before staging')
+@@ -87,7 +90,7 @@
+                 '/home/alex/work/pocket4-lmkd-enrollment-r6-android-build-01/link/lmkd-cgroup', BINS['android_lmkd']]
+         run = subprocess.run(argv, capture_output=True, text=True, timeout=40)
+         report.update(argv=argv, returncode=run.returncode, stdout=run.stdout, stderr=run.stderr)
+-        need(run.returncode == 0, 'owned revision09 staging failed')
++        need(run.returncode == 0, 'owned revision10 staging failed')
+         path = state/'evidence/staging-result.json'; staged = json.loads(path.read_text())
+         need(staged['ok'] and staged['all_source_and_copied_hashes_matched'] and staged['actor_sha256'] == BINS['actor'] and staged['lmkd_sha256'] == BINS['android_lmkd'], 'staging pin/receipt gate failed')
+         report.update(staging_result_sha256=sha(path), staging_result=staged)
+--- revision09/once.py
++++ revision10/once.py
+@@ -1,22 +1,22 @@
+-"""One revision09 owned invocation; no same-cell dispatch retry or Main mutation."""
++"""One revision10 owned invocation; no same-cell dispatch retry or Main mutation."""
+ from pathlib import Path
+ import datetime, hashlib, importlib.util, json, os, re, secrets, stat, subprocess, sys, time, traceback, types
+ sys.dont_write_bytecode = True
+ P = Path
+-SOURCE = 'c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5'
+-BUILD = '087a22519b0619be5a38440549a4730305bbfede6a046bbac347516dea0e962b'
+-BASE = P('/home/alex/work/pocket4-lmkd-host-pressure-r11-source-09')
++SOURCE = 'bc996fe6c763b0270de97d85c0f7ace71fd3804ca432c49d79f05ec21edec9e5'
++BUILD = '153c08dd7744149e0a1ff67f035d6a42cb218800521baca229f4950715076d46'
++BASE = P('/home/alex/work/pocket4-lmkd-host-pressure-r11-source-10')
+ ACT = P('/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json')
+ HELPER = P('/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py')
+ ACT_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+ HELPER_SHA = 'f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288'
+-QUALIFIER_SHA = '271d0d95f5532fface42fbe25f55787e455291c23a23a26ed74b23a4e08b88d5'
+-BINS = {'actor':'e4a24055ff87b793cee0c8bfe11b1e9df48581cc0406024fbf93f2461b8cf06e',
++QUALIFIER_SHA = '73a7405d3b663138e5a321257197ae073a01302631a9c21044076cb211651c31'
++BINS = {'actor':'cc610f548fc567ceab31695aacb3c80f4397321051b3a45459835854526c2011',
+         'driver':'a9de6becc67b03ccc877ed54b64ee7c3c1b3398f546fb6464d9b52f707ebe00b',
+         'broker':'6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154',
+         'android_lmkd':'bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde'}
+-PROFILES = {'pressure':('p4-lmkd-relay-pressure-r11-03', 'pocket4-lmkd-pressure-r11-coordinator-04'),
+-            'stale':('p4-lmkd-relay-stale-r11-02', 'pocket4-lmkd-pressure-r11-coordinator-05')}
++PROFILES = {'pressure':('p4-lmkd-relay-pressure-r11-04', 'pocket4-lmkd-pressure-r11-coordinator-06'),
++            'stale':('p4-lmkd-relay-stale-r11-03', 'pocket4-lmkd-pressure-r11-coordinator-07')}
+ LIMITS = {'memory.max':'536870912','memory.high':'max','memory.swap.max':'0','cpu.max':'100000 100000','pids.max':'64'}
+ HARD = 536870912
+ 
+@@ -58,7 +58,7 @@
+ 
+ def predecessor(pin):
+     need(re.fullmatch('[0-9a-f]{64}', pin) is not None, 'stale requires externally pinned positive result')
+-    path = P('/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-04/02-pressure-once/result.json')
++    path = P('/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-06/02-pressure-once/result.json')
+     need(sha(path) == pin, 'positive predecessor receipt pin changed')
+     r = json.loads(path.read_text())
+     need(r.get('phase') == 'pressure' and r.get('source_manifest_sha256') == SOURCE and r.get('matching_build_receipt_sha256') == BUILD,
+@@ -66,7 +66,10 @@
+     need(all(r.get(key) is True for key in ('ok','external_unit_binding_verified','exact_owned_cleanup_verified','main_epoch_unchanged_after_cleanup'))
+          and r.get('outcome_unknown') is False and r.get('forced_teardown') is False,
+          'positive predecessor normal completion/cleanup missing')
+-    need(r.get('pressure_qualified') is True or r.get('partial_medium_only') is True, 'positive predecessor rejected/inconclusive')
++    need(r.get('pressure_qualified') is True and r.get('partial_medium_only') is False and
++         r.get('unit') == PROFILES['pressure'][0]+'.service' and
++         r.get('qualification',{}).get('critical_event_observed_in_phase') is True and
++         r.get('qualification',{}).get('fresh_critical_event_correlated_with_cached_exit') is True, 'stale requires same-revision complete critical positive; partial or another unit is insufficient')
+     return {'path':str(path), 'sha256':pin, 'partial_medium_only':r.get('partial_medium_only',False)}
+ 
+ def bind_terminal(status, first, outer, qualified, unit, invocation):
+@@ -95,13 +98,35 @@
+         need(all(qualified.get(key) is True for key in (
+             'stale_actual_queue_zero_kill_verified',
+             'stale_actual_critical_queue_zero_kill_verified',
+-            'critical_event_observed_in_phase')),
+-            'stale requires actual original critical queue and zero-kill qualification')
++            'stale_after_allocator_relief_zero_kill_verified',
++            'critical_event_observed_in_phase')) and
++            qualified.get('stale_test_scope') == 'relieved-domain-aged-critical-queue' and
++            qualified.get('native_stale_drop_observed') is False and
++            qualified.get('above_high_stale_zero_kill_verified') is False,
++            'stale requires original critical queue, owned relief and explicit limited scope')
++
++
++def phase_result_flags(phase, complete, qualification_code):
++    """Keep the independent native-expiry gate closed for a relieved-domain trial."""
++    need(type(complete) is bool and (not complete or phase in PROFILES), 'known completed phase and boolean completion required')
++    if complete:
++        need(type(qualification_code) is int and (qualification_code == 0 or (phase == 'pressure' and qualification_code == 2)),
++             'only the verified phase result may complete')
++    return {
++        'pressure_qualified': complete and phase == 'pressure' and qualification_code == 0,
++        'partial_medium_only': complete and phase == 'pressure' and qualification_code == 2,
++        'stale_qualified': False,
++        'stale_critical_qualified': False,
++        'stale_relief_critical_qualified': complete and phase == 'stale' and qualification_code == 0,
++        'stale_test_scope': 'relieved-domain-aged-critical-queue' if phase == 'stale' else None,
++        'native_stale_drop_observed': False,
++        'above_high_stale_zero_kill_verified': False,
++    }
+ 
+ def main():
+     out = state = cgroup = epoch = act = unit = description = None
+     invocation = None; validation_ok = False; qualification_code = None; phase = None
+-    report = {'schema':1, 'ok':False, 'scope':'one owned revision09 PIDFD-only minimal-root phase; no Main deployment',
++    report = {'schema':1, 'ok':False, 'scope':'one owned revision10 PIDFD-only minimal-root phase; no Main deployment',
+               'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(), 'source_manifest_sha256':SOURCE,
+               'matching_build_receipt_sha256':BUILD, 'binaries_sha256':BINS, 'dispatch_attempted':False,
+               'outcome_unknown':False, 'forced_teardown':False, 'pressure_qualified':False,
+@@ -136,10 +161,10 @@
+         prepared = json.loads((root/'01-prepare/result.json').read_text())
+         need(prepared.get('ok') is True and prepared.get('main_epoch_unchanged') is True and prepared.get('phase') == phase
+              and prepared.get('unit') == unit and prepared.get('source_manifest_sha256') == SOURCE and prepared.get('matching_build_receipt_sha256') == BUILD,
+-             'this exact phase has no successful revision09 preparation')
++             'this exact phase has no successful revision10 preparation')
+         need(sha(state/'evidence/staging-result.json') == prepared['staging_result_sha256'], 'staging receipt changed')
+         need(sha(BASE/'source-manifest.json') == SOURCE and sha(BASE/'build-result.json') == BUILD, 'source/build pin changed')
+-        manifest = json.loads((BASE/'source-manifest.json').read_text()); need(len(manifest['files']) == 36, 'exact revision09 source count required')
++        manifest = json.loads((BASE/'source-manifest.json').read_text()); need(len(manifest['files']) == 38, 'exact revision10 source count required')
+         for name,row in manifest['files'].items():
+             path = BASE/name; metadata = path.lstat()
+             need(stat.S_ISREG(metadata.st_mode) and metadata.st_size == row['bytes'] and sha(path) == row['sha256'], 'source input changed: '+name)
+@@ -151,7 +176,7 @@
+         namespaces = {name:(P('/proc')/str(init)/'ns'/name).stat().st_ino for name in ('pid','mnt','cgroup','ipc','uts','net')}
+         available = int(next(line.split()[1] for line in P('/proc/meminfo').read_text().splitlines() if line.startswith('MemAvailable:'))) * 1024
+         need(available > 3*1024**3, 'minimum 3 GiB free host admission failed')
+-        description = 'p4-owned-r11-rev09-'+phase+'-'+secrets.token_hex(16)
++        description = 'p4-owned-r11-rev10-'+phase+'-'+secrets.token_hex(16)
+         props = ['Type=exec','RemainAfterExit=yes','Delegate=memory pids cpu','MemoryMax=512M','MemoryHigh=infinity','MemorySwapMax=0',
+                  'CPUQuota=100%','CPUQuotaPeriodSec=100ms','TasksMax=64','Nice=10','RuntimeMaxSec=60','TimeoutStopSec=3','KillMode=control-group',
+                  'LimitCORE=0','LimitNOFILE=4096','LimitFSIZE=1048576','RestrictRealtime=yes','UMask=0022','StandardInput=null',
+@@ -184,7 +209,7 @@
+         terminal_peak = uint(status.get('MemoryPeak',''), 'terminal MemoryPeak unavailable')
+         need(0 < terminal_peak < HARD and uint(status.get('MemorySwapPeak',''), 'terminal swap peak unavailable') == 0,
+              'terminal unit resource peaks exceed fixed admission')
+-        qualifier = BASE/'owned-relay/qualify_pressure.py'; need(sha(qualifier) == QUALIFIER_SHA, 'revision09 qualifier changed')
++        qualifier = BASE/'owned-relay/qualify_pressure.py'; need(sha(qualifier) == QUALIFIER_SHA, 'revision10 qualifier changed')
+         spec = importlib.util.spec_from_file_location('pinned_pressure_qualifier', qualifier)
+         module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+         files = []
+@@ -265,14 +290,12 @@
+         complete = (validation_ok and report.get('exact_owned_cleanup_verified') is True and
+                     report.get('main_epoch_unchanged_after_cleanup') is True and report['outcome_unknown'] is False and
+                     report['forced_teardown'] is False and 'cleanup_error' not in report and 'main_fence_error' not in report)
+-        report.update(ok=complete, pressure_qualified=complete and phase == 'pressure' and qualification_code == 0,
+-                      stale_qualified=complete and phase == 'stale' and qualification_code == 0,
+-                      stale_critical_qualified=complete and phase == 'stale' and qualification_code == 0,
+-                      partial_medium_only=complete and phase == 'pressure' and qualification_code == 2,
++        report.update(ok=complete, **phase_result_flags(phase, complete, qualification_code),
+                       finished_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+         if out is not None: write(out/'result.json', report)
+         print(json.dumps({'report':str(out/'result.json') if out is not None else None, 'sha256':sha(out/'result.json') if out is not None else None,
+-                          **{key:report.get(key) for key in ('ok','phase','pressure_qualified','stale_qualified','stale_critical_qualified','partial_medium_only','qualification',
++                          **{key:report.get(key) for key in ('ok','phase','pressure_qualified','stale_qualified','stale_critical_qualified','stale_relief_critical_qualified','stale_test_scope',
++                              'native_stale_drop_observed','above_high_stale_zero_kill_verified','partial_medium_only','qualification',
+                               'error','cleanup_error','exact_owned_cleanup_verified','main_epoch_unchanged_after_cleanup','invocation_id','outcome_unknown')}}), flush=True)
+     return 0 if report['ok'] else 1
+ 
+--- revision09/export.py
++++ revision10/export.py
+@@ -3,9 +3,9 @@
+ import datetime, hashlib, io, json, os, re, stat, sys, tarfile, traceback
+ 
+ P = Path
+-PROFILES = {'pressure':('p4-lmkd-relay-pressure-r11-03','04'), 'stale':('p4-lmkd-relay-stale-r11-02','05')}
+-SOURCE = 'c71f8aa93bb96f329177b7797a77d1b6f46238953450a9579b78547770f991b5'
+-BUILD = '087a22519b0619be5a38440549a4730305bbfede6a046bbac347516dea0e962b'
++PROFILES = {'pressure':('p4-lmkd-relay-pressure-r11-04','06'), 'stale':('p4-lmkd-relay-stale-r11-03','07')}
++SOURCE = 'bc996fe6c763b0270de97d85c0f7ace71fd3804ca432c49d79f05ec21edec9e5'
++BUILD = '153c08dd7744149e0a1ff67f035d6a42cb218800521baca229f4950715076d46'
+ 
+ def need(value, message):
+     if not value: raise RuntimeError(message)
+@@ -33,7 +33,7 @@
+     phase, pin = sys.argv[1:]; need(re.fullmatch('[0-9a-f]{64}', pin) is not None, 'external receipt pin required')
+     stem, suffix = PROFILES[phase]
+     root = P('/home/alex/work')/('pocket4-lmkd-pressure-r11-coordinator-'+suffix)
+-    state = P('/run')/stem; base = P('/home/alex/work/pocket4-lmkd-host-pressure-r11-source-09')
++    state = P('/run')/stem; base = P('/home/alex/work/pocket4-lmkd-host-pressure-r11-source-10')
+     result_path = root/('02-'+phase+'-once')/'result.json'; result_raw = read(result_path)
+     need(digest(result_raw) == pin, 'actual coordinator result pin differs')
+     result = json.loads(result_raw)
+@@ -76,7 +76,11 @@
+     summary = {'ok':True,'phase':phase,'archive':str(out/'owned-evidence.tar.gz'),'archive_bytes':len(archive_raw),
+                'archive_sha256':digest(archive_raw),'manifest_sha256':digest(manifest_raw),'payload_files':len(index),
+                'coordinator_result':str(out/'coordinator-result.json'),'coordinator_result_sha256':pin,
+-               'phase_ok':result.get('ok'),'exact_owned_cleanup_verified':result.get('exact_owned_cleanup_verified')}
++               'phase_ok':result.get('ok'),'exact_owned_cleanup_verified':result.get('exact_owned_cleanup_verified'),
++               'stale_relief_critical_qualified':result.get('stale_relief_critical_qualified'),
++               'stale_critical_qualified':result.get('stale_critical_qualified'),
++               'stale_test_scope':result.get('stale_test_scope'),'native_stale_drop_observed':result.get('native_stale_drop_observed'),
++               'above_high_stale_zero_kill_verified':result.get('above_high_stale_zero_kill_verified')}
+     put(out/'export-result.json',(json.dumps(summary,indent=2)+'\n').encode(),owner)
+     print(json.dumps(summary),flush=True)
+ 

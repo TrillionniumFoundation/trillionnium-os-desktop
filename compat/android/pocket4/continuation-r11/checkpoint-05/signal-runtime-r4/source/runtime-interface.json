@@ -1,0 +1,41 @@
+{
+  "always_required_additional_flags": [
+    "--namespace-helper",
+    "--namespace-helper-sha256",
+    "--namespace-helper-source",
+    "--namespace-helper-source-sha256",
+    "--namespace-helper-qualification",
+    "--namespace-helper-qualification-sha256"
+  ],
+  "common_required_original_flags": [
+    "--inputs",
+    "--inputs-sha256",
+    "--preparation-source",
+    "--source-manifest",
+    "--source-manifest-sha256",
+    "--host-wrapper-source-manifest",
+    "--host-suite-receipt",
+    "--host-suite-sha256",
+    "--host-launch-inputs",
+    "--host-launch-inputs-sha256"
+  ],
+  "helper": {
+    "binary_sha256": "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+    "qualification_sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+    "source_sha256": "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c"
+  },
+  "host_wrapper_manifest_sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5",
+  "old_a03_input_reference_is_not_a_new_run_plan": true,
+  "preparation_and_runtime_sources_distinct": true,
+  "preparation_cli": "prepare_runtime.py {check-inputs|prepare}",
+  "preparation_manifest_sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103",
+  "private_canary_run_authorized_by_this_file": false,
+  "production_ready": false,
+  "runtime_additional_original_flags": [
+    "--prepared-sha256"
+  ],
+  "runtime_cli": "run.py {check|run}",
+  "schema": 1,
+  "state": "INTERFACE_ONLY_NOT_A04_ADMISSION",
+  "whole_process_tree_cleanup_qualified_by_helper": false
+}

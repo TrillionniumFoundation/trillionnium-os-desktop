@@ -1,0 +1,424 @@
+--- a/guest_os_primitives/Android.bp
++++ b/guest_os_primitives/Android.bp
+@@ -237,6 +237,7 @@
+     local_include_dirs: ["arm64"],
+     header_libs: [
+         "libberberis_guest_abi_arm64_headers",
++        "libberberis_kernel_api_headers",
+         "libberberis_guest_os_primitives_headers",
+         "libberberis_guest_os_primitives_arm64_headers",
+         "libberberis_guest_state_headers",
+--- a/guest_os_primitives/guest_thread_clone.cc
++++ b/guest_os_primitives/guest_thread_clone.cc
+@@ -24,7 +24,10 @@
+ #include "berberis/base/tracing.h"
+ #include "berberis/guest_os_primitives/guest_signal.h"
+ #include "berberis/guest_os_primitives/guest_thread.h"
+-#include "berberis/guest_os_primitives/guest_thread_manager.h"  // ResetCurrentGuestThreadAfterFork
++#include "berberis/guest_os_primitives/guest_thread_manager.h"
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++#include "berberis/kernel_api/proc_maps_generation.h"
++#endif  // ResetCurrentGuestThreadAfterFork
+ #include "berberis/guest_os_primitives/scoped_pending_signals.h"
+ #include "berberis/guest_state/guest_addr.h"
+ #include "berberis/guest_state/guest_state_opaque.h"
+@@ -124,6 +127,10 @@
+                        GuestAddr new_tls,
+                        GuestAddr child_tid) {
+   ThreadState& thread_state = *thread->state();
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++  if (proc_maps_provenance::generation::BeforeGuestClone(static_cast<unsigned long>(flags)) < 0)
++    return -1;
++#endif
+   if (!(flags & CLONE_VM)) {
+     // Memory is *not* shared with the child.
+     // Run the child on the same host stack as the parent. Thus, can use host local variables.
+@@ -134,6 +141,9 @@
+     if (pid == 0) {
+       // Child, reset thread table.
+       ResetCurrentGuestThreadAfterFork(thread);
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++      proc_maps_provenance::generation::AfterPrivateGuestFork();
++#endif
+       if (guest_stack_top) {
+         SetStackRegister(GetCPUState(thread_state), guest_stack_top);
+         // TODO(b/280551726): Reset stack attributes?
+--- a/kernel_api/Android.bp
++++ b/kernel_api/Android.bp
+@@ -142,6 +142,11 @@
+         x86_64: {
+             srcs: [
+                 "arm64/open_emulation.cc",
++                "proc_maps_fd_owner.cc",
++                "proc_maps_path.cc",
++                "proc_maps_provenance.cc",
++                "proc_maps_raw_metadata_owner.cc",
++                "proc_maps_generation.cc",
+                 "open_emulation.cc",
+                 "runtime_bridge.cc",
+                 "sigevent_emulation.cc",
+--- a/kernel_api/arm64/syscall_emulation.cc
++++ b/kernel_api/arm64/syscall_emulation.cc
+@@ -37,6 +37,7 @@
+ #include "berberis/instrument/syscall.h"
+ #include "berberis/kernel_api/main_executable_real_path_emulation.h"
+ #include "berberis/kernel_api/runtime_bridge.h"
++#include "berberis/kernel_api/proc_maps_generation.h"
+ #include "berberis/kernel_api/syscall_emulation_common.h"
+ 
+ #include "berberis/guest_os_primitives/scoped_pending_signals.h"
+@@ -185,6 +186,18 @@
+ 
+   if (kInstrumentSyscalls) {
+     OnSyscall(state, guest_nr);
++  }
++
++  // This admission check precedes every translated syscall and the existing
++  // fast paths. Enabled experimental generations reject unsupported security
++  // or namespace transitions before the kernel can change caller identity.
++  if (proc_maps_provenance::generation::BeforeGuestSyscall(
++          guest_nr, state->cpu.x[0], state->cpu.x[1]) < 0) {
++    state->cpu.x[0] = -errno;
++    if (kInstrumentSyscalls) {
++      OnSyscallReturn(state, guest_nr);
++    }
++    return;
+   }
+ 
+   // vDSO fast path for the hottest time syscalls.
+--- a/kernel_api/exec_emulation.cc
++++ b/kernel_api/exec_emulation.cc
+@@ -15,6 +15,9 @@
+  */
+ 
+ #include "berberis/kernel_api/exec_emulation.h"
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++#include "berberis/kernel_api/proc_maps_generation.h"
++#endif
+ 
+ #include <unistd.h>
+ 
+@@ -113,7 +116,15 @@
+ 
+ int ExecveForGuest(const char* filename, char* const argv[], char* const envp[]) {
+   ScopedMmap new_envp;
+-  return execve(filename, argv, MangleGuestEnvp(&new_envp, envp));
++  char* const* prepared_envp = MangleGuestEnvp(&new_envp, envp);
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++  if (proc_maps_provenance::generation::BeforeGuestExec() < 0) return -1;
++#endif
++  const int result = execve(filename, argv, prepared_envp);
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++  proc_maps_provenance::generation::AfterGuestExecFailure();
++#endif
++  return result;
+ }
+ 
+ }  // namespace berberis
+--- a/kernel_api/include/berberis/kernel_api/proc_maps_generation.h
++++ b/kernel_api/include/berberis/kernel_api/proc_maps_generation.h
+@@ -0,0 +1,22 @@
++// SPDX-License-Identifier: Apache-2.0
++#ifndef BERBERIS_KERNEL_API_PROC_MAPS_GENERATION_H_
++#define BERBERIS_KERNEL_API_PROC_MAPS_GENERATION_H_
++#include "proc_maps_generation_protocol.h"
++namespace berberis::proc_maps_provenance::generation {
++// Normal initialization consumes a platform grant. It never starts an owner
++// from generic attach, a signal callback, a metadata query, or ExecuteGuest.
++int RequireReadyForNativeBridge();
++int BeforeGuestClone(unsigned long flags);
++void AfterPrivateGuestFork();
++// Return 0 to continue, -1 with errno to reject. This revision explicitly
++// rejects unsupported changing operations before issuing the kernel syscall.
++int BeforeGuestSyscall(long guest_number,unsigned long first_argument,unsigned long second_argument);
++// exec() closes admission before entering the kernel. A failed exec uses its
++// explicit paired return hook, never a lazy metadata-triggered restart.
++int BeforeGuestExec();
++void AfterGuestExecFailure();
++// Raw exit_group is a process-wide boundary. Ordinary thread exit remains
++// outside this protocol until the host-thread lifetime protocol is qualified.
++int BeforeGuestExitGroup();
++}
++#endif
+--- a/kernel_api/include/berberis/kernel_api/proc_maps_generation_protocol.h
++++ b/kernel_api/include/berberis/kernel_api/proc_maps_generation_protocol.h
+@@ -0,0 +1,26 @@
++// SPDX-License-Identifier: Apache-2.0
++#ifndef DROIDLOOM_NATIVE_GENERATION_PROTOCOL_V1_H_
++#define DROIDLOOM_NATIVE_GENERATION_PROTOCOL_V1_H_
++#include <stdint.h>
++// Private platform/engine protocol. Does not extend NativeBridgeCallbacks.
++namespace droidloom::native_generation {
++inline constexpr uint32_t kVersion=1;
++inline constexpr uint64_t kProtocol0=UINT64_C(0x444c4f4f4d474531);
++inline constexpr uint64_t kProtocol1=UINT64_C(0x50524f434d455431);
++inline constexpr char kEngineSymbol[]="DroidloomBerberisGenerationV1";
++enum Operation : uint32_t {
++  kPrepareMemory=1, kBeforeZygoteFork=2, kAfterSpecialize=3, kBeforeUnload=4, kCheckReady=5
++};
++enum Flag : uint32_t {kPrivateForkChild=1, kChildZygote=2};
++struct Request {
++  uint32_t version, size, operation, flags;
++  int32_t caller_tgid, previous_tgid;
++  uint64_t protocol0, protocol1;
++};
++static_assert(sizeof(Request)==40);
++using Entry=int(*)(const Request*);
++inline Request MakeRequest(Operation operation,uint32_t flags,int32_t caller,int32_t previous) {
++  return {kVersion,sizeof(Request),operation,flags,caller,previous,kProtocol0,kProtocol1};
++}
++}
++#endif
+--- a/kernel_api/proc_maps_generation.cc
++++ b/kernel_api/proc_maps_generation.cc
+@@ -0,0 +1,217 @@
++// SPDX-License-Identifier: Apache-2.0
++#include "berberis/kernel_api/proc_maps_generation.h"
++#include "berberis/kernel_api/proc_maps_raw_metadata_owner.h"
++#include <atomic>
++#include <errno.h>
++#include <sched.h>
++#include <linux/seccomp.h>
++#include <sys/prctl.h>
++#include <sys/syscall.h>
++#include <unistd.h>
++namespace berberis::proc_maps_provenance::generation {
++namespace {
++using namespace droidloom::native_generation;
++enum Phase {kCold,kPrepared,kReady,kClosed,kRetired,kFaulted,kExecPending};
++std::atomic<int> process{0},previous_process{0},phase{kCold};
++[[maybe_unused]] int Error(int value) {errno=value;return -1;}
++int CurrentProcess() {return static_cast<int>(syscall(SYS_getpid));}
++int CloseGeneration() {
++  if(process.load(std::memory_order_acquire)!=CurrentProcess())return Error(EOPNOTSUPP);
++  phase.store(kClosed,std::memory_order_release);
++  return raw_metadata_owner::QuiesceBeforeTransition();
++}
++bool Ready() {
++  return process.load(std::memory_order_acquire)==CurrentProcess() &&
++         phase.load(std::memory_order_acquire)==kReady && raw_metadata_owner::Enabled();
++}
++int DispatchEnabled(const Request& request) {
++  const int current=CurrentProcess();
++  if(request.caller_tgid!=current)return -ESTALE;
++  const int owner=process.load(std::memory_order_acquire);
++  const int current_phase=phase.load(std::memory_order_acquire);
++  const bool private_child=(request.flags&kPrivateForkChild)!=0;
++  switch(request.operation) {
++    case kPrepareMemory:
++      if(request.flags!=0 || request.previous_tgid!=0 || owner!=0 || current_phase!=kCold)
++        return -EPROTO;
++      if(raw_metadata_owner::PrepareInheritedStack()<0)return -errno;
++      process.store(current,std::memory_order_release);
++      phase.store(kPrepared,std::memory_order_release);
++      return 0;
++    case kBeforeZygoteFork:
++      if(request.flags!=0 || owner!=current || request.previous_tgid!=owner ||
++         (current_phase!=kPrepared && current_phase!=kReady && current_phase!=kClosed))
++        return -EPROTO;
++      return CloseGeneration()==0?0:-errno;
++    case kAfterSpecialize: {
++      if(owner==0 || request.previous_tgid!=owner)return -EPROTO;
++      if(current!=owner) {
++        // This grant is issued only from ART's known private-memory zygote
++        // fork path, after SpecializeCommon. TGID inequality alone is not
++        // treated as proof that arbitrary CLONE_VM memory is private.
++        if(!private_child || current_phase!=kClosed)return -EPROTO;
++        raw_metadata_owner::ResetAfterPrivateFork();
++        previous_process.store(owner,std::memory_order_relaxed);
++        process.store(current,std::memory_order_release);
++        phase.store(kPrepared,std::memory_order_release);
++      } else if(private_child || (current_phase!=kPrepared && current_phase!=kReady)) {
++        return -EPROTO;
++      }
++      if(raw_metadata_owner::Start()<0) {
++        const int error=errno;
++        phase.store(kFaulted,std::memory_order_release);
++        return -error;
++      }
++      phase.store(kReady,std::memory_order_release);
++      return 0;
++    }
++    case kCheckReady:
++      if(request.flags!=0 || request.previous_tgid!=owner)return -EPROTO;
++      return Ready()?0:-EPROTONOSUPPORT;
++    case kBeforeUnload:
++      if(owner==0)return -EPROTO;
++      if(current!=owner) {
++        if(!private_child || request.previous_tgid!=owner || current_phase!=kClosed)
++          return -EPROTO;
++        raw_metadata_owner::ResetAfterPrivateFork();
++        previous_process.store(owner,std::memory_order_relaxed);
++        process.store(current,std::memory_order_release);
++      } else {
++        const int expected=private_child?previous_process.load(std::memory_order_acquire):owner;
++        if(request.previous_tgid!=expected)return -EPROTO;
++      }
++      if(CloseGeneration()<0)return -errno;
++      phase.store(kRetired,std::memory_order_release);
++      return 0;
++  }
++  return -EINVAL;
++}
++}
++int Dispatch(const droidloom::native_generation::Request* request) {
++  using namespace droidloom::native_generation;
++  if(request==nullptr)return -EINVAL;
++  if(request->version!=kVersion || request->size!=sizeof(Request) ||
++     request->protocol0!=kProtocol0 || request->protocol1!=kProtocol1)
++    return -EPROTONOSUPPORT;
++  if((request->flags&~(kPrivateForkChild|kChildZygote))!=0)return -EINVAL;
++  if(request->operation!=kAfterSpecialize && (request->flags&kChildZygote)!=0)return -EINVAL;
++#if BERBERIS_PROCMAPS_RAW_METADATA_OWNER
++  return DispatchEnabled(*request);
++#else
++  (void)&DispatchEnabled;
++  return -EOPNOTSUPP;
++#endif
++}
++int RequireReadyForNativeBridge() {
++#if BERBERIS_PROCMAPS_RAW_METADATA_OWNER
++  return Ready()?0:Error(EPROTONOSUPPORT);
++#else
++  (void)&Ready;
++  return 0;
++#endif
++}
++int BeforeGuestClone(unsigned long flags) {
++#if BERBERIS_PROCMAPS_RAW_METADATA_OWNER
++  const unsigned long namespaces=CLONE_NEWCGROUP|CLONE_NEWIPC|CLONE_NEWNET|
++      CLONE_NEWNS|CLONE_NEWPID|CLONE_NEWUSER|CLONE_NEWUTS;
++  if((flags&namespaces)!=0 || ((flags&CLONE_VM)!=0 && (flags&CLONE_THREAD)==0))
++    return Error(EOPNOTSUPP);
++  if(!Ready())return Error(ESHUTDOWN);
++#else
++  (void)flags;
++#endif
++  return 0;
++}
++void AfterPrivateGuestFork() {
++#if BERBERIS_PROCMAPS_RAW_METADATA_OWNER
++  // Called only in CloneGuestThread's !(flags & CLONE_VM), pid == 0 branch.
++  const int parent=process.load(std::memory_order_relaxed);
++  if(parent==CurrentProcess())return;
++  raw_metadata_owner::ResetAfterPrivateFork();
++  previous_process.store(parent,std::memory_order_relaxed);
++  process.store(CurrentProcess(),std::memory_order_release);
++  phase.store(kPrepared,std::memory_order_release);
++  if(raw_metadata_owner::Start()<0)phase.store(kFaulted,std::memory_order_release);
++  else phase.store(kReady,std::memory_order_release);
++  // The kernel fork result remains 0 in this child even if the owner's
++  // preparation fails. Subsequent metadata fails closed; no fabricated fork
++  // failure and no new host thread is started by a later metadata request.
++#endif
++}
++int BeforeGuestSyscall(long number,unsigned long first,unsigned long second) {
++#if BERBERIS_PROCMAPS_RAW_METADATA_OWNER
++  // ARM64 generic Linux numbers, not host x86_64 syscall numbers.
++  switch(number) {
++    case 91: // capset
++    case 143: case 144: case 145: case 146: // setregid/setgid/setreuid/setuid
++    case 147: case 149: case 159: // setresuid/setresgid/setgroups
++    case 40: case 41: case 51: case 39: // mount/pivot_root/chroot/umount2
++    case 268: case 429: case 442: // setns/move_mount/mount_setattr
++      return Error(EOPNOTSUPP);
++    case 151: case 152: // setfsuid/setfsgid: -1 is the kernel's read-only query.
++      if(static_cast<uint32_t>(first)!=UINT32_MAX)return Error(EOPNOTSUPP);
++      break;
++    case 97: // unshare: independent files/fs are supported by per-caller pinning.
++      if((first&~static_cast<unsigned long>(CLONE_FILES|CLONE_FS))!=0)
++        return Error(EOPNOTSUPP);
++      break;
++    case 167: // prctl credential/security changes; query operations still run.
++      if(first==PR_SET_KEEPCAPS || first==PR_SET_SECUREBITS ||
++         (first==PR_CAP_AMBIENT && second!=PR_CAP_AMBIENT_IS_SET) ||
++         first==PR_SET_NO_NEW_PRIVS || first==PR_SET_SECCOMP ||
++         first==PR_SET_DUMPABLE || first==PR_CAPBSET_DROP)
++        return Error(EOPNOTSUPP);
++      break;
++    case 277: // seccomp installations cannot cross an unregistered worker generation.
++      if(first==SECCOMP_SET_MODE_FILTER || first==SECCOMP_SET_MODE_STRICT)
++        return Error(EOPNOTSUPP);
++      break;
++    case 94:
++      return BeforeGuestExitGroup();
++  }
++#else
++  (void)number;(void)first;(void)second;
++#endif
++  return 0;
++}
++int BeforeGuestExec() {
++#if BERBERIS_PROCMAPS_RAW_METADATA_OWNER
++  if(!Ready())return Error(ESHUTDOWN);
++  int expected=kReady;
++  if(!phase.compare_exchange_strong(expected,kExecPending,std::memory_order_acq_rel))
++    return Error(ESHUTDOWN);
++  if(raw_metadata_owner::Stop()<0) {
++    const int error=errno;phase.store(kFaulted,std::memory_order_release);return Error(error);
++  }
++#endif
++  return 0;
++}
++void AfterGuestExecFailure() {
++#if BERBERIS_PROCMAPS_RAW_METADATA_OWNER
++  const int saved=errno;
++  if(process.load(std::memory_order_acquire)==CurrentProcess() &&
++     phase.load(std::memory_order_acquire)==kExecPending) {
++    if(raw_metadata_owner::Start()<0)phase.store(kFaulted,std::memory_order_release);
++    else phase.store(kReady,std::memory_order_release);
++  }
++  errno=saved;
++#endif
++}
++int BeforeGuestExitGroup() {
++#if BERBERIS_PROCMAPS_RAW_METADATA_OWNER
++  return CloseGeneration();
++#else
++  return 0;
++#endif
++}
++}
++extern "C" __attribute__((visibility("default"))) int DroidloomBerberisGenerationV1(
++    const droidloom::native_generation::Request* request) {
++  return berberis::proc_maps_provenance::generation::Dispatch(request);
++}
++extern "C" __attribute__((visibility("default"),used,retain)) const char DroidloomBerberisGenerationMarker[]=
++#if BERBERIS_PROCMAPS_RAW_METADATA_OWNER
++  "DROIDLOOM_NATIVE_GENERATION=1;ROLE=ENGINE;ABI=1;PROTOCOL=DLOOMGE1-PROCMET1;";
++#else
++  "DROIDLOOM_NATIVE_GENERATION=0;ROLE=ENGINE;ABI=1;PROTOCOL=DLOOMGE1-PROCMET1;";
++#endif
+--- a/native_bridge/Android.bp
++++ b/native_bridge/Android.bp
+@@ -89,6 +89,7 @@
+     ],
+     header_libs: [
+         "libberberis_guest_abi_arm64_headers",
++        "libberberis_kernel_api_headers",
+     ],
+     target: {
+         android: {
+--- a/native_bridge/native_bridge.cc
++++ b/native_bridge/native_bridge.cc
+@@ -45,6 +45,7 @@
+ #include <android/fdsan.h>
+ 
+ #include "arm64/digitalis_app_support.h"
++#include "berberis/kernel_api/proc_maps_generation.h"
+ #endif
+ // endregion
+ 
+@@ -528,6 +529,12 @@
+   if (env == nullptr) {
+     return false;
+   }
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++  if (berberis::proc_maps_provenance::generation::RequireReadyForNativeBridge() < 0) {
++    LOG_NB("native bridge metadata generation lacks a matching ART post-specialize grant");
++    return false;
++  }
++#endif
+   g_runtime_callbacks = runtime_cbs;
+   SetAppPropertiesFromCodeCachePath(private_dir);
+   berberis::InitBerberis();

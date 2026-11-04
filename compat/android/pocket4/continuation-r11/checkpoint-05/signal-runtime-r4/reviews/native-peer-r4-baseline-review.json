@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "reviewer": "/root/native_bridge_repair",
+  "scope": "Independent complete-source reading of retained v5_original.py and preparation-r1/prepare.py for r4 admission",
+  "qualification": "BLOCKED_CLEANUP_EXCEPTION_PATH",
+  "a04_started_by_this_review": false,
+  "source_modified": false,
+  "inputs": [
+    {
+      "path": "/home/alex/work/pocket4-signal-runtime-r4-work-01/source-complete-r4-01/references/preparation-r1/v5_original.py",
+      "bytes": 45214,
+      "sha256": "895ecbfec6d04170adf0dbc16a0fd18d3de0b78317efec86de1846295dfcddb8",
+      "complete_source_read": true
+    },
+    {
+      "path": "/home/alex/work/pocket4-signal-runtime-r4-work-01/source-complete-r4-01/references/preparation-r1/prepare.py",
+      "bytes": 29145,
+      "sha256": "738924ea138e0fc5fb5e7d5a6f90bf1fffbc4c7555ce4d0b5c519346aae6e734",
+      "complete_source_read": true
+    }
+  ],
+  "verification": {
+    "read_method": "sequential bounded binary reads, immutable version on the second v5 chunk",
+    "chunk_hashes_verified": true,
+    "whole_file_hashes_independently_computed": true,
+    "sha256_implementation_self_controls": [
+      "empty string",
+      "abc"
+    ],
+    "no_target_code_executed": true
+  },
+  "blocking_findings": [
+    {
+      "id": "R4-CLEANUP-EVIDENCE-BEFORE-RETIRE",
+      "source": "v5_original.py",
+      "function": "cleanup",
+      "line": 570,
+      "statement": "save('resources-before-cleanup.json',resources)",
+      "behavior": "A failure to commit resource evidence exits cleanup before ctl stop and all systemctl stop operations.",
+      "actual_caller_status": "Author confirmed R4 main only records the cleanup exception and does not force subsequent retirement; root independently confirmed the caller path.",
+      "impact": "Owned units can remain until their RuntimeMaxSec despite the invocation being marked FAIL; FAIL is not evidence of cleanup.",
+      "required_change": "A new revision must retain the evidence error while always reaching identity-checked retirement and bounded descendant checks. Test a failure from the actual save path.",
+      "r4_frozen_source_must_remain_unchanged": true
+    }
+  ],
+  "resolved_or_bounded_findings": [
+    {
+      "id": "UNOBSERVED-UNIT-INVOCATION",
+      "source": "v5_original.py",
+      "lines": [
+        72,
+        77,
+        539,
+        580
+      ],
+      "finding": "The inherited unit launch can leave a row without InvocationID if launch occurs but the following properties observation fails. The inherited cleanup skips such rows.",
+      "caller_override": "Author reported R4 main finally re-observes such rows, requires exact nonce-bearing Description and nonempty InvocationID, and binds ControlGroup before cleanup. Root reviews the actual new caller.",
+      "review_status": "Not retained as an independent r4 blocker after the specific caller override was identified.",
+      "unknown_identity_rule": "An unverified unit is recorded unresolved and is not stopped by name alone."
+    },
+    {
+      "id": "SOURCE-INPUT-TO-PREPARE",
+      "finding": "No concrete path in the completely read prepare implementation was found that replaces an existing Main stage/data directory or formats an existing image under its validated input contract.",
+      "evidence": [
+        "Owned stage/data/runtime names have exact parent/prefix constraints and equality to the validated attempt name.",
+        "Existing targets and symlinks are rejected; top-level mkdir has no exist_ok override.",
+        "Unused host UID/GID and non-overlapping subordinate ranges are required against current cell specifications and allocation files.",
+        "The only engine unlink targets the verified copy in the just-created owned stage.",
+        "The data and metadata images are O_EXCL/O_NOFOLLOW created before mkfs; no retry/delete-existing path exists.",
+        "Copied source records and candidate/probe hashes are verified; preparation rechecks the live Main epoch before committing prepared.json."
+      ]
+    }
+  ],
+  "observed_retained_runtime_boundaries": [
+    "Only nonce-scoped new systemd unit names are requested, with Type=exec, Restart=no, control-group kill mode and bounded runtime.",
+    "Endpoint checks require socket owner and peer PID/UID to match the recorded owned unit.",
+    "Private init is selected below the owned launcher and compared with six namespaces, UID/process identity and cgroup membership.",
+    "The retained v5 numeric nsenter path is not independently qualified for r4 here; the new held-namespace caller is in root's separate review.",
+    "The retained cleanup uses explicit private daemon socket, recorded unit identity, Main/source preservation checks, and retains runtime directories for inspection."
+  ],
+  "limits": [
+    "The new four r4 production files and full caller chain were not independently read by this reviewer; caller coverage statements above are explicitly attributed to author/root.",
+    "Root separately identified descendant-cgroup completion and classpath zygote mount/root binding questions; these are tracked by author/root and are not silently counted as passed here.",
+    "No actual signal APK, Android canary, Main mutation, deployment, or whole-app production qualification was performed by this review.",
+    "R5 remediation and its tests require a new review; this receipt does not approve an unobserved replacement."
+  ]
+}

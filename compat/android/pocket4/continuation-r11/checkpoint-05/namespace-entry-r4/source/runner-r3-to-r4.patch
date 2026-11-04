@@ -1,0 +1,63 @@
+--- a/run-r3.py
++++ b/run-r4.py
+@@ -5,8 +5,12 @@
+ ACT = Path('/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json')
+ ACT_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+ PINS = {
++ '/home/alex/work/pocket4-owned-held-ns-runner-r4-01/held_target.py': '7b4fc0de8aa35ea128147139a99fee495ec368c9065b66825038c668dd4f08fd',
+  '/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py': 'f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288',
+  '/usr/local/bin/android-app': 'eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66'}
++HELD_MODULE = '/home/alex/work/pocket4-owned-held-ns-runner-r4-01/held_target.py'
++HELD_BINARY = '/home/alex/work/pocket4-owned-held-ns-runner-r4-01/held-namespace-entry'
++HELD_BINARY_SHA = '21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689'
+ PROBES = {
+  'owner': ('local.pocket4.fdownerprobe.r11', 'local.pocket4.fdownerprobe.ProbeInstrumentation', 'x86_64', 11),
+  'signal': ('org.droidloom.signalprobe', 'org.droidloom.signalprobe.SignalProbeInstrumentation', 'arm64-v8a', 1),
+@@ -34,7 +38,7 @@
+  out=root/args.step;out.mkdir(mode=0o700)
+  package,instrumentation,abi,version=PROBES[args.kind]
+  report={'phase':args.phase,'kind':args.kind,'package':package,'started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'action_attempted':False,'outcome_unknown':False,'commands':[]}
+- write(out/'claim.json',report);lock=None
++ write(out/'claim.json',report);lock=None;held=None
+  try:
+   lock=os.open('/run/lock/android-digitalis-actions.lock',os.O_RDWR|os.O_CREAT|os.O_NOFOLLOW,0o600)
+   info=os.fstat(lock);assert stat.S_ISREG(info.st_mode) and info.st_nlink==1 and info.st_uid==0
+@@ -44,15 +48,19 @@
+   epoch.require_unchanged(act['framework_epoch'],action_attempted=False)
+   init,env,status=app.discover()
+   assert init==act['framework_epoch']['binding']['processes']['init']['host_pid'] and status['host_pid']==act['status']['host_pid']
+-  base=['/usr/bin/nsenter','-t',str(init),'-m','-p','-u','-i','/system/bin/env']+[k+'='+env[k] for k in sorted(env)]+['/system/xbin/su','2000','/system/bin/timeout','-k','2']
++  held_module=load_module(HELD_MODULE)
++  held=held_module.HeldTarget(init,act['framework_epoch']['binding']['processes']['init'],epoch.process_identity,HELD_BINARY,HELD_BINARY_SHA)
++  report['held_target_binding']=held.snapshot()
++  base=['/system/bin/env']+[k+'='+env[k] for k in sorted(env)]+['/system/xbin/su','2000','/system/bin/timeout','-k','2']
+   report.update(framework_epoch_sha256=act['framework_epoch']['sha256'],activation_sha256=ACT_SHA)
+   def command(name,argv,data=None,mutation=False,timeout=25):
+    epoch.require_unchanged(act['framework_epoch'],action_attempted=report['action_attempted'])
+    if mutation:
+     report.update(action_attempted=True,outcome_unknown=True)
+     write(out/(name+'-attempt.json'),{'argv':argv,'time':datetime.datetime.now(datetime.timezone.utc).isoformat()})
+-   p=subprocess.run(base+[str(timeout)]+argv,input=data,capture_output=True,timeout=timeout+7)
++   p=subprocess.run(held.command_prefix()+base+[str(timeout)]+argv,input=data,capture_output=True,timeout=timeout+7,pass_fds=held.pass_fds(),env={'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C'})
+    report['commands'].append({'name':name,'argv':argv,'returncode':p.returncode,'stdout_sha256':write(out/(name+'.stdout'),p.stdout),'stderr_sha256':write(out/(name+'.stderr'),p.stderr)})
++   held.check()
+    epoch.require_unchanged(act['framework_epoch'],action_attempted=report['action_attempted'])
+    assert p.returncode==0,(name,p.returncode,p.stderr.decode(errors='replace')[-1200:])
+    return p.stdout.decode('utf-8','strict')
+@@ -79,7 +87,7 @@
+    paths=command('package-path',['/system/bin/cmd','package','path',package]).splitlines()
+    assert len(paths)==1 and paths[0].startswith('package:/data/app/')
+    apk_path=paths[0][len('package:'):];assert '..' not in Path(apk_path).parts
+-   actual=digest((Path('/proc')/str(init)/'root'/apk_path.lstrip('/')).read_bytes());assert actual==install['apk_sha256'],'installed APK changed'
++   actual=digest(held.read_regular(apk_path));assert actual==install['apk_sha256'],'installed APK changed'
+    report.update(installed_identity=install['installed_identity'],apk_sha256=actual)
+    if args.phase=='run':
+     assert re.fullmatch(r'[a-zA-Z0-9_-]{12,80}',args.nonce or '')
+@@ -102,6 +110,7 @@
+   report.update(ok=True,outcome_unknown=False)
+  except Exception as error:report.update(ok=False,error=repr(error))
+  finally:
++  if held is not None:held.close()
+   if lock is not None:os.close(lock)
+  report['finished_utc']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+  write(out/'result.json',report);print(json.dumps(report,ensure_ascii=False),flush=True)

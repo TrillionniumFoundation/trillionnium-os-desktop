@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "scope": "single r20 matching APK build and actual ELF audit; no Android install/run",
+  "state": "BUILT_AND_AUTOMATIC_ELF_AUDIT_PASSED_UNRUN",
+  "root": "/home/alex/work/pocket4-owned-fd-capability-r20-apk-01",
+  "actual_android_executed": false,
+  "commands": [
+    {
+      "name": "matching-build",
+      "argv": [
+        "/usr/bin/python3",
+        "/home/alex/work/pocket4-owned-probe-build-r3-r11-01.py",
+        "/home/alex/work/pocket4-owned-fd-capability-r20-apk-01/fd-owner-probe-r20-source",
+        "owner",
+        "1"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "86f87424888bb1daa6eec0c41f0ed81821edf13a12363eaf6df580c0c095b7c5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "core_changed_from_r19": [
+    "actual/proc_maps_raw_metadata_owner.cc"
+  ],
+  "case_assertions_unchanged": true,
+  "source_sha256": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "CASE_PLAN.json": "f8cbfbf1f53a45a8cc0a76314b4d734b9aaec43fc309d3411967c0aacad89e92",
+    "actual/berberis/kernel_api/proc_maps_fd_owner.h": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+    "actual/berberis/kernel_api/proc_maps_path.h": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+    "actual/berberis/kernel_api/proc_maps_provenance.h": "fe5fc2fb9e2deb5a08d437c331a765bd4eeb2d5d7d01a9b6bcc96dd2c926b884",
+    "actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h": "0be9a6dd88a4a2e6ff569a46cff33fb1a4f4f09ed9e467313ac9a06f85b9eb35",
+    "actual/proc_maps_fd_owner.cc": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+    "actual/proc_maps_path.cc": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+    "actual/proc_maps_provenance.cc": "73a5c2c7b3e2b1c70c6970b7c63bc7ef7568986754efd638550bfb16775bc596",
+    "actual/proc_maps_raw_metadata_owner.cc": "8a5812793ec5b569ef03d7a159871d74e27baccaf17d3e8fe6c9998e348e28a8",
+    "audit_worker_binary.py": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+    "metadata_raw_cases.cc": "2799e1fd9917e6377ec04e67ca7d56c1036a3821f7678765553af494430e59ee",
+    "owner_probe.cpp": "fecc54e5af3c2318ee2469b140a98ba088f0e504e6c284d527eb36a2cfddbda1",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+    "SOURCE_PINS.json": "6e6c806a9560b34435a937ae8d9dab241f3139f63106f93da108b06dc0584cbb"
+  },
+  "build_receipt_sha256": "09a8a5ab25c897405b70bebdeb6c75c98d94ec9124365fdb51956b35df96db43",
+  "APK": {
+    "path": "/home/alex/work/pocket4-owned-fd-capability-r20-apk-01/fd-owner-probe-r20-source/build-attempt-1/fdownerprobe.apk",
+    "sha256": "c056d2c116abc0bca4ec6606defb6810ba53d960fd6164a0595cac9cc8ed06f0",
+    "bytes": 94622
+  },
+  "ELF": {
+    "sha256": "c9ca14dff8e337e05dcf45fc3068cc8d8fe07a4acdc7080f30da206612604acc",
+    "needed": [
+      "libc.so"
+    ],
+    "NX_RELRO_NOW_no_WX": true
+  },
+  "audit_root": "/home/alex/work/pocket4-owned-fd-capability-r20-audit-01",
+  "audit_receipt_sha256": "4db3d1736597844dfeccf09646591db92201dece70b2231d769ac8f2b08cee33",
+  "worker_audit_sha256": "74256faa7106d0ad05d750aa16ceb7012e6d78ea5a6c0afcb36e1d6fa7d9eecc",
+  "relevant_disassembly_sha256": "36969ca1dfa4fdad331be7dea1735dc4d3f9f1aa361b0018fe61c4e7a0b73bf4",
+  "manual_review": "PENDING_ROOT"
+}

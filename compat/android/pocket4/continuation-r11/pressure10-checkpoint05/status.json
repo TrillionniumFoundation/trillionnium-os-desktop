@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "checkpoint": "r11-cp05-lmkd-pressure",
+  "revision09": {
+    "positive_critical_pass": true,
+    "stale_pass": false,
+    "stale_failed_check": "stale interval has new pressure stalls",
+    "original_failure_preserved": true
+  },
+  "revision10": {
+    "positive_critical_pass": true,
+    "stale_relief_critical_qualified": true,
+    "stale_test_scope": "relieved-domain-aged-critical-queue",
+    "stale_qualified": false,
+    "stale_critical_qualified": false,
+    "native_stale_drop_observed": false,
+    "above_high_stale_zero_kill_verified": false
+  },
+  "main_changed": false,
+  "installed_supervisor_recovery_qualified": false,
+  "production_cgroup_kill_qualified": false,
+  "pid_reuse_qualified": false,
+  "all_apps_production_ready": false,
+  "actual_main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "matching": {
+    "rust_tests": 20,
+    "ordinary_ipc": 7,
+    "python_controls": 28,
+    "coordinator_controls": 8,
+    "strict_actor_compile": true
+  },
+  "binary_sha256": {
+    "actor": "cc610f548fc567ceab31695aacb3c80f4397321051b3a45459835854526c2011",
+    "driver": "a9de6becc67b03ccc877ed54b64ee7c3c1b3398f546fb6464d9b52f707ebe00b",
+    "broker": "6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154",
+    "android_lmkd": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+  }
+}

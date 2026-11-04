@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "scope": "Exact missing production adapter deltas; a new full overlay must receive a new manifest",
+  "old_R7_36_file_freeze_restored": false,
+  "base": {
+    "root": "/home/alex/work/pocket4-proc-maps-offset-r16-20261104/source",
+    "recorded_manifest_sha256": "c6f3d4e1dfb3fde119b7e2fc0b7801043ccece54c8b99140c9cbe32e7452be3b",
+    "newly_read_adapter_hashes": "Observed from the unchanged R16 source path; full-tree manifest revalidation required before assembling a new full candidate"
+  },
+  "available": {
+    "latest_metadata_eight": "R20 actual eight, seven identical to R18 and the Bionic Read-boundary delta in one cc",
+    "open_pair": {
+      "published_commit": "4af46935a44ecb5e19ddc65fa39558ddf1f0b733",
+      "cc_sha256": "04abd180090fbe86fddce1e5365067ceaa41dab114da99c32f13c13b54c68a62",
+      "header_sha256": "2fb3a518994aaf1c67a1355ecc8dd27177e28eea8ea89dade7d3c933988260bc"
+    },
+    "lifecycle_engine_delta": "R8 revision03: three new protocol/generation files and seven individually pinned hook/build files",
+    "ART_delta": "R8 revision03: eight files; complete ART build and installed binary binding not qualified",
+    "updater_pair_gate": "four changed files; actual cargo fixture controls passed"
+  },
+  "missing_adapter_deltas": [
+    {
+      "path": "kernel_api/open_emulation.cc",
+      "r16_sha256": "90515622bd3837d34c70b92a122fa77ae119e36237ff2226c1df2e6dbc03543c",
+      "work": "Replace fd-number registry / raw memfd publication with authenticated factory + owner-backed snapshot adapter; preserve exact R16 maps formatter and address/file-offset behavior."
+    },
+    {
+      "path": "kernel_api/include/berberis/kernel_api/syscall_emulation_common.h",
+      "r16_sha256": "66bb24fc320ca68fd814b7916ae6e73d87c9a1bd8281a40853eb3ea3a250a234",
+      "work": "Wire actual Fstat/Fstatfs projections, safe guest copy and separate kernel-vs-libc statfs representation; preserve unmodified architecture behavior."
+    },
+    {
+      "path": "kernel_api/unistd_emulation.cc",
+      "r16_sha256": "de0398e847a5e1010de27f788d47e19558524f5236fdab34d09088e4ad5e3b88",
+      "work": "Wire Readlinkat provenance while preserving main-executable handling, kernel user-pointer semantics, truncation and empty-path behavior."
+    },
+    {
+      "path": "kernel_api/arm64/syscall_emulation_arch.cc",
+      "r16_sha256": "70b04d74016efb5cc547d3edbd6f28d9c4718eb60f995af3a13123fa901ba1a3",
+      "work": "Provide an actual checked host-to-guest stat conversion/copy entry, rather than direct writes through invalid guest pointers."
+    }
+  ],
+  "additional_build_delta": {
+    "path": "kernel_api/Android.bp",
+    "existing_r8_sha256": "b202597a1b13691a339fa3395dc480e58f52de4daaeaab4277831d20ba06821c",
+    "work": "Add recovered proc_maps_open.cc to the complete source closure; explicit feature-enabled source configuration still requires paired engine/ART qualification."
+  },
+  "missing_factory_closure": {
+    "status": "No factory server implementation/build/service file has been recovered in these checked cp03/cp04 subsets or R18 actual8",
+    "client_present": "proc_maps_provenance.cc CreateSnapshot + protocol header",
+    "required": "Locate exact prior candidate factory if available, otherwise implement a separately pinned reviewed server/build/service closure; do not invent old pins."
+  },
+  "not_source_recovery_errors": [
+    "The temporary Android TU compile failures include missing Soong include context and existing baseline warnings; they do not prove the complete AOSP files are missing.",
+    "ART and Bionic reference source hashes do not prove installed binary source binding."
+  ]
+}

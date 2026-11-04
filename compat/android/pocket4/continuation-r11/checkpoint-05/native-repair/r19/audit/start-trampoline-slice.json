@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "source": "/home/alex/work/pocket4-owned-fd-capability-r19-audit-01/relevant-disassembly.txt",
+  "source_sha256": "df592a9a99f952212aee19e940947c50097ad80519e4c67111f25424c90871cd",
+  "output": "/home/alex/work/pocket4-owned-fd-capability-r19-audit-01/start-trampoline-exact.txt",
+  "output_sha256": "997f7cd7cb4d98d9635e687d9eab50843acc0b69e087f2639f18f769f5886503",
+  "output_bytes": 19187,
+  "exact_source_sections": [
+    {
+      "symbol": "berberis_proc_metadata_raw_clone_x86_64",
+      "source_begin": 0,
+      "source_end_exclusive": 687,
+      "output_begin": 0,
+      "output_end_exclusive": 687,
+      "sha256": "f1c13e6bd26b12047af3dec23d24d942c4eaed0fcbd012436ea9eddd48445a92"
+    },
+    {
+      "symbol": "berberis::proc_maps_provenance::raw_metadata_owner::Start()",
+      "source_begin": 3794,
+      "source_end_exclusive": 22294,
+      "output_begin": 687,
+      "output_end_exclusive": 19187,
+      "sha256": "de147aa427e2031620807d64aa0388d4c0ad0a41ee9699335d737df4be53598b"
+    }
+  ],
+  "chunks": [
+    {
+      "name": "start-trampoline-part-1.txt",
+      "begin": 0,
+      "end_exclusive": 12000,
+      "sha256": "a7b28884282e27f0d42b00570bb6c2bad2dbd6a4b76cf4c186eb9c9ae72b67b7"
+    },
+    {
+      "name": "start-trampoline-part-2.txt",
+      "begin": 12000,
+      "end_exclusive": 19187,
+      "sha256": "8a6518bf2472b3af3eed134744a6041aa9540245276dd67e98e88022725e9e49"
+    }
+  ],
+  "manual_review_not_performed": true
+}
