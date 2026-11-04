@@ -1,0 +1,247 @@
+{
+  "Android_operations": 0,
+  "Main_mutations": 0,
+  "a04_admission": false,
+  "actual_finalization_checks": [
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-02/verify_prepare_gate.py",
+        "--manifest",
+        "/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-02/source-manifest.json",
+        "--manifest-sha256",
+        "398c1e85ee2f3fb6c08c33017a3d5da2bc6c75bd02aa1830b9cfd6f7a117b0c9"
+      ],
+      "cwd": "/home/alex/work/pocket4-signal-runtime-r5-work-01",
+      "env": {
+        "LANG": "C",
+        "LC_ALL": "C",
+        "PATH": "/usr/bin:/bin",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "finished_unix": 1793819915.6983442,
+      "label": "prepare-external-gates",
+      "production_after": {
+        "cleanup_owned.py": {
+          "bytes": 23861,
+          "sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3"
+        },
+        "failure_evidence.py": {
+          "bytes": 8972,
+          "sha256": "3f10ff4d991c9d69a9c867ef9ab29b109d0d19cee85854489dc41162e0fd6f97"
+        },
+        "held_runtime.py": {
+          "bytes": 22691,
+          "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+        },
+        "prepare_runtime.py": {
+          "bytes": 7350,
+          "sha256": "31266773780a772720272dfb937a8fdde7a93dd4314cd0b9d1dfcfe6defdbc30"
+        },
+        "run.py": {
+          "bytes": 45009,
+          "sha256": "2198c2e0bd0a30a4afb6d4fef8998d07d327b83388fb974c2c7eb02da6c72a23"
+        }
+      },
+      "production_before": {
+        "cleanup_owned.py": {
+          "bytes": 23861,
+          "sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3"
+        },
+        "failure_evidence.py": {
+          "bytes": 8972,
+          "sha256": "3f10ff4d991c9d69a9c867ef9ab29b109d0d19cee85854489dc41162e0fd6f97"
+        },
+        "held_runtime.py": {
+          "bytes": 22691,
+          "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+        },
+        "prepare_runtime.py": {
+          "bytes": 7350,
+          "sha256": "31266773780a772720272dfb937a8fdde7a93dd4314cd0b9d1dfcfe6defdbc30"
+        },
+        "run.py": {
+          "bytes": 45009,
+          "sha256": "2198c2e0bd0a30a4afb6d4fef8998d07d327b83388fb974c2c7eb02da6c72a23"
+        }
+      },
+      "returncode": 0,
+      "started_unix": 1793819914.110891,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 2718,
+        "sha256": "8d996729211bd3046684bb6b1c9b41809aa2f93c63a835507bdeac5f6fb09821"
+      },
+      "timeout_seconds": 120
+    },
+    {
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-02/owned_cleanup_fixture.py"
+      ],
+      "cwd": "/home/alex/work/pocket4-signal-runtime-r5-work-01",
+      "env": {
+        "LANG": "C",
+        "LC_ALL": "C",
+        "PATH": "/usr/bin:/bin",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "finished_unix": 1793819915.902699,
+      "label": "owned-systemd-plan-only",
+      "production_after": {
+        "cleanup_owned.py": {
+          "bytes": 23861,
+          "sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3"
+        },
+        "failure_evidence.py": {
+          "bytes": 8972,
+          "sha256": "3f10ff4d991c9d69a9c867ef9ab29b109d0d19cee85854489dc41162e0fd6f97"
+        },
+        "held_runtime.py": {
+          "bytes": 22691,
+          "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+        },
+        "prepare_runtime.py": {
+          "bytes": 7350,
+          "sha256": "31266773780a772720272dfb937a8fdde7a93dd4314cd0b9d1dfcfe6defdbc30"
+        },
+        "run.py": {
+          "bytes": 45009,
+          "sha256": "2198c2e0bd0a30a4afb6d4fef8998d07d327b83388fb974c2c7eb02da6c72a23"
+        }
+      },
+      "production_before": {
+        "cleanup_owned.py": {
+          "bytes": 23861,
+          "sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3"
+        },
+        "failure_evidence.py": {
+          "bytes": 8972,
+          "sha256": "3f10ff4d991c9d69a9c867ef9ab29b109d0d19cee85854489dc41162e0fd6f97"
+        },
+        "held_runtime.py": {
+          "bytes": 22691,
+          "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+        },
+        "prepare_runtime.py": {
+          "bytes": 7350,
+          "sha256": "31266773780a772720272dfb937a8fdde7a93dd4314cd0b9d1dfcfe6defdbc30"
+        },
+        "run.py": {
+          "bytes": 45009,
+          "sha256": "2198c2e0bd0a30a4afb6d4fef8998d07d327b83388fb974c2c7eb02da6c72a23"
+        }
+      },
+      "returncode": 0,
+      "started_unix": 1793819915.6991186,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1987,
+        "sha256": "d6cc9e035099796ea270f9cf1ed313bc353fc04a51914b15b5333aa558e873e5"
+      },
+      "timeout_seconds": 120
+    }
+  ],
+  "actual_readonly_prepare_controls": 4,
+  "finished_unix": 1793819916.2969754,
+  "fixture_execute_admission": false,
+  "fixture_plan_default_actual_pass": true,
+  "fixture_review_bundle": {
+    "bytes": 9104,
+    "path": "/home/alex/work/pocket4-signal-runtime-r5-work-01/finalization-02/owned-fixture-review.json.gz",
+    "sha256": "14d8d8bc2c1043621fa9957c93fcc49c78ee2778306d7ea1651e1fadc5a27bdd",
+    "source_pins": {
+      "OWNED-UNIT-FIXTURE.md": {
+        "bytes": 3610,
+        "sha256": "cbd5e5fcdd17616c7ab985a7765609752776db4b817d938400812ab3be99a291"
+      },
+      "owned_cleanup_fixture.py": {
+        "bytes": 17072,
+        "sha256": "331a069e658413f8986601b9dd91be5e470f1c8adae8a49533ce5f955eea560b"
+      },
+      "owned_cleanup_fixture_child.py": {
+        "bytes": 3154,
+        "sha256": "9f3a087fd26608440a36791bfef0b1b99a60bf856e0d6ddfbb04f7f252d308e8"
+      }
+    }
+  },
+  "fixture_source_tool_pins_actual_pass": true,
+  "patch": {
+    "bytes": 44245,
+    "path": "/home/alex/work/pocket4-signal-runtime-r5-work-01/finalization-02/runtime-r5.patch",
+    "sha256": "a3e0ca270d53dfb751bf9c0b23e06cd905c608ca74df8aeb8e88809db1f91122"
+  },
+  "previous_snapshots_preserved": true,
+  "private_Android_run": "NOT_RUN",
+  "private_canary_inputs_created": 0,
+  "private_canary_nonces_created": 0,
+  "private_data_images_created": 0,
+  "production_bundle": {
+    "bytes": 28259,
+    "file_count": 5,
+    "path": "/home/alex/work/pocket4-signal-runtime-r5-work-01/finalization-02/production-five.json.gz",
+    "sha256": "46d0581f4347727090cc6472ae7e53dcbda5d737e1e18e037bf69f768d60067b",
+    "uncompressed": {
+      "bytes": 114216,
+      "sha256": "861fe8e8b45d60da36880099347b46269b296a2f4c75811b060f44e571974a24"
+    }
+  },
+  "production_pins": {
+    "cleanup_owned.py": {
+      "bytes": 23861,
+      "sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3"
+    },
+    "failure_evidence.py": {
+      "bytes": 8972,
+      "sha256": "3f10ff4d991c9d69a9c867ef9ab29b109d0d19cee85854489dc41162e0fd6f97"
+    },
+    "held_runtime.py": {
+      "bytes": 22691,
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+    },
+    "prepare_runtime.py": {
+      "bytes": 7350,
+      "sha256": "31266773780a772720272dfb937a8fdde7a93dd4314cd0b9d1dfcfe6defdbc30"
+    },
+    "run.py": {
+      "bytes": 45009,
+      "sha256": "2198c2e0bd0a30a4afb6d4fef8998d07d327b83388fb974c2c7eb02da6c72a23"
+    }
+  },
+  "production_ready": false,
+  "real_MainPID0_subtree_fixture": "SOURCE_ONLY_NOT_RUN_NOT_ADMITTED",
+  "requested_launch": {
+    "cpu_quota_percent": 20,
+    "memory_max_bytes": 268435456,
+    "nice": 10,
+    "note": "requested limits; no actual resource counter claim"
+  },
+  "retained_actual_draft02_result": {
+    "bytes": 27799,
+    "path": "/home/alex/work/pocket4-signal-runtime-r5-work-01/draft-controls-02/result.json",
+    "sha256": "31ee4262be6bbd80f439243cae4e90d092a321b2ced3532d8d6c4db2b001242f"
+  },
+  "schema": 1,
+  "services_started": 0,
+  "source_archive": {
+    "bytes": 277204,
+    "path": "/home/alex/work/pocket4-signal-runtime-r5-work-01/finalization-02/runtime-r5-source.tar.gz",
+    "sha256": "ffae2c06c8c3cbd7852f2e7f7c4b25e4692837eea292b510265aacf878710c88"
+  },
+  "source_files": 117,
+  "source_manifest": {
+    "bytes": 20158,
+    "path": "/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-02/source-manifest.json",
+    "sha256": "398c1e85ee2f3fb6c08c33017a3d5da2bc6c75bd02aa1830b9cfd6f7a117b0c9"
+  },
+  "source_root": "/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-02",
+  "state": "FROZEN_R5_SOURCE_AND_READONLY_GATES_PASS_FIXTURE_AND_ANDROID_NOT_RUN"
+}

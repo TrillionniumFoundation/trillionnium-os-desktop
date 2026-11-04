@@ -1,0 +1,17 @@
+{
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-"
+  ],
+  "cpu_quota_percent": 10,
+  "cwd": "/home/alex/work",
+  "executable": "/usr/bin/sudo",
+  "host": "pocket4",
+  "idempotency_key": "pocket4-runtime-r5-empty-cgroup-fd-proof-02-20261104",
+  "memory_max_bytes": 134217728,
+  "nice": 10,
+  "stdin": "import os,pathlib,json,stat\ngroup=pathlib.Path(\"/proc/self/cgroup\").read_text().strip().split(\"0::\",1)[1]\nimport re\nassert re.fullmatch(r\"/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-[0-9a-f]+-fc05-[0-9a-f]+\\.service\",group),group\nbase=pathlib.Path(\"/sys/fs/cgroup\"+group)\nname=\"r5-empty-cgroup-proof-02\"\nchild=base/name\nresult={\"schema\":1,\"scope\":\"one empty child of this exact owned Hepta job cgroup\",\"own_cgroup\":group,\n        \"processes_moved\":0,\"controller_or_limit_changes\":0,\"Android_operations\":0}\nfd=-1;original=None\ntry:\n child.mkdir()\n original=child.stat()\n fd=os.open(child,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW)\n def statrow(s):return {\"dev\":s.st_dev,\"ino\":s.st_ino,\"nlink\":s.st_nlink,\"mode\":s.st_mode}\n result[\"before\"]={\"stat\":statrow(os.fstat(fd)),\"events\":(child/\"cgroup.events\").read_text(),\"procs\":(child/\"cgroup.procs\").read_text()}\n assert result[\"before\"][\"procs\"]==\"\"\n child.rmdir()\n result[\"after\"]={\"path_absent\":not child.exists(),\"stat\":statrow(os.fstat(fd))}\n for name in (\"cgroup.events\",\"cgroup.procs\",\"pids.current\"):\n  try:\n   f=os.open(name,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW,dir_fd=fd)\n   try:result[\"after\"][name]={\"read\":os.read(f,8192).decode()}\n   finally:os.close(f)\n  except OSError as e:result[\"after\"][name]={\"errno\":e.errno,\"error\":str(e)}\nfinally:\n if fd>=0:os.close(fd)\n if child.exists():\n  current=child.stat()\n  assert original and (current.st_dev,current.st_ino)==(original.st_dev,original.st_ino)\n  assert not (child/\"cgroup.procs\").read_text().strip()\n  child.rmdir()\n result[\"exact_child_absent\"]=not child.exists()\nprint(json.dumps(result,sort_keys=True))\n",
+  "timeout_seconds": 60
+}

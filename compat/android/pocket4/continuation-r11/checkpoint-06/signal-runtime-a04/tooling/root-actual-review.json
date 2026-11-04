@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "state": "ROOT_INDEPENDENT_A04_RAW_CASE_REVIEW_PASS",
+  "runtime_result_sha256": "2e8f289fd98b4b5d4087b6fb62e43b4bc0633a2d84fb541d996e076fbc08ff9c",
+  "terminal": {
+    "at_unix_ms": 1793821521125,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1a814d4d0-fc05-2d9a",
+    "launch_nonce": "a26c0020e556cec45f13589afdbf20d4",
+    "log_bytes": {
+      "stderr": {
+        "seen": 354,
+        "stored": 354
+      },
+      "stdout": {
+        "seen": 5580,
+        "stored": 5580
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "cases": [
+    {
+      "key": "r2-svc",
+      "nonce": "424e6c028c3a4f99b69029a0c46e465e",
+      "guest_pid": 5591,
+      "checks": "0x000000000007e001",
+      "word": "0xd4000001",
+      "status": "PASS",
+      "engine_inode": 44086581
+    },
+    {
+      "key": "r2-smc-handler",
+      "nonce": "05646f61d05a4f8d9a74f857bc021e4d",
+      "guest_pid": 5652,
+      "checks": "0x000000000007fffe",
+      "word": "0xd4000003",
+      "status": "PASS",
+      "engine_inode": 44086581
+    },
+    {
+      "key": "r2-smc-default",
+      "nonce": "2af1bba2075e4a5a9610cc754fffeda6",
+      "guest_pid": 5709,
+      "checks": "0x0000000000fc0000",
+      "word": "0xd4000003",
+      "status": "PASS",
+      "engine_inode": 44086581
+    },
+    {
+      "key": "r3-smc-mask-edit",
+      "nonce": "bd38db6e2bc1418ca3c177dd8bc3446d",
+      "guest_pid": 5830,
+      "checks": "0x000000000707fffe",
+      "word": "0xd4000003",
+      "status": "PASS",
+      "engine_inode": 44086581
+    }
+  ],
+  "classpath": {
+    "files": 52,
+    "total_bytes": 84396481,
+    "init_mnt_inode": 4026533865,
+    "zygote_mnt_inode": 4026534197,
+    "all_held_backing_pairs_equal": true,
+    "only_two_zygote_environment_keys": true
+  },
+  "exact_owned_units_retired": 5,
+  "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "original_failures_retained": true,
+  "production_ready": false,
+  "whole_apps_ready": 0,
+  "limits": [
+    "Four owned synchronous signal cases only; no commercial app readiness claim.",
+    "Actual memory OOM counters were zero. Controller memory.max pressure events are recorded, not claimed zero.",
+    "No Main engine change; no escaped-descendant qualification."
+  ]
+}

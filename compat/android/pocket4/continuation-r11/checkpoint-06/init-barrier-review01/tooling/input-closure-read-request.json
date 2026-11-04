@@ -1,0 +1,15 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/python3",
+  "args": [
+    "-I",
+    "-"
+  ],
+  "cwd": "/home/alex/work",
+  "stdin": "import pathlib,hashlib,gzip,base64,json\np=pathlib.Path('/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/init-barrier-android-build-01/input-closure.json')\nb=p.read_bytes();assert len(b)==203005 and hashlib.sha256(b).hexdigest()=='a8c7e7bf2de685a179ad5b3276531f25d5cd9db2f0df1bdacff68c8ba54e2301'\nz=gzip.compress(b,mtime=0)\nprint(json.dumps({'path':str(p),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest(),'gzip_sha256':hashlib.sha256(z).hexdigest(),'data_base64':base64.b64encode(z).decode()}))\n",
+  "idempotency_key": "pocket4-r11-root-barrier-input-closure-read-01",
+  "cpu_quota_percent": 5,
+  "memory_max_bytes": 67108864,
+  "nice": 10,
+  "timeout_seconds": 30
+}

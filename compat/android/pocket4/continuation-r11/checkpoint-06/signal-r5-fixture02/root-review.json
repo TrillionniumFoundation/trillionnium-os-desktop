@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "scope": "fixed owned R5 systemd one-unit one-child retirement control",
+  "source_root": "/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-03",
+  "source_manifest_sha256": "1825e327e039ac58779085444aa69896990eaa06f8fde24cfb4e98642508486a",
+  "finalization_receipt_sha256": "08ad592910842755d8672cf08f709eacc66ac541b073bfb2baad674e9a2e783a",
+  "finalization_terminal": {
+    "at_unix_ms": 1793820460274,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1a807f016-fc05-2d5d",
+    "launch_nonce": "8919b848c45e0d9fb4dc2dda50c9249e",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 3039,
+        "stored": 3039
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "owned_systemd_fixture_admitted": true,
+  "private_android_a04_admitted": false,
+  "fixture_already_executed": false,
+  "production_ready": false,
+  "whole_apps_ready": 0,
+  "production_files_reviewed": {
+    "run.py": {
+      "bytes": 45009,
+      "sha256": "2198c2e0bd0a30a4afb6d4fef8998d07d327b83388fb974c2c7eb02da6c72a23"
+    },
+    "held_runtime.py": {
+      "bytes": 22691,
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+    },
+    "cleanup_owned.py": {
+      "bytes": 23861,
+      "sha256": "45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3"
+    },
+    "prepare_runtime.py": {
+      "bytes": 7350,
+      "sha256": "31266773780a772720272dfb937a8fdde7a93dd4314cd0b9d1dfcfe6defdbc30"
+    },
+    "failure_evidence.py": {
+      "bytes": 8972,
+      "sha256": "3f10ff4d991c9d69a9c867ef9ab29b109d0d19cee85854489dc41162e0fd6f97"
+    }
+  },
+  "fixture_files_reviewed": {
+    "owned_cleanup_fixture.py": {
+      "bytes": 19041,
+      "sha256": "f03655a8c00a0728fe6e8343d1844b1c87324698d67a4da37ab2f532c34ff634"
+    },
+    "owned_cleanup_fixture_child.py": {
+      "bytes": 3153,
+      "sha256": "f3f6e3d1058d552d0fd11056a8b572bd4f14c94df2a50528cd76155779f49609"
+    },
+    "OWNED-UNIT-FIXTURE.md": {
+      "bytes": 4420,
+      "sha256": "cd76e5230403dbb663c5d94ff5d551fc4b73127ed9d53a5529e435de4002ae42"
+    }
+  },
+  "source_findings": [
+    "Evidence write failures are recorded independently; exact late unit reconciliation, binding release, cell stop and each unit retirement remain reachable.",
+    "Unit retirement requires matching InvocationID, Description and ControlGroup; MainPID zero does not suppress the exact stop. Hierarchical populated/pids.current supplement root cgroup.procs.",
+    "A held cgroup2 original directory and disappearance of its mandatory controls handle the actual kernel's nonzero nlink after removal. Unknown generation never licenses a stop.",
+    "Private classpaths are obtained from held zygote proc/root/mount descriptors. Each jar must resolve through simultaneous init-root and zygote-root file descriptors to the same dev/inode/size, with metadata stable around bounded streaming hash.",
+    "Three fixture files were completely read and independently SHA256 checked locally; frozen manifest matches all three and the five independently read production sources.",
+    "Fixture has one fixed nonce/unit, O_EXCL claim before start, Main epoch/tool/source checks, and one self-limited child that moves only itself to its own subgroup.",
+    "Actual fixture readiness must have MainPID zero, root procs empty, hierarchical populated=1/pids.current=1 and a stable live child PIDFD.",
+    "Withheld launch observation and exactly one ENOSPC save fault exercise actual cleanup reconciliation and retirement using real systemctl/cgroup operations. Successful recovery must still leave would_qualify_full_canary false.",
+    "No broad cgroup or numeric-PID kill is authorized. A failed/unknown exact stop is not retried automatically. Original child, cgroup FD, Main and source fences are checked.",
+    "Fixture02 invokes actual production OwnedCleanup.planned() from default PLAN and execute before source_contract, claim, directory or service creation. Root executed valid-plan and both invalid-old-nonce tripwire controls locally; no source_contract/write/start path was reached for invalid inputs.",
+    "Frozen03 binds original fixture failure and separate exact recovery, prior peer opinion/correction, and root's independent negative-control report. These are additive evidence; no original failure was overwritten."
+  ],
+  "fixed_unit": "p4-signal-r5-unit-control-20261104-02-bus.service",
+  "nonce": "5c53c248004139cd14513e8d88023c18",
+  "resource_bounds": {
+    "CPUQuota": "5%",
+    "MemoryMax": 67108864,
+    "MemorySwapMax": 0,
+    "TasksMax": 16,
+    "child_self_limit_seconds": 45,
+    "TimeoutStartSec": 15,
+    "TimeoutStopSec": 5
+  },
+  "limits": [
+    "This controls only one exact unit subtree and its one known child; no escaped-descendant claim.",
+    "The injected evidence failure must remain a canary failure even when recovery succeeds.",
+    "No Android entry, UI, pressure, engine activation or Main mutation is admitted by this review.",
+    "A fresh a04 input/preparation/manual admission is separate and must wait for the real retirement outcome."
+  ],
+  "prior_review_correction": {
+    "prior_review_sha256": "3c15efb6c8ec88490a77f10925138efa997a3d3e9c7111df0fd26d8d4d5c2d31",
+    "withdrawal": "Fixture01 unblocked opinion withdrawn: root and peer source reviews missed a 33-character nonce. Actual production planned() correctly rejected it after the old fixture's service start. This was a harness preflight omission; no production guard was relaxed.",
+    "actual_failure_sha256": "33c5df59e1eba4d4a3543653a07ec7723606f4e309ead6dc7d4f1fc74c10100d",
+    "separate_exact_recovery_sha256": "5bf9153d274570c20dbafe3032825e8cef4f158daae1859821dbab3387e4b301",
+    "recovery_scope": "Exact original generation stopped once with held cgroup retirement and child reaped. It does not qualify production cleanup of the original live child; the child may have reached its 45-second bound."
+  },
+  "new_nonce_preflight": {
+    "root_actual_offline_check_sha256": "9e826b05a5516d56f0fc54e8b2f18f602cdab5a9ce9918f101b28ee1ab61c711",
+    "nonce_ascii_lower_hex_length": 32,
+    "actual_production_planned_called_before_claim_or_source_contract": true,
+    "default_and_execute_reject_old_nonce_before_any_side_effects": true,
+    "production_five_unchanged": true
+  }
+}

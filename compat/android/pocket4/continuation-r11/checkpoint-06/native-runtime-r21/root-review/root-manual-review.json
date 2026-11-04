@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "revision": "R21 kernel and libc metadata dual views",
+  "reviewer": "root independent source and actual Android ELF review",
+  "owned_android_probe_admissible": true,
+  "production_ready": false,
+  "actual_android_executed": false,
+  "full_engine_install_admissible": false,
+  "entry_qualification_sha256": "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+  "runner_sha256": "c16015f7a51f857d114d92691dbf4ac4d0ccf758c2f99c7c541653ce1957ea62",
+  "apk_sha256": "875c5178d7b8ad9ede5444ed0eec402767dd3dcb3c9b70e52056aa095ca6c190",
+  "elf_sha256": "54df7468470040863cd9006e2b74d1d6d5df0e7d6a08d0d1da8659b522effc51",
+  "build_receipt_sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+  "actual_elf_audit_sha256": "883ef5bcc157eae19181de5fbc75e0544a09e714502c976676df4588c9a13a91",
+  "source_pins_sha256": "5e9558c71725040efde8298b7225f4c5679fb51dd5a0ccf14614910dc9adcdab",
+  "source_archive_sha256": "8e64e3ebcff6e8a07bd435ddd9399b9e96a09ddec214af9d1f80d072aa30c1d2",
+  "review_archive_sha256": "13af1cf3e97944cb116dd86b57256a479786ff571ed407420f1e512f1625d724",
+  "root_actual_read": {
+    "path": "/home/alex/work/pocket4-owned-fd-capability-r21-root-review-01/actual-source-and-elf-read.json",
+    "bytes": 5384,
+    "sha256": "0eb674ca97b317e30def21b6094e58f9703ba580d16e6bfed37243b0a66b153e",
+    "sole_clone_call": [
+      {
+        "caller": "berberis::proc_maps_provenance::raw_metadata_owner::Start()",
+        "instruction": "434a:      \tcallq\t0x3d30 <berberis_proc_metadata_raw_clone_x86_64>"
+      }
+    ],
+    "original_logic": {
+      "bytes": 14031,
+      "sha256": "5b341c1b0b55154650f4a3e3af1419b3ef74a70771d261190cbd1a128fb5584b",
+      "byte_identical_to_r20": true
+    },
+    "terminal": {
+      "at_unix_ms": 1793819200116,
+      "audit_recorded": true,
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a7f4c537-fc05-2d17",
+      "launch_nonce": "d1b4ef3e79ade3e510e5d7c640636627",
+      "log_bytes": {
+        "stderr": {
+          "seen": 0,
+          "stored": 0
+        },
+        "stdout": {
+          "seen": 528,
+          "stored": 528
+        }
+      },
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_synced": {
+        "stderr": true,
+        "stdout": true
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "terminal_publication_protocol": 1,
+      "timed_out": false
+    }
+  },
+  "reviewed_sections": {
+    "audit/start-trampoline-exact.txt": "b7d6872206b9ee408cf18caf020a5cfb239d2a43ed6308bb50e96c60ae86f9c6",
+    "audit/read-publication-exact.txt": "ee0f66ae40007c23b114a5732c877ed5e84cc2e3d06e4a9a7a36768cfcab1372",
+    "audit/guest-raw-statfs-exact.txt": "22d77790b1a11a529652ebce71f80bd6f4357202b5ac493fdc8b89b568243701"
+  },
+  "findings": [
+    "All 16 source archive members and all 49 UTF-8 review archive members were client SHA256 checked; review source is identical to build-bound source.",
+    "Root reran pinned objdump on the actual APK's exact embedded ELF, reproducing the complete disassembly hash. The entire ELF has one direct clone-trampoline call, at Start 0x434a to 0x3d30.",
+    "Start 0x3fc0 passes Worker 0x4880, a null context, clone flags 0x350900 and the single clear-TID address 0x31044. The trampoline stores its fixed entry/context on the private stack; its child reaches only that entry and the fallback raw exit.",
+    "The unchanged binary auditor's actual worker closure is Worker/ReadContext/SameContext, without TLS/runtime/PLT/indirect worker edges. This proves the fixed binary closure, not arbitrary lifecycle transitions.",
+    "Raw worker fstatfs writes a typed 120-byte LP64 KernelStatfs. Static assertions bind every offset/width and libc layout; the raw representation is retained independently.",
+    "Actual Read rejects negative request status at 0x559f, copies the raw 120-byte view into the separate libc view, clears only libc ST_VALID at 0x5600, then publishes the full 0x1b50-byte Snapshot at 0x5617 and restores incoming errno. Raw kernel flags are not reconstructed from libc flags.",
+    "Actual FstatfsKernel 0x8af0 sign-extends fd for SYS_fstatfs 0x8a; errors branch before output publication. Non-tmpfs raw result is retained as observed, tmpfs goes through the fixed owner. Successful paths preserve incoming errno.",
+    "Actual FstatfsForGuest 0x8cb0 copies exactly 0x78 bytes using process_vm_writev, with a machine-word zero flags argument; negative or short copies report failure. Partial user-memory failure is not described as atomic.",
+    "Original twelve case functions are unchanged in the source delta; root independently compared their 14031-byte Guard-to-MetadataCase body region, plus all listed source deltas. Four new cases exercise complete raw/libc oracles, EBADF output preservation, EFAULT/partial bounds and the retained NOFILE0 EMFILE red.",
+    "V1 trusted virtual raw statfs is explicitly EPROTONOSUPPORT until a versioned factory contract is qualified. This refusal remains an unresolved production path."
+  ],
+  "host_control_scope": {
+    "fixed-glibc": {
+      "pass": true,
+      "expected_behavior_mask": "0x000000000000ffff",
+      "observed_cases": 16,
+      "direct_reaped": 16,
+      "nested_reaped": 2,
+      "timeout": false,
+      "stdout_sha256": "cbcc309e96585737eca18a9f985899c813c3a84f49149c68295bbb28c564733c"
+    },
+    "fixed-bionic": {
+      "pass": true,
+      "expected_behavior_mask": "0x000000000000ffff",
+      "observed_cases": 16,
+      "direct_reaped": 16,
+      "nested_reaped": 2,
+      "timeout": false,
+      "stdout_sha256": "65f7726280b37bd4d3ddd3670f8787eb48bc1c51e6e71a7f39edc02f41f21c08"
+    },
+    "mutant-kernel-normalized": {
+      "pass": false,
+      "expected_behavior_mask": "0x000000000000efff",
+      "observed_cases": 16,
+      "direct_reaped": 16,
+      "nested_reaped": 2,
+      "timeout": false,
+      "stdout_sha256": "338ad09efd1bfdd48de012fe3e8453e4fc558d345eff04887baffeae1153224e"
+    },
+    "mutant-libc-raw": {
+      "pass": false,
+      "expected_behavior_mask": "0x000000000000e840",
+      "observed_cases": 16,
+      "direct_reaped": 16,
+      "nested_reaped": 2,
+      "timeout": false,
+      "stdout_sha256": "97871d4e986fff72d64e309238cc40344213f5bbbf86c73f4e1f3d53a34c8b3d"
+    }
+  },
+  "runtime_contract": {
+    "package": "local.pocket4.fdownerprobe.r11",
+    "ABI": "x86_64",
+    "expected_observations": 16,
+    "expected_behavior_mask": "0xffff",
+    "known_production_red_case_indices": [
+      11,
+      15
+    ],
+    "controller_ms": 15000,
+    "direct_child_ms": 3000,
+    "nested_child_ms": 2000,
+    "reap_after_kill_ms": 1000,
+    "result_buffer_bytes": 98304,
+    "only_once": true,
+    "explicit_install_run_exact_remove": true
+  },
+  "limits": [
+    "This x86_64 owned APK does not execute the outer translated ARM64 common.h adapter.",
+    "No full ART/engine pair or installed native bridge is qualified.",
+    "Trusted factory/O_PATH positives, pathname aliases, inherited NOFILE0 resources, arbitrary native credential/root/mount changes and complete lifecycle remain open.",
+    "No Main engine/presenter/resource update; existing package/data and original failed runs must be preserved.",
+    "Actual result must be read independently; phase dispatch success is not a native PASS."
+  ]
+}

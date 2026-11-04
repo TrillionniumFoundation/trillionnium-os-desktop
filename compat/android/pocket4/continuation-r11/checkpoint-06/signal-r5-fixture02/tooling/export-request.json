@@ -1,0 +1,17 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-"
+  ],
+  "cwd": "/home/alex/work",
+  "stdin": "import os,json,pathlib,stat,hashlib,gzip\nsrc=pathlib.Path('/home/alex/work/pocket4-signal-runtime-r5-work-01/owned-unit-control-02')\nout=pathlib.Path('/home/alex/work/pocket4-signal-r5-fixture02-export-01')\nassert src.is_dir() and not src.is_symlink()\nitems=sorted(src.rglob('*'))\nassert len(items)<=128\nfiles=[];excluded=[]\nfor p in items:\n s=p.lstat()\n if stat.S_ISDIR(s.st_mode):continue\n assert stat.S_ISREG(s.st_mode) and not p.is_symlink(),str(p)\n assert s.st_size<=524288,str(p)\n b=p.read_bytes(); row={'path':str(p.relative_to(src)),'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}\n if 'journal' in p.name.lower() or p.suffix in ['.log','.gz']:\n  excluded.append(row);continue\n try:t=b.decode('utf-8')\n except UnicodeDecodeError:excluded.append(row);continue\n row['content']=t;files.append(row)\nbody=json.dumps({'schema':1,'source_root':str(src),'files':files,'excluded_files':excluded},sort_keys=True,separators=(',',':')).encode()\nassert len(body)<=1048576\nz=gzip.compress(body,mtime=0)\nout.mkdir(mode=0o755)\np=out/'bundle.json.gz'\nfd=os.open(p,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_CLOEXEC,0o444)\nwith os.fdopen(fd,'wb') as f:f.write(z);f.flush();os.fsync(f.fileno())\nprint(json.dumps({'state':'EXPORTED_OWNED_FIXTURE02_EVIDENCE','path':str(p),'files':len(files),'excluded':excluded,'gzip_bytes':len(z),'gzip_sha256':hashlib.sha256(z).hexdigest(),'text_bytes':len(body),'text_sha256':hashlib.sha256(body).hexdigest()}))\n",
+  "idempotency_key": "pocket4-r11-root-fixture02-exact-text-export-02",
+  "cpu_quota_percent": 20,
+  "memory_max_bytes": 134217728,
+  "nice": 10,
+  "timeout_seconds": 60
+}

@@ -1,0 +1,16 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-"
+  ],
+  "stdin": "from pathlib import Path\nimport ast,hashlib,json,os,re,sys\nROOT=Path('/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-03')\ndef sha(p):\n with p.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()\nassert os.geteuid()==0 and not sys.flags.optimize\nassert sha(Path('/home/alex/work/pocket4-root-signal-r5-unit-review-02.json'))=='a45e42439b17db0e2b16b77440da00d13b823585aba007e0c63a2f0f163aea40'\nassert sha(ROOT/'source-manifest.json')=='1825e327e039ac58779085444aa69896990eaa06f8fde24cfb4e98642508486a'\nassert sha(ROOT/'evidence/fixture01-original-result.json')=='33c5df59e1eba4d4a3543653a07ec7723606f4e309ead6dc7d4f1fc74c10100d'\nassert sha(ROOT/'evidence/fixture01-recovery-result.json')=='5bf9153d274570c20dbafe3032825e8cef4f158daae1859821dbab3387e4b301'\nfor name,wanted in json.loads(\"{\\\"cleanup_owned.py\\\":\\\"45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3\\\",\\\"failure_evidence.py\\\":\\\"3f10ff4d991c9d69a9c867ef9ab29b109d0d19cee85854489dc41162e0fd6f97\\\",\\\"held_runtime.py\\\":\\\"72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4\\\",\\\"prepare_runtime.py\\\":\\\"31266773780a772720272dfb937a8fdde7a93dd4314cd0b9d1dfcfe6defdbc30\\\",\\\"run.py\\\":\\\"2198c2e0bd0a30a4afb6d4fef8998d07d327b83388fb974c2c7eb02da6c72a23\\\",\\\"owned_cleanup_fixture.py\\\":\\\"f03655a8c00a0728fe6e8343d1844b1c87324698d67a4da37ab2f532c34ff634\\\",\\\"owned_cleanup_fixture_child.py\\\":\\\"f3f6e3d1058d552d0fd11056a8b572bd4f14c94df2a50528cd76155779f49609\\\",\\\"OWNED-UNIT-FIXTURE.md\\\":\\\"cd76e5230403dbb663c5d94ff5d551fc4b73127ed9d53a5529e435de4002ae42\\\"}\").items():assert sha(ROOT/name)==wanted,name\ndef constants(path):\n out={}\n for node in ast.parse(path.read_bytes()).body:\n  if isinstance(node,ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0],ast.Name) and node.targets[0].id in ('NAME','NONCE'):\n   assert node.targets[0].id not in out and isinstance(node.value,ast.Constant) and type(node.value.value) is str\n   out[node.targets[0].id]=node.value.value\n return out\nidentity={'NAME':'p4-signal-r5-unit-control-20261104-02','NONCE':'5c53c248004139cd14513e8d88023c18'}\nassert re.fullmatch(r'[0-9a-f]{32}',identity['NONCE'],re.ASCII)\nassert constants(ROOT/'owned_cleanup_fixture.py')==identity\nassert constants(ROOT/'owned_cleanup_fixture_child.py')==identity\nos.execv('/usr/bin/python3',['/usr/bin/python3','-I',str(ROOT/'owned_cleanup_fixture.py'),'--execute-once','--source-manifest-sha256','1825e327e039ac58779085444aa69896990eaa06f8fde24cfb4e98642508486a'])\n",
+  "idempotency_key": "pocket4-r11-signal-r5-owned-mainpid0-subtree-cleanup-02",
+  "timeout_seconds": 180,
+  "cpu_quota_percent": 100,
+  "memory_max_bytes": 268435456,
+  "nice": 10
+}

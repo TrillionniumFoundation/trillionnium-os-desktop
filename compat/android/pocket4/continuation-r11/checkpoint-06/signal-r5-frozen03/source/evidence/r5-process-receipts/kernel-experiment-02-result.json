@@ -1,0 +1,40 @@
+{
+  "Android_operations": 0,
+  "after": {
+    "cgroup.events": {
+      "errno": 2,
+      "error": "[Errno 2] No such file or directory: 'cgroup.events'"
+    },
+    "cgroup.procs": {
+      "errno": 2,
+      "error": "[Errno 2] No such file or directory: 'cgroup.procs'"
+    },
+    "path_absent": true,
+    "pids.current": {
+      "errno": 2,
+      "error": "[Errno 2] No such file or directory: 'pids.current'"
+    },
+    "stat": {
+      "dev": 30,
+      "ino": 28057943,
+      "mode": 16832,
+      "nlink": 2
+    }
+  },
+  "before": {
+    "events": "populated 0\nfrozen 0\n",
+    "procs": "",
+    "stat": {
+      "dev": 30,
+      "ino": 28057943,
+      "mode": 16832,
+      "nlink": 2
+    }
+  },
+  "controller_or_limit_changes": 0,
+  "exact_child_absent": true,
+  "own_cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1a7e74133-fc05-2cdb.service",
+  "processes_moved": 0,
+  "schema": 1,
+  "scope": "one empty child of this exact owned Hepta job cgroup"
+}

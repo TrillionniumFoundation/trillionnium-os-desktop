@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "original_result_sha256": "33c5df59e1eba4d4a3543653a07ec7723606f4e309ead6dc7d4f1fc74c10100d",
+  "unit": "p4-signal-r5-unit-control-20261104-01-bus.service",
+  "invocation": "f428d7e397994f4f88351591f6dd1178",
+  "before": {
+    "Description": "p4-signal-r5-unit-control-20261104-01 969694d682504cb2ae81bf178474c96e8 bus",
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "f428d7e397994f4f88351591f6dd1178",
+    "Type": "oneshot",
+    "RemainAfterExit": "yes",
+    "MainPID": "0",
+    "ExecStart": "{ path=/usr/bin/python3 ; argv[]=/usr/bin/python3 -I /home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-02/owned_cleanup_fixture_child.py ; ignore_errors=no ; start_time=[Wed 2026-11-04 11:20:23 PST] ; stop_time=[Wed 2026-11-04 11:20:24 PST] ; pid=364217 ; code=exited ; status=0 }",
+    "ControlGroup": "/system.slice/p4-signal-r5-unit-control-20261104-01-bus.service",
+    "CPUQuotaPerSecUSec": "50ms",
+    "MemoryMax": "67108864",
+    "MemorySwapMax": "0",
+    "TasksMax": "16",
+    "KillMode": "control-group"
+  },
+  "before_cgroup": {
+    "path": "/system.slice/p4-signal-r5-unit-control-20261104-01-bus.service",
+    "absent": false,
+    "held_identity": {
+      "device": 30,
+      "inode": 28122804
+    },
+    "filesystem_type": 1667723888,
+    "path_present": true,
+    "events": {
+      "populated": 0,
+      "frozen": 0
+    },
+    "pids_current": 0,
+    "root_processes": [],
+    "hierarchical_population_checked": true
+  },
+  "before_child": {
+    "exists": false,
+    "original_birth": false
+  },
+  "main_before": {
+    "epoch": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "daemon": {
+      "ActiveState": "active",
+      "ControlGroup": "/system.slice/droidloomd.service",
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "MainPID": "3588022"
+    },
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    }
+  },
+  "fixture_original_state_preserved": true,
+  "no_fixture_rerun": true,
+  "stop_attempts": 1,
+  "production_ready": false,
+  "stop": {
+    "returncode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "unit_final": {
+    "Description": "p4-signal-r5-unit-control-20261104-01-bus.service",
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "InvocationID": "",
+    "Type": "",
+    "RemainAfterExit": "no",
+    "MainPID": "0",
+    "ControlGroup": "",
+    "CPUQuotaPerSecUSec": "infinity",
+    "MemoryMax": "infinity",
+    "MemorySwapMax": "infinity",
+    "TasksMax": "30053",
+    "KillMode": "control-group"
+  },
+  "cgroup_after": {
+    "path": "/system.slice/p4-signal-r5-unit-control-20261104-01-bus.service",
+    "absent": true,
+    "held_identity": {
+      "device": 30,
+      "inode": 28122804
+    },
+    "filesystem_type": 1667723888,
+    "held_nlink": 2,
+    "hierarchical_population_checked": true,
+    "proof": "original cgroup2 directory held; path absent; both mandatory controls removed"
+  },
+  "original_child_reaped": true,
+  "main_after": {
+    "epoch": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "daemon": {
+      "ActiveState": "active",
+      "ControlGroup": "/system.slice/droidloomd.service",
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "MainPID": "3588022"
+    },
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    }
+  },
+  "source_and_original_failure_preserved": true,
+  "state": "EXACT_FAILED_FIXTURE_UNIT_RETIRED",
+  "finished_utc": "2026-11-04T19:22:22.868997+00:00"
+}

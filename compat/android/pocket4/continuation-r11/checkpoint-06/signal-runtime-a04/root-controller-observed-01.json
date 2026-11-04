@@ -1,0 +1,93 @@
+{
+  "cgroup_identity": {
+    "device": 30,
+    "inode": 28173948
+  },
+  "main_resources": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "main_unit": {
+    "ActiveState": "active",
+    "ControlGroup": "/system.slice/droidloomd.service",
+    "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+    "MainPID": "3588022"
+  },
+  "observed_unix": 1793821331.3504627,
+  "process": {
+    "cmdline": [
+      "/usr/bin/python3",
+      "-I",
+      "/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-03/run.py",
+      "run",
+      "--inputs",
+      "/home/alex/work/pocket4-signal-mask-a04-inputs-01.json",
+      "--inputs-sha256",
+      "152cc16040fc50d6920800d0152e3efb324682f701ac4ef64fbc35951ab279a3",
+      "--preparation-source",
+      "/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-r1",
+      "--source-manifest",
+      "/home/alex/work/pocket4-signal-runtime-r5-work-01/source-frozen-r5-03/source-manifest.json",
+      "--source-manifest-sha256",
+      "1825e327e039ac58779085444aa69896990eaa06f8fde24cfb4e98642508486a",
+      "--host-wrapper-source-manifest",
+      "/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-runtime-r1/source-manifest.json",
+      "--host-suite-receipt",
+      "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/result.json",
+      "--host-suite-sha256",
+      "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+      "--host-launch-inputs",
+      "/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-runtime-r1/host-launch-inputs.json",
+      "--host-launch-inputs-sha256",
+      "c313ea1f0d03474b05ee2ee8ae3bb74d0131d57469fb9dbf454d03745e3002fb",
+      "--namespace-helper",
+      "/home/alex/work/pocket4-owned-held-ns-runner-r4-01/held-namespace-entry",
+      "--namespace-helper-sha256",
+      "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689",
+      "--namespace-helper-source",
+      "/home/alex/work/pocket4-owned-held-ns-runner-r4-01/held_namespace_entry.rs",
+      "--namespace-helper-source-sha256",
+      "adf5b08f7854bec061ab8d2a208f3414339701c816218881e6550afde2e6c31c",
+      "--namespace-helper-qualification",
+      "/home/alex/work/pocket4-owned-held-ns-runner-r4-export-01/qualification.json",
+      "--namespace-helper-qualification-sha256",
+      "3e3dd5c9ae1b4e913d7a688bb338507162cbc211bb897658a539948ffb6f93e3",
+      "--prepared-sha256",
+      "d334430df461e2011781307992a7ae60e84a8a6cc34e2a0f118f2ccf070f2aa8"
+    ],
+    "pid": 395794,
+    "start_ticks": 84701047
+  },
+  "resources": {
+    "cgroup.events": "populated 1\nfrozen 0",
+    "cpu.max": "10000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 14436\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "268435456",
+    "memory.swap.max": "0",
+    "pids.current": "1",
+    "pids.max": "128"
+  },
+  "schema": 1,
+  "service_mutations": 0,
+  "state": "ACTUAL_CONTROLLER_GENERATION_AND_RESOURCE_BOUNDS_OBSERVED",
+  "unit": {
+    "ActiveState": "active",
+    "CPUQuotaPerSecUSec": "100ms",
+    "ControlGroup": "/system.slice/p4-signal-mask-r1-20261104-a04-controller-01.service",
+    "Description": "p4-signal-mask-r1-20261104-a04 aefbacbc3c7544a6aae0ee8b1bcfe80e controller-01",
+    "InvocationID": "986e73586d6d4911b1ab2fe36c3572a7",
+    "KillMode": "control-group",
+    "LoadState": "loaded",
+    "MainPID": "395794",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "Restart": "no",
+    "RuntimeMaxUSec": "25min",
+    "SubState": "running",
+    "TasksMax": "128",
+    "TimeoutStopUSec": "30s"
+  }
+}

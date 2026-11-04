@@ -1,0 +1,160 @@
+{
+  "Android_operations": 0,
+  "Main_actions": 0,
+  "actual_cleanup_implementations_executed": [
+    "frozen R4 loader cleanup",
+    "R5 OwnedCleanup.run"
+  ],
+  "controls": [
+    {
+      "detail": {
+        "error": "OSError(28, 'declared evidence ENOSPC')",
+        "expected_negative": true,
+        "stops": []
+      },
+      "name": "r4-actual-cleanup-evidence-failure-skips-all-owned-stops",
+      "passed": true
+    },
+    {
+      "detail": {
+        "all_four_retired": true,
+        "errors": [
+          "cleanup-evidence-write:resources-before-cleanup.json: OSError(28, 'declared evidence ENOSPC')"
+        ],
+        "release_before_stop": true,
+        "whole_run_must_fail": true
+      },
+      "name": "r5-actual-cleanup-retirements-continue-after-resource-save-error",
+      "passed": true
+    },
+    {
+      "detail": {
+        "expected_negative": true,
+        "owned_subtrees_still_populated": 4,
+        "reported_cleanup_errors": []
+      },
+      "name": "r4-actual-cleanup-mainpid-zero-root-empty-misses-populated-child",
+      "passed": true
+    },
+    {
+      "detail": {
+        "descendant_populated_before": true,
+        "exact_stops": 4,
+        "hierarchical_zero_after": true,
+        "root_empty_before": true
+      },
+      "name": "r5-actual-cleanup-stops-mainpid-zero-and-proves-hierarchical-empty",
+      "passed": true
+    },
+    {
+      "detail": {
+        "errors": [
+          "unit-retirement:p4-signal-r5-fixture-daemon.service: CleanupError('owned hierarchical cgroup remains populated')",
+          "unit-retirement:p4-signal-r5-fixture-presenter.service: CleanupError('owned hierarchical cgroup remains populated')",
+          "unit-retirement:p4-signal-r5-fixture-sway.service: CleanupError('owned hierarchical cgroup remains populated')",
+          "unit-retirement:p4-signal-r5-fixture-bus.service: CleanupError('owned hierarchical cgroup remains populated')"
+        ],
+        "rejected_populated_subtrees": 4
+      },
+      "name": "successful-stop-ack-and-empty-root-do-not-hide-live-subtree",
+      "passed": true
+    },
+    {
+      "detail": {
+        "exact_stops": 1,
+        "initial_error": "OSError('declared first post-launch props read failure')",
+        "old_r4_outer_reconciler_existed": true
+      },
+      "name": "actual-unit-launch-props-failure-reconciles-one-exact-generation",
+      "passed": true
+    },
+    {
+      "detail": {
+        "other_units_stopped": 3,
+        "protected_unit_not_stopped": true
+      },
+      "name": "mismatched-InvocationID-never-stopped-other-owned-units-continue",
+      "passed": true
+    },
+    {
+      "detail": {
+        "other_units_stopped": 3,
+        "protected_unit_not_stopped": true
+      },
+      "name": "mismatched-Description-never-stopped-other-owned-units-continue",
+      "passed": true
+    },
+    {
+      "detail": {
+        "other_units_stopped": 3,
+        "protected_unit_not_stopped": true
+      },
+      "name": "mismatched-ControlGroup-never-stopped-other-owned-units-continue",
+      "passed": true
+    },
+    {
+      "detail": {
+        "automatic_retry": false,
+        "errors": [
+          "unit-stop:p4-signal-r5-fixture-daemon.service: TimeoutExpired(['/usr/bin/systemctl', 'stop', 'p4-signal-r5-fixture-daemon.service'], 45)",
+          "unit-retirement:p4-signal-r5-fixture-daemon.service: CleanupError('unit still has a main process or active state')"
+        ],
+        "stop_attempts": 4
+      },
+      "name": "one-unit-stop-timeout-does-not-prevent-other-retirements",
+      "passed": true
+    },
+    {
+      "detail": {
+        "held_identity": {
+          "device": 66306,
+          "inode": 34369740
+        },
+        "populated": 1
+      },
+      "name": "held-original-populated-directory-is-not-lost-after-path-rename",
+      "passed": true
+    },
+    {
+      "detail": {
+        "error": "CleanupError('control group directory was replaced')"
+      },
+      "name": "replacement-empty-directory-cannot-prove-old-populated-domain-empty",
+      "passed": true
+    },
+    {
+      "detail": {
+        "errors": [
+          "unit-reconciliation:p4-signal-r5-fixture-bus.service: CleanupError('launch generation was never observed; absence is not a retirement proof')",
+          "unit-retirement:p4-signal-r5-fixture-bus.service: CleanupError('unknown launch generation; no stop or completed-retirement claim')"
+        ],
+        "retirement_claim": false,
+        "stops": 0
+      },
+      "name": "never-observed-launch-generation-remains-failed-even-if-currently-absent",
+      "passed": true
+    }
+  ],
+  "declared_seams": [
+    "systemctl/props/journal transport",
+    "regular-file cgroup counter fixtures",
+    "fixed Main/source contract values",
+    "release callback"
+  ],
+  "passed": 13,
+  "private_canary_run": "NOT_RUN",
+  "production_ready": false,
+  "real_mechanisms": [
+    "filesystem descriptors",
+    "path rename/replacement",
+    "exact original v5 unit_launch function"
+  ],
+  "real_systemd_units_started": 0,
+  "schema": 1,
+  "source_pins": {
+    "cleanup_owned.py": "11c4659e739372621f2a2e4948bd9826e223e41481aee675bb46f1b8206a4772",
+    "run.py": "2198c2e0bd0a30a4afb6d4fef8998d07d327b83388fb974c2c7eb02da6c72a23",
+    "verify_cleanup_r5.py": "ec8566ee615f2d7fe8d61b08d25759539bf6e6353401ae4cf313116e21ff859a"
+  },
+  "state": "ACTUAL_CLEANUP_FUNCTION_CONTROLS_PASS"
+}

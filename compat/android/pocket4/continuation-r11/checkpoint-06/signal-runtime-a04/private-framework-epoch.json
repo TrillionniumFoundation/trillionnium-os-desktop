@@ -1,0 +1,115 @@
+{
+  "binding": {
+    "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+    "processes": {
+      "init": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service"
+        ],
+        "cmdline": [
+          "/init",
+          "second_stage"
+        ],
+        "executable": "/system/bin/init",
+        "host_pid": 398265,
+        "namespace_pids": [
+          398265,
+          1
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398264,
+        "start_ticks": 84711689,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "surfaceflinger": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_670"
+        ],
+        "cmdline": [
+          "/system/bin/surfaceflinger"
+        ],
+        "executable": "/system/bin/surfaceflinger",
+        "host_pid": 399113,
+        "namespace_pids": [
+          399113,
+          670
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533865]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711895,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "system_server": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_1000/pid_823"
+        ],
+        "cmdline": [
+          "system_server"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 399294,
+        "namespace_pids": [
+          399294,
+          823
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534198]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 399089,
+        "start_ticks": 84712025,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      "zygote64": {
+        "cgroup": [
+          "0::/system.slice/p4-signal-mask-r1-20261104-a04-daemon.service/system/uid_0/pid_647"
+        ],
+        "cmdline": [
+          "zygote64"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 399089,
+        "namespace_pids": [
+          399089,
+          647
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026534197]",
+          "pid": "pid:[4026533868]"
+        },
+        "parent_host_pid": 398265,
+        "start_ticks": 84711891,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    }
+  },
+  "collected_monotonic_ns": 847185674862942,
+  "schema": "pocket4-framework-epoch-v1",
+  "sha256": "5794590c0583c8a0c207b1028a1647bda7d824c0680a354da129c8d89184f3cb"
+}

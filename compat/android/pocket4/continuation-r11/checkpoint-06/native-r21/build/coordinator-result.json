@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "scope": "single r21 matching APK build and actual ELF audit; no Android install/run",
+  "state": "BUILT_AND_AUTOMATIC_ELF_AUDIT_PASSED_UNRUN",
+  "root": "/home/alex/work/pocket4-owned-fd-capability-r21-apk-01",
+  "actual_android_executed": false,
+  "commands": [
+    {
+      "name": "matching-build",
+      "argv": [
+        "/usr/bin/python3",
+        "/home/alex/work/pocket4-owned-probe-build-r3-r11-01.py",
+        "/home/alex/work/pocket4-owned-fd-capability-r21-apk-01/fd-owner-probe-r21-source",
+        "owner",
+        "1"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "b862ab8926093c870ed6b1315e195d65697cc27e79dadfb30bc077b84f67148d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "core_changed_from_r20": [
+    "actual/berberis/kernel_api/proc_maps_provenance.h",
+    "actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h",
+    "actual/proc_maps_provenance.cc",
+    "actual/proc_maps_raw_metadata_owner.cc"
+  ],
+  "new_core_files": [
+    "actual/berberis/kernel_api/proc_maps_kernel_statfs.h"
+  ],
+  "existing_twelve_case_logic_unchanged": true,
+  "existing_logic_sha256": "e89e1061be5aa4559abc9d91dea944064eda4de351ed316dcaf94e8acb4d943d",
+  "new_control_scope": "raw and libc complete 120-byte dual oracles; EBADF atomicity; EFAULT/partial copy; NOFILE0 known red",
+  "source_sha256": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "CASE_PLAN.json": "169b95d8ecebded248f0fa78f9b6323ed95a29fa9103717d99120c09995a3cf6",
+    "actual/berberis/kernel_api/proc_maps_fd_owner.h": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+    "actual/berberis/kernel_api/proc_maps_kernel_statfs.h": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0",
+    "actual/berberis/kernel_api/proc_maps_path.h": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+    "actual/berberis/kernel_api/proc_maps_provenance.h": "473ab64ebb36b1f8c911181616744d96710d3cb7e429a48ed5d0941c5bb6e44e",
+    "actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h": "7e8ae5c660c783c8fb8f5db75c054e5359690275a2f4acc2a9fe1c9af7c11554",
+    "actual/proc_maps_fd_owner.cc": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+    "actual/proc_maps_path.cc": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+    "actual/proc_maps_provenance.cc": "7174470eb249ca7cb39cd7a32f42f722ea7465ed25e9a28a567b9ff477e0de25",
+    "actual/proc_maps_raw_metadata_owner.cc": "489264a8fcb8e0607a671b78363970caf17f0bb4589b46c12e77329daf17b818",
+    "audit_worker_binary.py": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+    "metadata_raw_cases.cc": "083e4ecaf5e56a6e034153071e34f8bb46db0b5a933e47c1decd2fefd7dde8ff",
+    "owner_probe.cpp": "880d0617486e42630aaa0fac176ed684042cbc3460d57463d0d36a5705c9bd45",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+    "SOURCE_PINS.json": "5e9558c71725040efde8298b7225f4c5679fb51dd5a0ccf14614910dc9adcdab"
+  },
+  "build_receipt_sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+  "APK": {
+    "path": "/home/alex/work/pocket4-owned-fd-capability-r21-apk-01/fd-owner-probe-r21-source/build-attempt-1/fdownerprobe.apk",
+    "sha256": "875c5178d7b8ad9ede5444ed0eec402767dd3dcb3c9b70e52056aa095ca6c190",
+    "bytes": 106910
+  },
+  "ELF": {
+    "sha256": "54df7468470040863cd9006e2b74d1d6d5df0e7d6a08d0d1da8659b522effc51",
+    "needed": [
+      "libc.so"
+    ],
+    "NX_RELRO_NOW_no_WX": true
+  },
+  "audit_root": "/home/alex/work/pocket4-owned-fd-capability-r21-audit-01",
+  "audit_receipt_sha256": "883ef5bcc157eae19181de5fbc75e0544a09e714502c976676df4588c9a13a91",
+  "worker_audit_sha256": "f81e32eee23c36650937b7a05988dcadad57bb5e75898764432ac7f103ed4eb3",
+  "relevant_disassembly_sha256": "3bb06f3a99d2109ff851fae17983ef8221c04497711d99e5a41435d9dffcef96",
+  "manual_review": "PENDING_ROOT"
+}

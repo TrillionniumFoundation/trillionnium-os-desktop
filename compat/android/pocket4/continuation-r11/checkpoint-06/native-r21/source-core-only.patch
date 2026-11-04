@@ -1,0 +1,207 @@
+--- a/actual/berberis/kernel_api/proc_maps_kernel_statfs.h
++++ b/actual/berberis/kernel_api/proc_maps_kernel_statfs.h
+@@ -0,0 +1,56 @@
++// SPDX-License-Identifier: Apache-2.0
++#ifndef BERBERIS_KERNEL_API_PROC_MAPS_KERNEL_STATFS_H_
++#define BERBERIS_KERNEL_API_PROC_MAPS_KERNEL_STATFS_H_
++
++#include <stddef.h>
++#include <stdint.h>
++#include <string.h>
++#include <sys/statfs.h>
++#include <type_traits>
++
++namespace berberis::proc_maps_provenance {
++
++// Linux asm-generic/statfs.h LP64 raw-syscall representation, shared by
++// x86_64 and arm64. These members retain kernel bits, not libc semantics.
++// Never construct it by adding flags to an already-normalized libc result.
++struct KernelStatfs {
++  uint64_t f_type{}, f_bsize{}, f_blocks{}, f_bfree{}, f_bavail{};
++  uint64_t f_files{}, f_ffree{};
++  uint32_t f_fsid[2]{};
++  uint64_t f_namelen{}, f_frsize{}, f_flags{}, f_spare[4]{};
++};
++static_assert(sizeof(long) == 8);
++static_assert(std::is_standard_layout_v<KernelStatfs>);
++static_assert(std::is_trivially_copyable_v<KernelStatfs>);
++static_assert(sizeof(KernelStatfs) == 120 && alignof(KernelStatfs) == 8);
++static_assert(sizeof(struct statfs) == sizeof(KernelStatfs));
++#define BERBERIS_CHECK_KERNEL_STATFS_FIELD(field, offset, bytes) \
++  static_assert(offsetof(KernelStatfs, field) == offset); \
++  static_assert(sizeof(KernelStatfs::field) == bytes); \
++  static_assert(offsetof(struct statfs, field) == offset); \
++  static_assert(sizeof(((struct statfs*)nullptr)->field) == bytes)
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_type, 0, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_bsize, 8, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_blocks, 16, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_bfree, 24, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_bavail, 32, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_files, 40, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_ffree, 48, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_fsid, 56, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_namelen, 64, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_frsize, 72, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_flags, 80, 8);
++BERBERIS_CHECK_KERNEL_STATFS_FIELD(f_spare, 88, 32);
++#undef BERBERIS_CHECK_KERNEL_STATFS_FIELD
++
++// Caller-side conversion only. The fixed worker writes KernelStatfs directly.
++// The host libc ABI has the asserted layout above, but Bionic's successful
++// fstatfs wrapper clears ST_VALID. Preserve every other bit and raw snapshot.
++inline void KernelStatfsToLibc(const KernelStatfs& kernel, struct statfs* result) {
++  memcpy(result, &kernel, sizeof(kernel));
++#if defined(__BIONIC__)
++  result->f_flags &= ~0x0020;
++#endif
++}
++}  // namespace berberis::proc_maps_provenance
++#endif
+--- a/actual/berberis/kernel_api/proc_maps_provenance.h
++++ b/actual/berberis/kernel_api/proc_maps_provenance.h
+@@ -12,6 +12,8 @@
+ #include <sys/stat.h>
+ #include <sys/statfs.h>
+ #include <sys/types.h>
++
++#include "proc_maps_kernel_statfs.h"
+ 
+ #if defined(__GNUC__)
+ #pragma GCC visibility push(hidden)
+@@ -156,6 +158,11 @@
+ // temporary descriptor is installed in or closed from the caller's table.
+ int Fstat(int fd, struct stat* result, const Configuration& config);
+ int Fstatfs(int fd, struct statfs* result, const Configuration& config);
++// Raw LP64 kernel ABI, for ARM64 guest syscalls on the qualified x86_64 host.
++// V1 origin tags have no qualified raw-statfs contract and are rejected here;
++// a host-libc result must never be guessed back into a kernel representation.
++int FstatfsKernel(int fd, KernelStatfs* result, const Configuration& config);
++int FstatfsForGuest(int fd, void* guest_result, const Configuration& config);
+ int CopyToCaller(const void* source, void* destination, size_t size);
+ 
+ // Returns a final result for both ordinary and virtual links (including -1).
+--- a/actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h
++++ b/actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h
+@@ -26,6 +26,8 @@
+ };
+ struct Snapshot {
+   struct stat identity{},final_identity{};
++  // One pinned observation has two explicitly different ABI views.
++  KernelStatfs kernel_filesystem{};
+   struct statfs filesystem{};
+   AppContext worker_before{},worker_after{};
+   // 0 ordinary, 1 root-owned sealed tag ready for strict caller-side decoding.
+--- a/actual/proc_maps_provenance.cc
++++ b/actual/proc_maps_provenance.cc
+@@ -229,7 +229,7 @@
+   return Lookup::kVirtual;
+ }
+ 
+-enum class MetadataOperation { kOrigin, kStat, kStatfs };
++enum class MetadataOperation { kOrigin, kStat, kStatfs, kKernelStatfs };
+ 
+ struct MetadataRequest {
+   const Configuration* config;
+@@ -238,6 +238,7 @@
+   Origin origin{};
+   struct stat info{};
+   struct statfs filesystem{};
++  KernelStatfs kernel_filesystem{};
+ };
+ 
+ #if !BERBERIS_PROCMAPS_RAW_METADATA_OWNER
+@@ -256,6 +257,13 @@
+       if (request->lookup == Lookup::kOrdinary) return ::fstatfs(fd, &request->filesystem);
+       if (!DecodeStatfs(request->origin, &request->filesystem)) return Error(EBADMSG);
+       return 0;
++    case MetadataOperation::kKernelStatfs:
++      // V1 did not specify whether the factory recorded kernel or libc
++      // statfs flags. Until a new, qualified protocol supplies raw fields,
++      // reject this virtual projection without changing the output.
++      if (request->lookup != Lookup::kOrdinary) return Error(EPROTONOSUPPORT);
++      return static_cast<int>(syscall(SYS_fstatfs, static_cast<long>(fd),
++                                      &request->kernel_filesystem));
+   }
+   return Error(EIO);
+ }
+@@ -293,6 +301,13 @@
+     case MetadataOperation::kStatfs:
+       if (request->lookup == Lookup::kOrdinary) {request->filesystem = snapshot.filesystem; return 0;}
+       if (!DecodeStatfs(request->origin, &request->filesystem)) return Error(EBADMSG);
++      return 0;
++    case MetadataOperation::kKernelStatfs:
++      // V1 did not specify whether the factory recorded kernel or libc
++      // statfs flags. Until a new, qualified protocol supplies raw fields,
++      // reject this virtual projection without changing the output.
++      if (request->lookup != Lookup::kOrdinary) return Error(EPROTONOSUPPORT);
++      request->kernel_filesystem = snapshot.kernel_filesystem;
+       return 0;
+   }
+   return Error(EIO);
+@@ -514,6 +529,30 @@
+   *result = request.filesystem;
+   errno = incoming_errno;
+   return 0;
++}
++
++int FstatfsKernel(int fd, KernelStatfs* result, const Configuration& config) {
++  const int incoming_errno = errno;
++  KernelStatfs actual{};
++  if (syscall(SYS_fstatfs, static_cast<long>(fd), &actual) < 0) return -1;
++  if (actual.f_type != TMPFS_MAGIC) {
++    // Keep the complete first raw observation. It cannot be our tmpfs-backed
++    // snapshot, even when the fd is closed or reused immediately afterwards.
++    *result = actual;
++    errno = incoming_errno;
++    return 0;
++  }
++  MetadataRequest request{&config, MetadataOperation::kKernelStatfs};
++  if (ReadOwnedMetadata(fd, &request) < 0) return -1;
++  *result = request.kernel_filesystem;
++  errno = incoming_errno;
++  return 0;
++}
++
++int FstatfsForGuest(int fd, void* guest_result, const Configuration& config) {
++  KernelStatfs value{};
++  if (FstatfsKernel(fd, &value, config) < 0) return -1;
++  return CopyToCaller(&value, guest_result, sizeof(value));
+ }
+ 
+ int CopyToCaller(const void* source, void* destination, size_t size) {
+--- a/actual/proc_maps_raw_metadata_owner.cc
++++ b/actual/proc_maps_raw_metadata_owner.cc
+@@ -269,14 +269,14 @@
+     Raw(SYS_close,caller);return static_cast<int>(pinned);
+   }
+   long result=Raw(SYS_fstat,pinned,Address(&value->identity));
+-  if(result>=0)result=Raw(SYS_fstatfs,pinned,Address(&value->filesystem));
++  if(result>=0)result=Raw(SYS_fstatfs,pinned,Address(&value->kernel_filesystem));
+   long readable=-1;
+   bool ordinary=true;
+   if(result>=0 && S_ISREG(value->identity.st_mode) && value->identity.st_uid==0 &&
+      value->identity.st_gid==0 && (value->identity.st_mode&07777)==0444 &&
+      value->identity.st_nlink==0 && value->identity.st_size>0 &&
+      static_cast<uint64_t>(value->identity.st_size)<=kMaxSnapshotBytes &&
+-     static_cast<uint64_t>(value->filesystem.f_type)==TMPFS_MAGIC) {
++     value->kernel_filesystem.f_type==TMPFS_MAGIC) {
+     const long flags=Raw(SYS_fcntl,pinned,F_GETFL);
+     if(flags<0)result=flags;
+     else if((flags&O_PATH)==0)readable=pinned;
+@@ -474,13 +474,9 @@
+                  (request.context_invalid && request.result<0?-request.result:ESTALE));
+   }
+   if(request.result<0)return Error(-request.result);
+-#if defined(__BIONIC__)
+-  // bionic/libc/bionic/sys_statfs.cpp removes the kernel-private ST_VALID
+-  // bit before returning a successful libc statfs result. Snapshot uses the
+-  // host libc structure and is also consumed by the ordinary Fstatfs path.
+-  // Keep glibc's existing behavior and every other field/flag unchanged.
+-  value.filesystem.f_flags &= ~0x0020;
+-#endif
++  // Retain the exact raw result for the guest syscall adapter. Host libc
++  // normalization belongs only to the separate public filesystem view.
++  KernelStatfsToLibc(value.kernel_filesystem, &value.filesystem);
+   *snapshot=value;
+   errno=before;return request.result;
+ }

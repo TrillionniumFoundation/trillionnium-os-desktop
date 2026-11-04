@@ -1,0 +1,162 @@
+--- fixture01/owned_cleanup_fixture.py
++++ fixture02/owned_cleanup_fixture.py
+@@ -1,6 +1,7 @@
+ #!/usr/bin/env python3
+ """Fixed, once-only R5 owned systemd fixture. Default mode only prints its plan."""
+ import argparse
++import ast
+ import errno
+ import hashlib
+ import importlib.util
+@@ -18,10 +19,10 @@
+ sys.dont_write_bytecode=True
+ HERE=Path(__file__).parent
+ WORK=Path("/home/alex/work/pocket4-signal-runtime-r5-work-01")
+-EVIDENCE=WORK/"owned-unit-control-01"
+-CLAIM=WORK/"owned-unit-control-01.claim.json"
+-NAME="p4-signal-r5-unit-control-20261104-01"
+-NONCE="969694d682504cb2ae81bf178474c96e8"
++EVIDENCE=WORK/"owned-unit-control-02"
++CLAIM=WORK/"owned-unit-control-02.claim.json"
++NAME="p4-signal-r5-unit-control-20261104-02"
++NONCE="5c53c248004139cd14513e8d88023c18"
+ UNIT=NAME+"-bus.service"
+ DESCRIPTION=NAME+" "+NONCE+" bus"
+ GROUP="/system.slice/"+UNIT
+@@ -63,6 +64,35 @@
+     fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o444)
+     with os.fdopen(fd,"wb") as stream:
+         stream.write(raw);stream.flush();os.fsync(stream.fileno())
++def validate_plan():
++    """Pure preflight through the actual production guard; creates nothing."""
++    cleanup_source=HERE/"cleanup_owned.py"
++    need(pin(cleanup_source)=={"bytes":23861,
++        "sha256":"45661ea4b0c3d9de0708571cdab3521d6827bed1f2108abf6814493d812fdbd3"},
++        "unreviewed production cleanup source")
++    module=load("actual_r5_fixture_preflight",cleanup_source)
++    row={"role":"bus","unit":UNIT,"description":DESCRIPTION}
++    actual=module.OwnedCleanup({"NAME":NAME,"NONCE":NONCE}).planned(row)
++    need(actual==GROUP,"actual planned control group differs")
++    need(PLAN["name"]==NAME and PLAN["nonce"]==NONCE and PLAN["unit"]==UNIT
++         and PLAN["group"]==GROUP and PLAN["once_claim"]==str(CLAIM)
++         and PLAN["evidence"]==str(EVIDENCE),"fixed plan fields differ")
++    # Parse constants without importing the worker's deliberately effectful entry.
++    tree=ast.parse((HERE/"owned_cleanup_fixture_child.py").read_bytes())
++    values={}
++    for node in tree.body:
++        if isinstance(node,ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0],ast.Name):
++            key=node.targets[0].id
++            if key in ("NAME","NONCE"):
++                need(key not in values and isinstance(node.value,ast.Constant)
++                     and type(node.value.value) is str,"ambiguous worker identity constant")
++                values[key]=node.value.value
++    need(values=={"NAME":NAME,"NONCE":NONCE},"worker identity differs from preflighted plan")
++    return {"state":"ACTUAL_PRODUCTION_PLANNED_PREFLIGHT_PASS",
++            "nonce_hex_length":len(NONCE),"unit":UNIT,"group":actual,
++            "cleanup_source":pin(cleanup_source),"worker_identity_constants_match":True,
++            "claim_created":False,"services_started":0,"Android_operations":0}
++
+ def source_contract(expected):
+     need(pin(HERE/"source-manifest.json")["sha256"]==expected,"fixture manifest pin differs")
+     manifest=json.loads((HERE/"source-manifest.json").read_text())
+@@ -103,6 +133,7 @@
+     return result
+ 
+ def execute(expected):
++    plan_preflight=validate_plan()
+     need(os.geteuid()==0 and sys.flags.optimize==0,"root/nonoptimized host fixture required")
+     contract=source_contract(expected)
+     activation=json.loads(ACTIVATION.read_text())
+@@ -129,7 +160,7 @@
+     module=load("actual_r5_owned_cleanup_fixture",HERE/"cleanup_owned.py")
+     result={"schema":1,"state":"OWNED_FIXTURE_STARTED","plan":PLAN,"source":contract,
+         "Android_operations":0,"Main_actions":0,"pressure_generated":False,
+-        "source_contract_before":contract,"main_resources_before":resources_before,
++        "source_contract_before":contract,"main_resources_before":resources_before,"plan_preflight":plan_preflight,
+         "production_ready":False}
+     row={"role":"bus","unit":UNIT,"description":DESCRIPTION}
+     transports=[];injected=False;stop_attempts=0;pidfd=-1;held=None;child=None;scope=None;cleanup=None
+@@ -268,15 +299,18 @@
+         "original_child_pidfd_exited","original_child_reaped","would_qualify_full_canary","fixture_cleanup_errors")},sort_keys=True))
+     return 0 if result["state"]=="OWNED_SYSTEMD_RETIREMENT_FIXTURE_PASS" else 1
+ 
+-if __name__=="__main__":
++def main(argv=None):
+     parser=argparse.ArgumentParser(description=__doc__)
+     parser.add_argument("--execute-once",action="store_true")
+     parser.add_argument("--source-manifest-sha256")
+-    options=parser.parse_args()
++    options=parser.parse_args(argv)
+     if not options.execute_once:
+-        print(json.dumps(PLAN,sort_keys=True,indent=2))
+-    else:
+-        need(re.fullmatch(r"[0-9a-f]{64}",options.source_manifest_sha256 or ""),
+-             "explicit frozen source manifest pin required")
+-        raise SystemExit(execute(options.source_manifest_sha256))
+-
++        validation=validate_plan()
++        print(json.dumps({**PLAN,"preflight":validation},sort_keys=True,indent=2))
++        return 0
++    need(re.fullmatch(r"[0-9a-f]{64}",options.source_manifest_sha256 or ""),
++         "explicit frozen source manifest pin required")
++    return execute(options.source_manifest_sha256)
++
++if __name__=="__main__":
++    raise SystemExit(main())
+--- fixture01/owned_cleanup_fixture_child.py
++++ fixture02/owned_cleanup_fixture_child.py
+@@ -9,11 +9,11 @@
+ import sys
+ import time
+ 
+-NAME="p4-signal-r5-unit-control-20261104-01"
+-NONCE="969694d682504cb2ae81bf178474c96e8"
++NAME="p4-signal-r5-unit-control-20261104-02"
++NONCE="5c53c248004139cd14513e8d88023c18"
+ UNIT=NAME+"-bus.service"
+ GROUP="/system.slice/"+UNIT
+-EVIDENCE=Path("/home/alex/work/pocket4-signal-runtime-r5-work-01/owned-unit-control-01")
++EVIDENCE=Path("/home/alex/work/pocket4-signal-runtime-r5-work-01/owned-unit-control-02")
+ assert len(sys.argv)==1 and os.geteuid()==0
+ assert Path("/proc/self/cgroup").read_text().strip()=="0::"+GROUP
+ read_fd,write_fd=os.pipe()
+--- fixture01/OWNED-UNIT-FIXTURE.md
++++ fixture02/OWNED-UNIT-FIXTURE.md
+@@ -1,11 +1,20 @@
+ # Fixed R5 owned systemd retirement fixture — NOT EXECUTED
++
++## Prior fixture01 remains failed
++
++Fixture01 used a 33-character nonce. The production planned() guard correctly
++rejected it after the fixture had already started its one unit. No production
++cleanup stop occurred. Root separately retired that exact observed invocation;
++that recovery does not turn the original fixture into PASS, and the child may
++have reached its 45-second lifetime before recovery. The old source, failed
++receipt, reviews and explicit review corrections remain preserved.
+ 
+ ## Identity and admission
+ 
+-Name: p4-signal-r5-unit-control-20261104-01
+-Nonce: 969694d682504cb2ae81bf178474c96e8
+-Only unit: p4-signal-r5-unit-control-20261104-01-bus.service
+-Only unit cgroup: /system.slice/p4-signal-r5-unit-control-20261104-01-bus.service
++Name: p4-signal-r5-unit-control-20261104-02
++Nonce: 5c53c248004139cd14513e8d88023c18
++Only unit: p4-signal-r5-unit-control-20261104-02-bus.service
++Only unit cgroup: /system.slice/p4-signal-r5-unit-control-20261104-02-bus.service
+ 
+ Default command prints the plan only:
+ python3 -I owned_cleanup_fixture.py
+@@ -14,7 +23,11 @@
+ sudo -n /usr/bin/python3 -I <frozen-source>/owned_cleanup_fixture.py --execute-once --source-manifest-sha256 <exact-final-manifest-sha256>
+ 
+ The program accepts no caller-selected unit, nonce, child executable or target.
+-The fixed claim is created with O_EXCL before any start. Unknown outcomes are
++Both default PLAN and execute first invoke actual production OwnedCleanup.planned()
++on the fixed row, before any claim, directory creation or systemd start. The
++worker NAME/NONCE constants are parsed without executing the worker and must
++match. The preflight pins the unchanged production cleanup source. Only after
++that validation can the fixed claim be created with O_EXCL. Unknown outcomes are
+ not replayed. The exact source manifest, four host tool hashes, original Main
+ activation and framework helper are checked. Main must remain at epoch
+ 48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f.

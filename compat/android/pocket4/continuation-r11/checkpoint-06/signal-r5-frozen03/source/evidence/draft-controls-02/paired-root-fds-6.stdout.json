@@ -1,0 +1,74 @@
+{
+  "Android_operations": 0,
+  "Main_actions": 0,
+  "controls": [
+    {
+      "detail": {
+        "jars": 2,
+        "simultaneous_fd_identity_proved": true,
+        "streamed_backing_bytes": 38
+      },
+      "name": "different-root-paths-and-absolute-apex-links-resolve-same-held-backing",
+      "passed": true
+    },
+    {
+      "detail": {
+        "error": "BindingError('init and zygote resolve the classpath jar to different backing files')",
+        "no_fd_leak": true,
+        "same_content_is_not_implicitly_qualified": true
+      },
+      "name": "same-path-and-identical-bytes-on-different-backing-fail-closed",
+      "passed": true
+    },
+    {
+      "detail": {
+        "r4_helper_returned_success": true,
+        "r5_error": "BindingError('init and zygote resolve the classpath jar to different backing files')",
+        "scope": "actual hash helpers; not a replayed Android run"
+      },
+      "name": "r4-init-only-hash-accepts-while-actual-r5-paired-view-rejects",
+      "passed": true
+    },
+    {
+      "detail": {
+        "command_entries": 0,
+        "held_fd_count": 4,
+        "namespace_entries": 0
+      },
+      "name": "actual-owned-process-procdir-pidfd-mnt-root-view",
+      "passed": true
+    },
+    {
+      "detail": {
+        "error": "BindingError('held zygote procdir differs from the fixed epoch')"
+      },
+      "name": "mismatched-fixed-mount-identity-rejected-with-all-fds-closed",
+      "passed": true
+    },
+    {
+      "detail": {
+        "error": "BindingError('fixed zygote generation or mount namespace changed')",
+        "exact_owned_child_reaped": true
+      },
+      "name": "dead-original-process-pidfd-rejects-held-root-admission",
+      "passed": true
+    }
+  ],
+  "different_actual_Android_mount_namespace_test": "NOT_RUN; fresh private qualification still required",
+  "namespace_entries": 0,
+  "passed": 6,
+  "production_ready": false,
+  "real_mechanisms": [
+    "actual openat2 rooted file resolution",
+    "hard-linked identical backing",
+    "different backing with identical bytes",
+    "actual own procdir/pidfd/mount/root descriptors",
+    "owned child exit/reap"
+  ],
+  "schema": 1,
+  "source_pins": {
+    "held_runtime.py": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4",
+    "verify_paired_roots_r5.py": "db6488d46260100e7a8738ff59a95e89369aecf3ae17530ab6f2e310b6a44459"
+  },
+  "state": "PAIRED_ROOT_FD_CONTROLS_PASS"
+}

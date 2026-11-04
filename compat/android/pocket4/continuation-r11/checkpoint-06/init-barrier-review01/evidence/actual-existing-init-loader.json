@@ -1,0 +1,174 @@
+{
+  "AT_SECURE": [
+    0
+  ],
+  "actual_cmdline": [
+    "/init",
+    "second_stage"
+  ],
+  "actual_init_elf": {
+    "bytes": 2967000,
+    "dev": 66306,
+    "dynamic_loader_lines": [
+      "      [Requesting program interpreter: /system/bin/bootstrap/linker64]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libbase.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libcutils.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libext4_utils.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libfs_mgr.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libgsi.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [liblog.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [liblogwrap.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [liblp.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libprocessgroup.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libprocessgroup_setup.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libselinux.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libunwindstack.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libutils.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libvendorsupport.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libc++.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libc.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libm.so]",
+      " 0x0000000000000001 (NEEDED)             Shared library: [libdl.so]",
+      " 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE",
+      " 0x0000000000000019 (INIT_ARRAY)         0x2c20f0",
+      " 0x000000000000001b (INIT_ARRAYSZ)       56 (bytes)"
+    ],
+    "ino": 108134725,
+    "mode": "0o755",
+    "proc_exe_link": "/system/bin/init",
+    "sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73"
+  },
+  "actual_main_read_only": true,
+  "captured_at": "2026-11-04T18:29:19.479129+00:00",
+  "complete_maps_read_to_eof": true,
+  "complete_maps_rows": 1110,
+  "init_host_pid": 3588093,
+  "init_start_time_ticks": 80797014,
+  "installed_files_changed": false,
+  "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "main_epoch_unchanged": true,
+  "mapped_backings": {
+    "/system/bin/bootstrap/linker64": {
+      "backing_elf": {
+        "bytes": 2273216,
+        "dev": 1807,
+        "dynamic_loader_lines": [
+          " 0x000000000000000e (SONAME)             Library soname: [ld-android.so]",
+          " 0x000000006ffffffb (FLAGS_1)            Flags: NOW",
+          " 0x0000000000000019 (INIT_ARRAY)         0x1b11f8",
+          " 0x000000000000001b (INIT_ARRAYSZ)       128 (bytes)"
+        ],
+        "ino": 11847168,
+        "mode": "0o755",
+        "sha256": "b8f4ca47cfc88a815554d2c37cb9f56c91c715491493b2b48a8fd781fa625a9f"
+      },
+      "maps_rows": [
+        "767a1b0e0000-767a1b125000 r--p 00000000 07:0f 11847168                   /system/bin/bootstrap/linker64",
+        "767a1b128000-767a1b288000 r-xp 00048000 07:0f 11847168                   /system/bin/bootstrap/linker64",
+        "767a1b288000-767a1b292000 r--p 001a8000 07:0f 11847168                   /system/bin/bootstrap/linker64",
+        "767a1b294000-767a1b297000 rw-p 001b4000 07:0f 11847168                   /system/bin/bootstrap/linker64"
+      ],
+      "matching_rooted_paths": [
+        "/system/bin/bootstrap/linker64"
+      ]
+    },
+    "/system/lib64/libclang_rt.asan-x86_64-android.so": {
+      "backing_elf": {
+        "bytes": 35336,
+        "dev": 66306,
+        "dynamic_loader_lines": [
+          " 0x0000000000000001 (NEEDED)             Shared library: [libc.so]",
+          " 0x0000000000000001 (NEEDED)             Shared library: [libm.so]",
+          " 0x0000000000000001 (NEEDED)             Shared library: [libdl.so]",
+          " 0x000000000000000e (SONAME)             Library soname: [libdroidloom_selinux_compat.so]",
+          " 0x000000006ffffffb (FLAGS_1)            Flags: NOW"
+        ],
+        "ino": 108134918,
+        "mode": "0o755",
+        "sha256": "b4da6c85703e5f0dac88c039438d8836a4123c97655d14130e68828295d3fb50"
+      },
+      "maps_rows": [
+        "767a180c3000-767a180c4000 r--p 00000000 103:02 108134918                 /system/lib64/libclang_rt.asan-x86_64-android.so",
+        "767a180c7000-767a180c8000 r-xp 00004000 103:02 108134918                 /system/lib64/libclang_rt.asan-x86_64-android.so",
+        "767a180cb000-767a180cc000 r--p 00008000 103:02 108134918                 /system/lib64/libclang_rt.asan-x86_64-android.so"
+      ],
+      "matching_rooted_paths": [
+        "/system/lib64/libclang_rt.asan-x86_64-android.so"
+      ]
+    }
+  },
+  "maps_bound_bytes": 4194304,
+  "namespaces_entered": false,
+  "not_a_future_barrier_candidate_execution": true,
+  "prior_complete_read_failed_bound_bytes": 131072,
+  "prior_complete_read_job": "1a1a7d1cc3f-fc05-2c9f",
+  "prior_reader_limitation": "single read of proc sequence files; no mapped-chain qualification was claimed",
+  "prior_receipt_sha256": "f1b7e0416162e3708bfae50a990796080f3ab67978674ee8858de9b268fae078",
+  "rooted_artifacts": {
+    "/system/bin/bootstrap/linker64": {
+      "bytes": 2273216,
+      "dev": 1807,
+      "dynamic_loader_lines": [
+        " 0x000000000000000e (SONAME)             Library soname: [ld-android.so]",
+        " 0x000000006ffffffb (FLAGS_1)            Flags: NOW",
+        " 0x0000000000000019 (INIT_ARRAY)         0x1b11f8",
+        " 0x000000000000001b (INIT_ARRAYSZ)       128 (bytes)"
+      ],
+      "init_maps_by_dev_inode": [
+        "767a1b0e0000-767a1b125000 r--p 00000000 07:0f 11847168                   /system/bin/bootstrap/linker64",
+        "767a1b128000-767a1b288000 r-xp 00048000 07:0f 11847168                   /system/bin/bootstrap/linker64",
+        "767a1b288000-767a1b292000 r--p 001a8000 07:0f 11847168                   /system/bin/bootstrap/linker64",
+        "767a1b294000-767a1b297000 rw-p 001b4000 07:0f 11847168                   /system/bin/bootstrap/linker64"
+      ],
+      "ino": 11847168,
+      "mapped_in_init": true,
+      "mode": "0o755",
+      "sha256": "b8f4ca47cfc88a815554d2c37cb9f56c91c715491493b2b48a8fd781fa625a9f"
+    },
+    "/system/lib64/libclang_rt.asan-x86_64-android.so": {
+      "bytes": 35336,
+      "dev": 66306,
+      "dynamic_loader_lines": [
+        " 0x0000000000000001 (NEEDED)             Shared library: [libc.so]",
+        " 0x0000000000000001 (NEEDED)             Shared library: [libm.so]",
+        " 0x0000000000000001 (NEEDED)             Shared library: [libdl.so]",
+        " 0x000000000000000e (SONAME)             Library soname: [libdroidloom_selinux_compat.so]",
+        " 0x000000006ffffffb (FLAGS_1)            Flags: NOW"
+      ],
+      "init_maps_by_dev_inode": [
+        "767a180c3000-767a180c4000 r--p 00000000 103:02 108134918                 /system/lib64/libclang_rt.asan-x86_64-android.so",
+        "767a180c7000-767a180c8000 r-xp 00004000 103:02 108134918                 /system/lib64/libclang_rt.asan-x86_64-android.so",
+        "767a180cb000-767a180cc000 r--p 00008000 103:02 108134918                 /system/lib64/libclang_rt.asan-x86_64-android.so"
+      ],
+      "ino": 108134918,
+      "mapped_in_init": true,
+      "mode": "0o755",
+      "sha256": "b4da6c85703e5f0dac88c039438d8836a4123c97655d14130e68828295d3fb50"
+    },
+    "/vendor/bin/droidloom-lmkd-compat": {
+      "bytes": 35664,
+      "dev": 1810,
+      "dynamic_loader_lines": [
+        "      [Requesting program interpreter: /system/bin/linker64]",
+        " 0x0000000000000001 (NEEDED)             Shared library: [libstd.dylib.so]",
+        " 0x0000000000000001 (NEEDED)             Shared library: [libc.so]",
+        " 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE"
+      ],
+      "init_maps_by_dev_inode": [],
+      "ino": 17,
+      "mapped_in_init": false,
+      "mode": "0o755",
+      "sha256": "96c2652ffd9d1330fe088c304cf336e1e94de52f49146dea524b0a0b0d1d62c7"
+    }
+  },
+  "rooted_resolution": "openat2 RESOLVE_IN_ROOT|RESOLVE_NO_MAGICLINKS via held Main root directory",
+  "runtime_started": false,
+  "schema": 1,
+  "selected_mappings_stable": true,
+  "selected_runtime_environment": {
+    "ANDROID_DATA": "/data",
+    "ANDROID_ROOT": "/system",
+    "DROIDLOOM_CELL": "1",
+    "LD_PRELOAD": "/system/lib64/libclang_rt.asan-x86_64-android.so"
+  }
+}

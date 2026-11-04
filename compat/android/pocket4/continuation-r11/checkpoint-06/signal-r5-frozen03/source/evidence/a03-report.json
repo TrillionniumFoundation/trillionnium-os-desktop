@@ -1,0 +1,203 @@
+{
+  "artifact": "isolated-signal-a03-actual-failure-and-cleanup-r1",
+  "boot": {
+    "adbd": "stopped",
+    "android": "17",
+    "completed": "1",
+    "engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+    "sdk": "37",
+    "system_server_start_count": "1"
+  },
+  "cases_completed": 0,
+  "cleanup": {
+    "controller": {
+      "ActiveState": "failed",
+      "ControlGroup": "",
+      "Description": "Owned isolated signal canary 78a540d1c3654b49ad81b044b90331be",
+      "ExecMainStatus": "1",
+      "InvocationID": "fbdb74bc0aae4f9f8a93fec138c53020",
+      "LoadState": "loaded",
+      "MainPID": "0",
+      "Result": "exit-code",
+      "SubState": "failed"
+    },
+    "controller_cgroup_absent": true,
+    "exact_init_dead": true,
+    "four_private_units_absent": true,
+    "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "main_preserved": true,
+    "original_cleanup_errors": [],
+    "post_cleanup_actions": [
+      "none",
+      "none",
+      "none",
+      "none"
+    ],
+    "post_readback_sha256": "a73a6b3e2e80bdd5ce26649001554def512075e34584fda7e63de143ce035290"
+  },
+  "direct_cause_evidence": {
+    "header": [
+      "*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***",
+      "Build fingerprint: 'generic/aosp_cf_x86_64_only_phone/vsoc_x86_64_only:17/CP2A.260605.016/15885347:userdebug/test-keys'",
+      "Kernel Release: '7.0.0-38-generic'",
+      "Revision: '0'",
+      "ABI: 'x86_64'",
+      "Timestamp: 2026-11-04 17:01:56.620584226+0000",
+      "Process uptime: 2s",
+      "Executable: /system/bin/app_process64",
+      "Cmdline: app_process /system/bin com.android.commands.am.Am instrument -w -r -e case svc -e nonce 257549b90f71419c9f72874f2cceaa0d org.droidloom.signalprobe/org.droidloom.signalprobe.SignalProbeInstrumentation",
+      "pid: 5567, ppid: 5566, tid: 5567, name: app_process  >>> app_process <<<",
+      "uid: 2000",
+      "signal 6 (SIGABRT), code -1 (SI_QUEUE), fault addr --------",
+      "Abort message: 'Check failed: !location.empty() BOOTCLASSPATH and DEX2OATBOOTCLASSPATH must not be empty'"
+    ],
+    "image_writes_or_mounts": false,
+    "interpretation": "ART command process aborted before creating its Java VM because required boot classpath environment was absent; no owned ARM64 probe verdict was produced. The later missing-claim FileNotFoundError obscured this earlier command error.",
+    "raw_owned_tombstone": {
+      "bytes": 330431,
+      "path": "/home/alex/work/pocket4-signal-a03-data-forensics-01/owned-tombstone_00.txt",
+      "sha256": "a558ba75a1ac923f1736a9061de7b4a2d5d00b7b6131be5120e0171df7269a4f"
+    },
+    "read_only_forensics_index": {
+      "path": "/home/alex/work/pocket4-signal-a03-data-forensics-01/index.json",
+      "sha256": "865d68453c853e42789a139518ace26a76edc63cff734726fc819879a254ba87"
+    }
+  },
+  "engine_observation_receipt": {
+    "archive_member": "evidence/r2-svc-engine-observations.json",
+    "bytes": 246,
+    "sha256": "cc37706087a0c5b895b6829012dc97021c6458f00172cd717c9842df7afa35a2"
+  },
+  "error_reported_by_original_wrapper": "FileNotFoundError(2, 'No such file or directory')",
+  "external_evidence": {
+    "archive": {
+      "bytes": 220625,
+      "path": "/home/alex/work/pocket4-signal-canary-a03-final-evidence-01.tar.gz",
+      "sha256": "ec69bb8e5fe26dae0c5fd8bcab242eb93a2106de353ecb6cf3439afe08bef0ea"
+    },
+    "export_index": {
+      "path": "/home/alex/work/pocket4-signal-canary-a03-final-export-01.json",
+      "sha256": "84c9141baf8a1cbead25655655504b2bd22fa7e8e3c7ed5d66585bd38a34a990"
+    },
+    "export_manifest_sha256": "a1c0b2d46e39520ef8d7289315161e8605c5030ff26c476cbcb7eba2689a4490"
+  },
+  "first_command_failure": {
+    "attempt": {
+      "archive_member": "evidence/r2-svc-instrument-attempt.json",
+      "bytes": 954,
+      "sha256": "d910a917588fffee62aa38489102e36a130d5071eed76f5a1c5e74972db77dde"
+    },
+    "case": "r2-svc",
+    "instrumentation_invocations": 1,
+    "nonce": "257549b90f71419c9f72874f2cceaa0d",
+    "receipt": {
+      "archive_member": "evidence/r2-svc-instrument-terminal.json",
+      "bytes": 104,
+      "sha256": "aa611588c1443fc584b3b4e44054cd38d65ac1cb288ceeab9ec1c5c8bf8be6a6"
+    },
+    "returncode": 134,
+    "stderr_bytes": 0,
+    "stdout_bytes": 0,
+    "timed_out": false
+  },
+  "initial_framework_capture": {
+    "attempts": 1,
+    "capture_errors": [],
+    "census": [
+      {
+        "complete": true,
+        "enumeration_errors": [],
+        "name": "private-framework-initial-0-census.json",
+        "read_errors": [],
+        "role_matches": {
+          "surfaceflinger": [
+            162813
+          ],
+          "system_server": [
+            163068
+          ],
+          "zygote64": [
+            162790
+          ]
+        },
+        "scope_stable": true,
+        "sha256": "515050a3f8a36abdaeb8d0809cc40fb70b0473b671539e014d6d735bd64e5950"
+      }
+    ]
+  },
+  "inputs": {
+    "full_host_suite_receipt_sha256": "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283",
+    "input_sha256": "48830abbdf42313576ecdfba9891ab4b93e6599bd938d6978713dfc9c0114492",
+    "new_engine_sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0",
+    "prepared_sha256": "8f2f55b6235700f57673af9a7563027fddedfd181fc3f1532e30ec6d9adc3161",
+    "runtime_manifest_sha256": "546b68b714b0f9c5721e6a9c03acbc68bafc63abe0cacd1d7c4e268bfcda24fe"
+  },
+  "install_binding_receipt": {
+    "archive_member": "evidence/r2-install-binding.json",
+    "bytes": 280,
+    "sha256": "d0cf555e6f9b97750de8dc42105e8b260f9c21ca969cf7068ee8471d5351bac2"
+  },
+  "limitations": [
+    "No candidate Android signal behavior passed or failed from this attempt.",
+    "The original r1 wrapper full independent review remains incomplete.",
+    "Numeric namespace target PID reuse window found by source review was not observed to affect Main; a held-FD revision is pending."
+  ],
+  "main_deployment": false,
+  "native_probe_engine_mapping_observations": 0,
+  "no_replay": true,
+  "original_failure_retained": true,
+  "owned_package": {
+    "apk_path": "/data/app/~~qGCRyLGEfJpl2Q6-HmkEGA==/org.droidloom.signalprobe-hDCbigoNVAYKRID6as6myw==/base.apk",
+    "apk_sha256": "7982ebd6e951a6c2159755afa79d1d7bafe43b6b6aa8c29f43a7d0c1496e3f59",
+    "package": "org.droidloom.signalprobe",
+    "uid": 10114,
+    "version_code": 1
+  },
+  "package_cleanup": {
+    "baseline_restored": true,
+    "remaining_owned_paths": [],
+    "removal_receipt": {
+      "archive_member": "evidence/r2-owned-path-removal.json",
+      "bytes": 273,
+      "sha256": "8a84fb5e701811e0454247eb9e41f4d6f173f2f3d0e89d453f80ea01fd31c115"
+    },
+    "uninstall_receipt": {
+      "archive_member": "evidence/r2-uninstall-terminal.json",
+      "bytes": 102,
+      "sha256": "44399855e8b04b9597cc404f5506f8fc91a04d99b4b74275f7ec25b3da5d8500"
+    },
+    "uninstall_returncode": 0
+  },
+  "production_ready": false,
+  "resources": {
+    "controller": {
+      "cgroup": "/sys/fs/cgroup/system.slice/p4-signal-canary-controller-78a540d1c365.service",
+      "cpu.max": "10000 100000",
+      "cpu.pressure": "some avg10=12.19 avg60=12.69 avg300=9.70 total=43654266\nfull avg10=12.19 avg60=12.69 avg300=9.70 total=43653567",
+      "memory.events": "low 0\nhigh 0\nmax 61245\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "268435456",
+      "memory.peak": "268435456",
+      "memory.pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=134038\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=134038",
+      "memory.swap.max": "0",
+      "unit": "current-owned-controller-actor"
+    },
+    "interpretation": "Observed controller max events 61245 and peak 256 MiB are retained, but this failure has an explicit missing-classpath abort. No resource limit was increased.",
+    "receipt": {
+      "archive_member": "evidence/resources-before-cleanup.json",
+      "bytes": 2972,
+      "sha256": "4771c35a015a20b4e8ef5651d736442b8bcb5d3549bf5d17d0279307b59d83e6"
+    }
+  },
+  "runtime_result": {
+    "archive_member": "evidence/runtime-result.json",
+    "bytes": 13426,
+    "sha256": "deb1c8d09b5f124b161381186a0d8f8e60c2fad9be4ed2af36b21984e2227a0a"
+  },
+  "schema": 1,
+  "state": "RUNNER_LAUNCH_ENVIRONMENT_FAILURE_NO_NATIVE_VERDICT",
+  "unattempted_cases": [
+    "r2-smc-handler",
+    "r2-smc-default",
+    "r3-smc-mask-edit"
+  ]
+}
