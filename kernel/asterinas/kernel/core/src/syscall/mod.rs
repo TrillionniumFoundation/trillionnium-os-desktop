@@ -410,10 +410,10 @@ pub(crate) fn handle_syscall(ctx: &Context, user_ctx: &mut UserContext) {
                     .is_ok()
             {
                 ostd::warn!(
-                    "native G2 EACCES diagnostic: pid={} syscall={} error={:?}",
+                    "native G2 EACCES diagnostic: pid={} syscall={} errno={}",
                     current!().pid(),
                     syscall_frame.syscall_number,
-                    err
+                    err.error() as i32
                 );
             }
             debug!("syscall return error: {:?}", err);
