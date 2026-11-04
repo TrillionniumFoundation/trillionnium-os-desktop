@@ -1,0 +1,26 @@
+--- a/kernel_api/proc_maps_provenance.cc
++++ b/kernel_api/proc_maps_provenance.cc
+@@ -255,7 +255,11 @@
+   struct iovec local{const_cast<void*>(source), size};
+   struct iovec remote{destination, size};
+ #ifdef SYS_process_vm_writev
+-  const ssize_t copied = syscall(SYS_process_vm_writev, process, &local, 1, &remote, 1, 0);
++  // x86_64 syscall() receives its sixth kernel argument in an eight-byte
++  // stack slot. A variadic int 0 need not initialize that slot's high word;
++  // process_vm_* interprets flags as unsigned long and rejects stray bits.
++  const ssize_t copied = syscall(SYS_process_vm_writev, static_cast<long>(process),
++                                 &local, 1UL, &remote, 1UL, 0UL);
+   if (copied < 0) return -1;
+   if (static_cast<size_t>(copied) != size) return Error(EFAULT);
+   return 0;
+--- a/kernel_api/proc_maps_path.cc
++++ b/kernel_api/proc_maps_path.cc
+@@ -69,7 +69,7 @@
+     struct iovec local{destination + offset, count};
+     struct iovec remote{reinterpret_cast<void*>(address), count};
+     const ssize_t copied = syscall(SYS_process_vm_readv, syscall(SYS_gettid),
+-                                   &local, 1, &remote, 1, 0);
++                                   &local, 1UL, &remote, 1UL, 0UL);
+     if (copied < 0) return -1;
+     if (copied == 0) return Error(EFAULT);
+     if (memchr(destination + offset, '\0', static_cast<size_t>(copied))) return 0;

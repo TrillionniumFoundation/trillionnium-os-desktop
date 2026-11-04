@@ -1,0 +1,216 @@
+{
+  "actual_execution": {
+    "actual_mapped_binary_and_three_libraries_confirmed": true,
+    "argv": [
+      "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/fixture/bin/berberis_arm64_host_tests",
+      "--gtest_filter=*",
+      "--gtest_repeat=1",
+      "--gtest_color=no",
+      "--gtest_output=xml:/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/results.xml"
+    ],
+    "assessment": {
+      "all_expected_registered_executed": true,
+      "completed_count": 3788,
+      "disabled": [
+        "Arm64LiteTranslateRegionDispatchTest.DISABLED_MemsetAarch64_FullBodyFrom0x49cc0_1024ByteZeroFill",
+        "Arm64TierCoverage.DISABLED_RegenerateTable"
+      ],
+      "executed_count": 3791,
+      "failed_cases": [],
+      "registered_count": 3793,
+      "skipped": {
+        "Arm64HeavyOptimizerFrontendTest.FcmpHBailsWithoutF16C": "F16C present; FCMP H lowers in-tier",
+        "Arm64HeavyOptimizerFrontendTest.FmaxvVecHBailsWithoutF16C": "F16C present; FMAXV H lowers in-tier",
+        "Arm64MmapNoreserveTest.UnrealSizedArenaReservesAddressSpaceWithoutCommittingRam": "opt-in policy is disabled"
+      }
+    },
+    "automatic_retry": false,
+    "cpu": 6,
+    "cwd": "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/fixture/bin",
+    "environment": {
+      "HOME": "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/home",
+      "LANG": "C",
+      "LC_ALL": "C",
+      "LD_LIBRARY_PATH": "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/fixture/lib",
+      "PATH": "/usr/bin:/bin",
+      "TMPDIR": "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262/tmp"
+    },
+    "exact_source_artifacts_unchanged": true,
+    "filter": "*",
+    "finished_utc": "2026-11-04T16:04:43.683922+00:00",
+    "invocation_id": "e095c04108114beb897f56be8eb3c665",
+    "limits": {
+      "cpu.max": "100000 100000",
+      "memory.high": "max",
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "pids.max": "128"
+    },
+    "max_oom_and_oom_kill_events_all_zero": true,
+    "repeat": 1,
+    "sharding": false,
+    "start_utc": "2026-11-04T16:04:35.961792+00:00",
+    "test_binary_sha256": "a14288dae95a85d8f92eb35403c00714a0705241ecfae13ed3704b713fb854f1",
+    "unit": "p4-signal-host-candidate-9d630262872f.service"
+  },
+  "authoritative_jobs": {
+    "candidate": {
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a74e12f0-fc05-2aea",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "timed_out": false
+    },
+    "readback_cleanup_export": {
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a74f1390-fc05-2af0",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "timed_out": false
+    },
+    "stage": {
+      "cancelled": false,
+      "exit_code": 0,
+      "job_id": "1a1a74b1bc1-fc05-2ae1",
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "terminal_publication_confirmed": true,
+      "timed_out": false
+    }
+  },
+  "baseline_result": {
+    "path": "/home/alex/work/pocket4-signal-host-baseline-r11-01-ff3127ab/result.json",
+    "sha256": "d99ee51205eeab9b6d33a2fcd6b4fa3d51304b06bc2fc638a470677a8f3a5a2e"
+  },
+  "boundaries": {
+    "Android_runtime_qualification": false,
+    "all_signals_qualified": false,
+    "candidate_executed": true,
+    "candidate_full_build_complete": true,
+    "commercial_app_qualification": false,
+    "production_ready": false,
+    "runtime_wrapper_independent_peer_review_complete": false
+  },
+  "candidate_binding": {
+    "candidate_build_inputs": {
+      "path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-inputs.json",
+      "sha256": "ccf2ebc89bfb4a06722719e292723669332e69691894717d702ff96eaf30e898"
+    },
+    "candidate_build_receipt": {
+      "path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-source.json",
+      "sha256": "4096ca1581c648063b16375786ca207be360e8fe788da68a523c16c602e4c4de"
+    },
+    "engine": {
+      "path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/target/product/droidloom_x86_64/system/lib64/libberberis_arm64.so",
+      "sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0"
+    },
+    "signal_fix_pins": {
+      "path": "/home/alex/work/pocket4-owned-signal-host-r11-source-01/candidate-attempt-01/signal-mask-r1-pins.json",
+      "sha256": "6a24ef53595e9d8da458a626effbfca4280a5de18c90ad1d5dd036ad3e936bf2"
+    }
+  },
+  "cleanup": {
+    "action": "none; completed unit already absent or inactive",
+    "cgroup_exists_after": false,
+    "commercial_app_data_touched": false,
+    "remaining_owned_pids": [],
+    "source_evidence_and_fixture_retained": true,
+    "unit_after": {
+      "ActiveState": "inactive",
+      "ControlGroup": "",
+      "Description": "p4-signal-host-candidate-9d630262872f.service",
+      "ExecMainCode": "0",
+      "ExecMainStatus": "0",
+      "InvocationID": "",
+      "LoadState": "not-found",
+      "MainPID": "0",
+      "Result": "success",
+      "SubState": "dead"
+    }
+  },
+  "created_utc": "2026-11-04T16:10:21.454958+00:00",
+  "export_verification": {
+    "chunk_and_archive_sha256_verified": true,
+    "chunks": 2,
+    "every_file_manifest_verified": true,
+    "exact_regular_file_count": 21,
+    "immutable_version": "66306:31370377:125231:1793808342791652673:1793808342791652673",
+    "native_tests_reexecuted_for_export": false,
+    "registration_and_xml_reparsed_locally": true,
+    "registration_identical_to_actual_R16_baseline": true
+  },
+  "host": "pocket4",
+  "kind": "actual-signal-mask-r1-full-host-candidate-qualification",
+  "main": {
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "preserved_through_test_and_cleanup": true,
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    }
+  },
+  "nonce": "9d630262872f4a09acf4ae710974d5f3",
+  "pins": {
+    "archive": {
+      "bytes": 125231,
+      "path": "/workspace/scratch/94990735b266/signal-host-candidate-device-r1/pocket4-owned-signal-host-candidate-r11-01-evidence.tar.gz",
+      "sha256": "e79f9eeb57f3144d9eaea3f48aa3321c1c21e39f0fae2ca576258629fdd9412f"
+    },
+    "export_manifest": {
+      "bytes": 5595,
+      "path": "/workspace/scratch/94990735b266/signal-host-candidate-device-r1/exported/export-manifest.json",
+      "sha256": "72b71b1e03482de6613fa4be6343be91ca609ceaf525a906a904e0ec120f0e94"
+    },
+    "external_inputs": {
+      "bytes": 2476,
+      "path": "/workspace/scratch/94990735b266/signal-host-candidate-device-r1/exported/source/host-candidate-inputs.json",
+      "sha256": "53451ebb5a3df6ea08e1964be863aafb837ada121101a52de08e19e9accb893d"
+    },
+    "post_execution_readback": {
+      "bytes": 3403,
+      "path": "/workspace/scratch/94990735b266/signal-host-candidate-device-r1/exported/evidence/post-execution-readback.json",
+      "sha256": "3d37d16f2e935c5c94a793852b9fb86ba43f8e0b28097f375783f52912d0cd9c"
+    },
+    "preparation_manifest": {
+      "bytes": 1940,
+      "path": "/workspace/scratch/94990735b266/signal-host-candidate-device-r1/exported/source/preparation-source-manifest.json",
+      "sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103"
+    },
+    "result": {
+      "bytes": 26086,
+      "path": "/workspace/scratch/94990735b266/signal-host-candidate-device-r1/exported/evidence/result.json",
+      "sha256": "b8c9b01588d1c2a13c80ba1afc5765fcf6656147d26e630a7c2cf74f4f482283"
+    },
+    "run_request": {
+      "bytes": 1616,
+      "path": "/workspace/scratch/94990735b266/signal-host-candidate-device-r1/run-request.json",
+      "sha256": "874a500e42704ce7e85e287d371ddc2640170cdcc8b1eda5fee22847751bdbc9"
+    },
+    "runtime_manifest": {
+      "bytes": 2703,
+      "path": "/workspace/scratch/94990735b266/signal-host-candidate-device-r1/exported/source/runtime-source-manifest.json",
+      "sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5"
+    },
+    "xml": {
+      "bytes": 1065793,
+      "path": "/workspace/scratch/94990735b266/signal-host-candidate-device-r1/exported/evidence/results.xml",
+      "sha256": "56c66abfa39745d82175226905dd2b33b7e084bf502fc4373e0aab7964834b6e"
+    }
+  },
+  "reviewer": "android_acceptance",
+  "schema": 1,
+  "scope": "One complete new candidate host suite against the same frozen registration, disabled/skip contract, wrapper, CPU and private environment as the actual R16 baseline. No Android process was started by this host qualification.",
+  "state": "PASS_FULL_HOST_SUITE_AND_OWNED_PROCESS_CLEANUP_CONFIRMED"
+}

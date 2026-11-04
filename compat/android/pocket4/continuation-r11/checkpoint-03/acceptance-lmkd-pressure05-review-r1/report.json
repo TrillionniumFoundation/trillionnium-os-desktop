@@ -1,0 +1,131 @@
+{
+  "all_frozen_file_pins_verified": true,
+  "created_utc": "2026-11-04T15:29:03.022827+00:00",
+  "explicit_external_requirements": [
+    "Actual matching source/build/binary receipt and source hashes before/after execution.",
+    "Coordinator verifies exact systemd InvocationID, bounded wall clock, outer-unit OOM/max counters, current Main epoch and final exact unit/cgroup cleanup.",
+    "No pressure run should be called accepted based only on qualifier exit status without those external receipts."
+  ],
+  "findings": [
+    {
+      "id": "P05-AUDIT-TAIL",
+      "impact": "The joined audit is not a complete record of actual consumed observations. A late event can be missing from an apparently complete stale-queue qualification audit. This is an audit/qualification defect, not evidence of a real device kill.",
+      "locations": [
+        "src/psi.rs:183",
+        "src/psi.rs:191",
+        "src/pressure_audit.rs:137"
+      ],
+      "observed_source_behavior": "Control readiness breaks before any monitor observation counter is incremented. Cancellation uses stop_reason 1. Prior observations/queued/record counts may remain equal; terminal from_retirement can mark incomplete false although this successful poll consumed an unaccounted PSI event.",
+      "precondition": "One successful poll returns cancellation/control readiness and a monitor POLLPRI in the same result.",
+      "required_fix": "Account for every monitor POLLPRI returned by a successful poll before any control/revalidation/error exit, while retaining cancellation priority and sending no event after cancellation. Any consumed but unsent event must make terminal audit incomplete.",
+      "severity": "P1 acceptance false-completeness",
+      "status": "source-confirmed; implementing agent independently accepted",
+      "verification": "Exact source path; no real device PSI execution in this review."
+    },
+    {
+      "id": "P05-CLEANUP-LATE-VICTIM",
+      "impact": "A delayed second victim from the tested daemon can escape the intended zero-extra-victim and preserved-foreground acceptance checks. Native kill counters are not queried again after this window, and a SIGKILL need not change kernel OOM counters.",
+      "locations": [
+        "owned-relay/fixture_init.cpp:517",
+        "owned-relay/fixture_init.cpp:520",
+        "owned-relay/fixture_init.cpp:521",
+        "owned-relay/fixture_init.cpp:522"
+      ],
+      "observed_source_behavior": "The cleanup loop only checks and waits children when alive_fd is true. Already-dead unexpected targets are silently skipped and their descriptors closed; phase-result may still be written ok=true.",
+      "precondition": "An unexpected foreground/protected/other owned target dies after the last kill-count/liveness checks but before exact LMKD exit and the cleanup loop.",
+      "required_fix": "After exact LMKD reap, revalidate every target that should still live. Require individual Q, exact wait/reap and exit0 for all those targets; only the already-proven and reaped cached SIGKILL victim may be skipped. Retain exact per-target identity and exit classification in an externally pinned cleanup receipt required by the qualifier.",
+      "severity": "P1 acceptance false pass",
+      "status": "source-confirmed and exact-statement local owned-child reproduction; implementing agent accepted",
+      "verification": {
+        "compile": "g++ -std=c++20 -O1 -Wall -Wextra -Werror -pthread",
+        "full_fixture_or_device_run": false,
+        "outcome": {
+          "Android_or_PSI_executed": false,
+          "child_reaped": true,
+          "cleanup_accepted": true,
+          "kind": "actual-frozen-cleanup-statement-local-owned-child-control",
+          "unexpected_foreground_SIGKILL": true
+        },
+        "result": "/workspace/scratch/94990735b266/acceptance-lmkd-pressure05-review-r1/late-victim-result.json",
+        "result_sha256": "69b0f01510d0da57885a7abe70708d820578e771da5b30fe82044f68d6f5e8d7",
+        "source_control": "/workspace/scratch/94990735b266/acceptance-lmkd-pressure05-review-r1/late_victim_control.cpp",
+        "source_control_sha256": "15308c91ee098badb973b55508fc4181b7aa523003234a3b479789aaa23c264a"
+      }
+    }
+  ],
+  "kind": "independent-source-and-local-owned-control-review",
+  "limits": {
+    "Android_or_namespace_executed": false,
+    "Rust_independently_executed": false,
+    "all_apps_production_ready": false,
+    "device_access_during_review": false,
+    "frozen_source_modified": false,
+    "installed_supervisor_recovery_qualified": false,
+    "kernel_PSI_or_pressure_executed": false,
+    "pid_reuse_qualified": false,
+    "production_cgroup_kill_qualified": false
+  },
+  "next_revision_note": "Implementing agent will produce a new freeze06; freeze05 stays byte-identical. No next-revision approval is implied.",
+  "reviewed_files": {
+    "owned-relay/PRESSURE.md": {
+      "bytes": 12615,
+      "sha256": "c2b6b02a8d6357384a5351866c5af223a9fae314ff674706ea44860fbdd495d5"
+    },
+    "owned-relay/fixture_init.cpp": {
+      "bytes": 52075,
+      "sha256": "77dd1bcd0a8a86a5df0a3b1f61a723b608310b2eb7e140acc2388e6b596e7fbb"
+    },
+    "owned-relay/qualify_pressure.py": {
+      "bytes": 21501,
+      "sha256": "55339b4124d41b1c9ee0d7315173590a07d12d084355ea7678f3c581466d2ad4"
+    },
+    "owned-relay/test_qualify_pressure.py": {
+      "bytes": 17033,
+      "sha256": "ca032d62f43c202da089aa8a4a5a4d50092a035745d31cfe2ca8b733128fc69e"
+    },
+    "src/bin/owned_relay_canary.rs": {
+      "bytes": 22454,
+      "sha256": "a4aa88c1e577c2512270ab46ae55133ecb82a6ac4da2d0f9c305344c1a69ec09"
+    },
+    "src/enrollment.rs": {
+      "bytes": 19506,
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363"
+    },
+    "src/lib.rs": {
+      "bytes": 43408,
+      "sha256": "0c682f01c368211dd30b4307b509a0891e360bd21a7cb9dfad67761027400670"
+    },
+    "src/lifecycle_bootstrap.rs": {
+      "bytes": 47843,
+      "sha256": "85abcc95923e8333b2e8fdeef5a8e8086b453cc8e80a59f2473918420ec2403b"
+    },
+    "src/lifecycle_relay.rs": {
+      "bytes": 16229,
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a"
+    },
+    "src/pressure_audit.rs": {
+      "bytes": 20193,
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+    },
+    "src/psi.rs": {
+      "bytes": 14546,
+      "sha256": "287732ffd760c8c6ea6c196b95e814d56dd17e6675214ce38841e5433ac9113c"
+    }
+  },
+  "reviewed_properties": [
+    "Initial domain hard=512MiB high=384MiB swap=0 is configured before authority and re-read during pressure; no later lowering of thresholds or budgets is implemented in the inspected path.",
+    "4MiB allocator steps require 16MiB reserve under observed 432MiB cap and stop requesting more work after the first observed cached exit; one in-flight bounded chunk can complete. Cap is explicitly observed, not a continuous kernel-enforced 432MiB limit.",
+    "Actual registration audit stores the bytes successfully written to held pressure descriptors and their inode/device; both fixed 70ms some and 700ms full in 1000ms windows are required.",
+    "Audit transport is nonce/generation/scope/budget bound; terminal audit is unavailable from LifecycleBroker until exact terminal status and broker process reap.",
+    "Queued event audit requires per-level consecutive sequences, monotonic order, send within original window, bounded capacity, and matching observation/queue/record counts; the identified early-exit observation gap must still be fixed.",
+    "Qualifier pins complete evidence file sets through external manifest/source hashes, descriptor-bound regular file reads, exact lengths/hashes, duplicate-key rejection, and no symlinks.",
+    "Positive narrow pass requires a fresh critical queued event correlated before the observed cached pidfd exit, exact cached identity/SIGKILL, native notification and diagnostic; medium-only returns partial. The actual native critical decision is separately reported and must not be inferred from qualification_status alone.",
+    "Stale narrow pass requires real events while exact LMKD is stopped, all recorded events aged before resume, retained above-high zero-kill observation and later allocator-only relief with unchanged budget. Audit completeness and final target cleanup must first be repaired.",
+    "Owned driver checks exact unit cgroup, 1CPU/512MiB/swap0/64tasks, fresh owned roots and independent namespaces; final broker/init ownership and domain-empty proof are distinct from the external unit/Main fence."
+  ],
+  "reviewer": "android_acceptance",
+  "schema": 1,
+  "source_manifest_sha256": "cec434f1e868248f70dbc8a4eea7c924193e9ba633bba61dcf6cea90b642ab29",
+  "source_root": "/workspace/scratch/94990735b266/lmkd-work/host-pressure-freeze-05",
+  "state": "BLOCKED_FOR_PRESSURE_QUALIFICATION_PENDING_NEXT_REVISION"
+}

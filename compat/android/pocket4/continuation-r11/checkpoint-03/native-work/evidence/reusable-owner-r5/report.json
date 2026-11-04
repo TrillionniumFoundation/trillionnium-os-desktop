@@ -1,0 +1,257 @@
+{
+  "schema": 1,
+  "bounded_host_controls_expected": true,
+  "production_ready": false,
+  "actual_android_executed": false,
+  "runtime_hooks_installed": false,
+  "fix": "One startup-allocated guarded 128KiB stack mapping is retained through Stop/restart and private-memory fork; child reuses its own inherited COW mapping via pthread_attr_setstack.",
+  "baseline_failure": "Same corrected-behavior control against frozen r4: native fstat/fs pass, raw fork succeeds, child Start EAGAIN11 and projected fs ESHUTDOWN108.",
+  "fixed_observation": "Same control against r5: child Start0 and projected fs0 under RLIMIT_AS1; own child reaped and parent owner stops.",
+  "results": [
+    {
+      "name": "baseline-compile",
+      "argv": [
+        "g++",
+        "-std=c++17",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-04/kernel_api/include",
+        "/workspace/scratch/94990735b266/native-work/reusable_owner_fork_limited_r5_control.cc",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-04/kernel_api/proc_maps_fd_owner.cc",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-04/kernel_api/proc_maps_provenance.cc",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-04/kernel_api/proc_maps_path.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-work/evidence/reusable-owner-r5/baseline-fork-as-control"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "baseline-run",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-work/evidence/reusable-owner-r5/baseline-fork-as-control"
+      ],
+      "exit_code": 1,
+      "expected_exit": 1,
+      "matched": true,
+      "stdout_sha256": "2c482329e470d46dc8f293488b0a06c21abead984a3d639b0b792b04469182e4",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "fixed-compile",
+      "argv": [
+        "g++",
+        "-std=c++17",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-snapshot-05/kernel_api/include",
+        "/workspace/scratch/94990735b266/native-work/reusable_owner_fork_limited_r5_control.cc",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-snapshot-05/kernel_api/proc_maps_fd_owner.cc",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-snapshot-05/kernel_api/proc_maps_provenance.cc",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-snapshot-05/kernel_api/proc_maps_path.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-work/evidence/reusable-owner-r5/fixed-fork-as-control"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "fixed-run",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-work/evidence/reusable-owner-r5/fixed-fork-as-control"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "matched": true,
+      "stdout_sha256": "5ed54d57ff046ffac373491df17dcfc43ca93a1361ecbf3386f1a4d6308c8f90",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "lifecycle-compile",
+      "argv": [
+        "g++",
+        "-std=c++17",
+        "-O1",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-I",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-snapshot-05/kernel_api/include",
+        "/workspace/scratch/94990735b266/native-work/reusable_owner_lifecycle_r5_regression.cc",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-snapshot-05/kernel_api/proc_maps_provenance.cc",
+        "/workspace/scratch/94990735b266/native-work/reusable-owner-snapshot-05/kernel_api/proc_maps_path.cc",
+        "-Wl,--wrap=pthread_create",
+        "-Wl,--wrap=pthread_join",
+        "-o",
+        "/workspace/scratch/94990735b266/native-work/evidence/reusable-owner-r5/lifecycle-control"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "matched": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "lifecycle-run",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-work/evidence/reusable-owner-r5/lifecycle-control"
+      ],
+      "exit_code": 0,
+      "expected_exit": 0,
+      "matched": true,
+      "stdout_sha256": "21c3fe8c420300b2a24b715e737717dd4b2095bc067659825439f47c4a0a8721",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "previous_lifecycle_cases": [
+    {
+      "case": "prewarmed_actual_RLIMIT_AS_1_metadata",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "prewarmed_reject_new_pthread_EAGAIN",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "stop_inflight_closes_admission_and_restart",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "stop_during_paused_startup_no_reopen",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "raw_clone_private_fork_inflight",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "libc_fork_atfork_inflight",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "CLONE_VM_new_TGID_gate_parent_survives",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "startup_EAGAIN_explicit_retry",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "join_failure_sticky_poison",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "actual_caller_unshared_fdtable",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "caller_mask_preserved",
+      "expected_behavior_observed": true,
+      "known_production_red": false,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    },
+    {
+      "case": "RLIMIT_NOFILE_0_still_EMFILE_known_red",
+      "expected_behavior_observed": true,
+      "known_production_red": true,
+      "child_reaped": true,
+      "timeout": false,
+      "signal": 0,
+      "exit": 0
+    }
+  ],
+  "source_delta": [
+    {
+      "path": "kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h",
+      "before_sha256": "7fd5b52a999c1796445c77be78f3d8b1e7728e8fd213d087b60c4c8a70a6ef0e",
+      "after_sha256": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc"
+    },
+    {
+      "path": "kernel_api/proc_maps_fd_owner.cc",
+      "before_sha256": "c5f389ac8faceb47357675f23edf3903aa8e48a2b1c7bc7e2dd98cd7fa78b9bc",
+      "after_sha256": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e"
+    }
+  ],
+  "remaining_gates": [
+    "Actual Bionic supplied-stack/TLS/thread bookkeeping not yet qualified.",
+    "pthread task-count and libc TLS allocations are not claimed eliminated.",
+    "NOFILE0 remains EMFILE.",
+    "Runtime and zygote lifecycle hooks not installed.",
+    "CLONE_VM/new-TGID only containment gate.",
+    "Credentials/root/mount transitions and ordinary alias-to-maps remain unqualified."
+  ]
+}

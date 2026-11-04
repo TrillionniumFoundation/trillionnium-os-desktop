@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "actual_elf_review": true,
+  "production_ready": false,
+  "artifacts": {
+    "elf": {
+      "path": "/workspace/scratch/94990735b266/fd-owner-probe-r12-device-elf/libfdownerprobe.so",
+      "sha256": "8d15ad5214ec39f7f51bedbce5ab7af4d20a82aa60fe098425f90489bc96365e"
+    },
+    "disassembly": {
+      "path": "/workspace/scratch/94990735b266/fd-owner-probe-r12-device-elf/objdump.txt",
+      "sha256": "f3ff305edbd3a5e8ab0dfa4f9e39c03d7c9d81428f5bac437fd5f2e9656709a8"
+    },
+    "probe_source": {
+      "path": "/workspace/scratch/94990735b266/fd-owner-probe-r12-source/owner_probe.cpp",
+      "sha256": "f3611452d145ce18511296ff8647d6c7e29bbda8788e42d30f6a729e39dd7841"
+    },
+    "device_result": {
+      "path": "/workspace/scratch/94990735b266/pocket4-continuation/evidence/fd-copy-r12-current-r16-failure.json",
+      "sha256": "ab3e9be764ae460378ac4c6a8844c646b5ea0f628b7a9b483d53b7a8ec9b583c"
+    },
+    "word_patch": {
+      "path": "/workspace/scratch/94990735b266/native-work/copy-word-r3.patch",
+      "sha256": "bde5d497c97d6de19d73fb4e7f567c0edb3ac4f8ee65dd6e01217feab9001ac0"
+    },
+    "r13_archive": {
+      "path": "/workspace/scratch/94990735b266/fd-owner-probe-r13-source.tar.gz",
+      "sha256": "891ed80e32a84e27782e98ec86821367e9bdc0bdbae363125f49ac7a610b6e21"
+    }
+  },
+  "confirmed_compiled_defect": {
+    "function": "ProbeOwnCopy(CopyProbe*)",
+    "function_start": "0x13b0",
+    "flags_argument": "7th C argument to variadic syscall; 6th kernel argument",
+    "flag_stores": [
+      {
+        "address": "0x1425",
+        "bytes": "c7 04 24 00 00 00 00",
+        "instruction": "movl $0,(%rsp)"
+      },
+      {
+        "address": "0x14b6",
+        "bytes": "c7 04 24 00 00 00 00",
+        "instruction": "movl $0,(%rsp)"
+      },
+      {
+        "address": "0x1542",
+        "bytes": "c7 04 24 00 00 00 00",
+        "instruction": "movl $0,(%rsp)"
+      },
+      {
+        "address": "0x1592",
+        "bytes": "c7 04 24 00 00 00 00",
+        "instruction": "movl $0,(%rsp)"
+      }
+    ],
+    "call_addresses": [
+      "0x1449",
+      "0x14da",
+      "0x156c",
+      "0x15b4"
+    ],
+    "upper_flags_word_initialized_by_function": false,
+    "argument_stack_slot_width": 8,
+    "written_width": 4,
+    "register_arguments": "32-bit moves to esi/ecx/r9d zero-extend registers; the flags store is a memory write and does not zero-extend the adjacent 4 bytes."
+  },
+  "actual_result": {
+    "caller_tid_four_calls": "-1/EINVAL(22)",
+    "private_owner_tid_read_write": "16 bytes; exact content",
+    "private_owner_tid_bad_pointer": "-1/EFAULT(14)",
+    "original_fd_owner_controls": "PASS",
+    "r12_overall": "FAIL"
+  },
+  "causal_status": "An actual compiled argument-width defect is confirmed. Dirty upper flag bits are consistent with all four caller EINVAL results and fresh owner success. The historic runtime stack high word was not captured, so this receipt does not claim it was directly observed. The exact-device libc syscall wrapper and r13 typed raw/libc controls complete the remaining causal evidence.",
+  "new_source_correction": "R3 changes process_vm raw iov counts to 1UL and flags to 0UL, and pid to long. R13 carries both the actual corrected sources and independent typed libc controls; legacy int calls remain diagnostic.",
+  "unchanged_red_gates": [
+    "ordinary resource semantics (RLIMIT_AS/pthread_create and RLIMIT_NOFILE=0)",
+    "ordinary path admission alias-to-maps race",
+    "actual Android R13 execution not yet received",
+    "full factory/translated engine integration and commercial App acceptance not established"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "actual_android_executed": false,
+  "cases": [
+    {
+      "binary": "path-r13-host-controller",
+      "exit_code": 1,
+      "expected_exit": 1,
+      "sha256": "c04d8d0a948b942682c0a5fae7690970b0fdfc98ec0078e377b97676f00d9ac2",
+      "stdout_sha256": "84969b5f67dfe00f7454c3c1f09688f901919c2550f6d02a65dd4d38a339487b",
+      "summary": {
+        "host_copy_seam": false,
+        "pass": false,
+        "case_mask": "0x000000003fe7400c",
+        "child_reaped": true
+      }
+    },
+    {
+      "binary": "path-r13-controller-copy-seam",
+      "exit_code": 0,
+      "expected_exit": 0,
+      "sha256": "7b6f8e492a3aab44dc67a517179725b746863ab621b5aae9ae9d36215b5b3d3e",
+      "stdout_sha256": "8eafaf238f255ff62a255d8baa3cca12f6a38967c29c5b823552f174c7442b55",
+      "summary": {
+        "host_copy_seam": true,
+        "pass": true,
+        "case_mask": "0x000000003fffffff",
+        "child_reaped": true
+      }
+    }
+  ],
+  "note": "No-seam local host is a truthful EPERM negative; link-only host copy seam proves fixture logic, not Android capability."
+}

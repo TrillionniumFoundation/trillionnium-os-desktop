@@ -1,0 +1,342 @@
+--- a/kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h
++++ b/kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h
+@@ -21,6 +21,31 @@
+ using Operation = int (*)(int owned_fd, void* context);
+ int WithPinnedFd(int fd, Operation operation, void* context);
+ 
++// Opt in before entering guest code, while normal startup resources are still
++// available. Once enabled, WithPinnedFd uses one already-created owner and a
++// fixed single-request slot, with no pthread creation or queue allocation per
++// metadata query. This does not remove pidfd_open/getfd's RLIMIT_NOFILE needs.
++// Pathname operations deliberately retain their per-request owner protocol.
++int StartReusableMetadataOwner();
++
++// Close admission first, finish the last accepted request, then stop and join
++// the owned thread. Requests arriving after admission closes return ESHUTDOWN;
++// they never restart the owner. Only an explicit Start opens admission again.
++// Invoke before the zygote's wait-for-no-host-threads/fork boundary.
++int StopReusableMetadataOwner();
++
++// Only for a child with a PRIVATE copy of the parent's address space. Discard
++// the copied queue/thread state without locking it, joining the vanished owner,
++// or dereferencing a parent's outstanding request. This is also installed as a
++// libc pthread_atfork child hook; raw guest clone(!CLONE_VM) must call it
++// explicitly, then Start before resuming guest execution. A CLONE_VM child
++// with a new TGID must never call this function: it shares the parent's state.
++void ResetReusableMetadataOwnerAfterPrivateFork();
++
++// Operations run under the caller's synchronous request lifetime. They must
++// not throw or recursively submit to this owner. A different TGID sharing this
++// address space is rejected with EOPNOTSUPP without changing the owner's state.
++
+ // The operation receives a PIDFD_THREAD for the calling thread, in the
+ // independent table. It may acquire caller dirfds with pidfd_getfd; passing a
+ // caller descriptor number directly to an owner syscall is never correct.
+--- a/kernel_api/proc_maps_fd_owner.cc
++++ b/kernel_api/proc_maps_fd_owner.cc
+@@ -133,7 +133,7 @@
+   return 0;
+ }
+ 
+-int Perform(Request& request) {
++int InitializePrivateTable() {
+   // Until unshare succeeds this is still the caller's fd table. In particular,
+   // do not close any descriptor on the failure path before this boundary.
+   if (syscall(SYS_unshare, CLONE_FILES) < 0) return -1;
+@@ -144,6 +144,10 @@
+ #else
+   return Error(ENOSYS);
+ #endif
++  return 0;
++}
++
++int PerformInPrivateTable(Request& request) {
+ #ifdef SYS_pidfd_open
+   OwnedFd caller(static_cast<int>(syscall(SYS_pidfd_open, request.caller_tid, O_EXCL)));
+   if (caller.get() < 0) return -1;
+@@ -163,6 +167,11 @@
+ #endif
+ }
+ 
++int Perform(Request& request) {
++  if (InitializePrivateTable() < 0) return -1;
++  return PerformInPrivateTable(request);
++}
++
+ void* Run(void* context) {
+   auto* request = static_cast<Request*>(context);
+   errno = 0;
+@@ -175,7 +184,263 @@
+   return nullptr;
+ }
+ 
++// This owner is opt-in. Before runtime lifecycle hooks are installed, the
++// existing temporary owner remains the default. No TLS is used here: raw
++// CLONE_VM guest processes can share the caller's host TLS while having a
++// distinct TGID. Such a process must not reset or join this process's owner.
++struct ReusableOwner {
++  std::atomic<int> process{0};
++  std::atomic<bool> enabled{false};
++  // 0 closed; 1 accepting; 2 stopping. A single atomic prevents Start from
++  // reopening admission while Stop is waiting for an in-flight request.
++  std::atomic<int> admission{0};
++  std::atomic<int> gate{0};
++  std::atomic<int> event{0};
++  // 0 idle; 1 request; 2 stop. Access to the slot is serialized by gate.
++  std::atomic<int> command{0};
++  std::atomic<Request*> slot{nullptr};
++  std::atomic<bool> startup_done{false};
++  std::atomic<bool> exited{false};
++  int startup_error = 0;
++  int poison = 0;  // guarded by gate; a failed join must never revive an exited worker
++  pthread_t thread{};
++  bool joinable = false;
++  bool atfork_registered = false;
++};
++
++ReusableOwner g_reusable;
++
++void NotifyReusable() {
++  g_reusable.event.fetch_add(1, std::memory_order_release);
++  syscall(SYS_futex, &g_reusable.event, FUTEX_WAKE_PRIVATE, INT_MAX,
++          nullptr, nullptr, 0UL);
++}
++
++void WaitReusableEvent(int observed) {
++  syscall(SYS_futex, &g_reusable.event, FUTEX_WAIT_PRIVATE, observed,
++          nullptr, nullptr, 0UL);
++}
++
++int CurrentProcess() { return static_cast<int>(syscall(SYS_getpid)); }
++
++bool OwnsReusableState() {
++  return g_reusable.process.load(std::memory_order_acquire) == CurrentProcess();
++}
++
++class ReusableGate {
++ public:
++  int Enter() {
++    if (!OwnsReusableState()) return Error(EOPNOTSUPP);
++    for (;;) {
++      int expected = 0;
++      if (g_reusable.gate.compare_exchange_weak(expected, 1, std::memory_order_acquire)) {
++        held_ = true;
++        return 0;
++      }
++      syscall(SYS_futex, &g_reusable.gate, FUTEX_WAIT_PRIVATE, 1,
++              nullptr, nullptr, 0UL);
++    }
++  }
++  ~ReusableGate() {
++    if (!held_) return;
++    const int saved = errno;
++    g_reusable.gate.store(0, std::memory_order_release);
++    syscall(SYS_futex, &g_reusable.gate, FUTEX_WAKE_PRIVATE, INT_MAX,
++            nullptr, nullptr, 0UL);
++    errno = saved;
++  }
++ private:
++  bool held_ = false;
++};
++
++void* RunReusable(void*) {
++  errno = 0;
++  const int initialized = InitializePrivateTable();
++  g_reusable.startup_error = initialized < 0 ? errno : 0;
++  if (initialized < 0) g_reusable.exited.store(true, std::memory_order_release);
++  g_reusable.startup_done.store(true, std::memory_order_release);
++  NotifyReusable();
++  if (initialized < 0) return nullptr;
++  for (;;) {
++    const int observed = g_reusable.event.load(std::memory_order_acquire);
++    const int command = g_reusable.command.load(std::memory_order_acquire);
++    if (command == 2) break;
++    if (command != 1) {
++      WaitReusableEvent(observed);
++      continue;
++    }
++    Request* request = g_reusable.slot.load(std::memory_order_acquire);
++    // Only the admitted caller owns gate and publishes a non-null slot.
++    // The caller cannot return until the completion store below.
++    errno = 0;
++    request->result = PerformInPrivateTable(*request);
++    request->error = errno;
++    g_reusable.slot.store(nullptr, std::memory_order_release);
++    g_reusable.command.store(0, std::memory_order_release);
++    request->complete.store(true, std::memory_order_release);
++    // Do not access request again, including for futex wake. The caller may
++    // already have returned and destroyed its stack request. Wake via the
++    // process-lifetime event word instead.
++    NotifyReusable();
++  }
++  g_reusable.exited.store(true, std::memory_order_release);
++  NotifyReusable();
++  return nullptr;
++}
++
++int RunReusableRequest(int fd, Operation operation, void* context) {
++  if (fd < 0) return Error(EBADF);
++  if (operation == nullptr) return Error(EINVAL);
++  if (!OwnsReusableState()) return Error(EOPNOTSUPP);
++  CallerScope scope;
++  if (scope.Enter() < 0) return -1;
++  if (g_reusable.admission.load(std::memory_order_acquire) != 1) return Error(ESHUTDOWN);
++  ReusableGate gate;
++  if (gate.Enter() < 0) return -1;
++  if (g_reusable.admission.load(std::memory_order_acquire) != 1) return Error(ESHUTDOWN);
++  Request request{static_cast<pid_t>(syscall(SYS_gettid)), fd, operation, context};
++  g_reusable.slot.store(&request, std::memory_order_release);
++  g_reusable.command.store(1, std::memory_order_release);
++  NotifyReusable();
++  for (;;) {
++    const int observed = g_reusable.event.load(std::memory_order_acquire);
++    if (request.complete.load(std::memory_order_acquire)) break;
++    WaitReusableEvent(observed);
++  }
++  errno = request.error;
++  return request.result;
++}
++
+ }  // namespace
++
++void ResetReusableMetadataOwnerAfterPrivateFork() {
++  // This function is called only in a private-memory child, including libc
++  // fork's child hook. The copied gate may have been held by a vanished thread.
++  // No lock, old pthread handle or copied stack request is touched.
++  g_reusable.admission.store(0, std::memory_order_relaxed);
++  g_reusable.gate.store(0, std::memory_order_relaxed);
++  g_reusable.event.store(0, std::memory_order_relaxed);
++  g_reusable.command.store(0, std::memory_order_relaxed);
++  g_reusable.slot.store(nullptr, std::memory_order_relaxed);
++  g_reusable.startup_done.store(false, std::memory_order_relaxed);
++  g_reusable.exited.store(false, std::memory_order_relaxed);
++  g_reusable.startup_error = 0;
++  g_reusable.poison = 0;
++  g_reusable.thread = pthread_t{};
++  g_reusable.joinable = false;
++  g_reusable.process.store(CurrentProcess(), std::memory_order_release);
++}
++
++int StartReusableMetadataOwner() {
++  const int incoming_errno = errno;
++  const int process = CurrentProcess();
++  const int registered = g_reusable.process.load(std::memory_order_acquire);
++  if (registered != 0 && registered != process) return Error(EOPNOTSUPP);
++  // An already-open owner needs no TLS, mask operation or gate acquisition.
++  // A concurrent Stop can linearize immediately after this observation.
++  if (g_reusable.admission.load(std::memory_order_acquire) == 1) return 0;
++  CallerScope scope;
++  if (scope.Enter() < 0) return -1;
++  int unassigned = 0;
++  g_reusable.process.compare_exchange_strong(unassigned, process, std::memory_order_acq_rel);
++  if (!OwnsReusableState()) return Error(EOPNOTSUPP);
++  if (g_reusable.admission.load(std::memory_order_acquire) == 2) return Error(EBUSY);
++  ReusableGate gate;
++  if (gate.Enter() < 0) return -1;
++  if (g_reusable.admission.load(std::memory_order_acquire) == 2) return Error(EBUSY);
++  if (g_reusable.poison != 0) return Error(g_reusable.poison);
++  g_reusable.enabled.store(true, std::memory_order_release);
++  if (g_reusable.joinable) {
++    int closed = 0;
++    if (!g_reusable.admission.compare_exchange_strong(closed, 1, std::memory_order_acq_rel) &&
++        closed != 1) return Error(EBUSY);
++    errno = incoming_errno;
++    return 0;
++  }
++  if (!g_reusable.atfork_registered) {
++    const int error = pthread_atfork(nullptr, nullptr, ResetReusableMetadataOwnerAfterPrivateFork);
++    if (error != 0) return Error(error);
++    g_reusable.atfork_registered = true;
++  }
++  pthread_attr_t attributes;
++  int error = pthread_attr_init(&attributes);
++  if (error != 0) return Error(error);
++  error = pthread_attr_setstacksize(&attributes, 128u * 1024u);
++  if (error != 0) {
++    pthread_attr_destroy(&attributes);
++    return Error(error);
++  }
++  g_reusable.startup_done.store(false, std::memory_order_relaxed);
++  g_reusable.exited.store(false, std::memory_order_relaxed);
++  g_reusable.command.store(0, std::memory_order_relaxed);
++  error = pthread_create(&g_reusable.thread, &attributes, RunReusable, nullptr);
++  pthread_attr_destroy(&attributes);
++  if (error != 0) return Error(error);
++  g_reusable.joinable = true;
++  for (;;) {
++    const int observed = g_reusable.event.load(std::memory_order_acquire);
++    if (g_reusable.startup_done.load(std::memory_order_acquire)) break;
++    WaitReusableEvent(observed);
++  }
++  if (g_reusable.startup_error != 0) {
++    const int startup_error = g_reusable.startup_error;
++    const int joined = pthread_join(g_reusable.thread, nullptr);
++    if (joined == 0) {
++      g_reusable.joinable = false;
++      g_reusable.thread = pthread_t{};
++    } else {
++      g_reusable.poison = joined;
++    }
++    return Error(joined != 0 ? joined : startup_error);
++  }
++  int closed = 0;
++  if (!g_reusable.admission.compare_exchange_strong(closed, 1, std::memory_order_acq_rel) &&
++      closed != 1) return Error(EBUSY);
++  errno = incoming_errno;
++  return 0;
++}
++
++int StopReusableMetadataOwner() {
++  const int incoming_errno = errno;
++  if (!g_reusable.enabled.load(std::memory_order_acquire)) return 0;
++  if (!OwnsReusableState()) return Error(EOPNOTSUPP);
++  CallerScope scope;
++  if (scope.Enter() < 0) return -1;
++  // Close admission before waiting for a caller already holding the gate.
++  if (g_reusable.admission.exchange(2, std::memory_order_acq_rel) == 2) return Error(EBUSY);
++  int result = 0;
++  int error = 0;
++  {
++    ReusableGate gate;
++    if (gate.Enter() < 0) {
++      result = -1;
++      error = errno;
++    } else if (g_reusable.poison != 0) {
++      result = -1;
++      error = g_reusable.poison;
++    } else if (g_reusable.joinable) {
++      g_reusable.command.store(2, std::memory_order_release);
++      NotifyReusable();
++      for (;;) {
++        const int observed = g_reusable.event.load(std::memory_order_acquire);
++        if (g_reusable.exited.load(std::memory_order_acquire)) break;
++        WaitReusableEvent(observed);
++      }
++      error = pthread_join(g_reusable.thread, nullptr);
++      if (error == 0) {
++        g_reusable.joinable = false;
++        g_reusable.thread = pthread_t{};
++      } else {
++        g_reusable.poison = error;
++        result = -1;
++      }
++    }
++  }
++  g_reusable.admission.store(0, std::memory_order_release);
++  NotifyReusable();
++  errno = result < 0 ? error : incoming_errno;
++  return result;
++}
+ 
+ int RunRequest(int fd, bool pin_caller_fd, Operation operation, Publication publication,
+                void* context) {
+@@ -229,6 +494,9 @@
+ }
+ 
+ int WithPinnedFd(int fd, Operation operation, void* context) {
++  if (g_reusable.enabled.load(std::memory_order_acquire)) {
++    return RunReusableRequest(fd, operation, context);
++  }
+   return RunRequest(fd, true, operation, nullptr, context);
+ }
+ 

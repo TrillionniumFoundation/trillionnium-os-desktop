@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_ANDROID_BUILD_FAILED",
+  "source_revision": "fd-owner-probe-r13",
+  "build_job": "1a1a719b2c8-fc05-2a1f",
+  "archive_sha256": "891ed80e32a84e27782e98ec86821367e9bdc0bdbae363125f49ac7a610b6e21",
+  "pins_sha256": "52645cf523a0b5d67ab2e93754109bc47a22d796e50ea6d3183599a185f4d497",
+  "events": [
+    {
+      "phase": "r13_sources_verified",
+      "source_root": "/home/alex/work/pocket4-owned-fd-capability-r13-apk-01/fd-owner-probe-r13-source",
+      "archive_sha256": "891ed80e32a84e27782e98ec86821367e9bdc0bdbae363125f49ac7a610b6e21",
+      "pins_sha256": "52645cf523a0b5d67ab2e93754109bc47a22d796e50ea6d3183599a185f4d497",
+      "no_install": true
+    },
+    {
+      "state": "FAILED",
+      "error": "AssertionError(('compile-native', 1, \"In file included from /home/alex/work/pocket4-owned-fd-capability-r13-apk-01/fd-owner-probe-r13-source/owner_probe.cpp:224:\\nIn file included from /home/alex/work/pocket4-owned-fd-capability-r13-apk-01/fd-owner-probe-r13-source/owned_cases.cc:37:\\n/home/alex/work/pocket4-owned-fd-capability-r13-apk-01/fd-owner-probe-r13-source/actual/kernel_api/proc_maps_provenance.cc:117:42: error: static assertion failed due to requirement 'std::is_signed_v<unsigned long>'\\n  117 |   static_assert(std::is_integral_v<T> && std::is_signed_v<T>);\\n      |                                          ^~~~~~~~~~~~~~~~~~~\\n/home/alex/work/pocket4-owned-fd-capability-r13-apk-01/fd-owner-probe-r13-source/actual/kernel_api/proc_maps_provenance.cc:381:8: note: in instantiation of function template specialization 'berberis::proc_maps_provenance::(anonymous namespace)::SignedField<unsigned long>' requested here\\n  381 |       !SignedField(w[kFsBlockSize], &value.f_bsize) ||\\n      |        ^\\n/home/alex/work/pocket4-owned-fd-capability-r13-apk-01/fd-owner-probe-r13-source/actual/kernel_api/proc_maps_provenance.cc:122:56: error: comparison of integers of different signs: 'int64_t' (aka 'long') and 'type' (aka 'unsigned long') [-Werror,-Wsign-compare]\\n  122 |   if (number < std::numeric_limits<T>::min() || number > std::numeric_limits<T>::max()) {\\n      |                                                 ~~~~~~ ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\n/home/alex/work/pocket4-owned-fd-capability-r13-apk-01/fd-owner-probe-r13-source/actual/kernel_api/proc_maps_provenance.cc:122:14: error: comparison of integers of different signs: 'int64_t' (aka 'long') and 'type' (aka 'unsigned long') [-Werror,-Wsign-compare]\\n  122 |   if (number < std::numeric_limits<T>::min() || number > std::numeric_limits<T>::max()) {\\n      |       ~~~~~~ ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\\n3 errors generated.\\n\"))",
+      "APK": null
+    }
+  ],
+  "apk_created": false,
+  "installed": false,
+  "actual_probe_run": false,
+  "finding": "Actual bionic x86_64 statfs.f_bsize is unsigned long; frozen provenance decoder requires a signed integral field. Production source portability defect remains until a separately frozen revision builds and runs."
+}

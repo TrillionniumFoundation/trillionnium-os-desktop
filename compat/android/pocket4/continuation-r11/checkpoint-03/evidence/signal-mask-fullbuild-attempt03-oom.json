@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "state": "ATTEMPT03_ACTUAL_UNIT_OOM_BEFORE_ENGINE_BUILD",
+  "job": "1a1a718677e-fc05-2a1a",
+  "unit": "hepta-runtime-job-1a1a718677e-fc05-2a1a.service",
+  "soong_soft_memory_budget": "6GiB",
+  "unit_memory_max_bytes": 8589934592,
+  "started_utc": "2026-11-04T15:05:58Z",
+  "ended_utc": "2026-11-04T15:15:01Z",
+  "journal_memory_peak": "8G",
+  "journal_swap_peak": "2.1G",
+  "journal_result": "oom-kill",
+  "source_preparation": "signal-build-memory-r1/actual-preparation.json",
+  "final_engine_receipt_created": false,
+  "evidence": [
+    {
+      "name": "unit",
+      "returncode": 0,
+      "stdout": "ActiveState=inactive\nSubState=dead\nInvocationID=\nResult=success\nExecMainStatus=0\nMemoryPeak=[not set]\nMemorySwapPeak=[not set]\n",
+      "stderr": ""
+    },
+    {
+      "name": "journal",
+      "returncode": 0,
+      "stdout": "2026-11-04T07:05:58-08:00 alex-G1628-04 systemd[2472]: Started hepta-runtime-job-1a1a718677e-fc05-2a1a.service - Hepta Runtime job 1a1a718677e-fc05-2a1a 7fee905d48d66a2de1cc5b7e3128cac4.\n2026-11-04T07:15:01-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a718677e-fc05-2a1a.service: The kernel OOM killer killed some processes in this unit.\n2026-11-04T07:15:01-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a718677e-fc05-2a1a.service: Main process exited, code=exited, status=1/FAILURE\n2026-11-04T07:15:01-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a718677e-fc05-2a1a.service: Failed with result 'oom-kill'.\n2026-11-04T07:15:01-08:00 alex-G1628-04 systemd[2472]: hepta-runtime-job-1a1a718677e-fc05-2a1a.service: Consumed 16min 23.903s CPU time over 9min 3.238s wall clock time, 8G memory peak, 2.1G memory swap peak.\n",
+      "stderr": ""
+    },
+    {
+      "memory": [
+        "MemTotal:       25739556 kB",
+        "MemFree:         8216536 kB",
+        "MemAvailable:   16168336 kB",
+        "Buffers:          154000 kB",
+        "Cached:          3001276 kB",
+        "SwapCached:       104000 kB"
+      ]
+    },
+    {
+      "installed_source_root": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/production-media-term-candidate",
+      "exists": true
+    }
+  ],
+  "conclusion": "Lower Go soft memory target alone did not keep this complete Soong graph generation inside the 8GiB unit. No candidate engine or runtime pass is claimed."
+}
