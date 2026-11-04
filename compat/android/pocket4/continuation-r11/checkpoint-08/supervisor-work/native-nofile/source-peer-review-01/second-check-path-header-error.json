@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "scope": "local review-checker comparison only",
+  "returncode": 1,
+  "actual_readonly_objdump_audit_returncode": 0,
+  "worker_closure_qualified": true,
+  "failed_check": "raw whole-disassembly SHA equality after deliberately copying ELF to a different owned review path",
+  "cause": "objdump prints the input path in its first file-format header; all remaining bytes are identical",
+  "actual_disassembly_preserved": {
+    "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/reviews/nofile-owner-next01-review-01/worker-audit.disassembly.txt",
+    "bytes": 123837,
+    "sha256": "67d03a861bbadd16caaff3518ee7bea7cab26f077fb41a1a40d83d1dd94aab8b"
+  },
+  "original_disassembly": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/nofile-owner-next-01/local-build-01/worker-audit.disassembly.txt",
+    "bytes": 123821,
+    "sha256": "4d76ff5d14785ead923ea5f8f6f9283ac9febbbfc46d50f061035557ce7446c1"
+  },
+  "corrected_check": "replace the unique known copied-ELF path header only; every byte then equals the original full disassembly",
+  "source_changed": false,
+  "binary_executed": false
+}

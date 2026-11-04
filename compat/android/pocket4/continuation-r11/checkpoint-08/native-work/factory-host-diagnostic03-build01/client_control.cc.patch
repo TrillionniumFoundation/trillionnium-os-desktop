@@ -1,0 +1,103 @@
+--- host02/client_control.cc
++++ host03/client_control.cc
+@@ -9,7 +9,10 @@
+ #include <dirent.h>
+ #include <errno.h>
+ #include <fcntl.h>
++#include <linux/capability.h>
+ #include <linux/magic.h>
++#include <linux/nsfs.h>
++#include <sys/ioctl.h>
+ #include <linux/memfd.h>
+ #include <poll.h>
+ #include <stdint.h>
+@@ -66,8 +69,61 @@
+  bool projected_libc=false,guest_copy=false,errno_preserved=false,bionic_branch=false;
+  uint64_t elapsed_ns=0,raw_flags=0,libc_flags=0,bionic_flags=0;
+  char raw_bytes[241]{},libc_bytes[241]{},bionic_bytes[241]{};
++ char namespace_diagnostic[4096]="null";
+  bool Fail(int s,int e){stage=s;error=e;return false;}
+ };
++
++// Failure-only observations of this owned client's existing credentials and
++// the exact namespace syscalls. No credential, policy, namespace or guard change.
++void DiagnoseInitialNamespace(Result* r) {
++ const int primary_errno=errno;
++ uid_t real=static_cast<uid_t>(-1),effective=real,saved=real;
++ gid_t greal=static_cast<gid_t>(-1),geffective=greal,gsaved=greal;
++ errno=0;const int uid_rc=getresuid(&real,&effective,&saved);const int uid_errno=uid_rc<0?errno:0;
++ errno=0;const int gid_rc=getresgid(&greal,&geffective,&gsaved);const int gid_errno=gid_rc<0?errno:0;
++ errno=0;const long fsuid=syscall(SYS_setfsuid,static_cast<uid_t>(-1));const int fsuid_errno=errno;
++ errno=0;const long fsgid=syscall(SYS_setfsgid,static_cast<gid_t>(-1));const int fsgid_errno=errno;
++ struct __user_cap_header_struct header{_LINUX_CAPABILITY_VERSION_3,0};
++ struct __user_cap_data_struct caps[2]{};
++ errno=0;const long cap_rc=syscall(SYS_capget,&header,caps);const int cap_errno=cap_rc<0?errno:0;
++ errno=0;const long dumpable=syscall(SYS_prctl,3,0,0,0,0);const int dump_errno=dumpable<0?errno:0;
++ errno=0;const long seccomp=syscall(SYS_prctl,21,0,0,0,0);const int seccomp_errno=seccomp<0?errno:0;
++ errno=0;const long nnp=syscall(SYS_prctl,39,0,0,0,0);const int nnp_errno=nnp<0?errno:0;
++ errno=0;const long securebits=syscall(SYS_prctl,27,0,0,0,0);const int securebits_errno=securebits<0?errno:0;
++ const long tid=syscall(SYS_gettid);
++ errno=0;Fd self(static_cast<int>(syscall(SYS_pidfd_open,tid,O_EXCL)));
++ const int pidfd_errno=self.get()<0?errno:0;
++ int ns_errno=0,stat_rc=-99,stat_errno=0,fs_rc=-99,fs_errno=0,kind=-99,kind_errno=0;
++ Fd ns;struct stat info{};struct statfs fs{};
++ if(self.get()>=0){errno=0;ns.reset(ioctl(self.get(),_IO(0xff,9),0));ns_errno=ns.get()<0?errno:0;}
++ if(ns.get()>=0){
++  errno=0;stat_rc=fstat(ns.get(),&info);stat_errno=stat_rc<0?errno:0;
++  errno=0;fs_rc=fstatfs(ns.get(),&fs);fs_errno=fs_rc<0?errno:0;
++  errno=0;kind=ioctl(ns.get(),NS_GET_NSTYPE,0);kind_errno=kind<0?errno:0;
++ }
++ const int n=snprintf(r->namespace_diagnostic,sizeof(r->namespace_diagnostic),
++  "{\"observed_after_original_guard_failure\":true,\"primary_errno\":%d,"
++  "\"getresuid\":{\"rc\":%d,\"errno\":%d,\"real\":%u,\"effective\":%u,\"saved\":%u},"
++  "\"getresgid\":{\"rc\":%d,\"errno\":%d,\"real\":%u,\"effective\":%u,\"saved\":%u},"
++  "\"fsuid\":%ld,\"fsuid_errno\":%d,\"fsgid\":%ld,\"fsgid_errno\":%d,"
++  "\"capget\":{\"rc\":%ld,\"errno\":%d,\"effective\":[%u,%u],\"permitted\":[%u,%u],\"inheritable\":[%u,%u]},"
++  "\"dumpable\":%ld,\"dumpable_errno\":%d,\"seccomp\":%ld,\"seccomp_errno\":%d,"
++  "\"no_new_privs\":%ld,\"no_new_privs_errno\":%d,\"securebits\":%ld,\"securebits_errno\":%d,"
++  "\"tid\":%ld,\"pidfd_thread\":%d,\"pidfd_errno\":%d,\"userns_fd\":%d,\"userns_errno\":%d,"
++  "\"fstat_rc\":%d,\"fstat_errno\":%d,\"fstatfs_rc\":%d,\"fstatfs_errno\":%d,"
++  "\"namespace_type\":%d,\"namespace_type_errno\":%d,\"namespace_device\":%llu,\"namespace_inode\":%llu,\"namespace_fs_type\":%llu}",
++  primary_errno,uid_rc,uid_errno,real,effective,saved,gid_rc,gid_errno,greal,geffective,gsaved,
++  fsuid,fsuid_errno,fsgid,fsgid_errno,cap_rc,cap_errno,
++  caps[0].effective,caps[1].effective,caps[0].permitted,caps[1].permitted,caps[0].inheritable,caps[1].inheritable,
++  dumpable,dump_errno,seccomp,seccomp_errno,nnp,nnp_errno,securebits,securebits_errno,
++  tid,self.get(),pidfd_errno,ns.get(),ns_errno,stat_rc,stat_errno,fs_rc,fs_errno,kind,kind_errno,
++  static_cast<unsigned long long>(info.st_dev),static_cast<unsigned long long>(info.st_ino),
++  static_cast<unsigned long long>(fs.f_type));
++ if(n<0||static_cast<size_t>(n)>=sizeof(r->namespace_diagnostic))
++  strcpy(r->namespace_diagnostic,"{\"diagnostic_error\":\"bounded_format_failure\"}");
++ errno=primary_errno;
++}
++
+ int Connect(){Fd s(socket(AF_UNIX,SOCK_SEQPACKET|SOCK_CLOEXEC,0));if(s.get()<0)return -1;
+  timeval timeout{4,0};if(setsockopt(s.get(),SOL_SOCKET,SO_SNDTIMEO,&timeout,sizeof(timeout))<0||
+  setsockopt(s.get(),SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(timeout))<0)return -1;
+@@ -179,7 +235,8 @@
+  const char* name=r->name;r->uid=static_cast<int>(getuid());r->gid=static_cast<int>(getgid());
+  r->visible_tgid=getpid();
+  if((getuid()!=kClientUid&&getuid()!=kDeniedUid)||getgid()!=getuid()||
+-  p::RequireUnprivilegedInitialNamespace(p::kCandidateConfiguration)<0)return r->Fail(1,errno?errno:EPERM);
++  p::RequireUnprivilegedInitialNamespace(p::kCandidateConfiguration)<0){
++  const int original_error=errno?errno:EPERM;DiagnoseInitialNamespace(r);return r->Fail(1,original_error);}
+  Fd source(open(!strcmp(name,"wrong_source")?"/proc/self/status":"/proc/self/maps",O_RDONLY|O_CLOEXEC));
+  if(source.get()<0)return r->Fail(2,errno);
+  if(!strcmp(name,"create_snapshot")||!strcmp(name,"bad_reply")){
+@@ -233,7 +290,7 @@
+  "\"source_metadata\":%s,\"query_virtual\":%s,\"projected_stat\":%s,\"projected_raw\":%s,"
+  "\"projected_libc\":%s,\"guest_copy\":%s,\"errno_preserved\":%s,\"bionic_branch_fixture\":%s,"
+  "\"bionic_api_executed\":false,\"elapsed_ns\":%llu,\"raw_flags\":%llu,\"libc_flags\":%llu,\"bionic_flags\":%llu,"
+- "\"raw120\":\"%s\",\"libc120\":\"%s\",\"bionic_branch120\":\"%s\"}\n",
++ "\"raw120\":\"%s\",\"libc120\":\"%s\",\"bionic_branch120\":\"%s\",\"namespace_diagnostic\":%s}\n",
+  r.name,r.pass?"true":"false",r.stage,r.error,r.uid,r.gid,r.visible_tgid,r.start,r.stop,r.rights,r.reply_error,
+  r.fd_before,r.fd_after,r.request_sent?"true":"false",r.wire_valid?"true":"false",r.input_observed?"true":"false",r.new_inode?"true":"false",
+  r.root_inode?"true":"false",r.sealed?"true":"false",r.input_unchanged?"true":"false",r.payload_equal?"true":"false",
+@@ -242,7 +299,7 @@
+  r.errno_preserved?"true":"false",r.bionic_branch?"true":"false",
+  static_cast<unsigned long long>(r.elapsed_ns),static_cast<unsigned long long>(r.raw_flags),
+  static_cast<unsigned long long>(r.libc_flags),static_cast<unsigned long long>(r.bionic_flags),
+- r.raw_bytes,r.libc_bytes,r.bionic_bytes);fflush(stdout);
++ r.raw_bytes,r.libc_bytes,r.bionic_bytes,r.namespace_diagnostic);fflush(stdout);
+ }
+ }
+ int main(int argc,char** argv){

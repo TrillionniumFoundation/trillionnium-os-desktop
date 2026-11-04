@@ -1,0 +1,149 @@
+{
+  "schema": 1,
+  "scope": "independent local binding verification before any normal02 preflight or runtime; not a live admission",
+  "verdict": "EXACT_BINDINGS_CONSISTENT_NO_NEW_MISMATCH",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-normal-admission-02/normal-plan.json",
+      "bytes": 7258,
+      "sha256": "cc003f5e6bbb54e1c8a8cd86a78a50b65ee7598ac37992f64b5f89a32923a41f"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-normal-admission-02/execute-request.json",
+      "bytes": 728,
+      "sha256": "e64fe8b69084c380fe3aef34aaba759da97b6b5a1fdbb7e2c7d6f309c3d2ed9f"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-normal-admission-02/stage-request.json",
+      "bytes": 21153,
+      "sha256": "718a25e55be95e63d76e87e0020d66a38768e27ea9c13ef6b8a828cd6054158d"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-normal-admission-02/manifest.json",
+      "bytes": 1633,
+      "sha256": "3c7826416f2f964947a054bcac0ba588614c4c1c09f71b1c9f1cd7fc482bd530"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-prepare-02/build-result.json",
+      "bytes": 10261,
+      "sha256": "767207e9c5e86321a57a27f62126da6f18b95a758c5f025b8c44287af5165c76"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-prepare-01/build-result.json",
+      "bytes": 11910,
+      "sha256": "1e70d9df93309ff5be991f0a20e4b5b4493e57a0b64fcc3881075e652a5ae712"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-normal-admission-01/normal-plan.json",
+      "bytes": 7258,
+      "sha256": "dd9c420ae36678e3dc6fc4cbac4b08730a133a6b4b37ae11496c6f4b46babaef"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-normal-preflight-01/preflight-result.json",
+      "bytes": 2454,
+      "sha256": "0b29fe07377483c57406145b838e38a3854a64276a09e16ac9aa4bd5fddb35ad"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-main-fence-diagnostic-01/result.json",
+      "bytes": 3419,
+      "sha256": "04bd2b638f389e850eb8ab15fa5f3701de20cb0e013b472a8dca4470ccf34f0a"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/factory-host-runtime-01/runtime-result.json",
+      "bytes": 16054,
+      "sha256": "b91c34d11b134965d6b4fd69df4eca5d2dbcc07637c3d372f934934bcf849faf"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/launch-source-reference-05/read-result.json",
+      "bytes": 3548,
+      "sha256": "bf316b27302e7fcf3c5be35d98e6f23aea5103733e3c91dc8681ef4063ddc8e0"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-submitted-02/source/prefix_coordinator.py",
+      "bytes": 40434,
+      "sha256": "7b257af1c0b5493ff0a28528146a5ccad96a38bc190402ef1524644a27b9d2e0"
+    }
+  ],
+  "checks": {
+    "exact_execute_argv": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/prefix_coordinator.py",
+      "--execute",
+      "--plan",
+      "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/normal-plan-02.json",
+      "--plan-sha256",
+      "cc003f5e6bbb54e1c8a8cd86a78a50b65ee7598ac37992f64b5f89a32923a41f"
+    ],
+    "outer_resources": {
+      "cpu_quota_percent": 25,
+      "memory_max_bytes": 134217728,
+      "nice": 10,
+      "timeout_seconds": 120
+    },
+    "idempotency_key": "p4-prefix02-normal02-cc003f5e6bbb54e1",
+    "normal_only_no_predecessor": true,
+    "exact_names_from_frozen_pure_names_function": {
+      "namespace": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f",
+      "leaf": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal",
+      "unit": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service",
+      "group": "/system.slice/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service",
+      "evidence": "/home/alex/work/pocket4-relay-prefix-r11-owned/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal",
+      "description": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal nonce=d5ac0c8b6b3250e8ab02a33f1d04fe9ea64f3a32667325dff1827499ba77336a owned-host-prefix-no-android"
+    },
+    "old_and_new_names_disjoint": true,
+    "actor_once_claim": "/home/alex/work/pocket4-relay-prefix-r11-owned/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal/once.claim.json",
+    "coordinator_once_claim": "/home/alex/work/pocket4-relay-prefix-r11-owned/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal/coordinator-claim.json",
+    "runtime_limits": {
+      "cpu.max": "100000 100000",
+      "memory.max": "268435456",
+      "memory.swap.max": "0",
+      "pids.max": "32"
+    },
+    "required_unit_properties_present_once": [
+      "--property=Restart=no",
+      "--property=RemainAfterExit=yes",
+      "--property=RuntimeMaxSec=60",
+      "--property=TimeoutStopSec=8",
+      "--property=KillMode=control-group",
+      "--property=OOMPolicy=stop",
+      "--property=CPUQuota=100%",
+      "--property=CPUQuotaPeriodSec=100ms",
+      "--property=MemoryMax=256M",
+      "--property=MemorySwapMax=0",
+      "--property=TasksMax=32"
+    ],
+    "actual_matching_source_pins_match_plan": true,
+    "original_probe_receipt_and_same_object_reuse": {
+      "bytes": 21752,
+      "device": 66306,
+      "gid": 0,
+      "inode": 34481448,
+      "mode": 448,
+      "path": "/home/alex/work/pocket4-relay-prefix-r11-source-05-01/bin/prefix-probe",
+      "sha256": "79b30f9fa4a1e7635ae4786a50372b3fcaa84ad619269476e40a1badd65c0e82",
+      "uid": 0
+    },
+    "new_native_controls": 0,
+    "original_native_controls_referenced": 6,
+    "all_seven_Main_identities_and_daemon_resources_artifacts_unchanged_from_old_plan": true,
+    "canonical_framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "four_framework_identities_match_retained_actual_factory_receipt": true,
+    "system_server_identity_matches_retained_actual_PIDFD_diagnostic": true,
+    "five_tool_pins_match_retained_actual_readonly_receipt": true,
+    "original_failed_preflight_bytes_unchanged": true
+  },
+  "local_execution": "JSON/AST/integrity checks and isolated pure names(plan) function only; no coordinator/module main or runtime function called",
+  "limits": [
+    "This validates historical fixed pins and complete source-to-plan binding. It is not a current live Main/target-freshness check. The new plan --check must actually pass before runtime admission.",
+    "Runtime admission remains separate; no runtime, Android, installed supervisor, init constructor, LMKD or app qualification.",
+    "Original normal01 failure is preserved. The new source revision does not convert it to success."
+  ],
+  "remote_calls": 0,
+  "normal02_preflight_submitted": false,
+  "normal02_runtime_submitted": false,
+  "frozen_source_modified": false,
+  "production_ready": false
+}

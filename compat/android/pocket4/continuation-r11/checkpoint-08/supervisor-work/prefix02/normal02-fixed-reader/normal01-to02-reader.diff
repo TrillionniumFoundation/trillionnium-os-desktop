@@ -1,0 +1,29 @@
+--- normal01/read-normal-evidence.py
++++ normal02/read-normal-evidence.py
+@@ -6,12 +6,12 @@
+ import re
+ import stat
+ 
+-SOURCE_ROOT = "/home/alex/work/pocket4-relay-prefix-r11-source-05-01"
++SOURCE_ROOT = "/home/alex/work/pocket4-relay-prefix-r11-source-05-02"
+ BASE = "/home/alex/work/pocket4-relay-prefix-r11-owned"
+-LEAF = "p4-relay-prefix-5dcff218dbef5869c213de3c-normal"
+-NAMESPACE = "p4-relay-prefix-5dcff218dbef5869c213de3c"
+-NONCE = "5dcff218dbef5869c213de3c4bcf475ff76111794ac3bb302fac2d73d396f2be"
+-PLAN_SHA = "dd9c420ae36678e3dc6fc4cbac4b08730a133a6b4b37ae11496c6f4b46babaef"
++LEAF = "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal"
++NAMESPACE = "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f"
++NONCE = "d5ac0c8b6b3250e8ab02a33f1d04fe9ea64f3a32667325dff1827499ba77336a"
++PLAN_SHA = "cc003f5e6bbb54e1c8a8cd86a78a50b65ee7598ac37992f64b5f89a32923a41f"
+ MEMBERS = ("coordinator-result.json", "prefix-result.json", "coordinator-claim.json", "once.claim.json",
+            "actor-input.json", "actor-admission.json", "namespace-created.json", "unit-first-observation.json")
+ 
+@@ -73,7 +73,7 @@
+           "qualification_performed_by_reader": False, "files": [], "missing": []}
+ try:
+     source = directory(SOURCE_ROOT); handles.append(source)
+-    plan_row, plan = read_member(source, "normal-plan-01.json")
++    plan_row, plan = read_member(source, "normal-plan-02.json")
+     need(plan_row["sha256"] == PLAN_SHA and plan["nonce"] == NONCE and plan["mode"] == "normal"
+          and plan["scope"] == "OWNED_HOST_PREFIX_ONLY_NO_ANDROID" and plan["predecessor"] is None,
+          "fixed externally admitted normal plan differs")

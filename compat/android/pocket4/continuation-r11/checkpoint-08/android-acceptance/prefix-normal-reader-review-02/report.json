@@ -1,0 +1,57 @@
+{
+  "Android_or_Main_actions": 0,
+  "Hepta_calls": 0,
+  "check_source": {
+    "bytes": 4456,
+    "path": "/workspace/scratch/94990735b266/android-cp06/prefix-normal-reader-review-02/check_bindings.py",
+    "sha256": "e79c392fede78250ec0a42b2f5f70c165d49e88cfb17bec33d55ee2b379a6e6d"
+  },
+  "checks": {
+    "bytes": 3190,
+    "path": "/workspace/scratch/94990735b266/android-cp06/prefix-normal-reader-review-02/binding-checks.json",
+    "sha256": "b784df1ab2523915f89b841f09c9dfb73a7299dbea97cc7aa00fa9628c1cb5d6"
+  },
+  "findings": [],
+  "manifest": {
+    "bytes": 646,
+    "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-normal-readback-02/manifest.json",
+    "sha256": "c740679364d64d204d11bbf0c4a6d81c6626ebbe66680d25b3ae441db2045055"
+  },
+  "namespace_or_unit_actions": 0,
+  "new_confirmed_blocker_found": false,
+  "new_plan": {
+    "bytes": 7258,
+    "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-normal-admission-02/normal-plan.json",
+    "sha256": "cc003f5e6bbb54e1c8a8cd86a78a50b65ee7598ac37992f64b5f89a32923a41f"
+  },
+  "observations": [
+    "All four new manifest payload pins match. The full 6632-byte reader was read. Applying exactly five explicit replacement pairs (six occurrences) to the old c3d847 source reproduces every byte of new bf4b311 source, and the stored diff is exact.",
+    "The new 64-hex nonce equals the actual normal02 plan. Namespace equals p4-relay-prefix- plus its first24 hex characters; leaf appends -normal. PLAN_SHA equals the exact cc003f5e plan bytes; source root matches actor/coordinator source paths and the reader selects normal-plan-02.json.",
+    "The eight fixed members, per-file/aggregate/envelope bounds, external result hash or explicit missing mode, claims/nonce/source checks, nofollow opens and finally descriptor closure are byte-identical to the prior reviewed source.",
+    "The source compiles in memory without import/execution. The prior review receipt71c863 remains unchanged. No root-private device evidence or runtime result was read by this review."
+  ],
+  "old_source": {
+    "bytes": 6632,
+    "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-normal-readback-01/read-normal-evidence.py",
+    "sha256": "c3d8476dddcc8edd86987469727685ffeb74cfde0c4756a04ca39e2b532e11c4"
+  },
+  "prior_review": {
+    "bytes": 3491,
+    "path": "/workspace/scratch/94990735b266/android-cp06/prefix-normal-reader-review-01/report.json",
+    "sha256": "71c8636cd18a49c5f0746c318d6e18cc25bdad2d9267fc01562ebb5e48846dd7"
+  },
+  "production_ready": false,
+  "reader_executed": false,
+  "retained_limitations": [
+    "Exit0 collects bounded evidence only, including failed or incomplete producer evidence. The reader always reports qualification_performed_by_reader=false; a caller must independently qualify required producer records.",
+    "Missing mode is an observation at lookup/read time, not an atomic multi-file terminal snapshot or proof that a result cannot appear later.",
+    "This review establishes only source/plan rebinding. It does not establish runtime dispatch, producer success, process cleanup, namespace retirement or Android readiness."
+  ],
+  "reviewed_source": {
+    "bytes": 6632,
+    "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix-normal-readback-02/read-normal-evidence.py",
+    "sha256": "bf4b311e5e33e3ff2fdb2c984858183c713f6001b4a04c97b84faa2989f49ea9"
+  },
+  "schema": 1,
+  "scope": "Independent readonly literal-rebinding review of fixed normal02 evidence reader; reader never executed"
+}

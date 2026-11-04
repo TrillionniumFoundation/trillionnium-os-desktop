@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "stage": "local additive allowlist generation",
+  "first_attempt_result": "AssertionError before allowlist write",
+  "cause": "The inline expected hash literal for the prior 33-file allowlist omitted its embedded digit 5 (ebec instead of eb5ec).",
+  "prior_actual_sha256": "05119ca055abf6866175dd2847e548d03e323709e8501c015b05eb5ec61e5f2a",
+  "old_files_modified": false,
+  "candidate_sources_or_device_changed": false,
+  "readme_created_before_assertion": true,
+  "resolution": "Recheck original prior SHA; preserve the new README and regenerate only the still-absent allowlist."
+}

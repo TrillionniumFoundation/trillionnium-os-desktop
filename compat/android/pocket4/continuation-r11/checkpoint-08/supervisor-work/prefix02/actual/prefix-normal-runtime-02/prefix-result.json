@@ -1,0 +1,196 @@
+{
+  "schema": 1,
+  "scope": "OWNED_HOST_PREFIX_ONLY_NO_ANDROID",
+  "mode": "normal",
+  "nonce": "d5ac0c8b6b3250e8ab02a33f1d04fe9ea64f3a32667325dff1827499ba77336a",
+  "Android_operations": 0,
+  "production_ready": false,
+  "success": true,
+  "actual_Rust_Owner_executed": false,
+  "declared_prefix_standin": true,
+  "actual_prefix": {
+    "nonce": "d5ac0c8b6b3250e8ab02a33f1d04fe9ea64f3a32667325dff1827499ba77336a",
+    "scope": "OWNED_HOST_PREFIX_ONLY_NO_ANDROID",
+    "prefix": [
+      "/usr/bin/ip",
+      "netns",
+      "exec",
+      "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f",
+      "/usr/bin/unshare",
+      "--mount",
+      "--pid",
+      "--mount-proc",
+      "--ipc",
+      "--uts",
+      "--fork",
+      "--kill-child=TERM",
+      "--propagation=private",
+      "/proc/self/fd/201",
+      "development-enter",
+      "--spec",
+      "/home/alex/work/pocket4-relay-prefix-r11-owned/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal/actor-input.json"
+    ],
+    "controller_pid": 680265,
+    "owner": {
+      "pid": 680266,
+      "birth": 85860941,
+      "parent": 680265,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "gids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "nspid": [
+        680266
+      ],
+      "cmdline": [
+        "/usr/bin/unshare",
+        "--mount",
+        "--pid",
+        "--mount-proc",
+        "--ipc",
+        "--uts",
+        "--fork",
+        "--kill-child=TERM",
+        "--propagation=private",
+        "/proc/self/fd/201",
+        "development-enter",
+        "--spec",
+        "/home/alex/work/pocket4-relay-prefix-r11-owned/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal/actor-input.json"
+      ],
+      "cgroup": [
+        "0::/system.slice/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service"
+      ]
+    },
+    "private_pid1": {
+      "pid": 680267,
+      "birth": 85860941,
+      "parent": 680266,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "gids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "nspid": [
+        680267,
+        1
+      ],
+      "cmdline": [
+        "/proc/self/fd/201",
+        "development-enter",
+        "--spec",
+        "/home/alex/work/pocket4-relay-prefix-r11-owned/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal/actor-input.json"
+      ],
+      "cgroup": [
+        "0::/system.slice/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service"
+      ]
+    },
+    "fixed_FD_observation": [
+      66306,
+      34605715,
+      66306,
+      34481448,
+      9,
+      1,
+      0
+    ],
+    "inherited_owner_pidfd_matches_exact_child": true,
+    "namespace_identity": {
+      "pid": [
+        5,
+        4026533864
+      ],
+      "pid_for_children": [
+        5,
+        4026533864
+      ],
+      "mnt": [
+        5,
+        4026533859
+      ],
+      "cgroup": [
+        5,
+        4026531835
+      ],
+      "user": [
+        5,
+        4026531837
+      ],
+      "net": [
+        5,
+        4026533063
+      ],
+      "ipc": [
+        5,
+        4026533861
+      ],
+      "uts": [
+        5,
+        4026533860
+      ],
+      "time": [
+        5,
+        4026531834
+      ],
+      "time_for_children": [
+        5,
+        4026531834
+      ]
+    },
+    "probe_start_monotonic_ms": 858609417,
+    "probe_lifetime_ms": 15000
+  },
+  "terminal": {
+    "normal_exit": true,
+    "next_exec_no_fixed_FDs": true
+  },
+  "outer_final": {
+    "nonce": "d5ac0c8b6b3250e8ab02a33f1d04fe9ea64f3a32667325dff1827499ba77336a",
+    "actor_pid": 680262,
+    "unit": {
+      "cgroup": "/system.slice/p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service",
+      "cgroup_identity": [
+        30,
+        28595119
+      ],
+      "invocation": "4a6da1fb975e4446a35a512c339e9658",
+      "limits": {
+        "cpu.max": "100000 100000",
+        "memory.max": "268435456",
+        "memory.swap.max": "0",
+        "pids.max": "32"
+      },
+      "name": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service"
+    },
+    "counters": {
+      "cgroup.procs": "680262",
+      "cgroup.events": "populated 1\nfrozen 0",
+      "pids.current": "1",
+      "memory.current": "14426112",
+      "memory.peak": "27275264",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.current": "0",
+      "memory.max": "268435456",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "32"
+    },
+    "sole_remaining_actor": true,
+    "sampled_before_unit_exit": true
+  },
+  "external_exact_unit_and_netns_retirement_required": true
+}

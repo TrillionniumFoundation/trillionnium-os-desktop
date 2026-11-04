@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "original_harness_exit_code": 1,
+  "candidate_suite_returncode": 0,
+  "candidate_tests_passed": 27,
+  "baseline_control_returncode": 1,
+  "baseline_tests_failed": 2,
+  "harness_expected_failed_count": 1,
+  "reason": "The negative nonempty-argument control also asserted the new padding presentation, so the old implementation correctly failed both assertions. No runtime source failure was found; next test revision will focus the negative solely on preserving nonempty change and keeping the original identity comparison unequal.",
+  "outputs_preserved": true,
+  "source_before_control_adjustment": [
+    {
+      "path": "full_prefix_control.py",
+      "bytes": 30605,
+      "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+    },
+    {
+      "path": "main-cmdline-actual-diagnostic.json",
+      "bytes": 3419,
+      "sha256": "04bd2b638f389e850eb8ab15fa5f3701de20cb0e013b472a8dca4470ccf34f0a"
+    },
+    {
+      "path": "prefix_coordinator.py",
+      "bytes": 40434,
+      "sha256": "7b257af1c0b5493ff0a28528146a5ccad96a38bc190402ef1524644a27b9d2e0"
+    },
+    {
+      "path": "prefix_probe.c",
+      "bytes": 9662,
+      "sha256": "d088edf44d523a67e2881ce6c0715a4885664f11c5315938e04f52738c43a34a"
+    },
+    {
+      "path": "test_prefix_control.py",
+      "bytes": 8284,
+      "sha256": "ae1cbf8f7c74afb4b32ffaefc1674e5635777f66833ba7adaf5c4b1f86a4d887"
+    },
+    {
+      "path": "test_prefix_coordinator.py",
+      "bytes": 13419,
+      "sha256": "138d8c6d3802a4b96564e13347b8978f91d7433ba6f387f760209c4f2786731b"
+    }
+  ]
+}

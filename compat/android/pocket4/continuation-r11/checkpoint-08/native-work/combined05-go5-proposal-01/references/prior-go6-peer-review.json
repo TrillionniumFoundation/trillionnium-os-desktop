@@ -1,0 +1,30 @@
+{
+  "scope": "read-only exact patch and cached builder control-flow review",
+  "files": {
+    "signal-build-memory-r1/0008-soong-leaf-go-memory-budget.preimage.patch": "f2070410f9d2a37f6b67ebabcb1c0db3da7341dfc3a61ca3a0392fc3343727bb",
+    "signal-build-memory-r1/0008-soong-leaf-go-memory-budget.patch": "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e",
+    "pocket4-build-recovery-reference-r11-01/1-main.rs": "7a17d5b3fbf067efad68022595009a59b381041c769b85c9c36b967ea635ff61",
+    "pocket4-build-recovery-reference-r11-01/0-android.rs": "fa6f6a995a1cedf17c342ac900df34d1742d6177651af4db6d3c44e6f5478958"
+  },
+  "only_change": "0008 invocationEnv[GOMEMLIMIT] 10GiB -> 6GiB",
+  "static_review": "NO_NEW_BLOCKER",
+  "qualification_preserved_conditionally": true,
+  "reason": [
+    "Patch applies only at existing leaf_go_memory_mode branch; no selected targets or module/dependency validation code changed.",
+    "Main acquires both existing build/source locks before recovering interrupted source projection and dispatching native engine target closure.",
+    "Projection.patch performs git apply --check, journals touched original files, applies, and records the patch hash.",
+    "engine_build_inputs consumes effective source/patch inventory before bootstrap and writes new pinned inputs."
+  ],
+  "required_execution_evidence": [
+    "New full builder source copy inventory differs in exactly this patch.",
+    "Pinned builder ELF remains identical; --source selects that new copy.",
+    "Normal existing locks and recovery path used; no manual unlock/bypass.",
+    "Fresh build input/receipt reflects 6GiB patch hash, followed by complete artifact and tests."
+  ],
+  "not_claimed": [
+    "Remote new copy not yet reviewed",
+    "Build completion or runtime qualification",
+    "Bit-identical output or lower peak RSS guaranteed",
+    "Production readiness from a successful engine-only build"
+  ]
+}

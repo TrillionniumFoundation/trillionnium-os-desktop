@@ -1,0 +1,49 @@
+{
+  "schema": 1,
+  "actual_preparation_path": "/workspace/scratch/94990735b266/native-new-env-01/go5-actual-preparation-01/preparation.json",
+  "actual_preparation_sha256": "7d68c1ce0bf7cac8eebea87db10aed55355ef22470de5b406cd0fb3a49581cb8",
+  "candidate05_manifest_sha256": "4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba",
+  "bindings": {
+    "proc_maps_raw_metadata_owner.cc": {
+      "R21_path": "/workspace/scratch/94990735b266/root-cp06/native-r21/source/actual/proc_maps_raw_metadata_owner.cc",
+      "R21_sha256": "489264a8fcb8e0607a671b78363970caf17f0bb4589b46c12e77329daf17b818",
+      "candidate05_actual_engine_input_sha256": "489264a8fcb8e0607a671b78363970caf17f0bb4589b46c12e77329daf17b818",
+      "entire_file_identical": true
+    },
+    "proc_maps_fd_owner.cc": {
+      "R21_path": "/workspace/scratch/94990735b266/root-cp06/native-r21/source/actual/proc_maps_fd_owner.cc",
+      "R21_sha256": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+      "candidate05_actual_engine_input_sha256": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+      "entire_file_identical": true
+    },
+    "proc_maps_provenance.cc": {
+      "R21_path": "/workspace/scratch/94990735b266/root-cp06/native-r21/source/actual/proc_maps_provenance.cc",
+      "R21_sha256": "7174470eb249ca7cb39cd7a32f42f722ea7465ed25e9a28a567b9ff477e0de25",
+      "candidate05_local_path": "/workspace/scratch/94990735b266/native-new-env-01/factory-v2-r2/engine-delta/proc_maps_provenance.cc",
+      "candidate05_actual_engine_input_sha256": "f4e6685f5b689d3b408dc6aa7723e36b2174e6e2545e743fbb5c5896f6142137",
+      "entire_file_identical": false,
+      "identical_functions": {
+        "int Fstatfs(": {
+          "bytes": 626,
+          "sha256": "50914ac0d5dbbc77e4d50855bb38a2cec4625918849bef104ab17f2c3218aa2f",
+          "identical": true
+        },
+        "int FstatfsKernel(": {
+          "bytes": 680,
+          "sha256": "4ed9636c38aad914130ca4b2d9ddc9214031417e4d0a7354d1c240f5b51bccfe",
+          "identical": true
+        },
+        "int FstatfsForGuest(": {
+          "bytes": 221,
+          "sha256": "99dcd9fba29fe16659ea714d2e751ca4a4e9a3c2247cba68e38d7e1782709356",
+          "identical": true
+        }
+      }
+    }
+  },
+  "first_descriptor_allocation_in_ReadPinned": "SYS_pidfd_open(request->caller_tid, O_EXCL)",
+  "second_descriptor_allocation": "SYS_pidfd_getfd(caller, request->fd, 0)",
+  "per_syscall_trace_from_R21_observed": false,
+  "production_source_changed": false,
+  "new_control_scope": "Fixed inherited-fd-table metadata mechanism; no application authority or virtual provenance validation."
+}

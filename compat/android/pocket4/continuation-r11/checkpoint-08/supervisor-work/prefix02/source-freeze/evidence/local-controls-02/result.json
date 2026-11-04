@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "scope": "ordinary local Python qualification controls with retained actual raw fixture; no device or namespace execution",
+  "source_before": {
+    "full_prefix_control.py": {
+      "bytes": 30605,
+      "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+    },
+    "main-cmdline-actual-diagnostic.json": {
+      "bytes": 3419,
+      "sha256": "04bd2b638f389e850eb8ab15fa5f3701de20cb0e013b472a8dca4470ccf34f0a"
+    },
+    "prefix_coordinator.py": {
+      "bytes": 40434,
+      "sha256": "7b257af1c0b5493ff0a28528146a5ccad96a38bc190402ef1524644a27b9d2e0"
+    },
+    "prefix_probe.c": {
+      "bytes": 9662,
+      "sha256": "d088edf44d523a67e2881ce6c0715a4885664f11c5315938e04f52738c43a34a"
+    },
+    "test_prefix_control.py": {
+      "bytes": 8284,
+      "sha256": "ae1cbf8f7c74afb4b32ffaefc1674e5635777f66833ba7adaf5c4b1f86a4d887"
+    },
+    "test_prefix_coordinator.py": {
+      "bytes": 13397,
+      "sha256": "e93843852ac45479d0daeefed0fe2fd474deaa87c3596c0e7203f7703bbd5248"
+    }
+  },
+  "source_after": {
+    "full_prefix_control.py": {
+      "bytes": 30605,
+      "sha256": "1432b761fbc289877465c0a167b7ff213cd9c87f0086495ddfeecf7b55e65745"
+    },
+    "main-cmdline-actual-diagnostic.json": {
+      "bytes": 3419,
+      "sha256": "04bd2b638f389e850eb8ab15fa5f3701de20cb0e013b472a8dca4470ccf34f0a"
+    },
+    "prefix_coordinator.py": {
+      "bytes": 40434,
+      "sha256": "7b257af1c0b5493ff0a28528146a5ccad96a38bc190402ef1524644a27b9d2e0"
+    },
+    "prefix_probe.c": {
+      "bytes": 9662,
+      "sha256": "d088edf44d523a67e2881ce6c0715a4885664f11c5315938e04f52738c43a34a"
+    },
+    "test_prefix_control.py": {
+      "bytes": 8284,
+      "sha256": "ae1cbf8f7c74afb4b32ffaefc1674e5635777f66833ba7adaf5c4b1f86a4d887"
+    },
+    "test_prefix_coordinator.py": {
+      "bytes": 13397,
+      "sha256": "e93843852ac45479d0daeefed0fe2fd474deaa87c3596c0e7203f7703bbd5248"
+    }
+  },
+  "commands": [
+    {
+      "label": "candidate27",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix02-work-01/source/test_prefix_coordinator.py"
+      ],
+      "returncode": 0,
+      "expected_returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "42eb937797dc3a640ddada797ff3270352084e1c123fb37821293fe886a20241",
+      "stdout_bytes": 0,
+      "stderr_bytes": 3721
+    },
+    {
+      "label": "old-capture2",
+      "argv": [
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix02-work-01/old-capture-negative-02/test_prefix_coordinator.py",
+        "MainCaptureCanonicalControls"
+      ],
+      "returncode": 1,
+      "expected_returncode": 1,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "631ec0de2502d68dc7e84c687dea311a5b6d57bb5e2eb86d700e767b80e05034",
+      "stdout_bytes": 0,
+      "stderr_bytes": 1257
+    }
+  ],
+  "candidate_coordinator_controls_passed": 27,
+  "old_capture_negative_actual_raw_failure_reproduced": true,
+  "old_capture_nonempty_arg_control_passed": true,
+  "actor_and_native_probe_source_unchanged": true,
+  "prior_unchanged_actor_16_and_native_6_actual_receipt_sha256": "1e70d9df93309ff5be991f0a20e4b5b4493e57a0b64fcc3881075e652a5ae712",
+  "root_runtime_started": false,
+  "Main_actions": 0,
+  "finished_utc": "2026-11-04T22:19:39.559564+00:00",
+  "success": true
+}

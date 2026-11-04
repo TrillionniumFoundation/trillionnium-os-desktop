@@ -1,0 +1,29 @@
+--- a/frozen-r21-audit_worker_binary.py
++++ b/audit_two_workers.py
+@@ -29,13 +29,14 @@
+         elif current is not None:
+             functions[current]["lines"].append(line)
+     workers = [address for address, body in functions.items()
+-               if body["name"].endswith("::Worker(void*)") and
++               if body["name"].endswith(("::Worker(void*)", "::InheritedWorker(void*)")) and
+                "berberis::proc_maps_provenance::raw_metadata_owner::" in body["name"]]
+     trampolines = [address for address, body in functions.items()
+                    if body["name"] == "berberis_proc_metadata_raw_clone_x86_64"]
+     errors = []
+-    if len(workers) != 1:
+-        errors.append("Exactly one named Worker entry is required; stripped or missing symbols fail.")
++    suffixes = ("::Worker(void*)", "::InheritedWorker(void*)")
++    if len(workers) != 2 or any(sum(functions[x]["name"].endswith(suffix) for x in workers) != 1 for suffix in suffixes):
++        errors.append("Exactly one persistent Worker and one InheritedWorker are required; missing symbols fail.")
+     if len(trampolines) != 1:
+         errors.append("Exactly one own clone trampoline is required.")
+     addresses = sorted(functions)
+@@ -94,7 +95,7 @@
+             errors.append("Trampoline must contain only the clone and fallback exit syscall sites.")
+         trampoline_info = {"name": body["name"], "syscall_sites": syscall_count,
+                            "indirect_fixed_entry_calls": indirect,
+-                           "source_binding_required": "Start's sole call passes Worker and null context."}
++                           "source_binding_required": "Start passes Worker/null; ReadInheritedAfterAllocationFailure passes only InheritedWorker/its retained Request. Review both actual clone call sites."}
+     report = {
+         "schema": 1,
+         "elf": str(elf),

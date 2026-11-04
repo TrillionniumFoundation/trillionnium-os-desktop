@@ -1,0 +1,10 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"audit_recorded\": true,\n  \"job\": {\n    \"args\": [\n      \"-I\",\n      \"-c\",\n      \"import sys,hashlib;raw=sys.stdin.buffer.read();expected='2c569853811e0f594a805c056b68794481edac6222524c190cc2ff2f35f6ccac';assert hashlib.sha256(raw).hexdigest()==expected;scope={'__name__':'__main__','__file__':'<verified-combined05-go4-controller>','VERIFIED_CONTROLLER_SHA256':expected};exec(compile(raw,'combined_build_go4.py','exec'),scope,scope)\",\n      \"--prepare\"\n    ],\n    \"created_unix_ms\": 1793831674917,\n    \"cwd\": \"/home/alex/work\",\n    \"env_keys\": [\n      \"PYTHONDONTWRITEBYTECODE\"\n    ],\n    \"executable\": \"/usr/bin/python3\",\n    \"execution_mode\": \"operator\",\n    \"host\": \"pocket4\",\n    \"id\": \"1a1a8b32425-fc05-2f81\",\n    \"idempotency_key\": \"pocket4-native-combined05-go4-full-source-preparation-01-20261104\",\n    \"launch_error\": null,\n    \"launch_state\": \"launched\",\n    \"remote_job_dir\": \"/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1a8b32425-fc05-2f81\",\n    \"request_digest\": \"f1f2002ae0f2ded3128722053a72743a0d31fc63dba7154685a0a7e2258f7468\",\n    \"request_fingerprint\": 17433997291667250899,\n    \"ssh_target\": \"hepta-pocket4\",\n    \"system_jobctl\": false,\n    \"unit\": \"hepta-runtime-job-1a1a8b32425-fc05-2f81\"\n  },\n  \"launch\": {\n    \"backend\": \"systemd\",\n    \"launcher_pid\": null,\n    \"ok\": true,\n    \"unit\": \"hepta-runtime-job-1a1a8b32425-fc05-2f81\"\n  },\n  \"local_record_pending\": false,\n  \"reused\": false\n}"
+    }
+  ],
+  "structuredContent": null,
+  "isError": false
+}

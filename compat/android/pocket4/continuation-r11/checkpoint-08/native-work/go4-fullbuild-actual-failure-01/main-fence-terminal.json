@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "state": "FAILED",
+  "error": "RuntimeError('inner full build failed')",
+  "inner_build_called": true,
+  "inner_returncode": 1,
+  "seconds": 762.8180658849888,
+  "main_fence_assessment": {
+    "main_fence_pass": true,
+    "identity_or_limit_changes": [],
+    "main_memory_event_deltas": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "main_oom_delta_zero": true,
+    "main_current_resource_deltas": {
+      "memory.current": -1216774144,
+      "memory.swap.current": 249143296,
+      "pids.current": 1
+    },
+    "pressure_counter_increases_observed": {},
+    "unobserved_transient_effects_excluded": false,
+    "causal_attribution_of_counter_changes": false,
+    "scope": "Only the pinned pre/post invariants and OOM deltas are gated; full interval absence of interference is not claimed."
+  },
+  "before_observed": true,
+  "after_observed": true,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "main_unchanged_not_inferred_from_actions": true,
+  "installed": false,
+  "production_ready": false
+}

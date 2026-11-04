@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "controller_exact_five_single_replacements": [
+    [
+      "pocket4-owned-factory-v2-host-build-02",
+      "pocket4-owned-factory-v2-host-build-03"
+    ],
+    [
+      "fd4a8d8a3b4b037bdf9ee72992cda69544ce8c94ea44e46696d028c0ad041142",
+      "be318dc96a7c32296c3a875a079e954665ed65acf2b4d574088b3bbce560e215"
+    ],
+    [
+      "838149e04b8672ab7ca262983d66c835fc7d7530efffee5cec6a6ed217b3afdf",
+      "7ff8f35ea0deba3870cac7471dc7f1d113821d528cdce133e1cb542c421ff789"
+    ],
+    [
+      "28d8c920222f0b4d13515bc229c4aafc93c305e27d600b5436b79bb318b5af96",
+      "883d3828e72b9d264d496134e38d9df9e557ce01610290a0b8b5e437d072c1cd"
+    ],
+    [
+      "337088",
+      "343280"
+    ]
+  ],
+  "remaining_controller_bytes_equal": true,
+  "stage_only_expected_digest_and_two_fresh_paths": true,
+  "request_changed_fields": [
+    "args",
+    "idempotency_key",
+    "stdin"
+  ],
+  "request_stdin_equals_controller": true,
+  "request_c_argument_equals_stage": true,
+  "in_memory_compile_only": true,
+  "frozen_payloads_verified": 5,
+  "actual_evidence_payloads_verified": 6,
+  "actual_terminal": {
+    "job_id": "1a1a8a67b70-fc05-2f5b",
+    "exit_code": 0,
+    "output_durable": true,
+    "output_complete": true,
+    "timed_out": false,
+    "cancelled": false
+  },
+  "build_report_full_sha_verified": true,
+  "actual_compile_link_audit_commands": 21,
+  "actual_report_input_count": 291,
+  "actual_report_MD_equality": true,
+  "actual_report_sources_unchanged": true,
+  "four_fixture_source_pins_match_current_frozen_diagnostic_sources": [
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/client_control.cc",
+      "bytes": 19946,
+      "sha256": "bcfbc01d02c089d01f8bcd34fb939655055b51611dfde7621e31747948c962fb"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/bionic_branch_view.cc",
+      "bytes": 784,
+      "sha256": "0eaf591282192e3675c44be6ad8ecb37441237082013cd8743b4f5d8ad664857"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/audit_worker_binary.py",
+      "bytes": 5841,
+      "sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-host-diagnostic03-build01/build_fixture.py",
+      "bytes": 13411,
+      "sha256": "856cc25f68bc6c782f15517e12aba7f88ae3a6db7de7d91999dfa2e57a14c4f7"
+    }
+  ],
+  "artifact_constants": {
+    "factory": [
+      "factory-v2-host",
+      "dcb8989f4ac2557a6c69bfaf8b9ec38527327703d3f8c501c934da35496dffdc",
+      134912
+    ],
+    "client": [
+      "factory-client-host",
+      "883d3828e72b9d264d496134e38d9df9e557ce01610290a0b8b5e437d072c1cd",
+      343280
+    ]
+  },
+  "worker_audit_full_sha_and_client_pin_match": true,
+  "no_remote_requests": true
+}

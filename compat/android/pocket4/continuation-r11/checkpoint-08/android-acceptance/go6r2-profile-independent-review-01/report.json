@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "state": "NARROW_SOURCE_AND_LOCAL_CONTROLS_REVIEW_PASS",
+  "reviewed_root": "/workspace/scratch/94990735b266/native-new-env-01/combined05-go6r2-profile-02",
+  "reviewed_manifest_sha256": "4918f3634e328caa0c359a38a6a8291f8d2686ce28459ad56e4c01b927f06490",
+  "scope": "Independent read-only review of the final Go6R2 profile02 delta, request generator and preparation packet; not a new full review of unchanged controller/cleanup code.",
+  "reviewed_files": {
+    "controller-original-go6-to-go6r2.patch": {
+      "bytes": 9600,
+      "sha256": "c14a14a7e511b829bbaf666c0e66de7ed11e3f14bfdff2f9dda6c6b142133bdc"
+    },
+    "fence-go4-to-go6r2.patch": {
+      "bytes": 1216,
+      "sha256": "675c927aab5bf6b98a8ccb4edcc3afeba45684aa81615ff85ff21727c76b64ed"
+    },
+    "request-generator-go4-to-go6r2.patch": {
+      "bytes": 10863,
+      "sha256": "441eabd2fe72b8a2f45ade5e7d21d00bf7c9aec417cd1b4c21bf06cc03b01407"
+    },
+    "combined_build_go6r2.py": {
+      "bytes": 38609,
+      "sha256": "714a9de0ac3615ff8a8439f6d808f1ea3e57bd13dad05f3e3cc1565281719a37"
+    },
+    "make_requests.py": {
+      "bytes": 10287,
+      "sha256": "74f47fee3f13ed109c308c5b2a98e9876e20fe56a8e55ef8c19b1df27b9f09b7"
+    },
+    "verify_profile.py": {
+      "bytes": 9754,
+      "sha256": "6911007770cbb8c5af07549e32e4a8474acf97b3a8a59e42f43848f67f16c08c"
+    },
+    "derive_profile.py": {
+      "bytes": 10125,
+      "sha256": "75ad2c6928c5176d16fa050aae1be945dd39736f198d9187240ef5d75941d9a5"
+    },
+    "local-controls.json": {
+      "bytes": 7543,
+      "sha256": "9ddb82f8ed0a611e620d986b199289934a4dd7b4028638453d0093a8af3e15bf"
+    },
+    "preserved-protocols.json": {
+      "bytes": 2622,
+      "sha256": "523e26b3030c07a1f4f832868d1fb42a313657a79f3ba3403859ffe06da2e0ef"
+    },
+    "REVIEW.md": {
+      "bytes": 6884,
+      "sha256": "2decdf5cadd6c8b97e5296ae00b66ad58b3b5696840482ccd42638df9bffb279"
+    },
+    "prepare-request-01/exact-request.json": {
+      "bytes": 41339,
+      "sha256": "a3304cba21d243543b46b1eaff7341a8b8d66fc0dfd77468d153b25a1d57cdcd"
+    }
+  },
+  "findings": [
+    {
+      "id": "unchanged-source-and-main",
+      "severity": "none",
+      "finding": "The complete original 449-row builder manifest is byte-identical to e7c225bd2842c260d9f4149aca3c4483ed31c569efb31068b6d787892bd17017. Its 583-byte Go6 patch remains 6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e. No builder source-row or patch-byte rewrite is introduced. The f909 Main snapshot is byte-identical."
+    },
+    {
+      "id": "resource-admission",
+      "severity": "none",
+      "finding": "Actual build reads fresh /proc/meminfo and requires MemAvailable >= 14 GiB and SwapFree >= 2 GiB before claim/build. Own limits remain 11 GiB RAM, 1 GiB swap, 200% CPU, two allowed CPUs and one builder job. The 3 GiB RAM / 1 GiB swap arithmetic difference is explicit; it does not reserve memory. Old failed attempts are not rewritten and a new root/key is used."
+    },
+    {
+      "id": "projection-and-recovery",
+      "severity": "none",
+      "finding": "The normal builder invocation and existing shared-source lock/journal recovery remain unchanged. The added artifact gate requires the entire actual applied patch map and actual Soong source hash to equal the pinned previous successful Go6 receipt, rejecting leftover Go4/Go5 projection. It does not delete the prior projection journal."
+    },
+    {
+      "id": "owned-oom-gate",
+      "severity": "none",
+      "finding": "The final memory.events observation is made while the controller still resides in its owned cgroup. Missing, malformed, duplicate or incomplete counters reject qualification; any nonzero oom_kill or oom_group_kill rejects even with builder exit0/artifacts. The original failure is preserved and raw counters remain in terminal. max and oom are retained observations, not required zero by this explicitly kill-based gate."
+    },
+    {
+      "id": "actual-input-and-fresh-request",
+      "severity": "none",
+      "finding": "Preparation request a3304cba21d243543b46b1eaff7341a8b8d66fc0dfd77468d153b25a1d57cdcd exactly equals generator output; stdin is the exact 714a9de0 controller and wrapper checks its SHA before --prepare. Actual build request generation still requires a new externally SHA-bound successful preparation and exact original 449-row manifest. Placeholder receipt rejects before actions."
+    }
+  ],
+  "independent_verification": {
+    "binding_checker": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/go6r2-profile-independent-review-01/check_bindings.py",
+      "sha256": "e55e2d05b71114580ffd23e27686b35b4f20e6ab9ea5661e2cff17e74b842722",
+      "returncode": 0
+    },
+    "binding_result": {
+      "path": "/workspace/scratch/94990735b266/android-cp06/go6r2-profile-independent-review-01/binding-checks.json",
+      "sha256": "02f58d0c5c0990c00bd380d2133355c8a73bdb036df807c2d72c141bf330fc9f",
+      "bytes": 3410
+    },
+    "all_18_payload_hashes_verified": true,
+    "all_three_complete_diffs_recomputed_equal": true,
+    "12_claimed_unchanged_functions_actual_source_bytes_verified": true,
+    "local_controls": {
+      "command": "python3 -I /workspace/scratch/94990735b266/native-new-env-01/combined05-go6r2-profile-02/verify_profile.py --output /workspace/scratch/94990735b266/android-cp06/go6r2-profile-independent-review-01/independent-local-controls.json",
+      "returncode": 0,
+      "count": 29,
+      "all_pass": true,
+      "result_sha256": "9ddb82f8ed0a611e620d986b199289934a4dd7b4028638453d0093a8af3e15bf",
+      "byte_identical_to_frozen_result": true
+    },
+    "actual_old_Go4_terminal_checked": "6abfe6c9e8eb448043b3040a735b1483a93b3bf365ef99441bb0d5c48a61186d",
+    "actual_old_Go4_oom_kill_rejected": true,
+    "memory_projection_and_new_preparation_controls_use_explicit_fixtures": true
+  },
+  "unperformed": [
+    "No Hepta or device calls",
+    "No preparation dispatch",
+    "No actual fresh memory/swap admission",
+    "No new full build or host suite",
+    "No Android or Main UI/actions",
+    "No Main deployment or production-readiness qualification"
+  ],
+  "limitations": [
+    "The 3 GiB admission difference is smaller than the prior 4 GiB profile and is not a reservation; availability may change after the check.",
+    "Prior 11+1 GiB success touched its limits and does not prove this new 925-file engine will fit.",
+    "Unchanged cleanup/projection protocols are verified for source identity in this delta review, not re-executed here.",
+    "The owned gate proves only its recorded cgroup OOM-kill counters; observed pre/post Main fences do not prove absence of transient pressure."
+  ],
+  "blocking_findings": [],
+  "source_changes_made": false,
+  "remote_mutations": 0,
+  "all_apps_production_ready": false
+}

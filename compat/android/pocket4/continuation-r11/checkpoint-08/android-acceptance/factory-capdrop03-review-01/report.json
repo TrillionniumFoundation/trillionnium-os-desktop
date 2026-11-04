@@ -1,0 +1,52 @@
+{
+  "Hepta_calls": 0,
+  "Main_or_Android_actions": 0,
+  "check_source": {
+    "bytes": 5113,
+    "path": "/workspace/scratch/94990735b266/android-cp06/factory-capdrop03-review-01/check_bindings.py",
+    "sha256": "d2c09d4896b58f5a22312018868f19126eaf6ed544b003055ab13c80c5369965"
+  },
+  "checks": [
+    "Frozen five payload hashes match. The controller is byte-identical to the provided work01 candidate e76e3533. The stored patch equals the actual old/new diff.",
+    "The capability helper only runs inside the uid-is-not-None client branch after setgroups([]), setresgid(uid,uid,uid), and setresuid(uid,uid,uid). It rechecks allowed numeric UID, exact real/effective/saved UID and GID, and empty supplementary groups before capset.",
+    "Capability ABI version3 (0x20080522), pid0/current task, two 32-bit records, effective/permitted/inheritable field order, pointer argument types and int return types match the local Linux UAPI header. Zero-initialized capset drops E/P/I; a subsequent capget requires all six words zero. Any error raises before ELF exec.",
+    "The helper opens no descriptors and does not send signals, change namespaces, alter the production permission guard or affect the root factory branch. All other controller AST is identical after removing only the two structures, four ctypes declarations, helper, and one call.",
+    "The original PDEATHSIG rearm after credentials, held parent-pidfd liveness check, sealed ELF exec and fresh-child ownership paths remain in their original order. The new operations occur before that existing rearm/check; failure still reaches the unchanged owned-child exception/exit path.",
+    "The complete 1052-byte stage changes only controller hash and fresh source/output03 paths. Request stdin equals the frozen controller; its -I -c payload equals the exact stage; argv selects only fresh runtime03. All remaining request fields equal runtime02, including 100% CPU, 512MiB, nice10, 180s.",
+    "Host03 build/audit/ELF pins, Main guards, UID collision preflight, namespace protocol, framing, descriptor retirement and output bounds are unchanged by this delta."
+  ],
+  "controller": {
+    "bytes": 45040,
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-capdrop03-runtime03-freeze-01/controller.py",
+    "sha256": "e76e35332951ba72e68bc59e7d4849ec05c06233c5db95d8d50d74ecfefe0628"
+  },
+  "findings": [],
+  "limitations": [
+    "This is a delta review, not a new independent qualification of every unchanged controller failure path or all process descendants.",
+    "No controller import/execution, capset, setuid, namespace, service, host factory/client run or Hepta call was performed by this review. Compile checks do not establish successful credential migration.",
+    "The parent-reported control02 failed while seeding a capability in the old control because this local environment has an empty permitted/bounding set. The frozen scope records LOCAL_CAPABILITY_MIGRATION_CONTROL_UNSUPPORTED and new_capdrop_function_reached=false; this is not evidence of candidate failure or candidate success.",
+    "Actual fresh Pocket4 host runtime03 remains necessary to validate the client transition and the unchanged production guard with the same host03 ELFs. No Android/App or production-ready conclusion follows from this source review."
+  ],
+  "local_checks": {
+    "bytes": 1472,
+    "path": "/workspace/scratch/94990735b266/android-cp06/factory-capdrop03-review-01/binding-checks.json",
+    "sha256": "dfcfb9154f3680ef30c1d76c6c2a7c4a0c4810c364ca6dde8d1ad90c46be1b66"
+  },
+  "manifest": {
+    "bytes": 811,
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-capdrop03-runtime03-freeze-01/SOURCE_PINS.json",
+    "sha256": "3e880d69c5520d2cac259ea5e0d0d8de76c2f2eff48d3787c2c50c05158eb9b1"
+  },
+  "new_confirmed_blocker_found": false,
+  "old_controller": {
+    "bytes": 43521,
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/factory-diagnostic03-runtime02-freeze-01/controller.py",
+    "sha256": "2db9c643b177a61989d5fd3c860caba8a40b4abc7b8009db408b08d93caf99f2"
+  },
+  "production_ready": false,
+  "reviewed": "Complete added capability structures/function/call, surrounding spawn/child_exec/arm_parent/checked/client/factory call paths, complete stage and exact request binding; unchanged controller compared by exact diff and full AST",
+  "runtime_executed": false,
+  "schema": 1,
+  "scope": "Independent narrow source review of factory client capability-drop delta and frozen runtime03 stage/request; no runtime execution",
+  "source_root": "/workspace/scratch/94990735b266/native-new-env-01/factory-capdrop03-runtime03-freeze-01"
+}

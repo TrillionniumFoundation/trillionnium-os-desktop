@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "decision": "independent Go6 11GiB RAM / 1GiB swap build profile with fresh 14GiB MemAvailable and 2GiB SwapFree admission",
+  "basis": {
+    "Go4_actual_oom_count": 1,
+    "Go4_actual_oom_kill_count": 1,
+    "Go4_memory_peak_bytes": 9663676416,
+    "Go4_swap_peak_bytes": 1073741824,
+    "Go4_terminal_sha256": "6abfe6c9e8eb448043b3040a735b1483a93b3bf365ef99441bb0d5c48a61186d",
+    "R16_prior_successful_profile": "Go6 / 11GiB RAM / 1GiB swap; independent original receipt retained",
+    "fresh_diagnostic03_sha256": "991b200c6264a2582a77d57543e30b6050045e55a11d3bf72630a1c3e350738c",
+    "fresh_diagnostic_MemAvailable_GiB": 14.492057800292969,
+    "fresh_diagnostic_SwapFree_GiB": 3.4591217041015625
+  },
+  "admission_change_explicit": {
+    "previous_minimum_headroom_GiB": 4,
+    "new_minimum_headroom_GiB": 3,
+    "headroom_is_reserved": false,
+    "minimum_swap_headroom_GiB": 1,
+    "each_actual_launch_must_remeasure": true
+  },
+  "CPU_cores": 2,
+  "jobs": 1,
+  "at_least_two_host_CPUs_free_required": true,
+  "Main_limits_or_processes_changed": false,
+  "frozen_925_engine_inputs_changed": false,
+  "failed_attempts_overwritten": false,
+  "build_or_test_qualification_relaxed": false,
+  "normal_builder_journal_and_lock_required": true,
+  "manual_projection_recovery_forbidden": true,
+  "risks": [
+    "The smaller admission difference is a scheduling margin, not a physical reservation.",
+    "Transient memory/swap effects cannot be ruled out by before/after Main checks.",
+    "Previously successful 11GiB budget is evidence, not a guarantee for a new build.",
+    "The new actual result must still show complete artifacts, retired owned children and zero owned OOM kills before qualification."
+  ],
+  "execution_state": "LOCAL_PROFILE_REQUESTED_NOT_YET_SUBMITTED",
+  "whole_app_production_ready": false
+}

@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "reviewer": "android_acceptance",
+  "state": "EXACT_ACTIONRUNNER_APK_SOURCE_BUILD_BINDING_NOT_ESTABLISHED",
+  "scope": "Existing local949 materials plus authorized fixed-r10 repository tree naming/public source evidence. No Main query, installation, instrumentation or UI action in this lookup.",
+  "caller_source": {
+    "path": "/workspace/scratch/94990735b266/android-cp06/bilibili-preparation-01/recorder-held-r2-freeze-01/references/android_backend.py",
+    "bytes": 36401,
+    "sha256": "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae"
+  },
+  "observed_interface": {
+    "component": "local.pocket4.actions.v2/.ActionRunner",
+    "argv_shape": [
+      "/system/bin/am",
+      "instrument",
+      "-w",
+      "-r",
+      "-e",
+      "request",
+      "<base64 JSON>",
+      "local.pocket4.actions.v2/.ActionRunner"
+    ],
+    "caller_requires_single_sidecar_result_base64": true,
+    "caller_requires_accessibility_mode_restoration_verified": true,
+    "caller_timeout_seconds": 70,
+    "automatic_retry": false,
+    "caller_does_not_check_installed_APK_sha_or_signer_or_build_receipt": true
+  },
+  "fixed_repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "fixed_r10_commit": "0894ebe5c269af391ea4ac4940c6e82c34e69eac",
+  "repository_tree_naming_observations": [
+    {
+      "name": "r10-pocket4",
+      "sha": "283b13ddbba38ac0995b7cd776f1da5d962b3a46",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/trees/283b13ddbba38ac0995b7cd776f1da5d962b3a46",
+      "truncated": false,
+      "count": 430,
+      "matches": []
+    },
+    {
+      "name": "r10-support",
+      "sha": "f4a2874408914c515d6a485c9cb4507cf2877270",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/trees/f4a2874408914c515d6a485c9cb4507cf2877270",
+      "truncated": false,
+      "count": 619,
+      "matches": []
+    },
+    {
+      "name": "r10-tests",
+      "sha": "37ba39a6c02759b579b9c8d45dceb830d678b768",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/trees/37ba39a6c02759b579b9c8d45dceb830d678b768",
+      "truncated": false,
+      "count": 2559,
+      "matches": []
+    },
+    {
+      "name": "r10-ui",
+      "sha": "cb85b7a1de0301f4f99214d4334d7b8fdc390ced",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/trees/cb85b7a1de0301f4f99214d4334d7b8fdc390ced",
+      "truncated": false,
+      "count": 50,
+      "matches": []
+    },
+    {
+      "name": "r10-services",
+      "sha": "99a6c3dd25f3224bbafbc0e03ae3db1dd9aa70e9",
+      "url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/git/trees/99a6c3dd25f3224bbafbc0e03ae3db1dd9aa70e9",
+      "truncated": false,
+      "count": 38,
+      "matches": []
+    }
+  ],
+  "public_sources": [
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/0894ebe5c269af391ea4ac4940c6e82c34e69eac/compat/android/pocket4/evidence/business-bilibili-20261104.json",
+      "git_blob_sha": "930a6d714a19428aaec9c89fb098a7758b715ef2",
+      "local_content": {
+        "path": "/workspace/scratch/94990735b266/android-cp06/actionrunner-existing-materials-review-01/r10-bilibili-public.json",
+        "bytes": 4525,
+        "sha256": "e9d58bd216a8775682388705e88827cddf2c6b671b75d4fc519ce4805d94c110"
+      }
+    },
+    {
+      "url": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/0894ebe5c269af391ea4ac4940c6e82c34e69eac/compat/android/pocket4/acceptance/business-flows/README.md",
+      "git_blob_sha": "346765fe1527cae3bfc83145ec7ed33b851a3f2d",
+      "local_content": {
+        "path": "/workspace/scratch/94990735b266/android-cp06/actionrunner-existing-materials-review-01/r10-business-readme.md",
+        "bytes": 10896,
+        "sha256": "f75b44ab09bdfc1cf8430c92a5ceb3f5b0482f9e73114e69916cd5888c59cc25"
+      }
+    }
+  ],
+  "finding": "The retrieved trees/public receipts and local caller identify the instrumentation interface but do not provide the exact installed runner APK hash, signer, producing source and matching build receipt. Existing r10 Bilibili search/visual playback/owned-close receipt is not rewritten or invalidated by this provenance gap.",
+  "search_limits": [
+    "Only listed nontruncated subtree path listings and named public files were reviewed at fixed r10. This is not a content search of every file in the repository.",
+    "Default-branch literal search returned no hit, which does not prove absence from nondefault/unindexed work.",
+    "No claim that a similar org.trillionnium smoke app is the same ActionRunner source.",
+    "Local review was limited to the current949 project materials and did not search other scratch roots.",
+    "No current installed runner metadata, code path, APK bytes or certificate was read."
+  ],
+  "missing_binding": [
+    "Exact installed code path(s), package/instrumentation identity, APK SHA and signing identity under a still-valid Main binding.",
+    "Retained exact source/build recipe/build receipt producing that installed APK and signer."
+  ],
+  "next_step": "Prepare a bounded metadata-only direct-child task-directory index under /home/alex/work; select exact subroots only after parent reviews the index. Source content reading and UI remain separately unopened gates.",
+  "whole_app_production_ready": false,
+  "Hepta_actions_in_this_lookup": 0,
+  "UI_actions": 0
+}

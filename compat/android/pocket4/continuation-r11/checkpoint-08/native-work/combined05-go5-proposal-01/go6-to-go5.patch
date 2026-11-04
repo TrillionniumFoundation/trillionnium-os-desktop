@@ -1,0 +1,11 @@
+--- a/0008-soong-go6.patch
++++ b/0008-soong-go5.patch
+@@ -6,7 +6,7 @@
+ +	// Private leaf build on a 24 GiB desktop. env -i drops outer Go settings;
+ +	// give the analyzer the supported Go soft memory budget explicitly.
+ +	// This changes collection frequency, not module or dependency validation.
+-+	invocationEnv["GOMEMLIMIT"] = "6GiB"
+++	invocationEnv["GOMEMLIMIT"] = "5GiB"
+  	if pb.debugPort != "" {
+  		//debug mode
+  		commonArgs = append(commonArgs, "--delve_listen", pb.debugPort,

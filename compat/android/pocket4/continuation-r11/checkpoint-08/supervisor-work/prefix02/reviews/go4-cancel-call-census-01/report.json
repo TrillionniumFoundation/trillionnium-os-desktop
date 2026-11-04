@@ -1,0 +1,216 @@
+{
+  "schema": 1,
+  "scope": "this agent local retained request/terminal census during the current Go4 interval; no device audit",
+  "target_job": "1a1a8b5b235-fc05-2f88",
+  "target_unit": "hepta-runtime-job-1a1a8b5b235-fc05-2f88",
+  "parent_reported_signal_time": "2026-11-04T22:50:07Z",
+  "this_agent_direct_process_stop_cancel_kill_calls_to_target": 0,
+  "this_agent_tools_used_for_these_six_jobs": [
+    "process_start",
+    "process_status",
+    "process_read"
+  ],
+  "jobs": [
+    {
+      "phase": "prefix-prepare-02/main",
+      "job_id": "1a1a8b6dd54-fc05-2f8b",
+      "key": "p4-prefix02-prepare01-e44674269cbde046",
+      "unit": "hepta-runtime-job-1a1a8b6dd54-fc05-2f8b",
+      "created_at_utc": "2026-11-04T22:38:38.932000+00:00",
+      "terminal_at_utc": "2026-11-04T22:38:40.403000+00:00",
+      "exit_code": 0,
+      "cancelled": false,
+      "timed_out": false,
+      "executable": "/usr/bin/sudo",
+      "args": [
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-"
+      ]
+    },
+    {
+      "phase": "prefix-prepare-02/reader",
+      "job_id": "1a1a8b83231-fc05-2f8e",
+      "key": "p4-prefix02-receipt-read01-767207e9c5e86321",
+      "unit": "hepta-runtime-job-1a1a8b83231-fc05-2f8e",
+      "created_at_utc": "2026-11-04T22:40:06.193000+00:00",
+      "terminal_at_utc": "2026-11-04T22:40:07.564000+00:00",
+      "exit_code": 0,
+      "cancelled": false,
+      "timed_out": false,
+      "executable": "/usr/bin/sudo",
+      "args": [
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-",
+        "--expected-sha256",
+        "767207e9c5e86321a57a27f62126da6f18b95a758c5f025b8c44287af5165c76"
+      ]
+    },
+    {
+      "phase": "prefix-normal-preflight-02/main",
+      "job_id": "1a1a8c1e12b-fc05-2fa7",
+      "key": "p4-prefix02-normal-plan02-cc003f5e6bbb54e1",
+      "unit": "hepta-runtime-job-1a1a8c1e12b-fc05-2fa7",
+      "created_at_utc": "2026-11-04T22:50:40.811000+00:00",
+      "terminal_at_utc": "2026-11-04T22:50:42.644000+00:00",
+      "exit_code": 0,
+      "cancelled": false,
+      "timed_out": false,
+      "executable": "/usr/bin/sudo",
+      "args": [
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-"
+      ]
+    },
+    {
+      "phase": "prefix-normal-preflight-02/reader",
+      "job_id": "1a1a8c28f23-fc05-2fa9",
+      "key": "p4-prefix02-preflight-read01-bb88a07526e2d5a0",
+      "unit": "hepta-runtime-job-1a1a8c28f23-fc05-2fa9",
+      "created_at_utc": "2026-11-04T22:51:25.347000+00:00",
+      "terminal_at_utc": "2026-11-04T22:51:26.700000+00:00",
+      "exit_code": 0,
+      "cancelled": false,
+      "timed_out": false,
+      "executable": "/usr/bin/sudo",
+      "args": [
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-",
+        "--expected-sha256",
+        "bb88a07526e2d5a05545b276fbf83341fb421cf785a784a8ffb06669c6924365"
+      ]
+    },
+    {
+      "phase": "prefix-normal-runtime-02/main",
+      "job_id": "1a1a8c5cf70-fc05-2fb2",
+      "key": "p4-prefix02-normal02-cc003f5e6bbb54e1",
+      "unit": "hepta-runtime-job-1a1a8c5cf70-fc05-2fb2",
+      "created_at_utc": "2026-11-04T22:54:58.416000+00:00",
+      "terminal_at_utc": "2026-11-04T22:55:00.455000+00:00",
+      "exit_code": 0,
+      "cancelled": false,
+      "timed_out": false,
+      "executable": "/usr/bin/sudo",
+      "args": [
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/prefix_coordinator.py",
+        "--execute",
+        "--plan",
+        "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/normal-plan-02.json",
+        "--plan-sha256",
+        "cc003f5e6bbb54e1c8a8cd86a78a50b65ee7598ac37992f64b5f89a32923a41f"
+      ]
+    },
+    {
+      "phase": "prefix-normal-runtime-02/reader",
+      "job_id": "1a1a8c6d7fa-fc05-2fb5",
+      "key": "p4-prefix02-normal-evidence01-77891888cc854305",
+      "unit": "hepta-runtime-job-1a1a8c6d7fa-fc05-2fb5",
+      "created_at_utc": "2026-11-04T22:56:06.138000+00:00",
+      "terminal_at_utc": "2026-11-04T22:56:07.396000+00:00",
+      "exit_code": 0,
+      "cancelled": false,
+      "timed_out": false,
+      "executable": "/usr/bin/sudo",
+      "args": [
+        "-n",
+        "/usr/bin/python3",
+        "-I",
+        "-B",
+        "-",
+        "--expected-result-sha256",
+        "77891888cc854305d8e0a7af6391894079567010d311597a7a4f900e65fb11e8"
+      ]
+    }
+  ],
+  "observed_timing": {
+    "last_matching_reader_terminal_utc": "2026-11-04T22:40:07.564000+00:00",
+    "next_preflight_created_utc": "2026-11-04T22:50:40.811000+00:00",
+    "preflight_begins_after_parent_reported_Go4_SIG15": true,
+    "normal_owned_unit_creation_and_cleanup_occurs_later_still": true
+  },
+  "authorized_runtime_cleanup_target": "p4-relay-prefix-d5ac0c8b6b3250e8ab02a33f-normal.service",
+  "cleanup_source_sha256": "7b257af1c0b5493ff0a28528146a5ccad96a38bc190402ef1524644a27b9d2e0",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-prepare-02/launch.json",
+      "bytes": 1025,
+      "sha256": "d03221c8282bccea69e1a1e4e85f7e65ac089765c1b3bfaf0dc358d830c11eee"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-prepare-02/terminal.json",
+      "bytes": 730,
+      "sha256": "543e347e7e5b5b283a82e91cd0ef88f0e99724b4c73543a80d41fc227e80a046"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-prepare-02/reader-launch.json",
+      "bytes": 1131,
+      "sha256": "79b5cbe86c5d7900a71d39e62a513962ddcad2507b348abb54c887bc8f2affae"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-prepare-02/reader-terminal.json",
+      "bytes": 734,
+      "sha256": "0ad6d1086c201840b38a8945e6d8a9c731f934708b21541a3e4bf32372c5a629"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-normal-preflight-02/launch.json",
+      "bytes": 1110,
+      "sha256": "cb02fc1adeee5ac609107aed969c24c015b6bee8ebca1c09dbc1c26cba2afb6e"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-normal-preflight-02/terminal.json",
+      "bytes": 730,
+      "sha256": "8728109bb043ddecf6d1b82224b594e9128bbf969ba084591e03e1751ed8f058"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-normal-preflight-02/reader-launch.json",
+      "bytes": 1133,
+      "sha256": "91bf86f402bcb14531262188d9222b1e09b41b51192438a6c82d2b602ecda49b"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-normal-preflight-02/reader-terminal.json",
+      "bytes": 732,
+      "sha256": "f95bb43713467f145491041b311b0aa81968bfa3469ae318297cdcfb3a290552"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-normal-runtime-02/launch.json",
+      "bytes": 1401,
+      "sha256": "b0b0d04626a3dbf6e34ec5d3dc4f76f825f7e3e67a0236cd188cd941f0426b44"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-normal-runtime-02/terminal.json",
+      "bytes": 730,
+      "sha256": "861d9b2ca73cdccb3a1f39e6a9be54f6cd680503433666cbbb276a20e8f50dde"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-normal-runtime-02/reader-launch.json",
+      "bytes": 1141,
+      "sha256": "8302127d4bc4cab810c65d5878e68feb729679f9bc758140e80c97876a2b9abe"
+    },
+    {
+      "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/evidence/prefix-normal-runtime-02/reader-terminal.json",
+      "bytes": 734,
+      "sha256": "7be9d05923c6f1d51db60eacf7c4e677367cec001839614ce364486f2af7f777"
+    }
+  ],
+  "limits": [
+    "This is retained local provenance and this agent action census, not a complete host signal-sender audit.",
+    "No assertion about the Go4 SIG15 sender, OOM, compiler/source error or a causal relationship follows from these records.",
+    "No new remote query, signal, stop, retry or source modification was performed."
+  ],
+  "remote_calls_for_review": 0
+}

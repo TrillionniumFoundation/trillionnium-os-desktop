@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "kind": "AUTHOR_LOCAL_BINARY_REVIEW_NOT_INDEPENDENT",
+  "elf_sha256": "a95dffe64c84f6b963521ee4db130925ff4132f3a757216eb52357a77a4e295b",
+  "full_disassembly_sha256": "4d76ff5d14785ead923ea5f8f6f9283ac9febbbfc46d50f061035557ce7446c1",
+  "excerpt_sha256": "e588ed5b2b5a2614290f7f109c87aeb60f6ceab76f9da2b7307907b720403f9f",
+  "clone_calls": [
+    {
+      "enclosing_symbol": "0000000000002520 <berberis::proc_maps_provenance::raw_metadata_owner::Start()>:",
+      "instruction": "279a:\tcall   1600 <berberis_proc_metadata_raw_clone_x86_64>"
+    },
+    {
+      "enclosing_symbol": "0000000000002a70 <berberis::proc_maps_provenance::raw_metadata_owner::Read(int, berberis::proc_maps_provenance::raw_metadata_owner::Snapshot*)>:",
+      "instruction": "2fe0:\tcall   1600 <berberis_proc_metadata_raw_clone_x86_64>"
+    }
+  ],
+  "Start_entry": "Worker at0x2190, argument null, flags0x350900, parent/child tid state+0x1c",
+  "Read_entry": "InheritedWorker at0x2150, retained Request at caller rsp+0x60, flags0x350900, parent/child tid state+0x20",
+  "InheritedWorker_common_reader_mode": true,
+  "both_worker_closures_automatically_audited": true,
+  "author_read_complete_callsite_argument_and_join_blocks": true,
+  "Android_binary_audited": false,
+  "positive_owner_executed": false,
+  "production_ready": false
+}

@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "review": "root Go4 independent smaller build profile",
+  "all20_payloads_verified": true,
+  "complete_controller_fence_generator_delta_read": true,
+  "actual_base449_derives_one_patch_delta": true,
+  "expected_manifest_sha256": "0bfd9e1b509c38c347b2b41863473fd3a15b58b38dc813564f92a0d75b595598",
+  "expected_manifest_is_remote_actual": false,
+  "new_MemoryMax_GiB": 9,
+  "fresh_MemAvailable_minimum_GiB": 13,
+  "unchanged_admission_headroom_GiB": 4,
+  "swap_max_GiB": 1,
+  "CPUQuota": 200,
+  "jobs": 1,
+  "normal_builder_and_original_Main_fences_unchanged": true,
+  "original_Go5_and_Go6_failed_attempts_preserved": true,
+  "scope_approved": "exact source preparation only; final build must bind actual new preparation and copied manifest",
+  "risk": "Go4 soft heap does not guarantee 9GiB RSS; own OOM and longer GC remain possible; no full-build success claimed",
+  "request_sha256": "23580c439aea3674b0e171574151c284efdc94febd8e7b5a86d206a422cda14c",
+  "production_ready": false
+}

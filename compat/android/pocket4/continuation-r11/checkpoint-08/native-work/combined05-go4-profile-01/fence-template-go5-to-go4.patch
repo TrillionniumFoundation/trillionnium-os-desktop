@@ -1,0 +1,25 @@
+--- a/frozen-fenced_build_go5.template.py
++++ b/fenced_build_go4.template.py
+@@ -9,10 +9,10 @@
+ import subprocess
+ import time
+ 
+-CONTROLLER_SHA = '506c528d110f4b3e73d8e6c7d6d12217a8e4b9b6e7105935be3404805aba3e15'
++CONTROLLER_SHA = '2c569853811e0f594a805c056b68794481edac6222524c190cc2ff2f35f6ccac'
+ SNAPSHOT_SHA = 'f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb'
+-PREPARATION_SHA = 'ACTUAL_GO5_PREPARATION_SHA_REQUIRED'
+-ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go5-01')
++PREPARATION_SHA = 'ACTUAL_GO4_PREPARATION_SHA_REQUIRED'
++ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go4-01')
+ FENCE_ROOT = ROOT / 'build-fences-01'
+ 
+ 
+@@ -76,7 +76,7 @@
+ 
+ def run(packet):
+     require(len(PREPARATION_SHA) == 64 and all(c in "0123456789abcdef" for c in PREPARATION_SHA),
+-            "a new actual Go5 preparation receipt is required")
++            "a new actual Go4 preparation receipt is required")
+     require(os.getuid() == 1000 and os.geteuid() == 1000, 'outer build controller must remain UID1000')
+     os.umask(0o077)
+     source = packet['controller_source'].encode()

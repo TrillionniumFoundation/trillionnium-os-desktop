@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "packet_exact": true,
+  "four_payload_pins": {
+    "client_control.cc": {
+      "sha256": "bcfbc01d02c089d01f8bcd34fb939655055b51611dfde7621e31747948c962fb",
+      "bytes": 19946
+    },
+    "bionic_branch_view.cc": {
+      "sha256": "0eaf591282192e3675c44be6ad8ecb37441237082013cd8743b4f5d8ad664857",
+      "bytes": 784
+    },
+    "audit_worker_binary.py": {
+      "sha256": "bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9",
+      "bytes": 5841
+    },
+    "build_fixture.py": {
+      "sha256": "856cc25f68bc6c782f15517e12aba7f88ae3a6db7de7d91999dfa2e57a14c4f7",
+      "bytes": 13411
+    }
+  },
+  "request_sha256": "1de4668f7c835256fa8710be143bde8973d1b41e144c80ccb5e70a2cbe3b58fa",
+  "packet_sha256": "a19b46f8f6cfb760c1e48b52f54fec87cb1ccd94cccc9171e23bf532e9dfa535",
+  "entry_sha256": "c5952adae8a0f3a51737f39667be0ce4473dda89effa1c935cffa42cb339058d",
+  "request_stdin_exact_packet": true,
+  "declared_patches_equal_actual": true,
+  "unchanged_bionic_and_auditor": true,
+  "stage_AST_equal_except_paths_labels_and_EXPECTED": true,
+  "default_plans": [
+    {
+      "source": "stage_and_build03.py",
+      "returncode": 0,
+      "stdout_sha256": "a9237d4fc119e1d1f04173384e1717563fb198a3aa32fd954075ec3431df788f"
+    },
+    {
+      "source": "build_fixture.py",
+      "returncode": 0,
+      "stdout_sha256": "05dea81ccb460a6e76f05fded4156e9d40626f1964e2dba9a5365eecc79d4073"
+    }
+  ],
+  "remote_or_execute_called": false
+}

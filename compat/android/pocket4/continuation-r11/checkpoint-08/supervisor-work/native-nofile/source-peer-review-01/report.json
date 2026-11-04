@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "reviewer": "local_pocket4_inventory",
+  "scope": "Independent read-only review of nofile-owner-next-01 exact three-file delta and existing local final ELF; no production-owner positive execution",
+  "verdict": "NO_NEW_CONFIRMED_BLOCKER_IN_REVIEWED_SOURCE_DELTA; POSITIVE_RUNTIME_AND_ANDROID_QUALIFICATION_OPEN",
+  "candidate_manifest": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/nofile-owner-next-01/SOURCE_PINS.json",
+    "bytes": 5653,
+    "sha256": "2a0a0defb04f398e8fe541814562bd44ee07bdb070aa56530e7cc1bd3b142f96"
+  },
+  "candidate_raw_owner": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/nofile-owner-next-01/source/kernel_api/proc_maps_raw_metadata_owner.cc",
+    "bytes": 25425,
+    "sha256": "4400b1db44f3d7c46dd25136dba8599bc934f2ef28963c289cde1953960536a6"
+  },
+  "preimage_raw_owner": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/nofile-owner-next-01/preimage/kernel_api/proc_maps_raw_metadata_owner.cc",
+    "bytes": 22735,
+    "sha256": "489264a8fcb8e0607a671b78363970caf17f0bb4589b46c12e77329daf17b818"
+  },
+  "patch": {
+    "path": "/workspace/scratch/94990735b266/native-new-env-01/nofile-owner-next-01/nofile-inherited-owner.patch",
+    "bytes": 9560,
+    "sha256": "d162221a37518cbb93ba78dc9a102fd5a8e76a1cd08bb9833dd3cf785a22c932"
+  },
+  "independent_checks": {
+    "path": "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/reviews/nofile-owner-next01-review-01/checks.json",
+    "bytes": 12077,
+    "sha256": "103004217e524f641e38e301acf7ef0ba60ea7e5d08eb68984b3189e2b2bf2e4"
+  },
+  "findings": [
+    {
+      "id": "only_exact_pin_EMFILE_enters_fallback",
+      "assessment": "PinFailure starts kNone, is assigned only immediately after the persistent worker pidfd_open or pidfd_getfd fails, and Read requires both result==-EMFILE and one of those exact enum values. Context, metadata, xattr, seal or O_PATH reopen errors cannot select it. The inherited worker itself has no recursive retry."
+    },
+    {
+      "id": "actual_caller_table_capture",
+      "assessment": "ReadInheritedAfterAllocationFailure is called synchronously by the original Read caller after persistent completion. Its fixed raw clone call supplies InheritedWorker and the retained local Request; it does not enqueue cloning to the persistent worker. Both call sites use 0x350900, with CLONE_FILES, CLONE_FS and CLONE_SETTLS absent. ReadPinned(true) selects only that copied-table descriptor; the ordinary Worker remains ReadPinned(false) and continues pinning by caller TID."
+    },
+    {
+      "id": "request_stack_and_kernel_exit_ownership",
+      "assessment": "The second stack has separate mapping/top and clear-tid address, prepared before restricted use. A successful clone is joined with the shared FUTEX_WAIT clear-tid protocol before the local inherited Request can leave scope or its stack can be reused. The completion release/acquire publishes result and context state. Clone failure does not publish output; early worker death without complete becomes EIO. Persistent completion clears its request/command before publishing complete and subsequently accesses only process-lifetime state."
+    },
+    {
+      "id": "gate_mask_and_lifecycle",
+      "assessment": "Read holds the existing full Mask and Gate across the inherited clone, metadata, kernel clear-tid and final caller context check. Stop closes admission then waits for Gate, so it cannot retire/reset synchronization during this request. Quiesce remains sticky for the current generation. ResetAfterPrivateFork changes only the private copied state and additionally clears inherited_tid; OwnProcess/Read still reject a different TGID sharing VM. Correct proof of private memory remains an upstream lifecycle requirement."
+    },
+    {
+      "id": "authority_and_output_not_weakened",
+      "assessment": "Nine source blocks were independently located, hashed and found byte-identical: SameContext, ReadContext, startup PIDFD_THREAD namespace authority, Start, Stop, Quiesce, metadata shape/xattr/seals/final inode, final caller-context/ABI/publication/errno, and persistent startup authority. Fallback is reachable only after admitted Start. It does not create namespace authority under NOFILE=0 or treat a name/raw initial stat as provenance. Caller output still publishes only after complete metadata and final checks."
+    },
+    {
+      "id": "actual_local_machine_code_scope",
+      "assessment": "Independently reran the frozen two-worker auditor via objdump on a hash-identical private copy of the existing author host ELF. Two named worker roots, six reachable owner functions and no forbidden libc/TLS/canary/runtime edge passed. Independently read both call-site argument blocks, distinct stack/tid locations, true/false shared-reader modes, trampoline and clear-tid join. The only full-disassembly byte difference is the known input-path header."
+    }
+  ],
+  "material_limits_and_next_evidence": [
+    {
+      "id": "not_a_production_positive",
+      "detail": "The five kernel-mechanism controls use a smaller worker and the local real-source test rejects UID 0; neither executes this new production path. No such positive result is asserted here."
+    },
+    {
+      "id": "actual_controls_required",
+      "detail": "The exact owner source needs a qualified nonroot/caps-zero/initial-userns Start, then NOFILE=0 and NOFILE=1, preprepared AS=1, real caller table unshare/close/reuse, output atomicity/errno, Stop blocked behind active inherited work, and private fork while a parent request is in flight. The actual Android ELF needs a fresh two-worker closure and both clone call-site review."
+    },
+    {
+      "id": "startup_and_O_PATH_limits_preserved",
+      "detail": "Start after already lowering NOFILE to zero still cannot establish its original namespace authority. Virtual O_PATH may still require a new readable FD and fail with EMFILE. These are explicit unsupported cases, not silently bypassed."
+    },
+    {
+      "id": "copied_table_and_task_resources",
+      "detail": "This path creates a kernel task and copies the caller table; task/kernel allocation failure remains possible. The inherited worker retains copied descriptor references until kernel task exit; JoinRaw prevents those references escaping past Read return, but this is not a no-resource-allocation metadata path."
+    },
+    {
+      "id": "platform_lifecycle_remains_open",
+      "detail": "Paired ART/native bridge generation transitions, cancellation/last-thread retirement, credentials and namespaces remain separate production gates. Source preservation alone does not prove they run in actual Android."
+    }
+  ],
+  "review_harness_notes": "Two local checker assumptions failed and were retained: the ninth fragment began with two comments before the chosen anchor; objdump file-format headers include the copied ELF pathname. Both were resolved by exact fragment SHA and unique known path-header normalization, with no source change. The ELF audit itself returned zero; no ELF execution or positive metadata test was performed.",
+  "source_modified": false,
+  "remote_calls": 0,
+  "ELF_executed": false,
+  "production_owner_positive_executed": false,
+  "Android_compiled_or_executed_by_reviewer": false,
+  "production_ready": false
+}

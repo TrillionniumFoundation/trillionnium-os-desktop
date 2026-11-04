@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "state": "LOCAL_PROFILE_PROPOSAL_NOT_PREPARED_OR_DISPATCHED",
+  "new_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-go5-01",
+  "candidate_engine_manifest_sha256": "4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba",
+  "engine_files_unchanged": 925,
+  "six_signal_outputs_unchanged": true,
+  "feature_default_enabled": false,
+  "builder_executable_sha256": "16df26d88391c22c9f076917531f022907ec5608bd31e58e05c898605db9dcc4",
+  "base_builder_manifest_sha256": "e7c225bd2842c260d9f4149aca3c4483ed31c569efb31068b6d787892bd17017",
+  "base_builder_files": 449,
+  "only_builder_source_change": "android/apex-compat/0008-soong-leaf-go-memory-budget.patch",
+  "patch_preimage_sha256": "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e",
+  "patch_candidate_sha256": "39211a784284ed319b6abbbe4b327a88896931d39c6bdb91fe727a9a7589325f",
+  "patch_bytes": 583,
+  "patch_changed_bytes": 1,
+  "base_profile": {
+    "Go_soft_limit_GiB": 6,
+    "MemoryMax_bytes": 11811160064,
+    "minimum_MemAvailable_bytes": 16106127360,
+    "memory_swap_max_bytes": 1073741824
+  },
+  "proposed_profile": {
+    "Go_soft_limit_GiB": 5,
+    "MemoryMax_bytes": 10737418240,
+    "minimum_MemAvailable_bytes": 15032385536,
+    "memory_swap_max_bytes": 1073741824,
+    "cpu_quota_percent": 200,
+    "normal_builder_jobs": 1,
+    "affinity_cores": 2,
+    "nice": 10,
+    "timeout_seconds": 6400
+  },
+  "admission_RAM_margin_bytes": 4294967296,
+  "headroom_is_an_admission_difference_not_a_reservation": true,
+  "Main_snapshot_source_sha256": "f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb",
+  "Main_fences_unchanged": true,
+  "required_new_actual_pins": [
+    "full copied 449-file builder-source manifest with only the patch changed",
+    "preparation receipt retaining base builder manifest and new actual builder manifest separately",
+    "new controller hash and fresh root/out/attempt/fence identities",
+    "new exact preparation request and new exact fullbuild request digests",
+    "actual effective_projection.patches[0008] equals the new patch SHA",
+    "actual effective_projection.files[build/soong/ui/build/soong.go] and its reviewed 5GiB injection",
+    "new engine/host-test build inputs, final artifact receipt, and final ELF/test artifacts"
+  ],
+  "unchanged_external_qualification": [
+    "existing normal builder ELF",
+    "source locks, Clang/link references, target closure, native source snapshot and source import policy",
+    "package and shared-source locks/recovery",
+    "Main epoch, activation, process identity, resource limit and OOM fences",
+    "worker binary review, complete host suite and owned signal runtime gates"
+  ],
+  "not_claimed": [
+    "a one-GiB lower Go soft limit guarantees a one-GiB lower peak RSS",
+    "the prior successful Go6 build qualifies this smaller profile",
+    "a cached memory snapshot admits a later build",
+    "successful engine build qualifies ART, factory service, Android or complete apps"
+  ],
+  "original_attempt_preserved": {
+    "job_id": "1a1a886d2c7-fc05-2ef4",
+    "root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined05-01",
+    "resource_admission": "reported authoritative failure before compiler; retain original 15GiB gate and receipts"
+  },
+  "remote_preparation_performed": false,
+  "remote_build_dispatched": false,
+  "production_ready": false
+}

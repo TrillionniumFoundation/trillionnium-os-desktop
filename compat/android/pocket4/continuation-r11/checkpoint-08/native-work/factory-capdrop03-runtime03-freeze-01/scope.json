@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "state": "FROZEN_RUNTIME03_NOT_SUBMITTED",
+  "controller_sha256": "e76e35332951ba72e68bc59e7d4849ec05c06233c5db95d8d50d74ecfefe0628",
+  "predecessor": "runtime02 failed first client namespace guard EPERM with inheritable [0,8], E/P zero and userns ioctl successful",
+  "delta": "clear and verify capability E/P/I only in the owned child after exact UID/GID/groups drop and before the unchanged PDEATHSIG rearm/pidfd check/sealed ELF exec",
+  "production_guard_changed": false,
+  "production_source_or_ELF_changed": false,
+  "host_build_root": "/home/alex/work/pocket4-owned-factory-v2-host-build-03",
+  "host_build_report_sha256": "be318dc96a7c32296c3a875a079e954665ed65acf2b4d574088b3bbce560e215",
+  "factory_sha256": "dcb8989f4ac2557a6c69bfaf8b9ec38527327703d3f8c501c934da35496dffdc",
+  "client_sha256": "883d3828e72b9d264d496134e38d9df9e557ce01610290a0b8b5e437d072c1cd",
+  "local_control": {
+    "schema": 1,
+    "state": "LOCAL_CAPABILITY_MIGRATION_CONTROL_UNSUPPORTED",
+    "attempt": "control02",
+    "tool_chunk": "35ba34",
+    "actual_parent_capabilities": {
+      "CapInh": 0,
+      "CapPrm": 0,
+      "CapEff": 0,
+      "CapBnd": 0,
+      "CapAmb": 0
+    },
+    "actual_child_exit_code": 125,
+    "actual_child_reaped": true,
+    "actual_child_forced_kill": false,
+    "primary_failure": "original control cannot seed CAP_NET_BIND_SERVICE because its initial permitted set is empty",
+    "new_capdrop_function_reached": false,
+    "new_capdrop_success_claimed": false,
+    "local_host_permissions_changed": false,
+    "next_validation": "same host03 ELFs in fresh isolated Pocket4 runtime03, after independent source review",
+    "original_control01_failure_preserved": true,
+    "child_raw_sha256": "a8d9c825356d2177b3b2a8a78332675833dbc9ae03f012a7f2fc616c862abcd6",
+    "context_sha256": "3adba84a54f9a607483355afa1653b76fcd87230ea296c18f28cebcd61f3815a"
+  },
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "whole_app_production_ready": false
+}

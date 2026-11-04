@@ -1,0 +1,16 @@
+test_actual_99_byte_padding_matches_original_main_identity (__main__.MainCaptureCanonicalControls.test_actual_99_byte_padding_matches_original_main_identity) ... FAIL
+test_nonempty_main_argument_change_still_differs (__main__.MainCaptureCanonicalControls.test_nonempty_main_argument_change_still_differs) ... ok
+
+======================================================================
+FAIL: test_actual_99_byte_padding_matches_original_main_identity (__main__.MainCaptureCanonicalControls.test_actual_99_byte_padding_matches_original_main_identity)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/pocket4-lmkd-supervisor-r11-20261104-owned-01/prefix02-work-01/old-capture-negative-02/test_prefix_coordinator.py", line 170, in test_actual_99_byte_padding_matches_original_main_identity
+    self.assertEqual(self.capture_fixture(self.raw), self.expected)
+AssertionError: {'host_pid': 3589120, 'parent_host_pid': 35[652 chars]8]'}} != {'cgroup': ['0::/system.slice/droidloomd.se[312 chars]000]}
+Diff is 2068 characters long. Set self.maxDiff to None to see it.
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.003s
+
+FAILED (failures=1)

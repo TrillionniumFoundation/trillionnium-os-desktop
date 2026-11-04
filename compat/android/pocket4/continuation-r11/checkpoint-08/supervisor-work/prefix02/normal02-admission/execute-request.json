@@ -1,0 +1,28 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "cwd": "/home/alex/work",
+  "env": {
+    "PATH": "/usr/bin:/bin",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "cpu_quota_percent": 25,
+  "memory_max_bytes": 134217728,
+  "nice": 10,
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/source/prefix_coordinator.py",
+    "--execute",
+    "--plan",
+    "/home/alex/work/pocket4-relay-prefix-r11-source-05-02/normal-plan-02.json",
+    "--plan-sha256",
+    "cc003f5e6bbb54e1c8a8cd86a78a50b65ee7598ac37992f64b5f89a32923a41f"
+  ],
+  "idempotency_key": "p4-prefix02-normal02-cc003f5e6bbb54e1",
+  "timeout_seconds": 120
+}
