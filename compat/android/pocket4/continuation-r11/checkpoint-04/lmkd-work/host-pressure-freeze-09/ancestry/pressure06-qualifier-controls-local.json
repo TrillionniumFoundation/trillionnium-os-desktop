@@ -1,0 +1,28 @@
+{
+  "android_executed": false,
+  "cargo_available_locally": false,
+  "command": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "owned-relay",
+    "-p",
+    "test_qualify_pressure.py",
+    "-v"
+  ],
+  "expected_tests": 16,
+  "finished_at": "2026-11-04T15:31:10.144022+00:00",
+  "kernel_psi_executed": false,
+  "returncode": 0,
+  "schema": 1,
+  "scope": "synthetic evidence rejection/correlation and ordinary temporary file controls only",
+  "source_sha256": {
+    "qualify_pressure.py": "00254b6a7e166c3b9789d5ee417469e6e59375b2ad7bd58604ddafd136336bab",
+    "test_qualify_pressure.py": "331c21ee341288416b656aaf78ed10c3b61a2a2bfa8a245d4e5a8fcf73674f45"
+  },
+  "stderr": "test_empty_or_duplicate_set_rejected_even_when_manifest_pinned (test_qualify_pressure.ExternalPinControls.test_empty_or_duplicate_set_rejected_even_when_manifest_pinned) ... ok\ntest_external_manifest_and_complete_bytes (test_qualify_pressure.ExternalPinControls.test_external_manifest_and_complete_bytes) ... ok\ntest_symlink_cannot_replace_evidence (test_qualify_pressure.ExternalPinControls.test_symlink_cannot_replace_evidence) ... ok\ntest_changed_native_default_or_actual_write_rejected (test_qualify_pressure.QualificationControls.test_changed_native_default_or_actual_write_rejected) ... ok\ntest_critical_sent_after_exit_cannot_be_correlated (test_qualify_pressure.QualificationControls.test_critical_sent_after_exit_cannot_be_correlated) ... ok\ntest_duplicate_json_keys_rejected (test_qualify_pressure.QualificationControls.test_duplicate_json_keys_rejected) ... ok\ntest_fresh_stale_or_expiry_boundary_is_inconclusive (test_qualify_pressure.QualificationControls.test_fresh_stale_or_expiry_boundary_is_inconclusive) ... ok\ntest_kernel_oom_budget_and_second_kill_rejected (test_qualify_pressure.QualificationControls.test_kernel_oom_budget_and_second_kill_rejected) ... ok\ntest_late_nonvictim_exit_cannot_be_skipped_at_cleanup (test_qualify_pressure.QualificationControls.test_late_nonvictim_exit_cannot_be_skipped_at_cleanup) ... ok\ntest_medium_only_is_partial_and_not_critical_pass (test_qualify_pressure.QualificationControls.test_medium_only_is_partial_and_not_critical_pass) ... ok\ntest_no_real_event_or_incomplete_audit_rejected (test_qualify_pressure.QualificationControls.test_no_real_event_or_incomplete_audit_rejected) ... ok\ntest_nonce_scope_terminal_and_owner_identity_rejected (test_qualify_pressure.QualificationControls.test_nonce_scope_terminal_and_owner_identity_rejected) ... ok\ntest_replay_future_and_quiet_events_rejected (test_qualify_pressure.QualificationControls.test_replay_future_and_quiet_events_rejected) ... ok\ntest_stale_requires_real_events_and_keeps_targets (test_qualify_pressure.QualificationControls.test_stale_requires_real_events_and_keeps_targets) ... ok\ntest_synthetic_critical_positive_scope_is_narrow (test_qualify_pressure.QualificationControls.test_synthetic_critical_positive_scope_is_narrow) ... ok\ntest_wrong_victim_or_priority_and_route_rejected (test_qualify_pressure.QualificationControls.test_wrong_victim_or_priority_and_route_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 16 tests in 0.016s\n\nOK\n",
+  "stdout": ""
+}

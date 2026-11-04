@@ -1,0 +1,44 @@
+{
+  "schema": 1,
+  "reviewed_utc": "2026-11-04T16:09:34.126060+00:00",
+  "reviewer": "root independent code and exact artifact review",
+  "scope": "cleanup retention and explicit same-daemon retry only",
+  "frozen_manifest_sha256": "425840a7a9ca3c9763e9884198c6d8bebd709cfcb6ff0202c43dc4be92f6872e",
+  "verified_payloads": 46,
+  "matching_build_receipt_sha256": "43d6de97be053cc15790fd9db8316177639b7600dd659709d13b14f910fc3c56",
+  "actual_candidate_tests_passed": 91,
+  "actual_new_controls": [
+    "control::tests::daemon_retains_failed_cleanup_across_poll_stop_shutdown_and_reentry",
+    "control::tests::daemon_stop_keeps_the_exact_child_after_real_exit_and_cleanup_failure",
+    "control::tests::daemon_loop_keeps_serving_after_an_owned_cleanup_failure",
+    "development::tests::cleanup_failure_repeats_until_the_owned_runtime_is_removed",
+    "development_network::tests::failed_network_effect_retains_itself_and_lower_ownership_steps",
+    "development_network::tests::failed_forwarding_restore_keeps_the_original_recovery_record",
+    "development_network::tests::failed_record_removal_does_not_replay_a_successful_forwarding_restore"
+  ],
+  "source_patch_forward_and_reverse_verified": true,
+  "changed_source_sha256": {
+    "docs/contracts/runtime-layout-v1.md": "aff435358e2a7ad80257f34de5d38576fe78855778abb79556f9d3ad276b48e6",
+    "runtime/droidloom-supervisor/src/control.rs": "b8cb1daf628ca6fea08504ecc4209c864eecc002eafba3f904fbdcf92fe387aa",
+    "runtime/droidloom-supervisor/src/development.rs": "45c3ef2d647f4dc79edc40dbe641578b76976d3a193cbe4c2ccff785f7cbb151",
+    "runtime/droidloom-supervisor/src/development_network.rs": "cd39787d7632a545ca4966fc37d6828cee396dbe5c074abc1997c220caac7fb6"
+  },
+  "status": "PASS_SCOPED_SOURCE_AND_HOST_MATCHING_BUILD_REVIEW",
+  "observations": [
+    "Cell cleanup only completes after all steps succeed and preserves network ownership before runtime directory removal.",
+    "Network retirement removes only successful effects from its stack and retains forwarding restoration/recovery state.",
+    "Daemon poll/stop/shutdown failure retains the ActiveCell; entry gates block start/restart while latched; explicit authorized stop can retry.",
+    "Control loop continues serving failure responses after polling cleanup failure, and success clears the retained owner only after cleanup returns Ok.",
+    "The new cleanup_failed response is explicit and the three lifecycle binaries were built together.",
+    "Actual failure tests use owned process and filesystem failures; the network seam tests the production ownership algorithm without host network mutations."
+  ],
+  "retained_limits": [
+    "No release artifact or installed deployment.",
+    "Final process exit or force kill can still discard in-memory owner; cross-daemon recovery and old namespace retirement require further work.",
+    "Numeric PID/PDEATHSIG behavior and recovery existence probes are unchanged.",
+    "Cross-generation forwarding record replay and network creation rollback qualification remain open.",
+    "No installed LMKD lifecycle hook, real network failure canary, or commercial app acceptance is established."
+  ],
+  "all_apps_production_ready": false,
+  "runtime_mutations_during_review": false
+}

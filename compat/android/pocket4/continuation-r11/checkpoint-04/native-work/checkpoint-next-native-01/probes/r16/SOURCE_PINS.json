@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "package": "local.pocket4.fdownerprobe.r11",
+  "version_code": 11,
+  "jni_symbol": "Java_local_pocket4_fdownerprobe_ProbeInstrumentation_runProbe",
+  "source_sha256": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "CASE_PLAN.json": "f4685fc955dc1f012d5fe6b57d0001c5dbc9146e61353601a09762b1d20ee137",
+    "actual/kernel_api/berberis/kernel_api/proc_maps_fd_owner.h": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+    "actual/kernel_api/berberis/kernel_api/proc_maps_open.h": "2fb3a518994aaf1c67a1355ecc8dd27177e28eea8ea89dade7d3c933988260bc",
+    "actual/kernel_api/berberis/kernel_api/proc_maps_path.h": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+    "actual/kernel_api/berberis/kernel_api/proc_maps_provenance.h": "e11e053aa0e33ece4ab166c2da618a4a559956675f52790b893d30f4ee1fb175",
+    "actual/kernel_api/proc_maps_fd_owner.cc": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+    "actual/kernel_api/proc_maps_open.cc": "04abd180090fbe86fddce1e5365067ceaa41dab114da99c32f13c13b54c68a62",
+    "actual/kernel_api/proc_maps_path.cc": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+    "actual/kernel_api/proc_maps_provenance.cc": "356bdba66986e446f7946fe5c7be344bc562a7e6d665dd3d1b8651b796935c39",
+    "lifecycle_cases.cc": "60e371eed5e0a6a50a408da5508332748a56486b86885c2aa54f93ef06a3a384",
+    "owner_probe.cpp": "e84593fa20e9803c3b6f8c7e908f0386015abcaf43710e6b9af0fcd223e3d846",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f"
+  },
+  "actual_candidate_sources": {
+    "actual/kernel_api/berberis/kernel_api/proc_maps_fd_owner.h": {
+      "source": "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-05/kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h",
+      "sha256": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc"
+    },
+    "actual/kernel_api/berberis/kernel_api/proc_maps_open.h": {
+      "source": "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-05/kernel_api/include/berberis/kernel_api/proc_maps_open.h",
+      "sha256": "2fb3a518994aaf1c67a1355ecc8dd27177e28eea8ea89dade7d3c933988260bc"
+    },
+    "actual/kernel_api/berberis/kernel_api/proc_maps_path.h": {
+      "source": "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-05/kernel_api/include/berberis/kernel_api/proc_maps_path.h",
+      "sha256": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c"
+    },
+    "actual/kernel_api/berberis/kernel_api/proc_maps_provenance.h": {
+      "source": "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-05/kernel_api/include/berberis/kernel_api/proc_maps_provenance.h",
+      "sha256": "e11e053aa0e33ece4ab166c2da618a4a559956675f52790b893d30f4ee1fb175"
+    },
+    "actual/kernel_api/proc_maps_fd_owner.cc": {
+      "source": "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-05/kernel_api/proc_maps_fd_owner.cc",
+      "sha256": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e"
+    },
+    "actual/kernel_api/proc_maps_open.cc": {
+      "source": "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-05/kernel_api/proc_maps_open.cc",
+      "sha256": "04abd180090fbe86fddce1e5365067ceaa41dab114da99c32f13c13b54c68a62"
+    },
+    "actual/kernel_api/proc_maps_path.cc": {
+      "source": "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-05/kernel_api/proc_maps_path.cc",
+      "sha256": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765"
+    },
+    "actual/kernel_api/proc_maps_provenance.cc": {
+      "source": "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-05/kernel_api/proc_maps_provenance.cc",
+      "sha256": "356bdba66986e446f7946fe5c7be344bc562a7e6d665dd3d1b8651b796935c39"
+    }
+  },
+  "reusable_owner_core_pins_sha256": "ea0cdaff5d88fe1d8a092a1fa2210bf4483a308b6c2e49e9f78ed64c559076ca",
+  "host_controller_report_sha256": "f1eb90a07c12e460e414fec367ee8b2be8c4154683946952b0e1068e0ecb8749",
+  "builder_contract": "Existing pinned owner builder, x86_64/API24, compiles owner_probe.cpp and included actual sources; no additional linker flags or dependencies.",
+  "archive_layout": "flat root files plus actual/ and src/; no enclosing directory",
+  "expected_observed_cases": 13,
+  "expected_behavior_mask": "0x0000000000001fff",
+  "actual_android_executed": false,
+  "production_candidate_ready": false,
+  "runtime_entry_hooks_installed": false,
+  "host_copy_seam": false,
+  "known_reds": [
+    "RLIMIT_NOFILE=0 metadata remains EMFILE",
+    "libc TLS allocation and task-count limits are not claimed eliminated",
+    "CLONE_VM new TGID is a containment rejection, not guest support",
+    "runtime lifecycle hooks not installed",
+    "credential/root/mount transitions unqualified",
+    "ordinary alias-to-maps admission race remains"
+  ],
+  "artifact_not_a_runtime_deployment": true,
+  "r14_prior_actual_pass_receipt_sha256": "9f7b3e4b89c9f02f31c197bf791ce73b0d740a5af8933698835c02b12d88eeb5",
+  "r15_prior_actual_lifecycle_receipt_sha256": "b3fd7cab3164ecf2e768acc49ed2e7051e935c90d92fbf135d9e86f68a5e3077",
+  "source_revision": "Frozen reusable owner r5, supplied stack retained through private fork; runtime entry hooks remain absent."
+}

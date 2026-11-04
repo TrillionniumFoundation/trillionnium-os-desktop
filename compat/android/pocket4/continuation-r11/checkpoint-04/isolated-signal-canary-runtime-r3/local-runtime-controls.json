@@ -1,0 +1,158 @@
+{
+  "schema": 1,
+  "state": "LOCAL_RUNTIME_CONTROLS_PASS",
+  "controls": [
+    {
+      "name": "synthetic-complete-admission-sets-only",
+      "passed": true,
+      "expected_rejection": false,
+      "error": null
+    },
+    {
+      "name": "reject-empty-copied_records",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "prepared runtime record set is incomplete or differs"
+    },
+    {
+      "name": "reject-empty-apks",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "prepared r2/r3 APK set differs"
+    },
+    {
+      "name": "reject-empty-data_images",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "fresh image set incomplete"
+    },
+    {
+      "name": "reject-empty-nonces",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "owned case nonce set differs"
+    },
+    {
+      "name": "reject-one-missing-runtime-record",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "prepared runtime record set is incomplete or differs"
+    },
+    {
+      "name": "reject-missing-r3",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "prepared r2/r3 APK set differs"
+    },
+    {
+      "name": "reject-duplicate-data-instead-of-metadata",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "fresh image set incomplete"
+    },
+    {
+      "name": "reject-reused-nonce",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "nonce uniqueness/format differs"
+    },
+    {
+      "name": "reject-changed-action-target",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "prepared action targets differ from the reviewed input contract"
+    },
+    {
+      "name": "reject-changed-engine-identity",
+      "passed": true,
+      "expected_rejection": true,
+      "error": "prepared action targets differ from the reviewed input contract"
+    },
+    {
+      "name": "exact-spec-derivation-uses-only-owned-data-and-sources",
+      "passed": true
+    },
+    {
+      "name": "18-original-v5-function-definitions-loaded-with-no-side-effects",
+      "passed": true
+    }
+  ],
+  "retained_original_functions": {
+    "now": {
+      "source_sha256": "d4c9401fe48508973b09b76508527136e24c7d1f6eff9a2293f9c7a869817213",
+      "first_line": 22
+    },
+    "sha": {
+      "source_sha256": "e8e02a2fff65c7bce776d61da079a0229b5abd91210f8dd06dbf1fc00aaad196",
+      "first_line": 23
+    },
+    "save": {
+      "source_sha256": "b605e0e4a8501d1bdd6a2a1d67783f44765a6172a1b4ac3d47394216d37294a5",
+      "first_line": 25
+    },
+    "event": {
+      "source_sha256": "bd1e582152b19547f715dc157fa7bfc0bf83e9a45aa04e3537a1625a85fbe5f4",
+      "first_line": 30
+    },
+    "call": {
+      "source_sha256": "4a227b37bdfc9935ddb7565eecb7c88489cb64961be0ff5325963eedb3e9ca74",
+      "first_line": 32
+    },
+    "props": {
+      "source_sha256": "82c37535fb294dc08910b46e44b0e31609519450517bf2eeaad10ca6f04cf73c",
+      "first_line": 36
+    },
+    "proc": {
+      "source_sha256": "06776ce8e2d1e9ee25f838651e0b9b223768416608fc2abc04959536bd0d26d6",
+      "first_line": 41
+    },
+    "unit_launch": {
+      "source_sha256": "38c8f212aefc7f76c4ce7825541c66dcbcfce650161cf1e524914fafa2edf20a",
+      "first_line": 63
+    },
+    "owned": {
+      "source_sha256": "3b60db8407026da803445cc6ce02693977354623062c3c1b4e44a48f7f816e3e",
+      "first_line": 80
+    },
+    "endpoint": {
+      "source_sha256": "7660f2f79979edf6e7783839bc7523e018b9d19afe375ec7231a2da4970b8c6c",
+      "first_line": 84
+    },
+    "ctl": {
+      "source_sha256": "a6b0b539bbee8e6a2f2e8a72d05da4fe2e78e984c8c0453b87af0b056f7ea1a6",
+      "first_line": 96
+    },
+    "discover_init": {
+      "source_sha256": "2fefa5baa37ed77fb7140667214fd52a1a73ee4c2de4fdbcba051b6f35703600",
+      "first_line": 102
+    },
+    "atext": {
+      "source_sha256": "9f55cc85350eb01fa7bfd60f215319a4f2660de3ee2206ed47aea29112c6aa05",
+      "first_line": 132
+    },
+    "current_guest_epoch": {
+      "source_sha256": "d535bf5dd22ced7e58458f1d29abb41799505338368323cc7ae84f8e094152cb",
+      "first_line": 139
+    },
+    "engine_loaded": {
+      "source_sha256": "8b460096416195eee581d0c9ae6c6006763d08f5b74e5192e80f2c47adef6281",
+      "first_line": 154
+    },
+    "bootstrap_ready": {
+      "source_sha256": "e11693255f880725f6dfa446cab386565e356529b72f3c0987a67ed0fbefef38",
+      "first_line": 345
+    },
+    "run": {
+      "source_sha256": "d74e63f2903eb2d48e4195c7259387fa89e5c61ff13bb242091e2b63fc45d90a",
+      "first_line": 460
+    },
+    "cleanup": {
+      "source_sha256": "0146de48bda01f98490726ff595666c3590c88cc2afb3d3e1737cc5724f9f936",
+      "first_line": 535
+    }
+  },
+  "device_operations": 0,
+  "native_execution": false,
+  "actual_isolated_Android_qualification": "NOT_RUN",
+  "synthetic_scope": "complete-set admission and loader only"
+}

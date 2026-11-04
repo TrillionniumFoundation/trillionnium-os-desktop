@@ -1,0 +1,82 @@
+{
+  "phase": "run",
+  "kind": "owner",
+  "package": "local.pocket4.fdownerprobe.r11",
+  "started_utc": "2026-11-04T16:27:23.715702+00:00",
+  "action_attempted": true,
+  "outcome_unknown": false,
+  "commands": [
+    {
+      "name": "packages-before",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "a5742c14de4f53f89c70e331970944a9ecb55e66ded13be407282604c5a1f396",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "package-path",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "path",
+        "local.pocket4.fdownerprobe.r11"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "f79ccef12980cf69b868caf16fd76fb4c7f65e54aec49f684318622793d1abac",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "instrument",
+      "argv": [
+        "/system/bin/am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "nonce",
+        "p4r11_raw_metadata_actual_r17_20261104_a1",
+        "local.pocket4.fdownerprobe.r11/local.pocket4.fdownerprobe.ProbeInstrumentation"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "f29bcbfde93b487479b68106e182805a044d70000869c5c9d950bd9e7d5102d3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "packages-after",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "a5742c14de4f53f89c70e331970944a9ecb55e66ded13be407282604c5a1f396",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "package_count_before": 183,
+  "installed_identity": {
+    "version_code": 11,
+    "uid": 10159
+  },
+  "apk_sha256": "74f54c5b3bb48f4c14a6ea788b7e6df5ba80c4b2944a79be37e99a919f8dab83",
+  "instrumentation_output": "INSTRUMENTATION_RESULT: debuggable=false\nINSTRUMENTATION_RESULT: nonce=p4r11_raw_metadata_actual_r17_20261104_a1\nINSTRUMENTATION_RESULT: pid=166931\nINSTRUMENTATION_RESULT: policy=NoNewPrivs:\t0\nSeccomp:\t0\nSeccomp_filters:\t0\n\nINSTRUMENTATION_RESULT: probe_result={\"probe\":\"owned_fixed_raw_metadata_r17\",\"cases\":[{\"case\":\"fixed_stat_statfs_tag_seals_identity\",\"expected_behavior_observed\":true,\"known_production_red\":false,\"direct_child_reaped\":true,\"timeout\":false,\"signal\":0,\"exit\":0,\"setup\":0,\"native_stat\":-99,\"native_fs\":-99,\"start\":0,\"start_errno\":0,\"read\":0,\"read_errno\":113,\"stop\":0,\"worker_tid_cleared\":1,\"inherited_stack\":0,\"child_finished\":0,\"nested_child_started\":0,\"nested_child_reaped\":0,\"nested_timeout\":0,\"nested_status\":-99,\"parent_read\":-99,\"parent_stop\":-99,\"parent_fd_survived\":0,\"joined_rounds\":0,\"errno_preserved\":1,\"mask_preserved\":0},{\"case\":\"warm_AS_1_and_stop_restart_without_TLS_mapping\",\"expected_behavior_observed\":true,\"known_production_red\":false,\"direct_child_reaped\":true,\"timeout\":false,\"signal\":0,\"exit\":0,\"setup\":0,\"native_stat\":0,\"native_fs\":0,\"start\":0,\"start_errno\":0,\"read\":0,\"read_errno\":113,\"stop\":0,\"worker_tid_cleared\":1,\"inherited_stack\":0,\"child_finished\":0,\"nested_child_started\":0,\"nested_child_reaped\":0,\"nested_timeout\":0,\"nested_status\":-99,\"parent_read\":-99,\"parent_stop\":-99,\"parent_fd_survived\":0,\"joined_rounds\":0,\"errno_preserved\":1,\"mask_preserved\":0},{\"case\":\"raw_private_fork_AS_1_inherited_stack\",\"expected_behavior_observed\":true,\"known_production_red\":false,\"direct_child_reaped\":true,\"timeout\":false,\"signal\":0,\"exit\":0,\"setup\":0,\"native_stat\":0,\"native_fs\":0,\"start\":0,\"start_errno\":0,\"read\":0,\"read_errno\":113,\"stop\":0,\"worker_tid_cleared\":1,\"inherited_stack\":1,\"child_finished\":1,\"nested_child_started\":1,\"nested_child_reaped\":1,\"nested_timeout\":0,\"nested_status\":0,\"parent_read\":0,\"parent_stop\":0,\"parent_fd_survived\":1,\"joined_rounds\":0,\"errno_preserved\":1,\"mask_preserved\":0},{\"case\":\"24_stop_restart_kernel_clear_tid_rounds\",\"expected_behavior_observed\":true,\"known_production_red\":false,\"direct_child_reaped\":true,\"timeout\":false,\"signal\":0,\"exit\":0,\"setup\":0,\"native_stat\":-99,\"native_fs\":-99,\"start\":0,\"start_errno\":0,\"read\":0,\"read_errno\":113,\"stop\":0,\"worker_tid_cleared\":1,\"inherited_stack\":0,\"child_finished\":0,\"nested_child_started\":0,\"nested_child_reaped\":0,\"nested_timeout\":0,\"nested_status\":-99,\"parent_read\":-99,\"parent_stop\":-99,\"parent_fd_survived\":0,\"joined_rounds\":24,\"errno_preserved\":1,\"mask_preserved\":0},{\"case\":\"full_caller_fdtable_native_fd_survives\",\"expected_behavior_observed\":true,\"known_production_red\":false,\"direct_child_reaped\":true,\"timeout\":false,\"signal\":0,\"exit\":0,\"setup\":0,\"native_stat\":-99,\"native_fs\":-99,\"start\":0,\"start_errno\":0,\"read\":0,\"read_errno\":113,\"stop\":0,\"worker_tid_cleared\":1,\"inherited_stack\":0,\"child_finished\":0,\"nested_child_started\":0,\"nested_child_reaped\":0,\"nested_timeout\":0,\"nested_status\":-99,\"parent_read\":-99,\"parent_stop\":-99,\"parent_fd_survived\":0,\"joined_rounds\":0,\"errno_preserved\":1,\"mask_preserved\":0},{\"case\":\"worker_negative_result_preserves_caller_errno_mask\",\"expected_behavior_observed\":true,\"known_production_red\":false,\"direct_child_reaped\":true,\"timeout\":false,\"signal\":0,\"exit\":0,\"setup\":0,\"native_stat\":-99,\"native_fs\":-99,\"start\":0,\"start_errno\":0,\"read\":-99,\"read_errno\":0,\"stop\":0,\"worker_tid_cleared\":1,\"inherited_stack\":0,\"child_finished\":0,\"nested_child_started\":0,\"nested_child_reaped\":0,\"nested_timeout\":0,\"nested_status\":-99,\"parent_read\":-99,\"parent_stop\":-99,\"parent_fd_survived\":0,\"joined_rounds\":0,\"errno_preserved\":1,\"mask_preserved\":1},{\"case\":\"invalid_fd_preserves_snapshot\",\"expected_behavior_observed\":true,\"known_production_red\":false,\"direct_child_reaped\":true,\"timeout\":false,\"signal\":0,\"exit\":0,\"setup\":0,\"native_stat\":-99,\"native_fs\":-99,\"start\":0,\"start_errno\":0,\"read\":-1,\"read_errno\":9,\"stop\":0,\"worker_tid_cleared\":1,\"inherited_stack\":0,\"child_finished\":0,\"nested_child_started\":0,\"nested_child_reaped\":0,\"nested_timeout\":0,\"nested_status\":-99,\"parent_read\":-99,\"parent_stop\":-99,\"parent_fd_survived\":0,\"joined_rounds\":0,\"errno_preserved\":0,\"mask_preserved\":0},{\"case\":\"NOFILE_0_remains_EMFILE_known_red\",\"expected_behavior_observed\":true,\"known_production_red\":true,\"direct_child_reaped\":true,\"timeout\":false,\"signal\":0,\"exit\":0,\"setup\":0,\"native_stat\":0,\"native_fs\":0,\"start\":0,\"start_errno\":0,\"read\":-1,\"read_errno\":24,\"stop\":0,\"worker_tid_cleared\":1,\"inherited_stack\":0,\"child_finished\":0,\"nested_child_started\":0,\"nested_child_reaped\":0,\"nested_timeout\":0,\"nested_status\":-99,\"parent_read\":-99,\"parent_stop\":-99,\"parent_fd_survived\":0,\"joined_rounds\":0,\"errno_preserved\":0,\"mask_preserved\":0}],\"pass\":true,\"child_reaped\":true,\"direct_children_started\":8,\"direct_children_reaped\":8,\"nested_children_started\":1,\"nested_children_reaped\":1,\"expected_cases\":8,\"observed_cases\":8,\"expected_behavior_mask\":\"0x00000000000000ff\",\"timeout\":false,\"application_uid\":10159,\"scope\":\"fixed raw-syscall metadata primitive with an owned tag; no provenance projection\",\"source_worker_has_arbitrary_callback\":false,\"host_copy_seam\":false,\"fault_injections\":[],\"rawfork_inflight_request_covered\":false,\"full_provenance_tested\":false,\"runtime_hooks_installed\":false,\"candidate_production_ready\":false,\"broker_positive_identity_tested\":false,\"known_reds\":[\"NOFILE0 remains EMFILE\",\"task-count and kernel-resource limits remain\",\"host cancellation and credential/root/mount transitions unqualified\",\"full provenance and pathname operations not integrated\",\"runtime lifecycle hooks absent\"]}\nINSTRUMENTATION_RESULT: sdk=37\nINSTRUMENTATION_RESULT: uid=10159\nINSTRUMENTATION_CODE: -1\n",
+  "all_package_identities_preserved": true,
+  "ok": true,
+  "finished_utc": "2026-11-04T16:27:24.089987+00:00"
+}

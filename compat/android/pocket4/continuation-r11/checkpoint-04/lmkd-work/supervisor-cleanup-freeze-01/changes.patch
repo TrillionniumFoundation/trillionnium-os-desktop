@@ -1,0 +1,1013 @@
+--- a/docs/contracts/runtime-layout-v1.md
++++ b/docs/contracts/runtime-layout-v1.md
+@@ -160,6 +160,26 @@
+ policy/veth, unmounts the private tree, removes runtime paths, and finally
+ releases the cgroup. Repeating teardown must be safe.
+ 
++The executable development-cell owner marks cleanup complete only after network
++retirement and runtime-directory removal both succeed. A failed network deletion
++retains that object and every lower ownership step; a failed forwarding restore
++retains its recovery record. Completed deletions are not replayed by the same
++owner, and a record-removal retry does not repeat a completed global sysctl write.
++
++After a child wait or cleanup failure, `droidloomd` keeps the old cell handle and
++returns `ok: false` with state `cleanup_failed`. Routine polling does not retry
++effects or release the slot. Start, restart, launches and readiness operations
++remain blocked; an authorized explicit stop, or final daemon shutdown, may retry
++the remaining cleanup. Only successful cleanup releases the slot. The daemon
++keeps its listener alive after a polling failure so that failure cannot become
++an automatic restart with an empty owner slot. Consumers must understand the new
++state; an older strict protocol client will reject it rather than report success.
++
++This retention applies while the daemon remains alive. Forced daemon termination,
++proof that a prior namespace has fully retired, and recovery-record replay across
++daemon generations require separate lifecycle recovery qualification. Retaining
++the forwarding record does not by itself establish those properties.
++
+ ## Lifecycle readiness and progress
+ 
+ `running` means the namespace owner is alive. Android readiness additionally
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -140,6 +140,9 @@
+     Stopped,
+     /// The namespace owner is alive. Android services may still be booting.
+     Running,
++    /// The old cell still owns resources after a failed wait or teardown.
++    /// Starting another cell is forbidden until explicit cleanup succeeds.
++    CleanupFailed,
+ }
+ 
+ /// One enabled Android launcher activity exposed to the host application menu.
+@@ -166,7 +169,7 @@
+     pub state: CellState,
+     /// Human-readable result or error.
+     pub message: String,
+-    /// Exact host PID owned by the daemon when running.
++    /// Exact child PID held by the daemon, including pending cleanup after exit.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub host_pid: Option<u32>,
+     /// Successful task-launcher output, when applicable.
+@@ -223,6 +226,7 @@
+     config: DaemonConfig,
+     active: Option<ActiveCell>,
+     last_exit: Option<String>,
++    retirement_error: Option<String>,
+     progress: Reporter,
+ }
+ 
+@@ -232,11 +236,13 @@
+             config,
+             active: None,
+             last_exit: None,
++            retirement_error: None,
+             progress: Reporter::default(),
+         }
+     }
+ 
+     fn poll(&mut self) -> Result<(), ControlError> {
++        self.require_no_retirement_failure()?;
+         let Some(active) = self.active.as_mut() else {
+             return Ok(());
+         };
+@@ -247,9 +253,7 @@
+             }
+             Ok(None) => {}
+             Err(error) => {
+-                self.last_exit = Some(format!("Android cell teardown failed: {error}"));
+-                self.active = None;
+-                return Err(error);
++                return Err(self.record_retirement_failure(error));
+             }
+         }
+         Ok(())
+@@ -261,7 +265,11 @@
+         request: ControlRequest,
+         file: Option<fs::File>,
+     ) -> ControlResponse {
+-        if let Err(error) = self.poll() {
++        // Only an explicit stop can retry the retained failed owner. Routine
++        // polling and another start/restart must not turn failure into success.
++        if !matches!(&request, ControlRequest::Stop)
++            && let Err(error) = self.poll()
++        {
+             return self.failure(error.to_string());
+         }
+         let result = match request {
+@@ -308,6 +316,9 @@
+     }
+ 
+     fn start(&mut self, peer_uid: u32, spec_path: &Path) -> Result<ControlResponse, ControlError> {
++        // Keep this gate in the method as well as the transport dispatcher:
++        // launch and other in-process callers also reach start directly.
++        self.poll()?;
+         let spec = load_authorized_spec(peer_uid, spec_path, &self.config.spec_directory)?;
+         if let Some(active) = &self.active {
+             if active.spec == spec {
+@@ -347,10 +358,15 @@
+             return Ok(self.success("cell is already stopped"));
+         };
+         authorize_uid(peer_uid, active.spec.host_uid)?;
+-        let mut active = self.active.take().expect("active cell was just checked");
+-        active.cell.stop().map_err(development_error)?;
++        let active = self.active.as_mut().expect("active cell was just checked");
++        let cell_id = active.spec.id();
++        if let Err(error) = active.cell.stop().map_err(development_error) {
++            return Err(self.record_retirement_failure(error));
++        }
++        self.active = None;
++        self.retirement_error = None;
+         self.last_exit = None;
+-        Ok(self.success(format!("stopped cell {}", active.spec.id())))
++        Ok(self.success(format!("stopped cell {cell_id}")))
+     }
+ 
+     fn restart(
+@@ -358,6 +374,7 @@
+         peer_uid: u32,
+         spec_path: &Path,
+     ) -> Result<ControlResponse, ControlError> {
++        self.require_no_retirement_failure()?;
+         load_authorized_spec(peer_uid, spec_path, &self.config.spec_directory)?;
+         if self.active.is_some() {
+             self.stop(peer_uid)?;
+@@ -366,6 +383,7 @@
+     }
+ 
+     fn status(&self, peer_uid: u32) -> Result<ControlResponse, ControlError> {
++        self.require_no_retirement_failure()?;
+         if let Some(active) = &self.active {
+             authorize_uid(peer_uid, active.spec.host_uid)?;
+             let (_, phase) = android_boot_snapshot(&active.spec)?;
+@@ -564,6 +582,7 @@
+     }
+ 
+     fn ensure_active_cell(&mut self, peer_uid: u32, spec_path: &Path) -> Result<(), ControlError> {
++        self.require_no_retirement_failure()?;
+         if self.active.is_none() {
+             self.start(peer_uid, spec_path)?;
+             return Ok(());
+@@ -586,6 +605,7 @@
+         peer_uid: u32,
+         expected_spec: Option<&Path>,
+     ) -> Result<&ActiveCell, ControlError> {
++        self.require_no_retirement_failure()?;
+         let active = self.active.as_ref().ok_or_else(|| {
+             ControlError::Invalid("Droidloom's boot-managed Android cell is not running".into())
+         })?;
+@@ -637,7 +657,9 @@
+     fn success(&self, message: impl Into<String>) -> ControlResponse {
+         ControlResponse {
+             ok: true,
+-            state: if self.active.is_some() {
++            state: if self.retirement_error.is_some() {
++                CellState::CleanupFailed
++            } else if self.active.is_some() {
+                 CellState::Running
+             } else {
+                 CellState::Stopped
+@@ -658,10 +680,30 @@
+     }
+ 
+     fn shutdown(&mut self) -> Result<(), ControlError> {
+-        if let Some(mut active) = self.active.take() {
+-            active.cell.stop().map_err(development_error)?;
+-        }
++        if let Some(active) = self.active.as_mut()
++            && let Err(error) = active.cell.stop().map_err(development_error)
++        {
++            return Err(self.record_retirement_failure(error));
++        }
++        self.active = None;
++        self.retirement_error = None;
+         Ok(())
++    }
++
++    fn require_no_retirement_failure(&self) -> Result<(), ControlError> {
++        match &self.retirement_error {
++            Some(message) => Err(ControlError::Invalid(message.clone())),
++            None => Ok(()),
++        }
++    }
++
++    fn record_retirement_failure(&mut self, error: ControlError) -> ControlError {
++        let message = format!(
++            "Android cell cleanup is incomplete; retained owner blocks start/restart: {error}"
++        );
++        self.last_exit = Some(message.clone());
++        self.retirement_error = Some(message.clone());
++        ControlError::Invalid(message)
+     }
+ }
+ 
+@@ -693,7 +735,14 @@
+         if shutdown.load(Ordering::Relaxed) {
+             return Ok(());
+         }
+-        daemon.poll()?;
++        let already_failed = daemon.retirement_error.is_some();
++        if let Err(error) = daemon.poll()
++            && !already_failed
++        {
++            // Keep the old owner and listener alive. An automatic daemon exit
++            // here used to discard the only in-memory cleanup handle.
++            eprintln!("droidloomd: {error}");
++        }
+         match listener.accept() {
+             Ok((mut stream, _)) => {
+                 let response = match receive_request(&mut stream) {
+@@ -1456,6 +1505,128 @@
+ mod tests {
+     use super::*;
+     use std::sync::Arc;
++
++    fn daemon_with_owned_cleanup_failure(
++        directory: &Path,
++        child: std::process::Child,
++    ) -> (Daemon, PathBuf) {
++        let spec = crate::development::owned_cleanup_test_spec(directory);
++        fs::create_dir(&spec.runtime_dir).unwrap();
++        let blocker = spec.runtime_dir.join("android-cmdline");
++        fs::create_dir(&blocker).unwrap();
++        let mut daemon = Daemon::new(DaemonConfig {
++            socket: directory.join("unused-control.sock"),
++            supervisor: directory.join("unused-supervisor"),
++            spec_directory: directory.join("unused-specifications"),
++        });
++        daemon.active = Some(ActiveCell {
++            spec_path: directory.join("unused-spec.json"),
++            cell: DevelopmentCell::from_owned_child_for_test(spec.clone(), child),
++            spec,
++        });
++        (daemon, blocker)
++    }
++
++    #[test]
++    fn daemon_retains_failed_cleanup_across_poll_stop_shutdown_and_reentry() {
++        let directory = tempfile::tempdir().unwrap();
++        let mut child = std::process::Command::new("/bin/true").spawn().unwrap();
++        let child_pid = child.id();
++        assert!(child.wait().unwrap().success());
++        let (mut daemon, blocker) = daemon_with_owned_cleanup_failure(directory.path(), child);
++        assert!(daemon.poll().is_err());
++        for _ in 0..3 {
++            assert!(daemon.poll().is_err());
++            assert!(daemon.stop(1001).is_err());
++            assert!(daemon.shutdown().is_err());
++            assert_eq!(daemon.active.as_ref().unwrap().cell.host_pid(), child_pid);
++            let failure = daemon.handle(1001, ControlRequest::Status, None);
++            assert!(!failure.ok);
++            assert_eq!(failure.state, CellState::CleanupFailed);
++            assert_eq!(failure.host_pid, Some(child_pid));
++            assert!(failure.message.contains("cleanup is incomplete"));
++            let encoded = serde_json::to_vec(&failure).unwrap();
++            assert_eq!(
++                serde_json::from_slice::<ControlResponse>(&encoded).unwrap(),
++                failure
++            );
++            let absent_spec = directory.path().join("must-not-be-opened.json");
++            assert!(
++                daemon
++                    .start(1001, &absent_spec)
++                    .unwrap_err()
++                    .to_string()
++                    .contains("cleanup is incomplete")
++            );
++            assert!(
++                daemon
++                    .restart(1001, &absent_spec)
++                    .unwrap_err()
++                    .to_string()
++                    .contains("cleanup is incomplete")
++            );
++            assert!(daemon.ensure_active_cell(1001, &absent_spec).is_err());
++            assert!(daemon.require_active_cell(1001, None).is_err());
++            assert!(blocker.is_dir());
++        }
++        // An unrelated uid cannot use the explicit retry path.
++        assert!(daemon.stop(1002).is_err());
++        assert!(daemon.active.is_some());
++        fs::remove_dir(&blocker).unwrap();
++        let stopped = daemon.handle(1001, ControlRequest::Stop, None);
++        assert!(stopped.ok);
++        assert_eq!(stopped.state, CellState::Stopped);
++        assert!(daemon.active.is_none());
++        assert!(daemon.retirement_error.is_none());
++        daemon.poll().unwrap();
++        daemon.shutdown().unwrap();
++    }
++
++    #[test]
++    fn daemon_stop_keeps_the_exact_child_after_real_exit_and_cleanup_failure() {
++        let directory = tempfile::tempdir().unwrap();
++        let child = std::process::Command::new("/bin/sleep")
++            .arg("30")
++            .spawn()
++            .unwrap();
++        let child_pid = child.id();
++        let (mut daemon, blocker) = daemon_with_owned_cleanup_failure(directory.path(), child);
++        assert!(daemon.stop(1001).is_err());
++        assert_eq!(daemon.active.as_ref().unwrap().cell.host_pid(), child_pid);
++        assert!(daemon.shutdown().is_err());
++        assert!(daemon.poll().is_err());
++        fs::remove_dir(&blocker).unwrap();
++        daemon.shutdown().unwrap();
++        assert!(daemon.active.is_none());
++    }
++
++    #[test]
++    fn daemon_loop_keeps_serving_after_an_owned_cleanup_failure() {
++        let directory = tempfile::tempdir().unwrap();
++        let mut child = std::process::Command::new("/bin/true").spawn().unwrap();
++        assert!(child.wait().unwrap().success());
++        let (mut daemon, blocker) = daemon_with_owned_cleanup_failure(directory.path(), child);
++        let socket = directory.path().join("control.sock");
++        let listener = UnixListener::bind(&socket).unwrap();
++        listener.set_nonblocking(true).unwrap();
++        let shutdown = Arc::new(AtomicBool::new(false));
++        let worker_shutdown = Arc::clone(&shutdown);
++        let worker = thread::spawn(move || {
++            let result = run_loop(&listener, &mut daemon, &worker_shutdown);
++            (result, daemon)
++        });
++        let response = request(&socket, &ControlRequest::Status);
++        shutdown.store(true, Ordering::Relaxed);
++        let (result, mut daemon) = worker.join().unwrap();
++        result.unwrap();
++        let response = response.unwrap();
++        assert!(!response.ok);
++        assert_eq!(response.state, CellState::CleanupFailed);
++        assert!(daemon.active.is_some());
++        assert!(daemon.shutdown().is_err());
++        fs::remove_dir(blocker).unwrap();
++        daemon.shutdown().unwrap();
++    }
+ 
+     #[test]
+     fn install_transport_delivers_open_file_and_preserves_android_failure() {
+--- a/runtime/droidloom-supervisor/src/development.rs
++++ b/runtime/droidloom-supervisor/src/development.rs
+@@ -110,7 +110,8 @@
+         let image = crate::gapps::partition_image(spec, name);
+         detect_read_only_filesystem(&image)?;
+     }
+-    crate::gapps::validate(spec).map_err(|error| DevelopmentError::InvalidInput(error.to_string()))?;
++    crate::gapps::validate(spec)
++        .map_err(|error| DevelopmentError::InvalidInput(error.to_string()))?;
+     if starts_with_magic(&spec.vendor_image, 0, &ANDROID_SPARSE_MAGIC)? {
+         return Err(DevelopmentError::InvalidInput(format!(
+             "{} is Android-sparse; convert it with simg2img before boot",
+@@ -358,19 +359,26 @@
+         if self.cleaned {
+             return Ok(());
+         }
+-        let mut first_error = None;
+-        if let Some(mut network) = self.network.take()
+-            && let Err(error) = network.teardown()
+-        {
+-            first_error = Some(error);
+-        }
+-        if let Err(error) = cleanup_runtime_directory(&self.spec)
+-            && first_error.is_none()
+-        {
+-            first_error = Some(error);
+-        }
++        if let Some(network) = self.network.as_mut() {
++            // Keep the exact remaining network owner and its recovery record
++            // until teardown really succeeds. Runtime cleanup must not erase
++            // that record after a network failure.
++            network.teardown()?;
++            self.network = None;
++        }
++        cleanup_runtime_directory(&self.spec)?;
+         self.cleaned = true;
+-        first_error.map_or(Ok(()), Err)
++        Ok(())
++    }
++
++    #[cfg(test)]
++    pub(crate) fn from_owned_child_for_test(spec: CellSpec, child: Child) -> Self {
++        Self {
++            spec,
++            child,
++            network: None,
++            cleaned: false,
++        }
+     }
+ }
+ 
+@@ -382,6 +390,33 @@
+         if let Err(error) = self.stop() {
+             eprintln!("droidloom-supervisor: best-effort cell teardown failed: {error}");
+         }
++    }
++}
++
++#[cfg(test)]
++pub(crate) fn owned_cleanup_test_spec(directory: &Path) -> CellSpec {
++    CellSpec {
++        host_uid: 1001,
++        subordinate_uids: crate::IdRange {
++            start: 100_000,
++            count: 100_000,
++        },
++        subordinate_gids: crate::IdRange {
++            start: 200_000,
++            count: 100_000,
++        },
++        image_dir: directory.join("images"),
++        gapps_dir: None,
++        vendor_image: directory.join("vendor.img"),
++        android_init: None,
++        android_file_overrides: Vec::new(),
++        android_runtime_directories: Vec::new(),
++        shared_storage_directories: Vec::new(),
++        data_dir: directory.join("data"),
++        runtime_dir: directory.join("runtime"),
++        render_node: directory.join("unused-render-node"),
++        graphics_backend: crate::GraphicsBackend::default(),
++        denial_socket: directory.join("unused-denial.sock"),
+     }
+ }
+ 
+@@ -402,13 +437,9 @@
+ ) -> Result<DevelopmentCell, DevelopmentError> {
+     validate_development_inputs(spec)?;
+     prepare_host_directories(spec)?;
+-    let mut network = match DevelopmentNetwork::create(spec) {
+-        Ok(network) => network,
+-        Err(error) => {
+-            cleanup_runtime_directory(spec)?;
+-            return Err(error);
+-        }
+-    };
++    // A failed setup can also have a failed rollback. Preserve its private
++    // runtime/recovery directory for the next explicit recovery attempt.
++    let mut network = DevelopmentNetwork::create(spec)?;
+     let parent_pid = unsafe { libc::getpid() };
+     let mut command = droidloom_cpu_placement::command("ip");
+     command
+@@ -457,10 +488,8 @@
+             cleaned: false,
+         }),
+         Err(source) => {
+-            let network_result = network.teardown();
+-            let runtime_result = cleanup_runtime_directory(spec);
+-            network_result?;
+-            runtime_result?;
++            network.teardown()?;
++            cleanup_runtime_directory(spec)?;
+             Err(io_error("execute networked unshare", source))
+         }
+     }
+@@ -642,9 +671,12 @@
+     }
+     let cpu_policy = spec.runtime_dir.join("cpu-policy");
+     if cpu_policy.exists() {
+-        for entry in fs::read_dir(&cpu_policy).map_err(|e| io_error("read CPU policy directory", e))? {
++        for entry in
++            fs::read_dir(&cpu_policy).map_err(|e| io_error("read CPU policy directory", e))?
++        {
+             let entry = entry.map_err(|e| io_error("read CPU policy entry", e))?;
+-            fs::remove_file(entry.path()).map_err(|e| io_error("remove generated CPU policy", e))?;
++            fs::remove_file(entry.path())
++                .map_err(|e| io_error("remove generated CPU policy", e))?;
+         }
+         fs::remove_dir(cpu_policy).map_err(|e| io_error("remove CPU policy directory", e))?;
+     }
+@@ -819,7 +851,9 @@
+     let cpu_policy = crate::cpu_placement::prepare(&root, spec.id().as_str())
+         .map_err(|source| io_error("prepare private Android CPU placement hierarchy", source))?;
+     bind_development_cgroups(spec, &root, cpu_policy.is_some())?;
+-    if let Some(policy) = cpu_policy { bind_cpu_policy(spec, &root, &policy)?; }
++    if let Some(policy) = cpu_policy {
++        bind_cpu_policy(spec, &root, &policy)?;
++    }
+ 
+     // The reusable base is a system-as-root image, but Droidloom has already
+     // supplied the mounts that Android first-stage init normally constructs.
+@@ -837,8 +871,7 @@
+             .env("vendor.minigbm.allocator", "dma_heap_images");
+     }
+     let error = std::os::unix::process::CommandExt::exec(
+-        init
+-            .arg("second_stage")
++        init.arg("second_stage")
+             // Android's mount-namespace decision runs before ro.boot.*
+             // properties are guaranteed to exist. Give the package-owned
+             // init adaptation an unambiguous early-boot marker instead.
+@@ -1684,8 +1717,12 @@
+     if text_socket.exists() {
+         if !fs::metadata(&text_socket)
+             .map_err(|source| io_error("stat text-input socket", source))?
+-            .file_type().is_socket() {
+-            return Err(DevelopmentError::InvalidInput("text-input endpoint is not a socket".into()));
++            .file_type()
++            .is_socket()
++        {
++            return Err(DevelopmentError::InvalidInput(
++                "text-input endpoint is not a socket".into(),
++            ));
+         }
+         let target = root.join("dev/socket/droidloom/text-input");
+         create_mount_target(&target)?;
+@@ -1716,20 +1753,29 @@
+         .map_err(|source| io_error("stat auxiliary graphics device", source))?;
+     if !metadata.file_type().is_char_device() {
+         return Err(DevelopmentError::InvalidInput(format!(
+-            "{} must be a character device, not a symlink", path.display()
++            "{} must be a character device, not a symlink",
++            path.display()
+         )));
+     }
+     let (major, minor) = linux_device_numbers(metadata.rdev());
+     let uevent = fs::read_to_string(format!("/sys/dev/char/{major}:{minor}/uevent"))
+         .map_err(|source| io_error("read auxiliary graphics device identity", source))?;
+-    let expected = format!("DEVNAME={}", path.strip_prefix("/dev").expect("fixed device path").display());
++    let expected = format!(
++        "DEVNAME={}",
++        path.strip_prefix("/dev")
++            .expect("fixed device path")
++            .display()
++    );
+     if !uevent.lines().any(|line| line == expected) {
+         return Err(DevelopmentError::InvalidInput(format!(
+-            "{} does not match its kernel device identity", path.display()
++            "{} does not match its kernel device identity",
++            path.display()
+         )));
+     }
+-    Ok((u32::try_from(major).expect("Linux device major"),
+-        u32::try_from(minor).expect("Linux device minor")))
++    Ok((
++        u32::try_from(major).expect("Linux device major"),
++        u32::try_from(minor).expect("Linux device minor"),
++    ))
+ }
+ 
+ fn bind_boot_parameters(spec: &CellSpec, root: &Path) -> Result<(), DevelopmentError> {
+@@ -1748,21 +1794,30 @@
+     bind_mount(&cmdline, &root.join("proc/cmdline"), true)
+ }
+ 
+-fn bind_development_cgroups(spec: &CellSpec, root: &Path, cpuset: bool) -> Result<(), DevelopmentError> {
++fn bind_development_cgroups(
++    spec: &CellSpec,
++    root: &Path,
++    cpuset: bool,
++) -> Result<(), DevelopmentError> {
+     // The target host is unified cgroup v2. Keep Android's legacy controller
+     // descriptors optional so their unavailable v1 mounts cannot prevent the
+     // private v2 hierarchy (and its /system subtree) from being created.
+     let source = spec.runtime_dir.join("android-cgroups.json");
+-    let mut config: serde_json::Value = serde_json::from_str(DEVELOPMENT_CGROUPS)
+-        .expect("embedded cgroup configuration is valid");
++    let mut config: serde_json::Value =
++        serde_json::from_str(DEVELOPMENT_CGROUPS).expect("embedded cgroup configuration is valid");
+     if cpuset {
+         // CPU placement uses cpuset. Do not advertise an unusable legacy CPU
+         // controller: get_sched_policy() must read the real cpuset hierarchy.
+-        config["Cgroups"].as_array_mut().expect("controller list")
++        config["Cgroups"]
++            .as_array_mut()
++            .expect("controller list")
+             .retain(|controller| controller["Controller"] != "cpu");
+     }
+-    fs::write(&source, serde_json::to_vec_pretty(&config).expect("JSON value serializes"))
+-        .map_err(|source| io_error("write Android development cgroup configuration", source))?;
++    fs::write(
++        &source,
++        serde_json::to_vec_pretty(&config).expect("JSON value serializes"),
++    )
++    .map_err(|source| io_error("write Android development cgroup configuration", source))?;
+     bind_mount(&source, &root.join(ANDROID_CGROUPS_TARGET), true)
+ }
+ 
+@@ -1773,14 +1828,16 @@
+     // shared-kernel adaptations. The appended on-init action follows AOSP's
+     // cpuset defaults and completes before services are started.
+     let target = root.join("system/etc/init/hw/init.rc");
+-    let mut init = fs::read_to_string(&target).map_err(|e| io_error("read Android init policy", e))?;
++    let mut init =
++        fs::read_to_string(&target).map_err(|e| io_error("read Android init policy", e))?;
+     init.push_str(policy);
+     let source = directory.join("init.rc");
+     fs::write(&source, init).map_err(|e| io_error("write Android CPU init policy", e))?;
+     bind_mount(&source, &target, true)?;
+ 
+     let target = root.join("system/etc/init/surfaceflinger.rc");
+-    let original = fs::read_to_string(&target).map_err(|e| io_error("read SurfaceFlinger service", e))?;
++    let original =
++        fs::read_to_string(&target).map_err(|e| io_error("read SurfaceFlinger service", e))?;
+     let service = crate::cpu_placement::graphics_service(&original)
+         .map_err(|e| io_error("set SurfaceFlinger graphics role", e))?;
+     let source = directory.join("surfaceflinger.rc");
+@@ -1788,23 +1845,35 @@
+     bind_mount(&source, &target, true)?;
+ 
+     let mut targets = vec![root.join("system/etc/task_profiles.json")];
+-    for relative in ["vendor/etc/task_profiles.json", "system_ext/etc/task_profiles.json"] {
++    for relative in [
++        "vendor/etc/task_profiles.json",
++        "system_ext/etc/task_profiles.json",
++    ] {
+         let target = root.join(relative);
+-        if target.exists() { targets.push(target); }
++        if target.exists() {
++            targets.push(target);
++        }
+     }
+     // API-specific profiles load between system and vendor; translate them
+     // too, so an older image cannot silently replace a working CPU backend.
+     let api_directory = root.join("system/etc/task_profiles");
+     if api_directory.is_dir() {
+-        for entry in fs::read_dir(api_directory).map_err(|e| io_error("read API task profiles", e))? {
++        for entry in
++            fs::read_dir(api_directory).map_err(|e| io_error("read API task profiles", e))?
++        {
+             let entry = entry.map_err(|e| io_error("read API task profile entry", e))?;
+-            if entry.file_name().to_str().is_some_and(|s| s.starts_with("task_profiles_") && s.ends_with(".json")) {
++            if entry
++                .file_name()
++                .to_str()
++                .is_some_and(|s| s.starts_with("task_profiles_") && s.ends_with(".json"))
++            {
+                 targets.push(entry.path());
+             }
+         }
+     }
+     for (index, target) in targets.iter().enumerate() {
+-        let original = fs::read_to_string(target).map_err(|e| io_error("read Android task profiles", e))?;
++        let original =
++            fs::read_to_string(target).map_err(|e| io_error("read Android task profiles", e))?;
+         let translated = crate::cpu_placement::task_profiles(&original)
+             .map_err(|e| io_error("translate Android CPU task profiles", e))?;
+         let source = directory.join(format!("profiles-{index}.json"));
+@@ -1988,6 +2057,31 @@
+ mod tests {
+     use super::*;
+     use std::io::Write;
++
++    #[test]
++    fn cleanup_failure_repeats_until_the_owned_runtime_is_removed() {
++        let directory = tempfile::tempdir().unwrap();
++        let spec = owned_cleanup_test_spec(directory.path());
++        fs::create_dir(&spec.runtime_dir).unwrap();
++        let blocker = spec.runtime_dir.join("android-cmdline");
++        fs::create_dir(&blocker).unwrap();
++        let mut child = std::process::Command::new("/bin/true").spawn().unwrap();
++        assert!(child.wait().unwrap().success());
++        let mut cell = DevelopmentCell::from_owned_child_for_test(spec.clone(), child);
++        for _ in 0..3 {
++            assert!(cell.try_wait().is_err());
++            assert!(cell.wait().is_err());
++            assert!(cell.stop().is_err());
++            assert!(!cell.cleaned);
++            assert!(blocker.is_dir());
++        }
++        fs::remove_dir(&blocker).unwrap();
++        cell.stop().unwrap();
++        assert!(cell.cleaned);
++        assert!(!spec.runtime_dir.exists());
++        assert!(cell.try_wait().unwrap().unwrap().success());
++        cell.stop().unwrap();
++    }
+ 
+     #[test]
+     fn native_media_heap_preflight_rejects_regular_files_and_symlinks() {
+--- a/runtime/droidloom-supervisor/src/development_network.rs
++++ b/runtime/droidloom-supervisor/src/development_network.rs
+@@ -46,6 +46,7 @@
+     runtime_dir: PathBuf,
+     resources: Vec<NetworkResource>,
+     previous_ipv4_forward: Option<String>,
++    forwarding_restored: bool,
+ }
+ 
+ #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+@@ -65,6 +66,7 @@
+             runtime_dir: spec.runtime_dir.clone(),
+             resources: Vec::new(),
+             previous_ipv4_forward: None,
++            forwarding_restored: false,
+         };
+ 
+         if let Err(error) = network.setup() {
+@@ -346,42 +348,42 @@
+ 
+     /// Remove every object created by this instance in reverse ownership order.
+     pub(crate) fn teardown(&mut self) -> Result<(), DevelopmentError> {
+-        let mut first_error = None;
+-
+-        while let Some(resource) = self.resources.pop() {
+-            let result = match resource {
+-                NetworkResource::UfwForwardRule => remove_ufw_rule(&self.names),
+-                NetworkResource::Namespace => run("ip", ["netns", "delete", &self.names.namespace]),
+-                NetworkResource::HostInterface => {
+-                    run("ip", ["link", "delete", &self.names.host_interface])
++        self.teardown_with(
++            remove_resource,
++            |previous| {
++                fs::write(IPV4_FORWARD_PATH, previous)
++                    .map_err(|source| io_error("restore host IPv4 forwarding", source))
++            },
++            |path| remove_file_if_present(path, "remove host IPv4 forwarding state"),
++        )
++    }
++
++    // The effect boundary is replaceable by owned-file controls in unit tests;
++    // production and tests use this same ownership/retirement algorithm.
++    fn teardown_with(
++        &mut self,
++        mut remove: impl FnMut(NetworkResource, &NetworkNames) -> Result<(), DevelopmentError>,
++        mut restore_forwarding: impl FnMut(&str) -> Result<(), DevelopmentError>,
++        mut remove_record: impl FnMut(&Path) -> Result<(), DevelopmentError>,
++    ) -> Result<(), DevelopmentError> {
++        while let Some(resource) = self.resources.last().copied() {
++            remove(resource, &self.names)?;
++            self.resources.pop();
++        }
++        if let Some(previous) = self.previous_ipv4_forward.as_deref() {
++            if !self.forwarding_restored {
++                if previous.trim() != "1" {
++                    restore_forwarding(previous)?;
+                 }
+-                NetworkResource::FilterTable => {
+-                    run("nft", ["delete", "table", "inet", &self.names.filter_table])
+-                }
+-                NetworkResource::NatTable => {
+-                    run("nft", ["delete", "table", "ip", &self.names.nat_table])
+-                }
+-            };
+-            record_error(&mut first_error, result);
+-        }
+-        if let Some(previous) = self.previous_ipv4_forward.take() {
+-            if previous.trim() != "1" {
+-                record_error(
+-                    &mut first_error,
+-                    fs::write(IPV4_FORWARD_PATH, previous)
+-                        .map_err(|source| io_error("restore host IPv4 forwarding", source)),
+-                );
++                self.forwarding_restored = true;
+             }
+-            record_error(
+-                &mut first_error,
+-                remove_file_if_present(
+-                    &self.forwarding_state_path(),
+-                    "remove host IPv4 forwarding state",
+-                ),
+-            );
+-        }
+-
+-        first_error.map_or(Ok(()), Err)
++            // A record-removal failure must not replay a successful global
++            // sysctl write on a later retry by this same owner.
++            remove_record(&self.forwarding_state_path())?;
++            self.previous_ipv4_forward = None;
++            self.forwarding_restored = false;
++        }
++        Ok(())
+     }
+ 
+     /// Remove exact, deterministically named objects left by an interrupted
+@@ -415,40 +417,48 @@
+                 run("ip", ["netns", "delete", &names.namespace]),
+             );
+         }
++        // Failed object retirement must retain the forwarding recovery record.
++        first_error.map_or(Ok(()), Err)?;
+ 
+         let forwarding_state = spec.runtime_dir.join(IPV4_FORWARD_STATE_FILE);
+         match fs::read_to_string(&forwarding_state) {
+             Ok(previous) => {
+-                record_error(
+-                    &mut first_error,
+-                    fs::write(IPV4_FORWARD_PATH, previous).map_err(|source| {
+-                        io_error("restore stale host IPv4 forwarding state", source)
+-                    }),
+-                );
+-                record_error(
+-                    &mut first_error,
+-                    remove_file_if_present(
+-                        &forwarding_state,
+-                        "remove stale host IPv4 forwarding state",
+-                    ),
+-                );
++                fs::write(IPV4_FORWARD_PATH, previous).map_err(|source| {
++                    io_error("restore stale host IPv4 forwarding state", source)
++                })?;
++                remove_file_if_present(
++                    &forwarding_state,
++                    "remove stale host IPv4 forwarding state",
++                )?;
+             }
+             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+             Err(source) => {
+-                record_error(
+-                    &mut first_error,
+-                    Err(io_error("read stale host IPv4 forwarding state", source)),
+-                );
++                return Err(io_error("read stale host IPv4 forwarding state", source));
+             }
+         }
+ 
+-        first_error.map_or(Ok(()), Err)
++        Ok(())
+     }
+ 
+     fn forwarding_state_path(&self) -> PathBuf {
+         // `runtime_dir` has already been created mode 0700 before networking
+         // starts, so this recovery record is not exposed to the Android cell.
+         self.runtime_dir.join(IPV4_FORWARD_STATE_FILE)
++    }
++}
++
++fn remove_resource(
++    resource: NetworkResource,
++    names: &NetworkNames,
++) -> Result<(), DevelopmentError> {
++    match resource {
++        NetworkResource::UfwForwardRule => remove_ufw_rule(names),
++        NetworkResource::Namespace => run("ip", ["netns", "delete", &names.namespace]),
++        NetworkResource::HostInterface => run("ip", ["link", "delete", &names.host_interface]),
++        NetworkResource::FilterTable => {
++            run("nft", ["delete", "table", "inet", &names.filter_table])
++        }
++        NetworkResource::NatTable => run("nft", ["delete", "table", "ip", &names.nat_table]),
+     }
+ }
+ 
+@@ -634,4 +644,172 @@
+         assert_eq!(HOST_IPV4_CIDR, "10.177.0.1/30");
+         assert_eq!(CELL_IPV4_CIDR, "10.177.0.2/32");
+     }
+-}
++
++    fn cleanup_owner(directory: &Path, resources: Vec<NetworkResource>) -> DevelopmentNetwork {
++        DevelopmentNetwork {
++            names: NetworkNames::for_spec(&spec(1001)),
++            runtime_dir: directory.to_owned(),
++            resources,
++            previous_ipv4_forward: Some("0\n".into()),
++            forwarding_restored: false,
++        }
++    }
++
++    #[test]
++    fn failed_network_effect_retains_itself_and_lower_ownership_steps() {
++        let directory = tempfile::tempdir().unwrap();
++        let blocker = directory.path().join("owned-delete-target");
++        fs::create_dir(&blocker).unwrap();
++        let mut network = cleanup_owner(
++            directory.path(),
++            vec![
++                NetworkResource::Namespace,
++                NetworkResource::HostInterface,
++                NetworkResource::FilterTable,
++                NetworkResource::NatTable,
++            ],
++        );
++        fs::write(network.forwarding_state_path(), "0\n").unwrap();
++        let mut observed = Vec::new();
++        for _ in 0..2 {
++            let result = network.teardown_with(
++                |resource, names| {
++                    assert_eq!(names.namespace, "droidloom-u1001");
++                    observed.push(resource);
++                    if resource == NetworkResource::HostInterface {
++                        fs::remove_file(&blocker)
++                            .map_err(|source| io_error("owned test resource removal", source))?;
++                    }
++                    Ok(())
++                },
++                |_| panic!("must not restore forwarding below an unretired resource"),
++                |_| panic!("must retain recovery record below an unretired resource"),
++            );
++            assert!(result.is_err());
++            assert_eq!(
++                network.resources,
++                vec![NetworkResource::Namespace, NetworkResource::HostInterface]
++            );
++            assert_eq!(
++                fs::read_to_string(network.forwarding_state_path()).unwrap(),
++                "0\n"
++            );
++        }
++        assert_eq!(
++            observed,
++            vec![
++                NetworkResource::NatTable,
++                NetworkResource::FilterTable,
++                NetworkResource::HostInterface,
++                NetworkResource::HostInterface
++            ]
++        );
++        fs::remove_dir(&blocker).unwrap();
++        fs::write(&blocker, "owned target").unwrap();
++        let owned_forwarding = directory.path().join("owned-forwarding-value");
++        network
++            .teardown_with(
++                |resource, _| {
++                    observed.push(resource);
++                    if resource == NetworkResource::HostInterface {
++                        fs::remove_file(&blocker)
++                            .map_err(|source| io_error("owned resource removal", source))?;
++                    }
++                    Ok(())
++                },
++                |previous| {
++                    fs::write(&owned_forwarding, previous)
++                        .map_err(|source| io_error("owned forwarding restore", source))
++                },
++                |path| remove_file_if_present(path, "owned record removal"),
++            )
++            .unwrap();
++        assert!(network.resources.is_empty());
++        assert!(network.previous_ipv4_forward.is_none());
++        assert_eq!(fs::read_to_string(&owned_forwarding).unwrap(), "0\n");
++        assert!(!network.forwarding_state_path().exists());
++    }
++
++    #[test]
++    fn failed_forwarding_restore_keeps_the_original_recovery_record() {
++        let directory = tempfile::tempdir().unwrap();
++        let mut network = cleanup_owner(directory.path(), Vec::new());
++        fs::write(network.forwarding_state_path(), "0\n").unwrap();
++        let owned_forwarding = directory.path().join("owned-forwarding-value");
++        fs::create_dir(&owned_forwarding).unwrap();
++        for _ in 0..2 {
++            assert!(
++                network
++                    .teardown_with(
++                        |_, _| panic!("no network objects in this control"),
++                        |previous| fs::write(&owned_forwarding, previous)
++                            .map_err(|source| io_error("owned forwarding restore", source)),
++                        |_| panic!("failed restore must not remove its recovery record"),
++                    )
++                    .is_err()
++            );
++            assert_eq!(network.previous_ipv4_forward.as_deref(), Some("0\n"));
++            assert!(!network.forwarding_restored);
++            assert_eq!(
++                fs::read_to_string(network.forwarding_state_path()).unwrap(),
++                "0\n"
++            );
++        }
++        fs::remove_dir(&owned_forwarding).unwrap();
++        network
++            .teardown_with(
++                |_, _| panic!("no network objects in this control"),
++                |previous| {
++                    fs::write(&owned_forwarding, previous)
++                        .map_err(|source| io_error("owned forwarding restore", source))
++                },
++                |path| remove_file_if_present(path, "owned record removal"),
++            )
++            .unwrap();
++        assert!(network.previous_ipv4_forward.is_none());
++    }
++
++    #[test]
++    fn failed_record_removal_does_not_replay_a_successful_forwarding_restore() {
++        let directory = tempfile::tempdir().unwrap();
++        let mut network = cleanup_owner(directory.path(), Vec::new());
++        fs::create_dir(network.forwarding_state_path()).unwrap();
++        let owned_forwarding = directory.path().join("owned-forwarding-value");
++        let mut restores = 0;
++        for _ in 0..2 {
++            assert!(
++                network
++                    .teardown_with(
++                        |_, _| panic!("no network objects in this control"),
++                        |previous| {
++                            restores += 1;
++                            fs::write(&owned_forwarding, previous)
++                                .map_err(|source| io_error("owned forwarding restore", source))
++                        },
++                        |path| remove_file_if_present(path, "owned record removal"),
++                    )
++                    .is_err()
++            );
++            assert_eq!(restores, 1);
++            assert!(network.forwarding_restored);
++            assert!(network.previous_ipv4_forward.is_some());
++            fs::write(&owned_forwarding, "changed by another owner\n").unwrap();
++        }
++        fs::remove_dir(network.forwarding_state_path()).unwrap();
++        fs::write(network.forwarding_state_path(), "0\n").unwrap();
++        network
++            .teardown_with(
++                |_, _| panic!("no network objects in this control"),
++                |_| panic!("must not replay a completed forwarding restore"),
++                |path| remove_file_if_present(path, "owned record removal"),
++            )
++            .unwrap();
++        assert!(network.previous_ipv4_forward.is_none());
++        assert!(!network.forwarding_restored);
++        assert!(!network.forwarding_state_path().exists());
++        assert_eq!(
++            fs::read_to_string(&owned_forwarding).unwrap(),
++            "changed by another owner\n"
++        );
++    }
++}

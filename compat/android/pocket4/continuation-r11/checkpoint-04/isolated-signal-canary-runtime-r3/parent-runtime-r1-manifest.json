@@ -1,0 +1,72 @@
+{
+  "artifact": "isolated-signal-canary-runtime-r1",
+  "deployed": false,
+  "files": {
+    "RUNTIME.md": {
+      "bytes": 10563,
+      "sha256": "bf50db91220b8b8e6c2ec7c939c11cf3989b2e098b58d5c422c33713e5010e27"
+    },
+    "host-baseline-inputs-template.json": {
+      "bytes": 1377,
+      "sha256": "51e6138efa80568fd67578ad018e1de775a37617ba3aabc4ccb0683d665a8a4f"
+    },
+    "host-candidate-inputs-template.json": {
+      "bytes": 1696,
+      "sha256": "4f14a4e9c472153c9c246687b35ccc573059f43bf4966b36a0c1b12e82c8c9b1"
+    },
+    "host-launch-inputs.json": {
+      "bytes": 518,
+      "sha256": "c313ea1f0d03474b05ee2ee8ae3bb74d0131d57469fb9dbf454d03745e3002fb"
+    },
+    "host-test-contract.json": {
+      "bytes": 223064,
+      "sha256": "5e6fce662b8e08b8c0397b09df7425e60f522dde86847f2c86b899f38f24fc41"
+    },
+    "host_suite.py": {
+      "bytes": 30776,
+      "sha256": "5c405e08e6c12ddc69e04927b708d006f4eb8039af06649f75e8df63fc94c848"
+    },
+    "local-host-parser-controls.json": {
+      "bytes": 4332,
+      "sha256": "19573a95106fd43d97e9ad473eee03ecc64905dc111e0c4f78947496b3e07d65"
+    },
+    "local-runtime-controls.json": {
+      "bytes": 4859,
+      "sha256": "4b28945a0f6345af5de371682deb06ec4276759683175c6cd2cf6adb10394ee0"
+    },
+    "r16-host-layout.json": {
+      "bytes": 1467,
+      "sha256": "e369b6bce365bd2553be7193bdeea22975d0e26d13d4bb73e826f10b6be78cd2"
+    },
+    "run.py": {
+      "bytes": 33901,
+      "sha256": "abea7028d68681eb438bca80455dd1ad3bbc4ae2e8ff12dfdb3c0ba169e3b3ae"
+    },
+    "verify_host_local.py": {
+      "bytes": 4875,
+      "sha256": "4f9a962694dbf1a6530e7c5ca0c94d4939a6340736f9a9164aa9a06222ef7685"
+    },
+    "verify_local_runtime.py": {
+      "bytes": 7220,
+      "sha256": "121720dae736255cf46300075d21b484cf0845a78b075a97e8a78e02d08dbad4"
+    }
+  },
+  "local_controls": {
+    "device_operations": 0,
+    "host_registration_XML_parser": 19,
+    "native_test_execution": false,
+    "runtime_admission_and_original_loader": 13
+  },
+  "peer_review_status_at_freeze": "Requested; inventory reviewer has not yet read this revision. Parent independent review required before device execution.",
+  "preparation_manifest_sha256": "3f12e8bcde951712a20208aaeed04f1125bac58993ce1a3f5a93e4f950a9b103",
+  "production_ready": false,
+  "required_runtime_gates": [
+    "new same-wrapper frozen R16 host baseline PASS",
+    "actual completed new native-engine --tests build",
+    "new same-wrapper candidate full host suite PASS bound to new baseline",
+    "exact fresh preparation and independent private Android four-case execution",
+    "same Main epoch and exact owned reverse cleanup"
+  ],
+  "schema": 1,
+  "state": "FROZEN_SOURCE_NOT_DEVICE_EXECUTED"
+}

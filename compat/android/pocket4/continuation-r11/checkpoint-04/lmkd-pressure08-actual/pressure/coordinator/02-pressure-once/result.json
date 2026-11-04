@@ -1,0 +1,579 @@
+{
+  "schema": 1,
+  "ok": true,
+  "scope": "one owned revision08 PIDFD-only minimal-root phase; no Main deployment",
+  "started_utc": "2026-11-04T16:17:53.757763+00:00",
+  "source_manifest_sha256": "ffe555f1913e2d3f540ec115298580ddb95849e797926511e13acb0eab126de6",
+  "matching_build_receipt_sha256": "e77c1f2b8ff072076a68cd43ea677bc12f8e3c7b80c61e7b614bbffefb257857",
+  "binaries_sha256": {
+    "actor": "4bbf0137a0e8ea089dca4b9e6c2ec800d587e6293fba28eb4ea452d44a898cd9",
+    "driver": "a9de6becc67b03ccc877ed54b64ee7c3c1b3398f546fb6464d9b52f707ebe00b",
+    "broker": "6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154",
+    "android_lmkd": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+  },
+  "dispatch_attempted": true,
+  "outcome_unknown": false,
+  "forced_teardown": false,
+  "pressure_qualified": true,
+  "stale_qualified": false,
+  "partial_medium_only": false,
+  "all_apps_production_ready": false,
+  "phase": "pressure",
+  "unit": "p4-lmkd-relay-pressure-r11-02.service",
+  "coordinator_root": "/home/alex/work/pocket4-lmkd-pressure-r11-coordinator-02",
+  "state": "/run/p4-lmkd-relay-pressure-r11-02",
+  "stage": "/opt/p4-lmkd-relay-pressure-r11-02",
+  "description": "p4-owned-r11-rev08-pressure-39b64f2a2687391f43d1d872317ab262",
+  "main_namespaces": {
+    "pid": 4026533288,
+    "mnt": 4026533284,
+    "cgroup": 4026533394,
+    "ipc": 4026533286,
+    "uts": 4026533285,
+    "net": 4026533041
+  },
+  "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "available_memory_bytes": 16001396736,
+  "dispatch_returncode": 0,
+  "dispatch_stdout": "",
+  "dispatch_stderr": "",
+  "invocation_id": "cb6f0264d2d5400986382915feb407f8",
+  "resources_first_observed": {
+    "invocation_id": "cb6f0264d2d5400986382915feb407f8",
+    "cgroup_device": 30,
+    "cgroup_inode": 27699712,
+    "observed_monotonic_ns": 834783074969090,
+    "limits": {
+      "memory.max": "536870912",
+      "memory.high": "max",
+      "memory.swap.max": "0",
+      "cpu.max": "100000 100000",
+      "pids.max": "64"
+    },
+    "memory_events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_current": 1835008,
+    "memory_peak": 1835008,
+    "swap_current": 0,
+    "swap_peak": 0,
+    "cgroup_events": "populated 1\nfrozen 0\n"
+  },
+  "terminal_status": {
+    "Description": "p4-owned-r11-rev08-pressure-39b64f2a2687391f43d1d872317ab262",
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "cb6f0264d2d5400986382915feb407f8",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainStartTimestampMonotonic": "834783068991",
+    "ExecMainExitTimestampMonotonic": "834789226019",
+    "ExecMainPID": "107572",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "0",
+    "ExecStart": "{ path=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/owned-relay-canary ; argv[]=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/owned-relay-canary pressure /opt/p4-lmkd-relay-pressure-r11-02/root /run/p4-lmkd-relay-pressure-r11-02 p4-lmkd-relay-pressure-r11-02.service 4bbf0137a0e8ea089dca4b9e6c2ec800d587e6293fba28eb4ea452d44a898cd9 bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde /home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/droidloom-psi-owner 6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154 4026533288 4026533284 4026533394 4026533286 4026533285 4026533041 ; ignore_errors=no ; start_time=[Wed 2026-11-04 08:17:53 PST] ; stop_time=[Wed 2026-11-04 08:17:59 PST] ; pid=107572 ; code=exited ; status=0 }",
+    "ControlGroup": "",
+    "MemoryPeak": "419090432",
+    "MemorySwapPeak": "0"
+  },
+  "evidence_manifest_sha256": "30c4d90711265cdc968874b1056eae80fbf25ef00820b395e466819b8df21d54",
+  "qualification_returncode": 0,
+  "qualification": {
+    "actual_scoped_pressure_evidence": true,
+    "all_apps_production_ready": false,
+    "authority_generation": "d4b843c97569eb12ada8a3e3c66d3209947fd6b893aea9bb1b17a9392d3a21f3",
+    "cgroup_device": 30,
+    "cgroup_inode": 27699812,
+    "critical_event_observed_in_phase": true,
+    "evidence_manifest_sha256": "30c4d90711265cdc968874b1056eae80fbf25ef00820b395e466819b8df21d54",
+    "external_main_unit_cleanup_fences_verified_here": false,
+    "foreground_and_protected_preserved": true,
+    "fresh_critical_event_correlated_with_cached_exit": true,
+    "fresh_levels_correlated_with_cached_exit": [
+      1,
+      2
+    ],
+    "installed_supervisor_recovery_qualified": false,
+    "lease_generation": "fa562e903b835b80fc477b408dce6d096c2f00637f924eba6b9791a12eba37ad",
+    "matching_build_receipt_sha256": "e77c1f2b8ff072076a68cd43ea677bc12f8e3c7b80c61e7b614bbffefb257857",
+    "native_critical_kill_decision_observed": true,
+    "native_defaults": [
+      "some 70000 1000000",
+      "full 700000 1000000"
+    ],
+    "nonce": "6af6b18ee7cab448e3e5c5c838cef42574f295d1f0be8a30cc870ae58564d84b",
+    "outer_final_resources_after_joined_retirement_verified": true,
+    "outer_identity_for_external_unit_binding": {
+      "cgroup_device": 30,
+      "cgroup_inode": 27699712,
+      "driver_pid": 107572,
+      "unit": "p4-lmkd-relay-pressure-r11-02.service"
+    },
+    "phase": "pressure",
+    "pid_reuse_qualified": false,
+    "production_cgroup_kill_qualified": false,
+    "qualification_status": "pass",
+    "quiet_live_lease_zero_kill_verified": true,
+    "route": "PIDFD-only minimal root",
+    "schema": 1,
+    "source_manifest_sha256": "ffe555f1913e2d3f540ec115298580ddb95849e797926511e13acb0eab126de6",
+    "stale_actual_queue_zero_kill_verified": false
+  },
+  "external_unit_binding_verified": true,
+  "outer_identity_bound": {
+    "unit": "p4-lmkd-relay-pressure-r11-02.service",
+    "driver_pid": 107572,
+    "cgroup_device": 30,
+    "cgroup_inode": 27699712
+  },
+  "resources_retained_before_driver_exit": {
+    "schema": 1,
+    "source": "owned-driver-after-all-child-retirement-before-exit",
+    "unit": "p4-lmkd-relay-pressure-r11-02.service",
+    "phase": "pressure",
+    "nonce": "6af6b18ee7cab448e3e5c5c838cef42574f295d1f0be8a30cc870ae58564d84b",
+    "driver_pid": 107572,
+    "cgroup_device": 30,
+    "cgroup_inode": 27699712,
+    "domain_device": 30,
+    "domain_inode": 27699812,
+    "observed_monotonic_ns": 834789224577221,
+    "limits": {
+      "memory.max": "536870912",
+      "memory.high": "max",
+      "memory.swap.max": "0",
+      "pids.max": "64",
+      "cpu.max": "100000 100000"
+    },
+    "memory_events": {
+      "high": 649,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_current": 2752512,
+    "memory_peak": 419090432,
+    "pids_current": 1,
+    "swap_current": 0,
+    "swap_peak": 0,
+    "root_members": [],
+    "host_members": [
+      107572
+    ],
+    "cgroup_events": {
+      "frozen": 0,
+      "populated": 1
+    },
+    "domain_events": {
+      "frozen": 0,
+      "populated": 0
+    }
+  },
+  "terminal_peaks_verified": true,
+  "main_epoch_unchanged": true,
+  "pre_stop_status": {
+    "Description": "p4-owned-r11-rev08-pressure-39b64f2a2687391f43d1d872317ab262",
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "cb6f0264d2d5400986382915feb407f8",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainStartTimestampMonotonic": "834783068991",
+    "ExecMainExitTimestampMonotonic": "834789226019",
+    "ExecMainPID": "107572",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "0",
+    "ExecStart": "{ path=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/owned-relay-canary ; argv[]=/home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/owned-relay-canary pressure /opt/p4-lmkd-relay-pressure-r11-02/root /run/p4-lmkd-relay-pressure-r11-02 p4-lmkd-relay-pressure-r11-02.service 4bbf0137a0e8ea089dca4b9e6c2ec800d587e6293fba28eb4ea452d44a898cd9 bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde /home/alex/work/pocket4-lmkd-host-pressure-r11-source-08/target/debug/droidloom-psi-owner 6ba22d7ba928a2e05dd71e76317252097526672530f43793ad6cdfdb26c93154 4026533288 4026533284 4026533394 4026533286 4026533285 4026533041 ; ignore_errors=no ; start_time=[Wed 2026-11-04 08:17:53 PST] ; stop_time=[Wed 2026-11-04 08:17:59 PST] ; pid=107572 ; code=exited ; status=0 }",
+    "ControlGroup": "",
+    "MemoryPeak": "419090432",
+    "MemorySwapPeak": "0"
+  },
+  "stop_returncode": 0,
+  "stop_stdout": "",
+  "stop_stderr": "",
+  "post_stop_status": {
+    "Description": "p4-lmkd-relay-pressure-r11-02.service",
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "InvocationID": "",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainStartTimestampMonotonic": "0",
+    "ExecMainExitTimestampMonotonic": "0",
+    "ExecMainPID": "0",
+    "ExecMainCode": "0",
+    "ExecMainStatus": "0",
+    "ControlGroup": "",
+    "MemoryPeak": "[not set]",
+    "MemorySwapPeak": "[not set]"
+  },
+  "owned_cgroup_after_stop": "absent",
+  "exact_owned_cleanup_verified": true,
+  "main_epoch_unchanged_after_cleanup": true,
+  "retained_files": {
+    "after-relay-hup.json": {
+      "sha256": "3f276251681c263a91e61ffca9129232922c4611157e0848580063a144534c28",
+      "bytes": 1534
+    },
+    "broker-active.json": {
+      "sha256": "e215422482b09a8a2f7d2edf8784b9a91ac8c0814fc0bacb90eb6f2e31fda3ee",
+      "bytes": 374
+    },
+    "broker-pressure-audit.json": {
+      "sha256": "e45a661073d4ff2afa9003746596a3dd9c69360e5d985b33faa2da3f9808849e",
+      "bytes": 1272
+    },
+    "broker-ready.json": {
+      "sha256": "a32008b3512bf0a4669099b43841d5f1802dddfff0033adc157b0dfe2c7c3ff9",
+      "bytes": 374
+    },
+    "broker-retired.json": {
+      "sha256": "d042d987ee1c6c932b679a846e95460762bd39c85f41c78a930d235c68a48dcc",
+      "bytes": 375
+    },
+    "cached-exit.json": {
+      "sha256": "01b5e9ce810fd06c5c78a0045bda8e86afc196cd72a58395ffbab65c4293e63d",
+      "bytes": 92
+    },
+    "cached-kill-diagnostic.json": {
+      "sha256": "f9cc3f61bbbc46f56fce517916b575c528404a89ac7606030415993097cfc2ed",
+      "bytes": 222
+    },
+    "cached-kill-notification.json": {
+      "sha256": "c17471e4d7cd5b70435e77b9bd45dfe09f811e7cfb7c243370ca760bcdf32811",
+      "bytes": 100
+    },
+    "driver-result.json": {
+      "sha256": "aa7ae7c0219437a880041120eef4683f3bbad2bddad05b3c25c829767ff2d189",
+      "bytes": 505
+    },
+    "identities.json": {
+      "sha256": "842e38d24b0184a96f740c1cdc83210c78cdc987c2fac270fe1acd04d32bae36",
+      "bytes": 494
+    },
+    "inner-preflight.json": {
+      "sha256": "5570c4d996143a6eac142a8ff2fde92a65870199efa9659bdc5438827a2c22fe",
+      "bytes": 537
+    },
+    "lmkd-fds.txt": {
+      "sha256": "a8ebb9da0c95a6656027d206fb6062de88a9b79a127c3919dea6df791c257b77",
+      "bytes": 863
+    },
+    "lmkd-maps.txt": {
+      "sha256": "8ffa25c83274b0c16adc06f5627549efb76d634afe3c7d0280b45658821614a5",
+      "bytes": 4020
+    },
+    "lmkd-post-registration-fds.txt": {
+      "sha256": "a39c3191c6dbd5c3954ad52e11c3360ab00530810dd1c57ac14ae36d74cb7acb",
+      "bytes": 929
+    },
+    "lmkd-post-registration-maps.txt": {
+      "sha256": "8ffa25c83274b0c16adc06f5627549efb76d634afe3c7d0280b45658821614a5",
+      "bytes": 4020
+    },
+    "lmkd-post-registration-pressure-file.json": {
+      "sha256": "8de10bead0e7f03bfa7aca9713142e5115b304ddef658411b571a213b9c4d1b8",
+      "bytes": 91
+    },
+    "lmkd-post-registration-status.txt": {
+      "sha256": "e786fbe9668529940b24569a07ce9d824289e848f400c4dab0aa5b6de4b4242f",
+      "bytes": 1494
+    },
+    "lmkd-pressure-file.json": {
+      "sha256": "8de10bead0e7f03bfa7aca9713142e5115b304ddef658411b571a213b9c4d1b8",
+      "bytes": 91
+    },
+    "lmkd-status.txt": {
+      "sha256": "3ac8be1bf4195906ac4ea2d567438502ece2a0767ecd4a53636dab74e80eb6ae",
+      "bytes": 1493
+    },
+    "logdw.records": {
+      "sha256": "3bb34cac9dc7a1d3744eb22cd66bce3d5aa028b3ef36088d8275228bd890c546",
+      "bytes": 3128
+    },
+    "outer-final.json": {
+      "sha256": "8bfd103764bc9630639f001f03be1c6ccad5fe372059cf0eb1a07c8eaab68f45",
+      "bytes": 812
+    },
+    "outer-preflight.json": {
+      "sha256": "15d6be8dc585cbdd91902021ea46677e27f5bbb1b4a6e1637d8f0cbfd09ae3d7",
+      "bytes": 297
+    },
+    "phase-result.json": {
+      "sha256": "b65533b378087324d5c670cbe53b65b2bf8bc8c9ba1434b2ea7111cb31081a30",
+      "bytes": 354
+    },
+    "pressure-after.json": {
+      "sha256": "24037cabcb58da7fdd1e0339cad362a6c4f9b931039aa128dd44a7c7f388ee9d",
+      "bytes": 1534
+    },
+    "pressure-before.json": {
+      "sha256": "4ff732a56811c23ad3fe4af5d16ea5f63511387f26943eef509c8124ded299d1",
+      "bytes": 1522
+    },
+    "pressure-workload.json": {
+      "sha256": "d76e23ae889248c6c7ef3974fbacaee343baa5ab181ab274f692aba01ca3a4b1",
+      "bytes": 898
+    },
+    "protocol-complete.json": {
+      "sha256": "64dc4b091fc79fc624ddf22a1337083cbe15902570396bd91b9801d447f0db63",
+      "bytes": 1515
+    },
+    "qualification-inputs.json": {
+      "sha256": "30c4d90711265cdc968874b1056eae80fbf25ef00820b395e466819b8df21d54",
+      "bytes": 4174
+    },
+    "quiet-after.json": {
+      "sha256": "4ff732a56811c23ad3fe4af5d16ea5f63511387f26943eef509c8124ded299d1",
+      "bytes": 1522
+    },
+    "quiet-before.json": {
+      "sha256": "c5c4f9b83758205afd7ff4afbdfa5b30a680897028557b1d52022548d0a589e9",
+      "bytes": 1522
+    },
+    "relay-projection.json": {
+      "sha256": "4c8eff2d974798b49e15022c7ec9a34b24ae9ea6ee2671a78d6adbf3b1b789bb",
+      "bytes": 62
+    },
+    "staging-result.json": {
+      "sha256": "eece4225e9ed1514de3232e80cf872cc6e56cf5c7e05cd2077b6bbdd7f89905d",
+      "bytes": 315
+    },
+    "target-cleanup.json": {
+      "sha256": "adcc663ca206f56eaa25d249d0e4b6086cd545aa2981eb22ff9ee809d4fb8ce6",
+      "bytes": 641
+    }
+  },
+  "driver-result.json": {
+    "ok": true,
+    "phase": "pressure",
+    "nonce": "6af6b18ee7cab448e3e5c5c838cef42574f295d1f0be8a30cc870ae58564d84b",
+    "driver_pid": 107572,
+    "actual_broker": true,
+    "broker_pid": 107576,
+    "owner_pid": 107573,
+    "init_pid": 107574,
+    "bootstrap_rights": 16,
+    "same_cell_retry_denied": true,
+    "broker_retired_and_reaped": true,
+    "owner_and_init_exited": true,
+    "domain_populated": false,
+    "android_enrollment": true,
+    "joined_host_audit_present": true,
+    "pressure_workload_requested": true,
+    "real_pressure_verified": false,
+    "installed_supervisor_changed": false
+  },
+  "phase-result.json": {
+    "ok": true,
+    "phase": "pressure",
+    "marked_contract_rejected": true,
+    "real_protocol_verified": true,
+    "actual_relay_hup_verified": true,
+    "nonvictim_cleanup_verified": true,
+    "pressure_workload_complete": true,
+    "host_audit_required": true,
+    "real_pressure_verified": false,
+    "route": "PIDFD-only minimal root",
+    "production_cgroup_kill_qualified": false,
+    "pid_reuse_qualified": false
+  },
+  "broker-pressure-audit.json": {
+    "schema": 1,
+    "source": "actual-registration-write-and-POLLPRI-send-after-joined-retirement",
+    "nonce": "6af6b18ee7cab448e3e5c5c838cef42574f295d1f0be8a30cc870ae58564d84b",
+    "authority_generation": "d4b843c97569eb12ada8a3e3c66d3209947fd6b893aea9bb1b17a9392d3a21f3",
+    "lease_generation": "fa562e903b835b80fc477b408dce6d096c2f00637f924eba6b9791a12eba37ad",
+    "cgroup_device": 30,
+    "cgroup_inode": 27699812,
+    "budget_hex": "0000002000000000000000180000000000000000000000000000000001000000",
+    "granted": true,
+    "faulted": false,
+    "incomplete": false,
+    "overflow": false,
+    "observations": 2,
+    "packets_queued": 2,
+    "stop_reason": 1,
+    "retired_monotonic_ns": 834789076284828,
+    "registrations": [
+      {
+        "level": 1,
+        "trigger": "some 70000 1000000",
+        "window_us": 1000000,
+        "stall_us": 70000,
+        "pressure_device": 30,
+        "pressure_inode": 27699828,
+        "write_started_ns": 834783211029118,
+        "write_completed_ns": 834783211146591,
+        "bytes_written": 18
+      },
+      {
+        "level": 2,
+        "trigger": "full 700000 1000000",
+        "window_us": 1000000,
+        "stall_us": 700000,
+        "pressure_device": 30,
+        "pressure_inode": 27699828,
+        "write_started_ns": 834783211882072,
+        "write_completed_ns": 834783211883464,
+        "bytes_written": 19
+      }
+    ],
+    "events": [
+      {
+        "level": 1,
+        "sequence": 1,
+        "observed_ns": 834786955074938,
+        "send_completed_ns": 834786955900329
+      },
+      {
+        "level": 2,
+        "sequence": 1,
+        "observed_ns": 834787683062395,
+        "send_completed_ns": 834787683788479
+      }
+    ]
+  },
+  "pressure-workload.json": {
+    "phase": "pressure",
+    "workload_complete": true,
+    "host_audit_required": true,
+    "real_pressure_verified": false,
+    "max": 536870912,
+    "high": 402653184,
+    "first_kill_current_cap": 452984832,
+    "peak_observed_current": 414892032,
+    "final_current": 349093888,
+    "cached_bytes": 67108864,
+    "foreground_bytes": 134217728,
+    "allocator_bytes": 189792256,
+    "pressure_start_ns": 834786733148903,
+    "quiet_started_ns": 834784529020917,
+    "quiet_completed_ns": 834786733095522,
+    "allocation_finished_ns": 834787851408556,
+    "stopped_ns": 0,
+    "resume_ns": 0,
+    "cached_exit_observed_ns": 834787851239907,
+    "quiet_end_ns": 834789058870872,
+    "some_before": 0,
+    "some_after": 590341,
+    "full_before": 0,
+    "full_after": 590341,
+    "events_before": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+    "events_after": "low 0\nhigh 649\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+    "kill_count": 1,
+    "protected_targets_alive": true,
+    "budget_unchanged": true
+  },
+  "target-cleanup.json": {
+    "lmkd_reaped_before_nonvictim_check": true,
+    "children": [
+      {
+        "label": "cached",
+        "pid": 8,
+        "uid": 10001,
+        "start": 83478324,
+        "known_cached_victim": true,
+        "exit_code": -1,
+        "exit_signal": 9
+      },
+      {
+        "label": "foreground",
+        "pid": 9,
+        "uid": 10002,
+        "start": 83478324,
+        "known_cached_victim": false,
+        "exit_code": 0,
+        "exit_signal": 0
+      },
+      {
+        "label": "protected",
+        "pid": 10,
+        "uid": 10003,
+        "start": 83478324,
+        "known_cached_victim": false,
+        "exit_code": 0,
+        "exit_signal": 0
+      },
+      {
+        "label": "sentinel",
+        "pid": 11,
+        "uid": 10004,
+        "start": 83478324,
+        "known_cached_victim": false,
+        "exit_code": 0,
+        "exit_signal": 0
+      },
+      {
+        "label": "allocator",
+        "pid": 12,
+        "uid": 10005,
+        "start": 83478324,
+        "known_cached_victim": false,
+        "exit_code": 0,
+        "exit_signal": 0
+      }
+    ]
+  },
+  "outer-final.json": {
+    "schema": 1,
+    "source": "owned-driver-after-all-child-retirement-before-exit",
+    "unit": "p4-lmkd-relay-pressure-r11-02.service",
+    "phase": "pressure",
+    "nonce": "6af6b18ee7cab448e3e5c5c838cef42574f295d1f0be8a30cc870ae58564d84b",
+    "driver_pid": 107572,
+    "cgroup_device": 30,
+    "cgroup_inode": 27699712,
+    "domain_device": 30,
+    "domain_inode": 27699812,
+    "observed_monotonic_ns": 834789224577221,
+    "limits": {
+      "memory.max": "536870912",
+      "memory.high": "max",
+      "memory.swap.max": "0",
+      "pids.max": "64",
+      "cpu.max": "100000 100000"
+    },
+    "memory_events": {
+      "high": 649,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_current": 2752512,
+    "memory_peak": 419090432,
+    "pids_current": 1,
+    "swap_current": 0,
+    "swap_peak": 0,
+    "root_members": [],
+    "host_members": [
+      107572
+    ],
+    "cgroup_events": {
+      "frozen": 0,
+      "populated": 1
+    },
+    "domain_events": {
+      "frozen": 0,
+      "populated": 0
+    }
+  },
+  "unit.stdout": "{\"ok\":true,\"phase\":\"pressure\",\"real_pressure_verified\":false}\n",
+  "unit.stderr": "WARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\"\nWARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\"\n",
+  "finished_utc": "2026-11-04T16:18:00.050069+00:00"
+}

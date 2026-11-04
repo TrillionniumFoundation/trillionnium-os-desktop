@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "frozen_source": "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-05",
+  "baseline": "/workspace/scratch/94990735b266/native-work/reusable-owner-review-freeze-04",
+  "changed": [
+    {
+      "path": "kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h",
+      "before_sha256": "7fd5b52a999c1796445c77be78f3d8b1e7728e8fd213d087b60c4c8a70a6ef0e",
+      "after_sha256": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc"
+    },
+    {
+      "path": "kernel_api/proc_maps_fd_owner.cc",
+      "before_sha256": "c5f389ac8faceb47357675f23edf3903aa8e48a2b1c7bc7e2dd98cd7fa78b9bc",
+      "after_sha256": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e"
+    }
+  ],
+  "patch_sha256": "a0e4ecbb01346eb7dbd5c01bdce18dd9fa5853b06d3965a1497a9d18a14d57be",
+  "report_sha256": "f2579b7f4c03565b40b57b36e2d9bb7c1c13eb078424c3487de420bfab057ec0",
+  "controls": {
+    "reusable_owner_lifecycle_r5_regression.cc": "abbc6e27d69157729673d72ae7c0439de942e8cd627762e7fc7bdce3412ec673",
+    "reusable_owner_fork_limited_r5_control.cc": "d85c41ada78c10282d211b05d27d65cea576dbf30e23ad5c2c945c43d28b677b",
+    "reusable_owner_fork_limited_control.cc": "d7d3671dd2e0623b20a7e86a7dcd69ba7ebea15adbf28ba3c3506051e89f7f81"
+  },
+  "all_source_sha256": {
+    "base/include/berberis/base/fd.h": "16e836873b9af40c58c0a59b13a89e6732869ded96fb2d43c8ed65c1cd7593d3",
+    "base/include/berberis/base/scoped_errno.h": "f5380a9df8b8f8ca96415efe9d4fec9b0c90be4fa0a2f461fa7669e59f6e1a74",
+    "base/include/berberis/base/scoped_fd.h": "009539000fd0cef6cb5a47b424ae7131b40799d060fc11005a08c6150490c7d0",
+    "guest_os_primitives/Android.bp": "45c0fd959d0bd9ae5a9b2690aa943218d571c12dc79b6946905a778a52e1cae7",
+    "guest_os_primitives/guest_thread_clone.cc": "e286a2e54eebf0e8a65f3f64c90ac56ec72ecba0838a454db6f7c24f5ffcd3e4",
+    "guest_os_primitives/guest_thread_manager.cc": "a75912eeab3fd27fabb590c587c511696f5dbd034eb6e241c3a782356db47a8c",
+    "kernel_api/Android.bp": "a2618c30da96d07446d356422388b908d5c60142f464654874f5c2098d14461d",
+    "kernel_api/arm64/gen_syscall_emulation_arm64_to_x86_64-inl.h": "06f5e1ee8ea48449d5be5027ea76dbbba509721c7d4ae621049d81a616c025ee",
+    "kernel_api/arm64/syscall_emulation.cc": "5dd20992b4db8df4131ac088b08fad2e38acd2665121cff3c65f57bb2bc197e5",
+    "kernel_api/arm64/syscall_emulation_arch.cc": "214705bf3c63996fcac8debd725513742b3071a2f513dca503c1074e745b6cac",
+    "kernel_api/exec_emulation.cc": "71a1b7311be877d4420204d48ff37ce5b8082d8a50cd52d7b8982912bea40b7a",
+    "kernel_api/fcntl_emulation.cc": "ac983fa8cefedd77ecd7d5fbcce483691b406f3f93dd7597863d2cf2a58ba748",
+    "kernel_api/include/berberis/kernel_api/exec_emulation.h": "5f40a7f89fbc47a419fdf1e5a87030392e1a41b549d3c4ff833898cfea0889bd",
+    "kernel_api/include/berberis/kernel_api/fcntl_emulation.h": "175084e36b50f09147e64043231b9afb51d17b10940ccd95fcdd66fa84f93bc2",
+    "kernel_api/include/berberis/kernel_api/open_emulation.h": "55bc42b6b5438423d1a3e9856cde57544ab570f3b66b2489ca297ca377409f8f",
+    "kernel_api/include/berberis/kernel_api/proc_maps_fd_candidate.h": "14d35c73798ac87ae2849901d74dbe5ca4dc6ad6e54bdfd16e42bab3af64939e",
+    "kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+    "kernel_api/include/berberis/kernel_api/proc_maps_open.h": "2fb3a518994aaf1c67a1355ecc8dd27177e28eea8ea89dade7d3c933988260bc",
+    "kernel_api/include/berberis/kernel_api/proc_maps_path.h": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+    "kernel_api/include/berberis/kernel_api/proc_maps_provenance.h": "e11e053aa0e33ece4ab166c2da618a4a559956675f52790b893d30f4ee1fb175",
+    "kernel_api/include/berberis/kernel_api/syscall_emulation_common.h": "4b39e7cdfec59069acc4ba2087c67aabab395ca786e4520266306e642c9a5b34",
+    "kernel_api/include/berberis/kernel_api/unistd_emulation.h": "42f02f397cbb0636e9103368b95fd875e59c5fecb4edcf909228e8027442d865",
+    "kernel_api/main_executable_real_path_emulation.cc": "534f2e9ccf3e39b698c8c45e835958b76926f2f83cb919c6b8b559773d94d34e",
+    "kernel_api/open_emulation.cc": "cbf6be10dcb2f2018f18da35727574f6fb92cbb0afd1584d4d2ac00d5c7a0d31",
+    "kernel_api/proc_maps_fd_candidate.cc": "e51239b38a125048abdbb0874b16d0b83eb08ecf9f62e19555ce12868d0510b9",
+    "kernel_api/proc_maps_fd_owner.cc": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+    "kernel_api/proc_maps_open.cc": "04abd180090fbe86fddce1e5365067ceaa41dab114da99c32f13c13b54c68a62",
+    "kernel_api/proc_maps_path.cc": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+    "kernel_api/proc_maps_provenance.cc": "356bdba66986e446f7946fe5c7be344bc562a7e6d665dd3d1b8651b796935c39",
+    "kernel_api/runtime_bridge.cc": "f83b3890137e89b62e847abd721ad7380df61643adc44c08448896e746ad58d4",
+    "kernel_api/sys_mman_emulation.cc": "33cf21a63b9561b052c8c3dcd86c0c57fdf66d22efc2a930280e8da1ece9306b",
+    "kernel_api/tools/custom_syscalls.json": "fbc4a3cd7e2bff2fa4ac576b4cd40a35e96067814e348ae380230d6fc1cfae46",
+    "kernel_api/unistd_emulation.cc": "47cfdbda00091f00ae456500ff7048114eee79667bef9b8b1154c33c8dbdb4f0",
+    "native_bridge/native_bridge.cc": "07a73332ad90aaf787543c73ad7dbc867d681f8f6b8b109f06546ecbea9ae0ed"
+  },
+  "production_ready": false
+}

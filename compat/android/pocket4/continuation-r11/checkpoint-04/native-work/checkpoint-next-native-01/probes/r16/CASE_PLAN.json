@@ -1,0 +1,66 @@
+{
+  "expected_cases": 13,
+  "expected_behavior_mask": "0x0000000000001fff",
+  "order": [
+    "prewarmed_actual_RLIMIT_AS_1_metadata",
+    "prewarmed_reject_new_pthread_EAGAIN",
+    "stop_inflight_closes_admission_and_restart",
+    "stop_during_paused_startup_no_reopen",
+    "raw_clone_private_fork_inflight",
+    "libc_fork_atfork_inflight",
+    "CLONE_VM_new_TGID_gate_parent_survives",
+    "startup_EAGAIN_explicit_retry",
+    "join_failure_sticky_poison",
+    "actual_caller_unshared_fdtable",
+    "caller_mask_preserved",
+    "RLIMIT_NOFILE_0_still_EMFILE_known_red",
+    "raw_fork_inflight_after_AS_1_reuses_inherited_stack"
+  ],
+  "expected_red_case": "RLIMIT_NOFILE_0_still_EMFILE_known_red",
+  "no_main_runtime_hook": true,
+  "no_copy_seam": true,
+  "application_resource_scope": "Fstatfs on an ordinary tmpfs memfd uses the reusable owner. At a non-root Android UID Fstat/QueryOrigin can take their ordinary negative filter; do not claim root-owned candidate-shape coverage from that run.",
+  "mask_control": "Nonempty SIGUSR1-blocked low64 mask must survive Start/query/Stop, then original mask restored.",
+  "fork_controls": [
+    "raw clone(SIGCHLD) private address space while parent request holds the old gate; explicit child reset/start, no join of parent owner",
+    "libc fork while in-flight, child registered atfork reset then explicit start",
+    "clone(CLONE_VM|SIGCHLD) new TGID returns EOPNOTSUPP for submit/start/stop and parent still works"
+  ],
+  "failure_controls": [
+    "pthread_create EAGAIN after successful warmup must not be called by subsequent metadata queries",
+    "initial pthread_create EAGAIN requires explicit retry",
+    "pthread_join EIO after observed real worker exit permanently poisons restart/second retirement"
+  ],
+  "watchdog": {
+    "per_case_ms": 3000,
+    "total_ms": 15000,
+    "post_kill_reap_ms": 1000,
+    "only_owned_pid_signalled": true,
+    "PDEATHSIG_in_case_and_nested_children": true,
+    "no_signal_disposition_changes": true
+  },
+  "known_production_gates": [
+    "RLIMIT_NOFILE=0 metadata remains EMFILE",
+    "libc TLS allocation and task-count limits are not claimed eliminated",
+    "CLONE_VM new TGID is a containment rejection, not guest support",
+    "runtime lifecycle hooks not installed",
+    "credential/root/mount transitions unqualified",
+    "ordinary alias-to-maps admission race remains"
+  ],
+  "runtime_entry_hooks_installed": false,
+  "production_candidate_ready": false,
+  "new_cross_condition": {
+    "case": "raw_fork_inflight_after_AS_1_reuses_inherited_stack",
+    "sequence": [
+      "Start reusable owner while resources are available.",
+      "Hold parent metadata operation in-flight with the old gate owned.",
+      "Set actual RLIMIT_AS soft and hard to 1.",
+      "Perform raw private-memory clone(SIGCHLD).",
+      "Child explicitly discards COW queue/old pthread identity while retaining its own inherited guarded stack mapping.",
+      "Require native fstat/fstatfs and child owner start + projected fstatfs all succeed.",
+      "Child stops its owner; parent reaps child, resumes original callback, joins and stops its owner; original caller fd identity survives."
+    ],
+    "baseline_host": "Frozen r4 without supplied stack fails child startup EAGAIN11 and projected fstatfs ESHUTDOWN108; this is not assumed to be an already measured Android r4 cross-result."
+  },
+  "supplied_stack_android_qualified": false
+}

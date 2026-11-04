@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "elf": "/workspace/scratch/94990735b266/native-work/evidence/raw-owner-r17-controller/host-controller",
+  "elf_sha256": "228ff3c2177cb04e8b171642b7daff9672e1005b2bde45008c745c4ea93718e1",
+  "objdump": "objdump",
+  "qualified_worker_closure": true,
+  "worker_symbols": [
+    "pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+  ],
+  "reachable_functions": [
+    "pocket4::raw_metadata_owner::(anonymous namespace)::Notify()",
+    "pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)"
+  ],
+  "edges": [
+    {
+      "from": "pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "pocket4::raw_metadata_owner::(anonymous namespace)::Notify()"
+    },
+    {
+      "from": "pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "pocket4::raw_metadata_owner::(anonymous namespace)::Notify()"
+    },
+    {
+      "from": "pocket4::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "pocket4::raw_metadata_owner::(anonymous namespace)::Notify()"
+    }
+  ],
+  "clone_trampoline": {
+    "name": "pocket4_raw_clone_x86_64",
+    "syscall_sites": 2,
+    "indirect_fixed_entry_calls": [
+      "*(%rsp)"
+    ],
+    "source_binding_required": "Start's sole call passes Worker and null context."
+  },
+  "errors": [],
+  "limits": [
+    "This verifies the named final binary closure, not runtime credential or signal policy.",
+    "The inherited TLS pointer exists but the audited child closure must not dereference it.",
+    "No Bionic pthread registration is created. Credential transitions and host cancellation remain unqualified.",
+    "A host ELF result cannot substitute for auditing the actual Android ELF."
+  ]
+}

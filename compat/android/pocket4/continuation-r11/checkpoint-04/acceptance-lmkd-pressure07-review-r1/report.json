@@ -1,0 +1,62 @@
+{
+  "all_frozen_payload_hashes_verified": 32,
+  "decision": "Do not run revision07 pressure as fully qualified; keep immutable and apply the narrow audit fix in a new revision.",
+  "findings": [
+    {
+      "evidence": "Driver checks root cgroup.procs empty, host cgroup.procs exactly its PID, domain cgroup.events populated=0, and outer populated=1. Actor actually creates a third supervisor subgroup. These observations remain compatible with an additional process in supervisor or another descendant; outer populated=1 is already caused by the driver. Neither driver nor qualifier checks hierarchical pids.current or enumerates every other subtree.",
+      "kind": "retirement audit coverage gap",
+      "priority": "P1",
+      "recommended_minimal_change": "Require and retain outer pids.current=1 while the exact single-thread driver remains alive, and require the same field in the qualifier; add a negative control for 2 or more tasks without changing root/host/domain direct observations.",
+      "source_locations": [
+        "src/bin/owned_relay_canary.rs:68 outer_retirement_record",
+        "owned-relay/fixture_init.cpp:85 setup_cgroup creates supervisor and domain",
+        "owned-relay/fixture_init.cpp:87 moves actual owner into supervisor",
+        "owned-relay/qualify_pressure.py:156 qualified_outer_final"
+      ],
+      "status": "confirmed in frozen source; no runtime leak claimed",
+      "title": "The only-driver predicate does not cover the supervisor subgroup or other descendants",
+      "unchanged_boundary": "No assertion that the actual revision06 run leaked a process; this is an incomplete final-audit proof."
+    }
+  ],
+  "independent_execution": {
+    "device": false,
+    "namespace": false,
+    "pressure": false,
+    "python_controls": false,
+    "rust": false
+  },
+  "observations": [
+    "Actual sampler is called only after broker retirement_complete, exact actor Child success and both held owner/init pidfds dead, and held domain populated=0 with original budget.",
+    "Held outer and domain directory FDs bind later reads and recorded device/inode; sample uses CLOCK_MONOTONIC and precedes driver success receipt.",
+    "Original five outer budgets, max/OOM zero and strict peak/swap checks are enforced; no PSI threshold or actor change in revision07.",
+    "Pure qualifier deliberately returns outer identity for independent InvocationID/ExecMainPID/first-observed cgroup device-inode binding; external terminal success, cleanup and Main epoch are still required."
+  ],
+  "reviewed_at": "2026-11-04T16:01:22.582298+00:00",
+  "reviewed_files": {
+    "OUTER-RETIREMENT.md": {
+      "bytes": 2759,
+      "sha256": "2197e5811e428979726ac1e0270555e04a8afea5a486d1697feffa67a08f060a"
+    },
+    "owned-relay/fixture_init.cpp": {
+      "bytes": 53130,
+      "sha256": "343c2421355ba35bc46fb23cd05bf7a327a6ae2e40a5528f017ec876e3e75d8c"
+    },
+    "owned-relay/qualify_pressure.py": {
+      "bytes": 25239,
+      "sha256": "3c55ebe597ba0608f3a6939e9df39633bd90fd7a8ffcde23b321535154be8adf"
+    },
+    "owned-relay/test_qualify_pressure.py": {
+      "bytes": 20753,
+      "sha256": "1efae3122cdc33f63aa103f30ee93be17179109c4bd9e1689de9458151862f5f"
+    },
+    "src/bin/owned_relay_canary.rs": {
+      "bytes": 27731,
+      "sha256": "5b65b22c10afdd0ef17d411834e05a00aaa8c74ac11765f37552769b70c5613b"
+    }
+  },
+  "reviewer": "local_pocket4_inventory",
+  "schema": 1,
+  "scope": "Read-only delta review of driver final outer-resource audit and pure qualifier, using unchanged actor as the actual cgroup topology source.",
+  "source_manifest_sha256": "0dd3901441c9d61948dbe04523995a5c7855882868cdfeeb1234dad61bf89ea5",
+  "source_root": "/workspace/scratch/94990735b266/lmkd-work/host-pressure-freeze-07"
+}

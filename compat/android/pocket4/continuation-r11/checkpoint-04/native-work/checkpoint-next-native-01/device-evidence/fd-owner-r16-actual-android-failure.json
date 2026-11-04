@@ -1,0 +1,244 @@
+{
+  "schema": 1,
+  "scope": "owned headless Android r16 reusable metadata owner lifecycle probe on unchanged R16 Main",
+  "source_archive_sha256": "e720f587b3466d90dd8afec131645aab9a2c60ef8a2f2d2d66507060d464b264",
+  "source_pins_sha256": "ca060d46dfebd11e413204f18050f4d44a05828262709083d5dc4fa4225a22f2",
+  "apk_sha256": "d98681e3dad29b9765936bbaffe1677a2c80fcf202883900d116149547a010eb",
+  "build_job": "1a1a73f9ddd-fc05-2aaf",
+  "runtime_job": "1a1a741a79e-fc05-2ab4",
+  "actual_uid": 10158,
+  "nonce": "p4r11_fdcopy_actualsource_r16_20261104_a1",
+  "status": "FAIL: Bionic child owner startup remains EAGAIN after private fork under RLIMIT_AS=1 despite inherited supplied stack",
+  "actual_native": {
+    "probe": "owned_reusable_metadata_lifecycle_r16",
+    "pass": false,
+    "child_reaped": false,
+    "direct_children_started": 13,
+    "direct_children_reaped": 13,
+    "expected_cases": 13,
+    "observed_cases": 13,
+    "expected_behavior_mask": "0x0000000000000fff",
+    "timeout": false,
+    "cases": [
+      {
+        "case": "prewarmed_actual_RLIMIT_AS_1_metadata",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "prewarmed_reject_new_pthread_EAGAIN",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "stop_inflight_closes_admission_and_restart",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "stop_during_paused_startup_no_reopen",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "raw_clone_private_fork_inflight",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "libc_fork_atfork_inflight",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "CLONE_VM_new_TGID_gate_parent_survives",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "startup_EAGAIN_explicit_retry",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "join_failure_sticky_poison",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "actual_caller_unshared_fdtable",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "caller_mask_preserved",
+        "expected_behavior_observed": true,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "RLIMIT_NOFILE_0_still_EMFILE_known_red",
+        "expected_behavior_observed": true,
+        "known_production_red": true,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 0,
+        "wait_errno": 0
+      },
+      {
+        "case": "raw_fork_inflight_after_AS_1_reuses_inherited_stack",
+        "expected_behavior_observed": false,
+        "known_production_red": false,
+        "direct_child_reaped": true,
+        "timeout": false,
+        "signal": 0,
+        "exit": 1,
+        "wait_errno": 0
+      }
+    ],
+    "application_uid": 10158,
+    "resource_fixture": {
+      "tmpfs_fstatfs_uses_real_owner": true,
+      "fstat_queryorigin_candidate_shape": false
+    },
+    "fork_after_AS_1": {
+      "setup": 0,
+      "fork_errno": 0,
+      "native_stat_rc": 0,
+      "native_statfs_rc": 0,
+      "child_start_rc": -1,
+      "child_start_errno": 11,
+      "projected_statfs_rc": -1,
+      "projected_statfs_errno": 108,
+      "child_finished": 1,
+      "child_reaped": 1,
+      "child_signal": 0,
+      "child_exit": 0,
+      "child_stop_rc": -99,
+      "parent_submit_rc": 23,
+      "parent_join_rc": 0,
+      "parent_stop_rc": 0,
+      "parent_fd_survived": 1,
+      "inherited_stack_present": 1
+    },
+    "known_reds": [
+      "RLIMIT_NOFILE=0 metadata remains EMFILE",
+      "libc TLS allocation and task-count limits are not claimed eliminated",
+      "CLONE_VM new TGID is a containment rejection, not guest support",
+      "runtime lifecycle hooks not installed",
+      "credential/root/mount transitions unqualified",
+      "ordinary alias-to-maps admission race remains"
+    ],
+    "fault_injections": [
+      "pthread_create EAGAIN",
+      "pthread_join EIO after real worker exit"
+    ],
+    "host_copy_seam": false,
+    "runtime_hooks_installed": false,
+    "candidate_production_ready": false,
+    "broker_positive_identity_tested": false
+  },
+  "runner_steps": [
+    {
+      "phase": "install",
+      "returncode": 0,
+      "ok": true,
+      "outcome_unknown": false,
+      "identity": {
+        "version_code": 11,
+        "uid": 10158
+      },
+      "cleanup": null,
+      "error": null
+    },
+    {
+      "phase": "run",
+      "returncode": 0,
+      "ok": true,
+      "outcome_unknown": false,
+      "identity": {
+        "version_code": 11,
+        "uid": 10158
+      },
+      "cleanup": null,
+      "error": null
+    },
+    {
+      "phase": "remove",
+      "returncode": 0,
+      "ok": true,
+      "outcome_unknown": false,
+      "identity": {
+        "version_code": 11,
+        "uid": 10158
+      },
+      "cleanup": true,
+      "error": null
+    }
+  ],
+  "owned_cycle_complete": true,
+  "main_runtime_changed": false,
+  "all_apps_production_ready": false,
+  "limitations": [
+    "Owned APK uses actual owner for tmpfs fstatfs; ordinary memfd fstat/query origin follows negative-shape fast path at this app UID.",
+    "No runtime lifecycle hooks installed or credential/root/mount transitions qualified.",
+    "r5 host AS=1 success does not transfer to this actual Bionic result.",
+    "RLIMIT_NOFILE=0 remains EMFILE.",
+    "Alias-to-maps admission race and positive broker identity remain unresolved."
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "scope": "Independent read-only reproduction from actual r08 retained source-bound evidence",
+  "new_runtime_actions": false,
+  "source_unchanged": true,
+  "source_manifest_sha256": "ffe555f1913e2d3f540ec115298580ddb95849e797926511e13acb0eab126de6",
+  "phases": {
+    "pressure": {
+      "all_exported_files_verified": 46,
+      "export_manifest_sha256": "d2132d2bac8114858fb1ed9ba243acbef6b6ae2b9b51056cf5ad51231e3fc46c",
+      "coordinator_result_sha256": "c2cfe52ea009cf1a181ce9ca84f23954022ef8e7480417a4b6edfd0ab09e246f",
+      "coordinator_ok": true,
+      "cleanup_and_Main_fence_verified": true
+    },
+    "stale": {
+      "all_exported_files_verified": 32,
+      "export_manifest_sha256": "a4ce4d096c069cce625a99bc14b5a3cfbdc00aaa714e9f06c66add81222c7901",
+      "coordinator_result_sha256": "d6946b8ad2f08bd4e1e33f169cc98c444a20be58ab28f6786d5127d6e1112dc8",
+      "coordinator_ok": false,
+      "cleanup_and_Main_fence_verified": true,
+      "retained_failure": "RuntimeError: owned unit did not exit normally with its retained successful invocation"
+    }
+  },
+  "positive_qualification_reproduced_byte_semantics": true,
+  "positive_qualifier_returncode": 0,
+  "external_invocation_and_outer_first_final_identity_reproduced": {
+    "unit": "p4-lmkd-relay-pressure-r11-02.service",
+    "driver_pid": 107572,
+    "cgroup_device": 30,
+    "cgroup_inode": 27699712
+  },
+  "stale_phase_qualified": false,
+  "stale_reason": "Actual original unit failed before the age/resume phase; qualifier was never reached.",
+  "additional_next_revision_gap": "08 scoped stale qualifier labels medium-only aged queue pass while exposes critical=false; critical stale target must separately require actual level2.",
+  "candidate_deployed": false,
+  "all_apps_production_ready": false
+}

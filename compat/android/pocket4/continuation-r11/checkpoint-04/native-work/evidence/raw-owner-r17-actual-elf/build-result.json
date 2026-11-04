@@ -1,0 +1,267 @@
+{
+  "state": "BUILT_STATIC_VERIFIED_ANDROID_UNRUN",
+  "kind": "owner",
+  "commands": [
+    {
+      "name": "compile-native",
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/clang++",
+        "-target",
+        "x86_64-linux-android24",
+        "--sysroot=/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/sysroot",
+        "-shared",
+        "-nostdlib",
+        "-fPIC",
+        "-fuse-ld=lld",
+        "-Wl,--build-id=sha1,--no-undefined,--allow-shlib-undefined,--no-as-needed,--soname,libfdownerprobe.so,-z,noexecstack,-z,relro,-z,now",
+        "-fno-stack-protector",
+        "-fvisibility=hidden",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O1",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/include",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/include/linux",
+        "-I",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/sysroot/usr/include/x86_64-linux-android",
+        "-std=c++17",
+        "-fno-exceptions",
+        "-fno-rtti",
+        "-nostdinc++",
+        "-isystem",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/sysroot/usr/include/c++/v1",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/owner_probe.cpp",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/sysroot/usr/lib/x86_64-linux-android/24/libc.so",
+        "-o",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/lib/x86_64/libfdownerprobe.so"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "javac",
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+        "-J-XX:ActiveProcessorCount=1",
+        "-J-XX:+UseSerialGC",
+        "-J-Xmx256m",
+        "-source",
+        "8",
+        "-target",
+        "8",
+        "-bootclasspath",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "-d",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/classes",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/src/local/pocket4/fdownerprobe/ProbeInstrumentation.java"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "312e9bd919c699a2f8409f70240177012720c94095f0f4374d44152defc50f7e"
+    },
+    {
+      "name": "d8",
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-cp",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+        "com.android.tools.r8.D8",
+        "--lib",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "--min-api",
+        "24",
+        "--output",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/dex",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/classes/local/pocket4/fdownerprobe/ProbeInstrumentation.class"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "aapt-package",
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "package",
+        "-f",
+        "-M",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/AndroidManifest.xml",
+        "-S",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/res",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "-F",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/unsigned.apk"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "align",
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-f",
+        "4",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/unsigned.apk",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/aligned.apk"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "sign",
+      "argv": [
+        "[existing owned-test signing configuration]"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "signature",
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/apksigner",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/fdownerprobe.apk"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "23c7e4a9b053d8e5a5a399f8b9d8d6556998f706f707ba16210238837566e05e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "alignment",
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-c",
+        "4",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/fdownerprobe.apk"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "badging",
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "badging",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/fdownerprobe.apk"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "3769eb9a7df32167bde4a5983abb65814434e2ba5b99cc153831fd65637c32a8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "permissions",
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "permissions",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/fdownerprobe.apk"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "782fc873d7d6136a4e32bc3e881d0836ce19414296d07b6843157354f62dcf3c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "manifest",
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "xmltree",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/fdownerprobe.apk",
+        "AndroidManifest.xml"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "ff32a3529a30ad551bba159337c7a0300d0c9ed62f4f362801b6c992f4069e5c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "ELF",
+      "argv": [
+        "/usr/bin/readelf",
+        "-h",
+        "-d",
+        "--dyn-syms",
+        "-l",
+        "-r",
+        "-V",
+        "--wide",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/lib/x86_64/libfdownerprobe.so"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "be13896cb5343828c1f1aeb2914df9b95b0e1758ee1dad5cfca36070ea241a04",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "disassembly",
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+        "-d",
+        "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/lib/x86_64/libfdownerprobe.so"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "a0b85eca2fef8aec6a12380f66335ec35b9c851df19f2c5e5204a7febfb7d1c5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "actual_android_executed": false,
+  "started_utc": "2026-11-04T16:10:49.830372+00:00",
+  "ndk_archive": {
+    "sha256": "601246087a682d1944e1e16dd85bc6e49560fe8b6d61255be2829178c8ed15d9",
+    "bytes": 663956036,
+    "provenance": "existing retained NDK archive; hash observed before extraction"
+  },
+  "package": "local.pocket4.fdownerprobe.r11",
+  "ABI": "x86_64",
+  "APK": {
+    "path": "/home/alex/work/pocket4-owned-fd-capability-r17-apk-02/fd-owner-probe-r17-source/build-attempt-1/fdownerprobe.apk",
+    "sha256": "74f54c5b3bb48f4c14a6ea788b7e6df5ba80c4b2944a79be37e99a919f8dab83",
+    "bytes": 45470
+  },
+  "ELF": {
+    "sha256": "3439433e7e85fae3e95ae67189c9bd3aa29b263266a6da18fe778436023fe4e4",
+    "needed": [
+      "libc.so"
+    ],
+    "NX_RELRO_NOW_no_WX": true
+  },
+  "source_sha256": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "CASE_PLAN.json": "792830ba52de84080fa4f696b9214e68abc3c95937aefb4c6bda92d5eb026ba3",
+    "SOURCE_PINS.json": "a24ffd999179df79145a03490c2394d242a96f6d57ab635c41a7da76ac7174eb",
+    "audit_worker_binary.py": "f403f1d19c139f0f398c7db05c1adc0231802fafdc69d67abc0e48034820d54e",
+    "owner_probe.cpp": "35613eea885bfb177fe6abbeda78e7cd497e3832516e424eb7af7c83116d7f0a",
+    "raw_metadata_owner.cc": "9a4d83c31457f11f942ccb36da07bba881b17c2204262cba85758302b5a3f533",
+    "raw_metadata_owner.h": "9a5fb5da4373c553fac4a0d54c24ff667c77bf4f5db739917af8db5149cccd1d",
+    "raw_owner_cases.cc": "cee1ded736206db57e40cdc3176a06e9b9e2973ee7990abdafcf8b5efbef6564",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f"
+  },
+  "builder_sha256": "6f07583856f660eba100589f43114ff6b423659256363a9cf3883a334d6b4c81",
+  "tools_sha256": {
+    "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/clang": "15261046b6ea9504da0ae57b9d65ebc869ab1942aecb1af2819762b9b5251957",
+    "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/ld.lld": "bbf9306936ea48ab0da4b56e76e8557fdc712ae96ff426699ed2b70d7b0913af",
+    "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump": "25a342ca878e88866e730541db585112de3b87a0b564215902221fbd28b02075",
+    "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842",
+    "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa",
+    "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5",
+    "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7",
+    "/usr/lib/android-sdk/build-tools/debian/aapt": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972",
+    "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758",
+    "/usr/lib/android-sdk/build-tools/debian/apksigner": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+  },
+  "no_permissions": true,
+  "no_activity": true,
+  "finished_utc": "2026-11-04T16:10:55.000736+00:00"
+}

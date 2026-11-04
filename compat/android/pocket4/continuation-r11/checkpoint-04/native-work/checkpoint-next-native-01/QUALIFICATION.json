@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "status": "PREPARED_FOR_PARENT_REVIEW_NOT_PUBLISHED",
+  "does_not_modify_cp03": true,
+  "r5": {
+    "host_cross_control_passed": true,
+    "actual_android_r16_cross_control_failed": true,
+    "failure": "Bionic Start EAGAIN11 despite inherited user stack; native fstat/statfs succeed",
+    "actual_android_report_sha256": "bfcfe2d2e33a3299a0af540477f23276f58c0e45b3d5865b354bd047e37c2340"
+  },
+  "raw_r6_r17": {
+    "fixed_metadata_mechanism_only": true,
+    "host_8_expected_controls_observed": true,
+    "one_expected_case_is_NOFILE0_production_red": true,
+    "real_android_build_completed": true,
+    "real_android_elf_static_audit_outcome": "UNKNOWN_REMOTE_PROCESS_START_ACK_TIMEOUT_PENDING_RECONCILIATION",
+    "actual_android_runtime_not_executed_at_preparation": true,
+    "peer_review": "NOT_PERFORMED",
+    "full_provenance_projection": false,
+    "runtime_hooks_installed": false,
+    "arbitrary_callbacks": false
+  },
+  "all_apps_production_ready": false,
+  "candidate_deployable": false,
+  "next_gates": [
+    "Reconcile exact r17 audit-01 outcome; inspect actual Android ELF closure with pinned tool; do not reissue with new idempotency key.",
+    "If static audit qualifies, parent performs one nonce-bound owned Android install/run/remove cycle.",
+    "Runtime lifecycle/credential/root/mount/host cancellation controls and production provenance projection remain absent.",
+    "NOFILE0 and ordinary alias-to-maps admission race remain red."
+  ],
+  "source_reference_limits": "Bionic/ART source references do not establish installed binary binding. Three runtime source files match R16 manifest and recorded engine build."
+}

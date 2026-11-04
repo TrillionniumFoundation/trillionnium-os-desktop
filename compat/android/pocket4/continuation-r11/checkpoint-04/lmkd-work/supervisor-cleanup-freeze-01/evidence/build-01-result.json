@@ -1,0 +1,128 @@
+{
+  "android_or_main_started": false,
+  "archive_sha256": "2dcb8bd08fe643bbd8b67d8a18211c6d41874272a7d820561ebaec8b2fb4026c",
+  "baseline_test_only_append_sha256": "c28cbbea5f732c446850950ba39000020f80e8fc9b373e5b11b7e67b755b9a7f",
+  "build_root": "/home/alex/work/pocket4-supervisor-cleanup-r11-build-01",
+  "candidate_source_inventory_sha256": "35d414aea3cb2f60e9a9ba2e367060530f77fe5671ea00347856e0114ade4309",
+  "commands": [
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/rustfmt",
+        "--edition",
+        "2024",
+        "runtime/droidloom-supervisor/src/control.rs",
+        "runtime/droidloom-supervisor/src/development.rs",
+        "runtime/droidloom-supervisor/src/development_network.rs"
+      ],
+      "cwd": "/home/alex/work/pocket4-supervisor-cleanup-r11-build-01/candidate",
+      "elapsed_seconds": 0.19540434097871184,
+      "name": "rustfmt",
+      "returncode": 0,
+      "stderr": "",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "--",
+        "--exact",
+        "development::cleanup_regression_control::repeated_owned_cleanup_must_not_report_success",
+        "--test-threads=1"
+      ],
+      "cwd": "/home/alex/work/pocket4-supervisor-cleanup-r11-build-01/baseline",
+      "elapsed_seconds": 20.255445089074783,
+      "name": "preimage-negative-control",
+      "returncode": 101,
+      "stderr": "   Compiling proc-macro2 v1.0.107\n   Compiling unicode-ident v1.0.24\n   Compiling quote v1.0.47\n   Compiling version_check v0.9.5\n   Compiling generic-array v0.14.7\n   Compiling syn v3.0.2\n   Compiling libc v0.2.188\n   Compiling serde_core v1.0.229\n   Compiling typenum v1.20.1\n   Compiling zmij v1.0.23\n   Compiling cfg-if v1.0.4\n   Compiling utf8parse v0.2.2\n   Compiling serde_json v1.0.151\n   Compiling getrandom v0.4.3\n   Compiling rustix v1.1.4\n   Compiling serde v1.0.229\n   Compiling thiserror v2.0.19\n   Compiling anstyle-parse v1.0.0\n   Compiling crypto-common v0.1.7\n   Compiling block-buffer v0.10.4\n   Compiling serde_derive v1.0.229\n   Compiling thiserror-impl v2.0.19\n   Compiling itoa v1.0.18\n   Compiling anstyle v1.0.14\n   Compiling memchr v2.8.3\n   Compiling linux-raw-sys v0.12.1\n   Compiling colorchoice v1.0.5\n   Compiling is_terminal_polyfill v1.70.2\n   Compiling anstyle-query v1.1.5\n   Compiling bitflags v2.13.1\n   Compiling anstream v1.0.0\n   Compiling digest v0.10.7\n   Compiling syn v2.0.119\n   Compiling once_cell v1.21.4\n   Compiling fastrand v2.5.0\n   Compiling heck v0.5.0\n   Compiling strsim v0.11.1\n   Compiling cpufeatures v0.2.17\n   Compiling clap_lex v1.1.0\n   Compiling clap_builder v4.6.0\n   Compiling sha2 v0.10.9\n   Compiling clap_derive v4.6.1\n   Compiling tempfile v3.27.0\n   Compiling hex v0.4.3\n   Compiling droidloom-contracts v0.1.0 (/home/alex/work/pocket4-supervisor-cleanup-r11-build-01/baseline/runtime/droidloom-contracts)\n   Compiling droidloom-window-policy v0.1.0 (/home/alex/work/pocket4-supervisor-cleanup-r11-build-01/baseline/runtime/droidloom-window-policy)\n   Compiling clap v4.6.1\n   Compiling droidloom-cpu-placement v0.1.0 (/home/alex/work/pocket4-supervisor-cleanup-r11-build-01/baseline/runtime/droidloom-cpu-placement)\n   Compiling droidloom-supervisor v0.1.0 (/home/alex/work/pocket4-supervisor-cleanup-r11-build-01/baseline/runtime/droidloom-supervisor)\n    Finished `test` profile [unoptimized] target(s) in 20.16s\n     Running unittests src/lib.rs (/home/alex/work/pocket4-supervisor-cleanup-r11-build-01/target/debug/deps/droidloom_supervisor-9c0f12bceb38e2c1)\nerror: test failed, to rerun pass `-p droidloom-supervisor --lib`\n",
+      "stderr_sha256": "efa89da18473fecaf979a5fcd3ef07696af4d99c0aa5298a6388999a1ef3b125",
+      "stdout": "\nrunning 1 test\ntest development::cleanup_regression_control::repeated_owned_cleanup_must_not_report_success ... FAILED\n\nfailures:\n\n---- development::cleanup_regression_control::repeated_owned_cleanup_must_not_report_success stdout ----\n\nthread 'development::cleanup_regression_control::repeated_owned_cleanup_must_not_report_success' (66228) panicked at runtime/droidloom-supervisor/src/development.rs:2256:9:\ncleanup failure became false success on the second poll\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    development::cleanup_regression_control::repeated_owned_cleanup_must_not_report_success\n\ntest result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 74 filtered out; finished in 0.00s\n\n",
+      "stdout_sha256": "87a6a4393bca15a01a4d7029e0a765d7d0885ea1dcb7459615f1488c71a38728"
+    },
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-supervisor",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/home/alex/work/pocket4-supervisor-cleanup-r11-build-01/candidate",
+      "elapsed_seconds": 4.419945561909117,
+      "name": "candidate-tests",
+      "returncode": 101,
+      "stderr": "   Compiling droidloom-supervisor v0.1.0 (/home/alex/work/pocket4-supervisor-cleanup-r11-build-01/candidate/runtime/droidloom-supervisor)\nwarning: function `task_profiles` is never used\n   --> runtime/droidloom-supervisor/examples/../src/cpu_placement.rs:205:15\n    |\n205 | pub(crate) fn task_profiles(source: &str) -> io::Result<String> {\n    |               ^^^^^^^^^^^^^\n    |\n    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: function `graphics_service` is never used\n   --> runtime/droidloom-supervisor/examples/../src/cpu_placement.rs:317:15\n    |\n317 | pub(crate) fn graphics_service(source: &str) -> io::Result<String> {\n    |               ^^^^^^^^^^^^^^^^\n\nwarning: `droidloom-supervisor` (example \"cpu-placement-probe\") generated 2 warnings\n    Finished `test` profile [unoptimized] target(s) in 3.78s\n     Running unittests src/lib.rs (/home/alex/work/pocket4-supervisor-cleanup-r11-build-01/target/debug/deps/droidloom_supervisor-9c0f12bceb38e2c1)\nerror: test failed, to rerun pass `-p droidloom-supervisor --lib`\n",
+      "stderr_sha256": "fcbc9e2d13b9be59f1a34e6fc24dd60dfb84c992d671338fdd36f07353e3d163",
+      "stdout": "\nrunning 75 tests\ntest control::apk::tests::descriptor_survives_unlink_and_is_close_on_exec ... ok\ntest control::apk::tests::legacy_json_needs_no_descriptor ... ok\ntest control::apk::tests::package_command_receives_apk_on_standard_input ... ok\ntest control::apk::tests::rejects_multiple_and_truncated_descriptors ... ok\ntest control::apk::tests::rejects_non_files_empty_oversized_and_non_zip_inputs ... ok\ntest control::apk::tests::requires_explicit_package_manager_success ... ok\ntest control::apk::tests::stdin_install_ends_with_size_not_a_bare_dash_option ... ok\ntest control::diagnostics::tests::crash_report_keeps_native_traces_when_activity_service_is_down ... ok\ntest control::diagnostics::tests::logs_use_installed_uid_even_when_the_process_is_dead ... ok\ntest control::diagnostics::tests::oversized_output_keeps_bounded_tail_and_announces_truncation ... ok\ntest control::diagnostics::tests::timed_out_commands_report_failure ... ok\ntest control::progress::tests::fragmented_progress_and_result_are_delivered_before_disconnect ... ok\ntest control::progress::tests::full_accept_queue_is_reported_without_blocking_connect ... ok\ntest control::progress::tests::legacy_result_without_newline_still_works ... ok\ntest control::progress::tests::partial_response_and_progress_only_disconnect_do_not_report_success ... ok\ntest control::progress::tests::progress_envelope_preserves_strict_request_validation ... ok\ntest control::progress::tests::silent_and_chatty_daemons_both_have_a_wall_clock_deadline ... ok\ntest control::tests::application_catalog_protocol_round_trip_is_explicit ... ok\ntest control::tests::boot_complete_does_not_hide_a_failed_input_service ... ok\ntest control::tests::boot_progress_uses_observed_services_and_checks_every_readiness_gate ... ok\ntest control::tests::boot_wait_reports_changes_and_a_stall_has_the_last_phase_and_log_commands ... ok\ntest control::tests::install_missing_file_fails_before_connecting ... ok\ntest control::tests::install_transport_delivers_open_file_and_preserves_android_failure ... ok\ntest control::tests::launch_resolution_validation_and_old_clients ... ok\ntest control::tests::local_daemon_status_and_stopped_teardown_are_idempotent ... ok\ntest control::tests::only_missing_android_services_are_treated_as_boot_progress ... ok\ntest control::tests::only_root_or_the_exact_cell_owner_is_authorized ... ok\ntest control::tests::package_and_component_validation_reject_shell_syntax ... ok\ntest control::tests::persistent_density_protocol_round_trip_is_explicit ... ok\ntest control::tests::protocol_round_trip_is_explicit ... ok\ntest cpu_placement::service_tests::preserves_bootstrap_import_and_other_service_policies ... ok\ntest cpu_placement::tests::boot_policy_respects_capacity_classes_and_homogeneous_fallback ... ok\ntest cpu_placement::tests::translates_placement_without_dropping_unrelated_actions ... ok\ntest development::cleanup_regression_control::repeated_owned_cleanup_must_not_report_success ... FAILED\ntest development::tests::android_file_override_source_must_be_a_regular_file ... ok\ntest development::tests::android_init_override_must_be_a_regular_executable_file ... ok\ntest development::tests::android_sparse_magic_is_little_endian_uapi_value ... ok\ntest development::tests::binder_ioctl_matches_linux_uapi ... ok\ntest development::tests::development_base_accepts_erofs_and_raw_ext4 ... ok\ntest development::tests::development_base_rejects_unknown_images ... ok\ntest development::tests::development_cgroups_keep_unavailable_v1_controllers_optional ... ok\ntest development::tests::linux_device_numbers_decode_render_node ... ok\ntest development::tests::loop_device_minors_follow_host_partition_geometry ... ok\ntest development::tests::loop_device_minors_reject_overflow_and_out_of_range_devices ... ok\ntest development::tests::native_media_heap_preflight_rejects_regular_files_and_symlinks ... ok\ntest development::tests::pci_render_node_projection_includes_bounded_libdrm_identity ... ok\ntest development::tests::render_node_sysfs_projection_contains_only_selected_metadata ... ok\ntest development::tests::storage_identity_uses_installed_media_provider_not_media_rw_or_other_apps ... ok\ntest development_network::tests::cell_and_gateway_use_the_same_bounded_subnet ... ok\ntest development_network::tests::network_objects_are_stable_and_interface_names_fit_linux ... ok\ntest gapps::tests::fresh_only_data_preserves_existing_users_and_rejects_implicit_disable ... ok\ntest gapps::tests::update_invalidates_only_google_parser_cache_without_following_links ... ok\ntest linux_plan::tests::android_file_overrides_are_read_only_but_mappable ... ok\ntest linux_plan::tests::android_init_override_is_read_only_but_executable ... ok\ntest linux_plan::tests::android_runtime_directories_are_private_read_only_projections ... ok\ntest linux_plan::tests::android_writable_storage_uses_dedicated_images ... ok\ntest linux_plan::tests::binder_and_partition_allowlists_are_exact ... ok\ntest linux_plan::tests::device_plan_contains_one_render_node_and_no_host_device_tree ... ok\ntest linux_plan::tests::explicit_shared_storage_is_idmapped_and_unmounted_before_data ... ok\ntest linux_plan::tests::gapps_selects_only_product_and_system_ext_before_boot ... ok\ntest linux_plan::tests::native_media_heap_adds_only_the_explicit_read_only_allocation_device ... ok\ntest linux_plan::tests::network_objects_are_bounded_and_tagged ... ok\ntest linux_plan::tests::plan_uses_transaction_order_and_reverse_teardown ... ok\ntest package_cache::tests::clean_data_image_needs_no_cache_directory ... ok\ntest package_cache::tests::drops_stale_systemui_manifests_without_touching_other_apps_or_symlinks ... ok\ntest tests::complete_start_and_teardown_are_strictly_ordered ... ok\ntest tests::every_start_failure_rolls_back_completed_stages ... ok\ntest tests::graphics_backend_is_explicit_and_bounded ... ok\ntest tests::native_media_backend_roundtrips_with_only_a_read_only_system_heap ... ok\ntest tests::rollback_residue_remains_owned_and_is_retryable ... ok\ntest tests::spec_rejects_card_nodes_and_host_uid_aliasing ... ok\ntest tests::spec_rejects_unsafe_and_duplicate_shared_storage_names ... ok\ntest tests::spec_rejects_unsafe_or_duplicate_android_file_overrides ... ok\ntest tests::spec_rejects_unsafe_or_overlapping_runtime_directories ... ok\ntest tests::teardown_of_absent_cell_is_successful_and_explicit ... ok\n\nfailures:\n\n---- development::cleanup_regression_control::repeated_owned_cleanup_must_not_report_success stdout ----\n\nthread 'development::cleanup_regression_control::repeated_owned_cleanup_must_not_report_success' (66788) panicked at runtime/droidloom-supervisor/src/development.rs:2256:9:\ncleanup failure became false success on the second poll\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\n\nfailures:\n    development::cleanup_regression_control::repeated_owned_cleanup_must_not_report_success\n\ntest result: FAILED. 74 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.59s\n\n",
+      "stdout_sha256": "de2fb016155931f5eb5131911426d8ac681922dd3f834f41746d85147f7e7416"
+    }
+  ],
+  "environment_controls": {
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "RUST_TEST_THREADS": "1"
+  },
+  "error": "RuntimeError: candidate-tests unexpected exit",
+  "finished_at": "2026-11-04T15:53:27.289551+00:00",
+  "formatted_overlay_archive": {
+    "bytes": 46897,
+    "sha256": "cf6536f4d836c04ec4ed96cf2f4eced16d1151a0a97d9b6a7a5906f61f7cd871"
+  },
+  "formatted_overlays": {
+    "docs/contracts/runtime-layout-v1.md": {
+      "bytes": 12628,
+      "kind": "file",
+      "mode": "0o664",
+      "sha256": "aff435358e2a7ad80257f34de5d38576fe78855778abb79556f9d3ad276b48e6"
+    },
+    "runtime/droidloom-supervisor/src/control.rs": {
+      "bytes": 72571,
+      "kind": "file",
+      "mode": "0o664",
+      "sha256": "b8cb1daf628ca6fea08504ecc4209c864eecc002eafba3f904fbdcf92fe387aa"
+    },
+    "runtime/droidloom-supervisor/src/development.rs": {
+      "bytes": 88795,
+      "kind": "file",
+      "mode": "0o664",
+      "sha256": "45c3ef2d647f4dc79edc40dbe641578b76976d3a193cbe4c2ccff785f7cbb151"
+    },
+    "runtime/droidloom-supervisor/src/development_network.rs": {
+      "bytes": 27419,
+      "kind": "file",
+      "mode": "0o664",
+      "sha256": "cd39787d7632a545ca4966fc37d6828cee396dbe5c074abc1997c220caac7fb6"
+    }
+  },
+  "host_network_effects_executed": false,
+  "installed_files_changed": false,
+  "overlay_manifest_sha256": "9da94754fd2170cfb7f708e3371f2a5cdfb21d6b1f2a118e6c2df73f0457b23c",
+  "preimage_false_success_reproduced": true,
+  "resources": {
+    "cpu_max": "100000 100000",
+    "memory_events_before": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+    "memory_max": "536870912",
+    "nice": 5
+  },
+  "schema": 1,
+  "source_inventory_sha256": "c50e4a1e2b28ee60497f649b2bf4457ad7255e868407bed59522f2597131333b",
+  "source_root": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/production-media-term-candidate",
+  "started_at": "2026-11-04T15:53:01.833886+00:00",
+  "success": false
+}

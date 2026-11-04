@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "decision": "PASS_R2_DIAGNOSTIC_DELTA_ONLY_FOR_FRESH_OWNED_CANARY",
+  "r2_manifest_sha256": "edbc982ada938b847c270c8aabeb6749922c00c92d9dc02202f18e6eee135937",
+  "r1_manifest_sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5",
+  "verified_frozen_payload_files": 17,
+  "reviewed_run_sha256": "00555a0b69cb0034c342ea42b7e5367270f255d6c651f5e3dc378a32fac6594c",
+  "reviewed_census_sha256": "9a88368e65b3157a7cb6238eb3de94194929f6cc55d658b33c5171d52ddd30a1",
+  "changed_runtime_functions": [
+    "ProbeFlow.run",
+    "admit",
+    "main",
+    "original_runtime"
+  ],
+  "unmodified_methods": [
+    "need",
+    "sha",
+    "load_module",
+    "verify_manifest",
+    "verify_prepared_sets",
+    "expected_cell_spec",
+    "ProbeFlow.__init__",
+    "ProbeFlow.guard",
+    "ProbeFlow.argv",
+    "ProbeFlow.android",
+    "ProbeFlow.command",
+    "ProbeFlow.packages",
+    "ProbeFlow.package_binding",
+    "ProbeFlow.install",
+    "ProbeFlow.sample_engine",
+    "ProbeFlow.instrument_with_mapping",
+    "ProbeFlow.case",
+    "ProbeFlow.cleanup_packages"
+  ],
+  "original_host_suite_and_contract_byte_identical": true,
+  "local20_controls_receipt_sha256": "513bd7b6b8fed33e6d4f334ad40b11e841468eb20a0d87ff8c333140a217324a",
+  "local_controls_reexecuted_by_this_review": false,
+  "findings": [
+    "Census reads argv only after confirming the enumerated process is in the exact owned daemon cgroup and init PID namespace; process identity and scope are checked again before retaining details.",
+    "Census uses explicit8s/4096PID/8192cgroup/2MiB limits and bounded proc reads; errors are retained without admitting an epoch.",
+    "Only the original ambiguous-or-missing role error permits another initial read within30s. Main/init/daemon guards surround census and strict capture; other epoch errors stop immediately.",
+    "First successful unchanged original helper capture fixes PRIVATE_EPOCH; later recapture is denied and all preexisting action/mapping/package cleanup methods are byte-semantics unchanged.",
+    "Original successful full host-suite receipt remains bound to frozen r1 wrapper ad47718c, with unchanged host code/layout/3793-registration contract; no relabeling as r2 host execution.",
+    "a01 failure lacks role census and remains unexplained at per-role level; no transient-zygote cause is asserted."
+  ],
+  "fresh_r2_device_run_executed_by_review": false,
+  "complete_original_r1_wrapper_independent_review": false,
+  "production_deployment_approved": false,
+  "all_apps_production_ready": false
+}
