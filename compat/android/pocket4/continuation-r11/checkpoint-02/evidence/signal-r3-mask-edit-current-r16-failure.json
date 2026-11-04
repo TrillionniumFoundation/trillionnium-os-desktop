@@ -1,0 +1,86 @@
+{
+  "phase": "run",
+  "kind": "signal-r3",
+  "package": "org.droidloom.signalprobe.r3",
+  "started_utc": "2026-11-04T13:56:04.447715+00:00",
+  "action_attempted": true,
+  "outcome_unknown": false,
+  "commands": [
+    {
+      "name": "packages-before",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "52d1e89b47c9ba6ac2ac772e91c16b60d2518b1c811d37f10d00f101f0f0ac40",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "package-path",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "path",
+        "org.droidloom.signalprobe.r3"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "df7e4ee2a1ee69ecd1b839166e3f4f90f30b7de51cf9407751231d06ebf9a82d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "instrument",
+      "argv": [
+        "/system/bin/am",
+        "instrument",
+        "-w",
+        "-r",
+        "-e",
+        "nonce",
+        "p4r11_signalr3_maskedit_20261104_a1",
+        "-e",
+        "case",
+        "smc-mask-edit",
+        "org.droidloom.signalprobe.r3/org.droidloom.signalprobe.r3.SignalProbeInstrumentation"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "41860c289fc4064b101b68b457e6401adf5d8aadc5722a16ee6523fa380f1bd9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "packages-after",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "52d1e89b47c9ba6ac2ac772e91c16b60d2518b1c811d37f10d00f101f0f0ac40",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "package_count_before": 183,
+  "installed_identity": {
+    "version_code": 3,
+    "uid": 10154
+  },
+  "apk_sha256": "6ec31387ce9b648bc841b1aa6c4ca6bf67b2544fee804a320f2df100831ef0d9",
+  "instrumentation_output": "INSTRUMENTATION_STATUS: case=smc-mask-edit\nINSTRUMENTATION_STATUS: nonce=p4r11_signalr3_maskedit_20261104_a1\nINSTRUMENTATION_STATUS: phase=STARTED\nINSTRUMENTATION_STATUS: result_path=/data/user/0/org.droidloom.signalprobe.r3/files/signal-probe/p4r11_signalr3_maskedit_20261104_a1.json\nINSTRUMENTATION_STATUS_CODE: 1\nINSTRUMENTATION_RESULT: case=smc-mask-edit\nINSTRUMENTATION_RESULT: evidence_json={\"schema\":1,\"phase\":\"FAIL\",\"case\":\"smc-mask-edit\",\"nonce\":\"p4r11_signalr3_maskedit_20261104_a1\",\"java_pid\":118735,\"elapsed_ms\":8,\"target_sdk\":33,\"package\":\"org.droidloom.signalprobe.r3\",\"fingerprint\":\"generic\\/aosp_cf_x86_64_only_phone\\/vsoc_x86_64_only:17\\/CP2A.260605.016\\/15885347:userdebug\\/test-keys\",\"java_os_arch\":\"aarch64\",\"java_process_is_64_bit\":true,\"watchdog_ms\":10000,\"self_security\":{\"seccomp\":\"0\",\"no_new_privs\":\"0\",\"status_read_error\":null,\"attr_current\":\"unconfined\",\"attr_read_error\":null},\"native\":{\"schema\":1,\"case\":\"smc-mask-edit\",\"status\":\"FAIL\",\"reason\":10,\"errno\":0,\"pid\":118735,\"tid\":118750,\"elapsed_ns\":273652,\"guest_isa\":\"aarch64\",\"checks\":\"0x000000000407fefe\",\"required_checks\":\"0x000000000707fffe\",\"instruction\":{\"fault_pc\":\"0x00007e83d94f0e48\",\"resume_pc\":\"0x00007e83d94f0e4c\",\"word_before\":\"0xd4000003\",\"word_after\":\"0xd4000003\"},\"signal\":{\"precise_siginfo_observed\":true,\"count\":1,\"unexpected\":0,\"signo\":4,\"info_signo\":4,\"si_code\":1,\"si_errno\":0,\"si_addr\":\"0x00007e83d94f0e48\",\"guest_pc\":\"0x00007e83d94f0e48\",\"guest_sp\":\"0x00007e83d91ebe40\",\"pstate\":\"0x0000000080000000\",\"context_sigill_blocked\":0,\"context_sigusr1_blocked\":0,\"handler_mask_query_rc\":0,\"handler_kernel_mask\":\"0x000000008000120c\",\"x\":[\"0x0000000000001111\",\"0x0000000000002222\",\"0x0000000000000000\",\"0x0000000000000008\",\"0x0000000000000080\",\"0x0000000000000080\",\"0x0000000000000080\",\"0x48006e7552657669\",\"0x00000000000000ac\",\"0x0000000000009999\",\"0x000000000000aaaa\",\"0x0000000080001804\",\"0x00007e83a008d2a0\",\"0x0000000000004110\",\"0x0000000000000110\",\"0x0000000100000000\",\"0x00007e83d94f5188\",\"0x00007e8342b1e840\",\"0x00007e8340200000\",\"0x00007e83d94f9458\",\"0x00007e83d94f9228\",\"0x0000000000000004\",\"0x00007e83d94f9000\",\"0x0000000000000000\",\"0x000000003b9ac9ff\",\"0x00007e83d94f9240\",\"0x00007e83d94f9220\",\"0x00007e83d94f9230\",\"0x000000003b9aca00\",\"0x00007e83d91ebf80\",\"0x00007e83d94ef9f4\"]},\"after\":{\"x0\":\"0x0000000000005a01\",\"x1\":\"0x0000000000005a02\",\"x8\":\"0x0000000000005a08\",\"x9\":\"0x0000000000005a09\",\"x10\":\"0x0000000000005a0a\",\"sp\":\"0x00007e83d91ebe40\",\"resume_pc\":\"0x00007e83d94f0e4c\",\"cookie\":\"0x0000000000004f4b\",\"nzcv\":\"0x0000000060000000\",\"return_value\":\"0x0000000000005a01\"},\"restore\":{\"mask_before\":\"0x0000000080001204\",\"mask_after\":\"0x0000000080001204\",\"action_rc\":0,\"mask_rc\":0,\"action_readback_rc\":0,\"action_equal\":true,\"original_action_flags\":\"0x8000004\",\"original_action_pointer\":\"0x00007e83ac219040\",\"original_action_mask\":\"0xfffffffffffbfeff\",\"restored_action_flags\":\"0x8000004\",\"restored_action_pointer\":\"0x00007e83ac219040\",\"restored_action_mask\":\"0xfffffffffffbfeff\"},\"mask_edit\":{\"requested\":true,\"entered_kernel_mask\":\"0x0000000080001204\",\"context_kernel_mask\":\"0x0000000000000000\",\"requested_context_mask\":\"0x0000000080041904\",\"expected_resume_mask\":\"0x0000000080001804\",\"live_after_edit\":\"0x000000008000120c\",\"live_after_edit_rc\":0,\"post_handler_kernel_mask\":\"0x0000000080001204\",\"post_handler_query_rc\":0,\"sampled_before_harness_restore\":true},\"child\":{\"pid\":0,\"recorded_pid\":0,\"recorded_ppid\":0,\"recorded_tid\":0,\"phase\":0,\"setup_reason\":0,\"setup_errno\":0,\"pdeathsig\":0,\"wait_observed\":false,\"wait_status\":0,\"wifsignaled\":false,\"termination_signal\":0,\"wifexited\":false,\"exit_status\":0,\"timed_out\":false,\"kill_rc\":-1,\"kill_errno\":0,\"reaped\":false,\"elapsed_ns\":0,\"deadline_ms\":2000,\"cleanup_bound_ms\":1000,\"original_sigchld_flags\":\"0x0\",\"original_sigchld_pointer\":\"0x0000000000000000\"}}}\nINSTRUMENTATION_RESULT: nonce=p4r11_signalr3_maskedit_20261104_a1\nINSTRUMENTATION_RESULT: phase=FAIL\nINSTRUMENTATION_RESULT: result_path=/data/user/0/org.droidloom.signalprobe.r3/files/signal-probe/p4r11_signalr3_maskedit_20261104_a1.json\nINSTRUMENTATION_CODE: 0\n",
+  "all_package_identities_preserved": true,
+  "ok": true,
+  "finished_utc": "2026-11-04T13:56:04.888370+00:00"
+}
+

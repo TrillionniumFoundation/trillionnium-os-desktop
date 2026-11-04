@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "kind": "owned_actual_app_uid_copy_capability_only",
+  "package": "local.pocket4.fdownerprobe.r11",
+  "version_code": 11,
+  "jni_symbol": "Java_local_pocket4_fdownerprobe_ProbeInstrumentation_runProbe",
+  "source_sha256": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "owner_probe.cpp": "f3611452d145ce18511296ff8647d6c7e29bbda8788e42d30f6a729e39dd7841",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f"
+  },
+  "original_source_sha256": {
+    "AndroidManifest.xml": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+    "owner_probe.cpp": "b045f5a3794bb6c473f7819b06af31c05ad238c16b05c72f7c67fa09e6d08988",
+    "src/local/pocket4/fdownerprobe/ProbeInstrumentation.java": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f"
+  },
+  "actual_android_executed": false,
+  "install_contract": "package must be absent before exact APK installation; owned instrumentation only; remove after exact-result capture",
+  "copy_tests": [
+    "self caller TID readv/writev exact 16 bytes",
+    "self private owner TID readv/writev exact 16 bytes",
+    "invalid remote pointer 1 returns EFAULT for both APIs",
+    "source unchanged; original fd owner capability controls retained"
+  ],
+  "not_included": [
+    "path snapshot implementation or positive broker identity test"
+  ],
+  "local_host_result": "strict C++ compile pass; actual local seccomp returns EPERM on both APIs; controlled child reaped; overall pass=false as expected"
+}

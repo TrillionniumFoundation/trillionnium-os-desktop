@@ -1,0 +1,199 @@
+{
+  "scope": "one real isolated lifecycle bootstrap; no LMKD, PSI or pressure",
+  "started_utc": "2026-11-04T14:09:00.127858+00:00",
+  "unit": "p4-lmkd-relay-bootstrap-r11-01.service",
+  "dispatch_attempted": true,
+  "outcome_unknown": false,
+  "forced_teardown": false,
+  "main_namespaces": {
+    "pid": 4026533288,
+    "mnt": 4026533284,
+    "cgroup": 4026533394,
+    "ipc": 4026533286,
+    "uts": 4026533285,
+    "net": 4026533041
+  },
+  "available_memory_bytes": 9927278592,
+  "dispatch_returncode": 0,
+  "dispatch_stdout": "",
+  "dispatch_stderr": "",
+  "invocation_id": "c076b03878e44ec2b4e18f04aa084fda",
+  "terminal_status": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "c076b03878e44ec2b4e18f04aa084fda",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainPID": "4086722",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "0",
+    "ControlGroup": ""
+  },
+  "evidence": {
+    "staging-result.json": {
+      "sha256": "55f889b6a189f6179018211ecb32a6c995b288ddb9702739155ad4db4a680d2a",
+      "data": {
+        "ok": true,
+        "actor_sha256": "b26feb098e0edea19fd89608490c4a23a7603469130160574383e409286d2c4f",
+        "lmkd_sha256": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde",
+        "pinned_library_files": 15,
+        "all_source_and_copied_hashes_matched": true,
+        "processes_started": false,
+        "namespaces_created": false,
+        "pressure": false
+      }
+    },
+    "inner-preflight.json": {
+      "sha256": "b4c51aac724e367b0c32536b18d528f0a3bc05e65acb2c6f8beb4d383a62730d",
+      "data": {
+        "pid": 1,
+        "ppid": 0,
+        "cgroup_dev": 30,
+        "cgroup_ino": 27411695,
+        "ns": {
+          "pid": 4026533804,
+          "mnt": 4026533070,
+          "cgroup": 4026533805,
+          "ipc": 4026533803,
+          "uts": 4026533802,
+          "net": 4026533806
+        },
+        "namespace_root_dev": 30,
+        "namespace_root_ino": 27411595,
+        "memory_mount_path": "/sys/fs/cgroup",
+        "domain_relative": "/domain",
+        "domain_dev": 30,
+        "domain_ino": 27411695,
+        "root_pressure_test_performed": false,
+        "evidence_dev": 28,
+        "evidence_ino": 1157658,
+        "socket_dev": 28,
+        "socket_ino": 1157660,
+        "state_noexec": true,
+        "closed_inherited_fds": true,
+        "only_owned_gate_fds": [
+          3,
+          4
+        ],
+        "lmkd_started": false
+      }
+    },
+    "outer-preflight.json": {
+      "sha256": "3cc271c38427cb2cc1e0f5ae6c55699bd18c708f0a6cebfe06e2e76445b3c7dd",
+      "data": {
+        "child_host_pid": 4086726,
+        "child_start": 82704950,
+        "cgroup": "/system.slice/p4-lmkd-relay-bootstrap-r11-01.service",
+        "cgroup_dev": 30,
+        "cgroup_ino": 27411595,
+        "domain_relative": "/domain",
+        "domain_dev": 30,
+        "domain_ino": 27411695,
+        "bootstrap_cgroup": "/supervisor",
+        "bootstrap_host_pid": 4086724,
+        "lmkd_started": false
+      }
+    },
+    "broker-ready.json": {
+      "sha256": "4d13c701ccc61c863ad1fb959029bf374e12949614039e7007834c07d5833c07",
+      "data": {
+        "state": "Ready",
+        "generation": "8b87509409a70707c681d7b660e525efa50f3aa294098561e77b29b19952cd24",
+        "endpoint_device": 28,
+        "endpoint_inode": 1158165,
+        "cgroup_device": 30,
+        "cgroup_inode": 27411695,
+        "budget_hex": "0000002000000000000000000000000000000000000000000100000001000000",
+        "granted": false,
+        "faulted": false
+      }
+    },
+    "relay-projection.json": {
+      "sha256": "62161f06b417e25156af52a6a2f37cbf11f5bf522370c434a4a6bf41d65463ab",
+      "data": {
+        "device": 28,
+        "inode": 1158165,
+        "uid": 1069,
+        "gid": 1069,
+        "mode": 384
+      }
+    },
+    "broker-retired.json": {
+      "sha256": "0abc5989879b11cfbc9476dc6dd9073ef4481985a89158ba96c41ef534d07169",
+      "data": {
+        "state": "Retired",
+        "generation": "8b87509409a70707c681d7b660e525efa50f3aa294098561e77b29b19952cd24",
+        "endpoint_device": 28,
+        "endpoint_inode": 1158165,
+        "cgroup_device": 30,
+        "cgroup_inode": 27411695,
+        "budget_hex": "0000002000000000000000000000000000000000000000000100000001000000",
+        "granted": false,
+        "faulted": false
+      }
+    },
+    "phase-result.json": {
+      "sha256": "965f5537faef9aade7210620f668c4cc85374131ce0a7b530453ec8d6c3e7392",
+      "data": {
+        "ok": true,
+        "phase": "bootstrap",
+        "lmkd_started": false,
+        "psi_registered": false,
+        "real_pressure_verified": false
+      }
+    },
+    "driver-result.json": {
+      "sha256": "309e2d932b193e49a217a0e2e7bd33fb09e00682113b80cd7b0c0da6087a48c0",
+      "data": {
+        "ok": true,
+        "phase": "bootstrap",
+        "actual_broker": true,
+        "broker_pid": 4086728,
+        "owner_pid": 4086724,
+        "init_pid": 4086726,
+        "bootstrap_rights": 16,
+        "same_cell_retry_denied": true,
+        "broker_retired_and_reaped": true,
+        "owner_and_init_exited": true,
+        "domain_populated": false,
+        "android_enrollment": false,
+        "real_pressure_verified": false,
+        "installed_supervisor_changed": false
+      }
+    }
+  },
+  "ok": true,
+  "main_epoch_unchanged": true,
+  "unit.stdout": "{\"ok\":true,\"phase\":\"bootstrap\",\"real_pressure_verified\":false}\n",
+  "unit.stderr": "",
+  "pre_stop_status": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "c076b03878e44ec2b4e18f04aa084fda",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainPID": "4086722",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "0",
+    "ControlGroup": ""
+  },
+  "stop_returncode": 0,
+  "post_stop_status": {
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "InvocationID": "",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainPID": "0",
+    "ExecMainCode": "0",
+    "ExecMainStatus": "0",
+    "ControlGroup": ""
+  },
+  "owned_cgroup_after_stop": "absent",
+  "main_epoch_unchanged_after_cleanup": true,
+  "finished_utc": "2026-11-04T14:09:00.435743+00:00"
+}
+

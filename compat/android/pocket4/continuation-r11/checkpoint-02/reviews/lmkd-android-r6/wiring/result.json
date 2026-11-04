@@ -1,0 +1,77 @@
+{
+  "scope": "source-extracted router and Reaper effect body; local real Session sockets; effect syscall I/O replaced; no Android/real PSI/cgroup/signal/deployment",
+  "unchanged_r5_policy_sha256": {
+    "static int find_and_kill_process(": "996634f15f7c06a54076508b91b36d38ef5e98e28bec22603f054e779037af5e",
+    "static void apply_proc_prio(": "eae598ec70eb5cdf39ad6a396a6f37c3a8cd7e192a992f2f797cd933f3c1e289",
+    "static void register_oom_adj_proc(": "beea62052a5fc0f5deb8142e1c1a90d6dbf89bdd0155b9c9c8aa3382278056d9",
+    "static bool claim_record(": "86ec7152f9be9293992abf8afa2bbcd7cb1359e23569e9b4ee318c1d40f8978e",
+    "static void __mp_event_psi(": "eeb10cb2fe077c20add186335ffdfef0fa1f67f6008a2a147baa47fa9cb2ace4",
+    "static bool update_props() {": "74c1ff0e391a7b20cd9e3d29d090898d0c4eb8f8a5f06602b4a03893287df3b5"
+  },
+  "tests": {
+    "router": {
+      "command": [
+        "g++",
+        "-std=c++17",
+        "-O2",
+        "-g0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-I",
+        "/workspace/scratch/94990735b266/lmkd-work/android-build-freeze-01/android-r6",
+        "/workspace/scratch/94990735b266/acceptance-lmkd-r6/wiring/router.cpp",
+        "-o",
+        "/workspace/scratch/94990735b266/acceptance-lmkd-r6/wiring/router"
+      ],
+      "compile_rc": 0,
+      "compile_stderr": "",
+      "test_rc": 0,
+      "stdout": "PASS relay failure preempts earlier queued event without ctrl_data_close\nPASS relay failure preempts earlier queued event without ctrl_data_close\nPASS relay failure preempts earlier queued event without ctrl_data_close\nPASS unexpected control IN retires old batch before pressure dispatch\nPASS ordinary framework connection keeps original close index\nPASS process-death HUP keeps original completion handler\nPASS healthy pressure dispatch remains reachable\nRESULT 7 source router assertions passed; no Android event loop\n",
+      "stderr": ""
+    },
+    "guarded_reaper": {
+      "command": [
+        "g++",
+        "-std=c++17",
+        "-O2",
+        "-g0",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-I",
+        "/workspace/scratch/94990735b266/lmkd-work/android-build-freeze-01/android-r6",
+        "/workspace/scratch/94990735b266/acceptance-lmkd-r6/wiring/guarded_reaper.cpp",
+        "/workspace/scratch/94990735b266/lmkd-work/android-build-freeze-01/android-r6/pressure_relay.cpp",
+        "/workspace/scratch/94990735b266/lmkd-work/android-build-freeze-01/android-r6/enrollment.cpp",
+        "/workspace/scratch/94990735b266/lmkd-work/android-build-freeze-01/android-r6/relay_session.cpp",
+        "-Wl,--wrap=clock_gettime,--wrap=write,--wrap=pidfd_send_signal",
+        "-o",
+        "/workspace/scratch/94990735b266/acceptance-lmkd-r6/wiring/guarded_reaper"
+      ],
+      "compile_rc": 0,
+      "compile_stderr": "",
+      "test_rc": 0,
+      "stdout": "PASS real Reaper entry cannot signal from lease-only authority\nPASS pidfd-only effect is synchronous and finally gated\nPASS verified exact group uses one actual write without queued work\nPASS unbound broad group is refused without fallback\nPASS legacy numeric-PID cgroup loop is explicitly unsupported\nPASS failed group write requires a separately gated held-pidfd fallback\nPASS window expiry during failed group write prevents fallback syscall\nPASS revoked generation leaves no deferred worker effect\nRESULT 8 actual Reaper source assertions passed; syscall I/O replaced\n",
+      "stderr": ""
+    }
+  },
+  "source_sha256": {
+    "Android.bp": "0b0fad020359d75162c3670fb745e6285420b90eb0c8eacba036875e72c8d110",
+    "enrollment.cpp": "239f7f0bc12d4eba9a17215bf142053b92654709a8c46eccf6956418a78916fc",
+    "enrollment.h": "46c02d6a157d9bb8dbca60ce01deadde60433ffb7f0d0fa6f138076e32314794",
+    "lmkd.cpp": "d49e5a8251acab96a2be05ef7437cbd754072da0371aceb6add7214bbcfdf654",
+    "memory_cgroup.cpp": "ab36a8f578b705b837d0622a076267a5cd1b8e156ea5552f11f349eaae9052d4",
+    "memory_cgroup.h": "8b479184a7b66f54e0acf4b610efde6533417005210a8b652c40675e3f711cb2",
+    "pressure_relay.cpp": "16de80c3d3ec154d66279b784eaa847fdc675c2973559b97d3ef1a1a167fd70e",
+    "pressure_relay.h": "e8c1c5a8173f511ac2a56f9c80cda5495523608e03863a3e5804aac0125d46ce",
+    "reaper.cpp": "2445add620e4fa39bc9daeeec370b575bd1c02bdb15fb40e990f561a5283018f",
+    "reaper.h": "c431318f9312800032b1494b2fb7460d600b9d0b625d40962d71116fb089e7d2",
+    "relay_session.cpp": "e940cad52b4f5cbb586d86704a51669468f8efbc3faea3d676eff1f496a5bf6d",
+    "relay_session.h": "6e491ef6fd8385f63d7af57c4fa5f7cb3db654ee8bee326ce5a19ef28cf35378"
+  },
+  "script_sha256": "5bbfea48d68cdcfe6598e4291f2433af9a5f612695a4d6f2ff388af5e5ca712a",
+  "pass": true
+}

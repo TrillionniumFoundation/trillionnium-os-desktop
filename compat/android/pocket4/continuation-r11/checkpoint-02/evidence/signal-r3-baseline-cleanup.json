@@ -1,0 +1,80 @@
+{
+  "phase": "remove",
+  "kind": "signal-r3",
+  "package": "org.droidloom.signalprobe.r3",
+  "started_utc": "2026-11-04T13:59:19.715422+00:00",
+  "action_attempted": true,
+  "outcome_unknown": false,
+  "commands": [
+    {
+      "name": "packages-before",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "52d1e89b47c9ba6ac2ac772e91c16b60d2518b1c811d37f10d00f101f0f0ac40",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "package-path",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "path",
+        "org.droidloom.signalprobe.r3"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "df7e4ee2a1ee69ecd1b839166e3f4f90f30b7de51cf9407751231d06ebf9a82d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "uninstall-owned-only",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "uninstall",
+        "--user",
+        "0",
+        "org.droidloom.signalprobe.r3"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "7fc0023a6402c7bd7abd98bb3e580968de4833eed07d88d1cc8d70819d69c7a0",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "packages-after",
+      "argv": [
+        "/system/bin/cmd",
+        "package",
+        "list",
+        "packages",
+        "-U",
+        "--show-versioncode",
+        "--user",
+        "0"
+      ],
+      "returncode": 0,
+      "stdout_sha256": "367f6b94498c85098f0b9673e5eb4f41de679c8bcbfa2fddd6fae1178c1397bd",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "package_count_before": 183,
+  "installed_identity": {
+    "version_code": 3,
+    "uid": 10154
+  },
+  "apk_sha256": "6ec31387ce9b648bc841b1aa6c4ca6bf67b2544fee804a320f2df100831ef0d9",
+  "only_exact_owned_package_removed": true,
+  "ok": true,
+  "finished_utc": "2026-11-04T13:59:19.940001+00:00"
+}
+

@@ -1,0 +1,217 @@
+{
+  "scope": "one real isolated Android LMKD enrollment, protocol and HUP; owned PSI registration, no pressure workload",
+  "started_utc": "2026-11-04T14:16:05.642527+00:00",
+  "unit": "p4-lmkd-relay-protocol-r11-01.service",
+  "dispatch_attempted": true,
+  "outcome_unknown": false,
+  "forced_teardown": false,
+  "main_namespaces": {
+    "pid": 4026533288,
+    "mnt": 4026533284,
+    "cgroup": 4026533394,
+    "ipc": 4026533286,
+    "uts": 4026533285,
+    "net": 4026533041
+  },
+  "available_memory_bytes": 16460836864,
+  "dispatch_returncode": 0,
+  "dispatch_stdout": "",
+  "dispatch_stderr": "",
+  "invocation_id": "669fa176b5154a0bbaebcf5146b30ba6",
+  "terminal_status": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "669fa176b5154a0bbaebcf5146b30ba6",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainPID": "4096982",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "0",
+    "ControlGroup": ""
+  },
+  "evidence": {
+    "staging-result.json": {
+      "sha256": "55f889b6a189f6179018211ecb32a6c995b288ddb9702739155ad4db4a680d2a",
+      "data": {
+        "ok": true,
+        "actor_sha256": "b26feb098e0edea19fd89608490c4a23a7603469130160574383e409286d2c4f",
+        "lmkd_sha256": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde",
+        "pinned_library_files": 15,
+        "all_source_and_copied_hashes_matched": true,
+        "processes_started": false,
+        "namespaces_created": false,
+        "pressure": false
+      }
+    },
+    "inner-preflight.json": {
+      "sha256": "a04043aadf2e8fef93f910fe12b7a29cde1543442fb3e80c1527771a42e3523a",
+      "data": {
+        "pid": 1,
+        "ppid": 0,
+        "cgroup_dev": 30,
+        "cgroup_ino": 27428107,
+        "ns": {
+          "pid": 4026533804,
+          "mnt": 4026533070,
+          "cgroup": 4026533805,
+          "ipc": 4026533803,
+          "uts": 4026533802,
+          "net": 4026533806
+        },
+        "namespace_root_dev": 30,
+        "namespace_root_ino": 27428007,
+        "memory_mount_path": "/sys/fs/cgroup",
+        "domain_relative": "/domain",
+        "domain_dev": 30,
+        "domain_ino": 27428107,
+        "root_pressure_test_performed": false,
+        "evidence_dev": 28,
+        "evidence_ino": 1158678,
+        "socket_dev": 28,
+        "socket_ino": 1158680,
+        "state_noexec": true,
+        "closed_inherited_fds": true,
+        "only_owned_gate_fds": [
+          3,
+          4
+        ],
+        "lmkd_started": false
+      }
+    },
+    "outer-preflight.json": {
+      "sha256": "333a4089b1626b3d50abe1cc24c8888bcd1217117542160ef7bbae10d5fd9bc1",
+      "data": {
+        "child_host_pid": 4096987,
+        "child_start": 82747500,
+        "cgroup": "/system.slice/p4-lmkd-relay-protocol-r11-01.service",
+        "cgroup_dev": 30,
+        "cgroup_ino": 27428007,
+        "domain_relative": "/domain",
+        "domain_dev": 30,
+        "domain_ino": 27428107,
+        "bootstrap_cgroup": "/supervisor",
+        "bootstrap_host_pid": 4096986,
+        "lmkd_started": false
+      }
+    },
+    "broker-ready.json": {
+      "sha256": "323b513b628cbb201e09fd605ca6a15aafbf59a07929f183d5b73cf100ea0444",
+      "data": {
+        "state": "Ready",
+        "generation": "521f498772b30d88e58097fab304e079e6ae1bf395539d7a87d0eb387c502d6a",
+        "endpoint_device": 28,
+        "endpoint_inode": 1159154,
+        "cgroup_device": 30,
+        "cgroup_inode": 27428107,
+        "budget_hex": "0000002000000000000000000000000000000000000000000100000001000000",
+        "granted": false,
+        "faulted": false
+      }
+    },
+    "relay-projection.json": {
+      "sha256": "ce80bd831e4210af25dea82581671a622526876367771a65c08763360710c93a",
+      "data": {
+        "device": 28,
+        "inode": 1159154,
+        "uid": 1069,
+        "gid": 1069,
+        "mode": 384
+      }
+    },
+    "broker-active.json": {
+      "sha256": "238d2cd0fc34be478410ffafbb42db9507668329db5dde70fe077fb569e6b2ef",
+      "data": {
+        "state": "Active",
+        "generation": "521f498772b30d88e58097fab304e079e6ae1bf395539d7a87d0eb387c502d6a",
+        "endpoint_device": 28,
+        "endpoint_inode": 1159154,
+        "cgroup_device": 30,
+        "cgroup_inode": 27428107,
+        "budget_hex": "0000002000000000000000000000000000000000000000000100000001000000",
+        "granted": true,
+        "faulted": false
+      }
+    },
+    "broker-retired.json": {
+      "sha256": "139788a424314488d18b8e8239b2aae255fe54b0bf088d574bb14942f6f42cca",
+      "data": {
+        "state": "Retired",
+        "generation": "521f498772b30d88e58097fab304e079e6ae1bf395539d7a87d0eb387c502d6a",
+        "endpoint_device": 28,
+        "endpoint_inode": 1159154,
+        "cgroup_device": 30,
+        "cgroup_inode": 27428107,
+        "budget_hex": "0000002000000000000000000000000000000000000000000100000001000000",
+        "granted": true,
+        "faulted": false
+      }
+    },
+    "phase-result.json": {
+      "sha256": "b6f10831615d9f561973f283d38c18e13129042fa551285dc5be61e8e09b1e65",
+      "data": {
+        "ok": true,
+        "phase": "protocol",
+        "marked_contract_rejected": true,
+        "real_protocol_verified": true,
+        "actual_relay_hup_verified": true,
+        "real_pressure_verified": false,
+        "route": "PIDFD-only minimal root",
+        "production_cgroup_kill_qualified": false,
+        "pid_reuse_qualified": false
+      }
+    },
+    "driver-result.json": {
+      "sha256": "59aef3621849d0710adc35786c35d0463590524b4f5979c6df951ab1a6779cb5",
+      "data": {
+        "ok": true,
+        "phase": "protocol",
+        "actual_broker": true,
+        "broker_pid": 4096988,
+        "owner_pid": 4096986,
+        "init_pid": 4096987,
+        "bootstrap_rights": 16,
+        "same_cell_retry_denied": true,
+        "broker_retired_and_reaped": true,
+        "owner_and_init_exited": true,
+        "domain_populated": false,
+        "android_enrollment": true,
+        "real_pressure_verified": false,
+        "installed_supervisor_changed": false
+      }
+    }
+  },
+  "ok": true,
+  "main_epoch_unchanged": true,
+  "unit.stdout": "{\"ok\":true,\"phase\":\"protocol\",\"real_pressure_verified\":false}\n",
+  "unit.stderr": "WARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\"\nWARNING: linker: Warning: failed to find generated linker configuration from \"/linkerconfig/ld.config.txt\"\n",
+  "pre_stop_status": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "669fa176b5154a0bbaebcf5146b30ba6",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainPID": "4096982",
+    "ExecMainCode": "1",
+    "ExecMainStatus": "0",
+    "ControlGroup": ""
+  },
+  "stop_returncode": 0,
+  "post_stop_status": {
+    "LoadState": "not-found",
+    "ActiveState": "inactive",
+    "SubState": "dead",
+    "InvocationID": "",
+    "MainPID": "0",
+    "Result": "success",
+    "ExecMainPID": "0",
+    "ExecMainCode": "0",
+    "ExecMainStatus": "0",
+    "ControlGroup": ""
+  },
+  "owned_cgroup_after_stop": "absent",
+  "main_epoch_unchanged_after_cleanup": true,
+  "finished_utc": "2026-11-04T14:16:07.227081+00:00"
+}
+

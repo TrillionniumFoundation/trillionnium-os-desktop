@@ -1,0 +1,246 @@
+{
+  "schema": 1,
+  "scope": "Actual ProcessGuestSignal + ARM64 GuestContext with declared CPU/GuestCall fixture providers; real own-process Linux signal and sigreturn; not full translator/Android",
+  "results": [
+    {
+      "candidate": "baseline",
+      "build_command": [
+        "g++",
+        "-std=c++20",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-DNATIVE_BRIDGE_GUEST_ARCH_ARM64=1",
+        "-DBERBERIS_GUEST_LP64=1",
+        "-DCANDIDATE=0",
+        "-I",
+        "/workspace/scratch/94990735b266/signal-fix/local-mask-controls-r2/fixture",
+        "-I",
+        "/workspace/scratch/94990735b266/signal-fix/device-r16-preimage/base/include",
+        "-I",
+        "/workspace/scratch/94990735b266/signal-fix/device-r16-preimage/guest_os_primitives/arm64/include",
+        "-I",
+        "/workspace/scratch/94990735b266/signal-fix/device-r16-preimage/guest_os_primitives/arm64",
+        "-I",
+        "/workspace/scratch/94990735b266/signal-fix/device-r16-preimage/guest_os_primitives",
+        "/workspace/scratch/94990735b266/signal-fix/device-r16-preimage/guest_os_primitives/guest_signal_handling_arch.cc",
+        "/workspace/scratch/94990735b266/signal-fix/tests/mask_control.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/signal-fix/local-mask-controls-r2/baseline"
+      ],
+      "build_exit": 0,
+      "source_sha256": {
+        "guest_os_primitives/scoped_signal_blocker.h": "64083329d2ef34fe25d5cc778f5e0e368108cf596a86ba4f4451449951fe1047",
+        "guest_os_primitives/guest_signal_handling_arch.cc": "6097d09a396d77c516cf91c5b75abb3b0cbd1e7fccbcc1e1555b84e7d1292963",
+        "guest_os_primitives/guest_thread.cc": "63b708e9adf64a36064662b3ff5ac377b25582f0f28793c5da4e9131b6ed3415",
+        "guest_os_primitives/guest_signal_handling.cc": "8c4052082617327c3c52126eb3124fa0a3259c4b36a380e61e7b20503277bbeb",
+        "runtime_primitives/signal_queue.cc": "a2bf0cde1ea959e2130474650bb164998b1f96ef1277e619afdd95a3ce7190f3",
+        "base/include/berberis/base/struct_check.h": "8ffb895053e5a8fe8fd8a8887c99710bdc222c0719d2e959fc2c9f9178c467c9",
+        "base/include/berberis/base/host_signal.h": "1efc150dec3d80a98e22481cf806f5f43908491304ab2db2bd08fd2befd03fed",
+        "base/include/berberis/base/checks.h": "df1594c34e1cd36f65452941746f3cbdfca644534e7ec79287a9255aff8f5f60",
+        "guest_state/arm64/include/berberis/guest_state/guest_state_arch.h": "9d3a4a771bf3a7aca85ba8f0db2780cc282f30e26cbd9995d43ee4d69f645e5f",
+        "guest_os_primitives/riscv64/guest_context_arch.h": "7a605bc30744c72dea610626e8a3ecc47c9578eb93cebcba878378c0218e041d",
+        "guest_os_primitives/arm64/guest_context_arch.h": "ca4daaa682994ad830180291f3cef07375c5d938aa0ab9f58b45c5e15fff34cf",
+        "guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h": "4b27ba2f90bee2c9e92c49d3f3b2beb6a07fb7ee27087d9e8e04d369603fa737",
+        "guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h": "8a343fa094ac83a0411cbcfe82372881ff77f32f08cc5d5a8ae15cdf8ec11877",
+        "guest_os_primitives/riscv64/include/berberis/guest_os_primitives/guest_signal_arch.h": "0f993e835b5c811c65d1a405f9b04d9205798cdfaed973f463896cc8a9423230",
+        "guest_os_primitives/arm64/include/berberis/guest_os_primitives/guest_signal_arch.h": "8db870737b957e2ba5db7d19d0b7c3eb4e30d86276e5bd365eb4efcf3d1797e0",
+        "runtime_primitives/include/berberis/runtime_primitives/signal_queue.h": "c495a509f92998641ef85ee673ccab9b3d7f0488280b2f0bbbe4f0034da9cd09",
+        "instrument/include/berberis/instrument/guest_thread.h": "e0dd29f3e13165fa796d54a3837904e4cb06484d80c7f6d110a36802ffe802a3"
+      },
+      "run_exit": 1,
+      "stdout_sha256": "4df2dac2f688b5b69e2c4cafa356b3ddd990a47f28f7fb3f345721b5b250ed91",
+      "records": [
+        {
+          "case": "host_frame_original_mask",
+          "pass": false,
+          "signals": 1,
+          "context": "0x0000000000000000",
+          "live": "0x8000000000002a00",
+          "after_real_return": "0x8000000000000200",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x0000000000000000"
+        },
+        {
+          "case": "host_frame_nodefer",
+          "pass": false,
+          "signals": 1,
+          "context": "0x0000000000000000",
+          "live": "0x8000000000002200",
+          "after_real_return": "0x8000000000000200",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x0000000000000000"
+        },
+        {
+          "case": "host_frame_edited_mask_real_sigreturn",
+          "pass": false,
+          "signals": 1,
+          "context": "0x0000000000000000",
+          "live": "0x8000000000002a00",
+          "after_real_return": "0x8000000000000200",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x0000000000000000"
+        },
+        {
+          "case": "deferred_original_mask",
+          "pass": false,
+          "signals": 1,
+          "context": "0x0000000000000000",
+          "live": "0x8000000000002a00",
+          "after_real_return": "0x8000000000000200",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x0000000000000000"
+        },
+        {
+          "case": "deferred_edited_mask",
+          "pass": false,
+          "signals": 1,
+          "context": "0x0000000000000000",
+          "live": "0x8000000000002a00",
+          "after_real_return": "0x8000000000000200",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x0000000000000000"
+        },
+        {
+          "case": "nested_nodefer_frame_masks",
+          "pass": false,
+          "signals": 2,
+          "context": "0x0000000000000000",
+          "live": "0x8000000000002200",
+          "after_real_return": "0x8000000000000200",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x8000000000002200"
+        }
+      ]
+    },
+    {
+      "candidate": "fixed",
+      "build_command": [
+        "g++",
+        "-std=c++20",
+        "-O1",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-DNATIVE_BRIDGE_GUEST_ARCH_ARM64=1",
+        "-DBERBERIS_GUEST_LP64=1",
+        "-DCANDIDATE=1",
+        "-I",
+        "/workspace/scratch/94990735b266/signal-fix/local-mask-controls-r2/fixture",
+        "-I",
+        "/workspace/scratch/94990735b266/signal-fix/source-candidate-r1/base/include",
+        "-I",
+        "/workspace/scratch/94990735b266/signal-fix/source-candidate-r1/guest_os_primitives/arm64/include",
+        "-I",
+        "/workspace/scratch/94990735b266/signal-fix/source-candidate-r1/guest_os_primitives/arm64",
+        "-I",
+        "/workspace/scratch/94990735b266/signal-fix/source-candidate-r1/guest_os_primitives",
+        "/workspace/scratch/94990735b266/signal-fix/source-candidate-r1/guest_os_primitives/guest_signal_handling_arch.cc",
+        "/workspace/scratch/94990735b266/signal-fix/tests/mask_control.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/signal-fix/local-mask-controls-r2/fixed"
+      ],
+      "build_exit": 0,
+      "source_sha256": {
+        "guest_os_primitives/scoped_signal_blocker.h": "64083329d2ef34fe25d5cc778f5e0e368108cf596a86ba4f4451449951fe1047",
+        "guest_os_primitives/guest_signal_handling_arch.cc": "5fc077ed8538255bac2ac921b1231a3bf60314659f85c79237d724c41f0460b5",
+        "guest_os_primitives/scoped_guest_signal_mask.h": "52c18a437a05e00be80420c39ef03d24b4ec86a2470b66b548c29d8888eecde9",
+        "guest_os_primitives/guest_signal_handling.cc": "7ca556ea512b2262e2bf28709bbb7962d4ef5cb7e4c53c012437b6603fd9623a",
+        "base/include/berberis/base/struct_check.h": "8ffb895053e5a8fe8fd8a8887c99710bdc222c0719d2e959fc2c9f9178c467c9",
+        "base/include/berberis/base/host_signal.h": "1efc150dec3d80a98e22481cf806f5f43908491304ab2db2bd08fd2befd03fed",
+        "base/include/berberis/base/checks.h": "df1594c34e1cd36f65452941746f3cbdfca644534e7ec79287a9255aff8f5f60",
+        "guest_state/arm64/include/berberis/guest_state/guest_state_arch.h": "9d3a4a771bf3a7aca85ba8f0db2780cc282f30e26cbd9995d43ee4d69f645e5f",
+        "guest_os_primitives/riscv64/guest_context_arch.h": "7a605bc30744c72dea610626e8a3ecc47c9578eb93cebcba878378c0218e041d",
+        "guest_os_primitives/arm64/guest_context_arch.h": "c4234d83ce70c526d96cbd9b843dbca1e0645c18d7f371654552d2a8e2f07140",
+        "guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h": "90a35d504656e32520ab84968ae8a3b586264c835489d13f85f42444cb0764c0",
+        "guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h": "ebcc5ac4e092c50916a0f9668c94d3cb2266cece0ff728bc19513e8f7eb218ca",
+        "guest_os_primitives/riscv64/include/berberis/guest_os_primitives/guest_signal_arch.h": "0f993e835b5c811c65d1a405f9b04d9205798cdfaed973f463896cc8a9423230",
+        "guest_os_primitives/arm64/include/berberis/guest_os_primitives/guest_signal_arch.h": "8db870737b957e2ba5db7d19d0b7c3eb4e30d86276e5bd365eb4efcf3d1797e0",
+        "instrument/include/berberis/instrument/guest_thread.h": "e0dd29f3e13165fa796d54a3837904e4cb06484d80c7f6d110a36802ffe802a3"
+      },
+      "run_exit": 0,
+      "stdout_sha256": "4ac2b0edea8f85aec5eb75c9de28628cf26122e9259133414f4629a4c637d0a1",
+      "records": [
+        {
+          "case": "host_frame_original_mask",
+          "pass": true,
+          "signals": 1,
+          "context": "0x8000000000000200",
+          "live": "0x8000000000002a00",
+          "after_real_return": "0x8000000000000200",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x0000000000000000"
+        },
+        {
+          "case": "host_frame_nodefer",
+          "pass": true,
+          "signals": 1,
+          "context": "0x8000000000000200",
+          "live": "0x8000000000002200",
+          "after_real_return": "0x8000000000000200",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x0000000000000000"
+        },
+        {
+          "case": "host_frame_edited_mask_real_sigreturn",
+          "pass": true,
+          "signals": 1,
+          "context": "0x8000000000000200",
+          "live": "0x8000000000002a00",
+          "after_real_return": "0x8000000000000800",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x0000000000000000"
+        },
+        {
+          "case": "deferred_original_mask",
+          "pass": true,
+          "signals": 1,
+          "context": "0x8000000000000200",
+          "live": "0x8000000000002a00",
+          "after_real_return": "0x8000000000000200",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x0000000000000000"
+        },
+        {
+          "case": "deferred_edited_mask",
+          "pass": true,
+          "signals": 1,
+          "context": "0x8000000000000200",
+          "live": "0x8000000000002a00",
+          "after_real_return": "0x8000000000000800",
+          "nested_context": "0x0000000000000000",
+          "nested_return_live": "0x0000000000000000"
+        },
+        {
+          "case": "nested_nodefer_frame_masks",
+          "pass": true,
+          "signals": 2,
+          "context": "0x8000000000000200",
+          "live": "0x8000000000002200",
+          "after_real_return": "0x8000000000000800",
+          "nested_context": "0x8000000000002200",
+          "nested_return_live": "0x8000000000006200"
+        },
+        {
+          "case": "only_kernel_low64_written_and_unblockable_filtered",
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "fixture_files": {
+    "berberis/base/gettid.h": "cc92cff2647f279a72751799b5172a72f05dcaa8632f4645cf22369149610288",
+    "berberis/base/tracing.h": "ffc27a60c4916341fdf63b132e7a9f0e67034097f5f392b8d59f93e1bc3e0a7a",
+    "berberis/base/checks.h": "4f12b60ce7917ff47960c331c3ab17e2439d0893438c7f3d1e8068e4d7a82a4d",
+    "berberis/guest_state/guest_state.h": "b78ce2d9d43c542a4ab1594a272aeae85a969613a468e6dc827c154da9ded074",
+    "berberis/guest_os_primitives/guest_thread.h": "260b9a66f512e297b62de4ceddb0171a2ea1dee7d90afff2f780cead38c4810e",
+    "berberis/guest_os_primitives/guest_signal.h": "df0f6f00aebac2d4130253a8f8af07ecb5fad95225842292e8febc7c768af7a6",
+    "berberis/guest_abi/guest_call.h": "d7b24ab7701793fe40a20e0884b61985c5cb215fa5f9a62c2a593af5505ef1b9"
+  },
+  "mask_control_sha256": "6d069cb63af13fdf59ecdaecf628b4802e91416d1867bf2ef1cfd25d0c458712"
+}

@@ -1,0 +1,22 @@
+{
+  "scope": "local strict native compile only; no execution or namespaces",
+  "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+  "command": [
+    "g++",
+    "-std=c++20",
+    "-O1",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-pthread",
+    "owned-relay/fixture_init.cpp",
+    "-o",
+    "fixture-init-local-check"
+  ],
+  "returncode": 0,
+  "actor_source_sha256": "ec0e7bc2dd978f71803526d8702a7753dc2c00ea565d79bb9be1dd0e9b891215",
+  "local_binary_sha256": "23bc3ee8dcb55858d43acf20a6d4ad727cde964c6c0783de92d26866fd5bc8ae",
+  "runtime_executed": false,
+  "rust_matching_build": "pending",
+  "device_canary": "not_run"
+}

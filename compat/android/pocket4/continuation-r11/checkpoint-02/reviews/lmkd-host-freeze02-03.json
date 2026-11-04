@@ -1,0 +1,197 @@
+{
+  "schema": 1,
+  "kind": "independent-read-only-source-review",
+  "reviewer": "/root/android_acceptance",
+  "recorded_utc": "2026-11-04T13:27:07.389660+00:00",
+  "revisions": [
+    {
+      "revision": "host-admission-freeze-02",
+      "root": "/workspace/scratch/94990735b266/lmkd-work/host-admission-freeze-02",
+      "manifest_sha256": "2d9076acfaaebc7079cba96cf49b5c14e54707fb73b5b64f80755d2023e858bd",
+      "checks": [
+        {
+          "path": "Cargo.lock",
+          "expected_sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+          "actual_sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+          "match": true
+        },
+        {
+          "path": "Cargo.toml",
+          "expected_sha256": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+          "actual_sha256": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+          "match": true
+        },
+        {
+          "path": "src/bin/owned_ipc_controls.rs",
+          "expected_sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0",
+          "actual_sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0",
+          "match": true
+        },
+        {
+          "path": "src/enrollment.rs",
+          "expected_sha256": "e1bdfb6dd508b1e2e6685f09130201a1ab0d119642135c238d5252528a320e76",
+          "actual_sha256": "e1bdfb6dd508b1e2e6685f09130201a1ab0d119642135c238d5252528a320e76",
+          "match": true
+        },
+        {
+          "path": "src/event_fixture.rs",
+          "expected_sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54",
+          "actual_sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54",
+          "match": true
+        },
+        {
+          "path": "src/lib.rs",
+          "expected_sha256": "4ac74a1c099772e90ba22287d88ec971f3c17f3ef7f550332663e745736654c7",
+          "actual_sha256": "4ac74a1c099772e90ba22287d88ec971f3c17f3ef7f550332663e745736654c7",
+          "match": true
+        },
+        {
+          "path": "src/lifecycle_relay.rs",
+          "expected_sha256": "532a096effe4f3a119952031b4d47ac6368840aba57b38df9545da2162b76958",
+          "actual_sha256": "532a096effe4f3a119952031b4d47ac6368840aba57b38df9545da2162b76958",
+          "match": true
+        },
+        {
+          "path": "src/psi.rs",
+          "expected_sha256": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+          "actual_sha256": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+          "match": true
+        },
+        {
+          "path": "tests/data/grant.hex",
+          "expected_sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29",
+          "actual_sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29",
+          "match": true
+        },
+        {
+          "path": "tests/data/request.hex",
+          "expected_sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede",
+          "actual_sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede",
+          "match": true
+        }
+      ]
+    },
+    {
+      "revision": "host-bootstrap-freeze-03",
+      "root": "/workspace/scratch/94990735b266/lmkd-work/host-bootstrap-freeze-03",
+      "manifest_sha256": "39baa3fc27ffb76134c3e95f35d30eed0856aff98075d1f209bb38cdb07f465f",
+      "checks": [
+        {
+          "path": "BOOTSTRAP.md",
+          "expected_sha256": "acebabc4587be6429d6958aba9a0a001f4e58434391a2ef03342754ee56ad094",
+          "actual_sha256": "acebabc4587be6429d6958aba9a0a001f4e58434391a2ef03342754ee56ad094",
+          "match": true
+        },
+        {
+          "path": "Cargo.lock",
+          "expected_sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+          "actual_sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+          "match": true
+        },
+        {
+          "path": "Cargo.toml",
+          "expected_sha256": "87242d9b12726c09f602d8f55b828323c817a997c3cd2cf79f3f3e0119e47cd7",
+          "actual_sha256": "87242d9b12726c09f602d8f55b828323c817a997c3cd2cf79f3f3e0119e47cd7",
+          "match": true
+        },
+        {
+          "path": "src/bin/droidloom_psi_owner.rs",
+          "expected_sha256": "e3ca5039c82bd472c8c7e30471085b24a4a681299d8cd1624e101d9f18edddb8",
+          "actual_sha256": "e3ca5039c82bd472c8c7e30471085b24a4a681299d8cd1624e101d9f18edddb8",
+          "match": true
+        },
+        {
+          "path": "src/bin/owned_ipc_controls.rs",
+          "expected_sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0",
+          "actual_sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0",
+          "match": true
+        },
+        {
+          "path": "src/enrollment.rs",
+          "expected_sha256": "eb91f8ff7f2627e837b393922ed0efa4f87aa82d55c60bd51e12a2fec25b47a9",
+          "actual_sha256": "eb91f8ff7f2627e837b393922ed0efa4f87aa82d55c60bd51e12a2fec25b47a9",
+          "match": true
+        },
+        {
+          "path": "src/event_fixture.rs",
+          "expected_sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54",
+          "actual_sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54",
+          "match": true
+        },
+        {
+          "path": "src/lib.rs",
+          "expected_sha256": "c9a10f784cfb00c2371272629f33bee98df59c55ab6e7a643ae710197aa47e6b",
+          "actual_sha256": "c9a10f784cfb00c2371272629f33bee98df59c55ab6e7a643ae710197aa47e6b",
+          "match": true
+        },
+        {
+          "path": "src/lifecycle_bootstrap.rs",
+          "expected_sha256": "947e5e1fa7d199a943b5eed1714181f2d7c14b8a964ddb2922e3dc10fb4fac75",
+          "actual_sha256": "947e5e1fa7d199a943b5eed1714181f2d7c14b8a964ddb2922e3dc10fb4fac75",
+          "match": true
+        },
+        {
+          "path": "src/lifecycle_relay.rs",
+          "expected_sha256": "4e83ecf32c213778baa1c18215e995b045da9af268ee9b96870e1a9a0f0025d7",
+          "actual_sha256": "4e83ecf32c213778baa1c18215e995b045da9af268ee9b96870e1a9a0f0025d7",
+          "match": true
+        },
+        {
+          "path": "src/psi.rs",
+          "expected_sha256": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+          "actual_sha256": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+          "match": true
+        },
+        {
+          "path": "tests/data/grant.hex",
+          "expected_sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29",
+          "actual_sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29",
+          "match": true
+        },
+        {
+          "path": "tests/data/request.hex",
+          "expected_sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede",
+          "actual_sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede",
+          "match": true
+        }
+      ]
+    }
+  ],
+  "changed_frozen_sources": false,
+  "review_conclusion": "No newly demonstrated blocker in the reviewed CellRelay / LifecycleBroker production-callable paths; real build, actual broker invocation and installed lifecycle integration remain separate gates.",
+  "confirmed_helper_defect": {
+    "file": "host-admission-freeze-02/src/lib.rs",
+    "symbol": "LeaseOwner::finish_retirement",
+    "mechanism": "worker.take() consumes the join handle before a panic is returned as Err. No sticky poison is stored. A direct second invocation observes worker=None and returns Ok(true).",
+    "evidence_level": "deterministic source path; no locally executed Rust panic control",
+    "current_adapter_exposure": "Not reachable as false-success through CellRelay::serve: its first Err sets Poisoned and parks permanently. Bootstrap only uses CellRelay.",
+    "author_response": "Inventory confirms no production direct helper caller in freeze03 and is adding sticky poison plus a real panic/retry control in the next separate revision."
+  },
+  "reviewed_properties": [
+    "One accepted connection closes listener; per-authority service and enrollment latches survive failures and Arc clones.",
+    "PendingGrant is stored before send_once; failure does not drop generation ownership. Admission retirement requires PSI worker completion.",
+    "CellRelay reports retirement only after joining admission; panic poisons rather than releasing the process-wide slot.",
+    "Process-wide slot replacement requires a retirement certificate and both exact prior owner/init pidfds dead; new Authority alone cannot reset it.",
+    "Bootstrap channel verifies root socketpair creator credentials against exact current parent and SO_PEERPIDFD, arms parent-death signal and rechecks parent.",
+    "All visible transferred SCM_RIGHTS are adopted by OwnedFd before decode/truncation/deadline errors; unexpected status/command rights are RAII-closed.",
+    "Bound listener retains the exact private directory fd across threads; persistent O_EXCL claim is not removed on exit or error.",
+    "LifecycleBroker owns child/control before initialize; errors preserve this ownership and one-shot attempt state.",
+    "Status drain permits a final packet alongside HUP but validates nonce/scope/state and does not by itself certify retirement.",
+    "Retire requires valid joined-worker RETIRED status plus exact child reap with matching exit code before setting the shared retirement flag.",
+    "No reviewed path restores native direct PSI monitoring as a fallback after relay failure."
+  ],
+  "execution_scope": {
+    "local_cargo_available": false,
+    "rust_tests_executed_by_reviewer": false,
+    "hash_checks_executed": true,
+    "device_operations_by_reviewer": false,
+    "root_matching_build": "Root owns and reports this separately; no inferred result in this record."
+  },
+  "remaining_qualification": [
+    "Actual executable/bootstrap invocation with exact lifecycle handles and mounted endpoint.",
+    "Actual Android r6 enrollment, lease HUP behavior, and real PSI observation under the intended finite cgroup budget.",
+    "Installed supervisor startup barrier, ActiveCell ownership, fault/retirement handling, exact old owner/init stop+reap, and controlled reconstruction hook.",
+    "Public LeaseOwner panic retry defect must be fixed before exposing it as a generally safe direct lifecycle API."
+  ],
+  "production_ready": false
+}

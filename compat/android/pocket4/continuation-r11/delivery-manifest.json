@@ -1,138 +1,998 @@
 {
-  "schema": "pocket4-r11-public-checkpoint-v1",
-  "base_commit": "05da17e92b3630d798942a8b6557ff64eda5918d",
+  "schema": "pocket4-r11-public-checkpoint-v2",
+  "base_commit": "e6394b2fa4db8e9d9c173fc223e19969fbd55d2c",
+  "base_tree": "0ffd697156f6e984fa311e4f7b61511c877219b4",
+  "pull_request": 292,
+  "branch": "fix/pocket4-android-production-20261104-r11",
+  "previous_manifest_sha256": "6f8175ae3500a3118070fb14d48d0427112de60bfa2a70d28736a71c2bf8c462",
   "all_apps_production_ready": false,
-  "files_excluding_manifest": 26,
+  "deployed_native_engine": "R16",
+  "signal_fullbuild_attempts": "two cancelled; no completed candidate engine artifact",
+  "lmkd_actual_bootstrap": "PASS",
+  "lmkd_actual_protocol": "PASS_MINIMAL_ROOT_ENROLLMENT_PROTOCOL_HUP_ONLY",
+  "lmkd_real_psi_qualified": false,
+  "installed_supervisor_hook_qualified": false,
+  "files_excluding_manifest": 163,
+  "bytes_excluding_manifest": 1336292,
   "files": [
     {
       "path": "README.md",
       "sha256": "8c3de9b6a526db075533de35350c6b64af7e7414021aa5d1c5e1c4bac643e7ec",
-      "bytes": 4581
+      "bytes": 4581,
+      "encoding": "utf-8"
     },
     {
       "path": "acceptance/collect_inventory.py",
       "sha256": "ac068869469a44c24648c9d843042e7f9ec3be91385bdffba8b65fd57882326e",
-      "bytes": 5026
+      "bytes": 5026,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/README.md",
+      "sha256": "6a859ddf43934da790fc9215220e46f153ee474611cf19045f54ff66268cfaac",
+      "bytes": 14832,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/artifact-index.json",
+      "sha256": "3af8d7010400ca3f2766fde5191e725c49d24ba2bc5a0e44d0ad890b9dc7bead",
+      "bytes": 64547,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/lmkd-bootstrap-actual-runtime-01.json",
+      "sha256": "d5a2b6e54b0543da0144964c3c28104969e72c6c5cbaf54bd31cc7f3aeba8a35",
+      "bytes": 6191,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/lmkd-bootstrap-prepare-01.json",
+      "sha256": "9dba94480f96e65b6bf2e528b599bafca86e252902f659579ecfdc0fe4470865",
+      "bytes": 1569,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/lmkd-host-admission-freeze02-pocket4-build.json",
+      "sha256": "004d4d1ce2b36f84ced3a397a09af0e883aa32d858d4f183c6cc1f7e4ca375ce",
+      "bytes": 5229,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/lmkd-host-bootstrap-freeze04-pocket4-build-summary.json",
+      "sha256": "c30bd2eff4938f6f5a5b976ba9f32e951e53c7a06c03cebc2dc94bc274b5372e",
+      "bytes": 5574,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/lmkd-protocol-actual-runtime-01.json",
+      "sha256": "4cbe2dfa348e52b985e4777cd98704d5773c70f4fef25a0aec69e0e8a6e780ae",
+      "bytes": 7170,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/lmkd-r6-android-matching-build.json",
+      "sha256": "73f3bc9feaf00a92dfa2f84484cf875cd25848cac7aac9cbdf61e2d9c9e8eed1",
+      "bytes": 3356,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/signal-mask-build-unit-oom-diagnosis.json",
+      "sha256": "a1938d12b7cb5badc2636a293a90f8ee27d6ce814b8aef98a6dbe104a6313649",
+      "bytes": 3041,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/signal-mask-fullbuild-attempt01-cancelled.json",
+      "sha256": "028209066698866f563948f7461acaff4bd24acc3f41703f12a11614b4f0c33c",
+      "bytes": 734,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/signal-mask-fullbuild-attempt02-cancelled.json",
+      "sha256": "3180ea2f078c12cf715fb59575877778b1a5bbebd023319af8d59f3339cdf74c",
+      "bytes": 732,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/signal-r3-baseline-cleanup.json",
+      "sha256": "07b3bf35cf27c52718f37619de7c707b9d91c7073c5471ed97dedca4ee2fc596",
+      "bytes": 2358,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/signal-r3-mask-edit-current-r16-failure.json",
+      "sha256": "1b7d8e0a74934bc918e30ed3a98848a32762fc19ff08281ed24b8d81b76a9604",
+      "bytes": 7008,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/evidence/supervisor-installed-versus-reference-elf.json",
+      "sha256": "0fa502d6543e495be2cbdde360fa5da56b9c5ef4c2872a94bfbf022bb08e9abe",
+      "bytes": 3165,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-candidate-manifest.json",
+      "sha256": "c93438544e084f3f73c262cf91c7cb9f22f3b529368af5521c797a245c18cba3",
+      "bytes": 1250,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/Android.bp",
+      "sha256": "0b0fad020359d75162c3670fb745e6285420b90eb0c8eacba036875e72c8d110",
+      "bytes": 2125,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/enrollment.cpp",
+      "sha256": "239f7f0bc12d4eba9a17215bf142053b92654709a8c46eccf6956418a78916fc",
+      "bytes": 13334,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/enrollment.h",
+      "sha256": "46c02d6a157d9bb8dbca60ce01deadde60433ffb7f0d0fa6f138076e32314794",
+      "bytes": 3210,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/lmkd.cpp",
+      "sha256": "d49e5a8251acab96a2be05ef7437cbd754072da0371aceb6add7214bbcfdf654",
+      "bytes": 157229,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/memory_cgroup.cpp",
+      "sha256": "ab36a8f578b705b837d0622a076267a5cd1b8e156ea5552f11f349eaae9052d4",
+      "bytes": 18014,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/memory_cgroup.h",
+      "sha256": "8b479184a7b66f54e0acf4b610efde6533417005210a8b652c40675e3f711cb2",
+      "bytes": 4722,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/pressure_relay.cpp",
+      "sha256": "16de80c3d3ec154d66279b784eaa847fdc675c2973559b97d3ef1a1a167fd70e",
+      "bytes": 11717,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/pressure_relay.h",
+      "sha256": "e8c1c5a8173f511ac2a56f9c80cda5495523608e03863a3e5804aac0125d46ce",
+      "bytes": 4186,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/reaper.cpp",
+      "sha256": "2445add620e4fa39bc9daeeec370b575bd1c02bdb15fb40e990f561a5283018f",
+      "bytes": 11164,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/reaper.h",
+      "sha256": "c431318f9312800032b1494b2fb7460d600b9d0b625d40962d71116fb089e7d2",
+      "bytes": 2625,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/relay_session.cpp",
+      "sha256": "e940cad52b4f5cbb586d86704a51669468f8efbc3faea3d676eff1f496a5bf6d",
+      "bytes": 8761,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/android-r6/relay_session.h",
+      "sha256": "6e491ef6fd8385f63d7af57c4fa5f7cb3db654ee8bee326ce5a19ef28cf35378",
+      "bytes": 2659,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/controls/scoped-reader.json",
+      "sha256": "22486fd14e8ac41de949dfecb08ed0976bc43f3fc1233cabfe8cec7f18083449",
+      "bytes": 3537,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/controls/session.json",
+      "sha256": "ac44ebbaad3c1500918c0d95a6151fe8076a0d345358897fc3246e89dc911d47",
+      "bytes": 4034,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/controls/transport.json",
+      "sha256": "fe52336cdebd07e0136e1a509b47b87341b8b18865c9d20c7117081844a1ca89",
+      "bytes": 4765,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/controls/wiring.json",
+      "sha256": "e175810392532019024e7fe9b2a2787693fe2f48d21d59f55c9e3f3c48ef2403",
+      "bytes": 4767,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/freeze-manifest.json",
+      "sha256": "5510c0be8098f267005269d54f6ebf3849ecfeaa96d4c385b0b5af425c7cebef",
+      "bytes": 2585,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/prepare_android_build.py",
+      "sha256": "662e6fcb5df4f2386513c479fc0e7a0c0f0c9a9c805a7150b0264da98607eaf3",
+      "bytes": 11660,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/r5-to-android-r6.patch",
+      "sha256": "1ebaa942743dc838817ea962236316a076d864520bc6175146a7112a5bc21f9e",
+      "bytes": 67596,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/tests/test_enrollment.cpp",
+      "sha256": "e2b0b9c5a0fc2701f2af017f6ce278837ffa3f4765a49f821aade680a74aec89",
+      "bytes": 13140,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/tests/test_scoped_reader.py",
+      "sha256": "54823947611799a0ca1cca3111a8180159c11a05fe3db9701c90eef724eb73be",
+      "bytes": 5895,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/tests/test_session.cpp",
+      "sha256": "ee6377a3ff458e22d0532345ee7a2b30f20b7dcd4a8832ec1516e82a3db9f67c",
+      "bytes": 13691,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/android-build-freeze-01/tests/test_source_wiring.py",
+      "sha256": "5bbfea48d68cdcfe6598e4291f2433af9a5f612695a4d6f2ff388af5e5ca712a",
+      "bytes": 11199,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/BOOTSTRAP.md",
+      "sha256": "85470b8f7283e5fed2c0a9e51b448900e7a88e3a785b75748566a831747a52e8",
+      "bytes": 9156,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/Cargo.lock",
+      "sha256": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+      "bytes": 2433,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/Cargo.toml",
+      "sha256": "6da7eb91c9b965cfc8f2442b018602bf1548e64ab7cb4936d0657f355d433005",
+      "bytes": 533,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/owned-relay/CANARY.md",
+      "sha256": "e5f2d67ca1cddb0bfe6edbccd279c16b20755f791cc3f468bd58ea2aadadf8e5",
+      "bytes": 9218,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/owned-relay/fixture_init.cpp",
+      "sha256": "ec0e7bc2dd978f71803526d8702a7753dc2c00ea565d79bb9be1dd0e9b891215",
+      "bytes": 38088,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/owned-relay/include/lmkd.h",
+      "sha256": "458e8c6f6aa145dc89903c0c91f36ea790138443d6b2d46fc38e7f3909282033",
+      "bytes": 13562,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/owned-relay/library-source-receipt.json",
+      "sha256": "fcf360d1ff3a57d6f9e92f99e4470e7aa7e106169fa37f6016b03e11827cdf44",
+      "bytes": 679,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/owned-relay/local-compile-receipt.json",
+      "sha256": "d488b8c5300e7988c8e705ee90f7b0b49ef69de8f2587bb9bc5c9d18bb6ff9f3",
+      "bytes": 633,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/owned-relay/minimal-root-libraries.tsv",
+      "sha256": "784f627d79602deb3b94026cf384b6637cf1c20daefdd2ac7476dbde9588fe61",
+      "bytes": 2779,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/source-manifest.json",
+      "sha256": "0a2926b79240eaf5fd5556fd5c7d3bfd6058119b379b83996618097d9e06838d",
+      "bytes": 3353,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/src/bin/droidloom_psi_owner.rs",
+      "sha256": "e3ca5039c82bd472c8c7e30471085b24a4a681299d8cd1624e101d9f18edddb8",
+      "bytes": 769,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/src/bin/owned_ipc_controls.rs",
+      "sha256": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0",
+      "bytes": 28935,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/src/bin/owned_relay_canary.rs",
+      "sha256": "6782bca2611316bccc3f21eb69dde8472bd46fdffe95e3dbbd485b1d6f2b1ed4",
+      "bytes": 21837,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/src/enrollment.rs",
+      "sha256": "eb91f8ff7f2627e837b393922ed0efa4f87aa82d55c60bd51e12a2fec25b47a9",
+      "bytes": 19422,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/src/event_fixture.rs",
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54",
+      "bytes": 23424,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/src/lib.rs",
+      "sha256": "527451ffc0639f1115b40d7024432f26db284ef14ea48ad4e87ff13909694fc7",
+      "bytes": 43272,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/src/lifecycle_bootstrap.rs",
+      "sha256": "450a7fc8fa807825c1473e204f6fac6fe1a6ff5d7c0b0245f9c8c337fa6d0306",
+      "bytes": 41983,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/src/lifecycle_relay.rs",
+      "sha256": "4e83ecf32c213778baa1c18215e995b045da9af268ee9b96870e1a9a0f0025d7",
+      "bytes": 15979,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/src/psi.rs",
+      "sha256": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+      "bytes": 13156,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/tests/data/grant.hex",
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29",
+      "bytes": 353,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/lmkd/host-bootstrap-freeze-04/tests/data/request.hex",
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede",
+      "bytes": 289,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/previous-checkpoint-manifest.json",
+      "sha256": "6f8175ae3500a3118070fb14d48d0427112de60bfa2a70d28736a71c2bf8c462",
+      "bytes": 4722,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/fd-owner-r12/AndroidManifest.xml",
+      "sha256": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
+      "bytes": 599,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/fd-owner-r12/SOURCE_PINS.json",
+      "sha256": "cf22ad7696422d81d0600b5467ebff22b006d2bf7e083db69de7b9f6d2a3a083",
+      "bytes": 1608,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/fd-owner-r12/owner_probe.cpp",
+      "sha256": "f3611452d145ce18511296ff8647d6c7e29bbda8788e42d30f6a729e39dd7841",
+      "bytes": 8299,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/fd-owner-r12/src/local/pocket4/fdownerprobe/ProbeInstrumentation.java",
+      "sha256": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
+      "bytes": 1875,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/signal-r3/AndroidManifest.xml",
+      "sha256": "5f70fe974001a1721e39bf44ffdb9edf1ee0b0ce98cb8b33dcd71df857251d1b",
+      "bytes": 782,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/signal-r3/README.md",
+      "sha256": "f62249ad2e9d192e1878fd9acfdd1eb86686d549dbe7fe0b8e11c59505c8ce7c",
+      "bytes": 12782,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/signal-r3/SOURCE_PINS.json",
+      "sha256": "1a17f89bf0ab6d03cc6d592528735c23012c3af38bc3b57cae008659631fc456",
+      "bytes": 2088,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/signal-r3/java/org/droidloom/signalprobe/r3/SignalProbeInstrumentation.java",
+      "sha256": "c94db885b4128c88e382933308c255d28a2bf30698e828d8e1d95fef7b130267",
+      "bytes": 10941,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/signal-r3/native/probe_abi.h",
+      "sha256": "c445f923888768d4e688c2761f578575b253429dd62279a14237dc0f2de2f589",
+      "bytes": 2037,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/signal-r3/native/probe_arm64.S",
+      "sha256": "5f4cb56e646194e8d1c6255d28f41c9a870df119d83b7138c6f6954369f84544",
+      "bytes": 1787,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/signal-r3/native/signal_probe.c",
+      "sha256": "2e5c94e2c976f51b6b071e5677a52b5b353afc2402e939a5db015a5f3a591255",
+      "bytes": 29177,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/tooling/build-r3.py",
+      "sha256": "6f07583856f660eba100589f43114ff6b423659256363a9cf3883a334d6b4c81",
+      "bytes": 12182,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/probes/tooling/run-r3.py",
+      "sha256": "69e7be92a77e4dc3def4f0602f398b4ea93b68f0b15fdc2a0dd26ec36036f73b",
+      "bytes": 8021,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/reviews/lmkd-android-r6/report.json",
+      "sha256": "7264655fb36efe0e83f395f3a001300c58dd3df5e59305d7179bda5fadaada04",
+      "bytes": 5843,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/reviews/lmkd-android-r6/session.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/reviews/lmkd-android-r6/session.stdout.txt",
+      "sha256": "0c800bf973a14c7a83a4f943a6e0b8d1a3ac26ba6a62e7ad83169f4c1ee1c01d",
+      "bytes": 2178,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/reviews/lmkd-android-r6/wiring/guarded_reaper.cpp",
+      "sha256": "3f8343a877a4654cdd88514dcdc25a3d185a3cd8a9d23bfde2316ddcd0a39b60",
+      "bytes": 5680,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/reviews/lmkd-android-r6/wiring/result.json",
+      "sha256": "89480baa29d92c5c1a6495e5211c9c5fc043a986e83316299e795c7e5bfd397c",
+      "bytes": 4725,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/reviews/lmkd-android-r6/wiring/router.cpp",
+      "sha256": "914ddfb3eac5e7e59b77b81e3afec4a027dc5dd0d0a22392c88e50137b2d350d",
+      "bytes": 5192,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/reviews/lmkd-host-freeze02-03.json",
+      "sha256": "17afa686a4f8eb049b638e374d4fedd779e15cccd121e3e098267df818ef8970",
+      "bytes": 10488,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/reviews/lmkd-host-freeze04.json",
+      "sha256": "e9399730a9de37932067e66dc6f7df0329eb10244a5db67ea581b3135073d9aa",
+      "bytes": 4204,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/reviews/signal-mask-r1-peer-review.json",
+      "sha256": "568098b5e7c57b5fbc08085c3279d567879e55f1af64338859b60d51256ed26b",
+      "bytes": 998,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/reviews/signal-probe-r3-peer-review.json",
+      "sha256": "8c8a1cb9eef9c61556920b1b74862310f1ae32f23941db7900aeb92666f414ea",
+      "bytes": 1482,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/base/include/berberis/base/checks.h",
+      "sha256": "df1594c34e1cd36f65452941746f3cbdfca644534e7ec79287a9255aff8f5f60",
+      "bytes": 6644,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/base/include/berberis/base/host_signal.h",
+      "sha256": "1efc150dec3d80a98e22481cf806f5f43908491304ab2db2bd08fd2befd03fed",
+      "bytes": 1778,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/base/include/berberis/base/struct_check.h",
+      "sha256": "8ffb895053e5a8fe8fd8a8887c99710bdc222c0719d2e959fc2c9f9178c467c9",
+      "bytes": 4161,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_os_primitives/arm64/guest_context_arch.h",
+      "sha256": "ca4daaa682994ad830180291f3cef07375c5d938aa0ab9f58b45c5e15fff34cf",
+      "bytes": 8286,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_os_primitives/arm64/include/berberis/guest_os_primitives/guest_signal_arch.h",
+      "sha256": "8db870737b957e2ba5db7d19d0b7c3eb4e30d86276e5bd365eb4efcf3d1797e0",
+      "bytes": 1571,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_os_primitives/guest_signal_handling.cc",
+      "sha256": "8c4052082617327c3c52126eb3124fa0a3259c4b36a380e61e7b20503277bbeb",
+      "bytes": 28529,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_os_primitives/guest_signal_handling_arch.cc",
+      "sha256": "6097d09a396d77c516cf91c5b75abb3b0cbd1e7fccbcc1e1555b84e7d1292963",
+      "bytes": 5471,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_os_primitives/guest_thread.cc",
+      "sha256": "63b708e9adf64a36064662b3ff5ac377b25582f0f28793c5da4e9131b6ed3415",
+      "bytes": 13270,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h",
+      "sha256": "8a343fa094ac83a0411cbcfe82372881ff77f32f08cc5d5a8ae15cdf8ec11877",
+      "bytes": 3461,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h",
+      "sha256": "4b27ba2f90bee2c9e92c49d3f3b2beb6a07fb7ee27087d9e8e04d369603fa737",
+      "bytes": 5815,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_os_primitives/riscv64/guest_context_arch.h",
+      "sha256": "7a605bc30744c72dea610626e8a3ecc47c9578eb93cebcba878378c0218e041d",
+      "bytes": 4286,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_os_primitives/riscv64/include/berberis/guest_os_primitives/guest_signal_arch.h",
+      "sha256": "0f993e835b5c811c65d1a405f9b04d9205798cdfaed973f463896cc8a9423230",
+      "bytes": 1426,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_os_primitives/scoped_signal_blocker.h",
+      "sha256": "64083329d2ef34fe25d5cc778f5e0e368108cf596a86ba4f4451449951fe1047",
+      "bytes": 1689,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/guest_state/arm64/include/berberis/guest_state/guest_state_arch.h",
+      "sha256": "9d3a4a771bf3a7aca85ba8f0db2780cc282f30e26cbd9995d43ee4d69f645e5f",
+      "bytes": 4980,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/instrument/include/berberis/instrument/guest_thread.h",
+      "sha256": "e0dd29f3e13165fa796d54a3837904e4cb06484d80c7f6d110a36802ffe802a3",
+      "bytes": 1065,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/receipt-addendum.json",
+      "sha256": "ac0f0502e13e7f3333f925461e36bc88a3c94d4554d023d252d81740f6c46712",
+      "bytes": 1640,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/receipt-queue.json",
+      "sha256": "6a48a1e6e3f66d027ff1acbed7ba32001bb81938c08c397dbd2c4f43ede89408",
+      "bytes": 6625,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/receipt.json",
+      "sha256": "7a055cb9f71ca9a84fd0387e0b0f2c567d654dab8b538119f97d445184a73f73",
+      "bytes": 2997,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/runtime_primitives/include/berberis/runtime_primitives/signal_queue.h",
+      "sha256": "c495a509f92998641ef85ee673ccab9b3d7f0488280b2f0bbbe4f0034da9cd09",
+      "bytes": 2994,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/device-r16-preimage/runtime_primitives/signal_queue.cc",
+      "sha256": "a2bf0cde1ea959e2130474650bb164998b1f96ef1277e619afdd95a3ce7190f3",
+      "bytes": 2473,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/baseline.build.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/baseline.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/baseline.stdout.jsonl",
+      "sha256": "4df2dac2f688b5b69e2c4cafa356b3ddd990a47f28f7fb3f345721b5b250ed91",
+      "bytes": 1449,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/fixed.build.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/fixed.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/fixed.stdout.jsonl",
+      "sha256": "4ac2b0edea8f85aec5eb75c9de28628cf26122e9259133414f4629a4c637d0a1",
+      "bytes": 1517,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/fixture/berberis/base/checks.h",
+      "sha256": "4f12b60ce7917ff47960c331c3ab17e2439d0893438c7f3d1e8068e4d7a82a4d",
+      "bytes": 129,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/fixture/berberis/base/gettid.h",
+      "sha256": "cc92cff2647f279a72751799b5172a72f05dcaa8632f4645cf22369149610288",
+      "bytes": 204,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/fixture/berberis/base/tracing.h",
+      "sha256": "ffc27a60c4916341fdf63b132e7a9f0e67034097f5f392b8d59f93e1bc3e0a7a",
+      "bytes": 149,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/fixture/berberis/guest_abi/guest_call.h",
+      "sha256": "d7b24ab7701793fe40a20e0884b61985c5cb215fa5f9a62c2a593af5505ef1b9",
+      "bytes": 551,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/fixture/berberis/guest_os_primitives/guest_signal.h",
+      "sha256": "df0f6f00aebac2d4130253a8f8af07ecb5fad95225842292e8febc7c768af7a6",
+      "bytes": 862,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/fixture/berberis/guest_os_primitives/guest_thread.h",
+      "sha256": "260b9a66f512e297b62de4ceddb0171a2ea1dee7d90afff2f780cead38c4810e",
+      "bytes": 222,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/fixture/berberis/guest_state/guest_state.h",
+      "sha256": "b78ce2d9d43c542a4ab1594a272aeae85a969613a468e6dc827c154da9ded074",
+      "bytes": 947,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/local-mask-controls-r2/report.json",
+      "sha256": "cb2eac38839b30e34633a03e4acdc43ddd6caa0897897485c5513f9c92cf8ea9",
+      "bytes": 12468,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/r1-baseline-pins.json",
+      "sha256": "27bb61dd1fc4101b79161ba3f4682e62e8f7b36eab98ae7c7b556f028ae62545",
+      "bytes": 4658,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/signal-mask-r1-pins.json",
+      "sha256": "6a24ef53595e9d8da458a626effbfca4280a5de18c90ad1d5dd036ad3e936bf2",
+      "bytes": 3976,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/signal-mask-r1.patch",
+      "sha256": "dc7d1cddb53a3d57b30c09d5688016ccef9b0691c38f0a62ea58ceb1b2a39a50",
+      "bytes": 11012,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/base/include/berberis/base/checks.h",
+      "sha256": "df1594c34e1cd36f65452941746f3cbdfca644534e7ec79287a9255aff8f5f60",
+      "bytes": 6644,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/base/include/berberis/base/host_signal.h",
+      "sha256": "1efc150dec3d80a98e22481cf806f5f43908491304ab2db2bd08fd2befd03fed",
+      "bytes": 1778,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/base/include/berberis/base/struct_check.h",
+      "sha256": "8ffb895053e5a8fe8fd8a8887c99710bdc222c0719d2e959fc2c9f9178c467c9",
+      "bytes": 4161,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_os_primitives/arm64/guest_context_arch.h",
+      "sha256": "c4234d83ce70c526d96cbd9b843dbca1e0645c18d7f371654552d2a8e2f07140",
+      "bytes": 8640,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_os_primitives/arm64/include/berberis/guest_os_primitives/guest_signal_arch.h",
+      "sha256": "8db870737b957e2ba5db7d19d0b7c3eb4e30d86276e5bd365eb4efcf3d1797e0",
+      "bytes": 1571,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_os_primitives/guest_signal_handling.cc",
+      "sha256": "7ca556ea512b2262e2bf28709bbb7962d4ef5cb7e4c53c012437b6603fd9623a",
+      "bytes": 28870,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_os_primitives/guest_signal_handling_arch.cc",
+      "sha256": "5fc077ed8538255bac2ac921b1231a3bf60314659f85c79237d724c41f0460b5",
+      "bytes": 6274,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h",
+      "sha256": "ebcc5ac4e092c50916a0f9668c94d3cb2266cece0ff728bc19513e8f7eb218ca",
+      "bytes": 3611,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h",
+      "sha256": "90a35d504656e32520ab84968ae8a3b586264c835489d13f85f42444cb0764c0",
+      "bytes": 6115,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_os_primitives/riscv64/guest_context_arch.h",
+      "sha256": "7a605bc30744c72dea610626e8a3ecc47c9578eb93cebcba878378c0218e041d",
+      "bytes": 4286,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_os_primitives/riscv64/include/berberis/guest_os_primitives/guest_signal_arch.h",
+      "sha256": "0f993e835b5c811c65d1a405f9b04d9205798cdfaed973f463896cc8a9423230",
+      "bytes": 1426,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_os_primitives/scoped_guest_signal_mask.h",
+      "sha256": "52c18a437a05e00be80420c39ef03d24b4ec86a2470b66b548c29d8888eecde9",
+      "bytes": 2869,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_os_primitives/scoped_signal_blocker.h",
+      "sha256": "64083329d2ef34fe25d5cc778f5e0e368108cf596a86ba4f4451449951fe1047",
+      "bytes": 1689,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/guest_state/arm64/include/berberis/guest_state/guest_state_arch.h",
+      "sha256": "9d3a4a771bf3a7aca85ba8f0db2780cc282f30e26cbd9995d43ee4d69f645e5f",
+      "bytes": 4980,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/source-candidate-r1/instrument/include/berberis/instrument/guest_thread.h",
+      "sha256": "e0dd29f3e13165fa796d54a3837904e4cb06484d80c7f6d110a36802ffe802a3",
+      "bytes": 1065,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/tests/build_mask_controls.py",
+      "sha256": "bb15bf88c25f25a1a2adab84091071ac8819a9dffdbb9259e5390ff43322842d",
+      "bytes": 6595,
+      "encoding": "utf-8"
+    },
+    {
+      "path": "checkpoint-02/signal-mask-r1/tests/mask_control.cc",
+      "sha256": "6d069cb63af13fdf59ecdaecf628b4802e91416d1867bf2ef1cfd25d0c458712",
+      "bytes": 5676,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/ceair-current-r16-native-summary.json",
       "sha256": "5ca48f14d9fb238fea03b13beb889399188e30cdcf18e2aa8193c08b7089e204",
-      "bytes": 2523
+      "bytes": 2523,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/current-launcher-acceptance-matrix.json",
       "sha256": "05e74a719281abab717464978d85393dec8d0d528c1e7ccbd93691f156ce56e4",
-      "bytes": 13786
+      "bytes": 13786,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/fd-owner-android-cleanup.json",
       "sha256": "f9e6a55b3f6ef3dc0125c320e2e44bf3b68bc9badef5a7ce5139c99e6b836bc4",
-      "bytes": 2360
+      "bytes": 2360,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/fd-owner-android-current-r16.json",
       "sha256": "30f39ca1a935caa08e6f288183ff4970e4ac5cd7a54282ffc703038153c38b4d",
-      "bytes": 3285
+      "bytes": 3285,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/fd-owner-pocket4-host-result.json",
       "sha256": "f9830b2708130b2afe3a9cc9b7f33b0d9043c7181093f261e40e6c41814bb030",
-      "bytes": 924
+      "bytes": 924,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/lmkd-enrollment-pocket4-host-build.json",
       "sha256": "0c4d2a97ed16b74dc9fb69ea7e83526966569a5d3b075e3047dec0f1e609c17a",
-      "bytes": 4749
+      "bytes": 4749,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/lmkd-r6-android-matching-build.json",
       "sha256": "73f3bc9feaf00a92dfa2f84484cf875cd25848cac7aac9cbdf61e2d9c9e8eed1",
-      "bytes": 3356
+      "bytes": 3356,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/signal-baseline-android-cleanup.json",
       "sha256": "0d5abd7d626f3b57509bbaf3b4d1e136c5e1e81d4d15304b1b44caa19290ed3f",
-      "bytes": 2345
+      "bytes": 2345,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/signal-smc-default-current-r16.json",
       "sha256": "5f59c211cfd42166dbfff24824be15781af019ccc9e04ab42cbd37081043d236",
-      "bytes": 6583
+      "bytes": 6583,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/signal-smc-handler-current-r16-failure.json",
       "sha256": "8ccc11617ddfdda666488b5915b3e0b7f048aec701559f10f1d61789eefc9e7e",
-      "bytes": 6567
+      "bytes": 6567,
+      "encoding": "utf-8"
     },
     {
       "path": "evidence/signal-svc-current-r16.json",
       "sha256": "4af07cf759762013a6cf4011b8654cd744e10d8bbb1f59bbf4dfc673bc26fcdd",
-      "bytes": 6481
+      "bytes": 6481,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/fd-owner/AndroidManifest.xml",
       "sha256": "37e4abe24824f2d8b0ffb76e90f8c400659d77d632fc5d443a69af984cc944ee",
-      "bytes": 599
+      "bytes": 599,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/fd-owner/owner_probe.cpp",
       "sha256": "b045f5a3794bb6c473f7819b06af31c05ad238c16b05c72f7c67fa09e6d08988",
-      "bytes": 5244
+      "bytes": 5244,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/fd-owner/src/local/pocket4/fdownerprobe/ProbeInstrumentation.java",
       "sha256": "0878b6fe3d0059432b1bf7fc8041838ea9b36c3d1d0cfd9384b05d64bf52719f",
-      "bytes": 1875
+      "bytes": 1875,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/signal/AndroidManifest.xml",
       "sha256": "f55e83dc6483b81ed5262cfaccb7120206e546f457cec9febdcf2dd094c11c28",
-      "bytes": 773
+      "bytes": 773,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/signal/README.md",
       "sha256": "aed504a01e4c8c46bbc7aa62e888018960794020689db6ec99f831979eba357d",
-      "bytes": 10371
+      "bytes": 10371,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/signal/SOURCE_PINS.json",
       "sha256": "b5d03eb02ad073180fd3a680518bfac3be42b7df292caa3ba74b4139581d458f",
-      "bytes": 2172
+      "bytes": 2172,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/signal/java/org/droidloom/signalprobe/SignalProbeInstrumentation.java",
       "sha256": "e70f08614147e7c6539f84f9f553f93068f4de6f4785fa005c313528378adda4",
-      "bytes": 10860
+      "bytes": 10860,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/signal/native/probe_abi.h",
       "sha256": "c445f923888768d4e688c2761f578575b253429dd62279a14237dc0f2de2f589",
-      "bytes": 2037
+      "bytes": 2037,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/signal/native/probe_arm64.S",
       "sha256": "5f4cb56e646194e8d1c6255d28f41c9a870df119d83b7138c6f6954369f84544",
-      "bytes": 1787
+      "bytes": 1787,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/signal/native/signal_probe.c",
       "sha256": "83f69385750cbc80d111eb951ce2fdfa881d304cae3ce44aac330cea42cdf1a7",
-      "bytes": 25592
+      "bytes": 25592,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/tooling/build-owner-executed.py",
       "sha256": "243ce6c4012c8ba641644fd5fc944959c878391961a19b0322d3d72aaf95ff58",
-      "bytes": 11973
+      "bytes": 11973,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/tooling/build.py",
       "sha256": "5204a11e3e6ae4b0e4dab344dc4ab77d8972b12b8e786e43138b080e544d0709",
-      "bytes": 12108
+      "bytes": 12108,
+      "encoding": "utf-8"
     },
     {
       "path": "probes/tooling/run.py",
       "sha256": "54890188cc83c861f7a858c6753b7884460916a083f4484b84408624758f3037",
-      "bytes": 7866
+      "bytes": 7866,
+      "encoding": "utf-8"
     }
-  ]
+  ],
+  "signal_build_observed_cause": "later exact owned systemd unit journals confirm kernel OOM for both attempts"
 }

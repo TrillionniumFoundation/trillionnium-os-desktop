@@ -1,0 +1,40 @@
+{
+  "scope": "actual C++ Session with owned local SCM_RIGHTS sockets; declared scope probe and selected deterministic clock boundary controls; not Android/cgroup/real PSI/pressure/deployment",
+  "command": [
+    "g++",
+    "-std=c++17",
+    "-O2",
+    "-g0",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-Wconversion",
+    "-Wsign-conversion",
+    "-fno-exceptions",
+    "-fno-rtti",
+    "-pthread",
+    "-I",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/android-r6",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/android-r6/pressure_relay.cpp",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/android-r6/enrollment.cpp",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/android-r6/relay_session.cpp",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/native/test_session.cpp",
+    "-Wl,--wrap=clock_gettime",
+    "-o",
+    "/workspace/scratch/94990735b266/lmkd-work/enrollment-r1/local-controls/session-controls-final"
+  ],
+  "build_rc": 0,
+  "build_stderr": "",
+  "test_rc": 0,
+  "stdout": "PASS grant creates active packet monitoring\nPASS healthy lease without real notification cannot authorize effect\nPASS startup polling cannot fabricate pressure\nPASS fresh packet and current scope allow guarded operation\nPASS effect failure is distinct from invalid authority\nPASS existing fresh window permits original periodic polling\nPASS effect allowed one nanosecond before original window boundary\nPASS effect rejected exactly at original window boundary\nPASS expired pressure retires evidence without inventing transport failure\nPASS later contiguous authentic observation starts a new window\nPASS scope I/O cannot extend pressure freshness at final effect boundary\nPASS post-receive scope I/O cannot promote an expired event\nPASS scope identity budget drift or accounting failure revokes before effect\nPASS restored values cannot revive revoked generation\nPASS scope identity budget drift or accounting failure revokes before effect\nPASS restored values cannot revive revoked generation\nPASS scope identity budget drift or accounting failure revokes before effect\nPASS restored values cannot revive revoked generation\nPASS scope identity budget drift or accounting failure revokes before effect\nPASS restored values cannot revive revoked generation\nPASS other-monitor HUP rejects fresh packet from same epoll batch\nPASS notification HUP cannot retain watchdog authority\nPASS unexpected control message preempts queued pressure packet\nPASS control HUP cancels original periodic polling\nPASS stale authentic packet is drained without pressure promotion\nPASS stale-only stream grants no effects\nPASS future event timestamp revokes generation\nPASS old or foreign generation packet cannot rebind active lease\nPASS monotonic clock rollback revokes effect authority\nPASS contended watchdog uses try-lock and cannot act on partial validation\nPASS event-loop validation resumes with same bounded evidence\nPASS same process cannot enroll a replacement generation\nPASS re-enrollment rejection closes previously claimed recipients\nPASS all session paths close every owned control pidfd and recipient\nRESULT 34 assertions passed; local packet/session controls, no Android or real PSI\n",
+  "stderr": "",
+  "source_sha256": {
+    "android-r6/pressure_relay.cpp": "16de80c3d3ec154d66279b784eaa847fdc675c2973559b97d3ef1a1a167fd70e",
+    "android-r6/enrollment.cpp": "239f7f0bc12d4eba9a17215bf142053b92654709a8c46eccf6956418a78916fc",
+    "android-r6/relay_session.cpp": "e940cad52b4f5cbb586d86704a51669468f8efbc3faea3d676eff1f496a5bf6d",
+    "native/test_session.cpp": "ee6377a3ff458e22d0532345ee7a2b30f20b7dcd4a8832ec1516e82a3db9f67c",
+    "android-r6/pressure_relay.h": "e8c1c5a8173f511ac2a56f9c80cda5495523608e03863a3e5804aac0125d46ce",
+    "android-r6/enrollment.h": "46c02d6a157d9bb8dbca60ce01deadde60433ffb7f0d0fa6f138076e32314794",
+    "android-r6/relay_session.h": "6e491ef6fd8385f63d7af57c4fa5f7cb3db654ee8bee326ce5a19ef28cf35378"
+  }
+}

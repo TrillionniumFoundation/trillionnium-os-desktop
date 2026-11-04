@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "candidate": "pocket4-r16-arm64-signal-mask-r1",
+  "reviewed_utc": "2026-11-04T13:17:59.078756+00:00",
+  "reviewer": "native_bridge_repair",
+  "candidate_pins_sha256": "6a24ef53595e9d8da458a626effbfca4280a5de18c90ad1d5dd036ad3e936bf2",
+  "verdict": "NO_BLOCKER_FOR_DECLARED_SYNCHRONOUS_AND_DIRECT_MASK_SCOPE; proceed fullbuild and owned canary qualification",
+  "checked": [
+    "SA_NODEFER and action-mask behavior",
+    "interrupted mask comes from the current host frame",
+    "only kernel low 64 bits are written back",
+    "SIGKILL and SIGSTOP are excluded",
+    "temporary live mask restoration followed by actual host sigreturn commitment",
+    "deferred direct delivery captures mask at delivery time",
+    "CPU state is restored before unblocking",
+    "no frame pointer is stored in queue or global/TLS state"
+  ],
+  "open": "Software pending-queue mask eligibility and related syscall protocol remain separately open; not all-signal production-ready certification."
+}

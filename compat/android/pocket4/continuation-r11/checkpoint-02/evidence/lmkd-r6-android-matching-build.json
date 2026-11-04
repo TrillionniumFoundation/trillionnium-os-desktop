@@ -1,0 +1,70 @@
+[
+  {
+    "phase": "prepare",
+    "returncode": 0,
+    "result": {
+      "plan": "/home/alex/work/pocket4-lmkd-enrollment-r6-android-build-01/plan.json",
+      "plan_sha256": "57d9f204c731da951d1786ec9754c30461944098ce7bf69ec8933243e4a8ec51",
+      "units": [
+        "memory_cgroup.cpp",
+        "lmkd.cpp",
+        "pressure_relay.cpp",
+        "enrollment.cpp",
+        "relay_session.cpp",
+        "reaper.cpp"
+      ],
+      "compiler_started": false,
+      "deployment": false
+    },
+    "stderr": ""
+  },
+  {
+    "phase": "build",
+    "returncode": 0,
+    "result": {
+      "at": "2026-11-04T12:45:00.286020+00:00",
+      "scope": "isolated incremental compile/link only; no Android execution, pressure, UI or deployment",
+      "plan_sha256": "57d9f204c731da951d1786ec9754c30461944098ce7bf69ec8933243e4a8ec51",
+      "source_sha256": {
+        "Android.bp": "0b0fad020359d75162c3670fb745e6285420b90eb0c8eacba036875e72c8d110",
+        "enrollment.cpp": "239f7f0bc12d4eba9a17215bf142053b92654709a8c46eccf6956418a78916fc",
+        "enrollment.h": "46c02d6a157d9bb8dbca60ce01deadde60433ffb7f0d0fa6f138076e32314794",
+        "lmkd.cpp": "d49e5a8251acab96a2be05ef7437cbd754072da0371aceb6add7214bbcfdf654",
+        "memory_cgroup.cpp": "ab36a8f578b705b837d0622a076267a5cd1b8e156ea5552f11f349eaae9052d4",
+        "memory_cgroup.h": "8b479184a7b66f54e0acf4b610efde6533417005210a8b652c40675e3f711cb2",
+        "pressure_relay.cpp": "16de80c3d3ec154d66279b784eaa847fdc675c2973559b97d3ef1a1a167fd70e",
+        "pressure_relay.h": "e8c1c5a8173f511ac2a56f9c80cda5495523608e03863a3e5804aac0125d46ce",
+        "reaper.cpp": "2445add620e4fa39bc9daeeec370b575bd1c02bdb15fb40e990f561a5283018f",
+        "reaper.h": "c431318f9312800032b1494b2fb7460d600b9d0b625d40962d71116fb089e7d2",
+        "relay_session.cpp": "e940cad52b4f5cbb586d86704a51669468f8efbc3faea3d676eff1f496a5bf6d",
+        "relay_session.h": "6e491ef6fd8385f63d7af57c4fa5f7cb3db654ee8bee326ce5a19ef28cf35378"
+      },
+      "owned_limits": {
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1a6974cc2-fc05-2731.service",
+        "memory.max": "1073741824",
+        "cpu.max": [
+          "100000",
+          "100000"
+        ],
+        "nice": 5
+      },
+      "success": true,
+      "production_ready": false,
+      "deployment": false,
+      "reused_object_limit": "three pinned support objects retain prior historical -MMD system-header provenance limitation",
+      "target_sha256": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde",
+      "target_bytes": 162952,
+      "actual_md_manifest_sha256": "4e45c5e15e988c9a13e0e9236d7fd0658125d40bd1c5249fe05521a364e9bf37",
+      "new_objects": {
+        "pressure_relay.cpp.o": "965d15a6185b5d1f9ae4c2b160571b22ed3a6c1152e77416a7f90844104cba66",
+        "reaper.cpp.o": "bc78e4c972165b3aab14a68edf23b1475c547d7aebccd90d2d9303513127bce3",
+        "relay_session.cpp.o": "067a8b543f9a13f77b71a9762fad74a7b9c37722294054cb7bf8945c12b6776a",
+        "enrollment.cpp.o": "14b5d1b8c3ff1de9ed06fc062b2e659d14402fa8675fd6b2342d738a6d858787",
+        "memory_cgroup.cpp.o": "30a5c7d8723e3409c4c701f34badd87441955e567f1e6ae6a74cbc775834a3a6",
+        "lmkd.cpp.o": "2bcc5842c263f4ab9a043b0145608bafa122f33f735f51ae7e5c113cdbafd72c"
+      },
+      "inputs_unchanged": true
+    },
+    "stderr": ""
+  }
+]

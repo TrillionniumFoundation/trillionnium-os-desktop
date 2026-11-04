@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "candidate": "owned-arm64-signal-probe-r3",
+  "frozen_utc": "2026-11-04T13:19:11.375810+00:00",
+  "package": "org.droidloom.signalprobe.r3",
+  "instrumentation": "org.droidloom.signalprobe.r3.SignalProbeInstrumentation",
+  "version_code": 3,
+  "target_sdk": 33,
+  "debuggable": false,
+  "test_only": true,
+  "cases": [
+    "svc",
+    "smc-handler",
+    "smc-default",
+    "smc-mask-edit"
+  ],
+  "parent_r2_pins_sha256": "b5d03eb02ad073180fd3a680518bfac3be42b7df292caa3ba74b4139581d458f",
+  "parent_r2_all_source_hashes_still_match": true,
+  "aggregate_format": "SHA256 of UTF-8 lines: sha256 + two spaces + path + newline, in files order",
+  "aggregate_sha256": "cd4b8193fa857d68e94afce4b563bbd68066a1a40036a062671717a3509af6e0",
+  "validation": {
+    "manifest_and_package_static": "PASS",
+    "old_r2_sources_unchanged": "PASS",
+    "assembly_and_abi_header_identical_to_r2": "PASS",
+    "post_handler_kernel_mask_read_precedes_all_harness_restore": "PASS",
+    "peer_review": "PENDING_FINAL",
+    "android_build": "ROOT_PENDING",
+    "android_execution": "NOT_RUN_BY_THIS_AGENT"
+  },
+  "files": [
+    {
+      "path": "AndroidManifest.xml",
+      "bytes": 782,
+      "sha256": "5f70fe974001a1721e39bf44ffdb9edf1ee0b0ce98cb8b33dcd71df857251d1b"
+    },
+    {
+      "path": "README.md",
+      "bytes": 12782,
+      "sha256": "f62249ad2e9d192e1878fd9acfdd1eb86686d549dbe7fe0b8e11c59505c8ce7c"
+    },
+    {
+      "path": "java/org/droidloom/signalprobe/r3/SignalProbeInstrumentation.java",
+      "bytes": 10941,
+      "sha256": "c94db885b4128c88e382933308c255d28a2bf30698e828d8e1d95fef7b130267"
+    },
+    {
+      "path": "native/probe_abi.h",
+      "bytes": 2037,
+      "sha256": "c445f923888768d4e688c2761f578575b253429dd62279a14237dc0f2de2f589"
+    },
+    {
+      "path": "native/probe_arm64.S",
+      "bytes": 1787,
+      "sha256": "5f4cb56e646194e8d1c6255d28f41c9a870df119d83b7138c6f6954369f84544"
+    },
+    {
+      "path": "native/signal_probe.c",
+      "bytes": 29177,
+      "sha256": "2e5c94e2c976f51b6b071e5677a52b5b353afc2402e939a5db015a5f3a591255"
+    }
+  ]
+}

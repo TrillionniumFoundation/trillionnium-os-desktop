@@ -1,0 +1,1596 @@
+--- r5/Android.bp
++++ android-r6/Android.bp
+@@ -41,6 +41,9 @@
+     srcs: [
+         "lmkd.cpp",
+         "memory_cgroup.cpp",
++        "pressure_relay.cpp",
++        "enrollment.cpp",
++        "relay_session.cpp",
+         "reaper.cpp",
+         "watchdog.cpp",
+     ],
+--- r5/enrollment.cpp
++++ android-r6/enrollment.cpp
+@@ -0,0 +1,264 @@
++// Copyright 2026 Droidloom contributors; SPDX-License-Identifier: Apache-2.0
++#include "enrollment.h"
++
++#include <algorithm>
++#include <cerrno>
++#include <cstring>
++#include <fcntl.h>
++#include <limits>
++#include <poll.h>
++#include <sys/random.h>
++#include <sys/socket.h>
++#include <time.h>
++#include <unistd.h>
++
++namespace droidloom::lmkd::relay {
++namespace {
++constexpr std::array<uint8_t, 8> kRequestMagic{{'P','4','E','N','R','0','1','!'}};
++constexpr std::array<uint8_t, 8> kGrantMagic{{'P','4','E','N','G','0','1','!'}};
++constexpr int kPeerPidfd = 77;
++constexpr short kBad = POLLERR | POLLHUP | POLLRDHUP | POLLNVAL;
++
++template <size_t N>
++void Put(std::array<uint8_t, N>& wire, size_t offset, uint64_t value, size_t bytes) {
++    for (size_t i = 0; i < bytes; ++i) wire[offset + i] = static_cast<uint8_t>(value >> (8 * i));
++}
++template <size_t N>
++uint64_t Get(const std::array<uint8_t, N>& wire, size_t offset, size_t bytes) {
++    uint64_t value = 0;
++    for (size_t i = 0; i < bytes; ++i) value |= uint64_t(wire[offset + i]) << (8 * i);
++    return value;
++}
++template <size_t N>
++void Configs(std::array<uint8_t, N>& wire, size_t offset, const EnrollmentRequest& request) {
++    for (size_t i = 0; i < request.count && i < kMaxMonitors; ++i) {
++        size_t at = offset + 24 * i;
++        Put(wire, at, static_cast<uint32_t>(request.configs[i].level), 4);
++        Put(wire, at + 8, request.configs[i].window_us, 8);
++        Put(wire, at + 16, request.configs[i].stall_us, 8);
++    }
++}
++template <size_t N>
++bool DecodeConfigs(const std::array<uint8_t, N>& wire, size_t offset, EnrollmentRequest* request) {
++    if (request->count < 1 || request->count > kMaxMonitors) return false;
++    for (size_t i = 0; i < kMaxMonitors; ++i) {
++        size_t at = offset + 24 * i;
++        if (i >= request->count) {
++            for (size_t j = at; j < at + 24; ++j) if (wire[j] != 0) return false;
++            continue;
++        }
++        if (Get(wire, at + 4, 4) != 0) return false;
++        request->configs[i] = {static_cast<Level>(Get(wire, at, 4)),
++                              Get(wire, at + 8, 8), Get(wire, at + 16, 8)};
++    }
++    return true;
++}
++bool SocketInt(int fd, int option, int* value) {
++    socklen_t length = sizeof(*value);
++    return getsockopt(fd, SOL_SOCKET, option, value, &length) == 0 && length == sizeof(*value);
++}
++bool NonblockingPacket(int fd) {
++    int flags = fcntl(fd, F_GETFL), descriptor = fcntl(fd, F_GETFD), type = 0, domain = 0;
++    return flags >= 0 && descriptor >= 0 && (flags & O_NONBLOCK) && (descriptor & FD_CLOEXEC) &&
++           SocketInt(fd, SO_TYPE, &type) && type == SOCK_SEQPACKET &&
++           SocketInt(fd, SO_DOMAIN, &domain) && domain == AF_UNIX;
++}
++bool Now(uint64_t* value) {
++    timespec t{};
++    if (clock_gettime(CLOCK_MONOTONIC, &t) || t.tv_sec < 0 || t.tv_nsec < 0 ||
++        t.tv_nsec >= 1000000000 || uint64_t(t.tv_sec) >
++        (std::numeric_limits<uint64_t>::max() - uint64_t(t.tv_nsec)) / 1000000000) return false;
++    *value = uint64_t(t.tv_sec) * 1000000000 + uint64_t(t.tv_nsec);
++    return *value != 0;
++}
++bool BeforeDeadline(uint64_t start, uint64_t deadline, uint64_t* last) {
++    uint64_t now = 0;
++    if (!Now(&now) || now < start || now < *last || now >= deadline) return false;
++    *last = now;
++    return true;
++}
++bool Wait(int fd, int pidfd, short wanted, uint64_t start, uint64_t deadline, uint64_t* last) {
++    while (BeforeDeadline(start, deadline, last)) {
++        uint64_t remaining_ms = (deadline - *last + 999999) / 1000000;
++        int timeout = static_cast<int>(std::min<uint64_t>(remaining_ms, 100));
++        pollfd descriptors[2]{{fd, static_cast<short>(wanted | POLLRDHUP), 0}, {pidfd, POLLIN, 0}};
++        int n = poll(descriptors, 2, timeout);
++        if (n < 0 && errno == EINTR) continue;
++        if (n < 0 || descriptors[0].revents & kBad || descriptors[1].revents != 0) return false;
++        if (!BeforeDeadline(start, deadline, last)) return false;
++        if (descriptors[0].revents & wanted) return true;
++    }
++    return false;
++}
++// All kernel-delivered FDs are closed on every malformed/truncated path.
++bool ReceiveRights(msghdr* message, std::array<int, kMaxMonitors>* output, size_t* count) {
++    *count = 0;
++    bool valid = true;
++    size_t headers = 0;
++    for (cmsghdr* header = CMSG_FIRSTHDR(message); header; header = CMSG_NXTHDR(message, header)) {
++        ++headers;
++        if (header->cmsg_level != SOL_SOCKET || header->cmsg_type != SCM_RIGHTS ||
++            header->cmsg_len < CMSG_LEN(0)) { valid = false; continue; }
++        size_t bytes = header->cmsg_len - CMSG_LEN(0);
++        if (bytes % sizeof(int)) valid = false;
++        const unsigned char* data = CMSG_DATA(header);
++        for (size_t i = 0; i < bytes / sizeof(int); ++i) {
++            int fd = -1;
++            std::memcpy(&fd, data + i * sizeof(int), sizeof(fd));
++            if (*count < kMaxMonitors) (*output)[(*count)++] = fd;
++            else { close(fd); valid = false; }
++        }
++    }
++    return valid && headers == 1 && !(message->msg_flags & MSG_CTRUNC);
++}
++}  // namespace
++
++bool EnrollmentRequest::operator==(const EnrollmentRequest& other) const {
++    if (nonce != other.nonce || cgroup_device != other.cgroup_device ||
++        cgroup_inode != other.cgroup_inode || budget != other.budget || count != other.count ||
++        count > kMaxMonitors) return false;
++    for (size_t i = 0; i < count; ++i) if (!(configs[i] == other.configs[i])) return false;
++    return true;
++}
++bool ValidRequest(const EnrollmentRequest& request) {
++    Scope scope{request.nonce, request.cgroup_device, request.cgroup_inode, request.budget};
++    if (!ValidScope(scope) || request.count < 1 || request.count > kMaxMonitors) return false;
++    for (size_t i = 0; i < request.count; ++i) if (!ValidConfig(request.configs[i])) return false;
++    return request.count != 2 || request.configs[0].level != request.configs[1].level;
++}
++bool FreshRequestNonce(Bytes32* nonce) {
++    if (!nonce) return false;
++    nonce->fill(0);
++    ssize_t count = getrandom(nonce->data(), nonce->size(), 0);
++    if (count != static_cast<ssize_t>(nonce->size()) ||
++        std::all_of(nonce->begin(), nonce->end(), [](uint8_t b) { return b == 0; })) {
++        nonce->fill(0);
++        return false;
++    }
++    return true;
++}
++RequestWire EncodeRequest(const EnrollmentRequest& request) {
++    RequestWire wire{};
++    std::copy(kRequestMagic.begin(), kRequestMagic.end(), wire.begin());
++    Put(wire, 8, 1, 4); Put(wire, 12, request.count, 4);
++    std::copy(request.nonce.begin(), request.nonce.end(), wire.begin() + 16);
++    Put(wire, 48, request.cgroup_device, 8); Put(wire, 56, request.cgroup_inode, 8);
++    std::copy(request.budget.begin(), request.budget.end(), wire.begin() + 64);
++    Configs(wire, 96, request);
++    return wire;
++}
++bool DecodeRequest(const RequestWire& wire, EnrollmentRequest* request) {
++    if (!request || !std::equal(kRequestMagic.begin(), kRequestMagic.end(), wire.begin()) || Get(wire, 8, 4) != 1) return false;
++    EnrollmentRequest decoded{};
++    decoded.count = static_cast<uint32_t>(Get(wire, 12, 4));
++    std::copy_n(wire.begin() + 16, 32, decoded.nonce.begin());
++    decoded.cgroup_device = Get(wire, 48, 8); decoded.cgroup_inode = Get(wire, 56, 8);
++    std::copy_n(wire.begin() + 64, 32, decoded.budget.begin());
++    if (!DecodeConfigs(wire, 96, &decoded) || !ValidRequest(decoded)) return false;
++    *request = decoded;
++    return true;
++}
++GrantWire EncodeGrant(const EnrollmentGrant& grant) {
++    GrantWire wire{};
++    std::copy(kGrantMagic.begin(), kGrantMagic.end(), wire.begin());
++    Put(wire, 8, 1, 4); Put(wire, 12, grant.request.count, 4);
++    std::copy(grant.request.nonce.begin(), grant.request.nonce.end(), wire.begin() + 16);
++    std::copy(grant.generation.begin(), grant.generation.end(), wire.begin() + 48);
++    Put(wire, 80, grant.request.cgroup_device, 8); Put(wire, 88, grant.request.cgroup_inode, 8);
++    std::copy(grant.request.budget.begin(), grant.request.budget.end(), wire.begin() + 96);
++    Configs(wire, 128, grant.request);
++    return wire;
++}
++bool DecodeGrant(const GrantWire& wire, EnrollmentGrant* grant) {
++    if (!grant || !std::equal(kGrantMagic.begin(), kGrantMagic.end(), wire.begin()) || Get(wire, 8, 4) != 1) return false;
++    EnrollmentGrant decoded{};
++    decoded.request.count = static_cast<uint32_t>(Get(wire, 12, 4));
++    std::copy_n(wire.begin() + 16, 32, decoded.request.nonce.begin());
++    std::copy_n(wire.begin() + 48, 32, decoded.generation.begin());
++    decoded.request.cgroup_device = Get(wire, 80, 8); decoded.request.cgroup_inode = Get(wire, 88, 8);
++    std::copy_n(wire.begin() + 96, 32, decoded.request.budget.begin());
++    Scope scope{decoded.generation, decoded.request.cgroup_device, decoded.request.cgroup_inode, decoded.request.budget};
++    if (!DecodeConfigs(wire, 128, &decoded.request) || !ValidRequest(decoded.request) || !ValidScope(scope)) return false;
++    *grant = decoded;
++    return true;
++}
++
++GrantRecipients::~GrantRecipients() { Reset(); }
++void GrantRecipients::Reset() {
++    for (int& fd : fds_) { if (fd >= 0) close(fd); fd = -1; }
++    grant_ = {}; complete_ = false;
++}
++int GrantRecipients::Take(size_t index) {
++    if (!complete_ || index >= grant_.request.count) return -1;
++    int fd = fds_[index]; fds_[index] = -1; return fd;
++}
++EnrollmentClient::~EnrollmentClient() { Close(); }
++void EnrollmentClient::Close() {
++    if (control_fd_ >= 0) close(control_fd_);
++    if (server_pidfd_ >= 0) close(server_pidfd_);
++    control_fd_ = server_pidfd_ = -1;
++}
++bool EnrollmentClient::Healthy() const {
++    Credentials actual;
++    if (control_fd_ < 0 || server_pidfd_ < 0 || !ReadCredentials(control_fd_, &actual) || !(actual == server_)) return false;
++    pollfd descriptors[2]{{control_fd_, POLLIN | POLLRDHUP, 0}, {server_pidfd_, POLLIN, 0}};
++    // After the single grant, any additional control data is a protocol error.
++    return poll(descriptors, 2, 0) == 0 && descriptors[0].revents == 0 && descriptors[1].revents == 0;
++}
++bool EnrollmentClient::Exchange(int connected_fd, const Credentials& expected_server,
++                                const EnrollmentRequest& request, uint32_t timeout_ms,
++                                GrantRecipients* recipients) {
++    // Every failed attempt clears the supplied output, including an unclaimed
++    // successful grant passed back on a forbidden replay.
++    if (recipients) recipients->Reset();
++    if (attempted_) {
++        if (connected_fd >= 0 && connected_fd != control_fd_) close(connected_fd);
++        Close(); return false;
++    }
++    attempted_ = true; control_fd_ = connected_fd; server_ = expected_server;
++    auto fail = [&]() { if (recipients) recipients->Reset(); Close(); return false; };
++    uint64_t started = 0, last = 0;
++    if (!recipients || !ValidRequest(request) || timeout_ms == 0 || timeout_ms > 2000 ||
++        !NonblockingPacket(control_fd_) || !Now(&started) ||
++        started > std::numeric_limits<uint64_t>::max() - uint64_t(timeout_ms) * 1000000) return fail();
++    uint64_t deadline = started + uint64_t(timeout_ms) * 1000000; last = started;
++    Credentials actual;
++    if (!ReadCredentials(control_fd_, &actual) || !(actual == server_) ||
++        !SocketInt(control_fd_, kPeerPidfd, &server_pidfd_) || server_pidfd_ < 0) return fail();
++    int pid_flags = fcntl(server_pidfd_, F_GETFD);
++    if (pid_flags < 0 || !(pid_flags & FD_CLOEXEC) || !Healthy()) return fail();
++    RequestWire request_wire = EncodeRequest(request);
++    for (;;) {
++        if (!Wait(control_fd_, server_pidfd_, POLLOUT, started, deadline, &last)) return fail();
++        ssize_t sent = send(control_fd_, request_wire.data(), request_wire.size(), MSG_DONTWAIT | MSG_NOSIGNAL);
++        if (sent < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) continue;
++        if (sent != static_cast<ssize_t>(request_wire.size())) return fail();
++        break;
++    }
++    GrantWire wire{};
++    alignas(cmsghdr) unsigned char ancillary[CMSG_SPACE(4 * sizeof(int))]{};
++    size_t fd_count = 0;
++    for (;;) {
++        if (!Wait(control_fd_, server_pidfd_, POLLIN, started, deadline, &last)) return fail();
++        iovec payload{wire.data(), wire.size()};
++        msghdr message{}; message.msg_iov = &payload; message.msg_iovlen = 1;
++        message.msg_control = ancillary; message.msg_controllen = sizeof(ancillary);
++        ssize_t count = recvmsg(control_fd_, &message, MSG_DONTWAIT | MSG_CMSG_CLOEXEC | MSG_TRUNC);
++        if (count < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) continue;
++        bool rights_ok = count >= 0 && ReceiveRights(&message, &recipients->fds_, &fd_count);
++        if (count != static_cast<ssize_t>(wire.size()) || (message.msg_flags & MSG_TRUNC) ||
++            !rights_ok || fd_count != request.count || !DecodeGrant(wire, &recipients->grant_) ||
++            !(recipients->grant_.request == request)) return fail();
++        break;
++    }
++    for (size_t i = 0; i < fd_count; ++i) {
++        if (!NonblockingPacket(recipients->fds_[i]) || !ReadCredentials(recipients->fds_[i], &actual) ||
++            !(actual == server_)) return fail();
++        pollfd descriptor{recipients->fds_[i], POLLIN | POLLRDHUP, 0};
++        if (poll(&descriptor, 1, 0) < 0 || descriptor.revents & kBad) return fail();
++    }
++    if (!Healthy() || !BeforeDeadline(started, deadline, &last)) return fail();
++    recipients->complete_ = true;
++    return true;
++}
++}  // namespace droidloom::lmkd::relay
+--- r5/enrollment.h
++++ android-r6/enrollment.h
+@@ -0,0 +1,90 @@
++// Copyright 2026 Droidloom contributors; SPDX-License-Identifier: Apache-2.0
++#pragma once
++
++#include "pressure_relay.h"
++#include <array>
++#include <cstddef>
++#include <cstdint>
++
++namespace droidloom::lmkd::relay {
++
++constexpr size_t kRequestSize = 144;
++constexpr size_t kGrantSize = 176;
++constexpr size_t kMaxMonitors = 2;
++using RequestWire = std::array<uint8_t, kRequestSize>;
++using GrantWire = std::array<uint8_t, kGrantSize>;
++
++struct EnrollmentRequest {
++    Bytes32 nonce{};
++    uint64_t cgroup_device = 0;
++    uint64_t cgroup_inode = 0;
++    Bytes32 budget{};
++    uint32_t count = 0;
++    std::array<Config, kMaxMonitors> configs{};
++    bool operator==(const EnrollmentRequest& other) const;
++};
++
++struct EnrollmentGrant {
++    EnrollmentRequest request;
++    Bytes32 generation{};
++};
++
++bool ValidRequest(const EnrollmentRequest& request);
++bool FreshRequestNonce(Bytes32* nonce);
++RequestWire EncodeRequest(const EnrollmentRequest& request);
++bool DecodeRequest(const RequestWire& wire, EnrollmentRequest* request);
++GrantWire EncodeGrant(const EnrollmentGrant& grant);
++bool DecodeGrant(const GrantWire& wire, EnrollmentGrant* grant);
++
++// One grant has one owner. Destruction closes every unclaimed recipient.
++// This object only owns packet recipients, never a real PSI/cgroup/namespace FD.
++class GrantRecipients {
++public:
++    GrantRecipients() = default;
++    GrantRecipients(const GrantRecipients&) = delete;
++    GrantRecipients& operator=(const GrantRecipients&) = delete;
++    ~GrantRecipients();
++    const EnrollmentGrant& grant() const { return grant_; }
++    bool complete() const { return complete_; }
++    int Take(size_t index);
++    void Reset();
++
++private:
++    friend class EnrollmentClient;
++    std::array<int, kMaxMonitors> fds_{{-1, -1}};
++    EnrollmentGrant grant_{};
++    bool complete_ = false;
++};
++
++// Startup-only, allocation-free bounded request/grant transport. It is not an
++// endpoint discovery mechanism and does not authorize a kill. The connected
++// AF_UNIX endpoint and expected server credentials must come from the exact
++// lifecycle-owned endpoint, not from a response or pressure notification.
++// SO_PEERPIDFD pins server liveness even when the server's PID is projected as
++// zero in Android's child PID namespace. No numeric PID fallback is used.
++class EnrollmentClient {
++public:
++    EnrollmentClient() = default;
++    EnrollmentClient(const EnrollmentClient&) = delete;
++    EnrollmentClient& operator=(const EnrollmentClient&) = delete;
++    ~EnrollmentClient();
++
++    // Takes ownership of the connected fd on every path. One call only.
++    // timeout_ms is a handshake bound (1..2000), not a pressure threshold.
++    bool Exchange(int connected_fd, const Credentials& expected_server,
++                  const EnrollmentRequest& request, uint32_t timeout_ms,
++                  GrantRecipients* recipients);
++    // Thread-confined with Exchange/Close. This is not the watchdog gate.
++    bool Healthy() const;
++    int control_fd() const { return control_fd_; }
++    int server_pidfd() const { return server_pidfd_; }
++    void Close();
++
++private:
++    int control_fd_ = -1;
++    int server_pidfd_ = -1;
++    Credentials server_{};
++    bool attempted_ = false;
++};
++
++}  // namespace droidloom::lmkd::relay
+--- r5/lmkd.cpp
++++ android-r6/lmkd.cpp
+@@ -65,11 +65,39 @@
+ #include "statslog.h"
+ #include "watchdog.h"
+ #include "memory_cgroup.h"
++#include "relay_session.h"
+ 
+ namespace cell_memory = droidloom::lmkd;
++namespace cell_relay = droidloom::lmkd::relay;
+ static cell_memory::Reader cell_memory_reader;
++static cell_memory::Reader cell_relay_scope_reader;
+ static cell_memory::Snapshot cell_memory_snapshot{};
+ static bool cell_memory_enabled = false;
++static bool cell_relay_required = false;
++static cell_relay::Session cell_relay_session;
++static int cell_relay_control_fd = -1;
++
++static Reaper::GuardedResult cell_relay_perform_effect(void* context, Reaper::Effect effect,
++                                                       void* argument) {
++    const auto result = static_cast<cell_relay::Session*>(context)->Perform([&]() {
++        return effect(argument);
++    });
++    switch (result) {
++    case cell_relay::Dispatch::Denied: return Reaper::GuardedResult::Denied;
++    case cell_relay::Dispatch::Failed: return Reaper::GuardedResult::Failed;
++    case cell_relay::Dispatch::Sent: return Reaper::GuardedResult::Sent;
++    }
++    return Reaper::GuardedResult::Denied;
++}
++
++static bool cell_relay_validate_group(void* context, int fd, uid_t uid, pid_t pid) {
++    (void)context;
++    // Only immutable pinned-root state is accessed here. The actual effect
++    // gate follows this path validation and re-reads current accounting.
++    return cell_relay_scope_reader.IsProcessKillFd(fd, uid, pid);
++}
++static const Reaper::EffectGate cell_relay_effect_gate{
++    &cell_relay_session, cell_relay_perform_effect, cell_relay_validate_group};
+ 
+ #define ATRACE_TAG ATRACE_TAG_ALWAYS
+ #include <cutils/trace.h>
+@@ -291,13 +319,14 @@
+ 
+ /* vmpressure event handler data */
+ static struct event_handler_info vmpressure_hinfo[VMPRESS_LEVEL_COUNT];
++static struct event_handler_info cell_relay_control_hinfo;
+ 
+ /*
+  * 1 ctrl listen socket, 3 ctrl data socket, 3 memory pressure levels,
+  * 1 lmk events + 1 fd to wait for process death + 1 fd to receive kill failure notifications
+- * + 1 fd to receive memevent_listener notifications
++ * + 1 fd to receive memevent_listener notifications + 1 relay lease control
+  */
+-#define MAX_EPOLL_EVENTS (1 + MAX_DATA_CONN + VMPRESS_LEVEL_COUNT + 1 + 1 + 1 + 1)
++#define MAX_EPOLL_EVENTS (1 + MAX_DATA_CONN + VMPRESS_LEVEL_COUNT + 1 + 1 + 1 + 1 + 1)
+ static int epollfd;
+ static int maxevents;
+ 
+@@ -2397,6 +2426,31 @@
+     // make a copy because original might be destroyed after adjslot_list_lock is released
+     target_proc = *procp;
+ 
++    if (cell_relay_required) {
++        // Relay validation performs I/O before the effect. Pin both actual
++        // kernel objects while the original record is still protected, so a
++        // concurrent main-thread removal cannot reuse a copied numeric fd.
++        target_proc.pidfd = -1;
++        target_proc.cgroupfd.reset();
++        if (!target_proc.valid) return true;
++        target_proc.pidfd = fcntl(procp->pidfd, F_DUPFD_CLOEXEC, 0);
++        bool copied = target_proc.pidfd >= 0;
++        if (copied && procp->cgroupfd) {
++            target_proc.cgroupfd = procp->cgroupfd;
++            std::visit([&](auto& group) {
++                group.fd = fcntl(group.fd, F_DUPFD_CLOEXEC, 0);
++                if (group.fd < 0) copied = false;
++            }, *target_proc.cgroupfd);
++        }
++        if (!copied) {
++            if (target_proc.pidfd >= 0) close(target_proc.pidfd);
++            close(target_proc.cgroupfd);
++            target_proc.pidfd = -1;
++            target_proc.cgroupfd.reset();
++            target_proc.valid = false;
++        }
++    }
++
+     return true;
+ }
+ 
+@@ -2413,8 +2467,26 @@
+             continue;
+         }
+ 
+-        if (target.valid &&
+-            reaper.kill({ target.pidfd, target.cgroupfd, target.pid, target.uid }, true)) {
++        bool sent = false;
++        bool denied = false;
++        if (target.valid) {
++            if (cell_relay_required) {
++                const auto dispatched = reaper.kill_guarded(
++                    {target.pidfd, target.cgroupfd, target.pid, target.uid}, cell_relay_effect_gate);
++                // An invalid or contended lease never authorizes the watchdog.
++                // Do not mutate the event-loop's Reader from this thread.
++                denied = dispatched == Reaper::GuardedResult::Denied;
++                sent = dispatched == Reaper::GuardedResult::Sent;
++            } else {
++                sent = reaper.kill({ target.pidfd, target.cgroupfd, target.pid, target.uid }, true);
++            }
++        }
++        if (cell_relay_required) {
++            if (target.pidfd >= 0) close(target.pidfd);
++            close(target.cgroupfd);
++        }
++        if (denied) return;
++        if (sent) {
+             ALOGW("lmkd watchdog killed process %d, oom_score_adj %d", target.pid, oom_score);
+             killinfo_log(&target, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL);
+             // Can't call pid_remove() from non-main thread, therefore just invalidate the record
+@@ -2589,13 +2661,36 @@
+       ALOGI("Skipping kill; %ld kB freed elsewhere.", result * page_k);
+       return result;
+     }
+-    start_wait_for_proc_kill(pidfd < 0 ? pid : pidfd);
+-
+-    if (!reaper.kill({ pidfd, procp->cgroupfd, pid, uid }, false)) {
++    // Relay mode has no queued kill. A failed/refused effect must retain the
++    // still-live process record. Its independently-owned wait pidfd is only
++    // registered after an actual synchronous kernel effect succeeds.
++    {
++    bool sent = false;
++    if (cell_relay_required) {
++        const int wait_fd = fcntl(pidfd, F_DUPFD_CLOEXEC, 0);
++        if (wait_fd < 0) {
++            cell_memory_reader.ClearHighEvidence();
++            return 0;
++        }
++        const auto dispatched = reaper.kill_guarded({pidfd, procp->cgroupfd, pid, uid},
++                                                     cell_relay_effect_gate);
++        if (dispatched != Reaper::GuardedResult::Sent) {
++            close(wait_fd);
++            cell_memory_reader.ClearHighEvidence();
++            return 0;
++        }
++        start_wait_for_proc_kill(wait_fd);
++        sent = true;
++    } else {
++        start_wait_for_proc_kill(pidfd < 0 ? pid : pidfd);
++        sent = reaper.kill({ pidfd, procp->cgroupfd, pid, uid }, false);
++    }
++    if (!sent) {
+         stop_wait_for_proc_kill(false);
+         ALOGE("kill(%d): errno=%d", pid, errno);
+         /* Delete process record even when we fail to kill so that we don't get stuck on it */
+         goto out;
++    }
+     }
+     ATRACE_INSTANT_FOR_TRACK(LOG_TAG, desc);
+     last_kill_tm = *tm;
+@@ -3530,6 +3625,139 @@
+     }
+ }
+ 
++static bool read_cell_relay_scope(void* context, cell_relay::AccountingScope* scope) {
++    auto* reader = static_cast<cell_memory::Reader*>(context);
++    cell_memory::Snapshot snapshot{};
++    cell_memory::ScopeIdentity identity{};
++    if (!reader || !scope || !reader->ReadScoped(&snapshot, &identity)) return false;
++    *scope = {identity.device, identity.inode,
++              cell_relay::BindBudget(snapshot.max, snapshot.high, snapshot.swap_max,
++                                     snapshot.high_unlimited, snapshot.swap_unlimited)};
++    return true;
++}
++
++static void destroy_cell_relay_monitors() {
++    // Session is the only fd owner. A rejected Monitor::Consume may already
++    // have closed one endpoint, so never close a cached numeric fd here.
++    for (int level = VMPRESS_LEVEL_MEDIUM; level <= VMPRESS_LEVEL_CRITICAL; ++level) {
++        if (mpevfd[level] >= 0) {
++            epoll_ctl(epollfd, EPOLL_CTL_DEL, mpevfd[level], nullptr);
++            mpevfd[level] = -1;
++            --maxevents;
++        }
++    }
++    if (cell_relay_control_fd >= 0) {
++        epoll_ctl(epollfd, EPOLL_CTL_DEL, cell_relay_control_fd, nullptr);
++        cell_relay_control_fd = -1;
++        --maxevents;
++    }
++    cell_relay_session.Stop();
++    cell_memory_reader.ClearHighEvidence();
++    monitors_initialized = false;
++}
++
++static void cell_relay_stop(struct polling_params* poll_params) {
++    destroy_cell_relay_monitors();
++    poll_params->poll_handler = nullptr;
++    poll_params->paused_handler = nullptr;
++    poll_params->update = POLLING_DO_NOT_CHANGE;
++    ALOGE("Cell PSI relay lease invalid; pressure effects disabled until lifecycle restart");
++}
++
++static void cell_relay_event(int data, uint32_t events, struct polling_params* poll_params) {
++    if (data != VMPRESS_LEVEL_MEDIUM && data != VMPRESS_LEVEL_CRITICAL) {
++        cell_relay_stop(poll_params);
++        return;
++    }
++    const auto ready = cell_relay_session.Handle(static_cast<cell_relay::Level>(data), events);
++    switch (ready) {
++    case cell_relay::Ready::Event:
++        // Only a freshly authenticated packet supplies a new PSI observation.
++        mp_event_psi(data, EPOLLIN, poll_params);
++        break;
++    case cell_relay::Ready::Polling:
++        // Preserve AOSP's existing poll, with no new critical/high evidence.
++        mp_event_psi(data, 0, poll_params);
++        break;
++    case cell_relay::Ready::Empty:
++        break;
++    case cell_relay::Ready::Stale:
++        cell_memory_reader.ClearHighEvidence();
++        poll_params->poll_handler = nullptr;
++        poll_params->paused_handler = nullptr;
++        poll_params->update = POLLING_DO_NOT_CHANGE;
++        break;
++    case cell_relay::Ready::Revoked:
++        cell_relay_stop(poll_params);
++        return;
++    }
++    // A concurrent watchdog or an effect gate can discover a failed lease.
++    if (!cell_relay_session.active()) cell_relay_stop(poll_params);
++}
++
++static void cell_relay_control_event(int data __unused, uint32_t events __unused,
++                                      struct polling_params* poll_params) {
++    // There are no valid post-grant messages. IN, ERR, HUP and RDHUP all revoke.
++    cell_relay_stop(poll_params);
++}
++
++static bool is_cell_relay_handler(const struct event_handler_info* info) {
++    return cell_relay_required && info &&
++           (info->handler == cell_relay_event || info->handler == cell_relay_control_event);
++}
++
++static bool init_cell_relay_monitors() {
++    cell_memory::Snapshot snapshot{};
++    cell_memory::ScopeIdentity identity{};
++    cell_relay::EnrollmentRequest request{};
++    if (!cell_memory_enabled || psi_window_size_ms < 500 || psi_window_size_ms > 10000 ||
++        !cell_memory_reader.ReadScoped(&snapshot, &identity) ||
++        !cell_relay::FreshRequestNonce(&request.nonce)) return false;
++    request.cgroup_device = identity.device;
++    request.cgroup_inode = identity.inode;
++    request.budget = cell_relay::BindBudget(snapshot.max, snapshot.high, snapshot.swap_max,
++                                           snapshot.high_unlimited, snapshot.swap_unlimited);
++    for (int level = VMPRESS_LEVEL_MEDIUM; level <= VMPRESS_LEVEL_CRITICAL; ++level) {
++        const int stall_ms = psi_thresholds[level].threshold_ms;
++        if (!stall_ms) continue;
++        if (stall_ms < 0 || stall_ms > psi_window_size_ms) return false;
++        request.configs[request.count++] = {static_cast<cell_relay::Level>(level),
++            static_cast<uint64_t>(psi_window_size_ms) * 1000,
++            static_cast<uint64_t>(stall_ms) * 1000};
++    }
++    if (!cell_relay::ValidRequest(request)) return false;
++    cell_relay::Credentials server{};
++    const int connected = cell_relay::ConnectLifecycleEndpoint(&server);
++    if (connected < 0 || !cell_relay_session.Start(connected, server, request,
++            {&cell_relay_scope_reader, read_cell_relay_scope})) return false;
++    for (uint32_t i = 0; i < request.count; ++i) {
++        const int level = static_cast<int>(request.configs[i].level);
++        const int fd = cell_relay_session.fd(request.configs[i].level);
++        vmpressure_hinfo[level] = {level, cell_relay_event};
++        struct epoll_event event{};
++        event.events = EPOLLIN | EPOLLRDHUP | EPOLLHUP | EPOLLERR;
++        event.data.ptr = &vmpressure_hinfo[level];
++        if (fd < 0 || epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &event)) {
++            destroy_cell_relay_monitors();
++            return false;
++        }
++        mpevfd[level] = fd;
++        ++maxevents;
++    }
++    const int control = cell_relay_session.control_fd();
++    cell_relay_control_hinfo = {0, cell_relay_control_event};
++    struct epoll_event event{};
++    event.events = EPOLLIN | EPOLLRDHUP | EPOLLHUP | EPOLLERR;
++    event.data.ptr = &cell_relay_control_hinfo;
++    if (control < 0 || epoll_ctl(epollfd, EPOLL_CTL_ADD, control, &event)) {
++        destroy_cell_relay_monitors();
++        return false;
++    }
++    cell_relay_control_fd = control;
++    ++maxevents;
++    return true;
++}
++
+ static bool init_mp_psi(enum vmpressure_level level, bool use_new_strategy) {
+     int fd;
+ 
+@@ -3737,6 +3965,10 @@
+         psi_thresholds[VMPRESS_LEVEL_CRITICAL].threshold_ms = psi_complete_stall_ms;
+     }
+ 
++    // Explicit lifecycle mode only. Failure cannot fall through to direct PSI
++    // or a global/cgroup-v1 event source.
++    if (cell_relay_required) return init_cell_relay_monitors();
++
+     if (!init_mp_psi(VMPRESS_LEVEL_LOW, use_new_strategy)) {
+         return false;
+     }
+@@ -3773,6 +4005,10 @@
+ }
+ 
+ static void destroy_monitors() {
++    if (cell_relay_required) {
++        destroy_cell_relay_monitors();
++        return;
++    }
+     if (cell_memory_enabled) cell_memory_reader.ClearHighEvidence();
+     destroy_mp_psi(VMPRESS_LEVEL_CRITICAL);
+     destroy_mp_psi(VMPRESS_LEVEL_MEDIUM);
+@@ -3892,6 +4128,14 @@
+         cell_memory_enabled = true;
+         ALOGI("Using cell cgroup memory budget: max=%" PRIu64 " high=%" PRIu64,
+               cell_memory_snapshot.max, cell_memory_snapshot.high);
++    }
++    if (const char* pressure_mode = getenv("DROIDLOOM_LMKD_PRESSURE")) {
++        if (strcmp(pressure_mode, "relay-required") || !cell_memory_enabled ||
++            !cell_relay_scope_reader.Open("/sys/fs/cgroup")) {
++            ALOGE("Invalid or unavailable required cell PSI relay domain");
++            return -1;
++        }
++        cell_relay_required = true;
+     }
+ 
+     // Pre-expand the fdtable so we don't need to allocate when memory is low,
+@@ -4120,6 +4364,19 @@
+          * In such cases it's essential to handle connection closures first.
+          */
+         for (i = 0, evt = &events[0]; i < nevents; ++i, evt++) {
++            // Relay closure is not a framework data-socket index. Retire it
++            // before dispatching any other event from this epoll batch.
++            // An extra control record also invalidates the complete lease.
++            if (evt->data.ptr) {
++                handler_info = (struct event_handler_info*)evt->data.ptr;
++                if (is_cell_relay_handler(handler_info) &&
++                    (handler_info->handler == cell_relay_control_event ||
++                     (evt->events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)))) {
++                    call_handler(handler_info, &poll_params, evt->events);
++                    evt->data.ptr = nullptr;
++                    continue;
++                }
++            }
+             if ((evt->events & EPOLLHUP) && evt->data.ptr) {
+                 handler_info = (struct event_handler_info*)evt->data.ptr;
+                 if (handler_info->handler == kill_done_handler) {
+--- r5/memory_cgroup.cpp
++++ android-r6/memory_cgroup.cpp
+@@ -1,6 +1,8 @@
+ /* Copyright 2026 Droidloom contributors
+  * SPDX-License-Identifier: Apache-2.0 */
+ #include "memory_cgroup.h"
++#include <linux/openat2.h>
++#include <sys/syscall.h>
+ 
+ #include <algorithm>
+ #include <cerrno>
+@@ -10,6 +12,7 @@
+ #include <fcntl.h>
+ #include <linux/magic.h>
+ #include <iterator>
++#include <sys/stat.h>
+ #include <sys/vfs.h>
+ #include <time.h>
+ #include <unistd.h>
+@@ -350,6 +353,46 @@
+            now_ns - evidence_observed_ns_ < window_ms * 1000000;
+ }
+ 
++bool Reader::IsProcessKillFd(int target_fd, uint32_t uid, int32_t pid) const {
++    if (!opened_ || root_fd_ < 0 || target_fd < 0 || pid <= 0) return false;
++    char relative[96];
++    const int length = snprintf(relative, sizeof(relative), "uid_%u/pid_%d/cgroup.kill", uid, pid);
++    if (length <= 0 || static_cast<size_t>(length) >= sizeof(relative)) return false;
++    struct open_how how{};
++    how.flags = O_PATH | O_CLOEXEC;
++    how.resolve = RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS | RESOLVE_NO_XDEV;
++    const int expected = static_cast<int>(syscall(SYS_openat2, root_fd_, relative, &how, sizeof(how)));
++    if (expected < 0) return false;  // no path-based or legacy fallback
++    struct stat actual{}, bound{};
++    struct statfs filesystem{};
++    const bool matches = !fstat(target_fd, &actual) && !fstat(expected, &bound) &&
++            S_ISREG(actual.st_mode) && S_ISREG(bound.st_mode) &&
++            actual.st_dev == bound.st_dev && actual.st_ino == bound.st_ino &&
++            !fstatfs(expected, &filesystem) && filesystem.f_type == CGROUP2_SUPER_MAGIC;
++    close(expected);
++    return matches;
++}
++
++bool Reader::ReadScoped(Snapshot* snapshot, ScopeIdentity* identity, int64_t window_ms) {
++    struct stat before{}, after{};
++    Snapshot current{};
++    if (!snapshot || !identity || root_fd_ < 0 || fstat(root_fd_, &before) ||
++        !S_ISDIR(before.st_mode)) {
++        error_ = EINVAL;
++        ClearHighEvidence();
++        return false;
++    }
++    if (!Read(&current, window_ms)) return false;
++    if (fstat(root_fd_, &after) || before.st_dev != after.st_dev || before.st_ino != after.st_ino) {
++        error_ = ESTALE;
++        ClearHighEvidence();
++        return false;
++    }
++    *identity = {static_cast<uint64_t>(after.st_dev), static_cast<uint64_t>(after.st_ino)};
++    *snapshot = current;
++    return true;
++}
++
+ int Reader::OpenPressureMonitor(bool full, uint64_t stall_us, uint64_t window_us) const {
+     if (!opened_ || window_us < 500000 || window_us > 10000000 || !stall_us || stall_us > window_us) { errno = EINVAL; return -1; }
+     int fd = openat(root_fd_, "memory.pressure", O_RDWR | O_CLOEXEC | O_NONBLOCK | O_NOFOLLOW);
+--- r5/memory_cgroup.h
++++ android-r6/memory_cgroup.h
+@@ -39,6 +39,11 @@
+     uint64_t min, low, high;
+ };
+ 
++struct ScopeIdentity {
++    uint64_t device = 0;
++    uint64_t inode = 0;
++};
++
+ // Parsing is strict for required inputs and ignores unknown kernel fields.
+ // Units: memory amounts are bytes; reclaim/refault counters are pages/events.
+ bool ParseNumber(std::string_view text, uint64_t* value);
+@@ -76,6 +81,12 @@
+     // The untimed form still supplies accounting, but cannot retain evidence.
+     // Timed reads use the existing PSI window, without changing its threshold.
+     bool Read(Snapshot* snapshot, int64_t window_ms = 0);
++    // Snapshot and scope come from this Reader's already-pinned root FD.
++    // Publishes neither output on failure; no independent path re-discovery.
++    bool ReadScoped(Snapshot* snapshot, ScopeIdentity* identity, int64_t window_ms = 0);
++    // Relay group effects support only the exact Android uid/pid subtree
++    // beneath this pinned accounting root. No root/sibling/mount escape.
++    bool IsProcessKillFd(int target_fd, uint32_t uid, int32_t pid) const;
+     // Only the caller's actual critical PSI decision may consume this token.
+     // Every consume attempt is one-shot, including an expired token.
+     bool ConsumeHighEvidence(int64_t window_ms);
+--- r5/pressure_relay.cpp
++++ android-r6/pressure_relay.cpp
+@@ -0,0 +1,278 @@
++// Copyright 2026 Droidloom contributors
++// SPDX-License-Identifier: Apache-2.0
++#include "pressure_relay.h"
++
++#include <algorithm>
++#include <cerrno>
++#include <cstring>
++#include <fcntl.h>
++#include <limits>
++#include <poll.h>
++#include <sys/socket.h>
++#include <time.h>
++#include <unistd.h>
++
++namespace droidloom::lmkd::relay {
++namespace {
++constexpr std::array<uint8_t, 8> kMagic = {'P', '4', 'P', 'S', 'I', '0', '1', '!'};
++
++template <size_t N>
++void Put(std::array<uint8_t, N>& wire, size_t offset, uint64_t value, size_t bytes) {
++    for (size_t i = 0; i < bytes; ++i) wire[offset + i] = (value >> (8 * i)) & 255;
++}
++template <size_t N>
++uint64_t Get(const std::array<uint8_t, N>& wire, size_t offset, size_t bytes) {
++    uint64_t value = 0;
++    for (size_t i = 0; i < bytes; ++i) value |= uint64_t(wire[offset + i]) << (8 * i);
++    return value;
++}
++bool Nonzero(const Bytes32& value) {
++    return std::any_of(value.begin(), value.end(), [](uint8_t x) { return x != 0; });
++}
++bool MonotonicNow(uint64_t* value) {
++    timespec now{};
++    if (clock_gettime(CLOCK_MONOTONIC, &now) || now.tv_sec < 0 || now.tv_nsec < 0 ||
++        now.tv_nsec >= 1000000000 ||
++        uint64_t(now.tv_sec) > (std::numeric_limits<uint64_t>::max() - uint64_t(now.tv_nsec)) / 1000000000)
++        return false;
++    *value = uint64_t(now.tv_sec) * 1000000000 + uint64_t(now.tv_nsec);
++    return *value != 0;
++}
++bool SocketInt(int fd, int option, int* value) {
++    socklen_t size = sizeof(*value);
++    return getsockopt(fd, SOL_SOCKET, option, value, &size) == 0 && size == sizeof(*value);
++}
++bool CloseUnexpectedRights(msghdr* message) {
++    bool any = false;
++    for (cmsghdr* header = CMSG_FIRSTHDR(message); header;
++         header = CMSG_NXTHDR(message, header)) {
++        any = true;
++        if (header->cmsg_level != SOL_SOCKET || header->cmsg_type != SCM_RIGHTS ||
++            header->cmsg_len < CMSG_LEN(0)) continue;
++        size_t count = (header->cmsg_len - CMSG_LEN(0)) / sizeof(int);
++        const auto* data = reinterpret_cast<const unsigned char*>(CMSG_DATA(header));
++        for (size_t i = 0; i < count; ++i) {
++            int fd;
++            std::memcpy(&fd, data + i * sizeof(fd), sizeof(fd));
++            close(fd);
++        }
++    }
++    return any;
++}
++}  // namespace
++
++bool Scope::operator==(const Scope& o) const {
++    return generation == o.generation && cgroup_device == o.cgroup_device &&
++           cgroup_inode == o.cgroup_inode && budget == o.budget;
++}
++bool Config::operator==(const Config& o) const {
++    return level == o.level && window_us == o.window_us && stall_us == o.stall_us;
++}
++bool Credentials::operator==(const Credentials& o) const {
++    return pid == o.pid && uid == o.uid && gid == o.gid;
++}
++Bytes32 BindBudget(uint64_t maximum, uint64_t high, uint64_t swap_maximum,
++                   bool high_unlimited, bool swap_unlimited) {
++    Bytes32 bytes{};
++    Put(bytes, 0, maximum, 8);
++    Put(bytes, 8, high_unlimited ? 0 : high, 8);
++    Put(bytes, 16, swap_unlimited ? 0 : swap_maximum, 8);
++    Put(bytes, 24, (high_unlimited ? 1U : 0U) | (swap_unlimited ? 2U : 0U), 4);
++    Put(bytes, 28, 1, 4);
++    return bytes;
++}
++bool ValidScope(const Scope& s) {
++    uint64_t maximum = Get(s.budget, 0, 8), high = Get(s.budget, 8, 8);
++    uint64_t swap = Get(s.budget, 16, 8), flags = Get(s.budget, 24, 4);
++    return Nonzero(s.generation) && s.cgroup_device && s.cgroup_inode &&
++           Get(s.budget, 28, 4) == 1 && flags <= 3 && maximum > 0 &&
++           maximum <= uint64_t(std::numeric_limits<int64_t>::max()) &&
++           swap <= uint64_t(std::numeric_limits<int64_t>::max()) &&
++           ((flags & 1) ? high == 0 : high > 0 && high <= maximum) &&
++           (!(flags & 2) || swap == 0);
++}
++bool ValidConfig(const Config& c) {
++    return (c.level == Level::Medium || c.level == Level::Critical) &&
++           c.window_us >= 500000 && c.window_us <= 10000000 &&
++           c.stall_us > 0 && c.stall_us <= c.window_us;
++}
++Wire Encode(const Event& e) {
++    Wire w{};
++    std::copy(kMagic.begin(), kMagic.end(), w.begin());
++    Put(w, 8, 1, 4);
++    Put(w, 12, static_cast<uint32_t>(e.config.level), 4);
++    std::copy(e.scope.generation.begin(), e.scope.generation.end(), w.begin() + 16);
++    Put(w, 48, e.scope.cgroup_device, 8);
++    Put(w, 56, e.scope.cgroup_inode, 8);
++    std::copy(e.scope.budget.begin(), e.scope.budget.end(), w.begin() + 64);
++    Put(w, 96, e.config.window_us, 8);
++    Put(w, 104, e.config.stall_us, 8);
++    Put(w, 112, e.sequence, 8);
++    Put(w, 120, e.observed_monotonic_ns, 8);
++    return w;
++}
++bool Decode(const Wire& w, Event* e) {
++    if (!e || !std::equal(kMagic.begin(), kMagic.end(), w.begin()) || Get(w, 8, 4) != 1)
++        return false;
++    e->config.level = static_cast<Level>(Get(w, 12, 4));
++    std::copy_n(w.begin() + 16, 32, e->scope.generation.begin());
++    e->scope.cgroup_device = Get(w, 48, 8);
++    e->scope.cgroup_inode = Get(w, 56, 8);
++    std::copy_n(w.begin() + 64, 32, e->scope.budget.begin());
++    e->config.window_us = Get(w, 96, 8);
++    e->config.stall_us = Get(w, 104, 8);
++    e->sequence = Get(w, 112, 8);
++    e->observed_monotonic_ns = Get(w, 120, 8);
++    return ValidScope(e->scope) && ValidConfig(e->config) && e->sequence &&
++           e->sequence != std::numeric_limits<uint64_t>::max() && e->observed_monotonic_ns;
++}
++bool ReadCredentials(int fd, Credentials* credentials) {
++    ucred actual{};
++    socklen_t size = sizeof(actual);
++    if (!credentials || getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &actual, &size) ||
++        size != sizeof(actual)) return false;
++    *credentials = {actual.pid, actual.uid, actual.gid};
++    return true;
++}
++
++Monitor::~Monitor() { Revoke(); }
++void Monitor::Revoke() {
++    if (fd_ >= 0) close(fd_);
++    fd_ = -1;
++    last_sequence_ = last_event_ns_ = last_local_ns_ = 0;
++}
++bool Monitor::Adopt(int fd, const Scope& s, const Config& c, const Credentials& peer) {
++    if (adopted_once_) {
++        if (fd >= 0 && fd != fd_) close(fd);
++        Revoke();
++        return false;
++    }
++    adopted_once_ = true;
++    fd_ = fd;
++    scope_ = s;
++    config_ = c;
++    peer_ = peer;
++    int type = 0, domain = 0;
++    int descriptor_flags = fd_ < 0 ? -1 : fcntl(fd_, F_GETFD);
++    int status_flags = fd_ < 0 ? -1 : fcntl(fd_, F_GETFL);
++    Credentials actual;
++    if (fd_ < 0 || !ValidScope(s) || !ValidConfig(c) ||
++        descriptor_flags < 0 || status_flags < 0 ||
++        (descriptor_flags & FD_CLOEXEC) == 0 || (status_flags & O_NONBLOCK) == 0 ||
++        !SocketInt(fd_, SO_TYPE, &type) || type != SOCK_SEQPACKET ||
++        !SocketInt(fd_, SO_DOMAIN, &domain) || domain != AF_UNIX ||
++        !ReadCredentials(fd_, &actual) || !(actual == peer_)) {
++        Revoke();
++        return false;
++    }
++    short readiness = 0;
++    if (!TransportHealthy(&readiness)) {
++        Revoke();
++        return false;
++    }
++    return true;
++}
++bool Monitor::TransportHealthy(short* readiness) {
++    Credentials actual;
++    if (fd_ < 0 || !ReadCredentials(fd_, &actual) || !(actual == peer_)) return false;
++    pollfd descriptor{fd_, POLLIN | POLLRDHUP, 0};
++    int rc = poll(&descriptor, 1, 0);
++    if (rc < 0 || descriptor.revents & (POLLHUP | POLLRDHUP | POLLERR | POLLNVAL))
++        return false;
++    *readiness = descriptor.revents;
++    return true;
++}
++Result Monitor::Fail(Error error) {
++    Revoke();
++    return {Status::Revoked, error, 0, 0, 0};
++}
++Result Monitor::Consume(const Scope& scope) {
++    uint64_t before = 0, after = 0;
++    if (!MonotonicNow(&before)) return Fail(Error::ClockInvalid);
++    Result result = ConsumeAt(scope, before, true);
++    if (result.status == Status::Revoked) return result;
++    // Nonblocking I/O can still fault or stall on a kernel memory charge. A
++    // fresh entry timestamp cannot certify an event after such a delay.
++    short readiness = 0;
++    if (!TransportHealthy(&readiness)) return Fail(Error::Transport);
++    // This must follow the final health I/O as well as the record drain.
++    if (!MonotonicNow(&after) || after < before || after < last_local_ns_)
++        return Fail(Error::ClockInvalid);
++    last_local_ns_ = after;
++    if (result.status == Status::Event &&
++        after - result.observed_monotonic_ns >= config_.window_us * 1000) {
++        result.status = Status::Stale;
++        ++result.stale_records;
++    }
++    return result;
++}
++#ifdef DROIDLOOM_RELAY_TEST
++Result Monitor::ConsumeAtForTest(const Scope& scope, uint64_t now_ns) {
++    return ConsumeAt(scope, now_ns, false);
++}
++#endif
++Result Monitor::ConsumeAt(const Scope& scope, uint64_t now_ns, bool live_clock) {
++    if (!active()) return {Status::Revoked, Error::Transport, 0, 0, 0};
++    if (!(scope == scope_)) return Fail(Error::ScopeChanged);
++    if (!now_ns || now_ns < last_local_ns_) return Fail(Error::ClockInvalid);
++    last_local_ns_ = now_ns;
++    short readiness = 0;
++    if (!TransportHealthy(&readiness)) return Fail(Error::Transport);
++    Result result;
++    for (size_t i = 0; i < kMaxDrainRecords; ++i) {
++        Wire wire{};
++        alignas(cmsghdr) unsigned char ancillary[CMSG_SPACE(16 * sizeof(int))]{};
++        iovec payload{wire.data(), wire.size()};
++        msghdr message{};
++        message.msg_iov = &payload;
++        message.msg_iovlen = 1;
++        message.msg_control = ancillary;
++        message.msg_controllen = sizeof(ancillary);
++        ssize_t received = recvmsg(fd_, &message, MSG_DONTWAIT | MSG_CMSG_CLOEXEC | MSG_TRUNC);
++        if (received < 0) {
++            if (errno == EAGAIN || errno == EWOULDBLOCK) break;
++            if (errno == EINTR) {
++                // No unbounded retry in the pressure path. A later poll retries.
++                if (!TransportHealthy(&readiness)) return Fail(Error::Transport);
++                return result;
++            }
++            return Fail(Error::Transport);
++        }
++        bool unexpected_control = CloseUnexpectedRights(&message);
++        if (unexpected_control || (message.msg_flags & MSG_CTRUNC)) return Fail(Error::AncillaryData);
++        if (received != static_cast<ssize_t>(wire.size()) || (message.msg_flags & MSG_TRUNC))
++            return Fail(Error::RecordSize);
++        if (live_clock) {
++            uint64_t received_ns = 0;
++            // A host notification can be generated after entry and arrive
++            // during recvmsg. Compare it with receipt time, not entry time.
++            if (!MonotonicNow(&received_ns) || received_ns < now_ns || received_ns < last_local_ns_)
++                return Fail(Error::ClockInvalid);
++            now_ns = received_ns;
++            last_local_ns_ = received_ns;
++        }
++        Event event;
++        if (!Decode(wire, &event)) return Fail(Error::RecordEncoding);
++        if (!(event.scope == scope_)) return Fail(Error::EventScope);
++        if (!(event.config == config_)) return Fail(Error::EventConfig);
++        if (event.sequence != last_sequence_ + 1) return Fail(Error::Sequence);
++        if (event.observed_monotonic_ns > now_ns || event.observed_monotonic_ns < last_event_ns_)
++            return Fail(Error::Timestamp);
++        last_sequence_ = event.sequence;
++        last_event_ns_ = event.observed_monotonic_ns;
++        result.last_sequence = event.sequence;
++        if (now_ns - event.observed_monotonic_ns >= config_.window_us * 1000) {
++            ++result.stale_records;
++            if (result.status != Status::Event) result.status = Status::Stale;
++        } else {
++            result.status = Status::Event;
++            result.observed_monotonic_ns = event.observed_monotonic_ns;
++        }
++        if (!TransportHealthy(&readiness)) return Fail(Error::Transport);
++        if (!(readiness & POLLIN)) break;
++        if (i + 1 == kMaxDrainRecords) return Fail(Error::DrainLimit);
++    }
++    if (!TransportHealthy(&readiness)) return Fail(Error::Transport);
++    return result;
++}
++}  // namespace droidloom::lmkd::relay
+--- r5/pressure_relay.h
++++ android-r6/pressure_relay.h
+@@ -0,0 +1,122 @@
++// Copyright 2026 Droidloom contributors
++// SPDX-License-Identifier: Apache-2.0
++#pragma once
++
++#include <array>
++#include <cstddef>
++#include <cstdint>
++#include <sys/types.h>
++
++// Native LMKD-side protocol candidate only. No listener, process discovery,
++// pressure registration, memory decision, signal, cgroup write or deployment.
++// An authenticated host lease grant must supply the expected scope and socket.
++namespace droidloom::lmkd::relay {
++
++constexpr size_t kWireSize = 128;
++constexpr size_t kMaxDrainRecords = 64;
++using Bytes32 = std::array<uint8_t, 32>;
++using Wire = std::array<uint8_t, kWireSize>;
++
++enum class Level : uint32_t { Medium = 1, Critical = 2 };
++
++struct Scope {
++    Bytes32 generation{};
++    uint64_t cgroup_device = 0;
++    uint64_t cgroup_inode = 0;
++    Bytes32 budget{};
++    bool operator==(const Scope& other) const;
++};
++
++struct Config {
++    Level level = Level::Medium;
++    uint64_t window_us = 0;
++    uint64_t stall_us = 0;
++    bool operator==(const Config& other) const;
++};
++
++struct Credentials {
++    pid_t pid = -1;
++    uid_t uid = static_cast<uid_t>(-1);
++    gid_t gid = static_cast<gid_t>(-1);
++    bool operator==(const Credentials& other) const;
++};
++
++struct Event {
++    Scope scope;
++    Config config;
++    uint64_t sequence = 0;
++    uint64_t observed_monotonic_ns = 0;
++};
++
++bool ValidScope(const Scope& scope);
++bool ValidConfig(const Config& config);
++// Canonical lossless binding to the Reader's existing budget fields. This is
++// not a hash and adds no cryptographic library dependency. Read/Validate must
++// still establish a coherent snapshot before these values are used.
++Bytes32 BindBudget(uint64_t maximum, uint64_t high, uint64_t swap_maximum,
++                   bool high_unlimited, bool swap_unlimited);
++Wire Encode(const Event& event);
++bool Decode(const Wire& wire, Event* event);
++bool ReadCredentials(int fd, Credentials* credentials);
++
++enum class Status { Empty, Event, Stale, Revoked };
++enum class Error {
++    None, InvalidGrant, ScopeChanged, ClockInvalid, Transport, PeerChanged,
++    AncillaryData, RecordSize, RecordEncoding, EventScope, EventConfig,
++    Sequence, Timestamp, DrainLimit,
++};
++
++struct Result {
++    Status status = Status::Empty;
++    Error error = Error::None;
++    uint64_t last_sequence = 0;
++    uint64_t observed_monotonic_ns = 0;
++    size_t stale_records = 0;
++};
++
++class Monitor {
++public:
++    // Thread-confined to LMKD's event loop. A separately reviewed atomic lease
++    // gate is required before any watchdog-thread integration.
++    Monitor() = default;
++    Monitor(const Monitor&) = delete;
++    Monitor& operator=(const Monitor&) = delete;
++    ~Monitor();
++
++    // Takes ownership even on rejection. Requires a connected AF_UNIX
++    // SOCK_SEQPACKET descriptor received with MSG_CMSG_CLOEXEC. The grant
++    // provider must have permanently shut down the recipient's write half.
++    // expected_peer comes from the authenticated host grant, never a frame.
++    bool Adopt(int fd, const Scope& scope, const Config& config,
++               const Credentials& expected_peer);
++    int fd() const { return fd_; }
++    bool active() const { return fd_ >= 0; }
++    void Revoke();
++
++    // verified_current_scope must come from the existing fixed-root Reader
++    // and the live lease owner. observed time uses shared CLOCK_MONOTONIC;
++    // the host must verify matching time namespaces before granting a lease.
++    // No allocation, logging, blocking wait or process operation occurs here.
++    Result Consume(const Scope& verified_current_scope);
++
++    // Deterministic tests exercise the identical parser and transport. This
++    // clock injection entry point is absent from a normal compilation.
++#ifdef DROIDLOOM_RELAY_TEST
++    Result ConsumeAtForTest(const Scope& verified_current_scope, uint64_t now_ns);
++#endif
++
++private:
++    Result ConsumeAt(const Scope& scope, uint64_t now_ns, bool live_clock);
++    Result Fail(Error error);
++    bool TransportHealthy(short* readiness);
++    int fd_ = -1;
++    Scope scope_{};
++    Config config_{};
++    Credentials peer_{};
++    uint64_t last_sequence_ = 0;
++    uint64_t last_event_ns_ = 0;
++    uint64_t last_local_ns_ = 0;
++    bool adopted_once_ = false;
++};
++
++}  // namespace droidloom::lmkd::relay
+--- r5/reaper.cpp
++++ android-r6/reaper.cpp
+@@ -297,6 +297,33 @@
+     return kill_cgroup_or_process(target);
+ }
+ 
++Reaper::GuardedResult Reaper::kill_guarded(const struct target_proc& target,
++                                          const EffectGate& gate) {
++    // This path contains no asynchronous work, priority side effects or PID
++    // enumeration. There is no queued request that can outlive its evidence.
++    if (!gate.perform || target.pidfd < 0 || target.pid <= 0) return GuardedResult::Denied;
++    if (target.cgroupfd) {
++        const auto* group = std::get_if<CgroupKillFD>(&*target.cgroupfd);
++        // cgroup.procs needs a separately qualified per-member identity and
++        // partial-effect contract. It cannot silently fall back in relay mode.
++        if (!group || !gate.validate_cgroup ||
++            !gate.validate_cgroup(gate.context, group->fd, target.uid, target.pid))
++            return GuardedResult::Denied;
++        int fd = group->fd;
++        const auto written = gate.perform(gate.context, [](void* context) {
++            const int target_fd = *static_cast<int*>(context);
++            // One byte, one syscall; no hidden retries after an expired gate.
++            return write(target_fd, "1", 1) == 1;
++        }, &fd);
++        if (written != GuardedResult::Failed) return written;
++    }
++    int pidfd = target.pidfd;
++    return gate.perform(gate.context, [](void* context) {
++        const int target_fd = *static_cast<int*>(context);
++        return pidfd_send_signal(target_fd, SIGKILL, nullptr, 0) == 0;
++    }, &pidfd);
++}
++
+ void Reaper::notify_kill_failure(pid_t pid) {
+     static std::mutex mtx;
+     std::scoped_lock lock(mtx);
+--- r5/reaper.h
++++ android-r6/reaper.h
+@@ -42,6 +42,13 @@
+         pid_t pid;
+         uid_t uid;
+     };
++    enum class GuardedResult { Denied, Failed, Sent };
++    using Effect = bool (*)(void*);
++    struct EffectGate {
++        void* context;
++        GuardedResult (*perform)(void*, Effect, void*);
++        bool (*validate_cgroup)(void*, int, uid_t, pid_t);
++    };
+ private:
+     static constexpr size_t THREAD_POOL_SIZE = 2;
+     ThreadsafeQueue<target_proc> reap_queue_;
+@@ -68,4 +75,7 @@
+ 
+     // return true on success. errno may be set on failure.
+     bool kill(const struct target_proc& target, bool synchronous);
++    // Required relay mode never enqueues a kill. Each individual actual kernel
++    // effect is freshly authorized, and the legacy numeric-PID loop is refused.
++    GuardedResult kill_guarded(const struct target_proc& target, const EffectGate& gate);
+ };
+--- r5/relay_session.cpp
++++ android-r6/relay_session.cpp
+@@ -0,0 +1,231 @@
++// Copyright 2026 Droidloom contributors; SPDX-License-Identifier: Apache-2.0
++#include "relay_session.h"
++
++#include <cerrno>
++#include <cstdio>
++#include <cstring>
++#include <fcntl.h>
++#include <limits>
++#include <poll.h>
++#include <sys/epoll.h>
++#include <sys/socket.h>
++#include <sys/stat.h>
++#include <sys/un.h>
++#include <time.h>
++#include <unistd.h>
++
++namespace droidloom::lmkd::relay {
++namespace {
++bool RootDirectory(int fd) {
++    struct stat st{};
++    return fd >= 0 && !fstat(fd, &st) && S_ISDIR(st.st_mode) &&
++           st.st_uid == 0 && st.st_gid == 0 && (st.st_mode & 0022) == 0;
++}
++bool SameSocket(const struct stat& a, const struct stat& b) {
++    return S_ISSOCK(a.st_mode) && S_ISSOCK(b.st_mode) && a.st_dev == b.st_dev &&
++           a.st_ino == b.st_ino && a.st_uid == b.st_uid && a.st_gid == b.st_gid &&
++           a.st_mode == b.st_mode;
++}
++}  // namespace
++
++bool Session::CheckClock(uint64_t* result) {
++    struct timespec now{};
++    if (!result || clock_gettime(CLOCK_MONOTONIC, &now) || now.tv_sec < 0 ||
++        now.tv_nsec < 0 || now.tv_nsec >= 1000000000 ||
++        static_cast<uint64_t>(now.tv_sec) >
++            (std::numeric_limits<uint64_t>::max() - static_cast<uint64_t>(now.tv_nsec)) /
++                1000000000) return false;
++    const uint64_t value = static_cast<uint64_t>(now.tv_sec) * 1000000000 +
++                           static_cast<uint64_t>(now.tv_nsec);
++    if (!value || value < last_clock_ns_) return false;
++    last_clock_ns_ = value;
++    *result = value;
++    return true;
++}
++
++int Session::Index(Level level) const {
++    for (uint32_t i = 0; i < grant_.request.count; ++i)
++        if (grant_.request.configs[i].level == level) return static_cast<int>(i);
++    return -1;
++}
++
++bool Session::FreshDecision() {
++    uint64_t now = 0;
++    if (!active_ || !decision_observed_ns_ || !decision_window_ns_) return false;
++    if (!CheckClock(&now) || now < decision_observed_ns_) {
++        active_ = false;
++        decision_observed_ns_ = decision_window_ns_ = 0;
++        return false;
++    }
++    if (now - decision_observed_ns_ >= decision_window_ns_) {
++        decision_observed_ns_ = decision_window_ns_ = 0;
++        return false;
++    }
++    return true;
++}
++
++bool Session::CheckScopeAndTransport() {
++    AccountingScope current{};
++    uint64_t now = 0;
++    if (!active_ || !CheckClock(&now) || !client_.Healthy() || !probe_.read ||
++        !probe_.read(probe_.context, &current) || current.device != scope_.cgroup_device ||
++        current.inode != scope_.cgroup_inode || current.budget != scope_.budget) {
++        active_ = false;
++        return false;
++    }
++    for (uint32_t i = 0; i < grant_.request.count; ++i) {
++        pollfd descriptor{monitors_[i].fd(), POLLIN | POLLRDHUP, 0};
++        if (descriptor.fd < 0 || poll(&descriptor, 1, 0) < 0 ||
++            (descriptor.revents & (POLLHUP | POLLRDHUP | POLLERR | POLLNVAL))) {
++            active_ = false;
++            return false;
++        }
++    }
++    // Recheck after accounting/health I/O; no earlier timestamp certifies a
++    // result that was delayed inside a syscall or a memory charge.
++    if (!client_.Healthy() || !CheckClock(&now)) {
++        active_ = false;
++        return false;
++    }
++    return true;
++}
++
++bool Session::Start(int connected_fd, const Credentials& server,
++                    const EnrollmentRequest& request, ScopeProbe probe) {
++    std::lock_guard<std::mutex> lock(mutex_);
++    if (attempted_) {
++        if (connected_fd >= 0 && connected_fd != client_.control_fd()) close(connected_fd);
++        StopLocked();
++        return false;
++    }
++    attempted_ = true;
++    GrantRecipients recipients;
++    if (!probe.read || !client_.Exchange(connected_fd, server, request, 1000, &recipients)) {
++        if (!probe.read && connected_fd >= 0) close(connected_fd);
++        StopLocked();
++        return false;
++    }
++    grant_ = recipients.grant();
++    scope_ = {grant_.generation, request.cgroup_device, request.cgroup_inode, request.budget};
++    probe_ = probe;
++    for (uint32_t i = 0; i < request.count; ++i) {
++        if (!monitors_[i].Adopt(recipients.Take(i), scope_, request.configs[i], server)) {
++            StopLocked();
++            return false;
++        }
++    }
++    active_ = true;
++    if (!CheckScopeAndTransport()) {
++        StopLocked();
++        return false;
++    }
++    return true;
++}
++
++int Session::fd(Level level) const {
++    std::lock_guard<std::mutex> lock(mutex_);
++    const int i = Index(level);
++    return active_ && i >= 0 ? monitors_[static_cast<size_t>(i)].fd() : -1;
++}
++int Session::control_fd() const {
++    std::lock_guard<std::mutex> lock(mutex_);
++    return active_ ? client_.control_fd() : -1;
++}
++bool Session::active() const {
++    std::lock_guard<std::mutex> lock(mutex_);
++    return active_;
++}
++void Session::StopLocked() {
++    active_ = false;
++    decision_observed_ns_ = decision_window_ns_ = 0;
++    client_.Close();
++    for (Monitor& monitor : monitors_) monitor.Revoke();
++}
++void Session::Stop() {
++    std::lock_guard<std::mutex> lock(mutex_);
++    StopLocked();
++}
++
++Ready Session::Handle(Level level, uint32_t events) {
++    std::lock_guard<std::mutex> lock(mutex_);
++    const int index = Index(level);
++    if (index < 0 || (events & ~static_cast<uint32_t>(EPOLLIN)) || !CheckScopeAndTransport()) {
++        active_ = false;
++        return Ready::Revoked;
++    }
++    if (!events) return FreshDecision() ? Ready::Polling : Ready::Stale;
++    const size_t i = static_cast<size_t>(index);
++    const Result result = monitors_[i].Consume(scope_);
++    if (result.status == Status::Revoked || !CheckScopeAndTransport()) {
++        active_ = false;
++        return Ready::Revoked;
++    }
++    if (result.status == Status::Event) {
++        uint64_t after = 0;
++        if (!CheckClock(&after) || result.observed_monotonic_ns > after) {
++            active_ = false;
++            return Ready::Revoked;
++        }
++        if (after - result.observed_monotonic_ns >= grant_.request.configs[i].window_us * 1000) {
++            decision_observed_ns_ = decision_window_ns_ = 0;
++            return Ready::Stale;
++        }
++        decision_observed_ns_ = result.observed_monotonic_ns;
++        decision_window_ns_ = grant_.request.configs[i].window_us * 1000;
++        return Ready::Event;
++    }
++    if (result.status == Status::Stale) decision_observed_ns_ = decision_window_ns_ = 0;
++    return result.status == Status::Stale ? Ready::Stale : Ready::Empty;
++}
++
++int ConnectLifecycleEndpoint(Credentials* expected_server) {
++    if (!expected_server) { errno = EINVAL; return -1; }
++    constexpr const char* name = "droidloom-lmkd-psi";
++    int root = open("/", O_PATH | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW);
++    int dev = -1, sockets = -1, fd = -1;
++    auto fail = [&]() {
++        const int saved = errno;
++        if (fd >= 0) close(fd);
++        if (sockets >= 0) close(sockets);
++        if (dev >= 0) close(dev);
++        if (root >= 0) close(root);
++        errno = saved;
++        return -1;
++    };
++    if (!RootDirectory(root)) return fail();
++    dev = openat(root, "dev", O_PATH | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW);
++    if (!RootDirectory(dev)) return fail();
++    sockets = openat(dev, "socket", O_PATH | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW);
++    if (!RootDirectory(sockets)) return fail();
++    struct stat before{}, after{};
++    if (fstatat(sockets, name, &before, AT_SYMLINK_NOFOLLOW) || !S_ISSOCK(before.st_mode) ||
++        before.st_uid != geteuid() || before.st_gid != getegid() ||
++        (before.st_mode & 07777) != 0600) return fail();
++    sockaddr_un address{};
++    address.sun_family = AF_UNIX;
++    const int written = std::snprintf(address.sun_path, sizeof(address.sun_path),
++                                      "/proc/self/fd/%d/%s", sockets, name);
++    if (written <= 0 || static_cast<size_t>(written) >= sizeof(address.sun_path)) return fail();
++    fd = socket(AF_UNIX, SOCK_SEQPACKET | SOCK_NONBLOCK | SOCK_CLOEXEC, 0);
++    if (fd < 0) return fail();
++    if (connect(fd, reinterpret_cast<const sockaddr*>(&address), sizeof(address)) < 0) {
++        if (errno != EINPROGRESS) return fail();
++        pollfd ready{fd, POLLOUT | POLLRDHUP, 0};
++        int error = 0;
++        socklen_t length = sizeof(error);
++        if (poll(&ready, 1, 100) <= 0 || !(ready.revents & POLLOUT) ||
++            (ready.revents & (POLLHUP | POLLRDHUP | POLLERR | POLLNVAL)) ||
++            getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &length) ||
++            length != sizeof(error) || error) return fail();
++    }
++    Credentials peer{};
++    if (fstatat(sockets, name, &after, AT_SYMLINK_NOFOLLOW) || !SameSocket(before, after) ||
++        !ReadCredentials(fd, &peer) || peer.uid != 0 || peer.gid != 0 || peer.pid < 0)
++        return fail();
++    close(sockets);
++    close(dev);
++    close(root);
++    *expected_server = peer;
++    return fd;
++}
++}  // namespace droidloom::lmkd::relay
+--- r5/relay_session.h
++++ android-r6/relay_session.h
+@@ -0,0 +1,71 @@
++// Copyright 2026 Droidloom contributors; SPDX-License-Identifier: Apache-2.0
++#pragma once
++#include "enrollment.h"
++#include <mutex>
++#include <utility>
++
++namespace droidloom::lmkd::relay {
++
++struct AccountingScope {
++    uint64_t device = 0;
++    uint64_t inode = 0;
++    Bytes32 budget{};
++};
++struct ScopeProbe {
++    void* context = nullptr;
++    // Must read the real fixed-root Reader. Serialized by this session's lock;
++    // the probe Reader is separate from the main handler's pending-evidence Reader.
++    bool (*read)(void*, AccountingScope*) = nullptr;
++};
++enum class Ready { Polling, Event, Empty, Stale, Revoked };
++enum class Dispatch { Denied, Failed, Sent };
++
++// One LMKD process generation, one enrollment, at most two monitors.
++// The event-loop owns receive sequencing; watchdog effect checks use a try-lock
++// and independently re-read the same scope, never Monitor::Consume or a mutable
++// main-thread Reader. Invalid/contended authority never permits a signal.
++class Session {
++public:
++    Session() = default;
++    Session(const Session&) = delete;
++    Session& operator=(const Session&) = delete;
++    bool Start(int connected_fd, const Credentials& server,
++               const EnrollmentRequest& request, ScopeProbe probe);
++    int fd(Level level) const;
++    int control_fd() const;
++    Ready Handle(Level level, uint32_t events);
++    void Stop();
++    bool active() const;
++    template <class F> Dispatch Perform(F&& operation) {
++        std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
++        if (!lock.owns_lock() || !FreshDecision() || !CheckScopeAndTransport() ||
++            !FreshDecision()) return Dispatch::Denied;
++        return std::forward<F>(operation)() ? Dispatch::Sent : Dispatch::Failed;
++    }
++
++private:
++    bool CheckScopeAndTransport();
++    bool CheckClock(uint64_t* now);
++    bool FreshDecision();
++    int Index(Level level) const;
++    void StopLocked();
++    mutable std::mutex mutex_;
++    bool attempted_ = false;
++    bool active_ = false;
++    EnrollmentClient client_;
++    std::array<Monitor, kMaxMonitors> monitors_;
++    EnrollmentGrant grant_{};
++    Scope scope_{};
++    ScopeProbe probe_{};
++    uint64_t last_clock_ns_ = 0;
++    uint64_t decision_observed_ns_ = 0;
++    uint64_t decision_window_ns_ = 0;
++};
++
++// Exact lifecycle endpoint only. This function retains each /dev/socket
++// directory component with O_NOFOLLOW, validates ownership/modes and the
++// selected socket inode before/after connect, and requires root server UID/GID.
++// Host PID may be zero in a child PID namespace; Exchange pins SO_PEERPIDFD.
++int ConnectLifecycleEndpoint(Credentials* expected_server);
++
++}  // namespace droidloom::lmkd::relay

@@ -1,0 +1,40 @@
+{
+  "scope": "Pocket4 Linux host build and ordinary IPC only; no Android, real PSI, deployment or Main changes",
+  "source_sha256": {
+    "Cargo.lock": "94876b46af35019567dfce0ea2002a6a5c6d522280d4d8da3b412dc34c5a2f03",
+    "source-manifest.json": "2d9076acfaaebc7079cba96cf49b5c14e54707fb73b5b64f80755d2023e858bd",
+    "Cargo.toml": "a4f31db859cf0606cf174779dfa520ff3ee3efdff229ecb7503f1f7e13756cd6",
+    "src/enrollment.rs": "e1bdfb6dd508b1e2e6685f09130201a1ab0d119642135c238d5252528a320e76",
+    "src/event_fixture.rs": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54",
+    "src/psi.rs": "36d5a80c13ef982e3fb0e9cc8a7a055a193ba18b15531a93fd662b9c73d92e4b",
+    "src/lib.rs": "4ac74a1c099772e90ba22287d88ec971f3c17f3ef7f550332663e745736654c7",
+    "src/lifecycle_relay.rs": "532a096effe4f3a119952031b4d47ac6368840aba57b38df9545da2162b76958",
+    "src/bin/owned_ipc_controls.rs": "33ba770340d4db205ff52a46c31aacb0e1ee4f7512f1992af8b7e16b73fcd9a0",
+    "tests/data/grant.hex": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29",
+    "tests/data/request.hex": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede"
+  },
+  "commands": [
+    {
+      "name": "build",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "   Compiling version_check v0.9.5\n   Compiling generic-array v0.14.7\n   Compiling typenum v1.20.1\n   Compiling crypto-common v0.1.7\n   Compiling block-buffer v0.10.4\n   Compiling libc v0.2.188\n   Compiling digest v0.10.7\n   Compiling cpufeatures v0.2.17\n   Compiling cfg-if v1.0.4\n   Compiling sha2 v0.10.9\n   Compiling droidloom-pressure-relay-owner-candidate v0.0.0 (/home/alex/work/pocket4-lmkd-host-admission-r11-source-02/host-admission-freeze-02)\nwarning: value assigned to `reason` is never read\n   --> src/lifecycle_relay.rs:253:21\n    |\n253 |                     reason = Some(error.to_string());\n    |                     ^^^^^^\n    |\n    = help: maybe it is overwritten before being read?\n    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: `droidloom-pressure-relay-owner-candidate` (lib) generated 1 warning\n    Finished `dev` profile [unoptimized] target(s) in 2.95s\n"
+    },
+    {
+      "name": "tests",
+      "returncode": 0,
+      "stdout": "\nrunning 7 tests\ntest enrollment::tests::cross_language_wire_vectors_and_exact_contract ... ok\ntest enrollment::tests::request_rights_are_closed_before_admission ... ok\ntest lifecycle_relay::tests::cancellation_fd_is_real_bounded_and_idempotent ... ok\ntest lifecycle_relay::tests::live_lifecycle_pidfd_is_not_a_replacement_certificate ... ok\ntest lifecycle_relay::tests::one_lifecycle_claim_survives_failure_and_concurrent_clones ... ok\ntest psi::tests::exact_thresholds_and_bounded_progress_are_not_relaxed ... ok\ntest tests::poisoned_sender_lock_revokes_existing_real_capability_without_deadlock ... ok\n\ntest result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\nrunning 2 tests\ntest event_fixture::tests::event_gate_rejects_wrong_generation_scope_threshold_sequence_future_and_exact_expiry ... ok\ntest event_fixture::tests::notification_alone_or_historical_high_cannot_certify_real_target_pressure ... ok\n\ntest result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n",
+      "stderr": "warning: value assigned to `reason` is never read\n   --> src/lifecycle_relay.rs:253:21\n    |\n253 |                     reason = Some(error.to_string());\n    |                     ^^^^^^\n    |\n    = help: maybe it is overwritten before being read?\n    = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default\n\nwarning: `droidloom-pressure-relay-owner-candidate` (lib) generated 1 warning\n   Compiling droidloom-pressure-relay-owner-candidate v0.0.0 (/home/alex/work/pocket4-lmkd-host-admission-r11-source-02/host-admission-freeze-02)\nwarning: `droidloom-pressure-relay-owner-candidate` (lib test) generated 1 warning (1 duplicate)\n    Finished `test` profile [unoptimized] target(s) in 0.63s\n     Running unittests src/lib.rs (/home/alex/work/pocket4-lmkd-host-admission-r11-source-02/target/debug/deps/droidloom_pressure_relay_owner_candidate-d20f04e214b20b30)\n     Running unittests src/bin/owned_ipc_controls.rs (/home/alex/work/pocket4-lmkd-host-admission-r11-source-02/target/debug/deps/owned_ipc_controls-60c4b61e9c75e9c4)\n"
+    },
+    {
+      "name": "ordinary-ipc",
+      "returncode": 0,
+      "stdout": "PASS host proc PID namespace matches getpid; proc and cgroup2 filesystems verified\nPASS kernel accepted credentials reject wrong UID\nPASS kernel accepted credentials reject wrong GID\nPASS pinned executable rejects a different trusted file\nPASS SO_PEERPIDFD retains dead connection generation after normal exit and reap\nPASS ordinary host child fails the required exact cgroup projection gate\nPASS owned children reaped, descriptors/socket cleaned, parent namespace/projection/membership unchanged\nRESULT PASS mode=host-negative-controls\n",
+      "stderr": ""
+    }
+  ],
+  "started_utc": "2026-11-04T13:06:22.962800+00:00",
+  "success": true,
+  "finished_utc": "2026-11-04T13:06:26.863420+00:00"
+}
+

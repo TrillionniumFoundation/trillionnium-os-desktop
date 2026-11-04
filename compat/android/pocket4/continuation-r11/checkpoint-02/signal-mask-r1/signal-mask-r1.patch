@@ -1,0 +1,276 @@
+diff --git a/guest_os_primitives/arm64/guest_context_arch.h b/guest_os_primitives/arm64/guest_context_arch.h
+--- a/guest_os_primitives/arm64/guest_context_arch.h
++++ b/guest_os_primitives/arm64/guest_context_arch.h
+@@ -72,6 +72,18 @@
+     memcpy(fpsimd->vregs, cpu->v, sizeof(fpsimd->vregs));
+   }
+ 
++  void Save(const CPUState* cpu, uint64_t interrupted_mask) {
++    Save(cpu);
++    static_assert(sizeof(ctx_.uc_sigmask) == sizeof(interrupted_mask));
++    memcpy(&ctx_.uc_sigmask, &interrupted_mask, sizeof(interrupted_mask));
++  }
++
++  uint64_t signal_mask() const {
++    uint64_t mask;
++    memcpy(&mask, &ctx_.uc_sigmask, sizeof(mask));
++    return mask;
++  }
++
+   void Restore(CPUState* cpu) const {
+     // Restore everything.
+     *cpu = cpu_;
+diff --git a/guest_os_primitives/guest_signal_handling.cc b/guest_os_primitives/guest_signal_handling.cc
+--- a/guest_os_primitives/guest_signal_handling.cc
++++ b/guest_os_primitives/guest_signal_handling.cc
+@@ -182,7 +182,11 @@
+   }
+   if (!prev_pending_signals_enabled || synchronized_undefined) {
+     CHECK_EQ(GetResidence(*thread->state()), kOutsideGeneratedCode);
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++    thread->ProcessAndDisablePendingSignals(&ucontext->uc_sigmask);
++#else
+     thread->ProcessAndDisablePendingSignals();
++#endif
+     if (prev_pending_signals_enabled) {
+       CHECK_EQ(false, thread->TestAndEnablePendingSignals());
+     }
+@@ -530,6 +534,10 @@
+ }
+ 
+ bool GuestThread::ProcessAndDisablePendingSignals() {
++  return ProcessAndDisablePendingSignals(nullptr);
++}
++
++bool GuestThread::ProcessAndDisablePendingSignals(HostSigset* host_resume_mask) {
+   for (;;) {
+     // If pending signals are not present, cas should disable them.
+     // Otherwise, process pending signals and try again.
+@@ -541,7 +549,7 @@
+     if (old_status == kPendingSignalsDisabled) {
+       return false;
+     }
+-    ProcessPendingSignalsImpl();
++    ProcessPendingSignalsImpl(host_resume_mask);
+   }
+ }
+ 
+@@ -555,7 +563,7 @@
+ 
+ // Return if another iteration is needed.
+ // ATTENTION: Can be interrupted by SetSignal!
+-void GuestThread::ProcessPendingSignalsImpl() {
++void GuestThread::ProcessPendingSignalsImpl(HostSigset* host_resume_mask) {
+   // Clear pending signals status and queue.
+   // ATTENTION: It is important to change status before the queue!
+   // Otherwise if interrupted by SetSignal, we might end up with
+@@ -568,7 +576,7 @@
+     // region digitalis
+ #if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
+     if (sa) {
+-      ProcessGuestSignal(this, sa, signal_info);
++      ProcessGuestSignal(this, sa, signal_info, host_resume_mask);
+       pending_signals_.FreeSignal(signal_info);
+     } else {
+       int signo = signal_info->si_signo;
+@@ -598,7 +606,7 @@
+     }
+ #else
+     // endregion
+-    ProcessGuestSignal(this, sa, signal_info);
++    ProcessGuestSignal(this, sa, signal_info, host_resume_mask);
+     pending_signals_.FreeSignal(signal_info);
+     // region digitalis
+ #endif
+diff --git a/guest_os_primitives/guest_signal_handling_arch.cc b/guest_os_primitives/guest_signal_handling_arch.cc
+--- a/guest_os_primitives/guest_signal_handling_arch.cc
++++ b/guest_os_primitives/guest_signal_handling_arch.cc
+@@ -36,24 +36,41 @@
+ #include "berberis/guest_os_primitives/guest_thread.h"
+ 
+ #include "guest_context_arch.h"
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++#include "scoped_guest_signal_mask.h"
++#endif
+ #include "scoped_signal_blocker.h"
+ 
+ namespace berberis {
+ 
+ void ProcessGuestSignal(GuestThread* thread, const Guest_sigaction* sa, Guest_siginfo_t* info) {
+-  // ATTENTION: action mask is ADDED to currently blocked signals!
+-  // Should be no-op if invoked from HandleHostSignal, as it must run under guest action mask!
++  ProcessGuestSignal(thread, sa, info, nullptr);
++}
++
++void ProcessGuestSignal(GuestThread* thread, const Guest_sigaction* sa, Guest_siginfo_t* info,
++                        HostSigset* host_resume_mask) {
++  // The action mask and optional self bit are temporary handler-only bits.
++  // They must not become the interrupted mask stored in guest ucontext.
+   HostSigset block_mask;
+   ConvertToBigSigset(sa->sa_mask, &block_mask);
+   if ((sa->sa_flags & SA_NODEFER) == 0u) {
+     HostSigaddset(&block_mask, info->si_signo);
+   }
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++  ScopedGuestSignalMask signal_mask(&block_mask, host_resume_mask);
++#else
++  (void)host_resume_mask;
+   ScopedSignalBlocker signal_blocker(&block_mask);
++#endif
+ 
+   // Save state to ucontext.
+   ThreadState* state = thread->state();
+   GuestContext ctx;
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++  ctx.Save(&state->cpu, signal_mask.interrupted_mask());
++#else
+   ctx.Save(&state->cpu);
++#endif
+ 
+   // region digitalis - capture pre-altstack SP for diagnostics (arm64-guest
+   // only; consumed by the forensics TRACE below).
+@@ -110,8 +127,8 @@
+     dfl.sa_handler = SIG_DFL;
+     sigaction(info->si_signo, &dfl, nullptr);
+     syscall(__NR_tgkill, GetpidSyscall(), GettidSyscall(), info->si_signo);
+-    // The re-raised signal fires once the ScopedSignalBlocker at the top of this
+-    // function unblocks it on return; nothing below should run.
++    // The re-raised signal fires when the surrounding signal-mask scope or
++    // the host signal frame unblocks it on return; nothing below should run.
+     return;
+   }
+ #endif  // NATIVE_BRIDGE_GUEST_ARCH_ARM64
+@@ -130,6 +147,11 @@
+ 
+   // Restore state from ucontext, it may be updated by the handler.
+   ctx.Restore(&state->cpu);
++#if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
++  // Commit after CPU state is restored: deferred delivery may unblock another
++  // pending signal as this scope exits. A host frame commits at host sigreturn.
++  signal_mask.Commit(ctx.signal_mask());
++#endif
+ }
+ 
+ }  // namespace berberis
+diff --git a/guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h b/guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h
+--- a/guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h
++++ b/guest_os_primitives/include/berberis/guest_os_primitives/guest_signal.h
+@@ -83,6 +83,8 @@
+ GuestAddr WrapHostSigactionForGuest(const HostStructSigaction& host_sa);
+ 
+ void ProcessGuestSignal(GuestThread* thread, const Guest_sigaction* sa, Guest_siginfo_t* info);
++void ProcessGuestSignal(GuestThread* thread, const Guest_sigaction* sa, Guest_siginfo_t* info,
++                        HostSigset* host_resume_mask);
+ 
+ // region digitalis
+ #if defined(NATIVE_BRIDGE_GUEST_ARCH_ARM64)
+diff --git a/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h b/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h
+--- a/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h
++++ b/guest_os_primitives/include/berberis/guest_os_primitives/guest_thread.h
+@@ -21,6 +21,7 @@
+ #include <csignal>  // stack_t
+ #include <memory>
+ 
++#include "berberis/base/host_signal.h"
+ #include "berberis/guest_state/guest_addr.h"
+ #include "berberis/guest_state/guest_state_opaque.h"
+ #include "berberis/runtime_primitives/signal_queue.h"
+@@ -74,6 +75,9 @@
+ 
+   // Both return *previous* pending signals status (false: disabled, true: enabled).
+   bool ProcessAndDisablePendingSignals();
++  // A non-null mask belongs to the current host signal frame. It is used only
++  // during this synchronous drain and never stored in the pending queue.
++  bool ProcessAndDisablePendingSignals(HostSigset* host_resume_mask);
+   bool TestAndEnablePendingSignals();
+ 
+   void SetSignalFromHost(const siginfo_t& info);
+@@ -118,7 +122,7 @@
+   bool AllocShadowCallStack();
+   bool AllocStaticTls();
+ 
+-  void ProcessPendingSignalsImpl();
++  void ProcessPendingSignalsImpl(HostSigset* host_resume_mask = nullptr);
+   void EnqueueHostSignal(const siginfo_t& info, bool synchronous);
+ 
+   // Set the default table for the main process.
+diff --git a/guest_os_primitives/scoped_guest_signal_mask.h b/guest_os_primitives/scoped_guest_signal_mask.h
+new file mode 100644
+--- /dev/null
++++ b/guest_os_primitives/scoped_guest_signal_mask.h
+@@ -0,0 +1,75 @@
++/* Copyright 2026 Droidloom contributors. SPDX-License-Identifier: Apache-2.0 */
++#ifndef BERBERIS_GUEST_OS_PRIMITIVES_SCOPED_GUEST_SIGNAL_MASK_H_
++#define BERBERIS_GUEST_OS_PRIMITIVES_SCOPED_GUEST_SIGNAL_MASK_H_
++
++#include <signal.h>
++#include <cstdint>
++#include <cstring>
++
++#include "berberis/base/host_signal.h"
++
++namespace berberis {
++
++// A guest handler's saved mask is the interrupted mask, before sa_mask and
++// the optional self bit are applied. A host signal frame already has those
++// temporary bits in its live mask, so that frame must supply its saved mask.
++// Deferred delivery outside a host signal frame instead captures the mask at
++// its real guest-delivery point. No frame pointer is retained past this scope.
++class ScopedGuestSignalMask {
++ public:
++  ScopedGuestSignalMask(const HostSigset* action_mask, HostSigset* host_resume_mask)
++      : host_resume_mask_(host_resume_mask) {
++    if (host_resume_mask_) {
++      interrupted_mask_ = ReadKernelMask(host_resume_mask_);
++      HostSigset live_mask{};
++      WriteKernelMask(&live_mask, interrupted_mask_ | ReadKernelMask(action_mask));
++      RTSigprocmaskSyscallOrDie(SIG_SETMASK, &live_mask, &restore_live_mask_);
++    } else {
++      RTSigprocmaskSyscallOrDie(SIG_BLOCK, action_mask, &restore_live_mask_);
++      interrupted_mask_ = ReadKernelMask(&restore_live_mask_);
++    }
++  }
++
++  ScopedGuestSignalMask(const ScopedGuestSignalMask&) = delete;
++  ScopedGuestSignalMask& operator=(const ScopedGuestSignalMask&) = delete;
++
++  ~ScopedGuestSignalMask() {
++    RTSigprocmaskSyscallOrDie(SIG_SETMASK, &restore_live_mask_, nullptr);
++  }
++
++  uint64_t interrupted_mask() const { return interrupted_mask_; }
++
++  void Commit(uint64_t guest_resume_mask) {
++    // Linux set_current_blocked() never permits SIGKILL or SIGSTOP in the
++    // restored mask, including masks edited in a user signal frame.
++    constexpr uint64_t kUnblockable =
++        (uint64_t{1} << (SIGKILL - 1)) | (uint64_t{1} << (SIGSTOP - 1));
++    guest_resume_mask &= ~kUnblockable;
++    if (host_resume_mask_) {
++      // Keep the host handler's temporary live mask until host sigreturn.
++      // Only the kernel's low 64 bits belong to this contract; glibc exposes
++      // a larger sigset_t and its trailing bytes must not be overwritten.
++      WriteKernelMask(host_resume_mask_, guest_resume_mask);
++    } else {
++      WriteKernelMask(&restore_live_mask_, guest_resume_mask);
++    }
++  }
++
++ private:
++  static uint64_t ReadKernelMask(const HostSigset* mask) {
++    static_assert(sizeof(HostSigset) >= sizeof(uint64_t));
++    uint64_t value;
++    std::memcpy(&value, mask, sizeof(value));
++    return value;
++  }
++  static void WriteKernelMask(HostSigset* mask, uint64_t value) {
++    std::memcpy(mask, &value, sizeof(value));
++  }
++
++  HostSigset* host_resume_mask_;
++  HostSigset restore_live_mask_{};
++  uint64_t interrupted_mask_ = 0;
++};
++
++}  // namespace berberis
++#endif
