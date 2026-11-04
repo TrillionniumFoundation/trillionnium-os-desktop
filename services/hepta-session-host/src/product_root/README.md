@@ -1,10 +1,18 @@
 # Original Linux product Root entry
 
 The independent Notes+Calculator successor is specified in
-[DESKTOP_PROFILE](DESKTOP_PROFILE.md). It adds an explicit v2 fresh entry and
-new original Core thread. That page records its source checkpoint and pending
-owner CLI, pin/lock, compilation and runtime acceptance; it is not a completed
-replacement for the frozen Notes product described below.
+[DESKTOP_PROFILE](DESKTOP_PROFILE.md). Its explicit v2 fresh entry, new original
+Core thread and original joint CLI/loader are now included in the source
+selected by the [shared contract](../../../../support/ui/HEPTA_SHARED_PRESENTER.json).
+The [dependency procedure](../../../../support/ui/DEPENDENCIES.md) and
+[actual source receipt](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/d27ae5dede3ebd91614b40fa6a9b47f5425f955e/results/integration/2026-11-03-organ-followup/joint-desktop-canonical14-source-20261104/README.md)
+record the completed pin/lock and fresh graph checks. The
+[Hepta execution ledger](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-agentd/DESKTOP_ORGAN_CANDIDATE.md#executed-evidence-and-remaining-gates)
+keeps earlier full-package failures and selected repairs under their actual
+sources. New-pair build, installation and effect/recovery acceptance remain
+separate gates. The sections below describe the existing finite Notes-only
+entry; its old catalog and recovery contract do not become joint-profile
+qualification.
 
 This module is the finite first-deployment entry for the original Hepta Notes
 product. It is built by the `product-root` feature of `hepta-session-host` as

@@ -2,27 +2,43 @@
 
 ## Status and exact scope
 
-This is the source integration checkpoint for the explicit
-`notes_calculator_v1` successor. It is separate from the frozen Desktop
-`fd8d56c52b971c2d5d0e6430f296803b43ef60a3` / Hepta
-`a39a0871d9601ffccb5e0d95d8f39d54b3a63360` product pair.
+This page describes the explicit `notes_calculator_v1` source successor.
+The selected original owner is authoritative in the
+[shared source contract](../../../../support/ui/HEPTA_SHARED_PRESENTER.json);
+[DEPENDENCIES](../../../../support/ui/DEPENDENCIES.md) records the matching
+Cargo entry points, locks and verification procedure. The published source
+pair is [Desktop f5](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/f5fbc7e1a533e5bec588575ab56312a3203f6d8c)
+and [Hepta 14](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/14e2d89b3367232ec5dbe6187f09feed0f2b68d3).
+The original joint Agentd CLI and sealed deployment loader are included.
 
-The App/Session parent is Desktop
-`c2c369836e87e9cf27b4dc9aa8b7446e85efdf90`
-(tree `56f2672a7eeca971870e616762b0a730bec2d32b`).
-Its preceding `5a8684cc4591a4163c162f198b4121ca4cfc6ebc` tree has actual
-Rust 1.96 core and default App/Session component receipts. Those receipts do
-not validate this later Root integration, a native Calculator window, or an
-original owner/model/effect closed loop.
+The [actual source checkpoint](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/d27ae5dede3ebd91614b40fa6a9b47f5425f955e/results/integration/2026-11-03-organ-followup/joint-desktop-canonical14-source-20261104/README.md)
+records Rust/Cargo 1.96 generation of the three consuming locks, preservation
+of the other three locks, all 39 dependency declarations and six fresh
+locked/offline metadata graphs. Original source/cache checks passed. The normal and optimized dependency
+regressions each passed 41 cases. The published full
+tree equals the clean local source-check tree; canonical checkout was then
+verified clean. These checks establish source and dependency selection, not
+a new joint product build, installation, GUI effect or recovery result.
 
-The actual original-owner API reviewed for this checkpoint is Hepta
+The [original owner's execution ledger](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-agentd/DESKTOP_ORGAN_CANDIDATE.md#executed-evidence-and-remaining-gates)
+retains the actual 26a four-package failures, the exact 47 custody repair and
+the separate 857d/92a seed component. Earlier App/Session evidence belongs to
+Desktop 5a and its c2 successor. Neither those results nor the previously
+installed fd/a39 Notes baseline qualify this later joint Root integration.
+Fresh builds and the real original human/Core/Notes/Calculator sequence must
+record their own exact source pair and artifacts.
+
+The earlier API review used Hepta
 `c1f336cf50cc6c3bcf47da059e767273499506f0`
-(tree `7191691322d070f97b885487eeb59c5936546b18`). Its Root source is saved,
-but the joint Agentd CLI, final shared dependency pin/locks, Cargo checks and
-joint runtime acceptance are not complete at this checkpoint. The current
-Cargo manifests still select the frozen a39 dependency. This source checkpoint
-must not be installed or described as a buildable, qualified new pair until
-the explicit pending steps below are completed.
+(tree `7191691322d070f97b885487eeb59c5936546b18`). Its then-pending CLI and
+a39 dependency selection are historical checkpoint limitations; they are
+not the current source selection. The active contract above now binds the
+reviewed joint implementation and generated locks.
+
+This remains a finite original-owner session with the existing maximum
+300,000 ms lifetime. Continuous reauthorization and epoch continuation are
+not implemented. The joint profile has no qualified restart/recovery path;
+the old Notes-only recovery entry cannot be used for it.
 
 ## Selection and compatibility
 
@@ -144,7 +160,9 @@ retain their old meanings. Historical evidence remains in place.
 | `mod.rs` | Explicit Agentd FD routing, original prepared factory, separate composition receipt |
 | `../bin/hepta-desktop-root.rs` | Distinct `initialize-desktop` action |
 
-After the owner CLI and one exact shared new Hepta pin/lock graph exist, run:
+The CLI and shared pin/lock prerequisites are now in the selected source.
+Run the original checks on that exact clean pair and retain their actual
+results; the following commands are instructions, not passed-run claims:
 
 ```sh
 cargo test --manifest-path services/hepta-session-host/Cargo.toml \
@@ -162,21 +180,23 @@ They do not start an issuer, model or real application. Existing real-owned
 process and App/Session tests retain their separate scopes. Rustfmt can check
 syntax without resolving dependencies; it is not a Rust type check.
 
-Pending before a new pair can be selected:
+Remaining product and verification gates:
 
-- Complete and review the original Agentd CLI/loader against the actual
-  sealed joint deployment and held Session pidfd.
-- Pin every relevant Desktop workspace to one reviewed new original Hepta
-  commit, regenerate the original lock graph and pass meaningful original
-  owner, Objective and Root contract tests.
-- Verify the original writer's raw Calculator Applied/readback/ACK fixture
-  across implementations and retain its durable terminal/retirement proof.
+- Build and test the selected pair's original owner, Objective, production
+  Agentd binary and Desktop Root entry using the original features and locks.
+  Preserve the full 26a red results and the narrower 47 repair from the owner
+  ledger; a selected pass cannot replace a complete package result.
+- Keep the cross-implementation raw Calculator Applied/readback/ACK fixture
+  and original typed terminal/retirement checks in component validation.
+  Their existing fixture results do not establish an installed Root grant
+  or a real application effect.
 - Run a fresh isolated native original-owner session with the explicit new
   thread/profile, actual Notes and Calculator Apps, original human/Core
   callback, checked effect, independent readback and causal receipt.
 - Exercise same-turn cross-target refusal and Unknown observation without
   retry. Confirm actual Session lifetime closes idle Apps. Retain partial
   startup and failure receipts without inventing successful effects.
-- Review the resulting new exact pair before any deployment or change to
-  the frozen product. Joint recovery remains unsupported until separately
-  implemented and verified.
+- Bind each build, installation and run to its own source pair, package,
+  binary and resource identities. Preserve the previous installed fd/a39
+  baseline and its failures. Joint recovery and continuous authority renewal
+  remain separate unimplemented or unqualified conditions.
