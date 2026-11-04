@@ -398,6 +398,24 @@ pub(crate) fn handle_syscall(ctx: &Context, user_ctx: &mut UserContext) {
             }
         }
         Err(err) => {
+            // Temporary bounded G2 diagnosis. This records the actual failing
+            // process/syscall without changing any errno, credential or deadline.
+            use core::sync::atomic::{AtomicUsize, Ordering};
+            static EACCES_DIAGNOSTICS: AtomicUsize = AtomicUsize::new(0);
+            if err.error() == Errno::EACCES
+                && EACCES_DIAGNOSTICS
+                    .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |count| {
+                        count.checked_add(1).filter(|next| *next <= 16)
+                    })
+                    .is_ok()
+            {
+                ostd::warn!(
+                    "native G2 EACCES diagnostic: pid={} syscall={} errno={}",
+                    current!().pid(),
+                    syscall_frame.syscall_number,
+                    err.error() as i32
+                );
+            }
             debug!("syscall return error: {:?}", err);
             let errno = err.error() as i32;
             user_ctx.set_syscall_ret((-errno) as usize)
