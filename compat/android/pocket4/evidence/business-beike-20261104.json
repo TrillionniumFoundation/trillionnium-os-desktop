@@ -1,0 +1,136 @@
+{
+  "schema": "pocket4-business-flow-public-summary-v1",
+  "app": "Beike",
+  "package": "com.lianjia.beike",
+  "flow": "r10/business-flows/beike-01",
+  "evidence_date_utc": "2026-11-04",
+  "status": "BLOCKED_LOGIN_ROUTER_BLANK_PAGE",
+  "production_ready": false,
+  "runtime_binding": {
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+    "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
+  },
+  "evidence_basis": "Publication/app evidence agent executed this bounded same-epoch flow, inspected the archived screenshot and read the retained App/framework lifecycle records.",
+  "public_city": "北京",
+  "public_query": "望京",
+  "launch_verified": true,
+  "unicode_query_exact_readback_verified": true,
+  "matching_region_and_community_suggestions_verified": true,
+  "region_suggestion_selected_once": true,
+  "listing_results_verified": false,
+  "listing_detail_verified": false,
+  "in_app_return_verified": false,
+  "reopen_verified": false,
+  "programmatic_set_text_is_not_ime_qualification": true,
+  "mutation_outcome_unknown": false,
+  "automatic_action_retry": false,
+  "blank_observations": [
+    {
+      "step": "08-results-dump",
+      "at_utc": "2026-11-04T10:04:10.222547+00:00",
+      "visible_nodes": 7,
+      "meaningful_controls": 0,
+      "source_sha256": "a8924c8e6875629ff1ff822c19291af4b235692807e66647fd271c07a961de6a"
+    },
+    {
+      "step": "09-results-observe",
+      "at_utc": "2026-11-04T10:06:48.764786+00:00",
+      "visible_nodes": 7,
+      "meaningful_controls": 0,
+      "source_sha256": "57de7ab45b6cc5cd440e4e37b89fc6c20fc61ac78de4cc77dda5612ebb8627e5",
+      "original_png_sha256": "5fe404d93ba65339186d25babb15f33571670cb8c88c843432ee962e3f3595f0",
+      "original_dimensions": [
+        1200,
+        1520
+      ],
+      "private_visual_review": "A white App surface with no visible content or controls; reviewed via a private resized JPEG. This is not merely a missing accessibility tree."
+    }
+  ],
+  "lifecycle": {
+    "app_selected_results_activity_at_utc": "2026-11-04T10:03:35.561Z",
+    "results_activity": "com.liajia.biz.msearch.result.MultipleSearchResultActivity",
+    "automatic_login_route_at_utc": "2026-11-04T10:03:38.352Z",
+    "route": [
+      "com.homelink.android.account.OneLoginRouterActivity",
+      "com.lianjia.sdk.uc.business.UcOneLoginActivity",
+      "com.lianjia.sdk.uc.business.LoginActivity"
+    ],
+    "one_login_finish_reason": "app-request",
+    "login_finish_at_utc": "2026-11-04T10:03:39.836Z",
+    "login_finish_reason": "clear-task-stack",
+    "second_login_route": "App-originated LAUNCH_SINGLE_TASK login intent returned to the already existing OneLoginRouterActivity; start result code 3 and wm_new_intent were recorded.",
+    "top_activity_before_close": "com.homelink.android.account.OneLoginRouterActivity",
+    "top_activity_source_sha256": "cb4df8ecee67b423302b7975b82963132bf07b72d4c40c249134d3c0132775fe",
+    "helper_mutation_between_region_click_and_diagnostics": false,
+    "global_task_removal_or_framework_restart": false,
+    "reason_for_app_second_login_route": "Not established."
+  },
+  "actual_engine_mapping": {
+    "verified": true,
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "mapping_rows": 4,
+    "receipt_sha256": "ce0357e34cef7fdaffc0387740cb1d148f2d305ad39664a31ccb4822f8373aa8"
+  },
+  "preclose_exit_history": {
+    "at_utc": "2026-11-04T10:09:23.156012+00:00",
+    "fresh_app_exit_observed": false,
+    "latest_record_at_utc": "2026-11-04T03:00:54.537Z",
+    "latest_record_type": "Historical remove-task",
+    "stdout_sha256": "a177aa9ae4d404081ec880b1a87cb5f65ea8ff71da7b343740b6184ff7c4c29b"
+  },
+  "normal_close": {
+    "at_utc": "2026-11-04T10:11:58.094989+00:00",
+    "receipt_sha256": "52f2959c9a2e5f97ae6ce3443897da9e14fa879efd6ad90c96e6bac7c4ca4a0c",
+    "new_owned_leaf_removed": true,
+    "other_tasks_preserved": true,
+    "only_preexisting_home_remained": true,
+    "outcome_unknown": false,
+    "controller_start_response_timed_out": true,
+    "same_idempotency_key_reconciled_original_job": true,
+    "remote_job_reused": true,
+    "action_replayed": false
+  },
+  "recorded_resource_observations": {
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "full_psi_avg10_at_samples": 0,
+    "memory_current_after_close_bytes": 5103980544,
+    "continuous_monitoring": false,
+    "pressure_causality_inferred": false
+  },
+  "diagnostics": {
+    "captured_after_close": true,
+    "uid_log_from_flow_time": {
+      "original_sha256": "7f7357a7db1a42fdd1c7f86555f0f8cedf5c2dc628b3e6d37ae2edfb8461d09d",
+      "bytes": 731678,
+      "first_retained_timestamp_utc": "2026-11-04T09:51:48.067Z",
+      "last_retained_timestamp_utc": "2026-11-04T10:21:06.212Z"
+    },
+    "framework_lifecycle_log": {
+      "original_sha256": "8dd578194a74a0917694f1fc53d249765a3869df7fa2df0f90ae50c45d7bfd90",
+      "bytes": 28993
+    },
+    "prior_tail_capture_retained": true,
+    "prior_tail_did_not_cover_white_page_interval": true,
+    "webview_update_after_close": {
+      "version": "145.0.7632.218",
+      "installed_enabled_and_valid": true,
+      "relros_started": 1,
+      "relros_finished": 1,
+      "is_root_cause_proof": false
+    }
+  },
+  "images_or_raw_logs_published": false,
+  "authentication_performed": false,
+  "authentication_bypassed": false,
+  "claim_limits": [
+    "The initial white-page observation is retained and refined by the later activity/log evidence: it was the login router, not a proven blank listing-results renderer.",
+    "No specific network, SDK, authentication service or WebView cause has been established.",
+    "No new account login, transaction, clear-data, force-stop or global task removal was performed."
+  ]
+}

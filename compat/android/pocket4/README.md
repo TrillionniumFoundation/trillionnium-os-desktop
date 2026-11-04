@@ -1,6 +1,6 @@
 # Pocket4 Android application repair snapshot
 
-Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Application business flows and LMKD integration still need acceptance.
+Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Business acceptance is in progress: Bilibili public search and visual playback passed; Marriott still has a fresh native crash, and Beike reaches a blank login router. LMKD integration remains unqualified.
 
 This directory preserves repair source and dated evidence for Android 17 in DroidLoom on the Pocket4 Linux host. These results do not qualify Android on this repository's Asterinas kernel.
 
@@ -15,6 +15,16 @@ The [native bridge bundle](native-bridge/README.md) preserves R15 alarm semantic
 [Main activation](evidence/main-activation-20261104.json) completed verification at 08:55:13 UTC: presenter `47f34d5f…`, R16 engine `c8b9bae4…`, a new framework epoch, 182 packages and 362 existing application directories preserved with UID/data identity and resource limits. OOM counters remained zero. The summary identifies the actual parent verification records used; it is not another runtime execution by the publication agent.
 
 The [LMKD bundle](lmkd/README.md) reconstructs r3/r4/r5 sources, includes scoped controls and retains failed pressure trials. **r4/b099 must not deploy:** a real trial lost its foreground process. Separate r5 is Android-built but has no protocol/pressure canary or Main deployment. Its new-unit `-MD` records improve dependency evidence; four reused objects still have a historical system-header gap. Main currently uses the drain/ACK-only compatibility service, so a file replacement alone cannot establish LMKD integration.
+
+## Current business observations
+
+All three records are bound to the verified post-activation framework epoch. [Business acceptance](acceptance/business-flows/README.md) separates completed subflows from untested behavior.
+
+| App | Current evidence | Remaining gate |
+| --- | --- | --- |
+| Bilibili | Public Unicode search, matching video, three visually inspected frames showing content progression, actual R16 mapping and normal owned-task close. | Audio, pause/seek, in-app back, reopen and broader App behavior remain untested. |
+| Marriott | Fresh exact-App SIGSEGV during the single launch; no completed task receipt. | Launch and all business behavior remain failed/unqualified; the original unknown launch result is retained. |
+| Beike | Exact Chinese query and matching suggestions passed. Selecting the region automatically entered login; an App-originated second login intent removed LoginActivity and left OneLoginRouterActivity blank. | Listing results/details/return are blocked. No login was performed; the reason for the repeated login route is unresolved. |
 
 ## Acceptance scope
 

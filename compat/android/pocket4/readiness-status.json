@@ -934,21 +934,27 @@
   "coverage_gaps": [
     "No new qualified CEAIR or Hyatt business result was found in the audited Nov4 runs.",
     "This is an audited evidence subset, not a complete installed-package inventory.",
-    "Authenticated, transactional, persistence and extended lifecycle flows remain unqualified where not separately evidenced."
+    "Authenticated, transactional, persistence and extended lifecycle flows remain unqualified where not separately evidenced.",
+    "Fresh current-epoch results cover only the explicitly listed flows; Bilibili audio/back/reopen, Beike authenticated results/details, Marriott launch and the remaining App queue remain unqualified."
   ],
   "next_business_tests": [
     {
       "apps": [
-        "Bilibili",
+        "Bilibili"
+      ],
+      "flow": "Complete audio, pause/seek, in-app return and separately scoped normal reopen; retain the successful current-epoch visual progression."
+    },
+    {
+      "apps": [
         "Douyin"
       ],
-      "flow": "Search/select public content, confirm actual playback and progress, navigate back, reopen."
+      "flow": "Fresh public search, actual visual playback/progress, in-app return and normal close; no current-epoch business result yet."
     },
     {
       "apps": [
         "Beike"
       ],
-      "flow": "Public listing search, matching listing detail, return with query state preserved."
+      "flow": "Diagnose the App-originated login-route loop/blank router, then verify a legitimate public or already-authorized authenticated listing flow; no login bypass."
     },
     {
       "apps": [
@@ -990,7 +996,7 @@
     }
   ],
   "current_runtime_blocker": {
-    "status": "REPAIR_ACTIVATED_AWAITING_BUSINESS_REQUALIFICATION",
+    "status": "REPAIR_ACTIVATED_BUSINESS_ACCEPTANCE_IN_PROGRESS",
     "at_utc": "2026-11-04T05:48:03Z",
     "cause": "Composer exited after a zero presentation timestamp violated the existing monotonic contract; init restarted the Android framework.",
     "evidence": "evidence/framework-restart-20261104.json",
@@ -1006,7 +1012,7 @@
   },
   "presenter_candidate": {
     "source_commit": "568f3cea524ec80d09ed42fdcff15f90b870120b",
-    "status": "MAIN_DEPLOYED_FRESH_BUSINESS_REQUALIFICATION_PENDING",
+    "status": "MAIN_DEPLOYED_BUSINESS_ACCEPTANCE_IN_PROGRESS",
     "binary_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
     "host_checks_passed": 68,
     "existing_host_microbenchmark_ignored": 1,
@@ -1017,7 +1023,7 @@
     "main_activation_evidence": "evidence/main-activation-20261104.json"
   },
   "native_bridge_candidates": {
-    "status": "R16_MAIN_DEPLOYED_FRESH_APP_ACCEPTANCE_PENDING",
+    "status": "R16_MAIN_DEPLOYED_BUSINESS_ACCEPTANCE_IN_PROGRESS",
     "source_bundle": "native-bridge/",
     "source_reconstruction_verified": {
       "translator_stage_file_counts": [
@@ -1067,7 +1073,8 @@
     "actual_application_fixes_verified": false,
     "production_ready": false,
     "canary_evidence": "native-bridge/qualification/evidence/three-arm-summary.json",
-    "main_activation_evidence": "evidence/main-activation-20261104.json"
+    "main_activation_evidence": "evidence/main-activation-20261104.json",
+    "scoped_business_validation": "Bilibili public search and visual playback passed on the deployed runtime. Causal attribution to one repair is not established. Marriott still crashes; Beike reaches a blank login router."
   },
   "lmkd_candidate": {
     "status": "DO_NOT_DEPLOY_MAIN",
@@ -1096,7 +1103,7 @@
     },
     "actual_main_integration": "lmkd/evidence/r5-build/main-integration-summary.json"
   },
-  "updated_at_utc": "2026-11-04T08:57:11.209905+00:00",
+  "updated_at_utc": "2026-11-04T10:27:59.851463+00:00",
   "main_activation": {
     "schema": "pocket4-main-activation-public-summary-v1",
     "evidence_basis": "Parent actual verification stdout, authoritative rc0 status, and read-only saved-after review; publication agent inspected cached records, not complete private after JSON.",
@@ -1131,5 +1138,41 @@
     "presenter_and_native_only": true,
     "per_app_actual_engine_mapping_requires_fresh_flow": true,
     "production_ready": false
+  },
+  "current_business_flows": [
+    {
+      "app": "Bilibili",
+      "package": "tv.danmaku.bili",
+      "status": "PASS_SCOPED_SEARCH_VISUAL_PLAYBACK_AND_OWNED_CLOSE",
+      "production_ready": false,
+      "evidence": "evidence/business-bilibili-20261104.json",
+      "query_and_visual_progress": true,
+      "audio_and_reopen_verified": false
+    },
+    {
+      "app": "Marriott",
+      "package": "com.marriott.mrt",
+      "status": "FAIL_NATIVE",
+      "production_ready": false,
+      "evidence": "evidence/business-marriott-20261104.json",
+      "fresh_exact_app_sigsegv": true
+    },
+    {
+      "app": "Beike",
+      "package": "com.lianjia.beike",
+      "status": "BLOCKED_LOGIN_ROUTER_BLANK_PAGE",
+      "production_ready": false,
+      "evidence": "evidence/business-beike-20261104.json",
+      "query_suggestions_verified": true,
+      "listing_details_verified": false
+    }
+  ],
+  "current_business_flow_runtime": {
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+    "deployed_engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "deployed_presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
   }
 }
