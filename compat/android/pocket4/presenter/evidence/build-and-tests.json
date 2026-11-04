@@ -1,0 +1,78 @@
+{
+  "schema": "pocket4-presenter-build-verification-v1",
+  "recorded_at_utc": "2026-11-04",
+  "status": "BUILT_NOT_MAIN_DEPLOYED",
+  "source_public_manifest_sha256": "a594a722b734c930ef39f9724dadd73ba7fe9ba53098b94a58caf1e29302b331",
+  "recorded_candidate_commit": "568f3cea524ec80d09ed42fdcff15f90b870120b",
+  "binary": {
+    "name": "droidloom-wayland",
+    "bytes": 7026568,
+    "sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "profile": "release",
+    "published": false
+  },
+  "toolchain": "rustc 1.93.0 (254b59607 2026-01-19)\nbinary: rustc\ncommit-hash: 254b59607d4417e9dffbc307138ae5c86280fe4c\ncommit-date: 2026-01-19\nhost: x86_64-unknown-linux-gnu\nrelease: 1.93.0\nLLVM version: 21.1.8\n",
+  "cargo_lock_sha256": "c1dfa6f13f789cf40435d0d72973d029d0e264b27bd833eabb5a727492127f62",
+  "commands": {
+    "candidate_tests": [
+      "cargo",
+      "test",
+      "--locked",
+      "-j",
+      "1",
+      "-p",
+      "droidloom-denial-endpoint",
+      "-p",
+      "droidloom-denial-ipc",
+      "-p",
+      "droidloom-wayland",
+      "--",
+      "--test-threads=2"
+    ],
+    "release_build": [
+      "cargo",
+      "build",
+      "--release",
+      "--locked",
+      "-j",
+      "1",
+      "-p",
+      "droidloom-wayland"
+    ]
+  },
+  "build_returncode": 0,
+  "baseline": {
+    "test": "presentation_zero_timing_never_reaches_android_and_valid_feedback_recovers",
+    "result": "EXPECTED_FAILURE",
+    "real_wire": true,
+    "failure": "invalid presentation timing crossed the Android wire",
+    "original_receipt_sha256": "0140f5fa19012b20ffa5e5a0409cb4ca4dc2b7e881df32d08bb28d19413a5594"
+  },
+  "candidate_host_tests": {
+    "passed": 68,
+    "failed": 0,
+    "ignored": 1,
+    "ignored_reason": "Existing local socket microbenchmark",
+    "scope": [
+      "Denial endpoint",
+      "Denial IPC",
+      "Wayland presenter and its included integration tests"
+    ],
+    "original_receipt_sha256": "62f8a35929a8c7853d4324bb7ecec63a75529ce27ad11570399e344d6dda4afc"
+  },
+  "composer_controls": {
+    "passed": 2,
+    "scope": "Existing presentation controls; monotonic Android core contract retained"
+  },
+  "scope_limits": [
+    "The 70 passed checks do not qualify every inherited supervisor, audio or source-builder change.",
+    "This is a host presenter build and source verification, not a full Android image build or app business qualification.",
+    "System link libraries and the complete toolchain installation are not archived; byte-for-byte binary reproduction on an independent host is not claimed.",
+    "No Main deployment occurred in this snapshot."
+  ],
+  "original_receipt_hashes": {
+    "release": "efe28e8fba8b0971aca3aa112d9fbfddd5c680887d2a4af238b589980e2f18d8",
+    "source_freeze": "043f90a728833a1ce2545d091a6105c392ef7218eb649601490c54ddb7f40877",
+    "build": "e435637388bd7561d8cf1e00df8dd6d0674e789a8c3c670feb20d8ed69774534"
+  }
+}

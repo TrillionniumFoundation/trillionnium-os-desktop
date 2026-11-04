@@ -160,7 +160,8 @@
         15
       ],
       "notes": [
-        "GMS_ENVIRONMENT_ERROR."
+        "Historical Google Play environment alert. Current read-only inspection finds enabled/installed microG GmsCore 0.3.17.252432 and Play Store 0.3.17.40226; missing or disabled package is not established.",
+        "TextFree 13.28, minSdk 32, targetSdk 36, arm64. A specific API or attestation root cause has not been established; fresh epoch launch/log verification remains pending."
       ],
       "business_verified_in_this_run": false,
       "cold_start_verified": false,
@@ -968,5 +969,16 @@
     "host_real_process_tests_passed": 10,
     "live_read_only_check_passed": true,
     "installed_helper_replaced": false
+  },
+  "presenter_candidate": {
+    "source_commit": "568f3cea524ec80d09ed42fdcff15f90b870120b",
+    "status": "BUILT_NOT_MAIN_DEPLOYED",
+    "binary_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "host_checks_passed": 68,
+    "existing_host_microbenchmark_ignored": 1,
+    "composer_controls_passed": 2,
+    "real_zero_wire_negative_control_failed_as_expected": true,
+    "source_bundle": "presenter/",
+    "business_requalification_pending": true
   }
 }
