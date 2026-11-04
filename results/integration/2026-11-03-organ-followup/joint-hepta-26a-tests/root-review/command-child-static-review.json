@@ -1,0 +1,31 @@
+{
+  "schema": "trill.appserver-command-child-static-review.v1",
+  "source_head": "26a46e3fe763b53e1f0362793701f112383a72fa",
+  "original_observed_failure": {
+    "raw_window_sha256": "fbf5b9098ddae783ffc7752d55434808f902019486a0c08f95085cb01839e46a",
+    "attempts": 2,
+    "scope": "Original full AppServer suite; no new reproduction was run by this review. The same fixture-owned command marker remained observable after the original five-second disconnect observation."
+  },
+  "static_trace": [
+    {
+      "file": "codex-rs/app-server/src/command_exec.rs",
+      "finding": "connection_closed removes this connection's sessions and sends their existing Terminate control; run_command forwards it to the owned ProcessHandle."
+    },
+    {
+      "file": "codex-rs/utils/pty/src/pipe.rs",
+      "finding": "On Linux the original pipe terminator addresses the recorded original process group. The original waiter observes and reaps the immediate child."
+    },
+    {
+      "file": "codex-rs/utils/pty/src/process.rs",
+      "finding": "request_terminate consumes the terminator and discards the kill result. A successful control enqueue is not by itself evidence that the whole descendant tree exited."
+    }
+  ],
+  "unresolved": [
+    "The retained failure has no kill return value or original parent-process identity trace that uniquely establishes why descendants remained.",
+    "Process-group signal success and immediate-child exit cannot be substituted for complete process-tree retirement or global recovery reserve."
+  ],
+  "recommended_product_boundary": "Preserve original ownership and cancellation identity, propagate actual termination errors and use a verified task-tree containment/reaping boundary before claiming retirement. The native organ work needs its own explicit process-tree memory and independent recovery accounting.",
+  "production_sources_changed": false,
+  "new_test_executions": 0,
+  "unique_root_cause_established": false
+}

@@ -1,0 +1,344 @@
+{
+  "schema": "hepta.g2-a286-build-cache-evidence-index.v1",
+  "desktop_head": "a286e0f922bf8e439e8951ae1538abeac0b26477",
+  "files": [
+    {
+      "path": "source-v1-failure/result.json",
+      "bytes": 3263,
+      "sha256": "86a54a44d8e7a64677b5bc32c6cb79ff39ebdff0b2168a93d93af1d27666a632",
+      "scope": "Failed source preparation: omitted upstream tree, before checkout or build",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/owner-a286-source-preparation-v1/result.json",
+        "rpc_wrapper": "owner-a286-source-result-read.json"
+      }
+    },
+    {
+      "path": "source-v2/result.json",
+      "bytes": 10189,
+      "sha256": "632786c1130df3bd6237abd6a08f5b2b20b54ac77a605b63e8b5dd590dab1d24",
+      "scope": "Verified depth-two independent source, no kernel qualification",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/owner-a286-source-preparation-v2/result.json",
+        "local_raw_path": "/workspace/scratch/92e2482fa623/f1-work/owner-a286-source-v2-result.json"
+      }
+    },
+    {
+      "path": "owner-build/result.json",
+      "bytes": 8679,
+      "sha256": "fcec381e0a93de928e46d5fd75afcff192bc755e163c41fd66690eef7de39138",
+      "scope": "Original warm owner build; exact image only, not guest effect",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-build-v1/result.json",
+        "local_raw_path": "/workspace/scratch/92e2482fa623/f1-work/owner-exact-a286-build-result.json"
+      }
+    },
+    {
+      "path": "kernel-v1/pipeline.json",
+      "bytes": 3752,
+      "sha256": "ba76eb216e9f39cc9eab2f7eb9ffed9cc60e33a867293d451b00e8d856046c1f",
+      "scope": "Failed OSDK online registry transfer; no kernel stage",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v1/pipeline.json",
+        "local_raw_path": "/workspace/scratch/92e2482fa623/f1-work/owner-exact-a286-kernel-v1-final.json"
+      }
+    },
+    {
+      "path": "kernel-v1/osdk-build.log",
+      "bytes": 41804,
+      "sha256": "395ff36ee4affb5727deff70f93786c47e9caa02f19686f7c3212a4e2726294b",
+      "scope": "Complete captured OSDK error log with final miniz_oxide download failure",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v1/osdk-build.log",
+        "local_raw_path": "/workspace/scratch/92e2482fa623/f1-work/owner-exact-a286-osdk-progress-01.log"
+      }
+    },
+    {
+      "path": "kernel-v2/pipeline.json",
+      "bytes": 4369,
+      "sha256": "31fa0e1f5dbf686d8c2fd73a6ff433dc6a42b4fb21adbf021564e328b268ca39",
+      "scope": "Final pipeline: original OSDK succeeds, kernel fails before compilation on build-std getopts",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v2/pipeline.json",
+        "local_raw_path": "/workspace/scratch/92e2482fa623/f1-work/owner-exact-a286-kernel-v2-progress-02.json"
+      }
+    },
+    {
+      "path": "kernel-v2/g2-kernel.log",
+      "bytes": 2127,
+      "sha256": "bbceeae15b96b9ad7e490e820af18346fe435ca8005550cff0bdbded029596d8",
+      "scope": "Original kernel command error; no guest or completed kernel compile",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v2/g2-kernel.log",
+        "local_raw_path": "/workspace/scratch/92e2482fa623/f1-work/owner-exact-a286-kernel-v2-failure.log"
+      }
+    },
+    {
+      "path": "kernel-v2/osdk-compilation-snapshot.log",
+      "bytes": 3501,
+      "sha256": "55f9c17bbc122a6b4aa8d0c9fd81ec24106ae66a9d12b29eeb0d54e45e28830f",
+      "scope": "Snapshot during OSDK compilation, not its final complete log",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v2/osdk-build.log",
+        "local_raw_path": "/workspace/scratch/92e2482fa623/f1-work/owner-exact-a286-osdk-v2-progress-01.log"
+      }
+    },
+    {
+      "path": "cache-inventory/summary.json",
+      "bytes": 52017,
+      "sha256": "4fd47e0a74f27b9661efb850210a8e1f88bb95c6de7c0f4a67e97b6171d29925",
+      "scope": "Two project locks inspected; mixed-case loongArch64 index path false miss corrected by later admission",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/original-kernel-dependency-cache-a286-v1/summary.json",
+        "local_raw_path": "/workspace/scratch/92e2482fa623/f1-work/owner-a286-cache-summary.json"
+      }
+    },
+    {
+      "path": "cache-admission/result.json",
+      "bytes": 78503,
+      "sha256": "5de12d2000e41878e92358ec54f0282694f6a6e8db01a6391ec56b102ba1d7da",
+      "scope": "Create-only SHA-checked 143 archives, 17,952,022 bytes; no source cache or lock changes",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/original-kernel-cache-admission-a286-v1/result.json",
+        "local_raw_path": "/workspace/scratch/92e2482fa623/f1-work/owner-a286-cache-admission-result.json"
+      }
+    },
+    {
+      "path": "source-v1-failure/process-status.json",
+      "bytes": 475,
+      "sha256": "96f902ffcd3b140d8410b67a59bae424b31243eb34b7ac2e6ab8a02721a0f9d8",
+      "scope": "Original authoritative runtime status text",
+      "origin": {
+        "host": "main",
+        "rpc_wrapper": "owner-a286-source-status.json"
+      }
+    },
+    {
+      "path": "source-v2/process-status.json",
+      "bytes": 478,
+      "sha256": "808d742134a9673a037764a14fc669207664e9142c3a688aac29132657522226",
+      "scope": "Original authoritative runtime status text",
+      "origin": {
+        "host": "main",
+        "rpc_wrapper": "owner-a286-source-v2-status.json"
+      }
+    },
+    {
+      "path": "owner-build/process-status.json",
+      "bytes": 480,
+      "sha256": "403c2303c9578176c4c9a24551357892acfa8742616746eab465da3157f07a19",
+      "scope": "Original authoritative runtime status text",
+      "origin": {
+        "host": "main",
+        "rpc_wrapper": "owner-exact-a286-build-status.json"
+      }
+    },
+    {
+      "path": "kernel-v1/process-status.json",
+      "bytes": 475,
+      "sha256": "cf0b0516e44ae60cce4fd9f0341797ca9d06d9df07e01a35a1fb7df5b68e41ac",
+      "scope": "Original authoritative runtime status text",
+      "origin": {
+        "host": "main",
+        "rpc_wrapper": "owner-exact-a286-kernel-status.json"
+      }
+    },
+    {
+      "path": "cache-admission/process-status.json",
+      "bytes": 478,
+      "sha256": "5897e77926eb52c2c5af1c74110fc6cb96fdb65a873ab63ed8a424fd8fb1ad39",
+      "scope": "Original authoritative runtime status text",
+      "origin": {
+        "host": "main",
+        "rpc_wrapper": "owner-a286-cache-admission-status.json"
+      }
+    },
+    {
+      "path": "cache-admission/process.stdout",
+      "bytes": 181,
+      "sha256": "b8847708f70d665f68921c5fbe0fdc09e6574e3154822f11c5b76101aab65054",
+      "scope": "Complete original cache preparation process log",
+      "origin": {
+        "host": "main",
+        "job_id": "1a1a3a5c43e-96a-7729",
+        "stream": "stdout",
+        "rpc_wrapper": "owner-a286-cache-admission-read.json"
+      }
+    },
+    {
+      "path": "cache-admission/process.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "scope": "Complete original cache preparation process log",
+      "origin": {
+        "host": "main",
+        "job_id": "1a1a3a5c43e-96a-7729",
+        "stream": "stderr",
+        "rpc_wrapper": "owner-a286-cache-admission-read.json"
+      }
+    },
+    {
+      "path": "read-errors/owner-exact-a286-kernel-v2-status.json",
+      "bytes": 246,
+      "sha256": "40f5c0723f406fd7e10160a17966f704dc082b9ed1311b1bed09870a22b3b7b1",
+      "scope": "MCP read timeout only; no claim that target file is absent or that build failed for transport reasons",
+      "origin": {
+        "kind": "original_tool_response"
+      }
+    },
+    {
+      "path": "read-errors/fixed-nightly-library-lock-read.json",
+      "bytes": 243,
+      "sha256": "d10921286da066a624dd79bbb60c37c87194bc19932e0a0942fd4a9dfec9a6e0",
+      "scope": "MCP read timeout only; no claim that target file is absent or that build failed for transport reasons",
+      "origin": {
+        "kind": "original_tool_response"
+      }
+    },
+    {
+      "path": "read-errors/owner-a286-generated-kernel-lock-info.json",
+      "bytes": 241,
+      "sha256": "727b64a24320d24e73c8ad8e04ddea02c3956d94f2ffb289d8ee588f06aafbc7",
+      "scope": "MCP read timeout only; no claim that target file is absent or that build failed for transport reasons",
+      "origin": {
+        "kind": "original_tool_response"
+      }
+    },
+    {
+      "path": "operations/prepare_owner_a286_owned_source.py",
+      "bytes": 7260,
+      "sha256": "9615c9626088e7daf293ed9ff93a2fa9b7c6171a74abd673ca7688511422b75f",
+      "scope": "Local operational source; outside reviewed product source, no standalone runtime qualification",
+      "origin": {
+        "kind": "task_local_operational_source"
+      }
+    },
+    {
+      "path": "operations/finalize_owner_a286_owned_source.py",
+      "bytes": 8316,
+      "sha256": "0fa40af55da754cd1f90f8e17dc9637be1a9a9f7fd23da9a65aeb083d74ac507",
+      "scope": "Local operational source; outside reviewed product source, no standalone runtime qualification",
+      "origin": {
+        "kind": "task_local_operational_source"
+      }
+    },
+    {
+      "path": "operations/audit_original_kernel_dependency_cache.py",
+      "bytes": 7465,
+      "sha256": "8bac0e353ee9a03a58269e7344ce4c32f7635e0b901de95b70b3eb851bfbe180",
+      "scope": "Local operational source; outside reviewed product source, no standalone runtime qualification",
+      "origin": {
+        "kind": "task_local_operational_source"
+      }
+    },
+    {
+      "path": "operations/admit_original_kernel_cached_archives.py",
+      "bytes": 7914,
+      "sha256": "d6524d20358cb870a206c55ffa9bb3e2053415137ae1718ef16f7073e1a51b9a",
+      "scope": "Local operational source; outside reviewed product source, no standalone runtime qualification",
+      "origin": {
+        "kind": "task_local_operational_source"
+      }
+    },
+    {
+      "path": "operations/run_exact_owner_kernel_pipeline.py",
+      "bytes": 13500,
+      "sha256": "741641887f3a91399a712006e80e5237d831317000e4a951828acde39ee61c25",
+      "scope": "Local operational source; outside reviewed product source, no standalone runtime qualification",
+      "origin": {
+        "kind": "task_local_operational_source"
+      }
+    },
+    {
+      "path": "operations/run_exact_owner_kernel_pipeline_offline_v2.py",
+      "bytes": 13565,
+      "sha256": "a772015525eea5fac380e11618bda4f86cb83a4fb167b9f2f8d2d6b440b5995e",
+      "scope": "Local operational source; outside reviewed product source, no standalone runtime qualification",
+      "origin": {
+        "kind": "task_local_operational_source"
+      }
+    },
+    {
+      "path": "source-review.json",
+      "bytes": 1462,
+      "sha256": "5b6430e653771d53c2febf8b1720db44b27c2a146a00d4ad75663fbb6e2ca843",
+      "scope": "Pinned input selection, not execution evidence",
+      "origin": {
+        "host": "main",
+        "path": "/data/trill-organ-20261103-f1-build/exact-owner-a286-source-review.json"
+      }
+    },
+    {
+      "path": "README.md",
+      "bytes": 2861,
+      "sha256": "42964565de2b603e17fb2a469a4ea3a5a3653037cae69245338db71576bdd5ea",
+      "scope": "Scope and stage interpretation",
+      "origin": {
+        "kind": "local_explanation"
+      }
+    }
+  ],
+  "remote_only": [
+    {
+      "path": "/data/trill-organ-20261103-f1-build/owner-a286-source-preparation-v2/tracked-source-snapshot.json",
+      "bytes": 3553515,
+      "sha256": "bb71a57adcc1564ccd6014e7b99ddfb7d1e3886d3b5a9e162e2c5816f63bb1ed",
+      "scope": "Full source inventory recorded by source preparation; not downloaded here"
+    },
+    {
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-build-v1/packaged/hepta-g2-native-owner",
+      "bytes": 20138584,
+      "sha256": "6ce96a0785b2cbb51bb71fabb2973c1e04d93e213d56694b42b4d717ed55a454",
+      "scope": "Original packaged executable, not downloaded"
+    },
+    {
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-build-v1/hepta-g2-native-owner.unstripped",
+      "bytes": 102836712,
+      "sha256": "b16eb4663f5b6661314091af5ad5ec40c5de65b0ae3f3f5544a5700b6ad9c4ac",
+      "scope": "Original unstripped executable, not downloaded"
+    },
+    {
+      "path": "/data/trill-organ-20261103-f1-build/original-kernel-dependency-cache-a286-v1/inventory.json",
+      "bytes": 417302,
+      "sha256": "455fad0fbc8d06de27fb11fbabe5379b045293ecbcd9e21457a160f9e606e7a8",
+      "scope": "Complete cache inventory, not downloaded"
+    },
+    {
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v2/source-built-cargo-osdk",
+      "bytes": null,
+      "sha256": "fc0669f46c50bfd1a9274f40bb6f586f981e580b244c0d531a0a002bbf7daa4f",
+      "scope": "SHA recorded by final pipeline; byte length not yet independently read, not downloaded"
+    }
+  ],
+  "pending_reads": [
+    {
+      "path": "/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v2/osdk-build.log",
+      "scope": "Final full log not yet fetched; only earlier compilation snapshot archived"
+    },
+    {
+      "path": "/data/trill-organ-20261103-f1-build/kernel-target/osdk/asterinas-run-base/Cargo.lock",
+      "scope": "Actual generated lock file read timed out; its SHA/count/graph not claimed"
+    },
+    {
+      "path": "/data/trill-organ-20261103-f1-build/rustup-home/toolchains/nightly-2026-07-21-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/Cargo.lock",
+      "scope": "Fixed-nightly standard-library lock read timed out; next dependency-cache step still pending"
+    }
+  ],
+  "osdk_build_exit_code": 0,
+  "kernel_command_exit_code": 2,
+  "kernel_built": false,
+  "locked_204_graph_verified": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "whole_guest_peak_verified": false,
+  "global_memory_reserve": false
+}

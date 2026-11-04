@@ -1,0 +1,82 @@
+RUST_MIN_STACK=8388608 NEXTEST_PROFILE=local python3 ../scripts/run-nextest.py "$@"
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#generic-array@0.14.7` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#proc-macro2@1.0.107` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#quote@1.0.47` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde_core@1.0.229` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#zmij@1.0.23` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde_json@1.0.154` which wasn't produced by cargo metadata
+warning: warning: saw package ID `registry+https://github.com/rust-lang/crates.io-index#serde@1.0.229` which wasn't produced by cargo metadata
+   Compiling codex-hepta-types v0.0.0 (/data/trill-calculator-joint-20261103-v1/source/codex-rs/hepta-types)
+   Compiling codex-hepta-objective v0.0.0 (/data/trill-calculator-joint-20261103-v1/source/codex-rs/hepta-objective)
+    Finished `test` profile [unoptimized] target(s) in 5.87s
+────────────
+ Nextest run ID 33a8a2ae-33f7-4a70-a1b2-d79d76c5cbad with nextest profile: local
+    Starting 66 tests across 1 binary (2 tests skipped)
+        PASS [   0.009s] ( 1/66) codex-hepta-objective admission_profile_json::tests::profile_json_rejects_unknown_fields_and_oversize_input
+        PASS [   0.008s] ( 2/66) codex-hepta-objective admission_profile_json::tests::profile_json_rejects_unregistered_risk_ordering
+        PASS [   0.008s] ( 3/66) codex-hepta-objective admission_profile_json::tests::strict_profile_json_decodes_and_validates_digest_semantics
+        PASS [   0.007s] ( 4/66) codex-hepta-objective compiler::tests::changing_soft_weight_preserves_hard_digest
+        PASS [   0.007s] ( 5/66) codex-hepta-objective compiler::tests::compilation_is_permutation_invariant
+        PASS [   0.009s] ( 6/66) codex-hepta-objective compiler::tests::contradictory_hard_bounds_return_inclusion_minimal_pair
+        PASS [   0.007s] ( 7/66) codex-hepta-objective compiler::tests::duplicate_semantic_ids_fail_before_digest_publication
+        PASS [   0.008s] ( 8/66) codex-hepta-objective compiler::tests::empty_caller_action_set_still_has_explicit_abstain
+        PASS [   0.009s] ( 9/66) codex-hepta-objective compiler::tests::explicit_intrinsic_abstain_does_not_consume_an_extra_slot
+        PASS [   0.008s] (10/66) codex-hepta-objective compiler::tests::forbidden_requested_action_returns_conflict
+        PASS [   0.008s] (11/66) codex-hepta-objective compiler::tests::intrinsic_abstain_cannot_be_forbidden
+        PASS [   0.008s] (12/66) codex-hepta-objective compiler::tests::intrinsic_abstain_cannot_require_confirmation
+        PASS [   0.008s] (13/66) codex-hepta-objective compiler::tests::intrinsic_abstain_has_one_reserved_action_slot
+        PASS [   0.008s] (14/66) codex-hepta-objective compiler::tests::maximum_caller_set_compiles_to_exactly_128_actions
+        PASS [   0.063s] (15/66) codex-hepta-objective compiler::tests::maximum_scalar_conflict_is_deterministic_at_numeric_extremes
+        PASS [   0.007s] (16/66) codex-hepta-objective compiler::tests::persisted_semantic_bytes_recompute_objective_digest
+        PASS [   0.007s] (17/66) codex-hepta-objective compiler::tests::untrusted_evidence_cannot_create_privileged_authority
+        PASS [   0.014s] (18/66) codex-hepta-objective desktop_thread_source::tests::both_desktop_actions_require_the_new_profile_and_keep_one_effect_budget
+        PASS [   0.009s] (19/66) codex-hepta-objective desktop_thread_source::tests::desktop_source_refuses_missing_original_operation_binding
+        PASS [   0.008s] (20/66) codex-hepta-objective error_policy::tests::retry_policy_is_variant_specific
+        PASS [   0.787s] (21/66) codex-hepta-objective feasibility::exhaustive_tests::all_three_action_graphs_match_truth_table_and_have_minimal_conflicts
+        PASS [   0.009s] (22/66) codex-hepta-objective feasibility::tests::core_is_permutation_invariant_and_removes_irrelevant_atoms
+        PASS [   0.007s] (23/66) codex-hepta-objective feasibility::tests::exhaustion_never_exposes_a_partial_conflict_or_drops_an_atom
+        PASS [   0.008s] (24/66) codex-hepta-objective feasibility::tests::finite_enum_inclusion_and_exclusion_are_intersected
+        PASS [   0.009s] (25/66) codex-hepta-objective feasibility::tests::forbidden_actions_and_transitive_antecedents_are_not_unforced
+        PASS [   0.040s] (26/66) codex-hepta-objective feasibility::tests::horn_solver_and_each_minimal_core_match_exhaustive_boolean_assignments
+        PASS [   0.008s] (27/66) codex-hepta-objective feasibility::tests::immutable_scope_and_generation_must_match_the_registered_snapshot
+        PASS [   0.007s] (28/66) codex-hepta-objective feasibility::tests::interval_intersection_returns_a_witness_and_ignores_soft_constraints
+        PASS [   0.007s] (29/66) codex-hepta-objective feasibility::tests::negative_closure_terminates_cycles_and_is_order_invariant
+        PASS [   0.013s] (30/66) codex-hepta-objective feasibility::tests::pilot_atom_bound_and_maximum_oracle_count_are_enforced
+        PASS [   0.006s] (31/66) codex-hepta-objective feasibility::tests::positive_closure_enables_only_forced_actions_and_terminates_cycles
+        PASS [   0.007s] (32/66) codex-hepta-objective feasibility::tests::registry_action_limit_is_checked_before_solving
+        PASS [   0.007s] (33/66) codex-hepta-objective feasibility::tests::requiring_a_transitive_antecedent_of_a_forbidden_action_is_infeasible
+        PASS [   0.007s] (34/66) codex-hepta-objective feasibility::tests::unknown_axes_units_observers_and_origins_fail_closed
+        PASS [   0.008s] (35/66) codex-hepta-objective feasibility::tests::unsupported_atoms_are_detected_before_a_known_conflict
+        PASS [   0.011s] (36/66) codex-hepta-objective notes_literal_source::tests::literal_notes_source_binds_original_operation_and_uses_real_admission
+        PASS [   0.009s] (37/66) codex-hepta-objective notes_literal_source::tests::literal_notes_source_refuses_invalid_navigation_and_unbound_inputs
+        PASS [   0.013s] (38/66) codex-hepta-objective notes_thread_source::tests::model_tool_source_uses_its_own_profile_and_cannot_masquerade_as_literal
+        PASS [   0.010s] (39/66) codex-hepta-objective objective_admission::tests::complete_profile_bound_envelope_compiles_without_dropping_fields
+        PASS [   0.008s] (40/66) codex-hepta-objective objective_admission::tests::fractional_utc_timestamp_is_parsed_exactly
+        PASS [   0.008s] (41/66) codex-hepta-objective objective_admission::tests::oversized_profile_mapping_set_is_rejected
+        PASS [   0.007s] (42/66) codex-hepta-objective objective_admission::tests::resource_conversion_overflow_rejects_without_truncation
+        PASS [   0.007s] (43/66) codex-hepta-objective objective_admission::tests::risk_profile_ordering_is_monotone
+        PASS [   0.007s] (44/66) codex-hepta-objective objective_admission::tests::selected_profile_digest_must_bind_exact_mapping
+        PASS [   0.008s] (45/66) codex-hepta-objective objective_admission::tests::semantic_array_reordering_preserves_intent_digest
+        PASS [   0.010s] (46/66) codex-hepta-objective objective_admission::tests::stale_observation_is_not_rewritten_to_current_time
+        PASS [   0.008s] (47/66) codex-hepta-objective objective_admission::tests::strict_or_unregistered_comparator_is_never_approximated
+        PASS [   0.010s] (48/66) codex-hepta-objective objective_admission::tests::supplied_principal_label_cannot_replace_authenticated_principal
+        PASS [   0.010s] (49/66) codex-hepta-objective objective_admission::tests::two_phase_admission_matches_convenience_wrapper
+        PASS [   0.008s] (50/66) codex-hepta-objective objective_admission::tests::unknown_semantic_mapping_is_rejected_before_native_compile
+        PASS [   0.009s] (51/66) codex-hepta-objective objective_admission::tests::untrusted_evidence_reaches_native_authority_rejection
+        PASS [   0.008s] (52/66) codex-hepta-objective source_envelope_json::tests::decodes_all_fields_without_loss_or_semantic_admission
+        PASS [   0.043s] (53/66) codex-hepta-objective source_envelope_json::tests::every_object_rejects_unknown_missing_null_and_duplicate_fields
+        PASS [   0.013s] (54/66) codex-hepta-objective source_envelope_json::tests::numeric_and_digest_grammar_remains_exact
+        PASS [   0.009s] (55/66) codex-hepta-objective source_envelope_json::tests::preserves_empty_caller_actions_for_intrinsic_abstain
+        PASS [   0.017s] (56/66) codex-hepta-objective source_envelope_json::tests::raw_ingress_budget_and_json_framing_fail_without_source_leakage
+        PASS [   0.017s] (57/66) codex-hepta-objective source_envelope_json::tests::rejects_positional_structs_and_enum_objects_with_otherwise_correct_contents
+        PASS [   0.009s] (58/66) codex-hepta-objective source_envelope_json::tests::retains_structural_count_text_and_semantic_key_checks_after_decoding
+        PASS [   0.011s] (59/66) codex-hepta-objective source_envelope_v1::tests::duplicate_semantic_ids_reject_even_when_other_fields_differ_without_echoing_source
+        PASS [   0.006s] (60/66) codex-hepta-objective source_envelope_v1::tests::empty_caller_action_set_is_structurally_valid_for_intrinsic_abstain
+        PASS [   0.009s] (61/66) codex-hepta-objective source_envelope_v1::tests::every_collection_enforces_counts_and_duplicate_keys_before_semantic_compilation
+        PASS [   0.007s] (62/66) codex-hepta-objective source_envelope_v1::tests::predicate_families_share_the_native_aggregate_ceiling
+        PASS [   0.012s] (63/66) codex-hepta-objective source_envelope_v1::tests::source_constraint_bound_reserves_generated_native_slots
+        PASS [   0.008s] (64/66) codex-hepta-objective source_envelope_v1::tests::structural_validation_retains_semantics_that_native_compilation_cannot_represent
+        PASS [   0.009s] (65/66) codex-hepta-objective source_envelope_v1::tests::text_limits_count_utf8_bytes_for_every_source_field
+        PASS [   0.008s] (66/66) codex-hepta-objective source_envelope_v1::tests::validation_preserves_order_cross_array_references_and_conflicts_for_the_semantic_owner
+────────────
+     Summary [   1.499s] 66 tests run: 66 passed, 2 skipped

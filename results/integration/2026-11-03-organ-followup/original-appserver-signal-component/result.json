@@ -1,0 +1,455 @@
+{
+  "schema": "trill.original-appserver-signal-component-build.v1",
+  "status": "components_built_seed_not_run",
+  "scope": "App Server and original seed test components only; no installation or authority",
+  "sources": {
+    "hepta": {
+      "head": "857d8f61b96453c06a7f93dfba79dcdebca31bf8",
+      "tree": "ed0824c48bb4133dcebbff6c1aa733f23f2e0f28",
+      "status": "",
+      "path": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-source",
+      "base": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+      "bundle_sha256": "d49e86ae31efa4c99dc61fbd9af176f2cf456d595a58f36abf1e34c17e1f2f16",
+      "sparse_patterns": [],
+      "read_only_object_stores": [
+        "/home/qian-qi/work/trill-organ-20261103-f1/hepta-current-source/.git/objects",
+        "/data/lan-archive-20261103/desktop/old-dev/trill-product-convergence-20261026-root/hepta-clean/.git/objects"
+      ]
+    },
+    "desktop": {
+      "head": "92a06c4b4b041a9e94d83480bc2c4cdcd6afa3d2",
+      "tree": "7eb3cff149daf8109ce823ff86cfa8827161dcae",
+      "status": "",
+      "path": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-source",
+      "base": "fd8d56c52b971c2d5d0e6430f296803b43ef60a3",
+      "bundle_sha256": "4113fdfbc562e7e27139f64b143532c49f3ccf42346b0aee4b4b21edfeeb2754",
+      "sparse_patterns": [
+        "/*",
+        "!/results/"
+      ],
+      "read_only_object_stores": [
+        "/home/qian-qi/work/trill-organ-owner-20261103/desktop-final-source/.git/objects",
+        "/home/qian-qi/work/trill-organ-owner-20261103/desktop-source/.git/objects",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-current-source/.git/objects",
+        "/data/lan-archive-20261103/desktop/old-dev/trill-product-convergence-20261026-root/desktop/.git/objects",
+        "/data/lan-archive-20261103/desktop/old-dev/os-audit-implementation-20261024-r1/desktop/.git/objects",
+        "/home/qian-qi/Documents/Codex/2026-10-23/https-github-com-trillionniumfoundation-trillionnium-os-3/work/trillionnium-os-desktop/.git/objects",
+        "/home/qian-qi/.local/state/trillionnium-os-organ-next-20261016/repo/.git/objects"
+      ]
+    }
+  },
+  "commands": [
+    {
+      "name": "hepta-git-init",
+      "argv": [
+        "/usr/bin/git",
+        "init",
+        "--quiet",
+        "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-source"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1",
+      "exit_code": 0,
+      "seconds": 0.032,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-git-init.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-git-init.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "hepta-bundle-verify",
+      "argv": [
+        "/usr/bin/git",
+        "bundle",
+        "verify",
+        "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta.bundle"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-source",
+      "exit_code": 0,
+      "seconds": 0.016,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-bundle-verify.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-bundle-verify.stderr.log",
+      "stdout_sha256": "0593ad32471d06f3bbff563988dbd144c67bf30a84da78bed566f5fd08be05e9",
+      "stderr_sha256": "eb0f768d644d159f2c66bdf9f486b3adf075230c70e2a0811ca4b31c9807198a"
+    },
+    {
+      "name": "hepta-bundle-import",
+      "argv": [
+        "/usr/bin/git",
+        "fetch",
+        "--quiet",
+        "--no-tags",
+        "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta.bundle",
+        "refs/heads/codex/original-appserver-signal-20261103"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-source",
+      "exit_code": 0,
+      "seconds": 0.115,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-bundle-import.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-bundle-import.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "hepta-checkout",
+      "argv": [
+        "/usr/bin/git",
+        "checkout",
+        "--quiet",
+        "--detach",
+        "857d8f61b96453c06a7f93dfba79dcdebca31bf8"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-source",
+      "exit_code": 0,
+      "seconds": 1.118,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-checkout.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-checkout.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "desktop-git-init",
+      "argv": [
+        "/usr/bin/git",
+        "init",
+        "--quiet",
+        "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-source"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1",
+      "exit_code": 0,
+      "seconds": 0.004,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-git-init.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-git-init.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "desktop-bundle-verify",
+      "argv": [
+        "/usr/bin/git",
+        "bundle",
+        "verify",
+        "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop.bundle"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-source",
+      "exit_code": 0,
+      "seconds": 0.065,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-bundle-verify.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-bundle-verify.stderr.log",
+      "stdout_sha256": "09196871212e8255da05865b3661d7e16bb9d7853968e8b6f4032608a48121ac",
+      "stderr_sha256": "ba8fdb0e2baeb0452ccac28c4059ec760e48d6659cdebd480e76ec62cd4d4bdb"
+    },
+    {
+      "name": "desktop-bundle-import",
+      "argv": [
+        "/usr/bin/git",
+        "fetch",
+        "--quiet",
+        "--no-tags",
+        "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop.bundle",
+        "refs/heads/codex/original-seed-lifecycle-20261103"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-source",
+      "exit_code": 0,
+      "seconds": 0.115,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-bundle-import.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-bundle-import.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "desktop-sparse-init",
+      "argv": [
+        "/usr/bin/git",
+        "sparse-checkout",
+        "init",
+        "--no-cone"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-source",
+      "exit_code": 0,
+      "seconds": 0.004,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-sparse-init.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-sparse-init.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "desktop-sparse-set",
+      "argv": [
+        "/usr/bin/git",
+        "sparse-checkout",
+        "set",
+        "--no-cone",
+        "/*",
+        "!/results/"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-source",
+      "exit_code": 0,
+      "seconds": 0.004,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-sparse-set.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-sparse-set.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "desktop-checkout",
+      "argv": [
+        "/usr/bin/git",
+        "checkout",
+        "--quiet",
+        "--detach",
+        "92a06c4b4b041a9e94d83480bc2c4cdcd6afa3d2"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-source",
+      "exit_code": 0,
+      "seconds": 0.767,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-checkout.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-checkout.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "compiler",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-source",
+      "exit_code": 0,
+      "seconds": 0.016,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/compiler.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/compiler.stderr.log",
+      "stdout_sha256": "f64c55ed9f210d80a9b248206104a47175faf5ec94a093e4ad132549209089fc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "hepta-original-fmt-check",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/just",
+        "fmt",
+        "--base",
+        "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+        "--check"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-source/codex-rs",
+      "exit_code": 0,
+      "seconds": 0.717,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-original-fmt-check.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-original-fmt-check.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "desktop-seed-fmt-check",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+        "--edition",
+        "2024",
+        "--check",
+        "--config",
+        "skip_children=true",
+        "services/hepta-session-host/src/product_root/seed.rs",
+        "services/hepta-session-host/src/product_root/seed_tests.rs"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-source",
+      "exit_code": 0,
+      "seconds": 0.033,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-seed-fmt-check.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-seed-fmt-check.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "appserver-original-fix",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/just",
+        "fix",
+        "-p",
+        "codex-app-server",
+        "--locked",
+        "--offline",
+        "--profile",
+        "dev-small",
+        "--jobs",
+        "2"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-source/codex-rs",
+      "exit_code": 0,
+      "seconds": 423.659,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/appserver-original-fix.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/appserver-original-fix.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "84430d408c3108810d480d89255e347cd7ce47b220bb54fa440b9e0fa6cb3725"
+    },
+    {
+      "name": "appserver-signal-and-drain-tests",
+      "argv": [
+        "/home/qian-qi/.cargo/bin/just",
+        "test",
+        "-p",
+        "codex-app-server",
+        "--lib",
+        "--locked",
+        "--offline",
+        "--cargo-profile",
+        "dev-small",
+        "--jobs",
+        "2",
+        "-E",
+        "test(shutdown_signals::tests::) | test(drain_handle_tests::)"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-source/codex-rs",
+      "exit_code": 0,
+      "seconds": 398.246,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/appserver-signal-and-drain-tests.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/appserver-signal-and-drain-tests.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "398f9ab851d27c3d8e553ac31c4fa2324e68cd6ffb2421137166deb4320aad53"
+    },
+    {
+      "name": "appserver-product-linux",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "product-linux",
+        "--jobs",
+        "2",
+        "-p",
+        "codex-app-server",
+        "--bin",
+        "codex-app-server"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/hepta-source/codex-rs",
+      "exit_code": 0,
+      "seconds": 1300.85,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/appserver-product-linux.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/appserver-product-linux.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "8582d05fd43bfc2adfa375c8e4211fef8cf3051cc95c4375f9a69362385f07dd"
+    },
+    {
+      "name": "strip-appserver",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-strip",
+        "--strip-unneeded",
+        "/data/trill-organ-owner-20261103/appserver-signal-component-v1/bin/codex-app-server"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1",
+      "exit_code": 0,
+      "seconds": 0.717,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/strip-appserver.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/strip-appserver.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "seed-test-compile",
+      "argv": [
+        "/home/qian-qi/.rustup/toolchains/1.96.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--manifest-path",
+        "services/hepta-session-host/Cargo.toml",
+        "--locked",
+        "--offline",
+        "--features",
+        "product-root",
+        "--bin",
+        "hepta-desktop-root",
+        "--no-run",
+        "--profile",
+        "dev-small",
+        "--jobs",
+        "2",
+        "--message-format=json-render-diagnostics"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-source",
+      "exit_code": 0,
+      "seconds": 22.152,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/seed-test-compile.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/seed-test-compile.stderr.log",
+      "stdout_sha256": "5821da674d553920a7f8f96222e1f3473419ee94bc68541c30984876c8a9a436",
+      "stderr_sha256": "122b1a2acf1df5d86d22a5e201ada376d6ab4e2573f595623e84a44a805a52d5"
+    },
+    {
+      "name": "seed-test-list",
+      "argv": [
+        "/data/trill-organ-owner-20261103/appserver-signal-component-v1/bin/hepta-desktop-root-seed-test",
+        "--list",
+        "--format",
+        "terse"
+      ],
+      "cwd": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/desktop-source",
+      "exit_code": 0,
+      "seconds": 0.008,
+      "stdout": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/seed-test-list.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/seed-test-list.stderr.log",
+      "stdout_sha256": "f6fa8fcdfe1cc734dbe0a596f1cb88ff1d1986a616edde2db705351d0829b9b2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "cargo_jobs": 2,
+  "production_qualified": false,
+  "cpu_quota_percent": 200,
+  "memory_max_bytes": 25769803776,
+  "nice": 15,
+  "io_priority": "idle",
+  "seed_test": "product_root::seed::tests::actual_seed_start_resume_closes_client_and_reaps_first_signal_child",
+  "host_before": {
+    "memory_available_bytes": 107263143936,
+    "data_disk": {
+      "total": 983023263744,
+      "used": 818520166400,
+      "free": 114492788736
+    },
+    "affinity_count": 48,
+    "io_pressure": "some avg10=0.95 avg60=1.05 avg300=1.03 total=36034453765\nfull avg10=0.86 avg60=0.94 avg300=0.95 total=33697289461\n",
+    "at_unix_ms": 1793744313154
+  },
+  "target_leases": [
+    {
+      "path": "/data/trill-organ-owner-20261103/hepta-root-target/.trill-product-build.lock",
+      "scope": "exclusive cooperating-product-builder lease through packaging"
+    },
+    {
+      "path": "/data/trill-organ-owner-20261103/root-target/.trill-product-build.lock",
+      "scope": "exclusive cooperating-product-builder lease through packaging"
+    }
+  ],
+  "actual_parent_signal_tests": [
+    "first_sighup_survives_cancelled_receive",
+    "first_sigint_survives_cancelled_receive",
+    "first_sigterm_survives_cancelled_receive"
+  ],
+  "appserver_binary": {
+    "path": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/bin/codex-app-server",
+    "size": 103449400,
+    "sha256": "fd1fed2f97e218f77d6a3d682579d1681785e93de72781419684d849bd278254",
+    "source": "857d8f61b96453c06a7f93dfba79dcdebca31bf8",
+    "profile": "product-linux"
+  },
+  "seed_test_binary": {
+    "path": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/bin/hepta-desktop-root-seed-test",
+    "size": 70664232,
+    "sha256": "e3519ccd0efdbd919876d77875976ab825a6823ae6935134670133802ffb926c",
+    "source": "92a06c4b4b041a9e94d83480bc2c4cdcd6afa3d2",
+    "original_library_source": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+    "profile": "dev-small",
+    "exact_test_listed_count": 1
+  },
+  "sources_after": {
+    "hepta": {
+      "head": "857d8f61b96453c06a7f93dfba79dcdebca31bf8",
+      "tree": "ed0824c48bb4133dcebbff6c1aa733f23f2e0f28",
+      "status": ""
+    },
+    "desktop": {
+      "head": "92a06c4b4b041a9e94d83480bc2c4cdcd6afa3d2",
+      "tree": "7eb3cff149daf8109ce823ff86cfa8827161dcae",
+      "status": ""
+    }
+  },
+  "finished_unix_ms": 1793746464246
+}

@@ -1,0 +1,35 @@
+{
+  "schema": "trill.joint-memory-log-root-review.v1",
+  "actual_source_commit": "26a46e3fe763b53e1f0362793701f112383a72fa",
+  "actual_tree": "2175f198948308c3a2f9d61f8282bc179669e798",
+  "stderr_path": "audit-cache/hepta-fc9-verify/test-memory-26a46e3f-stderr.log",
+  "stderr_bytes": 77916,
+  "stderr_sha256": "413d9f3c22b859df676f3888293de73666db4ad4935860b31672ac5ff4320fef",
+  "first_attempt_pass_cases": 399,
+  "test_start": [
+    "Starting 400 tests across 2 binaries (13 tests skipped)"
+  ],
+  "summaries": [
+    "Summary [ 359.392s] 400 tests run: 399 passed, 1 failed, 13 skipped"
+  ],
+  "failure_markers_including_summary_repeat": [
+    "TRY 1 FAIL [   6.873s] (\u2500\u2500\u2500\u2500\u2500\u2500\u2500) codex-hepta-memory cognitive_runtime_tests::product_v2_reports_peer_truncation_before_aggregation",
+    "TRY 2 FAIL [   6.703s] ( 47/400) codex-hepta-memory cognitive_runtime_tests::product_v2_reports_peer_truncation_before_aggregation",
+    "TRY 2 FAIL [   6.703s] ( 47/400) codex-hepta-memory cognitive_runtime_tests::product_v2_reports_peer_truncation_before_aggregation"
+  ],
+  "only_failure_test": "cognitive_runtime_tests::product_v2_reports_peer_truncation_before_aggregation",
+  "failure_values": {
+    "observed_completed_peers": 0,
+    "expected_completed_peers": 16
+  },
+  "failure_stage_or_peer_root_cause_identified": false,
+  "budget_or_assertion_relaxed": false,
+  "new_cross_app_cases": [
+    "PASS [   0.610s] (295/400) codex-hepta-memory production_writer::objective_sender::desktop_tests::concurrent_desktop_apps_share_the_original_sqlite_send_fence",
+    "PASS [   2.184s] (296/400) codex-hepta-memory production_writer::objective_sender::desktop_tests::desktop_unknown_turn_retains_first_app_identity_and_never_grants_a_second_send",
+    "PASS [   2.309s] (297/400) codex-hepta-memory production_writer::objective_sender::desktop_writer_tests::two_apps_cannot_cross_the_same_original_turn_effect_boundary_twice"
+  ],
+  "flaky_markers_present": false,
+  "original_retry_policy_preserved": true,
+  "qualified": false
+}

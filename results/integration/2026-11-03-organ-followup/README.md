@@ -6,6 +6,58 @@ It does not replace the frozen Desktop `fd8d56c52b971c2d5d0e6430f296803b43ef60a3
 and Hepta `a39a0871d9601ffccb5e0d95d8f39d54b3a63360` product pair, or turn a
 component test into installed-product qualification.
 
+## 2026-11-04 execution checkpoint
+
+The reviewed joint Hepta source is now published in
+[PR #4749](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4749)
+at `14e2d89b3367232ec5dbe6187f09feed0f2b68d3`, tree
+`0e12d53adf6a13721fdb2feef0e974d903b92e85`. The
+[publication record](joint-hepta-canonical-publication/README.md) binds the
+complete local/remote tree equality and exact a39 review base. It is a source
+publication; the Desktop dependency/lock selection, joint build and installed
+effect sequence remain separate gates.
+
+The new [original App Server component build](original-appserver-signal-component/README.md)
+completed all 19 commands on Rust 1.96. Its three first-signal lifecycle tests
+and two original drain tests passed. The complete 41-member original archive
+was independently downloaded and verified; the large compile JSON stream is
+retained whole. The [actual original seed execution](original-seed-lifecycle-857d/README.md)
+then passed its exact test, under the unchanged 10-second child exit bound,
+with the socket retired and fresh mount detached. Its explicit Hepta 857d /
+Desktop test 92a / original library a39 component identities do not qualify a
+new joint installed product, user submission or Notes effect.
+
+The [complete four-package Hepta run](joint-hepta-26a-tests/README.md) used
+`26a46e3fe763b53e1f0362793701f112383a72fa`, tree
+`2175f198948308c3a2f9d61f8282bc179669e798`, and the original package test entries.
+Objective reports 66 passed / 0 failed / 2 skipped; Memory 399 / 1 / 13;
+Agentd 546 / 1 / 60; App Server 1,315 / 16 / 2. The original job exited 1,
+with no outer timeout or cancellation. Both original failure attempts remain
+in the complete logs. Fourteen App Server failures involve absent original
+helper programs; process-tree cleanup and cold-resume parent-thread identity
+are two separate failures. A selected prerequisite recheck cannot replace
+this complete failed run. The [47 custody-fixture successor](joint-hepta-47-custody/README.md)
+then passed its original formatter, scoped Agentd fix and one exact test on
+Rust 1.96, clean source, with no retry. Its unchanged one-second deadline now
+observes actual lock availability as well as Weak retirement. The original
+26a full Agentd failure remains failed.
+
+The [a286 source/build/cache checkpoint](g2-a286-build-and-cache-evidence-20261103/README.md)
+contains 28 indexed files. It records independent complete source, the exact
+original owner ELF, the OSDK download failure and the later source-built OSDK
+success. The original offline kernel attempt then refused missing `getopts`
+from the fixed nightly's standard-library lock. The separate
+[19-file read recovery and standard-library cache checkpoint](g2-a286-read-recovery-evidence-20261103/README.md)
+retains the complete OSDK log, original job status, exact generated 204-package
+lock, fixed toolchain library lock and four checksum-verified create-only
+cache copies. The generated lock is not a completed kernel graph gate. Both
+groups have independent byte reviews; no full kernel or native G2 result is
+granted by these records. The later [v3 kernel attempt](g2-a286-kernel-v3-20261104/README.md)
+actually reached `aster-core` after 202.642 seconds of kernel compilation,
+then failed at three original metadata macro call sites. Its complete log,
+original pipeline and authoritative exit-1 status are independently retained.
+That log does not expose the nested metadata stderr or establish its cause.
+
 ## Results and exact scope
 
 | Scope | Actual source | Actual result | Still unqualified |
@@ -163,9 +215,11 @@ The new source also adds bounded lifecycle memory observations. The seven
 initial samples and optional successor samples are implementation points,
 not observed guest results. They cannot establish a continuous peak, complete
 process-tree accounting, successor overlap or global recovery reserve.
-The real locked graph, source-built OSDK, full kernel and positive original
-owner guest scenarios still need their own execution records. All native G2
-and production flags in this archive remain false.
+At that initial host-only checkpoint, the real locked graph, source-built OSDK,
+full kernel and positive original owner guest scenarios remained unexecuted.
+The later a286 records above separately establish source-built OSDK; they do
+not yet establish the full kernel or native scenarios. All native G2 and
+production flags in this archive remain false.
 
 ## Canonical source, original owner build and quiet-log repair
 

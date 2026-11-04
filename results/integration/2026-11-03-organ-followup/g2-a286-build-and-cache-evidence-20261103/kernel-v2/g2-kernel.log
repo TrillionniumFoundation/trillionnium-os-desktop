@@ -1,0 +1,19 @@
+initramfs: 1107990 bytes, sha256=86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3
+make: Entering directory '/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas'
+/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/minimal.mk:5: warning: overriding recipe for target 'initramfs'
+Makefile:323: warning: ignoring old recipe for target 'initramfs'
+/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/minimal.mk:10: warning: overriding recipe for target '/data/trill-organ-20261103-f1-build/cargo-home/bin/cargo-osdk'
+Makefile:298: warning: ignoring old recipe for target '/data/trill-organ-20261103-f1-build/cargo-home/bin/cargo-osdk'
+/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/minimal.mk:13: warning: overriding recipe for target 'install_osdk'
+Makefile:291: warning: ignoring old recipe for target 'install_osdk'
+/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/minimal.mk:39: warning: overriding recipe for target 'kernel'
+Makefile:338: warning: ignoring old recipe for target 'kernel'
+cd kernel && cargo osdk build --release --boot-method=vmm-direct --grub-boot-protocol=multiboot --initramfs="/data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v2/kernel-build/initramfs.cpio.gz" --kcmd-args="loglevel=info" --kcmd-args="earlycon" --kcmd-args="console=ttyS0" --qemu-exe="/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/record-qemu.py" --features=g2-original-owner-a39-v1
+error: failed to download `getopts v0.2.24`
+
+Caused by:
+  attempting to make an HTTP request, but --offline was specified
+[Error]: Cargo build failed
+make: *** [/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/support/build/minimal.mk:39: kernel] Error 6
+make: Leaving directory '/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source/kernel/asterinas'
+evidence: /data/trill-organ-20261103-f1-build/g2-owner-exact-a286-kernel-v2/kernel-build

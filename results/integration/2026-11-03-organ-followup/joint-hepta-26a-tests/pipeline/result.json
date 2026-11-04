@@ -1,0 +1,50 @@
+{
+  "schema": "hepta.calculator.owning-tests.v1",
+  "state": "complete",
+  "passed": false,
+  "head": "26a46e3fe763b53e1f0362793701f112383a72fa",
+  "tree": "2175f198948308c3a2f9d61f8282bc179669e798",
+  "runner_sha256": "7cfba7bcfafb475c43f2005978bc545c42ba003a746115d19384add5a1baa293",
+  "commands": [
+    "test-objective",
+    "test-memory",
+    "test-agentd",
+    "test-app-server"
+  ],
+  "steps": [
+    {
+      "command": "test-objective",
+      "runner_exit_code": 0,
+      "result_path": "/data/trill-calculator-joint-20261103-v1/steps/test-objective-26a46e3f-tests-v1/result.json",
+      "result_sha256": "b187b8fca2860d987a611f6fbf95e940ccdb03129bd0a37e97ac86227b95e5e4",
+      "passed": true,
+      "exit_code": 0
+    },
+    {
+      "command": "test-memory",
+      "runner_exit_code": 1,
+      "result_path": "/data/trill-calculator-joint-20261103-v1/steps/test-memory-26a46e3f-tests-v1/result.json",
+      "result_sha256": "4b9fad65c7493a6bdfb0254fa382480ff53b22001e77b4b1505f13676f8f1207",
+      "passed": false,
+      "exit_code": 100
+    },
+    {
+      "command": "test-agentd",
+      "runner_exit_code": 1,
+      "result_path": "/data/trill-calculator-joint-20261103-v1/steps/test-agentd-26a46e3f-tests-v1/result.json",
+      "result_sha256": "dac948b9c8332adef82ca1728b92b61f30632bb3e4204a5c04ee331abe7bbdd6",
+      "passed": false,
+      "exit_code": 100
+    },
+    {
+      "command": "test-app-server",
+      "runner_exit_code": 1,
+      "result_path": "/data/trill-calculator-joint-20261103-v1/steps/test-app-server-26a46e3f-tests-v1/result.json",
+      "result_sha256": "4d0680b67a97a30194748fd950c5e953963744d1d7fe03c81b690cbc39fdc1e1",
+      "passed": false,
+      "exit_code": 100
+    }
+  ],
+  "scope": "Original just test for the four changed owning packages; original ignored tests and nextest gates retained. No GUI, model turn, HumanAdmission, production authority or full product recovery qualification.",
+  "elapsed_seconds": 3320.6946729460033
+}

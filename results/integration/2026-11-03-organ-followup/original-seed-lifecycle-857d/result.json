@@ -1,0 +1,179 @@
+{
+  "schema": "trill.original-root.seed-lifecycle-execution.v1",
+  "status": "original_seed_component_passed",
+  "scope": "actual original seed component only; mixed component sources, no product acceptance",
+  "commands": [
+    {
+      "name": "root-component-stage",
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "--",
+        "/usr/bin/python3",
+        "-I",
+        "-c",
+        "import hashlib, json, os, pathlib, stat, sys\n\nexpected = json.loads(sys.argv[1])\nassert os.getuid()==0 and os.geteuid()==0\nos.umask(0o077)\nprefix = pathlib.Path('/opt/trill-seed-signal-20261103-857d')\nconfig_path = pathlib.Path('/root/trill-organ-owner-20261103/seed-857d-v1.json')\ndeployment = pathlib.Path('/var/lib/trill/s1103as1')\n\ndef physical(path):\n    assert path.is_absolute() and path.resolve()==path\n    for part in [path,*path.parents]:\n        m = part.lstat()\n        assert stat.S_ISDIR(m.st_mode) and m.st_uid==0 and m.st_mode & 0o022==0\n\nphysical(prefix.parent)\nphysical(config_path.parent)\nassert not os.path.lexists(prefix) and not os.path.lexists(config_path) and not os.path.lexists(deployment)\noriginal = pathlib.Path('/root/trill-organ-owner-20261103/initialize.json')\nphysical(original.parent)\nfd = os.open(original,os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC)\nwith os.fdopen(fd,'rb') as f:\n    m = os.fstat(f.fileno())\n    assert stat.S_ISREG(m.st_mode) and m.st_uid==0 and m.st_nlink==1 and stat.S_IMODE(m.st_mode)==0o600\n    raw = f.read(65537)\nassert hashlib.sha256(raw).hexdigest()=='6a373c9e6bc949598aaa9a42d5eba46020113fa93ae10a3466f05ce68cfd52ec'\ninputs = json.loads(raw)\nprefix.mkdir(mode=0o755)\ncopied = {}\nfor key,name in [('appserver_binary','codex-app-server'),('seed_test_binary','hepta-desktop-root-seed-test')]:\n    item = expected[key]\n    source = pathlib.Path(item['path'])\n    assert source.parent==pathlib.Path('/data/trill-organ-owner-20261103/appserver-signal-component-v1/bin')\n    assert 0<item['size']<=2*1024**3 and len(item['sha256'])==64\n    source_fd = os.open(source,os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC|os.O_NONBLOCK)\n    destination = prefix/name\n    h, length = hashlib.sha256(), 0\n    with os.fdopen(source_fd,'rb') as src, destination.open('xb') as dst:\n        before = os.fstat(src.fileno())\n        assert stat.S_ISREG(before.st_mode) and before.st_nlink==1 and before.st_size==item['size']\n        assert src.read(4)==b'\\x7fELF'\n        src.seek(0)\n        for block in iter(lambda:src.read(1024*1024),b''):\n            length += len(block)\n            assert length<=item['size']\n            dst.write(block); h.update(block)\n        after = os.fstat(src.fileno())\n        assert (before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns,before.st_ctime_ns)==(after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns,after.st_ctime_ns)\n        assert length==item['size'] and h.hexdigest()==item['sha256']\n        dst.flush(); os.fsync(dst.fileno()); os.fchmod(dst.fileno(),0o555)\n    copied[key] = {'path':str(destination),'size':length,'sha256':h.hexdigest()}\ninputs['prefix'] = str(deployment)\ninputs['programs']['app_server'] = str(prefix/'codex-app-server')\ndata = (json.dumps(inputs,indent=2)+'\\n').encode()\nfd = os.open(config_path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)\nwith os.fdopen(fd,'wb') as f: f.write(data);f.flush();os.fsync(f.fileno())\nfor path in (prefix,config_path.parent):\n    fd=os.open(path,os.O_RDONLY|os.O_DIRECTORY);os.fsync(fd);os.close(fd)\nprint(json.dumps({'scope':'explicit original seed component only, mixed component sources',\n    'config':str(config_path),'config_sha256':hashlib.sha256(data).hexdigest(),\n    'prefix':str(deployment),'copied':copied,'production_qualified':False}))\n",
+        "{\"appserver_binary\": {\"path\": \"/data/trill-organ-owner-20261103/appserver-signal-component-v1/bin/codex-app-server\", \"size\": 103449400, \"sha256\": \"fd1fed2f97e218f77d6a3d682579d1681785e93de72781419684d849bd278254\", \"source\": \"857d8f61b96453c06a7f93dfba79dcdebca31bf8\", \"profile\": \"product-linux\"}, \"seed_test_binary\": {\"path\": \"/data/trill-organ-owner-20261103/appserver-signal-component-v1/bin/hepta-desktop-root-seed-test\", \"size\": 70664232, \"sha256\": \"e3519ccd0efdbd919876d77875976ab825a6823ae6935134670133802ffb926c\", \"source\": \"92a06c4b4b041a9e94d83480bc2c4cdcd6afa3d2\", \"original_library_source\": \"a39a0871d9601ffccb5e0d95d8f39d54b3a63360\", \"profile\": \"dev-small\", \"exact_test_listed_count\": 1}}"
+      ],
+      "exit_code": 0,
+      "seconds": 1.619,
+      "stdout": "/data/trill-organ-owner-20261103/seed-lifecycle-857d-v1/root-component-stage.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/seed-lifecycle-857d-v1/root-component-stage.stderr.log",
+      "stdout_sha256": "57fe82852f404e46768d286f9f32bcfecea2e72fe33e8f2a769f83507385150b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "actual-original-seed-test",
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "--",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "LANG=C.UTF-8",
+        "TRILL_ROOT_SEED_TEST_CONFIG=/root/trill-organ-owner-20261103/seed-857d-v1.json",
+        "/usr/bin/unshare",
+        "--mount",
+        "--propagation",
+        "private",
+        "--",
+        "/opt/trill-seed-signal-20261103-857d/hepta-desktop-root-seed-test",
+        "--exact",
+        "product_root::seed::tests::actual_seed_start_resume_closes_client_and_reaps_first_signal_child",
+        "--ignored",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "seconds": 20.721,
+      "stdout": "/data/trill-organ-owner-20261103/seed-lifecycle-857d-v1/actual-original-seed-test.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/seed-lifecycle-857d-v1/actual-original-seed-test.stderr.log",
+      "stdout_sha256": "8ebc1f71d2e56d432e2c45577ef73079c3e1537ec425d4460b8700b02a9cb5ff",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "new-prefix-read-only-postmortem",
+      "argv": [
+        "/usr/bin/sudo",
+        "-n",
+        "--",
+        "/usr/bin/python3",
+        "-I",
+        "-c",
+        "import base64, hashlib, json, os, pathlib, stat\n\nroot = pathlib.Path('/var/lib/trill/s1103as1')\nassert os.getuid()==0 and os.geteuid()==0\nresult = {'scope':'read-only new seed-test prefix after the exact test returned',\n          'prefix':str(root),'observer_mount_namespace':os.readlink('/proc/self/ns/mnt'),\n          'authority_state_exists':os.path.lexists(root/'a/state'), 'entries':[], 'files':[]}\nretained = 0\nadmin_names = {'seed.stdout','seed.stderr','original-inputs.json','original-thread-seed.json','seed-lifecycle-observation.json'}\nif root.exists():\n    assert root.resolve()==root\n    for directory, directories, files in os.walk(root,followlinks=False):\n        directories[:] = sorted(d for d in directories if not (pathlib.Path(directory)/d).is_symlink())\n        for name in sorted(files):\n            path = pathlib.Path(directory)/name\n            m = path.lstat()\n            assert len(result['entries'])<2048\n            relative = path.relative_to(root).as_posix()\n            item = {'path':relative,'size':m.st_size,'mode':stat.S_IMODE(m.st_mode),'uid':m.st_uid,'gid':m.st_gid,\n                    'device':m.st_dev,'inode':m.st_ino,'regular':stat.S_ISREG(m.st_mode),'symlink':stat.S_ISLNK(m.st_mode)}\n            result['entries'].append(item)\n            wanted = (path.parent==root/'admin' and name in admin_names) or path.suffix=='.log'\n            if not wanted or not item['regular'] or m.st_nlink!=1 or m.st_size>262144 or retained+m.st_size>1048576:\n                continue\n            fd = os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC|os.O_NONBLOCK)\n            with os.fdopen(fd,'rb') as stream:\n                before=os.fstat(stream.fileno());data=stream.read(262145);after=os.fstat(stream.fileno())\n            assert (before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns,before.st_ctime_ns)==(after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns,after.st_ctime_ns)\n            assert len(data)==m.st_size\n            retained += len(data)\n            result['files'].append({'path':relative,'size':len(data),'sha256':hashlib.sha256(data).hexdigest(),\n                                    'base64':base64.b64encode(data).decode()})\nresult['retained_bytes'] = retained\nprint(json.dumps(result))\n"
+      ],
+      "exit_code": 0,
+      "seconds": 0.115,
+      "stdout": "/data/trill-organ-owner-20261103/seed-lifecycle-857d-v1/new-prefix-read-only-postmortem.stdout.log",
+      "stderr": "/data/trill-organ-owner-20261103/seed-lifecycle-857d-v1/new-prefix-read-only-postmortem.stderr.log",
+      "stdout_sha256": "dbe390da4f4b711f668a4868bfb92a842b7631090ef102a93499ed65f3158e83",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "production_qualified": false,
+  "exact_test": "product_root::seed::tests::actual_seed_start_resume_closes_client_and_reaps_first_signal_child",
+  "build_receipt_sha256": "baae8fd6b4df6df7383494e2713035948b4074fde68882af146db8769ee67012",
+  "components": {
+    "appserver_binary": {
+      "path": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/bin/codex-app-server",
+      "size": 103449400,
+      "sha256": "fd1fed2f97e218f77d6a3d682579d1681785e93de72781419684d849bd278254",
+      "source": "857d8f61b96453c06a7f93dfba79dcdebca31bf8",
+      "profile": "product-linux"
+    },
+    "seed_test_binary": {
+      "path": "/data/trill-organ-owner-20261103/appserver-signal-component-v1/bin/hepta-desktop-root-seed-test",
+      "size": 70664232,
+      "sha256": "e3519ccd0efdbd919876d77875976ab825a6823ae6935134670133802ffb926c",
+      "source": "92a06c4b4b041a9e94d83480bc2c4cdcd6afa3d2",
+      "original_library_source": "a39a0871d9601ffccb5e0d95d8f39d54b3a63360",
+      "profile": "dev-small",
+      "exact_test_listed_count": 1
+    }
+  },
+  "host_before": {
+    "io_pressure": "some avg10=0.47 avg60=1.43 avg300=2.41 total=36118821695\nfull avg10=0.47 avg60=1.41 avg300=2.34 total=33778959296\n",
+    "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=1404006583\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=1345509001\n",
+    "at_unix_ms": 1793749387489
+  },
+  "staging": {
+    "scope": "explicit original seed component only, mixed component sources",
+    "config": "/root/trill-organ-owner-20261103/seed-857d-v1.json",
+    "config_sha256": "e9b1212bcccf5d1c320d8d912fef1a095fc601f1f8a1afe5ccb9a4f4e496ba4f",
+    "prefix": "/var/lib/trill/s1103as1",
+    "copied": {
+      "appserver_binary": {
+        "path": "/opt/trill-seed-signal-20261103-857d/codex-app-server",
+        "size": 103449400,
+        "sha256": "fd1fed2f97e218f77d6a3d682579d1681785e93de72781419684d849bd278254"
+      },
+      "seed_test_binary": {
+        "path": "/opt/trill-seed-signal-20261103-857d/hepta-desktop-root-seed-test",
+        "size": 70664232,
+        "sha256": "e3519ccd0efdbd919876d77875976ab825a6823ae6935134670133802ffb926c"
+      }
+    },
+    "production_qualified": false
+  },
+  "test_exit_code": 0,
+  "libtest_summaries": [
+    [
+      "ok",
+      "1",
+      "0",
+      "0",
+      "0",
+      "27"
+    ]
+  ],
+  "prefix_evidence": [
+    {
+      "path": "admin/original-inputs.json",
+      "size": 1711,
+      "sha256": "206da39db6cd2a3ca4512dcb47c3f0d3a7adc754afe75a065afa3ba466a31abf"
+    },
+    {
+      "path": "admin/original-thread-seed.json",
+      "size": 915,
+      "sha256": "b9e5de11ed9d907ad9b70ebe502fd43cd14694477acbc8e4131bf9b525f80993"
+    },
+    {
+      "path": "admin/seed-lifecycle-observation.json",
+      "size": 603,
+      "sha256": "f2e03673b6ae6aa9c274adc71f8817dfcaf9dcd83013e9656c94d5895fd1d4aa"
+    },
+    {
+      "path": "admin/seed.stderr",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "admin/seed.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "authority_state_exists": false,
+  "observation": {
+    "path": "/data/trill-organ-owner-20261103/seed-lifecycle-857d-v1/prefix-evidence/admin/seed-lifecycle-observation.json",
+    "sha256": "f2e03673b6ae6aa9c274adc71f8817dfcaf9dcd83013e9656c94d5895fd1d4aa",
+    "value": {
+      "app_server": "/opt/trill-seed-signal-20261103-857d/codex-app-server",
+      "app_server_sha256": "fd1fed2f97e218f77d6a3d682579d1681785e93de72781419684d849bd278254",
+      "authority_state_absent": true,
+      "create_elapsed_ms": 14360,
+      "fresh_mount_detached": true,
+      "no_session_or_turn_submitted_by_fixture": true,
+      "original_child_termination_deadline_ms": 10000,
+      "original_seed_create_returned": true,
+      "original_seed_receipt": "/var/lib/trill/s1103as1/admin/original-thread-seed.json",
+      "production_qualified": false,
+      "schema": "trill.original-root.seed-lifecycle-test.v1",
+      "scope": "original_seed_component_only",
+      "seed_socket_retired": true
+    }
+  },
+  "test_attempted": true,
+  "finished_unix_ms": 1793749409977
+}

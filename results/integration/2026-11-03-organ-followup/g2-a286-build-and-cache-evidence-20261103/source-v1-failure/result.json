@@ -1,0 +1,94 @@
+{
+  "schema": "hepta.canonical-owned-source-successor.v1",
+  "passed": false,
+  "started_at_utc": "2026-11-03T22:25:47.144106+00:00",
+  "source_root": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source",
+  "source_head": "a286e0f922bf8e439e8951ae1538abeac0b26477",
+  "source_tree": "342ad0840d521e97d6de5845682cbc11a115f6f7",
+  "canonical_parent": "fe55fe8e1764f4967bae295311d288d8049b6eae",
+  "fixed_upstream_tree": "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+  "complete_git_history_claimed": false,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/git",
+        "rev-parse",
+        "HEAD",
+        "HEAD^{tree}"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-fe55-owned-source",
+      "exit_code": 0,
+      "label": "old-identity"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-fe55-owned-source",
+      "exit_code": 0,
+      "label": "old-clean"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "clone",
+        "--no-hardlinks",
+        "--no-checkout",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-fe55-owned-source",
+        "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source"
+      ],
+      "cwd": "/data/trill-organ-20261103-f1-build",
+      "exit_code": 0,
+      "label": "clone-owned-source"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "bundle",
+        "verify",
+        "/data/trill-organ-20261103-f1-build/desktop-owner-a286-from-fe55.bundle"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source",
+      "exit_code": 0,
+      "label": "verify-canonical-bundle"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "fetch",
+        "--no-tags",
+        "/data/trill-organ-20261103-f1-build/desktop-owner-a286-from-fe55.bundle",
+        "refs/heads/codex/g2-owner-canonical-export-a286:refs/heads/canonical-a286"
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source",
+      "exit_code": 0,
+      "label": "fetch-canonical-successor"
+    },
+    {
+      "argv": [
+        "/usr/bin/git",
+        "update-ref",
+        "refs/task-inputs/asterinas-fixed-tree",
+        "96605cf64aeae2d34f29b97e85eff9315fe10a8e",
+        ""
+      ],
+      "cwd": "/home/qian-qi/work/trill-organ-20261103-f1/desktop-owner-a286-owned-source",
+      "exit_code": 128,
+      "label": "pin-upstream-tree"
+    }
+  ],
+  "independent_object_store_verified": false,
+  "kernel_built": false,
+  "locked_204_graph_verified": false,
+  "native_execution_verified": false,
+  "g2_complete": false,
+  "bundle": {
+    "bytes": 2092,
+    "sha256": "aaffea0688ac672d1a3d54baead100803a6f6df5a7c2008a395b5f3f70ee0923"
+  },
+  "error": "ValueError: pin-upstream-tree failed: fatal: update_ref failed for ref 'refs/task-inputs/asterinas-fixed-tree': cannot update ref 'refs/task-inputs/asterinas-fixed-tree': trying to write ref 'refs/task-inputs/asterinas-fixed-tree' with nonexistent object 96605cf64aeae2d34f29b97e85eff9315fe10a8e\n",
+  "finished_at_utc": "2026-11-03T22:25:51.100459+00:00"
+}

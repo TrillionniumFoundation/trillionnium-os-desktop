@@ -1,5 +1,19 @@
 # 当前状态
 
+## 2026-11-04 原 seed 与联合候选检查点
+
+联合 Hepta 已发布为 [PR #4749](https://github.com/TrillionniumFoundation/hepta-private-ci/pull/4749) 的 `14e2d89b3367232ec5dbe6187f09feed0f2b68d3` / tree `0e12d53adf6a13721fdb2feef0e974d903b92e85`。原 `a39` 父提交、完整本地/远端 tree 等值及实际执行身份由[发布记录](../results/integration/2026-11-03-organ-followup/joint-hepta-canonical-publication/README.md)分别保留；这尚非新的联合安装包验收。
+
+原 App Server 的持久信号监听修复已完成 Rust 1.96 组件构建，19 条命令全部成功；其三项首次信号退出和两项原 drain 用例通过。[实际原 seed 测试](../results/integration/2026-11-03-organ-followup/original-seed-lifecycle-857d/README.md)随后真实通过 1 项，原 job exit 0，原 10 秒子进程退出边界不变，socket 和临时挂载均退役。实际为 Hepta `857d8f61` / Desktop test `92a06c4b` / 原库 `a39` 的明确组件组合，未授予新联合产品、用户提交、Notes 效果或重启资格；旧 `fd/a39` 首次启动失败继续保留。
+
+[Hepta 26a 的完整四包执行](../results/integration/2026-11-03-organ-followup/joint-hepta-26a-tests/README.md)已结束：Objective 66/0/2、Memory 399/1/13、Agentd 546/1/60、App Server 1,315/16/2，顺序为 passed/failed/skipped。原 job exit 1、无外层超时或取消。14 项 App Server 失败涉及缺失原 helper，另两项是断连进程回收和冷恢复 parent thread；原失败日志及 retries 全部保留，后续选测不能替代完整执行。
+
+[a286 的独立源码与原 owner](../results/integration/2026-11-03-organ-followup/g2-a286-build-and-cache-evidence-20261103/README.md)已实际构建并通过原 118-file 来源门禁。原 OSDK 0.19.0 从源码构建成功，后续 kernel 在缺少固定 nightly 标准库的 `getopts 0.2.24` 时失败。[原结果恢复与精确缓存接纳](../results/integration/2026-11-03-organ-followup/g2-a286-read-recovery-evidence-20261103/README.md)已另存；204-package 生成锁字节一致不等于实际图门禁或内核通过。新内核、正向 guest、原 writer/outbox 持久 G2 和完整资源恢复继续逐项验收。
+
+后续[47 custody 选测](../results/integration/2026-11-03-organ-followup/joint-hepta-47-custody/README.md)已在原一秒期限内通过实际物理锁释放观察，fmt/fix/精确一项均成功；26a 全包红灯不变。[a286 kernel v3](../results/integration/2026-11-03-organ-followup/g2-a286-kernel-v3-20261104/README.md)实际编译到 `aster-core` 后因三处原 metadata 宏失败，完整原日志、退出码和来源未变记录保留，尚无内核或 G2 成功。
+
+下方日期节及其“当前”“仍需”属于原时点；最新汇总以[当前能力](CURRENT_CAPABILITIES.md#current-product-pair)为准。
+
 ## 2026-11-03 当前入口与历史边界
 
 当前实施起点为 Desktop `745c0731aed270ee394145c6767371a6af47f49f` / tree `fa70b1b95206d25775009c6965245d34051468a4`，配对原 Hepta `a39a0871d9601ffccb5e0d95d8f39d54b3a63360` / tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`。完整当前范围和未完成门禁统一见[当前能力](CURRENT_CAPABILITIES.md#current-product-pair)；实际后继产物须绑定自己的 Desktop commit/tree。
