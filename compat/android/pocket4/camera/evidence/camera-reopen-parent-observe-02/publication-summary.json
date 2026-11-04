@@ -1,0 +1,114 @@
+{
+  "at": "2026-11-04T08:29:12.854834+00:00",
+  "parent_window": {
+    "launch_begin": "2026-11-04T08:26:24.418Z",
+    "normal_close_complete": "2026-11-04T08:26:36.911Z",
+    "photo_taken": false
+  },
+  "ignored_nonlaunch": {
+    "at": "2026-11-04T08:22:00Z",
+    "classification": "component parser rejected request before launch; parent evidence; not a successful reopen"
+  },
+  "events": [
+    {
+      "realtime_us": "1793780784639854",
+      "metadata": {
+        "event": "producer",
+        "utc": "2026-11-04T08:26:24Z",
+        "message": "Pocket4LiveCamera camera_open"
+      }
+    },
+    {
+      "realtime_us": "1793780784659459",
+      "metadata": {
+        "event": "producer",
+        "utc": "2026-11-04T08:26:24Z",
+        "message": "Pocket4LiveCamera session_configured metadata_injection=false"
+      }
+    },
+    {
+      "realtime_us": "1793780784659459",
+      "metadata": {
+        "event": "producer",
+        "utc": "2026-11-04T08:26:24Z",
+        "message": "Pocket4LiveCamera stream_configured id=0 size=640x480 format=1"
+      }
+    },
+    {
+      "realtime_us": "1793780784660131",
+      "metadata": {
+        "event": "producer",
+        "utc": "2026-11-04T08:26:24Z",
+        "message": "Pocket4LiveCamera source_connected session=2 peer_uid=0"
+      }
+    },
+    {
+      "realtime_us": "1793780784661044",
+      "metadata": {
+        "event": "physical_camera_open",
+        "utc": "2026-11-04T08:26:24Z",
+        "device": "<physical-camera>"
+      }
+    },
+    {
+      "realtime_us": "1793780784917801",
+      "metadata": {
+        "event": "live_frames",
+        "utc": "2026-11-04T08:26:24Z",
+        "frames": 1,
+        "elapsed": 0.257,
+        "age_ms": 0.216
+      }
+    },
+    {
+      "realtime_us": "1793780784921315",
+      "metadata": {
+        "event": "producer",
+        "utc": "2026-11-04T08:26:24Z",
+        "message": "Pocket4LiveCamera live_frame session=2 frames=1 seq=1 age_ms=3 surfaces=1"
+      }
+    },
+    {
+      "realtime_us": "1793780796623571",
+      "metadata": {
+        "event": "producer",
+        "utc": "2026-11-04T08:26:36Z",
+        "message": "Pocket4LiveCamera stream_closed id=0"
+      }
+    },
+    {
+      "realtime_us": "1793780796658177",
+      "metadata": {
+        "event": "producer",
+        "utc": "2026-11-04T08:26:36Z",
+        "message": "Pocket4LiveCamera source_closed session=2 frames=196"
+      }
+    },
+    {
+      "realtime_us": "1793780796689465",
+      "metadata": {
+        "event": "physical_camera_closed",
+        "utc": "2026-11-04T08:26:36Z",
+        "frames": 197,
+        "elapsed": 12.028,
+        "exit": 0,
+        "detail": "capture: MJPG 640x480 interval=1/30\ncapture_stats frames=197 dequeued=197 dropped=0 bytes=4641406 min=22035 max=34331 driver_first=0 driver_last=196 seconds=11.969 fps=16.460 status=stopped\n"
+      }
+    }
+  ],
+  "physical_open_count": 1,
+  "physical_close_count": 1,
+  "capture_processes_after_count": 1,
+  "all_capture_processes_reaped": true,
+  "status": {
+    "transport": "live_mjpeg_memory_only",
+    "capture": "on_demand"
+  },
+  "usb_present": true,
+  "original_events_sha256": "d43808a3e83362646d364587bf919cae109153d47ec66be26b49001fde7cecaa",
+  "preview_ui_verified_by_this_agent": false,
+  "production_mutated": false,
+  "production_ready": false,
+  "original_public_summary_sha256": "5e96239384c6a01da1055a5578382c0425041851bff7ec3649992bec9cb67990",
+  "publication_note": "Process/task/USB enumeration identities removed; facts and observer/UI verification boundary retained. Original event hash fields refer to original provided metadata."
+}

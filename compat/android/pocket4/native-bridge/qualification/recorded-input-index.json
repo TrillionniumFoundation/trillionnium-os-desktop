@@ -1,0 +1,162 @@
+{
+  "binary_build_inputs": {
+    "complete_digest_map": "Available in original v8-once-source-r2/build-attempt-1/build-result.json, not cached here",
+    "full_original_build_receipt_included": false,
+    "must_not_infer_missing_hashes": true,
+    "roles": [
+      "Clang",
+      "JDK",
+      "Android SDK jar",
+      "R8/D8",
+      "aapt",
+      "zipalign",
+      "apksigner",
+      "ARM64 Bionic libc provider"
+    ]
+  },
+  "completed_qualification": {
+    "full_raw_receipt_included": false,
+    "main_deployment_in_this_receipt": false,
+    "receipt_name": "three-arm-qualification-v5-once.json",
+    "sha256": "e9213a03acf9a6d995040a08488a1ee073c3a8fa46e1b40a78ee1e056137d371",
+    "state": "PASS_THREE_ARM_OWNED_NATIVE_SEMANTICS"
+  },
+  "excluded_content": [
+    "APK bytes",
+    "signing keys",
+    "raw logs",
+    "actual nonces",
+    "process IDs",
+    "private Main identities"
+  ],
+  "external_cleanup_review": {
+    "receipt_sha256": {
+      "R14": "e3986f2a49fb6006f2e638592dcac6688c29ffd9cf1ab4660598fc1758d92caf",
+      "R15": "2ab3e7f2a337313fcc82973de36c70a6fe49687e1720a97eaf6d0cf4278ffc09",
+      "R16": "f61c966375d08fdefad5ce3d9a4e7016b32497ea33aee275dd95ae49f620d932"
+    },
+    "reviewer_sha256": "48da7871e2a3396d4d1365ae5007bba298a8395dff5907690fb7a36bc86a569a"
+  },
+  "materialized_original_sources": [
+    {
+      "bytes": 11742,
+      "file": "v8-once-source-r2/native_probe.c",
+      "matches_observed_remote_pin": true,
+      "sha256": "be03493895ef5f6296837cb591eb93f7621f4b9fbdef390e39a6de2d15a0ed22"
+    },
+    {
+      "bytes": 622,
+      "file": "v8-once-source-r2/AndroidManifest.xml",
+      "matches_observed_remote_pin": true,
+      "sha256": "7cbeb51ae16c2148cdaaf86634094cc15b72722f09c5fd839838fd92bfa59424"
+    },
+    {
+      "bytes": 8804,
+      "file": "v8-once-source-r2/build.py",
+      "matches_observed_remote_pin": true,
+      "sha256": "ae44bd882ebc7203fe99dc62d0cebac97733ba806b0ce8a61531eb3964a9508e"
+    },
+    {
+      "bytes": 5399,
+      "file": "v8-once-source-r2/src/local/pocket4/nativeoraclev8/MainActivity.java",
+      "matches_observed_remote_pin": true,
+      "sha256": "f61e91e17bd42a1a0554aa2721eef435d2919f621a67e2a182d1e21b233a3f1c"
+    },
+    {
+      "bytes": 1122,
+      "file": "v8-once-source-r2/source-manifest.json",
+      "matches_observed_remote_pin": true,
+      "sha256": "3f0f336756874c1d048e43945abe2acdd081f6056e91ebd973b6ffd3bd8945e9"
+    },
+    {
+      "bytes": 11650,
+      "file": "prepare-v5-once.py",
+      "matches_observed_remote_pin": true,
+      "sha256": "9eadf9bb33dd21fbd2aa368572c13ef7f9f425392da251041e15924bc20924e2"
+    },
+    {
+      "bytes": 4163,
+      "file": "assess-default-once.py",
+      "matches_observed_remote_pin": true,
+      "sha256": "6cd85a2e6c58ec39cdaf38eb1fbbab87d3960ba4459b49977d6174edd3ade766"
+    },
+    {
+      "bytes": 5600,
+      "file": "assess-v2.py",
+      "matches_observed_remote_pin": true,
+      "sha256": "c3d88977418a8a8a522db604d4b6930eefaf5dddbf406ddb2175c5b748356f0c"
+    },
+    {
+      "bytes": 4012,
+      "file": "default_once_parser_test.py",
+      "matches_observed_remote_pin": "Remote digest not separately read; exact original creation payload retained",
+      "sha256": "ae8cf3520c01a65699f17310f98c74aaa5195466ef07e4aba4dcade1873fdbcd"
+    }
+  ],
+  "native_engine_inputs": {
+    "R14": "a74cba50358ab473b4261e33daee98107fb45fcc78110f71599ad38b63822d2c",
+    "R15": "a770eda38e27d072f10568b7dee164a429f9eb05261667f7cb3c6f1c10e0d535",
+    "R16": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d"
+  },
+  "other_previously_observed_source_pins": {
+    "qualify_three_arms_v5_once.py": "c27fe38177bc36a71b4c0289c4cebce1a279dbe038080575bc37122bf1aacc50",
+    "run_arm-v5-once.py": "895ecbfec6d04170adf0dbc16a0fd18d3de0b78317efec86de1846295dfcddb8",
+    "runner-v5-once-manifest.json": "72d3151d28485f536b9f28b9575b248da92c6b289998e28066a82a8a2f776f67"
+  },
+  "owned_probe_outputs": {
+    "APK_bytes_included": false,
+    "APK_sha256": "dc1777871e32681a823253c36dba0a553ef596a464a3c4d7a282d3f9a6bafa67",
+    "build_stdout_state": "BUILT_STATIC_AND_REAL_HOST_CONTROLS_PASS_ANDROID_UNRUN",
+    "build_stdout_state_scope": "Build-time receipt only; Android execution is separately qualified",
+    "native_ELF_sha256_unchanged": "ee3152f3edb1a86dea09ee9e6446a1cdada8586ab826d3c72de6f0085c08839a"
+  },
+  "parent_source_inputs": [
+    {
+      "included_in_this_transfer": false,
+      "name": "native-jni-oracle-v6/build.py",
+      "sha256": "0e77ac152e7fd91cb6e5171e189394fbdd4c30f6e62af919c7ca31dcab5ceb59"
+    },
+    {
+      "included_in_this_transfer": false,
+      "name": "native-jni-oracle-v7-r2/static_helpers.py",
+      "sha256": "9e2fcbdf7ded4db0dcbd2bbe25b50884a238329d7afcbd34c680d9a3d2044f0b"
+    }
+  ],
+  "parser_only_stdout_summary": {
+    "actual_Android_test": false,
+    "original_full_receipt_included": false,
+    "original_full_receipt_regenerated": false,
+    "state": "PASS_1_SYNTHETIC_POSITIVE_10_REJECTIONS_2_INCOMPLETE_CONTROLS"
+  },
+  "preserved_failure_history": [
+    "Outdated CPU inventory fixture",
+    "Asynchronous Home bootstrap changed package baseline",
+    "Original v3 R15 multiple-process attribution failure",
+    "Default-only lifecycle diagnostic was not full qualification",
+    "First once-APK compile failed on unavailable public SDK constant",
+    "Non-root launcher manifest read failed before Android execution"
+  ],
+  "prior_control_APK_inputs": {
+    "V4": "74c566cefda4877e1b156394a5f8a38e043db95cd33780fd8a45021f9cb6704a",
+    "V5": "4cea86be78ba70aba56f5a37bbfe73be9ab10af958cd528a0015fba45f4ced95",
+    "V6": "8706242bc7d24bb2f4fc1c0b7358d3c1839b36b8be71470e6f323c5c1b5b43fe"
+  },
+  "prior_control_source_build_chain_closed_here": false,
+  "private_runtime_inputs": {
+    "complete_Android_OS_source_rebuild": false,
+    "fixture_bytes_included": false,
+    "fixture_manifest_sha256": "31885dffa33fe30b0249d37acf437c00b348a0ac1020f8c56b427a8dac743183",
+    "frozen_records": 86,
+    "presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
+  },
+  "provenance": "Offline recovery from cached exact source contents and previously observed source digests; no new Pocket4 access",
+  "reproducibility_limits": [
+    "Not a clean-checkout runnable private Android environment",
+    "Requires local pinned parent builders, toolchain, libc, prior control APKs, and frozen runtime fixtures",
+    "Signing material omitted; no cross-machine byte-reproducible APK guarantee",
+    "Historical sources contain host-specific checks; edited publication copies require their own digests and documented transformations",
+    "Immediate default executors have application-recorded start ticks, not independent host start/map samples; engine maps were independently observed in preceding live controls"
+  ],
+  "schema": "pocket4-native-canary-public-source-input-index-v1",
+  "scope": "Owned native semantics in the completed private v5 three-arm canary; no publisher application or complete production readiness claim"
+}

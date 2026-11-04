@@ -1,0 +1,32 @@
+{
+  "schema": "pocket4-lmkd-r4-pending-high-negative-v1",
+  "original_sha256": "dd2696f65223dfcfcaac2190befa85ae2fa1ab114c422ae86c6414961c14c760",
+  "scope": "Actual Reader plus extracted production guard, medium/poll before critical; source-level negative, not the cause of the r7 foreground death",
+  "record": {
+    "scope": "actual Reader and actual no-scan block; descriptor I/O substitutes; no live pressure",
+    "compile_rc": 0,
+    "source_sha256": {
+      "lmkd.cpp": "fa7d9e3a7c5f28af243d8b20b2fb8c81d5bdfb7471148d336a00e53b33ff1c9b",
+      "memory_cgroup.cpp": "126f21429c4a80fbac26a206121f0aabefccc9ca6f4e3db273b5ad05de8612b6",
+      "memory_cgroup.h": "5ec847e398c99b5a522d7229cdf2972cc7402120811cb3b95afcda0fff8028fe"
+    },
+    "reader_fixture_sha256": "cd49c84f244c5eb2225d6c1ed0abcf5948f1dfec258c317a1534af250640277e",
+    "guard_sha256": "06d3f9526c9ef6a1a2be697d82b0f285529d337a21e1223b0c5126ff23359cc1",
+    "sequences": {
+      "medium": {
+        "rc": 2,
+        "stdout": "PASS sequence argument\nPASS real reader cold baseline\nPASS old cumulative high count cannot activate critical decision\nPASS new high observation above unchanged finite limit\nPASS intermediate wakeup preserves true critical notification gate\nPASS critical notification reads same current count and unchanged budget\n",
+        "stderr": "FAIL fresh high observation survives intermediate wakeup until critical decision\n"
+      },
+      "poll": {
+        "rc": 2,
+        "stdout": "PASS sequence argument\nPASS real reader cold baseline\nPASS old cumulative high count cannot activate critical decision\nPASS new high observation above unchanged finite limit\nPASS intermediate wakeup preserves true critical notification gate\nPASS critical notification reads same current count and unchanged budget\n",
+        "stderr": "FAIL fresh high observation survives intermediate wakeup until critical decision\n"
+      }
+    },
+    "r4_regression_confirmed": true,
+    "production_ready": false
+  },
+  "test_source_sha256": "e79fd4e557f38cd200b681fc68039aeaf9dc058a78bd8b705620e3c939ecc660",
+  "production_ready": false
+}

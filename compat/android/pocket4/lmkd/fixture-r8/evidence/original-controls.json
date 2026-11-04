@@ -1,0 +1,31 @@
+{
+  "schema": "pocket4-lmkd-fixture-r8-recorded-controls-v1",
+  "scope": "Original private runner: 29 temporary/fake guard tests and 24 owned fork/socket/pidfd tests; no LMKD pressure in these host tests",
+  "original_runner_sha256": "3f2c304d29db469ce179fe61a417f593f661dae49108e1451714bf8040415aba",
+  "guard_tests": {
+    "original_sha256": "336125666303b050fb0fa3bcec198cb3c6dc79da7d1a1eb43a01a7ed4f2a7c87",
+    "record": {
+      "name": "guard-tests",
+      "argv": [
+        "/usr/bin/python3",
+        "LMKD_WORK/fixture-review-08-pressure-diagnostics/test_runner.py"
+      ],
+      "rc": 0,
+      "stdout": "{\n  \"scope\": \"temporary files and fake guards only; no Main/unit/LMKD executed\",\n  \"tests\": 29,\n  \"passed\": true,\n  \"failures\": 0,\n  \"errors\": 0,\n  \"runner_sha256\": \"3f2c304d29db469ce179fe61a417f593f661dae49108e1451714bf8040415aba\",\n  \"output\": \"test_alternate_lmkd_path_cannot_replace_fixed_contract (__main__.Boundaries.test_alternate_lmkd_path_cannot_replace_fixed_contract) ... ok\\ntest_changed_main_counter_frame_is_saved_before_stop (__main__.Boundaries.test_changed_main_counter_frame_is_saved_before_stop) ... ok\\ntest_child_domain_limit_mismatch_and_populated_root_are_rejected (__main__.Boundaries.test_child_domain_limit_mismatch_and_populated_root_are_rejected) ... ok\\ntest_duplicate_counter_is_unknown (__main__.Boundaries.test_duplicate_counter_is_unknown) ... ok\\ntest_duplicate_psi_is_unknown (__main__.Boundaries.test_duplicate_psi_is_unknown) ... ok\\ntest_execute_requires_explicit_switch_before_any_host_read (__main__.Boundaries.test_execute_requires_explicit_switch_before_any_host_read) ... ok\\ntest_execution_and_state_directory_policies (__main__.Boundaries.test_execution_and_state_directory_policies) ... ok\\ntest_file_bound_is_enforced (__main__.Boundaries.test_file_bound_is_enforced) ... ok\\ntest_framework_process_cannot_escape_main_namespace_or_parent (__main__.Boundaries.test_framework_process_cannot_escape_main_namespace_or_parent) ... ok\\ntest_guest_framework_generations_are_part_of_stable_identity (__main__.Boundaries.test_guest_framework_generations_are_part_of_stable_identity) ... ok\\ntest_hash_pin_rejects_changed_bytes (__main__.Boundaries.test_hash_pin_rejects_changed_bytes) ... ok\\ntest_historical_counters_retained_and_deltas_stop (__main__.Boundaries.test_historical_counters_retained_and_deltas_stop) ... ok\\ntest_input_hardlink_is_rejected (__main__.Boundaries.test_input_hardlink_is_rejected) ... ok\\ntest_input_symlink_is_rejected (__main__.Boundaries.test_input_symlink_is_rejected) ... ok\\ntest_missing_or_duplicate_framework_process_is_rejected (__main__.Boundaries.test_missing_or_duplicate_framework_process_is_rejected) ... ok\\ntest_missing_psi_fields_are_unknown (__main__.Boundaries.test_missing_psi_fields_are_unknown) ... ok\\ntest_namespace_root_bind_cannot_replace_fixed_memory_mount (__main__.Boundaries.test_namespace_root_bind_cannot_replace_fixed_memory_mount) ... ok\\ntest_namespace_root_cannot_replace_memory_domain (__main__.Boundaries.test_namespace_root_cannot_replace_memory_domain) ... ok\\ntest_namespace_root_monitor_permission_must_still_be_denied (__main__.Boundaries.test_namespace_root_monitor_permission_must_still_be_denied) ... ok\\ntest_negative_counter_is_unknown (__main__.Boundaries.test_negative_counter_is_unknown) ... ok\\ntest_nonfinite_psi_is_unknown (__main__.Boundaries.test_nonfinite_psi_is_unknown) ... ok\\ntest_original_strict_psi_admission_threshold_is_unchanged (__main__.Boundaries.test_original_strict_psi_admission_threshold_is_unchanged) ... ok\\ntest_output_claim_never_overwrites (__main__.Boundaries.test_output_claim_never_overwrites) ... ok\\ntest_owned_child_domain_is_bound_to_real_inode_and_limits (__main__.Boundaries.test_owned_child_domain_is_bound_to_real_inode_and_limits) ... ok\\ntest_persist_failure_prevents_policy_and_release_progress (__main__.Boundaries.test_persist_failure_prevents_policy_and_release_progress) ... ok\\ntest_post_registration_runtime_gate_precedes_pressure (__main__.Boundaries.test_post_registration_runtime_gate_precedes_pressure) ... ok\\ntest_rejected_health_frame_is_durable_with_exact_trigger (__main__.Boundaries.test_rejected_health_frame_is_durable_with_exact_trigger) ... ok\\ntest_unrelated_domain_inode_is_rejected (__main__.Boundaries.test_unrelated_domain_inode_is_rejected) ... ok\\ntest_workload_and_supervisor_membership_are_not_interchangeable (__main__.Boundaries.test_workload_and_supervisor_membership_are_not_interchangeable) ... ok\\n\\n----------------------------------------------------------------------\\nRan 29 tests in 0.011s\\n\\nOK\\n\"\n}\n",
+      "stderr": ""
+    }
+  },
+  "owned_ipc": {
+    "original_sha256": "52e0d0baa1668ab568b44fb03c192e9f98f3ab0684bd45df254065f9ee5996b0",
+    "record": {
+      "name": "owned-ipc-tests",
+      "argv": [
+        "LMKD_WORK/fixture-review-08-pressure-diagnostics/test-owned-ipc"
+      ],
+      "rc": 0,
+      "stdout": "PASS legacy ACK-only wait leaves log queue stalled\nPASS legacy negative control still owns live blocked sender\nPASS ACK arrives while actual helper drains log queue\nPASS all owned log bytes persisted before ACK completion\nPASS length-delimited log evidence complete\nPASS positive sender exits normally\nPASS silent ACK retains finite original-style deadline\nPASS owned fork\nPASS owned pidfd pinned\nPASS live process does not invent exit info\nPASS stopped state preserves live start identity\nPASS continued state preserves live start identity\nPASS owned signal exit bounded\nPASS exact signal exit observed through pidfd\nPASS WNOWAIT leaves exit repeatably observable\nPASS later owned waitpid still receives same signal\nPASS owned fork\nPASS owned pidfd pinned\nPASS owned signal exit bounded\nPASS exact signal exit observed through pidfd\nPASS WNOWAIT leaves exit repeatably observable\nPASS later owned waitpid still receives same signal\nPASS normal exit code distinguished from signal\nPASS invalid pidfd does not fall back to numeric PID\nRESULT 24 passed; owned IPC only, no cgroup or LMKD run\n",
+      "stderr": ""
+    }
+  },
+  "production_ready": false
+}

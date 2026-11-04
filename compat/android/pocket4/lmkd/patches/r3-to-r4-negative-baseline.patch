@@ -1,0 +1,154 @@
+--- a/memory_cgroup.h
++++ b/memory_cgroup.h
+@@ -27,6 +27,10 @@
+ struct Snapshot {
+     uint64_t current, max, high, swap_current, swap_max;
+     bool high_unlimited, swap_unlimited;
++    uint64_t high_events;
++    // True only for a new high event between two successful, coherent reads
++    // with the same budget, while current usage still exceeds finite high.
++    bool high_throttling_progressed;
+     MemoryStat stat;
+     HostMemory host;
+ };
+@@ -40,9 +44,11 @@
+ bool ParseNumber(std::string_view text, uint64_t* value);
+ bool ParseLimit(std::string_view text, uint64_t* value, bool* unlimited);
+ bool ParseStat(std::string_view text, MemoryStat* stat);
++bool ParseHighEvents(std::string_view text, uint64_t* high_events);
+ bool ParseHostMemory(std::string_view text, HostMemory* host);
+ bool Validate(const Snapshot& snapshot, uint64_t page_size);
+ bool CountersMonotonic(const Snapshot& previous, const Snapshot& current);
++bool HighThrottlingProgressed(const Snapshot& previous, const Snapshot& current);
+ 
+ // Real capacity remaining, capped by physical free memory; never credits the
+ // host's total RAM as container capacity. Clean cache is not added here.
+@@ -71,13 +77,14 @@
+     int error() const { return error_; }
+ 
+   private:
+-    enum File { kCurrent, kMax, kHigh, kSwapCurrent, kSwapMax, kStat, kHostMem, kCount };
++    enum File { kCurrent, kMax, kHigh, kSwapCurrent, kSwapMax, kStat, kEvents, kHostMem, kCount };
+     int root_fd_ = -1;
+-    int fds_[kCount] = {-1, -1, -1, -1, -1, -1, -1};
++    int fds_[kCount] = {-1, -1, -1, -1, -1, -1, -1, -1};
+     int error_ = 0;
+     bool opened_ = false;
+     bool counters_faulted_ = false;
+     bool previous_valid_ = false;
++    bool high_baseline_valid_ = false;
+     Snapshot previous_{};
+     bool ReadFile(File file, char* buffer, size_t size, std::string_view* text);
+ };
+--- a/memory_cgroup.cpp
++++ b/memory_cgroup.cpp
+@@ -92,6 +92,22 @@
+     });
+     if (!ok || seen != ((1U << std::size(fields)) - 1)) return false;
+     *stat = parsed;
++    return true;
++}
++
++bool ParseHighEvents(std::string_view text, uint64_t* high_events) {
++    uint64_t parsed = 0;
++    bool seen = false;
++    bool ok = Lines(text, [&](std::string_view line) {
++        size_t split = line.find_first_of(" \t");
++        if (split == std::string_view::npos) return false;
++        if (line.substr(0, split) != "high") return true;
++        if (seen || !ParseNumber(line.substr(split + 1), &parsed)) return false;
++        seen = true;
++        return true;
++    });
++    if (!ok || !seen) return false;
++    *high_events = parsed;
+     return true;
+ }
+ 
+@@ -131,9 +147,20 @@
+ }
+ 
+ bool CountersMonotonic(const Snapshot& a, const Snapshot& b) {
+-    return b.stat.workingset_refault_file >= a.stat.workingset_refault_file &&
++    return b.high_events >= a.high_events &&
++           b.stat.workingset_refault_file >= a.stat.workingset_refault_file &&
+            b.stat.pgscan_kswapd >= a.stat.pgscan_kswapd &&
+            b.stat.pgscan_direct >= a.stat.pgscan_direct && b.stat.pgrefill >= a.stat.pgrefill;
++}
++
++bool HighThrottlingProgressed(const Snapshot& a, const Snapshot& b) {
++    // memory.events.high counts actual high-boundary throttling, including
++    // reclaim attempts that have no scannable pages. A changed budget or an
++    // old cumulative event is not evidence of current pressure.
++    return !a.high_unlimited && !b.high_unlimited && a.high == b.high &&
++           a.max == b.max && a.swap_max == b.swap_max &&
++           a.swap_unlimited == b.swap_unlimited && b.current > b.high &&
++           b.high_events > a.high_events;
+ }
+ 
+ uint64_t FreeBytes(const Snapshot& s) { return std::min(Sub(s.max, s.current), s.host.free); }
+@@ -166,7 +193,8 @@
+     if (root_fd_ < 0) { error_ = errno; return false; }
+     if (fstatfs(root_fd_, &fs) || fs.f_type != CGROUP2_SUPER_MAGIC) { error_ = ENODEV; return false; }
+     constexpr const char* names[] = {"memory.current", "memory.max", "memory.high",
+-                                    "memory.swap.current", "memory.swap.max", "memory.stat"};
++                                    "memory.swap.current", "memory.swap.max", "memory.stat",
++                                    "memory.events"};
+     for (int i = 0; i < kHostMem; ++i) {
+         fds_[i] = openat(root_fd_, names[i], O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
+         if (fds_[i] < 0) { error_ = errno; return false; }
+@@ -186,6 +214,10 @@
+ }
+ 
+ bool Reader::Read(Snapshot* out) {
++    // A failed sample breaks the event interval. Retain the last counters for
++    // rollback detection, but never reuse its events as fresh pressure later.
++    const bool compare_high = high_baseline_valid_;
++    high_baseline_valid_ = false;
+     if (!opened_ || counters_faulted_) { error_ = counters_faulted_ ? EUCLEAN : EBADF; return false; }
+     Snapshot s{};
+     char buffer[8192];
+@@ -199,6 +231,7 @@
+         !limit(kSwapMax, &s.swap_max, &s.swap_unlimited) ||
+         !number(kCurrent, &s.current) || !number(kSwapCurrent, &s.swap_current) ||
+         !ReadFile(kStat, buffer, sizeof(buffer), &text) || !ParseStat(text, &s.stat) ||
++        !ReadFile(kEvents, buffer, sizeof(buffer), &text) || !ParseHighEvents(text, &s.high_events) ||
+         !ReadFile(kHostMem, buffer, sizeof(buffer), &text) || !ParseHostMemory(text, &s.host)) return false;
+     // Do not combine an old budget with new usage across a concurrent change.
+     uint64_t second;
+@@ -213,8 +246,10 @@
+         error_ = EUCLEAN;
+         return false;
+     }
++    s.high_throttling_progressed = compare_high && HighThrottlingProgressed(previous_, s);
+     previous_ = s;
+     previous_valid_ = true;
++    high_baseline_valid_ = true;
+     *out = s;
+     error_ = 0;
+     return true;
+--- a/lmkd.cpp
++++ b/lmkd.cpp
+@@ -2990,10 +2990,19 @@
+     } else if ((workingset_refault_file == prev_workingset_refault) &&
+                 (source == PSI)) {
+         /*
+-         * Device is not thrashing and not reclaiming, bail out early until we see these stats
+-         * changing
++         * A cell above memory.high can be throttled without any scannable
++         * pages. Continue only for a new, coherent high event and an actual
++         * critical PSI notification; polling and historical events cannot
++         * bypass this guard. Existing watermarks and kill policy still apply.
+          */
+-        goto no_kill;
++        if (!(cell_memory_enabled && cell_memory_snapshot.high_throttling_progressed &&
++              level == VMPRESS_LEVEL_CRITICAL && events != 0)) {
++            goto no_kill;
++        }
++        ALOGI("Cell high throttling with critical PSI: current=%" PRIu64
++              " high=%" PRIu64 " high_events=%" PRIu64,
++              cell_memory_snapshot.current, cell_memory_snapshot.high,
++              cell_memory_snapshot.high_events);
+     }
+ 
+     prev_workingset_refault = workingset_refault_file;

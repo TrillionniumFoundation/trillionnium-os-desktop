@@ -1,0 +1,193 @@
+{
+  "schema": "pocket4-lmkd-external-dependencies-v1",
+  "source": {
+    "lmkd": {
+      "url": "https://android.googlesource.com/platform/system/memory/lmkd",
+      "commit": "c3601e823bd07c9c190f67e2f9bc7486e4978328"
+    },
+    "libmeminfo": {
+      "url": "https://android.googlesource.com/platform/system/memory/libmeminfo",
+      "commit": "d59c960b1fb93377bf68664918031ea5fe709f89"
+    }
+  },
+  "compiler": {
+    "package": "clang-r584948b",
+    "target": "x86_64-linux-android10000",
+    "entry_sha256": "15261046b6ea9504da0ae57b9d65ebc869ab1942aecb1af2819762b9b5251957"
+  },
+  "path_roots": {
+    "AOSP_SOURCE": "Pinned materialized Android source/prebuilt workspace, not distributed",
+    "BASELINE_ANDROID_OUT": "Frozen prior Android CRT/generated-output workspace, not distributed",
+    "LMKD_WORK": "Local preparation tree; source-r3 and source-r4 are reconstructable, binary inputs are separately pinned and not distributed"
+  },
+  "shared_libraries": [
+    {
+      "name": "libdl.so",
+      "source": "LMKD_WORK/android-build-01/deps/libdl.so",
+      "sha256": "cac32e3c3cf985186becde5aeae987794892c88b192762073eb38f202ec111a9"
+    },
+    {
+      "name": "libm.so",
+      "source": "LMKD_WORK/android-build-01/deps/libm.so",
+      "sha256": "e2a7938f3a05a1b18531c918e6468a2f422e86cbda01ee8f966b64ebca7bf0b4"
+    },
+    {
+      "name": "libmemevents.so",
+      "source": "LMKD_WORK/android-build-01/deps/libmemevents.so",
+      "sha256": "26b20973292206cb73715872d48a4b27db670604a2175e9864f8929c84b25d18"
+    },
+    {
+      "name": "libprocessgroup.so",
+      "source": "LMKD_WORK/android-build-01/deps/libprocessgroup.so",
+      "sha256": "360a3a5422c8070c5c0b9ee88b8f60d1d412d17c34c23454cecfc7b22431834e"
+    },
+    {
+      "name": "libpsi.so",
+      "source": "LMKD_WORK/android-build-01/deps/libpsi.so",
+      "sha256": "8779d34e285fdf526c2296e2ffa2d45406a7c1115ed3c7720a92f3701a5797fa"
+    },
+    {
+      "name": "libc++.so",
+      "source": "LMKD_WORK/android-build-01/deps/libc++.so",
+      "sha256": "1d01d51b0cdf7ad4224f96e5a3bbd33556cf2ccca6abc6bc886f7e1c4a40fc34"
+    },
+    {
+      "name": "libcutils.so",
+      "source": "LMKD_WORK/android-build-01/deps/libcutils.so",
+      "sha256": "6803d6a5d2d32a853c1e6f10f65f55b951d03899711fb4bcf5dcf7772446c63b"
+    },
+    {
+      "name": "libc.so",
+      "source": "LMKD_WORK/android-build-01/deps/libc.so",
+      "sha256": "e0a83b3741ba190cc4de2c66986ae62c0d0428aca371eba5a48bf0a9ff02d26e"
+    },
+    {
+      "name": "liblog.so",
+      "source": "LMKD_WORK/android-build-01/deps/liblog.so",
+      "sha256": "6831a2e3d97d625b169a31b92691d7f612449134a37483d60c1fbae611282026"
+    },
+    {
+      "name": "libbase.so",
+      "source": "LMKD_WORK/android-build-01/deps/libbase.so",
+      "sha256": "584542baaca8fc7f115db6e851a7bdb4ab2e2e840dfd736b26e565a66c57e46e"
+    },
+    {
+      "name": "ld-android.so",
+      "source": "/usr/lib/droidloom/images/images/system.img:/system/lib64/ld-android.so",
+      "sha256": "5e5ee4ff6f562d81abf02198b0cce5d98f755b338f6df81ddb060adca34b1b8e"
+    },
+    {
+      "name": "libbpf_bcc.so",
+      "source": "/usr/lib/droidloom/images/images/system.img:/system/lib64/libbpf_bcc.so",
+      "sha256": "50ac866ec979da59c564e1bfc32b6cef275a44d7dcd86d22bd2ae41badbfb606"
+    },
+    {
+      "name": "libbpf_minimal.so",
+      "source": "/usr/lib/droidloom/images/images/system.img:/system/lib64/libbpf_minimal.so",
+      "sha256": "0d27431662dc3f8e1965680c685d2aae7e0b25d71542694add9e9314d04567a5"
+    },
+    {
+      "name": "libz.so",
+      "source": "/usr/lib/droidloom/images/images/system.img:/system/lib64/libz.so",
+      "sha256": "e746439d56786bdb84f00c5b3e2691e3702480ec87ac21fd9b4d37ba1c407e43"
+    }
+  ],
+  "needed_graph": {
+    "libdl.so": [
+      "ld-android.so"
+    ],
+    "libm.so": [
+      "libc.so"
+    ],
+    "libmemevents.so": [
+      "libbase.so",
+      "libbpf_bcc.so",
+      "liblog.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "libprocessgroup.so": [
+      "libbase.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "libpsi.so": [
+      "liblog.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "libc++.so": [
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "libcutils.so": [
+      "liblog.so",
+      "libbase.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "libc.so": [
+      "ld-android.so",
+      "libdl.so"
+    ],
+    "liblog.so": [
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "libbase.so": [
+      "liblog.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "libbpf_bcc.so": [
+      "libbpf_minimal.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "ld-android.so": [],
+    "libbpf_minimal.so": [
+      "libz.so",
+      "libc++.so",
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ],
+    "libz.so": [
+      "libc.so",
+      "libm.so",
+      "libdl.so"
+    ]
+  },
+  "dynamic_loader": {
+    "source": "LMKD_WORK/android-loader-01/linker64",
+    "dest": "system/bin/linker64",
+    "sha256": "b49ddfc69f7ad2558fef7145524c353391d42bce8004ff5f09e022066c9a1173",
+    "mode": 365
+  },
+  "emitted_dependencies": "manifests/recorded-mmd-dependencies.json",
+  "actual_commands": "evidence/r4-android-build.json",
+  "missing_or_external_inputs": [
+    "Materialized AOSP source/prebuilt workspace and its complete project/input closure.",
+    "System and compiler builtin headers omitted from the historical -MMD dependency files.",
+    "Four frozen support objects and generated CRT outputs, with hashes recorded but full independent build closure unavailable here.",
+    "Exact shared libraries and Android dynamic loader, hash pinned but not distributed.",
+    "Installed runtime configuration, cgroup delegation and fresh process/resource fence required for any authorized private fixture execution."
+  ],
+  "clean_hermetic_build_claim": false,
+  "binaries_distributed": false
+}

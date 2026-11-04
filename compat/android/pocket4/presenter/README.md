@@ -1,6 +1,6 @@
 # Pocket4 presenter timing repair
 
-Status at this source snapshot: **built and reviewed; Main deployment and fresh business acceptance still pending**. Overall Pocket4 readiness remains **NO-GO**.
+Status: **built, reviewed and subsequently activated in Main; fresh business acceptance remains pending**. Overall Pocket4 readiness remains **NO-GO**.
 
 ## Failure and repair
 
@@ -51,3 +51,7 @@ See [build-and-tests.json](evidence/build-and-tests.json) for the exact source, 
 ## Licensing
 
 DroidLoom's original code retains **GPL-3.0-or-later**. The original notice, full GPL text and third-party scope are included. Upstream Android and other third-party material keeps its own notices. This bundle stays under `compat/android/pocket4/presenter/`; it does not replace the Foundation repository's other runtime implementation.
+
+## Later Main activation
+
+Separate Main verification completed at 2026-11-04 08:55:13 UTC with the exact release hash and R16 engine. See [the activation summary](../evidence/main-activation-20261104.json). Earlier build/stage receipts retain their original time scope; activation is not application business acceptance.

@@ -59,7 +59,11 @@ The portable unsigned script is adapted from the recorded release07 script whose
 
 ## Current device result
 
-The parent runtime verification confirmed the installed release07 APK hash, preserved application data and unchanged Android runtime. Native launch and location-onboarding opt-out succeeded. The app now reaches a handled “cannot connect to camera” error without a new unhandled exception in the observed flow. Preview, photo and reopen business tests remain blocked by the provider connection. See [the dated readiness ledger](../readiness-status.json) for the precise scope.
+Release07 was installed with its exact APK hash and application data preserved. The first missing-provider flow reached a handled error without a new uncaught exception. Later real sessions succeeded on the prior Main/R14 epoch: the first collected 130 physical/129 producer frames; the separate reopen collected 197/196 frames and closed normally with its capture process reaped. Negotiated format was MJPG 640×480 with 1/30 interval. Measured rates were approximately 16.8 and 16.5 fps, not measured 30 fps.
+
+The parent directly inspected the second reopen's private PNG at 08:26:30.810 UTC and confirmed a real physical scene in the Camera UI, with Options and shutter visible. The metadata observer's original `preview_ui_verified_by_this_agent=false` remains unchanged; the parent confirmation is a separate hash-bound receipt. Only public metadata and image hashes are distributed. No photo was taken, and photo output/persistence remains unqualified. These results do not automatically transfer to the later presenter/R16 Main epoch. Earlier provider failures and the parser-rejected non-launch remain historical failures.
+
+See `evidence/camera-preview-parent-observe-01/`, `evidence/camera-reopen-parent-observe-02/` and `evidence/parent-visual-preview-confirmation.json`.
 
 ## Licensing
 

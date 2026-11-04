@@ -1,0 +1,146 @@
+{
+  "schema": "pocket4-lmkd-fixture-r8-recorded-inputs-v1",
+  "original_manifest_sha256": "849e6fd826058f5454b58e28f5380ba993805f3ab67b742b1cabb0e6dc2514f8",
+  "record": {
+    "schema": 1,
+    "state": "prepared_not_run",
+    "execution_authorized": false,
+    "target_sha256": "b09939386d2f3e128d827701ede4da7594f9b333c92e296ddc1f7bbc50782c8f",
+    "runner_sha256": "3f2c304d29db469ce179fe61a417f593f661dae49108e1451714bf8040415aba",
+    "helper_source_sha256": "5f60400d7e6c408ea7544482f47514d4a290a0194c3e31c8f36ad50b6315f659",
+    "wire_header_sha256": "458e8c6f6aa145dc89903c0c91f36ea790138443d6b2d46fc38e7f3909282033",
+    "plan_sha256": "f633bf38b7fec36ed70da98f7a013751fa5d34d705156d4ac812336b09b8aefa",
+    "audit_sha256": "4b0306ace7b931345bebb4755c3bfce82eafc78c9e90bfb46a4a5f9acd49cdfb",
+    "phases": [
+      "probe",
+      "protocol",
+      "pressure"
+    ],
+    "pid_reuse_qualified": false,
+    "production_cgroup_kill_qualified": false,
+    "requires_fresh_post_release_main_fence": true,
+    "files": [
+      {
+        "source": "LMKD_WORK/android-link-04-high-events/lmkd-cgroup",
+        "dest": "system/bin/lmkd",
+        "sha256": "b09939386d2f3e128d827701ede4da7594f9b333c92e296ddc1f7bbc50782c8f",
+        "mode": 365
+      },
+      {
+        "source": "LMKD_WORK/android-loader-01/linker64",
+        "dest": "system/bin/linker64",
+        "sha256": "b49ddfc69f7ad2558fef7145524c353391d42bce8004ff5f09e022066c9a1173",
+        "mode": 365
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/ld-android.so",
+        "dest": "system/lib64/ld-android.so",
+        "sha256": "5e5ee4ff6f562d81abf02198b0cce5d98f755b338f6df81ddb060adca34b1b8e",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libbase.so",
+        "dest": "system/lib64/libbase.so",
+        "sha256": "584542baaca8fc7f115db6e851a7bdb4ab2e2e840dfd736b26e565a66c57e46e",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libbpf_bcc.so",
+        "dest": "system/lib64/libbpf_bcc.so",
+        "sha256": "50ac866ec979da59c564e1bfc32b6cef275a44d7dcd86d22bd2ae41badbfb606",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libbpf_minimal.so",
+        "dest": "system/lib64/libbpf_minimal.so",
+        "sha256": "0d27431662dc3f8e1965680c685d2aae7e0b25d71542694add9e9314d04567a5",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libc++.so",
+        "dest": "system/lib64/libc++.so",
+        "sha256": "1d01d51b0cdf7ad4224f96e5a3bbd33556cf2ccca6abc6bc886f7e1c4a40fc34",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libc.so",
+        "dest": "system/lib64/libc.so",
+        "sha256": "e0a83b3741ba190cc4de2c66986ae62c0d0428aca371eba5a48bf0a9ff02d26e",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libcutils.so",
+        "dest": "system/lib64/libcutils.so",
+        "sha256": "6803d6a5d2d32a853c1e6f10f65f55b951d03899711fb4bcf5dcf7772446c63b",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libdl.so",
+        "dest": "system/lib64/libdl.so",
+        "sha256": "cac32e3c3cf985186becde5aeae987794892c88b192762073eb38f202ec111a9",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/liblog.so",
+        "dest": "system/lib64/liblog.so",
+        "sha256": "6831a2e3d97d625b169a31b92691d7f612449134a37483d60c1fbae611282026",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libm.so",
+        "dest": "system/lib64/libm.so",
+        "sha256": "e2a7938f3a05a1b18531c918e6468a2f422e86cbda01ee8f966b64ebca7bf0b4",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libmemevents.so",
+        "dest": "system/lib64/libmemevents.so",
+        "sha256": "26b20973292206cb73715872d48a4b27db670604a2175e9864f8929c84b25d18",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libprocessgroup.so",
+        "dest": "system/lib64/libprocessgroup.so",
+        "sha256": "360a3a5422c8070c5c0b9ee88b8f60d1d412d17c34c23454cecfc7b22431834e",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libpsi.so",
+        "dest": "system/lib64/libpsi.so",
+        "sha256": "8779d34e285fdf526c2296e2ffa2d45406a7c1115ed3c7720a92f3701a5797fa",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/android-link-01/deps/libz.so",
+        "dest": "system/lib64/libz.so",
+        "sha256": "e746439d56786bdb84f00c5b3e2691e3702480ec87ac21fd9b4d37ba1c407e43",
+        "mode": 292
+      },
+      {
+        "source": "LMKD_WORK/fixture-review-08-pressure-diagnostics/fixture-init",
+        "dest": "fixture-init",
+        "sha256": "34b47a85efe10b99b102ddac3f1c38a20c93ef6421da000538dca91ebfe074ad",
+        "mode": 365
+      }
+    ],
+    "execution_layout": {
+      "payload_root": "/opt/p4-lmkd-fixture-r8-<run-id>/root",
+      "state_root": "/run/p4-lmkd-fixture-r8-<run-id>",
+      "state_noexec_required": true,
+      "policy_changes": false,
+      "replaces_failed_probe_without_replay": true,
+      "probe203_readonly_sha256": "4c40d700a201f51cddc3303de054ad5d97fd675af654ce4572bfd8af48e9d322",
+      "parent_readonly_sha256": "91203ca1b212bc8e74fe42ee7b1062d23404554ab59fadca532a60e3ab14c54c"
+    },
+    "memory_domain_layout": "delegated-child-fixed-mount-v2",
+    "requires_guest_framework_fence": true,
+    "health_evidence_before_guard": true,
+    "predecessor_manifest_sha256": "d09d2c33d2f050983028630df33c180cc455020b3dd45cd7a3d8fcec412fc5fc",
+    "test_source_sha256": "69b0bf1d7db04fa90c52c5a5d58930ce2e7e8dfbb870253ce962b0a3e1815985",
+    "target_build_receipt_sha256": "687461839791dfb4ac20d2dc94d2af57c5dc907ee08adffe2eb0e23ccdb8b1f0",
+    "prior_manifest_sha256": "eee8b05e3ceeb92cb961f1df307a182a657cd201fba72a523eeebdb86fe9d573",
+    "scope_note": "source-r4 unchanged; r7 foreground-death remains failure; better bounded logs/exit/wait evidence only",
+    "owned_ipc_source_sha256": "be161fa7f781bbb9bab12780149af7e6c45ba00239d8458d2e1e3eb551088709"
+  },
+  "publication_note": "Historical prepared manifest, not an execution permit. Paths normalized for publication. Original source hash is not the relocated public runner hash. Later phase receipts are separate; the historical prepared state is retained."
+}

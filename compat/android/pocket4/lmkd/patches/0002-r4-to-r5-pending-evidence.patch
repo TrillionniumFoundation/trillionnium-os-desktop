@@ -1,0 +1,280 @@
+--- a/lmkd.cpp
++++ b/lmkd.cpp
+@@ -2879,6 +2879,7 @@
+     bool in_direct_reclaim;
+     long direct_reclaim_duration_ms;
+     bool in_kswapd_reclaim;
++    bool cell_high_evidence = false;
+ 
+     mp_event_count++;
+     if (debug_process_killing) {
+@@ -2890,6 +2891,7 @@
+     }
+ 
+     if (clock_gettime(CLOCK_MONOTONIC_COARSE, &curr_tm) != 0) {
++        if (cell_memory_enabled) cell_memory_reader.ClearHighEvidence();
+         ALOGE("Failed to get current time");
+         return;
+     }
+@@ -2927,12 +2929,19 @@
+ 
+     // One bounded snapshot supplies both accounting inputs for this cycle.
+     // An unknown cell budget must never fall back to host-global memory.
+-    if (cell_memory_enabled && !cell_memory_reader.Read(&cell_memory_snapshot)) {
++    if (cell_memory_enabled &&
++        !cell_memory_reader.Read(&cell_memory_snapshot, psi_window_size_ms)) {
+         ALOGE("Invalid cell memory snapshot (errno=%d); refusing pressure decision",
+               cell_memory_reader.error());
+         return;
+     }
++    // A critical decision consumes current evidence once, even when ordinary
++    // reclaim also permits that decision. Medium events and polls retain it.
++    if (cell_memory_enabled && source == PSI && level == VMPRESS_LEVEL_CRITICAL && events != 0) {
++        cell_high_evidence = cell_memory_reader.ConsumeHighEvidence(psi_window_size_ms);
++    }
+     if (vmstat_parse(&vs) < 0) {
++        if (cell_memory_enabled) cell_memory_reader.ClearHighEvidence();
+         ALOGE("Failed to parse vmstat!");
+         return;
+     }
+@@ -2940,6 +2949,7 @@
+     workingset_refault_file = vs.field.workingset_refault ? : vs.field.workingset_refault_file;
+ 
+     if (meminfo_parse(&mi) < 0) {
++        if (cell_memory_enabled) cell_memory_reader.ClearHighEvidence();
+         ALOGE("Failed to parse meminfo!");
+         return;
+     }
+@@ -2992,10 +3002,11 @@
+         /*
+          * A cell above memory.high can be throttled without any scannable
+          * pages. Continue only for a new, coherent high event and an actual
+-         * critical PSI notification; polling and historical events cannot
+-         * bypass this guard. Existing watermarks and kill policy still apply.
++         * critical PSI notification. An intervening poll cannot discard or
++         * consume that bounded evidence; historical events cannot create it.
++         * Existing watermarks and kill policy still apply.
+          */
+-        if (!(cell_memory_enabled && cell_memory_snapshot.high_throttling_progressed &&
++        if (!(cell_memory_enabled && cell_high_evidence &&
+               level == VMPRESS_LEVEL_CRITICAL && events != 0)) {
+             goto no_kill;
+         }
+@@ -3071,6 +3082,7 @@
+         struct zoneinfo zi;
+ 
+         if (update_zoneinfo_watermarks(&zi) < 0) {
++            if (cell_memory_enabled) cell_memory_reader.ClearHighEvidence();
+             return;
+         }
+         wmark_update_tm = curr_tm;
+@@ -3081,6 +3093,7 @@
+ 
+     psi_status = psi_parse_mem(&psi_data);
+     if (cell_memory_enabled && psi_status != 0) {
++        cell_memory_reader.ClearHighEvidence();
+         ALOGE("Cell PSI read failed; refusing this pressure decision");
+         return;
+     }
+@@ -3760,6 +3773,7 @@
+ }
+ 
+ static void destroy_monitors() {
++    if (cell_memory_enabled) cell_memory_reader.ClearHighEvidence();
+     destroy_mp_psi(VMPRESS_LEVEL_CRITICAL);
+     destroy_mp_psi(VMPRESS_LEVEL_MEDIUM);
+     destroy_mp_psi(VMPRESS_LEVEL_LOW);
+--- a/memory_cgroup.cpp
++++ b/memory_cgroup.cpp
+@@ -11,6 +11,7 @@
+ #include <linux/magic.h>
+ #include <iterator>
+ #include <sys/vfs.h>
++#include <time.h>
+ #include <unistd.h>
+ 
+ namespace droidloom::lmkd {
+@@ -22,6 +23,30 @@
+ }
+ 
+ uint64_t Sub(uint64_t a, uint64_t b) { return a > b ? a - b : 0; }
++
++bool SameBudget(const Snapshot& a, const Snapshot& b) {
++    return a.high_unlimited == b.high_unlimited && a.high == b.high &&
++           a.max == b.max && a.swap_max == b.swap_max &&
++           a.swap_unlimited == b.swap_unlimited;
++}
++
++bool ValidWindow(int64_t window_ms) {
++    // Same limits as OpenPressureMonitor; this is not a new pressure threshold.
++    return window_ms >= 500 && window_ms <= 10000;
++}
++
++bool MonotonicNanos(int64_t* now_ns) {
++    struct timespec now{};
++    if (clock_gettime(CLOCK_MONOTONIC, &now) != 0) return false;
++    if (now.tv_sec < 0 || now.tv_nsec < 0 || now.tv_nsec >= 1000000000 ||
++        static_cast<uint64_t>(now.tv_sec) >
++            static_cast<uint64_t>(INT64_MAX - now.tv_nsec) / 1000000000) {
++        errno = ERANGE;
++        return false;
++    }
++    *now_ns = now.tv_sec * 1000000000 + now.tv_nsec;
++    return true;
++}
+ 
+ bool MulDivCeil(uint64_t a, uint64_t b, uint64_t divisor, uint64_t* out) {
+     if (!divisor) return false;
+@@ -157,9 +182,7 @@
+     // memory.events.high counts actual high-boundary throttling, including
+     // reclaim attempts that have no scannable pages. A changed budget or an
+     // old cumulative event is not evidence of current pressure.
+-    return !a.high_unlimited && !b.high_unlimited && a.high == b.high &&
+-           a.max == b.max && a.swap_max == b.swap_max &&
+-           a.swap_unlimited == b.swap_unlimited && b.current > b.high &&
++    return !a.high_unlimited && !b.high_unlimited && SameBudget(a, b) && b.current > b.high &&
+            b.high_events > a.high_events;
+ }
+ 
+@@ -182,11 +205,35 @@
+ }
+ 
+ Reader::~Reader() {
+-    for (int fd : fds_) if (fd >= 0) close(fd);
++    Close();
++}
++
++void Reader::ClearHighEvidence() {
++    high_baseline_valid_ = false;
++    pending_high_valid_ = false;
++    evidence_clock_valid_ = false;
++    evidence_window_ms_ = 0;
++    evidence_last_time_ns_ = 0;
++    evidence_observed_ns_ = 0;
++}
++
++void Reader::Close() {
++    for (int& fd : fds_) {
++        if (fd >= 0) close(fd);
++        fd = -1;
++    }
+     if (root_fd_ >= 0) close(root_fd_);
++    root_fd_ = -1;
++    opened_ = false;
++    counters_faulted_ = false;
++    previous_valid_ = false;
++    previous_ = {};
++    error_ = 0;
++    ClearHighEvidence();
+ }
+ 
+ bool Reader::Open(const char* root) {
++    ClearHighEvidence();
+     if (root_fd_ >= 0) { error_ = EALREADY; return false; }
+     root_fd_ = open(root, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW);
+     struct statfs fs{};
+@@ -213,11 +260,15 @@
+     return true;
+ }
+ 
+-bool Reader::Read(Snapshot* out) {
++bool Reader::Read(Snapshot* out, int64_t window_ms) {
+     // A failed sample breaks the event interval. Retain the last counters for
+     // rollback detection, but never reuse its events as fresh pressure later.
+     const bool compare_high = high_baseline_valid_;
++    const bool had_pending = pending_high_valid_;
++    const bool had_clock = evidence_clock_valid_;
+     high_baseline_valid_ = false;
++    pending_high_valid_ = false;
++    evidence_clock_valid_ = false;
+     if (!opened_ || counters_faulted_) { error_ = counters_faulted_ ? EUCLEAN : EBADF; return false; }
+     Snapshot s{};
+     char buffer[8192];
+@@ -247,12 +298,56 @@
+         return false;
+     }
+     s.high_throttling_progressed = compare_high && HighThrottlingProgressed(previous_, s);
++    if (ValidWindow(window_ms)) {
++        int64_t now_ns;
++        if (!MonotonicNanos(&now_ns)) { error_ = errno; return false; }
++        if (had_clock && now_ns < evidence_last_time_ns_) {
++            error_ = ERANGE;
++            return false;
++        }
++        const bool same_window = !had_clock || window_ms == evidence_window_ms_;
++        const bool still_current = compare_high && SameBudget(previous_, s) &&
++                                   !s.high_unlimited && s.current > s.high;
++        const bool unexpired = had_pending && now_ns >= evidence_observed_ns_ &&
++                               now_ns - evidence_observed_ns_ < window_ms * 1000000;
++        // A poll may observe a new increment without consuming it. Only a
++        // fresh increment can start/refresh the bounded lifetime; repeated
++        // reads of an unchanged historical counter cannot extend it.
++        if (same_window && still_current && (s.high_throttling_progressed || unexpired)) {
++            pending_high_valid_ = true;
++            if (s.high_throttling_progressed) evidence_observed_ns_ = now_ns;
++        }
++        evidence_clock_valid_ = true;
++        evidence_window_ms_ = window_ms;
++        evidence_last_time_ns_ = now_ns;
++    }
+     previous_ = s;
+     previous_valid_ = true;
+     high_baseline_valid_ = true;
+     *out = s;
+     error_ = 0;
+     return true;
++}
++
++bool Reader::ConsumeHighEvidence(int64_t window_ms) {
++    const bool pending = pending_high_valid_;
++    pending_high_valid_ = false;
++    if (!opened_ || counters_faulted_ || !high_baseline_valid_ ||
++        !evidence_clock_valid_ || !ValidWindow(window_ms) ||
++        window_ms != evidence_window_ms_) {
++        ClearHighEvidence();
++        return false;
++    }
++    if (!pending) return false;
++    int64_t now_ns;
++    if (!MonotonicNanos(&now_ns) || now_ns < evidence_last_time_ns_ ||
++        now_ns < evidence_observed_ns_) {
++        ClearHighEvidence();
++        return false;
++    }
++    evidence_last_time_ns_ = now_ns;
++    return !previous_.high_unlimited && previous_.current > previous_.high &&
++           now_ns - evidence_observed_ns_ < window_ms * 1000000;
+ }
+ 
+ int Reader::OpenPressureMonitor(bool full, uint64_t stall_us, uint64_t window_us) const {
+--- a/memory_cgroup.h
++++ b/memory_cgroup.h
+@@ -72,7 +72,14 @@
+     // The production caller uses the fixed, runtime-projected cell cgroup root.
+     // Rejects non-cgroup2 directories. Test parsers do not require a live cgroup.
+     bool Open(const char* root);
+-    bool Read(Snapshot* snapshot);
++    void Close();
++    // The untimed form still supplies accounting, but cannot retain evidence.
++    // Timed reads use the existing PSI window, without changing its threshold.
++    bool Read(Snapshot* snapshot, int64_t window_ms = 0);
++    // Only the caller's actual critical PSI decision may consume this token.
++    // Every consume attempt is one-shot, including an expired token.
++    bool ConsumeHighEvidence(int64_t window_ms);
++    void ClearHighEvidence();
+     int OpenPressureMonitor(bool full, uint64_t stall_us, uint64_t window_us) const;
+     int error() const { return error_; }
+ 
+@@ -86,6 +93,12 @@
+     bool previous_valid_ = false;
+     bool high_baseline_valid_ = false;
+     Snapshot previous_{};
++    // This state belongs to the pinned cgroup FD lifetime, never a path lookup.
++    bool pending_high_valid_ = false;
++    bool evidence_clock_valid_ = false;
++    int64_t evidence_window_ms_ = 0;
++    int64_t evidence_last_time_ns_ = 0;
++    int64_t evidence_observed_ns_ = 0;
+     bool ReadFile(File file, char* buffer, size_t size, std::string_view* text);
+ };
+ 

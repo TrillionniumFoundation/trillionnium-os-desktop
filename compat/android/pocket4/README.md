@@ -1,19 +1,27 @@
 # Pocket4 Android application repair snapshot
 
-Status: **NO-GO**, observed 2026-11-04.
+Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Application business flows and LMKD integration still need acceptance.
 
-This directory preserves repair source and a dated application evidence ledger for Android 17 running in DroidLoom on the Pocket4 Linux host. These results do not qualify Android on the repository's Asterinas kernel.
+This directory preserves repair source and dated evidence for Android 17 in DroidLoom on the Pocket4 Linux host. These results do not qualify Android on this repository's Asterinas kernel.
 
-The [Camera source delivery](camera/README.md) includes the zero-device/teardown prerequisite, the hotplug fix, the exact reviewed manager source, an executable host regression suite, pinned build inputs and a conditional unsigned rebuild recipe. The full baseline application build is not reproducible from this checkout alone; its missing inputs are enumerated explicitly.
+## Delivered repairs
 
-The [presenter timing source bundle](presenter/README.md) preserves the complete public preimage and the four-file timing repair. Its release build and 70 scoped checks passed; Main deployment and fresh application acceptance remain separate gates.
+The [Camera delivery](camera/README.md) includes the zero-device/teardown prerequisite, hotplug repair, exact manager source, host regressions, input locks and a conditional unsigned rebuild. Release07 passed actual physical preview and a separate reopen/normal-close trial on the prior R14 epoch. The parent visually confirmed the private image; only public metadata and its hash are included. Photo capture/persistence and the new epoch remain unqualified.
 
-The [native-bridge source bundle](native-bridge/README.md) preserves R15 alarm semantics and R16 guest maps offsets, their complete inherited translator source chain, the full public builder precondition, and separate raw/effective compiler input locks. Source reconstruction passed for all 906/907/908 translator files and 389 builder files. Both Android engines and full host suites were built; isolated runtime and actual application qualification remain open. The LMKD pressure candidate is explicitly blocked from Main deployment after a real foreground-survival failure.
+The [presenter bundle](presenter/README.md) preserves the complete public preimage and four-file timing repair. A real zero-timestamp negative control failed as expected; the candidate passed 68 host checks plus two composer controls and produced a pinned release. That exact release is now active in Main.
 
-The [framework epoch guard](acceptance/framework-epoch/README.md) binds acceptance observations and actions to init, zygote, system_server and SurfaceFlinger identities. Ten real-process Linux regressions and a read-only check of the actual Android framework passed. This standalone module supports new acceptance workflows; it does not replace the installed action helper.
+The [native bridge bundle](native-bridge/README.md) preserves R15 alarm semantics, R16 maps offsets, inherited translator source, the public builder precondition and raw/effective input locks. Reconstruction matched all 906/907/908 translator files and 389 builder files. Both Android engines and full host suites were built. The final [three-arm qualification](native-bridge/qualification/README.md) passed the scoped owned native probes with expected R14/R15 negative controls and the same runner/APK across all arms. Publisher application compatibility remains a separate requirement.
 
-[Framework restart evidence](evidence/framework-restart-20261104.json) explains the interrupted Bilibili trial. Public Unicode search passed in the prior framework epoch. Before the later video-open attempt, a zero presentation timestamp caused the composer service to exit and init to restart the Android framework. The later action timed out with unknown outcome; playback did not pass. This is not evidence of a fresh Bilibili crash or proof of a memory-pressure cause.
+[Main activation](evidence/main-activation-20261104.json) completed verification at 08:55:13 UTC: presenter `47f34d5f…`, R16 engine `c8b9bae4…`, a new framework epoch, 182 packages and 362 existing application directories preserved with UID/data identity and resource limits. OOM counters remained zero. The summary identifies the actual parent verification records used; it is not another runtime execution by the publication agent.
 
-[readiness-status.json](readiness-status.json) separates old launch observations, historical guest business tests and newer manual results. Contacts launch/onboarding was observed successfully. Camera release07 was installed with data preserved and handled the missing-device failure, while preview/photo use remained blocked by provider connection. These observations preceded the framework restart and require fresh epoch qualification for continuation.
+The [LMKD bundle](lmkd/README.md) reconstructs r3/r4/r5 sources, includes scoped controls and retains failed pressure trials. **r4/b099 must not deploy:** a real trial lost its foreground process. Separate r5 is Android-built but has no protocol/pressure canary or Main deployment. Its new-unit `-MD` records improve dependency evidence; four reused objects still have a historical system-header gap. Main currently uses the drain/ACK-only compatibility service, so a file replacement alone cannot establish LMKD integration.
 
-The application matrix is an audited subset, not a complete installed-package inventory. Native failures, environment/login gates, actual business flows and lifecycle qualification remain open. Nothing in this directory changes the whole-project release gate to GO.
+## Acceptance scope
+
+The [framework epoch guard](acceptance/framework-epoch/README.md) binds observations and actions to init, zygote, system_server and SurfaceFlinger identities. Ten real-process regressions and a read-only actual-framework check passed. It is a standalone module and does not replace the installed helper.
+
+[Framework restart evidence](evidence/framework-restart-20261104.json) retains the interrupted Bilibili trial. Unicode search passed in the old epoch; then a zero presentation timestamp caused the composer/framework restart before the later video-open action. That action timed out with unknown outcome and was not replayed. It proves neither playback nor a fresh Bilibili crash or memory-pressure cause.
+
+[readiness-status.json](readiness-status.json) keeps older launches, historical guest tests and later observations separate. Contacts onboarding was observed; create/edit/persist/sync is untested. TextFree's Play-environment alert remains unresolved despite enabled microG services. Static licensing/Integrity references do not prove an attestation cause.
+
+The matrix is an audited subset, not a complete installed-app inventory. Fresh per-app business flows, back/reopen, persistence and actual mapped-engine checks continue in the new epoch. No binary, APK, signing material, account data, private image, raw private UI or commercial crash capture is distributed.

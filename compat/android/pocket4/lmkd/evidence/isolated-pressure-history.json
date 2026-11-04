@@ -1,0 +1,470 @@
+{
+  "schema": "pocket4-lmkd-retained-pressure-history-v1",
+  "overall_status": "NO-GO",
+  "r4_main_deployment_allowed": false,
+  "positive_pressure_qualification": false,
+  "older_results": [
+    {
+      "run": "r10-domain05-probe01",
+      "original_result_sha256": "3df8e8cf77c448b454199bfa397b0116814c630ae6c7ba1a85298cf26bfb7741",
+      "ok": true,
+      "phase": "probe",
+      "error": null,
+      "main_preserved": true,
+      "owned_unit_empty": true
+    },
+    {
+      "run": "r10-domain05-protocol01",
+      "original_result_sha256": "b1dd5bb627f74ee469155f7826edcb29b3ba5dcc82c2f4101c911cced2c10eee",
+      "ok": true,
+      "phase": "protocol",
+      "error": null,
+      "main_preserved": true,
+      "owned_unit_empty": true
+    },
+    {
+      "run": "r10-domain05-pressure01",
+      "original_result_sha256": "953db41c93d615ff3d835e33a1f1c19566fa822481578f0ddeaef6d04771dfb4",
+      "ok": false,
+      "phase": "pressure",
+      "error": "EXTERNAL_MEMORY_PRESSURE",
+      "main_preserved": true,
+      "owned_unit_empty": true
+    },
+    {
+      "run": "r10-domain06-pressure01",
+      "original_result_sha256": "e3beb8727c6c987cf6c0c860755acf3ae3a39c3b6f4c597de4712eaaac47f54e",
+      "ok": false,
+      "phase": "pressure",
+      "error": "EXTERNAL_MEMORY_PRESSURE",
+      "main_preserved": true,
+      "owned_unit_empty": true
+    }
+  ],
+  "r6_exact_trigger": {
+    "kind": "lmkd_r6_trigger",
+    "guard": {
+      "scope": "host",
+      "metric": "memory.full.avg10_percent",
+      "value": 11.4,
+      "required_comparison": "<",
+      "limit": 10
+    },
+    "frame": "health-017.json",
+    "frame_sha256": "b27042d544c46f33c2b8210942a46d56b9c44f87cde35699490a5ea064d9c683",
+    "host_full_avg10": 11.4,
+    "main_full_avg10": 0,
+    "owned": {
+      "current": 442388480,
+      "limits": {
+        "memory.max": "536870912",
+        "memory.high": "402653184",
+        "memory.swap.max": "0",
+        "pids.max": "64",
+        "cpu.max": "100000 100000"
+      },
+      "events": {
+        "low": 0,
+        "high": 153,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "stat": {
+        "anon": 439623680,
+        "file": 57344,
+        "kernel": 1925120,
+        "kernel_stack": 180224,
+        "pagetables": 1269760,
+        "sec_pagetables": 0,
+        "percpu": 2496,
+        "sock": 0,
+        "vmalloc": 0,
+        "shmem": 57344,
+        "zswap": 0,
+        "zswapped": 0,
+        "file_mapped": 0,
+        "file_dirty": 0,
+        "file_writeback": 0,
+        "swapcached": 0,
+        "anon_thp": 0,
+        "file_thp": 0,
+        "shmem_thp": 0,
+        "inactive_anon": 0,
+        "active_anon": 438972416,
+        "inactive_file": 0,
+        "active_file": 0,
+        "unevictable": 708608,
+        "slab_reclaimable": 34008,
+        "slab_unreclaimable": 389632,
+        "slab": 423640,
+        "hugetlb": 0,
+        "workingset_refault_anon": 0,
+        "workingset_refault_file": 0,
+        "workingset_activate_anon": 0,
+        "workingset_activate_file": 0,
+        "workingset_restore_anon": 0,
+        "workingset_restore_file": 0,
+        "workingset_nodereclaim": 0,
+        "pgdemote_kswapd": 0,
+        "pgdemote_direct": 0,
+        "pgdemote_khugepaged": 0,
+        "pgdemote_proactive": 0,
+        "pgpromote_success": 0,
+        "pgscan": 0,
+        "pgsteal": 0,
+        "pswpin": 0,
+        "pswpout": 0,
+        "pgscan_kswapd": 0,
+        "pgscan_direct": 0,
+        "pgscan_khugepaged": 0,
+        "pgscan_proactive": 0,
+        "pgsteal_kswapd": 0,
+        "pgsteal_direct": 0,
+        "pgsteal_khugepaged": 0,
+        "pgsteal_proactive": 0,
+        "pgfault": 107934,
+        "pgmajfault": 0,
+        "pgrefill": 0,
+        "pgactivate": 0,
+        "pgdeactivate": 0,
+        "pglazyfree": 0,
+        "pglazyfreed": 0,
+        "swpin_zero": 0,
+        "swpout_zero": 0,
+        "zswpin": 0,
+        "zswpout": 0,
+        "zswpwb": 0,
+        "thp_fault_alloc": 0,
+        "thp_collapse_alloc": 0,
+        "thp_swpout": 0,
+        "thp_swpout_fallback": 0,
+        "numa_pages_migrated": 0,
+        "numa_pte_updates": 0,
+        "numa_hint_faults": 0
+      },
+      "pressure": {
+        "some": {
+          "avg10": 37.23,
+          "avg60": 7.53,
+          "avg300": 1.6,
+          "total": 5705697
+        },
+        "full": {
+          "avg10": 37.23,
+          "avg60": 7.53,
+          "avg300": 1.6,
+          "total": 5700184
+        }
+      }
+    },
+    "processes": [
+      {
+        "label": "init",
+        "state": "S (sleeping)",
+        "oom_score_adj": -1000,
+        "registered_start_matches": true,
+        "registered_uid_matches": true
+      },
+      {
+        "label": "lmkd",
+        "state": "S (sleeping)",
+        "oom_score_adj": -1000,
+        "registered_start_matches": true,
+        "registered_uid_matches": true
+      },
+      {
+        "label": "cached",
+        "state": "S (sleeping)",
+        "oom_score_adj": 900,
+        "registered_start_matches": true,
+        "registered_uid_matches": true
+      },
+      {
+        "label": "foreground",
+        "state": "S (sleeping)",
+        "oom_score_adj": 0,
+        "registered_start_matches": true,
+        "registered_uid_matches": true
+      },
+      {
+        "label": "protected",
+        "state": "S (sleeping)",
+        "oom_score_adj": -1000,
+        "registered_start_matches": true,
+        "registered_uid_matches": true
+      },
+      {
+        "label": "sentinel",
+        "state": "S (sleeping)",
+        "oom_score_adj": 0,
+        "registered_start_matches": true,
+        "registered_uid_matches": true
+      },
+      {
+        "label": "allocator",
+        "state": "D (disk sleep)",
+        "oom_score_adj": 0,
+        "registered_start_matches": true,
+        "registered_uid_matches": true
+      }
+    ]
+  },
+  "r7_probe_protocol": [
+    {
+      "run": "r10-domain07-probe01",
+      "original_result_sha256": "b0b4c62a172dfc52337c2d8c1dab9839b92b750bd1da687c72e3952e216056aa",
+      "ok": true,
+      "phase": "probe",
+      "phase_result": {
+        "ok": true,
+        "phase": "probe",
+        "lmkd_started": false
+      },
+      "main_preserved": true,
+      "owned_unit_empty": true
+    },
+    {
+      "run": "r10-domain07-protocol01",
+      "original_result_sha256": "b85c4504bed6f0f5475bd281d0586bc89efcbecfcbeb6d44034890a27fd35c7e",
+      "ok": true,
+      "phase": "protocol",
+      "phase_result": {
+        "ok": true,
+        "phase": "protocol",
+        "marked_contract_rejected": true,
+        "real_protocol_verified": true,
+        "real_pressure_verified": false,
+        "route": "PIDFD-only minimal root",
+        "production_cgroup_kill_qualified": false,
+        "pid_reuse_qualified": false
+      },
+      "main_preserved": true,
+      "owned_unit_empty": true
+    }
+  ],
+  "r7_r8_results": [
+    {
+      "run": "r10-domain07-pressure01",
+      "original_result_sha256": "d476e6afe256835eb8216f2b98cd78bed829b15df82fc50b8b0919ed7f0b26fc",
+      "ok": false,
+      "phase": "pressure",
+      "error": "PRIVATE_PHASE_FAILED",
+      "main_preserved": true,
+      "owned_unit_empty": true,
+      "phase_result": null,
+      "guard_observation": null,
+      "manifest_sha256": "eee8b05e3ceeb92cb961f1df307a182a657cd201fba72a523eeebdb86fe9d573"
+    },
+    {
+      "run": "r10-domain08-protocol01",
+      "original_result_sha256": "f582f2d83a4fd06206c48279ef3278ea6a1b7bc7ea937000e65d84787ab20e8b",
+      "ok": true,
+      "phase": "protocol",
+      "error": null,
+      "main_preserved": true,
+      "owned_unit_empty": true,
+      "phase_result": {
+        "ok": true,
+        "phase": "protocol",
+        "marked_contract_rejected": true,
+        "real_protocol_verified": true,
+        "real_pressure_verified": false,
+        "route": "PIDFD-only minimal root",
+        "production_cgroup_kill_qualified": false,
+        "pid_reuse_qualified": false
+      },
+      "guard_observation": null,
+      "manifest_sha256": "849e6fd826058f5454b58e28f5380ba993805f3ab67b742b1cabb0e6dc2514f8"
+    },
+    {
+      "run": "r10-domain08-pressure01",
+      "original_result_sha256": "d910e33bf198a08173cc295eaa59be98b23d2682b6b2d1a79f9c40c6f2806fb5",
+      "ok": false,
+      "phase": "pressure",
+      "error": "EXTERNAL_MEMORY_PRESSURE",
+      "main_preserved": true,
+      "owned_unit_empty": true,
+      "phase_result": null,
+      "guard_observation": {
+        "scope": "host",
+        "metric": "memory.full.avg10_percent",
+        "value": 15.17,
+        "required_comparison": "<",
+        "limit": 10
+      },
+      "manifest_sha256": "849e6fd826058f5454b58e28f5380ba993805f3ab67b742b1cabb0e6dc2514f8"
+    }
+  ],
+  "r7_health_transition": [
+    {
+      "frame": "health-015.json",
+      "original_sha256": "5adb39598655c368f227907de345799c17a95e1ef9892bc159fb63feb6a9dd78",
+      "current_bytes": 441331712,
+      "limits": {
+        "memory.max": "536870912",
+        "memory.high": "402653184",
+        "memory.swap.max": "0",
+        "pids.max": "64",
+        "cpu.max": "100000 100000"
+      },
+      "events": {
+        "low": 0,
+        "high": 170,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pressure": {
+        "some": {
+          "avg10": 21.33,
+          "avg60": 4.04,
+          "avg300": 0.85,
+          "total": 3992316
+        },
+        "full": {
+          "avg10": 21.33,
+          "avg60": 4.04,
+          "avg300": 0.85,
+          "total": 3992316
+        }
+      },
+      "processes": [
+        {
+          "label": "init",
+          "state": "S (sleeping)",
+          "oom_score_adj": -1000,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        },
+        {
+          "label": "lmkd",
+          "state": "D (disk sleep)",
+          "oom_score_adj": -1000,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        },
+        {
+          "label": "cached",
+          "state": "S (sleeping)",
+          "oom_score_adj": 900,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        },
+        {
+          "label": "foreground",
+          "state": "S (sleeping)",
+          "oom_score_adj": 0,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        },
+        {
+          "label": "protected",
+          "state": "S (sleeping)",
+          "oom_score_adj": -1000,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        },
+        {
+          "label": "sentinel",
+          "state": "S (sleeping)",
+          "oom_score_adj": 0,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        },
+        {
+          "label": "allocator",
+          "state": "D (disk sleep)",
+          "oom_score_adj": 0,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        }
+      ]
+    },
+    {
+      "frame": "health-016.json",
+      "original_sha256": "cd68b0ece56fbe629a9dd45deb64a3c7449bff36bc39903e4c31d3c54fcf641b",
+      "current_bytes": 240099328,
+      "limits": {
+        "memory.max": "536870912",
+        "memory.high": "402653184",
+        "memory.swap.max": "0",
+        "pids.max": "64",
+        "cpu.max": "100000 100000"
+      },
+      "events": {
+        "low": 0,
+        "high": 204,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "pressure": {
+        "some": {
+          "avg10": 31.95,
+          "avg60": 6.53,
+          "avg300": 1.39,
+          "total": 4503653
+        },
+        "full": {
+          "avg10": 31.95,
+          "avg60": 6.53,
+          "avg300": 1.39,
+          "total": 4503653
+        }
+      },
+      "processes": [
+        {
+          "label": "init",
+          "state": "S (sleeping)",
+          "oom_score_adj": -1000,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        },
+        {
+          "label": "lmkd",
+          "state": "S (sleeping)",
+          "oom_score_adj": -1000,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        },
+        {
+          "label": "protected",
+          "state": "S (sleeping)",
+          "oom_score_adj": -1000,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        },
+        {
+          "label": "sentinel",
+          "state": "S (sleeping)",
+          "oom_score_adj": 0,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        },
+        {
+          "label": "allocator",
+          "state": "D (disk sleep)",
+          "oom_score_adj": 0,
+          "registered_start_matches": true,
+          "registered_uid_matches": true
+        }
+      ]
+    }
+  ],
+  "interpretations": {
+    "r5": "Guard abort, exact rejected sample unavailable; no threshold or external-cause invention.",
+    "r6": "Host full PSI crossed the unchanged gate; owned workload also contributes host PSI.",
+    "r7": "Real foreground survival failure: cached and foreground disappear between consecutive frames. Zero OOM; protected/sentinel remain. The helper passed cached SIGKILL checking before the foreground pidfd failure. Cause not established.",
+    "r8": "A regular cached kill was recorded before host full PSI 15.17% caused a guard abort. This is not final pressure acceptance and does not replace r7.",
+    "errno_suffix": "The r7 Resource temporarily unavailable suffix is a stale-errno formatter artifact, not a proven syscall root cause.",
+    "pending_high": "The separate r4 medium/poll source defect and r5 source fix do not establish the cause or resolution of r7."
+  },
+  "production_ready": false
+}

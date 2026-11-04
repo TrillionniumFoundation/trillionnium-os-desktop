@@ -1,6 +1,6 @@
 # Pocket4 native-bridge repairs: R15 and R16
 
-Status: **built and host-tested; runtime and application qualification remain open**. Neither candidate is marked production ready.
+Status: **built, host-tested and qualified on owned private native probes; R16 is activated in Main; publisher application qualification remains open**. Neither candidate is marked production ready.
 
 This bundle preserves two focused Teto/Android native-bridge fixes and all their public source preconditions. It also preserves the separate DroidLoom builder source required to produce the recorded Android engines. No shared library, executable, APK, signing material, private device data or raw app crash capture is included.
 
@@ -53,7 +53,7 @@ For both revisions, **22 translator files** differ between the raw and effective
 
 The one production-header projection removes only the unused two-line `need_write` declaration from `LoadStoreExclusive`. The frozen builder applies an exact string replacement in `tools/droidloom-update/src/native_bridge.rs`; its comment identifies the obsolete flag left after the transition to fault-recoverable atomic builtins. The raw header SHA-256 is `6a07de1c3b9b0b4be2dc521829734ec2fed82a3764247b0a4b73afc93464a174`; independently applying that exact replacement yields `c2dbb95f386e5d542c62031123b85926e6661cf3a31dca9090e353713ef78d87`, matching both frozen effective manifests. [The exact diff](projection/interpreter-unused-flag.patch) is included as an audit aid. It is applied by the builder during the projection stage, not as a fourth raw source-series patch. Atomic load/CAS and fault-recovery operations are unchanged by this removal.
 
-The AOSP lock pins 214 projects. Compiler revision `clang-r584948b`, its project commit and compiler entry hash are recorded in [dependencies.lock.json](dependencies.lock.json). The native build uses an existing frozen `libandroid.so` link reference, SHA-256 `ce601e9536fb971a53bcdf17acd0bf25ee0ac54b1c4e03f83904514667bfb25e`. Its provider ELF dependency check is disabled by the inherited engine-only build path, and installed-runtime compatibility was not established. This limitation remains explicit.
+The AOSP lock pins 214 projects. Compiler revision `clang-r584948b`, its project commit and compiler entry hash are recorded in [dependencies.lock.json](dependencies.lock.json). The native build uses an existing frozen `libandroid.so` link reference, SHA-256 `ce601e9536fb971a53bcdf17acd0bf25ee0ac54b1c4e03f83904514667bfb25e`. Its provider ELF dependency check is disabled by the inherited engine-only build path, and installed-runtime compatibility was not established by that build-time check. Later owned-runtime qualification is documented separately; it does not prove every provider/application combination. This limitation remains explicit.
 
 ## Recorded builds and limits
 
@@ -76,7 +76,7 @@ DROIDLOOM_NATIVE_BRIDGE_SOURCE=/absolute/path/to/frozen-teto-source \
 
 The prepared workspace, frozen baseline link reference, full host environment and earlier focused-test provider preparation are not distributed. Their available pins and missing-input boundaries are enumerated. Public source reconstruction is verified separately from a clean independent Android binary rebuild, which is not claimed.
 
-The candidates retain the observed ELF dynamic contract: seven needed libraries, the same SONAME, 1,114 exported symbols and 245 undefined symbols. That comparison is necessary evidence, not runtime acceptance. Main installation, isolated runtime probes and fresh real App business flows remain separate gates.
+The candidates retain the observed ELF dynamic contract: seven needed libraries, the same SONAME, 1,114 exported symbols and 245 undefined symbols. That comparison is necessary evidence, not runtime acceptance. The final isolated three-arm owned-native contract passed and R16 was subsequently activated in Main. [Qualification sources and evidence](qualification/README.md) preserve expected negative controls, lifecycle attribution, cleanup and sampling limits. Fresh real App business flows remain a separate gate.
 
 ## Licenses
 

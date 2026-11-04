@@ -1,0 +1,693 @@
+--- a/Android.bp
++++ b/Android.bp
+@@ -40,6 +40,7 @@
+ 
+     srcs: [
+         "lmkd.cpp",
++        "memory_cgroup.cpp",
+         "reaper.cpp",
+         "watchdog.cpp",
+     ],
+--- a/lmkd.cpp
++++ b/lmkd.cpp
+@@ -64,6 +64,12 @@
+ #include "reaper.h"
+ #include "statslog.h"
+ #include "watchdog.h"
++#include "memory_cgroup.h"
++
++namespace cell_memory = droidloom::lmkd;
++static cell_memory::Reader cell_memory_reader;
++static cell_memory::Snapshot cell_memory_snapshot{};
++static bool cell_memory_enabled = false;
+ 
+ #define ATRACE_TAG ATRACE_TAG_ALWAYS
+ #include <cutils/trace.h>
+@@ -1989,20 +1995,47 @@
+ 
+     memset(mi, 0, sizeof(union meminfo));
+ 
+-    if ((buf = reread_file(&file_data)) == NULL) {
+-        return -1;
+-    }
+-
+-    for (line = strtok_r(buf, "\n", &save_ptr); line;
+-         line = strtok_r(NULL, "\n", &save_ptr)) {
+-        if (!meminfo_parse_line(line, mi)) {
+-            ALOGE("%s parse error", file_data.filename);
++    if (cell_memory_enabled) {
++        const auto& s = cell_memory_snapshot;
++        const auto& st = s.stat;
++        mi->field.nr_free_pages = cell_memory::FreeBytes(s) / pagesize;
++        // memcg NR_FILE_PAGES excludes swap cache (unlike the node counter
++        // used by /proc/meminfo); it already includes shmem. Do not subtract
++        // swapcached or add shmem a second time.
++        mi->field.cached = st.file / pagesize;
++        mi->field.swap_cached = st.swapcached / pagesize;
++        mi->field.shmem = st.shmem / pagesize;
++        mi->field.unevictable = st.unevictable / pagesize;
++        mi->field.total_swap = cell_memory::SwapTotalBytes(s) / pagesize;
++        mi->field.free_swap = cell_memory::SwapFreeBytes(s) / pagesize;
++        mi->field.active_anon = st.active_anon / pagesize;
++        mi->field.inactive_anon = st.inactive_anon / pagesize;
++        mi->field.active_file = st.active_file / pagesize;
++        mi->field.inactive_file = st.inactive_file / pagesize;
++        mi->field.sreclaimable = st.slab_reclaimable / pagesize;
++        mi->field.sunreclaimable = st.slab_unreclaimable / pagesize;
++        mi->field.kernel_stack = st.kernel_stack / pagesize;
++        mi->field.page_tables = st.pagetables / pagesize;
++        mi->field.dirty = st.file_dirty / pagesize;
++        mi->field.nr_file_pages = mi->field.cached + mi->field.swap_cached;
++        // No cell-scoped GPU/CMA/buffer metric is exported. Do not credit
++        // host accounting as capacity available to this cell.
++    } else {
++        if ((buf = reread_file(&file_data)) == NULL) {
+             return -1;
+         }
+-    }
+-    mi->field.nr_file_pages = mi->field.cached + mi->field.swap_cached +
+-        mi->field.buffers;
+-    mi->field.total_gpu_kb = read_gpu_total_kb();
++    
++        for (line = strtok_r(buf, "\n", &save_ptr); line;
++             line = strtok_r(NULL, "\n", &save_ptr)) {
++            if (!meminfo_parse_line(line, mi)) {
++                ALOGE("%s parse error", file_data.filename);
++                return -1;
++            }
++        }
++        mi->field.nr_file_pages = mi->field.cached + mi->field.swap_cached +
++            mi->field.buffers;
++        mi->field.total_gpu_kb = read_gpu_total_kb();
++    }
+ 
+     mi->field.easy_available = mi->field.nr_free_pages;
+     if (relaxed_available_memory && swap_compression_ratio) {
+@@ -2019,6 +2052,10 @@
+                                     anon_pages / swap_compression_ratio;
+     } else {
+         mi->field.easy_available += mi->field.inactive_file;
++    }
++    if (cell_memory_enabled) {
++        mi->field.easy_available = std::clamp<int64_t>(
++                mi->field.easy_available, 0, cell_memory_snapshot.max / pagesize);
+     }
+ 
+     return 0;
+@@ -2075,6 +2112,18 @@
+ 
+     memset(vs, 0, sizeof(union vmstat));
+ 
++    if (cell_memory_enabled) {
++        const auto& s = cell_memory_snapshot;
++        vs->field.nr_free_pages = cell_memory::FreeBytes(s) / pagesize;
++        vs->field.nr_inactive_file = s.stat.inactive_file / pagesize;
++        vs->field.nr_active_file = s.stat.active_file / pagesize;
++        vs->field.workingset_refault_file = s.stat.workingset_refault_file;
++        vs->field.pgscan_kswapd = s.stat.pgscan_kswapd;
++        vs->field.pgscan_direct = s.stat.pgscan_direct;
++        vs->field.pgrefill = s.stat.pgrefill;
++        return 0;
++    }
++
+     if ((buf = reread_file(&file_data)) == NULL) {
+         return -1;
+     }
+@@ -2115,7 +2164,7 @@
+ 
+ static int psi_parse_mem(struct psi_data *psi_data) {
+     static struct reread_data file_data = {
+-            .filename = psi_resource_file[PSI_MEMORY],
++            .filename = cell_memory_enabled ? "/sys/fs/cgroup/memory.pressure" : psi_resource_file[PSI_MEMORY],
+             .fd = -1,
+     };
+     return psi_parse(&file_data, psi_data->mem_stats, true);
+@@ -2123,7 +2172,7 @@
+ 
+ static int psi_parse_io(struct psi_data *psi_data) {
+     static struct reread_data file_data = {
+-            .filename = psi_resource_file[PSI_IO],
++            .filename = cell_memory_enabled ? "/sys/fs/cgroup/io.pressure" : psi_resource_file[PSI_IO],
+             .fd = -1,
+     };
+     return psi_parse(&file_data, psi_data->io_stats, true);
+@@ -2131,7 +2180,7 @@
+ 
+ static int psi_parse_cpu(struct psi_data *psi_data) {
+     static struct reread_data file_data = {
+-            .filename = psi_resource_file[PSI_CPU],
++            .filename = cell_memory_enabled ? "/sys/fs/cgroup/cpu.pressure" : psi_resource_file[PSI_CPU],
+             .fd = -1,
+     };
+     return psi_parse(&file_data, psi_data->cpu_stats, false);
+@@ -2750,6 +2799,20 @@
+         return -1;
+     }
+     calc_zone_watermarks(zi, &watermarks);
++    if (cell_memory_enabled) {
++        cell_memory::Watermarks host{
++            static_cast<uint64_t>(watermarks.min_wmark),
++            static_cast<uint64_t>(watermarks.low_wmark),
++            static_cast<uint64_t>(watermarks.high_wmark)};
++        cell_memory::Watermarks cell{};
++        if (!cell_memory::ScaleWatermarks(cell_memory_snapshot, host, pagesize, &cell)) {
++            ALOGE("Invalid cell/kernel watermarks; refusing this pressure decision");
++            return -1;
++        }
++        watermarks.min_wmark = cell.min;
++        watermarks.low_wmark = cell.low;
++        watermarks.high_wmark = cell.high;
++    }
+     return 0;
+ }
+ 
+@@ -2808,6 +2871,7 @@
+     bool cut_thrashing_limit = false;
+     int min_score_adj = 0;
+     int swap_util = 0;
++    int psi_status;
+     int64_t swap_low_threshold;
+     long since_thrashing_reset_ms;
+     int64_t workingset_refault_file;
+@@ -2861,6 +2925,13 @@
+      */
+     stop_wait_for_proc_kill(!kill_pending);
+ 
++    // One bounded snapshot supplies both accounting inputs for this cycle.
++    // An unknown cell budget must never fall back to host-global memory.
++    if (cell_memory_enabled && !cell_memory_reader.Read(&cell_memory_snapshot)) {
++        ALOGE("Invalid cell memory snapshot (errno=%d); refusing pressure decision",
++              cell_memory_reader.error());
++        return;
++    }
+     if (vmstat_parse(&vs) < 0) {
+         ALOGE("Failed to parse vmstat!");
+         return;
+@@ -2919,10 +2990,19 @@
+     } else if ((workingset_refault_file == prev_workingset_refault) &&
+                 (source == PSI)) {
+         /*
+-         * Device is not thrashing and not reclaiming, bail out early until we see these stats
+-         * changing
++         * A cell above memory.high can be throttled without any scannable
++         * pages. Continue only for a new, coherent high event and an actual
++         * critical PSI notification; polling and historical events cannot
++         * bypass this guard. Existing watermarks and kill policy still apply.
+          */
+-        goto no_kill;
++        if (!(cell_memory_enabled && cell_memory_snapshot.high_throttling_progressed &&
++              level == VMPRESS_LEVEL_CRITICAL && events != 0)) {
++            goto no_kill;
++        }
++        ALOGI("Cell high throttling with critical PSI: current=%" PRIu64
++              " high=%" PRIu64 " high_events=%" PRIu64,
++              cell_memory_snapshot.current, cell_memory_snapshot.high,
++              cell_memory_snapshot.high_events);
+     }
+ 
+     prev_workingset_refault = workingset_refault_file;
+@@ -2986,7 +3066,7 @@
+      * 2. per min in case user updated one of the margins if mem_event update_zoneinfo is NOT
+      *    supported.
+      */
+-    if (watermarks.high_wmark == 0 || (!mem_event_update_zoneinfo_supported &&
++    if (cell_memory_enabled || watermarks.high_wmark == 0 || (!mem_event_update_zoneinfo_supported &&
+         get_time_diff_ms(&wmark_update_tm, &curr_tm) > 60000)) {
+         struct zoneinfo zi;
+ 
+@@ -2999,7 +3079,12 @@
+     /* Find out which watermark is breached if any */
+     wmark = get_lowest_watermark(&mi, &watermarks);
+ 
+-    if (!psi_parse_mem(&psi_data)) {
++    psi_status = psi_parse_mem(&psi_data);
++    if (cell_memory_enabled && psi_status != 0) {
++        ALOGE("Cell PSI read failed; refusing this pressure decision");
++        return;
++    }
++    if (!psi_status) {
+         critical_stall = psi_data.mem_stats[PSI_FULL].avg10 > (float)stall_limit_critical;
+     }
+     /*
+@@ -3440,9 +3525,14 @@
+         return true;
+     }
+ 
+-    fd = init_psi_monitor(psi_thresholds[level].stall_type,
+-                          psi_thresholds[level].threshold_ms * US_PER_MS,
+-                          psi_window_size_ms * US_PER_MS);
++    fd = cell_memory_enabled
++            ? cell_memory_reader.OpenPressureMonitor(
++                      psi_thresholds[level].stall_type == PSI_FULL,
++                      psi_thresholds[level].threshold_ms * US_PER_MS,
++                      psi_window_size_ms * US_PER_MS)
++            : init_psi_monitor(psi_thresholds[level].stall_type,
++                               psi_thresholds[level].threshold_ms * US_PER_MS,
++                               psi_window_size_ms * US_PER_MS);
+ 
+     if (fd < 0) {
+         return false;
+@@ -3534,6 +3624,10 @@
+ 
+     if (memevent_listener) return true;
+ 
++    // These host-global BPF events cannot identify a cell's reclaim domain.
++    // Keep AOSP's existing fallback, supplied by cell-scoped vmstat counters.
++    if (cell_memory_enabled) return false;
++
+     // Make sure bpf programs are loaded, else we'll wait until they are loaded
+     android::bpf::waitForProgsLoaded();
+     memevent_listener = std::make_unique<android::bpf::memevents::MemEventListener>(
+@@ -3614,6 +3708,10 @@
+      */
+     bool use_new_strategy =
+         GET_LMK_PROPERTY(bool, "use_new_strategy", low_ram_device || !use_minfree_levels);
++    if (cell_memory_enabled && !use_new_strategy) {
++        ALOGE("Cell memory accounting requires the AOSP PSI strategy");
++        return false;
++    }
+     if (!use_new_strategy && memcg_version() != MemcgVersion::kV1) {
+         ALOGE("Old kill strategy can only be used with v1 cgroup hierarchy");
+         return false;
+@@ -3762,6 +3860,26 @@
+     pagesize = getpagesize();
+     page_k = pagesize / 1024;
+ 
++    const char* cell_root = getenv("DROIDLOOM_LMKD_CGROUP");
++    const char* marker = getenv("DROIDLOOM_CELL");
++    if (marker && !strcmp(marker, "1") && !cell_root) {
++        ALOGE("Marked Droidloom cell requires an explicit cgroup memory domain");
++        return -1;
++    }
++    if (const char* root = cell_root) {
++        if (!marker || strcmp(marker, "1") || strcmp(root, "/sys/fs/cgroup")) {
++            ALOGE("Invalid Droidloom cell memory domain");
++            return -1;
++        }
++        if (!cell_memory_reader.Open(root) || !cell_memory_reader.Read(&cell_memory_snapshot)) {
++            ALOGE("Cell memory initialization failed (errno=%d)", cell_memory_reader.error());
++            return -1;
++        }
++        cell_memory_enabled = true;
++        ALOGI("Using cell cgroup memory budget: max=%" PRIu64 " high=%" PRIu64,
++              cell_memory_snapshot.max, cell_memory_snapshot.high);
++    }
++
+     // Pre-expand the fdtable so we don't need to allocate when memory is low,
+     // which could trigger direct reclaim while we're trying to kill.
+     expand_fd_table(2048);
+@@ -3798,7 +3916,7 @@
+     }
+     maxevents++;
+ 
+-    has_inkernel_module = !access(INKERNEL_MINFREE_PATH, W_OK);
++    has_inkernel_module = !cell_memory_enabled && !access(INKERNEL_MINFREE_PATH, W_OK);
+     use_inkernel_interface = has_inkernel_module;
+ 
+     if (use_inkernel_interface) {
+@@ -4172,7 +4290,8 @@
+ 
+     ctx = create_android_logger(KILLINFO_LOG_TAG);
+ 
+-    if (!init()) {
++    const int init_result = init();
++    if (init_result == 0) {
+         if (!use_inkernel_interface) {
+             /*
+              * MCL_ONFAULT pins pages as they fault instead of loading
+@@ -4214,5 +4333,5 @@
+     android_log_destroy(&ctx);
+ 
+     ALOGI("exiting");
+-    return 0;
+-}
++    return init_result == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
++}
+--- /dev/null
++++ b/memory_cgroup.cpp
+@@ -0,0 +1,270 @@
++/* Copyright 2026 Droidloom contributors
++ * SPDX-License-Identifier: Apache-2.0 */
++#include "memory_cgroup.h"
++
++#include <algorithm>
++#include <cerrno>
++#include <charconv>
++#include <climits>
++#include <cstdio>
++#include <fcntl.h>
++#include <linux/magic.h>
++#include <iterator>
++#include <sys/vfs.h>
++#include <unistd.h>
++
++namespace droidloom::lmkd {
++namespace {
++std::string_view Trim(std::string_view s) {
++    while (!s.empty() && (s.front() == ' ' || s.front() == '\t' || s.front() == '\n')) s.remove_prefix(1);
++    while (!s.empty() && (s.back() == ' ' || s.back() == '\t' || s.back() == '\n')) s.remove_suffix(1);
++    return s;
++}
++
++uint64_t Sub(uint64_t a, uint64_t b) { return a > b ? a - b : 0; }
++
++bool MulDivCeil(uint64_t a, uint64_t b, uint64_t divisor, uint64_t* out) {
++    if (!divisor) return false;
++    __uint128_t value = (static_cast<__uint128_t>(a) * b + divisor - 1) / divisor;
++    if (value > INT64_MAX) return false;
++    *out = static_cast<uint64_t>(value);
++    return true;
++}
++
++struct Field { std::string_view name; uint64_t MemoryStat::*member; };
++constexpr Field fields[] = {
++    {"anon", &MemoryStat::anon}, {"file", &MemoryStat::file},
++    {"shmem", &MemoryStat::shmem}, {"swapcached", &MemoryStat::swapcached},
++    {"active_anon", &MemoryStat::active_anon}, {"inactive_anon", &MemoryStat::inactive_anon},
++    {"active_file", &MemoryStat::active_file}, {"inactive_file", &MemoryStat::inactive_file},
++    {"unevictable", &MemoryStat::unevictable}, {"slab_reclaimable", &MemoryStat::slab_reclaimable},
++    {"slab_unreclaimable", &MemoryStat::slab_unreclaimable},
++    {"kernel_stack", &MemoryStat::kernel_stack}, {"pagetables", &MemoryStat::pagetables},
++    {"file_dirty", &MemoryStat::file_dirty},
++    {"workingset_refault_file", &MemoryStat::workingset_refault_file},
++    {"pgscan_kswapd", &MemoryStat::pgscan_kswapd}, {"pgscan_direct", &MemoryStat::pgscan_direct},
++    {"pgrefill", &MemoryStat::pgrefill},
++};
++
++template <typename Callback> bool Lines(std::string_view text, Callback callback) {
++    while (!text.empty()) {
++        size_t end = text.find('\n');
++        auto line = Trim(text.substr(0, end));
++        if (!line.empty() && !callback(line)) return false;
++        if (end == std::string_view::npos) break;
++        text.remove_prefix(end + 1);
++    }
++    return true;
++}
++}  // namespace
++
++bool ParseNumber(std::string_view text, uint64_t* value) {
++    text = Trim(text);
++    if (text.empty() || text.front() < '0' || text.front() > '9') return false;
++    uint64_t parsed;
++    auto r = std::from_chars(text.data(), text.data() + text.size(), parsed);
++    if (r.ec != std::errc{} || r.ptr != text.data() + text.size() || parsed > INT64_MAX) return false;
++    *value = parsed;
++    return true;
++}
++
++bool ParseLimit(std::string_view text, uint64_t* value, bool* unlimited) {
++    if (Trim(text) == "max") { *value = 0; *unlimited = true; return true; }
++    if (!ParseNumber(text, value)) return false;
++    *unlimited = false;
++    return true;
++}
++
++bool ParseStat(std::string_view text, MemoryStat* stat) {
++    MemoryStat parsed{};
++    uint32_t seen = 0;
++    bool ok = Lines(text, [&](std::string_view line) {
++        size_t split = line.find_first_of(" \t");
++        if (split == std::string_view::npos) return false;
++        auto name = line.substr(0, split);
++        for (size_t i = 0; i < std::size(fields); ++i) {
++            if (name != fields[i].name) continue;
++            if ((seen & (1U << i)) || !ParseNumber(line.substr(split + 1), &(parsed.*fields[i].member))) return false;
++            seen |= 1U << i;
++            break;
++        }
++        return true;
++    });
++    if (!ok || seen != ((1U << std::size(fields)) - 1)) return false;
++    *stat = parsed;
++    return true;
++}
++
++bool ParseHighEvents(std::string_view text, uint64_t* high_events) {
++    uint64_t parsed = 0;
++    bool seen = false;
++    bool ok = Lines(text, [&](std::string_view line) {
++        size_t split = line.find_first_of(" \t");
++        if (split == std::string_view::npos) return false;
++        if (line.substr(0, split) != "high") return true;
++        if (seen || !ParseNumber(line.substr(split + 1), &parsed)) return false;
++        seen = true;
++        return true;
++    });
++    if (!ok || !seen) return false;
++    *high_events = parsed;
++    return true;
++}
++
++bool ParseHostMemory(std::string_view text, HostMemory* host) {
++    HostMemory parsed{};
++    uint32_t seen = 0;
++    constexpr std::string_view names[] = {"MemTotal:", "MemFree:", "SwapTotal:", "SwapFree:"};
++    uint64_t* targets[] = {&parsed.total, &parsed.free, &parsed.swap_total, &parsed.swap_free};
++    bool ok = Lines(text, [&](std::string_view line) {
++        size_t split = line.find_first_of(" \t");
++        if (split == std::string_view::npos) return false;
++        for (size_t i = 0; i < std::size(names); ++i) {
++            if (line.substr(0, split) != names[i]) continue;
++            auto amount = Trim(line.substr(split + 1));
++            if ((seen & (1U << i)) || amount.size() < 3 || amount.substr(amount.size() - 2) != "kB") return false;
++            uint64_t kib;
++            if (!ParseNumber(amount.substr(0, amount.size() - 2), &kib) || kib > INT64_MAX / 1024) return false;
++            *targets[i] = kib * 1024;
++            seen |= 1U << i;
++        }
++        return true;
++    });
++    if (!ok || seen != 15 || !parsed.total || parsed.free > parsed.total || parsed.swap_free > parsed.swap_total) return false;
++    *host = parsed;
++    return true;
++}
++
++bool Validate(const Snapshot& s, uint64_t page_size) {
++    if (!page_size || (page_size & (page_size - 1)) || page_size > 65536) return false;
++    if (s.max < page_size || s.max > INT64_MAX || s.max > s.host.total) return false;
++    if (!s.high_unlimited && (s.high < page_size || s.high > s.max)) return false;
++    if (s.current > INT64_MAX || s.swap_current > INT64_MAX || s.swap_max > INT64_MAX) return false;
++    // Kernel counters are not an atomic accounting identity. Do not reject a
++    // valid sample for small charge/stat races; saturating arithmetic below is
++    // intentional. A lowered limit can also temporarily be below current.
++    return s.host.free <= s.host.total && s.host.swap_free <= s.host.swap_total;
++}
++
++bool CountersMonotonic(const Snapshot& a, const Snapshot& b) {
++    return b.high_events >= a.high_events &&
++           b.stat.workingset_refault_file >= a.stat.workingset_refault_file &&
++           b.stat.pgscan_kswapd >= a.stat.pgscan_kswapd &&
++           b.stat.pgscan_direct >= a.stat.pgscan_direct && b.stat.pgrefill >= a.stat.pgrefill;
++}
++
++bool HighThrottlingProgressed(const Snapshot& a, const Snapshot& b) {
++    // memory.events.high counts actual high-boundary throttling, including
++    // reclaim attempts that have no scannable pages. A changed budget or an
++    // old cumulative event is not evidence of current pressure.
++    return !a.high_unlimited && !b.high_unlimited && a.high == b.high &&
++           a.max == b.max && a.swap_max == b.swap_max &&
++           a.swap_unlimited == b.swap_unlimited && b.current > b.high &&
++           b.high_events > a.high_events;
++}
++
++uint64_t FreeBytes(const Snapshot& s) { return std::min(Sub(s.max, s.current), s.host.free); }
++uint64_t SwapTotalBytes(const Snapshot& s) { return s.swap_unlimited ? s.host.swap_total : std::min(s.swap_max, s.host.swap_total); }
++uint64_t SwapFreeBytes(const Snapshot& s) { return std::min(s.host.swap_free, Sub(SwapTotalBytes(s), s.swap_current)); }
++
++bool ScaleWatermarks(const Snapshot& s, const Watermarks& host, uint64_t page_size, Watermarks* cell) {
++    if (!Validate(s, page_size) || !host.high || !host.min || host.min > host.low || host.low > host.high) return false;
++    Watermarks result{};
++    uint64_t scaled_high;
++    if (!MulDivCeil(host.high, s.max, s.host.total, &scaled_high)) return false;
++    uint64_t high_reserve = s.high_unlimited ? 0 : (Sub(s.max, s.high) / page_size);
++    result.high = std::max(scaled_high, high_reserve);
++    if (!result.high || result.high >= s.max / page_size) return false;
++    if (!MulDivCeil(host.low, result.high, host.high, &result.low) ||
++        !MulDivCeil(host.min, result.high, host.high, &result.min)) return false;
++    *cell = result;
++    return true;
++}
++
++Reader::~Reader() {
++    for (int fd : fds_) if (fd >= 0) close(fd);
++    if (root_fd_ >= 0) close(root_fd_);
++}
++
++bool Reader::Open(const char* root) {
++    if (root_fd_ >= 0) { error_ = EALREADY; return false; }
++    root_fd_ = open(root, O_RDONLY | O_DIRECTORY | O_CLOEXEC | O_NOFOLLOW);
++    struct statfs fs{};
++    if (root_fd_ < 0) { error_ = errno; return false; }
++    if (fstatfs(root_fd_, &fs) || fs.f_type != CGROUP2_SUPER_MAGIC) { error_ = ENODEV; return false; }
++    constexpr const char* names[] = {"memory.current", "memory.max", "memory.high",
++                                    "memory.swap.current", "memory.swap.max", "memory.stat",
++                                    "memory.events"};
++    for (int i = 0; i < kHostMem; ++i) {
++        fds_[i] = openat(root_fd_, names[i], O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
++        if (fds_[i] < 0) { error_ = errno; return false; }
++    }
++    fds_[kHostMem] = open("/proc/meminfo", O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
++    if (fds_[kHostMem] < 0) { error_ = errno; return false; }
++    opened_ = true;
++    return true;
++}
++
++bool Reader::ReadFile(File file, char* buffer, size_t size, std::string_view* text) {
++    ssize_t n;
++    do { n = pread(fds_[file], buffer, size - 1, 0); } while (n < 0 && errno == EINTR);
++    if (n <= 0 || static_cast<size_t>(n) == size - 1) { error_ = n < 0 ? errno : EOVERFLOW; return false; }
++    *text = {buffer, static_cast<size_t>(n)};
++    return true;
++}
++
++bool Reader::Read(Snapshot* out) {
++    // A failed sample breaks the event interval. Retain the last counters for
++    // rollback detection, but never reuse its events as fresh pressure later.
++    const bool compare_high = high_baseline_valid_;
++    high_baseline_valid_ = false;
++    if (!opened_ || counters_faulted_) { error_ = counters_faulted_ ? EUCLEAN : EBADF; return false; }
++    Snapshot s{};
++    char buffer[8192];
++    std::string_view text;
++    bool max_unlimited;
++    auto number = [&](File file, uint64_t* v) { return ReadFile(file, buffer, sizeof(buffer), &text) && ParseNumber(text, v); };
++    auto limit = [&](File file, uint64_t* v, bool* unlimited) { return ReadFile(file, buffer, sizeof(buffer), &text) && ParseLimit(text, v, unlimited); };
++    error_ = EINVAL;
++    if (!limit(kMax, &s.max, &max_unlimited) || max_unlimited ||
++        !limit(kHigh, &s.high, &s.high_unlimited) ||
++        !limit(kSwapMax, &s.swap_max, &s.swap_unlimited) ||
++        !number(kCurrent, &s.current) || !number(kSwapCurrent, &s.swap_current) ||
++        !ReadFile(kStat, buffer, sizeof(buffer), &text) || !ParseStat(text, &s.stat) ||
++        !ReadFile(kEvents, buffer, sizeof(buffer), &text) || !ParseHighEvents(text, &s.high_events) ||
++        !ReadFile(kHostMem, buffer, sizeof(buffer), &text) || !ParseHostMemory(text, &s.host)) return false;
++    // Do not combine an old budget with new usage across a concurrent change.
++    uint64_t second;
++    bool unlimited;
++    if (!limit(kMax, &second, &unlimited) || unlimited || second != s.max ||
++        !limit(kHigh, &second, &unlimited) || unlimited != s.high_unlimited || second != s.high ||
++        !limit(kSwapMax, &second, &unlimited) || unlimited != s.swap_unlimited || second != s.swap_max) { error_ = EAGAIN; return false; }
++    long page_size = sysconf(_SC_PAGESIZE);
++    if (page_size <= 0 || !Validate(s, static_cast<uint64_t>(page_size))) return false;
++    if (previous_valid_ && !CountersMonotonic(previous_, s)) {
++        counters_faulted_ = true;
++        error_ = EUCLEAN;
++        return false;
++    }
++    s.high_throttling_progressed = compare_high && HighThrottlingProgressed(previous_, s);
++    previous_ = s;
++    previous_valid_ = true;
++    high_baseline_valid_ = true;
++    *out = s;
++    error_ = 0;
++    return true;
++}
++
++int Reader::OpenPressureMonitor(bool full, uint64_t stall_us, uint64_t window_us) const {
++    if (!opened_ || window_us < 500000 || window_us > 10000000 || !stall_us || stall_us > window_us) { errno = EINVAL; return -1; }
++    int fd = openat(root_fd_, "memory.pressure", O_RDWR | O_CLOEXEC | O_NONBLOCK | O_NOFOLLOW);
++    if (fd < 0) return -1;
++    char trigger[96];
++    int n = snprintf(trigger, sizeof(trigger), "%s %llu %llu", full ? "full" : "some",
++                     static_cast<unsigned long long>(stall_us), static_cast<unsigned long long>(window_us));
++    ssize_t written;
++    do { written = write(fd, trigger, static_cast<size_t>(n)); } while (written < 0 && errno == EINTR);
++    if (written != n) { int error = written < 0 ? errno : EIO; close(fd); errno = error; return -1; }
++    return fd;
++}
++}  // namespace droidloom::lmkd
+--- /dev/null
++++ b/memory_cgroup.h
+@@ -0,0 +1,92 @@
++/*
++ * Copyright 2026 Droidloom contributors
++ * SPDX-License-Identifier: Apache-2.0
++ *
++ * Input adapter for AOSP LMKD. It contains no process selection or signal code.
++ */
++#pragma once
++
++#include <cstddef>
++#include <cstdint>
++#include <string_view>
++
++namespace droidloom::lmkd {
++
++struct MemoryStat {
++    uint64_t anon, file, shmem, swapcached;
++    uint64_t active_anon, inactive_anon, active_file, inactive_file;
++    uint64_t unevictable, slab_reclaimable, slab_unreclaimable;
++    uint64_t kernel_stack, pagetables, file_dirty;
++    uint64_t workingset_refault_file, pgscan_kswapd, pgscan_direct, pgrefill;
++};
++
++struct HostMemory {
++    uint64_t total, free, swap_total, swap_free;
++};
++
++struct Snapshot {
++    uint64_t current, max, high, swap_current, swap_max;
++    bool high_unlimited, swap_unlimited;
++    uint64_t high_events;
++    // True only for a new high event between two successful, coherent reads
++    // with the same budget, while current usage still exceeds finite high.
++    bool high_throttling_progressed;
++    MemoryStat stat;
++    HostMemory host;
++};
++
++struct Watermarks {
++    uint64_t min, low, high;
++};
++
++// Parsing is strict for required inputs and ignores unknown kernel fields.
++// Units: memory amounts are bytes; reclaim/refault counters are pages/events.
++bool ParseNumber(std::string_view text, uint64_t* value);
++bool ParseLimit(std::string_view text, uint64_t* value, bool* unlimited);
++bool ParseStat(std::string_view text, MemoryStat* stat);
++bool ParseHighEvents(std::string_view text, uint64_t* high_events);
++bool ParseHostMemory(std::string_view text, HostMemory* host);
++bool Validate(const Snapshot& snapshot, uint64_t page_size);
++bool CountersMonotonic(const Snapshot& previous, const Snapshot& current);
++bool HighThrottlingProgressed(const Snapshot& previous, const Snapshot& current);
++
++// Real capacity remaining, capped by physical free memory; never credits the
++// host's total RAM as container capacity. Clean cache is not added here.
++uint64_t FreeBytes(const Snapshot& snapshot);
++uint64_t SwapTotalBytes(const Snapshot& snapshot);
++uint64_t SwapFreeBytes(const Snapshot& snapshot);
++
++// Keep kernel watermark proportions, rescale for the cell, and place the high
++// watermark no later than memory.high. These are capacity thresholds, not a kill
++// trigger: AOSP's PSI/reclaim/thrashing logic still decides whether to act.
++bool ScaleWatermarks(const Snapshot& snapshot, const Watermarks& host_pages,
++                     uint64_t page_size, Watermarks* cell_pages);
++
++class Reader {
++  public:
++    Reader() = default;
++    ~Reader();
++    Reader(const Reader&) = delete;
++    Reader& operator=(const Reader&) = delete;
++
++    // The production caller uses the fixed, runtime-projected cell cgroup root.
++    // Rejects non-cgroup2 directories. Test parsers do not require a live cgroup.
++    bool Open(const char* root);
++    bool Read(Snapshot* snapshot);
++    int OpenPressureMonitor(bool full, uint64_t stall_us, uint64_t window_us) const;
++    int error() const { return error_; }
++
++  private:
++    enum File { kCurrent, kMax, kHigh, kSwapCurrent, kSwapMax, kStat, kEvents, kHostMem, kCount };
++    int root_fd_ = -1;
++    int fds_[kCount] = {-1, -1, -1, -1, -1, -1, -1, -1};
++    int error_ = 0;
++    bool opened_ = false;
++    bool counters_faulted_ = false;
++    bool previous_valid_ = false;
++    bool high_baseline_valid_ = false;
++    Snapshot previous_{};
++    bool ReadFile(File file, char* buffer, size_t size, std::string_view* text);
++};
++
++}  // namespace droidloom::lmkd

@@ -77,6 +77,38 @@
       "status": "BLOCKED_FRAMEWORK_RESTART",
       "production_ready": false,
       "evidence": "evidence/framework-restart-20261104.json"
+    },
+    {
+      "app": "Camera",
+      "package": "com.android.camera2",
+      "evidence_date_utc": "2026-11-04",
+      "observation_utc": "2026-11-04T08:26:30.810Z",
+      "status": "PHYSICAL_PREVIEW_AND_REOPEN_VERIFIED_PRIOR_EPOCH",
+      "preview_verified": true,
+      "reopen_business_verified": true,
+      "photo_verified": false,
+      "normal_close_and_capture_reaping_verified": true,
+      "native_engine_at_trial": "R14",
+      "historical_framework_epoch": true,
+      "requires_fresh_epoch_requalification": true,
+      "production_ready": false,
+      "evidence": "camera/evidence/parent-visual-preview-confirmation.json"
+    },
+    {
+      "app": "TextFree",
+      "evidence_date_utc": "2026-11-04",
+      "status": "PLAY_ENVIRONMENT_ALERT_CAUSE_UNRESOLVED",
+      "source": "Parent read-only static APK/service observations",
+      "active_apk_sha256": "2a6d24cef017b93d005f6bde20f29e105dcfb9f4a245d7b938eaf64dbdb80d70",
+      "gms_installed_enabled_version": "0.3.17.252432",
+      "vending_installed_enabled_version": "0.3.17.40226",
+      "microg_stack": true,
+      "three_referenced_services_resolve": true,
+      "licensing_and_integrity_references_in_dex": true,
+      "attestation_or_integrity_failure_proven": false,
+      "missing_play_package_proven": false,
+      "next_evidence": "Fresh same-epoch launch and UID/nonce-correlated licensing logs",
+      "production_ready": false
     }
   ],
   "dated_app_observations": [
@@ -958,11 +990,13 @@
     }
   ],
   "current_runtime_blocker": {
-    "status": "CONFIRMED_FRAMEWORK_RESTART",
+    "status": "REPAIR_ACTIVATED_AWAITING_BUSINESS_REQUALIFICATION",
     "at_utc": "2026-11-04T05:48:03Z",
     "cause": "Composer exited after a zero presentation timestamp violated the existing monotonic contract; init restarted the Android framework.",
     "evidence": "evidence/framework-restart-20261104.json",
-    "fix_deployed_in_this_snapshot": false
+    "fix_deployed_in_this_snapshot": true,
+    "activation_evidence": "evidence/main-activation-20261104.json",
+    "original_failure_retained": true
   },
   "acceptance_guard": {
     "path": "acceptance/framework-epoch/",
@@ -972,17 +1006,18 @@
   },
   "presenter_candidate": {
     "source_commit": "568f3cea524ec80d09ed42fdcff15f90b870120b",
-    "status": "BUILT_NOT_MAIN_DEPLOYED",
+    "status": "MAIN_DEPLOYED_FRESH_BUSINESS_REQUALIFICATION_PENDING",
     "binary_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
     "host_checks_passed": 68,
     "existing_host_microbenchmark_ignored": 1,
     "composer_controls_passed": 2,
     "real_zero_wire_negative_control_failed_as_expected": true,
     "source_bundle": "presenter/",
-    "business_requalification_pending": true
+    "business_requalification_pending": true,
+    "main_activation_evidence": "evidence/main-activation-20261104.json"
   },
   "native_bridge_candidates": {
-    "status": "BUILT_HOST_TESTED_NOT_MAIN_DEPLOYED",
+    "status": "R16_MAIN_DEPLOYED_FRESH_APP_ACCEPTANCE_PENDING",
     "source_bundle": "native-bridge/",
     "source_reconstruction_verified": {
       "translator_stage_file_counts": [
@@ -1028,9 +1063,11 @@
       }
     },
     "counts_note": "Executed includes skipped; registered includes disabled. These counts do not mean every registered case passed.",
-    "isolated_runtime_canary": "IN_PROGRESS_NO_RESULT_CLAIM",
+    "isolated_runtime_canary": "PASS_THREE_ARM_OWNED_NATIVE_SEMANTICS",
     "actual_application_fixes_verified": false,
-    "production_ready": false
+    "production_ready": false,
+    "canary_evidence": "native-bridge/qualification/evidence/three-arm-summary.json",
+    "main_activation_evidence": "evidence/main-activation-20261104.json"
   },
   "lmkd_candidate": {
     "status": "DO_NOT_DEPLOY_MAIN",
@@ -1047,7 +1084,52 @@
     "cause": "Unresolved. Ack wait did not drain private log socket; kill-decision logs are incomplete. Error errno suffix is not a proven syscall cause.",
     "positive_pressure_acceptance": false,
     "production_ready": false,
-    "source_and_evidence_delivery": "Pending completed diagnostic review; failed historical result remains retained on the test host."
+    "source_and_evidence_delivery": "lmkd/: complete r3/r4/r5 regular source reconstruction, scoped host controls, historical r4 pressure failures, separate r5 Android build and dependency limitations.",
+    "r5": {
+      "status": "BUILT_NOT_CANARY_QUALIFIED",
+      "target_sha256": "c6d49d95c16d1ce6d94293313ae9f6f683a079ebd4cc821338a701dfe5b2cf6f",
+      "main_deployed": false,
+      "protocol_canary_run": false,
+      "pressure_canary_run": false,
+      "positive_pressure_acceptance": false,
+      "evidence": "lmkd/evidence/r5-build/build-summary.json"
+    },
+    "actual_main_integration": "lmkd/evidence/r5-build/main-integration-summary.json"
   },
-  "updated_at_utc": "2026-11-04T07:21:20Z"
+  "updated_at_utc": "2026-11-04T08:57:11.209905+00:00",
+  "main_activation": {
+    "schema": "pocket4-main-activation-public-summary-v1",
+    "evidence_basis": "Parent actual verification stdout, authoritative rc0 status, and read-only saved-after review; publication agent inspected cached records, not complete private after JSON.",
+    "verified_at_utc": "2026-11-04T08:55:13.084914+00:00",
+    "activation_source_sha256": "5f843a4a183c18eeee525ff1a96270adbd931bdc7e7d53c86ecc7343eb389bea",
+    "activation_after_original_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "activation_verified_original_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "verification_exit_code": 0,
+    "verification_output_complete": true,
+    "main_deployed": true,
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "package_count": 182,
+    "existing_app_directory_count": 362,
+    "package_and_uid_inventory_preserved": true,
+    "existing_data_directory_device_inode_ownership_preserved": true,
+    "resource_limits": {
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "cpu.max": "200000 100000",
+      "pids.max": "12288"
+    },
+    "memory_oom_events": {
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "old_lmkd_bytes_preserved": true,
+    "framework_restart_requested_once": true,
+    "presenter_and_native_only": true,
+    "per_app_actual_engine_mapping_requires_fresh_flow": true,
+    "production_ready": false
+  }
 }
