@@ -1,15 +1,63 @@
 {
   "schema": "pocket4-source-delivery-manifest-v1",
   "scope": "Source and deidentified verification only",
-  "file_count_excluding_manifest": 36,
+  "file_count_excluding_manifest": 42,
   "files": {
-    "compat/android/pocket4/camera/source/packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java": {
-      "sha256": "2b112a02eadd4c2db0a642c3263207cfc55ad9930e1a4399c06c219c480e2bca",
-      "bytes": 9887
+    "compat/android/pocket4/README.md": {
+      "sha256": "13bae18390e6cf0ec6bb3fecd0874c9133f6e26f5a9a7dc2dab84e55062e2585",
+      "bytes": 2254
     },
-    "compat/android/pocket4/camera/tests/fixtures/zero-device/Camera2OneCameraManagerImpl.java": {
-      "sha256": "2019878f9f838e1985367d26c4d0e0c497907235a47d15ccc34d5968d4858ca8",
-      "bytes": 7728
+    "compat/android/pocket4/acceptance/framework-epoch/README.md": {
+      "sha256": "77ee79f1b40b6c4b8a0130d5ccf8fb7ecd0ffb68d97112da2e506ef401ba8f2c",
+      "bytes": 3335
+    },
+    "compat/android/pocket4/acceptance/framework-epoch/evidence/verification.json": {
+      "sha256": "077a146a764613be2810985ab3958c454b510e055f55ce26f5b63a4f8a00f22a",
+      "bytes": 2123
+    },
+    "compat/android/pocket4/acceptance/framework-epoch/framework_epoch.py": {
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "bytes": 8658
+    },
+    "compat/android/pocket4/acceptance/framework-epoch/source-lock.json": {
+      "sha256": "691aaad893b242f8ae99e0398c17ba300d2c3af61a9f71b1980876bbfa9fac67",
+      "bytes": 736
+    },
+    "compat/android/pocket4/acceptance/framework-epoch/test_framework_epoch.py": {
+      "sha256": "23a8b9b5e7e785cf36e619d49a2eca2be82a7b08c741fc8409bd45bf620f962d",
+      "bytes": 6153
+    },
+    "compat/android/pocket4/camera/LICENSE": {
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    "compat/android/pocket4/camera/README.md": {
+      "sha256": "ba2b0c3492b08d3352840cd0551e168ad476c16f5fe8fe43cd5ce8c0bccdb10b",
+      "bytes": 6710
+    },
+    "compat/android/pocket4/camera/dependencies.lock.json": {
+      "sha256": "a60795d773fc95a2cbfda3e739ecd7e60e70da5313e44fd8d45b45647bb043a8",
+      "bytes": 22880
+    },
+    "compat/android/pocket4/camera/evidence/host-regression.json": {
+      "sha256": "cf31b89c20769cbd8b0ab5a79c9d1d96b4276d2ae992efe9c2e87dd857b1c10a",
+      "bytes": 1549
+    },
+    "compat/android/pocket4/camera/evidence/recorded-host-regression.json": {
+      "sha256": "e5b1d810beb5361b8c4b3ad19bab0265a5b16fa90834fa9f82e211ce3ff362ec",
+      "bytes": 1580
+    },
+    "compat/android/pocket4/camera/evidence/recorded-release07-build.json": {
+      "sha256": "eb64d27eb3576215ee4ca44879e73c78e6f6090749c4597b723343616d60c84e",
+      "bytes": 1752
+    },
+    "compat/android/pocket4/camera/evidence/source-series.json": {
+      "sha256": "cde365f53e029520f33cd120f61814d002d00533c9277474581bb152c0fd3968",
+      "bytes": 318
+    },
+    "compat/android/pocket4/camera/evidence/unsigned-rebuild.json": {
+      "sha256": "5847dd267217a7ef0fe4346d971ecd5ddb9e163b2d13459598d374c3cf57f73f",
+      "bytes": 1721
     },
     "compat/android/pocket4/camera/patches/0001-zero-camera-and-teardown.patch": {
       "sha256": "81af5c5bef8a715c0fdf5aee01e9c8ad92bd32b497483c1a1b4c165a8720a180",
@@ -18,6 +66,14 @@
     "compat/android/pocket4/camera/patches/0002-camera-hotplug.patch": {
       "sha256": "237095a4f719f3dabd845ea6e54362d874afb4b4c8b8008a41f5067e3f899f7a",
       "bytes": 4018
+    },
+    "compat/android/pocket4/camera/source-lock.json": {
+      "sha256": "0a3720182d21ffe3f8797a551f37155d5f807b654ddb744670bb63783265bc4a",
+      "bytes": 6938
+    },
+    "compat/android/pocket4/camera/source/packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java": {
+      "sha256": "2b112a02eadd4c2db0a642c3263207cfc55ad9930e1a4399c06c219c480e2bca",
+      "bytes": 9887
     },
     "compat/android/pocket4/camera/tests/bindings/HotplugRegression.java": {
       "sha256": "79e4ce94738d726af61a759320a706cec1607950c24a8cb0d495d0a53cb70e39",
@@ -91,61 +147,29 @@
       "sha256": "c82a4ade11808ff953d9b82cd0b1c62e58341f74c16b67ae3f05578b02e49e1b",
       "bytes": 55
     },
-    "compat/android/pocket4/camera/LICENSE": {
-      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-      "bytes": 11358
-    },
-    "compat/android/pocket4/camera/source-lock.json": {
-      "sha256": "0a3720182d21ffe3f8797a551f37155d5f807b654ddb744670bb63783265bc4a",
-      "bytes": 6938
-    },
-    "compat/android/pocket4/camera/dependencies.lock.json": {
-      "sha256": "a60795d773fc95a2cbfda3e739ecd7e60e70da5313e44fd8d45b45647bb043a8",
-      "bytes": 22880
+    "compat/android/pocket4/camera/tests/fixtures/zero-device/Camera2OneCameraManagerImpl.java": {
+      "sha256": "2019878f9f838e1985367d26c4d0e0c497907235a47d15ccc34d5968d4858ca8",
+      "bytes": 7728
     },
     "compat/android/pocket4/camera/tests/run_host_regression.py": {
       "sha256": "f022d1ca5493965fe023692e5838a5ce2c2cf8edcad8c8055dfe69aee455cfd7",
       "bytes": 4474
     },
-    "compat/android/pocket4/camera/tools/verify_source_series.py": {
-      "sha256": "5563df2051f766d9aff8d5ee85c12622b26355df6ab78d07abf1dae472608328",
-      "bytes": 3171
-    },
     "compat/android/pocket4/camera/tools/build_hotplug_release_07.py": {
       "sha256": "4b4ea8d6ee5ab9b9c46123cdc304dfc37f444b779e816d928c426f0a7043041a",
       "bytes": 11869
     },
+    "compat/android/pocket4/camera/tools/verify_source_series.py": {
+      "sha256": "5563df2051f766d9aff8d5ee85c12622b26355df6ab78d07abf1dae472608328",
+      "bytes": 3171
+    },
+    "compat/android/pocket4/evidence/framework-restart-20261104.json": {
+      "sha256": "a5d68b22fe134bdaca9bd11cf42fe24080fc9f6af98240dfed5d207a398ade80",
+      "bytes": 3476
+    },
     "compat/android/pocket4/readiness-status.json": {
-      "sha256": "6ea0b5d3b948553f80acfc16ddeedee899700a5f8d0f9341882bd6d932377da6",
-      "bytes": 26204
-    },
-    "compat/android/pocket4/camera/evidence/recorded-host-regression.json": {
-      "sha256": "e5b1d810beb5361b8c4b3ad19bab0265a5b16fa90834fa9f82e211ce3ff362ec",
-      "bytes": 1580
-    },
-    "compat/android/pocket4/camera/evidence/recorded-release07-build.json": {
-      "sha256": "eb64d27eb3576215ee4ca44879e73c78e6f6090749c4597b723343616d60c84e",
-      "bytes": 1752
-    },
-    "compat/android/pocket4/README.md": {
-      "sha256": "9cb513bc52d6f8542d3fa51420b5c462cb337e85528e37642afa3f273f3f89e1",
-      "bytes": 1417
-    },
-    "compat/android/pocket4/camera/README.md": {
-      "sha256": "ba2b0c3492b08d3352840cd0551e168ad476c16f5fe8fe43cd5ce8c0bccdb10b",
-      "bytes": 6710
-    },
-    "compat/android/pocket4/camera/evidence/source-series.json": {
-      "sha256": "cde365f53e029520f33cd120f61814d002d00533c9277474581bb152c0fd3968",
-      "bytes": 318
-    },
-    "compat/android/pocket4/camera/evidence/host-regression.json": {
-      "sha256": "cf31b89c20769cbd8b0ab5a79c9d1d96b4276d2ae992efe9c2e87dd857b1c10a",
-      "bytes": 1549
-    },
-    "compat/android/pocket4/camera/evidence/unsigned-rebuild.json": {
-      "sha256": "5847dd267217a7ef0fe4346d971ecd5ddb9e163b2d13459598d374c3cf57f73f",
-      "bytes": 1721
+      "sha256": "259b6a3d9ea3df7c49e647c539fa71d43c9e2b5962660a3d757273dbb205be16",
+      "bytes": 27941
     }
   }
 }

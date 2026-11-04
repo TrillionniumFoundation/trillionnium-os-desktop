@@ -1,0 +1,50 @@
+{
+  "schema": "pocket4-framework-epoch-verification-v1",
+  "recorded_at_utc": "2026-11-04",
+  "source_sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+  "test_sha256": "23a8b9b5e7e785cf36e619d49a2eca2be82a7b08c741fc8409bd45bf620f962d",
+  "host_regression": {
+    "environment": "Pocket4 Linux; real child processes, no mocked proc tree",
+    "tests": 10,
+    "passed": 10,
+    "failed": 0,
+    "test_cases": [
+      "test_comm_main_and_parentheses_do_not_break_stat_parsing",
+      "test_disappeared_process_rejects_before_action",
+      "test_exec_in_same_pid_and_start_time_changes_identity",
+      "test_modified_document_is_rejected",
+      "test_restart_during_action_is_unknown_and_not_replayed",
+      "test_retained_parent_does_not_hide_child_restart",
+      "test_serialized_epoch_retains_binding",
+      "test_stable_epoch_runs_exactly_once",
+      "test_timeout_preserved_without_retry_when_epoch_stable",
+      "test_timeout_with_restart_keeps_original_error_chain"
+    ],
+    "original_result_sha256": "50a47204ff202cf3cbae6453a2f4c5dd5aaaf1a8690dc26c05350ac63608f00d",
+    "cloud_proc_visibility_attempt": "Fail-closed; no checks relaxed"
+  },
+  "live_read_only_check": {
+    "passed": true,
+    "roles": [
+      "init",
+      "zygote64",
+      "system_server",
+      "surfaceflinger"
+    ],
+    "capture_then_activity_stack_then_postcheck": true,
+    "epoch_sha256": "d820db4ea51514fdc7f2258e490a7b7453e03aefd666aab0939ad5a87915842d",
+    "original_result_sha256": "9595122ddc1b84a8309c6e85cfb974ef4152d76820426ed7a8ba68e0817fdfe5",
+    "raw_process_identity_not_published": true,
+    "restart_induced": false
+  },
+  "deployment": {
+    "used_by_new_acceptance_workflows": true,
+    "installed_android_app_helper_replaced": false,
+    "ActionRunner_APK_replaced": false
+  },
+  "limits": [
+    "Pre/post checks cannot make an external action atomic with a future process restart.",
+    "Stable process identity does not establish a business postcondition.",
+    "A changed epoch requires a fresh UI observation and decision; an unknown action is not replayed automatically."
+  ]
+}

@@ -8,7 +8,8 @@
   "evidence_rules": [
     "Launch/foreground observation does not prove a business flow.",
     "A prior guest-flow result is historical until repeated on the current runtime.",
-    "Owned test apps and host bindings do not qualify third-party Android app business behavior."
+    "Owned test apps and host bindings do not qualify third-party Android app business behavior.",
+    "Business observations and actions must remain bound to the same init/zygote/system_server/SurfaceFlinger epoch; an outer cell surviving does not establish framework continuity."
   ],
   "latest_baseline": {
     "run": "native-baseline-09",
@@ -30,7 +31,9 @@
       "optional_notification_prompt_dismissed": true,
       "empty_contact_list_visible": true,
       "business_create_edit_persist_sync_verified": false,
-      "production_ready": false
+      "production_ready": false,
+      "historical_framework_epoch": true,
+      "requires_fresh_epoch_requalification": true
     },
     {
       "app": "Camera",
@@ -41,7 +44,6 @@
       "active_apk_sha256": "0f6fb58ea0b81be5f588ee35796d35e4de65d19e866a51ea0e4ac79b26012c4e",
       "install_verified": true,
       "application_data_preserved": true,
-      "android_runtime_restart": false,
       "native_launch_succeeded": true,
       "onboarding_location_opt_out_verified": true,
       "observed_result": "Handled Camera error: cannot connect to camera",
@@ -51,7 +53,30 @@
       "photo_verified": false,
       "reopen_business_verified": false,
       "status": "BLOCKED_PROVIDER_CONNECTION",
-      "production_ready": false
+      "production_ready": false,
+      "historical_framework_epoch": true,
+      "requires_fresh_epoch_requalification": true,
+      "android_runtime_restart_during_install": false
+    },
+    {
+      "app": "Bilibili",
+      "package": "tv.danmaku.bili",
+      "evidence_date_utc": "2026-11-04",
+      "evidence_run": "r10/bilibili-flow-01",
+      "unicode_query_exact_readback": true,
+      "matching_public_search_results_verified": true,
+      "search_valid_in_prior_framework_epoch": true,
+      "framework_restarted_before_video_open": true,
+      "video_open_result": "TIMEOUT",
+      "outcome_unknown": true,
+      "automatic_retry": false,
+      "subsequent_readback": "FOREGROUND_PACKAGE_MISMATCH",
+      "fresh_exact_app_crash_proven": false,
+      "playback_verified": false,
+      "back_and_reopen_verified": false,
+      "status": "BLOCKED_FRAMEWORK_RESTART",
+      "production_ready": false,
+      "evidence": "evidence/framework-restart-20261104.json"
     }
   ],
   "dated_app_observations": [
@@ -930,5 +955,18 @@
       ],
       "flow": "Resolve provider connection; verify preview, photo output, normal close and reopen."
     }
-  ]
+  ],
+  "current_runtime_blocker": {
+    "status": "CONFIRMED_FRAMEWORK_RESTART",
+    "at_utc": "2026-11-04T05:48:03Z",
+    "cause": "Composer exited after a zero presentation timestamp violated the existing monotonic contract; init restarted the Android framework.",
+    "evidence": "evidence/framework-restart-20261104.json",
+    "fix_deployed_in_this_snapshot": false
+  },
+  "acceptance_guard": {
+    "path": "acceptance/framework-epoch/",
+    "host_real_process_tests_passed": 10,
+    "live_read_only_check_passed": true,
+    "installed_helper_replaced": false
+  }
 }
