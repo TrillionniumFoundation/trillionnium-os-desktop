@@ -1,6 +1,6 @@
 # Pocket4 Android application repair snapshot
 
-Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Business acceptance is in progress: Bilibili public search and visual playback passed; Marriott still has a fresh native crash, Beike reaches a blank login router, and Meituan repeatedly exits during startup. LMKD integration remains unqualified.
+Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Business acceptance is in progress: Bilibili public search and visual playback passed; Marriott still has a fresh native crash, Beike reaches a blank login router, and Meituan repeatedly exits during startup. Douyin has a verified public-browsing subset; StreetEasy remains blocked by a connection alert and JD.COM by login after query. LMKD integration remains unqualified.
 
 This directory preserves repair source and dated evidence for Android 17 in DroidLoom on the Pocket4 Linux host. These results do not qualify Android on this repository's Asterinas kernel.
 
@@ -26,8 +26,9 @@ The current records are bound to the verified post-activation framework epoch. [
 | Marriott | The original SIGSEGV/unknown launch remains. A separate [qualified metadata diagnostic](evidence/marriott-main-metadata-01.json) observed the virtual maps memfd path, descriptor close and zero-length mprotect before the same loader crash. | This supports an immediate compatibility defect; a corrected-runtime A/B test and actual business success remain unverified. |
 | Beike | Exact Chinese query and matching suggestions passed. Selecting the region automatically entered login; an App-originated second login intent removed LoginActivity and left OneLoginRouterActivity blank. | Listing results/details/return are blocked. No login was performed; the reason for the repeated login route is unresolved. |
 | Meituan Takeout | One native launch, actual R16 mapping and normal owned-task close were verified. Saved logs explicitly record repeated System.exit(0), with matching EXIT_SELF/0 exit records while the startup task persisted. | Merchant search and menu/details were never reached. The exit caller/trigger and replacement-process start authority are unresolved; no native-signal or pressure cause is inferred. |
-
 | Douyin | Optional login sheet closed normally; public video content visibly changed; related recommendations loaded; a selected video detail and in-app return were verified; normal close preserved Home. | Search was not exercised because no entry was visible in the inspected views. Audio, playback controls, seek and reopen remain unqualified; original helper/audit failures and a separately reconciled unknown click are retained. |
+| StreetEasy | One native launch and actual R16 mapping passed. The connection-error dialog was visually confirmed; one explicit Try again after the known error returned the same error. Normal close preserved Home. | Property query/results/details were never reached. The generic alert and empty UID log capture do not establish an offline-host, TLS or service cause. |
+| JD.COM | Exact 笔记本电脑 readback, matching suggestions and search-submit acknowledgment passed. The App then presented phone-login semantics; normal close preserved Home. | Product results/detail/return were not verified. LoginActivity was visible and SECURE; the inspected capture was all black, recorded as a protected-capture limitation without bypass or a rendering-failure claim. |
 
 ## Acceptance scope
 

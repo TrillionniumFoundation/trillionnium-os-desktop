@@ -1,0 +1,100 @@
+{
+  "schema": "pocket4-owned-app-business-flow-v1",
+  "app": "StreetEasy",
+  "package": "com.zillow.android.streeteasy",
+  "date_utc": "2026-11-04",
+  "flow": "streeteasy-01",
+  "status": "BLOCKED_CONNECTION_ERROR",
+  "production_ready": false,
+  "runtime": {
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_after_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "epoch_preserved": true,
+    "actual_frontmost_engine_mapping_verified": true
+  },
+  "verified_subset": {
+    "single_native_launch_acknowledged": true,
+    "connection_error_dialog_rendered_and_visually_verified": true,
+    "explicit_try_again_control_acknowledged": true,
+    "try_again_count": 1,
+    "same_connection_error_after_try_again": true,
+    "normal_owned_task_close_verified": true
+  },
+  "blocker": {
+    "title": "Could not connect to StreetEasy",
+    "message": "Please make sure you are connected to the Internet",
+    "observed_before_retry_utc": "2026-11-04T12:07:19.538064Z",
+    "observed_after_retry_utc": "2026-11-04T12:14:34.031491Z",
+    "cause_established": false,
+    "generic_alert_does_not_prove_host_offline_or_tls_failure": true,
+    "query_or_listing_detail_reached": false
+  },
+  "retry_semantics": {
+    "single_explicit_retry_after_definitive_visible_error": true,
+    "unknown_action_replayed": false,
+    "native_launch_repeated": false,
+    "automatic_retry": false
+  },
+  "unqualified": {
+    "property_query": false,
+    "search_results": false,
+    "listing_detail": false,
+    "in_app_return_from_detail": false,
+    "reopen": false,
+    "authenticated_behavior": false,
+    "extended_stability": false,
+    "cold_start": false
+  },
+  "exit_evidence": {
+    "captured_at_utc": "2026-11-04T12:15:26.383560Z",
+    "new_exact_main_process_exit_observed": false,
+    "latest_exact_main_exit_at_utc": "2026-11-04T02:36:57.509Z",
+    "latest_exit_predates_this_flow": true,
+    "raw_sha256": "c8723c5e72f50a7c79d5297604418ad04114f468f5244209343e7ccd9403e7c0"
+  },
+  "diagnostic_limitations": {
+    "uid_log_capture_bytes": 0,
+    "uid_log_capture_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "empty_uid_capture_does_not_establish_absence_of_network_errors": true
+  },
+  "cleanup": {
+    "completed_at_utc": "2026-11-04T12:20:43.365968+00:00",
+    "returncode": 0,
+    "outcome_unknown": false,
+    "new_owned_leaf_removed": true,
+    "preexisting_home_preserved": true,
+    "other_tasks_preserved": true,
+    "force_stop_or_data_clear": false,
+    "main_restart": false
+  },
+  "resource_observations": {
+    "memory_current_after_close_bytes": 3597033472,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "memory_high_events_after_close": 14749,
+    "pressure_as_cause_inferred": false,
+    "resource_limit_changes_performed": false
+  },
+  "independent_archive_review": {
+    "sha256": "1206b13b590a633750fb8ed65ca5879525d8f16d96c463f230de7bb9e86bbd4d",
+    "step_receipts": 8,
+    "command_stdout_stderr_pairs_rehashed": 23,
+    "original_pngs_rehashed": 1,
+    "private_screenshots_visually_inspected": 1,
+    "raw_ui_images_or_logs_published": false
+  },
+  "evidence_sha256": {
+    "launch_receipt": "98c0eb1e28175ff02672dfc65c6ca6085453d29a5fa9929f0721cf0298e0c064",
+    "native_launch_stdout": "f13027a4d74316f68eb11dc7423d626bf7d18b8f4f77028313120a7d8afee1bc",
+    "initial_error_dump_receipt": "a9799e3aa4ea738059f640d490a031761d76a27f199021fd34e4f5e2eb0b72f7",
+    "visual_error_observe_receipt": "a5582c838e0d662ebede2b33d0420c0c3991aebb113ee0fa7ca7052d8b5863c0",
+    "explicit_retry_receipt": "8fa948feb49d54c1049c11fad1303208ab108d453f8caf0b5be2231ab00aa657",
+    "persistent_error_dump_receipt": "82e177545243d6835f755fe59631ba886d22b9f8d9de837d58a5fa1446311af4",
+    "close_receipt": "9a590554036f12db627e96e43869b2249ccc786d193a26e8a4d310ee55119e8d",
+    "private_original_png": "82cdb6ee4c097e6fafca0244cf69f6a56dacfbdee76d573680c95c166bce6600"
+  }
+}

@@ -1118,7 +1118,7 @@
     },
     "actual_main_integration": "lmkd/evidence/r5-build/main-integration-summary.json"
   },
-  "updated_at_utc": "2026-11-04T11:57:39.724264+00:00",
+  "updated_at_utc": "2026-11-04T12:46:21.319019Z",
   "main_activation": {
     "schema": "pocket4-main-activation-public-summary-v1",
     "evidence_basis": "Parent actual verification stdout, authoritative rc0 status, and read-only saved-after review; publication agent inspected cached records, not complete private after JSON.",
@@ -1205,6 +1205,29 @@
       "audio_and_playback_controls_verified": false,
       "normal_owned_close_verified": true,
       "original_failures_retained": true
+    },
+    {
+      "app": "StreetEasy",
+      "package": "com.zillow.android.streeteasy",
+      "status": "BLOCKED_CONNECTION_ERROR",
+      "production_ready": false,
+      "evidence": "evidence/business-streeteasy-20261104.json",
+      "single_explicit_retry_after_known_error": true,
+      "property_query_reached": false,
+      "network_cause_established": false,
+      "normal_owned_close_verified": true
+    },
+    {
+      "app": "JD.COM",
+      "package": "com.jingdong.app.mall",
+      "status": "BLOCKED_LOGIN_AFTER_QUERY",
+      "production_ready": false,
+      "evidence": "evidence/business-jd-20261104.json",
+      "unicode_query_and_suggestions_verified": true,
+      "query_submit_reached_phone_login": true,
+      "product_results_and_detail_verified": false,
+      "protected_screenshot_not_treated_as_render_failure": true,
+      "normal_owned_close_verified": true
     }
   ],
   "current_business_flow_runtime": {
