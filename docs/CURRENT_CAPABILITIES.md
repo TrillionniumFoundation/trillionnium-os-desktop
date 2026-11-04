@@ -1,18 +1,20 @@
 # 当前能力、源码与验收边界
 
 <a id="current-product-pair"></a>
-## 2026-11-03 当前实施起点：Linux Root、Session 与 Rust UI
+<!-- current-hepta-source:start -->
+## 2026-11-04 当前联合候选：Linux Root、Notes 与 Calculator
 
-当前选择以下固定源码作为接续起点。它们定位实现，不是本次安装、运行或设备验收收据；后续代码和文档提交各有自己的 Desktop commit/tree。
+当前 `notes_calculator_v1` 联合候选选择以下固定来源。它们定位实现，不是本次安装、运行或设备验收收据；后续代码和文档提交各有自己的 Desktop commit/tree。原 Notes-only 目录、历史配对和运行收据保持原来源，不自动迁移或授予新联合 profile 资格。
 
 | 输入 | 精确身份与依据 |
 | --- | --- |
-| Desktop 实施起点 | [`745c0731aed270ee394145c6767371a6af47f49f`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/745c0731aed270ee394145c6767371a6af47f49f)，tree `fa70b1b95206d25775009c6965245d34051468a4` |
-| 原 Hepta owner / UI / 依赖补丁 | [`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360)，tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`；由 [canonical source contract](../support/ui/HEPTA_SHARED_PRESENTER.json) 及实际 Cargo 入口选择 |
+| Desktop 代码交接点 | [`f5fbc7e1a533e5bec588575ab56312a3203f6d8c`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/f5fbc7e1a533e5bec588575ab56312a3203f6d8c)，tree `2998926686ce45c38ec14d6f42ab0871ba25faa1`；最终产物绑定其实际干净 Desktop commit/tree |
+| Hepta commit | [`14e2d89b3367232ec5dbe6187f09feed0f2b68d3`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/14e2d89b3367232ec5dbe6187f09feed0f2b68d3)；原 owner / UI / 依赖补丁由 [canonical source contract](../support/ui/HEPTA_SHARED_PRESENTER.json) 及三处实际 Cargo 入口统一选择 |
+| Hepta tree | `0e12d53adf6a13721fdb2feef0e974d903b92e85` |
 | 产品构建与锁 | Rust/Cargo `1.96.0`；[DEPENDENCIES](../support/ui/DEPENDENCIES.md) 列出五个普通入口及独立 prepared UI 入口，共六份锁。源码选择、完整依赖图、构建和运行分别验证 |
 | 显式 preedit 输入候选 | [linux-preedit-profile.json](../support/ui/linux-preedit-profile.json) 选择同一 Hepta 来源；原 SDK `337566c8b25d47f7e4fff6a202157b65bf183330`，prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`。默认 SDK、clipboard 候选和 preedit 候选不互借锁或运行资格 |
 
-本页是当前状态的唯一汇总入口。[模块索引](modules/README.md) 对应实际源码和开发/技术合同；[SOURCES](SOURCES.md#hepta-native-organ) 定位同一 Hepta commit 的原 owner 手册；[STATUS](STATUS.md) 与[证据索引](EVIDENCE_INDEX.md) 保留按日期、源码和场景绑定的结果。`4223` 的六锁/32项原包测试、`942/de0` 的三项 CI、较早 v10/v11 和真实窗口记录仍属于各自原配对，不能转记为 `745/a39` 的完整运行。
+本页是当前状态的唯一汇总入口。[模块索引](modules/README.md) 对应实际源码和开发/技术合同；[SOURCES](SOURCES.md#hepta-native-organ) 定位同一 Hepta commit 的原 owner 手册；[STATUS](STATUS.md) 与[证据索引](EVIDENCE_INDEX.md) 保留按日期、源码和场景绑定的结果。`4223` 的六锁/32项原包测试、`942/de0` 的三项 CI、较早 v10/v11 和真实窗口记录仍属于各自原配对，不能转记为当前 14e 联合候选的完整运行。
 
 ### 当前交付范围与下一条实际验收
 
@@ -21,15 +23,23 @@
 | Linux 原 Root 与文本会话 | [product Root](../services/hepta-session-host/src/product_root/README.md)、[原文本 adapter](../services/hepta-session-host/TEXT_SESSION.md)、[同一 Root 的管理入口](../services/hepta-session-host/src/product_root/ADMIN.md)；原 authority、Current、writer/outbox 与 operation history 保留所属 owner | 最终安装包中的真实 Root/人类准入、原 thread/模型、期限/撤销与恢复，记录实际身份、命令和输出；源码合同不代替部署输入 |
 | Rust UI、安装和本地草稿 | [UI 五成员](../ui/README.md)、[产品安装/升级/回滚/卸载](../support/ui/PRODUCT.md)、[草稿与上下文](../support/ui/CHAT_WORKSPACE.md) | 同一个包的真实启动、Session/窗口身份、恢复、升级/回滚及卸载保留用户数据；最终 Makepad 的 IBus、AT-SPI 与物理输入另外验收 |
 | Notes 目的端 | [Notes organ](../support/ui/NOTES_ORGAN.md)、[独立文档回读和持久恢复](../support/ui/NOTES_DURABILITY.md)；原 operation/CAS 与应用文档 owner 相接 | 原授权→实际保存→独立回读→原 writer 持久终态，再按原门禁执行丢回复、撤销、并发编辑与 App 退出；模型文本不能作效果收据 |
-| 第二目的端与 Android | [Android 只读 adapter](../support/android/DEVICE_ORGAN.md)、[严格 receiver 合同](../support/android/receiver/README.md) 已有源码；当前 helper 在发现设备和 UI 调用前拒绝 `organ-set-text` | 每个新目的端独立绑定观察、目标身份/代际、授权、效果、撤销和原 owner 恢复；Android 还需原 signer、安装字节/peer 与真实回读资格。旧限定 APK smoke 不提供生产设备控制资格 |
+| Notes + Calculator 联合候选 | [Calculator 协议](../ui/core/CALCULATOR_PROTOCOL.md)、[双目的端 Session](../ui/session/README.md)、[原 Root 装配](../services/hepta-session-host/src/product_root/DESKTOP_PROFILE.md)；显式 `notes_calculator_v1` 使用两个原目标和一个新原 Core thread | 最终安装组合中的人类准入、原 authority / writer / outbox、两个真实效果及原 operation 终态、失回复与联合恢复；源码/六锁图检查不提供这些执行资格 |
+| Android | [Android 只读 adapter](../support/android/DEVICE_ORGAN.md)、[严格 receiver 合同](../support/android/receiver/README.md) 已有源码；当前 helper 在发现设备和 UI 调用前拒绝 `organ-set-text` | 原 signer、安装字节/peer、目标身份/代际、原授权、实际效果、撤销和独立回读；旧限定 APK smoke 不提供生产设备控制资格 |
 | Asterinas organ | [固定构建](../support/build/README.md)、[原 daemon runner](../tests/workloads/hepta_agentd_runtime/README.md)、[G1-d](agents/G1D_TRUSTED_CONTROL_PROFILE.md) 与下方 A00–A10 合同 | 同一最终 guest/Hepta 输入的完整 F1、G2 持久效果和故障恢复；各历史 QEMU 切片保留，不能代替当前原生产品、GPU/ARM/BSP 或手机资格 |
 | 模块交接与证据 | [机器目录](modules/catalogue.json) 覆盖 15 个第一方 package、1 个 UI workspace、11 个开发域及当前 57 个内核成员 | `check_modules.py` 检查映射和链接，源码/构建/运行分别留收据；文档覆盖数不作为开发完成率 |
 
 本页尚未登记这条最终安装组合的完整产品验收；生产授权与效果、完整原生 F1/G2、通用桌面控制和手机资格保持未取得。关闭一个门禁时须补充实际 Desktop/Hepta commit/tree、features/锁、二进制/资源摘要、环境、原始退出码、日志和未执行范围。修改来源时同步 README、SOURCES、依赖说明及模块交接；不改历史收据的来源、计数和结论。
 
+<!-- current-hepta-source:end -->
+
 ## 历史配对记录
 
-以下日期节保留各自执行时的“当前”“候选”“尚未”等表述。它们不覆盖上方 2026-11-03 选源，也不把曾通过或曾失败的场景自动转授后继。
+以下日期节保留各自执行时的“当前”“候选”“尚未”等表述。它们不覆盖上方 2026-11-04 联合候选选源，也不把曾通过或曾失败的场景自动转授后继。
+
+<a id="2026-11-03-当前实施起点linux-rootsession-与-rust-ui"></a>
+### 2026-11-03 实施起点（历史）
+
+原选源为 Desktop `745c0731aed270ee394145c6767371a6af47f49f` / tree `fa70b1b95206d25775009c6965245d34051468a4`，Hepta [`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360) / tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`。[原选源段落](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/886f48ee0b3a6f825005e8a9b383fb5631895697/docs/CURRENT_CAPABILITIES.md#current-product-pair)和 fd/a39 记录保留历史身份；它们不代表当前 Cargo pin，也不将曾通过或曾失败的场景转授 14e 联合候选。
 
 <a id="2026-10-27-审计修复候选linux-产品先行"></a>
 ## 2026-10-27 4223 审计修复候选（历史）
