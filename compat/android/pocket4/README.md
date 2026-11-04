@@ -18,14 +18,16 @@ The [LMKD bundle](lmkd/README.md) reconstructs r3/r4/r5 sources, includes scoped
 
 ## Current business observations
 
-All four records are bound to the verified post-activation framework epoch. [Business acceptance](acceptance/business-flows/README.md) separates completed subflows from untested behavior.
+The current records are bound to the verified post-activation framework epoch. [Business acceptance](acceptance/business-flows/README.md) separates completed subflows from untested behavior.
 
 | App | Current evidence | Remaining gate |
 | --- | --- | --- |
 | Bilibili | Public Unicode search, matching video, three visually inspected frames showing content progression, actual R16 mapping and normal owned-task close. | Audio, pause/seek, in-app back, reopen and broader App behavior remain untested. |
-| Marriott | Fresh exact-App SIGSEGV during the single launch; no completed task receipt. | Launch and all business behavior remain failed/unqualified; the original unknown launch result is retained. |
+| Marriott | The original SIGSEGV/unknown launch remains. A separate [qualified metadata diagnostic](evidence/marriott-main-metadata-01.json) observed the virtual maps memfd path, descriptor close and zero-length mprotect before the same loader crash. | This supports an immediate compatibility defect; a corrected-runtime A/B test and actual business success remain unverified. |
 | Beike | Exact Chinese query and matching suggestions passed. Selecting the region automatically entered login; an App-originated second login intent removed LoginActivity and left OneLoginRouterActivity blank. | Listing results/details/return are blocked. No login was performed; the reason for the repeated login route is unresolved. |
 | Meituan Takeout | One native launch, actual R16 mapping and normal owned-task close were verified. Saved logs explicitly record repeated System.exit(0), with matching EXIT_SELF/0 exit records while the startup task persisted. | Merchant search and menu/details were never reached. The exit caller/trigger and replacement-process start authority are unresolved; no native-signal or pressure cause is inferred. |
+
+| Douyin | Optional login sheet closed normally; public video content visibly changed; related recommendations loaded; a selected video detail and in-app return were verified; normal close preserved Home. | Search was not exercised because no entry was visible in the inspected views. Audio, playback controls, seek and reopen remain unqualified; original helper/audit failures and a separately reconciled unknown click are retained. |
 
 ## Acceptance scope
 

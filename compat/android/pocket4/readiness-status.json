@@ -109,6 +109,21 @@
       "missing_play_package_proven": false,
       "next_evidence": "Fresh same-epoch launch and UID/nonce-correlated licensing logs",
       "production_ready": false
+    },
+    {
+      "app": "Marriott",
+      "package": "com.marriott.mrt",
+      "evidence_date_utc": "2026-11-04",
+      "observation_utc": "2026-11-04T11:16:10.144Z",
+      "source": "Parent's qualified metadata diagnostic summary; publication agent reviewed the public summary and observer source, not an independent rerun.",
+      "status": "FAIL_NATIVE_SIG11_WITH_OBSERVED_VIRTUAL_PROC_FD_PATH_MISMATCH",
+      "evidence": "evidence/marriott-main-metadata-01.json",
+      "one_explicit_new_diagnostic": true,
+      "old_failed_launch_retained": true,
+      "metadata_capture_qualified": true,
+      "business_verified": false,
+      "corrected_runtime_ab_verified": false,
+      "production_ready": false
     }
   ],
   "dated_app_observations": [
@@ -935,7 +950,7 @@
     "No new qualified CEAIR or Hyatt business result was found in the audited Nov4 runs.",
     "This is an audited evidence subset, not a complete installed-package inventory.",
     "Authenticated, transactional, persistence and extended lifecycle flows remain unqualified where not separately evidenced.",
-    "Fresh current-epoch results cover only the explicitly listed flows; Bilibili audio/back/reopen, Beike authenticated results/details, Marriott launch and the remaining App queue remain unqualified."
+    "Fresh current-epoch results cover only the explicitly listed portions: Bilibili audio/back/reopen, Douyin search/playback controls/audio/reopen, Beike authenticated results/details, Marriott launch, Meituan startup and the remaining App queue are unqualified."
   ],
   "next_business_tests": [
     {
@@ -948,7 +963,7 @@
       "apps": [
         "Douyin"
       ],
-      "flow": "Fresh public search, actual visual playback/progress, in-app return and normal close; no current-epoch business result yet."
+      "flow": "Locate and verify a legitimate public query route, then matching search results; qualify pause/resume, seek, audio and separate normal reopen. The current scoped feed, related detail and return success does not prove these."
     },
     {
       "apps": [
@@ -1074,7 +1089,7 @@
     "production_ready": false,
     "canary_evidence": "native-bridge/qualification/evidence/three-arm-summary.json",
     "main_activation_evidence": "evidence/main-activation-20261104.json",
-    "scoped_business_validation": "Bilibili public search and visual playback passed on the deployed runtime. Causal attribution to one repair is not established. Marriott still crashes; Beike reaches a blank login router."
+    "scoped_business_validation": "Bilibili public search and visual playback, and Douyin public feed/related detail/return were observed on deployed R16. Causal attribution to one repair is not established. Marriott still crashes with a traced virtual proc-fd path mismatch; Beike reaches a blank login router; Meituan self-exits."
   },
   "lmkd_candidate": {
     "status": "DO_NOT_DEPLOY_MAIN",
@@ -1103,7 +1118,7 @@
     },
     "actual_main_integration": "lmkd/evidence/r5-build/main-integration-summary.json"
   },
-  "updated_at_utc": "2026-11-04T11:15:32.824758+00:00",
+  "updated_at_utc": "2026-11-04T11:57:39.724264+00:00",
   "main_activation": {
     "schema": "pocket4-main-activation-public-summary-v1",
     "evidence_basis": "Parent actual verification stdout, authoritative rc0 status, and read-only saved-after review; publication agent inspected cached records, not complete private after JSON.",
@@ -1152,10 +1167,12 @@
     {
       "app": "Marriott",
       "package": "com.marriott.mrt",
-      "status": "FAIL_NATIVE",
+      "status": "FAIL_NATIVE_SIG11_WITH_OBSERVED_VIRTUAL_PROC_FD_PATH_MISMATCH",
       "production_ready": false,
       "evidence": "evidence/business-marriott-20261104.json",
-      "fresh_exact_app_sigsegv": true
+      "fresh_exact_app_sigsegv": true,
+      "additional_evidence": "evidence/marriott-main-metadata-01.json",
+      "corrected_runtime_ab_verified": false
     },
     {
       "app": "Beike",
@@ -1175,6 +1192,19 @@
       "startup_main_process_self_exit_zero": true,
       "merchant_query_attempted": false,
       "normal_owned_close_verified": true
+    },
+    {
+      "app": "Douyin",
+      "package": "com.ss.android.ugc.aweme",
+      "status": "PARTIAL_PUBLIC_BROWSING_VERIFIED_SEARCH_NOT_EXERCISED",
+      "production_ready": false,
+      "evidence": "evidence/business-douyin-20261104.json",
+      "public_feed_content_progress_verified": true,
+      "related_detail_and_return_verified": true,
+      "search_verified": false,
+      "audio_and_playback_controls_verified": false,
+      "normal_owned_close_verified": true,
+      "original_failures_retained": true
     }
   ],
   "current_business_flow_runtime": {

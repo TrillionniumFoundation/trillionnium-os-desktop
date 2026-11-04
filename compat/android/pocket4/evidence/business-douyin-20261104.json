@@ -1,0 +1,131 @@
+{
+  "schema": "pocket4-owned-app-business-flow-v1",
+  "app": "Douyin",
+  "package": "com.ss.android.ugc.aweme",
+  "date_utc": "2026-11-04",
+  "flow": "douyin-01",
+  "status": "PARTIAL_PUBLIC_BROWSING_VERIFIED_SEARCH_NOT_EXERCISED",
+  "production_ready": false,
+  "runtime": {
+    "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_after_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "recorder_sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b",
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "epoch_preserved": true,
+    "actual_frontmost_engine_mapping_verified": true,
+    "same_cmdline_process_count": 2
+  },
+  "verified_subset": {
+    "single_native_launch_acknowledged": true,
+    "optional_login_sheet_closed_by_visible_control": true,
+    "account_login_performed": false,
+    "public_feed_rendered": true,
+    "actual_visible_video_content_changed": true,
+    "content_progress_basis": "Private screenshots from 11:42:42 and 11:44:49 were independently inspected; the cats' pose and scene composition changed. This does not establish continuous playback or the failed play control.",
+    "description_and_related_cards_loaded": true,
+    "selected_related_title": "雷霆小怒",
+    "matching_related_detail_title_and_actual_video_image_verified": true,
+    "in_app_back_to_original_description_and_recommendations_verified": true,
+    "normal_owned_task_close_verified": true
+  },
+  "unqualified": {
+    "search_query": false,
+    "search_results": false,
+    "search_entry": "No usable search entry was visible in the inspected home, sidebar or More functions views; this is not a proven cause or a claim that no route exists.",
+    "audio_listened": false,
+    "pause_resume_control": false,
+    "seek": false,
+    "reopen": false,
+    "cold_start": false,
+    "authenticated_behavior": false,
+    "extended_stability": false
+  },
+  "original_failures_retained": [
+    {
+      "step": "04-engine-maps",
+      "error": "NO_UNIQUE_LIVE_MAIN_APP_PROCESS",
+      "explanation": "The frozen helper assumes a unique exact cmdline; the App had a parent and a same-cmdline child. It was not modified mid-flow."
+    },
+    {
+      "step": "09-process-and-image-audit",
+      "error": "AssertionError at private JPEG size bound",
+      "explanation": "The whole original audit remains failed; separately scoped steps 10 and 17 verified the frontmost process and both actual engine mappings and created bounded derivatives."
+    },
+    {
+      "step": "18-play-video",
+      "helper_returncode": 1,
+      "helper_timed_out": false,
+      "helper_seconds": 2.1198288130108267,
+      "helper_error": "NO_MATCH",
+      "helper_outcome_unknown": false,
+      "outer_action_outcome_unknown_retained": true,
+      "helper_stderr_sha256": "17bb21b7068c27df994251713147577b688b8043a733a77f617baea1fdfb7191",
+      "replayed": false
+    }
+  ],
+  "reconciliation": {
+    "step": "20-reconcile-from-feed",
+    "original_step": "18-play-video",
+    "observation_step": "19-after-play-observe",
+    "unique_actual_visible_node": "com.ss.android.ugc.aweme:id/qbc / 暂停视频，按钮",
+    "same_flow_and_epoch": true,
+    "original_action_outcome": "unknown_retained",
+    "allows_new_decisions_only": true,
+    "business_success_inferred_from_reconciliation": false,
+    "old_action_replayed": false
+  },
+  "exit_evidence": {
+    "captured_at_utc": "2026-11-04T11:56:53.780522+00:00",
+    "new_exact_main_process_exit_observed": false,
+    "latest_exact_main_exit_at_utc": "2026-11-04T08:53:38.620Z",
+    "latest_exit_predates_this_flow": true,
+    "raw_sha256": "c70980ae026981e7dc7ab96c56535f5bf39c26c2c7d18614413e4e610332eae3"
+  },
+  "cleanup": {
+    "completed_at_utc": "2026-11-04T11:57:39.712263+00:00",
+    "returncode": 0,
+    "outcome_unknown": false,
+    "new_owned_leaf_removed": true,
+    "preexisting_home_preserved": true,
+    "other_tasks_preserved": true,
+    "force_stop_or_data_clear": false,
+    "main_restart": false
+  },
+  "resource_observations": {
+    "memory_current_after_close_bytes": 4457521152,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "memory_high_events_after_close": 13389,
+    "pressure_as_cause_inferred": false,
+    "resource_limit_changes_performed": false
+  },
+  "independent_archive_review": {
+    "sha256": "1632f2d749bff0c5323465a72bd85d97cbbe1d2e75e2fdca1de0e085e4a7daaf",
+    "step_receipts": 28,
+    "command_stdout_stderr_pairs_rehashed": 70,
+    "original_pngs_rehashed": 5,
+    "private_screenshots_visually_inspected": 5,
+    "raw_ui_images_or_logs_published": false
+  },
+  "evidence_sha256": {
+    "launch_receipt": "df6ab438f10479080d3f79d026cb5c590ac9c21f17ccd704dc927493dd968763",
+    "native_launch_stdout": "b737acf71def1cb51c2c3310ab310547c5dc9c25a48fa9cf67e019e46728a0a5",
+    "description_open_receipt": "8fa331f55e513e3184456c6d66231b29e450bb5a214607029018b77e44852812",
+    "related_open_receipt": "7d8d0b09e89d222d978277e2dccfd4536ce1c82189d89f1e828ade3957c5182c",
+    "related_observe_receipt": "d2a610e7545346a11b4f6d2ca6e14264dbb7ff87395d0e38bd5a19e69195e25c",
+    "return_receipt": "8664e69fd443df438e79cc1183509c126fc0b970191d1bdc348169dd1e24308c",
+    "return_state_receipt": "ffbc762e827c7b43e1ce561790ea5d76b5b32a8ea52409e4b632e68230350bb5",
+    "unknown_play_receipt": "3345e0268c1c8660011ce77e67f503d36b7f92baf31a3c6707f1f2500a002951",
+    "reconciliation_step_receipt": "6756cd2d356943a7deb4f49829bb9cf525a6530d9fae19419354a9c1f2587afb",
+    "close_receipt": "7312786cbcabd324d764a235f708a77cec7f5e79062bd18edd9915cf83f0fac4",
+    "private_original_pngs": {
+      "03-login-observe": "8a236016753ae856c1e912ffb2878aa0d559c772e48f52210d8a8d951bc79258",
+      "08-feed-observe": "46f51a5ed327057ff8a96d80315448f631a8621b986c7de92cca2dc8cead4c47",
+      "16-feed-observe": "eafe979e755e663625f44cc4fae3bb0a19593212b45bec0ab4d969d8f186731c",
+      "19-after-play-observe": "e1989ce655fb800d2e3b86e212dfeeceba96c63a2d657cce36f43de400ca6724",
+      "24-related-video-observe": "e88661d22e23b383b83055abdc7ef21ce13abb204a22eac8b9011106c05a9c9d"
+    }
+  }
+}
