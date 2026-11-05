@@ -22,7 +22,97 @@ together with the other original dependency security patches. Full verification
 covers the six lock roots listed below. The Notes model fixture, document
 readback fixture and prepared SDK helper must match that same source.
 
-## Selected joint candidate and qualification boundary (2026-11-04)
+<!-- current-hepta-source:start -->
+## Current source and six-lock qualification (2026-11-05)
+
+The `notes_calculator_v1` successor selects Hepta
+[`bfdf51e19efdfd38f6f6825372e81a790ed40c90`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/bfdf51e19efdfd38f6f6825372e81a790ed40c90),
+tree `ca6c2d3ad2951b8d5f4fa656dac49dbc434c533a`. Its Desktop integration baseline is
+[`88e5ab7b1cc884b7168c2bfa20692c7fd1e1aa46`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/88e5ab7b1cc884b7168c2bfa20692c7fd1e1aa46),
+tree `bf9fac6cb0167133a1f6d4bd13ff49b2993dd813`. The unchanged baseline still carries the
+earlier 14e contract. The new selection belongs to the successor containing the
+original updater's five source files and the generated locks below. Any build
+receipt must bind that complete successor Desktop commit/tree.
+
+All 39 Hepta Git declarations and the preedit profile select bfdf. The original
+presenter verifier checked the 194 source identities, 284 checkout files and
+three local licence copies. Original cache checks verified the selected Hepta
+and Makepad sources and graph; no runtime flag was promoted.
+
+### Actual Cargo outputs
+
+Cargo 1.96.0 ran the five original `cargo update --workspace` commands. The UI
+and Session host locks changed. The original prepared source-copy workflow
+generated the separate preedit SDK lock with Cargo and copied those exact
+bytes into the sixth root. The other three locks retained their original bytes.
+
+| Lock root | Actual result | SHA-256 |
+| --- | --- | --- |
+| `ui/Cargo.lock` | Cargo-generated change | `7cd44430f2b565728d2d8f79e7d7ecc82c7bcc7080d81d3c7e5b15af690cb181` |
+| `services/hepta-session-host/Cargo.lock` | Cargo-generated change | `305d76a814b196e84c247e4118515decc48497d30d8ef77d1c0f5661b02e1d0e` |
+| `support/ui/preedit-sdk/Cargo.lock` | Cargo-generated change | `c280b40e89830b9d392bc09a9f330ff22b5e6fa694af664226f2829ae2011cb1` |
+| `services/hepta-os/Cargo.lock` | Unchanged bytes | `cf09ebb1625ef65ee7722d1ed09f00f874a4390f619b7fbfde0588f61c52a302` |
+| `support/ui/Cargo.lock` | Unchanged bytes | `e3c3c849d9541154309b197285f99f6a86562f64476f44ab1cb7e2d6d8ae8614` |
+| `tests/ui/Cargo.lock` | Unchanged bytes | `2e2ed22254320f2da27d098766ba003d1159e71ad8e0ef261be5eb8747a40940` |
+
+Seven ordinary full graphs passed their original locked metadata commands and
+the repeated `--locked --offline` commands:
+
+| Manifest / graph | Explicit feature |
+| --- | --- |
+| `ui/Cargo.toml`, shared presenter | `trill-shell/hepta-shared-presenter` |
+| `ui/Cargo.toml`, native UI | `trill-shell/hepta-native-makepad` |
+| `ui/Cargo.toml`, preedit | `trill-shell/hepta-native-preedit-sdk` |
+| `services/hepta-session-host/Cargo.toml` | `product-root` |
+| `services/hepta-os/Cargo.toml` | Original defaults |
+| `support/ui/Cargo.toml` | Original defaults |
+| `tests/ui/Cargo.toml` | Original defaults |
+
+The eighth graph used the original prepared Desktop source copy, the explicit
+preedit feature and all 102 SDK overrides. Its offline resolution was followed
+by locked offline metadata and the original SDK source/edge verifier. Makepad
+commit `337566c8b25d47f7e4fff6a202157b65bf183330` and reviewed patched tree
+`6b422b3120f5f9b5c7ada579b55f647d51bd7fcf` were unchanged.
+The SDK helper used its original shared clone with an alternates reference;
+this receipt does not call it an independent Git object store.
+
+### Scope and retained evidence
+
+The original six-lock, source-cache, SDK, presenter and final graph verifiers
+all exited 0. The original dependency tests passed 41 cases in normal Python
+and the same 41 under `-O`. The source-and-lock difference contains eight paths:
+five original updater outputs and three Cargo-generated lock changes.
+No lock was edited by hand.
+
+The single metadata job `1a1ac11a46e-fc05-5213` exited 0 with durable output
+and no timeout. It used approximately 1045.314 seconds of its single
+2400-second work budget. Sampled cumulative positive cache/prepared growth
+was 4,218,576,896 bytes under the 12 GiB bound. The actual CPU 200% / 4 GiB
+cgroup and original entry/stage guards were retained. OOM counters did not
+increase. The read-only postterminal audit confirmed the original supervisor
+and runner identities gone, the unit inactive and its cgroup absent. This
+observation does not admit another build or test window.
+
+The exact result is `metadata-work-v1/result.json`, SHA-256
+`becd91b60995820bd00ffc4edbbf0f421fb8328e998177026a17c2312a3218d8`.
+The final summary is `metadata-postterminal-v1/summary.json`, SHA-256
+`39b13f0b588e0ef59c45b6c4cf0d16047ac0d6e21adb444cfe44c3d84504435a`,
+from read-only audit job `1a1ac2ac122-fc05-5298`. That audit did not rerun
+Cargo or extend the work window. Prior unexecuted v3/eac and superseded v4
+policy-binding proposals, and the initial mixed-source refusal, remain history.
+
+These are source and dependency metadata results: `compiled=false`,
+`runtime_qualified=false` and `product_published=false` remain the receipt's
+claims. Hepta's exact bfdf all-40-map pass likewise retains
+`productionImplementationProved=false`. It supplies no Rust/Firefox, installed
+Root, Notes/Calculator effect, physical device or Native G2 acceptance.
+The earlier eac/local-c789 native capacity failure stays with that exact pair.
+See [current capabilities](../../docs/CURRENT_CAPABILITIES.md#current-product-pair).
+The joint profile still needs a new Core thread and both original targets;
+selection does not grant admission, renew a lease or migrate an old catalogue.
+<!-- current-hepta-source:end -->
+
+## Historical joint candidate and qualification boundary (2026-11-04)
 
 This independent `notes_calculator_v1` candidate selects original Hepta
 [`14e2d89b3367232ec5dbe6187f09feed0f2b68d3`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/14e2d89b3367232ec5dbe6187f09feed0f2b68d3),

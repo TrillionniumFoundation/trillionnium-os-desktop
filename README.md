@@ -43,23 +43,28 @@ every shipped file digest and `effects_authorized: false`.
 ## Linux host entry point
 
 <!-- current-hepta-source:start -->
-The current independent `notes_calculator_v1` candidate selects one original
+The current `notes_calculator_v1` source-and-lock successor selects one original
 Hepta source for Root, Agentd, UI/core and the carried dependency patches:
 
 | Input | Exact identity |
 | --- | --- |
-| Hepta commit | [`14e2d89b3367232ec5dbe6187f09feed0f2b68d3`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/14e2d89b3367232ec5dbe6187f09feed0f2b68d3) |
-| Hepta tree | `0e12d53adf6a13721fdb2feef0e974d903b92e85` |
+| Hepta commit | [`bfdf51e19efdfd38f6f6825372e81a790ed40c90`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/bfdf51e19efdfd38f6f6825372e81a790ed40c90) |
+| Hepta tree | `ca6c2d3ad2951b8d5f4fa656dac49dbc434c533a` |
 
-The Desktop code handoff is
-[`f5fbc7e1a533e5bec588575ab56312a3203f6d8c`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/f5fbc7e1a533e5bec588575ab56312a3203f6d8c),
-tree `2998926686ce45c38ec14d6f42ab0871ba25faa1`. This identifies the candidate
-source, not a completed build or installation. Every successor records its
-actual Desktop commit/tree in its build receipt. All 39 Hepta Git dependencies
-and patches in the three consuming manifests select the commit above and use
-Rust 1.96.0. The UI Cargo root explicitly patches all four original AccessKit
-crates to this source. `services/hepta-os` remains a local protocol/transport
-crate without a Hepta Git dependency.
+The Desktop integration baseline is
+[`88e5ab7b1cc884b7168c2bfa20692c7fd1e1aa46`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/88e5ab7b1cc884b7168c2bfa20692c7fd1e1aa46),
+tree `bf9fac6cb0167133a1f6d4bd13ff49b2993dd813`. It is the canonical, same-tree mapping of
+local `c789c50f89493495c1717d7995da50861c0e0e33`. That unchanged baseline still
+records the earlier 14e selection. The bfdf selection belongs to the successor
+containing this change's updated contract, manifests and Cargo-generated locks.
+Every build must bind that complete successor Desktop commit/tree; the baseline
+identity alone is not a newly built or installed product.
+
+All 39 Hepta Git dependencies and patches in the three consuming manifests,
+and the explicit preedit profile, select the commit above. Rust/Cargo remains
+1.96.0. The UI root retains all four original AccessKit patches;
+`services/hepta-os` remains a local protocol/transport crate without a Hepta
+Git dependency.
 
 [HEPTA_SHARED_PRESENTER.json](support/ui/HEPTA_SHARED_PRESENTER.json) is the
 canonical Hepta identity. The [dependency guide](support/ui/DEPENDENCIES.md)
@@ -78,11 +83,29 @@ signed Android receiver. Each final source profile must bind the actual complete
 Desktop commit/tree, Cargo-generated locks, features, binary hashes and execution
 receipts; source and graph verification do not authorize production effects.
 
+On 2026-11-05 the original source and six-lock metadata workflow completed:
+three locks were generated with changed bytes and three were unchanged.
+Seven ordinary full graphs were resolved and repeated with locked, offline
+metadata; the prepared preedit SDK's eighth graph used the original 102 package
+overrides and the same native feature. The original dependency tests passed
+41 cases in normal mode and 41 in optimized mode. The original process and
+cgroup reached their recorded terminal state without timeout or OOM.
+These checks did not compile or run the product. Exact locks, scope and receipt
+identities are in the [dependency guide](support/ui/DEPENDENCIES.md).
+
+The exact Hepta all-40-map qualification also passed, with its production and
+execution claims still false. The earlier eac/local-c789 native build passed
+compilation and packaging but failed the original 8/16 MiB ELF capacity gate;
+OSDK, kernel builds, Root fixtures and VM boots were not executed. Its results
+do not transfer to bfdf or to the later same-tree Desktop mapping.
+[Current capabilities](docs/CURRENT_CAPABILITIES.md#current-product-pair)
+keeps these historical executions and the remaining runtime gates explicit.
+
 The original runtime contracts are pinned beside their owners:
-[Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),
-[original UI composition](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md),
-[Notes crash recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md)
-and [Android target](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md).
+[Root/Agentd text](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md),
+[original UI composition](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md),
+[Notes crash recovery](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md)
+and [Android target](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md).
 <!-- current-hepta-source:end -->
 
 The preceding 2026-11-03 checkpoint was Desktop

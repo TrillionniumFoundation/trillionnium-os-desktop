@@ -4,29 +4,31 @@
 
 <a id="hepta-native-organ"></a>
 <!-- current-hepta-source:start -->
-## 当前原生 organ 接合来源（2026-11-04）
+## 当前原生 organ 接合来源（2026-11-05）
 
 当前独立 `notes_calculator_v1` 联合候选以 [HEPTA_SHARED_PRESENTER.json](../support/ui/HEPTA_SHARED_PRESENTER.json) 为唯一 Hepta 源合同，固定 194 份原文件身份：
 
 | 输入 | 精确身份 |
 | --- | --- |
-| Hepta commit | [`14e2d89b3367232ec5dbe6187f09feed0f2b68d3`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/14e2d89b3367232ec5dbe6187f09feed0f2b68d3) |
-| Hepta tree | `0e12d53adf6a13721fdb2feef0e974d903b92e85` |
+| Hepta commit | [`bfdf51e19efdfd38f6f6825372e81a790ed40c90`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/bfdf51e19efdfd38f6f6825372e81a790ed40c90) |
+| Hepta tree | `ca6c2d3ad2951b8d5f4fa656dac49dbc434c533a` |
 
 Desktop 三处实际 Cargo 入口为 [UI root](../ui/Cargo.toml)、[UI core](../ui/core/Cargo.toml) 和 [Session host](../services/hepta-session-host/Cargo.toml)；39 条 Hepta Git 依赖与原补丁、显式 preedit helper profile 统一选择上述 commit。UI root 同时显式固定四个原 AccessKit crate；依赖 workspace 的 patch 不会自动传递。`services/hepta-os/Cargo.toml` 没有 Hepta Git dependency，其原协议合同和历史 pin 继续各自保存。
 
-当前 Desktop 代码交接点为 `f5fbc7e1a533e5bec588575ab56312a3203f6d8c` / tree `2998926686ce45c38ec14d6f42ab0871ba25faa1`。六根锁与原来源/依赖图验证范围见 [DEPENDENCIES](../support/ui/DEPENDENCIES.md)；最终产物身份取实际干净 Desktop commit/tree、selection 和构建收据，不复用旧包的测试资格。显式 preedit SDK prepared tree 保持 `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`，原 AWS、owner/bridge 与 canonical SDK helper 继续保留。
+Desktop 集成基线为 [`88e5ab7b1cc884b7168c2bfa20692c7fd1e1aa46`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/88e5ab7b1cc884b7168c2bfa20692c7fd1e1aa46) / tree `bf9fac6cb0167133a1f6d4bd13ff49b2993dd813`，是 local c789 的完整同树 canonical 映射。该未经修改的基线本身仍记录 14e；bfdf 选源由后继的原 updater 输出和 Cargo 锁承载。最终产物必须绑定包含这些变更的实际 Desktop commit/tree，映射不改变旧执行身份。
 
-下表链接定位当前 14e 的开发和技术文档。选源与文档可访问不证明当前包已编译、安装或执行；运行资格统一见[当前能力](CURRENT_CAPABILITIES.md#current-product-pair)。联合 profile 需要新原 Core thread 和两个原目标身份，不能迁移旧 Notes-only catalog 或借用其恢复资格。
+本轮原 source updater 与六锁 metadata 已实际通过：UI、Session host、prepared SDK 三锁改变，其余三锁逐字保持；七个普通完整 graph 与 prepared SDK 第八个 graph 均按原 feature 核验，原依赖测试普通/优化各 41 项通过。任务与原 cgroup 终态已核。原 SDK `337566c8b25d47f7e4fff6a202157b65bf183330`、prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf` 与 102 项 overrides 保持。完整锁哈希和原收据见 [DEPENDENCIES](../support/ui/DEPENDENCIES.md)；这些结果没有编译、安装或运行产品。
+
+bfdf 的原 all-40-map qualification 只覆盖源码导航及声明证据，保护 371 operations、43 顶层 callers、45 递归 callers，生产/运行旗标仍为 false。下表链接定位当前 bfdf 的开发和技术文档。选源与文档可访问不证明当前包已编译、安装或执行；运行资格统一见[当前能力](CURRENT_CAPABILITIES.md#current-product-pair)。联合 profile 需要新原 Core thread 和两个原目标身份，不能迁移旧 Notes-only catalog 或借用其恢复资格。
 
 | 原 owner / 模块 | 同一固定 Hepta commit 的开发与技术入口 | Desktop 接合入口 |
 | --- | --- | --- |
-| 全局开发与 organ 架构 | [DEVELOPMENT](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/docs/DEVELOPMENT.md)、[CNS/organ](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/docs/cns/README.md) | [架构与原 owner](ARCHITECTURE.md)、[当前模块交接](agents/NATIVE_ORGAN_MODULE_HANDOFF.md) |
-| Root / AuthBus / Agentd 文本 | [NATIVE_TEXT_SESSION](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md) | [TextChatAdapter 开发/技术手册](../services/hepta-session-host/TEXT_SESSION.md) |
-| 原 Makepad / ChatWorkspace | [NATIVE_COMPOSITION](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md)、[UI README](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/apps/hepta-control-ui/rust/robrix-ui/README.md) | [Shell](../ui/shell/README.md)、[原窗口验收](../support/ui/NATIVE_MAKEPAD.md) |
-| 原 AccessKit 与独立 clipboard SDK 候选 | [AccessKit patch](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/third_party/accesskit-0.17.1/HEPTA_PATCH.md)、[固定 SDK patch/feature](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/third_party/makepad-patches/README.md) | [默认/候选 profile 与 lock](../support/ui/PRODUCT.md#explicit-original-sdk-clipboard-candidate) |
-| 原 Notes writer / 旧 incarnation 恢复 | [Notes qualification](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md) | [Notes durability](../support/ui/NOTES_DURABILITY.md) |
-| 原 Android text target | [PRODUCTION_ANDROID_TEXT](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/14e2d89b3367232ec5dbe6187f09feed0f2b68d3/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md) | [原 receiver 的构建/签名/恢复合同](../support/android/receiver/README.md) |
+| 全局开发与 organ 架构 | [DEVELOPMENT](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/docs/DEVELOPMENT.md)、[CNS/organ](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/docs/cns/README.md) | [架构与原 owner](ARCHITECTURE.md)、[当前模块交接](agents/NATIVE_ORGAN_MODULE_HANDOFF.md) |
+| Root / AuthBus / Agentd 文本 | [NATIVE_TEXT_SESSION](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/codex-rs/hepta-agentd/NATIVE_TEXT_SESSION.md) | [TextChatAdapter 开发/技术手册](../services/hepta-session-host/TEXT_SESSION.md) |
+| 原 Makepad / ChatWorkspace | [NATIVE_COMPOSITION](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/apps/hepta-control-ui/rust/robrix-ui/NATIVE_COMPOSITION.md)、[UI README](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/apps/hepta-control-ui/rust/robrix-ui/README.md) | [Shell](../ui/shell/README.md)、[原窗口验收](../support/ui/NATIVE_MAKEPAD.md) |
+| 原 AccessKit 与独立 clipboard SDK 候选 | [AccessKit patch](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/codex-rs/third_party/accesskit-0.17.1/HEPTA_PATCH.md)、[固定 SDK patch/feature](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/third_party/makepad-patches/README.md) | [默认/候选 profile 与 lock](../support/ui/PRODUCT.md#explicit-original-sdk-clipboard-candidate) |
+| 原 Notes writer / 旧 incarnation 恢复 | [Notes qualification](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/codex-rs/hepta-agentd/NOTES_RECOVERY_QUALIFICATION.md) | [Notes durability](../support/ui/NOTES_DURABILITY.md) |
+| 原 Android text target | [PRODUCTION_ANDROID_TEXT](https://github.com/TrillionniumFoundation/hepta-private-ci/blob/bfdf51e19efdfd38f6f6825372e81a790ed40c90/codex-rs/hepta-memory/PRODUCTION_ANDROID_TEXT.md) | [原 receiver 的构建/签名/恢复合同](../support/android/receiver/README.md) |
 
 链接定位选定固定源码，不授予生产或设备资格。[历史 v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)与[当前能力](CURRENT_CAPABILITIES.md)区分原单包执行、默认 SDK 与独立候选、ignored/unselected 以及最终完整产品待验项。最终 Desktop source profile 还须记录完整本仓 commit/tree、实际 Cargo 生成的锁、features 和对应运行产物。
 
@@ -35,7 +37,7 @@ Desktop 三处实际 Cargo 入口为 [UI root](../ui/Cargo.toml)、[UI core](../
 ### 较早来源收敛（历史）
 
 <a id="当前原生-organ-接合来源2026-11-03"></a>
-2026-11-03 选源为 Desktop `745c0731aed270ee394145c6767371a6af47f49f` / tree `fa70b1b95206d25775009c6965245d34051468a4`，Hepta [`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360) / tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`。该旧基线、fd/a39 和更早运行收据继续保持原来源；当前 14e 选源不修改其结果，也不把它们记为本联合候选的运行。
+2026-11-03 选源为 Desktop `745c0731aed270ee394145c6767371a6af47f49f` / tree `fa70b1b95206d25775009c6965245d34051468a4`，Hepta [`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360) / tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`。该旧基线、fd/a39 和更早运行收据继续保持原来源；当时的 14e 选源及本轮 bfdf 后继均不修改其结果，也不把它们记为本联合候选的运行。
 
 2026-10-27 的 de0 选源使用 Hepta `de0ddaa41bd91c4f46a2f1b6034d25fa84c4469c` / tree `004702e28244eb15a90ac0fa5d5a94e259dace8b`，其 Desktop 源 pin 收敛起点为 `1813bac14a829cd83ef3d5fdda4e96e71955190e` / tree `db199ec4e58bc645f0a10c13852950a7a3f7439e`；后续 942/de0 和 4223 六锁结果各有[原始来源记录](EVIDENCE_INDEX.md)。原 `baf73bf0` / FD 的14条 Cargo 命令、六根图及123份必需来源/219个 manifest 检查只属于旧依赖配对。
 

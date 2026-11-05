@@ -2,19 +2,31 @@
 
 <a id="current-product-pair"></a>
 <!-- current-hepta-source:start -->
-## 2026-11-04 当前联合候选：Linux Root、Notes 与 Calculator
+## 2026-11-05 当前源码与六锁候选：Linux Root、Notes 与 Calculator
 
-当前 `notes_calculator_v1` 联合候选选择以下固定来源。它们定位实现，不是本次安装、运行或设备验收收据；后续代码和文档提交各有自己的 Desktop commit/tree。原 Notes-only 目录、历史配对和运行收据保持原来源，不自动迁移或授予新联合 profile 资格。
+当前 `notes_calculator_v1` 后继选择以下固定来源，已完成原六锁 metadata 检查。后继基于 Desktop 88e 的完整树，加上原 updater 和 Cargo 实际生成的锁；未经修改的 88e 本身仍记录较早的 14e 选源。最终产物必须绑定包含全部变更的实际 Desktop commit/tree。原 Notes-only 目录、历史配对和运行收据不迁移，也不自动授予后继运行资格。
 
 | 输入 | 精确身份与依据 |
 | --- | --- |
-| Desktop 代码交接点 | [`f5fbc7e1a533e5bec588575ab56312a3203f6d8c`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/f5fbc7e1a533e5bec588575ab56312a3203f6d8c)，tree `2998926686ce45c38ec14d6f42ab0871ba25faa1`；最终产物绑定其实际干净 Desktop commit/tree |
-| Hepta commit | [`14e2d89b3367232ec5dbe6187f09feed0f2b68d3`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/14e2d89b3367232ec5dbe6187f09feed0f2b68d3)；原 owner / UI / 依赖补丁由 [canonical source contract](../support/ui/HEPTA_SHARED_PRESENTER.json) 及三处实际 Cargo 入口统一选择 |
-| Hepta tree | `0e12d53adf6a13721fdb2feef0e974d903b92e85` |
+| Desktop 集成基线 | [`88e5ab7b1cc884b7168c2bfa20692c7fd1e1aa46`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/88e5ab7b1cc884b7168c2bfa20692c7fd1e1aa46)，tree `bf9fac6cb0167133a1f6d4bd13ff49b2993dd813`；它是 local `c789c50f89493495c1717d7995da50861c0e0e33` 的同树 canonical 映射，最终产物另绑定实际后继身份 |
+| Hepta commit | [`bfdf51e19efdfd38f6f6825372e81a790ed40c90`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/bfdf51e19efdfd38f6f6825372e81a790ed40c90)；原 owner / UI / 依赖补丁由 [canonical source contract](../support/ui/HEPTA_SHARED_PRESENTER.json) 及三处实际 Cargo 入口统一选择 |
+| Hepta tree | `ca6c2d3ad2951b8d5f4fa656dac49dbc434c533a` |
 | 产品构建与锁 | Rust/Cargo `1.96.0`；[DEPENDENCIES](../support/ui/DEPENDENCIES.md) 列出五个普通入口及独立 prepared UI 入口，共六份锁。源码选择、完整依赖图、构建和运行分别验证 |
 | 显式 preedit 输入候选 | [linux-preedit-profile.json](../support/ui/linux-preedit-profile.json) 选择同一 Hepta 来源；原 SDK `337566c8b25d47f7e4fff6a202157b65bf183330`，prepared tree `6b422b3120f5f9b5c7ada579b55f647d51bd7fcf`。默认 SDK、clipboard 候选和 preedit 候选不互借锁或运行资格 |
 
-本页是当前状态的唯一汇总入口。[模块索引](modules/README.md) 对应实际源码和开发/技术合同；[SOURCES](SOURCES.md#hepta-native-organ) 定位同一 Hepta commit 的原 owner 手册；[STATUS](STATUS.md) 与[证据索引](EVIDENCE_INDEX.md) 保留按日期、源码和场景绑定的结果。`4223` 的六锁/32项原包测试、`942/de0` 的三项 CI、较早 v10/v11 和真实窗口记录仍属于各自原配对，不能转记为当前 14e 联合候选的完整运行。
+本页是当前状态的唯一汇总入口。[模块索引](modules/README.md) 对应实际源码和开发/技术合同；[SOURCES](SOURCES.md#hepta-native-organ) 定位同一 Hepta commit 的原 owner 手册；[STATUS](STATUS.md) 与[证据索引](EVIDENCE_INDEX.md) 保留按日期、源码和场景绑定的结果。`4223` 的六锁/32项原包测试、`942/de0` 的三项 CI、较早 v10/v11 和真实窗口记录仍属于各自原配对，不能转记为当前 bfdf 后继的完整运行。
+
+### 本轮实际通过的 source/metadata 范围
+
+原 updater 只改五份选源文件。Cargo 更新了 UI、Session host 与 prepared SDK 三份锁，其余三份锁逐字不变。七个普通完整依赖图完成首次解析与 `--locked --offline` 复核，prepared SDK 第八个图在同一原 feature 下完成离线生成和锁定复核。原六锁、source-cache、SDK 与 presenter 验证均通过；原依赖 Python 用例普通和 `-O` 模式各 41 项通过。任务 `1a1ac11a46e-fc05-5213` 实际退出 0、输出持久化、无 timeout；独立后验确认原进程身份消失、unit 已终结、cgroup 不再存在，原 OOM 计数未增加。原单一 2400 秒工作窗口内耗时约 1045.314 秒。这些步骤没有编译或运行 Rust 产品、安装包或设备。
+
+同一 Hepta commit 的原 all-40-map qualification 实际通过，保护 371 项 operation、43 项顶层 caller 和 45 项递归 caller。其范围是 `source_navigation_and_declared_evidence_not_build_or_execution`，`productionImplementationProved=false`；计数不代表实现完成率，也不证明 bfdf 的 Rust 或 Firefox 执行通过。
+
+### 最近一次原生执行的来源与失败边界
+
+2026-11-05 原生 owner 实际使用 Hepta `eac9ca08f2414c619a5058868ebbedf683b18685` 与 local Desktop `c789c50f89493495c1717d7995da50861c0e0e33` / tree `bf9fac6cb0167133a1f6d4bd13ff49b2993dd813`，没有执行后来的 canonical 88e 或 bfdf。该次 metadata、release 编译、打包与 readelf 退出 0，但原 8/16 MiB ELF 容量门失败，整体任务退出 1。实测 F = 19,631,544 B、L = 19,660,800 B、S = 14,876,672 B，其中 S 是最大单个 LOAD，并非所有段之和。
+
+后续 kernel 输入获取，以及各自范围的 77 项 Python、原 verify-source、fmt 与 fsck 通过，仍不是产品运行。在原 HARD 窗口封存时，21-path 原生草案尚未 commit/publish；其后的源码发布也不构成原生资格。OSDK、内核构建、六项 Root fixtures、五次 boots 及最终 F–OptionF–G layout 均未执行，G2 保持 false。原 HARD 窗口已经封存，没有重置；这些历史结果不转授本轮 bfdf 后继。
 
 ### 当前交付范围与下一条实际验收
 
@@ -34,7 +46,7 @@
 
 ## 历史配对记录
 
-以下日期节保留各自执行时的“当前”“候选”“尚未”等表述。它们不覆盖上方 2026-11-04 联合候选选源，也不把曾通过或曾失败的场景自动转授后继。
+以下日期节保留各自执行时的“当前”“候选”“尚未”等表述。它们不覆盖上方 2026-11-05 源码与六锁候选，也不把曾通过或曾失败的场景自动转授后继。
 
 
 ### 2026-11-03 fd/e1 与 a39 执行基线（历史）
