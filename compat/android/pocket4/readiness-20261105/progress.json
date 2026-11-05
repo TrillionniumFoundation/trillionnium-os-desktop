@@ -1,0 +1,167 @@
+{
+  "schema": "pocket4-app-progress-v1",
+  "reviewed_at_utc": "2026-11-05T05:54:45.271048+00:00",
+  "gate_promotion_from_progress": false,
+  "apps": [
+    {
+      "id": "camera_release08_installed",
+      "package": "com.android.camera2",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "version_code": 20002000,
+      "observed_at_utc": "2026-11-05T05:40:16.783000+00:00",
+      "status": "EXACT_RELEASE08_INSTALLED_DATA_IDENTITY_PRESERVED",
+      "job_id": "1a1aa38d396-fc05-3f61",
+      "apk_sha256": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
+      "data_identity_preserved": true,
+      "business_qualified": false,
+      "evidence": [
+        {
+          "path": "inputs/camera-installed-verified.json",
+          "sha256": "85e85ff01ee9073724dfabb4159b53968102a369239ff8b269a1f8dacc514a24",
+          "bytes": 5292
+        }
+      ]
+    },
+    {
+      "id": "camera_accept01_device_unavailable",
+      "package": "com.android.camera2",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "version_code": 20002000,
+      "observed_at_utc": "2026-11-05T05:42:53.087460+00:00",
+      "status": "CAMERA_DEVICE_UNAVAILABLE_UNDER_DIAGNOSIS",
+      "error": "ONE_READY_SHUTTER_REQUIRED",
+      "observed_dialog": "Camera error / Can't connect to the camera.",
+      "native_launch_calls": 1,
+      "shutter_calls": 0,
+      "owned_task_remove_calls": 1,
+      "outcome_unknown": false,
+      "unpassed_checks": {
+        "camera.preview": "failed"
+      },
+      "cause_boundary": "CameraService reports zero devices; source loss is documented at 05:33:37, before this update/acceptance. The new APK is not established as the cause.",
+      "next_action": "Restore and diagnose source availability through the existing provider owner, then independently re-admit preview/photo/persistence.",
+      "evidence": [
+        {
+          "path": "inputs/camera-accept01-unready-shutter.json",
+          "sha256": "2de2828be20532be0d26a0f4c19c7c75abc0a79b6ac637b38076aa2a96c33843",
+          "bytes": 1761
+        },
+        {
+          "path": "inputs/camera-preview-error-observation.json",
+          "sha256": "60d504bdc365b11c7733f175aa94e614cfe1a87da143cdc449510998bbb5744d",
+          "bytes": 8512
+        },
+        {
+          "path": "inputs/platform-observations.json",
+          "sha256": "499f31cba90ac410b8f37c18e801e8eed6c75c118cfcaae54eae61dc93111f6b",
+          "bytes": 7781
+        }
+      ]
+    },
+    {
+      "id": "bili_latest_retained_video_transition",
+      "package": "tv.danmaku.bili",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "version_code": 9161100,
+      "status": "PLAYER_OPENED_BUFFERING_PLAYBACK_NOT_VERIFIED",
+      "job_id": "1a1aa006df8-fc05-3b0a",
+      "navigation_and_owned_close_verified": true,
+      "frames_verified": false,
+      "audio_verified": false,
+      "whole_app_ready": false,
+      "note": "Retain the Nov4 scoped visual result as history. The newer retained transition shows buffering and does not qualify actual playback, pause/seek/audio/reopen.",
+      "next_action": "Use the active Bili owner thread; require real frame/audio and control evidence without replaying its job.",
+      "evidence": [
+        {
+          "path": "inputs/bili-video-transition-review.json",
+          "sha256": "93c41023b3f49d13e1df43aa826fe0f97a46cb0b9e8e945e0ebc40de96daec7b",
+          "bytes": 4109
+        }
+      ]
+    },
+    {
+      "id": "contacts_ui_observation_blocked",
+      "package": "com.android.contacts",
+      "version_code": 10734,
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "reviewed_at_utc": "2026-11-05T05:56:54.251628+00:00",
+      "event_timestamp_in_retained_summary": null,
+      "status": "UI_OBSERVATION_GATE_BLOCKED_UNDER_DIAGNOSIS",
+      "error": "ControlError: FOREGROUND_PACKAGE_MISMATCH",
+      "job_id": "1a1aa44c196-fc05-4024",
+      "owned_task": 886,
+      "launch_calls": 1,
+      "create_clicks": 0,
+      "field_entries": 0,
+      "save_calls": 0,
+      "delete_calls": 0,
+      "account_actions": 0,
+      "owned_task_removed": true,
+      "other_tasks_preserved": true,
+      "empty_database_and_account_topology_preserved": true,
+      "unpassed_checks": {
+        "ui_observation": "blocked"
+      },
+      "not_an_app_crash_or_business_failure": true,
+      "next_action": "Inspect the original observation/foreground evidence read-only; do not replay or save contacts from this failed observation.",
+      "evidence": [
+        {
+          "path": "inputs/contacts-ui-preflight-result.json",
+          "sha256": "a5a7277cae428a1e2f1142c964469fd330cfb9cf7a6e6b5e92a891c8ad0ce7f2",
+          "bytes": 938
+        }
+      ]
+    }
+  ],
+  "platform_workstreams": [
+    {
+      "id": "native_candidate07",
+      "status": "BUILT_QUALIFICATION_RESULT_PENDING",
+      "not_an_app_pass": true,
+      "verified": "Both engine and unchanged host test binary built; original source projection restored.",
+      "remaining": [
+        "Actual complete 3793-registration full-host comparison",
+        "Four Android signal cases after host qualification",
+        "App-specific corrected-runtime comparison; no causality inferred from build"
+      ],
+      "source": {
+        "path": "inputs/platform-observations.json",
+        "sha256": "499f31cba90ac410b8f37c18e801e8eed6c75c118cfcaae54eae61dc93111f6b",
+        "bytes": 7781
+      }
+    },
+    {
+      "id": "art_normal_projection",
+      "status": "SOURCE_ONLY_UNCOMPILED_DRAFT",
+      "not_an_app_pass": true,
+      "remaining": [
+        "Matching Rust compile and original paired tests",
+        "Actual full ART translation-unit/command/dependency qualification",
+        "Paired signed APEX closure and runtime lifecycle",
+        "App-zygote/preload ordering and native-thread exit/authority questions"
+      ],
+      "source": {
+        "path": "inputs/platform-observations.json",
+        "sha256": "499f31cba90ac410b8f37c18e801e8eed6c75c118cfcaae54eae61dc93111f6b",
+        "bytes": 7781
+      }
+    },
+    {
+      "id": "lmkd_owner",
+      "status": "ACTUAL_OWNER08_FAILED_BEFORE_ACTIVE",
+      "not_an_app_pass": true,
+      "remaining": [
+        "Matching producer09/init ABI3 actual build receipts",
+        "Actual owner NORMAL activation/retirement/cleanup",
+        "RC property reload and installed-owner integration",
+        "Positive pressure acceptance with foreground survival"
+      ],
+      "note": "Mechanism02 syscall observations are retained, but its parent protocol/forced cleanup made the run fail. Revision03 15 local controls are not a namespace/owner/pressure pass.",
+      "source": {
+        "path": "inputs/platform-observations.json",
+        "sha256": "499f31cba90ac410b8f37c18e801e8eed6c75c118cfcaae54eae61dc93111f6b",
+        "bytes": 7781
+      }
+    }
+  ]
+}

@@ -128,11 +128,32 @@ unchanged at completion. Signing remains a separate local step with the existing
 identity. No key, APK, JAR or private device image is distributed here.
 
 Exact completed coordinator and signing receipts are under `evidence/`.
-This build checkpoint has not installed the candidate. A new controlled update
-must preserve UID, CE/DE data and runtime permissions, retain the exact installed
-release07 rollback APK, and verify the installed bytes. Normal preview/reopen,
-photo output/persistence and the real provider-disconnect path remain separate
-current-epoch gates. Historical R14 preview evidence does not qualify them.
+
+## Actual update and current Camera failure
+
+Release08 was installed once through the existing native daemon. The completed
+coordinator job `1a1aa38d396-fc05-3f61` returned exit 0 and `INSTALLED_VERIFIED`.
+The actual installed APK reads back as `0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e`.
+UID 10062, first-install time, runtime permissions and both CE/DE directory
+identities remained equal. The exact previously installed release07 APK was
+retained before dispatch. These are data identity checks, not a byte-level backup
+of every application database. Main remained on the same R16 framework epoch.
+See [installation evidence](evidence/camera-installed-verified.json).
+
+The first current-epoch acceptance trial failed at 05:42:53 UTC on 2026-11-05.
+Direct visual review and the scoped native UI tree show **Camera error — Can't
+connect to the camera.** There was no ready shutter and no photo was taken. The
+trial created one Camera task and normally removed exactly that owned task; no
+unknown action remains. Its original failure is retained in
+[acceptance evidence](evidence/camera-accept01-unready-shutter.json). The source
+enumeration fix and successful update do not resolve or qualify this observed
+connection failure. CameraService/provider diagnosis is continuing.
+
+The reviewed [device transaction and acceptance sources](device/README.md)
+preserve the exact epoch, scoped task ownership, one-shot installation and shutter
+semantics, and separate unknown outcomes from success. Current-epoch physical
+preview, photo persistence, normal reopen and provider-disconnect recovery remain
+unqualified. Historical R14 preview evidence does not qualify those gates.
 
 ## API references
 

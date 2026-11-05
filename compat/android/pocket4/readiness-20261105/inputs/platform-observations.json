@@ -1,0 +1,184 @@
+{
+  "schema": "pocket4-platform-evidence-review-v1",
+  "reviewed_at_utc": "2026-11-05T05:54:45.271048+00:00",
+  "scope": "Read-only local retained receipts; execution may have advanced in another active owner thread. No jobs/tests started for these workstreams.",
+  "sources": {
+    "camera_preview": {
+      "source_locator": "camera-accept08/analysis-accept01/read-only-preview-summary.json",
+      "bytes": 8512,
+      "sha256": "60d504bdc365b11c7733f175aa94e614cfe1a87da143cdc449510998bbb5744d"
+    },
+    "camera_device_diagnostic": {
+      "source_locator": "camera-accept08/analysis-accept01/held-readonly-diagnostic.json",
+      "bytes": 13081,
+      "sha256": "15a33aedeb107c820c5c41a8132354a1b3f40d91977db81d06e6b9ff506df0a7"
+    },
+    "bili_transition": {
+      "source_locator": "/workspace/scratch/94990735b266/android-bili-r3-video-transition-actual-review-01/report.json",
+      "bytes": 4109,
+      "sha256": "93c41023b3f49d13e1df43aa826fe0f97a46cb0b9e8e945e0ebc40de96daec7b"
+    },
+    "native_candidate07_terminal": {
+      "source_locator": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/candidate07-go5-build01/terminal-supplement01/terminal.json",
+      "bytes": 332929,
+      "sha256": "388ab68cd73a932addc43b6a39b334628a619e2a84bf894609047c5d6f852587"
+    },
+    "native_candidate07_job": {
+      "source_locator": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/candidate07-go5-build01/durable-status.json",
+      "bytes": 731,
+      "sha256": "616048a2342ccc895f61e4a3e419795b4c6e487d252399b0a2c45d24f6491e25"
+    },
+    "host_plan": {
+      "source_locator": "/workspace/scratch/94990735b266/native-recovery-20261105-02/engine-qualification07-host-bound01/README.md",
+      "bytes": 2520,
+      "sha256": "92fd4a9aac4e9ac68a2542710a92f6c426680b12765ef5f295d540b9595ebb9b"
+    },
+    "android_plan": {
+      "source_locator": "/workspace/scratch/94990735b266/native-recovery-20261105-02/engine-qualification07-android-template01/README.md",
+      "bytes": 1209,
+      "sha256": "6a59a21d3afc0bac5681614cc6aafe7a69ae0b48019e26d3c983640dbe7e6e52"
+    },
+    "art_draft": {
+      "source_locator": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-normal-projection-next03/DRAFT_STATUS.json",
+      "bytes": 516,
+      "sha256": "f69810056337cbf66243defad955e35c4869bd323afe9f38ee24cf6a3a43b74a"
+    },
+    "owner08_runtime": {
+      "source_locator": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner08-normal01-runtime01/runtime-result.json",
+      "bytes": 55292,
+      "sha256": "027848bec17ae20259e3ab2ddd8637bc820608b7f62e580c06b019f0e9ff8f16"
+    },
+    "cgroup_mechanism02": {
+      "source_locator": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner-cgroup-mount-mechanism02/result.json",
+      "bytes": 175000,
+      "sha256": "7157140c9e0afb5b79d87f41cc804423e543608db6e1a320e0bce625c4043e6c"
+    },
+    "cgroup_mechanism03_local_controls": {
+      "source_locator": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-mount-mechanism-work-03/local-controls01/result.json",
+      "bytes": 4205,
+      "sha256": "5ccb84711955c62fd1462c59937498a5b827767ee033794a753a0e7d95d6bd4a"
+    },
+    "producer09_plan": {
+      "source_locator": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer09-cgroup-controller-freeze-01/README.md",
+      "bytes": 764,
+      "sha256": "236cc4021725ecae4556003040bde6e7b9530474f050830ec2f7c7d879648e40"
+    },
+    "init_abi3_plan": {
+      "source_locator": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-cgroup-handoff-build-freeze-01/README.md",
+      "bytes": 963,
+      "sha256": "6c68ff515c506297de9e3ba6ceafaa5beaa25520b889f201fb135174a760205b"
+    }
+  },
+  "native": {
+    "job_id": "1a1aa09c5d6-fc05-3bd3",
+    "state": "ARTIFACTS_BUILT_QUALIFICATION_PENDING",
+    "finished_utc": "2026-11-05T05:16:53.427667+00:00",
+    "builder_returncode": 0,
+    "source_cleanup_complete": true,
+    "source_projection_journal_present": false,
+    "engine_sha256": "3aa9b479a9b66f56ae827477cf9f957fdeb6dcb21f1f8f981e34a1089f80048a",
+    "host_test_sha256": "21970832f7b97a9bb9538eba5749cdd7217bd1741ddd606ffa4e897666095ae3",
+    "raw_engine_source_files": 926,
+    "effective_engine_source_files": 926,
+    "host_suite_executed_in_build": false,
+    "host_qualification": "Bound request exists; no actual passing host result in the reviewed files.",
+    "android_signal_qualification": "Template still requires the actual full-host result.",
+    "ART_built": false,
+    "factory_built": false,
+    "installed": false,
+    "feature_default_enabled": false,
+    "all_apps_ready": false
+  },
+  "art": {
+    "schema": 1,
+    "state": "SOURCE_ONLY_UNCOMPILED_DRAFT",
+    "parent_builder451_manifest_sha256": "a5052accd9bb36231a3c59271f8bc35e464e5cf14d702787735feed0d86b7a13",
+    "expected_builder462_manifest_sha256": "7eaf421cc911a8fec13945099f8d3758bada44b2331e4698dbefd472f535c8da",
+    "derived_source_rows_verified": 13,
+    "existing_source_rows_unchanged": 449,
+    "actual_Rust_compile": false,
+    "actual_ART_full_TU_compile": false,
+    "execution_request_prepared": false,
+    "Main_actions": 0,
+    "production_ready": false
+  },
+  "lmkd": {
+    "owner08_success": false,
+    "owner08_error": "RuntimeError('owned unit authoritative terminal failed; actor first error={\\'error\\': \"RuntimeError(\\'actual producer stopped or failed before ACTIVE\\')\", \\'stage\\': \\'normal\\'}')",
+    "owner08_exact_cleanup": {
+      "cgroup_absent": true,
+      "invocation": "68550c01a9fd402687a3d36d3e69c2c8",
+      "original_actor_dead": true,
+      "unit": "p4-owner08-normal-20261105-01.service",
+      "unit_not_found": true
+    },
+    "owner08_main_preserved": true,
+    "installed_owner_qualified": false,
+    "pressure_effect_qualified": false,
+    "production_ready": false,
+    "mechanism02_success": false,
+    "mechanism02_observed_syscalls": {
+      "first_a": {
+        "rc": 0,
+        "errno": 0
+      },
+      "repeat_a_recursiveprot": {
+        "rc": -1,
+        "errno": 16
+      },
+      "repeat_a_plain": {
+        "rc": -1,
+        "errno": 16
+      },
+      "fresh_b": {
+        "rc": 0,
+        "errno": 0
+      }
+    },
+    "mechanism02_parent_errno": 71,
+    "mechanism02_forced_kill": true,
+    "mechanism03_local_control_passed": 15,
+    "mechanism03_namespaces_or_mounts_qualified": false,
+    "producer09_and_init_abi3": "Matching build requests are frozen; actual successful matching build/runtime/pressure receipts were not in this reviewed subset."
+  },
+  "camera": {
+    "guard_unchanged": true,
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "camera_devices": 0,
+    "normal_camera_devices": 0,
+    "API1_public_camera_devices": 0,
+    "active_camera_clients": 0,
+    "manager_active_but_source_running": false,
+    "provider_status": {
+      "running": false,
+      "cleanup_errors": []
+    },
+    "events": [
+      {
+        "event": "child_stopped",
+        "utc": "2026-11-05T05:33:37Z",
+        "role": "producer",
+        "exit": -15
+      },
+      {
+        "event": "child_stopped",
+        "utc": "2026-11-05T05:33:37Z",
+        "role": "provider",
+        "exit": -15
+      },
+      {
+        "event": "waiting",
+        "utc": "2026-11-05T05:33:37Z",
+        "reason": "physical_device_disconnected"
+      },
+      {
+        "event": "waiting",
+        "utc": "2026-11-05T05:33:39Z",
+        "reason": "waiting_for_physical_camera"
+      }
+    ],
+    "acceptance_started_utc": "2026-11-05T05:42:48.602040+00:00",
+    "new_apk_causality_established": false,
+    "underlying_repeated_disconnect_cause": "Under diagnosis; no inference of physical unplugging or hardware damage."
+  }
+}
