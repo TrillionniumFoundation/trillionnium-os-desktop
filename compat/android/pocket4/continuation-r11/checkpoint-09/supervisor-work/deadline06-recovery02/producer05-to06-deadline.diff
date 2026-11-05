@@ -1,0 +1,102 @@
+--- producer05-actual/runtime/droidloom-pressure-relay/src/lib.rs
++++ producer06-deadline/runtime/droidloom-pressure-relay/src/lib.rs
+@@ -35,7 +35,7 @@
+ mod lifecycle_relay;
+ pub use lifecycle_relay::{CellRelay, PreparedRelay, RelayPhase, RetirementReceipt};
+ mod lifecycle_bootstrap;
+-pub use lifecycle_bootstrap::{run_inherited_lifecycle, BootstrapSpec, BootstrapStatus, BootstrapState, LifecycleBroker};
++pub use lifecycle_bootstrap::{run_inherited_lifecycle, BootstrapSpec, BootstrapStatus, BootstrapState, LifecycleBroker, MAX_LIFECYCLE_IO_TIMEOUT};
+ 
+ const CGROUP2_MAGIC: libc::c_long = 0x6367_7270;
+ const PROC_MAGIC: libc::c_long = 0x9fa0;
+--- producer05-actual/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
++++ producer06-deadline/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
+@@ -153,10 +153,14 @@
+     }
+ }
+ 
++/// Largest supported wait for one lifecycle request/response transaction.
++/// Callers must share this bound; a longer argument is rejected before I/O.
++pub const MAX_LIFECYCLE_IO_TIMEOUT: Duration = Duration::from_secs(2);
++
+ struct Deadline(Instant);
+ impl Deadline {
+     fn new(timeout: Duration) -> Result<Self> {
+-        if timeout < Duration::from_millis(1) || timeout > Duration::from_secs(2) {
++        if timeout < Duration::from_millis(1) || timeout > MAX_LIFECYCLE_IO_TIMEOUT {
+             return Err(Error::Reject("bootstrap I/O bound outside 1..2000 ms"));
+         }
+         Ok(Self(Instant::now().checked_add(timeout).ok_or(Error::Reject("bootstrap deadline overflow"))?))
+@@ -737,6 +741,53 @@
+         (audit, status)
+     }
+     #[test]
++    fn producer05_three_second_retirement_is_rejected_before_transport() {
++        let (caller, peer) = sockets();
++        // Producer05 passed this exact argument to LifecycleBroker::retire.
++        // Its first Deadline::new rejects it; the public request path shares
++        // that same bound. Preserve the old failure rather than relaxing it.
++        let result = spec().request_retirement(
++            unsafe { BorrowedFd::borrow_raw(caller.as_raw_fd()) },
++            Duration::from_secs(3),
++        );
++        assert!(matches!(result, Err(Error::Reject("bootstrap I/O bound outside 1..2000 ms"))));
++        let mut byte = 0u8;
++        assert_eq!(unsafe { libc::recv(peer.as_raw_fd(), (&mut byte as *mut u8).cast(), 1,
++            libc::MSG_DONTWAIT) }, -1);
++        assert_eq!(io::Error::last_os_error().kind(), io::ErrorKind::WouldBlock);
++    }
++    #[test]
++    fn shared_retirement_bound_sends_exact_request_and_receives_terminal_ack() {
++        let (caller, peer) = sockets();
++        let request = spec();
++        let peer_request = request.clone();
++        let (_, expected_ack) = empty_audit_and_status();
++        let peer_ack = expected_ack.clone();
++        let server = std::thread::spawn(move || {
++            let (wire, rights) = receive_packet(peer.as_raw_fd(), RETIRE_SIZE,
++                &mut Deadline::new(MAX_LIFECYCLE_IO_TIMEOUT)?, false)?;
++            let mut expected = [0; RETIRE_SIZE];
++            expected[..8].copy_from_slice(b"P4RET01!");
++            put(&mut expected, 8, 1, 4);
++            expected[16..48].copy_from_slice(&peer_request.nonce);
++            if wire != expected || !rights.is_empty() {
++                return Err(Error::Reject("ordinary retirement control received a different request"));
++            }
++            send_packet(peer.as_raw_fd(), &peer_ack.encode(), &[],
++                &mut Deadline::new(MAX_LIFECYCLE_IO_TIMEOUT)?)
++            // Closing peer after the real send also covers terminal POLLIN+HUP.
++        });
++        let actual = request.request_retirement(
++            unsafe { BorrowedFd::borrow_raw(caller.as_raw_fd()) }, MAX_LIFECYCLE_IO_TIMEOUT,
++        ).and_then(|()| request.receive_status(
++            unsafe { BorrowedFd::borrow_raw(caller.as_raw_fd()) }, MAX_LIFECYCLE_IO_TIMEOUT,
++        ));
++        // Join the bounded real peer even when the caller path fails.
++        let peer_result = server.join();
++        peer_result.unwrap().unwrap();
++        assert_eq!(actual.unwrap(), expected_ack);
++    }
++    #[test]
+     fn audit_and_terminal_packet_survive_peer_close_with_exact_framing() {
+         let (send, receive) = sockets(); let (audit, status) = empty_audit_and_status();
+         send_packet(send.as_raw_fd(), &audit.encode().unwrap(), &[], &mut Deadline::new(Duration::from_secs(1)).unwrap()).unwrap();
+--- producer05-actual/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
++++ producer06-deadline/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
+@@ -9,6 +9,7 @@
+ use crate::generation_claim::{Claim, Store};
+ use droidloom_pressure_relay::{
+     BootstrapSpec, BootstrapState, BootstrapStatus, ExecutablePin, HostContext, LifecycleBroker,
++    MAX_LIFECYCLE_IO_TIMEOUT,
+ };
+ use std::ffi::CString;
+ use std::fs::File;
+@@ -461,7 +462,7 @@
+         let mut failure = None;
+         if let Some(broker) = self.broker.as_mut() {
+             let result = if self.initialize_started {
+-                match relay(broker.retire(Duration::from_secs(3))) {
++                match relay(broker.retire(MAX_LIFECYCLE_IO_TIMEOUT)) {
+                     Ok(true) => Ok(()),
+                     Ok(false) => Err(error("broker retirement remains incomplete")),
+                     Err(e) => Err(e),

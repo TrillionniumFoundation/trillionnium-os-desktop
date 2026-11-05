@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "state": "SEVEN_ORIGINAL_PRODUCTION_FILES_RECOVERED_WITH_EXACT_PINS",
+  "mechanism": "Full transcript reads and apply_patch text reconstructed in functions.store; each UTF-8 byte count and SHA256 matches the pre-disconnection production pin.",
+  "original_files": {
+    "AndroidManifest.xml": {
+      "bytes": 712,
+      "sha256": "bb905d32504f1c03e28ddc8373edd06f263f741fe8c09216e46ecba5f934cbf3",
+      "expected_sha256": "bb905d32504f1c03e28ddc8373edd06f263f741fe8c09216e46ecba5f934cbf3",
+      "matched": true
+    },
+    "build_candidate.py": {
+      "bytes": 17964,
+      "sha256": "d1cafa56171ae4498f7198fc194663fea02860e226785753561d9598d9f548d3",
+      "expected_sha256": "d1cafa56171ae4498f7198fc194663fea02860e226785753561d9598d9f548d3",
+      "matched": true
+    },
+    "make_build_request.py": {
+      "bytes": 2936,
+      "sha256": "8acf6af113aed16e64046f9110e07266854cb339b7d7cc24a5ed3a91fd51d9e3",
+      "expected_sha256": "8acf6af113aed16e64046f9110e07266854cb339b7d7cc24a5ed3a91fd51d9e3",
+      "matched": true
+    },
+    "qa_adapter.py": {
+      "bytes": 19004,
+      "sha256": "e7b31430e609b1002c3ab5ca2d5c2af8822d84d01a5226cf8b5b2f4f277aeb72",
+      "expected_sha256": "e7b31430e609b1002c3ab5ca2d5c2af8822d84d01a5226cf8b5b2f4f277aeb72",
+      "matched": true
+    },
+    "qa_contract.py": {
+      "bytes": 13525,
+      "sha256": "afa20f5caf8b92042cebc6968d0c793334d146447768ef7313b39f2644368a82",
+      "expected_sha256": "afa20f5caf8b92042cebc6968d0c793334d146447768ef7313b39f2644368a82",
+      "matched": true
+    },
+    "src/org/droidloom/qa/bili/r1/ActionRunner.java": {
+      "bytes": 26245,
+      "sha256": "0d2157ea204833b51c2b0589fa3c978bdae950305081fbb10e4f3ddd50426014",
+      "expected_sha256": "0d2157ea204833b51c2b0589fa3c978bdae950305081fbb10e4f3ddd50426014",
+      "matched": true
+    },
+    "stage_build.py": {
+      "bytes": 7554,
+      "sha256": "70deaf1d5c876f5eac8b78f3975ec8bb6e0743f27ef8bbf0f1260989c5c4f094",
+      "expected_sha256": "70deaf1d5c876f5eac8b78f3975ec8bb6e0743f27ef8bbf0f1260989c5c4f094",
+      "matched": true
+    }
+  },
+  "changes": [
+    {
+      "path": "build_candidate.py",
+      "old_value": "pocket4-owned-bili-qa-r1-build-01",
+      "new_value": "pocket4-owned-bili-qa-r1-build-02",
+      "count": 1
+    },
+    {
+      "path": "stage_build.py",
+      "old_value": "pocket4-owned-bili-qa-r1-source-01",
+      "new_value": "pocket4-owned-bili-qa-r1-source-02",
+      "count": 1
+    },
+    {
+      "path": "stage_build.py",
+      "old_value": "pocket4-owned-bili-qa-r1-build-01",
+      "new_value": "pocket4-owned-bili-qa-r1-build-02",
+      "count": 1
+    },
+    {
+      "path": "make_build_request.py",
+      "old_value": "pocket4-owned-bili-qa-r1-static-build-01-20261104",
+      "new_value": "pocket4-owned-bili-qa-r1-static-build-02-20261104",
+      "count": 1
+    }
+  ],
+  "original_freeze01_reference": {
+    "manifest_sha256": "851c87a1b4054d730c3b6c24e904e221f60730935c08bf3251efde140483bc4a",
+    "manifest_bytes": 2233,
+    "full_manifest_not_recovered": true,
+    "archive_sha256": "abc502dbf3633adcd832c751baa84c36f5118df98e6d9cfbb940d6c03f3a86a2",
+    "archive_bytes": 40622,
+    "archive_not_recreated": true,
+    "request_sha256": "57bf5d9972bfea67c5abbd0fb32a7336a290a9f992439b3c7a715b202f428ef0",
+    "request_bytes": 155658,
+    "request01_submitted": false
+  },
+  "original_controls": {
+    "reported_actual_count": 30,
+    "reported_all_pass": true,
+    "result_sha256": "0973805469ae3c9f38bc8ac8a8917d27df7ae9b540533a34fe39d38f36788d1c",
+    "full_file_unavailable": true,
+    "recreated": false,
+    "rerun": false
+  },
+  "last_packet_binding_command": {
+    "started": false,
+    "reason": "exec-server process creation failed; environment unavailable",
+    "pass_claimed": false
+  },
+  "recovery_manifest": {
+    "bytes": 2194,
+    "sha256": "d0f9f0f45d0e94a3d6b4a46e0ae0d9048ea2e6ff6c60550b39f54a75029d5aba"
+  },
+  "source_payloads": 10,
+  "source_bytes": 97047,
+  "sha_implementation_known_answer_controls": [
+    "SHA256(empty)",
+    "SHA256(abc)"
+  ],
+  "local_executor_calls_during_recovery": 0,
+  "Hepta_calls_during_recovery": 0,
+  "Android_actions": 0,
+  "recovery02_build_request_submitted": false,
+  "production_ready": false
+}
