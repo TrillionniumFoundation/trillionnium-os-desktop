@@ -1,5 +1,24 @@
 # 模块文档覆盖审计（2026-10-22）
 
+## 2026-11-04 候选六模块入口复核
+
+本节是对候选 Desktop `b7c50344a5069b0efe11ec4c28d6cf2d2bafefab` 的独立只读复核，补充当前事实，不修改下方 2026-10-22 冻结清点的来源、统计或缺失记录。候选中的五个 UI crate 与 OS ABI 已分别具备 README 入口；逐份完整阅读确认了具体代码位置、技术边界、状态与权限约束、开发命令及验收范围，并非新建空模板。
+
+| 模块入口 | 字节数 | 最近修改该路径的提交 | 当前文件 SHA-256 |
+| --- | ---: | --- | --- |
+| [ui/core/README.md](../../ui/core/README.md) | 3,875 | `64cf7f03301110d4dde79c24e967719451ac4467` | `df1abea6316a177483bc542c9cb80ea7b65883f5bca83cc3d2ec291034f3367c` |
+| [ui/session/README.md](../../ui/session/README.md) | 6,195 | `5a8684cc4591a4163c162f198b4121ca4cfc6ebc` | `68dc6338d4a6ad51cd2ccf8af626b149a34bdc3bc77e21de78ae91744fed6c82` |
+| [ui/shell/README.md](../../ui/shell/README.md) | 10,981 | `fd8d56c52b971c2d5d0e6430f296803b43ef60a3` | `d0f2abaaa2d453b990cdbaef192ccd4cc6193faa557ed4a6035160189ebafc9c` |
+| [ui/app-window/README.md](../../ui/app-window/README.md) | 7,111 | `64cf7f03301110d4dde79c24e967719451ac4467` | `63c0ed86d055ca14076c5c150095f565a09ecd9c2c5269be60a080322101ea96` |
+| [ui/broker/README.md](../../ui/broker/README.md) | 1,973 | `fd8d56c52b971c2d5d0e6430f296803b43ef60a3` | `4745fabab76480a0cb3be8689641f20f642c4d1e32e85b8d0ce42dbfa621310d` |
+| [libs/os-abi/README.md](../../libs/os-abi/README.md) | 1,610 | `fd8d56c52b971c2d5d0e6430f296803b43ef60a3` | `7752dd666f4b422368485da6f7813d49e7aa2b53441b6f96cdcbfd99c1800559` |
+
+上述六份文件均与固定候选的 Git blob 逐字相同；99 个本地目标与锚点实际检查通过。原始审查收据位于本任务 Desktop 主机 `/data/trill-organ-owner-20261104-joint-ops/root-module-readmes-current-v1/receipt.json`，SHA-256 为 `36d57bbd4b69ed8cf20b3d13a5022c8a0ad5aaf1a2484328c10cde298664b8e5`，对应实际作业 `1a1a852f19f-fc05-2e4f` 已退出 0 并确认完整持久终态。该外部收据不是仓内附带下载文件。尝试另建模板的早期操作已被“文件存在”检查挡在写入前，现有六本没有被覆盖。
+
+**候选六模块入口已具备，最终同版 runtime 另验。** 本次仅补文档覆盖与导航证据，不把这六本扩展为“每个内核 crate 都有独立完整双手册”，也不把链接通过记作 Notes/Calculator、Asterinas、Android 或硬件运行通过。实际运行与未闭合项见 [2026-11-04 阻塞台账](BLOCKER_LEDGER_2026-11-04.md)。
+
+## 原历史清点与后续历史补充
+
 2026-10-24 当前清单：57 个内核成员的 [schema 2 机器清单](../modules/kernel-workspace/inventory.json) 已重新读取原 manifest、入口和所有 Git 跟踪的 Rust 源码；固定 source/tree 以清单字段为准。[更新与核对命令](../modules/kernel-workspace/README.md#如何使用与更新) 同时保护原历史清单字节。Linux 文本产品新增 [显式构建 profile 与技术入口](../../support/ui/LINUX_TEXT_PROFILE.md)，把实际 native features、原 SDK、工具链、锁、资源和两仓身份记录在同一构建收据。本文下方原清点仍保留其原始日期与范围。
 
 2026-10-23 补充：[57 个内核 workspace crate 手册](../modules/kernel-workspace/README.md) 已按 `10dae5ea4ae5c2f81e2e530b1eb74bd41a5c29cd` 逐包补充职责/API、owner、开发入口和具体未验证项，并附 manifest/源码 hash 清单。新手册是文档覆盖补齐，不转授运行资格；以下历史审计的源码、统计和结论保持其原时点。

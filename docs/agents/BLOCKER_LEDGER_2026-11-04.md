@@ -85,6 +85,8 @@ Supervisor 实际观察到 Agentd 退出码 1，以及 `original Objective sende
 
 这组记录位于 rog 主机本任务 `trill-g2-native-rog-20261104-v1/receipts`，不作为仓内附带的可下载文件。有效的净源码差分可以进入最终候选；02af 的 owning-async wrapper 仍不采用。最终 Hepta 还要重新量自己的 ELF、布局和容量，再据实际结果生成独立的闭合 profile；不能把 496 的中间 ELF 哈希、大小或测量结果填进最终组合。
 
+后续源码生命周期审查另提出一个尚在验证的边界：496 的小 Future 借用转发可能让原 Future 在 Tokio 内部 runtime-enter guard 退出后析构，与原 owned `block_on` 的上下文不同。该问题正在用独立小 Future 做真实 Drop 对照；上面的容量和布局结果保留，不能先将它们写成析构语义已闭合或据此冻结最终 Hepta。最终修正如有发生，必须取得自己的源码与运行证据。
+
 最终组合必须生成自己的 ELF 与闭合输入，并在原限制下完成 6 个 Root fixture、原 5 boot 正反场景。中间候选的尺寸或启动结果不能转授最终 Hepta/Desktop 源码；两条正向路径和三个负控必须保留原判定器。
 
 ## 5. 未闭合门槛及实际完成条件
@@ -103,6 +105,8 @@ Supervisor 实际观察到 Agentd 退出码 1，以及 `original Objective sende
 | 物理设备 / VMM / UI | 选定硬件的 IRQ/DMA/IOMMU/ACS/reset/power-loss、真实显示输入/IME、读屏 stride 与 bpp；host 模型与设备存在不能替代。 |
 | 主干与仓库规则 | 按实际 CI 与合并门槛发布；启用已审规则后读回有效结果。当前规则提案不等于行政变更完成。 |
 | 模块文档完整性 | 每个实际交付模块须有具体 owner、状态/接口、锁与权限、构建/运行/故障/验收入口；冻结的历史共享文档覆盖统计不等于每个 crate 都有独立完整双手册。 |
+
+2026-11-04 候选文档复核：五个 UI crate 与 OS ABI 的六份独立入口已经具备，固定 `b7c50344a5069b0efe11ec4c28d6cf2d2bafefab` 的全部文件字节与 Git blob 一致，99 个本地目标和锚点有效。来源、各文件 SHA 与原审查收据见 [模块文档审计的本日补充](MODULE_DOCUMENTATION_AUDIT.md#2026-11-04-候选六模块入口复核)。这项覆盖证据不改写旧 main 的历史缺失统计；最终同版 runtime 另验。
 
 同一原请求结果未知时，仅核对其原身份，不换 ID 重发效果。原 retained cut 为 1,024 请求 / 32 MiB，session 与 grant 时间边界保持不变；两个 successor 成功也不等于无限历史、自动回收、跨版本数据库迁移或断电恢复资格。
 
