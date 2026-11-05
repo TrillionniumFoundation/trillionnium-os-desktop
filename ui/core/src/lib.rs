@@ -1,8 +1,12 @@
 //! Host-only desktop prototype messages. These are NOT HOS2, a kernel permission
 //! protocol, or a trusted Hepta operation ledger.
+#[cfg(target_os = "linux")]
+mod app_checkpoint_store;
 pub mod calculator;
 #[cfg(target_os = "linux")]
 pub mod calculator_lifetime;
+#[cfg(target_os = "linux")]
+pub mod calculator_store;
 pub mod conversation;
 pub mod desktop_startup;
 pub mod hepta;

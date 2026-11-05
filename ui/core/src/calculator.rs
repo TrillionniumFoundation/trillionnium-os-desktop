@@ -1,5 +1,5 @@
 //! Bounded Calculator protocol. The original Hepta writer owns authority and
-//! operation history; this app model owns state and one volatile causal receipt.
+//! operation history; this app model owns state and one bounded causal receipt.
 
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -397,8 +397,9 @@ impl std::fmt::Display for CalculatorProtocolError {
 }
 impl std::error::Error for CalculatorProtocolError {}
 
-/// Owned and serialized by the GUI main thread. Volatile by design; a new
-/// process cannot reconstruct an unobserved old operation from current values.
+/// Owned by one application-state worker. Recovery uses the exact checkpoint,
+/// never infers an old operation from current values or another target.
+#[derive(Clone)]
 pub struct CalculatorDocument {
     target: CalculatorTargetIdentity,
     state: CalculatorValueState,
@@ -723,6 +724,9 @@ fn parse<T: for<'de> Deserialize<'de>>(
     }
     serde_json::from_slice(raw).map_err(|_| CalculatorProtocolError::Schema)
 }
+
+#[path = "calculator_checkpoint.rs"]
+mod checkpoint;
 
 #[cfg(test)]
 #[path = "calculator_tests.rs"]
