@@ -20,8 +20,8 @@
     },
     "progress": {
       "file": "progress.json",
-      "sha256": "631fad4dbd92368f8308345d18d986b1596823bc105ee229edcfa9cf3334994e",
-      "bytes": 16304
+      "sha256": "b96c4692a4777e78e6b8b9ab01afae2662dd8e97f686b3a3ebf6c305485fdd9f",
+      "bytes": 19800
     },
     "inventory": {
       "file": "current-installed-inventory-derived-20261105.json",
@@ -30,8 +30,8 @@
     },
     "gate_reviews": {
       "file": "gate-reviews.json",
-      "sha256": "7eb6d027323a6985d5ef577994e411915fc82a80163233debea860c7a6376eea",
-      "bytes": 7372
+      "sha256": "309c0611211bb3db2f0ff6777dfec8ae5905bcc36788bcb0d923194cc8f46143",
+      "bytes": 10136
     }
   },
   "baseline_observed_at_utc": "2026-11-04T12:00:30.044481+00:00",
@@ -294,7 +294,9 @@
         "path": "inputs/platform-observations.json",
         "sha256": "499f31cba90ac410b8f37c18e801e8eed6c75c118cfcaae54eae61dc93111f6b",
         "bytes": 7781
-      }
+      },
+      "snapshot_is_historical": true,
+      "superseded_for_current_progress_by": "native_candidate07_actual_host_android"
     },
     {
       "id": "art_normal_projection",
@@ -331,7 +333,7 @@
     },
     {
       "id": "shared_storage_recovery_and_session_lifecycle",
-      "status": "PATH_IO_RESTORED_SOURCE_FIX_UNDEPLOYED",
+      "status": "PATH_IO_RESTORED_OFFLINE_INSTALLED_DEX_CANDIDATE_BUILT_ALIGNED_UNDEPLOYED",
       "observed_at_utc": "2026-11-05T07:47:31.554913+00:00",
       "not_an_app_pass": true,
       "actual_unmount_calls": 1,
@@ -344,10 +346,11 @@
       "original_failed_qualification_retained": true,
       "source_candidates": [
         "main VolumeInfo reference, nine host method cases",
-        "locked ImmutableVolumeInfo reference, clean-apply only at this checkpoint"
+        "locked ImmutableVolumeInfo reference, clean-apply only at this checkpoint",
+        "Exact installed services.jar DEX candidate: 7582 classes/53839 methods compared; only target method changed; all 65 ZIP members checked."
       ],
       "remaining": [
-        "Complete actual installed-code candidate and build qualification",
+        "Actual installed ART verifier comparison",
         "Persistent lifecycle fix deployment qualification",
         "App-level file save/reopen qualification"
       ],
@@ -361,6 +364,40 @@
           "path": "inputs/storage-source-runtime-provenance.json",
           "sha256": "ede6a4bd49ec57545b403e445182161fe078453ec5c95e2bc1c58d473adf2d16",
           "bytes": 6147
+        },
+        {
+          "path": "inputs/storage-installed-dex-candidate.json",
+          "bytes": 3964,
+          "sha256": "6e031619cea0ca33b084fa064de791573d5dd2bbaa9d29f722af168e2bf3f701"
+        }
+      ]
+    },
+    {
+      "id": "native_candidate07_actual_host_android",
+      "status": "ACTUAL_FULL_HOST_AND_FOUR_ANDROID_SIGNAL_CASES_PASSED_IN_OWNED_RUNTIME",
+      "not_an_app_pass": true,
+      "reviewed_at_utc": "2026-11-05T09:36:06.735899+00:00",
+      "host_counts": {
+        "completed": 3788,
+        "disabled": 2,
+        "executed": 3791,
+        "failed": 0,
+        "registered": 3793,
+        "skipped": 3
+      },
+      "metadata_generation_enabled": false,
+      "deployed_to_Main": false,
+      "remaining": [
+        "Commercial App comparison on the exact candidate engine",
+        "ART trusted-factory and asynchronous-signal qualification",
+        "Main deployment and lifecycle qualification"
+      ],
+      "resource_boundary": "Controller memory.events.max61356, OOM0; four owned services have zero memory events. Main memory event deltas unavailable.",
+      "evidence": [
+        {
+          "path": "inputs/platform-native-candidate07-actual-update.json",
+          "bytes": 4169,
+          "sha256": "000ae4feeeb9cdd50493ac74e6f07e4aa3dddc5b94a63557a4e73fbc786dbc4c"
         }
       ]
     }
@@ -1009,32 +1046,59 @@
           "gate_credit": false
         }
       ],
-      "progress": [],
+      "progress": [
+        {
+          "id": "clock_stopwatch02_core_verified",
+          "package": "com.android.deskclock",
+          "version_code": 37,
+          "observed_at_utc": "2026-11-05T09:02:22.839201+00:00",
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "status": "STOPWATCH_START_PAUSE_REOPEN_RESUME_RESET_VERIFIED",
+          "scoped_business_flow_completed": true,
+          "whole_app_production_ready": false,
+          "limits": "Timer completion, alarm/timezone/audio and whole App release remain separate.",
+          "evidence": [
+            {
+              "path": "inputs/clock-stopwatch01.json",
+              "bytes": 4683,
+              "sha256": "bfc5a9442b0fd479a25c0c5aab7724ab49e73c9bd5096e50e94a4e4426a20abf"
+            },
+            {
+              "path": "inputs/clock-stopwatch02.json",
+              "bytes": 4065,
+              "sha256": "e41acffd1b5cf0463425fdd28f371248c209bab62ae8ed7a85a45074443b1801"
+            }
+          ]
+        }
+      ],
       "gate_results": {
         "identity": "pending",
-        "lifecycle": "pending",
+        "lifecycle": "passed",
         "stability": "pending",
         "data_permissions": "pending",
-        "release_scope": "pending",
-        "ui_observation": "pending",
+        "release_scope": "blocked",
+        "ui_observation": "passed",
         "clock.alarm": "pending",
         "clock.timer": "pending",
         "clock.persist": "pending"
       },
       "unpassed_gates": [
         "identity",
-        "lifecycle",
         "stability",
         "data_permissions",
         "release_scope",
-        "ui_observation",
         "clock.alarm",
         "clock.timer",
         "clock.persist"
       ],
-      "gate_evidence": {},
-      "accepted_reviews": [],
-      "reviewed_apk_sha256": null,
+      "gate_evidence": {
+        "ui_observation": "root_clock_stopwatch02_scoped_ui_lifecycle",
+        "lifecycle": "root_clock_stopwatch02_scoped_ui_lifecycle"
+      },
+      "accepted_reviews": [
+        "root_clock_stopwatch02_scoped_ui_lifecycle"
+      ],
+      "reviewed_apk_sha256": "ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae",
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -2988,32 +3052,59 @@
       "baseline_version_code": 0,
       "baseline_status": "CURRENT_EPOCH_BUSINESS_ACCEPTANCE_PENDING",
       "prior_evidence": [],
-      "progress": [],
+      "progress": [
+        {
+          "id": "probe03_two_round_controls_verified",
+          "package": "local.pocket4.fixture",
+          "version_code": 0,
+          "observed_at_utc": "2026-11-05T09:18:46.821632+00:00",
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "status": "TWO_ROUND_UNICODE_CONFIRM_REOPEN_CLEANUP_VERIFIED",
+          "scoped_business_flow_completed": true,
+          "whole_app_production_ready": false,
+          "limits": "Ambiguous selector negative control and complete identity/resource/release gates remain open.",
+          "evidence": [
+            {
+              "path": "inputs/probe-ui03-result.json",
+              "bytes": 2779,
+              "sha256": "9c2526a4e717c1de0f2c52ef649dfe2de02be7a19442e33f68cfcd0e6cf2754f"
+            },
+            {
+              "path": "inputs/probe-contract-review.json",
+              "bytes": 1290,
+              "sha256": "14d642ba280cf37fcc8f99a1d61de3409057011b91e769710cf8fab325e44d55"
+            }
+          ]
+        }
+      ],
       "gate_results": {
         "identity": "pending",
-        "lifecycle": "pending",
+        "lifecycle": "passed",
         "stability": "pending",
         "data_permissions": "pending",
-        "release_scope": "pending",
-        "ui_observation": "pending",
-        "fixture.contract": "pending",
+        "release_scope": "blocked",
+        "ui_observation": "passed",
+        "fixture.contract": "passed",
         "fixture.controls": "pending",
         "fixture.isolation": "pending"
       },
       "unpassed_gates": [
         "identity",
-        "lifecycle",
         "stability",
         "data_permissions",
         "release_scope",
-        "ui_observation",
-        "fixture.contract",
         "fixture.controls",
         "fixture.isolation"
       ],
-      "gate_evidence": {},
-      "accepted_reviews": [],
-      "reviewed_apk_sha256": null,
+      "gate_evidence": {
+        "fixture.contract": "root_probe03_two_round_scoped_contract_ui_lifecycle",
+        "ui_observation": "root_probe03_two_round_scoped_contract_ui_lifecycle",
+        "lifecycle": "root_probe03_two_round_scoped_contract_ui_lifecycle"
+      },
+      "accepted_reviews": [
+        "root_probe03_two_round_scoped_contract_ui_lifecycle"
+      ],
+      "reviewed_apk_sha256": "91e352c25e7c6ef54aa53ce652931e40ad1437dfcd0ebad2529bc662558a3dd6",
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false

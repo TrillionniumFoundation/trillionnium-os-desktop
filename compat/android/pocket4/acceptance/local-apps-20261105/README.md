@@ -31,3 +31,18 @@ The WebView acceptance adapter now touches the five exact observed HTML controls
 Contacts still needs Search UI, the remaining permission/sync/error paths and repeat/stability coverage. Its successful return to the same record is recorded accurately without silently treating a list-row selection as an exercised Search field.
 
 WebView's composite release checks additionally include HTTPS, images/media and error handling. This local text/JavaScript/form/history/storage trial does not close those checks. Both Apps also retain the common whole-release gates in the [45-App matrix](../../readiness-20261105/README.md). Earlier failed observations remain available beside the later successes.
+
+## Additional actual local flows
+
+[Clock stopwatch](clock-stopwatch/README.md) now has real Start/Pause, stable
+paused state, normal close/new-launch persistence, Resume/Pause with increased
+elapsed time, and UI Reset. The first adapter failure is retained; the separate
+continuation operated only its exact paused 9,170-ms state and reset from
+17,817ms to empty. Original alarm templates and notification permission were
+preserved. Timer completion, alarm delivery/timezone and sound are separate gates.
+
+[The local two-editor fixture](probe-fixture/README.md) completed two real rounds
+and 14 inputs covering Unicode, field isolation, positive and empty confirmation,
+clear and normal close/reopen. Its five installed classes were reviewed. Neither
+of the two earlier adapter failures is relabeled an App fault or success. The
+ambiguous-selector negative case and full release gates remain open.

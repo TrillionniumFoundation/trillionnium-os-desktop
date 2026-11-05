@@ -61,3 +61,13 @@ The inspected m692 runtime JARs contain DEX rather than JVM `.class` files. The 
 ## Packaged reproduction
 
 The delivered reference driver was rerun from this bundle. `validation/results/result.json` records that separate local reproduction with relocated invocation paths; both expected original failures and all nine candidate results matched. `validation/retained-original-result.json` preserves the original run. Extracted production methods, the harness template and complete pinned inputs are included. Generated class files and disposable build trees are excluded. This second run performs zero device actions and adds no full-framework or Android-runtime qualification.
+
+## Later exact installed-code candidate
+
+An [offline candidate](runtime-candidate/README.md) was actually assembled from
+the pinned installed services JAR. Its full 7,582-class/53,839-method comparison
+found only the reviewed target method change; all 65 ZIP payloads were checked.
+The separate alignment step passed for original and candidate. Actual installed
+ART tools and classpaths have been discovered read-only. ART verification, live
+lifecycle behavior and persistent Main deployment remain open; the prior
+source-reference limitations and failed preparation receipts remain retained.

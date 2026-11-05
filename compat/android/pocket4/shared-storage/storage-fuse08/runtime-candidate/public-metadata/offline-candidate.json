@@ -1,0 +1,83 @@
+{
+  "actual_alignment": {
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T09:12:29.968085+00:00",
+    "job_id": "1a1aafb05fe-fc05-4937",
+    "result_sha256": "bb2df6ff3d46b7949ba196dd4e26d0856ca773675cbef64483eab660c7a2d0e6",
+    "started_utc": "2026-11-05T09:12:29.584875+00:00"
+  },
+  "actual_build": {
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T09:07:37.173404+00:00",
+    "job_id": "1a1aaf62cf8-fc05-490f",
+    "result_sha256": "15947f9c0831e1419988dba12e2cf9a4dfa3bea66fdd229a857200fca2f76bd1",
+    "started_utc": "2026-11-05T09:07:03.708035+00:00"
+  },
+  "alignment_dependency_resolution": "Copied the observed, hash-pinned libzopfli into the new isolated output directory; all 14 resolved dynamic dependencies were hashed before and after alignment.",
+  "android_art_verifier_run": false,
+  "android_lifecycle_test_run": false,
+  "candidate_dex": {
+    "bytes": 10892756,
+    "checksum_and_signature_valid": true,
+    "format": "039",
+    "sha256": "8f74a77571feed8bc011bbaaa369f1cc8d75b793d6c3993d6f3b1cca49f912e3"
+  },
+  "candidate_jar": {
+    "bytes": 34667535,
+    "sha256": "f1acb56e23cd9082a77ef686f2e840a736e7769dd8843830e53e56b1ac31566f"
+  },
+  "changed_member": "classes3.dex",
+  "complete_java_or_aosp_build": false,
+  "deployed": false,
+  "existing_wifi_and_systemserver_changes_preserved_by_unchanged_dex_payloads": true,
+  "failed_preparation_receipts_preserved": [
+    "stage13-rejected-request.json",
+    "build13-stage-permission-failure.json"
+  ],
+  "original_changed_dex": {
+    "bytes": 10767488,
+    "sha256": "bbbeed4aeb197113710fd084ebe7fc30d42c8ea0baf60c36e12fa62c238cd172"
+  },
+  "original_class_sha256": "e0ddf859ff6c243681256b2100baab7bbb4228b10e77ad65812b301fd9bd1523",
+  "original_jar": {
+    "bytes": 34542267,
+    "sha256": "f33987e633e476f47ea043af3f7fb94907fd2431fa2b5b49df84cb586bce5c50"
+  },
+  "original_java_commit_for_entire_installed_jar_proven": false,
+  "qualification": "ALIGNED_OFFLINE_CANDIDATE_ART_AND_LIFECYCLE_NOT_YET_VALIDATED",
+  "roundtrip_class_sha256": "d8b6d36e16a23b4345713e14473d565aa2c31ec6639c9eb5c6b7e0fb14add781",
+  "scope": "Offline candidate assembled from the exact installed services.jar; no deployment",
+  "semantic_verification": {
+    "class_metadata_and_method_sets_equal": true,
+    "classes": 7582,
+    "differences": [
+      {
+        "file": "com/android/server/storage/StorageSessionController.smali",
+        "method": "public onVolumeUnmount(Lcom/android/server/storage/ImmutableVolumeInfo;)V"
+      }
+    ],
+    "evidence_sha256": "3de6eecad04daf7a6a8d52d5478ce6c220ecb8864b480feec545b7ec2bf843e5",
+    "methods": 53839,
+    "non_target_semantic_changes": 0,
+    "reviewed_target_ir_equal": true
+  },
+  "sources": {
+    "0001-runtime-storage-single-removal.patch": "c627cf426e402711119cc1c7ebac46e76daef4513d3f53fc909eb5496ca74557",
+    "JAVA_EQUIVALENCE.md": "9ce62067718776a417722294379c4b5b15880f7f1189bb7fe17896c8e0df2875",
+    "StorageSessionController.smali": "9c7070a802038cb1eaa4a18ebb3db12785aad1d7e96d37c50d5c62e92abe6e61",
+    "align_runtime15.py": "f20b98082406abb352c965dfcaa589aa91c462f56bdadfe225c3c84ee6e03bce",
+    "build_runtime13.py": "757dc7cd0c04ee1d7ddb6f4fa05457867b410e6f4c4ce30f5656eb590b25c5a8",
+    "onVolumeUnmount.candidate.smali": "f58cc62977a475d3f493e058db5a01f08e9d1beab24bb6a674ff8471b9ff2d2b",
+    "onVolumeUnmount.original.smali": "2e22c6020b2fa78abd94d273f2e07aa09036fe1ef89e15d0630595fee2f0fe62",
+    "smali_equivalence.py": "a895a4e3963f958ea6a6ff45b9d0c51f6239118b3a10fddff6d0f17e22e25f9f"
+  },
+  "unchanged_member_payloads": 64,
+  "unchanged_other_dex": {
+    "classes.dex": "70975dd40f27f01f35ff254bd7cbb8a1683c6255aca515ffe162f35df8c35d1c",
+    "classes2.dex": "75a258e4529180202c8a9eadd246ecb0a3ad48a91ebcc1617c0aec3c1f969fd1"
+  },
+  "zip_members": 65,
+  "zip_payload_proof_sha256": "86843bc17da1753c5f2f4acc1cafcc6a443a8758c86af2d0534ad5828bb29602",
+  "zipalign_check_candidate_exit": 0,
+  "zipalign_check_original_exit": 0
+}

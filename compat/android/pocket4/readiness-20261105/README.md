@@ -16,8 +16,10 @@ The complete 2026-11-05 05:46:49.686297 UTC inventory contains **186 installed p
 | Bilibili | The newer retained video transition opened the intended course page and closed only its owned task, but retained buffering and no verified advancing frames/audio. Keep the earlier Nov4 scoped visual result as history; do not transfer it into a current whole-App pass. |
 | Marriott / China Eastern | Retained Nov4 current-R16 evidence records native SIG11 with an observed virtual proc-fd mismatch / native SIGILL respectively. Corrected-runtime and actual business requalification remain absent. |
 | Meituan / Beike | Retained evidence records startup self-exit / a blank login router. Stable merchant/item or listing detail completion remains unverified. |
+| DeskClock | The stopwatch Start/Pause/stable/reopen/Resume/Pause/Reset workflow is verified with original alarms unchanged. Timer completion, alarm delivery/timezone/audio and complete release scope remain open. |
+| Pocket4 fixture | Exact installed source reviewed; two real Unicode/field-isolation/confirmation/clear/reopen rounds completed, 14 inputs and two normal closes. Ambiguous-selector negative coverage and full release gates remain open. |
 | Remaining Apps | Launch/onboarding or older guest-core observations do not close the package-specific checks listed below. Login, external service, controlled call/message peer and hardware prerequisites remain explicit. |
-| Native candidate07 | Job `1a1aa09c5d6-fc05-3bd3` built the engine and host suite successfully and restored the original source projection. The reviewed later host-bound request and Android template contain **no actual passing full-host/Android result**. Counts in those plans are requirements, not new test results. |
+| Native candidate07 | New retained actual receipts report 3,793 registered / 3,791 executed / 3,788 completed host cases, three skips, two disabled and zero failures, plus four passing Android signal cases with the exact mapped candidate engine. Raw native assertions were separately recomputed by the owner's frozen assessor. Main deployment and commercial-App qualification remain open; the controller had nonzero memory-limit events. |
 | ART | Normal-projection draft is source-only/uncompiled. Matching Rust/full ART/paired APEX/lifecycle gates remain open; no candidate07 build result is substituted for these. |
 | LMKD / Owner | Actual Owner08 stopped before ACTIVE and did not qualify installed operation or pressure survival. The mount mechanism recorded expected syscalls but failed its parent protocol/cleanup qualification; revision03's 15 local collection controls are not a namespace/Owner/pressure pass. Producer09/init ABI3 requests still need their matching actual receipts in this evidence set. |
 
@@ -36,7 +38,9 @@ The [session lifecycle patch and reference evidence](../shared-storage/storage-f
 fix the reproduced double-removal/missing-wait logic. The main reference passed
 nine host method cases; the matching `ImmutableVolumeInfo` reference variant is
 clean-apply verified only at this checkpoint. The actual installed services JAR
-is pinned, but persistent deployment is not claimed.
+is pinned. Its minimal DEX candidate was actually assembled and aligned, with
+all 7,582 classes / 53,839 methods and 65 ZIP payloads compared. Only the reviewed
+target method differs. ART verification and persistent deployment are not claimed.
 
 ## Exact inventory reconciliation
 
@@ -92,7 +96,7 @@ Every row also requires exact installation/runtime identity, usable scoped UI, n
 | `com.zillow.android.streeteasy` | StreetEasy | housing: Enter location/filters and verify matching populated listings. |
 | `ctrip.android.view` | Ctrip | travel: Verify the supported flight/hotel/train search routes with location/date input. |
 | `jp.co.ana.android.tabidachi` | ANA | flight: Enter route/date/passenger query and verify matching populated availability. |
-| `local.pocket4.fixture` | Pocket4 fixture | fixture: Identify and review the exact fixture source/APK and its intended shipping/test purpose. |
+| `local.pocket4.fixture` | Pocket4 fixture | fixture: Source and two-round controls reviewed; exercise exact ambiguous-selector rejection and finish remaining identity/resource/release scope. |
 | `org.chromium.webview_shell` | WebView shell | webview: Load controlled local/HTTPS fixtures and verify layout, text, images and JavaScript. |
 | `org.droidloom.qa.editorcontract` | Editor contract QA | editor: Verify focus, Unicode composition, exact text readback, selection and deletion in the editor contract. |
 | `org.fcitx.fcitx5.android` | Fcitx5 | ime: Verify configured Chinese/Unicode composition, candidate selection and exact commit into an owned field. |
@@ -119,7 +123,7 @@ For later complete inventories, pass the new receipt to `--inventory`. The updat
 
 Add hash-referenced scoped observations to `progress.json`; they can retain failed/blocked/pending gates but **cannot pass a gate**. Historical snapshot booleans and install/build/launch success cannot promote readiness.
 
-Optional `--gate-reviews review.json` accepts only schema `pocket4-reviewed-app-gates-v1` with a `reviews` array. Each review needs a unique `id`, `reviewer`, `package`, `scope` (`scoped` or `whole_app_release`), `observed_at_utc`, exact `framework_epoch_sha256`, `version_code`, `uid`, `apk_sha256`, nonempty `evidence` containing bundle-relative `path` and `sha256`, and `checks` mapping known gate IDs to `passed/failed/blocked/pending`. The files must exist and match their hashes; the review must follow the current inventory and any newer retained failure cutoff. A passed `release_scope` additionally requires `scope=whole_app_release`, `all_features_reviewed=true`, `retained_failures_reconciled=true` and `unresolved_findings=[]`. These are explicit reviewer attestations backed by inspected evidence, not semantic proof extracted automatically from arbitrary documents. Every required gate must pass on the same exact binary before an App can qualify. This matrix retains the historical Camera preview review but rejects its current credit after the newer hardware-absence failure. Current scoped reviews pass Contacts edit/cleanup/UI/lifecycle and WebView UI/lifecycle checks. The composite business checks remain open wherever Search, HTTPS, media or error coverage is still missing. No whole-App release gate passes; all 45 Apps remain in scope.
+Optional `--gate-reviews review.json` accepts only schema `pocket4-reviewed-app-gates-v1` with a `reviews` array. Each review needs a unique `id`, `reviewer`, `package`, `scope` (`scoped` or `whole_app_release`), `observed_at_utc`, exact `framework_epoch_sha256`, `version_code`, `uid`, `apk_sha256`, nonempty `evidence` containing bundle-relative `path` and `sha256`, and `checks` mapping known gate IDs to `passed/failed/blocked/pending`. The files must exist and match their hashes; the review must follow the current inventory and any newer retained failure cutoff. A passed `release_scope` additionally requires `scope=whole_app_release`, `all_features_reviewed=true`, `retained_failures_reconciled=true` and `unresolved_findings=[]`. These are explicit reviewer attestations backed by inspected evidence, not semantic proof extracted automatically from arbitrary documents. Every required gate must pass on the same exact binary before an App can qualify. This matrix retains the historical Camera preview review but rejects its current credit after the newer hardware-absence failure. Current scoped reviews pass Contacts edit/cleanup/UI/lifecycle, WebView UI/lifecycle, Clock stopwatch UI/lifecycle and local Probe source-contract/UI/lifecycle checks. The composite business checks remain open wherever Search, HTTPS, media or error coverage is still missing. No whole-App release gate passes; all 45 Apps remain in scope.
 
 ## Local validation and evidence limits
 
