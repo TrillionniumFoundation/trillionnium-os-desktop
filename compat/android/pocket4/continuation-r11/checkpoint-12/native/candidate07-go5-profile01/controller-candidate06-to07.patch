@@ -1,0 +1,178 @@
+--- candidate06/combined_build_streaming.py
++++ candidate07/combined_build_streaming.py
+@@ -17,15 +17,18 @@
+ 
+ P = pathlib.Path
+ OWNER = P("/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01")
+-COMPOSITION = OWNER / "overlay-reconstruction-10"
+-CANDIDATE = COMPOSITION / "candidate-06"
+-MANIFEST = COMPOSITION / "candidate-06-source-manifest.json"
+-MANIFEST_SHA = "3c780a398075f77d1f6b1c477c6ceaa35349de17b88e77896aa22820259c0376"
++COMPOSITION = OWNER / "overlay-reconstruction-11"
++CANDIDATE = COMPOSITION / "candidate-07"
++MANIFEST = COMPOSITION / "candidate-07-source-manifest.json"
++MANIFEST_SHA = "e10024548a5b2b5a391ecc9ddb3ea2f19b95a6fea3437f40207a0f4721745a93"
+ PARENT_MANIFEST_SHA = "4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba"
+-COMPOSITION_REPORT = COMPOSITION / "candidate-06-composition-report.json"
+-COMPOSITION_REPORT_SHA = "f49173e0527e336f5d5ff5af489a2dfa97ceaba247f0fc3657c9a68ca242922a"
+-COMPOSER_SOURCE = P("/home/alex/work/pocket4-candidate06-nofile-composition-source-01-20261105/compose.py")
+-COMPOSER_SHA = "b489e8ac7353c09c90f7c2f65b0b53c10cd0619c13308add7653dec56ba8d642"
++COMPOSITION_REPORT = COMPOSITION / "candidate-07-composition-report.json"
++COMPOSITION_REPORT_SHA = "ACTUAL_CANDIDATE07_COMPOSITION_REPORT_SHA_REQUIRED"
++CANDIDATE06_MANIFEST_SHA = "3c780a398075f77d1f6b1c477c6ceaa35349de17b88e77896aa22820259c0376"
++CANDIDATE06_COMPOSITION_SHA = "f49173e0527e336f5d5ff5af489a2dfa97ceaba247f0fc3657c9a68ca242922a"
++UAPI_TU_GATE_SHA = "5a09aa094c960a2bcc2d357fa732aac0cdb95203d25d3b690ced62497bb1c1d1"
++COMPOSER_SOURCE = P("/home/alex/work/pocket4-candidate07-host-uapi-composition-source-01-20261105/compose.py")
++COMPOSER_SHA = "8466ad04f84e84b6297687402350b0d1e35e9f2b1ece2ce113748b5df8e7b157"
+ NOFILE_ANDROID_SHA = "fbc3ca4d6e861b50da8ee537c90908b5308249015a31220acdd2d09b00f42b13"
+ NOFILE_HOST_SHA = "b0a03b1b95e3292131105dcb22fd59f4a767e63017197e29f4482036976a4ac2"
+ BUILDER_ORIGIN = P('/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-03-20261105/builder-source')
+@@ -49,7 +52,7 @@
+ TETO_BASE = "917021cf3ecd077eb1581146a79d2265011755b8"
+ TETO_URL = "https://github.com/denialwm/teto.git"
+ WORK = P("/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1")
+-ROOT = OWNER / "full-build-combined06-go5-streaming-01"
++ROOT = OWNER / "full-build-combined07-go5-streaming-01"
+ BUILD_SOURCE = ROOT / "builder-source"
+ ENGINE_SOURCE = ROOT / "engine-working"
+ OUT = ROOT / "android-out"
+@@ -172,45 +175,52 @@
+             gate["actual_listener_inheritance_fixed"] is True and
+             len(gate["commands"]) == 8 and all(row["returncode"] == 0 for row in gate["commands"]),
+             "original matched candidate05 gate is not complete")
+-    candidate06_composition_contract()
+-
+-def candidate06_composition_contract():
++    candidate07_composition_contract()
++
++def candidate07_composition_contract():
+     require(len(COMPOSITION_REPORT_SHA) == 64 and
+             all(c in "0123456789abcdef" for c in COMPOSITION_REPORT_SHA),
+-            "new actual candidate06 composition receipt must be bound")
++            "new actual candidate07 composition receipt must be bound")
+     no_alias(COMPOSER_SOURCE.parent)
+     regular(COMPOSER_SOURCE)
+     require(digest(COMPOSER_SOURCE) == COMPOSER_SHA and
+             digest(COMPOSITION_REPORT) == COMPOSITION_REPORT_SHA,
+-            "actual candidate06 composer or receipt changed")
++            "actual candidate07 composer or receipt changed")
+     scope = {"__name__": "frozen_composition_evidence_only", "__file__": str(COMPOSER_SOURCE)}
+     exec(compile(COMPOSER_SOURCE.read_bytes(), str(COMPOSER_SOURCE), "exec"), scope, scope)
+     report = json.loads(COMPOSITION_REPORT.read_bytes())
+-    parent = json.loads(scope["pinned"](scope["PARENT_MANIFEST"], PARENT_MANIFEST_SHA, 524288))
++    parent = json.loads(scope["pinned"](scope["PARENT_MANIFEST"], CANDIDATE06_MANIFEST_SHA, 524288))
++    parent_contract = scope["load_source"]("references/base-source-contract.py", scope["BASE_CONTRACT_SHA"])
++    require(parent_contract["source_contract"]()[0] == parent["files"],
++            "candidate06 source and preserved original NOFILE proof changed")
+     manifest, raw = scope["derive"](parent)
+     require(raw == scope["pinned"](MANIFEST, MANIFEST_SHA, 524288),
+-            "candidate06 source or preserved ancestry differs from the exact derivation")
+-    tested = scope["verify_11_sources"](manifest, scope["proof_contract"]())
+-    require(report["state"] == "CANDIDATE06_COMPOSED_SOURCE_NOT_BUILT" and
++            "candidate07 source or ancestry differs from its exact derivation")
++    gate = scope["proof_contract"]()
++    require(report["state"] == "CANDIDATE07_COMPOSED_SOURCE_NOT_BUILT" and
+             report["candidate"] == str(CANDIDATE) and report["manifest"] == str(MANIFEST) and
+-            report["manifest_sha256"] == MANIFEST_SHA and report["parent_manifest_sha256"] == PARENT_MANIFEST_SHA and
+-            report["source_files"] == 948 and report["engine_files"] == 925 and
+-            report["changed_files"] == sorted(scope["DELTA"]) and
+-            report["unchanged_total_files"] == 945 and report["unchanged_engine_files"] == 922 and
++            report["manifest_sha256"] == MANIFEST_SHA and
++            report["parent_manifest_sha256"] == CANDIDATE06_MANIFEST_SHA and
++            report["parent_composition_sha256"] == CANDIDATE06_COMPOSITION_SHA and
++            report["source_files"] == 949 and report["engine_files"] == 926 and
++            report["changed_files"] == sorted(name for name, row in scope["DELTA"].items() if row[0] is not None) and
++            report["added_files"] == sorted(name for name, row in scope["DELTA"].items() if row[0] is None) and
++            report["unchanged_total_files"] == 944 and report["unchanged_engine_files"] == 921 and
+             report["parent_and_authority_unchanged_after"] is True and
+-            report["all_11_tested_production_inputs_exact"] is True and
+-            report["tested_production_input_hashes"] == tested and
+-            report["actual_Android_build_sha256"] == scope["ANDROID_BUILD_SHA"] and
+-            report["actual_Android_runtime_sha256"] == NOFILE_ANDROID_SHA and
+-            report["actual_host_runtime_sha256"] == NOFILE_HOST_SHA and
++            report["parent_NOFILE_host_and_Android_proof_revalidated"] is True and
++            report["actual_complete_TU_gate_sha256"] == UAPI_TU_GATE_SHA == scope["GATE_SHA"] and
++            report["actual_original_missing_header_failure_reproduced"] is True and
++            report["actual_complete_candidate_TUs"] == len(gate["compiled_TUs"]) == 5 and
++            report["original_host_warning_target_and_sysroot_flags_preserved"] is True and
++            report["all_five_composition_inputs_in_actual_compiled_dependencies"] is True and
+             report["source_proof_files_root"] == str(COMPOSER_SOURCE.parent) and
+             report["original_candidate05_matched_gate_sha256"] == MATCHED_GATE_SHA,
+-            "actual candidate06 source/evidence composition qualification differs")
++            "actual candidate07 source or complete TU qualification differs")
+     require(all(report[key] is False for key in (
+-            "matched_candidate05_gates_rerun_for06", "feature_default_enabled", "full_engine_built",
+-            "ART_built", "factory_built", "installed", "services_started", "production_ready")) and
+-            report["Main_actions"] == report["Android_actions"] == 0,
+-            "candidate06 source composition scope widened")
++            "matched_candidate05_gates_rerun_for07", "NOFILE_Android_runtime_rerun_after_header_delta",
++            "feature_default_enabled", "full_engine_built", "ART_built", "factory_built", "installed",
++            "services_started", "production_ready")) and report["Main_actions"] == report["Android_actions"] == 0,
++            "candidate07 composition scope widened")
+     return report
+ 
+ 
+@@ -328,14 +338,14 @@
+     require(digest(MANIFEST) == MANIFEST_SHA, "candidate manifest changed")
+     manifest = json.loads(MANIFEST.read_bytes())
+     files = manifest["files"]
+-    require(len(files) == 948, "candidate file count changed")
++    require(len(files) == 949, "candidate file count changed")
+     for name, wanted in files.items():
+         relative(name)
+         regular(CANDIDATE / name)
+         require(digest(CANDIDATE / name) == wanted, "candidate byte mismatch: " + name)
+     require(hashes(CANDIDATE) == files, "candidate has missing/extra files")
+     engine = {name[len("engine/"):]: value for name, value in files.items() if name.startswith("engine/")}
+-    require(len(engine) == 925, "engine count changed")
++    require(len(engine) == 926, "engine count changed")
+     for name, wanted in SIGNAL.items():
+         require(engine[name] == wanted, "frozen signal delta changed")
+     header = CANDIDATE / "engine/kernel_api/include/berberis/kernel_api/proc_maps_raw_metadata_owner.h"
+@@ -415,9 +425,10 @@
+ 
+ def plan():
+     return {"schema": 1, "state": "PLAN_ONLY", "candidate": str(CANDIDATE),
+-            "candidate_manifest_sha256": MANIFEST_SHA, "candidate_files": 948, "engine_files": 925,
+-            "parent_candidate_manifest_sha256": PARENT_MANIFEST_SHA,
+-            "actual_candidate06_composition_sha256": COMPOSITION_REPORT_SHA,
++            "candidate_manifest_sha256": MANIFEST_SHA, "candidate_files": 949, "engine_files": 926,
++            "parent_candidate_manifest_sha256": CANDIDATE06_MANIFEST_SHA,
++            "actual_complete_TU_gate_sha256": UAPI_TU_GATE_SHA,
++            "actual_candidate07_composition_sha256": COMPOSITION_REPORT_SHA,
+             "actual_NOFILE_Android_runtime_sha256": NOFILE_ANDROID_SHA,
+             "actual_NOFILE_host_runtime_sha256": NOFILE_HOST_SHA,
+             "new_root": str(ROOT), "new_output": str(OUT), "new_attempt": str(ATTEMPT),
+@@ -498,8 +509,9 @@
+                 "saved runtime 450-file manifest differs")
+         receipt = {"schema": 1, "state": "PREPARED_NOT_BUILT", "finished_utc": utc(),
+                    "candidate_manifest_sha256": MANIFEST_SHA,
+-                   "parent_candidate_manifest_sha256": PARENT_MANIFEST_SHA,
+-                   "actual_candidate06_composition_sha256": COMPOSITION_REPORT_SHA,
++                   "parent_candidate_manifest_sha256": CANDIDATE06_MANIFEST_SHA,
++                   "actual_complete_TU_gate_sha256": UAPI_TU_GATE_SHA,
++                   "actual_candidate07_composition_sha256": COMPOSITION_REPORT_SHA,
+                    "actual_NOFILE_Android_runtime_sha256": NOFILE_ANDROID_SHA,
+                    "actual_NOFILE_host_runtime_sha256": NOFILE_HOST_SHA,
+                    "builder_manifest_sha256": RUNTIME_BUILDER_MANIFEST_SHA, "builder_sha256": BUILDER_SHA,
+@@ -602,8 +614,9 @@
+     require(digest(ROOT / "preparation.json") == expected_sha, "preparation receipt changed")
+     receipt = json.loads((ROOT / "preparation.json").read_bytes())
+     require(receipt["state"] == "PREPARED_NOT_BUILT" and receipt["candidate_manifest_sha256"] == MANIFEST_SHA and
+-            receipt["parent_candidate_manifest_sha256"] == PARENT_MANIFEST_SHA and
+-            receipt["actual_candidate06_composition_sha256"] == COMPOSITION_REPORT_SHA and
++            receipt["parent_candidate_manifest_sha256"] == CANDIDATE06_MANIFEST_SHA and
++            receipt["actual_complete_TU_gate_sha256"] == UAPI_TU_GATE_SHA and
++            receipt["actual_candidate07_composition_sha256"] == COMPOSITION_REPORT_SHA and
+             receipt["actual_NOFILE_Android_runtime_sha256"] == NOFILE_ANDROID_SHA and
+             receipt["actual_NOFILE_host_runtime_sha256"] == NOFILE_HOST_SHA,
+             "wrong preparation receipt")
+@@ -744,7 +757,7 @@
+     subreaper()
+     require(child_ids() == [], "controller has preexisting children or cannot enumerate its own children")
+     ATTEMPT.mkdir(mode=0o700)
+-    claim = {"schema": 1, "state": "STARTING_COMBINED06_GO5_STREAMING_FLAG0_COLD_BUILD",
++    claim = {"schema": 1, "state": "STARTING_COMBINED07_GO5_STREAMING_FLAG0_COLD_BUILD",
+              "started_utc": utc(), "preparation_sha256": expected_sha, "plan": plan(),
+              "mem_available_before": memory["MemAvailable"], "swap_free_before": memory["SwapFree"],
+              "cpu_affinity_before": affinity,
