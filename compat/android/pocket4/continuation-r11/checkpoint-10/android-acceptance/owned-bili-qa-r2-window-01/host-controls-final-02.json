@@ -1,0 +1,80 @@
+{
+  "Android_or_namespace_calls": 0,
+  "Go_or_Java_compile": false,
+  "actual_helper_UID_or_APK_inferred": false,
+  "all_expected_outcomes": true,
+  "controls": [
+    {
+      "calls": [
+        "before",
+        "inspect"
+      ],
+      "case": "old_actual_sequence_skips_after_on_inspect_error",
+      "outcome": "EXPECTED_RED_REPRODUCED"
+    },
+    {
+      "calls": [
+        "before",
+        "inspect",
+        "after"
+      ],
+      "case": "new_inspect_fail",
+      "outcome": "PASS"
+    },
+    {
+      "calls": [
+        "before",
+        "inspect",
+        "after"
+      ],
+      "case": "new_inspect_and_after_fail",
+      "outcome": "PASS"
+    },
+    {
+      "calls": [
+        "before",
+        "after"
+      ],
+      "case": "new_before_fail",
+      "outcome": "PASS"
+    },
+    {
+      "calls": [
+        "before",
+        "inspect",
+        "after"
+      ],
+      "case": "new_after_changed",
+      "outcome": "PASS"
+    },
+    {
+      "calls": [
+        "before",
+        "inspect",
+        "after"
+      ],
+      "case": "new_success",
+      "outcome": "PASS"
+    },
+    {
+      "case": "finish0_stays_failure_and_diagnostic_excludes_nodes",
+      "outcome": "PASS"
+    },
+    {
+      "case": "other_display_rejected",
+      "outcome": "PASS"
+    },
+    {
+      "case": "window_title_rejected",
+      "outcome": "PASS"
+    },
+    {
+      "case": "not_focused_rejected",
+      "outcome": "PASS"
+    }
+  ],
+  "private_original_wire_embedded": false,
+  "runtime_qualification": false,
+  "schema": 1,
+  "scope": "actual Python methods with explicit synthetic Session/wire seams"
+}

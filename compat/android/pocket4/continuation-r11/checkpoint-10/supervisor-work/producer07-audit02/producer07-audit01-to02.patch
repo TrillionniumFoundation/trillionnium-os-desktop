@@ -1,0 +1,11 @@
+--- producer07-audit01/runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs
++++ producer07-audit02/runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs
+@@ -204,7 +204,7 @@
+ }
+ impl Event {
+     fn bounded(&self) -> bool {
+-        let hex = |value: &str, bytes| value.len() == bytes * 2
++        let hex = |value: &str, bytes: usize| value.len() == bytes * 2
+             && value.bytes().all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c));
+         let broker = |value: &BrokerRecord| hex(&value.nonce, 32)
+             && hex(&value.generation, 32) && hex(&value.budget, 32);

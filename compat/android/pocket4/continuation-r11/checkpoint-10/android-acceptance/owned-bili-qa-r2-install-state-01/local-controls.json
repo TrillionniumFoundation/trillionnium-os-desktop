@@ -1,0 +1,42 @@
+{
+  "Android_or_Hepta_calls": 0,
+  "actual_APK_bytes_read_locally": false,
+  "actual_install_UID": null,
+  "all_expected_outcomes": true,
+  "checks": [
+    {
+      "build_sha256": "714be386573242c2763d6fb69f91e557a5f7537e33b30f75ccdaaebfb694deae",
+      "case": "actual_complete_r2_build_receipt_consumer",
+      "outcome": "PASS",
+      "stage_sha256": "cb7282e1562485a9506415118a52933c0e98fdddb5efe6c949845dcd74ee38db"
+    },
+    {
+      "case": "old_shim_rejects_actual_r2_dependency",
+      "outcome": "EXPECTED_RED_REPRODUCED"
+    },
+    {
+      "UID_10165_is_synthetic_not_an_actual_install_claim": true,
+      "case": "new_binding_uses_unmodified_actual_Session",
+      "outcome": "PASS"
+    },
+    {
+      "case": "commercial_legacy_and_r1_UIDs_rejected",
+      "outcome": "PASS"
+    },
+    {
+      "case": "wrong_source_proof_rejected",
+      "outcome": "PASS"
+    },
+    {
+      "case": "actual_UID_parser_and_nonreplacement_install_contract",
+      "outcome": "PASS"
+    },
+    {
+      "case": "inherited_actions_guards_lifecycle_cleanup_AST_unchanged_except_UID_rejection",
+      "outcome": "PASS"
+    }
+  ],
+  "install_or_UI_qualified": false,
+  "schema": 1,
+  "scope": "actual source and actual build receipts; synthetic constructor arguments only"
+}

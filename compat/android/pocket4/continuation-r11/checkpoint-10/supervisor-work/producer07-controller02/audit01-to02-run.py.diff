@@ -1,0 +1,40 @@
+--- producer07-audit01/run.py
++++ producer07-audit02/run.py
+@@ -10,24 +10,24 @@
+ import time
+ import traceback
+ 
+-CONTROL_REVISION = "producer07-audit01"
++CONTROL_REVISION = "producer07-audit02"
+ BASE = Path("/home/alex/work/pocket4-supervisor-lmkd-deadline-r11-build-06-recovery04")
+ SOURCE = BASE / "candidate"
+-OUT = Path("/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01")
++OUT = Path("/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02")
+ CANDIDATE = OUT / "candidate"
+ TARGET = OUT / "target"
+ CARGO = "/home/alex/.cargo/bin/cargo"
+ PRIOR_RECEIPT = BASE / "compile-result.json"
+ PRIOR_RECEIPT_SHA = "2eb658308593cf760b7f99bbc9e3d7762295ef18c4628b050221838ffa274d4f"
+ PRIOR_INVENTORY_SHA = "731fcdae3856011a418e244b19b0568160f9316e94b31ba3aa6e75e423cab5eb"
+-ORIGINAL_DIFF_SHA = "4f25a4311f9b1f981af60f5600c1f1c9be260d12f962714d3061850dea8bdef7"
++ORIGINAL_DIFF_SHA = "e4735859cde851b068d6f9697819e39c04bb20e93dfc4fc312a3e21681a9b5f3"
+ EXACT_OVERLAY = {
+     'runtime/droidloom-pressure-relay/src/lib.rs': (44547, 'f2fd8a952171809256dd56ef75ff2ffe358b7e3c21279583d83ea20aea812c96'),
+     'runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs': (54968, '3f3f7cc1accb8921b0248adb3257e3737879e90b10bf377231389d5eb18453c1'),
+     'runtime/droidloom-supervisor/src/control.rs': (83587, '3818e0023f9dbc09a1b98986354147e5adc24f84f92b89e7f0db2f1872a54870'),
+     'runtime/droidloom-supervisor/src/development.rs': (95133, 'f73b823d53e7bd6a6daca9fff34f7c1ff5844ab39ba55171384414d6d58544c4'),
+     'runtime/droidloom-supervisor/src/lib.rs': (34441, '2de510605987aa6f5486bc0edf6d0400bca9c7a8f5768dc37d66c06df5bd440a'),
+-    'runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs': (20903, 'f142b520b19748c80d466f5dd7b4e4e59f1706e76d3c3f2aecfbf5fc7855389c'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs': (20910, 'ec021636841d88bb2cd52981c0143685593e87750b97073af99a7f3ea4f8038a'),
+     'runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs': (24407, '1c335ebf2c4892fae9cfae2081828e86ff121f0512ed9fbbb375e01d77f13137'),
+     'runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs': (24924, '959b554c7be8a8d00cefb8e76097977d9074ea5f553978cc1d454ce9791a7cf4'),
+     'runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs': (343, 'f2eb90f9ff902e342f351318a53acc7d8d3255e2cefa93cc7d0b2e8b0fb4353e'),
+@@ -240,7 +240,7 @@
+          "wrong recovery payload revision")
+     need(cfg["original_diff_sha256"] == ORIGINAL_DIFF_SHA and
+          cfg["source_manifest_sha256"] ==
+-         "c91fcbb5318d01848d00eb533ddef8b4bed4ad53b59c95a54db0e12315bb672d",
++         "433b1e8e3cd97ba3b3fd7018ca7f899de3eae14ad84d011a5a54d05ba3f16b87",
+          "wrong recovered source lineage")
+     need(len(cfg["preimage"]) == 31 and
+          set(cfg["overlays"]) == set(EXACT_OVERLAY) and
