@@ -1,5 +1,7 @@
 # 开发与技术文档入口
 
+2026-11-04 本轮实际执行：[阻塞项与实际验收台账](agents/BLOCKER_LEDGER_2026-11-04.md) 记录固定组合的成功、真实 Notes 失败、后继源码修复与尚待取得的资格；不同提交的结果分别保留。
+
 2026-11-03 当前 checkout 入口：[模块开发与技术交接](modules/README.md) 和
 [机器目录](modules/catalogue.json) 覆盖全部第一方 Cargo 入口及57个内核成员，说明
 各自原 owner、构建验证、失败恢复与实际范围。可运行
@@ -10,11 +12,11 @@
 
 ## 当前入口
 
-先读 [当前能力、源码与验收边界](CURRENT_CAPABILITIES.md#current-product-pair)。它固定 Desktop `745c0731` / Hepta `a39a0871` 实施起点，区分已有实现、某个旧 source/profile 的执行和仍未取得的产品资格。本文的模块表用于定位合同和运行命令；[STATUS](STATUS.md)、[证据索引](EVIDENCE_INDEX.md) 及下方日期节保留各自历史身份。后续实际构建须记录自己的 Desktop commit/tree。
+先读 [当前能力、源码与验收边界](CURRENT_CAPABILITIES.md#current-product-pair)。当前原始 Hepta 身份由 [机器 source pin](../support/ui/HEPTA_SHARED_PRESENTER.json) 与实际构建收据共同绑定；Desktop `745c0731` / Hepta `a39a0871` 保留为 2026-11-03 实施起点。本文的模块表用于定位合同和运行命令；[STATUS](STATUS.md)、[证据索引](EVIDENCE_INDEX.md) 及下方日期节保留各自历史身份。后续实际构建须记录自己的 Desktop commit/tree，已有实现、旧 source/profile 的执行与新产品资格分别核对。
 
 [路线](ROADMAP.md) 给出下一条依赖；[10-23执行记录](agents/ORGAN_EXECUTION_2026_10_23.md) 和 [Objective owner设计交接](agents/OBJECTIVE_SENDER_OWNER_NEXT.md) 是各自固定时点的资料。开放PR的代码和手册不是当前整合版本的运行证明。
 
-[当前原生 organ 跨仓 source map](SOURCES.md#hepta-native-organ)固定 Hepta `a39a0871d9601ffccb5e0d95d8f39d54b3a63360`，逐项链接原 Root/Agentd、Makepad/ChatWorkspace、Notes、Android、AccessKit 与独立 SDK 候选的开发及技术合同。[v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)保留其历史来源，与当前完整产品门禁分开；默认原 SDK、clipboard 与 preedit 候选的 feature/lock/bundle 不混用。
+[当前原生 organ 跨仓 source map](SOURCES.md#hepta-native-organ)记录当前选定 Hepta 身份，逐项链接原 Root/Agentd、Makepad/ChatWorkspace、Notes、Android、AccessKit 与独立 SDK 候选的开发及技术合同。[v10/v11 scoped 收据](../results/integration/2026-10-24-original-owner-product/text-native-v10-v11/README.md)保留其历史来源，与当前完整产品门禁分开；默认原 SDK、clipboard 与 preedit 候选的 feature/lock/bundle 不混用。
 
 ### 本轮原生 organ 模块交接
 
