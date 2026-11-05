@@ -1,0 +1,112 @@
+--- r1/run_control.py
++++ r2/run_control.py
+@@ -15,7 +15,7 @@
+ import time
+ 
+ SOURCE = Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source')
+-ROOT = Path('/home/alex/work/pocket4-blueprint-streaming-controls-01-20261105')
++ROOT = Path('/home/alex/work/pocket4-blueprint-streaming-controls-02-20261105')
+ HERE = ROOT / 'source'
+ OUT = ROOT / 'attempt01'
+ GOROOT = SOURCE / 'prebuilts/go/linux-x86'
+@@ -200,6 +200,72 @@
+                 paths.add(path)
+     require(0 < package_count <= 1024 and len(paths) <= 8192, 'dependency inventory bound exceeded')
+     return sorted(paths), package_count
++
++def resource_text(directory_fd, name):
++    fd = os.open(name, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=directory_fd)
++    try:
++        raw = os.read(fd, 32769)
++        require(len(raw) <= 32768, 'owned resource observation exceeds bound')
++        return raw.decode('ascii').strip()
++    finally:
++        os.close(fd)
++
++def resource_events(text):
++    rows = [line.split() for line in text.splitlines()]
++    require(rows and all(len(row) == 2 and row[1].isdigit() for row in rows), 'malformed owned memory.events')
++    events = {row[0]:int(row[1]) for row in rows}
++    require(len(events) == len(rows) and all(k in events for k in ['oom','oom_kill','oom_group_kill']), 'incomplete or duplicate owned memory.events')
++    return events
++
++def resource_snapshot(directory_fd, membership):
++    observed = Path('/proc/self/cgroup').read_text().strip()
++    require(observed == membership, 'controller cgroup membership changed')
++    path = Path('/sys/fs/cgroup')/membership[3:].lstrip('/')
++    held_st = os.fstat(directory_fd)
++    named_st = path.lstat()
++    require(stat.S_ISDIR(held_st.st_mode) and stat.S_ISDIR(named_st.st_mode) and
++            (held_st.st_dev,held_st.st_ino) == (named_st.st_dev,named_st.st_ino), 'owned invocation cgroup identity changed')
++    fields = {name:resource_text(directory_fd,name) for name in [
++        'cgroup.procs','memory.events','memory.current','memory.peak','memory.high','memory.max',
++        'memory.swap.current','memory.swap.peak','memory.swap.max','cpu.max']}
++    require(str(os.getpid()) in fields['cgroup.procs'].split(), 'controller is not in the held invocation')
++    require(fields['memory.max'] == '1073741824' and fields['cpu.max'] == '100000 100000', 'owned resource limits do not match the request')
++    for key in ['memory.current','memory.peak','memory.swap.current','memory.swap.peak']:
++        require(fields[key].isdigit(), 'invalid owned resource counter: '+key)
++    return {'observed_utc':utc(), 'membership':membership, 'path':str(path),
++            'directory_identity':[held_st.st_dev,held_st.st_ino],
++            'controller_pid':os.getpid(), 'fields':fields, 'events':resource_events(fields['memory.events'])}
++
++def begin_resources():
++    membership = Path('/proc/self/cgroup').read_text().strip()
++    require('\n' not in membership and membership.startswith('0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-'), 'not the exact owned user invocation')
++    path = Path('/sys/fs/cgroup')/membership[3:].lstrip('/')
++    require(path.name.startswith('hepta-runtime-job-') and path.name.endswith('.service') and '..' not in path.parts, 'unexpected owned unit path')
++    fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
++    try:
++        before = resource_snapshot(fd,membership)
++        require(all(before['events'][k] == 0 for k in ['oom','oom_kill','oom_group_kill']), 'owned invocation already recorded OOM before the control')
++        return fd,before
++    except BaseException:
++        os.close(fd)
++        raise
++
++def finish_resources(directory_fd, before, report):
++    after = resource_snapshot(directory_fd,before['membership'])
++    report['owned_resources_after'] = after
++    report['owned_memory_peak'] = int(after['fields']['memory.peak'])
++    report['owned_memory_swap_peak'] = int(after['fields']['memory.swap.peak'])
++    require(after['directory_identity'] == before['directory_identity'], 'owned cgroup object replaced')
++    require(set(before['events']) == set(after['events']), 'owned memory event fields changed')
++    delta = {key:after['events'][key]-value for key,value in before['events'].items()}
++    report['owned_memory_events_delta'] = delta
++    require(all(value >= 0 for value in delta.values()), 'owned memory event counters went backwards')
++    require(all(delta[key] == 0 for key in ['oom','oom_kill','oom_group_kill']), 'owned OOM event occurred; control is not qualified')
++    require(all(before['fields'][key] == after['fields'][key] for key in ['memory.max','memory.high','memory.swap.max','cpu.max']), 'owned cgroup limits changed during control')
++    return {'pass':True, 'before':before, 'after':after, 'memory_events_delta':delta,
++            'memory_peak':int(after['fields']['memory.peak']), 'memory_swap_peak':int(after['fields']['memory.swap.peak']),
++            'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
++
+ 
+ def execute():
+     global DEADLINE
+@@ -238,7 +304,11 @@
+     signal.signal(signal.SIGINT, interrupted)
+     input_rows = []
+     tool_rows = []
++    resource_fd = -1
++    resource_before = None
+     try:
++        resource_fd, resource_before = begin_resources()
++        report['owned_resources_before'] = resource_before
+         version, version_pin = held(GOROOT/'VERSION', 1024)
+         require(version.startswith(b'go1.25.4\n'), 'observed GoRoot version changed')
+         tool_rows.append(version_pin)
+@@ -349,6 +419,15 @@
+         cleanup = report['cleanup']
+         if cleanup['forced_cleanup'] or cleanup['remaining'] or cleanup['errors']:
+             report['state'] = 'FAIL'
++        try:
++            require(resource_fd >= 0 and resource_before is not None, 'owned resource admission was not observed')
++            report['owned_resource_gate'] = finish_resources(resource_fd,resource_before,report)
++        except Exception as error:
++            report['owned_resource_gate'] = {'pass':False,'error':repr(error)}
++            report['state'] = 'FAIL'
++        finally:
++            if resource_fd >= 0:
++                os.close(resource_fd)
+         report['finished_utc'] = utc()
+         result = write_new(OUT/'result.json', report)
+         print(json.dumps({'state':report['state'], 'result':result, 'Main_actions':0, 'full_engine_build':False}), flush=True)
