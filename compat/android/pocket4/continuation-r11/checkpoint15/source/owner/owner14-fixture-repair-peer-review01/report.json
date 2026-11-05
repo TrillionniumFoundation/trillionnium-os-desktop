@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "reviewer": "/root/native_bridge_repair",
+  "scope": "source-only narrow review of two fixture repairs, complete exact diff and changed tests plus actual open_at wrapper; no Rust compile or execution",
+  "state": "NO_NEW_CONCRETE_BLOCKER_IN_REVIEWED_DELTA",
+  "patch": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-fixture-repair-work-14/source.diff",
+    "bytes": 2726,
+    "sha256": "2af0e86d25b4288c5426037d532d95cdda99076afeeefe40f62d45356df21f43"
+  },
+  "inputs": [
+    {
+      "preimage": {
+        "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-fixture-repair-work-14/preimage/runtime/droidloom-pressure-relay/src/lib.rs",
+        "bytes": 50847,
+        "sha256": "0e87dd2e7d0da46a647b93d212e492887446fcc55e5aace6bc0cff3091eea10e"
+      },
+      "candidate": {
+        "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-fixture-repair-work-14/candidate/runtime/droidloom-pressure-relay/src/lib.rs",
+        "bytes": 51658,
+        "sha256": "102456cf0a4754cf04c1f35fbf3c5b0f68b2edea981e21528f5b5e33fe58e9d8"
+      },
+      "production_prefix_bytes_unchanged": 43559
+    },
+    {
+      "preimage": {
+        "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-fixture-repair-work-14/preimage/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+        "bytes": 86037,
+        "sha256": "cf9b59ced14cd1594e59dd91f299a734c47cbba71fff5634c62c9d4c9d62c8b2"
+      },
+      "candidate": {
+        "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/retirement-fixture-repair-work-14/candidate/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+        "bytes": 86381,
+        "sha256": "08ffa252cf726c1aa54699918ec5152a2ef5cc8c60277b3ab67225556006e0d1"
+      },
+      "production_prefix_bytes_unchanged": 57395
+    }
+  ],
+  "findings": [
+    {
+      "case": "exited_owned_child_retains_exact_proc_base_and_role_without_revival",
+      "assessment": "The new native openat and production wrapper use the same held old proc-dir, ns/mnt path, and O_RDONLY|O_CLOEXEC flags after the exact owned child is reaped and pin.live confirms death. Raw errno is captured immediately. Unexpected raw success is closed before failing. Only ENOENT/ESRCH are accepted and the wrapper must exactly preserve that actual errno plus role/name/base identity; no replacement PID lookup or successful revival is accepted."
+    },
+    {
+      "case": "retirement_drains_owned_terminal_before_closed_peer_request",
+      "assessment": "The invalid faulted-and-complete audit is still required to fail encoding. Only that fixture then sets incomplete before constructing the wire. The status, real old send-first rejection, exact owned exit, audit/status equality, retire publication and repeated-call checks remain in place. This does not change the production codec, retirement authority or poison behavior."
+    }
+  ],
+  "byte_checks": {
+    "two_production_prefixes_exact": true,
+    "supplied_diff_equals_actual": true,
+    "all_changes_under_cfg_test": true
+  },
+  "limitations": [
+    "No local Rust toolchain or Rust test execution was used in this review.",
+    "The kernel errno oracle is a sequential native syscall comparison on a held dead-process directory, not a simultaneous kernel observation. The actual matching test run remains required.",
+    "Retirement completed for an explicitly faulted receipt is not evidence that the workload or NORMAL lifecycle was healthy.",
+    "The prior actual ordinary13 two test failures and prior peer scope remain unchanged."
+  ],
+  "source_modified": false,
+  "Hepta_calls": 0,
+  "device_actions": 0,
+  "Main_actions": 0
+}

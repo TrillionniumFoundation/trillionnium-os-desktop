@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "review": "amazon_install_context_source_peer_01",
+  "verdict": "NO_NEW_CONCRETE_BLOCKER_IN_REVIEWED_SCOPE",
+  "scope": "Final frozen Context, retained BoundArun command boundary and the worker call/cleanup path only. This is not a complete install controller, Main helper or whole-App qualification.",
+  "checks": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/amazon-install-context-peer-review-01/checks.json",
+    "bytes": 4178,
+    "sha256": "7b040923b666abd22bb3e5d0b6df732bce73affefd189643cc9da741620018ba"
+  },
+  "check_script": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/amazon-install-context-peer-review-01/check_bindings.py",
+    "bytes": 6007,
+    "sha256": "8fb6f5289b07eca96a666f2f1a5e0316f16ae430f41c29dce192c6931ab817fe"
+  },
+  "read_scope": [
+    {
+      "file": "amazon_context.py",
+      "extent": "Entire exact 13619-byte source; Context admission, open_context success/failure and ArtifactSet ownership/read/cleanup."
+    },
+    {
+      "file": "amazon_transport.py",
+      "extent": "Entire exact 15619-byte source and byte comparison with frozen R4 preimage. Only EXPECTED_PACKAGE and EXPECTED_UID changed."
+    },
+    {
+      "file": "install_state.py",
+      "extent": "Read constants/error_record/remember/command/acquire_action_lock and worker/execute call and cleanup blocks. Did not re-review every staging and resource helper."
+    },
+    {
+      "file": "recorder.py",
+      "extent": "Exact original Flow.command implementation, including held transport signature, result-before-release, original direct child kill/join and unjoined poison."
+    }
+  ],
+  "findings": [
+    {
+      "topic": "Exactly ordered no-replay admission",
+      "result": "Context checks exact argv, timeout and bool mutation against its 13-entry plan; advances next_command before transport and permanently poisons after every BaseException. Only the single helper install is marked mutation; no UI/launch operation can match the remaining list."
+    },
+    {
+      "topic": "Real shared command boundary",
+      "result": "The new Context passes the original Flow.command its expected Android command label, seven distinct held authority FDs, close_fds and fixed host environment. It does not instantiate the Bili Flow business constructor or invoke the old client. Original command result capture precedes lease release and the mandatory post guard."
+    },
+    {
+      "topic": "Failure and owned target release",
+      "result": "BoundArun preserves its command first cause when entry release, recorder evidence or post guard also fail. open_context closes the actual acquired HeldTarget on failure and records a close failure as a note on the primary exception; no replacement target is adopted."
+    },
+    {
+      "topic": "Three commercial APK descriptor lifetime",
+      "result": "Each root-relative read-only NOFOLLOW descriptor is added to the owned list before hash checks. Size, full held metadata, UID/GID1000, nlink1, write-mode predicate, SHA and bounded streaming deadlines remain mandatory. A partial before() failure still reaches worker finally and closes every opened descriptor. Per-command guards recheck metadata; the final path/UID/version and full hashes are checked separately."
+    },
+    {
+      "topic": "Cleanup and success ordering",
+      "result": "Worker finally attempts owned staging cleanup, target file revalidation when possible, all APK FD closures, final Main guard, held target release, independent Main guard and action-lock release. remember() sets ok=false on any error while retaining the first error. Result publication happens after those attempts; no ambiguous failure triggers reinstall/uninstall or replay."
+    },
+    {
+      "topic": "Retained actual evidence correlation",
+      "result": "Independently matched the frozen source manifest and all 11 exported public original byte/hash records. Existing worker/coordinator report success, 13 commands, helper UID10175, three target FD closures and no UI automation; these are retained evidence observations, not a new device run by this reviewer."
+    }
+  ],
+  "execution": {
+    "local_read_hash_AST_and_retained_binding_script": true,
+    "production_module_imported": false,
+    "production_controls_rerun": false,
+    "Hepta_or_device_invoked": false,
+    "files_changed_outside_own_review_directory": false
+  },
+  "limitations": [
+    "The frozen source is an install/state entry for a separately built helper. It does not qualify Amazon launch, search, product details, cart, playback or whole-App production readiness.",
+    "Existing installation PASS is not independently reproduced. The public exported result chain is checked locally without re-collecting all 13 command files or requalifying the full underlying held helper.",
+    "No claim of an atomic multi-file commercial APK snapshot or unchanged data between every two observations is made; original held identity/hash and per-command checks remain the actual contract.",
+    "The old 12 source/owned-file controls and earlier flock controls were not rerun. Their reports are not presented as device qualification."
+  ]
+}

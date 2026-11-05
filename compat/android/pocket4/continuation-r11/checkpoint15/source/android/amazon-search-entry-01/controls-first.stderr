@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/94990735b266/android-amazon-search-entry-01/check_search.py", line 233, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/scratch/94990735b266/android-amazon-search-entry-01/check_search.py", line 85, in main
+    case('actual_policy_exact_19_nonces_one_click_and_replay_rejection',exact_allowlist)
+  File "/workspace/scratch/94990735b266/android-amazon-search-entry-01/check_search.py", line 37, in case
+    fn();cases.append({'case':name,'expected_met':True})
+    ^^^^
+  File "/workspace/scratch/94990735b266/android-amazon-search-entry-01/check_search.py", line 81, in exact_allowlist
+    permit(p,s,r)
+  File "/workspace/scratch/94990735b266/android-amazon-search-entry-01/check_search.py", line 68, in permit
+    return policy.admit(qa.instrumentation_argv(request),20,
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/94990735b266/owned-amazon-qa-r1-build01/source/qa_contract.py", line 106, in instrumentation_argv
+    raw = validate_request(request)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/94990735b266/owned-amazon-qa-r1-build01/source/qa_contract.py", line 86, in validate_request
+    scope(value.get('scope'))
+  File "/workspace/scratch/94990735b266/owned-amazon-qa-r1-build01/source/qa_contract.py", line 74, in scope
+    require(isinstance(value['window_token'], str) and re.fullmatch('[0-9a-f]{1,32}', value['window_token']),
+  File "/workspace/scratch/94990735b266/owned-amazon-qa-r1-build01/source/qa_contract.py", line 30, in require
+    raise ProtocolError(code)
+actual_qa.ProtocolError: HOST_WINDOW_TOKEN_REQUIRED

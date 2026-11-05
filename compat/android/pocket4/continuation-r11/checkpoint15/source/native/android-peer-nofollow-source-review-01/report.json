@@ -1,0 +1,97 @@
+{
+  "O_NOFOLLOW_runtime_qualified": false,
+  "actual_build_owner_reported_not_independently_read": "Native reports matching build39commands passed; no runtime5case conclusion consumed here.",
+  "additional_read_scope": {
+    "controls/snapshot_controls.cc": "Only nofollow assertions and main PLAN/execute admission locations, not a complete fixture review",
+    "role_authorization.cc": "Descriptor destructor/release/reset definitions only; registry not independently re-reviewed"
+  },
+  "checks": {
+    "all_11_declared_unchanged_core_files_byte_equal": true,
+    "all_manifest_files_size_and_SHA_verified": 28,
+    "both_complete_final_identity_seal_status_offset_tag_and_owner_checks_byte_equal": true,
+    "full_production_diff_exactly_reconstructed_from_actual_preimage": true,
+    "role_AuthorizeCreate_FinishCreate_Close_wrapper_byte_equal": true
+  },
+  "findings": [
+    {
+      "conclusion": "Both callsites pass only the newly created held output memfd after root ownership, size/type, tag, mode and required seals have been checked. The peer supplies neither the file handle nor mount descriptor. The helper is not a general authority validator by itself.",
+      "scope": "Handle input ownership"
+    },
+    {
+      "conclusion": "Only actual source F_GETFL with O_NOFOLLOW uses the handle helper. Error returns do not enter the ordinary proc-fd path or clear the bit. The old non-NOFOLLOW path is preserved. Fd and Descriptor reset/destruction preserve errno and close held output/readable/canonical/directory descriptors on unsuccessful returns.",
+      "scope": "Branch and errno"
+    },
+    {
+      "conclusion": "The helper uses fixed 128-byte storage with explicit 8-byte ABI header/static layout checks, rejects empty/overbound/negative-type output, and passes the same held output descriptor into both syscalls. Original status flags plus CLOEXEC are submitted; final real F_GETFL must still equal the source flags. No capability, credential, namespace, security setting or fallback change appears in the delta.",
+      "scope": "Handle storage and flags"
+    },
+    {
+      "conclusion": "The unchanged final checks revalidate the same backing inode, root ownership, mode/link/size, seals, exact status/CLOEXEC/zero offset/tag and live authority before release. The role path still completes FinishCreate and closes/revokes on its failure.",
+      "scope": "Final publication"
+    }
+  ],
+  "necessary_unverified_conditions": [
+    "Actual open_by_handle_at support, existing factory CAP_DAC_READ_SEARCH and syscall policy are required; this source review does not establish them.",
+    "Successful kernel reopening, memfd dentry/readlink representation and exact non-settable O_NOFOLLOW/F_SETFL behavior need the planned actual target case.",
+    "No direct execution of FinishCreate-failure branch is established by this review.",
+    "Complete V2 service transport, enabled role/platform integration, Android/ART/guest open and arbitrary credential/namespace/fork transitions remain outside this scope."
+  ],
+  "review_actions": {
+    "compile": false,
+    "controls_or_default_PLAN_run": false,
+    "modified_source": false,
+    "namespace_root_fixture_Hepta_or_Main_actions": 0,
+    "new_kernel_behavior_claimed": false
+  },
+  "reviewed_files": [
+    {
+      "bytes": 6795,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-snapshot-nofollow-source-freeze01/production.diff",
+      "sha256": "10a2a3f2521cc440ea3862fabff33f48e0a07e5a85c1af86dedcb5143da7abd2"
+    },
+    {
+      "bytes": 2557,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-snapshot-nofollow-source-freeze01/include/berberis/kernel_api/proc_maps_snapshot_reopen.h",
+      "sha256": "175107cadc296ab714acb83d40f0559fd8bd5f4505ca73f48861d509d3a07977"
+    },
+    {
+      "bytes": 10185,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-snapshot-nofollow-source-freeze01/source/role_snapshot.cc",
+      "sha256": "87667dbd72333545ec7a8ff731874f22217bc74f37e54f31eaf43969c4050b62"
+    },
+    {
+      "bytes": 28804,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-snapshot-nofollow-source-freeze01/source/factory_main.cc",
+      "sha256": "d9a8f398856536025cabdcaeee2e27b7ca7ccf04634f5a2bcd87bfc9306ed837"
+    },
+    {
+      "bytes": 5539,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-snapshot-nofollow-source-freeze01/source/role_authorization.h",
+      "sha256": "320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c"
+    },
+    {
+      "bytes": 5377,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-snapshot-nofollow-source-freeze01/source/factory_context.cc",
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a"
+    },
+    {
+      "bytes": 4599,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-snapshot-nofollow-source-freeze01/README.md",
+      "sha256": "96b19fbff9266c028d94c1ad3c6092b531b7a8cb0005c16da0ffcff28f314bf8"
+    },
+    {
+      "bytes": 1451,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-snapshot-nofollow-source-freeze01/INPUT_BINDINGS.json",
+      "sha256": "698e722b98f281e849ceb132d5e9496f017734ea993cf5595689cd9a5225319e"
+    }
+  ],
+  "reviewer": "android_acceptance",
+  "schema": 1,
+  "source_manifest": {
+    "bytes": 4866,
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-snapshot-nofollow-source-freeze01/SOURCE_PINS.json",
+    "sha256": "310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36"
+  },
+  "state": "NO_NEW_CONCRETE_BLOCKER_IN_REVIEWED_SOURCE_DELTA",
+  "whole_app_production_ready": false
+}

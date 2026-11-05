@@ -1,0 +1,31 @@
+{
+  "approved_request": {
+    "bytes": 37394,
+    "idempotency_key": "p4-producer14-fixture01-ordinary01-a916592cc708dc76",
+    "local_path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer14-fixture-ordinary-freeze-01/request.json",
+    "sha256": "d383190cf90e1d752e1fcc3de757c9c9cb9092e1646235ad33e40cd71d535fc6"
+  },
+  "expected_stdin": {
+    "bytes": 35263,
+    "sha256": "9eef9bf99c688d128467c9962f7aec8d077a2e65b39042e3a1236f663cbe4ec4"
+  },
+  "matched_execution_fields": {
+    "args": [
+      "-I",
+      "-B",
+      "-",
+      "--compile-sha256",
+      "a916592cc708dc76411b482a371214410bca4662f6ff72dccd5083d88872b6a6"
+    ],
+    "cpu_quota_percent": 100,
+    "cwd": "/home/alex/work",
+    "env": {},
+    "executable": "/usr/bin/python3",
+    "memory_max_bytes": 536870912,
+    "nice": 10,
+    "timeout_seconds": 180
+  },
+  "schema": 1,
+  "stored_metadata_confirmed_by_root": "Existing 13 request.json observations: env {}, resource fields at top level; request_digest/request_fingerprint equal 64-hex strings; original idempotency key absent",
+  "unknown_ack_is_not_a_failure_or_absence_proof": true
+}

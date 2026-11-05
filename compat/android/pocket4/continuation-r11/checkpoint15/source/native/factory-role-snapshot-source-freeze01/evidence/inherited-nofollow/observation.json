@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_LOCAL_REOPEN_COMPATIBILITY_FAILURE",
+  "local_tool_chunk": "f56dab",
+  "returncode": 0,
+  "source_bytes": 693,
+  "source_sha256": "966c3be8bed51c3b79e48ce7575f975b794e8729cb15e539064af46e2168541e",
+  "stdout_bytes": 117,
+  "stdout_sha256": "394dcaac23c9339f457228c25648642109899a85caeb275ed6fe759c9d734451",
+  "saved_after_actual_execution": true,
+  "object": "only own proc maps and own memfd",
+  "factory_entry_executed": false,
+  "inference": "V2 MakeSnapshot reopens its memfd using the same source F_GETFL bits; O_NOFOLLOW causes ELOOP at that exact underlying open. A new status-projection design or actually equivalent kernel path is required before claiming this flag is supported.",
+  "fix_applied_to_production": false,
+  "Main_actions": 0
+}

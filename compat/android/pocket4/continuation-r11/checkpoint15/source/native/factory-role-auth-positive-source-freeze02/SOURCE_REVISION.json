@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "state": "SOURCE_REVISION_ONLY",
+  "prior_build01_state": "PASS_BUILD_ONLY",
+  "prior_positive_executed": false,
+  "original_actual_build_receipt_sha256": "6ff2ec191bc185de8377bf232494afca17913b7eeac3a55b769e56226a9f7a0e",
+  "defect": "parent expiry wait 2050ms exceeded owned child command idle wait 2000ms",
+  "fix": "only command-idle wait is now 5000ms, still min with original whole-fixture 30s deadline",
+  "production_core_unchanged": true,
+  "wire_frame_wait_ms_unchanged": 2000,
+  "production_pending_lease_ns_unchanged": 2000000000,
+  "case_count_unchanged": 10,
+  "assertions_unchanged": true,
+  "new_runtime_executed": false,
+  "new_compile_performed": false,
+  "Main_actions": 0
+}

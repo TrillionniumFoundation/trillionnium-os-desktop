@@ -1,0 +1,2478 @@
+{
+  "Main_actions": 0,
+  "Main_identity_observed": false,
+  "artifacts": {
+    "control": {
+      "default_plan": {
+        "Main_actions": 0,
+        "factory_service_started": false,
+        "owned_cases": 5,
+        "state": "PLAN_ONLY"
+      },
+      "elf": {
+        "bytes": 129640,
+        "identity": [
+          66306,
+          36972762,
+          33216,
+          129640,
+          1793883980079792960,
+          1793883980079821064
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot_controls",
+        "sha256": "5471a0d4a29431398818f8320a2613f7d3c6ba1eebeeaa49803cd6d222e054fe"
+      }
+    },
+    "factory": {
+      "default_plan": {
+        "production_ready": false,
+        "protocol": 2,
+        "service_started": false,
+        "state": "DISABLED_REQUIRES_PINNED_INHERITED_OWNER"
+      },
+      "elf": {
+        "bytes": 46648,
+        "identity": [
+          66306,
+          36972769,
+          33216,
+          46648,
+          1793883980164278363,
+          1793883980164304403
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory_v2",
+        "sha256": "177ea99aca0f745e1341fe274f598d8a938c3cc6c48182f9d221f1978313a947"
+      }
+    }
+  },
+  "artifacts_unchanged_after": true,
+  "cleanup": {
+    "errors": [],
+    "forced_cleanup": false,
+    "initial_owned_children": [],
+    "reaped": [],
+    "remaining": []
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "--version"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.143112+00:00",
+      "label": "compiler-version",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.140487+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972679,
+          33152,
+          0,
+          1793883977139574149,
+          1793883977139574149
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compiler-version.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 239,
+        "identity": [
+          66306,
+          36972678,
+          33152,
+          239,
+          1793883977140574193,
+          1793883977140574193
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compiler-version.stdout",
+        "sha256": "ac55452791ddd9d6e55f5e1f3dbcd5ee40f34b0b55ae18baade542748b008022"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-prog-name=cc1plus"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.145365+00:00",
+      "label": "resolve-cc1plus",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.143242+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972681,
+          33152,
+          0,
+          1793883977141574236,
+          1793883977141574236
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-cc1plus.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 45,
+        "identity": [
+          66306,
+          36972680,
+          33152,
+          45,
+          1793883977142574280,
+          1793883977142574280
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-cc1plus.stdout",
+        "sha256": "39f76ad13254d5ffff610144e511bbb0b4680fce3b4d3965362fe6004450fcbc"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-prog-name=collect2"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.188618+00:00",
+      "label": "resolve-collect2",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.186161+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972683,
+          33152,
+          0,
+          1793883977184576109,
+          1793883977184576109
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-collect2.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 46,
+        "identity": [
+          66306,
+          36972682,
+          33152,
+          46,
+          1793883977185576153,
+          1793883977185576153
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-collect2.stdout",
+        "sha256": "2e382fe751587e8333b2ccb46c214dcfd6a5cdae1237db338ce9467ee66ee8fb"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-prog-name=as"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.191915+00:00",
+      "label": "resolve-as",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.189725+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972685,
+          33152,
+          0,
+          1793883977188576283,
+          1793883977188576283
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-as.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 29,
+        "identity": [
+          66306,
+          36972684,
+          33152,
+          29,
+          1793883977189576326,
+          1793883977189576326
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-as.stdout",
+        "sha256": "7534b78b8f67cccb6890df272c964192a53aad2fbf50e24065b87e91f0b73f48"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-prog-name=ld"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.195299+00:00",
+      "label": "resolve-ld",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.193180+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972687,
+          33152,
+          0,
+          1793883977191576414,
+          1793883977191576414
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-ld.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 29,
+        "identity": [
+          66306,
+          36972686,
+          33152,
+          29,
+          1793883977192576457,
+          1793883977192576457
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-ld.stdout",
+        "sha256": "199b1171e8ceb91fef1c557b68a028a103fafd29db9f06182a4a6f83f39351eb"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-file-name=crt1.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.199883+00:00",
+      "label": "resolve-file-crt1.o",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.197631+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972689,
+          33152,
+          0,
+          1793883977196576632,
+          1793883977196576632
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-crt1.o.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 66,
+        "identity": [
+          66306,
+          36972688,
+          33152,
+          66,
+          1793883977197576675,
+          1793883977197576675
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-crt1.o.stdout",
+        "sha256": "9b0f21aeabc67123cad26715eb463b9b022d15f117f777c98f952d71d7f226c9"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-file-name=crti.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.202502+00:00",
+      "label": "resolve-file-crti.o",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.200282+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972691,
+          33152,
+          0,
+          1793883977198576719,
+          1793883977198576719
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-crti.o.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 66,
+        "identity": [
+          66306,
+          36972690,
+          33152,
+          66,
+          1793883977199576762,
+          1793883977199576762
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-crti.o.stdout",
+        "sha256": "7650b83f45cb5e110add3ceeb56931ef602ad595246d20342a0901e12fe2e5e1"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-file-name=crtn.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.204986+00:00",
+      "label": "resolve-file-crtn.o",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.202812+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972693,
+          33152,
+          0,
+          1793883977201576850,
+          1793883977201576850
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-crtn.o.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 66,
+        "identity": [
+          66306,
+          36972692,
+          33152,
+          66,
+          1793883977202576893,
+          1793883977202576893
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-crtn.o.stdout",
+        "sha256": "6a917a4ae7e090f8229452ced1ca51d04f7f25c0d9905efd55d210f8ce352673"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-file-name=crtbeginS.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.207320+00:00",
+      "label": "resolve-file-crtbeginS.o",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.205268+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972695,
+          33152,
+          0,
+          1793883977203576937,
+          1793883977203576937
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-crtbeginS.o.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 45,
+        "identity": [
+          66306,
+          36972694,
+          33152,
+          45,
+          1793883977204576980,
+          1793883977204576980
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-crtbeginS.o.stdout",
+        "sha256": "f1879e2d21d6b5e519b6f4a9d498e99f9bf84b3a399524a789c76cce1e1d6209"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-file-name=crtendS.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.209740+00:00",
+      "label": "resolve-file-crtendS.o",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.207708+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972697,
+          33152,
+          0,
+          1793883977206577067,
+          1793883977206577067
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-crtendS.o.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 43,
+        "identity": [
+          66306,
+          36972696,
+          33152,
+          43,
+          1793883977207577111,
+          1793883977207577111
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-crtendS.o.stdout",
+        "sha256": "8332e250f68399482e2fb7f2a3d7e080158c92afab8df35f1b164d81735173f3"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-file-name=libgcc.a"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.212196+00:00",
+      "label": "resolve-file-libgcc.a",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.210112+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972699,
+          33152,
+          0,
+          1793883977208577154,
+          1793883977208577154
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-libgcc.a.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 42,
+        "identity": [
+          66306,
+          36972698,
+          33152,
+          42,
+          1793883977209577198,
+          1793883977209577198
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-libgcc.a.stdout",
+        "sha256": "d35649adad263e42b4eb7438e49380a55f65db54596534ae4c74b0486f9855b9"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-file-name=libgcc_s.so"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.218235+00:00",
+      "label": "resolve-file-libgcc_s.so",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.216043+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972701,
+          33152,
+          0,
+          1793883977214577416,
+          1793883977214577416
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-libgcc_s.so.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 45,
+        "identity": [
+          66306,
+          36972700,
+          33152,
+          45,
+          1793883977215577459,
+          1793883977215577459
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-libgcc_s.so.stdout",
+        "sha256": "8b6162a3262735eb6deea4731f70755bbf1eb376ab28f303387fc59a8c59070a"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-file-name=libstdc++.so"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.220569+00:00",
+      "label": "resolve-file-libstdc++.so",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.218590+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972703,
+          33152,
+          0,
+          1793883977217577546,
+          1793883977217577546
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-libstdc++.so.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 46,
+        "identity": [
+          66306,
+          36972702,
+          33152,
+          46,
+          1793883977219354386,
+          1793883977219354386
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-libstdc++.so.stdout",
+        "sha256": "f84db57ede5b974661fff8ba3cbfc1f9264fd7bf0dc77b423f73868ea76c2378"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-print-file-name=libc.so"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.225397+00:00",
+      "label": "resolve-file-libc.so",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.223380+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972705,
+          33152,
+          0,
+          1793883977221577721,
+          1793883977221577721
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-libc.so.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 67,
+        "identity": [
+          66306,
+          36972704,
+          33152,
+          67,
+          1793883977222577764,
+          1793883977222577764
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/resolve-file-libc.so.stdout",
+        "sha256": "20d5f4ce6627dc45289d539af9792ae29a1a8e6ea9ae51c803462f9bca527afe"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/usr/bin/x86_64-linux-gnu-g++-15"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.230955+00:00",
+      "label": "tool-libraries-0",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.225813+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972707,
+          33152,
+          0,
+          1793883977224577851,
+          1793883977224577851
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-0.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 159,
+        "identity": [
+          66306,
+          36972706,
+          33152,
+          159,
+          1793883977227577982,
+          1793883977227577982
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-0.stdout",
+        "sha256": "e93d3dbf7315e43f22863b2d44e0e476f6ce15905caa17305080e2cbeba9fd43"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/usr/bin/python3.14"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.238869+00:00",
+      "label": "tool-libraries-2",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.233587+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972709,
+          33152,
+          0,
+          1793883977232578200,
+          1793883977232578200
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-2.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 380,
+        "identity": [
+          66306,
+          36972708,
+          33152,
+          380,
+          1793883977235578330,
+          1793883977235578330
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-2.stdout",
+        "sha256": "03d67084dcd21d88690c1cb0c50cde65096bf7b1651f6e5997f9f6af1049c334"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/usr/libexec/gcc/x86_64-linux-gnu/15/cc1plus"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.252755+00:00",
+      "label": "tool-libraries-3",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.243155+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972711,
+          33152,
+          0,
+          1793883977241578592,
+          1793883977241578592
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-3.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 684,
+        "identity": [
+          66306,
+          36972710,
+          33152,
+          684,
+          1793883977247578853,
+          1793883977247578853
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-3.stdout",
+        "sha256": "a2ca370d5258adbedd45b1242fd26e472ca9660cfabcf71d428a7b1698d75fd1"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/usr/libexec/gcc/x86_64-linux-gnu/15/collect2"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.269932+00:00",
+      "label": "tool-libraries-4",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.261674+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972713,
+          33152,
+          0,
+          1793883977260579419,
+          1793883977260579419
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-4.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 159,
+        "identity": [
+          66306,
+          36972712,
+          33152,
+          159,
+          1793883977264579594,
+          1793883977264579594
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-4.stdout",
+        "sha256": "03876f1c7d9a213768e16b4c52021a3f8e7a9e6c67d24dabb6993c6e2d8bf01a"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/usr/bin/x86_64-linux-gnu-as"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.277599+00:00",
+      "label": "tool-libraries-5",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.272232+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972715,
+          33152,
+          0,
+          1793883977270579855,
+          1793883977270579855
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-5.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 483,
+        "identity": [
+          66306,
+          36972714,
+          33152,
+          483,
+          1793883977275580073,
+          1793883977275580073
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-5.stdout",
+        "sha256": "4fb4e42217b281930801df49eed90a27bc2930ff7116a9c05fd83795264dc69b"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/usr/bin/x86_64-linux-gnu-ld.bfd"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.290241+00:00",
+      "label": "tool-libraries-6",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.282080+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972717,
+          33152,
+          0,
+          1793883977280580290,
+          1793883977280580290
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-6.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 641,
+        "identity": [
+          66306,
+          36972716,
+          33152,
+          641,
+          1793883977284580465,
+          1793883977284580465
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-6.stdout",
+        "sha256": "1408d5c6c262a2e1f535ded201080f7704ce3c0157aeca40ba3d6c5599e4ae84"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/usr/lib/gcc/x86_64-linux-gnu/15/libstdc++.so"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.300046+00:00",
+      "label": "tool-libraries-14",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.294987+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972719,
+          33152,
+          0,
+          1793883977293580857,
+          1793883977293580857
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-14.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 309,
+        "identity": [
+          66306,
+          36972718,
+          33152,
+          309,
+          1793883977296580987,
+          1793883977296580987
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-libraries-14.stdout",
+        "sha256": "7e4bcfbe548a5a653927c4b4fa6bd287b28e8cbdccb8319fefb4747966626681"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-M",
+        "-MT",
+        "CONTROL",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/role_authorization.cc"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.370297+00:00",
+      "label": "dependencies-authorization",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.303517+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972721,
+          33152,
+          0,
+          1793883977302581249,
+          1793883977302581249
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-authorization.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 8587,
+        "identity": [
+          66306,
+          36972720,
+          33152,
+          8587,
+          1793883977338582816,
+          1793883977338582816
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-authorization.stdout",
+        "sha256": "ac41bd9027f754e1c2ebad531287ff83d2f07b72e976d322c0639aa79086d36d"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-M",
+        "-MT",
+        "CONTROL",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/factory_context.cc"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.391977+00:00",
+      "label": "dependencies-context",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.380834+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972723,
+          33152,
+          0,
+          1793883977379584603,
+          1793883977379584603
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-context.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 1968,
+        "identity": [
+          66306,
+          36972722,
+          33152,
+          1968,
+          1793883977386584907,
+          1793883977386584907
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-context.stdout",
+        "sha256": "e8f74fe8e0b1f3ef58436442f628161a941f8d7da686cbfeed39bae4437f13ee"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-M",
+        "-MT",
+        "CONTROL",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/proc_maps_factory_wire.cc"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.413036+00:00",
+      "label": "dependencies-wire",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.394538+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972725,
+          33152,
+          0,
+          1793883977393585212,
+          1793883977393585212
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-wire.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 5881,
+        "identity": [
+          66306,
+          36972724,
+          33152,
+          5881,
+          1793883977406585779,
+          1793883977406585779
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-wire.stdout",
+        "sha256": "25885f047d3170932c304b163cc3a16fb00e9328cd7d971c3979372e7b96e16d"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-M",
+        "-MT",
+        "CONTROL",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/role_snapshot.cc"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.438912+00:00",
+      "label": "dependencies-snapshot",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.420498+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972727,
+          33152,
+          0,
+          1793883977419586345,
+          1793883977419586345
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-snapshot.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 8203,
+        "identity": [
+          66306,
+          36972726,
+          33152,
+          8203,
+          1793883977434586998,
+          1793883977434586998
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-snapshot.stdout",
+        "sha256": "53023502af7f91bb685ddb6ac9fda9fc42911927fc81cf4c47d8d9aed9dd5316"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-M",
+        "-MT",
+        "CONTROL",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/controls/snapshot_controls.cc"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.515375+00:00",
+      "label": "dependencies-control",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.448085+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972729,
+          33152,
+          0,
+          1793883977446587521,
+          1793883977446587521
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-control.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 14429,
+        "identity": [
+          66306,
+          36972728,
+          33152,
+          14429,
+          1793883977500589873,
+          1793883977500589873
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-control.stdout",
+        "sha256": "48620df3c0be6f1b9ce992891dff7199b26a2101385cb8b7101348c6a94d5ee4"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-M",
+        "-MT",
+        "CONTROL",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/factory_main.cc"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:17.552023+00:00",
+      "label": "dependencies-factory",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.533362+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972731,
+          33152,
+          0,
+          1793883977532591267,
+          1793883977532591267
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-factory.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 8771,
+        "identity": [
+          66306,
+          36972730,
+          33152,
+          8771,
+          1793883977548591964,
+          1793883977548591964
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependencies-factory.stdout",
+        "sha256": "f352a28142adea85b36ee2c23156d0ceee7bd3fd38a988bfa234500abdbd5606"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-MD",
+        "-MF",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/authorization.d",
+        "-MT",
+        "CONTROL",
+        "-c",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/role_authorization.cc",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/authorization.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:18.383610+00:00",
+      "label": "compile-authorization",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:17.565065+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972734,
+          33152,
+          0,
+          1793883977563592617,
+          1793883977563592617
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-authorization.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972733,
+          33152,
+          0,
+          1793883977563592617,
+          1793883977563592617
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-authorization.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-MD",
+        "-MF",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/context.d",
+        "-MT",
+        "CONTROL",
+        "-c",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/factory_context.cc",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/context.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:18.511301+00:00",
+      "label": "compile-context",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:18.394278+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972738,
+          33152,
+          0,
+          1793883978392628726,
+          1793883978392628726
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-context.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972735,
+          33152,
+          0,
+          1793883978392628726,
+          1793883978392628726
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-context.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-MD",
+        "-MF",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/wire.d",
+        "-MT",
+        "CONTROL",
+        "-c",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/proc_maps_factory_wire.cc",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/wire.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:18.681622+00:00",
+      "label": "compile-wire",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:18.514234+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972742,
+          33152,
+          0,
+          1793883978512633953,
+          1793883978512633953
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-wire.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972739,
+          33152,
+          0,
+          1793883978512633953,
+          1793883978512633953
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-wire.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-MD",
+        "-MF",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot.d",
+        "-MT",
+        "CONTROL",
+        "-c",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/role_snapshot.cc",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:18.858466+00:00",
+      "label": "compile-snapshot",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:18.691233+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972746,
+          33152,
+          0,
+          1793883978689641662,
+          1793883978689641662
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-snapshot.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972743,
+          33152,
+          0,
+          1793883978689641662,
+          1793883978689641662
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-snapshot.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-MD",
+        "-MF",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/control.d",
+        "-MT",
+        "CONTROL",
+        "-c",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/controls/snapshot_controls.cc",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/control.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:19.636611+00:00",
+      "label": "compile-control",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:18.868134+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972750,
+          33152,
+          0,
+          1793883978866649372,
+          1793883978866649372
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-control.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972747,
+          33152,
+          0,
+          1793883978866649372,
+          1793883978866649372
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-control.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "-MD",
+        "-MF",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory.d",
+        "-MT",
+        "CONTROL",
+        "-c",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/factory_main.cc",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory.o"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:20.023813+00:00",
+      "label": "compile-factory",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:19.655037+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972754,
+          33152,
+          0,
+          1793883979653683652,
+          1793883979653683652
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-factory.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972751,
+          33152,
+          0,
+          1793883979653683652,
+          1793883979653683652
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/compile-factory.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/authorization.o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/context.o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/wire.o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot.o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/control.o",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot_controls"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:20.100615+00:00",
+      "label": "link-control",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:20.034067+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972758,
+          33152,
+          0,
+          1793883980032700160,
+          1793883980032700160
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/link-control.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972755,
+          33152,
+          0,
+          1793883980032700160,
+          1793883980032700160
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/link-control.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot_controls"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:20.106623+00:00",
+      "label": "control-libraries",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:20.101054+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972760,
+          33152,
+          0,
+          1793883980099703078,
+          1793883980099703078
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/control-libraries.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 390,
+        "identity": [
+          66306,
+          36972759,
+          33152,
+          390,
+          1793883980103703252,
+          1793883980103703252
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/control-libraries.stdout",
+        "sha256": "09540dee03bc8911a653af31d7d628b48e275000ae21c15f7cbc038cf0ad8666"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot_controls"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:20.117468+00:00",
+      "label": "default-plan",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:20.114760+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972763,
+          33152,
+          0,
+          1793883980113703688,
+          1793883980113703688
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/default-plan.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 87,
+        "identity": [
+          66306,
+          36972761,
+          33152,
+          87,
+          1793883980114703731,
+          1793883980114703731
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/default-plan.stdout",
+        "sha256": "8092b62278d26405e44af79097712c4ba57e5bcce4bda5f04573a2a08dffccc7"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source",
+        "-I/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/context.o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/wire.o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory.o",
+        "-o",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory_v2"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:20.185217+00:00",
+      "label": "link-factory",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:20.117658+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972765,
+          33152,
+          0,
+          1793883980116703819,
+          1793883980116703819
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/link-factory.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972764,
+          33152,
+          0,
+          1793883980116703819,
+          1793883980116703819
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/link-factory.stdout",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory_v2"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:20.191115+00:00",
+      "label": "factory-libraries",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:20.185532+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972767,
+          33152,
+          0,
+          1793883980184706780,
+          1793883980184706780
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory-libraries.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 390,
+        "identity": [
+          66306,
+          36972766,
+          33152,
+          390,
+          1793883980187706911,
+          1793883980187706911
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory-libraries.stdout",
+        "sha256": "3fd55c70f82183ec0133003ae06c7699921b72f7b8f534466697fb7111549c6e"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory_v2"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:06:20.199514+00:00",
+      "label": "factory-default-plan",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:06:20.196662+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          66306,
+          36972770,
+          33152,
+          0,
+          1793883980195707259,
+          1793883980195707259
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory-default-plan.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 115,
+        "identity": [
+          66306,
+          36972768,
+          33152,
+          115,
+          1793883980196707303,
+          1793883980196707303
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory-default-plan.stdout",
+        "sha256": "4227369189c289289737019c9cc74f75ae346930286dc3ddd7680a3e5111c4bd"
+      },
+      "timed_out": false
+    }
+  ],
+  "compiler_version": "g++ (Ubuntu 15.2.0-16ubuntu1) 15.2.0\nCopyright (C) 2025 Free Software Foundation, Inc.\nThis is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n\n",
+  "dependency_changes": [],
+  "dependency_count": 327,
+  "dependency_inputs": {
+    "bytes": 161454,
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/dependency-inputs-before.json",
+    "sha256": "06d4c50a6a278c5160cc471683af1e8087963470799a9d121f066ea4aaf595c0"
+  },
+  "environment": {
+    "HOME": "/home/alex",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PATH": "/usr/bin:/bin",
+    "TMPDIR": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tmp"
+  },
+  "factory_runtime_libraries": {
+    "/lib64/ld-linux-x86-64.so.2": {
+      "bytes": 254864,
+      "identity": [
+        66306,
+        108003785,
+        33261,
+        254864,
+        1788444579000000000,
+        1791083352530953147
+      ],
+      "path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "requested_path": "/lib64/ld-linux-x86-64.so.2",
+      "resolved_path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "sha256": "bda779ea9e9ad234f60315477d7cfd0bdde861cd8ddd9df8cdaf62f18c4cec14"
+    },
+    "/usr/lib/x86_64-linux-gnu/libc.so.6": {
+      "bytes": 2190608,
+      "identity": [
+        66306,
+        108006127,
+        33261,
+        2190608,
+        1788444579000000000,
+        1791083352531953112
+      ],
+      "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "requested_path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "resolved_path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "85e64f97e348786a8fb4d9f3d52fec289e2fb86bba20f0731dfe61990525e0f7"
+    },
+    "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1": {
+      "bytes": 187120,
+      "identity": [
+        66306,
+        108003781,
+        33188,
+        187120,
+        1774168304000000000,
+        1791083354901869474
+      ],
+      "path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "requested_path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "resolved_path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "sha256": "9d339ecb409578d6a5d587e6c537a8f9589b8a13fefba30d167433a4b5758bee"
+    },
+    "/usr/lib/x86_64-linux-gnu/libm.so.6": {
+      "bytes": 1198376,
+      "identity": [
+        66306,
+        108006133,
+        33188,
+        1198376,
+        1788444579000000000,
+        1791083352531953112
+      ],
+      "path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "requested_path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "resolved_path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "sha256": "1c488db6f4fe8cecb72456bc018de000b7a9b539c2994864b0416b5e8371b3d8"
+    },
+    "/usr/lib/x86_64-linux-gnu/libstdc++.so.6": {
+      "bytes": 2735712,
+      "identity": [
+        66306,
+        108003788,
+        33188,
+        2735712,
+        1774168304000000000,
+        1791083355059863954
+      ],
+      "path": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.35",
+      "requested_path": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+      "resolved_path": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.35",
+      "sha256": "5bb0d21308f123b6ad46c6f35b42cedfcb8d6d439a53aa3dae04d880aaffdde3"
+    }
+  },
+  "factory_service_started": false,
+  "finished_utc": "2026-11-05T13:06:20.261056+00:00",
+  "objects": {
+    "authorization": {
+      "actual_md": {
+        "bytes": 8587,
+        "identity": [
+          66306,
+          36972736,
+          33152,
+          8587,
+          1793883978347791725,
+          1793883978347791725
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/authorization.d",
+        "sha256": "ac41bd9027f754e1c2ebad531287ff83d2f07b72e976d322c0639aa79086d36d"
+      },
+      "dependency_count": 181,
+      "object": {
+        "bytes": 69992,
+        "identity": [
+          66306,
+          36972737,
+          33152,
+          69992,
+          1793883978357627201,
+          1793883978357627201
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/authorization.o",
+        "sha256": "f5ac8a5d56c2818e076b4ec2eb47530f306c647ee10a05697acc234ce2b94c1c"
+      }
+    },
+    "context": {
+      "actual_md": {
+        "bytes": 1968,
+        "identity": [
+          66306,
+          36972740,
+          33152,
+          1968,
+          1793883978497096791,
+          1793883978497096791
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/context.d",
+        "sha256": "e8f74fe8e0b1f3ef58436442f628161a941f8d7da686cbfeed39bae4437f13ee"
+      },
+      "dependency_count": 38,
+      "object": {
+        "bytes": 5696,
+        "identity": [
+          66306,
+          36972741,
+          33152,
+          5696,
+          1793883978498633343,
+          1793883978498633343
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/context.o",
+        "sha256": "b135afe6fddabef8ee435cc56ff8ad9332e00cfed413b7ee535578e618225032"
+      }
+    },
+    "control": {
+      "actual_md": {
+        "bytes": 14429,
+        "identity": [
+          66306,
+          36972752,
+          33152,
+          14429,
+          1793883979573680167,
+          1793883979573680167
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/control.d",
+        "sha256": "48620df3c0be6f1b9ce992891dff7199b26a2101385cb8b7101348c6a94d5ee4"
+      },
+      "dependency_count": 306,
+      "object": {
+        "bytes": 83624,
+        "identity": [
+          66306,
+          36972753,
+          33152,
+          83624,
+          1793883979584680646,
+          1793883979584680646
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/control.o",
+        "sha256": "9641cc7821b802d8f748d022255cbe8de146a20bbda742b57850b8b8acc8fce6"
+      }
+    },
+    "factory": {
+      "actual_md": {
+        "bytes": 8771,
+        "identity": [
+          66306,
+          36972756,
+          33152,
+          8771,
+          1793883979972152229,
+          1793883979972152229
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory.d",
+        "sha256": "f352a28142adea85b36ee2c23156d0ceee7bd3fd38a988bfa234500abdbd5606"
+      },
+      "dependency_count": 177,
+      "object": {
+        "bytes": 30576,
+        "identity": [
+          66306,
+          36972757,
+          33152,
+          30576,
+          1793883979976697721,
+          1793883979976697721
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/factory.o",
+        "sha256": "987cdeb585dd33acb1dcdb6081e2a6573f04c288c2b7208fc1db4f14ca88e811"
+      }
+    },
+    "snapshot": {
+      "actual_md": {
+        "bytes": 8203,
+        "identity": [
+          66306,
+          36972748,
+          33152,
+          8203,
+          1793883978805396328,
+          1793883978805396328
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot.d",
+        "sha256": "53023502af7f91bb685ddb6ac9fda9fc42911927fc81cf4c47d8d9aed9dd5316"
+      },
+      "dependency_count": 159,
+      "object": {
+        "bytes": 10984,
+        "identity": [
+          66306,
+          36972749,
+          33152,
+          10984,
+          1793883978807646802,
+          1793883978807646802
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot.o",
+        "sha256": "31afa2b393bb760a4a5fbe935d021c09061cfc0203a051d07e0b95f27633f4eb"
+      }
+    },
+    "wire": {
+      "actual_md": {
+        "bytes": 5881,
+        "identity": [
+          66306,
+          36972744,
+          33152,
+          5881,
+          1793883978644968644,
+          1793883978644968644
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/wire.d",
+        "sha256": "25885f047d3170932c304b163cc3a16fb00e9328cd7d971c3979372e7b96e16d"
+      },
+      "dependency_count": 116,
+      "object": {
+        "bytes": 7520,
+        "identity": [
+          66306,
+          36972745,
+          33152,
+          7520,
+          1793883978647639833,
+          1793883978647639833
+        ],
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/wire.o",
+        "sha256": "334f367c41cdb35aa6475f008eeedf0397db86e1d83d0e7e294e622bc16b4f73"
+      }
+    }
+  },
+  "owned_memory_events_delta": {
+    "high": 0,
+    "low": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0,
+    "sock_throttled": 0
+  },
+  "owned_memory_peak": 161501184,
+  "owned_memory_swap_peak": 0,
+  "owned_resource_gate": {
+    "after": {
+      "controller_pid": 2145882,
+      "directory_identity": [
+        30,
+        30573893
+      ],
+      "events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "fields": {
+        "cgroup.procs": "2145878\n2145882",
+        "cpu.max": "100000 100000",
+        "memory.current": "85049344",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "max",
+        "memory.max": "536870912",
+        "memory.peak": "161501184",
+        "memory.swap.current": "0",
+        "memory.swap.max": "max",
+        "memory.swap.peak": "0"
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abd12dbc-fc05-50c3.service",
+      "observed_utc": "2026-11-05T13:06:20.260999+00:00",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abd12dbc-fc05-50c3.service"
+    },
+    "before": {
+      "controller_pid": 2145882,
+      "directory_identity": [
+        30,
+        30573893
+      ],
+      "events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "fields": {
+        "cgroup.procs": "2145878\n2145882",
+        "cpu.max": "100000 100000",
+        "memory.current": "20574208",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "max",
+        "memory.max": "536870912",
+        "memory.peak": "20574208",
+        "memory.swap.current": "0",
+        "memory.swap.max": "max",
+        "memory.swap.peak": "0"
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abd12dbc-fc05-50c3.service",
+      "observed_utc": "2026-11-05T13:06:17.129025+00:00",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abd12dbc-fc05-50c3.service"
+    },
+    "memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak": 161501184,
+    "memory_swap_peak": 0,
+    "pass": true,
+    "resource_settings_changed": false,
+    "swap_max_observed_only": "max"
+  },
+  "owned_resources_after": {
+    "controller_pid": 2145882,
+    "directory_identity": [
+      30,
+      30573893
+    ],
+    "events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "fields": {
+      "cgroup.procs": "2145878\n2145882",
+      "cpu.max": "100000 100000",
+      "memory.current": "85049344",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "max",
+      "memory.max": "536870912",
+      "memory.peak": "161501184",
+      "memory.swap.current": "0",
+      "memory.swap.max": "max",
+      "memory.swap.peak": "0"
+    },
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abd12dbc-fc05-50c3.service",
+    "observed_utc": "2026-11-05T13:06:20.260999+00:00",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abd12dbc-fc05-50c3.service"
+  },
+  "owned_resources_before": {
+    "controller_pid": 2145882,
+    "directory_identity": [
+      30,
+      30573893
+    ],
+    "events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "fields": {
+      "cgroup.procs": "2145878\n2145882",
+      "cpu.max": "100000 100000",
+      "memory.current": "20574208",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "max",
+      "memory.max": "536870912",
+      "memory.peak": "20574208",
+      "memory.swap.current": "0",
+      "memory.swap.max": "max",
+      "memory.swap.peak": "0"
+    },
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abd12dbc-fc05-50c3.service",
+    "observed_utc": "2026-11-05T13:06:17.129025+00:00",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abd12dbc-fc05-50c3.service"
+  },
+  "platform_policy_qualified": false,
+  "registry_positive_executed": false,
+  "runtime_libraries": {
+    "/lib64/ld-linux-x86-64.so.2": {
+      "bytes": 254864,
+      "identity": [
+        66306,
+        108003785,
+        33261,
+        254864,
+        1788444579000000000,
+        1791083352530953147
+      ],
+      "path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "requested_path": "/lib64/ld-linux-x86-64.so.2",
+      "resolved_path": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "sha256": "bda779ea9e9ad234f60315477d7cfd0bdde861cd8ddd9df8cdaf62f18c4cec14"
+    },
+    "/usr/lib/x86_64-linux-gnu/libc.so.6": {
+      "bytes": 2190608,
+      "identity": [
+        66306,
+        108006127,
+        33261,
+        2190608,
+        1788444579000000000,
+        1791083352531953112
+      ],
+      "path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "requested_path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "resolved_path": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "sha256": "85e64f97e348786a8fb4d9f3d52fec289e2fb86bba20f0731dfe61990525e0f7"
+    },
+    "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1": {
+      "bytes": 187120,
+      "identity": [
+        66306,
+        108003781,
+        33188,
+        187120,
+        1774168304000000000,
+        1791083354901869474
+      ],
+      "path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "requested_path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "resolved_path": "/usr/lib/x86_64-linux-gnu/libgcc_s.so.1",
+      "sha256": "9d339ecb409578d6a5d587e6c537a8f9589b8a13fefba30d167433a4b5758bee"
+    },
+    "/usr/lib/x86_64-linux-gnu/libm.so.6": {
+      "bytes": 1198376,
+      "identity": [
+        66306,
+        108006133,
+        33188,
+        1198376,
+        1788444579000000000,
+        1791083352531953112
+      ],
+      "path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "requested_path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "resolved_path": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "sha256": "1c488db6f4fe8cecb72456bc018de000b7a9b539c2994864b0416b5e8371b3d8"
+    },
+    "/usr/lib/x86_64-linux-gnu/libstdc++.so.6": {
+      "bytes": 2735712,
+      "identity": [
+        66306,
+        108003788,
+        33188,
+        2735712,
+        1774168304000000000,
+        1791083355059863954
+      ],
+      "path": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.35",
+      "requested_path": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+      "resolved_path": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.35",
+      "sha256": "5bb0d21308f123b6ad46c6f35b42cedfcb8d6d439a53aa3dae04d880aaffdde3"
+    }
+  },
+  "schema": 1,
+  "scope": "matching nofollow snapshot and standalone V2 factory compile; default PLAN only",
+  "selected_cpus": [
+    23
+  ],
+  "snapshot_created": false,
+  "snapshot_positive_executed": false,
+  "source_authority": {
+    "bytes": 4866,
+    "identity": [
+      66306,
+      36972662,
+      33024,
+      4866,
+      1793883977098978249,
+      1793883977098978249
+    ],
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/nofollow-source-pins.json",
+    "sha256": "310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36"
+  },
+  "source_inputs": {
+    "build_nofollow.py": {
+      "bytes": 26483,
+      "identity": [
+        66306,
+        36972652,
+        33024,
+        26483,
+        1793883977095653065,
+        1793883977095653065
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/build_nofollow.py",
+      "sha256": "15b2e0140a10477f06a02afcf0fa38cdfa6523294edce38f77598d18201fd86f"
+    },
+    "controls/snapshot_controls.cc": {
+      "bytes": 17634,
+      "identity": [
+        66306,
+        36972654,
+        33024,
+        17634,
+        1793883977096321664,
+        1793883977096321664
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/controls/snapshot_controls.cc",
+      "sha256": "4a2b14b4e5056974128670c50e445ebe5aa9df240778e9bf33a51f293df802b6"
+    },
+    "include/berberis/kernel_api/proc_maps_factory_protocol.h": {
+      "bytes": 5051,
+      "identity": [
+        66306,
+        36972658,
+        33024,
+        5051,
+        1793883977096886826,
+        1793883977096886826
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include/berberis/kernel_api/proc_maps_factory_protocol.h",
+      "sha256": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9"
+    },
+    "include/berberis/kernel_api/proc_maps_kernel_statfs.h": {
+      "bytes": 2480,
+      "identity": [
+        66306,
+        36972659,
+        33024,
+        2480,
+        1793883977097481915,
+        1793883977097481915
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include/berberis/kernel_api/proc_maps_kernel_statfs.h",
+      "sha256": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0"
+    },
+    "include/berberis/kernel_api/proc_maps_linux_compat.h": {
+      "bytes": 2072,
+      "identity": [
+        66306,
+        36972660,
+        33024,
+        2072,
+        1793883977097958397,
+        1793883977097958397
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include/berberis/kernel_api/proc_maps_linux_compat.h",
+      "sha256": "131d1eef8d9f789876c965fa2d827b21a59fc64ab7886fa1f78d95623114370c"
+    },
+    "include/berberis/kernel_api/proc_maps_snapshot_reopen.h": {
+      "bytes": 2557,
+      "identity": [
+        66306,
+        36972661,
+        33024,
+        2557,
+        1793883977098442574,
+        1793883977098442574
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/include/berberis/kernel_api/proc_maps_snapshot_reopen.h",
+      "sha256": "175107cadc296ab714acb83d40f0559fd8bd5f4505ca73f48861d509d3a07977"
+    },
+    "nofollow-source-pins.json": {
+      "bytes": 4866,
+      "identity": [
+        66306,
+        36972662,
+        33024,
+        4866,
+        1793883977098978249,
+        1793883977098978249
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/nofollow-source-pins.json",
+      "sha256": "310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36"
+    },
+    "references/factory_main.v2.cc": {
+      "bytes": 28588,
+      "identity": [
+        66306,
+        36972664,
+        33024,
+        28588,
+        1793883977099490319,
+        1793883977099490319
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/references/factory_main.v2.cc",
+      "sha256": "18d8134ed6c2077088104d9b5dc22ccfe1c93f73a87ee880595a9eb89821e2b9"
+    },
+    "references/registry_controls.cc": {
+      "bytes": 33258,
+      "identity": [
+        66306,
+        36972665,
+        33024,
+        33258,
+        1793883977100005034,
+        1793883977100005034
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/references/registry_controls.cc",
+      "sha256": "5ea30aeb58eebeb09542e9ee68c07e1be7ff92fedcc3141f4d336490458e1a94"
+    },
+    "source/factory_context.cc": {
+      "bytes": 5377,
+      "identity": [
+        66306,
+        36972667,
+        33024,
+        5377,
+        1793883977100485544,
+        1793883977100485544
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/factory_context.cc",
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a"
+    },
+    "source/factory_context.h": {
+      "bytes": 954,
+      "identity": [
+        66306,
+        36972668,
+        33024,
+        954,
+        1793883977100954131,
+        1793883977100954131
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/factory_context.h",
+      "sha256": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1"
+    },
+    "source/factory_main.cc": {
+      "bytes": 28804,
+      "identity": [
+        66306,
+        36972669,
+        33024,
+        28804,
+        1793883977101332144,
+        1793883977101332144
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/factory_main.cc",
+      "sha256": "d9a8f398856536025cabdcaeee2e27b7ca7ccf04634f5a2bcd87bfc9306ed837"
+    },
+    "source/proc_maps_factory_wire.cc": {
+      "bytes": 8661,
+      "identity": [
+        66306,
+        36972670,
+        33024,
+        8661,
+        1793883977101829025,
+        1793883977101829025
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/proc_maps_factory_wire.cc",
+      "sha256": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608"
+    },
+    "source/role_authorization.cc": {
+      "bytes": 38998,
+      "identity": [
+        66306,
+        36972671,
+        33024,
+        38998,
+        1793883977102289997,
+        1793883977102289997
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/role_authorization.cc",
+      "sha256": "5d9a43b4f9d51ddfe7896de563353c96f75856171d39c1af9a5816394247a03c"
+    },
+    "source/role_authorization.h": {
+      "bytes": 5539,
+      "identity": [
+        66306,
+        36972672,
+        33024,
+        5539,
+        1793883977102807989,
+        1793883977102807989
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/role_authorization.h",
+      "sha256": "320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c"
+    },
+    "source/role_snapshot.cc": {
+      "bytes": 10185,
+      "identity": [
+        66306,
+        36972673,
+        33024,
+        10185,
+        1793883977103310992,
+        1793883977103310992
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/role_snapshot.cc",
+      "sha256": "87667dbd72333545ec7a8ff731874f22217bc74f37e54f31eaf43969c4050b62"
+    },
+    "source/role_snapshot.h": {
+      "bytes": 1243,
+      "identity": [
+        66306,
+        36972674,
+        33024,
+        1243,
+        1793883977103816760,
+        1793883977103816760
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/source/role_snapshot.h",
+      "sha256": "24ca056261cf6928bcd0be38f9669290287ac5529629cc77901313060af97bd4"
+    }
+  },
+  "source_manifest_sha256": "310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36",
+  "source_unchanged_after": true,
+  "stage_authority": {
+    "bytes": 2708,
+    "identity": [
+      66306,
+      36972675,
+      33024,
+      2708,
+      1793883977104319833,
+      1793883977104319833
+    ],
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/stage-receipt.json",
+    "sha256": "dcaa557c59a6401e3850c8f7e3571a3aaff8fdc538f83f86ddbda66727f39839"
+  },
+  "started_utc": "2026-11-05T13:06:17.128482+00:00",
+  "state": "PASS_BUILD_ONLY",
+  "tool_changes": [],
+  "tool_inputs": {
+    "bytes": 15101,
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/tool-inputs-before.json",
+    "sha256": "51cd6fca573cd7d9db0fe2b5e49cd64cb6f2167b12a36ea76cb1e28965d33870"
+  }
+}

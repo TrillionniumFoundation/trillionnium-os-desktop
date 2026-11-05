@@ -1,0 +1,44 @@
+--- metadata01/stage_execute.py
++++ resolve01/stage_execute.py
+@@ -1,15 +1,15 @@
+ #!/usr/bin/env python3
+-"""Create one fixed private metadata source root; no retry or UI entry."""
++"""Create one fixed private resolver source root; no retry or UI entry."""
+ import hashlib
+ import json
+ import os
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-amazon-artifact-readonly-01')
+-SOURCE=ROOT/'source/read_amazon.py'
+-NONCE='42110205266d417c33e33607204a5d8d'
+-REFERENCE=Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/references/readonly_r3_coordinator.py')
++ROOT=Path('/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01')
++SOURCE=ROOT/'source/resolve_amazon.py'
++NONCE='def3447572e718bc263b37bd39393b90'
++REFERENCE=Path('/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ 
+ 
+@@ -21,7 +21,7 @@
+     assert 0<len(raw)<=32768 and hashlib.sha256(raw).hexdigest()==source_sha256
+     assert os.getuid()==os.geteuid()==0
+     assert ROOT.parent.resolve()==ROOT.parent and not os.path.lexists(ROOT)
+-    entry=types.ModuleType('amazon_metadata_fixed_entry');entry.__file__=str(SOURCE)
++    entry=types.ModuleType('amazon_launcher_fixed_entry');entry.__file__=str(SOURCE)
+     exec(compile(raw,str(SOURCE),'exec'),entry.__dict__)
+     assert entry.ROOT==ROOT and entry.SOURCE_PATH==SOURCE and entry.NONCE==NONCE
+     ref=entry.load(REFERENCE,REFERENCE_SHA,'amazon_stage_main_reference')
+@@ -52,9 +52,9 @@
+         observed=json.loads(durable)
+         assert observed['nonce']==NONCE and observed['package']==entry.PACKAGE
+         assert observed['source_sha256']==source_sha256
+-        assert rc==0 and observed.get('ok') is True,'AMAZON_METADATA_READ_NOT_QUALIFIED'
++        assert rc==0 and observed.get('ok') is True,'AMAZON_CURRENT_LAUNCHER_READ_NOT_QUALIFIED'
+         result['ok']=True
+-    except BaseException as error:remember('stage_or_metadata_read',error)
++    except BaseException as error:remember('stage_or_launcher_read',error)
+     finally:
+         try:
+             result['Main_after']=ref.main_guard(activation,epoch)

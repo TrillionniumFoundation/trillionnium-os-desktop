@@ -1,0 +1,35 @@
+{
+  "schema": 1,
+  "scope": "owned approved O_RDONLY role snapshot maker only",
+  "cases": [
+    {
+      "index": 0,
+      "name": "authorized_root_sealed_v2_snapshot",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 1,
+      "name": "wrong_source_rejected_then_same_grant_recovers",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 2,
+      "name": "unsealed_input_rejected_then_same_grant_recovers",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 3,
+      "name": "size_mismatch_rejected_then_same_grant_recovers",
+      "expected_state": "PASS"
+    }
+  ],
+  "direct_children_expected": 4,
+  "nested_children_expected": 0,
+  "factory_service_started": false,
+  "platform_policy_qualified": false,
+  "snapshot_created": true,
+  "maps_formatter": "owned_fixture",
+  "Main_actions": 0,
+  "production_source_manifest_sha256": "53e90ef34ab51ae8b9700f93419c3c050665fb0ea5a50482417b48aa860497e1",
+  "known_red": "O_NOFOLLOW full flags semantics remains unqualified and unchanged"
+}

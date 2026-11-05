@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "preimage": {
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-run-template-freeze02/run_registry.template.py",
+    "bytes": 27101,
+    "sha256": "d81586937de3414222a06bf0cac97ccabf921c913d8ddb032e37a28d9238e200"
+  },
+  "candidate": {
+    "bytes": 27458,
+    "sha256": "140f94169b2514d586bde30276c2ca63fced58141330a8ac084e916ddc9c1e5d"
+  },
+  "unchanged_functions": [
+    "require",
+    "utc",
+    "sha",
+    "identity",
+    "held",
+    "write_new",
+    "real_directory",
+    "children",
+    "cleanup_children",
+    "command",
+    "resource_text",
+    "resource_events",
+    "resource_snapshot",
+    "begin_resources",
+    "finish_resources",
+    "hash_held",
+    "regular_tree",
+    "verify_rows",
+    "held_executable",
+    "root_scope"
+  ],
+  "changed_functions": [
+    "qualified_build",
+    "run_held",
+    "validate_result",
+    "execute"
+  ],
+  "added_functions": [],
+  "removed_functions": [],
+  "run_held_delta": "fixed snapshot stdout/stderr paths and messages only; exact fork/PIDFD/exec/wait body unchanged",
+  "actual_build_binding": "PENDING_ACTUAL_BUILD_RESULT_SHA256",
+  "remote_actions": 0
+}

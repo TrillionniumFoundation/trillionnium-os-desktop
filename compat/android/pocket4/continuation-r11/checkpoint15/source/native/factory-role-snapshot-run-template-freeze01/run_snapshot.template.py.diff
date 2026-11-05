@@ -1,0 +1,179 @@
+--- a/run_registry.template.py
++++ b/run_snapshot.template.py
+@@ -245,21 +245,22 @@
+         return fd,pin
+     except BaseException:os.close(fd);raise
+ 
+-ROOT=Path('/run/pocket4-role-authorization-positive-host-run-02-20261105')
++ROOT=Path('/run/pocket4-role-authorized-snapshot-host-run-01-20261105')
+ HERE=ROOT/'control-source'
+ OUT=ROOT/'run01'
+-BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105')
++BUILD_ROOT=Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorized-snapshot-host-build-01-20261105')
+ SOURCE=BUILD_ROOT/'source'
+ BUILD_RESULT=BUILD_ROOT/'build01/result.json'
+ BUILD_RESULT_SHA='PENDING_ACTUAL_BUILD_RESULT_SHA256'
+-CASE_PLAN_SHA='77ce88615978dded6cb36bfee8df337e500515a018f83ffc72828e88acb7cd1d'
+-SOURCE_MANIFEST_SHA='fda076982c0a26682eb3b6a596a6964e6645cf1eddc7b175e56d9b499c06fda2'
++CASE_PLAN_SHA='d79fb33dbf54d7082c6bd70a1f1db12b604853482dd1a1c7ee050e65f5143494'
++SOURCE_MANIFEST_SHA='53e90ef34ab51ae8b9700f93419c3c050665fb0ea5a50482417b48aa860497e1'
+ DEADLINE=None
+ 
+ 
+ def qualified_build(build):
+     require(build['state']=='PASS_BUILD_ONLY' and build['source_manifest_sha256']==SOURCE_MANIFEST_SHA and
+-            build['registry_positive_executed'] is False and build['platform_policy_qualified'] is False and
++            build['registry_positive_executed'] is False and build['snapshot_positive_executed'] is False and
++            build['platform_policy_qualified'] is False and
+             build['factory_service_started'] is False and build['snapshot_created'] is False and
+             build['Main_actions']==0 and build['source_unchanged_after'] is True and
+             build['artifacts_unchanged_after'] is True and not build['tool_changes'] and
+@@ -270,15 +271,16 @@
+     labels=[row['label'] for row in build['commands']]
+     require(len(labels)==len(set(labels)) and all(row['returncode']==0 and not row['timed_out']
+             for row in build['commands']), 'matching build command failure or duplicate')
+-    for name in ['dependencies-authorization','dependencies-context','dependencies-control',
+-                 'compile-authorization','compile-context','compile-control','link-control',
++    for name in ['dependencies-authorization','dependencies-context','dependencies-wire',
++                 'dependencies-snapshot','dependencies-control','compile-authorization','compile-context',
++                 'compile-wire','compile-snapshot','compile-control','link-control',
+                  'control-libraries','default-plan']:
+         require(labels.count(name)==1, 'matching build omitted required command: '+name)
+-    require(set(build['objects'])=={'authorization','context','control'} and
++    require(set(build['objects'])=={'authorization','context','wire','snapshot','control'} and
+             all(row['dependency_count']>0 for row in build['objects'].values()),
+             'complete actual compiler dependency observations required')
+     require(build['artifacts']['control']['default_plan']=={
+-        'state':'PLAN_ONLY','actual_role_registry':False,'owned_cases':10,
++        'state':'PLAN_ONLY','owned_cases':4,
+         'factory_service_started':False,'Main_actions':0}, 'matching default PLAN differs')
+ 
+ 
+@@ -303,9 +305,9 @@
+ 
+ 
+ def run_held(fd,path,env,libc):
+-    require(not children(), 'unreaped child before the owned registry harness')
++    require(not children(), 'unreaped child before the owned snapshot harness')
+     require(os.execve in os.supports_fd, 'Python fd-based exec unavailable')
+-    stdout=OUT/'registry.stdout';stderr=OUT/'registry.stderr'
++    stdout=OUT/'snapshot.stdout';stderr=OUT/'snapshot.stderr'
+     started=utc();parent=os.getpid();pid=-1;pidfd=-1;status=None;timed_out=False
+     with stdout.open('xb') as out,stderr.open('xb') as err:
+         pid=os.fork()
+@@ -348,32 +350,34 @@
+ 
+ def validate_result(raw,plan):
+     lines=raw.decode('ascii').splitlines()
+-    require(len(lines)==11 and all(lines),'exact ten case records and one terminal required')
++    require(len(lines)==5 and all(lines),'exact four case records and one terminal required')
+     records=[json.loads(line) for line in lines]
+     expected=plan['cases']
+-    require(len(expected)==10 and len({row['name'] for row in expected})==10,
+-            'exact frozen ten-case plan required')
++    require(len(expected)==4 and len({row['name'] for row in expected})==4,
++            'exact frozen four-case snapshot plan required')
+     for wanted,seen in zip(expected,records[:-1]):
+         require(seen=={'case':wanted['name'],'state':'PASS','actual_kernel_identity':True,
+-                       'production_platform_policy':False,'snapshot_created':False},
++                       'production_platform_policy':False,'snapshot_created':True,
++                       'maps_formatter':'owned_fixture'},
+                 'owned case failed or unexpected record: '+wanted['name'])
+     result=records[-1]
+     require(set(result)=={'state','cases','assertions','direct_children_reaped','nested_children_reaped',
+                          'forced_cleanup','cleanup_unreaped','platform_policy_qualified','snapshot_created',
+-                         'Main_actions','factory_service_started'} and
+-            result['state']=='PASS_OWNED_REGISTRY_MECHANISM' and result['cases']==10 and
++                         'maps_formatter','Main_actions','factory_service_started'} and
++            result['state']=='PASS_OWNED_ROLE_SNAPSHOT' and result['cases']==4 and
+             isinstance(result['assertions'],int) and not isinstance(result['assertions'],bool) and
+-            result['assertions']>0 and result['direct_children_reaped']==10 and
+-            result['nested_children_reaped']==1 and result['forced_cleanup']==0 and
++            result['assertions']>0 and result['direct_children_reaped']==4 and
++            result['nested_children_reaped']==0 and result['forced_cleanup']==0 and
+             result['cleanup_unreaped']==0 and result['platform_policy_qualified'] is False and
+-            result['snapshot_created'] is False and result['Main_actions']==0 and
+-            result['factory_service_started'] is False, 'owned registry aggregate failed')
++            result['snapshot_created'] is True and result['maps_formatter']=='owned_fixture' and
++            result['Main_actions']==0 and result['factory_service_started'] is False,
++            'owned snapshot aggregate failed')
+     return {'cases':records[:-1],'summary':result}
+ 
+ 
+ def execute():
+     global DEADLINE
+-    require(Path(__file__).absolute()==HERE/'run_registry.py','fixed staged root runner required')
++    require(Path(__file__).absolute()==HERE/'run_snapshot.py','fixed staged root runner required')
+     require(re.fullmatch(r'[0-9a-f]{64}',BUILD_RESULT_SHA) is not None,
+             'actual matching build receipt has not been bound')
+     real_directory(HERE);os.umask(0o077);OUT.mkdir(mode=0o700);DEADLINE=time.monotonic()+90
+@@ -382,7 +386,7 @@
+     allowed=sorted(os.sched_getaffinity(0));require(len(allowed)>=3,'cannot leave two logical CPUs free')
+     os.sched_setaffinity(0,[allowed[-1]])
+     report={'schema':1,'state':'RUNNING','started_utc':utc(),
+-            'scope':'fixed root / owned role child kernel authorization mechanism only',
++            'scope':'fixed root / owned approved child ordinary O_RDONLY sealed snapshot only',
+             'Main_actions':0,'Main_identity_observed':False,'Android_execution':False,
+             'factory_service_started':False,'snapshot_created':False,'platform_policy_qualified':False,
+             'production_source_changed':False,'selected_cpus':[allowed[-1]],'commands':[]}
+@@ -399,11 +403,11 @@
+         require(staged==raw,'staged build receipt differs from actual matching receipt')
+         build=json.loads(raw);qualified_build(build)
+         plan_raw,plan_pin=held(HERE/'CASE_PLAN.json',32768)
+-        require(sha(plan_raw)==CASE_PLAN_SHA,'frozen ten-case plan changed')
++        require(sha(plan_raw)==CASE_PLAN_SHA,'frozen four-case snapshot plan changed')
+         plan=json.loads(plan_raw)
+         require(plan['production_source_manifest_sha256']==SOURCE_MANIFEST_SHA,
+                 'case plan is not bound to reviewed source')
+-        source_before=regular_tree(SOURCE,12,512*1024)
++        source_before=regular_tree(SOURCE,16,512*1024)
+         require(source_before==build['source_inputs'],'actual built source changed before runtime')
+         authority={str(BUILD_RESULT):build_pin,str(HERE/'actual-build-result.json'):staged_pin,
+                    str(HERE/'CASE_PLAN.json'):plan_pin}
+@@ -416,7 +420,7 @@
+         authority[str(tools_path)]=tools_pin
+         tools=json.loads(tools_raw);tool_rows=[tools['/usr/bin/python3'],tools['/usr/bin/ldd']]
+         require(not verify_rows(tool_rows),'runtime tools changed after matching build')
+-        path=BUILD_ROOT/'build01/registry_controls';artifact=build['artifacts']['control']['elf']
++        path=BUILD_ROOT/'build01/snapshot_controls';artifact=build['artifacts']['control']['elf']
+         require(artifact['path']==str(path),'actual control ELF path escaped matching build')
+         elf_fd,elf_pin=held_executable(path,artifact)
+         env={'PATH':'/usr/bin:/bin','HOME':'/root','LC_ALL':'C','LANG':'C'}
+@@ -437,10 +441,11 @@
+         report['runtime_libraries']=write_new(OUT/'runtime-libraries-before.json',libraries)
+         row,raw=run_held(elf_fd,path,env,libc);report['execution']=row
+         require(row['returncode']==0 and row['child_reaped'] and not row['timed_out'] and
+-                row['stderr']['bytes']==0,'owned registry process failed')
++                row['stderr']['bytes']==0,'owned snapshot process failed')
+         report['assessment']=validate_result(raw,plan)
+-        require(not children(),'owned registry harness left adopted children')
+-        report['state']='PASS_OWNED_REGISTRY_MECHANISM'
++        require(not children(),'owned snapshot harness left adopted children')
++        report['snapshot_created']=True;report['maps_formatter']='owned_fixture'
++        report['state']='PASS_OWNED_ROLE_SNAPSHOT'
+     except Exception as error:
+         report['state']='FAIL';report['error']={'type':type(error).__name__,'message':str(error),
+                                                'filename':getattr(error,'filename',None)}
+@@ -448,7 +453,7 @@
+         signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGTERM,signal.SIGINT})
+         report['cleanup']=cleanup_children()
+         try:
+-            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,12,512*1024)==source_before
++            report['source_unchanged_after']=bool(source_before)and regular_tree(SOURCE,16,512*1024)==source_before
+             report['authority_unchanged_after']=bool(authority)and all(hash_held(Path(path))==pin
+                                                                        for path,pin in authority.items())
+             report['library_changes']=verify_rows(list(libraries.values()))
+@@ -471,11 +476,11 @@
+             report['state']='FAIL'
+     report['finished_utc']=utc();pin=write_new(OUT/'result.json',report)
+     print(json.dumps({'state':report['state'],'result':pin}),flush=True)
+-    return 0 if report['state']=='PASS_OWNED_REGISTRY_MECHANISM'else 1
++    return 0 if report['state']=='PASS_OWNED_ROLE_SNAPSHOT'else 1
+ 
+ 
+ if __name__=='__main__':
+     if sys.argv[1:]!=['--execute-once']:
+-        print(json.dumps({'state':'PLAN_ONLY','requires_actual_matching_build':True,'owned_cases':10,
++        print(json.dumps({'state':'PLAN_ONLY','requires_actual_matching_build':True,'owned_cases':4,
+                           'root_execution':False,'factory_service_started':False,'Main_actions':0}))
+     else:raise SystemExit(execute())

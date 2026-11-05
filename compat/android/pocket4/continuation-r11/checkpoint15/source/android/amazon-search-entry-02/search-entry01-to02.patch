@@ -1,0 +1,211 @@
+--- search-entry-01/INPUTS.json
++++ search-entry-02/INPUTS.json
+@@ -41,7 +41,7 @@
+     "signer_bound_by_exact_signed_apk_bytes": "1f63759487a0b04e8da9b4088c11dbac8140bf63cb2d64d91460e2525924f424",
+     "uid": 10175
+   },
+-  "nonce": "853b099b08f0e7a60c3d7b05fcd07461",
++  "nonce": "d0e92c1920c92a57e7e7d0d915fc1bde",
+   "observed_selector_reference": {
+     "actual_assessment_sha256": "29d6a9fc5951cb7c9a1fa4e2a5e9b991ee424cfb9aebcfdad8f780cdcf522ac5",
+     "actual_inspect_result_sha256": "e81b411f3e92d5d5064010f8879bb66662faddc133354c43ae9cc1bdf0e78011",
+@@ -68,10 +68,10 @@
+   "search_entry_plan": {
+     "entry": {
+       "nonces": {
+-        "action": "bcddd26f2559ec5d7947c32197505f8d",
+-        "after": "a03bea48d6c009d8d2713d91e40b217f",
+-        "before": "e78e5f01904401a610fa9c764000938a",
+-        "inspect": "58f0306d92412784867f2dbd71d38758"
++        "action": "ade163da5eaecdfd356224b1b5bb487b",
++        "after": "d0d3be784255ec39d32bc78c420798d2",
++        "before": "3aa0df96843daa7c9bc7c2084a61fcc9",
++        "inspect": "9294ba2e524ef840daf09d474c947b53"
+       },
+       "operation": "click",
+       "schema": 1,
+@@ -84,9 +84,9 @@
+     "operation": "search_entry",
+     "post": {
+       "nonces": {
+-        "after": "c1ce224c47bde845e44c753072332eda",
+-        "before": "dead46cae6a4d45ebfb763a42921f5a4",
+-        "inspect": "6594bc1e6399d81527e36798aa504af4"
++        "after": "ac5dbb52631867966395c919ac24ad99",
++        "before": "cf6adac0c9950622cda09d851f0f377f",
++        "inspect": "02cf7694ef68e55804c272ac9ef8fb21"
+       },
+       "operation": "inspect",
+       "schema": 1
+@@ -95,36 +95,45 @@
+     "stability": [
+       {
+         "nonces": {
+-          "after": "06fb488ce50de2daf2334c17fe42fd41",
+-          "before": "956831cdddbb256149b0ad20dad4f062",
+-          "inspect": "a8a6302fa2b10d608a2eb8efc0a82bab"
++          "after": "c64132c6103a5d5c40697e6d30822823",
++          "before": "505adc1436dd34dce80584f858201824",
++          "inspect": "5d50826e0a4f4be75d22a3cfdd4ea231"
+         },
+         "operation": "inspect",
+         "schema": 1
+       },
+       {
+         "nonces": {
+-          "after": "88bab24e9fc6c94f8d386537dd8a04cd",
+-          "before": "6afad278ba5021af033a9f03043b28e8",
+-          "inspect": "2160e26d458d7527dd35683f19ad9220"
++          "after": "613ba7746e7ae574e6f7dbbb06939887",
++          "before": "190c4b8faae6c9da3ad360a286c78727",
++          "inspect": "26b9e5ca3b38ea6a2f2730187070e36c"
+         },
+         "operation": "inspect",
+         "schema": 1
+       },
+       {
+         "nonces": {
+-          "after": "ddbf4d2e18b4731f017789957894c6ca",
+-          "before": "58ef8a06eb60280fea239d7d55860feb",
+-          "inspect": "ee1cde2354b22277ab68400aeb30d661"
++          "after": "9c0ffd52951549973d3d939c06c57004",
++          "before": "f26e6be151b34835be63b5222b4f9f0d",
++          "inspect": "9c18e81dadfa5acc43a4e12c51c97cc7"
+         },
+         "operation": "inspect",
+         "schema": 1
+       },
+       {
+         "nonces": {
+-          "after": "ce53e002f28cd3a8439ad90786f86938",
+-          "before": "de8705b550190f0d9e825aa33f21e20c",
+-          "inspect": "354754889c0c5fcf3318c12cd082df4a"
++          "after": "e383096c8cf860cf11e1b12217a70e9b",
++          "before": "4c5cc29f0fbe46d8e973c7e5149057d1",
++          "inspect": "51c2755af75eb4f63ae628d084cc94b3"
++        },
++        "operation": "inspect",
++        "schema": 1
++      },
++      {
++        "nonces": {
++          "after": "2665fdc70013f7682645acf4240600b7",
++          "before": "10a79ee0c1e4ce036fb2c4f696356c6b",
++          "inspect": "2bda51f4fe379fb500f84b006a30d6a6"
+         },
+         "operation": "inspect",
+         "schema": 1
+--- search-entry-01/amazon_task_context.py
++++ search-entry-02/amazon_task_context.py
+@@ -38,7 +38,7 @@
+         need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF,'EXACT_AMAZON_CONTRACT_REQUIRED')
+         need(type(inspect_plan) is dict and set(inspect_plan)=={'schema','operation','stability','entry','post'} and
+              inspect_plan['schema']==1 and inspect_plan['operation']=='search_entry' and
+-             len(inspect_plan['stability'])==4 and all(p['operation']=='inspect' for p in
++             len(inspect_plan['stability'])==5 and all(p['operation']=='inspect' for p in
+              [*inspect_plan['stability'],inspect_plan['post']]) and inspect_plan['entry']['operation']=='click' and
+              inspect_plan['entry']['selector']=={'resource_id':PACKAGE+':id/chrome_search_box',
+                 'class':'android.widget.ImageButton','content_desc':'Search'},
+@@ -51,7 +51,7 @@
+             for name,nonce in plan['nonces'].items():
+                 qa.nonce(nonce);need(nonce not in self.request_ops,'DISTINCT_PHASE_NONCES')
+                 self.request_ops[nonce]=('inspect' if name=='inspect' else 'click' if name=='action' else 'state')
+-        need(len(self.request_ops)==19,'EXACT_NINETEEN_HELPER_NONCES')
++        need(len(self.request_ops)==22,'EXACT_TWENTY_TWO_HELPER_NONCES')
+         self.phase,self.qa,self.resolve,self.plan=phase,qa,list(resolve),inspect_plan
+         self.step,self.read,self.selected_task=step,read,selected_task
+         self.counts={};self.used_nonces=set();self.action_nonces=set();self.remove_attempted=False
+@@ -116,7 +116,7 @@
+                          'CLICK_MUST_USE_ITS_OWN_FRESH_INSPECTION')
+                 matches.append(nonce)
+         need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_STATE_INSPECT_OR_ENTRY_CLICK_REQUEST')
+-        self.used_nonces.add(matches[0]);self.claim('instrument',19)
++        self.used_nonces.add(matches[0]);self.claim('instrument',22)
+         if self.request_ops[matches[0]]=='click':self.action_nonces.add(matches[0])
+ 
+ 
+--- search-entry-01/owned_inspect.py
++++ search-entry-02/owned_inspect.py
+@@ -15,16 +15,16 @@
+ import types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-01')
++ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-02')
+ SOURCE=ROOT/'source'
+-NONCE='853b099b08f0e7a60c3d7b05fcd07461'
++NONCE='d0e92c1920c92a57e7e7d0d915fc1bde'
+ FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r1-flow-'+NONCE)
+ PACKAGE='com.amazon.mShop.android.shopping'
+ UID=10129
+ SELF='org.droidloom.qa.amazon.r1'
+ HELPER_UID=10175
+ COMPONENT=PACKAGE+'/com.amazon.mShop.home.HomeActivity'
+-PLAN={'entry': {'nonces': {'action': 'bcddd26f2559ec5d7947c32197505f8d', 'after': 'a03bea48d6c009d8d2713d91e40b217f', 'before': 'e78e5f01904401a610fa9c764000938a', 'inspect': '58f0306d92412784867f2dbd71d38758'}, 'operation': 'click', 'schema': 1, 'selector': {'class': 'android.widget.ImageButton', 'content_desc': 'Search', 'resource_id': 'com.amazon.mShop.android.shopping:id/chrome_search_box'}}, 'operation': 'search_entry', 'post': {'nonces': {'after': 'c1ce224c47bde845e44c753072332eda', 'before': 'dead46cae6a4d45ebfb763a42921f5a4', 'inspect': '6594bc1e6399d81527e36798aa504af4'}, 'operation': 'inspect', 'schema': 1}, 'schema': 1, 'stability': [{'nonces': {'after': '06fb488ce50de2daf2334c17fe42fd41', 'before': '956831cdddbb256149b0ad20dad4f062', 'inspect': 'a8a6302fa2b10d608a2eb8efc0a82bab'}, 'operation': 'inspect', 'schema': 1}, {'nonces': {'after': '88bab24e9fc6c94f8d386537dd8a04cd', 'before': '6afad278ba5021af033a9f03043b28e8', 'inspect': '2160e26d458d7527dd35683f19ad9220'}, 'operation': 'inspect', 'schema': 1}, {'nonces': {'after': 'ddbf4d2e18b4731f017789957894c6ca', 'before': '58ef8a06eb60280fea239d7d55860feb', 'inspect': 'ee1cde2354b22277ab68400aeb30d661'}, 'operation': 'inspect', 'schema': 1}, {'nonces': {'after': 'ce53e002f28cd3a8439ad90786f86938', 'before': 'de8705b550190f0d9e825aa33f21e20c', 'inspect': '354754889c0c5fcf3318c12cd082df4a'}, 'operation': 'inspect', 'schema': 1}]}
++PLAN={'entry': {'nonces': {'action': 'ade163da5eaecdfd356224b1b5bb487b', 'after': 'd0d3be784255ec39d32bc78c420798d2', 'before': '3aa0df96843daa7c9bc7c2084a61fcc9', 'inspect': '9294ba2e524ef840daf09d474c947b53'}, 'operation': 'click', 'schema': 1, 'selector': {'class': 'android.widget.ImageButton', 'content_desc': 'Search', 'resource_id': 'com.amazon.mShop.android.shopping:id/chrome_search_box'}}, 'operation': 'search_entry', 'post': {'nonces': {'after': 'ac5dbb52631867966395c919ac24ad99', 'before': 'cf6adac0c9950622cda09d851f0f377f', 'inspect': '02cf7694ef68e55804c272ac9ef8fb21'}, 'operation': 'inspect', 'schema': 1}, 'schema': 1, 'stability': [{'nonces': {'after': 'c64132c6103a5d5c40697e6d30822823', 'before': '505adc1436dd34dce80584f858201824', 'inspect': '5d50826e0a4f4be75d22a3cfdd4ea231'}, 'operation': 'inspect', 'schema': 1}, {'nonces': {'after': '613ba7746e7ae574e6f7dbbb06939887', 'before': '190c4b8faae6c9da3ad360a286c78727', 'inspect': '26b9e5ca3b38ea6a2f2730187070e36c'}, 'operation': 'inspect', 'schema': 1}, {'nonces': {'after': '9c0ffd52951549973d3d939c06c57004', 'before': 'f26e6be151b34835be63b5222b4f9f0d', 'inspect': '9c18e81dadfa5acc43a4e12c51c97cc7'}, 'operation': 'inspect', 'schema': 1}, {'nonces': {'after': 'e383096c8cf860cf11e1b12217a70e9b', 'before': '4c5cc29f0fbe46d8e973c7e5149057d1', 'inspect': '51c2755af75eb4f63ae628d084cc94b3'}, 'operation': 'inspect', 'schema': 1}, {'nonces': {'after': '2665fdc70013f7682645acf4240600b7', 'before': '10a79ee0c1e4ce036fb2c4f696356c6b', 'inspect': '2bda51f4fe379fb500f84b006a30d6a6'}, 'operation': 'inspect', 'schema': 1}]}
+ RESOLVER_ROOT=Path('/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01')
+ RESOLVER_SOURCE=RESOLVER_ROOT/'source/resolve_amazon.py'
+ RESOLVER_SHA='b963fde5ba1638702623ee707ec21b43f0a86f87f54550f1e0d2df474cb7b058'
+@@ -125,8 +125,8 @@
+     need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF and adapter.SELF==SELF,
+          'DEDICATED_AMAZON_HELPER_SOURCE_REQUIRED')
+     values=[NONCE,*[n for plan in all_plans for n in plan['nonces'].values()]]
+-    need(len(values)==len(set(values))==20 and all(re.fullmatch('[0-9a-f]{32}',v) for v in values),
+-         'EXACT_NEW_FLOW_AND_NINETEEN_HELPER_NONCES')
++    need(len(values)==len(set(values))==23 and all(re.fullmatch('[0-9a-f]{32}',v) for v in values),
++         'EXACT_NEW_FLOW_AND_TWENTY_TWO_HELPER_NONCES')
+     inputs=json.loads(read(HERE/'INPUTS.json',65536))
+     need(inputs['nonce']==NONCE and inputs['component']==COMPONENT and inputs['installed_helper']==resolver.INSTALLED
+          and inputs['resolver_records']=={k:{'relative_path':v[0],'bytes':v[1],'sha256':v[2]} for k,v in RESOLVER_RECORDS.items()},
+@@ -281,7 +281,7 @@
+                 'EXACT_LAUNCH_COMMAND_COUNTS_REQUIRED')
+         if phase=='inspect':
+             stable_count=len(result['search_entry']['stability_reads'])
+-            need(2<=stable_count<=4,'EXACT_BOUNDED_COMPLETED_STABILITY_READS')
++            need(2<=stable_count<=5,'EXACT_BOUNDED_COMPLETED_STABILITY_READS')
+             completed=[*PLAN['stability'][:stable_count],PLAN['entry'],PLAN['post']]
+             count=len(completed)
+             need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':2+2*count,
+--- search-entry-01/search_navigation.py
++++ search-entry-02/search_navigation.py
+@@ -22,7 +22,7 @@
+ def plans(spec):
+     need(type(spec) is dict and set(spec)=={'schema','operation','stability','entry','post'} and
+          spec['schema']==1 and spec['operation']=='search_entry' and
+-         type(spec['stability']) is list and len(spec['stability'])==4,
++         type(spec['stability']) is list and len(spec['stability'])==5,
+          'EXACT_BOUNDED_SEARCH_ENTRY_PLAN')
+     rows=[*spec['stability'],spec['entry'],spec['post']]
+     need(all(p['operation']=='inspect' for p in [*spec['stability'],spec['post']]) and
+--- search-entry-01/stage_execute.py
++++ search-entry-02/stage_execute.py
+@@ -6,9 +6,9 @@
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-01')
++ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-02')
+ SOURCE=ROOT/'source'
+-NONCE='853b099b08f0e7a60c3d7b05fcd07461'
++NONCE='d0e92c1920c92a57e7e7d0d915fc1bde'
+ FILES={'owned_inspect.py','amazon_task_context.py','search_navigation.py','INPUTS.json'}
+ REFERENCE=Path('/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+--- search-entry-01/make_request.py
++++ search-entry-02/make_request.py
+@@ -3,11 +3,11 @@
+ import argparse,hashlib,json,os
+ from pathlib import Path
+ HERE=Path(__file__).resolve().parent
+-MANIFEST_SHA='1c6b1f70daaa562236c434bd38c7c95051ff095f8e92571fb09f85123403f567'
+-STAGE_SHA='e0f191fbd7f8901485e65fe47d55d4593fca886bfa51b3bb5cc19f30ae0513b5'
++MANIFEST_SHA='5d75eb9bd3eef99f4e5aa22a1aa39ae154ac714859bc381141bd3c1daf0909a4'
++STAGE_SHA='8a6e30b960483f51a36aead25923674d153c4452b6327fadf0242199406d4eee'
+ STAGE_BYTES=5043
+-NONCE='853b099b08f0e7a60c3d7b05fcd07461'
+-KEY='pocket4-amazon-owned-search-entry-01-20261105'
++NONCE='d0e92c1920c92a57e7e7d0d915fc1bde'
++KEY='pocket4-amazon-owned-search-entry-02-20261105'
+ def main():
+     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--write-once',action='store_true');p.add_argument('--output',type=Path);a=p.parse_args()
+     if not a.write_once:

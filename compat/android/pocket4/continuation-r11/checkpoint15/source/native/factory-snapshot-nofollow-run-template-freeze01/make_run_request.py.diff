@@ -1,0 +1,21 @@
+--- a/ordinary-make_run_request.py
++++ b/nofollow-make_run_request.py
+@@ -7,12 +7,12 @@
+ import json
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT='/run/pocket4-role-authorized-snapshot-host-run-01-20261105'
+-KEY='pocket4-role-authorized-snapshot-host-runtime-01-20261105'
+-SOURCE_MANIFEST='53e90ef34ab51ae8b9700f93419c3c050665fb0ea5a50482417b48aa860497e1'
+-TEMPLATE_SHA='140f94169b2514d586bde30276c2ca63fced58141330a8ac084e916ddc9c1e5d'
+-PLAN_SHA='d79fb33dbf54d7082c6bd70a1f1db12b604853482dd1a1c7ee050e65f5143494'
+-BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorized-snapshot-host-build-01-20261105'
++ROOT='/run/pocket4-snapshot-nofollow-host-run-01-20261105'
++KEY='pocket4-snapshot-nofollow-host-runtime-01-20261105'
++SOURCE_MANIFEST='310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36'
++TEMPLATE_SHA='da701acd4ef1e6778abfd77428d434302db500db0fcb45dd711b5bd0d20fea5c'
++PLAN_SHA='5e50f0ae3bc7a2458e71d30fef0f859c5466f343ebe9c18ffcc0c8f2989b63c8'
++BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105'
+ 
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}

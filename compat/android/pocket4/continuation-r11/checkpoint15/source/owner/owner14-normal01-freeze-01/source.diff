@@ -1,0 +1,54 @@
+--- normal11-01/source/actor.py
++++ normal14-01/source/actor.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One actual producer11 cell inside one inherited, finite private outer unit."""
++"""One actual producer14 cell inside one inherited, finite private outer unit."""
+ import argparse, ctypes, hashlib, json, os, signal, socket, stat, sys, time, traceback, types
+ from pathlib import Path
+ 
+@@ -152,7 +152,7 @@
+ 
+ def run(args, prepared, plan, modules):
+     owned, support, prepare, qualify = (modules[x] for x in ('owned', 'pinned_support', 'prepare', 'qualify'))
+-    result = {'schema': 1, 'kind': 'owner11-real-normal01', 'attempt_nonce': plan['attempt_nonce'],
++    result = {'schema': 1, 'kind': 'owner14-real-normal01', 'attempt_nonce': plan['attempt_nonce'],
+               'success': False, 'production_ready': False, 'installed_owner_qualified': False,
+               'pressure_effect_qualified': False, 'rc_property_reload_qualified': False, 'errors': [],
+               'prepared_sha256': args.prepared_sha256, 'started_monotonic_ns': time.monotonic_ns()}
+--- normal11-01/source/coordinator.py
++++ normal14-01/source/coordinator.py
+@@ -49,9 +49,9 @@
+     state = group_fd = -1; actor = None; fence = None; invocation = None; launched = False; tools = {}
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0, 'external controller requires original host root')
+-        owned.need(plan['unit'] == 'p4-owner11-normal-20261105-01.service' and
+-                   plan['package'] == '/opt/p4-owner11-normal-20261105-01' and
+-                   plan['state'] == '/opt/p4-owner11-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
++        owned.need(plan['unit'] == 'p4-owner14-normal-20261105-01.service' and
++                   plan['package'] == '/opt/p4-owner14-normal-20261105-01' and
++                   plan['state'] == '/opt/p4-owner14-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
+         state = owned.root_directory(plan['state'])
+         owned.need(owned.file_id(state) == prepared['state_identity'], 'prepared state replaced')
+         for name in ('coordinator-claim.json', 'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json'):
+--- normal11-01/source/prepare.py
++++ normal14-01/source/prepare.py
+@@ -117,15 +117,15 @@
+ 
+ 
+ def main(plan, sources):
+-    result = {'schema': 1, 'kind': 'owner11-normal-preparation01', 'success': False,
++    result = {'schema': 1, 'kind': 'owner14-normal-preparation01', 'success': False,
+               'attempt_nonce': plan['attempt_nonce'], 'runtime_executed': False,
+               'namespace_or_network_changed': False, 'production_ready': False, 'errors': []}
+     package_fd = state_fd = data_fd = -1; tools = {}; fence = None
+     try:
+         owned.need(os.geteuid() == os.getuid() == os.getegid() == 0, 'preparation requires original host root')
+         owned.need(len(plan['attempt_nonce']) == 64 and
+-                   plan['scope'] == 'REAL_OWNER_ABI3_RETAINED_CAUSE_FIRST_ACTIVE_ORIGINAL_RETIREMENT' and
+-                   plan['kind'] == 'owned-real-producer11-normal01-retirement-cause01', 'wrong fixed profile')
++                   plan['scope'] == 'REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT' and
++                   plan['kind'] == 'owned-real-producer14-normal01-fixture-repair01', 'wrong fixed profile')
+         owned.need(not Path(plan['package']).exists() and not Path(plan['state']).exists(), 'preparation root already exists')
+         owned.need(support.props(plan['unit']).get('LoadState') == 'not-found', 'owned unit already exists')
+         fence = support.MainFence(plan, vars(support)); result['main_before'] = fence.check()

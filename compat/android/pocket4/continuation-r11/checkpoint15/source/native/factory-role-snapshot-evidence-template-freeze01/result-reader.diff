@@ -1,0 +1,34 @@
+--- a/registry-read-result.py
++++ b/snapshot-read-result.template.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Read one root-owned actual registry run02 result; no files are written."""
++"""Read one fixed root-owned snapshot result, bound only after its actual terminal."""
+ import base64
+ import gzip
+ import hashlib
+@@ -8,10 +8,10 @@
+ import stat
+ import sys
+ 
+-PATH = "/run/pocket4-role-authorization-positive-host-run-02-20261105/run01/result.json"
++PATH = "/run/pocket4-role-authorized-snapshot-host-run-01-20261105/run01/result.json"
+ MAXIMUM = 131072
+-EXPECTED_BYTES = 11715
+-EXPECTED_SHA256 = "bc5c8e59a963828c6c59a8b1cd183e575c8903fbb4efa850369a23666dd1dcd9"
++EXPECTED_BYTES = "PENDING_ACTUAL_RUNTIME_RESULT_BYTES"
++EXPECTED_SHA256 = "PENDING_ACTUAL_RUNTIME_RESULT_SHA256"
+ 
+ 
+ def need(value, message):
+@@ -62,8 +62,8 @@
+              report["held_after"] == report["named_after"] and len(raw) == before.st_size,
+              "original result changed during the held read")
+         need(len(raw) == EXPECTED_BYTES and hashlib.sha256(raw).hexdigest() == EXPECTED_SHA256,
+-             "original registry result differs from the actual terminal pin")
+-        report.update(state="ORIGINAL_REGISTRY_RESULT_READ", bytes=len(raw),
++             "original snapshot result differs from the actual terminal pin")
++        report.update(state="ORIGINAL_SNAPSHOT_RESULT_READ", bytes=len(raw),
+                       sha256=hashlib.sha256(raw).hexdigest(), text=raw.decode("utf-8"),
+                       original_file_modified=False, runtime_admitted=False)
+         code = 0

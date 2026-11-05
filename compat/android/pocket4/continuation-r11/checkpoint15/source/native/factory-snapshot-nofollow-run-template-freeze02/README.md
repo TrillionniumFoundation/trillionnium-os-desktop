@@ -1,0 +1,5 @@
+# NOFOLLOW runtime template 02
+
+Only the first exact artifact-set condition in qualified_build changes from {control} to {control,factory}, matching the existing later two-artifact and disabled-factory gate. The frozen template01 contradiction is retained and deterministically rejects the actual successful build receipt. The actual receipt now passes; deleting either artifact or enabling the factory still rejects. This is a receipt schema correction, not a relaxed production or runtime gate.
+
+All other runner functions, the five-case plan, fixed root/key, kernel reopen/flags/capability requirements, held ELF execution and cleanup remain byte-identical. The request generator changes only its reviewed template SHA. No earlier runtime was dispatched from template01. Actual compile data do not establish CAP_DAC_READ_SEARCH availability, kernel reopening success, five-case runtime, Android, service, or platform qualification. Missing existing capability must surface the original kernel failure; no capability is added.

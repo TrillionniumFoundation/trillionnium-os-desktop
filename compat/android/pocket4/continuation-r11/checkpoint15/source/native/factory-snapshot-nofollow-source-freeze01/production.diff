@@ -1,0 +1,139 @@
+--- /dev/null
++++ b/include/berberis/kernel_api/proc_maps_snapshot_reopen.h
+@@ -0,0 +1,60 @@
++// SPDX-License-Identifier: Apache-2.0
++#ifndef BERBERIS_KERNEL_API_PROC_MAPS_SNAPSHOT_REOPEN_H_
++#define BERBERIS_KERNEL_API_PROC_MAPS_SNAPSHOT_REOPEN_H_
++
++#include <errno.h>
++#include <fcntl.h>
++#include <stddef.h>
++#include <stdint.h>
++#include <sys/syscall.h>
++#include <unistd.h>
++
++namespace droidloom::proc_maps_factory {
++
++// Only the trusted factory's own freshly created, held and sealed memfd may
++// reach this helper. It never accepts a file handle or mount identifier from
++// the peer. Callers retain their complete final inode, seal, tag, offset and
++// exact F_GETFL checks before publication.
++//
++// A proc-fd magic link cannot be opened with O_NOFOLLOW. Reopening the same
++// inode by its kernel-produced handle avoids that lookup and preserves the
++// actual file-status bit. In particular, do not clear the bit or simulate it
++// in a returned status value. Kernel support and the factory's existing
++// CAP_DAC_READ_SEARCH are required; this entry never changes credentials or
++// policy, and propagates failures without a different opening fallback.
++inline int ReopenOwnSnapshotByHandle(int descriptor, int status_flags) {
++  if (!(status_flags & O_NOFOLLOW) ||
++      (status_flags & (O_ACCMODE | O_PATH)) != O_RDONLY) {
++    errno = EINVAL;
++    return -1;
++  }
++#if defined(SYS_name_to_handle_at) && defined(SYS_open_by_handle_at)
++  // Linux struct file_handle ABI, with the fixed MAX_HANDLE_SZ bound. Avoid a
++  // C++ flexible-array extension or relying on a libc struct declaration.
++  struct Handle {
++    uint32_t bytes;
++    int32_t type;
++    unsigned char data[128];
++  } handle{};
++  static_assert(offsetof(Handle, data) == 8 && sizeof(Handle) == 136);
++  handle.bytes = sizeof(handle.data);
++  int mount_id = 0;
++  if (syscall(SYS_name_to_handle_at, static_cast<long>(descriptor), "", &handle,
++              &mount_id, static_cast<unsigned long>(AT_EMPTY_PATH)) < 0) return -1;
++  if (!handle.bytes || handle.bytes > sizeof(handle.data) || handle.type < 0) {
++    errno = EPROTO;
++    return -1;
++  }
++  // The internal shmem mount can have legacy mount_id zero. The same held
++  // descriptor supplies the mount; no mount-table/path reconstruction occurs.
++  return static_cast<int>(syscall(SYS_open_by_handle_at, static_cast<long>(descriptor),
++                                  &handle, static_cast<unsigned long>(
++                                      static_cast<unsigned int>(status_flags | O_CLOEXEC))));
++#else
++  errno = ENOSYS;
++  return -1;
++#endif
++}
++
++}  // namespace droidloom::proc_maps_factory
++#endif  // BERBERIS_KERNEL_API_PROC_MAPS_SNAPSHOT_REOPEN_H_
+--- a/source/role_snapshot.cc
++++ b/source/role_snapshot.cc
+@@ -5,6 +5,7 @@
+ #include "role_snapshot.h"
+ #include "berberis/kernel_api/proc_maps_factory_protocol.h"
+ #include "berberis/kernel_api/proc_maps_linux_compat.h"
++#include "berberis/kernel_api/proc_maps_snapshot_reopen.h"
+ 
+ #include <errno.h>
+ #include <fcntl.h>
+@@ -128,15 +129,20 @@
+   if(!tag_size)return Error(EBADMSG);
+   if(fsetxattr(output.get(),p::kTagName,tag,tag_size,XATTR_CREATE)<0||
+      fchmod(output.get(),0444)<0||fcntl(output.get(),F_ADD_SEALS,p::kRequiredSeals)<0)return -1;
+-  // This is the factory's own held fdtable. Reopen through thread-self and
+-  // verify the resulting object, not /proc/self/fd of a different owner.
+-  Fd directory(open("/proc/thread-self/fd",O_PATH|O_DIRECTORY|O_CLOEXEC));
+-  struct statfs directory_fs{};
+-  if(directory.get()<0||fstatfs(directory.get(),&directory_fs)<0)return -1;
+-  if(static_cast<uint64_t>(directory_fs.f_type)!=PROC_SUPER_MAGIC)return Error(EXDEV);
+-  char number[32];const int n=snprintf(number,sizeof(number),"%d",output.get());
+-  if(n<=0||static_cast<size_t>(n)>=sizeof(number))return Error(EOVERFLOW);
+-  Fd readable(openat(directory.get(),number,source_flags|O_CLOEXEC));
++  Fd readable;
++  if (source_flags & O_NOFOLLOW) {
++    readable.reset(ReopenOwnSnapshotByHandle(output.get(), source_flags));
++  } else {
++    // This is the factory's own held fdtable. Reopen through thread-self and
++    // verify the resulting object, not /proc/self/fd of a different owner.
++    Fd directory(open("/proc/thread-self/fd",O_PATH|O_DIRECTORY|O_CLOEXEC));
++    struct statfs directory_fs{};
++    if(directory.get()<0||fstatfs(directory.get(),&directory_fs)<0)return -1;
++    if(static_cast<uint64_t>(directory_fs.f_type)!=PROC_SUPER_MAGIC)return Error(EXDEV);
++    char number[32];const int n=snprintf(number,sizeof(number),"%d",output.get());
++    if(n<=0||static_cast<size_t>(n)>=sizeof(number))return Error(EOVERFLOW);
++    readable.reset(openat(directory.get(),number,source_flags|O_CLOEXEC));
++  }
+   struct stat final_info{};
+   if(readable.get()<0||fstat(readable.get(),&final_info)<0)return -1;
+   const int final_seals=fcntl(readable.get(),F_GET_SEALS);
+--- a/source/factory_main.cc
++++ b/source/factory_main.cc
+@@ -6,6 +6,7 @@
+ #define _GNU_SOURCE
+ #endif
+ #include "factory_context.h"
++#include "berberis/kernel_api/proc_maps_snapshot_reopen.h"
+ #include "berberis/kernel_api/proc_maps_factory_protocol.h"
+ #include <errno.h>
+ #include <fcntl.h>
+@@ -380,13 +381,18 @@
+      fchmod(output.get(),0444)<0||fcntl(output.get(),F_ADD_SEALS,p::kRequiredSeals)<0)return -1;
+   // This is the factory's own held fdtable. Reopen through thread-self and
+   // verify the resulting object, not /proc/self/fd of a different owner.
+-  Fd directory(open("/proc/thread-self/fd",O_PATH|O_DIRECTORY|O_CLOEXEC));
+-  struct statfs directory_fs{};
+-  if(directory.get()<0||fstatfs(directory.get(),&directory_fs)<0)return -1;
+-  if(static_cast<uint64_t>(directory_fs.f_type)!=PROC_SUPER_MAGIC)return Error(EXDEV);
+-  char number[32];const int n=snprintf(number,sizeof(number),"%d",output.get());
+-  if(n<=0||static_cast<size_t>(n)>=sizeof(number))return Error(EOVERFLOW);
+-  Fd readable(openat(directory.get(),number,source_flags|O_CLOEXEC));
++  Fd readable;
++  if (source_flags & O_NOFOLLOW) {
++    readable.reset(ReopenOwnSnapshotByHandle(output.get(), source_flags));
++  } else {
++    Fd directory(open("/proc/thread-self/fd",O_PATH|O_DIRECTORY|O_CLOEXEC));
++    struct statfs directory_fs{};
++    if(directory.get()<0||fstatfs(directory.get(),&directory_fs)<0)return -1;
++    if(static_cast<uint64_t>(directory_fs.f_type)!=PROC_SUPER_MAGIC)return Error(EXDEV);
++    char number[32];const int n=snprintf(number,sizeof(number),"%d",output.get());
++    if(n<=0||static_cast<size_t>(n)>=sizeof(number))return Error(EOVERFLOW);
++    readable.reset(openat(directory.get(),number,source_flags|O_CLOEXEC));
++  }
+   struct stat final_info{};
+   if(readable.get()<0||fstat(readable.get(),&final_info)<0)return -1;
+   const int final_seals=fcntl(readable.get(),F_GET_SEALS);

@@ -1,0 +1,229 @@
+--- a/qa_contract.py
++++ b/qa_contract.py
+@@ -5,8 +5,8 @@
+ import re
+ import zlib
+ 
+-PROTOCOL = 'pocket4-owned-bili-qa-v5'
+-SELF = 'org.droidloom.qa.bili.r5'
++PROTOCOL = 'pocket4-owned-bili-qa-v6'
++SELF = 'org.droidloom.qa.bili.r6'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'tv.danmaku.bili'
+ UID = 10117
+@@ -81,7 +81,7 @@
+     nonce(value.get('nonce'))
+     op = value.get('op')
+     expected = {'protocol', 'nonce', 'op'}
+-    if op in ('inspect', 'click', 'set_text'):
++    if op in ('inspect', 'click', 'set_text','reveal_controls'):
+         expected.add('scope')
+         scope(value.get('scope'))
+     if op in ('click','set_text'):
+@@ -96,7 +96,12 @@
+         require(isinstance(value.get('node_resource_id'),str) and
+                 re.fullmatch(r'tv\.danmaku\.bili:id/[A-Za-z0-9_]+',value['node_resource_id']) and
+                 len(value['node_resource_id']) <= 256,'EXACT_EDIT_RESOURCE_REQUIRED')
+-    require(op in ('state', 'inspect', 'click', 'set_text') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
++    if op == 'reveal_controls':
++        expected.update(('inspection_nonce','inspection_sha256','player_scope_sha256','viewport_bounds'))
++        require(nonce(value.get('inspection_nonce'))!=value['nonce'],'DISTINCT_REVEAL_NONCE_REQUIRED')
++        digest(value.get('inspection_sha256'));digest(value.get('player_scope_sha256'));reveal_rect(value.get('viewport_bounds'))
++        require(value['scope']['activity']==REVEAL_ACTIVITY,'REVEAL_EXACT_COURSE_ACTIVITY')
++    require(op in ('state', 'inspect', 'click', 'set_text','reveal_controls') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
+     raw = canonical(value)
+     require(0 < len(raw) <= MAX_REQUEST, 'REQUEST_BOUND')
+     return raw
+@@ -164,7 +169,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+@@ -206,6 +211,8 @@
+             require(observed_trees[0]['emitted_nodes'] == len(value['inspection']['nodes']) and
+                     observed_trees[0]['serialized_bytes'] == len(canonical(value['inspection'])),
+                     'COMPLETE_TREE_COUNTERS_MUST_MATCH_ACTUAL_INSPECTION')
++        elif request['op']=='reveal_controls':
++            assess_reveal(value,request,observed_window,observed_trees)
+         else:
+             require(value.get('action_attempted') is True and value.get('outcome_unknown') is True and
+                     value.get('node_action') == ('ACTION_SET_TEXT' if request['op']=='set_text' else 'ACTION_CLICK') and
+@@ -279,6 +286,8 @@
+         result['tree_observations'] = tree_observations(value['tree_observations'],request['op'],complete_required=False)
+     if 'window_observation' in value:
+         result['window_observation'] = window_observation(value['window_observation'],ready_required=False)
++    if request['op']=='reveal_controls' and 'touch' in value:
++        result['touch_observation']=touch_observation(value['touch'],False)
+     return result
+ 
+ 
+@@ -289,7 +298,8 @@
+     if operation=='state':
+         require(value==[],'STATE_CANNOT_ENUMERATE_TREES')
+         return value
+-    expected=['inspection'] if operation=='inspect' else ['action_target','action_final_window']
++    expected=(['inspection'] if operation=='inspect' else ['reveal_target','reveal_final_window','reveal_after']
++              if operation=='reveal_controls' else ['action_target','action_final_window'])
+     require(len(value)<=len(expected),'TREE_CAPTURE_COUNT_BOUND')
+     if complete_required:require(len(value)==len(expected),'COMPLETE_TREE_CAPTURE_SEQUENCE_REQUIRED')
+     keys={'capture','purpose','node_limit','depth_limit','child_limit','json_byte_limit','attempted_nodes',
+@@ -423,10 +433,154 @@
+             'node_resource_id':found[0]['resource_id']}
+ 
+ 
++# This source block is inserted verbatim into the new owned qa_contract.py.
++REVEAL_ACTIVITY=PACKAGE+'/com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity'
++REVEAL_TITLE='7ff99f77d6b59f394c4c6c0ca167aded470663d4cef66215fcce841ed549afba'
++REVEAL_AUTHOR='3355707b07511199c7d280b9a77510b5e9b8698c7c7e4aedcf938805a3822d64'
++
++
++def reveal_rect(value):
++    require(type(value) is list and len(value)==4 and all(type(x) is int and 0<=x<=16384 for x in value)
++            and value[0]<value[2] and value[1]<value[3],'REVEAL_EXACT_POSITIVE_RECTANGLE')
++    return value
++
++
++def player_reveal_scope(inspection,host_scope,require_hidden=True):
++    inspect_record(inspection);scope(host_scope)
++    require(host_scope['activity']==REVEAL_ACTIVITY,'REVEAL_EXACT_COURSE_ACTIVITY')
++    nodes=inspection['nodes'];window=inspection['window']
++    def eligible(n):
++        return n.get('visible') is True and n.get('enabled') is True and n.get('password') is False and n.get('class_truncated') is False and n.get('resource_id_truncated') is False
++    def one(resource,kind,text_hash=None):
++        found=[n for n in nodes if n.get('resource_id')==resource and n.get('class')==kind and eligible(n) and
++               (text_hash is None or (n.get('text_truncated') is False and isinstance(n.get('text'),str) and
++                n.get('text_sha256')==text_hash==sha(n['text'].encode()))) ]
++        require(len(found)==1,'REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED')
++        return found[0]
++    def under(n,parent):return n['path'].startswith(parent['path']+'/')
++    def inside(a,b):
++        reveal_rect(a);reveal_rect(b)
++        return b[0]<=a[0] and a[2]<=b[2] and b[1]<=a[1] and a[3]<=b[3]
++    title=one(PACKAGE+':id/title','android.widget.TextView',REVEAL_TITLE)
++    author=one(PACKAGE+':id/author_name','android.widget.TextView',REVEAL_AUTHOR)
++    area=one(PACKAGE+':id/video_area','android.widget.FrameLayout')
++    container=one(PACKAGE+':id/video_container','android.widget.FrameLayout')
++    overlay=one(PACKAGE+':id/video_area_float_layer_container','android.widget.FrameLayout')
++    toolbar=one(PACKAGE+':id/collapsing_toolbar','android.widget.FrameLayout')
++    full=reveal_rect(area['bounds']);crop=reveal_rect(overlay['bounds'])
++    require(full==container['bounds'] and crop==toolbar['bounds'] and crop!=full and
++            inside(crop,full) and inside(full,window['bounds']) and under(container,area) and under(overlay,area),
++            'REVEAL_ABSOLUTE_PLAYER_GEOMETRY')
++    surfaces=[n for n in nodes if n.get('class') in ('android.view.SurfaceView','android.view.TextureView')]
++    require(len(surfaces)==2 and all(n['class']=='android.view.SurfaceView' and eligible(n) and
++            n['resource_id']=='' and under(n,container) and not under(n,overlay) and not under(n,toolbar)
++            for n in surfaces),'REVEAL_EXACT_TWO_SURFACE_ROLES')
++    area_rows=[n for n in surfaces if n['bounds']==full];crop_rows=[n for n in surfaces if n['bounds']==crop]
++    require(len(area_rows)==len(crop_rows)==1,'REVEAL_EXACT_TWO_SURFACE_ROLES')
++    for n in nodes:
++        if under(n,container) and n['visible'] is True:
++            require(n['password'] is False,'REVEAL_PLAYER_PASSWORD_DESCENDANT')
++            text=n['text']
++            require(isinstance(text,str) and (not text or n['text_truncated'] is False),
++                    'REVEAL_PLAYER_TEXT_COMPLETENESS')
++            require(not text.startswith('Buffering...'),'REVEAL_BUFFERING_PLAYER_REJECTED')
++    if require_hidden:
++        controls=one(PACKAGE+':id/control_container','android.widget.FrameLayout')
++        require(under(controls,container) and type(controls['child_count']) is int and controls['child_count']==0
++                and controls['bounds']==crop,'REVEAL_CURRENT_HIDDEN_CONTROL_CONTAINER')
++        require(all(n.get('clickable') is False and n['class']!='android.widget.SeekBar'
++                    for n in nodes if under(n,area) and n['visible'] is True and n['enabled'] is True),
++                'REVEAL_ALREADY_INTERACTIVE_PLAYER_REJECTED')
++    by_path={n['path']:n for n in nodes};parents=set();render=[]
++    for role,node in (('area-sized',area_rows[0]),('crop-sized',crop_rows[0])):
++        require('/' in node['path'],'REVEAL_SURFACE_PARENT_PATH')
++        parent_path=node['path'].rsplit('/',1)[0];parent=by_path.get(parent_path)
++        require(parent is not None and eligible(parent) and under(parent,container) and
++                parent['class']=='android.widget.FrameLayout' and parent['resource_id']=='' and
++                parent['bounds']==node['bounds'] and parent_path not in parents,
++                'REVEAL_EXACT_DISTINCT_SURFACE_PARENTS')
++        parents.add(parent_path)
++        render.append({'role':role,'node_sha256':node['node_sha256'],
++                       'parent_node_sha256':parent['node_sha256'],'bounds':node['bounds']})
++    fixed=[{'role':role,'path_sha256':sha(node['path'].encode()),'bounds':node['bounds'],
++            'class':node['class'],'resource_id':node['resource_id']}
++           for role,node in (('area',area),('container',container),('overlay',overlay),('toolbar',toolbar))]
++    return {'scope':host_scope,'window':window,'window_sha256':inspection['window_sha256'],
++            'tree_sha256':inspection['tree_sha256'],'viewport_bounds':crop,'full_area_bounds':full,
++            'render_structure_sha256':sha(canonical({'fixed_roles':fixed,'surfaces':render})),
++            'title_text_sha256':title['text_sha256'],'author_text_sha256':author['text_sha256']}
++
++
++def same_reveal_frame(first,second):
++    keys=('scope','window','window_sha256','viewport_bounds','full_area_bounds','render_structure_sha256',
++          'title_text_sha256','author_text_sha256')
++    return all(first[key]==second[key] for key in keys)
++
++
++def reveal_request_fields(inspection,host_scope):
++    proof=player_reveal_scope(inspection,host_scope,True)
++    left,top,right,bottom=proof['viewport_bounds']
++    x=left+(right-left)//2;y=top+(bottom-top)//2
++    require(left+16<x<right-16 and top+16<y<bottom-16,'REVEAL_STRICT_INTERIOR_POINT_REQUIRED')
++    return {'player_scope_sha256':sha(canonical(proof)),'viewport_bounds':proof['viewport_bounds']}
++
++
++def touch_observation(value,success_required):
++    flags={'explicit_public_display_factory','down_attempted','down_acknowledged','up_attempted','up_acknowledged',
++           'cancel_creation_attempted','cancel_attempted','cancel_acknowledged','down_created','up_created','cancel_created',
++           'down_recycled','up_recycled','cancel_recycled','all_created_events_recycled','input_stream_terminated',
++           'atomic_input_target_attribution','business_success_verified'}
++    integers={'display','pointer_count','source','runtime_sdk','down_time_ms','up_admission_elapsed_ms',
++              'finished_time_ms','up_admission_budget_ms'}
++    keys=flags|integers|{'point','primary_error','secondary_errors','controls_revealed'}
++    require(type(value) is dict and set(value)==keys and len(canonical(value))<=8192 and
++            all(type(value[k]) is bool for k in flags) and all(type(value[k]) is int for k in integers),
++            'EXACT_BOUNDED_TOUCH_OBSERVATION')
++    require(value['display']==0 and value['pointer_count']==1 and value['source']==4098 and value['runtime_sdk']>=34 and
++            value['explicit_public_display_factory'] is True and type(value['point']) is list and len(value['point'])==2 and
++            all(type(x) is int and 0<=x<=16384 for x in value['point']) and value['up_admission_budget_ms']==150 and
++            value['atomic_input_target_attribution'] is False and value['controls_revealed'] is None and
++            value['business_success_verified'] is False and isinstance(value['secondary_errors'],list) and
++            all(isinstance(s,str) and len(s)<=160 for s in value['secondary_errors']) and
++            (value['primary_error'] is None or isinstance(value['primary_error'],str)),
++            'EXACT_PUBLIC_SINGLE_POINTER_INPUT_CONTRACT')
++    if success_required:
++        require(all(value[k] is True for k in ('down_attempted','down_acknowledged','up_attempted','up_acknowledged',
++                'down_created','up_created','down_recycled','up_recycled','all_created_events_recycled','input_stream_terminated'))
++                and all(value[k] is False for k in ('cancel_creation_attempted','cancel_attempted','cancel_acknowledged',
++                'cancel_created','cancel_recycled')) and value['primary_error'] is None and value['secondary_errors']==[] and
++                0<=value['up_admission_elapsed_ms']<=150 and 0<=value['down_time_ms']<=value['finished_time_ms'],
++                'ACTUAL_COMPLETE_DOWN_UP_AND_EVENT_CLEANUP_REQUIRED')
++    return value
++
++
++def assess_reveal(value,request,observed_window,observed_trees):
++    require(value.get('action_attempted') is True and value.get('outcome_unknown') is True and
++            value.get('inspection_nonce')==request['inspection_nonce'] and value.get('inspection_sha256')==request['inspection_sha256'] and
++            value.get('player_scope_sha256')==request['player_scope_sha256'] and value.get('strict_interior_margin_px')==16,
++            'REVEAL_CURRENT_REQUEST_BINDING_REQUIRED')
++    proof=value.get('player_scope')
++    require(type(proof) is dict and sha(canonical(proof))==request['player_scope_sha256'] and
++            proof['scope']==request['scope'] and proof['viewport_bounds']==request['viewport_bounds'] and
++            value.get('action_window')==proof['window'],'REVEAL_PLAYER_PROOF_BINDING_REQUIRED')
++    touch=touch_observation(value.get('touch'),True)
++    left,top,right,bottom=reveal_rect(request['viewport_bounds'])
++    require(touch['point']==[left+(right-left)//2,top+(bottom-top)//2] and
++            left+16<touch['point'][0]<right-16 and top+16<touch['point'][1]<bottom-16,
++            'REVEAL_EXACT_STRICT_INTERIOR_POINT')
++    after=inspect_record(value.get('post_inspection'));after_proof=player_reveal_scope(after,request['scope'],False)
++    require(value.get('post_player_scope')==after_proof and same_reveal_frame(proof,after_proof) and
++            value.get('scope_unchanged_after_input') is True and value.get('requires_independent_controls_readback') is True and
++            observed_window['selected_window_id']==value.get('connection_scoped_window_id')==after['connection_scoped_window_id'] and
++            observed_trees[2]['emitted_nodes']==len(after['nodes']) and
++            observed_trees[2]['serialized_bytes']==len(canonical(after)),
++            'REVEAL_ACTUAL_COMPLETE_POST_INPUT_ABSOLUTE_SCOPE_REQUIRED')
++
++
+ def assess_restoration(before, operation, after):
+     """These inputs must be parse_completed returns from three joined commands."""
+     first, middle, last = before['helper'], operation['helper'], after['helper']
+-    require(first['op'] == last['op'] == 'state' and middle['op'] in ('inspect','click','set_text'), 'STATE_OPERATION_STATE_SEQUENCE_REQUIRED')
++    require(first['op'] == last['op'] == 'state' and middle['op'] in ('inspect','click','set_text','reveal_controls'), 'STATE_OPERATION_STATE_SEQUENCE_REQUIRED')
+     require(len({first['nonce'], middle['nonce'], last['nonce']}) == 3, 'DISTINCT_PHASE_NONCES_REQUIRED')
+     require(first['self_uid'] == middle['self_uid'] == last['self_uid'], 'HELPER_UID_CHANGED')
+     require(first['state'] == middle['accessibility_state_before_connection'] == last['state'] and

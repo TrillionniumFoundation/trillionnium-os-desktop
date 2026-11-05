@@ -1,0 +1,100 @@
+--- first-launch-inspect/INPUTS.json
++++ fresh-search-entry/INPUTS.json
+@@ -41,15 +41,16 @@
+     "signer_bound_by_exact_signed_apk_bytes": "1f63759487a0b04e8da9b4088c11dbac8140bf63cb2d64d91460e2525924f424",
+     "uid": 10175
+   },
+-  "nonce": "71222d708e933c9afc2472cc1565646a",
+-  "read_only_inspection_plan": {
+-    "nonces": {
+-      "after": "d1f1b84e1886c731ab7973761ad21339",
+-      "before": "613364012ce3dec91277c652147731f7",
+-      "inspect": "14b06ed19ee0a0272b34d611869288ac"
+-    },
+-    "operation": "inspect",
+-    "schema": 1
++  "nonce": "853b099b08f0e7a60c3d7b05fcd07461",
++  "observed_selector_reference": {
++    "actual_assessment_sha256": "29d6a9fc5951cb7c9a1fa4e2a5e9b991ee424cfb9aebcfdad8f780cdcf522ac5",
++    "actual_inspect_result_sha256": "e81b411f3e92d5d5064010f8879bb66662faddc133354c43ae9cc1bdf0e78011",
++    "first_flow_source_manifest_sha256": "8c6d466e8e75dd4b2261205f61d72848dd6e9bf4b415f798272aba75a29152fb",
++    "private_source_bytes": 67119,
++    "private_source_sha256": "7ede8758b2f44c31b213c986210f8c1251437ef656749a5d4abaa11c3549fe2e",
++    "raw_UI_in_source": false,
++    "raw_retired_nodes_authorize_actions": false,
++    "selector_scope": "Public search-entry resource/class/functional Search label only; reselected from action-bound fresh complete inspection"
+   },
+   "resolver_records": {
+     "stage": {
+@@ -64,5 +65,71 @@
+     }
+   },
+   "schema": 1,
++  "search_entry_plan": {
++    "entry": {
++      "nonces": {
++        "action": "bcddd26f2559ec5d7947c32197505f8d",
++        "after": "a03bea48d6c009d8d2713d91e40b217f",
++        "before": "e78e5f01904401a610fa9c764000938a",
++        "inspect": "58f0306d92412784867f2dbd71d38758"
++      },
++      "operation": "click",
++      "schema": 1,
++      "selector": {
++        "class": "android.widget.ImageButton",
++        "content_desc": "Search",
++        "resource_id": "com.amazon.mShop.android.shopping:id/chrome_search_box"
++      }
++    },
++    "operation": "search_entry",
++    "post": {
++      "nonces": {
++        "after": "c1ce224c47bde845e44c753072332eda",
++        "before": "dead46cae6a4d45ebfb763a42921f5a4",
++        "inspect": "6594bc1e6399d81527e36798aa504af4"
++      },
++      "operation": "inspect",
++      "schema": 1
++    },
++    "schema": 1,
++    "stability": [
++      {
++        "nonces": {
++          "after": "06fb488ce50de2daf2334c17fe42fd41",
++          "before": "956831cdddbb256149b0ad20dad4f062",
++          "inspect": "a8a6302fa2b10d608a2eb8efc0a82bab"
++        },
++        "operation": "inspect",
++        "schema": 1
++      },
++      {
++        "nonces": {
++          "after": "88bab24e9fc6c94f8d386537dd8a04cd",
++          "before": "6afad278ba5021af033a9f03043b28e8",
++          "inspect": "2160e26d458d7527dd35683f19ad9220"
++        },
++        "operation": "inspect",
++        "schema": 1
++      },
++      {
++        "nonces": {
++          "after": "ddbf4d2e18b4731f017789957894c6ca",
++          "before": "58ef8a06eb60280fea239d7d55860feb",
++          "inspect": "ee1cde2354b22277ab68400aeb30d661"
++        },
++        "operation": "inspect",
++        "schema": 1
++      },
++      {
++        "nonces": {
++          "after": "ce53e002f28cd3a8439ad90786f86938",
++          "before": "de8705b550190f0d9e825aa33f21e20c",
++          "inspect": "354754889c0c5fcf3318c12cd082df4a"
++        },
++        "operation": "inspect",
++        "schema": 1
++      }
++    ]
++  },
+   "target_artifact_reference_sha256": "f29fdd340a095b4686b27b5424b7651b0eb5a237b9fb123adb8b9f0d8ad46e35"
+ }

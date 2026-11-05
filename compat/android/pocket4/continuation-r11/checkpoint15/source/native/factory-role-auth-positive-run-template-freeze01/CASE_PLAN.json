@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "scope": "owned kernel identity / one-grant mechanism only",
+  "cases": [
+    {
+      "index": 0,
+      "name": "one_grant_create_release_tombstone",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 1,
+      "name": "same_pidfd_caller_suspend_attach",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 2,
+      "name": "fork_token_rejected_parent_reattaches",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 3,
+      "name": "unexpected_active_hup_tombstone",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 4,
+      "name": "pending_hup_tombstone",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 5,
+      "name": "pre_detach_hup_tombstone",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 6,
+      "name": "suspended_capability_loss_revokes",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 7,
+      "name": "wrong_fork_return_pid_then_exact_parent",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 8,
+      "name": "duplicate_root_approval_rejected",
+      "expected_state": "PASS"
+    },
+    {
+      "index": 9,
+      "name": "pending_deadline_tombstone",
+      "expected_state": "PASS"
+    }
+  ],
+  "direct_children_expected": 10,
+  "nested_children_expected": 1,
+  "factory_service_started": false,
+  "platform_policy_qualified": false,
+  "snapshot_created": false,
+  "Main_actions": 0,
+  "production_source_manifest_sha256": "d400255a4318ec5856692254cff062280021aeea5bf80662eb939a00d7586aa2"
+}

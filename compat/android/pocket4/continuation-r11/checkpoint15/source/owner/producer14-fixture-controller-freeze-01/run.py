@@ -1,0 +1,770 @@
+from pathlib import Path
+import datetime
+import hashlib
+import json
+import os
+import re
+import signal
+import stat
+import subprocess
+import time
+import traceback
+
+CONTROL_REVISION = 'producer14-retirement-fixture-repair01'
+BASE = Path('/home/alex/work/pocket4-supervisor-lmkd-drain-r11-build-13-01')
+SOURCE = BASE / "candidate"
+OUT = Path('/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01')
+CANDIDATE = OUT / "candidate"
+TARGET = OUT / "target"
+CARGO = "/home/alex/.cargo/bin/cargo"
+PRIOR_RECEIPT = BASE / "compile-result.json"
+PRIOR_RECEIPT_SHA = '9a2cf0087ff99b6834fc2b3a963e03629a14acc21af1a8d67f2b5081bbb22e8e'
+PRIOR_INVENTORY_SHA = 'bbd03d6760a2ab9e584d8ea3cfc84a8804b4ec0f144742f0e1a51e9f46d061a1'
+ORIGINAL_DIFF_SHA = '2af0e86d25b4288c5426037d532d95cdda99076afeeefe40f62d45356df21f43'
+EXACT_OVERLAY = {
+    'runtime/droidloom-pressure-relay/src/lib.rs': (51658, '102456cf0a4754cf04c1f35fbf3c5b0f68b2edea981e21528f5b5e33fe58e9d8'),
+    'runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs': (86381, '08ffa252cf726c1aa54699918ec5152a2ef5cc8c60277b3ab67225556006e0d1'),
+}
+NEW_SOURCE_FILES = set()
+BINARIES = ["droidloomd", "droidloom-supervisor", "droidloom-psi-owner", "owned-ipc-controls"]
+EXPECTED_TEST_TARGETS = {
+    ("droidloom_pressure_relay", "lib"),
+    ("droidloom_supervisor", "lib"),
+}
+SOURCE_LIMIT = 128 * 1024 * 1024
+LOG_LIMIT = 8 * 1024 * 1024
+
+def need(condition, reason):
+    if not condition:
+        raise RuntimeError(reason)
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+def now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+def json_bytes(value):
+    return (json.dumps(value, indent=2, sort_keys=True) + "\n").encode("utf-8")
+
+def stamp(st):
+    return [st.st_dev, st.st_ino, st.st_mode, st.st_size, st.st_mtime_ns, st.st_ctime_ns]
+
+def read_regular(path, maximum):
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        before = os.fstat(fd)
+        need(stat.S_ISREG(before.st_mode) and before.st_size <= maximum,
+             "not a bounded regular file: " + str(path))
+        parts = []
+        length = 0
+        while True:
+            block = os.read(fd, min(65536, maximum + 1 - length))
+            if not block:
+                break
+            parts.append(block)
+            length += len(block)
+            need(length <= maximum, "file exceeded read bound: " + str(path))
+        after = os.fstat(fd)
+        need(stamp(before) == stamp(after) and length == before.st_size,
+             "file changed during held read: " + str(path))
+        return b"".join(parts)
+    finally:
+        os.close(fd)
+
+def file_pin(path, maximum=256 * 1024 * 1024, require_elf=False):
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        before = os.fstat(fd)
+        need(stat.S_ISREG(before.st_mode) and before.st_size <= maximum,
+             "artifact is not a bounded regular file: " + str(path))
+        h = hashlib.sha256()
+        size = 0
+        first = b""
+        while True:
+            block = os.read(fd, 65536)
+            if not block:
+                break
+            if not first:
+                first = block[:4]
+            size += len(block)
+            need(size <= maximum, "artifact exceeded bound")
+            h.update(block)
+        need(stamp(before) == stamp(os.fstat(fd)) and size == before.st_size,
+             "artifact changed during held hashing")
+        if require_elf:
+            need(first == b"\x7fELF" and before.st_mode & 0o111,
+                 "compiled artifact is not an executable ELF")
+        return {"path": str(path), "bytes": size, "sha256": h.hexdigest(),
+                "device": before.st_dev, "inode": before.st_ino,
+                "mode": stat.S_IMODE(before.st_mode)}
+    finally:
+        os.close(fd)
+
+def put(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL |
+                 os.O_NOFOLLOW | os.O_CLOEXEC, 0o600)
+    with os.fdopen(fd, "wb") as stream:
+        stream.write(data)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+def all_source(root):
+    # Same serialized inventory as actual producer05 build-template.py.
+    # The bounded regular-file reader adds held-open race rejection only.
+    rows = []
+    total = 0
+    for path in sorted(root.rglob("*")):
+        st = path.lstat()
+        name = path.relative_to(root).as_posix()
+        if stat.S_ISDIR(st.st_mode):
+            continue
+        if stat.S_ISREG(st.st_mode):
+            data = read_regular(path, SOURCE_LIMIT)
+            rows.append({"path": name, "bytes": st.st_size, "sha256": sha(data)})
+            total += len(data)
+        elif stat.S_ISLNK(st.st_mode):
+            rows.append({"path": name, "symlink": os.readlink(path)})
+        else:
+            raise RuntimeError("unexpected non-source inode " + name)
+        need(len(rows) <= 4096 and total <= 256 * 1024 * 1024,
+             "complete source inventory bound exceeded")
+    return json_bytes(rows)
+
+def plain_input_path(root, name, *, must_be_absent=False):
+    need(not name.startswith("/") and ".." not in Path(name).parts,
+         "invalid input relative path")
+    need(root.resolve(strict=True) == root, "source root is not a plain absolute directory")
+    current = root
+    parts = Path(name).parts
+    for part in parts[:-1]:
+        current = current / part
+        need(stat.S_ISDIR(current.lstat().st_mode), "source parent is not a real directory")
+    destination = root / name
+    if must_be_absent:
+        need(name in NEW_SOURCE_FILES, "only the frozen new module may be created")
+        try:
+            destination.lstat()
+        except FileNotFoundError:
+            pass
+        else:
+            raise RuntimeError("new source module already exists")
+    else:
+        need(stat.S_ISREG(destination.lstat().st_mode),
+             "source input is not a real regular file")
+    return destination
+
+def inputs(root, expected):
+    result = {}
+    for name in sorted(expected):
+        need(not name.startswith("/") and ".." not in Path(name).parts,
+             "invalid input relative path")
+        data = read_regular(plain_input_path(root, name), SOURCE_LIMIT)
+        result[name] = {"bytes": len(data), "sha256": sha(data)}
+    need(result == expected, "exact source input pins differ")
+    return result
+
+def command_env(target):
+    env = dict(os.environ)
+    for key in list(env):
+        if key in {"RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTFLAGS",
+                   "CARGO_ENCODED_RUSTFLAGS", "RUSTDOCFLAGS", "RUSTDOC",
+                   "RUSTC", "CARGO_TARGET_DIR"}:
+            env.pop(key, None)
+    env.update(CARGO_BUILD_JOBS="1", CARGO_INCREMENTAL="0",
+               CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_TEST_DEBUG="0",
+               RUST_TEST_THREADS="1", CARGO_TARGET_DIR=str(target),
+               CARGO_HOME="/home/alex/.cargo", RUSTUP_HOME="/home/alex/.rustup")
+    return env
+
+def run_command(report, directory, argv, cwd, env, timeout, pass_fds=()):
+    index = len(report["commands"])
+    stdout_path = directory / ("command-%02d.stdout" % index)
+    stderr_path = directory / ("command-%02d.stderr" % index)
+    row = {"argv": argv, "cwd": str(cwd), "started_at": now(),
+           "timeout_seconds": timeout, "timed_out": False,
+           "returncode": None, "stdout_path": str(stdout_path),
+           "stderr_path": str(stderr_path)}
+    report["commands"].append(row)
+    with open(stdout_path, "xb") as stdout, open(stderr_path, "xb") as stderr:
+        process = subprocess.Popen(argv, cwd=cwd, env=env,
+                                   stdin=subprocess.DEVNULL, stdout=stdout,
+                                   stderr=stderr, start_new_session=True,
+                                   pass_fds=pass_fds)
+        row["exact_child_pid"] = process.pid
+        try:
+            row["returncode"] = process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            row["timed_out"] = True
+            # The direct child has not been reaped, so its numeric process
+            # group cannot be recycled while these two group signals run.
+            # Do not poll/wait between TERM and KILL.
+            try:
+                os.killpg(process.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass
+            time.sleep(0.2)
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            row["returncode"] = process.wait(timeout=5)
+        finally:
+            stdout.flush()
+            stderr.flush()
+    row["finished_at"] = now()
+    row["stdout_pin"] = file_pin(stdout_path, maximum=64 * 1024 * 1024)
+    row["stderr_pin"] = file_pin(stderr_path, maximum=64 * 1024 * 1024)
+    out = read_regular(stdout_path, LOG_LIMIT)
+    err = read_regular(stderr_path, LOG_LIMIT)
+    row["stdout_excerpt"] = out[-4096:].decode("utf-8", errors="replace")
+    row["stderr_excerpt"] = err[-4096:].decode("utf-8", errors="replace")
+    need(not row["timed_out"] and row["returncode"] == 0,
+         "command failed or timed out: " + str(index))
+    return out, err
+
+def validate_config(cfg):
+    need(set(cfg) == {"schema", "revision", "preimage", "overlays",
+                     "original_diff_sha256", "source_manifest_sha256"},
+         "unexpected recovery payload fields")
+    need(cfg["schema"] == 1 and cfg["revision"] == CONTROL_REVISION,
+         "wrong recovery payload revision")
+    need(cfg["original_diff_sha256"] == ORIGINAL_DIFF_SHA and
+         cfg["source_manifest_sha256"] ==
+         "6ae91802b992dba1d48c725e99e51a7daade464f4c5006f78575050f759bcccb",
+         "wrong recovered source lineage")
+    need(len(cfg["preimage"]) == 32 and
+         set(cfg["overlays"]) == set(EXACT_OVERLAY) and
+         set(cfg["overlays"]) - set(cfg["preimage"]) == NEW_SOURCE_FILES and
+         len(set(cfg["preimage"]) | set(cfg["overlays"])) == 32, "wrong input/overlay set")
+    for name, (size, digest) in EXACT_OVERLAY.items():
+        row = cfg["overlays"][name]
+        data = row["text"].encode("utf-8")
+        need(set(row) == {"text", "bytes", "sha256"} and
+             row["bytes"] == size and len(data) == size and
+             row["sha256"] == digest and sha(data) == digest,
+             "overlay does not match original frozen source: " + name)
+    return cfg
+
+def candidate_input_pins(cfg):
+    result = dict(cfg["preimage"])
+    for name, row in cfg["overlays"].items():
+        result[name] = {"bytes": row["bytes"], "sha256": row["sha256"]}
+    return result
+
+"""Read-only health gate for the controller's exact, held cgroup v2 domain.
+
+This source is inlined unchanged into both recovery03 controllers. It never
+writes a cgroup file. Its final observation precedes receipt publication; the
+caller still needs the durable outer job terminal to qualify the whole unit.
+"""
+import ctypes
+import os
+import re
+import stat
+import time
+import traceback
+
+_RESOURCE_CGROUP2_MAGIC = 0x63677270
+_RESOURCE_BAD_EVENTS = ("max", "oom", "oom_kill", "oom_group_kill")
+_RESOURCE_LIMIT_NAMES = ("memory.max", "memory.high", "memory.swap.max",
+                         "cpu.max", "pids.max")
+_RESOURCE_NS_NAMES = ("mnt", "cgroup")
+
+
+def _resource_need(condition, message):
+    if not condition:
+        raise RuntimeError("own resource gate: " + message)
+
+
+def _resource_uint(text):
+    _resource_need(re.fullmatch(r"[0-9]+", text) is not None,
+                   "counter is not an unsigned decimal")
+    value = int(text)
+    _resource_need(value <= (1 << 64) - 1, "counter overflow")
+    return value
+
+
+def _resource_limit(text):
+    return "max" if text == "max" else _resource_uint(text)
+
+
+def _resource_counters(text):
+    result = {}
+    for line in text.splitlines():
+        fields = line.split()
+        _resource_need(len(fields) == 2 and fields[0] not in result,
+                       "malformed or repeated counter")
+        _resource_need(re.fullmatch(r"[a-z_]+", fields[0]) is not None,
+                       "invalid counter name")
+        result[fields[0]] = _resource_uint(fields[1])
+    _resource_need(bool(result), "empty counter record")
+    return result
+
+
+def _resource_membership(text):
+    _resource_need(text.endswith("\n") and text.count("\n") == 1 and
+                   text.startswith("0::/"), "not one unified cgroup membership")
+    relative = text[4:-1]
+    parts = relative.split("/")
+    _resource_need(bool(relative) and all(part not in ("", ".", "..")
+                                        for part in parts),
+                   "root or noncanonical cgroup membership")
+    return relative
+
+
+def _resource_identity(fd):
+    value = os.fstat(fd)
+    _resource_need(stat.S_ISDIR(value.st_mode), "held resource object is not a directory")
+    return [value.st_dev, value.st_ino]
+
+
+def _resource_fstype(fd):
+    library = ctypes.CDLL(None, use_errno=True)
+    function = library.fstatfs
+    function.argtypes = [ctypes.c_int, ctypes.c_void_p]
+    function.restype = ctypes.c_int
+    buffer = ctypes.create_string_buffer(256)
+    if function(fd, ctypes.byref(buffer)) != 0:
+        raise OSError(ctypes.get_errno(), "fstatfs own cgroup")
+    return ctypes.c_long.from_buffer(buffer).value
+
+
+def _resource_open_descendant(root_fd, relative):
+    # This helper never resolves a slash-containing name through an ambient
+    # pathname. In particular a replaced/symlink component is not followed.
+    parts = relative.split("/")
+    _resource_need(bool(relative) and all(part not in ("", ".", "..")
+                                        for part in parts), "invalid descendant")
+    current = os.dup(root_fd)
+    try:
+        for part in parts:
+            child = os.open(part, os.O_RDONLY | os.O_DIRECTORY |
+                            os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=current)
+            os.close(current)
+            current = child
+        return current
+    except BaseException:
+        os.close(current)
+        raise
+
+
+def _resource_read_at(directory, name, maximum=32768):
+    _resource_need("/" not in name and name not in ("", ".", ".."),
+                   "invalid fixed resource filename")
+    fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                 dir_fd=directory)
+    try:
+        _resource_need(stat.S_ISREG(os.fstat(fd).st_mode),
+                       "resource attribute is not a regular virtual file")
+        data = bytearray()
+        while True:
+            part = os.read(fd, min(4096, maximum + 1 - len(data)))
+            if not part:
+                break
+            data.extend(part)
+            _resource_need(len(data) <= maximum, "resource attribute exceeds bound")
+        return bytes(data).decode("ascii", errors="strict").strip()
+    finally:
+        os.close(fd)
+
+
+def _resource_self_membership():
+    with open("/proc/self/cgroup", "rt", encoding="ascii") as stream:
+        text = stream.read(4097)
+    _resource_need(len(text) <= 4096, "membership read exceeds bound")
+    return text, _resource_membership(text)
+
+
+def _resource_namespaces():
+    result = {}
+    for name in _RESOURCE_NS_NAMES:
+        value = os.stat("/proc/self/ns/" + name)
+        result[name] = [value.st_dev, value.st_ino]
+    return result
+
+
+def _resource_validate_snapshot(snapshot, expected_memory):
+    limits = snapshot["limits"]
+    _resource_need(limits["memory.max"] == expected_memory,
+                   "actual memory.max differs from admitted request")
+    quota, period = limits["cpu.max"]
+    _resource_need(isinstance(quota, int) and quota == period and period > 0,
+                   "actual CPU quota is not one CPU")
+    events = snapshot["memory_events"]
+    _resource_need(all(key in events for key in ("max", "oom", "oom_kill")),
+                   "required memory event counters absent")
+    _resource_need(snapshot["memory_current"] <= expected_memory and
+                   snapshot["memory_peak"] <= expected_memory,
+                   "observed memory current/peak exceeds admitted limit")
+
+
+def _resource_qualify(before, after, expected_memory):
+    _resource_validate_snapshot(before, expected_memory)
+    _resource_validate_snapshot(after, expected_memory)
+    for name in ("pid", "cgroup_identity", "mount_identity", "membership",
+                 "namespaces", "limits"):
+        _resource_need(before[name] == after[name], name + " changed")
+    _resource_need(before["started_monotonic_ns"] <= before["completed_monotonic_ns"] <=
+                   after["started_monotonic_ns"] <= after["completed_monotonic_ns"],
+                   "resource sample clock/order changed")
+    _resource_need(after["memory_peak"] >= before["memory_peak"],
+                   "memory.peak was reset")
+    old_events = before["memory_events"]
+    new_events = after["memory_events"]
+    _resource_need(set(old_events) == set(new_events), "memory counter set changed")
+    delta = {}
+    for key in old_events:
+        _resource_need(new_events[key] >= old_events[key], "memory counter decreased")
+        delta[key] = new_events[key] - old_events[key]
+    for key in _RESOURCE_BAD_EVENTS:
+        _resource_need(old_events.get(key, 0) == 0 and new_events.get(key, 0) == 0,
+                       "memory limit/OOM event observed: " + key)
+    return delta
+
+
+class OwnJobResources:
+    def __init__(self, expected_memory):
+        _resource_need(expected_memory in (1073741824, 536870912),
+                       "unexpected compile/control memory budget")
+        self.expected_memory = expected_memory
+        self.root_fd = None
+        self.fd = None
+        self.identity = None
+        self.mount_identity = None
+        self.membership = None
+        self.namespaces = None
+        self.pid = os.getpid()
+        self.begin_passed = False
+        self.record = {
+            "schema": 1, "held_own_cgroup_gate_passed": False,
+            "expected_memory_max": expected_memory, "expected_cpu_count": 1,
+            "cgroup_files_written": False,
+            "swap_zero_claimed": False,
+            "whole_invocation_resource_qualified": False,
+            "scope": "held own cgroup until final pre-receipt sample; durable outer terminal remains required",
+        }
+
+    def begin(self):
+        _resource_need(self.fd is None and not self.begin_passed, "resource begin replay")
+        self.membership, relative = _resource_self_membership()
+        self.namespaces = _resource_namespaces()
+        self.root_fd = os.open("/sys/fs/cgroup", os.O_RDONLY | os.O_DIRECTORY |
+                               os.O_NOFOLLOW | os.O_CLOEXEC)
+        _resource_need(_resource_fstype(self.root_fd) == _RESOURCE_CGROUP2_MAGIC,
+                       "mount root is not cgroup v2")
+        self.mount_identity = _resource_identity(self.root_fd)
+        self.fd = _resource_open_descendant(self.root_fd, relative)
+        _resource_need(_resource_fstype(self.fd) == _RESOURCE_CGROUP2_MAGIC,
+                       "held domain is not cgroup v2")
+        self.identity = _resource_identity(self.fd)
+        before = self.sample()
+        self.record["before"] = before
+        _resource_validate_snapshot(before, self.expected_memory)
+        for key in _RESOURCE_BAD_EVENTS:
+            _resource_need(before["memory_events"].get(key, 0) == 0,
+                           "nonzero initial memory limit/OOM counter: " + key)
+        self.begin_passed = True
+
+    def sample(self):
+        _resource_need(self.fd is not None and self.root_fd is not None,
+                       "no retained resource domain")
+        started = time.monotonic_ns()
+        _resource_need(os.getpid() == self.pid and
+                       _resource_identity(self.fd) == self.identity and
+                       _resource_identity(self.root_fd) == self.mount_identity,
+                       "held resource/process identity changed")
+        membership, _ = _resource_self_membership()
+        namespaces = _resource_namespaces()
+        _resource_need(membership == self.membership and namespaces == self.namespaces,
+                       "controller moved domain or namespace")
+        limits = {name: _resource_limit(_resource_read_at(self.fd, name))
+                  for name in _RESOURCE_LIMIT_NAMES if name != "cpu.max"}
+        cpu = _resource_read_at(self.fd, "cpu.max").split()
+        _resource_need(len(cpu) == 2, "malformed cpu.max")
+        limits["cpu.max"] = [_resource_limit(cpu[0]), _resource_uint(cpu[1])]
+        procs = [_resource_uint(line) for line in
+                 _resource_read_at(self.fd, "cgroup.procs").splitlines()]
+        _resource_need(self.pid in procs and len(procs) == len(set(procs)),
+                       "held domain does not contain the controller")
+        current = _resource_uint(_resource_read_at(self.fd, "memory.current"))
+        swap_current = _resource_uint(_resource_read_at(self.fd, "memory.swap.current"))
+        try:
+            swap_peak = _resource_uint(_resource_read_at(self.fd, "memory.swap.peak"))
+        except FileNotFoundError:
+            swap_peak = None
+        pids = _resource_uint(_resource_read_at(self.fd, "pids.current"))
+        domain_events = _resource_counters(_resource_read_at(self.fd, "cgroup.events"))
+        # Event counters are the final attribute read, after the peak/current
+        # observations. This is an interval sample, not an atomic snapshot.
+        peak = _resource_uint(_resource_read_at(self.fd, "memory.peak"))
+        events = _resource_counters(_resource_read_at(self.fd, "memory.events"))
+        final_membership, _ = _resource_self_membership()
+        _resource_need(final_membership == self.membership and
+                       _resource_namespaces() == self.namespaces and
+                       _resource_identity(self.fd) == self.identity,
+                       "resource scope changed during sample")
+        return {
+            "pid": self.pid, "cgroup_identity": self.identity,
+            "mount_identity": self.mount_identity, "membership": membership,
+            "namespaces": namespaces, "limits": limits,
+            "memory_current": current, "memory_peak": peak,
+            "memory_swap_current": swap_current, "memory_swap_peak": swap_peak,
+            "memory_events": events, "cgroup_events": domain_events,
+            "pids_current": pids, "direct_cgroup_procs": procs,
+            "started_monotonic_ns": started,
+            "completed_monotonic_ns": time.monotonic_ns(),
+        }
+
+    def finish(self):
+        after = self.sample()
+        self.record["after"] = after
+        _resource_need(self.begin_passed and "before" in self.record,
+                       "initial resource gate did not pass")
+        self.record["memory_event_delta"] = _resource_qualify(
+            self.record["before"], after, self.expected_memory)
+        self.record["held_own_cgroup_gate_passed"] = True
+
+    def close(self):
+        first_error = None
+        for attribute in ("fd", "root_fd"):
+            fd = getattr(self, attribute)
+            if fd is not None:
+                setattr(self, attribute, None)
+                try:
+                    os.close(fd)
+                except OSError as error:
+                    if first_error is None:
+                        first_error = error
+        if first_error is not None:
+            raise first_error
+
+
+def _resource_record_error(report, resources, error):
+    report["success"] = False
+    resources.record["held_own_cgroup_gate_passed"] = False
+    detail = type(error).__name__ + ": " + str(error)
+    report.setdefault("resource_gate_errors", []).append(detail)
+    if "error" not in report:
+        report["error"] = detail
+        report["traceback"] = traceback.format_exc()
+
+
+def finish_own_resource_gate(report, resources):
+    try:
+        resources.finish()
+    except Exception as error:
+        # A compile/test failure remains the primary error. A later collection
+        # problem cannot erase it or become an apparent cleanup success.
+        _resource_record_error(report, resources, error)
+    finally:
+        try:
+            resources.close()
+        except Exception as error:
+            _resource_record_error(report, resources, error)
+
+
+import sys
+
+TARGETED_TESTS = [
+    "lifecycle_bootstrap::tests::producer05_three_second_retirement_is_rejected_before_transport",
+    "lifecycle_bootstrap::tests::shared_retirement_bound_sends_exact_request_and_receives_terminal_ack",
+]
+
+def fd_digest(fd, expected):
+    before = os.fstat(fd)
+    need(stat.S_ISREG(before.st_mode) and
+         before.st_dev == expected["device"] and
+         before.st_ino == expected["inode"] and
+         before.st_size == expected["bytes"] and
+         stat.S_IMODE(before.st_mode) == expected["mode"] and
+         before.st_mode & 0o111,
+         "held ELF identity differs from actual compile receipt")
+    need(before.st_size <= 256 * 1024 * 1024, "ELF bound exceeded")
+    offset = 0
+    h = hashlib.sha256()
+    while offset < before.st_size:
+        block = os.pread(fd, min(65536, before.st_size - offset), offset)
+        need(bool(block), "short held ELF read")
+        if offset == 0:
+            need(block.startswith(b"\x7fELF"), "held input is not ELF")
+        offset += len(block)
+        h.update(block)
+    need(stamp(before) == stamp(os.fstat(fd)) and h.hexdigest() == expected["sha256"],
+         "held ELF bytes changed or differ from actual compile receipt")
+    return stamp(before)
+
+def test_summary(out, expected_passed, expected_filtered):
+    text = out.decode("utf-8")
+    found = re.findall(
+        r"^test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored; "
+        r"(\d+) measured; (\d+) filtered out;", text, re.M)
+    need(len(found) == 1, "exact test binary summary missing or repeated")
+    state, passed, failed, ignored, measured, filtered = found[0]
+    need(state == "ok" and int(passed) == expected_passed and
+         int(failed) == 0 and int(ignored) == 0 and int(measured) == 0 and
+         int(filtered) == expected_filtered, "test count/status mismatch")
+    return {"passed": int(passed), "failed": 0, "ignored": 0,
+            "measured": 0, "filtered_out": int(filtered)}
+
+def ordinary_recovery(external_sha):
+    need(re.fullmatch(r"[0-9a-f]{64}", external_sha) is not None,
+         "a complete externally verified actual compile SHA is required")
+    need(os.geteuid() != 0, "ordinary controls must run as the configured non-root operator")
+    os.umask(0o077)
+    run_dir = OUT / "ordinary-run-01"
+    run_dir.mkdir(mode=0o700)
+    report = {
+        "schema": 1, "revision": CONTROL_REVISION, "started_at": now(),
+        "success": False, "commands": [], "external_compile_sha256": external_sha,
+        "cargo_invoked": False, "ordinary_controls_only": True,
+        "full_owner_runtime_qualified": False, "real_broker_generation_qualified": False,
+        "android_runtime_started": False, "barrier_constructor_executed": False,
+        "pressure_or_namespace_effects_requested": False,
+        "installed_files_changed": False, "main_fence_claimed": False,
+        "targeted_public_retirement_controls": [],
+    }
+    resources = OwnJobResources(536870912)
+    report["resource_health"] = resources.record
+    cfg = None
+    try:
+        resources.begin()
+        raw = read_regular(OUT / "compile-result.json", 256 * 1024)
+        need(sha(raw) == external_sha, "compile receipt differs from external SHA")
+        actual = json.loads(raw)
+        need(actual["schema"] == 1 and actual["revision"] == CONTROL_REVISION and
+             actual["success"] is True and actual["compile_only"] is True and
+             actual["test_binaries_executed"] is False and
+             actual["candidate"] == str(CANDIDATE) and
+             actual["target"] == str(TARGET) and
+             actual["prior_build_receipt_sha256"] == PRIOR_RECEIPT_SHA and
+             actual["original_source_diff_sha256"] == ORIGINAL_DIFF_SHA and
+             actual["original_source_inventory_after_sha256"] == PRIOR_INVENTORY_SHA and
+             actual["all_source_inventory_before_sha256"] ==
+             actual["all_source_inventory_after_sha256"],
+             "actual matching compile admission failed")
+        put(run_dir / "admitted-compile-result.json", raw)
+        payload = read_regular(OUT / "payload.json", 512 * 1024)
+        need(sha(payload) == actual["payload_sha256"], "compiled payload digest differs")
+        cfg = validate_config(json.loads(payload))
+        prior_raw = read_regular(OUT / "producer13-retirement-terminal-drain01-actual-compile-result.json", 128 * 1024)
+        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "producer13 terminal drain01 lineage receipt differs")
+        prior = json.loads(prior_raw)
+        need(prior["inputs_before"] == cfg["preimage"] == prior["inputs_after"],
+             "32 original source inputs differ")
+        expected = candidate_input_pins(cfg)
+        report["inputs_before"] = inputs(CANDIDATE, expected)
+        need(actual["inputs_before"] == expected == actual["inputs_after"],
+             "actual compile source inputs differ")
+        before = all_source(CANDIDATE)
+        need(sha(before) == actual["all_source_inventory_before_sha256"],
+             "full compiled source tree changed before ordinary controls")
+        report["all_source_inventory_before_sha256"] = sha(before)
+        put(run_dir / "source-inventory-before.json", before)
+        tests = {}
+        for row in actual["compiled_test_artifacts"]:
+            key = (row["target_name"], row["target_kind"])
+            need(key in EXPECTED_TEST_TARGETS and key not in tests,
+                 "unexpected or repeated compiled test identity")
+            path = Path(row["path"])
+            need(path.is_relative_to(TARGET / "debug" / "deps") and
+                 Path(row["cargo_target_source"]).is_relative_to(CANDIDATE / "runtime"),
+                 "compiled test escaped candidate/target")
+            tests[key] = row
+        need(set(tests) == EXPECTED_TEST_TARGETS and
+             set(actual["artifacts"]) == set(BINARIES), "compiled artifact set incomplete")
+        for name in BINARIES:
+            need(actual["artifacts"][name]["path"] == str(TARGET / "debug" / name),
+                 "binary path does not match isolated output")
+        env = command_env(TARGET)
+        deadline = time.monotonic() + 165
+
+        def execute(row, args, limit):
+            remaining = deadline - time.monotonic()
+            need(remaining >= 1, "ordinary invocation envelope exhausted")
+            path = Path(row["path"])
+            fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+            try:
+                first = fd_digest(fd, row)
+                need(stamp(path.lstat()) == first, "named ELF no longer names the held object")
+                index = len(report["commands"])
+                try:
+                    out, err = run_command(
+                        report, run_dir, ["/proc/self/fd/" + str(fd)] + list(args),
+                        CANDIDATE, env, min(limit, remaining), (fd,))
+                finally:
+                    if len(report["commands"]) > index:
+                        report["commands"][index]["actual_held_elf"] = {
+                            "path": row["path"], "sha256": row["sha256"],
+                            "bytes": row["bytes"], "device": row["device"],
+                            "inode": row["inode"], "mode": row["mode"]}
+                        # This is additional validation only; it cannot replace
+                        # the command return code or an original test error.
+                need(fd_digest(fd, row) == first and stamp(path.lstat()) == first,
+                     "executed ELF changed during ordinary control")
+                return out, err
+            finally:
+                os.close(fd)
+
+        relay = tests[("droidloom_pressure_relay", "lib")]
+        for name in TARGETED_TESTS:
+            out, _ = execute(relay, ["--exact", name, "--test-threads=1", "--nocapture"], 8)
+            result = test_summary(out, 1, 36)
+            result["name"] = name
+            report["targeted_public_retirement_controls"].append(result)
+        counts = {}
+        for key in sorted(tests):
+            expected_count = 37 if key == ("droidloom_pressure_relay", "lib") else 122
+            limit = 30 if key[0] == "droidloom_pressure_relay" else 45 if key[0] == "droidloom_supervisor" else 5
+            out, _ = execute(tests[key], ["--test-threads=1"], limit)
+            result = test_summary(out, expected_count, 0)
+            counts[key[0] + ":" + key[1]] = result["passed"]
+        ordinary, _ = execute(actual["artifacts"]["owned-ipc-controls"], [], 30)
+        need(len(re.findall(rb"^PASS ", ordinary, re.M)) == 7 and
+             ordinary.endswith(b"RESULT PASS mode=host-negative-controls\n"),
+             "ordinary seven-control result missing")
+        context, _ = execute(actual["artifacts"]["owned-ipc-controls"],
+                             ["--worker-context-control"], 10)
+        need(len(re.findall(rb"^PASS ", context, re.M)) == 1 and
+             context.endswith(b"RESULT PASS mode=worker-context-without-namespace-or-pressure-effects\n"),
+             "real leader-token ordinary control missing")
+        abi, _ = execute(actual["artifacts"]["droidloom-supervisor"],
+                         ["relay-entry-abi"], 5)
+        need(abi == b"droidloom-relay-entry-v3\n", "compiled entry ABI differs")
+        report["inputs_after"] = inputs(CANDIDATE, expected)
+        after = all_source(CANDIDATE)
+        put(run_dir / "source-inventory-after.json", after)
+        need(after == before and report["inputs_before"] == report["inputs_after"],
+             "compiled source changed during ordinary controls")
+        report.update(
+            success=True, all_source_inventory_after_sha256=sha(after),
+            rust_test_binary_counts=counts,
+            rust_tests_passed={"droidloom-pressure-relay": 37, "droidloom-supervisor": 122},
+            rust_test_scope="selected library targets only; integration/bin test suites excluded",
+            ordinary_ipc_passed=7, worker_context_passed=True,
+            actual_compiled_entry_abi_passed=True,
+            scope="ordinary host controls only; actual public request/status uses the compiled relay crate")
+    except Exception as failure:
+        report["error"] = type(failure).__name__ + ": " + str(failure)
+        report["traceback"] = traceback.format_exc()
+    finish_own_resource_gate(report, resources)
+    report["finished_at"] = now()
+    raw = json_bytes(report)
+    put(run_dir / "run-result.json", raw)
+    print(json.dumps({
+        "success": report["success"], "report": str(run_dir / "run-result.json"),
+        "bytes": len(raw), "sha256": sha(raw),
+        "rust_tests_passed": report.get("rust_tests_passed"),
+        "ordinary_ipc_passed": report.get("ordinary_ipc_passed"),
+        "full_owner_runtime_qualified": False, "error": report.get("error")
+    }), flush=True)
+    raise SystemExit(0 if report["success"] else 1)
+
+def run_from_args():
+    need(len(sys.argv) == 3 and sys.argv[1] == "--compile-sha256",
+         "usage: python3 -I -B - --compile-sha256 <externally-verified-actual-sha>")
+    ordinary_recovery(sys.argv[2])
+
+if __name__ == "__main__":
+    run_from_args()

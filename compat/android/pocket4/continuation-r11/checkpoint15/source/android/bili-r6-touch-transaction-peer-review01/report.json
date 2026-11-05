@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "scope": "Read-only review of the complete fixed TouchTransaction class only. WIP ActionRunner, Android adapter, authority/target selection and UI runtime are outside this review.",
+  "source": {
+    "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/src/org/droidloom/qa/bili/r6/TouchTransaction.java",
+    "bytes": 4979,
+    "sha256": "059c4a66d51b92931c626fd95283821dde21d1e311fb5a9f5d35e05342243803"
+  },
+  "conclusion": "No new concrete blocker identified in this narrowly declared one-pointer-stream Exception-handling contract.",
+  "observations": [
+    {
+      "area": "Single DOWN and UP",
+      "finding": "Each inject site occurs at most once, without retry loops. downAttempted and upAttempted are set immediately before the corresponding inject call, preserving uncertain-attempt state when inject returns false or throws an Exception."
+    },
+    {
+      "area": "Unknown or unsuccessful input cleanup",
+      "finding": "After any attempted DOWN without acknowledged UP, finally attempts to create one CANCEL and invokes its inject at most once. A failed/uncertain DOWN does not advance to UP; an acknowledged UP does not emit a redundant CANCEL. CANCEL failure does not cause a second DOWN, UP or CANCEL."
+    },
+    {
+      "area": "Deadline scope",
+      "finding": "The class checks nonnegative elapsed time before DOWN admission, before UP creation and again after UP creation. The 150 ms value bounds these observed admissions only; it does not bound a blocking inject call, guarantee actual event delivery time, or provide process-tree cleanup."
+    },
+    {
+      "area": "First and later Exceptions",
+      "finding": "Observation.remember preserves the first Exception object as primary and records later cancellation/recycle/final-clock Exceptions in secondary. The normal false-ack paths become explicit Fault errors. Successful cleanup cannot erase a prior pointer-stream failure."
+    },
+    {
+      "area": "Event recycling",
+      "finding": "The available up/down/cancel references are each passed once to an independent recycle try/catch. An Exception during one recycle does not skip the other available events, and allCreatedRecycled remains false for a created event whose recycle did not return."
+    },
+    {
+      "area": "Observation honesty",
+      "finding": "inputTerminated treats an attempted but unacknowledged DOWN/UP without acknowledged CANCEL as unresolved. It is a termination observation, not a complete success predicate; the WIP caller must still account for primary and recycling state."
+    }
+  ],
+  "limitations": [
+    "No compilation, control run or Android execution by this reviewer. The reported 16 host controls use explicit backend/time/allocation seams and are not independently rerun here.",
+    "Java Error subclasses, OOM during observation allocation, hard kill and permanently blocked Binder/backend calls are not covered by this Exception-only completion contract.",
+    "The Backend contract must provide the intended distinct owned event objects and must not inject unrelated input inside obtain, beforeDown, recycle or now; the Android implementation of that contract was not reviewed.",
+    "No claim about the enclosing helper authority, package/window/coordinate validation, input permissions, root/Main lifecycle or whole-app readiness."
+  ],
+  "files_modified_by_reviewer": [],
+  "Hepta_calls": 0,
+  "UI_actions": 0,
+  "test_execution": false,
+  "publication_owner": "Android CP15; do not duplicate this review in Native source catalog."
+}

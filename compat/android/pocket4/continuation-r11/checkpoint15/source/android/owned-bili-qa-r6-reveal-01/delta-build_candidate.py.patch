@@ -1,0 +1,58 @@
+--- a/build_candidate.py
++++ b/build_candidate.py
+@@ -16,8 +16,8 @@
+ import zipfile
+ 
+ HERE = Path(__file__).resolve().parent
+-PACKAGE = 'org.droidloom.qa.bili.r5'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-build-02')
++PACKAGE = 'org.droidloom.qa.bili.r6'
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-build-01')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -74,7 +74,7 @@
+         require(not path.is_absolute() and '..' not in path.parts and path.as_posix() == name, 'source relative path')
+         actual = file_pin(HERE / name, 1024 * 1024)
+         require(actual['sha256'] == row['sha256'] and actual['bytes'] == row['bytes'], 'source differs: ' + name)
+-    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r5/ActionRunner.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
++    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r6/ActionRunner.java', 'src/org/droidloom/qa/bili/r6/TouchTransaction.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
+     return files
+ 
+ 
+@@ -196,10 +196,10 @@
+     try:
+         for name in ('classes','dex','res','private-signing'):
+             (OUTPUT/name).mkdir(mode=0o700)
+-        source_java = HERE/'src/org/droidloom/qa/bili/r5/ActionRunner.java'
++        source_java = HERE/'src/org/droidloom/qa/bili/r6/ActionRunner.java'
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
+-            '-d',str(OUTPUT/'classes'),str(source_java)])
++            '-d',str(OUTPUT/'classes'),str(source_java),str(source_java.with_name('TouchTransaction.java'))])
+         classes = sorted((OUTPUT/'classes').rglob('*.class'))
+         require(1 <= len(classes) <= 32 and all(x.is_file() and x.stat().st_size <= 262144 for x in classes), 'class output bound')
+         command('d8', java+['-cp',resolved['r8'],'com.android.tools.r8.D8','--lib',resolved['android_jar'],
+@@ -218,10 +218,10 @@
+         # pinned Java runtime. No platform/commercial signing key is consumed.
+         command('create-owned-signing-key', java+['-m','java.base/sun.security.tools.keytool.Main',
+             '-genkeypair','-noprompt','-storetype','PKCS12','-keystore',str(store),'-storepass:file',str(password),
+-            '-alias','owned-bili-qa-r5','-keyalg','RSA','-keysize','3072','-validity','3650',
+-            '-dname','CN=Pocket4 Owned Bili QA R5,O=Owned Test,C=US'])
++            '-alias','owned-bili-qa-r6','-keyalg','RSA','-keysize','3072','-validity','3650',
++            '-dname','CN=Pocket4 Owned Bili QA R6,O=Owned Test,C=US'])
+         command('sign', [tool['apksigner'],'sign','--ks',str(store),'--ks-pass','file:'+str(password),
+-            '--ks-key-alias','owned-bili-qa-r5','--min-sdk-version','31','--v1-signing-enabled','false',
++            '--ks-key-alias','owned-bili-qa-r6','--min-sdk-version','31','--v1-signing-enabled','false',
+             '--v2-signing-enabled','true','--v3-signing-enabled','true','--out',str(OUTPUT/'owned-bili-qa.apk'),
+             str(OUTPUT/'aligned.apk')])
+         signature = command('signature', [tool['apksigner'],'verify','--verbose','--print-certs','--min-sdk-version','31',str(OUTPUT/'owned-bili-qa.apk')])
+@@ -231,7 +231,7 @@
+         badging = command('badging', [tool['aapt'],'dump','badging',str(OUTPUT/'owned-bili-qa.apk')])
+         permissions = command('permissions', [tool['aapt'],'dump','permissions',str(OUTPUT/'owned-bili-qa.apk')])
+         xml = command('manifest', [tool['aapt'],'dump','xmltree',str(OUTPUT/'owned-bili-qa.apk'),'AndroidManifest.xml'])
+-        require(b"package: name='org.droidloom.qa.bili.r5' versionCode='1'" in badging and
++        require(b"package: name='org.droidloom.qa.bili.r6' versionCode='1'" in badging and
+                 b"sdkVersion:'31'" in badging and b"targetSdkVersion:'33'" in badging, 'actual APK package/SDK differs')
+         require(b'uses-permission' not in permissions and b'uses-permission' not in xml and
+                 b'application-debuggable' not in badging and b'launchable-activity' not in badging, 'actual APK privilege/component differs')

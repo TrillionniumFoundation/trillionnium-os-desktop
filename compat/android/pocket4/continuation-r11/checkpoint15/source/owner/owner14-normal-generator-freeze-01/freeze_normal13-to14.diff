@@ -1,0 +1,280 @@
+--- owner13/freeze_normal13.py
++++ owner14/freeze_normal14.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Freeze one fresh real Owner13 attempt from externally pinned actual builds."""
++"""Freeze one fresh real Owner14 attempt from externally pinned actual builds."""
+ import argparse
+ import ast
+ import base64
+@@ -17,10 +17,11 @@
+ OLD = BASE / "owner11-normal01-freeze-01"
+ PAIR = BASE / "cgroup-handoff-pair-freeze-01"
+ HOST_PAIR = BASE / "retirement-terminal-drain-source-freeze-13"
++FIXTURE = BASE / "retirement-fixture-repair-source-freeze-14"
+ DIAGNOSTIC = BASE / "pinned-io-cause-source-freeze-12"
+-RUST = BASE / "producer13-retirement-controller-freeze-01"
+-OUT = BASE / "owner13-normal01-freeze-01"
+-PREFIX = "p4-owner13-normal-20261105-01"
++RUST = BASE / "producer14-fixture-controller-freeze-01"
++OUT = BASE / "owner14-normal01-freeze-01"
++PREFIX = "p4-owner14-normal-20261105-01"
+ OLD_PREFIX = "p4-owner11-normal-20261105-01"
+ 
+ 
+@@ -75,8 +76,8 @@
+     assert mc["all_private_mounts_unmounted"] is True and mc["inherited_domain_closed"] is True and mc["cgroup_controls_written"] is False
+     assert mc["first_a"] == mc["fresh_b"] == {"rc":0,"errno":0}
+     assert mc["repeat_a_recursiveprot"] == mc["repeat_a_plain"] == {"rc":-1,"errno":16}
+-    assert rb["success"] is True and rb["compile_only"] is True and rb["revision"] == "producer13-retirement-terminal-drain01"
+-    assert rb["candidate"] == "/home/alex/work/pocket4-supervisor-lmkd-drain-r11-build-13-01/candidate"
++    assert rb["success"] is True and rb["compile_only"] is True and rb["revision"] == "producer14-retirement-fixture-repair01"
++    assert rb["candidate"] == "/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/candidate"
+     assert rb["resource_health"]["held_own_cgroup_gate_passed"] is True
+     assert len(rb["commands"]) == 2 and all(c["returncode"] == 0 and not c["timed_out"] for c in rb["commands"])
+     host_manifest = (HOST_PAIR / "manifest.json").read_bytes()
+@@ -84,14 +85,31 @@
+     for row in json.loads(host_manifest)["files"]:
+         body = (HOST_PAIR / row["path"]).read_bytes()
+         assert len(body) == row["bytes"] and sha(body) == row["sha256"]
++    fixture_manifest = (FIXTURE / "manifest.json").read_bytes()
++    assert sha(fixture_manifest) == "6ae91802b992dba1d48c725e99e51a7daade464f4c5006f78575050f759bcccb"
++    for row in json.loads(fixture_manifest)["files"]:
++        body = (FIXTURE / row["path"]).read_bytes()
++        assert len(body) == row["bytes"] and sha(body) == row["sha256"]
++    fixture_paths = {"runtime/droidloom-pressure-relay/src/lib.rs",
++                     "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs"}
++    for relative in fixture_paths:
++        before = (FIXTURE / "preimage" / relative).read_bytes()
++        after = (FIXTURE / "candidate" / relative).read_bytes()
++        assert before == (HOST_PAIR / "candidate" / relative).read_bytes()
++        marker = b"#[cfg(test)]\nmod tests {"
++        assert before.count(marker) == after.count(marker) == 1
++        assert before.split(marker, 1)[0] == after.split(marker, 1)[0]
+     cfg = json.loads((RUST / "payload.json").read_bytes())
+-    assert cfg["source_manifest_sha256"] == sha(host_manifest)
+-    assert cfg["original_diff_sha256"] == sha((HOST_PAIR / "source.diff").read_bytes())
++    assert cfg["source_manifest_sha256"] == sha(fixture_manifest)
++    assert cfg["original_diff_sha256"] == sha((FIXTURE / "source.diff").read_bytes())
++    assert set(cfg["overlays"]) == fixture_paths
++    for relative, row in cfg["overlays"].items():
++        assert row["text"].encode() == (FIXTURE / "candidate" / relative).read_bytes()
+     expected = dict(cfg["preimage"])
+     expected.update({p: {"bytes": v["bytes"], "sha256": v["sha256"]} for p, v in cfg["overlays"].items()})
+     assert rb["inputs_before"] == rb["inputs_after"] == expected
+     assert rb["all_source_inventory_before_sha256"] == rb["all_source_inventory_after_sha256"]
+-    assert rr["success"] is True and rr["ordinary_controls_only"] is True and rr["revision"] == "producer13-retirement-terminal-drain01"
++    assert rr["success"] is True and rr["ordinary_controls_only"] is True and rr["revision"] == "producer14-retirement-fixture-repair01"
+     assert rr["external_compile_sha256"] == args.rust_build_sha256
+     assert rr["inputs_before"] == rr["inputs_after"] == expected
+     assert rr["all_source_inventory_before_sha256"] == rr["all_source_inventory_after_sha256"] == rb["all_source_inventory_before_sha256"]
+@@ -135,16 +153,16 @@
+     plan = remap(old_plan)
+     attempt = os.urandom(32).hex()
+     assert attempt != old_plan["attempt_nonce"] and attempt != "0" * 64
+-    plan.update(kind="owned-real-producer13-normal01-terminal-drain01",
++    plan.update(kind="owned-real-producer14-normal01-fixture-repair01",
+                 scope="REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT",
+-                attempt_nonce=attempt, description="Pocket4 Owner13 ABI3 NORMAL01 " + attempt)
+-    plan["spec"]["host_uid"] = 61285
+-    plan["spec"]["subordinate_uids"]["start"] = 20800000
+-    plan["spec"]["subordinate_gids"]["start"] = 20800000
+-    plan["spec"]["runtime_dir"] = "/run/droidloom/cells/u61285"
++                attempt_nonce=attempt, description="Pocket4 Owner14 ABI3 NORMAL01 " + attempt)
++    plan["spec"]["host_uid"] = 61286
++    plan["spec"]["subordinate_uids"]["start"] = 20900000
++    plan["spec"]["subordinate_gids"]["start"] = 20900000
++    plan["spec"]["runtime_dir"] = "/run/droidloom/cells/u61286"
+     for role in ("droidloomd", "droidloom-supervisor", "droidloom-psi-owner"):
+         row = copy.deepcopy(rb["artifacts"][role])
+-        assert row["path"] == "/home/alex/work/pocket4-supervisor-lmkd-drain-r11-build-13-01/target/debug/" + role
++        assert row["path"] == "/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/target/debug/" + role
+         assert row["mode"] & 0o111 and not row["mode"] & 0o6022 and row["inode"] > 0 and row["bytes"] > 0
+         row["destination"] = "bin/" + role
+         plan["artifacts"][role] = row
+@@ -241,6 +259,28 @@
+         "public_receive_progress_independent_error_global_poison_changed": False,
+         "old_Owner11_failure_reclassified": False,
+         "local_fixture_deterministic_send_race_branch_coverage_claimed": False}
++    prior_ordinary_raw = (FIXTURE / "evidence/actual-producer13-ordinary-failed.json").read_bytes()
++    assert sha(prior_ordinary_raw) == "cc26182f01c5241d6766dfb356263fa6efc7b6499a05684e0447895935ad523e"
++    prior_ordinary = json.loads(prior_ordinary_raw)
++    assert prior_ordinary["success"] is False and len(prior_ordinary["commands"]) == 3
++    assert [row["returncode"] for row in prior_ordinary["commands"]] == [0, 0, 101]
++    assert prior_ordinary["external_compile_sha256"] == "9a2cf0087ff99b6834fc2b3a963e03629a14acc21af1a8d67f2b5081bbb22e8e"
++    prior_stdout = (FIXTURE / "evidence/actual-producer13-relay-command.stdout").read_bytes()
++    assert len(prior_stdout) == 4483 and sha(prior_stdout) == "8a8537257b6bea7e1ca04031cf7d5f40143812cd71e6f7d1fdfd5082e911d528"
++    assert prior_ordinary["commands"][2]["stdout_pin"]["sha256"] == sha(prior_stdout)
++    assert "test result: FAILED. 35 passed; 2 failed;" in prior_stdout.decode()
++    plan["fixture_repair_source_manifest_sha256"] = sha(fixture_manifest)
++    plan["fixture_repair_contract"] = {
++        "production_prefixes_unchanged_from13": True,
++        "only_two_test_fixtures_changed": True,
++        "faulted_requires_incomplete_codec_not_changed": True,
++        "dead_held_proc_errno_compared_with_raw_syscall": True,
++        "prior_ordinary_failure_preserved": True,
++        "prior_ordinary_receipt_sha256": sha(prior_ordinary_raw),
++        "prior_relay_stdout_sha256": sha(prior_stdout),
++        "prior_relay_passed": 35, "prior_relay_failed": 2,
++        "prior_supervisor_IPC_executed": False,
++        "NORMAL13_never_prepared_or_executed": True}
+     plan["broker_bootstrap_source_contract"] = {"magic": "P4BOOT2!", "version": 2, "layout": 3,
+                                                 "fallback_allowed": False, "wire_execution_observed_by_this_generator": False}
+     plan["mechanism_evidence"] = {"report_sha256": "4a6f12bac1b20679596f7e6b2484662adaa90299c823bd957e24e2919051b4a6",
+@@ -265,24 +305,34 @@
+     assert list(relay) == fields(policy, "PressureRelaySpec")
+     for name in ("broker", "entry_supervisor", "lmkd", "init_barrier"):
+         assert list(relay[name]) == fields(policy, "RelayArtifact")
+-    controls_raw = (WORK / "new-profile-controls.json").read_bytes()
++    source_freeze = BASE / "owner14-normal-source-freeze-01"
++    assert sha((source_freeze / "manifest.json").read_bytes()) == "e2ae7182ce3d2bcd8c8aae249efd536999a9082c65d84ff8cf23cecb68e8b81b"
++    for row in json.loads((source_freeze / "manifest.json").read_bytes())["files"]:
++        raw = (source_freeze / row["path"]).read_bytes()
++        assert len(raw) == row["bytes"] and sha(raw) == row["sha256"]
++    controls_raw = (source_freeze / "source-review.json").read_bytes()
+     controls = json.loads(controls_raw)
+-    assert controls["success"] is True and controls["passed"] == 19
+-    for row in controls["source_pins"]:
+-        body = (WORK / "source" / row["path"]).read_bytes()
+-        assert len(body) == row["bytes"] and sha(body) == row["sha256"]
+-    observer_raw = (WORK / "init-observation-controls.json").read_bytes()
++    assert controls["actual_runtime_executed"] is False and controls["plan_generated"] is False
++    assert controls["fixed_profile_controls"] == [
++        {"case": "new_profile", "accepted": True}, {"case": "new_paths", "accepted": True},
++        {"case": "old_kind_rejected", "accepted": False}, {"case": "short_nonce_rejected", "accepted": False},
++        {"case": "old_scope_rejected", "accepted": False}, {"case": "old_unit_rejected", "accepted": False},
++        {"case": "old_package_rejected", "accepted": False}, {"case": "old_state_rejected", "accepted": False}]
++    # Only profile literals changed. Retain the earlier source-level init
++    # observation controls without claiming an additional execution of them.
++    observer_base = BASE / "owner13-normal-source-freeze-01"
++    observer_raw = (observer_base / "init-observation-controls.json").read_bytes()
+     observer = json.loads(observer_raw)
+     assert observer["success"] is True and observer["passed"] == 11
+     for name, digest in observer["pins"].items():
+-        assert sha((WORK / "source" / name).read_bytes()) == digest
+-    source_freeze = BASE / "owner13-normal-source-freeze-01"
+-    assert sha((source_freeze / "manifest.json").read_bytes()) == "f6e40d2b37bebe430eda08a0ad7aff95cd5917d4431e6c42a10c816d6c78dd41"
+-    for row in json.loads((source_freeze / "manifest.json").read_bytes())["files"]:
+-        raw = (source_freeze / row["path"]).read_bytes()
+-        assert len(raw) == row["bytes"] and sha(raw) == row["sha256"]
++        assert sha((observer_base / "source" / name).read_bytes()) == digest
++    def function_ast(path, name):
++        return ast.dump(next(n for n in ast.parse(path.read_text()).body
++                             if isinstance(n, ast.FunctionDef) and n.name == name))
++    assert function_ast(observer_base / "source/actor.py", "observe_init_hello") == function_ast(source_freeze / "source/actor.py", "observe_init_hello")
++    assert (observer_base / "source/qualify.py").read_bytes() == (source_freeze / "source/qualify.py").read_bytes()
+     payload = {}; source_diff = ""
+-    for path in sorted((WORK / "source").glob("*.py")):
++    for path in sorted((source_freeze / "source").glob("*.py")):
+         body = path.read_bytes(); old = (OLD / "source" / path.name).read_bytes()
+         ast.parse(body.decode()); compile(body, path.name, "exec")
+         assert body == (source_freeze / "source" / path.name).read_bytes()
+@@ -290,7 +340,7 @@
+             assert body == old
+         payload[path.name] = {"bytes": len(body), "sha256": sha(body), "content": body.decode()}
+         source_diff += "".join(difflib.unified_diff(old.decode().splitlines(True), body.decode().splitlines(True),
+-                                                 fromfile="normal11-01/source/" + path.name, tofile="normal13-01/source/" + path.name))
++                                                 fromfile="normal11-01/source/" + path.name, tofile="normal14-01/source/" + path.name))
+     assert len(payload) == 6
+     plan_raw = pretty(plan)
+     packet = json.dumps({"plan_utf8": plan_raw.decode(), "sources": payload}, ensure_ascii=False, separators=(",", ":")).encode()
+@@ -298,14 +348,14 @@
+     prepare_stdin = prepare_template.replace("__PACKET_SHA256__", repr(sha(packet))).replace("__PACKET_BASE64__", repr(base64.b64encode(packet).decode()))
+     ast.parse(prepare_stdin)
+     request = json.loads((OLD / "requests/prepare-request.json").read_bytes())
+-    request.update(stdin=prepare_stdin, idempotency_key="p4-owner13-normal01-prepare01-" + sha(prepare_stdin.encode())[:16])
++    request.update(stdin=prepare_stdin, idempotency_key="p4-owner14-normal01-prepare01-" + sha(prepare_stdin.encode())[:16])
+     old_coordinator = (OLD / "source/coordinator.py").read_bytes()
+     runtime = (OLD / "requests/runtime-stdin-template.py").read_text().replace(OLD_PREFIX, PREFIX)
+     runtime = runtime.replace(sha(old_coordinator), payload["coordinator.py"]["sha256"])
+     assert payload["coordinator.py"]["bytes"] == len(old_coordinator)
+     ast.parse(runtime)
+     runtime_request = json.loads((OLD / "requests/runtime-request-template.json").read_bytes())
+-    runtime_request.update(stdin=runtime, idempotency_key="p4-owner13-normal01-runtime01-__ACTUAL_PREPARED_SHA256_PREFIX16__")
++    runtime_request.update(stdin=runtime, idempotency_key="p4-owner14-normal01-runtime01-__ACTUAL_PREPARED_SHA256_PREFIX16__")
+     assert "__ACTUAL_PREPARED_SHA256__" in runtime
+     # Actual source admission predicates, against the completed plan.
+     for name, message in [("prepare.py", "wrong fixed profile"),
+@@ -322,7 +372,7 @@
+         write("source/" + name, row["content"])
+     write("source.diff", source_diff)
+     write("plan.diff", "".join(difflib.unified_diff((OLD / "plan.json").read_text().splitlines(True), plan_raw.decode().splitlines(True),
+-                                                 fromfile="normal11-01/plan.json", tofile="normal13-01/plan.json")))
++                                                 fromfile="normal11-01/plan.json", tofile="normal14-01/plan.json")))
+     write("requests/prepare-template.py", prepare_template)
+     write("requests/prepare-stdin.py", prepare_stdin)
+     write("requests/prepare-request.json", pretty(request))
+@@ -334,19 +384,22 @@
+     write("evidence/predecessor-normal11-runtime-failed.json", predecessor_raw)
+     write("evidence/predecessor-normal11-cause-review.json", cause_review_raw)
+     write("evidence/predecessor-normal11-daemon.stderr", previous_stderr)
+-    write("new-profile-controls.json", controls_raw)
+-    write("check_new_profile.py", (WORK / "check_new_profile.py").read_bytes())
+-    write("check_init_observation.py", (WORK / "check_init_observation.py").read_bytes())
+-    write("init-observation-controls.json", observer_raw)
+-    write("freeze_normal13.py", Path(__file__).read_bytes())
+-    validation = {"kind": "owner13_normal01_source_binding", "actual_device_execution": False,
++    write("source-profile-review.json", controls_raw)
++    write("derive_sources14.py", (source_freeze / "derive_sources14.py").read_bytes())
++    write("evidence/prior-init-observation-controls.json", observer_raw)
++    write("evidence/producer13-ordinary-failed.json", prior_ordinary_raw)
++    write("evidence/producer13-relay-command.stdout", prior_stdout)
++    write("freeze_normal14.py", Path(__file__).read_bytes())
++    validation = {"kind": "owner14_normal01_source_binding", "actual_device_execution": False,
+                   "rust_compile_sha256": args.rust_build_sha256, "rust_run_sha256": args.rust_run_sha256,
+                   "android_build_sha256": args.android_build_sha256,
+                   "source_pair_manifest_sha256": sha(pair_manifest), "old_runtime_failure_preserved": True,
+-                  "new_profile_predicates_accept_completed_plan": True, "new_ABI_and_profile_controls_passed": 19,
++                  "new_profile_predicates_accept_completed_plan": True, "new_profile_controls_passed": 8, "init_observation_controls_retained_not_rerun": 11,
+                   "unchanged_runtime_sources": ["owned.py", "pinned_support.py", "qualify.py"],
+                   "pinned_io_diagnostic_source_manifest_sha256": sha(diagnostic_manifest),
+                   "terminal_drain_source_manifest_sha256": sha(host_manifest),
++                  "fixture_repair_source_manifest_sha256": sha(fixture_manifest),
++                  "producer13_ordinary_failure_still_preserved": True,
+                   "old_owner_original_retirement_still_failed": True,
+                   "old_external_exact_cleanup_passed": True,
+                   "original_Rust_field_order_verified": True, "canonical_spec_sha256": sha(canonical),
+@@ -359,9 +412,9 @@
+                   "synthetic_uid_subid_live_absence_still_required": True,
+                   "Main_host_network_or_installed_service_modified": False}
+     write("source-binding-result.json", pretty(validation))
+-    write("README.md", """# Fresh real Owner13 NORMAL01: pinned I/O cause and strict terminal drain
+-
+-This plan requires the actual successful Producer13 matching compile and ordinary
++    write("README.md", """# Fresh real Owner14 NORMAL01: pinned I/O cause and strict terminal drain
++
++This plan requires the actual successful Producer14 matching compile and ordinary
+ receipts, including 37 relay / 122 supervisor library tests, two targeted public
+ retirement controls, seven IPC controls, worker-context and entry ABI3. The original
+ ABI3 Android DSO, LMKD r6, P4BOOT2/layout3 and cgroup mount mechanism remain fixed.
+@@ -373,6 +426,12 @@
+ exact child exit. Bare HUP/death cannot qualify, retirement errors stay poisoned,
+ and the original two-second deadline and one-request contract remain.
+ 
++Producer14 changes only two test fixtures after the original producer13 ordinary
++run failed 35/37 relay tests. That failure remains fixed evidence; its supervisor
++and IPC stages did not run. Production13 diagnostics and retirement remain
++unchanged. No NORMAL13 prepare or runtime was executed. The new expected suite
++must actually pass before this plan can be created.
++
+ Owner11 remains failed before ACTIVE. Its generic pinned-openat ENOENT is retained;
+ the precise relative path/role and error-versus-death order are not proved. Its
+ original resource retirement failed; later outer exact cleanup completed. The new
+@@ -387,7 +446,7 @@
+ 
+ Outer5GiB/inner4GiB, zero swap, CPU1, original deadlines, native 70/700ms PSI
+ defaults, one-shot claims, private dbus/sway/presenter, Main fences and exact cleanup
+-remain unchanged. Fresh UID61285 and subordinate range20800000+100000 must pass
++remain unchanged. Fresh UID61286 and subordinate range20900000+100000 must pass
+ live absence checks. No installed service, account/subid table or host network is
+ changed. Runtime requires the actual prepared SHA and Root dispatch.
+ 
+@@ -400,7 +459,7 @@
+         if path.is_file():
+             raw = path.read_bytes()
+             rows.append({"path": str(path.relative_to(OUT)), "bytes": len(raw), "sha256": sha(raw)})
+-    write("manifest.json", pretty({"kind": "owner13_normal01_frozen", "runtime_executed": False, "files": rows}))
++    write("manifest.json", pretty({"kind": "owner14_normal01_frozen", "runtime_executed": False, "files": rows}))
+     print(json.dumps({"root": str(OUT), "manifest_sha256": sha((OUT / "manifest.json").read_bytes()),
+                       "prepare_request_bytes": len((OUT / "requests/prepare-request.json").read_bytes()), **validation}, indent=2))
+ 

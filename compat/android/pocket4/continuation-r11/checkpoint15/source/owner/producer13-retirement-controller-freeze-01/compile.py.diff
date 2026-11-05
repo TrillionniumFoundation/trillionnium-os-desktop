@@ -1,0 +1,62 @@
+--- producer11/compile.py
++++ producer13/compile.py
+@@ -10,19 +10,21 @@
+ import time
+ import traceback
+ 
+-CONTROL_REVISION = "producer11-retirement-cause01"
+-BASE = Path("/home/alex/work/pocket4-supervisor-lmkd-broker-r11-build-10-01")
++CONTROL_REVISION = 'producer13-retirement-terminal-drain01'
++BASE = Path('/home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01')
+ SOURCE = BASE / "candidate"
+-OUT = Path("/home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01")
++OUT = Path('/home/alex/work/pocket4-supervisor-lmkd-drain-r11-build-13-01')
+ CANDIDATE = OUT / "candidate"
+ TARGET = OUT / "target"
+ CARGO = "/home/alex/.cargo/bin/cargo"
+ PRIOR_RECEIPT = BASE / "compile-result.json"
+-PRIOR_RECEIPT_SHA = "879cbe2c95a98de1f2d8d820348059eb1656d1b82c59b272bc4c901b91013460"
+-PRIOR_INVENTORY_SHA = "89122d0b725cac487b5912cec473fddf731f7b52eaa107aa355a40540b3514a0"
+-ORIGINAL_DIFF_SHA = "637e1b83a8a0ab523e551164f821b84172c804721bee596c6d83db8f4577d4f2"
++PRIOR_RECEIPT_SHA = 'a120890b2edeb1bf1adbe150f064987c55661420ac4021dc4d7ac9b023ad6ca6'
++PRIOR_INVENTORY_SHA = 'd8847105e8bb2da699eda4e2e8eded8a71c6ef84c6bc1963a27e60291667bb46'
++ORIGINAL_DIFF_SHA = '75b8eb18c2e057c06fde07ec3954b5dec972c516c118e264b998db0aa02dce34'
+ EXACT_OVERLAY = {
+-    'runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs': (70517, 'd88f14b02d17a94feb135fa1089e25a1fffcb52da441fb5edecee01fc6405c2e'),
++    'runtime/droidloom-pressure-relay/src/lib.rs': (50847, '0e87dd2e7d0da46a647b93d212e492887446fcc55e5aace6bc0cff3091eea10e'),
++    'runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs': (86037, 'cf9b59ced14cd1594e59dd91f299a734c47cbba71fff5634c62c9d4c9d62c8b2'),
++    'runtime/droidloom-pressure-relay/src/lifecycle_relay.rs': (16497, '143c8ab64ae6411847878718052cf361e1e11e7674803673005882dc0590f8a9'),
+ }
+ NEW_SOURCE_FILES = set()
+ BINARIES = ["droidloomd", "droidloom-supervisor", "droidloom-psi-owner", "owned-ipc-controls"]
+@@ -231,7 +233,7 @@
+          "wrong recovery payload revision")
+     need(cfg["original_diff_sha256"] == ORIGINAL_DIFF_SHA and
+          cfg["source_manifest_sha256"] ==
+-         "259154ae622c5c7ae5d29ca11b3a971dfc7e194ae6c9760b3b3de52e0b41a190",
++         "fab7226afa93d372a7ba7d025cd704ae4aba878f9fa5336490af72eca98e6593",
+          "wrong recovered source lineage")
+     need(len(cfg["preimage"]) == 32 and
+          set(cfg["overlays"]) == set(EXACT_OVERLAY) and
+@@ -594,17 +596,17 @@
+         put(OUT / "payload.json", json_bytes(cfg))
+         report["payload_sha256"] = sha(json_bytes(cfg))
+         prior_raw = read_regular(PRIOR_RECEIPT, 128 * 1024)
+-        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "actual producer10 broker holding01 receipt hash differs")
++        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "actual producer11 retained cause01 receipt hash differs")
+         prior = json.loads(prior_raw)
+         need(prior["success"] is True and prior["compile_only"] is True and
+-             prior["revision"] == "producer10-broker-holding01" and
++             prior["revision"] == "producer11-retirement-cause01" and
+              prior["candidate"] == str(SOURCE) and
+              prior["inputs_before"] == cfg["preimage"] and
+              prior["inputs_after"] == cfg["preimage"] and
+              prior["all_source_inventory_before_sha256"] == PRIOR_INVENTORY_SHA and
+              prior["all_source_inventory_after_sha256"] == PRIOR_INVENTORY_SHA,
+-             "actual producer10 broker holding01 receipt/source binding differs")
+-        put(OUT / "producer10-broker-holding01-actual-compile-result.json", prior_raw)
++             "actual producer11 retained cause01 receipt/source binding differs")
++        put(OUT / "producer11-retirement-cause01-actual-compile-result.json", prior_raw)
+         report["prior_build_receipt_sha256"] = PRIOR_RECEIPT_SHA
+         report["preimage_inputs"] = inputs(SOURCE, cfg["preimage"])
+         baseline = all_source(SOURCE)

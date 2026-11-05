@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "operation": "documented exact-key durable-job reconciliation",
+  "original_key": "pocket4-snapshot-nofollow-host-build-01-20261105",
+  "original_request_sha256": "fd4e35052e5179309df71aa9100f9ad08d6f70d2d58bf989a9f5b5291c807c0e",
+  "exact_original_fields_and_stdin": true,
+  "new_idempotency_key": false,
+  "original_timeout_preserved": true,
+  "prior_readonly_observation": "known expected build result directory absent; not proof original request had no effect",
+  "tool_contract": "Mandatory stable operation key; exact retries reconcile the original durable job.",
+  "tool_description_sha256": "dc179af0f5ee887291b301b8df3af3cc8724f421739d7b90a760b5e0b7f863a5",
+  "effect_replay_requested": false,
+  "maximum_reconciliation_calls": 1,
+  "scope": "previously reviewed matching compile/link/default PLAN only; no root fixture or Main deployment"
+}

@@ -1,0 +1,66 @@
+--- geometry01/viewport_observation.py
++++ fresh-before01/viewport_observation.py
+@@ -12,14 +12,14 @@
+ DETAILS='tv.danmaku.bili/com.bilibili.ship.theseus.detail.UnitedBizDetailsActivity'
+ TITLE='7ff99f77d6b59f394c4c6c0ca167aded470663d4cef66215fcce841ed549afba'
+ AUTHOR='3355707b07511199c7d280b9a77510b5e9b8698c7c7e4aedcf938805a3822d64'
+-NONCES = [['a17d8eaace047ba4f552486225d57727', '0b5a977103ddc2cc454d545020b3f6fc', 'cee745fc466496a97fe1c9d64b5404f8'], ['8752e7ac524a37e5490d8fdd8bd323d3', '55434fbc05d21b45efca09dcec39027c', '4b4dd14bff878690cee20f187bcfc4d4'], ['90bd4cefc75f4284b319f07a5676c6f4', '0ce7877c11152a3904cd2f2bd51498ea', '4f44f03350884a5246ebbee56059a91a'], ['babbf00d4a979b77934cb3a6c1f456a3', 'da701d4ac79b93bba55eab41a5a2d4c7', '86019a396b87210ad6e1f82e5f8d0af0'], ['838933ced9c6eef5e88a7a0fd822b4e5', '26fdf1be0bba8ec32f212c6a7ba0e745', 'ae87bcb856e0ee8bff9a623daa8c7468'], ['31d6e3e27dd3b6690be4cf6dbd152d2a', 'cf1f045e93bcb1d991453f00975c9775', '55720ea3fabccdbc76528a6d4434a29d'], ['ce8bcc7087bbfd779116a38eba15dae5', 'cebbe8ab0a71733f3004f7a474dbef81', '4f802aa2f68e9eded7f3b35517bb8a63'], ['f77721b5cd90655d693bd0b81fc54d0c', '23c0a3d24125b4dcf00e7671df4970cf', '939724b29ac0a34b0faf0d31dcb67655'], ['cea2b345589d819052f9eacf3cdef32b', 'f9bddd387341f6c36f79e061dd2b70d7', '5718bf5d49a11ede0f4b73a7cacfca97'], ['5c007bf64da0ef9e35fa583e8be11067', '3301f1b4ff96647a779aa3e78753748e', '397164ba7768f81e03f8839434a00187'], ['1e78b002f0068f16922ff79ddd4b22d3', 'd0ef7c74eb0e11b419874a2eead9d574', '1da80d7874c9e0df25fe2cd1071246ec'], ['3fc386ef1ffb0f94ee59e58485ed7a4b', '4db1d3d2d5d7623acfd3c795c2fed8e1', '0818079f012597fbc6cc8cf32aab1107'], ['c611f4e986acdf0f34a7ab28e9d3d420', '318455c0b0e553e1929f99f9a54d6a7a', '574e61a6d16b96ad05bb09bb8ef03988'], ['7eddb4ab616d84c67de43f64d6de679d', '34fa3177e2acc4b90e6de0861078d42d', '36303b3d2e334452ecfe7a363c4cfcba'], ['734540d3033fd9e229db437c8912abd6', '358d57a1f9025d5c8c6791a6e8e3d397', 'e9306051f9624d78489a31ed7985a3b5']]
++NONCES = [['02b04f657feed970a70f3e322ac44661', '8bd5dfb156ab5490655209298ef7c848', 'dd9c4470e57f739f8e57fcd1e7661f92'], ['5c1ea01cf66b0a47f82fd928925fdc34', '8fe8c5d795e3713d22d1630d8bf523da', 'd9eb3d41a3988a6e5a3d7e3f6212cbc5'], ['6796e67a6ba22a719e8dfca8a09eb27a', '5847315401be2251439057948d65fd8b', '60f1cbfeaf46d78668b832a99dfb3ebe'], ['d4d87bd90a0e523006074d8b41abf8ba', '44f70c5b17adc9bddeaf02128098b1be', 'c114249050bf113e0851b9bf59f7e41f'], ['08dce0aa4ed95b7efcffb1211799a24d', 'ac9c05a63772adf590e125cf3e768123', '5b7e09fa8427e9ace7d44596c20ab164'], ['4ed18df9369b4fa0cf0419730d1160a5', 'bcd6aeba50f384901e263e1f72306978', 'c84b0df7a61e259700cd837461a982a3'], ['a929697436f945580757937477d2731c', '8b9b62c323efa48fedf2eb1b4571d4f0', 'c33d4c2a7bea19fcde38af45c918837b'], ['0d06e5da259178153d71f8a2df2257a2', '03c540f478a6f76cdf6e2210611fccc0', '4ec5b09913fe1ec6608348d7669f96bb'], ['2fe555eaa5ccdaba5443f091a7094cbe', 'd46c9cd8c33f59aa03b4eadf25ce21e5', '410a2005384bec3b91db5c0a4320f29d'], ['1e57f000f9abfdd4fe8af7b1551aef3c', 'e2be7dc1a09e44a7ac64476354624fd0', 'af65ef5f4ac3ee087098830e7055415b'], ['e89f69e74082ea9a1701f9cba9151bf9', '6d4b7bb54fd445fa55da3f701fc12d3b', 'a4779c1a953263c5139f82621480b5fd'], ['4fa4669626dd43a7dc272dd6a7aa34f3', '5011d5c9d2dfc50239e7d321a9f8d0c8', '68eee4337cd0d7066655b57872536941'], ['95508c1dc30fa77664c766612a0c6dc4', '9d992eb0f7504e856d7c9002f3f1476f', '303ca2425a78f2fab0d578ff661e88e9'], ['9a3cc12cae59986247d21c34320c5392', '38b51d70be5b3cfb9b0fc5169059bcec', '2b8c080cda45004c1124944daf51beb7'], ['930892e678d4bb88d6b59070ee97bdb6', '087b9c657c9de6d82b0c01fa9d565bc3', 'ea33708a235a6ee928bd7bafc951eb53'], ['65639b2af171a5d93b93da7d5782f7ce', '33c2a7c94c848821471a41ab58351b6f', '9b19466a3ce9921c42d49302244b3bde'], ['2a77e81cce50c52da9bfcf3ca1f9d72a', '6dc4166396c10395929c7dd557b07953', 'aaf7b43fb6b2ce1c000ea6a16f0d67b9'], ['f81c934bf260e10e4db3b61bc5930279', 'a519199d1d99892d6d0616dd85e1277a', '42e0a4b532e284a5e24222fd606c0375']]
+ PLANS=[{'schema':1,'operation':'inspect','nonces':dict(zip(('before','inspect','after'),row))}for row in NONCES]
+ 
+ 
+ def validate(adapter,qa,used):
+     values=[x for row in NONCES for x in row]
+-    qa.require(len(NONCES)==15 and all(len(row)==3 for row in NONCES) and
+-        len(values)==len(set(values))==45 and not set(values)&set(used),'FIXED_FRESH_VIEWPORT_NONCES')
++    qa.require(len(NONCES)==18 and all(len(row)==3 for row in NONCES) and
++        len(values)==len(set(values))==54 and not set(values)&set(used),'FIXED_FRESH_VIEWPORT_NONCES')
+     for plan in PLANS:adapter.validate_plan(plan,qa)
+ 
+ 
+@@ -142,11 +142,22 @@
+             error.add_note('private crop close: '+type(close_error).__name__)
+ 
+ 
+-def capture(base,prior,qa,flow,session,installed,before,after_plan,index):
++def capture(base,prior,qa,flow,session,installed,before_plan,after_plan,index,*,allow_buffering=False):
+     """Never save the full screen or emit a crop before the independent check."""
+     record={'index':index,'capture_attempted':False,'private_crop_published':False,
+         'atomic_frame_attribution':False,'default_display_uses_original_screencap_convention':True,
+-        'playback_verified':False,'audio_captured':False}
++        'playback_verified':False,'audio_captured':False,'fresh_before_read_completed':False}
++    # Every capture obtains new authority. The previous transaction's after
++    # observation is evidence only, never the next screenshot's coordinate proof.
++    try:
++        before,before_observation=inspect(base,prior,qa,flow,session,installed,before_plan)
++        record['before_observation']=before_observation
++        record['fresh_before_read_completed']=True
++        base.require(allow_buffering or not before['buffering_label_present'],
++            'BUFFERING_REAPPEARED_BEFORE_CAPTURE')
++    except BaseException as error:
++        error.viewport_observation=record
++        raise
+     primary=None;raw=None;after=None
+     try:
+         base.require(not flow._private_backend_transport,'NO_NESTED_PRIVATE_VIEWPORT_CAPTURE')
+@@ -206,6 +217,7 @@
+ def run(base,prior,qa,flow,session,installed,result):
+     record={'maximum_successful_reads':12,'read_deadline_seconds':25,'reads':[],
+         'buffering_label_absent_observed':False,'viewport_samples':[],
++        'fresh_before_read_per_capture':True,'maximum_capture_transactions':3,
+         'action_replayed':False,'failed_read_retried':False,'audio_captured':False,
+         'playback_verified':False,'whole_app_ready':False}
+     result['buffer_viewport_observation']=record;result['buffer_viewport_observation_completed']=False
+@@ -224,8 +236,10 @@
+         base.require(proof is not None,'NO_COMPLETE_BUFFER_OBSERVATION')
+         # A still-buffering run gets one diagnostic crop but keeps its failure.
+         count=3 if record['buffering_label_absent_observed'] else 1
+-        for index,plan in enumerate(PLANS[12:12+count],1):
+-            proof,sample=capture(base,prior,qa,flow,session,installed,proof,plan,index)
++        for index in range(1,count+1):
++            before_plan,after_plan=PLANS[12+2*(index-1):14+2*(index-1)]
++            proof,sample=capture(base,prior,qa,flow,session,installed,before_plan,after_plan,index,
++                allow_buffering=not record['buffering_label_absent_observed'])
+             record['viewport_samples'].append(sample)
+             base.require(not record['buffering_label_absent_observed'] or not proof['buffering_label_present'],
+                 'BUFFERING_REAPPEARED_DURING_VIEWPORT_OBSERVATION')

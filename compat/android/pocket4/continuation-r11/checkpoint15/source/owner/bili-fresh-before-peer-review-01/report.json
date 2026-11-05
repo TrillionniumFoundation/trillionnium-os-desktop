@@ -1,0 +1,49 @@
+{
+  "delta": {
+    "bytes": 7535,
+    "path": "/workspace/scratch/94990735b266/android-bili-r5-player-fresh-before-01/delta-viewport_observation.py.patch",
+    "reconstructed_exactly": true,
+    "sha256": "e84c8f3df8b3a59c7a158fd5055b6370c0d5c57efa198a29daa2d0acc21a09c9"
+  },
+  "device_qualification": false,
+  "findings": [
+    "Each capture obtains a new complete inspect result before screencap. A failing before inspect or a reappearing buffering indicator fails before capture_attempted and no screenshot is requested. Prior transaction after evidence is no longer reused as coordinate authority.",
+    "Once the capture block begins, independent after inspect still runs in its finally block even on screenshot failure; a second failure is attached without replacing the first. No crop can be published when either observation fails or same_scope rejects the pair.",
+    "The six capture plans are disjoint pairs at indices 12..17, providing before/after for at most three transactions. The initial twelve-read buffering observation budget and its failure behavior remain. Still-buffering may produce one explicitly diagnostic crop but final success remains rejected.",
+    "same_scope, viewport, inspect and write_private ASTs are unchanged. Exact absolute geometry and per-transaction scope equality remain; the change does not authorize an unstable during-capture geometry or infer playback/audio from pixels."
+  ],
+  "limits": [
+    "Author synthetic controls were not reexecuted. No module was imported, no screenshot or Android action occurred, and no private tree/image was read.",
+    "Caller packet-wide nonce uniqueness, complete shared transport, renderer implementation and actual runtime samples are outside this three-function review.",
+    "The reviewed metadata explicitly disclaims atomic frame attribution, video-only pixels and playback/audio success. No device, pixel or playback qualification is added by this report.",
+    "The original source-review history remains untouched; this is a separate additive receipt."
+  ],
+  "local_checks_executed": [
+    "Byte hashes and complete unified diff reconstruction",
+    "Python AST comparison only; exactly validate/capture/run changed",
+    "Literal nonce shape and uniqueness: 18 plans/54 distinct values"
+  ],
+  "manifest_sha256": "f151b6737f72c53e9f776076ed81fecce4a68b327b59d2bf2f971fe838372283",
+  "new_concrete_blocker_in_reviewed_scope": false,
+  "preimage": {
+    "bytes": 16216,
+    "path": "/workspace/scratch/94990735b266/android-bili-r5-player-geometry-01/viewport_observation.py",
+    "sha256": "59ec2140f6fd5a51508ddd143708c0f8fe9d43f0b64363eaf9c0d6ddf849ac3c"
+  },
+  "reviewer": "local_pocket4_inventory",
+  "runtime_executed": false,
+  "schema": 1,
+  "scope": "Independent source-only review of validate/capture/run fresh-before delta; no raw UI or device evidence inspected",
+  "source": {
+    "bytes": 17420,
+    "path": "/workspace/scratch/94990735b266/android-bili-r5-player-fresh-before-01/viewport_observation.py",
+    "sha256": "2f1b46c7d4f4a5ed5626421aded9cd4936aede7bbc87e5e8bee382057afae20f"
+  },
+  "synthetic_controls_executed": false,
+  "unchanged_function_AST": [
+    "inspect",
+    "same_scope",
+    "viewport",
+    "write_private"
+  ]
+}

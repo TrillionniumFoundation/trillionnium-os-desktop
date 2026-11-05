@@ -1,0 +1,9 @@
+# Authorized snapshot actual-ELF runtime template 01
+
+This is source-only and cannot produce an executable request until a successful actual snapshot build receipt is supplied. No ELF SHA is invented. The generator preserves the raw receipt bytes and accepts only the complete matching build-only predicate, new source authority, five actual objects and five dependency/compile commands, real held ELF and default four-case PLAN.
+
+The root runtime keeps the previous run02 exact /run create-only root staging, fixed unused UID/GID61179, one held-ELF fork/exec, PDEATHSIG, exact pidfd wait, normal-reap requirement, source/tool/lib/authority before/after identities, root-owned resource identity and OOM gates. Budget is still CPU50%, MemoryMax256MiB, nice15, outer120s/inner90s, held harness45s; the fixture itself has30s. SwapMax is observed only. No arbitrary root shell, listener, network namespace, service, Android or Main action is added. This mechanism does not observe Main identity.
+
+Only the exact four-case JSON contract is accepted: each case actually creates the root sealed V2 snapshot after the expected input checks, with fixed owned payload; three cases first reject a specific invalid input and recover in the same approved grant. Aggregate must show four direct children normally reaped, zero nested/forced/unreaped, snapshot_created true, maps_formatter owned_fixture, policy and factory service false. The original helper ten-case main is not executed. Scope remains ordinary O_RDONLY only; O_NOFOLLOW semantic red gate remains unchanged.
+
+The exact generic helpers are recorded in AST_REUSE. Run_held has only output path/label substitutions. The root will review actual build/ELF and bind this template before a single controlled run. No actual run result or platform qualification is asserted by this freeze.

@@ -1,0 +1,160 @@
+{
+  "schema": 1,
+  "reviewer": "native_bridge_repair",
+  "state": "NO_NEW_CONCRETE_BLOCKER_IN_REVIEWED_SOURCE_DELTA",
+  "frozen_source_tree": "e7e85fea93b24bc2228097e43d2830bc85bd1ea2",
+  "source_manifest": {
+    "local_path": "/workspace/scratch/94990735b266/android-amazon-search-entry-01/SOURCE_PINS.json",
+    "bytes": 590,
+    "sha256": "1c6b1f70daaa562236c434bd38c7c95051ff095f8e92571fb09f85123403f567"
+  },
+  "reviewed_production": {
+    "INPUTS.json": {
+      "bytes": 5218,
+      "sha256": "050ed78cad7955109288202a46fb8ee560028ab98682e325f9cff74fad02ed8f"
+    },
+    "amazon_task_context.py": {
+      "bytes": 17286,
+      "sha256": "a60fed720bbd933624922d395f625758e218121de2515cbfe0eed2d731c70e14"
+    },
+    "owned_inspect.py": {
+      "bytes": 32338,
+      "sha256": "6d47ae5856601cda6d5d4cf64ca3c943602b183fa9163d50dd43a064ed406fdd"
+    },
+    "search_navigation.py": {
+      "bytes": 7587,
+      "sha256": "3b3ed0a54d1bdd1c520dbcd35b0d7729425139ca0f936b059e5b628e49fc0b00"
+    }
+  },
+  "actual_delta_bindings": {
+    "amazon_task_context.py": {
+      "preimage": {
+        "bytes": 15618,
+        "sha256": "696db6a604839225dd7494590831622579154e5f21a67a1baacf6a973b8b222b"
+      },
+      "candidate": {
+        "bytes": 17286,
+        "sha256": "a60fed720bbd933624922d395f625758e218121de2515cbfe0eed2d731c70e14"
+      },
+      "actual_full_delta_matches_frozen_patch": true,
+      "delta": {
+        "bytes": 6316,
+        "sha256": "526d04b8e969a2c19a0922a1a79723af48a88ba2c98d6533be8146f527c0ef93"
+      }
+    },
+    "owned_inspect.py": {
+      "preimage": {
+        "bytes": 28972,
+        "sha256": "396134028b624fd2593946049e48ebdf2dae344e51f6dc2550adb2e38ffc6927"
+      },
+      "candidate": {
+        "bytes": 32338,
+        "sha256": "6d47ae5856601cda6d5d4cf64ca3c943602b183fa9163d50dd43a064ed406fdd"
+      },
+      "actual_full_delta_matches_frozen_patch": true,
+      "delta": {
+        "bytes": 14029,
+        "sha256": "349cfd7e0eba8bdb6575be8ed839ea7d4bf4470bd84d5200cd4e098ebfd5be07"
+      }
+    },
+    "INPUTS.json": {
+      "preimage": {
+        "bytes": 2839,
+        "sha256": "0ee65ef14f48f52d0bce717baf690b064e38e6b0a3484323d91cb0206d6ab457"
+      },
+      "candidate": {
+        "bytes": 5218,
+        "sha256": "050ed78cad7955109288202a46fb8ee560028ab98682e325f9cff74fad02ed8f"
+      },
+      "actual_full_delta_matches_frozen_patch": true,
+      "delta": {
+        "bytes": 3503,
+        "sha256": "e35251284d75c5e64895d953b219a017201751a3a30f3f66280393d7f39b4a29"
+      }
+    },
+    "stage_execute.py": {
+      "preimage": {
+        "bytes": 4916,
+        "sha256": "11560772e9f29dea202e4a8cd424e6508aadde86009f587c5b49c576b63b587c"
+      },
+      "candidate": {
+        "bytes": 5043,
+        "sha256": "e0f191fbd7f8901485e65fe47d55d4593fca886bfa51b3bb5cc19f30ae0513b5"
+      },
+      "actual_full_delta_matches_frozen_patch": true,
+      "delta": {
+        "bytes": 2345,
+        "sha256": "16cf93928a3e6049dfabe0f9a2e3473ddc405540bff7fedc70640e93a6ac28b2"
+      }
+    },
+    "make_request.py": {
+      "preimage": {
+        "bytes": 3119,
+        "sha256": "41e0faf5e3db67020ac54b6bfe9a7cad28fc4287cb08ba2d00c228552c81552e"
+      },
+      "candidate": {
+        "bytes": 3140,
+        "sha256": "3fe493c76d73b63fc4f4f4813217234c4cd0a42ce60d1a8121cec157c97c6baf"
+      },
+      "actual_full_delta_matches_frozen_patch": true,
+      "delta": {
+        "bytes": 1699,
+        "sha256": "f39b2eb58f4bad5a67a6f19acb686df2adfe1aeef4b2f105ee82d477241c7bf6"
+      }
+    }
+  },
+  "actual_session_reference": {
+    "local_path": "/workspace/scratch/94990735b266/owned-amazon-qa-r1-build01/source/qa_adapter.py",
+    "bytes": 20809,
+    "sha256": "3f705d3a7a605b9436beb0e77bd156923cd8e581fe9f3f6d4635eb62910cce59",
+    "functions_read": [
+      "Session.sequence",
+      "Session.foreground"
+    ],
+    "full_Java_helper_not_rereviewed": true
+  },
+  "reused_scope": {
+    "Flow_AST_identical": true,
+    "open_task_context_AST_identical": true,
+    "need_AST_identical": true,
+    "coordinator_finally_AST_identical": true,
+    "worker_finally_delta": "one click_commands_attempted observation only; prior close/final guard/lock release/qualification paths retained"
+  },
+  "new_findings": [
+    {
+      "area": "fresh action authority",
+      "assessment": "Only the fixed public resource/class/functional Search label is reused. At most four complete successful inspect sequences seek two consecutive equal scope/window/tree hashes within30s. Those observations do not carry nodes into the click. The unchanged actual Session obtains its own new inspection, compares foreground again, and invokes ActionBoundSearchContract through its local qa alias before constructing an inspection-nonce/hash-bound action."
+    },
+    {
+      "area": "action-bound scope",
+      "assessment": "The proxy requires the actual sequence foreground package and MainActivity plus inspection window package at the real selection point; it delegates to the same frozen complete-tree/unique-clickable contract. It restores the original contract in a finally, so the independent post read is not erroneously constrained to the prior entry activity."
+    },
+    {
+      "area": "one mutation",
+      "assessment": "Policy binds19 distinct helper nonces, and maps just the entry action nonce to click. It checks full instrumentation argv and exact operation, rejects nonce reuse, requires mutation exactly for click, and binds the click to its own new inspect nonce. The20 total flow/helper nonces independently match exact32-hex shape and uniqueness."
+    },
+    {
+      "area": "failure handling",
+      "assessment": "The first stable-read or click error remains primary. Failed reads/actions are not replayed. A distinct post-inspection is attempted in finally and its failures remain secondary; each original Session retains its independent after-state and restoration checks. A poisoned transport can reject that attempt; this remains failure, not synthetic success."
+    },
+    {
+      "area": "task and artifact lifetime",
+      "assessment": "The frozen Flow and held Main/artifact context remain AST identical. Current resolve still precedes the one native launch under the original action lock. Success requires three APK and helper identities before/after, exact observed helper nonce/wire/finish status, and one actual click command. Cleanup uses the original independently locked exact new-task retirement without an outer duplicate acquisition, preserves preexisting tasks, and remains in coordinator finally unchanged."
+    },
+    {
+      "area": "scope and privacy",
+      "assessment": "Retired private-tree content is not read by this reviewer or used as action authority. Source keeps public selector and origin hashes; result retains scoped metadata with raw UI only in private flow. Click ACK plus post-inspection is not public search result, playback, transaction, or whole-App qualification."
+    }
+  ],
+  "boundaries": [
+    "Source-only independent review; no Hepta, device, UI, installation, launch, click, helper execution or request dispatch.",
+    "The12 local controls were not rerun by this reviewer; their stated Android/helper/restoration seams are not device evidence.",
+    "Existing helper full-tree/final-window logic is reused by pinned source; this review does not requalify the entire Java helper or installedAPK.",
+    "The30-second stability budget is a real admission limit; success on a fresh device state is not guaranteed.",
+    "Existing firstfixture nonhex-token failure remains preserved, no source edited."
+  ],
+  "device_calls": 0,
+  "remote_actions": 0,
+  "source_modified": false,
+  "whole_app_production_ready": false
+}

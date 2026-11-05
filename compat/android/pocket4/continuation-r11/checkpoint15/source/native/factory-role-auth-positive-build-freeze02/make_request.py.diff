@@ -1,0 +1,19 @@
+--- build01/make_request.py
++++ build02/make_request.py
+@@ -7,11 +7,11 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-CORE=HERE.parent/'factory-role-auth-positive-source-freeze01'
+-ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-01-20261105'
+-KEY='pocket4-role-authorization-positive-host-build-01-20261105'
+-MANIFEST_SHA='d400255a4318ec5856692254cff062280021aeea5bf80662eb939a00d7586aa2'
+-CONTROLLER_SHA='52408f9534ad70bad398d5025e468f4b0df40835368f05054542f173a6d343de'
++CORE=HERE.parent/'factory-role-auth-positive-source-freeze02'
++ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105'
++KEY='pocket4-role-authorization-positive-host-build-02-20261105'
++MANIFEST_SHA='fda076982c0a26682eb3b6a596a6964e6645cf1eddc7b175e56d9b499c06fda2'
++CONTROLLER_SHA='0dfeafc0dea6037ec189fb73ab9d6d268f55dc84691390f9dd8121c6ef17ebee'
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+ def write(path,data):

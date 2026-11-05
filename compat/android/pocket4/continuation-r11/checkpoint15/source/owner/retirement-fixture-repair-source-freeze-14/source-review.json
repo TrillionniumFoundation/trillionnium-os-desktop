@@ -1,0 +1,86 @@
+{
+  "actual_prior_compile_passed": true,
+  "actual_prior_failure": "RuntimeError: command failed or timed out: 2",
+  "actual_prior_ordinary_passed": false,
+  "actual_prior_original_targeted_tests": [
+    {
+      "failed": 0,
+      "filtered_out": 36,
+      "ignored": 0,
+      "measured": 0,
+      "name": "lifecycle_bootstrap::tests::producer05_three_second_retirement_is_rejected_before_transport",
+      "passed": 1
+    },
+    {
+      "failed": 0,
+      "filtered_out": 36,
+      "ignored": 0,
+      "measured": 0,
+      "name": "lifecycle_bootstrap::tests::shared_retirement_bound_sends_exact_request_and_receives_terminal_ack",
+      "passed": 1
+    }
+  ],
+  "actual_prior_relay_tests": {
+    "failed": 2,
+    "passed": 35,
+    "total": 37
+  },
+  "actual_prior_supervisor_and_ipc_executed": false,
+  "dead_proc_fixture": {
+    "actual_prior_kernel_errno": 3,
+    "exact_child_exit_and_pidfd_dead_gate_unchanged": true,
+    "new_expected_errno_from_raw_syscall_on_same_held_procdir": true,
+    "old_fixture_assumed_errno": 2,
+    "raw_flags": "O_RDONLY | O_CLOEXEC",
+    "raw_name": "ns/mnt",
+    "unexpected_success_fd_closed_before_assertion": true,
+    "vanished_proc_errno_class": [
+      "ENOENT",
+      "ESRCH"
+    ],
+    "wrapper_must_preserve_exact_kernel_errno": true
+  },
+  "faulted_fixture": {
+    "exact_cause": "faulted=true with incomplete=false violates the unchanged codec",
+    "new_faulted_fixture_incomplete": true,
+    "old_invalid_encode_retained_as_negative_assertion": true,
+    "status_faulted_and_exact_expected_child_exit_unchanged": true,
+    "stop_reason_zero_is_legal": true
+  },
+  "full_owner_or_android_qualified": false,
+  "limitations": [
+    "The send-error race branch is not deterministically forced by the existing positive fixture.",
+    "Original producer13 failure and Owner11 failure remain unchanged.",
+    "Observed zero swap is not a hard swap limit or whole-invocation resource qualification."
+  ],
+  "local_validation": "bytes, lineage, exact diff and production-prefix equality only",
+  "production_changes": [],
+  "revision14_compile_or_ordinary_executed": false,
+  "rust_tests_run_here": false,
+  "schema": 1,
+  "scope": "fixture-only repair after actual producer13 ordinary failure",
+  "test_only_changes": [
+    {
+      "candidate_bytes": 51658,
+      "candidate_sha256": "102456cf0a4754cf04c1f35fbf3c5b0f68b2edea981e21528f5b5e33fe58e9d8",
+      "path": "runtime/droidloom-pressure-relay/src/lib.rs",
+      "preimage_bytes": 50847,
+      "preimage_sha256": "0e87dd2e7d0da46a647b93d212e492887446fcc55e5aace6bc0cff3091eea10e",
+      "production_prefix_bytes": 43559,
+      "production_prefix_exactly_unchanged": true,
+      "production_prefix_sha256": "43bec46eb7730a022a874708fb7635f0a2092b15321a73ba1aa0b6818754a286"
+    },
+    {
+      "candidate_bytes": 86381,
+      "candidate_sha256": "08ffa252cf726c1aa54699918ec5152a2ef5cc8c60277b3ab67225556006e0d1",
+      "path": "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs",
+      "preimage_bytes": 86037,
+      "preimage_sha256": "cf9b59ced14cd1594e59dd91f299a734c47cbba71fff5634c62c9d4c9d62c8b2",
+      "production_prefix_bytes": 57395,
+      "production_prefix_exactly_unchanged": true,
+      "production_prefix_sha256": "577867ea9c16d0ab6f19fc208742d0f4b5549618464b3b5551a735d25827014c"
+    }
+  ],
+  "unchanged_lifecycle_relay_sha256": "143c8ab64ae6411847878718052cf361e1e11e7674803673005882dc0590f8a9",
+  "unchanged_pressure_audit_sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+}

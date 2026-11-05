@@ -1,0 +1,107 @@
+{
+  "added_functions": [
+    "stdin_matches"
+  ],
+  "all_original_bounds_and_UID_paths_regex_AST_unchanged": true,
+  "changed_functions": [
+    "main",
+    "read_regular",
+    "scan",
+    "tuple_matches"
+  ],
+  "device_or_task_execution": false,
+  "exact_request": {
+    "bytes": 15487,
+    "sha256": "11c44e28b856513d6ba184739b54a0d1e0f311738c544a0e23b7b8fdfd325232"
+  },
+  "fixed_targets_bound_to_original_request_bytes": [
+    {
+      "execution_fields": {
+        "args": [
+          "-I",
+          "-B",
+          "-",
+          "--compile-sha256",
+          "a916592cc708dc76411b482a371214410bca4662f6ff72dccd5083d88872b6a6"
+        ],
+        "cpu_quota_percent": 100,
+        "cwd": "/home/alex/work",
+        "env": {},
+        "executable": "/usr/bin/python3",
+        "memory_max_bytes": 536870912,
+        "nice": 10,
+        "timeout_seconds": 180
+      },
+      "label": "ordinary14",
+      "original_idempotency_key": "p4-producer14-fixture01-ordinary01-a916592cc708dc76",
+      "request_bytes": 37394,
+      "request_path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer14-fixture-ordinary-freeze-01/request.json",
+      "request_sha256": "d383190cf90e1d752e1fcc3de757c9c9cb9092e1646235ad33e40cd71d535fc6",
+      "stdin_bytes": 35263,
+      "stdin_sha256": "9eef9bf99c688d128467c9962f7aec8d077a2e65b39042e3a1236f663cbe4ec4"
+    },
+    {
+      "execution_fields": {
+        "args": [
+          "-n",
+          "/usr/bin/python3",
+          "-I",
+          "-",
+          "--collect"
+        ],
+        "cpu_quota_percent": 25,
+        "cwd": "/",
+        "env": {},
+        "executable": "/usr/bin/sudo",
+        "memory_max_bytes": 134217728,
+        "nice": 15,
+        "timeout_seconds": 30
+      },
+      "label": "native_snapshot_result_reader01",
+      "original_idempotency_key": "pocket4-role-authorized-snapshot-runtime-result-readonly-01-20261105",
+      "request_bytes": 4581,
+      "request_path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-snapshot-runtime-result-read01/exact-request.json",
+      "request_sha256": "1abe8d99f05c416230160e0c91954044f41e0baee7a44a7d11efb5c349ecdec8",
+      "stdin_bytes": 3998,
+      "stdin_sha256": "6131191253a9a22666cfd74f2e1fd1e7fa22d9fa4457084512e5cccc144005b3"
+    }
+  ],
+  "key": "p4-owner14-native-reconcile03-03afe3b603e8b7b2",
+  "local_controls": {
+    "bytes": 2141,
+    "count": 34,
+    "file": "checks.json",
+    "scope": "Pure matcher/parser plus five owned temporary metadata files; no real jobs root or production main. Added true target B, shared-tuple wrong-size zero-read, wrong-hash exclusion and cross-target stdin negative controls.",
+    "sha256": "fd7df012a6f99f6282732994ce97082fa4e4c7b65d99499eb1f8afb1adde77e3"
+  },
+  "native_snapshot_reader_status": "UNKNOWN",
+  "ordinary14_status": "UNKNOWN",
+  "predecessor01_and02_submitted": false,
+  "predecessor_manifest_sha256": "83177ad9f724d639209738abf5a932b865ade99877a71685ac4ac25e283ac34e",
+  "request_submitted": false,
+  "review_findings": [
+    "Each candidate must match one complete fixed execution tuple: executable, argv, cwd, env and four resource fields. Only those metadata candidates may open fixed stdin.bin.",
+    "A held stdin length outside every candidate target length is rejected before any stdin bytes are read. Same-length wrong-hash inputs are excluded. Neither class outputs unrelated job IDs, request pins or input text.",
+    "A match is published only after its own target stdin length+SHA and held/named job-directory identity pass; each record carries the specific target label. Common argv or resource fields cannot substitute for the per-target stdin pin.",
+    "Each target separately reports EXACT_MATCH_OBSERVED/MULTIPLE_EXACT_MATCHES_OBSERVED/NOT_FOUND_AT_OBSERVATION with execution_state UNKNOWN. Metadata does not prove execution or the original idempotency key; no automatic replay.",
+    "All unchanged UID1000/no-follow/regular ownership/FD cleanup, 4096 entries, 128KiB request, 32MiB total, checked10s deadline, 8 exact records and 64KiB output gates remain. The collector request still uses CPU1/128MiB/nice10/30s."
+  ],
+  "schema": 1,
+  "scope": "One UID1000 read-only fixed worker metadata scan for two externally pinned ACK-unknown requests",
+  "source": {
+    "bytes": 14810,
+    "sha256": "03afe3b603e8b7b22b52fa00f6511d4f2ca50736293123a1182a820024409752"
+  },
+  "sources_or_reports_from01_02_modified": false,
+  "stdin_equals_production_source": true,
+  "unchanged_function_AST": [
+    "close_fd",
+    "error_summary",
+    "identity",
+    "matching_metadata",
+    "open_jobs",
+    "request_object",
+    "tick",
+    "unique_object"
+  ]
+}

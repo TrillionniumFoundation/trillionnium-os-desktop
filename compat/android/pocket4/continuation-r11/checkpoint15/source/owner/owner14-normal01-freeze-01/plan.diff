@@ -1,0 +1,303 @@
+--- normal11-01/plan.json
++++ normal14-01/plan.json
+@@ -1,23 +1,23 @@
+ {
+   "schema": 1,
+-  "kind": "owned-real-producer11-normal01-retirement-cause01",
+-  "scope": "REAL_OWNER_ABI3_RETAINED_CAUSE_FIRST_ACTIVE_ORIGINAL_RETIREMENT",
+-  "attempt_nonce": "7fab165bd5502ca32260616d1d4faaf3cd898703f6eceb839ba81f2e598a2389",
+-  "package": "/opt/p4-owner11-normal-20261105-01",
+-  "state": "/opt/p4-owner11-normal-20261105-01-state",
+-  "unit": "p4-owner11-normal-20261105-01.service",
+-  "description": "Pocket4 Owner11 ABI3 NORMAL01 7fab165bd5502ca32260616d1d4faaf3cd898703f6eceb839ba81f2e598a2389",
++  "kind": "owned-real-producer14-normal01-fixture-repair01",
++  "scope": "REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT",
++  "attempt_nonce": "4b8b529f0b32b58c89a18cbc6adc43884b5c5cd3c5acde5d68c656a073aa0cf7",
++  "package": "/opt/p4-owner14-normal-20261105-01",
++  "state": "/opt/p4-owner14-normal-20261105-01-state",
++  "unit": "p4-owner14-normal-20261105-01.service",
++  "description": "Pocket4 Owner14 ABI3 NORMAL01 4b8b529f0b32b58c89a18cbc6adc43884b5c5cd3c5acde5d68c656a073aa0cf7",
+   "control_socket": "/run/p4-owner07-control.sock",
+-  "claim_store_backing": "/opt/p4-owner11-normal-20261105-01-state/claims",
+-  "canonical_spec_sha256": "8e7a87c1394e5ff854aad2400f63038352653345258597eb3a72166177730731",
++  "claim_store_backing": "/opt/p4-owner14-normal-20261105-01-state/claims",
++  "canonical_spec_sha256": "527d9fc3582289341092e4219bee4c257353423d2830c3eba2fb7c64375913e5",
+   "spec": {
+-    "host_uid": 61283,
++    "host_uid": 61286,
+     "subordinate_uids": {
+-      "start": 20600000,
++      "start": 20900000,
+       "count": 100000
+     },
+     "subordinate_gids": {
+-      "start": 20600000,
++      "start": 20900000,
+       "count": 100000
+     },
+     "image_dir": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5",
+@@ -211,13 +211,13 @@
+         "target": "/droidloom/wifi-nohw"
+       }
+     ],
+-    "data_dir": "/opt/p4-owner11-normal-20261105-01-state/data",
+-    "runtime_dir": "/run/droidloom/cells/u61283",
++    "data_dir": "/opt/p4-owner14-normal-20261105-01-state/data",
++    "runtime_dir": "/run/droidloom/cells/u61286",
+     "render_node": "/dev/dri/renderD128",
+     "graphics_backend": "drm_media_dma_heap",
+     "denial_socket": "/run/p4-owner07-user/droidloom/native-bridge.sock",
+     "pressure_relay": {
+-      "cgroup_parent": "/sys/fs/cgroup/system.slice/p4-owner11-normal-20261105-01.service/domains",
++      "cgroup_parent": "/sys/fs/cgroup/system.slice/p4-owner14-normal-20261105-01.service/domains",
+       "memory_max_bytes": 4294967296,
+       "memory_high_bytes": 3758096384,
+       "memory_swap_max_bytes": 0,
+@@ -229,19 +229,19 @@
+       "lmkd_uid": 1069,
+       "lmkd_gid": 1069,
+       "broker": {
+-        "path": "/opt/p4-owner11-normal-20261105-01/bin/droidloom-psi-owner",
+-        "sha256": "8b437bd887c49fff6fdd1054e60ecbad0b2c1408e22da9f4e44e81db6a376c9e"
++        "path": "/opt/p4-owner14-normal-20261105-01/bin/droidloom-psi-owner",
++        "sha256": "57db1048e871addb63c5779625d7848b666857d5f28223269300c1c7ae3ba85b"
+       },
+       "entry_supervisor": {
+-        "path": "/opt/p4-owner11-normal-20261105-01/bin/droidloom-supervisor",
+-        "sha256": "936b1d2976421c0a8723f53f9926492381eeb42dd5b44e52183054b1dd790aa8"
++        "path": "/opt/p4-owner14-normal-20261105-01/bin/droidloom-supervisor",
++        "sha256": "a89503e8b85ef55aea2324cd07b1d4a26fc028cb83aeed2d689167cf84b4d5a8"
+       },
+       "lmkd": {
+-        "path": "/opt/p4-owner11-normal-20261105-01/bin/lmkd",
++        "path": "/opt/p4-owner14-normal-20261105-01/bin/lmkd",
+         "sha256": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+       },
+       "init_barrier": {
+-        "path": "/opt/p4-owner11-normal-20261105-01/lib/libdroidloom_init_relay.so",
++        "path": "/opt/p4-owner14-normal-20261105-01/lib/libdroidloom_init_relay.so",
+         "sha256": "3af46c2dd6e833b8ae40991d2c7325c093ed1fc6bd28918300a10ccf04329822"
+       },
+       "init_sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73",
+@@ -473,44 +473,44 @@
+     }
+   },
+   "actual_compile_receipt": {
+-    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/producer11-retirement-compile01/result.json",
+-    "bytes": 39822,
+-    "sha256": "a120890b2edeb1bf1adbe150f064987c55661420ac4021dc4d7ac9b023ad6ca6"
++    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner14-compile01/compile-result.json",
++    "bytes": 39898,
++    "sha256": "a916592cc708dc76411b482a371214410bca4662f6ff72dccd5083d88872b6a6"
+   },
+-  "actual_ordinary_receipt_sha256": "367d08420a9a3d9e50f6c5dd342946c9c43ed122330ac85a7d3e2528192fa427",
++  "actual_ordinary_receipt_sha256": "d38caeef2c821b6136d51967ae5b7799b60e6796e5144ed67540bbde57c2ea91",
+   "actual_original_rc_receipt_sha256": "7b54441ed291c0b2ddd50b8230d069591fbf1593935761198aa0920cc4bf1b9c",
+   "artifacts": {
+     "droidloomd": {
+-      "bytes": 6492352,
+-      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01/candidate/runtime/droidloom-supervisor#0.1.0",
+-      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01/candidate/runtime/droidloom-supervisor/src/bin/droidloomd.rs",
++      "bytes": 6506304,
++      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/candidate/runtime/droidloom-supervisor#0.1.0",
++      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/candidate/runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+       "device": 66306,
+-      "inode": 36191014,
++      "inode": 36969061,
+       "mode": 448,
+-      "path": "/home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01/target/debug/droidloomd",
+-      "sha256": "14ab6d964b4540a1818eb28431704c9886deb8197ca3cbaed6ae5294ff42a611",
++      "path": "/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/target/debug/droidloomd",
++      "sha256": "986cbe7dbe988a358706e29d41183a36f2c6967fa089cb1d82401ac130e47f19",
+       "destination": "bin/droidloomd"
+     },
+     "droidloom-supervisor": {
+-      "bytes": 6527040,
+-      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01/candidate/runtime/droidloom-supervisor#0.1.0",
+-      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01/candidate/runtime/droidloom-supervisor/src/main.rs",
++      "bytes": 6540584,
++      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/candidate/runtime/droidloom-supervisor#0.1.0",
++      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/candidate/runtime/droidloom-supervisor/src/main.rs",
+       "device": 66306,
+-      "inode": 36191010,
++      "inode": 36969069,
+       "mode": 448,
+-      "path": "/home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01/target/debug/droidloom-supervisor",
+-      "sha256": "936b1d2976421c0a8723f53f9926492381eeb42dd5b44e52183054b1dd790aa8",
++      "path": "/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/target/debug/droidloom-supervisor",
++      "sha256": "a89503e8b85ef55aea2324cd07b1d4a26fc028cb83aeed2d689167cf84b4d5a8",
+       "destination": "bin/droidloom-supervisor"
+     },
+     "droidloom-psi-owner": {
+-      "bytes": 1283480,
+-      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01/candidate/runtime/droidloom-pressure-relay#0.1.0",
+-      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01/candidate/runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs",
++      "bytes": 1305384,
++      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/candidate/runtime/droidloom-pressure-relay#0.1.0",
++      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/candidate/runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs",
+       "device": 66306,
+-      "inode": 36191028,
++      "inode": 36969118,
+       "mode": 448,
+-      "path": "/home/alex/work/pocket4-supervisor-lmkd-cause-r11-build-11-01/target/debug/droidloom-psi-owner",
+-      "sha256": "8b437bd887c49fff6fdd1054e60ecbad0b2c1408e22da9f4e44e81db6a376c9e",
++      "path": "/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01/target/debug/droidloom-psi-owner",
++      "sha256": "57db1048e871addb63c5779625d7848b666857d5f28223269300c1c7ae3ba85b",
+       "destination": "bin/droidloom-psi-owner"
+     },
+     "lmkd": {
+@@ -1484,62 +1484,80 @@
+     "earlier": {
+       "earlier": {
+         "earlier": {
+-          "predecessor_failure": {
+-            "stdout_sha256": "8921a665badde77731239e59c1a823ce27318d7ef42e6d8d204a6088dbad707e",
+-            "reconstructed_report_sha256": "d3876c6061cfaa3c9d55b1e302dd432768f8e1268e609f79c06b63a7518107bc",
+-            "attempt_nonce": "021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
++          "earlier": {
++            "predecessor_failure": {
++              "stdout_sha256": "8921a665badde77731239e59c1a823ce27318d7ef42e6d8d204a6088dbad707e",
++              "reconstructed_report_sha256": "d3876c6061cfaa3c9d55b1e302dd432768f8e1268e609f79c06b63a7518107bc",
++              "attempt_nonce": "021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
++              "replayed": false,
++              "runtime_executed": false,
++              "remote_prepared_file_written": false,
++              "observed_boundary": "prepare fixed scope guard rejected before owned root creation"
++            },
++            "earlier_runtime_failure": {
++              "runtime_sha256": "26f19099192d0bfd76740c535f30598c32e17718da58b9fbe63d134bfe5abd19",
++              "log_collection_sha256": "e33d5669498e7f290b3003913646f888d0e866d40c47d1f13daf7f062656346a",
++              "attempt_nonce": "06ad67978c234fe35388a364f82523aadc8dc25755030cb61ee88128b9ca5979",
++              "replayed": false,
++              "observed_boundary": "init_hello,broker_ready,init_project_sent; failed before PROJECTED; exact cleanup passed"
++            }
++          },
++          "previous": {
++            "runtime_sha256": "b836404cc5011662239706418921758a4380b9c21d41534783f7fa64c8dfda7e",
++            "log_collection_sha256": "3d03b77dc6b929974eb1e53452b4d6309db43c8d1045feb693ddfdded93281fc",
++            "attempt_nonce": "65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
+             "replayed": false,
+-            "runtime_executed": false,
+-            "remote_prepared_file_written": false,
+-            "observed_boundary": "prepare fixed scope guard rejected before owned root creation"
+-          },
+-          "earlier_runtime_failure": {
+-            "runtime_sha256": "26f19099192d0bfd76740c535f30598c32e17718da58b9fbe63d134bfe5abd19",
+-            "log_collection_sha256": "e33d5669498e7f290b3003913646f888d0e866d40c47d1f13daf7f062656346a",
+-            "attempt_nonce": "06ad67978c234fe35388a364f82523aadc8dc25755030cb61ee88128b9ca5979",
+-            "replayed": false,
+-            "observed_boundary": "init_hello,broker_ready,init_project_sent; failed before PROJECTED; exact cleanup passed"
++            "observed_boundary": "actual constructor project-bind-mount errno=22 after HELLO/READY/PROJECT; no ACTIVE",
++            "exact_cleanup_passed": true
+           }
+         },
+         "previous": {
+-          "runtime_sha256": "b836404cc5011662239706418921758a4380b9c21d41534783f7fa64c8dfda7e",
+-          "log_collection_sha256": "3d03b77dc6b929974eb1e53452b4d6309db43c8d1045feb693ddfdded93281fc",
+-          "attempt_nonce": "65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
++          "runtime_sha256": "027848bec17ae20259e3ab2ddd8637bc820608b7f62e580c06b019f0e9ff8f16",
++          "log_collection_sha256": "0d3a5ced4144310fed7650b4f31e14dcf1fd17df620e9c7b2b0c31fa408faef4",
++          "attempt_nonce": "1263e33ed55e57b4ec42ead6afd051ed1b8265e9bead44653b8a87e70ca74498",
+           "replayed": false,
+-          "observed_boundary": "actual constructor project-bind-mount errno=22 after HELLO/READY/PROJECT; no ACTIVE",
++          "observed_boundary": "actual ABI2 HELLO/PROJECTED/COMMIT/DONE completed; init exited SIGHUP before ACTIVE; old kernel journal sender/cause unproved",
+           "exact_cleanup_passed": true
+         }
+       },
+       "previous": {
+-        "runtime_sha256": "027848bec17ae20259e3ab2ddd8637bc820608b7f62e580c06b019f0e9ff8f16",
+-        "log_collection_sha256": "0d3a5ced4144310fed7650b4f31e14dcf1fd17df620e9c7b2b0c31fa408faef4",
+-        "attempt_nonce": "1263e33ed55e57b4ec42ead6afd051ed1b8265e9bead44653b8a87e70ca74498",
++        "runtime_sha256": "20a20009beca9d9eb64b0973acfdd749f3b2a8cc8c6ef1c417d517378a518a05",
++        "attempt_nonce": "03f75dd099814dce95d8367beac8b10bdc03c90af3bbbc8e3af91986679c02f7",
+         "replayed": false,
+-        "observed_boundary": "actual ABI2 HELLO/PROJECTED/COMMIT/DONE completed; init exited SIGHUP before ACTIVE; old kernel journal sender/cause unproved",
+-        "exact_cleanup_passed": true
++        "observed_boundary": "actual InitHello followed by lifecycle packet framing/ancillary rejection; no BrokerReady or ACTIVE",
++        "old_owner_original_retirement_passed": false,
++        "outer_exact_cleanup_passed": true,
++        "separate_source_defect": "legacy broker bootstrap still required directly projected root and direct-root init membership",
++        "specific_old_transport_error_cause_not_inferred_from_source": true
+       }
+     },
+     "previous": {
+-      "runtime_sha256": "20a20009beca9d9eb64b0973acfdd749f3b2a8cc8c6ef1c417d517378a518a05",
+-      "attempt_nonce": "03f75dd099814dce95d8367beac8b10bdc03c90af3bbbc8e3af91986679c02f7",
++      "runtime_sha256": "019d04a084f1cc7f028cfefc3277eb51e9dea6a89efc663c52daeff3e14b8190",
++      "attempt_nonce": "085e9923695a33467c1093c2acb2812b762b8d6403fd578bd3f34d0a780d278f",
+       "replayed": false,
+-      "observed_boundary": "actual InitHello followed by lifecycle packet framing/ancillary rejection; no BrokerReady or ACTIVE",
+-      "old_owner_original_retirement_passed": false,
++      "observed_boundary": "actual InitHello, BrokerReady, PROJECTED, COMMIT and DONE; broker retired faulted before ACTIVE with no registration grant",
++      "old_owner_original_resource_retirement_passed": true,
++      "old_broker_retirement_audit_incomplete": true,
+       "outer_exact_cleanup_passed": true,
+-      "separate_source_defect": "legacy broker bootstrap still required directly projected root and direct-root init membership",
+-      "specific_old_transport_error_cause_not_inferred_from_source": true
++      "specific_retirement_reason_observed": false,
++      "diagnostic_gap": "joined RetirementReceipt.reason was consumed before only a generic lifecycle rejection reached stderr",
++      "old_failure_cause_not_inferred_from_blkio_cpuset_or_SIGHUP": true
+     }
+   },
+   "predecessor_failure": {
+-    "runtime_sha256": "019d04a084f1cc7f028cfefc3277eb51e9dea6a89efc663c52daeff3e14b8190",
+-    "attempt_nonce": "085e9923695a33467c1093c2acb2812b762b8d6403fd578bd3f34d0a780d278f",
++    "runtime_sha256": "a04dbc0f1073c5ffb5f7fdbd549618af4b316a98688d3ecfe0622d05ef98303d",
++    "attempt_nonce": "7fab165bd5502ca32260616d1d4faaf3cd898703f6eceb839ba81f2e598a2389",
+     "replayed": false,
+-    "observed_boundary": "actual InitHello, BrokerReady, PROJECTED, COMMIT and DONE; broker retired faulted before ACTIVE with no registration grant",
+-    "old_owner_original_resource_retirement_passed": true,
+-    "old_broker_retirement_audit_incomplete": true,
++    "observed_boundary": "actual InitHello, BrokerReady, PROJECTED, COMMIT and DONE; failed before ACTIVE; original retirement incomplete",
++    "old_owner_original_resource_retirement_passed": false,
++    "old_owner_retirement_error": "rejected: lifecycle bootstrap disconnected",
+     "outer_exact_cleanup_passed": true,
+-    "specific_retirement_reason_observed": false,
+-    "diagnostic_gap": "joined RetirementReceipt.reason was consumed before only a generic lifecycle rejection reached stderr",
++    "generic_pinned_openat_ENOENT_observed": true,
++    "specific_relative_name_base_or_role_observed": false,
++    "missing_public_projection_proved": false,
++    "retirement_cause_review_sha256": "79b248d4313baab3843a92e87fa06b61a47f9f7381947b80ea6979c1e96a747d",
++    "original_daemon_stderr_sha256": "ba0e15b7b1b8992f9fd77169e3f4d17b2687a0aafca9b6d28d2344cfa39dd6c6",
++    "diagnostic_gap": "exact relative name, held base and validated caller role were omitted; error/process-death ordering is not proved",
+     "old_failure_cause_not_inferred_from_blkio_cpuset_or_SIGHUP": true
+   },
+   "mechanism_evidence": {
+@@ -1565,5 +1583,37 @@
+     "encoding": "two independent optional UTF-8 hex causes",
+     "authority_or_lifecycle_changed": false,
+     "diagnostic_itself_qualifies_ACTIVE_or_enrollment": false
++  },
++  "pinned_io_diagnostic_source_manifest_sha256": "963f7055854ba25ebc4fb9a9cd2dbf1e59d5a4200363d2fa1222003c341b6bfb",
++  "pinned_io_diagnostic_contract": {
++    "scope": "failure-only relative open name/flags/optional held base and validated caller context",
++    "original_errno_preserved_before_optional_fstat": true,
++    "retry_fallback_or_authority_change": false,
++    "diagnostic_itself_qualifies_ACTIVE_or_enrollment": false
++  },
++  "terminal_drain_source_manifest_sha256": "fab7226afa93d372a7ba7d025cd704ae4aba878f9fa5336490af72eca98e6593",
++  "terminal_drain_contract": {
++    "scope": "public LifecycleBroker.retire transaction",
++    "existing_nonce_scope_AUDIT_status_and_exact_child_exit_required": true,
++    "predrain_itself_qualifies_nothing": true,
++    "one_request_only_and_original_maximum_two_seconds": true,
++    "retirement_error_poison_is_sticky": true,
++    "public_receive_progress_independent_error_global_poison_changed": false,
++    "old_Owner11_failure_reclassified": false,
++    "local_fixture_deterministic_send_race_branch_coverage_claimed": false
++  },
++  "fixture_repair_source_manifest_sha256": "6ae91802b992dba1d48c725e99e51a7daade464f4c5006f78575050f759bcccb",
++  "fixture_repair_contract": {
++    "production_prefixes_unchanged_from13": true,
++    "only_two_test_fixtures_changed": true,
++    "faulted_requires_incomplete_codec_not_changed": true,
++    "dead_held_proc_errno_compared_with_raw_syscall": true,
++    "prior_ordinary_failure_preserved": true,
++    "prior_ordinary_receipt_sha256": "cc26182f01c5241d6766dfb356263fa6efc7b6499a05684e0447895935ad523e",
++    "prior_relay_stdout_sha256": "8a8537257b6bea7e1ca04031cf7d5f40143812cd71e6f7d1fdfd5082e911d528",
++    "prior_relay_passed": 35,
++    "prior_relay_failed": 2,
++    "prior_supervisor_IPC_executed": false,
++    "NORMAL13_never_prepared_or_executed": true
+   }
+ }

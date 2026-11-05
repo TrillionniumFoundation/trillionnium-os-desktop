@@ -1,0 +1,121 @@
+{
+  "actual_source_checks": {
+    "default_PLAN_only": true,
+    "original_action_window_cache_restore_Java_methods_byte_equal": true,
+    "original_baseline_pins_match": true,
+    "original_stage_and_generator_functions_AST_equal": true,
+    "source_packet_validate_called": true,
+    "ten_sources_plus_manifest_exact": true
+  },
+  "baseline_manifest": {
+    "bytes": 2072,
+    "git_blob_sha1": "16be13a424c756754e293bf2766a0df94c7e3bab",
+    "sha256": "83f642432c59f8e441f32402e278e9b52467a1a848e9d8e59eedaa22ed2a9577"
+  },
+  "bounded_change": "One reveal_controls operation with current complete player proof, one DOWN/UP and at most one CANCEL cleanup. Existing ACTION_CLICK/ACTION_SET_TEXT unchanged; no audio/seek/pause/global key/settings/permissions.",
+  "independent_peer": {
+    "bytes": 3562,
+    "full_ActionRunner_and_adapter_review": "NOT_PERFORMED_BY_THIS_PEER",
+    "path": "native-recovery-20261105-02/bili-r6-touch-transaction-peer-review01/report.json",
+    "scope": "TouchTransaction only",
+    "sha256": "6276556dad6e428f4526789b558f82993633c213fcb4328c4e8a4b56a5dc38a8",
+    "tree": "ba8e681722f32ac24a7803819d97e15375131c67"
+  },
+  "local_controls": {
+    "Android_API_compile": false,
+    "Android_UI": false,
+    "Java_output": {
+      "bytes": 2935,
+      "git_blob_sha1": "beaecf940442fb76c19a7b4c0059934655b635bd",
+      "sha256": "801c6fa317f1638a3a5c8c1af50c5d2beda85c1be602841a83b083ad570d1e2a"
+    },
+    "actual_python_21": {
+      "bytes": 3205,
+      "git_blob_sha1": "21d1723f2a78347806f217d00fa87011ec1876f5",
+      "sha256": "91eefa458fbef21ea00b40a9a88e02217d441790f2e42bd7cb2e94ad938fb88c"
+    },
+    "exact_production_touch_class_16": {
+      "bytes": 1782,
+      "git_blob_sha1": "1974247c9cebfc06017792bc701aca5ef0596ad9",
+      "sha256": "fbc9bda8fed3c5335bad3e5eeb8a507215272f6255dfb2638e671f185e8d9086"
+    },
+    "host_JDK": 17,
+    "input_clock_allocation_command_seams_explicit": true
+  },
+  "package": "org.droidloom.qa.bili.r6",
+  "production_files": {
+    "AndroidManifest.xml": {
+      "bytes": 712,
+      "sha256": "0382b740de32dc4e7a73342d4476308169bb01a5cf8452aa20bdb742110d24e1"
+    },
+    "README.md": {
+      "bytes": 5805,
+      "sha256": "b88e4cff609176fadb62f8bfc13d8cb7ef9acba85a4c7ec7cc483bfb89493846"
+    },
+    "build-input-reference.json": {
+      "bytes": 2711,
+      "sha256": "7584683d46066a6ef778e0d1bd8281c99ab281abb26498ca5457afddbb14e4e5"
+    },
+    "build_candidate.py": {
+      "bytes": 18088,
+      "sha256": "5f722ef98f2faf18d47d249ea8adc099916d0926a7ba0440a2bd7be26baa8070"
+    },
+    "make_build_request.py": {
+      "bytes": 2936,
+      "sha256": "7ac2f2a08f7e28cf2633ffc1e6d32b8152715aad7d99f981a7735bf2ac77fa26"
+    },
+    "qa_adapter.py": {
+      "bytes": 25231,
+      "sha256": "1e939fb27aa4eaa9bb2fd79d7022ff4f48011fdf8824b0e7645bbc6f3308e1c8"
+    },
+    "qa_contract.py": {
+      "bytes": 39280,
+      "sha256": "871c784812063739a6ab976784fb38243af52266b0d9a95aa1244779ccd2c005"
+    },
+    "src/org/droidloom/qa/bili/r6/ActionRunner.java": {
+      "bytes": 60912,
+      "sha256": "c93b943bee94533fdeb31954879434f565227ed15e1315c5e697bfae8357c6f5"
+    },
+    "src/org/droidloom/qa/bili/r6/TouchTransaction.java": {
+      "bytes": 4979,
+      "sha256": "059c4a66d51b92931c626fd95283821dde21d1e311fb5a9f5d35e05342243803"
+    },
+    "stage_build.py": {
+      "bytes": 7554,
+      "sha256": "1782c853583d2d10a69d58bcc068ca9ad9a745cedfb9f8c3f97a5bda549c7c19"
+    }
+  },
+  "protocol": "pocket4-owned-bili-qa-v6",
+  "public_API_evidence": [
+    {
+      "claim": "Public static 16-argument obtain with displayId added API34; uptimeMillis timestamps; device0 synthetic. getMethod exact signature, no hidden setter or fallback.",
+      "observed": "2026-11-05",
+      "url": "https://developer.android.com/reference/android/view/MotionEvent"
+    },
+    {
+      "claim": "Public injectInputEvent API18 returns boolean; caller recycles; waits for animation/surface work. Thus 150ms is admission, not Binder-duration guarantee.",
+      "observed": "2026-11-05",
+      "url": "https://developer.android.com/reference/android/app/UiAutomation"
+    }
+  ],
+  "request": {
+    "bytes": 189391,
+    "git_blob_sha1": "27b6010a1ea0161f1cd97a1a722d63c64587332e",
+    "sha256": "25db8473559a84fa65e9d1041883669df7e1feceec43ebeb99ebe4f9fa6a6f68"
+  },
+  "schema": 1,
+  "scope_limits": [
+    "No Android compilation/install/input performed by these local controls.",
+    "No atomic input receiver attribution; exact before/after display/window/geometry required.",
+    "Input cleanup is best effort under normal Exception paths; hard kill, VM Error or indefinitely blocked Binder is not guaranteed.",
+    "A successful down/up does not prove controls revealed; fresh private controls readback still required.",
+    "No playback continuity, pause/seek/audio or whole-app qualification."
+  ],
+  "source_manifest": {
+    "bytes": 1478,
+    "git_blob_sha1": "32e090125151cc11510ff41c553565e27b87a31b",
+    "sha256": "6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419"
+  },
+  "state": "SOURCE_FROZEN_BUILD_ONLY_REQUEST_NOT_SUBMITTED_BY_AUTHOR",
+  "whole_app_qualified": false
+}

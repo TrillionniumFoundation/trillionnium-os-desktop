@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "state": "LOCAL_SYNTAX_AND_DEFAULT_PLAN_ONLY",
+  "actual_build_receipt_bound": false,
+  "runtime_executed": false,
+  "remote_actions": 0,
+  "common_byte_identical": true,
+  "common_functions": [
+    "require",
+    "utc",
+    "sha",
+    "identity",
+    "held",
+    "write_new",
+    "real_directory",
+    "children",
+    "cleanup_children",
+    "command",
+    "resource_text",
+    "resource_events",
+    "resource_snapshot",
+    "begin_resources",
+    "finish_resources",
+    "hash_held",
+    "regular_tree"
+  ],
+  "helper_AST_identical": [
+    "verify_rows",
+    "held_executable"
+  ],
+  "generated_stage_AST_valid_without_execution": true,
+  "commands": [
+    {
+      "file": "run_registry.template.py",
+      "returncode": 0,
+      "stdout": "{\"state\": \"PLAN_ONLY\", \"requires_actual_matching_build\": true, \"owned_cases\": 10, \"root_execution\": false, \"factory_service_started\": false, \"Main_actions\": 0}\n",
+      "stderr": "",
+      "remote_actions": 0
+    },
+    {
+      "file": "make_run_request.py",
+      "returncode": 0,
+      "stdout": "{\"state\": \"PLAN_ONLY\", \"requires_qualified_actual_build\": true, \"requires_actual_ELF_root_review\": true, \"remote_actions\": 0}\n",
+      "stderr": "",
+      "remote_actions": 0
+    }
+  ]
+}

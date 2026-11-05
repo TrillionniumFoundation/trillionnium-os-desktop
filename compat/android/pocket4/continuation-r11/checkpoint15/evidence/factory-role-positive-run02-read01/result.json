@@ -1,0 +1,375 @@
+{
+  "Android_execution": false,
+  "Main_actions": 0,
+  "Main_identity_observed": false,
+  "actual_build_receipt": {
+    "bytes": 63352,
+    "identity": [
+      66306,
+      36092985,
+      33152,
+      63352,
+      1793877410310001550,
+      1793877410310001550
+    ],
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105/build01/result.json",
+    "sha256": "2448db62f26f3c5f738d532b5104eccf791fa5eea923bb1ce4c06e3033d400f2"
+  },
+  "assessment": {
+    "cases": [
+      {
+        "actual_kernel_identity": true,
+        "case": "one_grant_create_release_tombstone",
+        "production_platform_policy": false,
+        "snapshot_created": false,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "same_pidfd_caller_suspend_attach",
+        "production_platform_policy": false,
+        "snapshot_created": false,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "fork_token_rejected_parent_reattaches",
+        "production_platform_policy": false,
+        "snapshot_created": false,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "unexpected_active_hup_tombstone",
+        "production_platform_policy": false,
+        "snapshot_created": false,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "pending_hup_tombstone",
+        "production_platform_policy": false,
+        "snapshot_created": false,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "pre_detach_hup_tombstone",
+        "production_platform_policy": false,
+        "snapshot_created": false,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "suspended_capability_loss_revokes",
+        "production_platform_policy": false,
+        "snapshot_created": false,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "wrong_fork_return_pid_then_exact_parent",
+        "production_platform_policy": false,
+        "snapshot_created": false,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "duplicate_root_approval_rejected",
+        "production_platform_policy": false,
+        "snapshot_created": false,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "pending_deadline_tombstone",
+        "production_platform_policy": false,
+        "snapshot_created": false,
+        "state": "PASS"
+      }
+    ],
+    "summary": {
+      "Main_actions": 0,
+      "assertions": 1017,
+      "cases": 10,
+      "cleanup_unreaped": 0,
+      "direct_children_reaped": 10,
+      "factory_service_started": false,
+      "forced_cleanup": 0,
+      "nested_children_reaped": 1,
+      "platform_policy_qualified": false,
+      "snapshot_created": false,
+      "state": "PASS_OWNED_REGISTRY_MECHANISM"
+    }
+  },
+  "authority_unchanged_after": true,
+  "cleanup": {
+    "errors": [],
+    "forced_cleanup": false,
+    "initial_owned_children": [],
+    "reaped": [],
+    "remaining": []
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/proc/self/fd/5"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105/source",
+      "finished_utc": "2026-11-05T11:25:30.645155+00:00",
+      "label": "runtime-libraries",
+      "returncode": 0,
+      "started_utc": "2026-11-05T11:25:30.639418+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          28,
+          1300449,
+          33152,
+          0,
+          1793877930639019944,
+          1793877930639019944
+        ],
+        "path": "/run/pocket4-role-authorization-positive-host-run-02-20261105/run01/runtime-libraries.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 390,
+        "identity": [
+          28,
+          1300448,
+          33152,
+          390,
+          1793877930643020226,
+          1793877930643020226
+        ],
+        "path": "/run/pocket4-role-authorization-positive-host-run-02-20261105/run01/runtime-libraries.stdout",
+        "sha256": "621ef4f51c00f9b1d53d7298a34e4ac44e67ea7b12140c25655fa83e8eb53317"
+      },
+      "timed_out": false
+    }
+  ],
+  "execution": {
+    "child_pid": 1997887,
+    "child_reaped": true,
+    "fd_exec": true,
+    "finished_utc": "2026-11-05T11:25:32.734063+00:00",
+    "held_elf_path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105/build01/registry_controls",
+    "returncode": 0,
+    "started_utc": "2026-11-05T11:25:30.654245+00:00",
+    "stderr": {
+      "bytes": 0,
+      "identity": [
+        28,
+        1300452,
+        33152,
+        0,
+        1793877930654150109,
+        1793877930654150109
+      ],
+      "path": "/run/pocket4-role-authorization-positive-host-run-02-20261105/run01/registry.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 1753,
+      "identity": [
+        28,
+        1300451,
+        33152,
+        1753,
+        1793877932728167237,
+        1793877932728167237
+      ],
+      "path": "/run/pocket4-role-authorization-positive-host-run-02-20261105/run01/registry.stdout",
+      "sha256": "4c07a66ef34850e7189aa3f0be4a61ed98cba6bc888aefe776b1f0672df8aad3"
+    },
+    "timed_out": false,
+    "wait_status": 0
+  },
+  "factory_service_started": false,
+  "finished_utc": "2026-11-05T11:25:32.751882+00:00",
+  "held_ELF_unchanged_after": true,
+  "library_changes": [],
+  "owned_memory_events_delta": {
+    "high": 0,
+    "low": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0,
+    "sock_throttled": 0
+  },
+  "owned_memory_peak": 25927680,
+  "owned_memory_swap_peak": 0,
+  "owned_resource_gate": {
+    "after": {
+      "controller_pid": 1997852,
+      "directory_identity": [
+        30,
+        30346901
+      ],
+      "events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "fields": {
+        "cgroup.procs": "1997844\n1997848\n1997852",
+        "cpu.max": "50000 100000",
+        "memory.current": "23367680",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "max",
+        "memory.max": "268435456",
+        "memory.peak": "25927680",
+        "memory.swap.current": "0",
+        "memory.swap.max": "max",
+        "memory.swap.peak": "0"
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ab74e9d2-fc05-4e0b.service",
+      "observed_utc": "2026-11-05T11:25:32.751815+00:00",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ab74e9d2-fc05-4e0b.service"
+    },
+    "before": {
+      "controller_pid": 1997852,
+      "directory_identity": [
+        30,
+        30346901
+      ],
+      "events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "fields": {
+        "cgroup.procs": "1997844\n1997848\n1997852",
+        "cpu.max": "50000 100000",
+        "memory.current": "20897792",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "max",
+        "memory.max": "268435456",
+        "memory.peak": "20897792",
+        "memory.swap.current": "0",
+        "memory.swap.max": "max",
+        "memory.swap.peak": "0"
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ab74e9d2-fc05-4e0b.service",
+      "observed_utc": "2026-11-05T11:25:30.576166+00:00",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ab74e9d2-fc05-4e0b.service"
+    },
+    "memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak": 25927680,
+    "memory_swap_peak": 0,
+    "pass": true,
+    "resource_settings_changed": false,
+    "swap_max_observed_only": "max"
+  },
+  "owned_resources_after": {
+    "controller_pid": 1997852,
+    "directory_identity": [
+      30,
+      30346901
+    ],
+    "events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "fields": {
+      "cgroup.procs": "1997844\n1997848\n1997852",
+      "cpu.max": "50000 100000",
+      "memory.current": "23367680",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "max",
+      "memory.max": "268435456",
+      "memory.peak": "25927680",
+      "memory.swap.current": "0",
+      "memory.swap.max": "max",
+      "memory.swap.peak": "0"
+    },
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ab74e9d2-fc05-4e0b.service",
+    "observed_utc": "2026-11-05T11:25:32.751815+00:00",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ab74e9d2-fc05-4e0b.service"
+  },
+  "owned_resources_before": {
+    "controller_pid": 1997852,
+    "directory_identity": [
+      30,
+      30346901
+    ],
+    "events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "fields": {
+      "cgroup.procs": "1997844\n1997848\n1997852",
+      "cpu.max": "50000 100000",
+      "memory.current": "20897792",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "max",
+      "memory.max": "268435456",
+      "memory.peak": "20897792",
+      "memory.swap.current": "0",
+      "memory.swap.max": "max",
+      "memory.swap.peak": "0"
+    },
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ab74e9d2-fc05-4e0b.service",
+    "observed_utc": "2026-11-05T11:25:30.576166+00:00",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ab74e9d2-fc05-4e0b.service"
+  },
+  "platform_policy_qualified": false,
+  "production_source_changed": false,
+  "runtime_libraries": {
+    "bytes": 2346,
+    "path": "/run/pocket4-role-authorization-positive-host-run-02-20261105/run01/runtime-libraries-before.json",
+    "sha256": "e889b5d723d1026d97cee2a75a6ce1bc0e824f6ea6a4377ab4bc3faa289f9318"
+  },
+  "schema": 1,
+  "scope": "fixed root / owned role child kernel authorization mechanism only",
+  "selected_cpus": [
+    23
+  ],
+  "snapshot_created": false,
+  "source_authority": {
+    "bytes": 1670,
+    "identity": [
+      66306,
+      36050792,
+      33024,
+      1670,
+      1793877408130917891,
+      1793877408130917891
+    ],
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorization-positive-host-build-02-20261105/source/role-source-pins.json",
+    "sha256": "fda076982c0a26682eb3b6a596a6964e6645cf1eddc7b175e56d9b499c06fda2"
+  },
+  "source_unchanged_after": true,
+  "started_utc": "2026-11-05T11:25:30.575857+00:00",
+  "state": "PASS_OWNED_REGISTRY_MECHANISM",
+  "tool_changes": []
+}

@@ -1,0 +1,79 @@
+--- owner13/freeze_logs_reader13.py
++++ owner14/freeze_logs_reader14.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Bind the unchanged fifteen-member reader to one actual retired Owner13 NORMAL01 run."""
++"""Bind the unchanged fifteen-member reader to one actual retired Owner14 NORMAL01 run."""
+ import argparse
+ import ast
+ import difflib
+@@ -10,10 +10,10 @@
+ 
+ BASE = Path('/workspace/scratch/94990735b266/lmkd-recovery-20261105-01')
+ PREIMAGE = BASE / 'owner07-normal01-logs-freeze-01'
+-SOURCE = BASE / 'owner13-normal01-freeze-01'
+-RUNTIME = BASE / 'owner13-normal01-runtime-freeze-01'
+-OUT = BASE / 'owner13-normal01-logs-freeze-01'
+-ROOT = '/opt/p4-owner13-normal-20261105-01-state'
++SOURCE = BASE / 'owner14-normal01-freeze-01'
++RUNTIME = BASE / 'owner14-normal01-runtime-freeze-01'
++OUT = BASE / 'owner14-normal01-logs-freeze-01'
++ROOT = '/opt/p4-owner14-normal-20261105-01-state'
+ 
+ 
+ def sha(raw):
+@@ -66,14 +66,14 @@
+     assert sha(old_raw) == '01ca8e6b31e3a529100520b652c03b02409b237470999e7b3c0d13f5f4f2e6f4'
+     old = old_raw.decode()
+     substitutions = {
+-        'retired first NORMAL attempt': 'retired Owner13 NORMAL01 attempt',
++        'retired first NORMAL attempt': 'retired Owner14 NORMAL01 attempt',
+         '/opt/p4-owner07-normal-20261105-01-state': ROOT,
+         '06ad67978c234fe35388a364f82523aadc8dc25755030cb61ee88128b9ca5979': ATTEMPT,
+         'be45f40c6453182e8a4f71ecb5cb7398803f8945f4c3be156410c168722c26ae': PREPARED_SHA,
+         '26f19099192d0bfd76740c535f30598c32e17718da58b9fbe63d134bfe5abd19': args.sha256,
+         'dbf7eb9f900a4c0f8738c1f1f8c99c65': invocation,
+         'ACTOR_PID = 1034770': f'ACTOR_PID = {actor}',
+-        'owner07-normal01-retired-evidence-read01': 'owner13-normal01-retired-evidence-read01',
++        'owner07-normal01-retired-evidence-read01': 'owner14-normal01-retired-evidence-read01',
+     }
+     source = old
+     for before, after in substitutions.items():
+@@ -85,18 +85,19 @@
+         reconstructed = reconstructed.replace(after, before)
+     assert reconstructed == old
+     ast.parse(source)
+-    compile(source, '<fixed Owner13 NORMAL01 read-only collector>', 'exec')
++    compile(source, '<fixed Owner14 NORMAL01 read-only collector>', 'exec')
+     request = json.loads((PREIMAGE / 'request.json').read_bytes())
+     assert request['stdin'] == old
+     request['stdin'] = source
+-    request['idempotency_key'] = 'p4-owner13-normal01-logs01-' + sha(source.encode())[:16]
++    request['idempotency_key'] = 'p4-owner14-normal01-logs01-' + sha(source.encode())[:16]
+     encoded_request = pretty(request)
+     binding = {
+-        'schema': 1, 'kind': 'owner13-normal01-fixed-root-evidence-reader-static-binding',
++        'schema': 1, 'kind': 'owner14-normal01-fixed-root-evidence-reader-static-binding',
+         'expected_prepared_sha256': PREPARED_SHA, 'expected_runtime_sha256': args.sha256,
+         'expected_plan_sha256': args.plan_sha256,
+         'actual_invocation': invocation, 'actual_actor_pid': actor,
+-        'actual_original_retirement_fields_required': True,
++        'actual_runtime_and_exact_outer_cleanup_required': True,
++        'original_Owner_retirement_success_not_required_or_claimed': True,
+         'only_fixed_literals_and_inert_labels_changed': True,
+         'allowed_member_count': 15, 'per_member_max_bytes': 1048576,
+         'aggregate_max_bytes': 4194304, 'source_AST_compile_passed': True,
+@@ -107,10 +108,10 @@
+         'collect.py': source.encode(), 'request.json': encoded_request,
+         'source-binding-result.json': pretty(binding),
+         'source.diff': ''.join(difflib.unified_diff(old.splitlines(True), source.splitlines(True),
+-                          fromfile='normal01/collect.py', tofile='owner13-normal01/collect.py')).encode(),
++                          fromfile='normal01/collect.py', tofile='owner14-normal01/collect.py')).encode(),
+         'actual-runtime.json': actual_raw,
+-        'freeze_logs_reader11.py': Path(__file__).read_bytes(),
+-        'README.md': b'# Fixed Owner13 NORMAL01 retirement evidence reader\n\nThis is the original fifteen-member root reader with only exact attempt, receipt, InvocationID, PID and inert labels substituted. No directory scan, write, mode change, process launch, namespace operation or runtime replay is added. Every source path remains fixed; collection success is never runtime qualification. The generator requires the original runtime result and its externally observed SHA, exact retired InvocationID, and all three cleanup fields before writing this reader.\n',
++        'freeze_logs_reader14.py': Path(__file__).read_bytes(),
++        'README.md': b'# Fixed Owner14 NORMAL01 retirement evidence reader\n\nThis is the original fifteen-member root reader with only exact attempt, receipt, InvocationID, PID and inert labels substituted. No directory scan, write, mode change, process launch, namespace operation or runtime replay is added. Every source path remains fixed; collection success is never runtime qualification. The generator requires the original runtime result and its externally observed SHA, exact retired InvocationID, and all three cleanup fields before writing this reader.\n',
+     }
+     OUT.mkdir(exist_ok=False)
+     rows = []

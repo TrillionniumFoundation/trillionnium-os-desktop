@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "reviewer": "native_bridge_repair",
+  "state": "NO_NEW_CONCRETE_BLOCKER_IN_REVIEWED_SOURCE_SCOPE",
+  "scope": "Full frozen qa_contract.py and qa_adapter.py read, their exact R5-to-R6 deltas, and cross-language fields/exception/restoration against the previously completed full R6 Java caller review. No target Python controls, Java compilation, device call, Hepta call, or UI action was executed.",
+  "inputs": {
+    "FROZEN_FILES.json": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/FROZEN_FILES.json",
+      "bytes": 9203,
+      "sha256": "3c6644d6d1b4890961bfd8a0215c95f968be7b66c4a9b6b9ca9bde9fe07817c0"
+    },
+    "source/SOURCE_PINS.json": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/SOURCE_PINS.json",
+      "bytes": 1478,
+      "sha256": "6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419"
+    },
+    "source/qa_contract.py": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/qa_contract.py",
+      "bytes": 39280,
+      "sha256": "871c784812063739a6ab976784fb38243af52266b0d9a95aa1244779ccd2c005"
+    },
+    "source/qa_adapter.py": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/qa_adapter.py",
+      "bytes": 25231,
+      "sha256": "1e939fb27aa4eaa9bb2fd79d7022ff4f48011fdf8824b0e7645bbc6f3308e1c8"
+    },
+    "source/src/org/droidloom/qa/bili/r6/ActionRunner.java": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/src/org/droidloom/qa/bili/r6/ActionRunner.java",
+      "bytes": 60912,
+      "sha256": "c93b943bee94533fdeb31954879434f565227ed15e1315c5e697bfae8357c6f5"
+    },
+    "source/src/org/droidloom/qa/bili/r6/TouchTransaction.java": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/src/org/droidloom/qa/bili/r6/TouchTransaction.java",
+      "bytes": 4979,
+      "sha256": "059c4a66d51b92931c626fd95283821dde21d1e311fb5a9f5d35e05342243803"
+    },
+    "delta-qa_contract.py.patch": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/delta-qa_contract.py.patch",
+      "bytes": 16042,
+      "sha256": "4148929ea815e30b294804c0823b1074acc15f8be6e62a8c680c7ced749cbe0d"
+    },
+    "delta-qa_adapter.py.patch": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/delta-qa_adapter.py.patch",
+      "bytes": 6378,
+      "sha256": "9dafb9327bc441164d4594d1c41b22689adce9b47470d36281f1cab7a6e00f94"
+    }
+  },
+  "prior_review": {
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/bili-r6-java-caller-peer-review01/report.json",
+    "bytes": 11720,
+    "sha256": "2ec9d97d629a805846dca6eb07ee59446829ec7c7795717320f7092f1133bee0"
+  },
+  "checks": {
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/bili-r6-python-peer-review01/checks.json",
+    "bytes": 1488,
+    "sha256": "a51855072108b54f483858654261b7e701893f7565831008c18e0ca6b9619b31"
+  },
+  "source_identity": {
+    "frozen_payloads_checked": 42,
+    "source_payloads_checked": 10,
+    "actual_unified_diffs_equal_supplied_deltas": true,
+    "qa_adapter_existing_function_delta": {
+      "bytes": 25231,
+      "sha256": "1e939fb27aa4eaa9bb2fd79d7022ff4f48011fdf8824b0e7645bbc6f3308e1c8",
+      "exact_declared_diff": true,
+      "unchanged": [
+        "require",
+        "sha",
+        "bounded",
+        "pinned",
+        "load",
+        "qualified_build",
+        "Session.installed",
+        "Session.foreground",
+        "Session.task"
+      ],
+      "changed": [
+        "own_source",
+        "validate_plan",
+        "Session.__init__",
+        "Session.instrument",
+        "Session.sequence",
+        "execute",
+        "main"
+      ],
+      "added": [],
+      "removed": []
+    },
+    "qa_contract_existing_function_delta": {
+      "bytes": 39280,
+      "sha256": "871c784812063739a6ab976784fb38243af52266b0d9a95aa1244779ccd2c005",
+      "exact_declared_diff": true,
+      "unchanged": [
+        "require",
+        "sha",
+        "_json_types",
+        "canonical",
+        "nonce",
+        "digest",
+        "scope",
+        "instrumentation_argv",
+        "state",
+        "decode_wire",
+        "inspect_record",
+        "window_observation",
+        "select_unique_clickable",
+        "select_unique_editable"
+      ],
+      "changed": [
+        "validate_request",
+        "parse_completed",
+        "failure_diagnostic",
+        "tree_observations",
+        "assess_restoration"
+      ],
+      "added": [
+        "reveal_rect",
+        "player_reveal_scope",
+        "same_reveal_frame",
+        "reveal_request_fields",
+        "touch_observation",
+        "assess_reveal"
+      ],
+      "removed": []
+    }
+  },
+  "findings": [
+    {
+      "area": "Fresh proof and one operation",
+      "conclusion": "The new plan has one reveal action nonce, distinct before/inspect/after/action nonces and no selector or arbitrary point. Session.sequence derives request fields from its own just-completed parsed inspect result after rechecking foreground scope. The Java side reopens its own nonce-bound persisted inspection, checks its digest and freshness, repeats complete target/final-window inspection, and recomputes the same player proof. Old retained UI trees are not accepted as independent action authority."
+    },
+    {
+      "area": "Player and coordinate identity",
+      "conclusion": "Python player_reveal_scope repeats the same exact course activity, title and author hashes, eligible complete node roles, absolute viewport/full-area geometry, two SurfaceViews and distinct parents, hidden control container and noninteractive-player checks read in Java. Canonical proof has nine matching fields; same_reveal_frame compares the same eight stable fields, permitting only the intended controls-tree evolution. The action coordinate is derived as the viewport center with a strict greater-than-16-pixel margin on all sides, not taken from a caller-supplied coordinate."
+    },
+    {
+      "area": "Success receipt and actual input acknowledgement",
+      "conclusion": "The reveal branch remains behind parse_completed: exact request/nonce/protocol/UID binding, canonical bounded gzip result, unique instrumentation finish(-1), actual joined command and SHA receipt, no helper error or secondary error, complete three-capture sequence, window/cache readiness and service restoration. assess_reveal requires all thirty exact touch fields, runtime SDK at least 34, explicit public display factory, display zero/source touchscreen/single pointer, acknowledged DOWN and UP, no CANCEL success-path flags, all created events recycled, correct interior point and 150ms UP-admission limit. Post-input inspection is complete and recomputed to the same absolute player frame."
+    },
+    {
+      "area": "Mutation classification and replay",
+      "conclusion": "Both Flow.begin and the instrumentation call classify reveal_controls as a mutation. Session.instrument records the nonce in its set before any attempt and persists one request, then requires exactly one additional held recorder command; it contains no input retry or fallback. The helper claim/work and independent postguard contracts remain required. The existing action lock is acquired once around the sequence and closed once in the original finally path."
+    },
+    {
+      "area": "First error and independent restoration",
+      "conclusion": "Session.sequence clears middle before calling the action, so an action/assessment failure cannot reuse the earlier inspect as successful mutation evidence. Its finally attempts one distinct after-state command once state sequencing began, even after inspect or action failure; a failed transport guard remains failure. When available, before/middle/after state and helper UID must agree, and service flags/capabilities restore before success. Foreground must remain exact for reveal; owned task and installed signed APK bytes are rechecked. The first exception is retained; subsequent state/foreground/task/install and final Main/release errors remain secondary, never converted to success."
+    },
+    {
+      "area": "Failure receipt and honest limits",
+      "conclusion": "A finish(0) failure cannot pass parse_completed. Optional failure_diagnostic extracts bounded metadata/touch observations only and is marked unqualified; diagnostic extraction failure leaves the original exception intact. Success explicitly keeps controls_revealed null, business/audio/whole-app success false, outcome_unknown tied to attempted action and independent controls readback required. The input transaction is not claimed atomic against window changes, and the inherited Java Error, hard-kill, permanently blocked Binder or unsuccessful CANCEL limits remain."
+    }
+  ],
+  "unchanged_boundaries": [
+    "Exact recorder manifest and held transport authority",
+    "Matched source/build/signer/installed-APK checks",
+    "Original task ownership; this adapter does not itself launch or close application tasks",
+    "Existing Main guards, connection flags, cache/window selection, ordinary inspect/click/edit and restore semantics",
+    "No hidden API, reflection beyond the reviewed public MotionEvent overload, or event-target attribution guarantee added"
+  ],
+  "specific_new_blockers": [],
+  "qualification": {
+    "source_review_only": true,
+    "target_controls_run_by_reviewer": false,
+    "Android_compiled_by_reviewer": false,
+    "Android_execution_by_reviewer": false,
+    "Hepta_calls": 0,
+    "UI_actions": 0,
+    "production_ready": false
+  },
+  "mapping_owner": "Android CP15 independent peer addendum, not Native catalog02 or Native NOFOLLOW addendum"
+}

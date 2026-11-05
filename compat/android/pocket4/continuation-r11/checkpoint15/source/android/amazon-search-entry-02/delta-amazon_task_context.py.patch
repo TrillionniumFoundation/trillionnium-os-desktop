@@ -1,0 +1,29 @@
+--- search-entry-01/amazon_task_context.py
++++ search-entry-02/amazon_task_context.py
+@@ -38,7 +38,7 @@
+         need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF,'EXACT_AMAZON_CONTRACT_REQUIRED')
+         need(type(inspect_plan) is dict and set(inspect_plan)=={'schema','operation','stability','entry','post'} and
+              inspect_plan['schema']==1 and inspect_plan['operation']=='search_entry' and
+-             len(inspect_plan['stability'])==4 and all(p['operation']=='inspect' for p in
++             len(inspect_plan['stability'])==5 and all(p['operation']=='inspect' for p in
+              [*inspect_plan['stability'],inspect_plan['post']]) and inspect_plan['entry']['operation']=='click' and
+              inspect_plan['entry']['selector']=={'resource_id':PACKAGE+':id/chrome_search_box',
+                 'class':'android.widget.ImageButton','content_desc':'Search'},
+@@ -51,7 +51,7 @@
+             for name,nonce in plan['nonces'].items():
+                 qa.nonce(nonce);need(nonce not in self.request_ops,'DISTINCT_PHASE_NONCES')
+                 self.request_ops[nonce]=('inspect' if name=='inspect' else 'click' if name=='action' else 'state')
+-        need(len(self.request_ops)==19,'EXACT_NINETEEN_HELPER_NONCES')
++        need(len(self.request_ops)==22,'EXACT_TWENTY_TWO_HELPER_NONCES')
+         self.phase,self.qa,self.resolve,self.plan=phase,qa,list(resolve),inspect_plan
+         self.step,self.read,self.selected_task=step,read,selected_task
+         self.counts={};self.used_nonces=set();self.action_nonces=set();self.remove_attempted=False
+@@ -116,7 +116,7 @@
+                          'CLICK_MUST_USE_ITS_OWN_FRESH_INSPECTION')
+                 matches.append(nonce)
+         need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_STATE_INSPECT_OR_ENTRY_CLICK_REQUEST')
+-        self.used_nonces.add(matches[0]);self.claim('instrument',19)
++        self.used_nonces.add(matches[0]);self.claim('instrument',22)
+         if self.request_ops[matches[0]]=='click':self.action_nonces.add(matches[0])
+ 
+ 

@@ -1,0 +1,346 @@
+--- producer11/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
++++ producer13/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
+@@ -657,6 +657,7 @@
+     audit: Option<PressureAudit>,
+     retirement_requested: bool,
+     retirement_seen: bool,
++    retirement_poisoned: bool,
+     joined: bool,
+     retired: Arc<AtomicBool>,
+ }
+@@ -728,7 +729,8 @@
+         };
+         // No fallible operation between spawn and returning retained ownership.
+         Ok(Self { child, running: None, channel, executable, host, spec, layout, inputs: Some(inputs), attempted: false,
+-            ready: None, latest: None, audit: None, retirement_requested: false, retirement_seen: false, joined: false, retired })
++            ready: None, latest: None, audit: None, retirement_requested: false, retirement_seen: false,
++            retirement_poisoned: false, joined: false, retired })
+     }
+     pub fn pid(&self) -> u32 { self.child.id() }
+     pub fn latest_status(&self) -> Option<&BootstrapStatus> { self.latest.as_ref() }
+@@ -795,7 +797,7 @@
+     /// while init is still held in its constructor.
+     pub fn ready_for_init_commit(&self) -> Result<()> {
+         self.host.validate_current_thread()?;
+-        if !self.attempted || self.joined || self.retirement_requested || self.retirement_seen ||
++        if !self.attempted || self.joined || self.retirement_requested || self.retirement_seen || self.retirement_poisoned ||
+             self.latest.as_ref().is_none_or(|s| s.state != BootstrapState::Ready || s.faulted || s.granted) {
+             return Err(Error::Reject("broker no longer holds its initial READY"));
+         }
+@@ -865,29 +867,73 @@
+     /// both a valid joined-worker RETIRED packet AND reaping the exact broker.
+     /// This still does not certify that the old Android owner/init have died.
+     pub fn retire(&mut self, timeout: Duration) -> Result<bool> {
++        if self.retirement_poisoned { return Err(Error::Reject("broker retirement is poisoned; retain exact generation")); }
+         if self.joined { return Ok(true); }
+         if !self.attempted || self.ready.is_none() { return Err(Error::Reject("bootstrap incomplete; retain failed owner")); }
+         let deadline = Deadline::new(timeout)?;
+-        if !self.retirement_seen && !self.retirement_requested {
+-            self.retirement_requested = true;
+-            self.spec.request_retirement(unsafe { BorrowedFd::borrow_raw(self.channel.as_raw_fd()) }, timeout)?;
+-        }
+-        while !self.retirement_seen {
+-            let remaining = deadline.0.saturating_duration_since(Instant::now());
+-            if remaining < Duration::from_millis(1) { return Ok(false); }
+-            self.receive_progress(remaining)?;
+-        }
+-        loop {
+-            if let Some(exit) = self.child.try_wait().map_err(|e| io_err("reap exact lifecycle broker", e))? {
+-                let faulted = self.latest.as_ref().expect("retirement status").faulted;
+-                if exit.code() != Some(if faulted { 1 } else { 0 }) {
+-                    return Err(Error::Reject("broker exit disagrees with retirement receipt"));
++        let attempt = (|| -> Result<bool> {
++            let mut request_error = None;
++            if !self.retirement_seen && !self.retirement_requested {
++                // A broker can retire on its own error and close after writing its
++                // AUDIT/RETIRED pair. Drain actual input before trying to write to
++                // that closed peer; bare EOF still fails the unchanged receiver.
++                while !self.retirement_seen {
++                    if deadline.0.saturating_duration_since(Instant::now()) < Duration::from_millis(1) {
++                        return Ok(false);
++                    }
++                    let mut p = libc::pollfd { fd: self.channel.as_raw_fd(),
++                        events: libc::POLLIN | libc::POLLRDHUP, revents: 0 };
++                    if unsafe { libc::poll(&mut p, 1, 0) } < 0 {
++                        if io::Error::last_os_error().kind() == io::ErrorKind::Interrupted { continue; }
++                        return Err(err("poll retirement input"));
++                    }
++                    if p.revents & (libc::POLLIN | BAD) == 0 { break; }
++                    let remaining = deadline.0.saturating_duration_since(Instant::now());
++                    if remaining < Duration::from_millis(1) { return Ok(false); }
++                    // The existing terminal receiver decides whether data may
++                    // be drained with HUP/ERR; this poll supplies no evidence.
++                    self.receive_progress(remaining)?;
+                 }
+-                self.joined = true; self.retired.store(true, Ordering::Release); return Ok(true);
+-            }
+-            if Instant::now() >= deadline.0 { return Ok(false); }
+-            thread::sleep(Duration::from_millis(1));
+-        }
++                if !self.retirement_seen {
++                    let remaining = deadline.0.saturating_duration_since(Instant::now());
++                    if remaining < Duration::from_millis(1) { return Ok(false); }
++                    self.retirement_requested = true; // never replay the command
++                    request_error = self.spec.request_retirement(
++                        unsafe { BorrowedFd::borrow_raw(self.channel.as_raw_fd()) }, remaining).err();
++                }
++            }
++            let terminal = (|| -> Result<bool> {
++                // Close can also race the readiness check above. A failed send is
++                // not retirement evidence: only the same full receiver plus exact
++                // Child reap can discharge it. Otherwise keep that first error.
++                while !self.retirement_seen {
++                    let remaining = deadline.0.saturating_duration_since(Instant::now());
++                    if remaining < Duration::from_millis(1) { return Ok(false); }
++                    self.receive_progress(remaining)?;
++                }
++                loop {
++                    if let Some(exit) = self.child.try_wait().map_err(|e| io_err("reap exact lifecycle broker", e))? {
++                        let faulted = self.latest.as_ref().expect("retirement status").faulted;
++                        if exit.code() != Some(if faulted { 1 } else { 0 }) {
++                            return Err(Error::Reject("broker exit disagrees with retirement receipt"));
++                        }
++                        self.joined = true; self.retired.store(true, Ordering::Release); return Ok(true);
++                    }
++                    if Instant::now() >= deadline.0 { return Ok(false); }
++                    thread::sleep(Duration::from_millis(1));
++                }
++            })();
++            match (terminal, request_error) {
++                (Ok(true), _) => Ok(true),
++                (_, Some(error)) => Err(error),
++                (result, None) => result,
++            }
++        })();
++        // A malformed/failed retirement cannot be retried into a clean
++        // certificate by consuming a valid tail left after the first error.
++        // Ok(false) retains an unfinished wait and remains resumable.
++        if attempt.is_err() { self.retirement_poisoned = true; }
++        attempt
+     }
+     /// Only before ANY bootstrap send, stopping/reaping this exact child proves
+     /// there was no authority or PSI owner. After initialize starts, failures
+@@ -931,6 +977,223 @@
+             budget, granted: false, faulted: false, incomplete: false, registrations: RegistrationAudit::default(),
+             observations: 0, packets_queued: 0, stop_reason: 0, events: EventAuditTrail::default(), retired_monotonic_ns: 10 };
+         (audit, status)
++    }
++    // This is a post-READY transport/reap fixture, not bootstrap authority.
++    // Only this test module seeds READY. Production constructors, their
++    // leader-origin requirement and all sixteen-handle checks are unchanged.
++    // Python merely sends Rust-encoded frames on the inherited owned socket;
++    // it implements no alternate protocol decoder or qualification logic.
++    const RETIREMENT_PEER: &str = r#"
++import socket, sys
++raw = sys.stdin.buffer.read(32769)
++assert len(raw) <= 32768
++lines = raw.splitlines()
++assert len(lines) >= 3
++code = int(lines[0]); assert code in (0, 1)
++request = bytes.fromhex(lines[1].decode())
++hold = lines[2] == b'1'
++frames = [bytes.fromhex(line.decode()) for line in lines[3:]]
++assert len(sys.argv) == 3
++channel = socket.socket(fileno=int(sys.argv[1]))
++control = socket.socket(fileno=int(sys.argv[2]))
++assert channel.type == control.type == socket.SOCK_SEQPACKET
++channel.settimeout(2)
++control.settimeout(2)
++assert control.send(b'R') == 1
++assert control.recv(2) == b'G'
++if request:
++    assert channel.recv(len(request) + 1) == request
++for frame in frames:
++    assert channel.send(frame) == len(frame)
++if hold:
++    assert control.recv(2) == b'X'
++channel.close(); control.close()
++sys.exit(code)
++"#;
++    struct RetirementOwnedChild(Option<std::process::Child>);
++    impl Drop for RetirementOwnedChild {
++        fn drop(&mut self) {
++            if let Some(child) = self.0.as_mut() {
++                if child.try_wait().ok().flatten().is_none() { let _ = child.kill(); }
++                let _ = child.wait();
++            }
++        }
++    }
++    struct RetirementFixture { broker: LifecycleBroker, control: OwnedFd }
++    impl Drop for RetirementFixture {
++        fn drop(&mut self) {
++            if self.broker.child.try_wait().ok().flatten().is_none() { let _ = self.broker.child.kill(); }
++            let _ = self.broker.child.wait();
++        }
++    }
++    impl RetirementFixture {
++        fn wait_exact_exit_without_reaping(&self) {
++            let pin = self.broker.running.as_ref().unwrap();
++            let deadline = Instant::now() + Duration::from_secs(2);
++            loop {
++                let mut p = libc::pollfd { fd: pin.pidfd.as_raw_fd(), events: libc::POLLIN, revents: 0 };
++                let count = unsafe { libc::poll(&mut p, 1, 10) };
++                assert!(count >= 0);
++                if p.revents & libc::POLLIN != 0 { return; }
++                assert_eq!(p.revents, 0);
++                assert!(Instant::now() < deadline, "owned retirement peer failed to exit");
++            }
++        }
++        fn release_exit(&self) {
++            send_packet(self.control.as_raw_fd(), b"X", &[],
++                &mut Deadline::new(Duration::from_secs(1)).unwrap()).unwrap();
++        }
++    }
++    fn retirement_fixture(frames: Vec<Vec<u8>>, code: i32, wait_request: bool, hold: bool) -> RetirementFixture {
++        use std::io::{Seek, SeekFrom};
++        use std::os::unix::process::CommandExt;
++        use std::process::{Command, Stdio};
++        fn high(fd: RawFd) -> OwnedFd {
++            let value = unsafe { libc::fcntl(fd, libc::F_DUPFD_CLOEXEC, 64) };
++            assert!(value >= 0);
++            unsafe { OwnedFd::from_raw_fd(value) }
++        }
++        fn hex(data: &[u8]) -> String { data.iter().map(|v| format!("{v:02x}")).collect() }
++        let request = if wait_request {
++            let mut wire = [0; RETIRE_SIZE]; wire[..8].copy_from_slice(b"P4RET01!");
++            put(&mut wire, 8, 1, 4); wire[16..].copy_from_slice(&spec().nonce); hex(&wire)
++        } else { String::new() };
++        let mut input = format!("{code}\n{request}\n{}\n", u8::from(hold));
++        for frame in frames { input.push_str(&hex(&frame)); input.push('\n'); }
++        assert!(input.len() <= 32768);
++        let raw = unsafe { libc::memfd_create(c"owned-retirement-input".as_ptr(), libc::MFD_CLOEXEC | libc::MFD_ALLOW_SEALING) };
++        assert!(raw >= 0);
++        let mut input_file = unsafe { File::from_raw_fd(raw) };
++        input_file.write_all(input.as_bytes()).unwrap();
++        input_file.seek(SeekFrom::Start(0)).unwrap();
++        assert_eq!(unsafe { libc::fcntl(input_file.as_raw_fd(), libc::F_ADD_SEALS,
++            libc::F_SEAL_WRITE | libc::F_SEAL_GROW | libc::F_SEAL_SHRINK | libc::F_SEAL_SEAL) }, 0);
++        let (channel, peer) = sockets();
++        let (control, peer_control) = sockets();
++        let peer_high = high(peer.as_raw_fd()); let control_high = high(peer_control.as_raw_fd());
++        let image = File::open("/usr/bin/python3").unwrap();
++        let digest = executable_digest(&image).unwrap();
++        let executable = ExecutablePin::from_lifecycle(image, digest).unwrap();
++        let image_high = high(executable.file.as_raw_fd());
++        let source = peer_high.as_raw_fd(); let ctl = control_high.as_raw_fd();
++        let parent_pid = unsafe { libc::getpid() };
++        let mut command = Command::new(format!("/proc/self/fd/{}", image_high.as_raw_fd()));
++        command.args(["-I", "-B", "-c", RETIREMENT_PEER])
++            .arg(source.to_string()).arg(ctl.to_string()).stdin(Stdio::from(input_file))
++            .stdout(Stdio::null()).stderr(Stdio::null());
++        unsafe {
++            command.pre_exec(move || {
++                if libc::fcntl(source, libc::F_SETFD, 0) < 0 || libc::fcntl(ctl, libc::F_SETFD, 0) < 0 ||
++                    libc::prctl(libc::PR_SET_PDEATHSIG, libc::SIGKILL) < 0 {
++                    return Err(io::Error::last_os_error());
++                }
++                if libc::getppid() != parent_pid { return Err(io::Error::other("owned fixture parent changed")); }
++                Ok(())
++            });
++        }
++        let mut child = RetirementOwnedChild(Some(command.spawn().unwrap()));
++        drop(peer); drop(peer_control); drop(peer_high); drop(control_high); drop(image_high);
++        let (ready, rights) = receive_packet(control.as_raw_fd(), 1,
++            &mut Deadline::new(Duration::from_secs(2)).unwrap(), false).unwrap();
++        assert_eq!(ready, b"R"); assert!(rights.is_empty());
++        // Capture real host/proc/thread identities for the test object. This
++        // test-only assembly does not exercise/claim public leader-origin or
++        // successful bootstrap admission; retire never opens that barrier.
++        let proc_root = open_dir(Path::new("/proc")).unwrap();
++        let self_pid = unsafe { libc::getpid() };
++        let self_proc = open_at(&proc_root, &self_pid.to_string(), libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW).unwrap();
++        let self_birth = process_birth(&read_at(&self_proc, "stat", MAX_PROC_BYTES).unwrap(), self_pid).unwrap();
++        let host_namespaces = NamespacePins::capture(&self_proc).unwrap();
++        let host = HostContext { proc_root, cgroup_mount: open_dir(Path::new("/sys/fs/cgroup")).unwrap(),
++            self_proc, self_pid, self_birth, host_namespaces };
++        host.validate_current_thread().unwrap();
++        let running = host.pin_owned_child(child.0.as_mut().unwrap()).unwrap();
++        executable.matches(&open_at(&running.proc_dir, "exe", libc::O_RDONLY).unwrap(), true).unwrap();
++        let (_, mut ready) = empty_audit_and_status(); ready.state = BootstrapState::Ready;
++        let broker = LifecycleBroker { child: child.0.take().unwrap(), running: Some(running), channel,
++            executable, host, spec: spec(), layout: BootstrapLayout::HoldingLeafV3, inputs: None,
++            attempted: true, latest: Some(ready.clone()), ready: Some(ready), audit: None,
++            retirement_requested: false, retirement_seen: false, retirement_poisoned: false, joined: false,
++            retired: Arc::new(AtomicBool::new(false)) };
++        let fixture = RetirementFixture { broker, control };
++        send_packet(fixture.control.as_raw_fd(), b"G", &[],
++            &mut Deadline::new(Duration::from_secs(1)).unwrap()).unwrap();
++        fixture
++    }
++    #[test]
++    fn retirement_drains_owned_terminal_before_closed_peer_request() {
++        for faulted in [false, true] {
++            let (mut audit, mut status) = empty_audit_and_status();
++            audit.faulted = faulted; status.faulted = faulted;
++            let mut owned = retirement_fixture(vec![audit.encode().unwrap().to_vec(), status.encode().to_vec()],
++                if faulted { 1 } else { 0 }, false, false);
++            owned.wait_exact_exit_without_reaping();
++            // Preserve the real old send-first failure without changing the
++            // state of the broker: no RETIRE can be delivered to this peer.
++            assert!(owned.broker.spec.request_retirement(
++                unsafe { BorrowedFd::borrow_raw(owned.broker.channel.as_raw_fd()) }, MAX_LIFECYCLE_IO_TIMEOUT).is_err());
++            assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).unwrap());
++            assert!(!owned.broker.retirement_requested);
++            assert_eq!(owned.broker.latest_status(), Some(&status));
++            assert_eq!(owned.broker.pressure_audit(), Some(&audit));
++            assert!(owned.broker.retired.load(Ordering::Acquire));
++            assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).unwrap());
++        }
++    }
++    #[test]
++    fn retirement_live_owned_peer_receives_one_exact_request() {
++        let (audit, status) = empty_audit_and_status();
++        let mut owned = retirement_fixture(vec![audit.encode().unwrap().to_vec(), status.encode().to_vec()], 0, true, false);
++        assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).unwrap());
++        assert!(owned.broker.retirement_requested);
++        assert_eq!(owned.broker.pressure_audit(), Some(&audit));
++        assert_eq!(owned.broker.child.try_wait().unwrap().unwrap().code(), Some(0));
++    }
++    #[test]
++    fn retirement_does_not_promote_dead_unbound_or_incomplete_peer() {
++        let (audit, status) = empty_audit_and_status();
++        let audit_wire = audit.encode().unwrap().to_vec(); let status_wire = status.encode().to_vec();
++        let mut nonce = status.clone(); nonce.nonce[0] ^= 1;
++        let mut generation = audit.clone(); generation.authority_generation[0] ^= 1;
++        let mut scope = status.clone(); scope.cgroup.inode += 1;
++        let mut flags = status.clone(); flags.faulted = true;
++        let mut active = status.clone(); active.state = BootstrapState::Active; active.granted = true;
++        let cases = [
++            ("bare EOF and exact death", vec![], 0),
++            ("status without joined audit", vec![status_wire.clone()], 0),
++            ("audit without terminal", vec![audit_wire.clone()], 0),
++            ("wrong nonce", vec![audit_wire.clone(), nonce.encode().to_vec()], 0),
++            ("wrong generation", vec![generation.encode().unwrap().to_vec(), status_wire.clone()], 0),
++            ("wrong scope", vec![audit_wire.clone(), scope.encode().to_vec()], 0),
++            ("inconsistent flags", vec![audit_wire.clone(), flags.encode().to_vec()], 1),
++            ("replayed audit", vec![audit_wire.clone(), audit_wire.clone(), status_wire.clone()], 0),
++            ("ACTIVE only then death", vec![active.encode().to_vec()], 0),
++            ("exit disagrees with terminal", vec![audit_wire, status_wire], 1),
++        ];
++        for (label, frames, code) in cases {
++            let mut owned = retirement_fixture(frames, code, false, false);
++            owned.wait_exact_exit_without_reaping();
++            assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).is_err(), "{label}");
++            assert!(!owned.broker.retirement_complete(), "{label}");
++            assert!(owned.broker.pressure_audit().is_none(), "{label}");
++            assert!(!owned.broker.retired.load(Ordering::Acquire), "{label}");
++            assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).is_err(), "{label}: retry");
++            assert!(!owned.broker.retirement_complete(), "{label}: retry");
++        }
++    }
++    #[test]
++    fn retirement_terminal_alone_cannot_replace_exact_child_exit() {
++        let (audit, status) = empty_audit_and_status();
++        let mut owned = retirement_fixture(vec![audit.encode().unwrap().to_vec(), status.encode().to_vec()], 0, false, true);
++        assert_eq!(owned.broker.receive_progress(MAX_LIFECYCLE_IO_TIMEOUT).unwrap(), &status);
++        assert!(!owned.broker.retire(Duration::from_millis(100)).unwrap());
++        assert!(owned.broker.retirement_seen);
++        assert!(!owned.broker.retirement_complete());
++        assert!(owned.broker.pressure_audit().is_none());
++        assert!(!owned.broker.retired.load(Ordering::Acquire));
++        owned.release_exit();
++        assert!(owned.broker.retire(MAX_LIFECYCLE_IO_TIMEOUT).unwrap());
++        assert_eq!(owned.broker.pressure_audit(), Some(&audit));
+     }
+     #[test]
+     fn retirement_cause_diagnostic_preserves_specific_and_lifecycle_reasons() {

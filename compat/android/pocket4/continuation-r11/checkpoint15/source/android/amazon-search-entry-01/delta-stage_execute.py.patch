@@ -1,0 +1,35 @@
+--- first-launch-inspect/stage_execute.py
++++ fresh-search-entry/stage_execute.py
+@@ -6,10 +6,10 @@
+ from pathlib import Path
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-amazon-owned-launch-inspect-01')
++ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-01')
+ SOURCE=ROOT/'source'
+-NONCE='71222d708e933c9afc2472cc1565646a'
+-FILES={'owned_inspect.py','amazon_task_context.py','INPUTS.json'}
++NONCE='853b099b08f0e7a60c3d7b05fcd07461'
++FILES={'owned_inspect.py','amazon_task_context.py','search_navigation.py','INPUTS.json'}
+ REFERENCE=Path('/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ 
+@@ -38,7 +38,7 @@
+     os.umask(0o077);ROOT.mkdir(mode=0o700)
+     result={'schema':1,'ok':False,'nonce':NONCE,'package':entry.PACKAGE,'source_manifest_sha256':manifest_sha256,
+         'Main_before':before,'error':None,'secondary_errors':[],'automatic_retry':False,
+-        'maximum_native_launches':1,'click_actions':0,'text_actions':0,'screenshots':0,'audio_actions':0,
++        'maximum_native_launches':1,'maximum_click_actions':1,'text_actions':0,'screenshots':0,'audio_actions':0,
+         'raw_UI_tree_private_only':True,'business_success_verified':False,'whole_app_production_ready':False}
+     def remember(phase,error):
+         row={'phase':phase,'type':type(error).__name__,'message':str(error)}
+@@ -55,7 +55,8 @@
+         assert observed['nonce']==NONCE and observed['source_manifest_sha256']==manifest_sha256
+         assert observed['package']==entry.PACKAGE and observed['helper_uid']==10175
+         assert rc==0 and observed['ok'] is True and observed['error'] is None and observed['secondary_errors']==[]
+-        assert observed['read_only_inspection_completed'] is True and observed['owned_task_absent_after_cleanup'] is True
++        assert observed['post_entry_inspection_completed'] is True and observed['search_entry_click_completed'] is True
++        assert observed['owned_task_absent_after_cleanup'] is True and observed['click_actions']==1
+         assert observed['business_success_verified'] is False and observed['whole_app_production_ready'] is False
+         result['ok']=True
+     except BaseException as error:remember('stage_or_owned_launch_inspect',error)

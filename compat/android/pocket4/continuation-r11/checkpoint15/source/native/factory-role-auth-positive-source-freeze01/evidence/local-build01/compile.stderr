@@ -1,0 +1,35 @@
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/registry_controls.cc: In function ‘void {anonymous}::Wait(int, short int, unsigned int)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/registry_controls.cc:65:32: error: no matching function for call to ‘min(uint64_t&, long long unsigned int)’
+   65 |   const uint64_t end = std::min(deadline, Now() + uint64_t{milliseconds} * 1000000ULL);
+      |                        ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/c++/13/algorithm:60,
+                 from /workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/registry_controls.cc:32:
+/usr/include/c++/13/bits/stl_algobase.h:233:5: note: candidate: ‘template<class _Tp> constexpr const _Tp& std::min(const _Tp&, const _Tp&)’
+  233 |     min(const _Tp& __a, const _Tp& __b)
+      |     ^~~
+/usr/include/c++/13/bits/stl_algobase.h:233:5: note:   template argument deduction/substitution failed:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/registry_controls.cc:65:32: note:   deduced conflicting types for parameter ‘const _Tp’ (‘long unsigned int’ and ‘long long unsigned int’)
+   65 |   const uint64_t end = std::min(deadline, Now() + uint64_t{milliseconds} * 1000000ULL);
+      |                        ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/c++/13/bits/stl_algobase.h:281:5: note: candidate: ‘template<class _Tp, class _Compare> constexpr const _Tp& std::min(const _Tp&, const _Tp&, _Compare)’
+  281 |     min(const _Tp& __a, const _Tp& __b, _Compare __comp)
+      |     ^~~
+/usr/include/c++/13/bits/stl_algobase.h:281:5: note:   template argument deduction/substitution failed:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/registry_controls.cc:65:32: note:   deduced conflicting types for parameter ‘const _Tp’ (‘long unsigned int’ and ‘long long unsigned int’)
+   65 |   const uint64_t end = std::min(deadline, Now() + uint64_t{milliseconds} * 1000000ULL);
+      |                        ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /usr/include/c++/13/algorithm:61:
+/usr/include/c++/13/bits/stl_algo.h:5775:5: note: candidate: ‘template<class _Tp> constexpr _Tp std::min(initializer_list<_Tp>)’
+ 5775 |     min(initializer_list<_Tp> __l)
+      |     ^~~
+/usr/include/c++/13/bits/stl_algo.h:5775:5: note:   template argument deduction/substitution failed:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/registry_controls.cc:65:32: note:   mismatched types ‘std::initializer_list<_Tp>’ and ‘long unsigned int’
+   65 |   const uint64_t end = std::min(deadline, Now() + uint64_t{milliseconds} * 1000000ULL);
+      |                        ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/usr/include/c++/13/bits/stl_algo.h:5785:5: note: candidate: ‘template<class _Tp, class _Compare> constexpr _Tp std::min(initializer_list<_Tp>, _Compare)’
+ 5785 |     min(initializer_list<_Tp> __l, _Compare __comp)
+      |     ^~~
+/usr/include/c++/13/bits/stl_algo.h:5785:5: note:   template argument deduction/substitution failed:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-positive-work01/registry_controls.cc:65:32: note:   mismatched types ‘std::initializer_list<_Tp>’ and ‘long unsigned int’
+   65 |   const uint64_t end = std::min(deadline, Now() + uint64_t{milliseconds} * 1000000ULL);
+      |                        ~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

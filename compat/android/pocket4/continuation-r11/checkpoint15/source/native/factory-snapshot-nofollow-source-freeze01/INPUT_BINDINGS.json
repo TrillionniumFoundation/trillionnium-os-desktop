@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "preimage_manifest": {
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-snapshot-source-freeze01/SOURCE_PINS.json",
+    "bytes": 4422,
+    "sha256": "53e90ef34ab51ae8b9700f93419c3c050665fb0ea5a50482417b48aa860497e1"
+  },
+  "new_v2_factory_preimage": {
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-snapshot-source-freeze01/references/factory_main.v2.cc",
+    "bytes": 28588,
+    "sha256": "18d8134ed6c2077088104d9b5dc22ccfe1c93f73a87ee880595a9eb89821e2b9"
+  },
+  "unchanged_files": [
+    "include/berberis/kernel_api/proc_maps_factory_protocol.h",
+    "include/berberis/kernel_api/proc_maps_kernel_statfs.h",
+    "include/berberis/kernel_api/proc_maps_linux_compat.h",
+    "references/factory_main.v2.cc",
+    "references/registry_controls.cc",
+    "source/factory_context.cc",
+    "source/factory_context.h",
+    "source/proc_maps_factory_wire.cc",
+    "source/role_authorization.cc",
+    "source/role_authorization.h",
+    "source/role_snapshot.h"
+  ],
+  "changed_existing_files": [
+    "controls/snapshot_controls.cc",
+    "source/role_snapshot.cc"
+  ],
+  "new_files": [
+    "include/berberis/kernel_api/proc_maps_snapshot_reopen.h",
+    "source/factory_main.cc"
+  ],
+  "role_authorize_finish_wrapper_byte_identical": true,
+  "three_StoreMetadata_functions_byte_identical": true,
+  "production_snapshot_positive_executed": false,
+  "Main_actions": 0
+}

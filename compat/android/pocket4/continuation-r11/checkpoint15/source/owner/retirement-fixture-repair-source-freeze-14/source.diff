@@ -1,0 +1,44 @@
+--- producer13/runtime/droidloom-pressure-relay/src/lib.rs
++++ producer14/runtime/droidloom-pressure-relay/src/lib.rs
+@@ -866,6 +866,17 @@
+             thread::sleep(Duration::from_millis(1));
+         }
+         assert!(matches!(pin.live(), Err(Error::Reject("process generation is dead"))));
++        // Linux proc namespace lookup can report ENOENT or ESRCH after
++        // this exact child was reaped. Compare the production wrapper with
++        // the raw syscall on the same held procdir/name/flags, rather than
++        // substituting one platform's expected errno for the kernel result.
++        let raw = unsafe { libc::syscall(libc::SYS_openat, pin.proc_dir.as_raw_fd(),
++            c"ns/mnt".as_ptr(), libc::O_RDONLY | libc::O_CLOEXEC, 0) };
++        let kernel_errno = io::Error::last_os_error().raw_os_error();
++        if raw >= 0 { unsafe { libc::close(raw as RawFd) }; }
++        assert_eq!(raw, -1, "dead held proc namespace unexpectedly reopened");
++        assert!(matches!(kernel_errno, Some(libc::ENOENT) | Some(libc::ESRCH)),
++            "unexpected dead-proc lookup errno: {kernel_errno:?}");
+         let error = open_at(&pin.proc_dir, "ns/mnt", libc::O_RDONLY).unwrap_err()
+             .context("lifecycle init identity");
+         assert!(error.to_string().starts_with("lifecycle init identity: open relative pinned directory"));
+@@ -874,7 +885,7 @@
+                 Error::RelativeIo { name, base, error, .. } => {
+                     assert_eq!(name, "ns/mnt");
+                     assert_eq!(base, Some(proc_id));
+-                    assert_eq!(error.raw_os_error(), Some(libc::ENOENT));
++                    assert_eq!(error.raw_os_error(), kernel_errno);
+                 }
+                 other => panic!("unexpected nested error: {other}"),
+             },
+--- producer13/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
++++ producer14/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
+@@ -1125,6 +1125,12 @@
+         for faulted in [false, true] {
+             let (mut audit, mut status) = empty_audit_and_status();
+             audit.faulted = faulted; status.faulted = faulted;
++            if faulted {
++                // Keep the codec rejection that exposed the original invalid
++                // fixture. Real faulted receipts are always incomplete.
++                assert!(matches!(audit.encode(), Err(Error::Reject("pressure retirement audit bounds/state"))));
++                audit.incomplete = true;
++            }
+             let mut owned = retirement_fixture(vec![audit.encode().unwrap().to_vec(), status.encode().to_vec()],
+                 if faulted { 1 } else { 0 }, false, false);
+             owned.wait_exact_exit_without_reaping();

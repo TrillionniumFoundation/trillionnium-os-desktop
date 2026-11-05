@@ -1,0 +1,5 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofollow-handle-mechanism-local01/control.py", line 12, in <module>
+    os.write(fd,b'owned mechanism only\n');os.fchmod(fd,0o444);fcntl.fcntl(fd,fcntl.F_ADD_SEALS,15)
+                                                                              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'fcntl' has no attribute 'F_ADD_SEALS'

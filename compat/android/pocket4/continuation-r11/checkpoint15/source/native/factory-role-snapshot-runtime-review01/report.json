@@ -1,0 +1,181 @@
+{
+  "schema": 1,
+  "scope": "Independent full actual receipt review of the unique owned ordinary O_RDONLY authorized snapshot runtime; no test replay.",
+  "actual_runtime_job": "1a1abb2e2df-fc05-4fe0",
+  "protected_read_reconciled_job": "1a1abbbd368-fc05-5034",
+  "actual_result": {
+    "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/factory-role-snapshot-run01-read01/result.json",
+    "bytes": 10710,
+    "sha256": "09ef82b92955dc00a447ff015b9253eb7295c89ff885468640d473956424f6b7"
+  },
+  "reader_report": {
+    "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/factory-role-snapshot-run01-read01/reader-report.json",
+    "bytes": 12775,
+    "sha256": "fd76fc37d910e93fc2c8cc9b90bdd2c6adece8de38f859239b49a0d61b6ac728",
+    "text_exact_original_bytes": true,
+    "held_named_before_after_equal": true
+  },
+  "matching_build": {
+    "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/factory-role-snapshot-build01/result.json",
+    "bytes": 78562,
+    "sha256": "919f2a52ee0bfd5baa82c8b87f6b1d1b74d351d5a4a23ecb4516af5766ba08ab",
+    "frozen_qualified_build_function_passed_offline": true,
+    "elf": {
+      "bytes": 125368,
+      "identity": [
+        66306,
+        36972083,
+        33216,
+        125368,
+        1793881458914141273,
+        1793881458914173284
+      ],
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorized-snapshot-host-build-01-20261105/build01/snapshot_controls",
+      "sha256": "6fea5e887e2827f38c5d5f1a12338a456935d858d911c24b75ee4f891734ec6b"
+    }
+  },
+  "source_authority": {
+    "bytes": 4422,
+    "identity": [
+      66306,
+      36971993,
+      33024,
+      4422,
+      1793881456215679650,
+      1793881456215679650
+    ],
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-authorized-snapshot-host-build-01-20261105/source/snapshot-source-pins.json",
+    "sha256": "53e90ef34ab51ae8b9700f93419c3c050665fb0ea5a50482417b48aa860497e1"
+  },
+  "observed_assessment": {
+    "cases": [
+      {
+        "actual_kernel_identity": true,
+        "case": "authorized_root_sealed_v2_snapshot",
+        "maps_formatter": "owned_fixture",
+        "production_platform_policy": false,
+        "snapshot_created": true,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "wrong_source_rejected_then_same_grant_recovers",
+        "maps_formatter": "owned_fixture",
+        "production_platform_policy": false,
+        "snapshot_created": true,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "unsealed_input_rejected_then_same_grant_recovers",
+        "maps_formatter": "owned_fixture",
+        "production_platform_policy": false,
+        "snapshot_created": true,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "size_mismatch_rejected_then_same_grant_recovers",
+        "maps_formatter": "owned_fixture",
+        "production_platform_policy": false,
+        "snapshot_created": true,
+        "state": "PASS"
+      }
+    ],
+    "summary": {
+      "Main_actions": 0,
+      "assertions": 355,
+      "cases": 4,
+      "cleanup_unreaped": 0,
+      "direct_children_reaped": 4,
+      "factory_service_started": false,
+      "forced_cleanup": 0,
+      "maps_formatter": "owned_fixture",
+      "nested_children_reaped": 0,
+      "platform_policy_qualified": false,
+      "snapshot_created": true,
+      "state": "PASS_OWNED_ROLE_SNAPSHOT"
+    }
+  },
+  "resource_scope": {
+    "identity_and_membership_before_after_same": true,
+    "memory_max_bytes": 268435456,
+    "cpu_max": "50000 100000",
+    "memory_peak": 26492928,
+    "memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "swap_peak_observed": 0,
+    "swap_max_observed": "max",
+    "swap_limit_not_claimed": true
+  },
+  "execution_checks": {
+    "returncode": 0,
+    "wait_status": 0,
+    "child_reaped": true,
+    "fd_exec": true,
+    "timed_out": false,
+    "runtime_libraries_command_returncode": 0,
+    "stdout": {
+      "bytes": 1069,
+      "identity": [
+        28,
+        1306394,
+        33152,
+        1069,
+        1793881994423846188,
+        1793881994423846188
+      ],
+      "path": "/run/pocket4-role-authorized-snapshot-host-run-01-20261105/run01/snapshot.stdout",
+      "sha256": "619be16e5e1852d3b5b063be30bd8853dce12c342df607c6918a7b82548937ac"
+    },
+    "stderr": {
+      "bytes": 0,
+      "identity": [
+        28,
+        1306395,
+        33152,
+        0,
+        1793881994414920767,
+        1793881994414920767
+      ],
+      "path": "/run/pocket4-role-authorized-snapshot-host-run-01-20261105/run01/snapshot.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "final_checks": {
+    "source_authority_and_held_elf_unchanged_reported": true,
+    "library_and_tool_changes": [],
+    "cleanup": {
+      "errors": [],
+      "forced_cleanup": false,
+      "initial_owned_children": [],
+      "reaped": [],
+      "remaining": []
+    }
+  },
+  "limitations": [
+    "The four original stdout records and aggregate are still pending separate fixed-log readback; the assessment in the full runtime receipt was checked against the frozen four-case plan, not presented as an independent parse of missing raw logs.",
+    "This is the fixed owned payload and canonical TGID maps source; actual kernel provenance, sealed inode and same grant recovery are the fixture scope.",
+    "FinishCreate own failure branch is not directly covered by these four cases.",
+    "O_NOFOLLOW positive qualification is separate and remains pending.",
+    "No platform policy, live factory service, enabled ART/engine, Android app, arbitrary caller maps or whole-app qualification.",
+    "Main_actions is zero; Main_identity_observed is false and no unchanged-Main claim is made."
+  ],
+  "two_log_reader": {
+    "local_path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-snapshot-runtime-logs-read01/exact-request.json",
+    "bytes": 6983,
+    "sha256": "97c03fde7dd1a7fbf3fd9dc6fcd315720a6333c16b91eb1a6f2a813035b7028b",
+    "authority_is_exact_raw_runtime_result": true,
+    "fixed_files": 2,
+    "dispatch_performed": false
+  },
+  "Hepta_calls": 0,
+  "test_execution_performed_by_reviewer": false
+}

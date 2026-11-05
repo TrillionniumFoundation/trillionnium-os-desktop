@@ -1,0 +1,11 @@
+--- reader01/read_requests.py
++++ reader02/read_requests.py
+@@ -30,7 +30,7 @@
+ MATCH_LIMIT = 8
+ SECONDS = 10
+ OUTPUT_LIMIT = 65536
+-JOB_ID = re.compile(r'[0-9a-f]{8,16}-[0-9a-f]{4}-[0-9a-f]{4}\Z')
++JOB_ID = re.compile(r'[0-9a-f]{8,16}-[0-9a-f]{4}-[0-9a-f]{1,4}\Z')
+ HEX64 = re.compile(r'[0-9a-f]{64}\Z')
+ IDENTITY_KEYS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid',
+                  'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')

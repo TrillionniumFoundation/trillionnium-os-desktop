@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "actual_build": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/factory-snapshot-nofollow-build01/result.json",
+    "bytes": 91682,
+    "sha256": "818bab5d2c0daead8cd597228480b15d7fc12ef7be06cd2b143f316c7f57a4e0"
+  },
+  "scope": "pure receipt predicate only; no remote, process or ELF execution",
+  "cases": [
+    {
+      "case": "frozen_template01_rejects_actual_two_artifact_receipt",
+      "observed": "REJECT",
+      "error": "complete matching build-only authority required",
+      "expected": true
+    },
+    {
+      "case": "template02_accepts_actual_two_artifact_receipt",
+      "observed": "ACCEPT",
+      "expected": true
+    },
+    {
+      "case": "factory_artifact_missing_rejected",
+      "observed": "REJECT",
+      "error": "complete matching build-only authority required",
+      "expected": true
+    },
+    {
+      "case": "control_artifact_missing_rejected",
+      "observed": "REJECT",
+      "error": "complete matching build-only authority required",
+      "expected": true
+    },
+    {
+      "case": "factory_service_started_rejected",
+      "observed": "REJECT",
+      "error": "matching standalone V2 factory default-disabled contract differs",
+      "expected": true
+    }
+  ],
+  "old_template_preserved": true,
+  "changed_functions": [
+    "qualified_build"
+  ],
+  "unchanged_functions": [
+    "require",
+    "utc",
+    "sha",
+    "identity",
+    "held",
+    "write_new",
+    "real_directory",
+    "children",
+    "cleanup_children",
+    "command",
+    "resource_text",
+    "resource_events",
+    "resource_snapshot",
+    "begin_resources",
+    "finish_resources",
+    "hash_held",
+    "regular_tree",
+    "verify_rows",
+    "held_executable",
+    "root_scope",
+    "run_held",
+    "validate_result",
+    "execute"
+  ]
+}

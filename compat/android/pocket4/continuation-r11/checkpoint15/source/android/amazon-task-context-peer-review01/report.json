@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_NO_NEW_CONCRETE_BLOCKER_IN_REVIEWED_SCOPE",
+  "reviewed_inputs": [
+    {
+      "path": "/workspace/scratch/94990735b266/android-amazon-launch-inspect-freeze-01/amazon_task_context.py",
+      "bytes": 15618,
+      "sha256": "696db6a604839225dd7494590831622579154e5f21a67a1baacf6a973b8b222b"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-amazon-launch-inspect-freeze-01/owned_inspect.py",
+      "bytes": 28972,
+      "sha256": "396134028b624fd2593946049e48ebdf2dae344e51f6dc2550adb2e38ffc6927"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-amazon-launch-inspect-freeze-01/SOURCE_PINS.json",
+      "bytes": 588,
+      "sha256": "8c6d466e8e75dd4b2261205f61d72848dd6e9bf4b415f798272aba75a29152fb"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-amazon-launch-inspect-freeze-01/task_scope_baseline_reference.py",
+      "bytes": 17281,
+      "sha256": "a16e347abb0de2ccbff24f6d7990f6dab1be600675054b45203e907fa8eef528"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-qa-install-state-01/review-inputs/recorder.py",
+      "bytes": 40090,
+      "sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-amazon-qa-r1-install-state-01/amazon_context.py",
+      "bytes": 13619,
+      "sha256": "59e4aac802aba1ac90800929e38dafd6455425d7fc97425b7ca640658d7934c1"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/android-amazon-qa-r1-install-state-01/install_state.py",
+      "bytes": 32646,
+      "sha256": "8036635bac509beac9f510534565721ab82f3e3b3f9574e47c5074558afde672"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/owned-amazon-qa-r1-build01/source/qa_adapter.py",
+      "bytes": 20809,
+      "sha256": "3f705d3a7a605b9436beb0e77bd156923cd8e581fe9f3f6d4635eb62910cce59"
+    }
+  ],
+  "frozen_file_pins_verified": [
+    "EXTERNAL_INPUTS.json",
+    "INPUTS.json",
+    "README.md",
+    "SOURCE_PINS.json",
+    "amazon_task_context.py",
+    "check_context.py",
+    "controls.stdout.json",
+    "default-plan.stdout.json",
+    "exact-request.json",
+    "install-context-to-task-context.patch",
+    "make_request.py",
+    "owned_inspect.py",
+    "source-review.json",
+    "stage_execute.py",
+    "task_scope_baseline_reference.py"
+  ],
+  "reviewed_complete_module": "amazon_task_context.py",
+  "additional_exact_scope": {
+    "recorder.Flow": [
+      "command",
+      "launch_locked",
+      "stacks",
+      "selected_task",
+      "cleanup"
+    ],
+    "recorder_functions": [
+      "task_functions",
+      "write_new"
+    ],
+    "Amazon_context": [
+      "ArtifactSet complete class"
+    ],
+    "qa_adapter.Session": [
+      "__init__",
+      "installed",
+      "foreground",
+      "sequence"
+    ],
+    "install_state": [
+      "remember",
+      "command",
+      "acquire_action_lock"
+    ],
+    "worker": [
+      "phase lock/admission/calls/finally",
+      "durable assessment",
+      "execute final cleanup"
+    ]
+  },
+  "findings": [
+    {
+      "topic": "identity and reused primitives",
+      "finding": "The new object supplies Amazon package com.amazon.mShop.android.shopping / UID10129 and helper org.droidloom.qa.amazon.r1 / UID10175. It invokes five exact original Flow methods on the new object, never constructs the Bili Flow. Those methods take task package from self.scope; the retained Bili-named rejection string does not select a Bili target."
+    },
+    {
+      "topic": "current authority and mutation",
+      "finding": "Phase Policy admits only fixed package reads, exact current resolver once during launch, one exact droidloomctl native launch, the three source-bound state/inspect/state requests, and one exact proven new-task removal. Command and nonce claims precede execution; transport failures poison that phase."
+    },
+    {
+      "topic": "action lock ownership",
+      "finding": "Launch/current resolve and inspection acquire the original global action lock in worker. Cleanup skips the outer global acquisition and enters the original Flow.cleanup lock exactly once, while retaining the separate private flow lock. No changed cross-phase automatic launch replay was found."
+    },
+    {
+      "topic": "three APK integrity",
+      "finding": "ArtifactSet.before opens and fully hashes the exact three actual-bound commercial APKs through HeldTarget; command guards inspect held identity. after fully rehashes all three and compares separately reopened named paths. Failure revalidates when the complete set exists, then closes every tracked FD; source-only review does not claim actual files were read."
+    },
+    {
+      "topic": "task ownership",
+      "finding": "Original launch records absence and native receipt, validates exact freeform leaf/user0/display0/package, and requires the full post-task set equals pre-set plus the new task. New selected_task adds strict shape/epoch/absence/hash checks. Cleanup can only remove that exact new task, once, then requires original prelaunch task IDs restored; unknown launch scope does not authorize package-wide stop."
+    },
+    {
+      "topic": "failure and final cleanup",
+      "finding": "util.remember preserves the first failure and appends later cleanup/guard failures while clearing ok. Coordinator finally independently invokes cleanup after a valid owned launch scope even if inspection/evidence failed. The worker releases held artifacts/binding/locks independently. Missing or unknown launch identity stays explicitly unresolved, not successful cleanup."
+    },
+    {
+      "topic": "privacy and claim limits",
+      "finding": "Only fixed read-only helper state/inspect operations are admitted. Foreground raw text stays in the existing private in-memory branch; final assessment includes bounded metadata/hashes rather than raw UI tree. Business success and whole-app readiness remain false."
+    }
+  ],
+  "execution": {
+    "source_modified": false,
+    "Python_context_instantiated": false,
+    "local_control_tests_run": false,
+    "Hepta_calls": 0,
+    "device_calls": 0,
+    "commercial_UI_read": false,
+    "Main_actions": 0
+  },
+  "limits": [
+    "No independent review of the complete original HeldTarget or BoundArun implementation in this pass; they are pinned reused inputs.",
+    "No actual fresh APK/task/window/UID/lock state was observed by this review.",
+    "No actual Amazon launch, inspection, helper instrumentation, or task cleanup was executed.",
+    "No statement of whole-app readiness or business success."
+  ]
+}

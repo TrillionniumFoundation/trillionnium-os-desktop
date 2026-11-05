@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "scope": "local own sealed memfd file-handle mechanism; not a factory entry or Pocket4 observation",
+  "state": "HANDLE_ENCODING_OBSERVED_REOPEN_PERMISSION_UNQUALIFIED",
+  "first_attempt": {
+    "path": "nofollow-handle-mechanism-local01/result.json",
+    "returncode": 1,
+    "stage": "Python fcntl F_ADD_SEALS constant missing; neither file-handle syscall reached"
+  },
+  "second_attempt": {
+    "path": "nofollow-handle-mechanism-local02/result.json",
+    "returncode": 0,
+    "name_to_handle_at": {
+      "returncode": 0,
+      "handle_bytes": 12,
+      "handle_type": 1,
+      "mount_id": 0
+    },
+    "open_by_handle_at": {
+      "returncode": -1,
+      "errno": 1
+    },
+    "self": {
+      "uid": 0,
+      "CapEff": "0000000000000000",
+      "NoNewPrivs": "1",
+      "Seccomp": "2",
+      "kernel_release": "6.18.57"
+    }
+  },
+  "inference_limits": [
+    "Missing CAP_DAC_READ_SEARCH is an independent unmet documented precondition; seccomp may also reject. This observation does not identify the EPERM path.",
+    "Internal memfd handle encoding succeeded despite legacy mount_id zero. No pathname or visible mount lookup is needed if the same held fd is used as mount_fd.",
+    "No successful reopened fd or retained O_NOFOLLOW flag was observed here.",
+    "Current Pocket4 kernel, factory capability profile, and Android behavior are untested for this mechanism."
+  ],
+  "candidate_direction": [
+    "Only use a handle generated from the factory own fresh sealed memfd, never accept a peer-supplied handle.",
+    "Pass the same held fd as open_by_handle_at mount_fd, retain original source F_GETFL plus CLOEXEC, and keep full final inode/seal/tag/status verification.",
+    "Do not clear O_NOFOLLOW or add fabricated F_GETFL projection. Missing support or permission remains a real failure; no automatic privilege/policy change."
+  ],
+  "primary_source_references": [
+    {
+      "url": "https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git/+/refs/tags/v6.6/fs/fhandle.c",
+      "observed_git_blob": "6ea8d35a9382ace3fac22b89c818c74f0f123c34",
+      "facts": "AT_EMPTY_PATH names the held object; mount fd supplies its vfsmount; CAP_DAC_READ_SEARCH precedes decoding; file_open_root receives the original open flags. Source reference only, not installed-kernel binding."
+    },
+    {
+      "url": "https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git/+/refs/heads/linux-6.18.y/mm/shmem.c",
+      "observed_git_blob": "0100110f77b8e1b58169494dfe3e1522b7a4bcf2",
+      "facts": "shmem exposes export encode/decode operations, including on the internal instance. Branch may advance; recorded blob is the observed source, not an installed-kernel binding."
+    }
+  ],
+  "source_or_policy_changed": false,
+  "factory_entry_executed": false,
+  "Main_actions": 0
+}

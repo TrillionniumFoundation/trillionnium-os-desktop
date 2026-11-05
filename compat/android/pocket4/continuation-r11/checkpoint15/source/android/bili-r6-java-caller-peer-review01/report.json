@@ -1,0 +1,154 @@
+{
+  "schema": 1,
+  "scope": "Independent read-only review of the final R6 Java caller and narrowly related cross-language request/proof/result fields. Full Android build, device execution and root stage/transport authorization are outside this review.",
+  "conclusion": "No new concrete blocker identified in the declared fixed reveal-controls source delta.",
+  "frozen_source_tree": "869766f5a1f464591a09169489a30ccc5e18d20b",
+  "frozen_package_prefix": "owned-bili-qa-r6-reveal-01/",
+  "source_inputs": {
+    "FROZEN_FILES.json": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/FROZEN_FILES.json",
+      "bytes": 9203,
+      "sha256": "3c6644d6d1b4890961bfd8a0215c95f968be7b66c4a9b6b9ca9bde9fe07817c0"
+    },
+    "source/SOURCE_PINS.json": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/SOURCE_PINS.json",
+      "bytes": 1478,
+      "sha256": "6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419"
+    },
+    "source/src/org/droidloom/qa/bili/r6/ActionRunner.java": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/src/org/droidloom/qa/bili/r6/ActionRunner.java",
+      "bytes": 60912,
+      "sha256": "c93b943bee94533fdeb31954879434f565227ed15e1315c5e697bfae8357c6f5"
+    },
+    "source/src/org/droidloom/qa/bili/r6/TouchTransaction.java": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/src/org/droidloom/qa/bili/r6/TouchTransaction.java",
+      "bytes": 4979,
+      "sha256": "059c4a66d51b92931c626fd95283821dde21d1e311fb5a9f5d35e05342243803"
+    },
+    "source/qa_contract.py": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/qa_contract.py",
+      "bytes": 39280,
+      "sha256": "871c784812063739a6ab976784fb38243af52266b0d9a95aa1244779ccd2c005"
+    },
+    "source/qa_adapter.py": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/qa_adapter.py",
+      "bytes": 25231,
+      "sha256": "1e939fb27aa4eaa9bb2fd79d7022ff4f48011fdf8824b0e7645bbc6f3308e1c8"
+    },
+    "source/AndroidManifest.xml": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/source/AndroidManifest.xml",
+      "bytes": 712,
+      "sha256": "0382b740de32dc4e7a73342d4476308169bb01a5cf8452aa20bdb742110d24e1"
+    },
+    "delta-src_org_droidloom_qa_bili_r6_ActionRunner.java.patch": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/delta-src_org_droidloom_qa_bili_r6_ActionRunner.java.patch",
+      "bytes": 23070,
+      "sha256": "40298d0d1ee44bb531f559495682faa3f53555f116b7b4e83c21747b268909c0"
+    },
+    "delta-qa_contract.py.patch": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/delta-qa_contract.py.patch",
+      "bytes": 16042,
+      "sha256": "4148929ea815e30b294804c0823b1074acc15f8be6e62a8c680c7ced749cbe0d"
+    },
+    "delta-qa_adapter.py.patch": {
+      "path": "/workspace/scratch/94990735b266/owned-bili-qa-r6-reveal-01/delta-qa_adapter.py.patch",
+      "bytes": 6378,
+      "sha256": "9dafb9327bc441164d4594d1c41b22689adce9b47470d36281f1cab7a6e00f94"
+    }
+  },
+  "baseline_java": {
+    "path": "/workspace/scratch/94990735b266/owned-bili-qa-r5-cache-build02/source/src/org/droidloom/qa/bili/r5/ActionRunner.java",
+    "bytes": 41226,
+    "sha256": "c167e7bcd3c378cf2689f725413cc74c34b134b014dc80d848d0e6619531c77c"
+  },
+  "mechanical_checks": {
+    "all_42_frozen_payloads_full_bytes_sha256_match": true,
+    "frozen_manifest_self_bytes_sha256_verified_separately": true,
+    "all_10_source_manifest_rows_match": true,
+    "full_actual_r5_to_r6_java_diff_equals_frozen_23070_byte_patch": true,
+    "unchanged_act_suffix_bytes": 5557,
+    "unchanged_connect_restore_node_walk_cache_window_inspect_block_bytes": 18009,
+    "touch_observation_java_python_exact_field_count": 30,
+    "player_scope_java_python_exact_field_count": 9,
+    "same_frame_java_python_exact_order": [
+      "scope",
+      "window",
+      "window_sha256",
+      "viewport_bounds",
+      "full_area_bounds",
+      "render_structure_sha256",
+      "title_text_sha256",
+      "author_text_sha256"
+    ],
+    "production_sources_modified": false
+  },
+  "reviewed_paths": [
+    {
+      "area": "Public API and explicit display",
+      "finding": "publicDisplayMotionFactory requires runtime SDK >=34, exact public static MotionEvent.obtain with the documented 16 parameter types and MotionEvent return type. The invocation uses source=SOURCE_TOUCHSCREEN, displayId=0, flags=0, classification=CLASSIFICATION_NONE in the documented order. It uses no hidden setter, setAccessible call or fallback overload. Each event has one finger pointer ID0; coordinates, action, source and uptime timestamps are checked before the owned object is returned."
+    },
+    {
+      "area": "Fresh authority and full tree",
+      "finding": "The reveal request must reference a distinct owned inspection nonce, exact prior bytes hash, successful complete prior work/restoration and unchanged host scope. Prior age is at most 10 seconds. The helper independently performs two complete current inspections and requires current/prior full tree and window hashes, exact player proof and connection-local window ID agreement before creating the pointer transaction. Three captures, including the post-input capture, fit the unchanged per-invocation maximum of three."
+    },
+    {
+      "area": "Player proof and screen geometry",
+      "finding": "The exact activity, title and author hashes, unique fixed roles, two specific SurfaceViews and distinct eligible parents are required. Bounds are integer screen coordinates within 0..16384, crop is strictly different from and contained in the full player, and the full player is inside the focused display0 application window. Hidden controls must have no children and the pre-input visible player descendants must not already be clickable or SeekBars. The integer crop center must lie strictly more than 16 pixels from all crop edges; it is not a relative or inferred scale coordinate."
+    },
+    {
+      "area": "Actual touch caller and first error",
+      "finding": "The backend calls uptimeMillis, creates new owned MotionEvent objects, invokes the unchanged overall deadline check before DOWN, marks actionAttempted immediately before actual DOWN injection and calls injectInputEvent(event,true). The previously reviewed TouchTransaction has no DOWN/UP retry and at most one CANCEL cleanup on a non-acknowledged stream. revealControls emits its observation and then rethrows touch.primary before claiming completion; it additionally requires both acknowledgments, input termination and every created event recycled."
+    },
+    {
+      "area": "Recycling and exceptional completion",
+      "finding": "displayMotion recycles an obtained event when its own field validation throws an Exception, with recycle exceptions suppressed onto that first error. The transaction independently handles created objects and later Exceptions. The caller retains current/after capture closing, and the outer original finally still restores its own service flags/capabilities and removes the event listener while preserving a first Exception. Java Error/hard kill/Binder non-return remain outside an unconditional cleanup guarantee."
+    },
+    {
+      "area": "Post-input reporting",
+      "finding": "A complete post-input tree must still match the same connection-local window ID, activity/host scope, screen geometry, render structure, title and author. The full tree hash is allowed to change because reveal may add controls; the retained render and geometry fields are compared. The helper explicitly records atomic_input_target_attribution=false, controls_revealed=null, business_success_verified=false and a requirement for independent controls readback."
+    },
+    {
+      "area": "Cross-language consistency",
+      "finding": "The Python request validator uses the same reveal operation, distinct nonce, hashes and viewport bounds. The player proof construction has the same nine output fields, fixed role ordering and surface role ordering, with ASCII canonical JSON matching Java escaping/sorted keys. The 30 touch observation fields and eight same-frame keys agree. Python success requires no primary/secondary error, acknowledged DOWN/UP, no CANCEL on the successful branch, full recycling, exact center and all three complete tree observations. The new adapter branch uses Session own fresh inspection, marks the held command as mutation, preserves the action lock and finally state checks and does not assert controls have been revealed."
+    },
+    {
+      "area": "Existing gates",
+      "finding": "All existing ACTION_CLICK/ACTION_SET_TEXT implementation bytes are unchanged. The complete connect/restore/node/traversal/public-cache/window-readiness/inspect block is unchanged. Package/protocol updates isolate the new helper; no permission, accessibility-setting, animation-scale, global-key, audio or playback action is introduced by this delta."
+    }
+  ],
+  "official_public_api_references": [
+    {
+      "url": "https://developer.android.com/reference/android/view/MotionEvent",
+      "retrieved_date": "2026-11-05",
+      "reviewed_section": "Public static 16-argument obtain, added API34; parameter order, uptime clock and synthetic device0 semantics.",
+      "interpretation": "Supports the API signature and parameter mapping only; it is not a binding to the actual installed framework binary."
+    },
+    {
+      "url": "https://developer.android.com/reference/android/app/UiAutomation",
+      "retrieved_date": "2026-11-05",
+      "reviewed_section": "Public injectInputEvent(InputEvent,boolean), added API18, caller recycling and synchronous animation/surface work.",
+      "interpretation": "The documented call can wait on framework work; 150 ms is an admission observation, not an end-to-end blocking bound."
+    }
+  ],
+  "prior_touch_only_review": {
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/bili-r6-touch-transaction-peer-review01/report.json",
+    "bytes": 3562,
+    "sha256": "6276556dad6e428f4526789b558f82993633c213fcb4328c4e8a4b56a5dc38a8"
+  },
+  "scope_limits": [
+    "No Java compilation, 16 TouchTransaction controls, 21 Python controls, Android install or UI input was executed by this reviewer. Reported author controls are not relabeled as independent actual tests.",
+    "The root-owned build/stage/held transport, public recorder, install identity and current actual window are not independently requalified by this source review. Root reviews those paths separately.",
+    "Before/after tree equality and explicit display do not atomically attribute every injected event to an application receiver. The source explicitly reports that limitation.",
+    "An acknowledged pointer pair is not proof of reveal, playback continuity, seek/pause behavior or whole-app readiness.",
+    "The 150 ms admission checks do not cap Binder duration. Error, memory exhaustion, hard kill and unsuccessful or blocked CANCEL can prevent an input stream termination guarantee."
+  ],
+  "reviewer_only_verification_corrections": [
+    "The first local manifest iterator assumed files was a list; the actual dict schema was then used and all 42 rows verified.",
+    "A first field-name extraction pattern omitted digits; the corrected pattern includes the sha256 field names and verifies the exact field sets/order.",
+    "Neither correction modified target source or executed a target test."
+  ],
+  "Hepta_calls": 0,
+  "Main_actions": 0,
+  "device_execution": false,
+  "publication_owner": "Android CP15 or its later agreed cut; exclude from Native payload catalog to avoid double mapping."
+}

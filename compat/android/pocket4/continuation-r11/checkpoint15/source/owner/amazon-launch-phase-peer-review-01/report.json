@@ -1,0 +1,66 @@
+{
+  "actual_device_execution_performed": false,
+  "findings": [
+    "Historical resolver success binds package/user/component and prior no-launch state but does not authorize launch: launch worker resolves again and requires exact COMPONENT before original launch_locked.",
+    "Launch and inspection hold one external global action lock; cleanup holds only the flow lock and delegates global lock ownership to original Flow.cleanup, avoiding a nested acquisition.",
+    "Original native launch requires no preexisting target task, one durable launch-attempt marker, exact native host receipt, exact new leaf and task-set delta before launch-scope is written.",
+    "Native launch command admits only exact argv/component, one claim, timeout70 and mutation=true; inspect only fixed before/state, inspect, after/state nonces. No click, text, media or screenshot authority is added.",
+    "Count gates align with callsites: launch 4 target + 4 helper metadata + one resolver + two stacks + one native launch =12 durable commands; inspect 4 target +8 helper +2 stacks +3 instrumentation =17, with 3 private foreground reads separately admitted.",
+    "Coordinator requires successful durable launch before starting inspect. A failed phase stops the business sequence; independently authorized original exact-task cleanup still runs only if valid fresh launch-scope exists. Uncertain launch without scope is retained for reconciliation, not broadened into a package stop.",
+    "Cleanup requires original exact leaf removal or confirmed already-absent task and equality with the prelaunch task set. Durable success additionally requires held binding/three APK FD release, unchanged helper/target/Main, source stability and no secondary errors.",
+    "The original remember helper preserves first error, appends secondary cleanup/guard/write errors and forces ok=false. The shared source loaded by qualified() and pure receipt summary does not initiate another Android action."
+  ],
+  "manifest_members_verified": 3,
+  "native_peer_scope_not_repeated": true,
+  "new_concrete_blockers_found": [],
+  "not_reviewed": [
+    "Full held-runtime implementation, whole original recorder and all adapter/Java behavior",
+    "Final stage request dispatch wrapper and device results",
+    "Atomic UI/display ownership across time; no such qualification inferred"
+  ],
+  "original_install_util_sha256": "8036635bac509beac9f510534565721ab82f3e3b3f9574e47c5074558afde672",
+  "original_recorder_sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511",
+  "read_scope": {
+    "amazon_task_context.py": [
+      "Policy",
+      "Flow phase-specific methods and delegates"
+    ],
+    "install_state.py": [
+      "remember"
+    ],
+    "original_recorder.py": [
+      "selected_task",
+      "launch_locked",
+      "cleanup"
+    ],
+    "owned_inspect.py": [
+      "actual_resolver",
+      "qualified",
+      "scope_record",
+      "owned_scope",
+      "assessment_summary",
+      "worker",
+      "durable",
+      "execute",
+      "main"
+    ]
+  },
+  "schema": 1,
+  "scope": "Final frozen Amazon launch/inspect/cleanup coordinator and phase callsites; source only",
+  "sources": {
+    "SOURCE_PINS.json": {
+      "bytes": 588,
+      "sha256": "8c6d466e8e75dd4b2261205f61d72848dd6e9bf4b415f798272aba75a29152fb"
+    },
+    "amazon_task_context.py": {
+      "bytes": 15618,
+      "sha256": "696db6a604839225dd7494590831622579154e5f21a67a1baacf6a973b8b222b"
+    },
+    "owned_inspect.py": {
+      "bytes": 28972,
+      "sha256": "396134028b624fd2593946049e48ebdf2dae344e51f6dc2550adb2e38ffc6927"
+    }
+  },
+  "validation_executed": "Local bytes/SHA and Python AST parsing only; no module execution, controls, process launch or device calls",
+  "whole_app_production_ready": false
+}

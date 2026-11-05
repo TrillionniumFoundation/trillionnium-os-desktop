@@ -1,0 +1,69 @@
+--- geometry01/INPUTS.json
++++ fresh-before01/INPUTS.json
+@@ -87,7 +87,21 @@
+   },
+   "buffer_viewport_behavior_changed": true,
+   "cache_cause_of_prior_failure_not_proven": true,
+-  "fixed_flow_nonce": "9e7c2a173b34236b7f96abc662295fd4",
++  "fixed_flow_nonce": "c1eaefa79cbafc86cb32f638900443bf",
++  "fresh_capture_transactions": {
++    "buffer_deadline_seconds": 25,
++    "helper_Java_and_Session_unchanged": true,
++    "helper_time_query_limits_unchanged": true,
++    "individual_capture_timeout_seconds": 20,
++    "maximum_buffer_reads": 12,
++    "maximum_captures": 3,
++    "new_inspect_before_each_capture": true,
++    "overall_request_seconds_unchanged": 600,
++    "same_scope_function_unchanged": true,
++    "source_packet_bound_unchanged": 131072,
++    "successful_inter_transaction_position_change_requires_new_independent_current_proof": true,
++    "within_capture_change_still_fails_without_crop_or_retry": true
++  },
+   "installed_identity": {
+     "apk_sha256": "16d3d1252b84accf0b454b8d9c3dd350031cca3a228cc9a772914d74a0c66b68",
+     "base_apk": "/data/app/~~Oe5CLAmhtH5r5QTWzbzukA==/org.droidloom.qa.bili.r5-i09w1S2dwR4iy8S_4bRb_Q==/base.apk",
+@@ -107,10 +121,10 @@
+     "uid": 10170
+   },
+   "navigation_Session_and_original_finally_behavior_changed": false,
+-  "new_unique_nonces": 149,
++  "new_unique_nonces": 158,
+   "no_new_clicks_or_opcodes": true,
+   "old_nonce_intersection": 0,
+-  "parent_source_manifest_sha256": "2eeff204605c6165f6bda6cd11f99124d6074d25df98c2104cc8af1669a4a99f",
++  "parent_source_manifest_sha256": "6620853a66d298cf1d85b16733f56e564654823bbe8c5e9e566bed4faa5b4ab6",
+   "previous_R4_buffer_flow_original_failure": {
+     "coordinator_sha256": "96c7128251ac2ebbf5dd14e0af93534d083bddec8c46cd6ab0087ea4f6c3ea74",
+     "first_cause": "NO_FOCUSED_APPLICATION_WINDOW after acknowledged public text edit; 21 unfocused reads; no submit/course/crop",
+@@ -127,6 +141,17 @@
+     "qualified_crop_or_playback": false,
+     "state_remains": "FAIL"
+   },
++  "previous_R5_geometry_original_failure": {
++    "actor_and_exact_motion_time_not_proven": true,
++    "coordinator_sha256": "61f0d5c97d12e9683be3237a813f60e03c2ab882a08b34f7d303e49168d3648b",
++    "first_cause": "VIEWPORT_SCOPE_CHANGED_DURING_CAPTURE",
++    "first_two_crops_exact_scope_qualified": true,
++    "job": "1a1ab222adf-fc05-4acc",
++    "navigation_sha256": "4ceb318717f554cf2779232846df77b5fe5871cc83e3ef1fff32e50920bbe80d",
++    "observed_bounds_translation_x": -320,
++    "state_remains": "FAIL",
++    "third_failed_crop_not_published": true
++  },
+   "previous_R5_install02_original_failure": {
+     "external_lock_holder_not_identified": true,
+     "install_state_and_Android_action_attempted": false,
+@@ -137,10 +162,10 @@
+   "qa_source_manifest_sha256": "83f642432c59f8e441f32402e278e9b52467a1a848e9d8e59eedaa22ed2a9577",
+   "qa_source_tree": "fa3ceddcc2046d54748ca052993c3ae23a261eff",
+   "schema": 1,
+-  "state": "SOURCE_ACTUAL_R5_BOUND_EXACT_PLAYER_GEOMETRY_ANDROID_UNRUN",
++  "state": "SOURCE_ACTUAL_R5_BOUND_FRESH_BEFORE_CAPTURE_ANDROID_UNRUN",
+   "state_command_index": 6,
+   "state_nonce": "2ad38fb92a0c5cfd6cde23b0c03c4ae6",
+   "state_wire_sha256": "d6ea152c1dcd395f02b2e0fe8002d98bcdf5203251463fd40ae6a17315ca9d98",
+-  "viewport_change_scope": "exact unique area-sized and crop-sized render geometry; capture before/after structure hash",
++  "viewport_change_scope": "fresh authoritative complete inspect before each capture; unchanged exact absolute before/after scope gate",
+   "whole_app_ready": false
+ }

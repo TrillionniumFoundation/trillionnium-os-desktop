@@ -1,0 +1,64 @@
+--- amazon-r1/qa_adapter.py
++++ ticket-r1/qa_adapter.py
+@@ -18,7 +18,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SELF = 'org.droidloom.qa.amazon.r1'
++SELF = 'org.droidloom.qa.ticket.r1'
+ BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+@@ -78,14 +78,14 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
+-             'src/org/droidloom/qa/amazon/r1/ActionRunner.java'} <= set(manifest['files']),
++             'src/org/droidloom/qa/ticket/r1/ActionRunner.java'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+ 
+ 
+ def validate_plan(plan, qa):
+     require(isinstance(plan, dict) and plan.get('schema') == 1 and
+-            plan.get('operation') in ('state','inspect','click','set_text'), 'OWNED_PLAN_REQUIRED')
++            plan.get('operation') in ('state','inspect','click'), 'OWNED_PLAN_REQUIRED')
+     op = plan['operation']; keys = {'schema','operation','nonces'}
+     if op in ('click','set_text'):
+         keys.add('selector')
+@@ -98,7 +98,7 @@
+         keys.add('value')
+         require(plan.get('value') == qa.PUBLIC_SEARCH_QUERY and
+                 {'resource_id','class'}<=set(plan['selector']) and plan['selector']['class']=='android.widget.EditText' and
+-                re.fullmatch(r'com\.amazon\.mShop\.android\.shopping:id/[A-Za-z0-9_]+',plan['selector']['resource_id']),
++                re.fullmatch(r'com\.MobileTicket:id/[A-Za-z0-9_]+',plan['selector']['resource_id']),
+                 'ONLY_OBSERVED_EXACT_EDIT_RESOURCE_AND_PUBLIC_QUERY')
+     require(set(plan) == keys and isinstance(plan['nonces'], dict), 'EXACT_PLAN_KEYS_REQUIRED')
+     names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text') else set())
+@@ -146,7 +146,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10129,10117,10125,10164,10165,10166,10169,10170),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10121,10129,10117,10125,10164,10165,10166,10169,10170,10175),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+@@ -227,7 +227,7 @@
+             value = original.foreground()
+         finally:
+             f._private_backend_transport = False
+-        require(value['package'] == self.qa.PACKAGE, 'FOREGROUND_MUST_STILL_BE_AMAZON')
++        require(value['package'] == self.qa.PACKAGE, 'FOREGROUND_MUST_STILL_BE_TICKET')
+         return self.qa.scope({'package':value['package'], 'uid':self.qa.UID, 'user':0, 'display':0,
+             'activity':value['package']+'/'+value['activity'], 'window_token':value['window_token'],
+             'main_epoch_sha256':self.qa.MAIN_EPOCH})
+@@ -355,7 +355,7 @@
+     args = parser.parse_args()
+     if not args.execute_once:
+         print(json.dumps({'state':'PLAN_ONLY', 'package':SELF, 'recorder_manifest_sha256':RECORDER_MANIFEST_SHA,
+-            'operations':['state','inspect','click','set_text'], 'install_launch_task_cleanup_or_UI_actions':0,
++            'operations':['state','inspect','click'], 'install_launch_task_cleanup_or_UI_actions':0,
+             'actual_build_install_and_runtime_qualification_required':True,
+             'standalone_execute_admitted':False,'dedicated_Amazon_flow_required':True}))
+         return 0
