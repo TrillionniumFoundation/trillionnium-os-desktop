@@ -1,0 +1,442 @@
+{
+  "activation_sha256": "91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435",
+  "all_65_target_classes_stored_status_verified": true,
+  "all_runtime_writes_observed": false,
+  "apk_sha256": "2f8ff1e09e572a7343433c7ab38e9929b3d43fd102562d0c7537471816a90234",
+  "authoritative_state": "succeeded",
+  "build_result_sha256": "ca80dfb4cd627729224275d957a2a023c6178c78e6aa1aeb602f590f7c894901",
+  "cache_observation": {
+    "complete": true,
+    "interpretation": "Only metadata of two fixed cache roots. Does not capture transient writes; concurrent App changes are not attributed to this compiler.",
+    "persistent_delta_observed": false
+  },
+  "class_loader_context": "PCL[]",
+  "compiler": {
+    "joined": true,
+    "rc": 0,
+    "spawned": true,
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "timed_out": false
+  },
+  "context_basis": "Pinned unchanged APK manifest has no uses-library/uses-static-library entries; all original and restored application DEX are in this same ZIP. This is an isolated artifact gate, not a running process class-loader capture.",
+  "exit_code": 0,
+  "finished_utc": "2026-11-05T17:24:39.764260+00:00",
+  "guard_after": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "guard_before": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "input_boot_apex_classpaths_unchanged": true,
+  "installed_by_verifier": false,
+  "installed_calendar08_unchanged": true,
+  "job_id": "1a1acbdb357-fc05-56a7",
+  "new_oat_sha256": "0bd57e987e2f780656e64f00f729d3af3402c532e44ee74049e135130f924bae",
+  "new_vdex_sha256": "e97157a1a0f15e33f644128a29e1df33bbe7faaadf4ceef1892753e5ccb049d0",
+  "oatdump": {
+    "joined": true,
+    "rc": 0,
+    "spawned": true,
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 8856704,
+      "sha256": "1d8858c388b6f67370366aec6b0f09dbca680565405afe74659e6cc301e3c1e8"
+    },
+    "timed_out": false
+  },
+  "raw_result_sha256": "441c3e7811989deb6282458bfef90302876d0117b968a2b5eaf48c2d0aee1b63",
+  "resource_admission": {
+    "cpu_stat": "usage_usec 64678\nuser_usec 51938\nsystem_usec 12739\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "pids.max": "64"
+    },
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 14716928
+  },
+  "resource_usage": {
+    "cpu_stat": "usage_usec 1152995\nuser_usec 766326\nsystem_usec 386669\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 14\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "pids.max": "64"
+    },
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 141963264
+  },
+  "runner_sha256": "61aa10763f058f160c548c027ad5901a63e72b8f65980b757b9d04788a87fae2",
+  "runtime_business_success": false,
+  "schema": "calendar09-actual-ART-selected-v1",
+  "started_utc": "2026-11-05T17:24:38.495857+00:00",
+  "state": "ALL_65_NEW_AND_MODIFIED_CALENDAR_CLASSES_ART_VERIFIED_NOT_INSTALLED",
+  "target_status_proof": {
+    "expected_target_classes": 65,
+    "missing": [],
+    "other_nonverified_statuses": {},
+    "parsed_class_headers": 199,
+    "target_statuses": {
+      "Lcom/android/calendar/AllInOneActivity;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "140: Lcom/android/calendar/AllInOneActivity; (offset=0x00002a9c) (type_idx=409) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/CalendarController;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "150: Lcom/android/calendar/CalendarController; (offset=0x00002ac4) (type_idx=420) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/EventInfoActivity;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "186: Lcom/android/calendar/EventInfoActivity; (offset=0x00002b54) (type_idx=456) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/AlertIdentity;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "0: Lcom/android/calendar/alerts/AlertIdentity; (offset=0x00002f60) (type_idx=88) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/AlertReceiver;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "212: Lcom/android/calendar/alerts/AlertReceiver; (offset=0x00002bbc) (type_idx=481) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/AlertService;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "214: Lcom/android/calendar/alerts/AlertService; (offset=0x00002bc4) (type_idx=483) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda0;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "1: Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda0; (offset=0x00002f64) (type_idx=89) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "2: Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda1; (offset=0x00002f68) (type_idx=90) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda2;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "3: Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda2; (offset=0x00002f6c) (type_idx=91) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda3;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "4: Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda3; (offset=0x00002f70) (type_idx=92) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "5: Lcom/android/calendar/alerts/RestoredAlerts$1; (offset=0x00002f74) (type_idx=93) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$Alert;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "6: Lcom/android/calendar/alerts/RestoredAlerts$Alert; (offset=0x00002f78) (type_idx=94) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$DueBatch;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "7: Lcom/android/calendar/alerts/RestoredAlerts$DueBatch; (offset=0x00002f7c) (type_idx=95) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "8: Lcom/android/calendar/alerts/RestoredAlerts; (offset=0x00002f80) (type_idx=96) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeAlarmsService;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "9: Lcom/android/calendar/alerts/SnoozeAlarmsService; (offset=0x00002f84) (type_idx=97) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeJournal$1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "10: Lcom/android/calendar/alerts/SnoozeJournal$1; (offset=0x00002f88) (type_idx=98) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeJournal$EventSnapshot;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "11: Lcom/android/calendar/alerts/SnoozeJournal$EventSnapshot; (offset=0x00002f8c) (type_idx=99) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeJournal$Record;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "12: Lcom/android/calendar/alerts/SnoozeJournal$Record; (offset=0x00002f90) (type_idx=100) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeJournal$Target;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "13: Lcom/android/calendar/alerts/SnoozeJournal$Target; (offset=0x00002f94) (type_idx=101) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeJournal;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "14: Lcom/android/calendar/alerts/SnoozeJournal; (offset=0x00002f98) (type_idx=102) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeState$Decision;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "15: Lcom/android/calendar/alerts/SnoozeState$Decision; (offset=0x00002f9c) (type_idx=103) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeState;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "16: Lcom/android/calendar/alerts/SnoozeState; (offset=0x00002fa0) (type_idx=104) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda0;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "17: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda0; (offset=0x00002fa4) (type_idx=105) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda10;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "18: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda10; (offset=0x00002fa8) (type_idx=106) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda11;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "19: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda11; (offset=0x00002fac) (type_idx=107) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda12;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "20: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda12; (offset=0x00002fb0) (type_idx=108) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda13;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "21: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda13; (offset=0x00002fb4) (type_idx=109) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda14;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "22: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda14; (offset=0x00002fb8) (type_idx=110) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda15;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "23: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda15; (offset=0x00002fbc) (type_idx=111) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda16;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "24: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda16; (offset=0x00002fc0) (type_idx=112) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda17;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "25: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda17; (offset=0x00002fc4) (type_idx=113) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda18;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "26: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda18; (offset=0x00002fc8) (type_idx=114) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda19;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "27: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda19; (offset=0x00002fcc) (type_idx=115) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "28: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda1; (offset=0x00002fd0) (type_idx=116) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda20;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "29: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda20; (offset=0x00002fd4) (type_idx=117) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda21;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "30: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda21; (offset=0x00002fd8) (type_idx=118) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda22;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "31: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda22; (offset=0x00002fdc) (type_idx=119) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda2;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "32: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda2; (offset=0x00002fe0) (type_idx=120) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda3;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "33: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda3; (offset=0x00002fe4) (type_idx=121) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda4;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "34: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda4; (offset=0x00002fe8) (type_idx=122) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda5;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "35: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda5; (offset=0x00002fec) (type_idx=123) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda6;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "36: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda6; (offset=0x00002ff0) (type_idx=124) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda7;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "37: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda7; (offset=0x00002ff4) (type_idx=125) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda8;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "38: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda8; (offset=0x00002ff8) (type_idx=126) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda9;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "39: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda9; (offset=0x00002ffc) (type_idx=127) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "40: Lcom/android/calendar/event/EditEventActivity$1; (offset=0x00003000) (type_idx=128) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$2;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "41: Lcom/android/calendar/event/EditEventActivity$2; (offset=0x00003004) (type_idx=129) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$3;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "42: Lcom/android/calendar/event/EditEventActivity$3; (offset=0x00003008) (type_idx=130) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda0;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "43: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda0; (offset=0x0000300c) (type_idx=131) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "44: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda1; (offset=0x00003010) (type_idx=132) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda2;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "45: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda2; (offset=0x00003014) (type_idx=133) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda3;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "46: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda3; (offset=0x00003018) (type_idx=134) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda4;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "47: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda4; (offset=0x0000301c) (type_idx=135) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda5;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "48: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda5; (offset=0x00003020) (type_idx=136) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda6;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "49: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda6; (offset=0x00003024) (type_idx=137) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda7;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "50: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda7; (offset=0x00003028) (type_idx=138) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "51: Lcom/android/calendar/event/EditEventActivity$Worker; (offset=0x0000302c) (type_idx=139) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "52: Lcom/android/calendar/event/EditEventActivity; (offset=0x00003030) (type_idx=140) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EventDraft;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "53: Lcom/android/calendar/event/EventDraft; (offset=0x00003034) (type_idx=141) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EventEditorStore$CalendarChoice;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "54: Lcom/android/calendar/event/EventEditorStore$CalendarChoice; (offset=0x00003038) (type_idx=142) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EventEditorStore$Loaded;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "55: Lcom/android/calendar/event/EventEditorStore$Loaded; (offset=0x0000303c) (type_idx=143) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EventEditorStore;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "56: Lcom/android/calendar/event/EventEditorStore; (offset=0x00003040) (type_idx=144) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EventReference;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "57: Lcom/android/calendar/event/EventReference; (offset=0x00003044) (type_idx=145) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/ProviderReceipt;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "58: Lcom/android/calendar/event/ProviderReceipt; (offset=0x00003048) (type_idx=146) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/repair/CalendarActions;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "59: Lcom/android/calendar/repair/CalendarActions; (offset=0x0000304c) (type_idx=147) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      }
+    },
+    "unverified": {}
+  },
+  "transport_sha256": "e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83"
+}

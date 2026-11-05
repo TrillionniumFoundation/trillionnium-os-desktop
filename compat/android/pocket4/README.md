@@ -8,7 +8,67 @@ The [complete current 45-App matrix](readiness-20261105/README.md) binds the 202
 
 The following original snapshot is retained with its 2026-11-04 scope. New Bilibili runs in [checkpoint 12](continuation-r11/checkpoint-12/README.md) reach DetailsActivity but still observe buffering; the earlier scoped visual playback is not a substitute for the new run. Native candidate07 now has a retained full-host result (3,793 registered, 3,791 executed, 3,788 completed, three skips, two disabled, zero failures) and four passing Android signal cases in its owned runtime. The controller recorded memory-limit events; Main deployment and commercial-App qualification remain open.
 
-## Later actual results — checkpoint8
+## Latest recorded results — checkpoint9
+
+[Calendar candidate10](calendar-functional-repair-20261105/CURRENT_STATUS.md) is
+installed as7872aa56… following actual verification of all66 added/modified
+classes by the installed ART tools. The single update finished at18:32:09 UTC
+and preserved UID10061, signer, permissions, data identities, Provider identity,
+eight empty tables and baseline task851. Candidate09 had fixed the actual08 menu
+VerifyError; its subsequent launch automatically opened microG login. That
+caller/task chain was independently reconciled and its two owned tasks normally
+closed. Candidate10 replaces automatic account setup on an empty calendar list
+with local guidance and an explicit Add account action. Actual event/reminder
+acceptance for the installed10 APK remains separate.
+
+[Gallery04](acceptance/local-apps-20261105/gallery-video/revision04/README.md)
+completed actual video pause/resume and separate reopen:4→9 seconds before
+pause, identical paused full-window pixels for4.8648 seconds,18→23 after resume,
+and4→9 after reopening. Both tasks and all media/helper state were cleaned.
+The [independent runtime identity review](acceptance/local-apps-20261105/gallery-video/runtime-identity04/README.md)
+binds the same signed APK to two actual process generations, five stable maps
+observations and381 hashed ELF files, including ART and nativebridge/lazy bridge.
+The original sampler completeness count remains zero; two name-matched unresolved
+paths were explicitly r--s property/resource mappings. JIT/anonymous memory is
+not hashed, and no future translation or stress qualification is claimed.
+Album enumeration, JPEG rotation, edited-copy persistence, audio and whole-release
+scope remain open, including the frozen gallery.open check.
+
+[Files feature08](acceptance/local-apps-20261105/documents-features/flow08/README.md)
+completed five scoped checks, now including copying two files through Files UI.
+Both59-byte and118-byte copies matched their complete source hashes. A later
+input precondition stopped with STALE_FRAME; no move/delete success is inferred.
+All owned tasks/files/directories/helper state were cleaned. The four fallback
+file unlinks receive no Files UI-delete credit, and the earlier Documents11
+I/O/persistence/lifecycle scope remains accepted.
+
+The [Editor lifecycle candidate](editor-lifecycle-candidate-20261105/README.md)
+passed43 actual host checks and bytecode roundtrip. It is not signed or installed:
+the original signing key is unavailable. The installed editor's earlier Unicode,
+callback, clear and separate-launch evidence remains distinct.
+
+The [new Dialer component review](component-audit-20261105/contract-review/dialer-functional-targets01/README.md)
+shows that actual call-log polling and voicemail settings reference separately
+declared, defined implementation classes. The two extra missing legacy
+declarations remain unresolved contracts, not two reproduced business crashes.
+The [Gallery camera route](component-audit-20261105/contract-review/gallery-camera-forwarding04/README.md)
+forwards to the installed Camera2 launcher; its unused-looking MediaSaveService
+declaration is not treated as a proven failure from literal counts alone.
+
+[Original Main resource settings were restored by their owner](runtime-resource-boundary-20261105/return-to-original05/README.md).
+Separate actual restoration and post-exit receipts, plus this continuation's
+independent read, verify TasksMax/pids.max12288 and unchanged Main identities.
+Subsequent jobs use the original b227/7e49 guard. The historical6144 profile and
+its rejecting USB04 receipt remain unchanged. At17:57:01 UTC the
+[fresh Camera USB05 read](camera/checked-disconnect/device/current-usb05/selected-review.json)
+still found the exact physical source absent and no matching video node while
+the same provider remained running. No new Camera UI or shutter attempt followed.
+
+All45 launcher Apps remain tracked. There are51 time-ordered installed-package
+observations and16 retained reviews, of which10 currently provide scoped credit
+and six old reviews do not. Whole-App production readiness remains0/45.
+
+## Earlier actual results — checkpoint8
 
 The [installed Clock text repair](acceptance/local-apps-20261105/clock-expired-text/README.md) adds standard expiry title/body fields for the actual notification bridge. On the exact installed e4ff APK, core03 verified start/pause/reopen/resume/reset/delete and the pending-alarm arm/cancel sequence. A separate expiry05 fixture cold-started the service in the background and reached EXPIRED, delivered the exact expiry text through host Notify, then stopped/deleted and closed both owned tasks. A separate saved-record review identified nonzero HAL power in ongoing rows omitted by the first parser. The original failed/1 receipt remains unchanged. This joint evidence passes the frozen timer check; visible desktop popup, physical speaker audibility, alarm/timezone behavior, engine identity and whole-App release remain open.
 

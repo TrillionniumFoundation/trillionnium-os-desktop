@@ -1,0 +1,84 @@
+--- inspect_configuration04.py
++++ inspect_configuration05.py
+@@ -5,6 +5,7 @@
+ process discovery, cgroup write, or existing-file modification is performed.
+ """
+ from pathlib import Path
++import argparse
+ import datetime
+ import hashlib
+ import json
+@@ -14,15 +15,17 @@
+ import subprocess
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-main-runtime-boundary-20261105-r12-04')
+-TX = Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+-TX_SHA = 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-ACTIVATION = Path('/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json')
+-ACTIVATION_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
++ROOT = Path('/home/alex/work/pocket4-main-runtime-boundary-20261105-r12-05')
++TX = Path('/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py')
++TX_SHA = 'e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83'
++ACTIVATION = Path('/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/activation-after-01.json')
++ACTIVATION_SHA = '91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435'
+ EPOCH = Path('/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py')
+ EPOCH_SHA = 'f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288'
+ CELL_SHA = 'f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc'
+ CGROUP = Path('/sys/fs/cgroup/system.slice/droidloomd.service')
++USB_FAILURE = Path('/home/alex/work/pocket4-camera-usb-current-20261105-r12-04.json')
++USB_FAILURE_SHA = '7349e42437c60b5739158b62078906b64cdc74c37533e0806a2c8602bd5308cb'
+ OBSERVED = {}
+ PROPERTIES = ('TasksMax', 'EffectiveTasksMax', 'TasksAccounting', 'ControlGroup', 'FragmentPath', 'DropInPaths', 'NeedDaemonReload', 'InvocationID', 'ExecMainPID', 'ActiveEnterTimestampMonotonic', 'CPUQuotaPerSecUSec', 'MemoryHigh', 'MemoryMax', 'MemorySwapMax')
+ 
+@@ -82,6 +85,11 @@
+     require(os.geteuid() == 0, 'ROOT_READ_ONLY_QUERY')
+     read(TX, TX_SHA, require_root=False)
+     activation = json.loads(read(ACTIVATION, ACTIVATION_SHA, require_root=False)[0])
++    failure_raw = read(USB_FAILURE, USB_FAILURE_SHA)[0]
++    failure = json.loads(failure_raw)
++    require(failure['state'] == 'READ_FAILED' and failure['error'] == 'RuntimeError: MAIN_LIMITS_CHANGED'
++            and failure['UI_actions'] == failure['device_open_calls'] == failure['service_changes'] == 0, 'USB04_ORIGINAL_FAILURE_DIFFERS')
++    OBSERVED['original_usb04_failure'] = {'sha256': USB_FAILURE_SHA, 'bytes': len(failure_raw), 'value': failure}
+     epoch = types.ModuleType('fixed_original_epoch_read_only')
+     epoch.__file__ = str(EPOCH)
+     exec(compile(read(EPOCH, EPOCH_SHA, require_root=False)[0], str(EPOCH), 'exec'), epoch.__dict__)
+@@ -123,7 +131,7 @@
+                 selected.append({'line': n, 'section': section, 'text': line})
+         configs.append({'path': name, 'canonical': str(canonical), **identity, 'selected_resource_directives': selected})
+     journal = tool_query(['/usr/bin/journalctl', '--system', '--no-pager', '--utc', '-o', 'short-iso-precise',
+-                          '--since=2026-11-05 14:45:00 UTC', '--until=2026-11-05 15:45:00 UTC',
++                          '--since=2026-11-05 16:00:00 UTC', '--until=2026-11-05 18:00:00 UTC',
+                           '_PID=1', '--grep=Reload|droidloomd|TasksMax', '-n', '160'])
+     OBSERVED['system_manager_journal_query'] = journal
+     require(journal['exit_code'] in (0, 1), 'SYSTEM_MANAGER_JOURNAL_QUERY_FAILED')
+@@ -137,19 +145,27 @@
+         require(all(current[k] == config[k] for k in current), 'UNIT_SOURCE_CHANGED_DURING_READ')
+     result = {'schema': 'pocket4-main-configured-task-limit-readonly/v1', 'before': before, 'after': after,
+               'expected_frozen_limits': activation['limits'], 'limit_consistency': before['limits'] == after['limits'],
++              'differences': {key: {'expected': value, 'before': before['limits'][key], 'after': after['limits'][key]}
++                    for key, value in activation['limits'].items() if value != before['limits'][key] or value != after['limits'][key]},
++              'original_usb04_failure': OBSERVED['original_usb04_failure'],
+               'fixed_framework_and_host_identity_verified_twice': True,
+               'systemd_properties': props, 'optional_unreported_properties': sorted(set(PROPERTIES) - set(props)), 'systemd_query': query, 'resource_configuration_files': configs,
+               'system_manager_journal_query': journal, 'journal_scope': 'PID1 manager records matching resource/reload/unit names; bounded160 entries in fixed UTC window. Absence is not proof of no direct cgroup writes.',
+               'source_pins': {'transaction': TX_SHA, 'activation': ACTIVATION_SHA, 'epoch': EPOCH_SHA},
+               'pinned_input_metadata': {str(path): read(path, pin, require_root=False)[1] for path, pin in ((TX, TX_SHA), (ACTIVATION, ACTIVATION_SHA), (EPOCH, EPOCH_SHA))},
+-              'scope': {'android_commands': 0, 'ui_actions': 0, 'service_actions': 0, 'cgroup_writes': 0, 'guard_updates': 0, 'package_actions': 0, 'signals_to_existing_processes': 0},
++              'scope': {'android_commands': 0, 'ui_actions': 0, 'service_actions': 0, 'cgroup_writes': 0, 'guard_updates': 0, 'package_actions': 0, 'signals_to_existing_processes': 0, 'namespace_entries': 0, 'fresh_main_selection': False},
+               'new_runtime_baseline_authorized_or_created': False}
+     record = write_result(result)
+     print(json.dumps({'state': 'READ_ONLY_CONFIGURATION_OBSERVED', 'result': record,
+                       'configured_tasks_max': props['TasksMax'], 'kernel_pids_max': after['limits']['pids.max'],
+-                      'limits_stable': result['limit_consistency']}), flush=True)
++                      'limits_stable': result['limit_consistency'], 'differences': result['differences']}), flush=True)
+ 
+ if __name__ == '__main__':
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--execute-read-only', action='store_true')
++    if not parser.parse_args().execute_read_only:
++        print(json.dumps({'state': 'INERT', 'Android_commands': 0, 'UI_actions': 0, 'resource_writes': 0}))
++        raise SystemExit(0)
+     try:
+         main()
+     except BaseException as exc:

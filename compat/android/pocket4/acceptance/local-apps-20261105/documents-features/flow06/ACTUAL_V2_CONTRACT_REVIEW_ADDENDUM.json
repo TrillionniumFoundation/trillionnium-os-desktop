@@ -1,0 +1,11 @@
+{
+  "ActionRunner_smali_sha256": "548dc51db06a267849eedf250847676f1f97641d58f73a3de0b940e9c22e0d42",
+  "base_review_sha256": "9e367bdf22cd3b87f15eb54f6920535776144dc6613ecae1cfc400de5ce8124a",
+  "clarification": "The shared-window-bounds claim in the base review is conditional on an initially selected focused window. When zero focused application windows are initially reported, execute can obtain getRootInActiveWindow for non-meta operations. It then still requires one focused application window with the same root window ID and package before mutation, but skips the initial-versus-final bounds comparison if the initial selected-window metadata was null.",
+  "frozen_source_modified": false,
+  "input_or_UI_actions": 0,
+  "mouse_branch": "mouseClick additionally requires the initially selected verified window metadata to be non-null, so this fallback cannot produce a mouse input.",
+  "new_definite_execution_blocker": false,
+  "schema": "pocket4-v2-native-contract-precision-addendum-v1",
+  "semantic_set_text_branch": "The fallback is available to set-text; the surrounding controller must retain its own actual focused WM/task and scope/geometry checks. The contract does not establish an atomic outer WM-token binding."
+}

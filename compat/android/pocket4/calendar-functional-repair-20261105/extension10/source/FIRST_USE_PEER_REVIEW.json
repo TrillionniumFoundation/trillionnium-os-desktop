@@ -1,0 +1,27 @@
+{
+  "conclusion": "No definite lifecycle or menu blocker found in reviewed narrow source change.",
+  "facts": [
+    "Original cursor count/finishing/close and catchall remain",
+    "No new catchall register merge",
+    "Explicit Add account preserves actual account type, authTokenType and options",
+    "Original callback run is empty; null callback drops no application handling",
+    "New event and Cancel paths introduce no provider writes"
+  ],
+  "limits": [
+    "Source review only; actual D8/ART and first-use business acceptance remain pending"
+  ],
+  "pins": {
+    "first-use-menu.diff": "1714a43f5521b450144b517477e6317d2f0988ac6c2de645eb08a5737c664ddd",
+    "first-use-patch.diff": "58672abf075b1e0e2ea3d6736ee5fa9944a29cbc5a222cf065614a792e4f0654",
+    "patch_original.py": "d34fe217a2488a0e2487c35b43ce7050f87d254e320adadaa57f1a0578e584bf",
+    "src/com/android/calendar/repair/CalendarActions.java": "1f8bf2b53d3a8bd5f3bb0d4f74c599d9afd3685c5ce2155700a0c97f03aa124b"
+  },
+  "reviewer": "/root/review_android_acceptance",
+  "schema": "calendar-first-use-peer-review-v1",
+  "scope": [
+    "actual QueryHandler and empty callback",
+    "first-use-patch.diff",
+    "first-use-menu.diff",
+    "CalendarActions.java"
+  ]
+}

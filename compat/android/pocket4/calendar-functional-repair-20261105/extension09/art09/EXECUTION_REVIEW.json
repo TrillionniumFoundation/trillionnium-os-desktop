@@ -1,0 +1,52 @@
+{
+  "all_inputs_boot_APEX_before_after_pin": true,
+  "all_runtime_writes_observed": false,
+  "build_result_sha256": "ca80dfb4cd627729224275d957a2a023c6178c78e6aa1aeb602f590f7c894901",
+  "cache_observation": "Two known cache roots metadata before/after only, no claims about transient writes or attribution of concurrent app deltas.",
+  "candidate_apk_sha256": "2f8ff1e09e572a7343433c7ab38e9929b3d43fd102562d0c7537471816a90234",
+  "classpath_basis": "Same installed ART, 52 exact held boot-classpath FDs and original mapped boot/APEX snapshot; APK declares no external uses-library. PCL[] is the isolated app-artifact context, not an observed app process classloader.",
+  "compiler_and_oatdump_full_logs_retained": true,
+  "compiler_flags": [
+    "--compiler-filter=verify",
+    "--abort-on-hard-verifier-error",
+    "--abort-on-soft-verifier-error",
+    "--class-loader-context=PCL[]",
+    "--instruction-set=x86_64",
+    "--boot-image=/system/framework/boot.art",
+    "--copy-dex-files=always",
+    "-j2",
+    "-Xms32m",
+    "-Xmx768m"
+  ],
+  "current_installed08_before_after_pin": true,
+  "default_inert": true,
+  "executed": false,
+  "fd_proof": "Same guarded namespace/root -> env -> su2000 -> timeout chain; exact stat identity and marker via direct+directory FD before compiler.",
+  "new_or_modified_target_classes": 65,
+  "no_install_or_UI": true,
+  "no_runtime_file_mutations_requested": true,
+  "original_failed08_runtime_retained": "execution09/core09-retained-result.json; exact VerifyError and task963 crash/removal; not rerun as a negative control.",
+  "output_scope": "New host directory; root-owned read-only APK/marker/directory, only new oat/vdex descriptors writable by compiler UID2000",
+  "request_sha256": "e07eddd24ac44b6e1f8c2291b6bd083c6efc5843c30af11e82db350ee81d8b65",
+  "required_actual_oatdump_status": "Verified for every exact descriptor",
+  "resource_bounds": {
+    "compiler_seconds": 85,
+    "cpu_quota_percent": 200,
+    "cpus": [
+      20,
+      21
+    ],
+    "internal_seconds": 225,
+    "memory_bytes": 2147483648,
+    "output_file_bytes": 268435456,
+    "swap_bytes": 0,
+    "tasks": 64,
+    "unit_seconds": 240
+  },
+  "schema": "calendar09-art-execution-review-v1",
+  "source_bytes": 15230,
+  "source_sha256": "61aa10763f058f160c548c027ad5901a63e72b8f65980b757b9d04788a87fae2",
+  "stage_sha256": "34382e8630a66efc42ec9fae759ee6e8048e11f5a3d741ca96c64aec359d7501",
+  "subsequent_upgrade_and_actual_App_UI_required": true,
+  "whole_unchanged_APK_manifest_sha256": "4745f217753636e077e65c7308123ab636dfec719ab0826f759bb14a547927dd"
+}

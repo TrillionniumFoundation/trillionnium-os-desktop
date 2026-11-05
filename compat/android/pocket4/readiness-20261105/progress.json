@@ -901,6 +901,340 @@
       "uid": 10061,
       "version_code": 37,
       "whole_app_production_ready": false
+    },
+    {
+      "Files_UI_delete_credit": false,
+      "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "baseline_tasks_restored": [
+        851
+      ],
+      "copy_destination_commit_dispatches": 0,
+      "evidence": [
+        {
+          "bytes": 10130,
+          "path": "inputs/documents-features06-PUBLIC_RESULT06.json",
+          "sha256": "a97ad30d007bc6ed6c02986ebc98ddbcccde766c87db2331f31b027bd1597949"
+        },
+        {
+          "bytes": 730,
+          "path": "inputs/documents-features06-flow06-terminal-original.json",
+          "sha256": "2d92ff0bd4748e50e47299266f27248b7f1da607ca19b284d1a4531c265c3ece"
+        },
+        {
+          "bytes": 8303,
+          "path": "inputs/documents-features06-OWNED_NEW_FOLDER_JOURNAL_SELECTED.json",
+          "sha256": "c323da07f961ba3995b8e7b6292e9de61f16065ad3d04505dab33fc4fdb2e727"
+        },
+        {
+          "bytes": 2172,
+          "path": "inputs/documents-features06-FLOW06_LOCATION_REVIEW.json",
+          "sha256": "3e9ba7510247286c7d193f02d2144fc5aeac9fd84b0c8a70f63b549b3c9a9c25"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "gates": {
+        "documents.provider": "pending"
+      },
+      "host_fallback_file_unlinks": 2,
+      "id": "documents_features06_actual_text_and_new_folder",
+      "limits": [
+        "The full feature session remains failed/1: the Copy destination picker opened Downloads and the owned-tree guard stopped before committing any Copy.",
+        "One actual semantic set-text with exact readback and one actual Files Create produced the owned folder, independently read back.",
+        "Raw default-destination thumbnails, unrelated filenames and raw maps remain private.",
+        "Earlier Documents11 local I/O, persistence, UI and lifecycle evidence remains current; broader provider, engine, stability and full release are pending."
+      ],
+      "new_app_failure_claimed": false,
+      "new_feature_this_run": "FILES_NEW_FOLDER",
+      "new_folder_Create_dispatches": 1,
+      "observed_at_utc": "2026-11-05T17:15:17.110989+00:00",
+      "original_error": "RuntimeError: CURRENT_LOCATION_NOT_OWNED_TREE",
+      "original_exit_code": 1,
+      "original_job_state": "failed",
+      "owned_cleanup_verified": true,
+      "owned_tasks_normally_closed": [
+        965,
+        964
+      ],
+      "package": "com.android.documentsui",
+      "set_text_dispatches": 1,
+      "status": "FOUR_SCOPED_FEATURE_GATES_VERIFIED_DESTINATION_NAVIGATION_PENDING",
+      "subordinate_feature_results": {
+        "EXACT_TREE_GRANT": true,
+        "FILES_NEW_FOLDER": true,
+        "GET_CONTENT_CANCEL": true,
+        "TREE_CANCEL": true
+      },
+      "uid": 10022,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "actual_App_business_qualified": false,
+      "all_65_new_or_modified_classes_ART_verified": true,
+      "apk_sha256": "2f8ff1e09e572a7343433c7ab38e9929b3d43fd102562d0c7537471816a90234",
+      "evidence": [
+        {
+          "bytes": 10345,
+          "path": "inputs/calendar09-install-result-original.json",
+          "sha256": "fa8c2275a05cd3fe70ed5769b0a45f689af75ff240100d508f62dfed0ce7dc17"
+        },
+        {
+          "bytes": 1355,
+          "path": "inputs/calendar09-build09-signature-selected.json",
+          "sha256": "8c3a3a5c495f62d94456edef912b46f2c2d0a8030b2ac301d704e7fad59bb471"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "calendar_functional09_installed_after_ART",
+      "job_id": "1a1acc51ca6-fc05-56cb",
+      "observed_at_utc": "2026-11-05T17:32:48.770649+00:00",
+      "package": "com.android.calendar",
+      "prior_binary_reviews_inherited": false,
+      "status": "INSTALLED_VERIFIED_NOT_BUSINESS_QUALIFIED",
+      "uid": 10061,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "actual_control_inputs": 3,
+      "apk_sha256": "347c376f07a4365fa3828ddf9f011994fe527a53fd2f5bd059997ffd3904d46e",
+      "evidence": [
+        {
+          "bytes": 65395,
+          "path": "inputs/gallery-video04-SAVED_REVIEW.json",
+          "sha256": "5d0d294e0cbf83eb52ad2a24d112b27af6a4dcc1716fea61932e2bdba80fc91f"
+        },
+        {
+          "bytes": 1013,
+          "path": "inputs/gallery-video04-TERMINAL_SELECTED.json",
+          "sha256": "c26338252286e4a6e43e0c9954270a7817870f8fb96fd3682584e0ea46f8a46b"
+        },
+        {
+          "bytes": 20514,
+          "path": "inputs/gallery-video04-RESULT_SELECTED.json",
+          "sha256": "0e76344a1898b4dc877b9d8b4b70114e7826886d0575b7eaa87841dafe03d2c8"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "gates": {
+        "gallery.enumeration": "pending",
+        "gallery.open": "pending",
+        "gallery.persist": "pending"
+      },
+      "id": "gallery_video04_actual_pause_resume_reopen",
+      "limits": [
+        "Current exact binary: real silent video playback, Pause/Resume and separate normal reopen are verified.",
+        "Frozen gallery.open remains pending: rotation and the rest of supported playback controls require further evidence.",
+        "Album enumeration/thumbnails, supported edit-on-copy, audio/seek, permission failures, exact engine, stability and full release remain unqualified.",
+        "Earlier failed runs remain original failures; this later success does not rewrite their states.",
+        "The 6144 runtime profile matched before/after this run. A later resource change must be reconciled before another run."
+      ],
+      "normal_closed_tasks": [
+        966,
+        967
+      ],
+      "observed_at_utc": "2026-11-05T17:19:03.173549+00:00",
+      "original_exit_code": 0,
+      "original_job_state": "succeeded",
+      "owned_cleanup_verified": true,
+      "package": "com.android.gallery3d",
+      "pause_entire_application_pixels_stable_seconds": 4.864830125472508,
+      "playback_timecodes": [
+        [
+          4,
+          9
+        ],
+        [
+          18,
+          23
+        ],
+        [
+          4,
+          9
+        ]
+      ],
+      "status": "OWNED_VIDEO_PLAY_PAUSE_RESUME_REOPEN_CLEANUP_VERIFIED",
+      "uid": 10064,
+      "version_code": 40030,
+      "whole_app_production_ready": false
+    },
+    {
+      "Android_commands": 0,
+      "current_hardware_observation": {
+        "observed_utc": "2026-11-05T17:57:01.617300+00:00",
+        "present": false,
+        "target": "/sys/devices/pci0000:00/0000:00:08.3/0000:c7:00.0/usb3/3-4"
+      },
+      "device_open_calls": 0,
+      "evidence": [
+        {
+          "bytes": 1908,
+          "path": "inputs/camera05-current-usb-provider05.json",
+          "sha256": "ccc32217abbc9376203d14dd60f01067efd135e9209dcb0a33e9a99cb6909a09"
+        },
+        {
+          "bytes": 732,
+          "path": "inputs/camera05-terminal05-original.json",
+          "sha256": "574c56108fef38b385df8cae400111a15182b4e089273c77aee829057f616901"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "gates": {
+        "camera.persist": "blocked",
+        "camera.photo": "blocked"
+      },
+      "id": "camera_usb_provider05_current_absence_original_guard_restored",
+      "limits": [
+        "The exact USB3-4 camera was absent at 17:57:01 UTC, with no matching video nodes.",
+        "The original provider remained active/running at the same process birth; no provider restart or device open was performed.",
+        "This replaces the last hardware presence observation, not any APK, playback, camera recovery or production qualification.",
+        "No physical disconnection cause is inferred; original USB04 remains a guard failure before hardware observation."
+      ],
+      "matching_video_nodes": [],
+      "new_Camera_UI_or_APK_review": false,
+      "new_UI_inputs": 0,
+      "observed_at_utc": "2026-11-05T17:57:01.690016+00:00",
+      "original_b227_guard_passed_before_and_after": true,
+      "package": "com.android.camera2",
+      "provider_birth_ticks": 79790547,
+      "provider_or_Main_service_changes": 0,
+      "provider_pid": 3253584,
+      "status": "CURRENT_EXACT_USB_ABSENT_PROVIDER_SAME_BIRTH_RUNNING",
+      "whole_app_production_ready": false
+    },
+    {
+      "Files_UI_delete_credit": false,
+      "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "baseline_tasks_restored": [
+        851
+      ],
+      "evidence": [
+        {
+          "bytes": 12722,
+          "path": "inputs/documents-features08-PUBLIC_RESULT08.json",
+          "sha256": "5a5a57812089a5e13705c6b8eb8fd1f138c94a28fdfdb18325901a17803ef867"
+        },
+        {
+          "bytes": 6288,
+          "path": "inputs/documents-features08-SCOPED_GATE_RESULTS08.json",
+          "sha256": "c3c00129f63672ef478281e693d89bdf7c0c4b0534bbd4bd40b9206eac679130"
+        },
+        {
+          "bytes": 731,
+          "path": "inputs/documents-features08-flow08-terminal-original.json",
+          "sha256": "4e27936728fc84e5ea15f7ed195cc404b5ba1b4660a1c8eadb005b2260dc563e"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "full_copy_hashes_equal_sources": true,
+      "gates": {
+        "documents.provider": "pending"
+      },
+      "host_fallback_file_unlinks": 4,
+      "id": "documents_features08_actual_two_file_copy",
+      "limits": [
+        "The original failed/1 outcome and its later STALE_FRAME stop remain; no move/delete success is inferred.",
+        "Only owned two-file copying is added. Earlier Documents11 I/O/persistence/lifecycle remains accepted.",
+        "Four guarded fallback unlinks cleaned the fixture and receive no UI-delete credit.",
+        "Broader provider, actual engine, search/sort, stability and whole-release coverage remain pending."
+      ],
+      "new_app_failure_claimed": false,
+      "new_feature_this_run": "FILES_MULTIPLE_COPY",
+      "observed_at_utc": "2026-11-05T18:21:06.869857+00:00",
+      "original_error": "ControlError: STALE_FRAME",
+      "original_exit_code": 1,
+      "original_job_id": "1a1aceeffc7-fc05-57a4",
+      "original_job_state": "failed",
+      "owned_cleanup_verified": true,
+      "owned_copy_bytes": [
+        59,
+        118
+      ],
+      "owned_tasks_normally_closed": [
+        972,
+        971
+      ],
+      "package": "com.android.documentsui",
+      "status": "FIVE_SCOPED_FEATURE_CHECKS_VERIFIED_LATER_INPUT_PREFLIGHT_STOPPED",
+      "subordinate_feature_results": {
+        "EXACT_TREE_GRANT": true,
+        "FILES_MULTIPLE_COPY": true,
+        "FILES_NEW_FOLDER": true,
+        "GET_CONTENT_CANCEL": true,
+        "TREE_CANCEL": true
+      },
+      "ui_actions": 30,
+      "uid": 10022,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "actual_process_generations": 2,
+      "android_user": 0,
+      "apk_sha256": "347c376f07a4365fa3828ddf9f011994fe527a53fd2f5bd059997ffd3904d46e",
+      "evidence": [
+        {
+          "bytes": 97108,
+          "path": "inputs/gallery-runtime04-DERIVED_OBSERVATIONS.json",
+          "sha256": "390888ac6e6f8a76c0557421fb9b294e6fe60606b12985cb3fd7e7eb48228345"
+        },
+        {
+          "bytes": 5550,
+          "path": "inputs/gallery-runtime04-PEER_REVIEW.json",
+          "sha256": "27b844c787ae9eef34dafc041374b5dc846e1bf9399da6363ef0f06cc6613715"
+        },
+        {
+          "bytes": 1807,
+          "path": "inputs/gallery-runtime04-SIGNATURE_BINDING.json",
+          "sha256": "9c9a9252b79250d0d6b98b59e2139af0ddb41833ce1ec4f9fd3cd7683246b16c"
+        },
+        {
+          "bytes": 1544,
+          "path": "inputs/gallery-runtime04-ROOT_QUALIFICATION.json",
+          "sha256": "17801b02ff634f20e18a087535e7a25685cf064a6412c8d9429c81d733f67fcc"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "full_ELF_file_hashes": 381,
+      "gates": {
+        "identity": "passed"
+      },
+      "id": "gallery04_saved_runtime_identity_review",
+      "observed_at_utc": "2026-11-05T17:19:03.173549+00:00",
+      "original_sampler_complete_count_retained": 0,
+      "package": "com.android.gallery3d",
+      "stable_observations_reviewed": 5,
+      "status": "OBSERVED_PER_APP_RUNTIME_IDENTITY_VERIFIED",
+      "uid": 10064,
+      "version_code": 40030,
+      "whole_app_production_ready": false
+    },
+    {
+      "actual_App_business_qualified": false,
+      "all_66_new_or_modified_classes_ART_verified": true,
+      "apk_sha256": "7872aa56b6aa35f4509a27a2c3c0ebb8743da7096136155e425f5b1e4499ae8e",
+      "evidence": [
+        {
+          "bytes": 10345,
+          "path": "inputs/calendar10-install-result-original.json",
+          "sha256": "253c98a9d27f1b5bb45e01cdda6042e0d43b2f268b3c0a228bf93a639b38f957"
+        },
+        {
+          "bytes": 2595,
+          "path": "inputs/calendar10-build10-signature-selected.json",
+          "sha256": "7c5baad806e56c753e2262bc5f2b75f3ef911e380cb09e46104f3fab354faf78"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "calendar_functional10_installed_after_ART",
+      "job_id": "1a1acfb7c24-fc05-57df",
+      "observed_at_utc": "2026-11-05T18:32:09.210226+00:00",
+      "package": "com.android.calendar",
+      "prior_binary_reviews_inherited": false,
+      "status": "INSTALLED_VERIFIED_NOT_BUSINESS_QUALIFIED",
+      "uid": 10061,
+      "version_code": 37,
+      "whole_app_production_ready": false
     }
   ],
   "gate_promotion_from_progress": false,
@@ -1034,6 +1368,6 @@
       "status": "ACTUAL_FULL_HOST_AND_FOUR_ANDROID_SIGNAL_CASES_PASSED_IN_OWNED_RUNTIME"
     }
   ],
-  "reviewed_at_utc": "2026-11-05T16:41:18.589342+00:00",
+  "reviewed_at_utc": "2026-11-05T18:30:04.200642+00:00",
   "schema": "pocket4-app-progress-v1"
 }

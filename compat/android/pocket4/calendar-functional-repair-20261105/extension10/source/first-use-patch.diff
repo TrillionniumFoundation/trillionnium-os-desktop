@@ -1,0 +1,33 @@
+--- revision09/patch_original.py
++++ revision10/patch_original.py
+@@ -11,6 +11,7 @@
+ ALERTS='Lcom/android/calendar/alerts/RestoredAlerts;'
+ KNOWN={
+  'AllInOneActivity.smali':'42345124f47ce4bb7b86919e2298525e2914684d43ce7482129c0e157a83cadd',
++ 'AllInOneActivity$QueryHandler.smali':'95ca070b4de74cb7b34177b315d43bb2de12a1be132799ab71eb3eccb81d7c29',
+  'CalendarController.smali':'382a929b2ff76472c491a2a14c65dece0f048c295b63b75db00c90c91c44e732',
+  'EventInfoActivity.smali':'4539e600603ca54d30c37a71a627fa1f9e313d47b60a2aad4fe023e49643fa8c',
+  'alerts/AlertService.smali':'784231b7896c8c182c6d414b8e9820a0c094ca3a321db8cc5f42ded552fd4a83',
+@@ -70,6 +71,22 @@
+         once(block,'    invoke-super {v1}, Landroid/app/Activity;->onResume()V',
+                    '    invoke-super {v1}, Landroid/app/Activity;->onResume()V\n\n    invoke-static {v1}, '+ACTIONS+'->onCalendarStarted(Landroid/app/Activity;)V'))
+ 
++    def first_use(block):
++        # Keep the actual query result, finishing check, cursor close and catchall.
++        # Replace only the original automatic account operation after cursor close.
++        start=block.index('    .line 159\n')
++        end=block.index('    :catchall_51\n',start)
++        automatic=block[start:end]
++        require(automatic.count('->addAccount(')==1 and automatic.endswith('    return-void\n\n'),
++            'EXACT_AUTOMATIC_ACCOUNT_BRANCH')
++        local='''    iget-object v0, p0, Lcom/android/calendar/AllInOneActivity$QueryHandler;->this$0:Lcom/android/calendar/AllInOneActivity;
++    invoke-static {v0}, ACTIONS->onNoCalendars(Landroid/app/Activity;)V
++    return-void
++
++'''.replace('ACTIONS',ACTIONS)
++        return block[:start]+local+block[end:]
++    alter('AllInOneActivity$QueryHandler.smali','onQueryComplete(ILjava/lang/Object;Landroid/database/Cursor;)V',first_use)
++
+     route='''    iget-object v0, p0, Lcom/android/calendar/CalendarController;->mContext:Landroid/content/Context;
+     iget-wide v1, p2, Lcom/android/calendar/CalendarController$EventInfo;->eventType:J
+     iget-wide v3, p2, Lcom/android/calendar/CalendarController$EventInfo;->id:J

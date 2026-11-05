@@ -1,0 +1,103 @@
+--- execution10/calendar_install09.py
++++ execution11/calendar_install10.py
+@@ -4,15 +4,15 @@
+ from datetime import datetime, timezone
+ import argparse, hashlib, io, json, os, re, signal, stat, types, zipfile
+ 
+-PROFILE_TX=Path('/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py')
+-PROFILE_TX_SHA='e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83'
+-PROFILE_ACTIVATION_SHA='91c7a4a911a7bcf908726750f55f3fda66f40263ddf3fac457473e0a6c780435'
+-
+-ROOT=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-09')
+-BUILD=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-09')
+-BUILD_SHA='ca80dfb4cd627729224275d957a2a023c6178c78e6aa1aeb602f590f7c894901'
+-OLD_SHA='95633138efb7209631638eef05ad54021b647740a6278d7de8976bb499f6b935'
+-NEW_SHA='2f8ff1e09e572a7343433c7ab38e9929b3d43fd102562d0c7537471816a90234'
++PROFILE_TX=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
++PROFILE_TX_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
++PROFILE_ACTIVATION_SHA='7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
++
++ROOT=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-10')
++BUILD=Path('/home/alex/work/pocket4-calendar-repair-build-20261105-r12-10')
++BUILD_SHA='03634674b17dba7960948ba7c92bd326e59f3ec48dc6c48ed94913af2381320a'
++OLD_SHA='2f8ff1e09e572a7343433c7ab38e9929b3d43fd102562d0c7537471816a90234'
++NEW_SHA='7872aa56b6aa35f4509a27a2c3c0ebb8743da7096136155e425f5b1e4499ae8e'
+ OLD_BYTES,NEW_BYTES=2631117,2631117
+ PACKAGE='com.android.calendar'
+ PROVIDER='com.android.providers.calendar'
+@@ -20,10 +20,10 @@
+ CERT='a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc'
+ FLOW=Path('/home/alex/work/pocket4-calendar-flow-tools-20261105-r12-01/run_calendar01.py')
+ FLOW_SHA='d307f4ceda9fc80e216f280cb1a9558fbe4e27b43cd659ecc83a1c6edab9c8fa'
+-PRIOR=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-08/result.json')
+-PRIOR_SHA='139d07165aa723e97c02dbc6e620c4502865e433e79b8e1a5757d343f87f17f4'
+-ART=Path('/home/alex/work/pocket4-calendar-art-verification-20261105-r12-09/result.json')
+-ART_SHA='441c3e7811989deb6282458bfef90302876d0117b968a2b5eaf48c2d0aee1b63'
++PRIOR=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-09/result.json')
++PRIOR_SHA='fa8c2275a05cd3fe70ed5769b0a45f689af75ff240100d508f62dfed0ce7dc17'
++ART=Path('/home/alex/work/pocket4-calendar-art-verification-20261105-r12-10/result.json')
++ART_SHA='4a449919bc290dc2871758c1a9523e23dffaa028c9a71ba3596ef10cf5d018cd'
+ JAVA_CLOSURE=('java','java_security','jdk_modules','jdk_release','jvm_cfg','libjava',
+               'libjimage','libjli','libjvm','apksigner_jar','signer_companion_apksig-0.9.jar')
+ 
+@@ -48,8 +48,8 @@
+         a={n for n in old.namelist() if not signature_entry(n)}
+         b={n for n in new.namelist() if not signature_entry(n)}
+         require(len(a)==664 and b==a and 'classes2.dex' in a,'PAYLOAD_SET_CHANGED')
+-        require([n for n in sorted(a) if old.read(n)!=new.read(n)]==['classes.dex'],'NON_TARGET_PAYLOAD_CHANGED')
+-        require(old.read('classes2.dex')==new.read('classes2.dex'),'RESTORED_CLASSES2_CHANGED')
++        require([n for n in sorted(a) if old.read(n)!=new.read(n)]==['classes.dex','classes2.dex'],
++                'ONLY_REVIEWED_TWO_DEX_PAYLOADS_MAY_CHANGE')
+ 
+ def pin_tools(deps):
+     result={}
+@@ -100,7 +100,7 @@
+     require(os.geteuid()==0 and not os.path.lexists(ROOT),'NEW_ROOT_REQUIRED')
+     require(re.fullmatch(r'[0-9a-f]{64}',ART_SHA) is not None,'ACTUAL_ART_PIN_NOT_FROZEN')
+     m=load(FLOW,FLOW_SHA)
+-    # Bind the independently approved 6144 profile; original helper and guard sources remain intact.
++    # Bind the original strictly revalidated 12288 profile; original helper and guard sources remain intact.
+     previous_tx=str(m.TX)
+     require(m.PINS[previous_tx]=='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470','ORIGINAL_TRANSPORT_PREIMAGE_CHANGED')
+     m.PINS={str(PROFILE_TX) if path==previous_tx else path: PROFILE_TX_SHA if path==previous_tx else pin
+@@ -132,18 +132,27 @@
+                 build['alignment_16k_verified'] is True and build['input_postcheck_passed'] is True and
+                 build['semantic_proof']['only_expected_methods_changed'] is True and
+                 build['payload_proof']['all_non_dex_payloads_byte_equal'] is True,'BUILD_PROVENANCE')
++            change=build['against_previous09'];restored=build['restored_code_proof']
++            require(change['apk_sha256']==OLD_SHA and change['all_other_methods_IR_equal'] and
++                change['changed_methods']==[['com/android/calendar/AllInOneActivity$QueryHandler.smali',
++                    'onQueryComplete(ILjava/lang/Object;Landroid/database/Cursor;)V']] and
++                change['classes2_preserved_except_reviewed_CalendarActions'] and
++                restored['classes_compared']==60 and restored['unchanged_classes']==59 and
++                restored['only_changed_class']=='com/android/calendar/repair/CalendarActions.smali',
++                'ACTUAL_NARROW_FIRST_USE_BUILD_PROOF_REQUIRED')
+             prior=json.loads(tx.read_regular(PRIOR,PRIOR_SHA,32768))
+             require(prior['state']=='INSTALLED_VERIFIED_NOT_BUSINESS_QUALIFIED' and
+                 prior['after']['apk_sha256']==OLD_SHA and not prior['install_pending'],'EXACT_PRIOR_INSTALL_REQUIRED')
+             art=json.loads(tx.read_regular(ART,ART_SHA,131072))
+-            require(art['state']=='ALL_65_NEW_AND_MODIFIED_CALENDAR_CLASSES_ART_VERIFIED_NOT_INSTALLED'
++            require(art['state']=='ALL_66_NEW_AND_MODIFIED_CALENDAR_CLASSES_ART_VERIFIED_NOT_INSTALLED'
+                 and art['apk_sha256']==NEW_SHA and art['build_result_sha256']==BUILD_SHA
+-                and art['all_65_target_classes_stored_status_verified'] is True
++                and art['all_66_target_classes_stored_status_verified'] is True
+                 and art['input_boot_apex_classpaths_unchanged'] is True
+-                and art['installed_calendar08_unchanged'] is True
++                and art['installed_calendar09_unchanged'] is True
+                 and art['compiler']['rc']==0 and art['oatdump']['rc']==0,'ACTUAL_ART_VERIFICATION_REQUIRED')
+             proof=art['target_status_proof']
+-            require(proof['expected_target_classes']==65 and len(proof['target_statuses'])==65
++            expected=set(build['new_class_definitions'])|{'L'+p[:-6]+';' for p in build['patch']['changed_classes']}
++            require(proof['expected_target_classes']==len(expected) and set(proof['target_statuses'])==expected
+                 and not proof['missing'] and not proof['unverified']
+                 and all(x['status']=='Verified' for x in proof['target_statuses'].values()),'ALL_TARGET_ART_STATUSES_REQUIRED')
+             require(art['resource_usage']['limits']==art['resource_admission']['limits']
+@@ -161,7 +170,7 @@
+                 flow.ui.baseline=set(tasks);result['tasks_before']=sorted(tasks)
+                 before=identity(s,m,doc);result['before']=before
+                 require(before['apk_sha256']==OLD_SHA and before['apk_bytes']==OLD_BYTES,'ORIGINAL_APK_REQUIRED')
+-                require(before==prior['after'],'CALENDAR_PREIMAGE_CHANGED_SINCE_VERIFIED_INSTALL08')
++                require(before==prior['after'],'CALENDAR_PREIMAGE_CHANGED_SINCE_VERIFIED_INSTALL09')
+                 result['provider_before']=doc.identity(s,PROVIDER,PROVIDER_SHA,10017,37)
+                 result['counts_before']=flow.counts('install-before')
+                 empty=dict.fromkeys(m.TABLES,0);require(result['counts_before']==empty,'ZERO_CALENDAR_BASELINE_REQUIRED')

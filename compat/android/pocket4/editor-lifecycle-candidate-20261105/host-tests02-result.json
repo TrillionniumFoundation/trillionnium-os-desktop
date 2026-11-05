@@ -1,0 +1,51 @@
+{
+  "Android_lifecycle_executed": false,
+  "commands": [
+    {
+      "argv": [
+        "java",
+        "com.sun.tools.javac.Main",
+        "-encoding",
+        "UTF-8",
+        "-source",
+        "8",
+        "-target",
+        "8",
+        "-d",
+        "editor-recovery08/host-tests02",
+        "editor-recovery08/candidate/src/org/droidloom/qa/editorcontract/RetainedEditorState.java",
+        "editor-recovery08/candidate/src/org/droidloom/qa/editorcontract/SessionOwner.java",
+        "editor-recovery08/tests/org/droidloom/qa/editorcontract/RetainedEditorStateTest.java",
+        "editor-recovery08/tests/org/droidloom/qa/editorcontract/SessionOwnerTest.java",
+        "editor-recovery08/tests/shims/android/util/AtomicFile.java",
+        "editor-recovery08/tests/shims/org/json/JSONArray.java"
+      ],
+      "rc": 0,
+      "stderr": "warning: [options] bootstrap class path not set in conjunction with -source 8\n1 warning\n",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "java",
+        "-cp",
+        "editor-recovery08/host-tests02",
+        "org.droidloom.qa.editorcontract.SessionOwnerTest"
+      ],
+      "rc": 0,
+      "stderr": "",
+      "stdout": "SessionOwner production checks=22 PASS; Android lifecycle unrun\n"
+    },
+    {
+      "argv": [
+        "java",
+        "-cp",
+        "editor-recovery08/host-tests02",
+        "org.droidloom.qa.editorcontract.RetainedEditorStateTest"
+      ],
+      "rc": 0,
+      "stderr": "",
+      "stdout": "PASS RetainedEditorStateTest checks=21 Android_lifecycle_executed=false file_IO_simulated=false\n"
+    }
+  ],
+  "schema": "editor-host-boundaries-v1"
+}

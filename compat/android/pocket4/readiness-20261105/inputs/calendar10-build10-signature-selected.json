@@ -1,0 +1,66 @@
+{
+  "Android_business_qualified": false,
+  "against_previous09": {
+    "all_other_methods_IR_equal": true,
+    "all_other_non_signature_payloads_byte_equal": true,
+    "apk_sha256": "2f8ff1e09e572a7343433c7ab38e9929b3d43fd102562d0c7537471816a90234",
+    "changed_methods": [
+      [
+        "com/android/calendar/AllInOneActivity$QueryHandler.smali",
+        "onQueryComplete(ILjava/lang/Object;Landroid/database/Cursor;)V"
+      ]
+    ],
+    "classes2_dex_byte_equal": false,
+    "classes2_preserved_except_reviewed_CalendarActions": true,
+    "classes_compared": 445,
+    "compared_non_signature_payloads": 664,
+    "methods_compared": 2327
+  },
+  "alignment_16k_verified": true,
+  "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+  "finished_utc": "2026-11-05T17:58:08.814797+00:00",
+  "host_tests": {
+    "AlertIdentityTest": "AlertIdentityTest: 9 checks passed\n",
+    "EventDraftTest": "EventDraftTest: 22 checks passed\n",
+    "EventReferenceTest": "EventReferenceTest: 17 checks passed\n",
+    "ProviderReceiptTest": "ProviderReceiptTest: 12 checks passed\n",
+    "SnoozeStateTest": "SnoozeStateTest: 31 checks passed\n"
+  },
+  "isolated_ART_verification": {
+    "context": "PCL[] isolated artifact; not App lifecycle/business acceptance",
+    "exact_new_or_modified_classes_Verified": 66,
+    "receipt": {
+      "bytes": 41917,
+      "sha256": "4a449919bc290dc2871758c1a9523e23dffaa028c9a71ba3596ef10cf5d018cd"
+    }
+  },
+  "restored_code_proof": {
+    "added_methods": [
+      "onNoCalendars(Landroid/app/Activity;)V"
+    ],
+    "changed_methods": [
+      "addNewEvent(Landroid/view/Menu;)V",
+      "onMenu(Landroid/app/Activity;Landroid/view/MenuItem;Ljava/lang/Long;)Z"
+    ],
+    "classes_compared": 60,
+    "only_changed_class": "com/android/calendar/repair/CalendarActions.smali",
+    "proof": {
+      "bytes": 17997,
+      "path": "/home/alex/work/pocket4-calendar-repair-build-20261105-r12-10/restored-class-ir-proof.json",
+      "sha256": "0e84b12ec575875a456fa031fdd112d79bf3a3454c5bf635f410ac10176ddca5"
+    },
+    "unchanged_classes": 59
+  },
+  "signature_v3_verified": true,
+  "signed_apk": {
+    "bytes": 2631117,
+    "path": "/home/alex/work/pocket4-calendar-repair-build-20261105-r12-10/Calendar-pocket4-functional.apk",
+    "sha256": "7872aa56b6aa35f4509a27a2c3c0ebb8743da7096136155e425f5b1e4499ae8e"
+  },
+  "source_result": {
+    "bytes": 43510,
+    "sha256": "03634674b17dba7960948ba7c92bd326e59f3ec48dc6c48ed94913af2381320a"
+  },
+  "started_utc": "2026-11-05T17:57:51.969565+00:00",
+  "state": "BUILT_SIGNED_NOT_INSTALLED"
+}

@@ -1,0 +1,149 @@
+{
+  "actual_terminals": {
+    "main-identity-readonly02": {
+      "exit_code": 0,
+      "job_id": "1a1acce7e5d-fc05-5704",
+      "original_status": {
+        "bytes": 733,
+        "sha256": "ed526424c7e67a9e4b56752feaf45af37fab3f09af2ea1d17b9d96fd5bab2e92"
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "timed_out": false
+    },
+    "main-tasksmax-restore01": {
+      "exit_code": 0,
+      "job_id": "1a1accb66a0-fc05-56ed",
+      "original_status": {
+        "bytes": 733,
+        "sha256": "76cae9ddea9802562c341f92d043aafbbec66e0dd5ffa0d4b14a5fc3ccd61d76"
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "timed_out": false
+    }
+  },
+  "independent_post_exit": {
+    "Android_UI_actions": 0,
+    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "Main_mutations": 0,
+    "all_five_original_limits_match": true,
+    "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+    "both_identity_observations_match": true,
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    },
+    "namespace_entry_performed": false,
+    "original_guard": {
+      "attempted": true,
+      "completed": true,
+      "passed": true,
+      "return_value": {
+        "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+        "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+        "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+        "resource_limits_match": true,
+        "three_host_processes_match": true,
+        "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+      }
+    },
+    "original_inputs_unchanged": true,
+    "owned_fds_closed": true
+  },
+  "later_config05": {
+    "after": {
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "limits": {
+        "cpu.max": "200000 100000",
+        "memory.high": "5368709120",
+        "memory.max": "6442450944",
+        "memory.swap.max": "max",
+        "pids.max": "12288"
+      },
+      "pids_current": "3601",
+      "pids_events": "max 0",
+      "utc": "2026-11-05T17:48:42.882216+00:00"
+    },
+    "before": {
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "limits": {
+        "cpu.max": "200000 100000",
+        "memory.high": "5368709120",
+        "memory.max": "6442450944",
+        "memory.swap.max": "max",
+        "pids.max": "12288"
+      },
+      "pids_current": "3601",
+      "pids_events": "max 0",
+      "utc": "2026-11-05T17:48:42.784699+00:00"
+    },
+    "effective_tasksmax": "12288",
+    "fixed_framework_and_host_identity_verified_twice": true,
+    "need_daemon_reload": "no",
+    "original_result": {
+      "bytes": 10422,
+      "sha256": "b664de19568666a8fb4a276df82ef51232e7d4928b92e629b82b9f2695d55d13"
+    },
+    "systemd_tasksmax": "12288"
+  },
+  "limits": [
+    "No runtime-engine or App release gate is granted by resource restoration.",
+    "Config05 PID1 journal query returned no entries; cause attribution uses the separate original transaction and complete terminal, not journal absence.",
+    "The earlier 6144-only guard failures and all failed jobs remain unchanged."
+  ],
+  "new_Android_commands": 0,
+  "new_Main_resource_writes": 0,
+  "new_UI_inputs": 0,
+  "profile_use": {
+    "6144_profile_and_its_historical_run_records_preserved": true,
+    "all_new_device_actions_still_require_fresh_full_original_guard": true,
+    "original_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "original_transaction_sha256": "b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470"
+  },
+  "restoration_actions": {
+    "Main_code_changed": false,
+    "config90_after": {
+      "bytes": 133,
+      "path": "/etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+      "sha256": "9ce11617715c28e3dc3a0a8a7446d29d93e0684490ce9ef69777bb47853bac22"
+    },
+    "config90_before": {
+      "bytes": 132,
+      "path": "/etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+      "sha256": "1ddafeb233beabb556bdc9f1cbd3a1af78d00a0489675facad2d02493ba431a7"
+    },
+    "daemon_reload": false,
+    "original_config90_held_inode_write_bytes": 133,
+    "original_guard_or_baseline_changed": false,
+    "restart": false,
+    "set_property_argv": [
+      "/usr/bin/systemctl",
+      "--system",
+      "--no-pager",
+      "--no-ask-password",
+      "set-property",
+      "droidloomd.service",
+      "TasksMax=12288"
+    ],
+    "set_property_child_reaped": true,
+    "set_property_exit_code": 0
+  },
+  "restoration_performed_by_this_publication_script": false,
+  "schema": "original-main-resource-restoration-cross-owner-reconciliation/v1",
+  "separate_owner_independent_post_exit_stdout": {
+    "bytes": 23171,
+    "sha256": "e9344b538fbf6f6f06442b27d81d772be40db0ee3f3805823648a0a733055116"
+  },
+  "separate_owner_original_stdout": {
+    "bytes": 60905,
+    "sha256": "07dac235abe10226316ffc29ba1c716a7cf19a18db39d7eefe19dcf02cc61af1"
+  },
+  "state": "ORIGINAL_12288_LIMITS_RESTORED_AND_INDEPENDENTLY_OBSERVED",
+  "whole_app_production_ready": false
+}
