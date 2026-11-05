@@ -79,6 +79,9 @@ impl Session {
             ))))
             .stdout(stdout)
             .stderr(stderr);
+        if inputs.is_desktop() {
+            command.env("TRILL_CALCULATOR_STATE_DIR", fresh.user.join("calculator"));
+        }
         process::drop_to_owner(&mut command, inputs.uid, inputs.gid);
         let owner = process::ChildOwner::spawn(&mut command)?;
         // Verify real drop before reading, without inventing a serialized peer.

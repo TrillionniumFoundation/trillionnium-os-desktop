@@ -60,15 +60,16 @@ impl eframe::App for ClientWindow {
         let mut calculator_updated = false;
         if let Some(organ) = &mut self.calculator_organ {
             let before = organ.revision();
-            organ.poll();
-            if organ.revision() != before {
+            let updated = organ.poll();
+            if updated && !organ.edit_pending() {
                 self.left = organ.state().left.clone();
                 self.right = organ.state().right.clone();
                 self.result = organ.state().result.clone();
                 self.calculator_operator = organ.state().operator;
-                self.calculator_notice = None;
-                calculator_updated = true;
+                self.calculator_notice = organ.edit_notice();
+                calculator_updated = organ.revision() != before;
             }
+            organ.defer_close_while_saving(ctx);
         }
         self.terminal_preedit_active = self.activation.composing();
         let mut notes_updated = false;
@@ -154,8 +155,10 @@ impl eframe::App for ClientWindow {
                     if let Some(organ) = &self.calculator_organ {
                         ui.small("整数计算（除法须整除）");
                         if organ.receipt_pending() { ui.small("正在等待操作结果确认"); }
+                        ui.small(organ.storage_status());
                     }
                     if let Some(notice) = self.calculator_notice { ui.small(notice); }
+                    ui.add_enabled_ui(self.calculator_organ.as_ref().is_none_or(|organ| organ.editable()), |ui| {
                     ui.horizontal(|ui| {
                         let a = ui.label("A");
                         ui.text_edit_singleline(&mut self.left).labelled_by(a.id);
@@ -168,6 +171,7 @@ impl eframe::App for ClientWindow {
                                 self.calculate(op);
                             }
                         }
+                    });
                     });
                     ui.label(RichText::new(&self.result).size(20.0));
                     ui.separator();

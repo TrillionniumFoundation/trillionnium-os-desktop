@@ -26,7 +26,7 @@ import tempfile
 import time
 import native_sdk
 
-PROGRAMS = ("trill-session", "trill-shell", "trill-app-window", "trill-ctl", "trill-notes-recovery")
+PROGRAMS = ("trill-session", "trill-shell", "trill-app-window", "trill-ctl", "trill-notes-recovery", "trill-calculator-recovery")
 UNIT = "trillionnium-desktop-session.service"
 MAX_FILE = 128 * 1024 * 1024
 MAX_BUNDLE = 512 * 1024 * 1024

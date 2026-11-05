@@ -1,6 +1,7 @@
 //! Original Session process lifetime only; this capability grants no effect,
 //! Root role, principal or reconnect permission. The Calculator two-FD wire is unchanged.
 use crate::calculator::CalculatorTargetIdentity;
+pub use crate::notes_lifetime::StorageRequirement;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{self, Read};
@@ -32,6 +33,7 @@ struct Metadata {
     pid: u32,
     boot_id: String,
     process_start_ticks: u64,
+    storage: StorageRequirement,
 }
 
 /// Captured from this actual process, not deserializable or reconstructable
@@ -43,6 +45,13 @@ pub struct SessionLifetimeSource {
 
 impl SessionLifetimeSource {
     pub fn capture_current(target: CalculatorTargetIdentity) -> io::Result<Self> {
+        Self::capture_current_with_storage(target, StorageRequirement::Optional)
+    }
+
+    pub fn capture_current_with_storage(
+        target: CalculatorTargetIdentity,
+        storage: StorageRequirement,
+    ) -> io::Result<Self> {
         target
             .validate()
             .map_err(|_| invalid("invalid Calculator lifetime target"))?;
@@ -75,6 +84,7 @@ impl SessionLifetimeSource {
                 .trim()
                 .into(),
             process_start_ticks: start_ticks(pid)?,
+            storage,
         };
         verify_kernel(&descriptor, &metadata, /*require_parent*/ false)?;
         Ok(Self {
@@ -120,6 +130,7 @@ impl SessionLifetimeSource {
 #[derive(Clone)]
 pub struct SessionLifetime {
     descriptor: Arc<OwnedFd>,
+    storage: StorageRequirement,
 }
 
 impl SessionLifetime {
@@ -167,7 +178,12 @@ impl SessionLifetime {
         verify_kernel(&descriptor, &metadata, /*require_parent*/ true)?;
         Ok(Some(Self {
             descriptor: Arc::new(descriptor),
+            storage: metadata.storage,
         }))
+    }
+
+    pub fn storage_requirement(&self) -> StorageRequirement {
+        self.storage
     }
 
     pub fn check_alive(&self) -> io::Result<()> {

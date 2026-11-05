@@ -39,7 +39,7 @@ class HostArchiveTests(unittest.TestCase):
         self.target = self.root / "target"
         release = self.target / "release"
         release.mkdir(parents=True)
-        for name in ("trill-session", "trill-shell", "trill-app-window", "trill-ctl", "trill-notes-recovery"):
+        for name in ("trill-session", "trill-shell", "trill-app-window", "trill-ctl", "trill-notes-recovery", "trill-calculator-recovery"):
             shutil.copyfile(shutil.which("true"), release / name)
             (release / name).chmod(0o755)
         self.environment = dict(os.environ, PATH=str(tools) + os.pathsep + os.environ["PATH"],

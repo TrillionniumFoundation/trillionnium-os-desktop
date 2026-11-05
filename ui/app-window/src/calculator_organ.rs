@@ -1,19 +1,23 @@
-//! Private Calculator channels. Only the egui main thread mutates app state;
-//! transport threads submit bounded work and cannot issue grants or replay.
+//! Private Calculator channels. One state worker persists causal receipts;
+//! rendering and transport threads cannot issue grants, mutate or replay effects.
 
 use eframe::egui;
 use std::io::{self, Read, Write};
 use std::net::Shutdown;
 use std::os::fd::BorrowedFd;
 use std::os::unix::net::{UnixDatagram, UnixStream};
-use std::sync::mpsc::{self, Receiver, SyncSender};
+use std::sync::mpsc::{self, SyncSender};
+use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 use std::time::Duration;
 use trill_ui_core::calculator::{
-    CalculatorDocument, CalculatorTargetIdentity, CalculatorValueState,
-    MAX_CALCULATOR_REQUEST_BYTES, MAX_CALCULATOR_RESPONSE_BYTES,
+    CalculatorTargetIdentity, CalculatorValueState, MAX_CALCULATOR_REQUEST_BYTES,
+    MAX_CALCULATOR_RESPONSE_BYTES,
 };
 use trill_ui_core::calculator_lifetime::{boottime_nanos, SessionLifetime};
+
+#[path = "calculator_worker.rs"]
+mod worker;
 
 const HANDOFF_BUDGET: Duration = Duration::from_secs(1);
 
@@ -45,8 +49,14 @@ struct Pending {
 }
 
 pub struct CalculatorAppChannel {
-    document: CalculatorDocument,
-    receiver: Receiver<Pending>,
+    projection: worker::Projection,
+    snapshot: Arc<Mutex<worker::Projection>>,
+    sender: Option<SyncSender<worker::Command>>,
+    durable: bool,
+    pending_edit: Option<(u64, CalculatorValueState)>,
+    next_edit: u64,
+    edit_refused: bool,
+    deferred_close: bool,
     lifetime: Option<SessionLifetime>,
     effect: UnixStream,
     recovery: UnixDatagram,
@@ -81,15 +91,21 @@ impl CalculatorAppChannel {
         recovery: UnixDatagram,
         lifetime: Option<SessionLifetime>,
     ) -> io::Result<Self> {
-        let document = CalculatorDocument::new(target).map_err(io::Error::other)?;
-        let (sender, receiver) = mpsc::sync_channel(2);
         let effect_worker = effect.try_clone()?;
         let recovery_worker = recovery.try_clone()?;
+        let connection = worker::start(ctx.clone(), target, lifetime.clone())?;
+        let sender = connection.sender.clone();
         // Construct the shutdown guard before the first spawn; a later spawn
         // failure cannot strand an open private effect reader.
         let mut channel = Self {
-            document,
-            receiver,
+            projection: worker::Projection::default(),
+            snapshot: connection.projection,
+            sender: Some(connection.sender),
+            durable: connection.durable,
+            pending_edit: None,
+            next_edit: 0,
+            edit_refused: false,
+            deferred_close: false,
             lifetime,
             effect,
             recovery,
@@ -125,59 +141,110 @@ impl CalculatorAppChannel {
         ended
     }
 
-    /// Called from the same egui update which consumes these values for layout.
+    /// Read-only projection: a worker publishes only after the checkpoint sync.
     pub fn poll(&mut self) -> bool {
-        let mut updated = false;
-        for _ in 0..2 {
-            let Ok(pending) = self.receiver.try_recv() else {
-                break;
-            };
-            if self
-                .lifetime
-                .as_ref()
-                .is_some_and(SessionLifetime::has_ended)
-            {
-                let _ = pending.reply.try_send(None);
-                continue;
-            }
-            let response = if pending.deadline.remaining().is_err() {
-                if pending.recovery {
-                    None
-                } else {
-                    self.document
-                        .deadline_refusal(&pending.bytes)
-                        .ok()
-                        .and_then(|r| serde_json::to_vec(&r).ok())
-                }
-            } else if pending.recovery {
-                self.document.recovery_exact(&pending.bytes).ok()
-            } else {
-                self.document
-                    .apply_exact(&pending.bytes)
-                    .ok()
-                    .and_then(|r| serde_json::to_vec(&r).ok())
-            };
-            updated = true;
-            let _ = pending.reply.try_send(
-                response.filter(|v| !v.is_empty() && v.len() <= MAX_CALCULATOR_RESPONSE_BYTES),
-            );
+        let Ok(snapshot) = self.snapshot.lock() else {
+            return false;
+        };
+        if snapshot.version == self.projection.version {
+            return false;
         }
-        updated
+        self.projection = snapshot.clone();
+        if let Some((id, _)) = &self.pending_edit {
+            if let Some((completed, accepted)) = self.projection.local_result {
+                if completed == *id {
+                    self.pending_edit = None;
+                    self.edit_refused = !accepted;
+                }
+            }
+        }
+        true
     }
     pub fn state(&self) -> &CalculatorValueState {
-        self.document.state()
+        &self.projection.state
     }
     pub fn revision(&self) -> u64 {
-        self.document.revision()
+        self.projection.revision
     }
     pub fn receipt_pending(&self) -> bool {
-        self.document.receipt_pending()
+        self.projection.receipt_pending
+    }
+    pub fn edit_pending(&self) -> bool {
+        self.pending_edit.is_some()
+    }
+    pub fn editable(&self) -> bool {
+        !self.edit_pending() && !self.projection.storage_failed
+    }
+    pub fn storage_status(&self) -> &'static str {
+        if self.projection.storage_failed {
+            "保存失败；当前结果需要恢复核对"
+        } else if self.edit_pending() {
+            "正在保存计算内容…"
+        } else if self.durable {
+            "计算内容已保存到此设备"
+        } else {
+            "临时计算内容；关闭窗口后不会保存"
+        }
+    }
+    pub fn edit_notice(&self) -> Option<&'static str> {
+        if self.projection.storage_failed {
+            Some("保存失败，已保留最后确认的状态")
+        } else if self.edit_refused {
+            Some("计算内容已变化，当前编辑未覆盖新状态")
+        } else {
+            None
+        }
+    }
+    pub fn defer_close_while_saving(&mut self, ctx: &egui::Context) {
+        if ctx.input(|input| input.viewport().close_requested()) && self.edit_pending() {
+            self.deferred_close = true;
+            ctx.send_viewport_cmd(egui::ViewportCommand::CancelClose);
+        }
+        if self.deferred_close && !self.edit_pending() {
+            self.deferred_close = false;
+            if !self.projection.storage_failed && !self.edit_refused {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+            }
+        }
     }
     pub fn local_edit(&mut self, state: CalculatorValueState) -> io::Result<()> {
         if let Some(lifetime) = &self.lifetime {
             lifetime.check_alive()?;
         }
-        self.document.local_edit(state).map_err(io::Error::other)
+        state.validate().map_err(io::Error::other)?;
+        if let Some((_, pending)) = &self.pending_edit {
+            return if pending == &state {
+                Ok(())
+            } else {
+                Err(io::Error::new(
+                    io::ErrorKind::WouldBlock,
+                    "Calculator edit is saving",
+                ))
+            };
+        }
+        if state == self.projection.state {
+            return Ok(());
+        }
+        if !self.editable() {
+            return Err(io::Error::other("Calculator storage requires recovery"));
+        }
+        let id = self
+            .next_edit
+            .checked_add(1)
+            .ok_or_else(|| io::Error::other("Calculator edit IDs exhausted"))?;
+        self.sender
+            .as_ref()
+            .ok_or_else(|| io::Error::other("Calculator state worker ended"))?
+            .try_send(worker::Command::LocalEdit {
+                id,
+                revision: self.revision(),
+                state: state.clone(),
+            })
+            .map_err(|_| io::Error::other("Calculator edit queue unavailable"))?;
+        self.next_edit = id;
+        self.pending_edit = Some((id, state));
+        self.edit_refused = false;
+        Ok(())
     }
 }
 
@@ -186,10 +253,12 @@ impl Drop for CalculatorAppChannel {
         let _ = self.effect.shutdown(Shutdown::Both);
         let _ = self.recovery.shutdown(Shutdown::Both);
         // Active work has a one-second budget; shutdown wakes idle readers.
-        // Neither worker can access or mutate the GUI-owned model.
+        // Drop the final sender after transport exit. The state worker then exits;
+        // an in-progress sync keeps the old incarnation locked until it finishes.
         for worker in self.workers.drain(..) {
             let _ = worker.join();
         }
+        self.sender.take();
     }
 }
 
@@ -231,7 +300,7 @@ fn write_until(stream: &mut UnixStream, mut bytes: &[u8], deadline: Deadline) ->
     Ok(())
 }
 
-fn serve_effect(mut stream: UnixStream, sender: SyncSender<Pending>, ctx: egui::Context) {
+fn serve_effect(mut stream: UnixStream, sender: SyncSender<worker::Command>, ctx: egui::Context) {
     let _ = (|| -> io::Result<()> {
         loop {
             let mut prefix = [0_u8; 4];
@@ -249,12 +318,12 @@ fn serve_effect(mut stream: UnixStream, sender: SyncSender<Pending>, ctx: egui::
             read_until(&mut stream, &mut bytes, deadline)?;
             let (reply, receive) = mpsc::sync_channel(1);
             sender
-                .try_send(Pending {
+                .try_send(worker::Command::Protocol(Pending {
                     bytes,
                     deadline,
                     recovery: false,
                     reply,
-                })
+                }))
                 .map_err(|_| io::Error::other("Calculator app queue unavailable"))?;
             ctx.request_repaint();
             let raw = receive
@@ -274,7 +343,7 @@ fn serve_effect(mut stream: UnixStream, sender: SyncSender<Pending>, ctx: egui::
     let _ = stream.shutdown(Shutdown::Both);
 }
 
-fn serve_recovery(channel: UnixDatagram, sender: SyncSender<Pending>, ctx: egui::Context) {
+fn serve_recovery(channel: UnixDatagram, sender: SyncSender<worker::Command>, ctx: egui::Context) {
     let mut buffer = [0_u8; MAX_CALCULATOR_REQUEST_BYTES + 1];
     loop {
         let Ok(length) = channel.recv(&mut buffer) else {
@@ -291,12 +360,12 @@ fn serve_recovery(channel: UnixDatagram, sender: SyncSender<Pending>, ctx: egui:
         };
         let (reply, receive) = mpsc::sync_channel(1);
         if sender
-            .try_send(Pending {
+            .try_send(worker::Command::Protocol(Pending {
                 bytes: buffer[..length].to_vec(),
                 deadline,
                 recovery: true,
                 reply,
-            })
+            }))
             .is_err()
         {
             continue;

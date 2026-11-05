@@ -137,6 +137,12 @@ impl Inputs {
         ] {
             fs::root_file(program, true)?;
         }
+        if self.is_desktop() {
+            fs::root_file(
+                &p.app_window.with_file_name("trill-calculator-recovery"),
+                true,
+            )?;
+        }
         // Session resolves this exact sibling, never a PATH replacement.
         if p.session.with_file_name("trill-app-window") != p.app_window {
             return Err("Session requires the installed sibling trill-app-window".into());

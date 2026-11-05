@@ -1,5 +1,7 @@
 //! Independent host-only process launcher/lifecycle owner.
 //! It is not a Wayland compositor and it grants no kernel permissions.
+#[cfg(target_os = "linux")]
+mod calculator_lifetime;
 mod deadline;
 #[cfg(target_os = "linux")]
 mod desktop_bootstrap;
@@ -391,8 +393,17 @@ impl Session {
             .arg("--calculator-incarnation")
             .arg(&target.incarnation)
             .stdin(Stdio::from(OwnedFd::from(child_bootstrap)));
-        trill_ui_core::calculator_lifetime::SessionLifetimeSource::capture_current(target.clone())?
-            .inherit_into(command)?;
+        let storage = if self.calculator_profile {
+            calculator_lifetime::require_durable_storage()?;
+            trill_ui_core::calculator_lifetime::StorageRequirement::DurableRequired
+        } else {
+            trill_ui_core::calculator_lifetime::StorageRequirement::Optional
+        };
+        trill_ui_core::calculator_lifetime::SessionLifetimeSource::capture_current_with_storage(
+            target.clone(),
+            storage,
+        )?
+        .inherit_into(command)?;
         Ok(desktop_bootstrap::CalculatorChannels {
             target,
             effect,
@@ -1056,6 +1067,9 @@ fn main() -> io::Result<()> {
         NotesBootstrapMode::Reserved | NotesBootstrapMode::DesktopReserved
     ) {
         notes_lifetime::require_durable_storage()?;
+        if requested == NotesBootstrapMode::DesktopReserved {
+            calculator_lifetime::require_durable_storage()?;
+        }
     }
     #[cfg(target_os = "linux")]
     let notes_bootstrap = match requested {

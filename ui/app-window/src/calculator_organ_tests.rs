@@ -50,7 +50,9 @@ fn drive<T>(channel: &mut CalculatorAppChannel, work: JoinHandle<T>) -> T {
         channel.poll();
         std::thread::sleep(Duration::from_millis(2));
     }
-    work.join().expect("channel thread passed")
+    let result = work.join().expect("channel thread passed");
+    channel.poll();
+    result
 }
 
 #[test]

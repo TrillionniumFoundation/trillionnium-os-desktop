@@ -138,6 +138,13 @@ impl Product {
         for name in ["home", "state", "replay", "notes"] {
             fs::directory_new(&user.join(name), 0o700, Some((inputs.uid, inputs.gid)))?;
         }
+        if inputs.is_desktop() {
+            fs::directory_new(
+                &user.join("calculator"),
+                0o700,
+                Some((inputs.uid, inputs.gid)),
+            )?;
+        }
         Ok(Self {
             prefix: inputs.prefix.clone(),
             admin,
