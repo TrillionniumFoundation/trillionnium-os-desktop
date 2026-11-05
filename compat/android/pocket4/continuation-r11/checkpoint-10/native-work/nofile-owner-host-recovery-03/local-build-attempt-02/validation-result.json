@@ -1,0 +1,99 @@
+{
+  "scope": "local strict compilation, default PLAN, root EPERM admission rejection and actual ELF audit only",
+  "positive_26_cases_executed": false,
+  "uid": 0,
+  "arms": [
+    {
+      "arm": "candidate",
+      "elf": {
+        "bytes": 117720,
+        "sha256": "89e06e63c40b2225e22183221d25a294a87dae05f7ca812e8b98e7dc379e2266"
+      },
+      "runs": [
+        {
+          "label": "default-plan",
+          "argv": [
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/candidate"
+          ],
+          "returncode": 0,
+          "stdout": "{\"mode\":\"PLAN\",\"revision\":\"recovery03\",\"case_count\":26,\"preimage\":false,\"candidate_expected_pass\":26,\"preimage_expected_function_pass\":15,\"preimage_expected_EMFILE_failures\":11,\"lost_harness_results_inherited\":false,\"Main_actions\":0}\n",
+          "stderr": ""
+        },
+        {
+          "label": "root-admission-negative",
+          "argv": [
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/candidate",
+            "--root-rejection-only"
+          ],
+          "returncode": 0,
+          "stdout": "{\"scope\":\"root admission negative only\",\"start\":-1,\"errno\":1,\"read\":-1,\"read_errno\":108,\"stop\":0,\"mask_preserved\":true,\"pass\":true,\"positive_controls_executed\":false}\n",
+          "stderr": ""
+        },
+        {
+          "label": "final-worker-audit",
+          "argv": [
+            "/usr/bin/python3",
+            "-I",
+            "-B",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/audit_two_workers.py",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/candidate",
+            "--objdump",
+            "/usr/bin/objdump",
+            "--output",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/candidate-audit.json"
+          ],
+          "returncode": 0,
+          "stdout": "{\"schema\": 1, \"elf\": \"/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/candidate\", \"elf_sha256\": \"89e06e63c40b2225e22183221d25a294a87dae05f7ca812e8b98e7dc379e2266\", \"objdump\": \"/usr/bin/objdump\", \"qualified_worker_closure\": true, \"worker_symbols\": [\"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::InheritedWorker(void*)\", \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\"], \"reachable_functions\": [\"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)\", \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*) [clone .part.0]\", \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::VerifyInitialUserNamespace(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&) [clone .constprop.0]\", \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)\", \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::InheritedWorker(void*)\", \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\"], \"edges\": [{\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*) [clone .part.0]\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::VerifyInitialUserNamespace(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&) [clone .constprop.0]\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*) [clone .part.0]\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*) [clone .part.0]\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::InheritedWorker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)\"}], \"clone_trampoline\": {\"name\": \"berberis_proc_metadata_raw_clone_x86_64\", \"syscall_sites\": 2, \"indirect_fixed_entry_calls\": [\"*(%rsp)\"], \"source_binding_required\": \"Start passes Worker/null; ReadInheritedAfterAllocationFailure passes only InheritedWorker/its retained Request. Review both actual clone call sites.\"}, \"errors\": [], \"limits\": [\"This verifies the named final binary closure, not runtime credential or signal policy.\", \"The inherited TLS pointer exists but the audited child closure must not dereference it.\", \"No Bionic pthread registration is created. Credential transitions and host cancellation remain unqualified.\", \"A host ELF result cannot substitute for auditing the actual Android ELF.\"]}\n",
+          "stderr": ""
+        }
+      ],
+      "ELF_unchanged": true
+    },
+    {
+      "arm": "preimage",
+      "elf": {
+        "bytes": 117264,
+        "sha256": "a65317222b0e9559ec5b17415b3cc09f8d3088051aa31c1e86a53bc3141432d3"
+      },
+      "runs": [
+        {
+          "label": "default-plan",
+          "argv": [
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/preimage"
+          ],
+          "returncode": 0,
+          "stdout": "{\"mode\":\"PLAN\",\"revision\":\"recovery03\",\"case_count\":26,\"preimage\":true,\"candidate_expected_pass\":26,\"preimage_expected_function_pass\":15,\"preimage_expected_EMFILE_failures\":11,\"lost_harness_results_inherited\":false,\"Main_actions\":0}\n",
+          "stderr": ""
+        },
+        {
+          "label": "root-admission-negative",
+          "argv": [
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/preimage",
+            "--root-rejection-only"
+          ],
+          "returncode": 0,
+          "stdout": "{\"scope\":\"root admission negative only\",\"start\":-1,\"errno\":1,\"read\":-1,\"read_errno\":108,\"stop\":0,\"mask_preserved\":true,\"pass\":true,\"positive_controls_executed\":false}\n",
+          "stderr": ""
+        },
+        {
+          "label": "final-worker-audit",
+          "argv": [
+            "/usr/bin/python3",
+            "-I",
+            "-B",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/audit_worker_binary.py",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/preimage",
+            "--objdump",
+            "/usr/bin/objdump",
+            "--output",
+            "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/preimage-audit.json"
+          ],
+          "returncode": 0,
+          "stdout": "{\"schema\": 1, \"elf\": \"/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/preimage\", \"elf_sha256\": \"a65317222b0e9559ec5b17415b3cc09f8d3088051aa31c1e86a53bc3141432d3\", \"objdump\": \"/usr/bin/objdump\", \"qualified_worker_closure\": true, \"worker_symbols\": [\"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\"], \"reachable_functions\": [\"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)\", \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*) [clone .part.0]\", \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::VerifyInitialUserNamespace(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&) [clone .constprop.0]\", \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\"], \"edges\": [{\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*) [clone .part.0]\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*) [clone .part.0]\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*) [clone .part.0]\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)\"}, {\"from\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)\", \"to\": \"berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::VerifyInitialUserNamespace(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&) [clone .constprop.0]\"}], \"clone_trampoline\": {\"name\": \"berberis_proc_metadata_raw_clone_x86_64\", \"syscall_sites\": 2, \"indirect_fixed_entry_calls\": [\"*(%rsp)\"], \"source_binding_required\": \"Start's sole call passes Worker and null context.\"}, \"errors\": [], \"limits\": [\"This verifies the named final binary closure, not runtime credential or signal policy.\", \"The inherited TLS pointer exists but the audited child closure must not dereference it.\", \"No Bionic pthread registration is created. Credential transitions and host cancellation remain unqualified.\", \"A host ELF result cannot substitute for auditing the actual Android ELF.\"]}\n",
+          "stderr": ""
+        }
+      ],
+      "ELF_unchanged": true
+    }
+  ]
+}

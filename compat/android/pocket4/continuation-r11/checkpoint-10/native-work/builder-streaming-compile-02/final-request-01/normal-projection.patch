@@ -1,0 +1,11 @@
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -2239,6 +2239,8 @@
+     if leaf_go_memory_mode(dependency_mode) {
+         p.patch(source, "build/soong", &repo.join(
+             "android/apex-compat/0008-soong-leaf-go-memory-budget.patch"))?;
++        p.patch(source, "build/blueprint", &repo.join(
++            "android/apex-compat/0009-blueprint-stream-uncached-module-actions.patch"))?;
+     }
+     for (cwd, patch) in audio_apex_pcm_patches(dependency_mode) {
+         p.patch(source, cwd, &repo.join(patch))?;

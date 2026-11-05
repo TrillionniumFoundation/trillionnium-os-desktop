@@ -1,0 +1,195 @@
+--- compile01/compile_builder.py
++++ compile02/compile_builder.py
+@@ -188,7 +188,7 @@
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+ BASE_SOURCE = Path('/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source')
+-ROOT = Path('/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-01-20261105')
++ROOT = Path('/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-02-20261105')
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+@@ -379,43 +379,115 @@
+                               'selection_installs_or_updates':False,'global_stable_1_95_not_used':True}
+     return selected,list(unique.values())
+ 
+-def dependency_sources(metadata):
+-    lock=tomllib.loads((COPIED/'Cargo.lock').read_text())
+-    checksums_by_package={(p['name'],p['version'],p.get('source')):p.get('checksum') for p in lock['package']}
++def parse_selected_tree(raw, copied):
++    require(0 < len(raw) <= 131072, 'selected tree output outside bound')
++    selected={}
++    for line in raw.decode('utf-8').splitlines():
++        match=re.fullmatch(r'([A-Za-z0-9_-]+) v([0-9][A-Za-z0-9.+-]*)(?: \(proc-macro\))?(?: \((/[^()\n]+)\))?(?: \(\*\))?',line)
++        require(match is not None, 'unrecognized pinned Cargo tree line: '+line)
++        name,version,directory=match.groups()
++        if directory is not None:
++            path=Path(directory)
++            require(path.is_relative_to(copied) and '..' not in path.parts and str(path)==directory,
++                    'selected path package escaped the exact copied source')
++        key=(name,version)
++        require(key not in selected or selected[key]==directory, 'ambiguous selected package source')
++        selected[key]=directory
++        require(len(selected)<=128, 'selected package bound exceeded')
++    require(selected, 'empty selected dependency tree')
++    return selected
++
++def dependency_sources(metadata, build_tree, test_tree, observed_tree):
++    require(metadata['resolve'] is None and metadata['workspace_root']==str(COPIED),
++            'no-deps metadata must describe only the exact copied workspace')
+     packages={p['id']:p for p in metadata['packages']}
+     roots=[p['id'] for p in packages.values() if p['name']=='droidloom-update' and Path(p['manifest_path'])==COPIED/'tools/droidloom-update/Cargo.toml']
+-    require(len(roots)==1,'selected package not the exact copied builder')
+-    edges={n['id']:n['dependencies'] for n in metadata['resolve']['nodes']}
+-    pending=list(roots);reachable=set()
+-    while pending:
+-        current=pending.pop()
+-        if current in reachable:
++    require(len(roots)==1, 'selected package not the exact copied builder')
++    previous=Path('/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-01-20261105/builder-source')
++    expected=observed_tree.decode().replace(str(previous),'<BUILDER_SOURCE>')
++    for raw in [build_tree,test_tree]:
++        require(raw.decode().replace(str(COPIED),'<BUILDER_SOURCE>')==expected,
++                'selected tree differs from the actual offline package-selection authority')
++    selected=parse_selected_tree(build_tree,COPIED)
++    require(selected==parse_selected_tree(test_tree,COPIED) and len(selected)==49,
++            'actual selected build/test package sets changed')
++    lock=tomllib.loads((COPIED/'Cargo.lock').read_text())
++    lock_by_key={}
++    for package in lock['package']:
++        lock_by_key.setdefault((package['name'],package['version']),[]).append(package)
++    registry=CARGO_HOME/'registry/src';real_directory(registry)
++    sources=sorted(registry.iterdir())
++    require(0 < len(sources) <= 16 and all(stat.S_ISDIR(p.lstat().st_mode) for p in sources),
++            'registry source roots are ambiguous aliases or exceed the bound')
++    collected={};descriptions=[]
++    for (name,version),selected_directory in sorted(selected.items()):
++        locked=lock_by_key.get((name,version),[])
++        require(len(locked)==1, 'selected package is ambiguous or absent in unchanged Cargo.lock')
++        package=locked[0]
++        if selected_directory is not None:
++            matches=[p for p in packages.values() if p['name']==name and p['version']==version and
++                     p['source'] is None and p['manifest_path']==str(Path(selected_directory)/'Cargo.toml')]
++            require(package.get('source') is None and len(matches)==1,
++                    'selected path package is not the exact no-deps workspace member')
++            descriptions.append({'id':matches[0]['id'],'kind':'pinned-builder-source','manifest':matches[0]['manifest_path']})
+             continue
+-        reachable.add(current)
+-        require(len(reachable)<=512 and current in packages and current in edges,'dependency graph bound/incompleteness')
+-        pending.extend(edges[current])
+-    collected={};descriptions=[]
+-    for package_id in sorted(reachable):
+-        package=packages[package_id]
+-        directory=Path(package['manifest_path']).parent
+-        if directory.is_relative_to(COPIED):
+-            descriptions.append({'id':package_id,'kind':'pinned-builder-source','manifest':package['manifest_path']})
+-            continue
+-        require(directory.is_relative_to(CARGO_HOME/'registry/src') and (package.get('source') or '').startswith('registry+'),
+-                'dependency is not an offline registry source or copied workspace member: '+package_id)
++        require(package.get('source')=='registry+https://github.com/rust-lang/crates.io-index' and
++                re.fullmatch(r'[0-9a-f]{64}',package.get('checksum','')) is not None,
++                'selected package is not the original locked crates.io source')
++        candidates=[]
++        for root in sources:
++            candidate=root/(name+'-'+version)
++            try:
++                st=candidate.lstat()
++            except FileNotFoundError:
++                continue
++            require(stat.S_ISDIR(st.st_mode), 'selected registry package is a directory alias')
++            candidates.append(candidate)
++        require(len(candidates)==1, 'selected package must have one existing local registry source: '+name+'@'+version)
++        directory=candidates[0]
+         rows=regular_tree(directory,4096,64*1024*1024)
+-        checksum_raw,_=held(directory/'.cargo-checksum.json',4*1024*1024)
++        checksum_raw,checksum_pin=held(directory/'.cargo-checksum.json',4*1024*1024)
+         checksums=json.loads(checksum_raw)
+-        require(checksums['package']==checksums_by_package[(package['name'],package['version'],package['source'])],
+-                'registry package checksum differs from original Cargo.lock: '+package_id)
+-        for name,digest in checksums['files'].items():
+-            require(name in rows and rows[name]['sha256']==digest,'registry source checksum mismatch: '+package_id+'/'+name)
++        require(checksums['package']==package['checksum'],
++                'registry package checksum differs from original Cargo.lock: '+name+'@'+version)
++        for filename,digest in checksums['files'].items():
++            require(filename in rows and rows[filename]['sha256']==digest,
++                    'registry source checksum mismatch: '+name+'@'+version+'/'+filename)
++        manifest_raw,manifest_pin=held(directory/'Cargo.toml',1024*1024)
++        manifest=tomllib.loads(manifest_raw.decode())
++        require(manifest['package']['name']==name and manifest['package']['version']==version and
++                rows['Cargo.toml']==manifest_pin and rows['.cargo-checksum.json']==checksum_pin,
++                'cached package manifest/checksum changed or names a different package')
+         for row in rows.values():
+-            require(len(collected)<16384,'complete dependency inventory too large')
++            require(len(collected)<16384, 'complete dependency inventory too large')
+             collected[row['path']]=row
+-        descriptions.append({'id':package_id,'kind':'offline-registry','manifest':package['manifest_path'],
++        package_id=package['source']+'#'+name+'@'+version
++        descriptions.append({'id':package_id,'kind':'offline-registry','manifest':str(directory/'Cargo.toml'),
+                              'recorded_files':len(rows),'package_checksum':checksums['package']})
++    require(sum(p['kind']=='offline-registry' for p in descriptions)==45 and len(descriptions)==49,
++            'selected existing dependency closure count changed')
+     return roots[0],descriptions,collected
++
++def qualify_compiler_inputs(raw,packages,dependency_rows,candidate_rows):
++    qualified={p['manifest']:p for p in packages}
++    qualified_ids={p['id'] for p in packages}
++    observed=set()
++    for line in raw.decode().splitlines():
++        if not line.strip():continue
++        item=json.loads(line)
++        if item.get('reason')=='compiler-artifact':
++            manifest=item.get('manifest_path')
++            require(manifest in qualified and item['package_id']==qualified[manifest]['id'],
++                    'Cargo compiled a package outside the pre-qualified source closure')
++            path=Path(item['target']['src_path'])
++            row=dependency_rows.get(str(path))
++            if row is None and path.is_relative_to(COPIED):row=candidate_rows.get(str(path.relative_to(COPIED)))
++            require(row is not None and hash_held(path)==row, 'actual compiled target source was not qualified or changed')
++            observed.add(item['package_id'])
++        elif item.get('reason')=='build-script-executed':
++            require(item['package_id'] in qualified_ids, 'Cargo executed an unqualified build script')
++    require(observed, 'no actual compiler-artifact inputs observed')
++    return sorted(observed)
+ 
+ def build_artifact(raw, package_id, test):
+     artifacts=[]
+@@ -506,12 +578,29 @@
+         config_rows=read_existing_config(config_paths)
+         report['cargo_config_inputs_before']=config_rows
+         report['build_environment']=env
+-        metadata_raw=command([str(tools['cargo']),'metadata','--offline','--locked','--format-version','1','--filter-platform','x86_64-unknown-linux-gnu'],COPIED,env,'metadata',report['commands'],60)
++        require(all(row.get('absent') is True for row in config_rows),
++                'selected cache qualification requires the actually observed absent Cargo configuration inputs')
++        selection_raw,selection_pin=pinned_packet('selection-result.json','185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf')
++        selection=json.loads(selection_raw)
++        require(selection['state']=='PASS' and selection['owned_resource_gate']['pass'] is True and
++                all(selection[k] is True for k in ['source_unchanged_after','tools_unchanged_after','configs_unchanged_after','authority_unchanged_after']) and
++                len(selection['commands'])==3 and all(c['returncode']==0 for c in selection['commands']),
++                'actual offline selection observation is not qualified')
++        observed_tree,tree_pin=pinned_packet('selected-build.stdout','82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d')
++        require(selection['commands'][1]['stdout']['sha256']==tree_pin['sha256'] and selection['commands'][2]['stdout']['sha256']==tree_pin['sha256'],
++                'actual selected tree does not bind both build and test dependency queries')
++        report['actual_selected_dependency_authority']=selection_pin
++        metadata_raw=command([str(tools['cargo']),'metadata','--offline','--locked','--no-deps','--format-version','1'],COPIED,env,'workspace-no-deps',report['commands'],30)
+         metadata=json.loads(metadata_raw)
+-        package_id,packages,dependency_rows=dependency_sources(metadata)
++        trees=[]
++        for label,edges in [('selected-build','normal,build'),('selected-test','normal,build,dev')]:
++            trees.append(command([str(tools['cargo']),'tree','--offline','--locked','-p','droidloom-update','--target','x86_64-unknown-linux-gnu',
++                                  '--edges',edges,'--prefix','none','--format','{p}','--color','never'],COPIED,env,label,report['commands'],30))
++        package_id,packages,dependency_rows=dependency_sources(metadata,trees[0],trees[1],observed_tree)
+         report['dependency_inputs']=write_new(OUT/'dependency-inputs-before.json',{'packages':packages,'files':dependency_rows})
+         common=[str(tools['cargo']),'--offline','--locked','-j','1','-p','droidloom-update','--bin','droidloom-update']
+         build=command([common[0],'build',*common[1:],'--message-format=json-render-diagnostics'],COPIED,env,'builder-compile',report['commands'],240)
++        report['actual_build_packages']=qualify_compiler_inputs(build,packages,dependency_rows,candidate_rows)
+         builder=build_artifact(build,package_id,False)
+         builder_pin=hash_held(builder)
+         require((builder.lstat().st_mode&0o111)!=0,'builder artifact is not executable')
+@@ -520,6 +609,7 @@
+         help_output=command([str(builder),'--help'],COPIED,env,'builder-help',report['commands'],10)
+         require(b'Usage:' in help_output and b'native-engine-build' in help_output,'normal builder CLI missing target closure command')
+         test_build=command([common[0],'test',*common[1:],'--no-run','--message-format=json-render-diagnostics'],COPIED,env,'builder-test-compile',report['commands'],180)
++        report['actual_test_compile_packages']=qualify_compiler_inputs(test_build,packages,dependency_rows,candidate_rows)
+         test_binary=build_artifact(test_build,package_id,True)
+         test_pin=hash_held(test_binary)
+         test_list=command([str(test_binary),'--list'],COPIED,env,'builder-test-list',report['commands'],10).decode()

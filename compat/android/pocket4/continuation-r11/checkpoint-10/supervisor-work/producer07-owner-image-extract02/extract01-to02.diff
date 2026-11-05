@@ -1,0 +1,20 @@
+--- owner07-image-extract-freeze-01/extract.py
++++ owner07-image-extract-freeze-02/extract.py
+@@ -12,7 +12,7 @@
+ import time
+ import traceback
+ 
+-ROOT = '/home/alex/work/pocket4-owner07-original-lmkd-rc-read-01'
++ROOT = '/home/alex/pocket4-owner07-original-lmkd-rc-read-02'
+ INODE_PATH = '/system/etc/init/lmkd.rc'
+ OUTPUT = 'original-lmkd.rc'
+ INSPECTOR_RECEIPT = {'bytes': 3887, 'sha256': '04b8c44dce6b42cb3d9a9675db037bdf0ef7d2e37d5289a1c6cbb8ce98843599'}
+@@ -182,7 +182,7 @@
+ 
+ 
+ def main():
+-    report = {'schema': 1, 'kind': 'producer07-original-lmkd-rc-single-inode-extract01',
++    report = {'schema': 1, 'kind': 'producer07-original-lmkd-rc-single-inode-extract02',
+               'success': False, 'qualification': False, 'semantic_rc_admission': False,
+               'owner_or_android_executed': False, 'namespaces_or_network_changed': False,
+               'image_mounted_or_written': False, 'system_service_changed': False,

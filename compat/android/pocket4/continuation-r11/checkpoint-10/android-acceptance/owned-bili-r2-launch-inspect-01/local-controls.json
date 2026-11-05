@@ -1,0 +1,45 @@
+{
+  "Android_or_Hepta_calls": 0,
+  "all_expected_outcomes": true,
+  "checks": [
+    {
+      "case": "actual_r2_build_install_state_receipts_complete_consumer",
+      "outcome": "PASS",
+      "path_mapping_seam": true,
+      "reader_sha256": "cf146b3ba8083380cfc3250d6ee157e668a25092915bb54c8bc61ce99b3e08b2"
+    },
+    {
+      "case": "pending_actual_UID_refused",
+      "outcome": "PASS"
+    },
+    {
+      "case": "old_r1_UID_refused",
+      "outcome": "PASS"
+    },
+    {
+      "case": "wrong_actual_worker_hash_refused",
+      "outcome": "PASS"
+    },
+    {
+      "added_function": [
+        "require_actual_install_binding"
+      ],
+      "case": "original_coordinator_cleanup_scope_and_stage_AST_preserved",
+      "changed_entry_functions": [
+        "actual_install",
+        "assessment_summary",
+        "load_prior",
+        "worker"
+      ],
+      "outcome": "PASS"
+    },
+    {
+      "case": "fresh_exact_inspect_only_plan",
+      "outcome": "PASS"
+    }
+  ],
+  "new_launch_or_inspection_performed": false,
+  "schema": 1,
+  "scope": "actual Python consumer and original actual receipts, explicit local path map",
+  "whole_app_ready": false
+}

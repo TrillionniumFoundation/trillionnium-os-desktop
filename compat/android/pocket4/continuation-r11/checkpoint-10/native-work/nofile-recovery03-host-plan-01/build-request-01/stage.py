@@ -1,0 +1,27 @@
+import hashlib,json,os,stat
+from pathlib import Path
+ROOT=Path('/home/alex/work/pocket4-nofile-owner-recovery03-host-build-01-20261105')
+EXPECTED={'recovery03-source-pins.json': {'bytes': 12606, 'sha256': 'baa504625fc51619824ef3023738b8b589008b9ef024fffdf6707ff726628aa3'}, 'actual/berberis/kernel_api/proc_maps_factory_protocol.h': {'bytes': 5051, 'sha256': 'b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9'}, 'actual/berberis/kernel_api/proc_maps_fd_owner.h': {'bytes': 3884, 'sha256': '7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc'}, 'actual/berberis/kernel_api/proc_maps_kernel_statfs.h': {'bytes': 2480, 'sha256': '77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0'}, 'actual/berberis/kernel_api/proc_maps_path.h': {'bytes': 1314, 'sha256': '0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c'}, 'actual/berberis/kernel_api/proc_maps_provenance.h': {'bytes': 4330, 'sha256': 'e21bc5dbe7b92893f52cd9a9d7d3ffe30cd813485aa4d2ebdadb435350e0fa68'}, 'actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h': {'bytes': 2750, 'sha256': 'b3c0fed34550a113c993808f31ee6eb3708b58b856530c0acf8cc7bfe22306cc'}, 'actual/proc_maps_factory_wire.cc': {'bytes': 8661, 'sha256': '4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608'}, 'actual/proc_maps_fd_owner.cc': {'bytes': 20933, 'sha256': 'b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e'}, 'actual/proc_maps_path.cc': {'bytes': 7026, 'sha256': '48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765'}, 'actual/proc_maps_provenance.cc': {'bytes': 32621, 'sha256': 'f4e6685f5b689d3b408dc6aa7723e36b2174e6e2545e743fbb5c5896f6142137'}, 'actual/proc_maps_raw_metadata_owner.cc': {'bytes': 25425, 'sha256': '4400b1db44f3d7c46dd25136dba8599bc934f2ef28963c289cde1953960536a6'}, 'audit_two_workers.py': {'bytes': 6141, 'sha256': 'aed6a7b8b352c5cafa6ea16529338a0d7a4908868a28b3a68b7a6be1d21cf26b'}, 'audit_worker_binary.py': {'bytes': 5841, 'sha256': 'bda5819b28745571a9a236199052e047b806a96a7d094e0f61732d3858e71bc9'}, 'owned_nofile_controls.cc': {'bytes': 39131, 'sha256': '62c53acf7a58054a3ff4ea83e051a5630405955fe79cc59dcccc99b37e4264ef'}, 'preimage/proc_maps_raw_metadata_owner.cc': {'bytes': 22735, 'sha256': '489264a8fcb8e0607a671b78363970caf17f0bb4589b46c12e77329daf17b818'}, 'r21_cases_reused.cc': {'bytes': 25727, 'sha256': '04700afc17b6d94f15f9d6bef0ca3c958988804ec82eca137f06348f7bf46155'}, 'build_nofile.py': {'bytes': 24903, 'sha256': 'b0f8e1ae55dea80ae4091769ba1216161dc8250dbace784502a98dcd22974eff'}}
+def main(packet):
+    if os.getuid()!=1000 or os.geteuid()!=1000:raise RuntimeError('operator UID1000 required')
+    if set(packet)!=set(EXPECTED):raise RuntimeError('source packet member set differs')
+    for name,text in packet.items():
+        raw=text.encode()
+        if len(raw)!=EXPECTED[name]['bytes'] or hashlib.sha256(raw).hexdigest()!=EXPECTED[name]['sha256']:
+            raise RuntimeError('frozen packet pin mismatch: '+name)
+    for parent in [ROOT.parent,*ROOT.parent.parents]:
+        if not stat.S_ISDIR(parent.lstat().st_mode):raise RuntimeError('owned root parent aliases directory')
+    os.umask(0o077);ROOT.mkdir(mode=0o700);source=ROOT/'source';source.mkdir(mode=0o700)
+    for name,text in packet.items():
+        path=source/name;path.parent.mkdir(parents=True,exist_ok=True)
+        for parent in [path.parent,*path.parent.parents]:
+            if not stat.S_ISDIR(parent.lstat().st_mode):raise RuntimeError('source parent aliases directory')
+        fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o400)
+        with os.fdopen(fd,'wb') as stream:
+            stream.write(text.encode());stream.flush();os.fsync(stream.fileno())
+    receipt=(json.dumps({'schema':1,'files':EXPECTED,'Main_actions':0,'positive_26_execution':False},indent=2)+'\n').encode()
+    fd=os.open(ROOT/'stage-receipt.json',os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o400)
+    with os.fdopen(fd,'wb') as stream:
+        stream.write(receipt);stream.flush();os.fsync(stream.fileno())
+    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'build_nofile.py'),'--execute-once'],
+              {'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C'})

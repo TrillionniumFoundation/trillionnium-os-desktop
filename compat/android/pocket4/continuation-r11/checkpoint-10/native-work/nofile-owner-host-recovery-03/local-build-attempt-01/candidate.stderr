@@ -1,0 +1,25 @@
+/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/owned_nofile_controls.cc: In function ‘bool InitiallyZeroRemainsRejected()’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/owned_nofile_controls.cc:328:46: error: ‘void* memset(void*, int, size_t)’ writing to an object of non-trivial type ‘struct berberis::proc_maps_provenance::raw_metadata_owner::Snapshot’; use assignment instead [-Werror=class-memaccess]
+  328 |   raw_owner::Snapshot value{},before{};memset(&value,0xa5,sizeof(value));memcpy(&before,&value,sizeof(value));
+      |                                        ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+In file included from /workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/actual/proc_maps_raw_metadata_owner.cc:2,
+                 from /workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/r21_cases_reused.cc:26,
+                 from /workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/owned_nofile_controls.cc:8:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h:27:8: note: ‘struct berberis::proc_maps_provenance::raw_metadata_owner::Snapshot’ declared here
+   27 | struct Snapshot {
+      |        ^~~~~~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/owned_nofile_controls.cc: In function ‘bool RootRejection()’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/owned_nofile_controls.cc:455:49: error: ‘void* memset(void*, int, size_t)’ writing to an object of non-trivial type ‘struct berberis::proc_maps_provenance::raw_metadata_owner::Snapshot’; use assignment instead [-Werror=class-memaccess]
+  455 |   raw_owner::Snapshot value{},unchanged{};memset(&value,0xa5,sizeof(value));memcpy(&unchanged,&value,sizeof(value));
+      |                                           ~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/actual/berberis/kernel_api/proc_maps_raw_metadata_owner.h:27:8: note: ‘struct berberis::proc_maps_provenance::raw_metadata_owner::Snapshot’ declared here
+   27 | struct Snapshot {
+      |        ^~~~~~~~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/owned_nofile_controls.cc: In function ‘int main(int, char**)’:
+/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/owned_nofile_controls.cc:524:5: error: this ‘if’ clause does not guard... [-Werror=misleading-indentation]
+  524 |     if(index)putchar(',');PrintRecord(index,*current,expected,match);fflush(stdout);
+      |     ^~
+/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/owned_nofile_controls.cc:524:27: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+  524 |     if(index)putchar(',');PrintRecord(index,*current,expected,match);fflush(stdout);
+      |                           ^~~~~~~~~~~
+cc1plus: all warnings being treated as errors

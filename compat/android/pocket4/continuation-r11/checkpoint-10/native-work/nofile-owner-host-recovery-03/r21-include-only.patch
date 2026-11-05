@@ -1,0 +1,14 @@
+--- references/r21-metadata_raw_cases.cc
++++ r21_cases_reused.cc
+@@ -20,7 +20,11 @@
+ #include <time.h>
+ #include <unistd.h>
+ 
++#if defined(OWNED_USE_PREIMAGE)
++#include "preimage/proc_maps_raw_metadata_owner.cc"
++#else
+ #include "actual/proc_maps_raw_metadata_owner.cc"
++#endif
+ #include "actual/proc_maps_fd_owner.cc"
+ #include "actual/proc_maps_path.cc"
+ #include "actual/proc_maps_provenance.cc"

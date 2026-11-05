@@ -1,0 +1,46 @@
+--- compile01/make_request.py
++++ compile02/make_request.py
+@@ -9,8 +9,8 @@
+ 
+ HERE=Path(__file__).resolve().parent
+ BASE=HERE.parent
+-ROOT='/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-01-20261105'
+-KEY='pocket4-blueprint-streaming-builder-450-matching-compile-01-20261105'
++ROOT='/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-02-20261105'
++KEY='pocket4-blueprint-streaming-builder-450-matching-compile-02-20261105'
+ GO_PATCH_SHA='9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307'
+ FIXTURE_SHA='5a928d10fbaabab5a1198c9c4a5abe9281da091abdde923a2e0a500071e8fbc5'
+ EXPECTED_INPUTS={
+@@ -18,6 +18,8 @@
+     'expected-builder-450-manifest.json':('blueprint-streaming-r1/builder-delta/expected-builder-450-manifest.json','6834ea57e4d0402bd5c6e6c405728a111af77fb54ea0e0bea407ba9647fa41b4'),
+     'normal-projection.patch':('blueprint-streaming-r1/builder-delta/normal-projection.patch','425f3a5bdeafec1f5f7e821cc575597c1075677715341d08a8588c8bd25a4a28'),
+     '0009-blueprint-stream-uncached-module-actions.patch':('blueprint-streaming-r1/0009-blueprint-stream-uncached-module-actions.patch',GO_PATCH_SHA),
++    'selection-result.json':('builder-streaming-compile-02/references/selection-result.json','185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf'),
++    'selected-build.stdout':('builder-streaming-compile-02/references/selected-build.stdout','82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d'),
+ }
+ 
+ def sha(raw):return hashlib.sha256(raw).hexdigest()
+@@ -45,9 +47,10 @@
+            all(q['returncode']==0 for q in tool['queries'])):
+         raise RuntimeError('complete actual repository-toolchain authority required')
+     source=(HERE/'compile_builder.py').read_text()
+-    for placeholder,digest in [('PENDING_ACTUAL_RUST193_RESULT_SHA256',sha(tool_raw)),('PENDING_ACTUAL_GO_CONTROL_RESULT_SHA256',sha(go_raw))]:
+-        if source.count(placeholder)!=1:raise RuntimeError('template receipt placeholder mismatch')
+-        source=source.replace(placeholder,digest)
++    if sha(source.encode())!='dfe71cc77b5acf87ac28a27d618de288978e270515d1e76c579796622ec159b1':
++        raise RuntimeError('reviewed compile02 source differs')
++    for digest in [sha(tool_raw),sha(go_raw)]:
++        if source.count(digest)!=1:raise RuntimeError('actual receipt differs from fixed controller binding')
+     ast.parse(source)
+     files={'compile_builder.py':source,'go-control-result.json':go_raw.decode(),'rust193-tools-read02-result.json':tool_raw.decode()}
+     for name,(relative,digest) in EXPECTED_INPUTS.items():
+@@ -105,6 +108,9 @@
+           'Main_actions':0,'Main_identity_observed':False,'full_engine_build':False,'Android_execution':False,
+           'upstream_Blueprint_vet_pass_claimed':False,'whole_app_qualification':False,
+           'actual_Go_gate_sha256':sha(go_raw),'actual_tool_authority_sha256':sha(tool_raw),
++          'actual_selection_authority_sha256':'185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf',
++          'registry_qualification':'45 selected original locked crates; unique existing cache source; full held/checksum pre-post; every actual compiler input bound',
++          'full_workspace_metadata_failure_preserved':True,
+           'upstream_inputs_local_paths':{'Go':str(go_path),'Rust':str(tool_path)}}
+     recorded['PLAN.json']=write(output/'PLAN.json',json.dumps(plan,indent=2)+'\n')
+     result=subprocess.run(['/usr/bin/python3','-I','-B',str(output/'compile_builder.py')],capture_output=True,text=True)

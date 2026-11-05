@@ -1,0 +1,53 @@
+{
+  "arms": [
+    {
+      "name": "candidate",
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++20",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/actual",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/owned_nofile_controls.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/actual/proc_maps_factory_wire.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/candidate"
+      ],
+      "returncode": 0,
+      "source_sha256": "d5a9a3b98b1817e99e6f2a369b2a3ca5acbfb9c7e38e8c8b8001de17b592d9c5",
+      "cpu_affinity": [
+        8
+      ],
+      "actual_local_only": true,
+      "positive_tests_executed": false
+    },
+    {
+      "name": "preimage",
+      "argv": [
+        "/usr/bin/g++",
+        "-std=c++20",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-pthread",
+        "-DOWNED_USE_PREIMAGE=1",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/actual",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/owned_nofile_controls.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/actual/proc_maps_factory_wire.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/nofile-owner-host-recovery-03/local-build-attempt-02/preimage"
+      ],
+      "returncode": 0,
+      "source_sha256": "d5a9a3b98b1817e99e6f2a369b2a3ca5acbfb9c7e38e8c8b8001de17b592d9c5",
+      "cpu_affinity": [
+        8
+      ],
+      "actual_local_only": true,
+      "positive_tests_executed": false
+    }
+  ]
+}
