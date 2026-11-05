@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "state": "LOCAL_THREE_FILE_DERIVATION_WAITING_COMPLETE_PARENT_MANIFEST_AND_ACTUAL_ANDROID_RECEIPT",
+  "parent_candidate_manifest_sha256": "4e2f7f9ea09c6977afbe8d97c040fd2f1344772429f78fe0f16edc913dadc7ba",
+  "actual_parent_preparation_sha256": "c477825f24b1eefa07b853f12330049283856987e2e1e6dee3b25017451e5654",
+  "engine_count": 925,
+  "changes": [
+    {
+      "path": "kernel_api/proc_maps_raw_metadata_owner.cc",
+      "before_sha256": "489264a8fcb8e0607a671b78363970caf17f0bb4589b46c12e77329daf17b818",
+      "after_sha256": "4400b1db44f3d7c46dd25136dba8599bc934f2ef28963c289cde1953960536a6",
+      "before_bytes": 22735,
+      "after_bytes": 25425,
+      "comment_only": false
+    },
+    {
+      "path": "kernel_api/include/berberis/kernel_api/proc_maps_raw_metadata_owner.h",
+      "before_sha256": "7e8ae5c660c783c8fb8f5db75c054e5359690275a2f4acc2a9fe1c9af7c11554",
+      "after_sha256": "b3c0fed34550a113c993808f31ee6eb3708b58b856530c0acf8cc7bfe22306cc",
+      "before_bytes": 2668,
+      "after_bytes": 2750,
+      "comment_only": true
+    },
+    {
+      "path": "kernel_api/include/berberis/kernel_api/proc_maps_provenance.h",
+      "before_sha256": "79e871b78d6fc2461f2fe103df070d6dc6504acf43ff6b64fcecec142eb618b0",
+      "after_sha256": "e21bc5dbe7b92893f52cd9a9d7d3ffe30cd813485aa4d2ebdadb435350e0fa68",
+      "before_bytes": 4201,
+      "after_bytes": 4330,
+      "comment_only": true
+    }
+  ],
+  "unchanged_engine_files": 922,
+  "actual_source_dependency_comparison": [
+    {
+      "actual": "berberis/kernel_api/proc_maps_factory_protocol.h",
+      "engine": "kernel_api/include/berberis/kernel_api/proc_maps_factory_protocol.h",
+      "sha256": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9",
+      "candidate06_equal": true,
+      "candidate05_equal": true
+    },
+    {
+      "actual": "berberis/kernel_api/proc_maps_fd_owner.h",
+      "engine": "kernel_api/include/berberis/kernel_api/proc_maps_fd_owner.h",
+      "sha256": "7725f2f662f8e720426ad57f74305184e932497b7e33cee2a24f9dd3344278dc",
+      "candidate06_equal": true,
+      "candidate05_equal": true
+    },
+    {
+      "actual": "berberis/kernel_api/proc_maps_kernel_statfs.h",
+      "engine": "kernel_api/include/berberis/kernel_api/proc_maps_kernel_statfs.h",
+      "sha256": "77f72e71bb8e5f9239287cfb4899fc4d83c38b61f3cd78cd93909da792d751a0",
+      "candidate06_equal": true,
+      "candidate05_equal": true
+    },
+    {
+      "actual": "berberis/kernel_api/proc_maps_path.h",
+      "engine": "kernel_api/include/berberis/kernel_api/proc_maps_path.h",
+      "sha256": "0993c19732160affe859ddf323f81206917296ce81524ebeab1609d6ab13ee4c",
+      "candidate06_equal": true,
+      "candidate05_equal": true
+    },
+    {
+      "actual": "berberis/kernel_api/proc_maps_provenance.h",
+      "engine": "kernel_api/include/berberis/kernel_api/proc_maps_provenance.h",
+      "sha256": "e21bc5dbe7b92893f52cd9a9d7d3ffe30cd813485aa4d2ebdadb435350e0fa68",
+      "candidate06_equal": true,
+      "candidate05_equal": false
+    },
+    {
+      "actual": "berberis/kernel_api/proc_maps_raw_metadata_owner.h",
+      "engine": "kernel_api/include/berberis/kernel_api/proc_maps_raw_metadata_owner.h",
+      "sha256": "b3c0fed34550a113c993808f31ee6eb3708b58b856530c0acf8cc7bfe22306cc",
+      "candidate06_equal": true,
+      "candidate05_equal": false
+    },
+    {
+      "actual": "proc_maps_factory_wire.cc",
+      "engine": "kernel_api/proc_maps_factory_wire.cc",
+      "sha256": "4a39b504188c5eaf56320f4e10d48285ea8954d816a98a2d5b7b684d38c48608",
+      "candidate06_equal": true,
+      "candidate05_equal": true
+    },
+    {
+      "actual": "proc_maps_fd_owner.cc",
+      "engine": "kernel_api/proc_maps_fd_owner.cc",
+      "sha256": "b9ab891c0a09a04661bf4c9306978502094b08606c33d8ea2742f5eba3d29c5e",
+      "candidate06_equal": true,
+      "candidate05_equal": true
+    },
+    {
+      "actual": "proc_maps_path.cc",
+      "engine": "kernel_api/proc_maps_path.cc",
+      "sha256": "48b0c85bdd0fb1b08b7e9478d7642ffe199d321c6bf80304eaba9c42f62b9765",
+      "candidate06_equal": true,
+      "candidate05_equal": true
+    },
+    {
+      "actual": "proc_maps_provenance.cc",
+      "engine": "kernel_api/proc_maps_provenance.cc",
+      "sha256": "f4e6685f5b689d3b408dc6aa7723e36b2174e6e2545e743fbb5c5896f6142137",
+      "candidate06_equal": true,
+      "candidate05_equal": true
+    },
+    {
+      "actual": "proc_maps_raw_metadata_owner.cc",
+      "engine": "kernel_api/proc_maps_raw_metadata_owner.cc",
+      "sha256": "4400b1db44f3d7c46dd25136dba8599bc934f2ef28963c289cde1953960536a6",
+      "candidate06_equal": true,
+      "candidate05_equal": false
+    }
+  ],
+  "Android_runtime_parent_reported_PASS_job": "1a1a9a2e461-fc05-3670",
+  "actual_full_Android_receipt_received": false,
+  "generation_enabled": false,
+  "whole_apps_ready": false,
+  "remote_actions": 0
+}

@@ -1,0 +1,121 @@
+{
+  "Android_actions": 0,
+  "actual_stable_click_run": false,
+  "controls": [
+    {
+      "control": "actual_install_consumer_and_all_identity_constants_preserved",
+      "earlier_actual_consumer_receipt_sha256": "00efbca8758f16a64491793598dec1f2f55e4c338606fbc3578aef6d65cd9d80",
+      "earlier_receipt_not_relabelled_as_new_device_run": true,
+      "original_worker_and_coordinator_finally_AST_unchanged": true,
+      "passed": true,
+      "unchanged_functions": [
+        "read",
+        "require_actual_install_binding",
+        "load_prior",
+        "actual_install",
+        "new_session",
+        "assessment_summary",
+        "owned_scope",
+        "verify_source"
+      ]
+    },
+    {
+      "actual_r3_plan_validator": true,
+      "click_limit": 1,
+      "control": "actual_five_source_manifest_and_twenty_distinct_nonce_plans",
+      "passed": true,
+      "read_only_stability_sequences": 4,
+      "set_text_actions": 0
+    },
+    {
+      "control": "actual_stability_function_changed_then_stable",
+      "explicit_seams": [
+        "Session.sequence observations/no Android",
+        "assessment_summary materialization/no private file",
+        "monotonic clock"
+      ],
+      "operations": [
+        "stability",
+        "stability",
+        "stability",
+        "click",
+        "inspect"
+      ],
+      "original_strict_action_failure_not_converted_to_success": false,
+      "passed": true
+    },
+    {
+      "control": "actual_stability_function_never_stable",
+      "explicit_seams": [
+        "Session.sequence observations/no Android",
+        "assessment_summary materialization/no private file",
+        "monotonic clock"
+      ],
+      "operations": [
+        "stability",
+        "stability",
+        "stability",
+        "stability",
+        "inspect"
+      ],
+      "original_strict_action_failure_not_converted_to_success": false,
+      "passed": true
+    },
+    {
+      "control": "actual_stability_function_failed_read_is_not_retried",
+      "explicit_seams": [
+        "Session.sequence observations/no Android",
+        "assessment_summary materialization/no private file",
+        "monotonic clock"
+      ],
+      "operations": [
+        "stability",
+        "stability",
+        "inspect"
+      ],
+      "original_strict_action_failure_not_converted_to_success": false,
+      "passed": true
+    },
+    {
+      "control": "actual_stability_function_strict_action_failure_after_stability",
+      "explicit_seams": [
+        "Session.sequence observations/no Android",
+        "assessment_summary materialization/no private file",
+        "monotonic clock"
+      ],
+      "operations": [
+        "stability",
+        "stability",
+        "click",
+        "inspect"
+      ],
+      "original_strict_action_failure_not_converted_to_success": true,
+      "passed": true
+    },
+    {
+      "control": "actual_stability_function_deadline_after_joined_observation",
+      "explicit_seams": [
+        "Session.sequence observations/no Android",
+        "assessment_summary materialization/no private file",
+        "monotonic clock"
+      ],
+      "operations": [
+        "stability",
+        "inspect"
+      ],
+      "original_strict_action_failure_not_converted_to_success": false,
+      "passed": true
+    },
+    {
+      "control": "stage_and_generator_function_AST_unchanged",
+      "passed": true
+    }
+  ],
+  "count": 8,
+  "raw_commercial_UI_exported": false,
+  "remote_actions": 0,
+  "schema": 1,
+  "source_sha256": "15dcf2ad136c158e55c1611e1635fdb7e789d2df5c768b7a9b104067a6dad484",
+  "state": "LOCAL_STABILITY_CONTROLS_PASS",
+  "whole_app_production_ready": false
+}

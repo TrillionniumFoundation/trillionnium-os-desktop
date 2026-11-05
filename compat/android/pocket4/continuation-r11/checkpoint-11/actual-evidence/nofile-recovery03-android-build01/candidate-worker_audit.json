@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "elf": "/home/alex/work/pocket4-nofile-owner-recovery03-android-build-01-20261105/candidate/build-attempt-1/lib/x86_64/libfdownerprobe.so",
+  "elf_sha256": "6dc5723d79f42fee6e1d59d37a726d873c624585ab00b732ea63f682a6b7df4f",
+  "objdump": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/llvm-objdump",
+  "qualified_worker_closure": true,
+  "worker_symbols": [
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::InheritedWorker(void*)"
+  ],
+  "reachable_functions": [
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)",
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)",
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)",
+    "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::InheritedWorker(void*)"
+  ],
+  "edges": [
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::InheritedWorker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext*)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::SameContext(berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&, berberis::proc_maps_provenance::raw_metadata_owner::AppContext const&)"
+    },
+    {
+      "from": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Worker(void*)",
+      "to": "berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::ReadPinned(berberis::proc_maps_provenance::raw_metadata_owner::(anonymous namespace)::Request*, bool)"
+    }
+  ],
+  "clone_trampoline": {
+    "name": "berberis_proc_metadata_raw_clone_x86_64",
+    "syscall_sites": 2,
+    "indirect_fixed_entry_calls": [
+      "*(%rsp)"
+    ],
+    "source_binding_required": "Start passes Worker/null; ReadInheritedAfterAllocationFailure passes only InheritedWorker/its retained Request. Review both actual clone call sites."
+  },
+  "errors": [],
+  "limits": [
+    "This verifies the named final binary closure, not runtime credential or signal policy.",
+    "The inherited TLS pointer exists but the audited child closure must not dereference it.",
+    "No Bionic pthread registration is created. Credential transitions and host cancellation remain unqualified.",
+    "A host ELF result cannot substitute for auditing the actual Android ELF."
+  ]
+}

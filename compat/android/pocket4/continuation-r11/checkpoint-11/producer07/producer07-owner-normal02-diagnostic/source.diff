@@ -1,0 +1,15 @@
+--- normal01/source/coordinator.py
++++ normal02/source/coordinator.py
+@@ -49,9 +49,9 @@
+     state = group_fd = -1; actor = None; fence = None; invocation = None; launched = False; tools = {}
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0, 'external controller requires original host root')
+-        owned.need(plan['unit'] == 'p4-owner07-normal-20261105-01.service' and
+-                   plan['package'] == '/opt/p4-owner07-normal-20261105-01' and
+-                   plan['state'] == '/opt/p4-owner07-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
++        owned.need(plan['unit'] == 'p4-owner07-normal-20261105-02.service' and
++                   plan['package'] == '/opt/p4-owner07-normal-20261105-02' and
++                   plan['state'] == '/opt/p4-owner07-normal-20261105-02-state', 'this controller accepts only its fixed fresh unit/package/state')
+         state = owned.root_directory(plan['state'])
+         owned.need(owned.file_id(state) == prepared['state_identity'], 'prepared state replaced')
+         for name in ('coordinator-claim.json', 'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json'):

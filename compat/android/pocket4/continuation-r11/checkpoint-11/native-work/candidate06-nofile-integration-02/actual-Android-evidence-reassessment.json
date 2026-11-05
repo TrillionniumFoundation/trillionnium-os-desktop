@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_ANDROID_RECEIPT_REASSESSMENT_PASSED",
+  "actual_coordinator_sha256": "fbc3ca4d6e861b50da8ee537c90908b5308249015a31220acdd2d09b00f42b13",
+  "reviewed_pure_assessment_source_sha256": "abd1195e47024b7ceed641ed40deb6e722155d8363413104604d87f99a095779",
+  "cases_reexecuted": false,
+  "original_native_proofs_revalidated": true,
+  "arms": [
+    {
+      "arm": "preimage",
+      "uid": 10167,
+      "sdk": 37,
+      "cases": 26,
+      "function_passed": 15,
+      "matched_expected": 26,
+      "direct_reaped": 26,
+      "nested_reaped": 5,
+      "transport_complete": true,
+      "exact_owned_package_removed": true
+    },
+    {
+      "arm": "candidate",
+      "uid": 10168,
+      "sdk": 37,
+      "cases": 26,
+      "function_passed": 26,
+      "matched_expected": 26,
+      "direct_reaped": 26,
+      "nested_reaped": 5,
+      "transport_complete": true,
+      "exact_owned_package_removed": true
+    }
+  ],
+  "resource_fences": {
+    "own": {
+      "identity": [
+        30,
+        29126458
+      ],
+      "memory_events_delta": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_peak": "90783744",
+      "memory_swap_peak": "0"
+    },
+    "Main": {
+      "identity": [
+        30,
+        26651611
+      ],
+      "memory_events_delta": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_peak": "5372022784",
+      "memory_swap_peak": "6246129664"
+    },
+    "only_pre_post_observation_claimed": true
+  },
+  "source_authority_unchanged_after": true,
+  "known_red_boundaries_remain": [
+    "initial NOFILE0 authority",
+    "first private-fork generation startup after NOFILE0",
+    "trusted virtual O_PATH reopening unqualified"
+  ],
+  "commercial_apps_qualified": 0,
+  "full_engine_qualification": false
+}

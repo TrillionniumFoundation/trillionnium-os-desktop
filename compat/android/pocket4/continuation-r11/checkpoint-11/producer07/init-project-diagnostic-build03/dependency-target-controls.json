@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "pure_parser_controls_passed": 5,
+  "actual_compile_executed": false,
+  "records": [
+    {
+      "case": "explicit_preflight",
+      "accepted": true,
+      "expected_acceptance": true,
+      "error": null
+    },
+    {
+      "case": "actual_output",
+      "accepted": true,
+      "expected_acceptance": true,
+      "error": null
+    },
+    {
+      "case": "wrong_root",
+      "accepted": false,
+      "expected_acceptance": false,
+      "error": "unexpected dependency target"
+    },
+    {
+      "case": "extra_target",
+      "accepted": false,
+      "expected_acceptance": false,
+      "error": "unexpected dependency target"
+    },
+    {
+      "case": "same_basename_wrong_absolute",
+      "accepted": false,
+      "expected_acceptance": false,
+      "error": "unexpected dependency target"
+    }
+  ]
+}

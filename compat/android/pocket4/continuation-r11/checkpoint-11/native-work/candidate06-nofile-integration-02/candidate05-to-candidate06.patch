@@ -1,0 +1,218 @@
+--- a/kernel_api/proc_maps_raw_metadata_owner.cc
++++ b/kernel_api/proc_maps_raw_metadata_owner.cc
+@@ -148,6 +148,7 @@
+      !SameInode(info,context.user_namespace))return -EXDEV;
+   return 0;
+ }
++enum class PinFailure {kNone,kPidfdOpen,kPidfdGetfd};
+ struct Request {
+   int caller_tid;
+   int fd;
+@@ -155,6 +156,7 @@
+   const AppContext* caller_context;
+   int result=-999;
+   bool context_invalid=false;
++  PinFailure pin_failure=PinFailure::kNone;
+   std::atomic<int> complete{0};
+ };
+ struct State {
+@@ -167,10 +169,13 @@
+   // 0 closed, 1 accepting, 2 stopping.
+   std::atomic<int> admission{0};
+   std::atomic<int> gate{0},event{0},command{0},ready{0},tid{0};
++  std::atomic<int> inherited_tid{0};
+   std::atomic<Request*> request{nullptr};
+   int startup_error=0;
+   void* stack_mapping=nullptr;
+   void* stack_top=nullptr;
++  void* inherited_stack_mapping=nullptr;
++  void* inherited_stack_top=nullptr;
+   bool started=false;
+   AppContext generation{},startup_context{};
+ };
+@@ -218,11 +223,11 @@
+ };
+ // CLONE_CHILD_CLEARTID wakes a shared FUTEX_WAIT, not FUTEX_WAIT_PRIVATE. Do not
+ // reuse the stack until the kernel has performed that final exit transition.
+-void JoinRaw() {
++void JoinRaw(std::atomic<int>* clear_tid=&state.tid) {
+   for(;;) {
+-    const int tid=state.tid.load(std::memory_order_acquire);
++    const int tid=clear_tid->load(std::memory_order_acquire);
+     if(tid==0)return;
+-    Raw(SYS_futex,Address(&state.tid),FUTEX_WAIT,tid);
++    Raw(SYS_futex,Address(clear_tid),FUTEX_WAIT,tid);
+   }
+ }
+ // Gate and complete caller signal mask must already be held.
+@@ -232,8 +237,8 @@
+     state.started=false;
+   }
+ }
+-int PrepareStackLocked() {
+-  if(state.stack_mapping!=nullptr)return 0;
++int PrepareOneStackLocked(void** owned_mapping,void** owned_top) {
++  if(*owned_mapping!=nullptr)return 0;
+   const long page=sysconf(_SC_PAGESIZE);
+   if(page<=0 || page>65536)return Error(EINVAL);
+   const size_t stack_size=128u*1024u;
+@@ -244,9 +249,13 @@
+   if(mprotect(bottom,stack_size,PROT_READ|PROT_WRITE)<0) {
+     const int saved=errno;munmap(mapping,length);return Error(saved);
+   }
+-  state.stack_mapping=mapping;
+-  state.stack_top=static_cast<char*>(bottom)+stack_size;
++  *owned_mapping=mapping;
++  *owned_top=static_cast<char*>(bottom)+stack_size;
+   return 0;
++}
++int PrepareStackLocked() {
++  if(PrepareOneStackLocked(&state.stack_mapping,&state.stack_top)<0)return -1;
++  return PrepareOneStackLocked(&state.inherited_stack_mapping,&state.inherited_stack_top);
+ }
+ int OwnProcess() {
+   const int process=Process();
+@@ -254,7 +263,10 @@
+   state.process.compare_exchange_strong(zero,process,std::memory_order_acq_rel);
+   return state.process.load(std::memory_order_acquire)==process?0:Error(EOPNOTSUPP);
+ }
+-RAW_ONLY int ReadPinned(Request* request) {
++// inherited_table is true only in the fixed one-shot worker cloned by
++// this request's calling thread without CLONE_FILES. The ordinary worker
++// must continue acquiring a pidfd/getfd pin from the calling thread.
++RAW_ONLY int ReadPinned(Request* request,bool inherited_table) {
+   Snapshot* value=request->snapshot;
+   int context_result=ReadContext(&value->worker_before);
+   if(context_result<0) {request->context_invalid=true;return context_result;}
+@@ -262,11 +274,18 @@
+      !SameContext(value->worker_before,*request->caller_context)) {
+     request->context_invalid=true;return -ESTALE;
+   }
+-  const long caller=Raw(SYS_pidfd_open,request->caller_tid,O_EXCL);
+-  if(caller<0)return static_cast<int>(caller);
+-  const long pinned=Raw(SYS_pidfd_getfd,caller,request->fd,0);
+-  if(pinned<0) {
+-    Raw(SYS_close,caller);return static_cast<int>(pinned);
++  long caller=-1;
++  long pinned=request->fd;
++  if(!inherited_table) {
++    caller=Raw(SYS_pidfd_open,request->caller_tid,O_EXCL);
++    if(caller<0) {
++      request->pin_failure=PinFailure::kPidfdOpen;return static_cast<int>(caller);
++    }
++    pinned=Raw(SYS_pidfd_getfd,caller,request->fd,0);
++    if(pinned<0) {
++      request->pin_failure=PinFailure::kPidfdGetfd;
++      Raw(SYS_close,caller);return static_cast<int>(pinned);
++    }
+   }
+   long result=Raw(SYS_fstat,pinned,Address(&value->identity));
+   if(result>=0)result=Raw(SYS_fstatfs,pinned,Address(&value->kernel_filesystem));
+@@ -324,8 +343,7 @@
+     }
+   }
+   if(readable>=0 && readable!=pinned)Raw(SYS_close,readable);
+-  Raw(SYS_close,pinned);
+-  Raw(SYS_close,caller);
++  if(!inherited_table) {Raw(SYS_close,pinned);Raw(SYS_close,caller);}
+   if(result<0)return static_cast<int>(result);
+   context_result=ReadContext(&value->worker_after);
+   if(context_result<0) {request->context_invalid=true;return context_result;}
+@@ -334,6 +352,33 @@
+   }
+   value->tagged=ordinary?0:1;
+   return 0;
++}
++RAW_ONLY int InheritedWorker(void* opaque) {
++  auto* request=static_cast<Request*>(opaque);
++  request->result=ReadPinned(request,true);
++  request->complete.store(1,std::memory_order_release);
++  Raw(SYS_exit,0);
++  __builtin_unreachable();
++}
++// Caller holds Gate and Mask throughout clone, metadata and kernel
++// clear-tid. This is never used to establish initial namespace authority:
++// only an already started, explicitly admitted generation reaches it.
++void ReadInheritedAfterAllocationFailure(Request* original) {
++  if(state.inherited_stack_top==nullptr ||
++     state.inherited_tid.load(std::memory_order_acquire)!=0) {
++    original->result=-ESHUTDOWN;return;
++  }
++  Request inherited{original->caller_tid,original->fd,original->snapshot,
++                    original->caller_context};
++  const int flags=CLONE_VM|CLONE_SIGHAND|CLONE_THREAD|CLONE_SYSVSEM|
++                  CLONE_PARENT_SETTID|CLONE_CHILD_CLEARTID;
++  const long tid=berberis_proc_metadata_raw_clone_x86_64(
++      static_cast<unsigned long>(flags),state.inherited_stack_top,
++      &state.inherited_tid,InheritedWorker,&inherited);
++  if(tid<0) {original->result=static_cast<int>(tid);return;}
++  JoinRaw(&state.inherited_tid);
++  original->result=inherited.complete.load(std::memory_order_acquire)?inherited.result:-EIO;
++  original->context_invalid=inherited.context_invalid;
+ }
+ RAW_ONLY int Worker(void*) {
+   // clone omitted CLONE_FILES. These closes can only affect this worker's own
+@@ -355,7 +400,7 @@
+         continue;
+       }
+       Request* request=state.request.load(std::memory_order_acquire);
+-      request->result=ReadPinned(request);
++      request->result=ReadPinned(request,false);
+       state.request.store(nullptr,std::memory_order_release);
+       state.command.store(0,std::memory_order_release);
+       request->complete.store(1,std::memory_order_release);
+@@ -464,6 +509,12 @@
+     if(request.complete.load(std::memory_order_acquire))break;
+     WaitEvent(event);
+   }
++  // Only these two exact allocation stages qualify. A later EMFILE from
++  // a filesystem, tag read or O_PATH reopen is preserved as an error.
++  if(request.result==-EMFILE &&
++     (request.pin_failure==PinFailure::kPidfdOpen ||
++      request.pin_failure==PinFailure::kPidfdGetfd))
++    ReadInheritedAfterAllocationFailure(&request);
+   AppContext after{};
+   const int after_result=ReadContext(&after);
+   if(after_result<0 || !SameContext(caller,after) || request.context_invalid) {
+@@ -515,10 +566,13 @@
+   state.command.store(0,std::memory_order_relaxed);
+   state.ready.store(0,std::memory_order_relaxed);
+   state.tid.store(0,std::memory_order_relaxed);
++  state.inherited_tid.store(0,std::memory_order_relaxed);
+   state.request.store(nullptr,std::memory_order_relaxed);
+   state.startup_error=0;state.started=false;
+   state.generation=AppContext{};state.startup_context=AppContext{};
+   state.process.store(Process(),std::memory_order_release);
+ }
+-bool HasInheritedStack() {return state.stack_mapping!=nullptr;}
++bool HasInheritedStack() {
++  return state.stack_mapping!=nullptr && state.inherited_stack_mapping!=nullptr;
++}
+ } // namespace berberis::proc_maps_provenance::raw_metadata_owner
+--- a/kernel_api/include/berberis/kernel_api/proc_maps_raw_metadata_owner.h
++++ b/kernel_api/include/berberis/kernel_api/proc_maps_raw_metadata_owner.h
+@@ -40,8 +40,9 @@
+ // generic thread-attach or signal callback. Reject root/saved-root/capabilities,
+ // mismatched fs IDs or user namespaces before any metadata operation. A worker
+ // must not cross a credential/root/mount/namespace/zygote/exec generation.
+-// Memory preparation alone is safe before specialization: it creates no
+-// worker, stores no credentials, and opens no request admission.
++// Memory preparation reserves the persistent and inherited-table worker
++// stacks before specialization. It creates no worker, stores no credentials
++// and opens no request admission. Both stacks survive a private fork.
+ int PrepareInheritedStack();
+ int Start();
+ int Read(int fd,Snapshot* snapshot);
+--- a/kernel_api/include/berberis/kernel_api/proc_maps_provenance.h
++++ b/kernel_api/include/berberis/kernel_api/proc_maps_provenance.h
+@@ -36,7 +36,9 @@
+ int RequireUnprivilegedInitialNamespace(const Configuration& config);
+ 
+ // Inspect the real inode. Ordinary inode shapes use one native fstat. A
+-// possible virtual inode is pinned by pidfd_getfd in an independent fd table.
++// possible virtual inode is captured in an independent fd table: normally
++// by pidfd_getfd, or on an exact descriptor-allocation EMFILE by a fixed
++// worker inheriting the caller table without CLONE_FILES.
+ // With BERBERIS_PROCMAPS_RAW_METADATA_OWNER enabled, the explicitly prepared
+ // raw metadata worker only returns a fixed
+ // kernel snapshot; strict tag decoding runs on the normal caller thread.

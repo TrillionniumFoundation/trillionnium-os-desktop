@@ -1,0 +1,155 @@
+--- r3-first/owned_navigation.py
++++ r3-stable/owned_navigation.py
+@@ -13,14 +13,17 @@
+ import re
+ import stat
+ import types
++import time
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-bilibili-r3-search-entry-01')
++ROOT = Path('/home/alex/work/pocket4-bilibili-r3-stable-search-entry-01')
+ SOURCE = ROOT / 'source'
+-NONCE = 'a53815018fc65e6cbcac07538bdd7c7d'
++NONCE = '35c49c9f72a6a8323ad1d8f384cad3c6'
+ FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-' + NONCE)
+-PLAN = {'schema':1,'operation':'click','selector':{'resource_id':'tv.danmaku.bili:id/expand_search','class':'android.widget.LinearLayout','content_desc':'Search bar, button'},'nonces':{'before': 'dc23f1f57cd8a8ee80c2716bca79f3ab', 'inspect': '12f173af30cad43d067140ee40f0a4b4', 'action': '246e02a25a3b85775a3c4f0cd691e719', 'after': '6f7c8b80f94b51a01792bc22b4ca9ca8'}}
+-POST_PLAN = {'schema':1,'operation':'inspect','nonces':{'before': '89b5b4ed5dbdcc409554079f4b0ce86b', 'inspect': '313bcbf4c643b9a1a1f844c181caa78e', 'after': '57e6e78c397b74f943a487821002d8cd'}}
++PLAN = {'schema':1,'operation':'click','selector':{'resource_id':'tv.danmaku.bili:id/expand_search','class':'android.widget.LinearLayout','content_desc':'Search bar, button'},'nonces':{'before': '35be8e637454673ebed752c03822b494', 'inspect': '01670f60b7f708e16d1c048f67c41bc0', 'action': '7272e611446fd41f84d4333438aa71b1', 'after': 'c1b28fb487877535117e58f2ff56ad36'}}
++POST_PLAN = {'schema':1,'operation':'inspect','nonces':{'before': 'da0dc727178c2d1881e03691946957c1', 'inspect': 'aff1fd968253a27889ebd473c2380348', 'after': 'cbc706ffb30059197cfcf4bb63645cc2'}}
++STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '0066c713c96ff0f718bf350022959f09', 'inspect': '25da948fd40375f963f8609bdf3cfaf2', 'after': 'f0cc789666f89c4cdbeccceccd8f8950'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4498c7839a6764d5cb45253edf48a0de', 'inspect': '4ce0c8cd18762c1e8572a3438218b328', 'after': '610642ceefcce025ff207e9350e9f121'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '179946ea3b297447d904d1c348c3be25', 'inspect': 'b4a7248af51aaaa17cedbd47ffa7fe65', 'after': '91a2003e3d3d170d53cd9e6cd9ec7b70'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '33f23dd45e91b55d8076fbbcc68c3a43', 'inspect': '4bfb7d2f75a9ab204056441a0d1af1ac', 'after': '9789e870c2a2fe962733202e2cfe4adf'}}]
++STABILITY_SECONDS = 12
+ SELF, UID = 'org.droidloom.qa.bili.r3', 10166
+ BILI, BILI_UID = 'tv.danmaku.bili', 10117
+ INSTALL_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r3-install-state-01')
+@@ -122,9 +125,12 @@
+ 
+ 
+ def fixed_plan():
+-    values = [NONCE,*PLAN['nonces'].values(),*POST_PLAN['nonces'].values()]
++    require(len(STABILITY_PLANS) == 4 and all(p.get('operation') == 'inspect' for p in STABILITY_PLANS),
++            'EXACT_READ_ONLY_STABILITY_PLANS_REQUIRED')
++    values = [NONCE,*PLAN['nonces'].values(),*POST_PLAN['nonces'].values(),
++              *(nonce for plan in STABILITY_PLANS for nonce in plan['nonces'].values())]
+     require(all(re.fullmatch('[0-9a-f]{32}',value) for value in values) and
+-            len(set(values)) == 8 and OLD_STATE_NONCE not in values,'FRESH_DISTINCT_NONCES_REQUIRED')
++            len(set(values)) == 20 and OLD_STATE_NONCE not in values,'FRESH_DISTINCT_NONCES_REQUIRED')
+     return json.loads(json.dumps(PLAN))
+ 
+ 
+@@ -246,14 +252,51 @@
+     return values
+ 
+ 
++def stable_before_click(prior, qa, flow, session, installed, result):
++    """Observe two consecutive complete equal trees; never replay a failed read.
++
++    This gate is additional. The actual action still takes its own fresh
++    inspection and the original Java whole-tree/window/target checks.
++    """
++    began = time.monotonic()
++    previous = None
++    result['pre_action_stability'] = {'maximum_sequences':4,'deadline_seconds':STABILITY_SECONDS,
++        'observations':[],'qualified':False,'failed_reads_retried':False,'action_retried':False}
++    state = result['pre_action_stability']
++    for index, plan in enumerate(STABILITY_PLANS,1):
++        require(time.monotonic()-began <= STABILITY_SECONDS,'STABILITY_OBSERVATION_DEADLINE')
++        sequence = session.sequence(json.loads(json.dumps(plan)))
++        require(sequence['installed_before'] == sequence['installed_after'] == installed and
++                sequence['restoration_qualified'] is True and sequence['after_state_completed'] is True,
++                'STABILITY_READ_INSTALL_AND_RESTORATION_REQUIRED')
++        summaries = assessment_summary(prior,qa,flow.step,sequence,plan)
++        observed = summaries['inspect']
++        key = {'tree_sha256':observed['tree_sha256'],'window_sha256':observed['window_sha256'],
++            'node_count':observed['node_count'],'foreground':sequence['foreground_after'],
++            'accessibility_state':sequence['accessibility_restoration']['state_after']}
++        elapsed = int((time.monotonic()-began)*1000)
++        state['observations'].append({'sequence':index,'elapsed_ms':elapsed,'complete_key':key,
++            'assessments':summaries,'restoration_qualified':True})
++        require(time.monotonic()-began <= STABILITY_SECONDS,'STABILITY_OBSERVATION_DEADLINE')
++        if previous == key:
++            state['qualified'] = True
++            state['matching_sequences'] = [index-1,index]
++            state['future_action_still_requires_original_strict_freshness'] = True
++            return
++        previous = key
++    raise RuntimeError('COMPLETE_TREE_NOT_STABLE_IN_BOUNDED_READS')
++
++
+ def navigation_sequences(prior, qa, flow, session, installed, result):
+     """One action, then one independent read-only observation, including failures.
+ 
+     An acknowledged click remains an unknown business outcome. No subsequent
+     mutation can consume this step as a successful business postcondition.
+     """
+-    result['click_sequence_started'] = True
++    result['click_sequence_started'] = False
+     try:
++        stable_before_click(prior,qa,flow,session,installed,result)
++        result['click_sequence_started'] = True
+         result['click_sequence'] = session.sequence(fixed_plan())
+         sequence = result['click_sequence']
+         require(sequence['installed_before'] == sequence['installed_after'] == installed and
+@@ -264,8 +307,8 @@
+         result['click_acknowledged'] = True
+     except BaseException as error:
+         if hasattr(session,'sequence_observation'):
+-            result['failed_click_sequence'] = session.sequence_observation
+-        prior.remember(result,'click_sequence',error)
++            result['failed_click_sequence' if result['click_sequence_started'] else 'failed_stability_sequence'] = session.sequence_observation
++        prior.remember(result,'click_sequence' if result['click_sequence_started'] else 'pre_action_stability',error)
+     finally:
+         # A one-shot read never replays an uncertain click. Its own state probes
+         # are fresh and the existing transport can still reject a poisoned gate.
+@@ -299,12 +342,13 @@
+     recorder = prior.recorder_module()
+     plan = adapter.validate_plan(fixed_plan(),qa)
+     adapter.validate_plan(POST_PLAN,qa)
++    for stable_plan in STABILITY_PLANS: adapter.validate_plan(stable_plan,qa)
+     step = 'launch-01' if phase == 'launch' else 'search-entry-01'
+     args = types.SimpleNamespace(operation='launch' if phase == 'launch' else 'owned-qa',
+         adapter_manifest_sha256=R4_MANIFEST,flow_dir=FLOW,
+         epoch_module=prior.RECORDER_ROOT/'references/framework_epoch.py',
+         task_source=prior.RECORDER_ROOT/'references/task_scope_baseline.py',step=step,
+-        request={'phase':phase,'nonce':NONCE,'plan':plan,'post_plan':POST_PLAN,'actual_install':admission},
++        request={'phase':phase,'nonce':NONCE,'plan':plan,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'actual_install':admission},
+         unknown_step=None,observation_step=None,postcondition=None)
+     result = {'schema':1,'ok':False,'error':None,'secondary_errors':[],
+         'phase':phase,'nonce':NONCE,'package':BILI,'uid':BILI_UID,'helper_package':SELF,'helper_uid':UID,
+@@ -381,6 +425,11 @@
+             value.get('held_binding_released') is True and value.get('action_lock_released') is True,
+             'ACTUAL_DURABLE_PHASE_REQUIRED:'+phase)
+     if phase == 'navigate':
++        stable = value.get('pre_action_stability',{})
++        require(stable.get('qualified') is True and stable.get('maximum_sequences') == 4 and
++                stable.get('deadline_seconds') == STABILITY_SECONDS and
++                stable.get('future_action_still_requires_original_strict_freshness') is True,
++                'ACTUAL_PRE_ACTION_COMPLETE_TREE_STABILITY_REQUIRED')
+         require(value.get('action_attempted') is True and
+                 value.get('scoped_click_and_post_observation_completed') is True and
+                 value.get('business_outcome_unknown') is True and value.get('business_success_verified') is False,
+@@ -427,6 +476,7 @@
+         _,result['actual_install'] = actual_install(prior,qa,proof)
+         adapter.validate_plan(fixed_plan(),qa)
+         adapter.validate_plan(POST_PLAN,qa)
++        for stable_plan in STABILITY_PLANS: adapter.validate_plan(stable_plan,qa)
+         activation = json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+         epoch = ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bili_inspect_epoch')
+         guard = lambda: ref.main_guard(activation,epoch)
+@@ -450,6 +500,7 @@
+             '--worker-once','navigate','--source-manifest-sha256',expected],240,evidence,guard)
+         navigated,result['navigation_result'] = durable_phase(observed,'navigate')
+         result['navigation'] = {'foreground':navigated['post_inspection_sequence']['foreground_after'],
++            'pre_action_stability':navigated['pre_action_stability'],
+             'selector':PLAN['selector'],'click_assessments':navigated['click_assessments'],
+             'post_assessments':navigated['post_assessments'],
+             'click_restoration':navigated['click_sequence']['accessibility_restoration'],
+@@ -530,7 +581,7 @@
+     if not args.execute_once and args.worker_once is None:
+         print(json.dumps({'state':'PLAN_ONLY','root':str(ROOT),'flow':str(FLOW),'helper_uid':UID,
+             'operation':'original launch + fresh inspect/exact search click + fresh post-inspect + exact-task cleanup',
+-            'plan':PLAN,'post_plan':POST_PLAN,'click_limit':1,'audio_actions':0,'old_v2_helper_called':False,
++            'plan':PLAN,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'click_limit':1,'audio_actions':0,'old_v2_helper_called':False,
+             'private_raw_tree_not_for_Git':True,'remote_actions':0}))
+         return 0
+     os.umask(0o077)

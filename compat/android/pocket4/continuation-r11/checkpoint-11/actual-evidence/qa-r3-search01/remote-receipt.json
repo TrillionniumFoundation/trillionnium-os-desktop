@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "runtime_job": "1a1a9a775cc-fc05-368a",
+  "exact_request_sha256": "4bf3d9deef6e297955760ca1bd36377ab7ed21e7614eb68433b3e261bf44254a",
+  "runtime_status": {
+    "at_unix_ms": 1793847694212,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 1,
+    "job_id": "1a1a9a775cc-fc05-368a",
+    "launch_nonce": "7c7ca0596e7528ef9fedd031b06644ee",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 923,
+        "stored": 923
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "failed",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "runtime_stdout": "{\"ok\": false, \"result\": {\"path\": \"/home/alex/work/pocket4-bilibili-r3-search-entry-01/result.json\", \"bytes\": 6327, \"sha256\": \"324a5d5e181be451748d3c2079ba86f306ee55658c6bc122fe400d72a84462e8\"}, \"error\": {\"phase\": \"coordinator\", \"type\": \"RuntimeError\", \"message\": \"03-navigate did not complete exactly once with a preserved Main fence\"}, \"secondary_errors\": [], \"raw_UI_tree_exported\": false, \"business_success_verified\": false, \"whole_app_production_ready\": false}\n{\"ok\": false, \"stage_result\": {\"path\": \"/home/alex/work/pocket4-bilibili-r3-search-entry-01/stage-result.json\", \"bytes\": 1768, \"sha256\": \"90909e2429c7e1ec34e5eff1b3d4c6591f6e0a3e6f1e79ce10bdd9636a1aff62\"}, \"error\": {\"phase\": \"stage_or_coordinator\", \"type\": \"RuntimeError\", \"message\": \"OWNED_CLICK_OBSERVE_CLEANUP_NOT_QUALIFIED\"}, \"secondary_errors\": [], \"raw_UI_tree_exported\": false, \"business_success_verified\": false, \"whole_app_production_ready\": false}\n",
+  "reader_job": "1a1a9a8db93-fc05-3694",
+  "reader_status": {
+    "at_unix_ms": 1793847780834,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1a9a8db93-fc05-3694",
+    "launch_nonce": "780c16005c4c90e5913392d4b6f1a6a7",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 10222,
+        "stored": 10222
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  },
+  "reader_stdout_sha256": "5011e2916685aeafb6ca63cf00c668fbf72f37197d808c703f852af3c981c5a6"
+}
