@@ -2,8 +2,9 @@
 """Merge retained App evidence and a complete inventory; never operate a device.
 
 Inventory and progress summaries cannot pass a production gate. Optional gate
-reviews must bind current inventory/epoch/UID/version, exact APK, checklist and
-hash-verified evidence. Historical failures remain visible after a newer review.
+reviews must bind current inventory/epoch/UID/version, independently observed
+installed APKs, checklist and hash-verified evidence. Historical failures remain
+visible after a newer review or package replacement.
 """
 import argparse
 from collections import Counter
@@ -134,7 +135,68 @@ def checked_reviews(path):
     return reviews, pin
 
 
-def build_matrix(baseline, historical, plans, progress, inventory=None, reviews=(), sources=None):
+def apk_set_hash(apks):
+    """Include every base/split content identity, without incidental path names."""
+    members = sorted(({'split_name': a['split_name'], 'sha256': a['sha256']} for a in apks),
+                     key=lambda a: a['split_name'] or '')
+    return sha(json.dumps(members, sort_keys=True, separators=(',', ':')).encode())
+
+
+def checked_package_identities(path):
+    if path is None:
+        return [], None
+    document, pin = read_json(path)
+    need(document.get('schema') == 'pocket4-package-identity-observations-v1',
+         'unknown package-identity schema')
+    root = Path(path).resolve().parent
+    observations = document['observations']
+    seen, times = set(), set()
+    for row in observations:
+        need(isinstance(row.get('id'), str) and row['id'] and row['id'] not in seen,
+             'missing or duplicate package-identity observation')
+        seen.add(row['id'])
+        need(PACKAGE.fullmatch(row.get('package', '')), 'invalid package-identity package')
+        need(row.get('kind') in ('read_only', 'package_install'), 'unknown package observation kind')
+        need(type(row.get('uid')) is int and row['uid'] >= 0
+             and type(row.get('version_code')) is int and row['version_code'] >= 0
+             and type(row.get('android_user')) is int and row['android_user'] == 0,
+             'invalid observed package identity')
+        need(HEX.fullmatch(row.get('framework_epoch_sha256', '')), 'package epoch missing')
+        observed = stamp(row['observed_at_utc'])
+        key = (row['package'], row['framework_epoch_sha256'], observed)
+        need(key not in times, 'ambiguous simultaneous package observations')
+        times.add(key)
+        apks = row.get('apks')
+        need(isinstance(apks, list) and apks, 'observed APK set missing')
+        splits = set()
+        for apk in apks:
+            split = apk.get('split_name')
+            need(split is None or isinstance(split, str) and split, 'invalid split name')
+            need(split not in splits, 'duplicate base/split observation')
+            splits.add(split)
+            need(HEX.fullmatch(apk.get('sha256', '')), 'invalid observed APK hash')
+            need(type(apk.get('bytes')) is int and apk['bytes'] > 0, 'invalid observed APK size')
+            certs = apk.get('signer_certificate_sha256')
+            need(isinstance(certs, list) and certs and len(certs) == len(set(certs))
+                 and all(HEX.fullmatch(c) for c in certs), 'observed signer identity missing')
+        need(None in splits, 'base APK missing')
+        need(row.get('evidence'), 'package observation requires evidence')
+        for evidence in row['evidence']:
+            relative = Path(evidence['path'])
+            need(not relative.is_absolute() and '..' not in relative.parts,
+                 'identity evidence path must stay in bundle')
+            actual = (root / relative).resolve()
+            need(actual.is_relative_to(root), 'identity evidence symlink escaped bundle')
+            raw = actual.read_bytes()
+            need(sha(raw) == evidence['sha256'] and len(raw) == evidence['bytes'],
+                 'identity evidence hash or size differs')
+        row['_evidence_verified'] = True
+        row['_apk_set_sha256'] = apk_set_hash(apks)
+    return observations, pin
+
+
+def build_matrix(baseline, historical, plans, progress, inventory=None, reviews=(), sources=None,
+                 package_identities=()):
     old = baseline['apps']
     old_by_package = {row['package']: row for row in old}
     need(len(old) == len(old_by_package) == baseline['launcher_package_count'] == 45,
@@ -155,6 +217,13 @@ def build_matrix(baseline, historical, plans, progress, inventory=None, reviews=
         need(row.get('_evidence_verified') is True, 'unverified gate-review evidence')
         need(row['package'] in tracked, 'review names an untracked App')
         by_review.setdefault(row['package'], []).append(row)
+    by_identity = {}
+    for row in package_identities:
+        need(row.get('_evidence_verified') is True, 'unverified package-identity evidence')
+        need(row['package'] in tracked, 'identity observation names an untracked App')
+        need(row.get('_apk_set_sha256') == apk_set_hash(row['apks']), 'observed APK set differs')
+        if row['framework_epoch_sha256'] == epoch and row['android_user'] == 0:
+            by_identity.setdefault(row['package'], []).append(row)
     common = plans['common_gates']
     output, ignored = [], []
     for package in sorted(tracked):
@@ -168,12 +237,32 @@ def build_matrix(baseline, historical, plans, progress, inventory=None, reviews=
         gate_evidence = {}
         accepted, full_release_review = [], None
         current_review_apk = None
+        known, identity_cutoff, previous_set = None, None, None
+        for observation in sorted(by_identity.get(package, []), key=lambda r: stamp(r['observed_at_utc'])):
+            fingerprint = (observation['uid'], observation['version_code'], observation['_apk_set_sha256'])
+            if (observation['kind'] == 'package_install'
+                    or previous_set is not None and previous_set != fingerprint):
+                identity_cutoff = stamp(observation['observed_at_utc'])
+            known, previous_set = observation, fingerprint
+        expected = installed.get(package)
+        identity_matches = bool(known and expected and known['uid'] == expected['uid']
+                                and known['version_code'] == expected['version_code'])
+        expected_apk = next((a['sha256'] for a in known['apks'] if a['split_name'] is None), None) if known else None
         last_failure = None
         for observation in by_progress.get(package, []):
             expected_version = installed.get(package, {}).get('version_code',
                 prior['installed_version_code'] if prior else None)
             if (observation.get('framework_epoch_sha256') == epoch
                     and observation.get('version_code') == expected_version):
+                if not observation.get('unpassed_checks'):
+                    continue
+                observed = stamp(observation.get('observed_at_utc') or observation['reviewed_at_utc'])
+                # Retain the original progress below, but do not apply an old
+                # binary's result to the replacement's current gate state.
+                if identity_cutoff is not None and observed < identity_cutoff:
+                    continue
+                if known and observation.get('apk_sha256', expected_apk) != expected_apk:
+                    continue
                 for key, state in observation.get('unpassed_checks', {}).items():
                     need(key in gates and state in ('failed', 'blocked', 'pending'),
                          'progress can only retain known unpassed gates')
@@ -182,16 +271,29 @@ def build_matrix(baseline, historical, plans, progress, inventory=None, reviews=
                 if observation.get('unpassed_checks'):
                     # Some retained summaries have no event timestamp. Their
                     # explicitly labelled review time is a conservative cutoff.
-                    observed = stamp(observation.get('observed_at_utc') or observation['reviewed_at_utc'])
                     last_failure = max(last_failure, observed) if last_failure else observed
         for review in sorted(by_review.get(package, []), key=lambda r: stamp(r['observed_at_utc'])):
-            expected = installed.get(package)
             valid = bool(current and expected and review['framework_epoch_sha256'] == epoch
                          and review['version_code'] == expected['version_code'] and review['uid'] == expected['uid']
-                         and stamp(review['observed_at_utc']) >= stamp(current['observed_at_utc'])
-                         and (last_failure is None or stamp(review['observed_at_utc']) >= last_failure))
+                         and stamp(review['observed_at_utc']) >= stamp(current['observed_at_utc']))
             if not valid:
                 ignored.append({'id': review['id'], 'reason': 'stale_or_different_inventory_epoch_uid_version'})
+                continue
+            reason = None
+            if not known:
+                reason = 'independent_installed_apk_observation_missing'
+            elif not identity_matches:
+                reason = 'latest_package_observation_conflicts_with_inventory'
+            elif review['apk_sha256'] != expected_apk:
+                reason = 'review_apk_differs_from_latest_installed_observation'
+            elif (len(known['apks']) > 1 or 'apk_set_sha256' in review) and review.get('apk_set_sha256') != known['_apk_set_sha256']:
+                reason = 'review_does_not_bind_observed_base_and_split_set'
+            elif identity_cutoff is not None and stamp(review['observed_at_utc']) < identity_cutoff:
+                reason = 'review_predates_package_install_or_identity_change'
+            elif last_failure is not None and stamp(review['observed_at_utc']) < last_failure:
+                reason = 'newer_retained_unpassed_observation'
+            if reason:
+                ignored.append({'id': review['id'], 'reason': reason})
                 continue
             if current_review_apk is not None and current_review_apk != review['apk_sha256']:
                 # A same-version replacement still invalidates every old binary's gate.
@@ -218,7 +320,7 @@ def build_matrix(baseline, historical, plans, progress, inventory=None, reviews=
             gates['release_scope'] = 'pending'
         present = package in installed if current else None
         enabled = package not in current['disabled_packages'] if current and present else None
-        ready = bool(current and present and enabled and full_release_review
+        ready = bool(current and present and enabled and identity_matches and full_release_review
                      and all(state == 'passed' for state in gates.values()))
         row = {'package': package, 'app': plan['app'], 'kind': plan['kind'],
                'retained_from_baseline': prior is not None, 'profile': plan['profile'],
@@ -232,6 +334,11 @@ def build_matrix(baseline, historical, plans, progress, inventory=None, reviews=
                'gate_results': gates, 'unpassed_gates': [key for key, state in gates.items() if state != 'passed'],
                'gate_evidence': gate_evidence, 'accepted_reviews': accepted,
                'reviewed_apk_sha256': current_review_apk,
+               'installed_apk_observation': ({key: known[key] for key in
+                   ('id', 'kind', 'observed_at_utc', 'uid', 'version_code', 'android_user', 'evidence')} | {
+                   'apk_sha256': expected_apk, 'apk_set_sha256': known['_apk_set_sha256'],
+                   'apk_count': len(known['apks']), 'matches_inventory': identity_matches,
+                   'earlier_review_cutoff_utc': identity_cutoff.isoformat() if identity_cutoff else None}) if known else None,
                'prerequisites': plan.get('prerequisites', []),
                'production_ready': ready}
         if prior and prior.get('evidence'):
@@ -241,11 +348,12 @@ def build_matrix(baseline, historical, plans, progress, inventory=None, reviews=
         output.append(row)
     ready_count = sum(row['production_ready'] for row in output)
     return {
-        'schema': 'pocket4-all-tracked-app-readiness-v2', 'read_only_generated': True,
+        'schema': 'pocket4-all-tracked-app-readiness-v3', 'read_only_generated': True,
         'framework_epoch_sha256': epoch, 'sources': sources or {},
         'baseline_observed_at_utc': baseline['observed_at_utc'],
         'inventory_observed_at_utc': current['observed_at_utc'] if current else None,
         'inventory_complete': current is not None, 'baseline_tracked_count': 45,
+        'apps_with_independent_apk_observations': sum(row['installed_apk_observation'] is not None for row in output),
         'tracked_app_count': len(output), 'current_launcher_count': len(launchers) if current else None,
         'current_installed_package_count': len(installed) if current else None,
         'current_third_party_package_count': len(current['third_party_packages']) if current else None,
@@ -254,7 +362,7 @@ def build_matrix(baseline, historical, plans, progress, inventory=None, reviews=
         'production_ready_count': ready_count, 'not_production_ready_count': len(output) - ready_count,
         'all_apps_production_ready': bool(current and ready_count == len(output)),
         'kind_counts': dict(sorted(Counter(row['kind'] for row in output).items())),
-        'status_rule': 'Inventory, launch, build, and scoped progress never grant gate credit; full release scope requires an explicit current evidence review.',
+        'status_rule': 'Inventory, installed-APK observations, launch, build, and scoped progress never grant gate credit; reviews must match independent latest installed APK observations and postdate known replacements. Full release scope requires an explicit current evidence review.',
         'common_gates': common, 'business_profiles': plans['profiles'],
         'platform_workstreams': progress.get('platform_workstreams', []),
         'ignored_reviews': ignored, 'apps': output}
@@ -268,6 +376,7 @@ def main():
     parser.add_argument('--progress', type=Path, default=HERE / 'progress.json')
     parser.add_argument('--inventory', type=Path)
     parser.add_argument('--gate-reviews', type=Path)
+    parser.add_argument('--package-identities', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     values, sources = {}, {}
@@ -278,8 +387,11 @@ def main():
     reviews, review_pin = checked_reviews(args.gate_reviews)
     if review_pin:
         sources['gate_reviews'] = review_pin
+    identities, identity_pin = checked_package_identities(args.package_identities)
+    if identity_pin:
+        sources['package_identities'] = identity_pin
     matrix = build_matrix(values['baseline'], values['historical'], values['plans'], values['progress'],
-                          values.get('inventory'), reviews, sources)
+                          values.get('inventory'), reviews, sources, identities)
     # Inputs are immutable; each invocation creates a distinct reviewable output.
     with args.output.open('x', encoding='utf-8') as out:
         json.dump(matrix, out, indent=2, ensure_ascii=False)

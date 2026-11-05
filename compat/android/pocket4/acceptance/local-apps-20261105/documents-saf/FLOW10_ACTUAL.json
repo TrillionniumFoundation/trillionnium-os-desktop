@@ -1,0 +1,55 @@
+{
+  "schema": "pocket4-documents-flow10-actual-v1",
+  "job_id": "1a1ab6bf6bb-fc05-4dac",
+  "terminal_utc": "2026-11-05T11:16:45.936000+00:00",
+  "process_state": "failed",
+  "exit_code": 1,
+  "output_complete": true,
+  "output_durable": true,
+  "business_flow_completed": false,
+  "whole_app_production_ready": false,
+  "error": "ControlError: STALE_FRAME",
+  "actual_stop": "Rename OK snapshot validation rejected before input injection",
+  "no_effect_proof": {
+    "source_sha256": "8ac9dd20076f92d9d7bbd4d07c81c1849b84c9f5587599395930e4465d9947f3",
+    "action_taken": false
+  },
+  "pixel_change_cause": "not determined",
+  "passed_gates": [
+    "CREATE_WRITE_READ_OK",
+    "PROVIDER_RENAME_OK"
+  ],
+  "ui_actions": 13,
+  "owned_task_ids_closed": [
+    940,
+    939
+  ],
+  "pending_effects": {},
+  "outcome_unknown": false,
+  "cleanup": {
+    "errors": [],
+    "file_cleanup": {
+      "directory_removed_verified": true,
+      "fallback_file_unlink": true,
+      "file_contents_written_by_host": false
+    },
+    "package_absent_verified": true,
+    "package_uninstalled_verified": true,
+    "staged_apk_removed": true
+  },
+  "result": {
+    "path": "flow10-result.json",
+    "bytes": 4500,
+    "sha256": "dae3c605fcf326eb00b8f0485dd092ebf9e2dd95464f3982c3f01b8a36342f9a"
+  },
+  "status": {
+    "path": "flow10-job-status.json",
+    "bytes": 729,
+    "sha256": "295336491f82ce196884e5f3ecd068677110364188736d69183701d9eaa5cdf7"
+  },
+  "original09_files_ui_rename_evidence_preserved": {
+    "path": "FLOW09_ACTUAL.json",
+    "bytes": 2975,
+    "sha256": "4eb8629263a4bae239bfea9151818f5fb021cebd081e601749c6e2e2a8f19c50"
+  }
+}

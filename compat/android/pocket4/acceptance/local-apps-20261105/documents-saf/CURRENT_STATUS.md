@@ -1,20 +1,23 @@
-# Current DocumentsUI scope after actual attempt09
+# Current DocumentsUI scope after actual Flow11
 
-Attempt09 actually completed the Files UI rename: the old name was absent and
-the new owned file retained all 87 bytes and its exact SHA-256. The preceding
-CREATE_DOCUMENT save, single content write/read and provider rename also passed.
+Flow11 completed the actual create/write/read, provider rename, Files UI rename
+and open, OPEN_DOCUMENT selection, close/reopen persisted-grant readback, and
+provider deletion of its one synthetic 87-byte file. Job
+`1a1ab7410f4-fc05-4e04` ended succeeded/0 with complete durable output. Its three
+owned tasks, exact file/directory, URI grants, staged APK and temporary package
+were all cleaned. No host fallback unlink was used.
 
-The following open tap was acknowledged, but observing the cross-package result
-failed with INVALID_PACKAGE. The effect remains unknown and was not replayed.
-Both owned tasks closed normally. The own file, directory and temporary fixture
-package were intentionally retained for exact reconciliation; cleanup is not
-qualified. The staged APK was removed. There is no complete DocumentsUI pass.
+See [the current review](FLOW11_SCOPED_REVIEW.json) and
+[selected actual receipts](FLOW11_VERIFIED_RECEIPTS.json). Twenty-three counted
+action decisions include two explicit no-effect STALE_FRAME returns; they are
+not twenty-three successful input injections.
 
-See SCOPED_RESULT09.json, FLOW09_ACTUAL.json and the unchanged actual09 result
-and terminal. The existing README, SCOPED_RESULT.json and PUBLICATION_MANIFEST
-are the frozen through08 snapshot; their then-inflight09 status is historical.
-The additional SOURCE_MANIFEST pins the complete current public bundle.
+The original 01–10 failed/unknown receipts remain unchanged. Attempt09's unknown
+open was independently resolved as a cancelled own system chooser and cleaned;
+it was not retrospectively declared an open pass. The through08 human summaries
+and original manifest are retained under `history/` with an explicit file map.
+The current root README and SCOPED_RESULT now describe the later Flow11 result.
 
-The pending open, OPEN_DOCUMENT/persisted-grant/reopen and provider deletion
-remain unqualified. This no-launcher fixture does not alter the 45-App scope.
-All prior failures and precise cleanup limits remain visible.
+Whole-App readiness is still false. Files UI delete, copy/move/folder/search,
+tree/content routes, exact active process/engine attribution, error paths and
+the rest of the supported release scope remain separately open.

@@ -1,0 +1,32 @@
+{
+  "api_added": 26,
+  "candidate_class_sha256": "65d59b45037fa51534698f8d0715583945307693ac707c8f24612996ee7a810e",
+  "changed_instructions": [
+    {
+      "after": "invoke-static {v2, v3, v0, v1}, Landroid/app/PendingIntent;->getForegroundService(Landroid/content/Context;ILandroid/content/Intent;I)Landroid/app/PendingIntent;",
+      "before": "invoke-static {v2, v3, v0, v1}, Landroid/app/PendingIntent;->getService(Landroid/content/Context;ILandroid/content/Intent;I)Landroid/app/PendingIntent;",
+      "instruction": 32
+    },
+    {
+      "after": "invoke-static {v2, v3, v0, v4}, Landroid/app/PendingIntent;->getForegroundService(Landroid/content/Context;ILandroid/content/Intent;I)Landroid/app/PendingIntent;",
+      "before": "invoke-static {v2, v3, v0, v4}, Landroid/app/PendingIntent;->getService(Landroid/content/Context;ILandroid/content/Intent;I)Landroid/app/PendingIntent;",
+      "instruction": 40
+    }
+  ],
+  "class": "com/android/deskclock/data/TimerModel.smali",
+  "class_metadata_preserved": true,
+  "deployed": false,
+  "installed_min_sdk": 37,
+  "method": "private final updateAlarmManager()V",
+  "method_control_flow_and_exception_coverage_preserved": true,
+  "method_count": 43,
+  "new_call_count": 2,
+  "old_call_count": 2,
+  "original_apk_sha256": "ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae",
+  "original_class_sha256": "70a5707b2d29f7da37d7ae442bd3e8e43121fe9d921db858e4d2718389204a4f",
+  "original_dex_sha256": "edecc8894d9a5795f86b5625e6b501941805de1adf8a89912df7b530d70aaadb",
+  "other_methods_preserved": true,
+  "runtime_expiry_pass": false,
+  "scope": "Exact installed Clock TimerModel scheduling PendingIntent type only",
+  "semantic_comparator_sha256": "a895a4e3963f958ea6a6ff45b9d0c51f6239118b3a10fddff6d0f17e22e25f9f"
+}

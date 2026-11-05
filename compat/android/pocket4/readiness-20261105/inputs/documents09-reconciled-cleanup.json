@@ -1,0 +1,119 @@
+{
+  "schema": "pocket4-documents09-reconciled-cleanup-v1",
+  "original_business_result": {
+    "path": "flow09-result.json",
+    "bytes": 4747,
+    "sha256": "6048be3b22be228dc6f1a845ab8c7d94afa4ceddd185900e402e93f004e62e15"
+  },
+  "original_open_pass": false,
+  "original_pending_receipt_preserved": true,
+  "reconciliation": {
+    "job_id": "1a1ab642781-fc05-4d43",
+    "terminal": {
+      "path": "reconcile09-readonly-job-status.json",
+      "bytes": 734,
+      "sha256": "3ec9dc80b1e68741e8c30a49293898e02d01678967c9361da339172bc9d8a06e"
+    },
+    "remote_result_sha256": "47fbaee8c2eaa9595061f35823a0dbbcd839ca73a9f24343c990dc1bc4078fdb",
+    "actual_saved_resolver_focus": [
+      {
+        "source_sha256": "e43b11670509948ffe21a6de0289fc3b35fd54df6fcd6d5f1f6ae46568da6465",
+        "focus": {
+          "activity": "com.android.internal.app.ResolverActivity",
+          "package": "android",
+          "popup": false,
+          "task": 938,
+          "window_token": "59fc3d7"
+        }
+      },
+      {
+        "source_sha256": "e43b11670509948ffe21a6de0289fc3b35fd54df6fcd6d5f1f6ae46568da6465",
+        "focus": {
+          "activity": "com.android.internal.app.ResolverActivity",
+          "package": "android",
+          "popup": false,
+          "task": 938,
+          "window_token": "59fc3d7"
+        }
+      }
+    ],
+    "system_uid_lines": [
+      "package:android uid:1000"
+    ],
+    "read_only": true,
+    "ui_actions": 0,
+    "held_guard": {
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "host_pid": 3588089,
+      "init_pid": 3588093,
+      "init_start_ticks": 80797014
+    },
+    "old_own_tasks_absent": true,
+    "current_task_ids": [
+      851
+    ],
+    "original_client_phase": "FILES_REQUESTED",
+    "original_client_pending": "FILES_REQUESTED",
+    "content_writes": 1,
+    "content_readbacks": 3,
+    "files_launch_calls": 1,
+    "files_view_results": 0,
+    "lease_remaining_ms_at_read": 766334,
+    "retained_file": {
+      "bytes": 87,
+      "ctime_ns": "1793876459177177526",
+      "identity": {
+        "st_dev": 158,
+        "st_gid": 1023,
+        "st_ino": 167250,
+        "st_mode": 33200,
+        "st_uid": 10108
+      },
+      "mtime_ns": "1793876412897864374",
+      "name": "files-ui-69814e80ea71f485.txt",
+      "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7"
+    },
+    "retained_directory": {
+      "birth": {
+        "st_dev": 158,
+        "st_gid": 1023,
+        "st_ino": 167248,
+        "st_mode": 17912,
+        "st_uid": 10108
+      },
+      "fresh_entries": [
+        "files-ui-69814e80ea71f485.txt"
+      ]
+    }
+  },
+  "cleanup": {
+    "job_id": "1a1ab675f11-fc05-4d6d",
+    "process_state": "succeeded",
+    "exit_code": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "terminal_utc": "2026-11-05T11:10:42.733000+00:00",
+    "result": {
+      "path": "cleanup09-exact-result.json",
+      "bytes": 1587,
+      "sha256": "f507edcc83bea5c49f51d082b8d3b18dba72190c93cd548b79ca273dc195a9d5"
+    },
+    "script": {
+      "path": "cleanup09_exact.py",
+      "bytes": 6457,
+      "sha256": "91d79199ff6b95e93bb3434688fc4e8ad5189bf206a6206acc2ff272c30f52c7"
+    },
+    "verified": true,
+    "ui_actions": 0,
+    "installs": 0,
+    "exact_file_and_directory_removed": true,
+    "exact_package_uid": 10177,
+    "exact_package_uninstalled_and_absent": true,
+    "original_stage_apk_removed_in_flow09": true,
+    "other_tasks_preserved": true,
+    "pending_effects": {},
+    "errors": []
+  },
+  "interpretation": "The original open reached the owned system chooser, then that task was normally removed without a VIEW delivery. The original failed/pending receipt is retained; the separately verified retained fixture cleanup earns no business open/delete pass.",
+  "whole_app_production_ready": false
+}

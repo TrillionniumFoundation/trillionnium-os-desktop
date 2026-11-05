@@ -8,7 +8,40 @@ The [complete current 45-App matrix](readiness-20261105/README.md) binds the 202
 
 The following original snapshot is retained with its 2026-11-04 scope. New Bilibili runs in [checkpoint 12](continuation-r11/checkpoint-12/README.md) reach DetailsActivity but still observe buffering; the earlier scoped visual playback is not a substitute for the new run. Native candidate07 now has a retained full-host result (3,793 registered, 3,791 executed, 3,788 completed, three skips, two disabled, zero failures) and four passing Android signal cases in its owned runtime. The controller recorded memory-limit events; Main deployment and commercial-App qualification remain open.
 
-## Further actual results — checkpoint6
+## Later actual results — checkpoint7
+
+The independent installed-package audit verified45 package identities and all86
+base/split APK signatures. Eleven original badging/manifest-metadata gaps were
+resolved from the same hash-bound APKs; the original combined-gate failure and
+memory-limit events remain retained. This is installation evidence, not an
+actual per-App engine mapping or whole-App pass. The audit observed the original
+Clock APK before the later update described below.
+
+Documents11 completed local create/write/read, provider and Files UI rename,
+Files open through the system resolver, OPEN_DOCUMENT, persisted-grant reopen,
+provider deletion and complete owned cleanup. Gallery rendered the same generated
+PNG in two separate launches, with full-image pixel and visual verification.
+Its residual directory index and helper were reconciled and removed without
+replaying an uncertain provider deletion. Earlier failures remain available.
+
+Clock now has a narrowly changed installed APK that uses a foreground-service
+PendingIntent for timer scheduling and cancellation. Its first actual60-second
+background trial reached EXPIRED at due+665ms and cold-started a foreground Clock
+service. The original trial failed because the notification parser used the wrong
+capitalization for the actual dump key. An independent saved-record review verifies
+the active notification and full-screen PendingIntent; actual alert presentation
+and audible output remain open. Stop/reset/delete returned timer state to empty
+and preserved the original alarms. The installation's exact counter/permission
+metadata differences are retained separately; it is not described as preserving
+every preference byte or permission flag.
+
+The readiness updater now uses independent latest installed-APK observations.
+An installation or changed base/split identity invalidates earlier binary-specific
+reviews immediately, even when no new review exists. Old Clock stopwatch/timer
+core passes remain historical facts and do not qualify the replacement package.
+All45 Apps remain tracked; whole-App readiness remains0/45.
+
+## Earlier actual results — checkpoint6
 
 The Clock timer core create/pause/reopen/resume/reset/delete flow passed, and
 Clock notifications were enabled through its actual settings page. A subsequent

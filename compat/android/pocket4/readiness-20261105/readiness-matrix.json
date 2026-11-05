@@ -1,5 +1,5 @@
 {
-  "schema": "pocket4-all-tracked-app-readiness-v2",
+  "schema": "pocket4-all-tracked-app-readiness-v3",
   "read_only_generated": true,
   "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
   "sources": {
@@ -20,8 +20,8 @@
     },
     "progress": {
       "file": "progress.json",
-      "sha256": "b27fa28c1f4aa0d40990a745606eeba3c1b2a5688c9e208069b3eac08b4890f0",
-      "bytes": 25953
+      "sha256": "5eab47fbd96f44f820e791bae555b4325caedc222d524a4b8308c2562d750ab2",
+      "bytes": 34990
     },
     "inventory": {
       "file": "current-installed-inventory-derived-20261105.json",
@@ -30,14 +30,20 @@
     },
     "gate_reviews": {
       "file": "gate-reviews.json",
-      "sha256": "cbbe76e84d997c00e4449d3fafb9d17b39e543fc319e380a9e028ba2cb649939",
-      "bytes": 13375
+      "sha256": "a15eab36d2148b327fb48789b7607ac601b19d1c3573b0f2d248fe4c342bb11e",
+      "bytes": 20500
+    },
+    "package_identities": {
+      "file": "package-identity-observations-20261105.json",
+      "sha256": "b65f5a08aed39cbc6d3efcd69dafb8eec03fd0a2f865fb220fd26a28f5569b6b",
+      "bytes": 66416
     }
   },
   "baseline_observed_at_utc": "2026-11-04T12:00:30.044481+00:00",
   "inventory_observed_at_utc": "2026-11-05T05:46:49.686297+00:00",
   "inventory_complete": true,
   "baseline_tracked_count": 45,
+  "apps_with_independent_apk_observations": 45,
   "tracked_app_count": 45,
   "current_launcher_count": 45,
   "current_installed_package_count": 186,
@@ -55,7 +61,7 @@
     "system": 10,
     "third_party": 29
   },
-  "status_rule": "Inventory, launch, build, and scoped progress never grant gate credit; full release scope requires an explicit current evidence review.",
+  "status_rule": "Inventory, installed-APK observations, launch, build, and scoped progress never grant gate credit; reviews must match independent latest installed APK observations and postdate known replacements. Full release scope requires an explicit current evidence review.",
   "common_gates": {
     "identity": "Bind the exact installed APK SHA-256/signing identity, UID, Android user, version, framework epoch and actual per-App engine mapping.",
     "lifecycle": "Prove owned-task normal close and separate reopen; retain the required state and exclude pre-existing tasks.",
@@ -412,15 +418,19 @@
   "ignored_reviews": [
     {
       "id": "root_camera_live_preview_r16_release08_accept02",
-      "reason": "stale_or_different_inventory_epoch_uid_version"
+      "reason": "newer_retained_unpassed_observation"
     },
     {
       "id": "root_contacts_crud10_scoped_edit_and_lifecycle",
-      "reason": "stale_or_different_inventory_epoch_uid_version"
+      "reason": "newer_retained_unpassed_observation"
     },
     {
       "id": "root_clock_stopwatch02_scoped_ui_lifecycle",
-      "reason": "stale_or_different_inventory_epoch_uid_version"
+      "reason": "review_apk_differs_from_latest_installed_observation"
+    },
+    {
+      "id": "root_clock_expiry01_actual_failure_clean_lifecycle",
+      "reason": "review_apk_differs_from_latest_installed_observation"
     }
   ],
   "apps": [
@@ -467,6 +477,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.Hyatt.hyt",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:02:55.669404+00:00",
+        "uid": 10138,
+        "version_code": 26090096,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "418dbf6fd2a42f87b79cc4d0a806c1d13baec34b8f85f48104a6c855b6f7d5e2",
+        "apk_set_sha256": "90fa5b6a816e6988271b73aac5c407c6b50be9a29938fa7dfdc2ecc90040474d",
+        "apk_count": 3,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -534,6 +564,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.MobileTicket",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:02:58.215478+00:00",
+        "uid": 10121,
+        "version_code": 275,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "c7e56101e5753002bba220ce40d07b00d4bc822e1eeef12bbe36ec9e2f8e272d",
+        "apk_set_sha256": "ba1c12536824c0f77df17e0b8a44b3ca03d3ef3cc1958d2fa7cf30212f84668c",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -602,6 +652,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.amazon.mShop.android.shopping",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:00.965570+00:00",
+        "uid": 10129,
+        "version_code": 1243240206,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "4dedce3983286cd19e990de172d3db1155f7d5eeba4c8b2746bf12c1bb1c0089",
+        "apk_set_sha256": "5683a699b78e611bd3fb55c4ebdde18919833713beb4b58eee595ce97741c282",
+        "apk_count": 3,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -651,6 +721,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.android.calendar",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:12:12.261424+00:00",
+        "uid": 10061,
+        "version_code": 37,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "7522e88fe03f4997513b0e03591da215b8ebc67f6c933939a73addc3c75495a9",
+        "apk_set_sha256": "229be8aeda0b58946acc99ac2eb52540ca1605dd7f10ccd284a9fbb1b7a02f4d",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -811,6 +901,26 @@
               "bytes": 2753
             }
           ]
+        },
+        {
+          "id": "camera_usb_provider03_current_absence",
+          "package": "com.android.camera2",
+          "version_code": 20002000,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-05T12:36:00.315370+00:00",
+          "status": "FRESH_EXACT_USB_SOURCE_ABSENT_PROVIDER_RUNNING",
+          "whole_app_production_ready": false,
+          "evidence": [
+            {
+              "path": "inputs/camera-usb-provider03-current.json",
+              "bytes": 1224,
+              "sha256": "1f2fac1d0d02cb8be81a092bed3296367895526a92c145c824591e9e6f142e28"
+            }
+          ],
+          "limits": [
+            "Read-only hardware/provider observation; no Camera launch, photo, device open, sysfs write or restart.",
+            "Absence is observed; the physical cause is not established."
+          ]
         }
       ],
       "gate_results": {
@@ -848,6 +958,26 @@
         "root_camera_accept03_current_hardware_absence"
       ],
       "reviewed_apk_sha256": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
+      "installed_apk_observation": {
+        "id": "installed_audit_com.android.camera2",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:02.104115+00:00",
+        "uid": 10062,
+        "version_code": 20002000,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
+        "apk_set_sha256": "bdae3d469026913a39b60ed716c826eccfc5ac3ccf1325e236bb810c42b4cf22",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -1030,6 +1160,26 @@
         "root_contacts_crud11_ui_complete_scoped"
       ],
       "reviewed_apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+      "installed_apk_observation": {
+        "id": "installed_audit_com.android.contacts",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:18:22.544550+00:00",
+        "uid": 10055,
+        "version_code": 10734,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+        "apk_set_sha256": "fca9f7e8f719edb14e51e994ba1f619fa32c27332f0cf2f42d2cb23e2ab67242",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -1150,6 +1300,104 @@
               "sha256": "40f6eaae0a3b6e650e8363fc88d44f25614e21b9bc4b4a9ce16aed282975aafa"
             }
           ]
+        },
+        {
+          "id": "clock_foreground_candidate_installed02",
+          "package": "com.android.deskclock",
+          "version_code": 37,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-05T12:04:56.657626+00:00",
+          "apk_sha256": "cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73",
+          "status": "EXACT_FOREGROUND_TIMER_UPDATE_INSTALLED_KNOWN_METADATA_DELTAS_REVIEWED",
+          "original_result_state": "POST_INSTALL_STATE_DIFFERS",
+          "whole_app_production_ready": false,
+          "install_calls": 1,
+          "automatic_reinstall": false,
+          "old_binary_gate_credit_invalidated": true,
+          "limits": [
+            "One denied storage permission gained an installer flag; all other runtime permission entries matched.",
+            "The intent counter changed119→120; offline preimage reconstruction matches the exact prior full-file hash.",
+            "No original data byte/flag equality is asserted for these two retained deltas.",
+            "Installation and exact signing identity do not pass App business or active-engine gates."
+          ],
+          "evidence": [
+            {
+              "path": "inputs/clock-install02-original-result.json",
+              "bytes": 787,
+              "sha256": "abb50d3830069b1aa4cb5eb848e287de824d4f4f23ccef9958ef59e640adf215"
+            },
+            {
+              "path": "inputs/clock-install02-known-differences.json",
+              "bytes": 2766,
+              "sha256": "deb7ae36c5124548f26a017d03d7f5f133783f07c2e805a5c6c6da155bb55e8e"
+            },
+            {
+              "path": "inputs/clock-current-installed-identity.json",
+              "bytes": 1005,
+              "sha256": "215693baa71973f40944dd4b84c0468dc914a2da6171e49a7b3f2fd9998dea69"
+            },
+            {
+              "path": "inputs/clock-after-expiry02-readonly.json",
+              "bytes": 16243,
+              "sha256": "318758070a3eedd74b678886f3e2d1d5618b1367175e2dfc69ccdd5a6fb7999f"
+            }
+          ]
+        },
+        {
+          "id": "clock_expiry02_candidate_expired_notification_reconciled",
+          "package": "com.android.deskclock",
+          "version_code": 37,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-05T12:20:31.004196+00:00",
+          "apk_sha256": "cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73",
+          "status": "ACTUAL_BACKGROUND_EXPIRY_AND_ACTIVE_NOTIFICATION_VERIFIED_CORE_REGRESSION_PENDING",
+          "original_result_state": "FAILED",
+          "original_job_id": "1a1aba572f0-fc05-4f62",
+          "actual_expired_after_due_ms": 665,
+          "new_cold_started_clock_pid": 642653,
+          "foreground_service_observed": true,
+          "active_timer_notification_observed": true,
+          "full_screen_pending_intent_observed": true,
+          "actual_alert_window_verified": false,
+          "owned_cleanup_verified": true,
+          "whole_app_production_ready": false,
+          "unpassed_checks": {
+            "clock.timer": "pending"
+          },
+          "evidence": [
+            {
+              "path": "inputs/clock-expiry02-original-result.json",
+              "bytes": 32779,
+              "sha256": "61f2bd63c63f637d858417e89f831bceb107d23432ed4815e0e77a8b5299d0cb"
+            },
+            {
+              "path": "inputs/clock-expiry02-terminal.json",
+              "bytes": 727,
+              "sha256": "74022a10ca5a02d4d51a1f34babf2e92252993a3b0c950e44648e34110dbb834"
+            },
+            {
+              "path": "inputs/clock-expiry02-independent-review.json",
+              "bytes": 7222,
+              "sha256": "820d56efc8bf49a3ff1798ef48831934df9593ed6e04ff257d2d13fd82212c9f"
+            },
+            {
+              "path": "inputs/clock-current-installed-identity.json",
+              "bytes": 1005,
+              "sha256": "215693baa71973f40944dd4b84c0468dc914a2da6171e49a7b3f2fd9998dea69"
+            },
+            {
+              "path": "inputs/clock-after-expiry02-readonly.json",
+              "bytes": 16243,
+              "sha256": "318758070a3eedd74b678886f3e2d1d5618b1367175e2dfc69ccdd5a6fb7999f"
+            }
+          ],
+          "limits": [
+            "The original expiry02 receipt remains failed/1 with notification_posted_verified=false.",
+            "A separate saved-dump review proves an active expired-timer notification and its full-screen PendingIntent.",
+            "An actual heads-up/full-screen window and audible output are not qualified.",
+            "The new binary still needs pause/resume/persist/reset/cancellation regression; old-binary core results are historical.",
+            "Owned alarm/timezone behavior, active per-App engine mapping, stability and complete release remain open."
+          ]
         }
       ],
       "gate_results": {
@@ -1160,7 +1408,7 @@
         "release_scope": "blocked",
         "ui_observation": "passed",
         "clock.alarm": "pending",
-        "clock.timer": "failed",
+        "clock.timer": "pending",
         "clock.persist": "pending"
       },
       "unpassed_gates": [
@@ -1173,14 +1421,39 @@
         "clock.persist"
       ],
       "gate_evidence": {
-        "clock.timer": "root_clock_expiry01_actual_failure_clean_lifecycle",
-        "ui_observation": "root_clock_expiry01_actual_failure_clean_lifecycle",
-        "lifecycle": "root_clock_expiry01_actual_failure_clean_lifecycle"
+        "clock.timer": "root_clock_candidate_expiry02_ui_lifecycle",
+        "ui_observation": "root_clock_candidate_expiry02_ui_lifecycle",
+        "lifecycle": "root_clock_candidate_expiry02_ui_lifecycle"
       },
       "accepted_reviews": [
-        "root_clock_expiry01_actual_failure_clean_lifecycle"
+        "root_clock_candidate_expiry02_ui_lifecycle"
       ],
-      "reviewed_apk_sha256": "ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae",
+      "reviewed_apk_sha256": "cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73",
+      "installed_apk_observation": {
+        "id": "clock_live_identity_after_expiry02",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T12:31:28.202376+00:00",
+        "uid": 10063,
+        "version_code": 37,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "acceptance/local-apps-20261105/clock-foreground-timer/latest-installed-identity.json",
+            "bytes": 1005,
+            "sha256": "215693baa71973f40944dd4b84c0468dc914a2da6171e49a7b3f2fd9998dea69"
+          },
+          {
+            "path": "acceptance/local-apps-20261105/clock-foreground-timer/metadata/after-expiry02-result.json",
+            "bytes": 16243,
+            "sha256": "318758070a3eedd74b678886f3e2d1d5618b1367175e2dfc69ccdd5a6fb7999f"
+          }
+        ],
+        "apk_sha256": "cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73",
+        "apk_set_sha256": "291f395614770a7bdba363c6d2b1914f3ece4a693a50cfc05a28046d0eaaa1f3",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": "2026-11-05T12:04:56.657626+00:00"
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -1234,6 +1507,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.android.dialer",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:18:22.971302+00:00",
+        "uid": 10056,
+        "version_code": 2900000,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "b67aa8202cc33850a3f684dc16b1106ee0c08690b037a689bb9a80b19a3d24de",
+        "apk_set_sha256": "b79db3759bf1534232322dfee3b382fe5fb190d1375a9b1a76427bd652bbab10",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "No outbound message or call until an explicit authorized test recipient/endpoint is available."
       ],
@@ -1297,37 +1590,107 @@
               "sha256": "9ccf10302cfa25eb29556d0db54cd13fd0f79bbb830306ffe5b407986078cd6c"
             }
           ]
+        },
+        {
+          "id": "documents11_local_saf_full_flow_verified",
+          "package": "com.android.documentsui",
+          "version_code": 37,
+          "observed_at_utc": "2026-11-05T11:26:26.097000+00:00",
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "status": "SCOPED_SAF_FILES_CREATE_RENAME_OPEN_REOPEN_PROVIDER_DELETE_PASSED",
+          "scoped_business_flow_completed": true,
+          "whole_app_production_ready": false,
+          "owned_cleanup_verified": true,
+          "evidence": [
+            {
+              "path": "inputs/documents11-scoped-review.json",
+              "bytes": 10233,
+              "sha256": "7f852dcb2e052234c395512fd60e2fbcedb8a4e4ad16dbb11fe071e88a6dc336"
+            },
+            {
+              "path": "inputs/documents11-verified-receipts.json",
+              "bytes": 17472,
+              "sha256": "c70bd842f1eebdd9e32fe1773f49eee30e8516a9d4a9e1f96eee24e97f90967d"
+            },
+            {
+              "path": "inputs/documents11-actual-result.json",
+              "bytes": 7790,
+              "sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712"
+            },
+            {
+              "path": "inputs/documents11-terminal.json",
+              "bytes": 732,
+              "sha256": "8706489b7de97200c25ee4479c697bba9bfc9f45477e55b288e569ad82d42018"
+            },
+            {
+              "path": "inputs/documents09-reconciled-cleanup.json",
+              "bytes": 3843,
+              "sha256": "32b8e7f1392c666e542acffad67eed18155b4ef881820859299674c7ace3ae6b"
+            },
+            {
+              "path": "inputs/documents-common-gates-open.json",
+              "bytes": 18383,
+              "sha256": "1a1a1cb638298086db1ec90d6847cb249b9d4553a418fcf8940f03f59dc06e0b"
+            }
+          ],
+          "limits": [
+            "one generated Unicode text file in primary ExternalStorageProvider",
+            "provider delete, not Files UI delete",
+            "normal task close/reopen, not process death or reboot",
+            "no copy/move/multiple-file/tree-grant/removable/remote-provider coverage",
+            "does not establish whole-App production readiness"
+          ]
         }
       ],
       "gate_results": {
         "identity": "pending",
-        "lifecycle": "pending",
+        "lifecycle": "passed",
         "stability": "pending",
         "data_permissions": "pending",
-        "release_scope": "pending",
-        "ui_observation": "pending",
-        "documents.io": "pending",
+        "release_scope": "blocked",
+        "ui_observation": "passed",
+        "documents.io": "passed",
         "documents.provider": "pending",
-        "documents.persist": "pending"
+        "documents.persist": "passed"
       },
       "unpassed_gates": [
         "identity",
-        "lifecycle",
         "stability",
         "data_permissions",
         "release_scope",
-        "ui_observation",
-        "documents.io",
-        "documents.provider",
-        "documents.persist"
+        "documents.provider"
       ],
       "gate_evidence": {
-        "documents.io": "documents09_ui_rename_open_unknown",
+        "documents.io": "root_documents11_io_persist_ui_lifecycle",
         "documents.provider": "documents09_ui_rename_open_unknown",
-        "documents.persist": "documents09_ui_rename_open_unknown"
+        "documents.persist": "root_documents11_io_persist_ui_lifecycle",
+        "ui_observation": "root_documents11_io_persist_ui_lifecycle",
+        "lifecycle": "root_documents11_io_persist_ui_lifecycle"
       },
-      "accepted_reviews": [],
-      "reviewed_apk_sha256": null,
+      "accepted_reviews": [
+        "root_documents11_io_persist_ui_lifecycle"
+      ],
+      "reviewed_apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "installed_apk_observation": {
+        "id": "installed_audit_com.android.documentsui",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:04.326573+00:00",
+        "uid": 10022,
+        "version_code": 37,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+        "apk_set_sha256": "816c96a6936c8365c82b2436064b9af58f0d902dd6aa7880370a058488fb1fc6",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -1355,32 +1718,86 @@
           "gate_credit": false
         }
       ],
-      "progress": [],
+      "progress": [
+        {
+          "id": "gallery01_image_render_reopen_and_final_cleanup",
+          "package": "com.android.gallery3d",
+          "version_code": 40030,
+          "observed_at_utc": "2026-11-05T11:54:50.608334+00:00",
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "status": "SCOPED_PNG_RENDER_REOPEN_VERIFIED_FINAL_FIXTURE_CLEANED",
+          "scoped_business_flow_completed": true,
+          "owned_cleanup_verified": true,
+          "whole_app_production_ready": false,
+          "evidence": [
+            {
+              "path": "inputs/gallery-image-scoped-review.json",
+              "bytes": 6977,
+              "sha256": "0bd1326de7431246f694a946b2b7fc52cfc06ba7fabf3ca50ef32fe18385efed"
+            },
+            {
+              "path": "inputs/gallery-image-execution-receipts.json",
+              "bytes": 2572,
+              "sha256": "45f0ecedea59d3cb374c847a8a0afbea85b0f0945574f08cc15737582efda8e0"
+            }
+          ],
+          "limits": [
+            "No Gallery album enumeration/thumbnail selection was qualified; VIEW used the exact owned URI.",
+            "No video, rotation, supported edit-on-copy, sharing, network, denied-permission or full stability scope is qualified.",
+            "MediaStore helper create/delete and exact controller directory cleanup are fixture operations, not Gallery UI create/delete passes.",
+            "Normal task close/reopen is not reboot or arbitrary process-death recovery.",
+            "No user media bytes, complete private UI tree, full original media listing, APK, signing key or raw host command envelope is published."
+          ]
+        }
+      ],
       "gate_results": {
         "identity": "pending",
-        "lifecycle": "pending",
+        "lifecycle": "passed",
         "stability": "pending",
         "data_permissions": "pending",
-        "release_scope": "pending",
-        "ui_observation": "pending",
+        "release_scope": "blocked",
+        "ui_observation": "passed",
         "gallery.enumeration": "pending",
         "gallery.open": "pending",
         "gallery.persist": "pending"
       },
       "unpassed_gates": [
         "identity",
-        "lifecycle",
         "stability",
         "data_permissions",
         "release_scope",
-        "ui_observation",
         "gallery.enumeration",
         "gallery.open",
         "gallery.persist"
       ],
-      "gate_evidence": {},
-      "accepted_reviews": [],
-      "reviewed_apk_sha256": null,
+      "gate_evidence": {
+        "ui_observation": "root_gallery01_owned_image_ui_lifecycle",
+        "lifecycle": "root_gallery01_owned_image_ui_lifecycle"
+      },
+      "accepted_reviews": [
+        "root_gallery01_owned_image_ui_lifecycle"
+      ],
+      "reviewed_apk_sha256": "347c376f07a4365fa3828ddf9f011994fe527a53fd2f5bd059997ffd3904d46e",
+      "installed_apk_observation": {
+        "id": "installed_audit_com.android.gallery3d",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:12:12.261424+00:00",
+        "uid": 10064,
+        "version_code": 40030,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "347c376f07a4365fa3828ddf9f011994fe527a53fd2f5bd059997ffd3904d46e",
+        "apk_set_sha256": "49c5ff3c97343fb1fe99da952186837d7db1589ceca0f25dc5119c4173f6b4d9",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -1434,6 +1851,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.android.messaging",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:18:23.165232+00:00",
+        "uid": 10070,
+        "version_code": 10001040,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "7478d4b48c1c1de235b08cddbcb672a2c1d55e536c602b12340a97e86d445221",
+        "apk_set_sha256": "01efee6cba8245f4a482f19df5eb284cf46371c53685df9644d19a9f60b1319d",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "No outbound message or call until an explicit authorized test recipient/endpoint is available."
       ],
@@ -1489,6 +1926,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.android.quicksearchbox",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:18:23.338460+00:00",
+        "uid": 10069,
+        "version_code": 37,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "e30ebea932dabb06f6ba7ad50b093101e697e7896742f1fedcad223fca23fbc5",
+        "apk_set_sha256": "34b9ae201cdd69c713928e9d51a892415383574db722d2205b16140ee7049d6a",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -1534,6 +1991,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.android.settings",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:18:23.797227+00:00",
+        "uid": 1000,
+        "version_code": 37,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "cb3079368ec4dd3f32da66c8586adca9165ba3a8a24a25255914a969b73517ab",
+        "apk_set_sha256": "b470df654e24c10af8ee34fe95cd75d1c699dda35b5d4004a2b63925f7e857c0",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -1587,6 +2064,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.android.threadnetwork.demoapp",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:18:23.996135+00:00",
+        "uid": 10083,
+        "version_code": 37,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "f4ff3523cdfe879014d23deace229840149a54e3a9e8238a45b0200a9ccdb20e",
+        "apk_set_sha256": "7dbbe150b17690eacfe4953b889883e9ba1e56370c284ec19f228f046c754b6e",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "A supported controlled Thread radio/peer and isolated test network are required."
       ],
@@ -1645,6 +2142,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.bestbuy.android",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:10.077014+00:00",
+        "uid": 10130,
+        "version_code": 2012312321,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "74ff0f36a2fed0693960af8ec13ae18bef976b51df1433eec15ca195002339b3",
+        "apk_set_sha256": "c51bc61aa54ca027abe70ca6fae8798a032b690cee2a9a5209ed98f46e27b015",
+        "apk_count": 3,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -1702,6 +2219,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.ehi.national.mobile",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:12.433540+00:00",
+        "uid": 10141,
+        "version_code": 9354,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "49c4e93fa83e42f729aad7baf482e839775f6ff11ed6f74022ed462f13c167cd",
+        "apk_set_sha256": "7c95665ef6aef7addd4e107013efb576088c16c08371b7e71fce3eecd240a861",
+        "apk_count": 4,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -1762,6 +2299,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.enflick.android.TextNow",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:14.764815+00:00",
+        "uid": 10127,
+        "version_code": 15733,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "28dda0ea2cbc2902f072fff365000cdadb712085fcea98b89d7dabf9f3a5cd95",
+        "apk_set_sha256": "338121b52302ec055d57971ffeb5bd3bfc93b052258ab7b26709204d05837f14",
+        "apk_count": 3,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress.",
         "No outbound message or call until an explicit authorized test recipient/endpoint is available."
@@ -1818,6 +2375,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.google.android.gms",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:17.420062+00:00",
+        "uid": 10118,
+        "version_code": 252432034,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "e5e6cba078bdec812b5450599350e5c1a12c8b7438da5bf77123af170f8c1a35",
+        "apk_set_sha256": "5074b8d8e1a070093b1b11f5cd2515531b1d2abeec5e3eeb00b8c1f5fa352183",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -1876,6 +2453,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.hertz.android.digital",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:20.802793+00:00",
+        "uid": 10140,
+        "version_code": 1389,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "d6a1837e87f25cc43f3d461cb263b05d05b90d6e7876b4f26fc3418064e6700b",
+        "apk_set_sha256": "f1517e2a1e72e3886370c47617b20281af2a1f0066dd38ea027a133b8b357a0b",
+        "apk_count": 4,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -1940,6 +2537,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.hilton.android.hhonors",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:23.363561+00:00",
+        "uid": 10135,
+        "version_code": 1004,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "0398f141f5867b451851c51ba0c66b9a43325b17a8e296f80f70325d58d1d55d",
+        "apk_set_sha256": "6ab80c102de871307e7f41fc38c725a89999abeed1d3223ccfa1bff1be9f2593",
+        "apk_count": 4,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2006,6 +2623,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.ihg.apps.android",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:24.155332+00:00",
+        "uid": 10137,
+        "version_code": 50023219,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "c12bb3bae3514c94caaca0a4ef6e8f1ad4491cbce57fd2a15be48b83b4c85b90",
+        "apk_set_sha256": "c755b084a13a3b0e82d08dd7dff9e3e6fa9ab842754803ba49e59c051a4b7ffa",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2066,6 +2703,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.jingdong.app.mall",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:27.852342+00:00",
+        "uid": 10126,
+        "version_code": 102810,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "d74313ab4c41e2a1dfde6ec3369636b4d5c3e3ee2dbc10667f539e10b103b622",
+        "apk_set_sha256": "0b781f9f2c2d1340147c3f54531bcaf3a4d86ed835e7907a710a97eb808a978b",
+        "apk_count": 2,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2127,6 +2784,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.lianjia.beike",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:32.256994+00:00",
+        "uid": 10143,
+        "version_code": 3066010,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "4c90b9fc66644a721befd69339cf2e676c9e4bfbe46825811c64fc7cd4198b1f",
+        "apk_set_sha256": "f8a288db9e406a51f551a5b3ab491acbf93c61747afdccfd7c7261f3958bb0b3",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "baseline_evidence": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/05da17e92b3630d798942a8b6557ff64eda5918d/compat/android/pocket4/evidence/business-beike-20261104.json",
@@ -2200,6 +2877,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.marriott.mrt",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:34.039574+00:00",
+        "uid": 10136,
+        "version_code": 671,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "5bbd3fe114de024709c7e816602aa70f91db724c503f4bdc5d081c8d0f4bd53b",
+        "apk_set_sha256": "04e363e92418ea3035c1ec71eed79ebe04201e7c4539da78a20efadb74075236",
+        "apk_count": 3,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2269,6 +2966,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.pinger.textfree",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:35.803561+00:00",
+        "uid": 10128,
+        "version_code": 260172,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "2a6d24cef017b93d005f6bde20f29e105dcfb9f4a245d7b938eaf64dbdb80d70",
+        "apk_set_sha256": "fca35a3cdd7d3522f98bb6ac0eced9e09cbc9bcf76bd28258ce8aee8a884c205",
+        "apk_count": 4,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress.",
         "No outbound message or call until an explicit authorized test recipient/endpoint is available."
@@ -2330,6 +3047,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.rytong.airchina",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:37.788212+00:00",
+        "uid": 10132,
+        "version_code": 75201,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "d654a0afdebacd9ece1aff7d732327dadd698bf2a3d05865938d6c6dd3bb5cd9",
+        "apk_set_sha256": "a7a52b5ad6d337d02e10ac469cafc34b6cae2b76bfe92e1672c1d757e93422f4",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2379,6 +3116,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.rytong.ceair",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:39.041506+00:00",
+        "uid": 10145,
+        "version_code": 238,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "20774ddb560e94b91459606bdaadbafdba4194f85418ddeca991d20c5fe728c7",
+        "apk_set_sha256": "aa13d29108bbd44f8e416cda9c39b189155c2d307487e40cc9f1234915b6e69c",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2446,6 +3203,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.sankuai.meituan.takeoutnew",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:41.192019+00:00",
+        "uid": 10147,
+        "version_code": 800830002,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "bb0fd5a5b2b13759073f72099bb6673a02d046e027bee2b16b3141aa20bc657b",
+        "apk_set_sha256": "bb1d5cbf5c66f90be973ba130c999c6a8988205f4cbc4df742c4e3ab2b293261",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2502,6 +3279,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.sdu.didi.psnger",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:42.522488+00:00",
+        "uid": 10131,
+        "version_code": 1208001404,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "7fad861c8df7e5c24f10c269aea5eec08b9e7795c0f3927c7c6f79a578529e0d",
+        "apk_set_sha256": "8917962f37a3c8781ae01fe452612135478efa3931426dd81e262754dbe30b20",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2565,6 +3362,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.ss.android.ugc.aweme",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:50.211969+00:00",
+        "uid": 10122,
+        "version_code": 400801,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "a66af953ff1d122908487b3e16706763d46cf95d5988404aae61698660306191",
+        "apk_set_sha256": "3de3fc5d87ab36bbc65204b9ef20d78b883051135d0ac127db14c2feca706984",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "baseline_evidence": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/05da17e92b3630d798942a8b6557ff64eda5918d/compat/android/pocket4/evidence/business-douyin-20261104.json",
@@ -2624,6 +3441,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.szzc",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:54.582368+00:00",
+        "uid": 10146,
+        "version_code": 327,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "997067da78cb0d8d0fde2adb58e26c90815de1daec4c1ee02beae39ce2ceda24",
+        "apk_set_sha256": "2a5ed5f2ce541107b121c03e97853af276833591c13f7833d8fee83436724022",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2684,6 +3521,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.taobao.taobao",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:57.112060+00:00",
+        "uid": 10120,
+        "version_code": 863,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "a1945838b602793cc965fdf8c497a947a2bfa3e766cca81e559c0ba6fcd2a6e4",
+        "apk_set_sha256": "35b6f4fbbd6c971908abe8437863a1d71e6af13d92624ea97bce2b55a44b3ae0",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2742,6 +3599,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.tencent.mm",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:03:59.787077+00:00",
+        "uid": 10114,
+        "version_code": 3200,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "5feb100337981467fd257c3ad66bb171f54a69d2579b2ecc70d5a628db8e7282",
+        "apk_set_sha256": "c30f62b91800e5f6d89a5686b07f81e4616d0b52a17dccfdafab559d219e0ffd",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "No outbound message or call until an explicit authorized test recipient/endpoint is available."
       ],
@@ -2800,6 +3677,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.ubercab",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:04:05.270592+00:00",
+        "uid": 10139,
+        "version_code": 316108,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "2a92686a421d1d37bd16d287869ac9dbc5c71f36a6b0793b187f0a2bc1c24a91",
+        "apk_set_sha256": "49874ccbc3ff75937046b89420a72d0956796c70574644b6a8ccfa4396f76c81",
+        "apk_count": 10,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2866,6 +3763,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.united.mobile.android",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:04:08.543503+00:00",
+        "uid": 10133,
+        "version_code": 3617,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "5ea5cd2ac6126ebc81ce92a9aadb29a68894c1b87268aca62f180c0727aa2b9e",
+        "apk_set_sha256": "7b6cb35ee532cb66adfafd0f1426b254293c28a136b1fe2f3e2064bde0ef7f6b",
+        "apk_count": 4,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2926,6 +3843,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.xunmeng.pinduoduo",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:04:09.998600+00:00",
+        "uid": 10142,
+        "version_code": 82600,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "08d5a90370e860ad7345da2f8176320cddb15e002b5998774e1974cd2496bd8d",
+        "apk_set_sha256": "3d0412255f9336b9753eba76e5537f3ebe4ad12afcd661a83fb86585192835cb",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -2981,6 +3918,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.zhubajie.client",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:04:11.109070+00:00",
+        "uid": 10144,
+        "version_code": 369,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "41c143d933240c0e1482b41873991def8e769fd9bcbe414e6e6bdbbe66bfea13",
+        "apk_set_sha256": "a9b7e4b5dbbf46c32d9b51b2ac7759a962c706141e3a79c280453fe42eece5ee",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -3036,6 +3993,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_com.zillow.android.streeteasy",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:04:12.745623+00:00",
+        "uid": 10123,
+        "version_code": 22850,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "79e57958e1c00064f21d4359cefdcd9b46e4f91f75ae66431dca0142d8796930",
+        "apk_set_sha256": "4a48c63a2aa227baf9ef718b4cd6492e28533bc563ac843f76515858b844e67f",
+        "apk_count": 4,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -3092,6 +4069,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_ctrip.android.view",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:04:13.735600+00:00",
+        "uid": 10119,
+        "version_code": 2100,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "53e92efde106eca69585d1bdcfe1244f320755c997c52ea7b8f47e4c25cc7ecd",
+        "apk_set_sha256": "26310feb380f05b1ad1f51830d4f60ef22f3fd2689eedb146196f2d38b4fa0aa",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -3152,6 +4149,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_jp.co.ana.android.tabidachi",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:04:15.805164+00:00",
+        "uid": 10134,
+        "version_code": 339,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "4588a62ed4505aacd9a241470189f1650d696a00b2feffabc6f560ffbf3fce00",
+        "apk_set_sha256": "785c6cc765d1a01f41706ecc5ca59973ef47faf7d6703e65984a73455ee1abb1",
+        "apk_count": 4,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [
         "Authenticated or transactional coverage needs an authorized test account/environment; guest search alone is scoped progress."
       ],
@@ -3226,6 +4243,26 @@
         "root_probe03_two_round_scoped_contract_ui_lifecycle"
       ],
       "reviewed_apk_sha256": "91e352c25e7c6ef54aa53ce652931e40ad1437dfcd0ebad2529bc662558a3dd6",
+      "installed_apk_observation": {
+        "id": "installed_audit_local.pocket4.fixture",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:18:24.182844+00:00",
+        "uid": 10115,
+        "version_code": 0,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "91e352c25e7c6ef54aa53ce652931e40ad1437dfcd0ebad2529bc662558a3dd6",
+        "apk_set_sha256": "44f7650d0cc010353f10fee208c6217a6331d2b57b8eef84f323b12943b857fb",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -3328,6 +4365,26 @@
         "root_webview04_scoped_ui_and_lifecycle"
       ],
       "reviewed_apk_sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df",
+      "installed_apk_observation": {
+        "id": "installed_audit_org.chromium.webview_shell",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:18:24.366811+00:00",
+        "uid": 10060,
+        "version_code": 1,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df",
+        "apk_set_sha256": "c7605adfc1e803de5d7febc683dc0876eaa7f09fc12d3e9e0c6ce46cd36d2137",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -3418,6 +4475,26 @@
         "root_editor03_two_round_scoped_ui_lifecycle"
       ],
       "reviewed_apk_sha256": "0d08f59024e4228e5d5b8f56742aafd1fbc04966d74224acd48542e09482743d",
+      "installed_apk_observation": {
+        "id": "installed_audit_org.droidloom.qa.editorcontract",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:04:16.983600+00:00",
+        "uid": 10149,
+        "version_code": 1,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "0d08f59024e4228e5d5b8f56742aafd1fbc04966d74224acd48542e09482743d",
+        "apk_set_sha256": "5ea54e1303546e34223839aa6dec359301336454019b9dc057b449295e040942",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -3471,6 +4548,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_org.fcitx.fcitx5.android",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:04:18.129884+00:00",
+        "uid": 10150,
+        "version_code": 114,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "aaeb569fc3e9e8ec532b0ea33be39ce77b143c8add824d172f17356ddc3b9ed2",
+        "apk_set_sha256": "6fe6601a67d84a35dcbd90db82b1de3bbc608f43d293a998b548874a6bfc2269",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -3571,6 +4668,26 @@
       "gate_evidence": {},
       "accepted_reviews": [],
       "reviewed_apk_sha256": null,
+      "installed_apk_observation": {
+        "id": "installed_audit_tv.danmaku.bili",
+        "kind": "read_only",
+        "observed_at_utc": "2026-11-05T11:04:19.944256+00:00",
+        "uid": 10117,
+        "version_code": 9161100,
+        "android_user": 0,
+        "evidence": [
+          {
+            "path": "identity-audit-20261105/public-metadata/installed-app-identities.json",
+            "bytes": 183597,
+            "sha256": "a070c1f6f33b73942e2948540654d2106d997daa7f11bb45af098df8b311a821"
+          }
+        ],
+        "apk_sha256": "9568f515a979b1856f8214191896af33948342759d118f99e32c86d204236cf4",
+        "apk_set_sha256": "cc0a701731e3a41e3ce705e6aa39608b0e30e3677dea06ed8021c93deae06a49",
+        "apk_count": 1,
+        "matches_inventory": true,
+        "earlier_review_cutoff_utc": null
+      },
       "prerequisites": [],
       "production_ready": false,
       "baseline_evidence": "https://github.com/TrillionniumFoundation/trillionnium-os-desktop/blob/05da17e92b3630d798942a8b6557ff64eda5918d/compat/android/pocket4/evidence/business-bilibili-20261104.json",

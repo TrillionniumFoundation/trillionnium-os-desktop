@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import timedelta
 import json
 from pathlib import Path
+import tempfile
 import unittest
 import update_matrix as matrix
 from parse_launcher_inventory import parse_launchers
@@ -23,8 +24,37 @@ class Integrity(unittest.TestCase):
         self.progress = load('progress.json')
         self.inv = load('inputs/current-installed-inventory-derived-20261105.json')
 
-    def build(self, reviews=()):
-        return matrix.build_matrix(self.base, self.history, self.plans, self.progress, self.inv, reviews)
+    def build(self, reviews=(), identities=()):
+        return matrix.build_matrix(self.base, self.history, self.plans, self.progress, self.inv, reviews,
+                                   package_identities=identities)
+
+    def identity(self, package, digest, when, kind='read_only', suffix='A'):
+        installed = next(r for r in self.inv['installed_packages'] if r['package'] == package)
+        result = {**installed, 'id': 'synthetic-identity-' + suffix, 'android_user': 0,
+                  'framework_epoch_sha256': self.inv['framework_epoch_sha256'], 'kind': kind,
+                  'observed_at_utc': when, '_evidence_verified': True,
+                  'apks': [{'split_name': None, 'sha256': digest, 'bytes': 123,
+                            'signer_certificate_sha256': ['f' * 64]}],
+                  'evidence': [{'path': 'synthetic-only', 'bytes': 0, 'sha256': '0' * 64}]}
+        result['_apk_set_sha256'] = matrix.apk_set_hash(result['apks'])
+        return result
+
+    def complete_review(self):
+        package = 'com.android.camera2'
+        installed = next(r for r in self.inv['installed_packages'] if r['package'] == package)
+        gates = set(self.plans['common_gates']) | set(self.plans['profiles']['camera']['checks'])
+        cutoff = matrix.stamp(self.inv['observed_at_utc'])
+        for observation in self.progress['apps']:
+            if (observation['package'] == package and observation.get('unpassed_checks')
+                    and observation.get('framework_epoch_sha256') == self.inv['framework_epoch_sha256']
+                    and observation.get('version_code') == installed['version_code']):
+                cutoff = max(cutoff, matrix.stamp(observation.get('observed_at_utc') or observation['reviewed_at_utc']))
+        return {'id': 'synthetic-test-only-A', '_evidence_verified': True, 'package': package,
+            'scope': 'whole_app_release', 'framework_epoch_sha256': self.inv['framework_epoch_sha256'],
+            'version_code': installed['version_code'], 'uid': installed['uid'], 'apk_sha256': 'a' * 64,
+            'observed_at_utc': (cutoff + timedelta(seconds=1)).isoformat(),
+            'checks': {key: 'passed' for key in gates}, 'all_features_reviewed': True,
+            'retained_failures_reconciled': True, 'unresolved_findings': []}
 
     def test_actual_inventory_and_all_baseline_entries(self):
         raw = (ROOT / 'inputs/launchers.stdout').read_bytes()
@@ -73,34 +103,86 @@ class Integrity(unittest.TestCase):
         self.assertFalse(result['all_apps_production_ready'])
 
     def test_review_scope_epoch_and_same_version_apk_cannot_mix(self):
-        package = 'com.android.camera2'
-        identity = next(r for r in self.inv['installed_packages'] if r['package'] == package)
-        gates = set(self.plans['common_gates']) | set(self.plans['profiles']['camera']['checks'])
-        cutoff = matrix.stamp(self.inv['observed_at_utc'])
-        for observation in self.progress['apps']:
-            if (observation['package'] == package and observation.get('unpassed_checks')
-                    and observation.get('framework_epoch_sha256') == self.inv['framework_epoch_sha256']
-                    and observation.get('version_code') == identity['version_code']):
-                observed = matrix.stamp(observation.get('observed_at_utc') or observation['reviewed_at_utc'])
-                cutoff = max(cutoff, observed)
-        review = {'id': 'synthetic-test-only-A', '_evidence_verified': True, 'package': package,
-            'scope': 'whole_app_release', 'framework_epoch_sha256': self.inv['framework_epoch_sha256'],
-            'version_code': identity['version_code'], 'uid': identity['uid'], 'apk_sha256': 'a' * 64,
-            'observed_at_utc': (cutoff + timedelta(seconds=1)).isoformat(),
-            'checks': {key: 'passed' for key in gates}, 'all_features_reviewed': True,
-            'retained_failures_reconciled': True, 'unresolved_findings': []}
-        self.assertEqual(self.build([review])['production_ready_count'], 1)
-        earlier = {**review, 'observed_at_utc': (cutoff - timedelta(seconds=1)).isoformat()}
-        self.assertEqual(self.build([earlier])['production_ready_count'], 0)
+        review = self.complete_review()
+        instant = matrix.stamp(review['observed_at_utc'])
+        identity = self.identity(review['package'], 'a' * 64, (instant - timedelta(seconds=1)).isoformat())
+        self.assertEqual(self.build([review], [identity])['production_ready_count'], 1)
+        earlier = {**review, 'observed_at_utc': (instant - timedelta(seconds=2)).isoformat()}
+        self.assertEqual(self.build([earlier], [identity])['production_ready_count'], 0)
         scoped = {**review, 'scope': 'scoped'}
         with self.assertRaises(ValueError):
-            self.build([scoped])
+            self.build([scoped], [identity])
         stale = {**review, 'framework_epoch_sha256': '0' * 64}
-        self.assertEqual(self.build([stale])['production_ready_count'], 0)
+        self.assertEqual(self.build([stale], [identity])['production_ready_count'], 0)
         replaced = {**review, 'id': 'synthetic-test-only-B', 'apk_sha256': 'b' * 64,
                     'scope': 'scoped', 'checks': {'identity': 'passed'},
-                    'observed_at_utc': (matrix.stamp(review['observed_at_utc']) + timedelta(seconds=1)).isoformat()}
-        self.assertEqual(self.build([review, replaced])['production_ready_count'], 0)
+                    'observed_at_utc': (instant + timedelta(seconds=2)).isoformat()}
+        new_identity = self.identity(review['package'], 'b' * 64, (instant + timedelta(seconds=1)).isoformat(),
+                                     'package_install', 'B')
+        self.assertEqual(self.build([review, replaced], [identity, new_identity])['production_ready_count'], 0)
+
+    def test_install_without_new_review_invalidates_old_binary(self):
+        review = self.complete_review()
+        after = (matrix.stamp(review['observed_at_utc']) + timedelta(seconds=1)).isoformat()
+        installed = self.identity(review['package'], 'b' * 64, after, 'package_install', 'B')
+        result = self.build([review], [installed])
+        self.assertEqual(result['production_ready_count'], 0)
+        row = next(r for r in result['apps'] if r['package'] == review['package'])
+        self.assertEqual(row['accepted_reviews'], [])
+        self.assertEqual(row['gate_results']['lifecycle'], 'pending')
+        self.assertIn('review_apk_differs_from_latest_installed_observation',
+                      [r['reason'] for r in result['ignored_reviews']])
+
+    def test_readonly_same_hash_preserves_scope_but_reinstall_does_not(self):
+        review = self.complete_review()
+        after = (matrix.stamp(review['observed_at_utc']) + timedelta(seconds=1)).isoformat()
+        observed = self.identity(review['package'], 'a' * 64, after)
+        self.assertEqual(self.build([review], [observed])['production_ready_count'], 1)
+        installed = {**observed, 'kind': 'package_install'}
+        self.assertEqual(self.build([review], [installed])['production_ready_count'], 0)
+
+    def test_rollback_to_original_bytes_cannot_revive_preinstall_review(self):
+        review = self.complete_review()
+        instant = matrix.stamp(review['observed_at_utc'])
+        identities = [self.identity(review['package'], digest * 64, (instant + timedelta(seconds=offset)).isoformat(),
+                                    kind, str(offset)) for digest, offset, kind in
+                      [('a', -1, 'read_only'), ('b', 1, 'package_install'), ('a', 2, 'package_install')]]
+        self.assertEqual(self.build([review], identities)['production_ready_count'], 0)
+        fresh = {**review, 'observed_at_utc': (instant + timedelta(seconds=3)).isoformat()}
+        self.assertEqual(self.build([fresh], identities)['production_ready_count'], 1)
+
+    def test_independent_identity_required_and_split_set_must_match(self):
+        review = self.complete_review()
+        self.assertEqual(self.build([review])['production_ready_count'], 0)
+        observed = self.identity(review['package'], 'a' * 64, review['observed_at_utc'])
+        observed['apks'].append({'split_name': 'config.x86_64', 'sha256': 'b' * 64,
+                                'bytes': 456, 'signer_certificate_sha256': ['f' * 64]})
+        observed['_apk_set_sha256'] = matrix.apk_set_hash(observed['apks'])
+        self.assertEqual(self.build([review], [observed])['production_ready_count'], 0)
+        pinned = {**review, 'apk_set_sha256': observed['_apk_set_sha256']}
+        self.assertEqual(self.build([pinned], [observed])['production_ready_count'], 1)
+        conflicting = {**observed, 'uid': observed['uid'] + 1}
+        self.assertEqual(self.build([pinned], [conflicting])['production_ready_count'], 0)
+
+    def test_identity_evidence_tamper_and_ambiguous_apk_members_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            evidence = b'synthetic independent observation\n'
+            (root / 'receipt.txt').write_bytes(evidence)
+            observed = self.identity('com.android.camera2', 'a' * 64, self.inv['observed_at_utc'])
+            observed['evidence'] = [{'path': 'receipt.txt', 'bytes': len(evidence), 'sha256': matrix.sha(evidence)}]
+            document = {'schema': 'pocket4-package-identity-observations-v1', 'observations': [observed]}
+            def write():
+                (root / 'identities.json').write_text(json.dumps(document))
+            write()
+            self.assertEqual(len(matrix.checked_package_identities(root / 'identities.json')[0]), 1)
+            (root / 'receipt.txt').write_bytes(evidence + b'changed')
+            with self.assertRaisesRegex(ValueError, 'hash or size differs'):
+                matrix.checked_package_identities(root / 'identities.json')
+            (root / 'receipt.txt').write_bytes(evidence)
+            observed['apks'].append(deepcopy(observed['apks'][0]));write()
+            with self.assertRaisesRegex(ValueError, 'duplicate base/split'):
+                matrix.checked_package_identities(root / 'identities.json')
 
 
 if __name__ == '__main__':

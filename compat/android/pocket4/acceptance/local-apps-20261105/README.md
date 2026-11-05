@@ -85,7 +85,7 @@ remaining -42,145 ms, then deleted it. Both owned tasks closed and timer/stopwat
 state returned to empty, with original alarms unchanged. The core flow and
 notification results above remain scoped facts, not a timer-completion pass.
 
-## Editor core and DocumentsUI progress
+## Editor core and historical Documents09 progress
 
 [Editor03](editor-contract/README.md) completed two actual Unicode/Enter/delete/
 clear rounds and independent launches, 12 inputs and two normal closes. Exact
@@ -99,3 +99,47 @@ The next open tap was acknowledged but post-observation failed across packages;
 it is retained as unknown and was not repeated. Both owned tasks closed, while
 the own file/directory/temporary package were retained for reconciliation.
 Complete open/grants/reopen/delete and cleanup receive no passing credit.
+
+## Completed Documents11 and Gallery image scope
+
+[Documents11](documents-saf/README.md) subsequently completed the real local
+CREATE_DOCUMENT save, content write/read, provider rename, Files UI rename and
+open through the system resolver, OPEN_DOCUMENT selection, normal close/reopen
+with a persisted grant, and exact provider deletion. Seven readbacks retained the
+same87-byte hash. All three owned tasks closed; the helper package, stage, file,
+directory and grants were removed. Its23 counted decisions include two explicit
+no-effect observations, so they are not described as23 injected inputs. The
+original09 unknown outcome was independently reconciled and cleaned before11;
+none of the earlier failed receipts was rewritten.
+
+[Gallery image01](gallery-image/README.md) rendered one generated640×480 PNG in
+two independent native launches. Four fresh full-window observations and a
+hash-verified visual inspection showed the complete image. Both tasks closed.
+The original flow correctly failed when its empty directory retained an index
+row. A single exact provider deletion returned empty stdout and was retained as
+unknown; a separate read-only observation proved both row and directory absent.
+That deletion was never replayed. Final cleanup only uninstalled the exact helper
+and verified original media metadata, tasks, permissions and Main identity.
+
+These results pass the stated local I/O/render and lifecycle scopes. Files tree
+and content routes, copy/move/folder/search, Gallery video/rotation/copy editing,
+remaining errors and complete release qualification continue separately.
+
+## Installed Clock background-expiry repair
+
+[The foreground timer candidate](clock-foreground-timer/README.md) changes only
+two PendingIntent factory calls in one TimerModel method. It was built, signed
+with the same certificate and installed once. The new60-second background timer
+actually cold-started Clock as a foreground service and reached EXPIRED665ms after
+due. Stop/reset/delete and both normal task closes completed. The original test
+failed on a dump-key capitalization mismatch; a separate saved-record review
+verifies the active expired notification and full-screen PendingIntent without
+rewriting that receipt. Actual heads-up/full-screen presentation and audible
+output remain unqualified.
+
+The exact installation retained two metadata deltas: a still-denied storage
+permission gained an installer flag and the global alarm intent counter changed
+119→120. The rest of that preference file was verified by full-hash reconstruction.
+Original alarms, data-directory identity, other permission entries, observed
+volume streams and ringtone settings remained the same. New-package core timer
+regression, owned alarms/timezone and complete release qualification remain open.

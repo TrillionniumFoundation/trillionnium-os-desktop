@@ -1,0 +1,81 @@
+--- timer_expiry01.py
++++ timer_expiry02.py
+@@ -5,8 +5,8 @@
+ import argparse, copy, hashlib, json, re, signal, time, types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-clock-timer-expiry-20261105-r12-01')
+-PUBLIC = HERE / 'clock-timer-expiry01-result.json'
++ROOT = Path('/home/alex/work/pocket4-clock-timer-expiry-20261105-r12-02')
++PUBLIC = HERE / 'clock-timer-expiry02-result.json'
+ PACKAGE = 'com.android.deskclock'
+ ALERT = PACKAGE + '.timer.ExpiredTimersActivity'
+ DURATION = 60000
+@@ -191,10 +191,34 @@
+             self.r['actual_alert_window_verified'] = not cleanup
+             return True
+ 
++        def observe_service_process(self, label):
++            # Read-only evidence; no requirement to invent a PID if the service
++            # is absent. Raw logs stay private, selected lines remain Clock-only.
++            value = {'observed_utc': datetime.now(timezone.utc).isoformat(),
++                     'uptime_ms': self.uptime(), 'commands': {}}
++            for kind, argv in (
++                ('services', ['/system/bin/dumpsys', 'activity', 'services', PACKAGE]),
++                ('events', ['/system/bin/logcat', '-b', 'events', '-d', '-v', 'threadtime', '-t', '1500']),
++            ):
++                raw = self.t.s.android(argv, 12)
++                self.t.tx.write_new(ROOT / (label + '-' + kind + '-private.txt'), raw)
++                text = raw.decode('utf-8', 'strict')
++                selected = [line for line in text.splitlines() if PACKAGE in line]
++                record = {'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
++                          'clock_lines': selected}
++                if kind == 'services':
++                    record['service_app_process_pids'] = sorted(set(int(x) for x in re.findall(
++                        r'(?m)^\s*app=ProcessRecord\{[^\n{}]*? (\d+):com\.android\.deskclock/u0a63\}', text)))
++                    record['service_state_lines'] = [line.strip() for line in text.splitlines()
++                        if re.match(r'^\s*(app=|startRequested=|isForeground=|startForegroundCount=|fgRequired=)', line)]
++                value['commands'][kind] = record
++            self.t.s.guard()
++            self.r.setdefault('runtime_observations', {})[label] = value
++
+         def wait_expiry(self):
+             created = self.r['phases']['created-running']['timers'][0]
+             due = created['last_start_ms'] + created['remaining_ms']
+-            wait_until = min(self.deadline - 60, time.monotonic() + DURATION / 1000 + 25)
++            wait_until = min(self.deadline - 60, self.closed_wait_started + DURATION / 1000 + 25)
+             samples = []
+             while time.monotonic() < wait_until:
+                 value = self.m.read(self.t.s); item = timer_owned(value, self.timer_id)
+@@ -320,7 +344,10 @@
+             self.creation_uptime_before = self.uptime(); self.creation_dispatch_before = self.c.actions
+             self.act('create-start', self.node('fab', ('Start',))); self.claim_created()
+             self.close()
++            self.closed_wait_started = time.monotonic()
++            self.observe_service_process('after-owned-close')
+             self.wait_expiry()
++            self.observe_service_process('actual-expired')
+             delivered = self.notifications('expired')
+             self.r['notification_posted_verified'] = bool(delivered.get('parsed') is True
+                                                           and delivered.get('expired_heads_up_count') == 1)
+@@ -377,6 +404,8 @@
+ 
+ def execute():
+     core = load(*PINS['core']); notifications = load(*PINS['notifications'])
++    core.PINS = dict(core.PINS)
++    core.PINS['model'] = (str(HERE / 'read_clock_foreground01.py'), '5591b37c256f1e8927f34cd1d7f89e6489add4bdde714198cf3f6d872c72b89e')
+     core.DURATION = DURATION  # Private module only; frozen timer01 bytes stay unchanged.
+     modules = {name: core.load(*pin) for name, pin in core.PINS.items()}
+     base, loop, model, shared, timer = [modules[x] for x in ('base', 'loop', 'model', 'shared', 'timer')]
+@@ -387,7 +416,10 @@
+         'alarm_write_actions': 0, 'global_volume_or_ringtone_actions': 0, 'notification_permission_actions': 0,
+         'automatic_retry': False, 'timer_duration_ms': DURATION, 'lease_seconds': 240,
+         'cleanup_budget_seconds': 45, 'source_pins': PINS, 'inherited_source_pins': core.PINS,
+-        'installed_dex_sha256': 'edecc8894d9a5795f86b5625e6b501941805de1adf8a89912df7b530d70aaadb',
++        'installed_dex_sha256': '8b7f0094b816a758d86599ba9c19866314dbb37cf78f57187a8602c2f3e3b77b',
++        'prior_failure_sha256': '90617209a0ed0ca29f13872293f1d5ed33e82b1ba8825fc54c9c29b58a6ca7f2',
++        'prior_install_strict_state': 'POST_INSTALL_STATE_DIFFERS',
++        'install_delta_review': 'READ_EXTERNAL remains denied; installer exemption added; global intent counter 119 -> 120; other protected state unchanged',
+         'started_utc': datetime.now(timezone.utc).isoformat()}
+     prior = signal.signal(signal.SIGALRM, expired); trial = flow = None
+     cleanup_deadline = None

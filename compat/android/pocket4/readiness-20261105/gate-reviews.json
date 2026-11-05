@@ -300,6 +300,161 @@
         "Timer expiry failed with granted notifications/AppOps allow; cause unestablished.",
         "Alarm/timezone/audio, complete identity, stability/resources and release qualification remain open."
       ]
+    },
+    {
+      "id": "root_documents11_io_persist_ui_lifecycle",
+      "reviewer": "root",
+      "scope": "scoped",
+      "package": "com.android.documentsui",
+      "uid": 10022,
+      "version_code": 37,
+      "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "observed_at_utc": "2026-11-05T11:26:26.097000+00:00",
+      "reviewed_at_utc": "2026-11-05T12:01:16.114767+00:00",
+      "checks": {
+        "documents.io": "passed",
+        "documents.persist": "passed",
+        "ui_observation": "passed",
+        "lifecycle": "passed"
+      },
+      "evidence": [
+        {
+          "path": "inputs/documents11-scoped-review.json",
+          "bytes": 10233,
+          "sha256": "7f852dcb2e052234c395512fd60e2fbcedb8a4e4ad16dbb11fe071e88a6dc336"
+        },
+        {
+          "path": "inputs/documents11-verified-receipts.json",
+          "bytes": 17472,
+          "sha256": "c70bd842f1eebdd9e32fe1773f49eee30e8516a9d4a9e1f96eee24e97f90967d"
+        },
+        {
+          "path": "inputs/documents11-actual-result.json",
+          "bytes": 7790,
+          "sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712"
+        },
+        {
+          "path": "inputs/documents11-terminal.json",
+          "bytes": 732,
+          "sha256": "8706489b7de97200c25ee4479c697bba9bfc9f45477e55b288e569ad82d42018"
+        },
+        {
+          "path": "inputs/documents09-reconciled-cleanup.json",
+          "bytes": 3843,
+          "sha256": "32b8e7f1392c666e542acffad67eed18155b4ef881820859299674c7ace3ae6b"
+        },
+        {
+          "path": "inputs/documents-common-gates-open.json",
+          "bytes": 18383,
+          "sha256": "1a1a1cb638298086db1ec90d6847cb249b9d4553a418fcf8940f03f59dc06e0b"
+        }
+      ],
+      "qualification_scope": [
+        "actual_create_document_picker_save_and_exact_returned_uri",
+        "single_content_resolver_write_readback",
+        "independent_fresh_same_directory_file_readback",
+        "provider_rename",
+        "files_ui_selection_rename_and_open",
+        "open_document_picker_close_reopen_persisted_grant_and_hash",
+        "provider_delete_and_true_absence"
+      ],
+      "unresolved_findings": [
+        "one generated Unicode text file in primary ExternalStorageProvider",
+        "provider delete, not Files UI delete",
+        "normal task close/reopen, not process death or reboot",
+        "no copy/move/multiple-file/tree-grant/removable/remote-provider coverage",
+        "does not establish whole-App production readiness",
+        "The composite provider/support scope remains pending beyond the observed primary local grants."
+      ]
+    },
+    {
+      "id": "root_gallery01_owned_image_ui_lifecycle",
+      "reviewer": "root",
+      "scope": "scoped",
+      "package": "com.android.gallery3d",
+      "uid": 10064,
+      "version_code": 40030,
+      "apk_sha256": "347c376f07a4365fa3828ddf9f011994fe527a53fd2f5bd059997ffd3904d46e",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "observed_at_utc": "2026-11-05T11:54:50.608334+00:00",
+      "reviewed_at_utc": "2026-11-05T12:01:16.114767+00:00",
+      "checks": {
+        "ui_observation": "passed",
+        "lifecycle": "passed"
+      },
+      "evidence": [
+        {
+          "path": "inputs/gallery-image-scoped-review.json",
+          "bytes": 6977,
+          "sha256": "0bd1326de7431246f694a946b2b7fc52cfc06ba7fabf3ca50ef32fe18385efed"
+        },
+        {
+          "path": "inputs/gallery-image-execution-receipts.json",
+          "bytes": 2572,
+          "sha256": "45f0ecedea59d3cb374c847a8a0afbea85b0f0945574f08cc15737582efda8e0"
+        }
+      ],
+      "qualification_scope": "One generated 640x480 PNG: exact MediaStore metadata and file hash, full actual Gallery render, normal close and separate reopen of the same image.",
+      "unresolved_findings": [
+        "No Gallery album enumeration/thumbnail selection was qualified; VIEW used the exact owned URI.",
+        "No video, rotation, supported edit-on-copy, sharing, network, denied-permission or full stability scope is qualified.",
+        "MediaStore helper create/delete and exact controller directory cleanup are fixture operations, not Gallery UI create/delete passes.",
+        "Normal task close/reopen is not reboot or arbitrary process-death recovery.",
+        "No user media bytes, complete private UI tree, full original media listing, APK, signing key or raw host command envelope is published."
+      ]
+    },
+    {
+      "id": "root_clock_candidate_expiry02_ui_lifecycle",
+      "reviewer": "root",
+      "scope": "scoped",
+      "package": "com.android.deskclock",
+      "uid": 10063,
+      "version_code": 37,
+      "apk_sha256": "cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "observed_at_utc": "2026-11-05T12:20:31.004196+00:00",
+      "reviewed_at_utc": "2026-11-05T12:43:52.490217+00:00",
+      "checks": {
+        "ui_observation": "passed",
+        "lifecycle": "passed",
+        "clock.timer": "pending"
+      },
+      "evidence": [
+        {
+          "path": "inputs/clock-expiry02-original-result.json",
+          "bytes": 32779,
+          "sha256": "61f2bd63c63f637d858417e89f831bceb107d23432ed4815e0e77a8b5299d0cb"
+        },
+        {
+          "path": "inputs/clock-expiry02-terminal.json",
+          "bytes": 727,
+          "sha256": "74022a10ca5a02d4d51a1f34babf2e92252993a3b0c950e44648e34110dbb834"
+        },
+        {
+          "path": "inputs/clock-expiry02-independent-review.json",
+          "bytes": 7222,
+          "sha256": "820d56efc8bf49a3ff1798ef48831934df9593ed6e04ff257d2d13fd82212c9f"
+        },
+        {
+          "path": "inputs/clock-current-installed-identity.json",
+          "bytes": 1005,
+          "sha256": "215693baa71973f40944dd4b84c0468dc914a2da6171e49a7b3f2fd9998dea69"
+        },
+        {
+          "path": "inputs/clock-after-expiry02-readonly.json",
+          "bytes": 16243,
+          "sha256": "318758070a3eedd74b678886f3e2d1d5618b1367175e2dfc69ccdd5a6fb7999f"
+        }
+      ],
+      "qualification_scope": "Actual new-package timer creation/start, normal own-task close, cold foreground-service start at expiry, expired UI stop/reset/delete and second normal close. Separate saved-notification record review; no new expiry replay.",
+      "unresolved_findings": [
+        "The original expiry02 receipt remains failed/1 with notification_posted_verified=false.",
+        "A separate saved-dump review proves an active expired-timer notification and its full-screen PendingIntent.",
+        "An actual heads-up/full-screen window and audible output are not qualified.",
+        "The new binary still needs pause/resume/persist/reset/cancellation regression; old-binary core results are historical.",
+        "Owned alarm/timezone behavior, active per-App engine mapping, stability and complete release remain open."
+      ]
     }
   ]
 }

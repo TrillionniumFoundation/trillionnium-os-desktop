@@ -1,0 +1,61 @@
+{
+  "actual_no_effect_receipt": {
+    "path": "flow10-receipts/200-files-rename-confirm-no-effect.json",
+    "sha256": "8ac9dd20076f92d9d7bbd4d07c81c1849b84c9f5587599395930e4465d9947f3",
+    "error": "STALE_FRAME",
+    "details": {
+      "action_taken": false
+    }
+  },
+  "exact_failure_phase": "Rename OK snapshot validation before pointer injection",
+  "cause_of_pixel_or_context_digest_change": "not determined; no cursor/animation cause claimed",
+  "policy": "At most two additional full observations, each requiring identical full form except connection window IDs, same focus/context, original exact provider file hash, and a new full snapshot-bound request. Never continue after unknown action.",
+  "new_trial": {
+    "job_id": "1a1ab7410f4-fc05-4e04",
+    "state": "succeeded",
+    "exit_code": 0,
+    "actual_no_effect_fresh_decisions": [
+      2,
+      3
+    ],
+    "business_flow_completed": true,
+    "result": {
+      "path": "flow11-result.json",
+      "bytes": 7790,
+      "sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712"
+    }
+  },
+  "files": {
+    "run_saf11.py": {
+      "sha256": "94eadb75f7c94fc2062d431add1ff43cf9a58bfe478abefd1ef88a4010e17ad3",
+      "bytes": 37646
+    },
+    "ui_adapter03.py": {
+      "sha256": "671c8307fbaab480d5e9307ad571c06091bb0692d9b5625b29c23315f3f5b1a9",
+      "bytes": 20095
+    },
+    "stage_run11.py": {
+      "sha256": "550e9e9f26cc8da5d16653ef96fb34e1d3e0d911dfa625d7562449d853797e92",
+      "bytes": 2414
+    },
+    "flow11-request.json": {
+      "sha256": "64a064481e59ccd99b9d3e6666c4d548b2c78368ae7d40407b8031e522731a99",
+      "bytes": 39139
+    },
+    "test_rename_no_effect11.py": {
+      "sha256": "512bad6761eb0f31c7e43baae0c4314bbc1f84c5a5d2a86a4d466687503591a5",
+      "bytes": 3542
+    },
+    "fixtures/rename-confirm10.json": {
+      "sha256": "db02febbdf1afa64ce2daad80fce1760207ede869516e688f5a918cfc8b9f7dc",
+      "bytes": 2421
+    },
+    "flow11-local-validation.txt": {
+      "sha256": "70e1105c8f77b222f0895992dcd920be6f761029807f83f24736d23563b54880",
+      "bytes": 1210
+    }
+  },
+  "offline_cases": 6,
+  "passed": 6,
+  "whole_app_production_ready": false
+}

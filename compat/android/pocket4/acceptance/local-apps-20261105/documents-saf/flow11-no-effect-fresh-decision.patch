@@ -1,0 +1,116 @@
+--- run_saf10.py
++++ run_saf11.py
+@@ -6,9 +6,9 @@
+ 
+ SOURCE=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ SOURCE_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-10/ui_adapter03.py')
++ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-11/ui_adapter03.py')
+ ADAPTER_SHA='671c8307fbaab480d5e9307ad571c06091bb0692d9b5625b29c23315f3f5b1a9'
+-ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-10')
++ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-11')
+ APK=Path('/home/alex/work/pocket4-documents-saf-build-20261105-r12-02/owned-saf.apk')
+ APK_SHA='3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6'
+ CERT_SHA='f772d334443bb5cd71abcc179d04e21ee3e70d424290df69828b94e42bc448f2'
+@@ -313,6 +313,39 @@
+             'sole_owned_file_hash_verified':True,'selection_via_observed_menu':True,'long_press_used':False})
+         return selected
+ 
++    def confirm_owned_rename(self,obs):
++        def controls(observation):
++            field=self.ui.one(observation,lambda n:n.get('editable') is True and n.get('text')==FILES,
++                'EXACT_RENAME_TEXT_REQUIRED_BEFORE_CONFIRM')
++            button=self.ui.one(observation,lambda n:n.get('enabled') is True and n.get('clickable') is True
++                and n.get('class')=='android.widget.Button' and n.get('resource-id')=='android:id/button1'
++                and str(n.get('text','')).casefold() in ('ok','rename') and 16 in n.get('supported_actions',[]),
++                'ONE_ACTUAL_RENAME_DIALOG_POSITIVE_BUTTON_REQUIRED')
++            return field,button
++        def stable(node):return {k:v for k,v in node.items() if k!='window_id'}
++        field,button=controls(obs);original_focus=obs['focus'];original_context=obs['screenshot']['context_token']
++        for decision in range(3):
++            self.folder.verify(PROVIDER,'uncommitted-rename-before-decision-'+str(decision+1))
++            try:
++                self.ui.input(obs,'files-rename-confirm-'+str(decision+1),button)
++                return
++            except self.s.helper.ControlError as exc:
++                details=exc.details
++                if (str(exc)!='STALE_FRAME' or details.get('action_taken') is not False
++                        or details.get('outcome_unknown') is True or self.ui.pending or decision==2):raise
++                # The prior request explicitly took no action. A new observation
++                # must prove the entire same form before a new snapshot decision.
++                self.ui.record('rename-confirm-no-effect-redecision',{'previous_decision':decision+1,
++                    'action_taken':False,'unknown_input_replayed':False,'maximum_decisions':3})
++                fresh=self.ui.observe('rename-confirm-fresh-'+str(decision+2),[FILES_ROUTE])
++                need(fresh['focus']==original_focus and fresh['screenshot']['context_token']==original_context,
++                    'RENAME_CONFIRM_FOCUS_OR_CONTEXT_CHANGED')
++                new_field,new_button=controls(fresh)
++                need(stable(new_field)==stable(field) and stable(new_button)==stable(button),
++                    'RENAME_CONFIRM_FORM_CHANGED')
++                self.result.setdefault('confirmed_no_effect_fresh_decisions',[]).append(decision+2)
++                obs,field,button=fresh,new_field,new_button
++
+     def row(self,obs,name,longpress=False):
+         label=self.ui.one(obs,lambda n:n.get('text')==name and n.get('editable') is False,'ONE_EXACT_OWNED_FILENAME_REQUIRED')
+         box=label.get('bounds_array');need(isinstance(box,list) and len(box)==4,'FILENAME_BOUNDS')
+@@ -347,35 +380,25 @@
+     def business(self):
+         # This is a new trial only after the previous known document and package
+         # were removed. The indeterminate stage02 remains permanently fenced.
+-        prior=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-09/result.json'),
+-            '6048be3b22be228dc6f1a845ab8c7d94afa4ceddd185900e402e93f004e62e15',65536))
+-        cleaned=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-cleanup09-20261105-r12-01/result.json'),
+-            'f507edcc83bea5c49f51d082b8d3b18dba72190c93cd548b79ca273dc195a9d5',65536))
++        prior=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-10/result.json'),
++            'dae3c605fcf326eb00b8f0485dd092ebf9e2dd95464f3982c3f01b8a36342f9a',65536))
+         fence=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02/NEVER_EXECUTE_OR_REUSE.json'),
+             '6a98cf8d82ead8506afeb1ff831d1e9fd99d1c8e112f5f750c828125dc6debe1',16384))
+-        need(prior['state']=='OWNED_CLEANUP_UNVERIFIED' and prior['error']=='ControlError: INVALID_PACKAGE'
+-            and prior['pending_effects']=={'files-open-owned-file':{'input_acknowledged':True,'kind':'tap',
+-                'post_capture_outcome_unknown':True}}
+-            and prior['owned_task_ids_closed']==[938,937] and prior['owned_remove_calls']==2
+-            and prior['gates']['FILES_UI_RENAME']['passed'] is True
+-            and prior['cleanup']['staged_apk_removed'] is True,'ORIGINAL_OPEN_PENDING_RECEIPT_CHANGED')
+-        need(cleaned['state']=='EXACT_RETAINED_FIXTURE_CLEANED' and cleaned['cleanup_verified'] is True
+-            and cleaned['original_pending_result_preserved'] is True and cleaned['original_open_success'] is False
+-            and cleaned['ui_actions']==cleaned['installs']==0 and cleaned['pending_effects']=={}
+-            and cleaned['old_owned_tasks_absent'] is True and cleaned['other_tasks_preserved'] is True
+-            and cleaned['original_package_identity']==prior['installed_identity']
+-            and cleaned['cleanup']['errors']==[] and cleaned['cleanup']['package_absent_verified'] is True
+-            and cleaned['cleanup']['package_uninstalled_verified'] is True
+-            and cleaned['cleanup']['file_cleanup']['directory_removed_verified'] is True
+-            and cleaned['cleanup']['file_cleanup']['fallback_file_unlink'] is True
+-            and cleaned['final_guard']==prior['final_guard']==self.s.guard(),'PRIOR_EXACT_CLEANUP_RECEIPT_CHANGED')
++        need(prior['state']=='DOCUMENTS_FLOW_STOPPED' and prior['error']=='ControlError: STALE_FRAME'
++            and prior['pending_effects']=={} and prior['outcome_unknown'] is False
++            and prior['ui_actions']==13 and prior['native_launch_calls']==1 and prior['owned_remove_calls']==2
++            and prior['owned_task_ids_closed']==[940,939] and prior['source_bound_adopted_tasks']==[940]
++            and prior['cleanup']['staged_apk_removed'] is True and prior['cleanup']['errors']==[]
++            and prior['cleanup']['package_absent_verified'] is True and prior['cleanup']['package_uninstalled_verified'] is True
++            and prior['cleanup']['file_cleanup']['directory_removed_verified'] is True
++            and prior['cleanup']['file_cleanup']['fallback_file_unlink'] is True
++            and prior['final_guard']==self.s.guard(),'PRIOR_EXACT_CLEANUP_RECEIPT_CHANGED')
+         need(fence['state']=='OLD_STAGE_ENTRY_FENCED' and fence['job_id']=='1a1ab190ab3-fc05-4a51'
+             and fence['must_never_remove_or_reuse'] is True,'ORIGINAL_UNKNOWN_STAGE_FENCE_CHANGED')
+-        self.result['new_trial_after_verified_cleanup']={'prior_cleanup_job':'1a1ab675f11-fc05-4d6d',
+-            'prior_cleanup_result_sha256':'f507edcc83bea5c49f51d082b8d3b18dba72190c93cd548b79ca273dc195a9d5',
++        self.result['new_trial_after_verified_cleanup']={'prior_cleanup_job':'1a1ab6bf6bb-fc05-4dac',
++            'prior_cleanup_result_sha256':'dae3c605fcf326eb00b8f0485dd092ebf9e2dd95464f3982c3f01b8a36342f9a',
+             'previous_created_document_removed':True,'previous_package_uninstalled':True,
+-            'original_stage02_fenced':True,'previous_failures_preserved':True,
+-            'original09_open_pending_receipt_preserved':True,'original09_open_pass':False}
++            'original_stage02_fenced':True,'previous_failures_preserved':True}
+         self.ui.record('prior-known-cleanup-and-old-entry-fence',self.result['new_trial_after_verified_cleanup'])
+         before=self.packages('target-identities-before');self.install();self.folder.setup()
+         self.grants('new-package-grants-empty',True)
+@@ -404,10 +427,7 @@
+         self.ui.input(obs,'files-rename-text',field,'set-text',FILES)
+         obs=self.ui.observe('files-rename-text-readback',[FILES_ROUTE])
+         self.ui.one(obs,lambda n:n.get('editable') is True and n.get('text')==FILES,'UI_RENAME_TEXT_READBACK')
+-        positive=self.ui.one(obs,lambda n:n.get('enabled') is True and n.get('class')=='android.widget.Button'
+-            and n.get('resource-id')=='android:id/button1' and str(n.get('text','')).casefold() in ('ok','rename'),
+-            'ONE_ACTUAL_RENAME_DIALOG_POSITIVE_BUTTON_REQUIRED')
+-        self.ui.input(obs,'files-rename-confirm',positive)
++        self.confirm_owned_rename(obs)
+         obs=self.ui.observe('files-renamed',[FILES_ROUTE]);self.own_location(obs)
+         self.folder.verify(FILES,'actual-files-ui-rename-readback')
+         self.result['gates']['FILES_UI_RENAME']={'passed':True,'old_name_absent':True,'new_name':FILES,'sha256':PAYLOAD_SHA}

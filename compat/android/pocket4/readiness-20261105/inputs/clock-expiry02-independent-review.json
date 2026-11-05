@@ -1,0 +1,97 @@
+{
+  "Android_writes": 0,
+  "UI_actions": 0,
+  "actual_active_timer_notification_with_full_screen_pending_intent_verified": true,
+  "actual_dump_key": "fullscreenIntent",
+  "actual_full_screen_alert_window_verified": false,
+  "actual_heads_up_window_verified": false,
+  "actual_selected_record_lines": [
+    "    NotificationRecord(0x07540373: pkg=com.android.deskclock user=UserHandle{0} id=2147483644 tag=null importance=3 key=0|com.android.deskclock|2147483644|null|10063: Notification(channel=TimerModelNotification shortcut=null contentView=com.android.deskclock/0x7f0d0024 vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|NO_CLEAR|FOREGROUND_SERVICE|HIGH_PRIORITY|LOCAL_ONLY color=0xff1a237e actions=2 vis=PRIVATE))",
+    "      uid=10063 userId=0",
+    "            fullscreenIntent=PendingIntent{5c4b230: PendingIntentRecord{33ae785 com.android.deskclock startActivity (allowlist: 58e8109:+30s0ms/0/NOTIFICATION_SERVICE/NotificationManagerService)}}",
+    "            headsUpContentView=null",
+    "      mSystemImportance=UNSPECIFIED",
+    "      mImportance=DEFAULT",
+    "      effectiveNotificationChannel=NotificationChannel{mId='TimerModelNotification', mName=Alarm, mDescription=, mImportance=3, mBypassDnd=false, mLockscreenVisibility=-1000, mSound=content://settings/system/notification_sound, mLights=false, mLightColor=0, mVibrationPattern=null, mVibrationEffect=null, mUserLockedFields=0, mUserVisibleTaskShown=true, mVibrationEnabled=false, mShowBadge=true, mDeleted=false, mDeletedTimeMs=-1, mGroup='null', mAudioAttributes=AudioAttributes: usage=USAGE_NOTIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null, mBlockableSystem=false, mAllowBubbles=-1, mImportanceLockedDefaultApp=false, mOriginalImp=3, mParent=null, mConversationId=null, mDemoted=false, mImportantConvo=false, mLastNotificationUpdateTimeMs=0, isBundle=false, emoji=null}",
+    "        NotificationChannel{mId='TimerModelNotification', mName=Ala..., mDescription=, mImportance=3, mBypassDnd=false, mLockscreenVisibility=-1000, mSound=content://settings/system/notification_sound, mLights=false, mLightColor=0, mVibrationPattern=null, mVibrationEffect=null, mUserLockedFields=0, mUserVisibleTaskShown=true, mVibrationEnabled=false, mShowBadge=true, mDeleted=false, mDeletedTimeMs=-1, mGroup='null', mAudioAttributes=AudioAttributes: usage=USAGE_NOTIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null, mBlockableSystem=false, mAllowBubbles=-1, mImportanceLockedDefaultApp=false, mOriginalImp=3, mParent=null, mConversationId=null, mDemoted=false, mImportantConvo=false, mLastNotificationUpdateTimeMs=0, isBundle=false, emoji=null}",
+    "        NotificationChannel{mId='StopwatchNotification', mName=Ala..., mDescription=, mImportance=3, mBypassDnd=false, mLockscreenVisibility=-1000, mSound=content://settings/system/notification_sound, mLights=false, mLightColor=0, mVibrationPattern=null, mVibrationEffect=null, mUserLockedFields=0, mUserVisibleTaskShown=false, mVibrationEnabled=false, mShowBadge=true, mDeleted=false, mDeletedTimeMs=-1, mGroup='null', mAudioAttributes=AudioAttributes: usage=USAGE_NOTIFICATION content=CONTENT_TYPE_SONIFICATION flags=0x800(FLAG_MUTE_HAPTIC)  tags= bundle=null, mBlockableSystem=false, mAllowBubbles=-1, mImportanceLockedDefaultApp=false, mOriginalImp=3, mParent=null, mConversationId=null, mDemoted=false, mImportantConvo=false, mLastNotificationUpdateTimeMs=0, isBundle=false, emoji=null}"
+  ],
+  "actual_timer_expired": true,
+  "audible_output_verified": false,
+  "cleanup": {
+    "fresh_audio_and_state_comparisons": {
+      "alarm_content_sha256": true,
+      "alarm_state": true,
+      "directories": true,
+      "epoch_sha256": true,
+      "identity": true,
+      "notification_appop_allow": true,
+      "package": true,
+      "sound_state": true,
+      "timer_and_stopwatch_empty": true
+    },
+    "normal_closed_tasks": [
+      947,
+      948
+    ],
+    "original_alarm_content_sha256": "655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea",
+    "owned_tasks": [
+      947,
+      948
+    ],
+    "pending_effect": null,
+    "task_set_restored": true,
+    "timer_and_stopwatch_empty": true
+  },
+  "clock_cold_start_observation": {
+    "observed_utc": "2026-11-05T12:20:08.514131+00:00",
+    "selected_event_lines": [
+      "11-05 12:20:07.834   830   866 I am_proc_start: [0,642653,10063,com.android.deskclock,started-service,{com.android.deskclock/com.android.deskclock.timer.TimerService}]",
+      "11-05 12:20:07.855   830 26165 I am_proc_bound: [0,642653,com.android.deskclock]",
+      "11-05 12:20:07.877   830 26165 I am_foreground_service_start: [0,com.android.deskclock/.timer.TimerService,0,PROC_STATE_FGS,30,30,0,0,0,1,UNKNOWN,0]",
+      "11-05 12:20:07.880   830   830 I notification_enqueue: [10063,642653,com.android.deskclock,2147483644,NULL,0,Notification(channel=TimerModelNotification shortcut=null contentView=com.android.deskclock/0x7f0d0024 vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|FOREGROUND_SERVICE|HIGH_PRIORITY|LOCAL_ONLY color=0xff1a237e actions=2 vis=PRIVATE),0,1]"
+    ],
+    "service_app_process_pids": [
+      642653
+    ],
+    "service_state_lines": [
+      "app=ProcessRecord{271ebb3 642653:com.android.deskclock/u0a63}",
+      "startForegroundCount=1",
+      "isForeground=true foregroundId=2147483644 types=0x00000000 foregroundNoti=Notification(channel=TimerModelNotification shortcut=null contentView=com.android.deskclock/0x7f0d0024 vibrate=null sound=null defaults=0 flags=ONGOING_EVENT|NO_CLEAR|FOREGROUND_SERVICE|HIGH_PRIORITY|LOCAL_ONLY color=0xff1a237e actions=2 vis=PRIVATE)",
+      "startRequested=true delayedStop=false stopIfKilled=true callStart=true lastStartId=1"
+    ]
+  },
+  "expected_due_uptime_ms": 906917115,
+  "first_observed_expired_after_due_ms": 665,
+  "first_observed_expired_uptime_ms": 906917780,
+  "no_new_expiry_replay_performed": true,
+  "notification_field_naming_note": "Inherited expired_heads_up_count counts timer records carrying a full-screen PendingIntent; it does not prove visual presentation.",
+  "original_business_success_verified": false,
+  "original_error": "RuntimeError: EXPIRY_REMINDER_DELIVERY_NOT_VERIFIED",
+  "original_exit_code": 1,
+  "original_job_id": "1a1aba572f0-fc05-4f62",
+  "original_notification_posted_verified": false,
+  "original_parser_key": "fullScreenIntent",
+  "original_result_retained": true,
+  "original_result_sha256": "61f2bd63c63f637d858417e89f831bceb107d23432ed4815e0e77a8b5299d0cb",
+  "original_state": "FAILED",
+  "reconciled_active_list": {
+    "active_count": 1,
+    "expired_heads_up_count": 1,
+    "parsed": true,
+    "records": [
+      {
+        "full_screen_pending_intent": true,
+        "record_sha256": "218779d5d377052fc5b64cafa3bbce2bdd552e9514058fb82a3c4d11b4a6921f",
+        "timer_channel": true,
+        "uid": 10063,
+        "user": 0
+      }
+    ]
+  },
+  "review_parser_sha256": "b36e4f76210d52a417bf8e628591d92764b0813e68b7a4132c8f6be5c0019ce4",
+  "source_dump_sha256": "7b116013b3685d1432c1cd644f7ec4482097d1c2ed3439fc8db348aad77cd2b6",
+  "state": "INDEPENDENT_READ_ONLY_EVIDENCE_REVIEW",
+  "timer_id": 0,
+  "whole_app_production_ready": false
+}

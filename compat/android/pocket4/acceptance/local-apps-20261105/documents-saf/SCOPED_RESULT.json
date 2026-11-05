@@ -1,6 +1,6 @@
 {
   "schema": "pocket4-documents-scoped-readiness-v1",
-  "updated_utc": "2026-11-05T11:00:46.191374+00:00",
+  "updated_utc": "2026-11-05T11:39:51.358317+00:00",
   "package": "com.android.documentsui",
   "version_code": 37,
   "uid": 10022,
@@ -12,91 +12,94 @@
     "apk_sha256": "50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea"
   },
   "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
-  "status": "PARTIAL_CREATE_PROVIDER_RENAME_AND_FILES_RENAME_DIALOG_VERIFIED",
+  "status": "SCOPED_SAF_AND_FILES_BUSINESS_COMPLETED",
   "whole_app_production_ready": false,
-  "full_saf_and_files_business_flow_completed": false,
+  "full_saf_and_files_business_flow_completed": true,
   "temporary_package_excluded_from_45_launcher_denominator": true,
   "gates": {
     "actual_create_document_picker_save_and_exact_returned_uri": {
       "passed": true,
-      "job_id": "1a1ab21c7dc-fc05-4ac6",
       "evidence": {
-        "path": "flow03-result.json",
-        "bytes": 3269,
-        "sha256": "c3243ed89e9edbc53f773e6211c3728c0654549e795044267003a522792d8eb0"
-      }
+        "path": "flow11-result.json",
+        "bytes": 7790,
+        "sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712"
+      },
+      "phase": "CREATE_WRITE_READ_OK"
     },
     "single_content_resolver_write_readback": {
       "passed": true,
+      "writes": 1,
       "bytes": 87,
       "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7",
-      "writes": 1,
-      "reads": 1
+      "create_phase_readbacks": 1,
+      "full_flow_readbacks": 7
     },
     "independent_fresh_same_directory_file_readback": {
       "passed": true,
       "evidence": {
-        "path": "flow03-directory-enumeration-evidence.json",
-        "bytes": 2481,
-        "sha256": "db5f83e98a37ba00ee90b609bf98d72cfea7a4d8732a3a8d31b581bf6928f18b"
+        "path": "FLOW11_VERIFIED_RECEIPTS.json",
+        "bytes": 17472,
+        "sha256": "c70bd842f1eebdd9e32fe1773f49eee30e8516a9d4a9e1f96eee24e97f90967d"
       }
     },
     "provider_rename": {
       "passed": true,
-      "evidence": {
-        "path": "flow08-result.json",
-        "bytes": 4436,
-        "sha256": "c23d0bc6786bd75598b3f2ecb6c432d480b61b8732d0921d839ad0ab7cae192e"
-      },
-      "actual_phase": "PROVIDER_RENAME_OK",
-      "provider_calls": 1,
-      "content_readbacks": 3,
-      "bytes": 87,
-      "sha256": "5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7"
+      "calls": 1,
+      "phase": "PROVIDER_RENAME_OK"
     },
-    "files_ui_rename_and_open": {
-      "passed": false,
-      "state": "RENAME_DIALOG_REACHED; text action stopped before dispatch because connection-scoped window_id changed"
+    "files_ui_selection_rename_and_open": {
+      "passed": true,
+      "renamed_name": "files-ui-69814e80ea71f485.txt",
+      "old_name_absent": true,
+      "actual_view_handler_results": 1,
+      "phase": "FILES_VIEW_OK"
     },
     "open_document_picker_close_reopen_persisted_grant_and_hash": {
-      "passed": false,
-      "state": "NOT_EXECUTED"
+      "passed": true,
+      "open_picker_calls": 1,
+      "reopen_reads": 1,
+      "phase": "REOPEN_OK",
+      "normal_task_close_reopen_only": true
     },
     "provider_delete_and_true_absence": {
-      "passed": false,
-      "state": "NOT_EXECUTED; exact fallback cleanup earns no provider/UI delete credit"
-    },
-    "files_ui_selection_and_rename_dialog": {
       "passed": true,
-      "scope": "one owned file selected by actual Select all menu; active toolbar More and Rename reached the real editable dialog; rename commit not executed",
-      "source_receipt_sha256": "aa7b9941cd99712ff72fe2ad2b553f9d9c3c1012bb2708510222511c91d62143"
+      "calls": 1,
+      "all_exact_paths_errno_ENOENT": true,
+      "grants_empty": true,
+      "fallback_file_unlink": false,
+      "evidence": {
+        "path": "FLOW11_VERIFIED_RECEIPTS.json",
+        "bytes": 17472,
+        "sha256": "c70bd842f1eebdd9e32fe1773f49eee30e8516a9d4a9e1f96eee24e97f90967d"
+      }
     }
   },
   "owned_cleanup": {
     "verified": true,
-    "job_id": "1a1ab56e186-fc05-4cc4",
-    "process_state": "failed",
-    "exit_code": 1,
-    "business_failure_reason": "RuntimeError: FULL_EDITOR_NODE_CHANGED_BEFORE_TEXT",
-    "ui_actions": 11,
-    "native_launch_calls": 1,
+    "job_id": "1a1ab7410f4-fc05-4e04",
+    "process_state": "succeeded",
+    "exit_code": 0,
     "owned_task_ids_closed": [
-      933,
-      932
+      942,
+      941,
+      943
     ],
-    "owned_remove_calls": 2,
+    "native_launch_calls": 2,
+    "normal_remove_calls": 3,
+    "ui_lock_released_after_terminal": true,
     "pending_effects": {},
     "outcome_unknown": false,
-    "exact_file_fallback_unlink": true,
-    "all_exact_file_paths_absent": true,
-    "original_empty_directory_removed": true,
-    "temporary_package_uninstalled_and_absence_verified": true,
+    "exact_file_deleted_through_provider": true,
+    "fallback_file_unlink": false,
+    "directory_removed": true,
+    "temporary_package_uid": 10179,
+    "temporary_package_uninstalled_and_absent": true,
     "staged_apk_removed": true,
     "errors": [],
     "evidence": {
-      "path": "flow08-result.json",
-      "bytes": 4436,
-      "sha256": "c23d0bc6786bd75598b3f2ecb6c432d480b61b8732d0921d839ad0ab7cae192e"
+      "path": "flow11-result.json",
+      "bytes": 7790,
+      "sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712"
     }
   },
   "transport_unknowns": {
@@ -268,33 +271,79 @@
         "bytes": 729,
         "sha256": "b48619b6077dccc972954ed45e2416d536f76093dc91893559849405ef2ace67"
       }
+    },
+    {
+      "flow": "09",
+      "job_id": "1a1ab5d9616-fc05-4d05",
+      "state": "failed",
+      "exit_code": 1,
+      "error": "ControlError: INVALID_PACKAGE",
+      "business_completed": false,
+      "ui_actions": 14,
+      "pending_effects": {
+        "files-open-owned-file": {
+          "input_acknowledged": true,
+          "kind": "tap",
+          "post_capture_outcome_unknown": true
+        }
+      },
+      "cleanup_verified": false,
+      "result": {
+        "path": "flow09-result.json",
+        "bytes": 4747,
+        "sha256": "6048be3b22be228dc6f1a845ab8c7d94afa4ceddd185900e402e93f004e62e15"
+      },
+      "terminal": {
+        "path": "flow09-job-status.json",
+        "bytes": 729,
+        "sha256": "9ccf10302cfa25eb29556d0db54cd13fd0f79bbb830306ffe5b407986078cd6c"
+      }
+    },
+    {
+      "flow": "10",
+      "job_id": "1a1ab6bf6bb-fc05-4dac",
+      "state": "failed",
+      "exit_code": 1,
+      "error": "ControlError: STALE_FRAME",
+      "business_completed": false,
+      "ui_actions": 13,
+      "pending_effects": {},
+      "cleanup_verified": true,
+      "result": {
+        "path": "flow10-result.json",
+        "bytes": 4500,
+        "sha256": "dae3c605fcf326eb00b8f0485dd092ebf9e2dd95464f3982c3f01b8a36342f9a"
+      },
+      "terminal": {
+        "path": "flow10-job-status.json",
+        "bytes": 729,
+        "sha256": "295336491f82ce196884e5f3ecd068677110364188736d69183701d9eaa5cdf7"
+      }
+    },
+    {
+      "flow": "11",
+      "job_id": "1a1ab7410f4-fc05-4e04",
+      "state": "succeeded",
+      "exit_code": 0,
+      "error": null,
+      "business_completed": true,
+      "ui_actions": 23,
+      "pending_effects": {},
+      "cleanup_verified": true,
+      "result": {
+        "path": "flow11-result.json",
+        "bytes": 7790,
+        "sha256": "095fb0441fdf39d4fdd84f337b3a343ee556d384ec6aef3a6312863b114dc712"
+      },
+      "terminal": {
+        "path": "flow11-job-status.json",
+        "bytes": 732,
+        "sha256": "8706489b7de97200c25ee4479c697bba9bfc9f45477e55b288e569ad82d42018"
+      }
     }
   ],
   "next_trial": {
-    "flow": "09",
-    "state": "ACTUALLY_LAUNCHED_INFLIGHT",
-    "job_id": "1a1ab5d9616-fc05-4d05",
-    "idempotency_key": "pocket4-documents-saf-flow-r12-09",
-    "source": {
-      "path": "run_saf09.py",
-      "bytes": 35608,
-      "sha256": "93ce75cffa2ac2dadf70d5f10647f4ec0c9ef597baed7d06f96cbe0d5719056d"
-    },
-    "adapter": {
-      "path": "ui_adapter02.py",
-      "bytes": 17810,
-      "sha256": "74234c0a3db0659e4632ce3e76510d80fe8b015514c6a72dc9e34bca31a83a54"
-    },
-    "stage": {
-      "path": "stage_run09.py",
-      "bytes": 2414,
-      "sha256": "e5eb27dc88854ecaca6f693264f242aa3e7087fb6f4d80a33f016cb2202f3d2d"
-    },
-    "request_sha256": "696ba437d427804d5563e506acb029b0a40f3827ad40f69de0887e474636b56a",
-    "new_output_and_stage_directories": true,
-    "new_install_identity_and_directory_birth_required": true,
-    "prior08_cleanup_and_stage02_fence_pinned": true,
-    "business_success_claimed": false
+    "state": "SCOPED_TASK_COMPLETE_NO_FURTHER_OPTIONAL_UI_SCHEDULED"
   },
   "privacy": {
     "user_file_contents_read": false,
@@ -302,7 +351,42 @@
     "private_signing_material_exported": false,
     "nanoseconds_in_public_summaries": "decimal strings"
   },
-  "latest_completed_attempt": "08",
-  "latest_job_id": "1a1ab56e186-fc05-4cc4",
-  "latest_terminal_utc": "2026-11-05T10:53:33.521000+00:00"
+  "latest_completed_attempt": "11",
+  "latest_job_id": "1a1ab7410f4-fc05-4e04",
+  "latest_terminal_utc": "2026-11-05T11:26:26.097000+00:00",
+  "original09_pending_reconciliation_and_separate_cleanup": {
+    "path": "FLOW09_RECONCILED_CLEANUP.json",
+    "bytes": 3843,
+    "sha256": "32b8e7f1392c666e542acffad67eed18155b4ef881820859299674c7ace3ae6b"
+  },
+  "current_source": {
+    "runner": {
+      "path": "run_saf11.py",
+      "bytes": 37646,
+      "sha256": "94eadb75f7c94fc2062d431add1ff43cf9a58bfe478abefd1ef88a4010e17ad3"
+    },
+    "adapter": {
+      "path": "ui_adapter03.py",
+      "bytes": 20095,
+      "sha256": "671c8307fbaab480d5e9307ad571c06091bb0692d9b5625b29c23315f3f5b1a9"
+    },
+    "stage": {
+      "path": "stage_run11.py",
+      "bytes": 2414,
+      "sha256": "550e9e9f26cc8da5d16653ef96fb34e1d3e0d911dfa625d7562449d853797e92"
+    }
+  },
+  "scope_limits": [
+    "one generated Unicode text file in primary ExternalStorageProvider",
+    "provider delete, not Files UI delete",
+    "normal task close/reopen, not process death or reboot",
+    "no copy/move/multiple-file/tree-grant/removable/remote-provider coverage",
+    "does not establish whole-App production readiness"
+  ],
+  "target_identities_before_after_equal": true,
+  "target_identity_proof": {
+    "path": "FLOW11_VERIFIED_RECEIPTS.json",
+    "bytes": 17472,
+    "sha256": "c70bd842f1eebdd9e32fe1773f49eee30e8516a9d4a9e1f96eee24e97f90967d"
+  }
 }

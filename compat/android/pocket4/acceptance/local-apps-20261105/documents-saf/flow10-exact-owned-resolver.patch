@@ -1,0 +1,48 @@
+--- ui_adapter02.py
++++ ui_adapter03.py
+@@ -77,6 +77,10 @@
+         self.owned={};self.baseline=None;self.pending={};self.allowed=set();self.popup_grant=None
+         self.allow_new=None;self.last=None;self.closed=[];self.adopted=[]
+         self.s.helper.foreground=self.helper_foreground
++        self.original_package_name=self.s.helper.package_name
++        self.resolver_binding=None
++        # This module is private to this held session; no system/helper file changes.
++        self.s.helper.package_name=self.helper_package_name
+ 
+     def record(self,label,value):
+         self.sequence+=1
+@@ -118,6 +122,34 @@
+ 
+     def allowed_focus(self,value):
+         return bool(value and value['task'] in self.owned and (value['package'],value['activity']) in self.allowed)
++
++    def helper_package_name(self,value):
++        if value!='android':return self.original_package_name(value)
++        # The sole one-component package exception is the actually observed
++        # system Resolver on our Files task, reached by its acknowledged open tap.
++        self.s.guard();current=self.focus()
++        need(current is not None and current.get('package')=='android'
++            and current.get('activity')==RESOLVER and current.get('popup') is False
++            and self.allowed_focus(current),'OWNED_SYSTEM_RESOLVER_FOCUS_REQUIRED')
++        task=current['task'];owner=self.owned[task]
++        need(tuple(owner['component'])==(DOCS,FILES) and owner['source']=='open-files'
++            and task in self.adopted,'SOURCE_BOUND_FILES_TASK_REQUIRED_FOR_RESOLVER')
++        binding={k:current[k] for k in ('package','activity','window_token','task')}
++        if self.resolver_binding is None:
++            need(self.allow_new=={'source':'files-open-owned-file','component':('android',RESOLVER)}
++                and self.pending.get('files-open-owned-file',{}).get('input_acknowledged') is True,
++                'ACKNOWLEDGED_OWNED_FILE_OPEN_REQUIRED_FOR_RESOLVER')
++            self.check_tasks('system-resolver-first-binding')
++            raw=self.s.android(['/system/bin/pm','list','packages','-U','--user','0','android'],15).decode()
++            exact=[line for line in raw.splitlines() if line.startswith('package:android ')]
++            need(exact==['package:android uid:1000'],'SYSTEM_RESOLVER_UID_CHANGED')
++            need(self.focus()==current,'SYSTEM_RESOLVER_CHANGED_DURING_UID_CHECK')
++            self.resolver_binding=binding
++            self.record('owned-system-resolver-binding',{'focus':binding,'uid':1000,'user':0,'display':0,
++                'actual_package_line':exact[0],'source':'files-open-owned-file',
++                'private_helper_exception_only':True,'other_package_validation_unchanged':True})
++        need(binding==self.resolver_binding,'BOUND_SYSTEM_RESOLVER_WINDOW_CHANGED')
++        return 'android'
+ 
+     def helper_foreground(self):
+         value=self.focus();need(self.allowed_focus(value),'HELPER_FOCUS_OUTSIDE_OWNED_ROUTE')
