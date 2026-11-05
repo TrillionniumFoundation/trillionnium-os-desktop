@@ -112,3 +112,146 @@ fn cumulative_deadline_does_not_restart_for_a_ready_frame_or_connect() -> Result
     assert!(connect_before(Path::new("/does-not-exist"), elapsed).is_err());
     Ok(())
 }
+
+#[test]
+fn issuer_revoke_cli_preserves_exact_original_selector_and_reason() -> Result<()> {
+    let longest_id = "a".repeat(128);
+    let digest = "ab".repeat(32);
+    for (lease_id, revision, expected) in [
+        ("original/issuer:A_b-c.1", "7", 7),
+        (longest_id.as_str(), "18446744073709551615", u64::MAX),
+    ] {
+        let action = parse_action(args(&[
+            "revoke-issuer",
+            "--expected-lease-id",
+            lease_id,
+            "--expected-revision",
+            revision,
+            "--reason-sha256",
+            &digest,
+        ]))?;
+        let RootAdminAction::RevokeIssuer {
+            expected_lease_id,
+            expected_revision,
+            reason_sha256,
+        } = action
+        else {
+            return Err("issuer revocation must remain its distinct original action".into());
+        };
+        assert_eq!(expected_lease_id, lease_id);
+        assert_eq!(expected_revision, expected);
+        assert_eq!(reason_sha256, [0xab; 32]);
+    }
+    Ok(())
+}
+
+#[test]
+fn issuer_revoke_cli_rejects_missing_reordered_duplicate_and_noncanonical_fields() {
+    let digest = "ab".repeat(32);
+    let original = [
+        "revoke-issuer",
+        "--expected-lease-id",
+        "original-issuer",
+        "--expected-revision",
+        "7",
+        "--reason-sha256",
+        digest.as_str(),
+    ];
+    for length in 0..original.len() {
+        assert!(parse_action(args(&original[..length])).is_err());
+    }
+    let overlong_id = "a".repeat(129);
+    for invalid in [
+        "",
+        "issuer with spaces",
+        "issuer\nother",
+        "issuer\0other",
+        "发行者",
+        "issuer+other",
+        overlong_id.as_str(),
+    ] {
+        let mut values = original;
+        values[2] = invalid;
+        assert!(parse_action(args(&values)).is_err());
+    }
+    for invalid in [
+        "",
+        "0",
+        "00",
+        "01",
+        "+1",
+        "-1",
+        "1.0",
+        "1e3",
+        " 1",
+        "1 ",
+        "18446744073709551616",
+    ] {
+        let mut values = original;
+        values[4] = invalid;
+        assert!(parse_action(args(&values)).is_err());
+    }
+    let zero_digest = "0".repeat(64);
+    let uppercase_digest = "AB".repeat(32);
+    for invalid in ["", "ab", zero_digest.as_str(), uppercase_digest.as_str()] {
+        let mut values = original;
+        values[6] = invalid;
+        assert!(parse_action(args(&values)).is_err());
+    }
+    for (index, invalid) in [
+        (1, "--lease-id"),
+        (1, "--expected-revision"),
+        (3, "--expected-lease-id"),
+        (5, "--expected-revision"),
+    ] {
+        let mut values = original;
+        values[index] = invalid;
+        assert!(parse_action(args(&values)).is_err());
+    }
+    for extra in [
+        vec!["extra"],
+        vec!["--expected-lease-id", "other-issuer"],
+        vec!["--expected-revision", "8"],
+        vec!["--reason-sha256", digest.as_str()],
+        vec!["--export-grant", "/unused"],
+    ] {
+        let mut values = original.to_vec();
+        values.extend(extra);
+        assert!(parse_action(args(&values)).is_err());
+    }
+}
+
+#[test]
+fn issuer_revoke_cli_rejects_non_utf8_selectors_before_any_transport() {
+    use std::os::unix::ffi::OsStringExt;
+    let digest = "ab".repeat(32);
+    let original = [
+        "revoke-issuer",
+        "--expected-lease-id",
+        "original-issuer",
+        "--expected-revision",
+        "7",
+        "--reason-sha256",
+        digest.as_str(),
+    ];
+    for index in [2, 4, 6] {
+        let mut values: Vec<OsString> = args(&original).collect();
+        values[index] = OsString::from_vec(vec![0xff]);
+        assert!(parse_action(values.into_iter()).is_err());
+    }
+}
+
+#[test]
+fn issuer_revocation_response_never_exports_or_promotes_unknown_status() -> Result<()> {
+    let confirmed = serde_json::json!({"status": "issuer_revoked"});
+    grants::finish_response(&confirmed, None)?;
+    assert!(grants::finish_response(&confirmed, Some(Path::new("/unused"))).is_err());
+    for status in [
+        "issuer_revocation_partial",
+        "issuer_revocation_unknown",
+        "issuer_reopened",
+    ] {
+        assert!(grants::finish_response(&serde_json::json!({"status": status}), None).is_err());
+    }
+    Ok(())
+}

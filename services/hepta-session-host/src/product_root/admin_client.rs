@@ -177,6 +177,49 @@ fn parse_action(mut args: impl Iterator<Item = OsString>) -> Result<RootAdminAct
                 reason_sha256: reason(&digest)?,
             }
         }
+        Some("revoke-issuer") => {
+            if args.next().as_deref() != Some(std::ffi::OsStr::new("--expected-lease-id")) {
+                return Err("missing expected original issuer lease ID".into());
+            }
+            let expected_lease_id = args
+                .next()
+                .ok_or("missing original issuer lease ID")?
+                .into_string()
+                .map_err(|_| "issuer lease ID must be UTF8")?;
+            if expected_lease_id.is_empty()
+                || expected_lease_id.len() > 128
+                || !expected_lease_id
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || b"_-.:/".contains(&byte))
+            {
+                return Err("invalid expected original issuer lease ID".into());
+            }
+            if args.next().as_deref() != Some(std::ffi::OsStr::new("--expected-revision")) {
+                return Err("missing expected original issuer revision".into());
+            }
+            let revision = args
+                .next()
+                .ok_or("missing original issuer revision")?
+                .into_string()
+                .map_err(|_| "issuer revision must be UTF8")?;
+            let expected_revision: u64 = revision.parse()?;
+            if expected_revision == 0 || revision != expected_revision.to_string() {
+                return Err("expected canonical nonzero original issuer revision".into());
+            }
+            if args.next().as_deref() != Some(std::ffi::OsStr::new("--reason-sha256")) {
+                return Err("missing original issuer revocation reason digest".into());
+            }
+            let digest = args
+                .next()
+                .ok_or("missing original issuer revocation digest")?
+                .into_string()
+                .map_err(|_| "issuer revocation digest must be UTF8")?;
+            RootAdminAction::RevokeIssuer {
+                expected_lease_id,
+                expected_revision,
+                reason_sha256: reason(&digest)?,
+            }
+        }
         _ => return Err("unknown original Root admin action".into()),
     };
     if args.next().is_some() {

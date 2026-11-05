@@ -132,11 +132,9 @@ fn load_original_artifact(file: &Path) -> Result<SignedFinalUseGrant> {
 
 pub(super) fn finish_response(value: &serde_json::Value, export: Option<&Path>) -> Result<()> {
     match value["status"].as_str() {
-        Some("observed" | "writer_revoked" | "original_notes_grant_observed")
-            if export.is_none() =>
-        {
-            Ok(())
-        }
+        Some(
+            "observed" | "writer_revoked" | "issuer_revoked" | "original_notes_grant_observed",
+        ) if export.is_none() => Ok(()),
         Some("issued_notes_grant_observed") => {
             let observation = &value["observation"];
             if observation["status"] != "captured" {
