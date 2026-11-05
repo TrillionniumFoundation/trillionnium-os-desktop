@@ -2,35 +2,12 @@ name: G0 scoped host contracts
 
 on:
   pull_request:
-    paths:
-      - "docs/**"
-      - "support/docs/**"
-      - "**/README.md"
-      - "tests/abi/**"
-      - "tests/golden/**"
-      - "tests/spec/**"
-      - "tests/control/**"
-      - "tests/organ_backend/**"
-      - "tests/kernel/control/**"
-      - "libs/os-abi/**"
-      - "libs/os-control/**"
-      - ".github/workflows/g0-contracts.yml"
   push:
     branches: [main]
-    paths:
-      - "docs/**"
-      - "support/docs/**"
-      - "**/README.md"
-      - "tests/abi/**"
-      - "tests/golden/**"
-      - "tests/spec/**"
-      - "tests/control/**"
-      - "tests/organ_backend/**"
-      - "tests/kernel/control/**"
-      - "libs/os-abi/**"
-      - "libs/os-control/**"
-      - ".github/workflows/g0-contracts.yml"
 
+# Keep this stable host-contract check present for every pull request and main
+# push. Workflow-level path filters can leave a required check pending forever.
+# This source/host gate does not qualify an installed runtime or physical device.
 permissions:
   contents: read
 
