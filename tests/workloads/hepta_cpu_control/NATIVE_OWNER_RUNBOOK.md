@@ -62,6 +62,21 @@ The source-reviewed original release profile is read from the actual manifest.
 The ELF remains at most 8 MiB with the original 16 MiB LOAD-map bound enforced
 by `run_g1c_guest.inspect_probe_elf`.
 
+Only the separate product copy is writable while the unchanged original
+release script strips symbols and adds its debug link. The copy is frozen
+again on both success and failure; the Cargo product and retained unstripped
+artifact are not modified by packaging.
+
+The Linux build supervisor requires default `SIGCHLD` and sole wait ownership
+of its commands. It observes exit with `waitid(WNOWAIT)`, relinquishes numeric
+process-group signalling before any reaping call, and retains the Cargo target
+lease through timeout or interruption cleanup. A lost wait identity disarms
+group signalling. Nonzero exits, timeouts and interruptions remain failures in
+the retained record; they cannot qualify an original entry. Descendants that
+leave the created group and forced supervisor termination are outside this
+cleanup boundary. The local supervision tests use only their own ordinary
+child processes and grant no native runtime qualification.
+
 ## Product kernel pipeline
 
 Build the product kernel only after the complete original owner passes its
@@ -203,3 +218,11 @@ python3 -B -m unittest discover \
 Parser fixtures explicitly remain inert. Bounded-I/O tests execute harmless
 local subprocesses and the real ext2 formatter on new temporary files. A green
 host suite is not a substitute for the source-bound QEMU executions above.
+
+## Separate exact original-owner image experiment
+
+The default commands in this runbook retain the original `g2-trusted-daemon`
+8 MiB / 16 MiB image profile. The separately versioned, fixed-a39 experiment is
+documented in [ORIGINAL_OWNER_IMAGE_PROFILE.md](ORIGINAL_OWNER_IMAGE_PROFILE.md).
+It requires explicit selectors and new source/build/kernel/runtime schemas;
+none of its results can be credited to the legacy profile.

@@ -17,10 +17,10 @@ override CARGO_OSDK_BUILD_ARGS := --release --boot-method=vmm-direct --grub-boot
 # The overlay replaces upstream BUILD_ARGS, including its expansion of COMMON
 # args. Forward the selected profile here as well; setting FEATURES alone would
 # silently produce the ordinary QueryAbi-only kernel.
-ifneq ($(filter-out 0 1,$(HEPTA_G1C_TRUSTED_OBSERVE) $(HEPTA_G1D_TRUSTED_CONTROL) $(HEPTA_G2_TRUSTED_DAEMON)),)
+ifneq ($(filter-out 0 1,$(HEPTA_G1C_TRUSTED_OBSERVE) $(HEPTA_G1D_TRUSTED_CONTROL) $(HEPTA_G2_TRUSTED_DAEMON) $(HEPTA_G2_ORIGINAL_OWNER_A39_V1)),)
 $(error trusted profile flags must be 0 or 1)
 endif
-ifneq ($(word 2,$(filter 1,$(HEPTA_G1C_TRUSTED_OBSERVE) $(HEPTA_G1D_TRUSTED_CONTROL) $(HEPTA_G2_TRUSTED_DAEMON))),)
+ifneq ($(word 2,$(filter 1,$(HEPTA_G1C_TRUSTED_OBSERVE) $(HEPTA_G1D_TRUSTED_CONTROL) $(HEPTA_G2_TRUSTED_DAEMON) $(HEPTA_G2_ORIGINAL_OWNER_A39_V1))),)
 $(error select at most one G1-c/G1-d/G2 build profile)
 endif
 ifeq ($(HEPTA_G1C_TRUSTED_OBSERVE),1)
@@ -29,8 +29,10 @@ else ifeq ($(HEPTA_G1D_TRUSTED_CONTROL),1)
 override CARGO_OSDK_BUILD_ARGS += --features=g1d-trusted-control
 else ifeq ($(HEPTA_G2_TRUSTED_DAEMON),1)
 override CARGO_OSDK_BUILD_ARGS += --features=g2-trusted-daemon
+else ifeq ($(HEPTA_G2_ORIGINAL_OWNER_A39_V1),1)
+override CARGO_OSDK_BUILD_ARGS += --features=g2-original-owner-a39-v1
 endif
-ifneq ($(filter 1,$(HEPTA_G1C_TRUSTED_OBSERVE) $(HEPTA_G1D_TRUSTED_CONTROL) $(HEPTA_G2_TRUSTED_DAEMON)),)
+ifneq ($(filter 1,$(HEPTA_G1C_TRUSTED_OBSERVE) $(HEPTA_G1D_TRUSTED_CONTROL) $(HEPTA_G2_TRUSTED_DAEMON) $(HEPTA_G2_ORIGINAL_OWNER_A39_V1)),)
 # Preserve the upstream recipe and prerequisites, but retain its actual OSDK
 # argv in kernel.log for this explicitly qualified build profile.
 kernel:

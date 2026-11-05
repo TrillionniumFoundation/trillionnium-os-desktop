@@ -141,3 +141,23 @@ python3 support/build/verify-source.py
 
 This checker protects the upstream inputs and the enumerated downstream build
 changes. Project navigation and other root documentation can evolve separately.
+
+## Historical native-owner baseline: 2026-11-03
+
+This historical record belongs to
+[Desktop `fd8d56c52b971c2d5d0e6430f296803b43ef60a3`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/fd8d56c52b971c2d5d0e6430f296803b43ef60a3),
+tree `347fbb7e9931006c749b5bef0e1550c54bc08f27`, and
+[Hepta `a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360),
+tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`.
+The [dated execution records](results/integration/2026-11-03-organ-convergence/README.md)
+distinguish that pair from its `e1f3898f` native-kernel execution source and
+the `745c0731` implementation base. The historical `fd/a39` CI ended with
+16 successes and one failure; the later `22a94f7` independent six-boot watchdog
+result does not replace that failed G1-d gate.
+
+These retained records are historical evidence, including their unsuccessful
+and unexecuted scopes. They do not select the current product source or qualify
+the current joint candidate, complete F04/Notes/F1/G2, general device control,
+or a physical/mobile platform. The [current product-pair section](docs/CURRENT_CAPABILITIES.md#current-product-pair)
+continues to identify the candidate; every subsequent build and runtime result
+must retain its own actual Desktop/Hepta identity.

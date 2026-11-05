@@ -36,6 +36,21 @@
 
 以下日期节保留各自执行时的“当前”“候选”“尚未”等表述。它们不覆盖上方 2026-11-04 联合候选选源，也不把曾通过或曾失败的场景自动转授后继。
 
+
+### 2026-11-03 fd/e1 与 a39 执行基线（历史）
+
+该历史配对为 Desktop [`fd8d56c52b971c2d5d0e6430f296803b43ef60a3`](https://github.com/TrillionniumFoundation/trillionnium-os-desktop/commit/fd8d56c52b971c2d5d0e6430f296803b43ef60a3)，tree `347fbb7e9931006c749b5bef0e1550c54bc08f27)，以及 Hepta [`a39a0871d9601ffccb5e0d95d8f39d54b3a63360`](https://github.com/TrillionniumFoundation/hepta-private-ci/commit/a39a0871d9601ffccb5e0d95d8f39d54b3a63360)，tree `e03f9b3eca364222029298496d3e4f1f5e1bf5de`。`e1f3898f` 是该历史轮首轮集成/原生内核执行来源，`745c0731` 是完整产品实现起点；这些来源不覆盖上方当前联合候选和实际机器选源。
+
+#### 该历史轮已经实际执行
+
+[该历史轮证据目录](../results/integration/2026-11-03-organ-convergence/README.md)保留原始来源、退出码、计数与未取得的资格：`e1/a39` 原 Session host 23 项、原 daemon guest 生命周期、同一普通内核上的原 CognitiveStore 10 项重开/CAS，以及原生 core 377 项、allocator 20 项、MLSDisk 15 项均通过；OSTD 报告 233 项，其中 3 项原 TCG soft-skip，实际执行下界为 230。原 Native UI CI 各组共 400 passed / 5 ignored，另有过滤的文本与 SDK 组件范围；不把 ignored 或 filtered 计为已执行。
+
+该历史 `fd/a39` 配对已完成 Linux Python 合同 196 个不同用例（包括另以真实 UID 0 执行的 4 项），Android 正常/优化各 257 项及未签名 APK 构建；修复 Pillow 环境依赖后的 A08 CI 已通过。`a39` 原共享 Rust UI core/Robrix 在产品 Rust 1.96 下分别 55/55、24/24，无过滤或跳过。这些记录不表示当前安装后的 Root/Notes、真实手机、Web 渲染或完整 F1/G2 已验收。
+
+该历史 `fd/a39` 配对全部 CI 已终结：16 项成功、1 项失败；[历史最终状态](../results/integration/2026-11-03-organ-convergence/ci-status-fd-final.json)与[该历史轮原 daemon 独立重放](../results/integration/2026-11-03-organ-convergence/f1-native-ci-fd/independent-review.json)均保留。该历史轮 A06、Session 与 Native UI 各自有 `fd` 收据，未把 `e1` 结果改名。G1-d 历史负控超过串口证据上限并有运行条件失败，仍为红灯。独立 watchdog workflow 在 `22a94f7` 后继上实际通过 6 次 guest，原 observer 已重放；合法 job-stop、零配额、一次恢复结果均保持原语义，但可信用户暂停入口及全局恢复资源仍未取得资格。
+
+本节保留成功、失败和未执行范围，不把 `c42/a39` 或任何历史 receipt 写成当前配对。完整 F04、Notes、F1/G2、通用设备控制以及物理/手机产品资格仍不得由上述局部证据推定；最终联合源码须取得自己的原构建、安装、效果、恢复和原生启动证据。
+
 <a id="2026-11-03-当前实施起点linux-rootsession-与-rust-ui"></a>
 ### 2026-11-03 实施起点（历史）
 

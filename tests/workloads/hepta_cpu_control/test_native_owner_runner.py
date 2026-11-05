@@ -1,11 +1,14 @@
 """Real bounded host I/O tests; synthetic child output never qualifies a guest."""
 import contextlib
+import gzip
+import inspect
 import hashlib
 import io
 import json
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -108,6 +111,88 @@ class NativeOwnerInputTests(unittest.TestCase):
                 (raw, {**record, "profile": {"cpu": "max"}})):
             with self.subTest(raw=changed_raw, record=changed_record), self.assertRaises(ValueError):
                 runner.rejection(changed_raw, changed_record, "entropy-not-ready")
+
+
+class NativeOwnerArchiveTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        _, _, cls.replay = inputs.original_helpers(runner.ROOT)
+
+    def test_normal_legacy_archive_keeps_the_original_codec_default(self):
+        fields = [1, 0o040755, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+        original = gzip.compress(self.replay.pack([("test", fields, b"")]), mtime=0)
+        owner = b"inert archive content; never an admitted executable"
+        plan = {"schema_version": 1, "scenario": "steady-state-v1", "nonce": "01" * 32}
+        output = runner.build_initramfs(original, owner, plan, self.replay)
+        restored = {name: content for name, _, content in self.replay.unpack(gzip.decompress(output))}
+        self.assertEqual(restored["test/hepta-g2-owner"], owner)
+        self.assertEqual(json.loads(restored["test/hepta-g2-run.json"]), plan)
+        self.assertEqual(inspect.signature(self.replay.unpack).parameters["max_bytes"].default, 16 * 1024**2)
+
+    def test_fixed_contract_uses_the_source_owned_original_image(self):
+        contract = runner.original_owner_archive_contract()
+        exact = inputs.image_module(inputs.EXACT_IMAGE_PROFILE)
+        self.assertEqual(contract["image_profile_descriptor_sha256"], exact.DESCRIPTOR_SHA256)
+        self.assertEqual(contract["owner_file_bytes"], exact.descriptor()["image"]["file_bytes"])
+        self.assertEqual(contract["maximum_archive_bytes"], 22_268_496)
+        self.assertEqual(contract["legacy_default_archive_bytes"], 16 * 1024**2)
+        self.assertFalse(contract["native_execution_verified"])
+
+    def test_only_the_two_finite_compact_plans_fit_the_named_contract(self):
+        for scenario, length in (("steady-state-v1", 125), ("manager-exit-after-terminal-v1", 140)):
+            plan = {"schema_version": 1, "scenario": scenario, "nonce": "ab" * 32}
+            encoded = runner.original_owner_archive_plan(plan)
+            self.assertEqual(len(encoded), length)
+            self.assertEqual(json.loads(encoded), plan)
+        valid = {"schema_version": 1, "scenario": "steady-state-v1", "nonce": "ab" * 32}
+        for change in ({"schema_version": True}, {"scenario": "unreviewed"}, {"nonce": "ab" * 31},
+                       {"nonce": "AB" * 32}, {"max_bytes": 64 * 1024**2}):
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                runner.original_owner_archive_plan({**valid, **change})
+
+
+class NativeOwnerQuietPackagingTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name).resolve()
+
+    def test_successful_quiet_command_keeps_its_exact_empty_log(self):
+        log = self.root / "original-packaging.log"
+        with log.open("xb") as stream:
+            completed = subprocess.run([sys.executable, "-I", "-B", "-c", "pass"],
+                                       stdin=subprocess.DEVNULL, stdout=stream, stderr=subprocess.STDOUT,
+                                       timeout=5, check=False)
+        self.assertEqual(completed.returncode, 0)
+        empty_sha = hashlib.sha256(b"").hexdigest()
+        self.assertEqual(inputs.read(log, 64 * 1024**2, empty_sha, allow_empty=True), b"")
+        retained = runner.retain_files(self.root / "retained", {log.name: log},
+                                       empty_logs=inputs.EMPTY_ORIGINAL_COMMAND_LOGS)
+        self.assertEqual(retained[log.name]["bytes"], 0)
+        self.assertEqual(retained[log.name]["sha256"], empty_sha)
+        self.assertEqual((self.root / "retained" / log.name).read_bytes(), b"")
+        self.assertEqual((self.root / "retained" / log.name).stat().st_mode & 0o777, 0o444)
+
+    def test_ordinary_inputs_documents_and_default_retention_still_require_bytes(self):
+        path = self.root / "input.json"
+        path.write_bytes(b"")
+        with self.assertRaises(ValueError):
+            inputs.read(path, 1024)
+        with self.assertRaises(ValueError):
+            inputs.document(path, 1024)
+        with self.assertRaises(ValueError):
+            runner.retain_files(self.root / "retained", {path.name: path})
+        self.assertFalse((self.root / "retained").exists())
+
+    def test_quiet_log_support_preserves_size_and_digest_checks(self):
+        log = self.root / "original-packaging.log"
+        content = b"normal command output\n"
+        log.write_bytes(content)
+        self.assertEqual(inputs.read(log, len(content), inputs.sha(log), allow_empty=True), content)
+        with self.assertRaises(ValueError):
+            inputs.read(log, len(content) - 1, allow_empty=True)
+        with self.assertRaisesRegex(ValueError, "frozen digest"):
+            inputs.read(log, len(content), hashlib.sha256(b"").hexdigest(), allow_empty=True)
 
 
 class NativeOwnerBoundedIoTests(unittest.TestCase):

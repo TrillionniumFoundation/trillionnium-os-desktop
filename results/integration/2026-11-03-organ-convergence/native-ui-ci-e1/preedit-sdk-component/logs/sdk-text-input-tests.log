@@ -1,0 +1,40 @@
+
+running 35 tests
+test text_input::composition_undo_tests::boundary_insertions_remain_outside_the_composition ... ok
+test text_input::composition_undo_tests::cancel_after_legal_outside_edits_preserves_the_edits_and_their_history ... ok
+test text_input::composition_undo_tests::cancelling_a_combining_grapheme_selection_preserves_cursor_affinity ... ok
+test text_input::composition_undo_tests::cancelling_after_external_combining_mark_carries_selection_to_grapheme_end ... ok
+test text_input::composition_undo_tests::cancelling_first_composition_does_not_add_an_undo_step ... ok
+test text_input::composition_undo_tests::cancelling_previews_preserves_prior_undo_redo_and_selection ... ok
+test text_input::composition_undo_tests::checkpoint_and_restore_exclude_uncommitted_preview_and_keep_prior_redo ... ok
+test text_input::composition_undo_tests::checkpoint_projects_external_edits_and_preserves_a_reversed_selection ... ok
+test text_input::composition_undo_tests::combining_suffix_boundary_does_not_discard_the_pending_transaction_on_cancel ... ok
+test text_input::composition_undo_tests::combining_suffix_boundary_does_not_discard_the_pending_transaction_on_commit ... ok
+test text_input::composition_undo_tests::composition_replacing_a_reversed_selection_restores_text_and_selection ... ok
+test text_input::composition_undo_tests::consecutive_compositions_are_separate_keyboard_undo_groups ... ok
+test text_input::composition_undo_tests::decimal_preview_filter_uses_the_replaced_composition_range ... ok
+test text_input::composition_undo_tests::edits_before_and_after_preview_use_committed_utf8_coordinates_on_commit ... ok
+test text_input::composition_undo_tests::empty_preedit_before_final_commit_keeps_the_commit_isolated ... ok
+test text_input::composition_undo_tests::external_history_restores_the_committed_reversed_selection_not_preview_caret ... ok
+test text_input::composition_undo_tests::focus_loss_cancels_preview_and_preserves_existing_redo ... ok
+test text_input::composition_undo_tests::keyboard_undo_cancels_preview_even_without_a_prior_history_entry ... ok
+test text_input::composition_undo_tests::late_empty_preedit_after_commit_cannot_erase_the_committed_text ... ok
+test text_input::composition_undo_tests::net_unchanged_commit_keeps_prior_redo_and_has_no_empty_undo_step ... ok
+test text_input::composition_undo_tests::normal_typing_on_both_sides_stays_in_separate_undo_groups ... ok
+test text_input::composition_undo_tests::previews_and_same_text_commit_are_one_keyboard_undo_and_redo ... ok
+test text_input::composition_undo_tests::rejected_numeric_preview_or_commit_does_not_cancel_valid_preedit ... ok
+test text_input::composition_undo_tests::replacing_the_document_or_selection_cannot_replay_an_old_composition ... ok
+test text_input::composition_undo_tests::select_all_uses_the_restored_committed_length_after_short_preview ... ok
+test text_input::composition_undo_tests::unconsumed_delete_or_escape_cancels_preview_without_history_corruption ... ok
+test text_input::composition_undo_tests::unconsumed_return_cannot_publish_a_preview_as_a_submission ... ok
+test text_input::tests::a_caret_carried_through_a_replacement_never_ends_up_before_it ... ok
+test text_input::tests::a_composition_left_behind_by_undo_or_a_delete_does_not_break_edits ... ok
+test text_input::tests::an_edit_beside_a_composition_moves_it_and_one_inside_is_refused ... ok
+test text_input::tests::extend_shares_an_undo_step_only_with_the_previous_external_edit ... ok
+test text_input::tests::replace_range_edits_the_text_and_carries_the_selection_across ... ok
+test text_input::tests::replace_range_goes_through_the_input_filter ... ok
+test text_input::tests::replace_range_refuses_bad_ranges_and_read_only_fields_untouched ... ok
+test text_input::tests::replacing_text_with_itself_is_not_an_edit ... ok
+
+test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 241 filtered out; finished in 8.58s
+

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure a tracked original Agentd entry against the unchanged native profile.
+"""Measure a tracked original Agentd entry against an explicit image profile.
 
 This performs a real locked, offline static release build and the original
 release packaging. It creates no Cargo fixture, replaces no supplier, disables
@@ -23,6 +23,17 @@ import subprocess
 import sys
 import time
 import tomllib
+
+LEGACY_IMAGE_PROFILE = "g2-trusted-daemon"
+EXACT_IMAGE_PROFILE = "g2-original-owner-a39-v1"
+
+
+def exact_image_module(desktop):
+    path = desktop / "support/build/original_owner_image.py"
+    spec = importlib.util.spec_from_file_location("original_owner_image_profile", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 sys.dont_write_bytecode = True
 TARGET = "x86_64-unknown-linux-gnu"
@@ -132,6 +143,10 @@ def target_lease(path):
 
 
 def run(command, cwd, environment, output, label, report, timeout):
+    require(signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL,
+            "original command requires sole wait ownership and default SIGCHLD")
+    require(hasattr(os, "WNOWAIT") and hasattr(signal, "pthread_sigmask"),
+            "non-reaping Linux child supervision required")
     record = {"argv": [str(value) for value in command], "cwd": str(cwd), "log": label,
               "timeout_seconds": timeout, "completed": False}
     report["commands"].append(record)
@@ -140,30 +155,69 @@ def run(command, cwd, environment, output, label, report, timeout):
     with (output / label).open("xb") as log:
         process = subprocess.Popen(record["argv"], cwd=cwd, env=environment, stdout=log,
                                    stderr=subprocess.STDOUT, start_new_session=True)
+        may_signal_group = True
+        failure = None
         try:
-            record["exit_code"] = process.wait(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            record["timed_out"] = True
-            try:
-                os.killpg(process.pid, signal.SIGTERM)
-            except ProcessLookupError:
-                pass
-            try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                pass
-            # Cargo may exit on TERM while a compiler child ignores it. Kill
-            # the whole retained group before releasing the writable cache.
-            try:
-                os.killpg(process.pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-            process.wait(timeout=10)
-            record["exit_code"] = process.returncode
+            while True:
+                remaining = timeout - (time.monotonic() - started)
+                if remaining <= 0:
+                    record["timed_out"] = True
+                    break
+                try:
+                    exited = os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                except ChildProcessError:
+                    may_signal_group = False
+                    record["wait_owner_lost"] = True
+                    raise ValueError("original command wait ownership was lost") from None
+                if exited is not None:
+                    # wait() may reap before propagating an interruption.
+                    # No later path may signal this numeric group after it.
+                    may_signal_group = False
+                    record["exit_code"] = process.wait()
+                    break
+                time.sleep(min(0.05, remaining))
+        except BaseException as error:
+            failure = error
+            record["error"] = type(error).__name__ + ": " + str(error)
         finally:
+            # Keep the caller's exclusive Cargo lease through cleanup/reap.
+            # Defer another Ctrl-C until the owned child has been collected.
+            previous_mask = signal.pthread_sigmask(signal.SIG_BLOCK, {signal.SIGINT})
+            try:
+                if may_signal_group:
+                    try:
+                        os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                    except ChildProcessError:
+                        may_signal_group = False
+                        record["wait_owner_lost"] = True
+                    if may_signal_group:
+                        try:
+                            record["cleanup_group_signal"] = "SIGKILL"
+                            os.killpg(process.pid, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        finally:
+                            may_signal_group = False
+                while process.returncode is None and not record.get("wait_owner_lost"):
+                    try:
+                        record["exit_code"] = process.wait()
+                    except (KeyboardInterrupt, SystemExit) as error:
+                        if failure is None:
+                            failure = error
+                            record["error"] = type(error).__name__ + ": " + str(error)
+                record["exit_code"] = process.returncode
+            finally:
+                try:
+                    signal.pthread_sigmask(signal.SIG_SETMASK, previous_mask)
+                except (KeyboardInterrupt, SystemExit) as error:
+                    if failure is None:
+                        failure = error
+                        record["error"] = type(error).__name__ + ": " + str(error)
             record["elapsed_seconds"] = round(time.monotonic() - started, 3)
-            record["completed"] = True
+            record["completed"] = process.returncode is not None
             save(output / "result.json", report)
+        if failure is not None:
+            raise failure
     require(not record.get("timed_out") and record["exit_code"] == 0, "original command failed: " + label)
 
 
@@ -174,6 +228,17 @@ def freeze(source, destination):
     destination.chmod(0o555)
     require(digest(source) == before == digest(destination), "built product changed while freezing")
     return {"path": destination.name, "bytes": destination.stat().st_size, "sha256": before}
+
+
+@contextmanager
+def packaging_copy(source, destination):
+    """Allow the original strip script to edit only its private product copy."""
+    freeze(source, destination)
+    destination.chmod(0o600)
+    try:
+        yield destination
+    finally:
+        destination.chmod(0o555)
 
 
 def environment(args, toolchain):
@@ -224,6 +289,10 @@ def execute(args, report):
         before[name] = source_snapshot(root, getattr(args, name + "_head"), getattr(args, name + "_tree"))
     save(args.output / "source-before.json", before)
     report["sources"] = {name: {key: value[key] for key in ("head", "tree")} for name, value in before.items()}
+    exact = exact_image_module(args.desktop_source) if args.image_profile == EXACT_IMAGE_PROFILE else None
+    if exact:
+        report.update(image_profile_descriptor=exact.descriptor(),
+                      image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256)
     upstream = tomllib.loads((args.hepta_source / "codex-rs/Cargo.toml").read_text())
     toolchain = tomllib.loads((args.hepta_source / "codex-rs/rust-toolchain.toml").read_text())["toolchain"]["channel"]
     require(re.fullmatch(r"\d+\.\d+\.\d+", toolchain), "original fixed release toolchain required")
@@ -253,6 +322,9 @@ def execute(args, report):
             require(target["path"] in source_files and source_files[target["path"]]["sha256"] == target["entry_sha256"],
                     "entry is not a frozen tracked original source file")
             report["original_entry"] = target
+            if exact:
+                exact.bind_build(report["sources"], target, report["original_lock_sha256"],
+                                 digest(args.hepta_source / "codex-rs/rust-toolchain.toml"), toolchain)
             command = [cargo, "build", "--manifest-path", "codex-rs/Cargo.toml", "--locked", "--offline", "--release",
                        "--target", TARGET, "-p", PACKAGE, "--" + args.entry_kind, args.entry, "-j" + str(args.jobs)]
             run(command, args.hepta_source, env, args.output, "build.log", report, args.timeout)
@@ -262,11 +334,11 @@ def execute(args, report):
             report["built"] = True
             packaged = args.output / "packaged"
             packaged.mkdir(mode=0o700)
-            freeze(product, packaged / args.entry)
             script = args.hepta_source / ".github/scripts/archive-release-symbols-and-strip-binaries.sh"
             package_command = ["/bin/bash", script, "--target", TARGET, "--artifact-name", "hepta-original-native-entry",
                                "--release-dir", packaged, "--archive-dir", args.output / "symbols-dist", "--binaries", args.entry]
-            run(package_command, args.hepta_source, env, args.output, "original-packaging.log", report, 600)
+            with packaging_copy(product, packaged / args.entry):
+                run(package_command, args.hepta_source, env, args.output, "original-packaging.log", report, 600)
             binary = packaged / args.entry
             report["product"] = {"path": "packaged/" + args.entry, "bytes": binary.stat().st_size, "sha256": digest(binary)}
             report["packaged"] = True
@@ -277,8 +349,9 @@ def execute(args, report):
             module = importlib.util.module_from_spec(spec)
             sys.path.insert(0, str(inspector.parent))
             spec.loader.exec_module(module)
-            report["original_shape"] = module.inspect_probe_elf(binary.read_bytes())
-            report["static_profile_passed"] = True
+            content = binary.read_bytes()
+            report["original_shape"] = exact.inspect_elf(content) if exact else module.inspect_probe_elf(content)
+            report["image_profile_passed" if exact else "static_profile_passed"] = True
             require(digest(product) == report["unstripped"]["sha256"], "target product changed before freeze completed")
             for item in dependencies.values():
                 require(digest(Path(item["path"])) == item["sha256"], "original dependency input changed during build")
@@ -294,6 +367,8 @@ def execute(args, report):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--image-profile", choices=(LEGACY_IMAGE_PROFILE, EXACT_IMAGE_PROFILE),
+                        default=LEGACY_IMAGE_PROFILE)
     for name in ("desktop", "hepta"):
         parser.add_argument("--" + name + "-source", type=Path, required=True)
         parser.add_argument("--" + name + "-head", required=True)
@@ -316,6 +391,16 @@ def main(argv=None):
               "features_disabled": False, "profile_overridden": False, "limits_changed": False,
               "fixture_created": False, "executed_binary": False, "native_role_verified": False,
               "persistent_cpu_verified": False, "recovery_verified": False, "g2_complete": False}
+    if args.image_profile == EXACT_IMAGE_PROFILE:
+        # The new schema carries no legacy success field. Original v1
+        # consumers cannot credit this as an 8/16 MiB static-profile pass.
+        report.pop("static_profile_passed")
+        report.pop("limits_changed")
+        report.update(schema="hepta.original-owner-image-entry-build.v1", image_profile=EXACT_IMAGE_PROFILE,
+                      image_profile_passed=False, legacy_static_profile_passed=False,
+                      legacy_limits_unchanged=True, selected_image_limits_differ_from_legacy=True,
+                      release_profile_unchanged=True, whole_guest_peak_verified=False,
+                      global_memory_reserve=False, production_ready=False)
     if not args.execute:
         print(json.dumps({**report, "status": "disabled; explicit --execute required"}, sort_keys=True))
         return 0
@@ -324,13 +409,15 @@ def main(argv=None):
                                                     args.cargo_home, args.target_cache, args.output)),
                 "absolute source, toolchain, cache and output paths required")
         execute(args, report)
-    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError, AssertionError) as error:
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError, AssertionError,
+            KeyboardInterrupt, SystemExit) as error:
         report["error"] = type(error).__name__ + ": " + str(error)
     report["finished_at_utc"] = datetime.now(timezone.utc).isoformat()
     if report.get("output_created"):
         save(args.output / "result.json", report)
     print(json.dumps(report, sort_keys=True))
-    return 0 if report["static_profile_passed"] and report.get("source_inputs_unchanged") and "error" not in report else 1
+    admitted = report.get("image_profile_passed") if args.image_profile == EXACT_IMAGE_PROFILE else report["static_profile_passed"]
+    return 0 if admitted and report.get("source_inputs_unchanged") and "error" not in report else 1
 
 
 if __name__ == "__main__":

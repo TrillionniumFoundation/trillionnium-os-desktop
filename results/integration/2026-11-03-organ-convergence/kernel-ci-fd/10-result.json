@@ -1,0 +1,63 @@
+{
+  "bios_sha256": "1a9ea4f17bcfb27bda5728e2c21d9fa074cf7947b9b4910bb28213a735c96735",
+  "cases": [
+    {
+      "crash": {
+        "exit_code": -9,
+        "ready_then_sigkill": true,
+        "serial_sha256": "4d712321db2c1016c52b5e739e44088b3cbf022e3f482154fb603e55a5f999bc"
+      },
+      "negative_control": false,
+      "negative_rejected": false,
+      "nonce": "8c8b3877b8bc26af114745d951e94c65cfa49e3168490f921e765112785a01db",
+      "positive_oracle": true,
+      "reopen_exit": 33,
+      "verify_serial_sha256": "705d0d7436752df862ae41c3f3cf83e401669d8090e77ecfbeccb53a7f504c81"
+    },
+    {
+      "crash": {
+        "exit_code": -9,
+        "ready_then_sigkill": true,
+        "serial_sha256": "192f57e26bfb931ad0a2bce587c5918d545fe96349eb4ec14c62373c39038a21"
+      },
+      "negative_control": true,
+      "negative_rejected": true,
+      "nonce": "7b25a6b2fe4fdf9906209f5580c9a82bd47613df05bf5cc06f95faaa3ee9a3d9",
+      "positive_oracle": false,
+      "reopen_exit": 33,
+      "verify_serial_sha256": "8f24c6219f3d9d35b3145bf97747b5112c1433e2580932accf42ad76871a0dd7"
+    }
+  ],
+  "compile_command": [
+    "/usr/bin/x86_64-linux-gnu-gcc-13",
+    "-O2",
+    "-std=c11",
+    "-Wall",
+    "-Wextra",
+    "-Werror",
+    "-static",
+    "/home/runner/work/trillionnium-os-desktop/trillionnium-os-desktop/tests/workloads/linux/sqlite_restart_probe.c",
+    "-lsqlite3",
+    "-lm",
+    "-ldl",
+    "-pthread",
+    "-o",
+    "/home/runner/work/_temp/a04-sqlite-restart/sqlite-restart"
+  ],
+  "ext2_features": [
+    "filetype"
+  ],
+  "hepta_original_owner": false,
+  "kernel_build_provenance": "caller must retain original build receipt",
+  "kernel_sha256": "dc530064db0dbf1946dc77e1d091bb4b9b431bdba40d635c50b49d1ed3b3af4c",
+  "original_initramfs_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+  "passed": true,
+  "physical_power_loss": false,
+  "probe_sha256": "def5015d95f976807c73a37e00af29849249c15f69fce27f09715f70e7f353ba",
+  "probe_source_sha256": "7a928392c67cd7440f517f59adc8c5764386e3dc122e9a5e7b6b4d10cae23c79",
+  "qemu_version": "QEMU emulator version 8.2.2 (Debian 1:8.2.2+ds-0ubuntu1.18)\nCopyright (c) 2003-2023 Fabrice Bellard and the QEMU Project developers\n",
+  "runner_sha256": "bc1205da30090d202d0eaadc63ec47dd22abb58368a1f25e232fc0972c453716",
+  "schema": "a04.sqlite-guest-restart.v1",
+  "scope": "SQLite WAL across an abrupt guest-kernel restart on a fresh ext2 disk",
+  "volatile_device_cache_loss": false
+}

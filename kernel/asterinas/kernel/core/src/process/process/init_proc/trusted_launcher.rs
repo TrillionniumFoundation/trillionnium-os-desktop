@@ -401,6 +401,8 @@ impl TrustedLauncher {
         state: &mut LauncherState,
         generation: u64,
     ) -> Result<()> {
+        #[cfg(feature = "g2-original-owner-a39-v1")]
+        super::memory_observation::system("successor_before_images", generation);
         let manager = allocate_initial_process(&self.path, new_resource_limits_for_init());
         let recovery = allocate_initial_process(&self.path, new_resource_limits_for_init());
         let keys = [
@@ -421,9 +423,23 @@ impl TrustedLauncher {
         let mut pending = PendingLaunch::new();
         let (prepared, image, entry) =
             self.prepare(manager, successor_page(1, receipt, pids[0], spaces[0]))?;
+        #[cfg(feature = "g2-original-owner-a39-v1")]
+        super::memory_observation::role(
+            "successor_image_prepared",
+            generation,
+            "manager",
+            &prepared.process,
+        );
         pending.push(prepared);
         let (prepared, recovery_image, recovery_entry) =
             self.prepare(recovery, successor_page(3, receipt, pids[2], spaces[1]))?;
+        #[cfg(feature = "g2-original-owner-a39-v1")]
+        super::memory_observation::role(
+            "successor_image_prepared",
+            generation,
+            "recovery",
+            &prepared.process,
+        );
         pending.push(prepared);
         let plan = NativeCpuManager::prepare_successor_pair(
             state.managers.clone(),
@@ -458,6 +474,8 @@ impl TrustedLauncher {
             "[hepta-g2] successor roles activated: generation={} manager={} workload={} recovery={} bootstrap_version=4 bytes=240 hepta_durability=false",
             generation, pids[0], pids[1], pids[2]
         );
+        #[cfg(feature = "g2-original-owner-a39-v1")]
+        super::memory_observation::system("successor_roles_ready", generation);
         pending.run();
         Ok(())
     }
@@ -468,6 +486,8 @@ impl TrustedLauncher {
         state: &mut LauncherState,
         generation: u64,
     ) -> Result<()> {
+        #[cfg(feature = "g2-original-owner-a39-v1")]
+        super::memory_observation::system("history_before_image", generation);
         let allocation = allocate_initial_process(&self.path, new_resource_limits_for_init());
         let key = allocation.0.hepta_capspace_session()?;
         let pid = allocation.0.pid();
@@ -484,6 +504,13 @@ impl TrustedLauncher {
             allocation,
             successor_page(HISTORY_ROLE, receipt, pid, hepta_image_space_id(key)),
         )?;
+        #[cfg(feature = "g2-original-owner-a39-v1")]
+        super::memory_observation::role(
+            "history_image_prepared",
+            generation,
+            "history",
+            &prepared.process,
+        );
         let mut pending = PendingLaunch::new();
         pending.push(prepared);
         let slots = TrustedControlSlots::prepare_history_only(key, &state.histories);
@@ -501,6 +528,8 @@ impl TrustedLauncher {
             "[hepta-g2] history successor activated: generation={} history={} workload={} bootstrap_version=4 bytes=240 hepta_durability=false",
             generation, pid, receipt.workload
         );
+        #[cfg(feature = "g2-original-owner-a39-v1")]
+        super::memory_observation::system("history_role_ready", generation);
         pending.run();
         Ok(())
     }

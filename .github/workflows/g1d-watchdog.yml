@@ -1,0 +1,78 @@
+name: G1-d independent timer and stop preservation
+
+on:
+  pull_request:
+    paths:
+      - "kernel/asterinas/**"
+      - "libs/os-abi/**"
+      - "libs/os-control/**"
+      - "support/build/**"
+      - "support/upstream-lock.json"
+      - "tests/kernel/control/**"
+      - ".github/workflows/g1d-watchdog.yml"
+  push:
+    branches: [main]
+    paths:
+      - "kernel/asterinas/**"
+      - "libs/os-abi/**"
+      - "libs/os-control/**"
+      - "support/build/**"
+      - "support/upstream-lock.json"
+      - "tests/kernel/control/**"
+      - ".github/workflows/g1d-watchdog.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  original-watchdog:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Install pinned native build and guest dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            build-essential ca-certificates curl git python3 pkg-config libssl-dev \
+            clang lld qemu-system-x86 busybox-static gcc-13 libc6-dev binutils
+          bash support/build/prepare-host.sh
+
+      - name: Validate the original bounded evidence parser
+        shell: bash
+        run: |
+          set -euo pipefail
+          out="${RUNNER_TEMP}/g1d-watchdog-parser"
+          mkdir "$out"
+          python3 -I -B -m unittest discover -s tests/kernel/control \
+            -p test_g1d_watchdog_guest.py -v > "$out/normal.log" 2>&1
+          python3 -I -B -O -m unittest discover -s tests/kernel/control \
+            -p test_g1d_watchdog_guest.py -v > "$out/optimized.log" 2>&1
+
+      - name: Build one exact image and execute all six original watchdog boots
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B tests/kernel/control/run_g1d_watchdog_guest.py \
+            --expected-source-head "$(git rev-parse HEAD)" \
+            --expected-source-tree "$(git rev-parse HEAD^{tree})" \
+            --target-dir "${RUNNER_TEMP}/g1d-watchdog-target" \
+            --output "${RUNNER_TEMP}/g1d-watchdog"
+
+      - name: Retain source identities, kernel, serial and original false flags
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: g1d-watchdog-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/g1d-watchdog-parser
+            ${{ runner.temp }}/g1d-watchdog
+          if-no-files-found: error
+          retention-days: 90

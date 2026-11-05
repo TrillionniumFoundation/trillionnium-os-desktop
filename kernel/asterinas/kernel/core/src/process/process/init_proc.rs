@@ -22,6 +22,8 @@ use crate::{
     vm::vmar::{Vmar, VmarHandle},
 };
 
+#[cfg(feature = "g2-original-owner-a39-v1")]
+mod memory_observation;
 #[cfg(feature = "g2-trusted-daemon")]
 mod trusted_daemon;
 #[cfg(feature = "g2-trusted-daemon")]

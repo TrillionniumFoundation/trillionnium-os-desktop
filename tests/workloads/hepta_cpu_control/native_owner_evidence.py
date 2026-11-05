@@ -9,6 +9,8 @@ import hashlib
 import json
 import re
 
+import native_owner_memory
+
 
 PREFIX = "HEPTA_G2_EVIDENCE_V1 "
 SCENARIOS = ("steady-state-v1", "manager-exit-after-terminal-v1")
@@ -286,22 +288,45 @@ def cpu_stat(raw):
     return values
 
 
-def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
+def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info, image_profile="g2-trusted-daemon"):
     """Raise on any missing boundary; success has only the named finite scope."""
     require(type(code) is int and code == 33 and timed_out is False and excessive is False,
             "QEMU must finish the bounded actual boot with the original success exit")
     lines, events = parse(raw, scenario, nonce)
+    require(image_profile in ("g2-trusted-daemon", "g2-original-owner-a39-v1"), "unknown owner image profile")
+    exact = None
+    profile_record = None
+    if image_profile == "g2-original-owner-a39-v1":
+        import importlib.util
+        from pathlib import Path
+        path = Path(__file__).resolve().parents[3] / "support/build/original_owner_image.py"
+        spec = importlib.util.spec_from_file_location("g2_evidence_exact_owner_image", path)
+        exact = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(exact)
+        image = exact.descriptor()["image"]
+        require(elf_info["bytes"] == image["file_bytes"] and elf_info["sha256"] == image["sha256"],
+                "exact image oracle received another original ELF identity")
+        profile_record = exact.kernel_selection_record()
     images = [(index, IMAGE.fullmatch(line)) for index, line in enumerate(lines) if IMAGE.fullmatch(line)]
     activated = [(index, ACTIVATION.fullmatch(line)) for index, line in enumerate(lines) if ACTIVATION.fullmatch(line)]
     require(len(images) == 4 and len(activated) == 1
             and all(int(match[1]) == elf_info["bytes"] and int(match[2], 16) == elf_info["entry"] for _, match in images)
             and max(index for index, _ in images) < activated[0][0] < events[0][0],
             "all four original immutable images must commit before any actual role resumes")
+    if exact:
+        require(lines.count(profile_record) == 1 and lines.index(profile_record) < images[0][0],
+                "kernel did not select the exact reviewed original-owner profile before loading roles")
     require(not any(line.startswith("[hepta-g2]") and not IMAGE.fullmatch(line) and not ACTIVATION.fullmatch(line)
-                    for line in lines), "unknown kernel G2 record or loader rejection")
+                    and line != profile_record for line in lines), "unknown kernel G2 record or loader rejection")
     role_pids = dict(zip(ROLE_IDS, map(int, activated[0][1].groups())))
     require(role_pids["root"] == 1 and len(set(role_pids.values())) == 4
             and all(0 < pid < 1 << 31 for pid in role_pids.values()), "four distinct actual role Processes required")
+    if exact:
+        memory = native_owner_memory.evaluate(
+            lines, role_pids, [index for index, _ in images], activated[0][0], events[0][0])
+    else:
+        require(not any(line.startswith(native_owner_memory.PREFIX) for line in lines),
+                "legacy owner profile cannot acquire new memory observation qualification")
     values = [value for _, value in events]
     cursor = 0
 
@@ -638,7 +663,7 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
             and complete["final_current_token"] == currents[final_role]["token"] and cursor == len(values)
             and all(operation.get("retired") is True for operation in operations.values()),
             "finite owner cycle has missing, unexpected or unretired observations")
-    return {"passed": True, "scenario": scenario, "nonce": nonce, "actual_role_pids": role_pids,
+    result = {"passed": True, "scenario": scenario, "nonce": nonce, "actual_role_pids": role_pids,
             "event_count": len(events), "operation_count": len(operations), "original_native_owner_cycle_verified": True,
             "same_boot_authenticated_successor_verified": scenario == "manager-exit-after-terminal-v1",
             "source_terminal_before_retirement_verified": True, "bounded_cpu_control_verified": True,
@@ -646,3 +671,9 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info):
             "grant_renewal_verified": False, "repeated_recovery_verified": False, "after_effect_crash_verified": False,
             "cross_boot_unknown_preservation_verified": False, "power_loss_verified": False,
             "unbounded_persistent_cpu_verified": False, "production_ready": False, "g2_complete": False}
+    if exact:
+        result.update(schema="hepta.original-owner-image-scenario.v1", image_profile=image_profile,
+                      image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256,
+                      legacy_static_profile_passed=False, whole_guest_peak_verified=False,
+                      global_memory_reserve=False, lifecycle_memory=memory)
+    return result

@@ -8,11 +8,24 @@ It grants no authority to a caller-supplied path or digest.
 
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
+import sys
+
+sys.dont_write_bytecode = True
 
 
 MAX_FILE_BYTES = 8 * 1024 * 1024
+ORIGINAL_OWNER_PROFILE = "g2-original-owner-a39-v1"
+
+
+def original_owner_profile():
+    path = Path(__file__).with_name("original_owner_image.py")
+    spec = importlib.util.spec_from_file_location("trusted_original_owner_image", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def main():
@@ -20,16 +33,21 @@ def main():
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
-    parser.add_argument("--profile", choices=("g1c-trusted-observe", "g1d-trusted-control", "g2-trusted-daemon"),
+    parser.add_argument("--profile", choices=("g1c-trusted-observe", "g1d-trusted-control", "g2-trusted-daemon", ORIGINAL_OWNER_PROFILE),
                         default="g1c-trusted-observe")
     args = parser.parse_args()
+    exact = original_owner_profile() if args.profile == ORIGINAL_OWNER_PROFILE else None
+    file_limit = exact.descriptor()["image"]["file_bytes"] if exact else MAX_FILE_BYTES
     source = args.input.resolve(strict=True)
     if not source.is_file():
         raise SystemExit("trusted initial input must be a regular ELF file")
     with source.open("rb") as stream:
-        content = stream.read(MAX_FILE_BYTES + 1)
-    if not content or len(content) > MAX_FILE_BYTES:
-        raise SystemExit("trusted initial input exceeds the 8 MiB profile")
+        content = stream.read(file_limit + 1)
+    if not content or len(content) > file_limit:
+        raise SystemExit("trusted initial input exceeds the exact original-owner profile" if exact
+                         else "trusted initial input exceeds the 8 MiB profile")
+    if exact:
+        exact.inspect_elf(content)
     # Fail an obvious wrong input before compiling; the kernel owns complete
     # ELF/profile validation and does not rely on this build-time check.
     if content[:7] != b"\x7fELF\x02\x01\x01" or content[16:20] != b"\x02\x00\x3e\x00":
@@ -52,7 +70,7 @@ def main():
         "period_ns": 100_000_000,
         "lease_ns": 300_000_000_000,
     }
-    if args.profile in ("g1d-trusted-control", "g2-trusted-daemon"):
+    if args.profile in ("g1d-trusted-control", "g2-trusted-daemon", ORIGINAL_OWNER_PROFILE):
         manifest.update({
             "schema": "hepta-g1d-trusted-initial-v1",
             "supported_ops": 62,
@@ -65,7 +83,7 @@ def main():
         # Role-specific slots are defined by the sealed v2 bootstrap page.
         del manifest["slot"]
         del manifest["generation"]
-    if args.profile == "g2-trusted-daemon":
+    if args.profile in ("g2-trusted-daemon", ORIGINAL_OWNER_PROFILE):
         manifest.update({
             "schema": "hepta-g2-trusted-initial-v1",
             "bootstrap_version": 3,
@@ -79,6 +97,8 @@ def main():
             "original_writer_durability_verified": False,
             "g2_complete": False,
         })
+    if exact:
+        manifest.update(exact.manifest_fields())
     with args.manifest.open("x") as stream:
         stream.write(json.dumps(manifest, sort_keys=True, indent=2) + "\n")
 

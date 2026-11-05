@@ -13,6 +13,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import selectors
 import shutil
 import signal
@@ -49,11 +50,12 @@ def freeze_bytes(path, content, mode=0o444):
     return {"path": str(path), "bytes": len(content), "sha256": digest}
 
 
-def retain_files(directory, files):
+def retain_files(directory, files, *, empty_logs=()):
     result = {}
     for relative, source in files.items():
         require(not Path(relative).is_absolute() and ".." not in Path(relative).parts, "retained relative path escaped")
-        result[relative] = freeze_bytes(directory / relative, inputs.read(source, 512 * 1024**2))
+        result[relative] = freeze_bytes(directory / relative,
+                                       inputs.read(source, 512 * 1024**2, allow_empty=relative in empty_logs))
     return result
 
 
@@ -66,17 +68,66 @@ def tool(path, expected=None):
     return selected, {"path": str(selected), "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}
 
 
-def build_initramfs(original, owner, plan, replay):
-    require(len(original) <= 8 * 1024**2 and 0 < len(owner) <= inputs.MAX_OWNER_BYTES,
-            "original base or owner exceeds the unchanged input bounds")
+def original_owner_archive_contract():
+    """One source-owned envelope for the pinned base and original a39 image."""
+    exact = inputs.image_module(inputs.EXACT_IMAGE_PROFILE)
+    image = exact.descriptor()["image"]
+    require(image["file_bytes"] == 20_138_584, "archive contract requires the reviewed original image length")
+    # newc header/name padding is 132 bytes for the owner and 136 for the plan.
+    # The larger reviewed compact plan is 140 bytes, already four-byte aligned.
+    maximum = 2_129_504 + image["file_bytes"] + 132 + 136 + 140
+    require(maximum == 22_268_496, "fixed original-owner archive budget differs")
+    return {"schema": "hepta.original-owner-image-archive.v1",
+            "image_profile": inputs.EXACT_IMAGE_PROFILE,
+            "image_profile_descriptor_sha256": exact.DESCRIPTOR_SHA256,
+            "base_gzip_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
+            "base_gzip_bytes": 1_107_990, "base_raw_bytes": 2_129_920,
+            "base_canonical_bytes": 2_129_504,
+            "base_canonical_sha256": "b27430a9bfc4018ddd9808524bd4729515c9da8b282cfa35ed6b4ef211c977ce",
+            "owner_file_bytes": image["file_bytes"], "maximum_plan_bytes": 140,
+            "maximum_archive_bytes": maximum, "legacy_default_archive_bytes": 16 * 1024**2,
+            "legacy_limits_unchanged": True, "native_execution_verified": False}
+
+
+def original_owner_archive_plan(plan):
+    require(type(plan) is dict and set(plan) == {"schema_version", "scenario", "nonce"}
+            and type(plan["schema_version"]) is int and plan["schema_version"] == 1
+            and plan["scenario"] in ("steady-state-v1", "manager-exit-after-terminal-v1")
+            and type(plan["nonce"]) is str and re.fullmatch(r"[0-9a-f]{64}", plan["nonce"]) is not None,
+            "exact original-owner archive requires a reviewed finite plan and 32-byte nonce")
+    encoded = (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    require(len(encoded) <= 140, "exact original-owner compact plan exceeds its fixed bound")
+    return encoded
+
+
+def build_initramfs(original, owner, plan, replay, image_profile=inputs.PROFILE):
+    require(len(original) <= 8 * 1024**2 and 0 < len(owner) <= inputs.owner_file_limit(image_profile),
+            "original base or owner exceeds its selected input bounds")
     raw = gzip.decompress(original)
     require(len(raw) <= 64 * 1024**2, "original initramfs exceeds its uncompressed bound")
     entries = replay.unpack(raw)
-    require(replay.unpack(replay.pack(entries)) == entries, "original cpio does not roundtrip")
+    canonical = replay.pack(entries)
+    require(replay.unpack(canonical) == entries, "original cpio does not roundtrip")
     require(sum(name.lstrip("./") == "test" and stat.S_ISDIR(fields[1]) for name, fields, _ in entries) == 1,
             "original base initramfs must contain one test directory")
+    contract = None
+    encoded_plan = (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()
+    if image_profile == inputs.EXACT_IMAGE_PROFILE:
+        contract = original_owner_archive_contract()
+        require(len(original) == contract["base_gzip_bytes"]
+                and hashlib.sha256(original).hexdigest() == contract["base_gzip_sha256"]
+                and len(raw) == contract["base_raw_bytes"]
+                and len(canonical) == contract["base_canonical_bytes"]
+                and hashlib.sha256(canonical).hexdigest() == contract["base_canonical_sha256"],
+                "exact original-owner archive base differs from its fixed identity")
+        # execute() admits the complete original ELF before deriving its existing
+        # startup controls. Packing is not ELF admission: the unchanged kernel
+        # still refuses the byte-mismatch and one-byte-truncated control images.
+        require(len(owner) in (contract["owner_file_bytes"], contract["owner_file_bytes"] - 1),
+                "exact original-owner archive has an unreviewed image length")
+        encoded_plan = original_owner_archive_plan(plan)
     additions = (("test/hepta-g2-owner", 0o100555, owner),
-                 ("test/hepta-g2-run.json", 0o100400, (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()))
+                 ("test/hepta-g2-run.json", 0o100400, encoded_plan))
     names = {name.lstrip("./") for name, _, _ in entries}
     inode = max(fields[0] for _, fields, _ in entries)
     modified = list(entries)
@@ -86,8 +137,15 @@ def build_initramfs(original, owner, plan, replay):
         fields = [inode, mode, 0, 0, 1, 0, len(content), 0, 0, 0, 0, len(name.encode()) + 1, 0]
         modified.append((name, fields, content))
     packed = replay.pack(modified)
-    require(len(packed) <= 64 * 1024**2 and replay.unpack(packed) == modified,
-            "original owner/plan image exceeds the unchanged cpio bound or changed bytes")
+    require(len(packed) <= 64 * 1024**2, "original owner/plan image exceeds the unchanged outer cpio bound")
+    if contract is None:
+        # Preserve the generic codec's original 16 MiB default for every legacy caller.
+        decoded = replay.unpack(packed)
+    else:
+        require(len(packed) <= contract["maximum_archive_bytes"],
+                "exact original-owner archive exceeds its fixed envelope")
+        decoded = replay.unpack(packed, max_bytes=contract["maximum_archive_bytes"])
+    require(decoded == modified, "original owner/plan archive roundtrip changed bytes")
     return gzip.compress(packed, mtime=0)
 
 
@@ -228,7 +286,7 @@ def rejection(raw, record, reason):
 
 
 def execute(args, report):
-    review = inputs.review_inputs(args.source_review, args.expected_source_review_sha256)
+    review = inputs.review_inputs(args.source_review, args.expected_source_review_sha256, args.image_profile)
     roots = {"desktop": args.desktop_source, "hepta": args.hepta_source}
     builder = inputs.load_module("original_native_entry_builder", HERE / "build_original_entry.py")
     snapshots = inputs.source_snapshots(roots, review, builder)
@@ -237,9 +295,9 @@ def execute(args, report):
     harness = builder.source_snapshot(ROOT, harness_head, harness_tree)
     shape, ordinary, replay = inputs.original_helpers(roots["desktop"])
     owner_receipt, owner, info, owner_files = inputs.owner_build(args.owner_build_receipt,
-        args.expected_owner_build_receipt_sha256, args.owner_elf, review, snapshots, shape, roots["hepta"])
+        args.expected_owner_build_receipt_sha256, args.owner_elf, review, snapshots, shape, roots["hepta"], args.image_profile)
     pipeline, kernel, base, kernel_files = inputs.kernel_build(args.kernel_pipeline,
-        args.expected_kernel_pipeline_sha256, review, owner, ordinary)
+        args.expected_kernel_pipeline_sha256, review, owner, ordinary, args.image_profile)
     bios = inputs.read(args.bios, 2 * 1024**2, replay.SEABIOS_SHA)
     qemu, qemu_identity = tool(args.qemu, args.expected_qemu_sha256)
     mkfs, mkfs_identity = tool(args.mkfs)
@@ -252,6 +310,11 @@ def execute(args, report):
     require(1 <= args.timeout <= 120, "unchanged G1d guest deadline must remain 1..120 seconds")
     output.mkdir(mode=0o700)
     report["output_created"] = True
+    exact = inputs.image_module(args.image_profile)
+    if exact:
+        report.update(image_profile_descriptor=exact.descriptor(),
+                      image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256,
+                      initramfs_archive_contract=original_owner_archive_contract())
     freeze_bytes(output / "source-review.json",
                  inputs.read(args.source_review, 1024**2, args.expected_source_review_sha256))
     save(output / "source-before.json", snapshots)
@@ -263,7 +326,8 @@ def execute(args, report):
                   kernel_pipeline_sha256=args.expected_kernel_pipeline_sha256,
                   input_attestation="caller-retained actual local build records and complete checked sources; not remote attestation",
                   tool_identities={"qemu": qemu_identity, "mkfs": mkfs_identity})
-    report["retained_owner_build"] = retain_files(output / "owner-build", owner_files)
+    report["retained_owner_build"] = retain_files(output / "owner-build", owner_files,
+                                                empty_logs=inputs.EMPTY_ORIGINAL_COMMAND_LOGS)
     report["retained_kernel_build"] = retain_files(output / "kernel-build-evidence", kernel_files)
     report["artifacts"] = {"owner": freeze_bytes(output / "original-owner.elf", owner),
                            "kernel": freeze_bytes(output / "product-kernel.elf", kernel),
@@ -287,10 +351,15 @@ def execute(args, report):
         # This root-only file is an acceptance plan, never Root installation,
         # registration, a writer lease, Current, a signer or a FinalUse grant.
         save(directory / "run-plan.json", plan)
-        initramfs = build_initramfs(base, actual_owner, plan, replay)
+        initramfs = build_initramfs(base, actual_owner, plan, replay, args.image_profile)
         freeze_bytes(directory / "initramfs.cpio.gz", initramfs)
         result = {"passed": False, "scenario": name, "nonce": nonce,
                   "actual_initial_elf_sha256": hashlib.sha256(actual_owner).hexdigest(), "g2_complete": False}
+        if exact:
+            result.update(schema="hepta.original-owner-image-scenario.v1", image_profile=args.image_profile,
+                          image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256,
+                          legacy_static_profile_passed=False, whole_guest_peak_verified=False,
+                          global_memory_reserve=False, production_ready=False)
         if not is_control:
             result["state"] = format_state(directory, mkfs, mkfs_identity)
         report["stage"] = "guest:" + name
@@ -307,7 +376,7 @@ def execute(args, report):
                     "retained pristine state image changed during guest execution")
         try:
             observed = (rejection(raw, record, name) if is_control else oracle.evaluate(raw, record["raw_exit_code"],
-                        record["timed_out"], record["serial_excessive"], name, nonce, info))
+                        record["timed_out"], record["serial_excessive"], name, nonce, info, args.image_profile))
             if not is_control:
                 require(result["state"]["after_bytes"] == STATE_BYTES
                         and result["state"]["after_sha256"] != result["state"]["before_sha256"],
@@ -327,10 +396,10 @@ def execute(args, report):
     save(output / "source-after.json", after)
     save(output / "harness-source-after.json", final_harness)
     require(after == snapshots and final_harness == harness, "source or original evidence oracle changed during native execution")
-    inputs.review_inputs(args.source_review, args.expected_source_review_sha256)
+    inputs.review_inputs(args.source_review, args.expected_source_review_sha256, args.image_profile)
     inputs.owner_build(args.owner_build_receipt, args.expected_owner_build_receipt_sha256, args.owner_elf,
-                       review, snapshots, shape, roots["hepta"])
-    inputs.kernel_build(args.kernel_pipeline, args.expected_kernel_pipeline_sha256, review, owner, ordinary)
+                       review, snapshots, shape, roots["hepta"], args.image_profile)
+    inputs.kernel_build(args.kernel_pipeline, args.expected_kernel_pipeline_sha256, review, owner, ordinary, args.image_profile)
     for artifact in report["artifacts"].values():
         require(inputs.sha(Path(artifact["path"])) == artifact["sha256"], "retained actual artifact changed")
     passed = all(value["passed"] is True for group in (report["controls"], report["scenarios"]) for value in group.values())
@@ -343,6 +412,7 @@ def execute(args, report):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--image-profile", choices=inputs.IMAGE_PROFILES, default=inputs.PROFILE)
     for name in ("desktop-source", "hepta-source", "source-review", "owner-elf", "owner-build-receipt", "kernel-pipeline", "output"):
         parser.add_argument("--" + name, type=Path)
     for name in ("expected-source-review-sha256", "expected-owner-build-receipt-sha256", "expected-kernel-pipeline-sha256", "expected-qemu-sha256"):
@@ -361,6 +431,10 @@ def main(argv=None):
               "unbounded_persistent_cpu_verified": False, "power_loss_verified": False,
               "hardware_qualification": False, "production_ready": False, "g2_complete": False,
               "started_at_utc": datetime.now(timezone.utc).isoformat()}
+    if args.image_profile == inputs.EXACT_IMAGE_PROFILE:
+        report.update(schema="hepta.original-owner-image-runtime.v1", image_profile=args.image_profile,
+                      legacy_static_profile_passed=False, legacy_limits_unchanged=True,
+                      whole_guest_peak_verified=False, global_memory_reserve=False)
     if not args.execute:
         print(json.dumps({**report, "status": "disabled; explicit --execute and original source-bound owner/kernel inputs required"}, sort_keys=True))
         return 0
