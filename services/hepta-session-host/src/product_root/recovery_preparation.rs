@@ -63,6 +63,7 @@ impl RecoveryPreparation {
             return Err("original recovery administration must be a private directory".into());
         }
         let path = admin.join("recovery.lock");
+        let directory = admin.join("recovery-2");
         let lock = OpenOptions::new()
             .read(true)
             .write(true)
@@ -83,16 +84,19 @@ impl RecoveryPreparation {
         }
         lock.try_lock()
             .map_err(|_| "another original recovery still holds its preparation lock")?;
+        // Every later refusal or synchronization error must release the
+        // successfully acquired lock through its original final-owner guard.
+        let preparation = Self {
+            directory,
+            _lock: lock,
+        };
         let current = std::fs::symlink_metadata(&path)?;
         if (metadata.dev(), metadata.ino()) != (current.dev(), current.ino()) {
             return Err("original recovery lock changed while acquiring it".into());
         }
-        lock.sync_all()?;
+        preparation._lock.sync_all()?;
         File::open(admin)?.sync_all()?;
-        Ok(Self {
-            directory: admin.join("recovery-2"),
-            _lock: lock,
-        })
+        Ok(preparation)
     }
 
     pub(super) fn admit(&self, observation: &impl Serialize) -> Result<()> {
