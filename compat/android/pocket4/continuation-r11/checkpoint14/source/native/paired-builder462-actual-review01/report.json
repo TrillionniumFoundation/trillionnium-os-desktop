@@ -1,0 +1,387 @@
+{
+  "Hepta_calls_by_reviewer": 0,
+  "Main_actions_by_reviewer": 0,
+  "authority_terminal": "Root observed exit 0, output complete and durable; no independent Hepta call by reviewer.",
+  "build": {
+    "Rust_toolchain": "1.93.0",
+    "all_rc_zero": true,
+    "all_timeout_false": true,
+    "builder_elf": {
+      "bytes": 32920000,
+      "identity": [
+        66306,
+        36179158,
+        33216,
+        32920000,
+        1793869981123192987,
+        1793869981157194269
+      ],
+      "path": "/home/alex/work/pocket4-native-generation-builder462-compile-01-20261105/attempt01/cargo-target/debug/droidloom-update",
+      "sha256": "8f19ac0deb472bf8c2a3a6befd689b76d67d619041fd6deb9c31df15c0056c12"
+    },
+    "commands": 57,
+    "offline_locked": true,
+    "registry_packages": 45,
+    "remote_input_manifests": {
+      "dependency_inputs": {
+        "bytes": 1374973,
+        "path": "/home/alex/work/pocket4-native-generation-builder462-compile-01-20261105/attempt01/dependency-inputs-before.json",
+        "sha256": "7721acfc43d6afc672f7865092da9883b59bdfd1abee3c97119518e36eb841f6"
+      },
+      "image_and_compiler_tool_inputs": {
+        "bytes": 72601,
+        "path": "/home/alex/work/pocket4-native-generation-builder462-compile-01-20261105/attempt01/all-tool-inputs-before-tests.json",
+        "sha256": "c38ef790eda0e702e26a7b9a4e6c5cb551bb724406c141e4aad58b280b8aa1b8"
+      },
+      "tool_inputs": {
+        "bytes": 39682,
+        "path": "/home/alex/work/pocket4-native-generation-builder462-compile-01-20261105/attempt01/tool-inputs-before.json",
+        "sha256": "a3bdc51c0bf6cd51d773891ced0315a6e9bc3f83abbf0ddb7a40529b163ce227"
+      }
+    },
+    "selected_packages": 49,
+    "source_dependencies_tools_configs_unchanged": true,
+    "test_elf": {
+      "bytes": 34364008,
+      "identity": [
+        66306,
+        36179426,
+        33216,
+        34364008,
+        1793869988721479367,
+        1793869988730479706
+      ],
+      "path": "/home/alex/work/pocket4-native-generation-builder462-compile-01-20261105/attempt01/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+      "sha256": "6fb56d205acbed4d42a0021c9009101da78a1e0c3de6cc2f313316a3baafbf50"
+    },
+    "workspace_packages": 4
+  },
+  "cleanup": {
+    "errors": [],
+    "forced_cleanup": false,
+    "initial_owned_children": [],
+    "reaped": [],
+    "remaining": []
+  },
+  "inputs": [
+    {
+      "bytes": 136350,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/paired-builder462-compile01-transport02/result.json",
+      "sha256": "f9a3dd01d9ebdb60a0e6a34ee99e3b1a2f646a30191eda3643cee5ca36ff544f"
+    },
+    {
+      "bytes": 843,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/paired-builder462-compile01-transport02/binary-metadata.json",
+      "sha256": "9a54223373705e6c6c6a4bc54191d43abe2f9c32ac00b817c36e2cdf845ffd80"
+    },
+    {
+      "bytes": 5316,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/SOURCE_PINS.json",
+      "sha256": "b4f3e78c61ddabd06fdf0e6c13cf4ed8206330b21448b928166890ebb59cd7d5"
+    },
+    {
+      "bytes": 64192,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/compile_builder.py",
+      "sha256": "997a1024b3ede93afa4fad33858b00432b95cf73abb6819612b4c096e76e52fc"
+    },
+    {
+      "bytes": 91148,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/expected-builder462-manifest.json",
+      "sha256": "7eaf421cc911a8fec13945099f8d3758bada44b2331e4698dbefd472f535c8da"
+    },
+    {
+      "bytes": 88664,
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/compiled-parent451-manifest.json",
+      "sha256": "a5052accd9bb36231a3c59271f8bc35e464e5cf14d702787735feed0d86b7a13"
+    }
+  ],
+  "job": "1a1aafae618-fc05-4932",
+  "limitations": [
+    "This review consumes the complete Root-collected receipt and its exact source contract. It does not rerun tests or independently reopen remote tools, dependency files, or ELF artifacts.",
+    "All 24 observed independent libtest result hashes and lengths equal exactly one expected success line. Stdout summary consistency is recorded by the executed controller; raw stdout for all commands is not separately fetched in this review.",
+    "197 is the registered count, not a claim that all 197 tests executed. Case 20 intentionally has two stdout runs and one outer independent result.",
+    "Image tests use fixture components and actual host image tools. They do not qualify platform signing, a complete production ART APEX, deployed images, or enabled lifecycle behavior.",
+    "No Soong/native-engine rebuild or installed candidate07 change occurred. Ordinary V2 and the 26 NOFILE cases are outside this builder run.",
+    "Main_actions=0 does not establish Main invariance; Main_identity_observed is explicitly false.",
+    "memory.swap.max was max. Zero observed swap usage is not a swap limit guarantee."
+  ],
+  "new_test_or_service_execution_by_reviewer": false,
+  "resource": {
+    "all_recorded_event_deltas": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "cgroup_identity": [
+      30,
+      30008106
+    ],
+    "cpu_max": "100000 100000",
+    "identity_and_limits_unchanged": true,
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aafae618-fc05-4932.service",
+    "memory_max": "1073741824",
+    "memory_peak": 1014640640,
+    "swap_current_after": 0,
+    "swap_max_observed": "max",
+    "swap_peak": 0,
+    "swap_was_not_capped": true
+  },
+  "reviewer": "/root/native_bridge_repair",
+  "schema": 1,
+  "source": {
+    "ART_sources_are_data_not_compiled": true,
+    "added": [
+      "android/native-generation-art/source/art/libnativebridge/Android.bp",
+      "android/native-generation-art/source/art/libnativebridge/droidloom_generation.cc",
+      "android/native-generation-art/source/art/libnativebridge/droidloom_generation.h",
+      "android/native-generation-art/source/art/libnativebridge/include/nativebridge/droidloom_generation_protocol.h",
+      "android/native-generation-art/source/art/libnativebridge/include/nativebridge/native_bridge.h",
+      "android/native-generation-art/source/art/libnativebridge/libnativebridge.map.txt",
+      "android/native-generation-art/source/art/libnativebridge/native_bridge.cc",
+      "android/native-generation-art/source/art/runtime/Android.bp",
+      "android/native-generation-art/source/art/runtime/native_bridge_art_interface.cc",
+      "android/native-generation-art/source/art/runtime/runtime.cc",
+      "tools/droidloom-update/src/native_generation_art.rs"
+    ],
+    "candidate_files": 462,
+    "candidate_manifest": {
+      "bytes": 91148,
+      "path": "/home/alex/work/pocket4-native-generation-builder462-compile-01-20261105/attempt01/copied-builder-source-manifest.json",
+      "sha256": "7eaf421cc911a8fec13945099f8d3758bada44b2331e4698dbefd472f535c8da"
+    },
+    "changed_existing": [
+      "tools/droidloom-update/src/android.rs",
+      "tools/droidloom-update/src/main.rs"
+    ],
+    "frozen_payload_pins_verified": 32,
+    "parent_actual_serialization": {
+      "bytes": 88664,
+      "path": "/home/alex/work/pocket4-native-generation-builder462-compile-01-20261105/attempt01/original-builder-source-manifest.json",
+      "sha256": "41ce28a2f2a22737f57c9d411a0ce81f2f9068a62987ecc99ea11d7e23d2f537"
+    },
+    "parent_files": 451,
+    "parent_semantic_map_matches_frozen451": true,
+    "unchanged_parent_files": 449
+  },
+  "state": "ACTUAL_RECEIPT_RECONCILED_SCOPED_PASS",
+  "tests": {
+    "actual_image_fixture_cases": 5,
+    "cases": [
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 81,
+        "independent_result_sha256": "1f5c4e76029f9eca8e41df0461c587cf389bec2486293082f4d1f865f248cc95",
+        "index": 0,
+        "name": "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 75,
+        "independent_result_sha256": "a728299d41b5625eafafcaa6d23565032b6a6b45df27a03ff7eb55d28218625d",
+        "index": 1,
+        "name": "android::tests::restoration_preserves_original_and_removes_created_file",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 98,
+        "independent_result_sha256": "c635bfbb83bc8203c702f0ef3113a71361b041a67677032db26c89e0f344fdd2",
+        "index": 2,
+        "name": "android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 96,
+        "independent_result_sha256": "aa6d354f87d9952fc06206bdd5d5383a0394c1b0989d8666a9143930f794fba3",
+        "index": 3,
+        "name": "android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 75,
+        "independent_result_sha256": "b04cd8b6de120ad5af5214784fc334309f8583af498fec18ae4f6acd4fc1803c",
+        "index": 4,
+        "name": "android::patch_tests::interrupted_projection_recovers_before_next_build",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 85,
+        "independent_result_sha256": "f5cf4e84278a08b440411dd1ea574226456196cc0707584148a3911652f91d11",
+        "index": 5,
+        "name": "tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 82,
+        "independent_result_sha256": "56e3da9808ccc027cf1b218b0a0ce1e83e8eb7a7eda734951dde697496b8e5a9",
+        "index": 6,
+        "name": "tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 76,
+        "independent_result_sha256": "6c33d18799ecfb5d0f5013e1b9215663264ef50ad71df605197c400aa84d3513",
+        "index": 7,
+        "name": "native_generation::tests::legacy_and_disabled_preserve_the_disabled_mode",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 69,
+        "independent_result_sha256": "9e30e031392e41cadb907fa34bcafe03548a799babef8dd0a3c14238e47c904c",
+        "index": 8,
+        "name": "native_generation::tests::rejects_every_mixed_old_new_combination",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 69,
+        "independent_result_sha256": "e0b107ad1e3fee4996625262dc0ad9fea126fe58d22951942c2d146afe220c59",
+        "index": 9,
+        "name": "native_generation::tests::enabled_triplet_requires_exact_contract",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 75,
+        "independent_result_sha256": "ad5b2dee0c0771c5006c51e61c6df8d59023ce6823516b82df11562f76775347",
+        "index": 10,
+        "name": "native_generation::tests::rejects_malformed_foreign_or_ambiguous_marker",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 75,
+        "independent_result_sha256": "7c912451e3519364f2d1734a345aff2a656e0631b307916fd29e7cb554c59395",
+        "index": 11,
+        "name": "native_generation::tests::rejects_foreign_elf_and_unrecognized_contract",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 58,
+        "independent_result_sha256": "8f4b0679a804135831cb0411ac2736c4264c106ad1ed57ff18937ed7898c2106",
+        "index": 12,
+        "name": "native_generation::tests::rejects_symlinked_components",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 78,
+        "independent_result_sha256": "b10b0a9ba5b61c616bd8f40c05bdf6d5d779117513a37062d43193784caa1d3a",
+        "index": 13,
+        "name": "native_generation::tests::rejects_previous_protocol_for_each_role_and_mode",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 95,
+        "independent_result_sha256": "516e076563f2c712c0193ee6ccf3d92935a704f7c5ac7433957353ebda17bfc5",
+        "index": 14,
+        "name": "native_generation::tests::rejects_previous_protocol_inside_self_consistent_enabled_contract",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 64,
+        "independent_result_sha256": "8d45001f7864f4871535e41ff8306df81fd04b58658d1f6301c8cccdf83dfa73",
+        "index": 15,
+        "name": "native_generation::tests::rejects_previous_protocol_contract",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 88,
+        "independent_result_sha256": "c64e50cc90392dbe1c4f83876d56fe3d6ca7335a389a4aa61447d5cc5d9840c0",
+        "index": 16,
+        "name": "native_generation::tests::real_ext4_apex_extraction_rejects_changed_nested_component",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 82,
+        "independent_result_sha256": "0b5ef5f8dd0d904bcddb5078b879a7f36d7f04cecdb3aa9bea883881925fa8a5",
+        "index": 17,
+        "name": "native_generation::tests::product_contract_generation_requires_enabled_triplet",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 93,
+        "independent_result_sha256": "dd39b20051e5cb8a0a720de0de0e26891841168078a4ea7cfeab2a7b6f346efb",
+        "index": 18,
+        "name": "native_generation::tests::product_contract_generation_is_create_only_and_binds_components",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 74,
+        "independent_result_sha256": "19f338fb2cdcad36967e0807e23ab42f3a8a7203d74e05b1ebf168d58c6dc4f7",
+        "index": 19,
+        "name": "native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 2,
+        "independent_result_bytes": 88,
+        "independent_result_sha256": "c4eae26986de4f62b918ac378f079e47340668fb056ea5e6a0cf22044de13439",
+        "index": 20,
+        "name": "native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 67,
+        "independent_result_sha256": "c22b824bb7d7a0aae203b4bfdc866f4eb6c28167de5070f782e7da06af761a33",
+        "index": 21,
+        "name": "tests::native_generation_pair_cli_requires_one_explicit_product",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 79,
+        "independent_result_sha256": "5e80cd26e5ff51ab92cc078ac55ec468383f653c26662328a93e8ac792a147c3",
+        "index": 22,
+        "name": "native_generation_art::tests::output_rejects_source_overlap_alias_and_reuse",
+        "rc": 0
+      },
+      {
+        "expected_stdout_runs": 1,
+        "independent_result_bytes": 91,
+        "independent_result_sha256": "1dca11aabf78ab6400f6d63f4efac3b2a2a7a52854ff3ddbe249d01f61265552",
+        "index": 23,
+        "name": "native_generation_art::tests::records_are_create_only_and_never_grant_runtime_readiness",
+        "rc": 0
+      }
+    ],
+    "fakeroot_retirement": {
+      "maximum_seconds": 2,
+      "reaped": [
+        {
+          "pid": 1695498,
+          "status": 0
+        }
+      ],
+      "remaining": [],
+      "signal_actions": 0
+    },
+    "full_197_suite_executed": false,
+    "independent_one_line_success_hashes_recomputed": 24,
+    "new_ART_projection": 2,
+    "original_projection": 7,
+    "pairing": 15,
+    "parent22_preserved_in_order": true,
+    "registered": 197,
+    "targeted": 24
+  }
+}

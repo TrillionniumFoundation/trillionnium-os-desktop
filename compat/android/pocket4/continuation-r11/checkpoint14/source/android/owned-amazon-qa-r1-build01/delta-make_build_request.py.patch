@@ -1,0 +1,20 @@
+--- Bili_R5/make_build_request.py
++++ Amazon_R1/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bili-qa-r5-static-build-02-20261105'
++KEY='pocket4-owned-amazon-qa-r1-static-build-01-20261105'
+ 
+ 
+ def encode(value):
+@@ -31,7 +31,7 @@
+         "assert len(raw)<=524288 and hashlib.sha256(raw).hexdigest()=="+repr(sha(wire))+";"
+         "packet=json.loads(raw);source=packet['stage_source'];"
+         "assert hashlib.sha256(source.encode()).hexdigest()=="+repr(stage_sha)+";"
+-        "scope={'__name__':'__main__','__file__':'<verified-owned-bili-qa-build-stage>','PACKET':packet};"
++        "scope={'__name__':'__main__','__file__':'<verified-owned-amazon-qa-build-stage>','PACKET':packet};"
+         "exec(compile(source,'stage_build.py','exec'),scope,scope)")
+     return {'host':'pocket4','executable':'/usr/bin/python3','args':['-I','-c',wrapper],
+         'cwd':'/home/alex/work','env':{'PYTHONDONTWRITEBYTECODE':'1'},'stdin':wire.decode(),

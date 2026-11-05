@@ -1,0 +1,3 @@
+# Exact fresh Owner10 NORMAL01 runtime request
+
+Only the externally observed actual prepared SHA and its stable key were filled into the previously frozen runtime template. The local generator has not submitted this request. The explicit P4BOOT2/layout3 broker, ABI3 holding-view and bootstrap-leaf producer, and init library are bound to actual matching build and ordinary receipts. Original Owner07, Owner08 and Owner09 failures remain unchanged; this is a separate fresh cell. Runtime authorization, durable terminal, actual success/failure evidence, original retirement and exact cleanup remain the root coordinator's responsibility. This package does not qualify property reload, installed operation, pressure effects or commercial Apps.

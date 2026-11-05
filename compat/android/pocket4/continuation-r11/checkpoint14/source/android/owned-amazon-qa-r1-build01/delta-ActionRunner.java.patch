@@ -1,0 +1,46 @@
+--- Bili_R5/src/org/droidloom/qa/bili/r5/ActionRunner.java
++++ Amazon_R1/src/org/droidloom/qa/amazon/r1/ActionRunner.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r5;
++package org.droidloom.qa.amazon.r1;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -39,14 +39,14 @@
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
+-    static final String PROTOCOL = "pocket4-owned-bili-qa-v5";
+-    static final String PACKAGE = "tv.danmaku.bili";
+-    static final String SELF = "org.droidloom.qa.bili.r5";
++    static final String PROTOCOL = "pocket4-owned-amazon-qa-v1";
++    static final String PACKAGE = "com.amazon.mShop.android.shopping";
++    static final String SELF = "org.droidloom.qa.amazon.r1";
+     static final String MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f";
+-    static final int TARGET_UID = 10117;
++    static final int TARGET_UID = 10129;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+     static final int MAX_NODES = 512, MAX_DEPTH = 32, MAX_CHILDREN = 64;
+-    static final String PUBLIC_SEARCH_QUERY = "微积分";
++    static final String PUBLIC_SEARCH_QUERY = "usb c cable";
+     static final long DEADLINE_MS = 8000, WATCHDOG_MS = 12000, MAX_INSPECTION_AGE_MS = 10000;
+     static final long WINDOW_WAIT_MS = 2000;
+     static final long WINDOW_RECHECK_MS = 100;
+@@ -174,7 +174,7 @@
+             else if (op.equals("set_text")) {
+                 keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256", "node_resource_id", "value");
+                 need(PUBLIC_SEARCH_QUERY.equals(string(request, "value", 64)), "ONLY_FIXED_PUBLIC_SEARCH_QUERY_ALLOWED");
+-                need(string(request, "node_resource_id", 256).matches("tv\\.danmaku\\.bili:id/[A-Za-z0-9_]+"), "EXACT_EDIT_RESOURCE_REQUIRED");
++                need(string(request, "node_resource_id", 256).matches("com\\.amazon\\.mShop\\.android\\.shopping:id/[A-Za-z0-9_]+"), "EXACT_EDIT_RESOURCE_REQUIRED");
+             }
+             else throw new Rejected("UNSUPPORTED_OPERATION");
+             need(PROTOCOL.equals(string(request, "protocol", 64)), "PROTOCOL_MISMATCH");
+@@ -290,7 +290,7 @@
+         keys(scope, "package", "uid", "user", "display", "activity", "window_token", "main_epoch_sha256");
+         need(PACKAGE.equals(string(scope, "package", 64)) && integer(scope, "uid") == TARGET_UID
+             && integer(scope, "user") == 0 && integer(scope, "display") == 0, "EXACT_BILI_SCOPE_REQUIRED");
+-        need(string(scope, "activity", 256).matches("tv\\.danmaku\\.bili/[A-Za-z0-9_.$]+"), "HOST_ACTIVITY_ATTESTATION_REQUIRED");
++        need(string(scope, "activity", 256).matches("com\\.amazon\\.mShop\\.android\\.shopping/[A-Za-z0-9_.$]+"), "HOST_ACTIVITY_ATTESTATION_REQUIRED");
+         need(string(scope, "window_token", 32).matches("[0-9a-f]{1,32}"), "HOST_WINDOW_TOKEN_REQUIRED");
+         need(MAIN_EPOCH.equals(string(scope, "main_epoch_sha256", 64)), "HOST_EPOCH_ATTESTATION_REQUIRED");
+         ApplicationInfo info = getContext().getPackageManager().getApplicationInfo(PACKAGE, 0);

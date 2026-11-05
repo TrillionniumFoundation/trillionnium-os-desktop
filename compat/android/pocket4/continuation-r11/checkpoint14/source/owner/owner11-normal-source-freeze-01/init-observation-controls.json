@@ -1,0 +1,57 @@
+{
+  "actual_owner_runtime_executed": false,
+  "cases": [
+    {
+      "case": "no_HELLO_opens_no_process",
+      "passed": true
+    },
+    {
+      "case": "exact_held_identity_and_real_clock_calls",
+      "passed": true
+    },
+    {
+      "case": "changed_birth_rejected_and_capability_closed",
+      "passed": true
+    },
+    {
+      "case": "snapshot_first_error_preserved_and_capability_closed",
+      "passed": true
+    },
+    {
+      "case": "exact_actual_capture_predicates_accept",
+      "passed": true
+    },
+    {
+      "case": "wrong_generation_rejected",
+      "passed": true
+    },
+    {
+      "case": "wrong_HELLO_sequence_rejected",
+      "passed": true
+    },
+    {
+      "case": "replaced_snapshot_rejected",
+      "passed": true
+    },
+    {
+      "case": "false_kernel_attribution_rejected",
+      "passed": true
+    },
+    {
+      "case": "capture_after_ACTIVE_rejected",
+      "passed": true
+    },
+    {
+      "case": "prior_capture_error_rejected",
+      "passed": true
+    }
+  ],
+  "passed": 11,
+  "pins": {
+    "actor.py": "1f2be54f474977174b86b22c7734ee2d7bd1e98d354fdeea4c13b0239a90813e",
+    "qualify.py": "a843d4a0ac4da1dd1baa8707ff3d0f59e4ed4c3cd26fd6fa1eae2ed9f21a6fad"
+  },
+  "schema": 1,
+  "scope": "Pure I/O seam plus actual source predicate controls; no process/namespace/runtime qualification",
+  "success": true
+}

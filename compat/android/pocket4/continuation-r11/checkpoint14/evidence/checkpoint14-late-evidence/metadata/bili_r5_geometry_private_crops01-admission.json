@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import sys,hashlib;raw=sys.stdin.buffer.read(16385);assert 0<len(raw)<=16384 and hashlib.sha256(raw).hexdigest()=='5d73cc76512bfeae3488ed96309b58733c7d6cec104a3e95a175cc2e8498160b';scope={'__name__':'fixed_private_crop_reader','__file__':'<verified-private-crop-reader>'};exec(compile(raw,'read_private_crops.py','exec'),scope);raise SystemExit(scope['main'](['--collect-once']))"
+    ],
+    "created_unix_ms": 1793874133195,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1ab3b00cb-fc05-4b8b",
+    "idempotency_key": "pocket4-bilibili-r5-player-geometry-private-crops-export-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1ab3b00cb-fc05-4b8b",
+    "request_digest": "e592c47e0db8d6ad4dcb1892345028e854065afe60915b882ebc0a73c9ba95b7",
+    "request_fingerprint": 16542500426960393901,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1ab3b00cb-fc05-4b8b"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1ab3b00cb-fc05-4b8b"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

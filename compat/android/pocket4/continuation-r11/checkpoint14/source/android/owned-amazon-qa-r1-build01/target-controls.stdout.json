@@ -1,0 +1,143 @@
+{
+  "actual_Amazon_Javac_D8_APK_or_signer_qualification": false,
+  "actual_Android_or_build_actions": 0,
+  "actual_manifest_reference_sha256": "825a53459b0fc3406d328aad3350624f9b658b150a2fbf56f3a908f46de4185d",
+  "controls": [
+    {
+      "accepted": true,
+      "case": "exact_Amazon_scope",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_Bili_package",
+      "error": {
+        "message": "FIXED_MAIN_AMAZON_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_Bili_UID",
+      "error": {
+        "message": "FIXED_MAIN_AMAZON_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_other_display",
+      "error": {
+        "message": "FIXED_MAIN_AMAZON_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_other_Main_epoch",
+      "error": {
+        "message": "FIXED_MAIN_AMAZON_SCOPE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_regex_wildcard_package",
+      "error": {
+        "message": "HOST_ACTIVITY_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "exact_public_query_request_synthetic_resource",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_Bili_edit_resource",
+      "error": {
+        "message": "EXACT_EDIT_RESOURCE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_other_text",
+      "error": {
+        "message": "ONLY_FIXED_PUBLIC_SEARCH_QUERY_ALLOWED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "reject_old_protocol",
+      "error": {
+        "message": "PROTOCOL_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "actual_XML_manifest_contract",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "standalone_legacy_flow_execution_always_denied",
+      "error": {
+        "message": "DEDICATED_AMAZON_HELD_FLOW_ADMISSION_REQUIRED",
+        "type": "RuntimeError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_Bili_manifest_rejected:actual self instrumentation target required",
+      "error": {
+        "message": "actual self instrumentation target required",
+        "type": "RuntimeError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "derived_Amazon_manifest_predicate:actual self instrumentation target required",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "actual_Bili_manifest_rejected:one exact actual instrumentation component required",
+      "error": {
+        "message": "one exact actual instrumentation component required",
+        "type": "RuntimeError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "derived_Amazon_manifest_predicate:one exact actual instrumentation component required",
+      "error": null,
+      "expected_met": true
+    }
+  ],
+  "schema": 1,
+  "state": "PASS",
+  "synthetic": [
+    "OwnedSyntheticActivity",
+    "owned_synthetic_search",
+    "Amazon XML derived only for actual Python gates"
+  ]
+}

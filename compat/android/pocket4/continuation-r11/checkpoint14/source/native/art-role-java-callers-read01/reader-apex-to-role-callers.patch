@@ -1,0 +1,46 @@
+--- a/read_sources.py
++++ b/read_sources.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Read only two fixed current AOSP ART APEX definitions, retaining every failed observation."""
++"""Read only three fixed current AOSP Java zygote role callers, retaining every failed observation."""
+ import base64
+ import datetime
+ import gzip
+@@ -11,8 +11,9 @@
+ 
+ BASE = Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source')
+ SOURCES = (
+-    ('art/build/apex/Android.bp', 262144),
+-    ('art/build/apex/apex_manifest.json', 16384),
++    ('libcore/dalvik/src/main/java/dalvik/system/ZygoteHooks.java', 262144),
++    ('frameworks/base/core/java/com/android/internal/os/Zygote.java', 262144),
++    ('frameworks/base/core/java/com/android/internal/os/AppZygoteInit.java', 262144),
+ )
+ 
+ 
+@@ -77,20 +78,20 @@
+     started = utc()
+     rows = [observe(relative, limit) for relative, limit in SOURCES]
+     complete = all(row['complete'] for row in rows)
+-    result = {'schema': 1, 'scope': 'two fixed current AOSP ART APEX definitions only',
++    result = {'schema': 1, 'scope': 'three fixed current AOSP Java zygote role callers only',
+               'source_sha256': SOURCE_SHA256, 'started_utc': started, 'finished_utc': utc(),
+-              'all_two_complete': complete, 'files': rows,
++              'all_three_complete': complete, 'files': rows,
+               'installed_ART_binary_bound': False, 'compiled451_source_bound': False,
+               'source_execution': False, 'recursive_scan': False, 'Main_actions': 0,
+               'files_written': 0, 'policy_or_resource_changes': 0,
+               'remote_service_or_build_started': False}
+     raw = (json.dumps(result, ensure_ascii=True, sort_keys=True) + '\n').encode()
+     if len(raw) > 20000000:
+-        raise RuntimeError('bounded two-source result unexpectedly exceeds encoding bound')
++        raise RuntimeError('bounded three-source result unexpectedly exceeds encoding bound')
+     packed = gzip.compress(raw, compresslevel=6, mtime=0)
+     envelope = {'schema': 1, 'encoding': 'gzip+base64', 'uncompressed_bytes': len(raw),
+                 'sha256': digest(raw), 'gzip_bytes': len(packed), 'gzip_sha256': digest(packed),
+-                'all_two_complete': complete, 'payload': base64.b64encode(packed).decode('ascii')}
++                'all_three_complete': complete, 'payload': base64.b64encode(packed).decode('ascii')}
+     print(json.dumps(envelope, sort_keys=True), flush=True)
+     return 0 if complete else 1
+ 

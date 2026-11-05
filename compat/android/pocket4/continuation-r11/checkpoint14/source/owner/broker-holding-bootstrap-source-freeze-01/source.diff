@@ -1,0 +1,330 @@
+--- a/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
++++ b/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
+@@ -15,6 +15,13 @@
+ const NSFS_MAGIC: libc::c_long = 0x6e73_6673;
+ const NS_GET_NSTYPE: libc::c_ulong = 0xb703;
+ const BAD: libc::c_short = libc::POLLERR | libc::POLLHUP | libc::POLLRDHUP | libc::POLLNVAL;
++const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
++
++// The layout is chosen only by the trusted lifecycle caller. The legacy
++// owned fixture and the real ABI3 init barrier have different, explicit
++// bootstrap layouts; neither endpoint guesses from a pathname or falls back.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++enum BootstrapLayout { ProjectedRootV1, HoldingLeafV3 }
+ 
+ fn number(bytes: &[u8], at: usize, width: usize) -> u64 {
+     let mut value = [0; 8]; value[..width].copy_from_slice(&bytes[at..at + width]);
+@@ -45,30 +52,57 @@
+         }
+         Ok(())
+     }
++    /// Legacy owned-fixture wire. Real ABI3 init uses the explicitly selected
++    /// holding path below and never retries this version after rejection.
+     pub fn encode(&self) -> Result<[u8; BOOT_SIZE]> {
++        self.encode_with_layout(BootstrapLayout::ProjectedRootV1)
++    }
++    fn encode_with_layout(&self, layout: BootstrapLayout) -> Result<[u8; BOOT_SIZE]> {
+         self.validate()?;
+         let mut wire = [0; BOOT_SIZE]; wire[..8].copy_from_slice(b"P4BOOT1!");
+         put(&mut wire, 8, 1, 4); put(&mut wire, 12, self.uid as u64, 4); put(&mut wire, 16, self.gid as u64, 4);
++        if layout == BootstrapLayout::HoldingLeafV3 {
++            wire[..8].copy_from_slice(b"P4BOOT2!");
++            put(&mut wire, 8, 2, 4); put(&mut wire, 20, 3, 4);
++        }
+         wire[24..56].copy_from_slice(&self.nonce);
+         wire[56..88].copy_from_slice(&self.lmkd_sha256); wire[88..120].copy_from_slice(&self.init_sha256);
+         Ok(wire)
+     }
+     fn decode(wire: &[u8]) -> Result<Self> {
+-        if wire.len() != BOOT_SIZE || &wire[..8] != b"P4BOOT1!" || number(wire, 8, 4) != 1 ||
+-            wire[20..24].iter().chain(&wire[120..]).any(|b| *b != 0) {
++        let (spec, layout) = Self::decode_with_layout(wire)?;
++        if layout != BootstrapLayout::ProjectedRootV1 {
++            return Err(Error::Reject("owned fixture bootstrap layout differs from root projection"));
++        }
++        Ok(spec)
++    }
++    fn decode_with_layout(wire: &[u8]) -> Result<(Self, BootstrapLayout)> {
++        if wire.len() != BOOT_SIZE || wire[120..].iter().any(|b| *b != 0) {
+             return Err(Error::Reject("bootstrap size/magic/version/reserved field"));
+         }
++        let layout = if &wire[..8] == b"P4BOOT1!" && number(wire, 8, 4) == 1 && number(wire, 20, 4) == 0 {
++            BootstrapLayout::ProjectedRootV1
++        } else if &wire[..8] == b"P4BOOT2!" && number(wire, 8, 4) == 2 && number(wire, 20, 4) == 3 {
++            BootstrapLayout::HoldingLeafV3
++        } else {
++            return Err(Error::Reject("bootstrap size/magic/version/reserved field"));
++        };
+         let mut nonce = [0; 32]; nonce.copy_from_slice(&wire[24..56]);
+         let mut lmkd_sha256 = [0; 32]; lmkd_sha256.copy_from_slice(&wire[56..88]);
+         let mut init_sha256 = [0; 32]; init_sha256.copy_from_slice(&wire[88..120]);
+         let spec = Self { nonce, uid: number(wire, 12, 4) as u32, gid: number(wire, 16, 4) as u32,
+             lmkd_sha256, init_sha256 };
+-        spec.validate()?; Ok(spec)
+-    }
+-    /// One datagram, exactly sixteen SCM_RIGHTS. Calling again is a protocol
+-    /// fault and retires the broker. This method never opens a PID or path.
++        spec.validate()?; Ok((spec, layout))
++    }
++    /// Legacy owned-fixture datagram, exactly sixteen SCM_RIGHTS. Calling
++    /// again is a protocol fault and retires the broker. This method never
++    /// opens a PID or path and is not the real ABI3 producer's send path.
+     pub fn send(&self, channel: BorrowedFd<'_>, descriptors: &[BorrowedFd<'_>; RIGHTS], timeout: Duration) -> Result<()> {
+-        let wire = self.encode()?;
++        self.send_with_layout(channel, descriptors, timeout, BootstrapLayout::ProjectedRootV1)
++    }
++    fn send_with_layout(&self, channel: BorrowedFd<'_>, descriptors: &[BorrowedFd<'_>; RIGHTS],
++        timeout: Duration, layout: BootstrapLayout) -> Result<()> {
++        let wire = self.encode_with_layout(layout)?;
+         let raw: Vec<RawFd> = descriptors.iter().map(AsRawFd::as_raw_fd).collect();
+         send_packet(channel.as_raw_fd(), &wire, &raw, &mut Deadline::new(timeout)?)
+     }
+@@ -359,11 +393,99 @@
+     marker.sync_all().map_err(|e| io_err("persist lifecycle one-shot claim", e))
+ }
+ 
++fn owned_bootstrap_directory(file: &File, filesystem: libc::c_long) -> Result<()> {
++    require_fs(file, filesystem)?;
++    let m = file.metadata().map_err(|e| io_err("stat bootstrap layout directory", e))?;
++    if !m.is_dir() || m.nlink() == 0 || m.uid() != 0 || m.gid() != 0 || m.mode() & 0o022 != 0 {
++        return Err(Error::Reject("bootstrap layout directory owner/type/mode differs"));
++    }
++    Ok(())
++}
++fn exact_holding_membership(root_procs: &str, leaf_procs: &str, init_pid: libc::pid_t) -> Result<()> {
++    if init_pid <= 0 || !root_procs.is_empty() || leaf_procs != format!("{init_pid}\n") {
++        return Err(Error::Reject("bootstrap holding layout requires empty root and exact init leaf"));
++    }
++    Ok(())
++}
++// Retain the actual directories and both host-mount ancestry proofs until
++// bootstrap is complete. A second capture must match these same generations;
++// a replacement pathname, sibling, ancestor, or different mount cannot pass.
++struct BootstrapLayoutPins {
++    layout: BootstrapLayout,
++    files: Vec<File>,
++    ids: Vec<FileId>,
++    ancestry: Vec<ancestry::CgroupAncestry>,
++}
++impl BootstrapLayoutPins {
++    fn capture(layout: BootstrapLayout, host: &HostContext, root: &File, init: &ProcessPin) -> Result<Self> {
++        init.live()?;
++        let root_id = FileId::of(root)?;
++        let init_root = open_at(&init.proc_dir, "root", libc::O_PATH | libc::O_DIRECTORY)?;
++        let member = host.membership(&init.proc_dir)?;
++        let mut ancestry = Vec::new();
++        let files = match layout {
++            BootstrapLayout::ProjectedRootV1 => {
++                let projection = beneath_dir(&init_root, "sys/fs/cgroup")?;
++                require_fs(&projection, CGROUP2_MAGIC)?;
++                if FileId::of(&member)? != root_id || FileId::of(&projection)? != root_id {
++                    return Err(Error::Reject("bootstrap init membership/projection differs from held root"));
++                }
++                vec![init_root, member, projection]
++            }
++            BootstrapLayout::HoldingLeafV3 => {
++                owned_bootstrap_directory(root, CGROUP2_MAGIC)?;
++                let holding = beneath_dir(&init_root, "dev/.droidloom-cgroups")?;
++                let projection = beneath_dir(&init_root, "dev/.droidloom-cgroups/relay-v2")?;
++                let sys = beneath_dir(&init_root, "sys")?;
++                let target = beneath_dir(&init_root, "sys/fs/cgroup")?;
++                owned_bootstrap_directory(&holding, TMPFS_MAGIC)?;
++                owned_bootstrap_directory(&projection, CGROUP2_MAGIC)?;
++                owned_bootstrap_directory(&sys, TMPFS_MAGIC)?;
++                owned_bootstrap_directory(&target, TMPFS_MAGIC)?;
++                if FileId::of(&projection)? != root_id || FileId::of(&sys)?.device != FileId::of(&target)?.device {
++                    return Err(Error::Reject("bootstrap holding projection or native target differs from held layout"));
++                }
++                let leaf = beneath_dir(root, "init-bootstrap")?;
++                owned_bootstrap_directory(&leaf, CGROUP2_MAGIC)?;
++                let parent = open_at(&leaf, "..", libc::O_RDONLY | libc::O_DIRECTORY | libc::O_NOFOLLOW)?;
++                if FileId::of(&leaf)? == root_id || FileId::of(&member)? != FileId::of(&leaf)? ||
++                    FileId::of(&parent)? != root_id || read_at(root, "cgroup.type", 64)? != "domain\n" ||
++                    read_at(&leaf, "cgroup.type", 64)? != "domain\n" ||
++                    !read_at(&leaf, "cgroup.subtree_control", 256)?.trim().is_empty() {
++                    return Err(Error::Reject("bootstrap init is outside the exact controller-free leaf"));
++                }
++                ancestry.push(ancestry::CgroupAncestry::capture(root, &member)?);
++                ancestry.push(ancestry::CgroupAncestry::capture(root, &leaf)?);
++                exact_holding_membership(&read_at(root, "cgroup.procs", 64)?,
++                    &read_at(&leaf, "cgroup.procs", 64)?, init.pid)?;
++                vec![init_root, member, projection, holding, sys, target, leaf, parent]
++            }
++        };
++        let ids = files.iter().map(FileId::of).collect::<Result<Vec<_>>>()?;
++        init.live()?;
++        Ok(Self { layout, files, ids, ancestry })
++    }
++    fn validate(&self, host: &HostContext, root: &File, init: &ProcessPin) -> Result<()> {
++        let current = Self::capture(self.layout, host, root, init)?;
++        if self.files.len() != self.ids.len() || current.ids != self.ids || current.ancestry.len() != self.ancestry.len() {
++            return Err(Error::Reject("bootstrap layout changed during authority construction"));
++        }
++        for (file, expected) in self.files.iter().zip(&self.ids) {
++            if FileId::of(file)? != *expected { return Err(Error::Reject("held bootstrap layout generation changed")); }
++        }
++        for (held, observed) in self.ancestry.iter().zip(&current.ancestry) {
++            held.validate()?;
++            if !held.same_as(observed) { return Err(Error::Reject("bootstrap leaf ancestor chain changed")); }
++        }
++        Ok(())
++    }
++}
++
+ fn bootstrap(host: &HostContext, parent: &ProcessPin, channel: RawFd) -> Result<(BootstrapSpec, Arc<CellAuthority>, File)> {
+     let mut deadline = Deadline::new(Duration::from_secs(2))?;
+     let (wire, rights) = receive_packet(channel, BOOT_SIZE, &mut deadline, false)?;
+     if rights.len() != RIGHTS { return Err(Error::Reject("bootstrap requires exactly sixteen owned descriptors")); }
+-    let spec = BootstrapSpec::decode(&wire)?;
++    let (spec, layout) = BootstrapSpec::decode_with_layout(&wire)?;
+     let mut rights = rights.into_iter();
+     let root = File::from(rights.next().expect("fixed rights count"));
+     let owner = adopt_pidfd(host, rights.next().expect("fixed rights count"))?;
+@@ -384,13 +506,7 @@
+     }
+     let init_executable = open_at(&init.proc_dir, "exe", libc::O_RDONLY)?;
+     expected_init.matches(&init_executable, true)?;
+-    let root_id = FileId::of(&root)?;
+-    let init_root = open_at(&init.proc_dir, "root", libc::O_PATH | libc::O_DIRECTORY)?;
+-    let projection = beneath_dir(&init_root, "sys/fs/cgroup")?;
+-    require_fs(&projection, CGROUP2_MAGIC)?;
+-    if FileId::of(&host.membership(&init.proc_dir)?)? != root_id || FileId::of(&projection)? != root_id {
+-        return Err(Error::Reject("bootstrap init membership/projection differs from held root"));
+-    }
++    let layout_pins = BootstrapLayoutPins::capture(layout, host, &root, &init)?;
+     let namespaces = role_namespaces(rights.map(File::from).collect(), &init)?;
+     if namespaces.identity("pid") == host.host_namespaces.identity("pid") {
+         return Err(Error::Reject("bootstrap init must be in a private PID namespace"));
+@@ -398,7 +514,9 @@
+     let role = RolePolicy { uid: spec.uid, gid: spec.gid, namespaces, executable: lmkd };
+     let authority = Arc::new(CellAuthority::from_lifecycle(root, owner, init, role)?);
+     parent.live()?; host.validate_host_view()?; no_unexpected_peer_data(channel)?; deadline.check()?;
++    layout_pins.validate(host, &authority.root, &authority.init)?;
+     claim_directory(&directory, &spec, &authority)?;
++    layout_pins.validate(host, &authority.root, &authority.init)?;
+     deadline.check()?;
+     Ok((spec, authority, directory))
+ }
+@@ -501,6 +619,7 @@
+     executable: ExecutablePin,
+     host: HostContext,
+     spec: BootstrapSpec,
++    layout: BootstrapLayout,
+     inputs: Option<Vec<OwnedFd>>,
+     attempted: bool,
+     ready: Option<BootstrapStatus>,
+@@ -515,11 +634,24 @@
+     pub fn spawn(executable: ExecutablePin, spec: BootstrapSpec, handles: &[BorrowedFd<'_>; RIGHTS]) -> Result<Self> {
+         Self::spawn_in_context(HostContext::open()?, executable, spec, handles)
+     }
++    /// Legacy owned-fixture entry with an already projected domain root.
+     /// Accepts only a HostContext originally opened by the process leader.
+     /// Its fields are private; forked processes and workers which change any
+     /// namespace fail validation before they can spawn or send authority.
+     pub fn spawn_in_context(host: HostContext, executable: ExecutablePin, spec: BootstrapSpec,
+         handles: &[BorrowedFd<'_>; RIGHTS]) -> Result<Self> {
++        Self::spawn_with_layout(host, executable, spec, handles, BootstrapLayout::ProjectedRootV1)
++    }
++    /// Paired only with the real ABI3 init barrier: the finite domain is at
++    /// its verified holding view and init occupies the exact bootstrap leaf.
++    /// This sends a version-2/layout-3 packet; an old broker rejects it. There
++    /// is no fallback to the legacy fixture's already-projected root layout.
++    pub fn spawn_holding_in_context(host: HostContext, executable: ExecutablePin, spec: BootstrapSpec,
++        handles: &[BorrowedFd<'_>; RIGHTS]) -> Result<Self> {
++        Self::spawn_with_layout(host, executable, spec, handles, BootstrapLayout::HoldingLeafV3)
++    }
++    fn spawn_with_layout(host: HostContext, executable: ExecutablePin, spec: BootstrapSpec,
++        handles: &[BorrowedFd<'_>; RIGHTS], layout: BootstrapLayout) -> Result<Self> {
+         use std::os::unix::process::CommandExt;
+         spec.validate()?;
+         if unsafe { libc::geteuid() } != 0 || unsafe { libc::getegid() } != 0 {
+@@ -565,7 +697,7 @@
+             }
+         };
+         // No fallible operation between spawn and returning retained ownership.
+-        Ok(Self { child, running: None, channel, executable, host, spec, inputs: Some(inputs), attempted: false,
++        Ok(Self { child, running: None, channel, executable, host, spec, layout, inputs: Some(inputs), attempted: false,
+             ready: None, latest: None, audit: None, retirement_requested: false, retirement_seen: false, joined: false, retired })
+     }
+     pub fn pid(&self) -> u32 { self.child.id() }
+@@ -617,7 +749,8 @@
+         let borrowed: [BorrowedFd<'_>; RIGHTS] = std::array::from_fn(|index| unsafe {
+             BorrowedFd::borrow_raw(inputs[index].as_raw_fd())
+         });
+-        self.spec.send(unsafe { BorrowedFd::borrow_raw(self.channel.as_raw_fd()) }, &borrowed, Duration::from_secs(2))?;
++        self.spec.send_with_layout(unsafe { BorrowedFd::borrow_raw(self.channel.as_raw_fd()) }, &borrowed,
++            Duration::from_secs(2), self.layout)?;
+         drop(inputs);
+         let status = self.spec.receive_status(unsafe { BorrowedFd::borrow_raw(self.channel.as_raw_fd()) }, Duration::from_secs(2))?;
+         if status.state != BootstrapState::Ready { return Err(Error::Reject("lifecycle broker did not return initial READY")); }
+@@ -854,6 +987,59 @@
+         let mut s = s; s.uid = 0; assert!(s.encode().is_err());
+     }
+     #[test]
++    fn holding_bootstrap_version_is_explicit_and_never_falls_back() {
++        let s = spec();
++        let legacy = s.encode().unwrap();
++        let holding = s.encode_with_layout(BootstrapLayout::HoldingLeafV3).unwrap();
++        assert_eq!(&legacy[..8], b"P4BOOT1!");
++        assert_eq!(number(&legacy, 8, 4), 1);
++        assert_eq!(number(&legacy, 20, 4), 0);
++        assert_eq!(&holding[..8], b"P4BOOT2!");
++        assert_eq!(number(&holding, 8, 4), 2);
++        assert_eq!(number(&holding, 20, 4), 3);
++        assert_eq!(BootstrapSpec::decode_with_layout(&holding).unwrap(), (s.clone(), BootstrapLayout::HoldingLeafV3));
++        assert_eq!(BootstrapSpec::decode_with_layout(&legacy).unwrap(), (s, BootstrapLayout::ProjectedRootV1));
++        // The old owned-child reader cannot silently reinterpret ABI3 input.
++        assert!(BootstrapSpec::decode(&holding).is_err());
++        for (version, layout) in [(1, 3), (2, 0), (2, 1), (2, 2), (3, 3), (2, u32::MAX)] {
++            let mut wrong = holding;
++            put(&mut wrong, 8, version as u64, 4); put(&mut wrong, 20, layout as u64, 4);
++            assert!(BootstrapSpec::decode_with_layout(&wrong).is_err());
++        }
++        let mut wrong = legacy; put(&mut wrong, 20, 3, 4);
++        assert!(BootstrapSpec::decode_with_layout(&wrong).is_err());
++        for at in [0, 120, 127] {
++            let mut wrong = holding; wrong[at] ^= 1;
++            assert!(BootstrapSpec::decode_with_layout(&wrong).is_err());
++        }
++        assert!(BootstrapSpec::decode_with_layout(&holding[..127]).is_err());
++    }
++    #[test]
++    fn holding_bootstrap_membership_requires_the_exact_init_slot() {
++        exact_holding_membership("", "17\n", 17).unwrap();
++        for (root, leaf, pid) in [("17\n", "17\n", 17), ("\n", "17\n", 17),
++            ("", "", 17), ("", "18\n", 17), ("", "17\n18\n", 17),
++            ("", "17\n17\n", 17), ("", "017\n", 17), ("", "17", 17),
++            ("", "17\n", 0), ("", "17\n", -1)] {
++            assert!(exact_holding_membership(root, leaf, pid).is_err());
++        }
++    }
++    #[test]
++    fn holding_packet_rejects_legacy_owned_child_receiver_and_closes_rights() {
++        let (send, receive) = sockets();
++        let mut pipe = [-1; 2];
++        assert_eq!(unsafe { libc::pipe2(pipe.as_mut_ptr(), libc::O_CLOEXEC | libc::O_NONBLOCK) }, 0);
++        let (reader, writer) = unsafe { (OwnedFd::from_raw_fd(pipe[0]), OwnedFd::from_raw_fd(pipe[1])) };
++        let handles: [BorrowedFd<'_>; RIGHTS] = std::array::from_fn(|_| unsafe { BorrowedFd::borrow_raw(writer.as_raw_fd()) });
++        spec().send_with_layout(unsafe { BorrowedFd::borrow_raw(send.as_raw_fd()) }, &handles,
++            Duration::from_secs(1), BootstrapLayout::HoldingLeafV3).unwrap();
++        drop(writer);
++        assert!(spec().receive_from_owned_child(unsafe { BorrowedFd::borrow_raw(receive.as_raw_fd()) },
++            Duration::from_secs(1)).is_err());
++        let mut byte = 0u8;
++        assert_eq!(unsafe { libc::read(reader.as_raw_fd(), (&mut byte as *mut u8).cast(), 1) }, 0);
++    }
++    #[test]
+     fn inherited_rights_are_cloexec_and_owned_on_reject() {
+         let (send, receive) = sockets();
+         let mut pipe = [-1; 2]; assert_eq!(unsafe { libc::pipe2(pipe.as_mut_ptr(), libc::O_CLOEXEC | libc::O_NONBLOCK) }, 0);
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
+@@ -404,7 +404,7 @@
+             .take()
+             .ok_or_else(|| error("host origin token already consumed"))?;
+         // spawn returns actual Child ownership before any protocol I/O.
+-        self.broker = Some(relay(LifecycleBroker::spawn_in_context(
++        self.broker = Some(relay(LifecycleBroker::spawn_holding_in_context(
+             host, executable, spec, &handles,
+         ))?);
+         self.initialize_started = true;

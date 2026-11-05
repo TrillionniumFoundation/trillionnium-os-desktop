@@ -1,0 +1,213 @@
+{
+  "schema": 1,
+  "kind": "owner10_normal01_original_failure_independent_analysis",
+  "created_utc": "2026-11-05T09:14:20.221652+00:00",
+  "source_result": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner10-normal01-runtime-read01/runtime-result.json",
+    "bytes": 58161,
+    "sha256": "019d04a084f1cc7f028cfefc3277eb51e9dea6a89efc663c52daeff3e14b8190"
+  },
+  "reader_result": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner10-normal01-runtime-read01/reader-report.json",
+    "bytes": 63817,
+    "sha256": "2d4c93f287eb831c82f31c82b5c270e4c0a0ae98e43980a98faa86a202433880"
+  },
+  "job": "1a1aaf055a6-fc05-48de",
+  "original_result": "FAIL",
+  "runtime_qualified": false,
+  "actor_result_original_serialization_sha256": "412f825cfda1114c7f9c1af27a51e8e6a967576a6ab735a44abf405666169578",
+  "outer_first_error": {
+    "error": "RuntimeError('owned unit authoritative terminal failed; actor first error={\\'error\\': \"RuntimeError(\\'actual producer stopped or failed before ACTIVE\\')\", \\'stage\\': \\'normal\\'}')",
+    "stage": "normal_coordinator"
+  },
+  "actor_first_error": {
+    "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+    "stage": "normal"
+  },
+  "retained_lifecycle_first_failure": {
+    "message": "real broker retired; complete old cell recovery is required",
+    "observed_monotonic_ns": 894986996373878,
+    "origin": "runtime"
+  },
+  "status_message": "Android cell failed and exited with signal: 1 (SIGHUP): real broker retired; complete old cell recovery is required",
+  "actual_events": [
+    {
+      "sequence": 1,
+      "event": "prepared",
+      "monotonic_ns": 894951190692357
+    },
+    {
+      "sequence": 2,
+      "event": "owner_attached",
+      "monotonic_ns": 894951347974537
+    },
+    {
+      "sequence": 3,
+      "event": "init_hello",
+      "monotonic_ns": 894953371706310
+    },
+    {
+      "sequence": 4,
+      "event": "broker_ready",
+      "monotonic_ns": 894953604964221
+    },
+    {
+      "sequence": 5,
+      "event": "init_project_sent",
+      "monotonic_ns": 894953605784529
+    },
+    {
+      "sequence": 6,
+      "event": "init_projected_accepted",
+      "monotonic_ns": 894953606239769
+    },
+    {
+      "sequence": 7,
+      "event": "init_commit_sent",
+      "monotonic_ns": 894953606338978
+    },
+    {
+      "sequence": 8,
+      "event": "init_done_accepted",
+      "monotonic_ns": 894953606643941
+    },
+    {
+      "sequence": 9,
+      "event": "retiring",
+      "monotonic_ns": 894986996379829
+    },
+    {
+      "sequence": 10,
+      "event": "broker_retired",
+      "monotonic_ns": 894986996486834
+    },
+    {
+      "sequence": 11,
+      "event": "processes_dead",
+      "monotonic_ns": 894987056959349
+    },
+    {
+      "sequence": 12,
+      "event": "domain_empty",
+      "monotonic_ns": 894987057188467
+    },
+    {
+      "sequence": 13,
+      "event": "retired",
+      "monotonic_ns": 894987057222572
+    },
+    {
+      "sequence": 14,
+      "event": "resources_removed",
+      "monotonic_ns": 894987104081004
+    },
+    {
+      "sequence": 15,
+      "event": "claim_released",
+      "monotonic_ns": 894987163918276
+    }
+  ],
+  "init_to_broker_progress": {
+    "init_HELLO_authenticated": true,
+    "broker_READY_received": true,
+    "PROJECT_ack_received": true,
+    "COMMIT_DONE_received": true,
+    "broker_ACTIVE_received": false,
+    "done_to_broker_retired_seconds": 33.340241469,
+    "actual_pressure_registrations": [],
+    "granted": false,
+    "faulted": true,
+    "audit_incomplete": true,
+    "observations": 0,
+    "packets_queued": 0
+  },
+  "init_identity_clock_binding": {
+    "matched_exact_HELLO_and_live_held_snapshot": true,
+    "process": {
+      "birth": 89495135,
+      "pid": 1673172,
+      "pidfd": {
+        "device": 6,
+        "inode": 22667839
+      },
+      "proc_dir": {
+        "device": 26,
+        "inode": 499770785
+      }
+    },
+    "executable_sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73",
+    "cgroup": [
+      "0::/system.slice/p4-owner10-normal-20261105-01.service/domains/g-a829d1db676f919e871ab8196516b741644ce84b9685f1355a18c5707c5c80c9/android/init-bootstrap"
+    ],
+    "audit_monotonic_ns": 894953371706310,
+    "monotonic_before_ns": 894953386816335,
+    "monotonic_after_ns": 894953386889234,
+    "boottime_ns": 894953386818809,
+    "realtime_ns": 1793869244098248889,
+    "global_kernel_lines_attributed": false,
+    "atomic_clock_sample": false
+  },
+  "original_owner_retirement": {
+    "records_preserved": true,
+    "retirement_failure": null,
+    "cleanup_failure": null,
+    "all_tree_and_claim_cleanup_events_observed": true,
+    "faulted_broker_retirement_is_not_healthy_runtime": true
+  },
+  "external_retirement": {
+    "original_child_reaps": [
+      {
+        "forced_kill": false,
+        "pid": 1673121,
+        "reaped": true,
+        "returncode": 0,
+        "role": "daemon"
+      },
+      {
+        "forced_kill": false,
+        "pid": 1673109,
+        "reaped": true,
+        "returncode": -15,
+        "role": "presenter"
+      },
+      {
+        "forced_kill": false,
+        "pid": 1673073,
+        "reaped": true,
+        "returncode": 0,
+        "role": "sway"
+      },
+      {
+        "forced_kill": false,
+        "pid": 1673070,
+        "reaped": true,
+        "returncode": 0,
+        "role": "bus"
+      }
+    ],
+    "exact_unit_cleanup": {
+      "cgroup_absent": true,
+      "invocation": "39964c833d074d2cb14f131018739ac7",
+      "original_actor_dead": true,
+      "unit": "p4-owner10-normal-20261105-01.service",
+      "unit_not_found": true
+    },
+    "original_final_actor_pid": 1673065,
+    "final_pids_current": 1
+  },
+  "resource_observation": {
+    "held_outer_identity_matches_first_and_final": true,
+    "memory_peak": 584597504,
+    "memory_max": "5368709120",
+    "memory_high": "4831838208",
+    "memory_swap_max": "0",
+    "memory_swap_peak": "0",
+    "memory_events_all_zero_before_and_after": true,
+    "CPU": "100000 100000",
+    "TasksMax": "4096",
+    "Main_before_gate_after_equal": true,
+    "continuous_Main_noninterference_claimed": false
+  },
+  "remaining_cause_boundary": "The exact broker retired faulted before any enrollment grant; the enclosing owner exited with SIGHUP as reported by the daemon. The original record does not identify the SIGHUP sender or the underlying relay retirement reason. Fixed original daemon logs are required; do not carry forward the previous wrong-filesystem-type attribution or use external unbound kernel lines as this run evidence.",
+  "new_build_runtime_remote_actions": 0
+}

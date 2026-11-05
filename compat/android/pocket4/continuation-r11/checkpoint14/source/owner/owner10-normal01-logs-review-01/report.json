@@ -1,0 +1,58 @@
+{
+  "kind": "Owner10_fixed15_reader_full_self_review",
+  "created_utc": "2026-11-05T09:11:15.767322+00:00",
+  "request": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-logs-freeze-01/request.json",
+    "bytes": 6532,
+    "sha256": "1b9b69489a3172b70904a9355f428973f1093917565cef7f88067bae51885310"
+  },
+  "source": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-logs-freeze-01/collect.py",
+    "bytes": 6078,
+    "sha256": "fb47fcf1c6d3d01f0c4af9ccabd325af23ed91241f3b459d789999cf016b9f35"
+  },
+  "manifest": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-logs-freeze-01/manifest.json",
+    "bytes": 1110,
+    "sha256": "8c96942f5882f7cfddedbcbcc7c499480c98f5628c9adb1c8ec8885f7eccae3c"
+  },
+  "diff": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-logs-freeze-01/source.diff",
+    "bytes": 1766,
+    "sha256": "7c97ec694460e99d701b62b39e03d100d310c8572e4d67a2b43a749fd0456653"
+  },
+  "preimage": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner07-normal01-logs-freeze-01/collect.py",
+    "bytes": 6074,
+    "sha256": "01ca8e6b31e3a529100520b652c03b02409b237470999e7b3c0d13f5f4f2e6f4"
+  },
+  "checks": {
+    "all_frozen_members_checked": true,
+    "full_source_and_delta_read": true,
+    "exact_inverse_literal_transform": true,
+    "four_helper_functions_AST_unchanged": true,
+    "main_AST_unchanged_after_inert_kind_normalization": true,
+    "fixed7records_plus8logs": true,
+    "external_actual_prepared_and_runtime_pins_bound": true,
+    "exactInvocation_and_ExecMainPID_bound": true,
+    "original_unit_and_cgroup_and_actor_death_cleanup_required": true,
+    "held_rootowned_NoFollow_FD_and_size_hash_gates_preserved": true,
+    "both_receipts_reread_at_end": true,
+    "no_write_scan_child_runtime_or_chmod": true
+  },
+  "limits": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 134217728,
+    "nice": 10,
+    "timeout_seconds": 30
+  },
+  "key": "p4-owner10-normal01-logs01-fb47fcf1c6d3d01f",
+  "reader_executed": false,
+  "qualification": false,
+  "local_first_comparison": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner10-normal01-logs-review-01/local-comparison-first-attempt.json",
+    "bytes": 304,
+    "sha256": "75faede8b9c964f92aad5cb10b71791c80d48de861b49be799828e01fc44da2d"
+  },
+  "verdict": "NO_NEW_BLOCKER_IN_FIXED_15_MEMBER_READ_BINDING"
+}

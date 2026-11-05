@@ -1,0 +1,113 @@
+{
+  "findings": [
+    {
+      "detail": "All 25 frozen payload pins match. The seven per-file deltas and concatenated 44059-byte diff reconstruct byte-for-byte from the retained R4 source. Four of five Python files have no function/class AST change; owned_navigation changes only require_actual_install_binding to reject old UID 10169 and use R5 diagnostic labels. Forty-three other functions/classes are unchanged.",
+      "result": "NO_NEW_CONCRETE_BLOCKER"
+    },
+    {
+      "detail": "All 149 nonce literals are distinct and disjoint from the prior R4 flow and actual R5 install03 flow/state nonce. All 48 plans pass the actual R5 adapter validator. Removing nonce fields leaves each plan byte-equivalent as Python data to R4: 44 inspect plans, exactly three clicks and one fixed public-query set_text. Runtime still requires a fresh flow and once claim; local nonce checks alone are not a claim that no external actor used them.",
+      "result": "NONCE_AND_ACTION_SCOPE_PRESERVED"
+    },
+    {
+      "detail": "All eleven original install03 files match their external lengths/SHA256. The unchanged production actual_install function was executed locally with only exact remote-to-local read-path mapping, against those original records and the actual R5 contract parser. UID 10170, signed APK 16d3d1252b84accf0b454b8d9c3dd350031cca3a228cc9a772914d74a0c66b68, full installed inode record and d6ea152c1dcd395f02b2e0fe8002d98bcdf5203251463fd40ae6a17315ca9d98 state wire matched. Historical state is explicitly not a current UI baseline.",
+      "result": "ACTUAL_INSTALL_CHAIN_RECHECKED"
+    },
+    {
+      "detail": "Worker still holds the original action lock, performs Main guard then live installed identity before launch/navigation, and requires each sequence independent after-state/restoration. Submission still verifies the current public query inside its own inspection; course selection still uses the current exact card scope. Worker and execute bodies, including finally cleanup, are AST-identical to R4. A first read/action failure stops further mutation, with independent after-state and exact newly owned-task retirement retained; no install, force-stop, old-state rewrite or action replay was introduced.",
+      "result": "ORIGINAL_AUTHORITY_AND_RECOVERY_UNCHANGED"
+    },
+    {
+      "detail": "The exact 121581-byte request SHA622f2985ace3de2e347458e0cce9335c04b15fa560edae97ab56da669511f28d embeds 117925 bytes SHA4c5ec8d10ef8d522e2ba8332230309cdb75e04ab63436a94f37f7f2b90aa50ce. All eight packet files equal the frozen sources. The fixed privileged isolated-Python wrapper pins packet/stage source. Original 600s outer, 180s launch/240s navigation/100s cleanup, CPU1/512MiB and owned resource checker paths are unchanged. This is source binding, not actual resource qualification.",
+      "result": "PACKET_AND_RUNTIME_LIMITS_UNCHANGED"
+    }
+  ],
+  "frozen_source_pins": {
+    "FROZEN_FILES.json": {
+      "bytes": 3662,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/FROZEN_FILES.json",
+      "sha256": "13ba00fafacd4a224a0284bf7156dc08a462edfae9f451679c23b991657760de"
+    },
+    "SOURCE_PINS.json": {
+      "bytes": 997,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/SOURCE_PINS.json",
+      "sha256": "2eeff204605c6165f6bda6cd11f99124d6074d25df98c2104cc8af1669a4a99f"
+    },
+    "actual-install-review.json": {
+      "bytes": 5525,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/actual-install-review.json",
+      "sha256": "08446c6c2fbe545e0d910ea0d38ba329bcf14213370d20034b6ea8a1b7a719ee"
+    },
+    "exact-request.json": {
+      "bytes": 121581,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/exact-request.json",
+      "sha256": "622f2985ace3de2e347458e0cce9335c04b15fa560edae97ab56da669511f28d"
+    },
+    "make_request.py": {
+      "bytes": 3382,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/make_request.py",
+      "sha256": "03636e1a7884d20aaf2d5124f3723990d48a2e2eea8f1cf4027a6e61fc9d5ed0"
+    },
+    "owned_navigation.py": {
+      "bytes": 65211,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/owned_navigation.py",
+      "sha256": "f157814274b1d0d2c66ca530eff18703ed049b13be7bef35729ca3657346ee0a"
+    },
+    "r4-to-r5-full.patch": {
+      "bytes": 44059,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/r4-to-r5-full.patch",
+      "sha256": "970d4020fb617e77aa87efae2d6373472e615a15a37c5a535e6cde88eb961a68"
+    },
+    "source-review.json": {
+      "bytes": 2113,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/source-review.json",
+      "sha256": "f9003767f3ff6a7c415e375e938eeecdd43b176192796b358ce95436ce3fd41b"
+    },
+    "stage_execute.py": {
+      "bytes": 5801,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/stage_execute.py",
+      "sha256": "35449ea8e2bfbd4627f8c2a78a7464031f072430df7842c4d410fb942a22e637"
+    },
+    "video_navigation.py": {
+      "bytes": 17105,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/video_navigation.py",
+      "sha256": "e98c38bdfe535f920c66abe44dcecc5321b79b115cb4e161da336210e65b49a0"
+    },
+    "viewport_observation.py": {
+      "bytes": 13830,
+      "path": "/workspace/scratch/94990735b266/android-bili-r5-buffer-viewport-01/viewport_observation.py",
+      "sha256": "80b3883422c72ba0e7702e5d02bf5b20e0f084bee01fd1e17bd2af16e439b6a7"
+    }
+  },
+  "local_check_exit_code": 0,
+  "local_check_source": {
+    "bytes": 8571,
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/peer-r5-flow-binding-review-01/check_bindings.py",
+    "sha256": "6428b180d1e50018dcd48bad336dccc67083931bf54d87a56baa163d78a486ed"
+  },
+  "local_checks": {
+    "bytes": 5326,
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/peer-r5-flow-binding-review-01/checks-result.json",
+    "sha256": "f9b21fa18399df50e43f766249e85c540be9aa647cc7e7ff66fb71f406d57e78"
+  },
+  "notes": [
+    "Actual install03 success did not create a UiAutomation connection and therefore does not test the cache hypothesis or focused-window behavior. This review does not convert R4 historical failure into success.",
+    "The new README omits some detailed inherited viewport limits; their source and validation bodies remain unchanged. Private trees and pixels are outside this review and must remain outside public evidence."
+  ],
+  "review_boundaries": {
+    "Hepta_requests": 0,
+    "audio_verified": false,
+    "new_UI_or_Android_execution": false,
+    "new_helper_clearCache_runtime_qualified": false,
+    "old_failed_results_modified": false,
+    "old_peer_NOT_PERFORMED_record_rewritten": false,
+    "production_source_modified": false,
+    "viewport_is_playback_proof": false,
+    "whole_app_production_ready": false,
+    "whole_helper_implementation_reviewed_this_pass": false
+  },
+  "reviewed_at_utc": "2026-11-05T08:36:59.439688+00:00",
+  "reviewer": "local_pocket4_inventory",
+  "schema": 1,
+  "scope": "Frozen R4-to-R5 flow delta, original installation admission, request/source binding and retained scope/cleanup; not a complete helper/runtime review",
+  "state": "NARROW_R4_TO_R5_FUNCTIONAL_BINDING_REVIEW_COMPLETE_NO_NEW_CONCRETE_BLOCKER"
+}

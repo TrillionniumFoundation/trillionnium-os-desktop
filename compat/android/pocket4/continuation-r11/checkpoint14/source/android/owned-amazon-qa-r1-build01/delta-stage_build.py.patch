@@ -1,0 +1,22 @@
+--- Bili_R5/stage_build.py
++++ Amazon_R1/stage_build.py
+@@ -8,8 +8,8 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-source-02')
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-build-02')
++ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r1-source-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-amazon-qa-r1-build-01')
+ MEMORY = 536870912
+ 
+ 
+@@ -91,7 +91,7 @@
+                   'unit':cgroup.name,'unit_device':before['device'],'unit_inode':before['inode'],'automatic_retry':False})
+         for name, data in payload.items():
+             target=source/name;target.parent.mkdir(mode=0o700,parents=True,exist_ok=True);write_new(target,data)
+-        builder=types.ModuleType('owned_bili_qa_build');builder.__file__=str(source/'build_candidate.py')
++        builder=types.ModuleType('owned_amazon_qa_build');builder.__file__=str(source/'build_candidate.py')
+         exec(compile(payload['build_candidate.py'],builder.__file__,'exec'),builder.__dict__)
+         code=builder.build_once(packet['source_manifest_sha256']);result['build_returncode']=code
+         if (OUTPUT/'build-result.json').is_file():

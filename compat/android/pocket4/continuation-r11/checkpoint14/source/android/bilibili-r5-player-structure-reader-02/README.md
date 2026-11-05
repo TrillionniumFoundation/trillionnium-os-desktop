@@ -1,0 +1,13 @@
+# R5 retained player geometry diagnostic 02
+
+This revision reads the same fifteen fixed files as diagnostic 01. It performs no Android command, namespace entry, App launch, screenshot, or replay. The failed R5 functional run and frozen diagnostic 01 remain unchanged.
+
+The actual diagnostic-01 result is 13,111 bytes with SHA-256 `4853c34166b422f074b66394bbeca1da09e3f522ff721a6e288a56a1aee4d0bc`. Its first post inspection passed the original viewport predicate with one eligible SurfaceView. The next two posts and first viewport inspection each had two eligible SurfaceViews under the same unique player container, so only the original uniqueness term failed. The fixed area/container/overlay/toolbar roles and the two required ancestry terms remained satisfied. This does not establish a playback or cache cause.
+
+The new output adds only bounds and hashes for at most eight already-qualified SurfaceViews: node path, parent path, node record, resource ID, and parent class/resource hashes; relationships to the four fixed structural roles; crop/window containment booleans; and the number of distinct surface rectangles. It does not export arbitrary resource strings, node text/descriptions, complete nodes, tree paths, pixels, or choose a surface. Existing qualification remains false. The original pure viewport predicate is still executed without modification.
+
+The first viewport assessment now also requires its actual full-file pin, 199,428 bytes / `c4d9455fa069461cdb3efe99c63cd335eca68434ee80ef88ffb22b1d2d36032f`, in addition to the original canonical helper wire and request/scope/restoration chain. The prior result SHA is a provenance reference; this reader does not claim to read that result remotely. The four retained inspections are from an already retired task and grant no authority for a new click.
+
+File limits remain 1 MiB each, 3 MiB total, 8 seconds, with 32 KiB maximum output. The exact verified source is 18,717 bytes, so only the request's source-input cap changes from 16 KiB to 32 KiB. This does not change any App tree or runtime bound. Resource request remains one CPU, 128 MiB, nice 10, 30 seconds. Stable key is `pocket4-bilibili-r5-player-structure-readback-02-20261105`.
+
+Eight local synthetic controls completed with exit 0. They execute the original pure predicate and new diagnostic; scope/hash validation is explicitly a seam. The added two controls show that equal or unequal duplicate-surface geometry is reported without selecting a surface or changing the old uniqueness failure. No retained commercial assessment or device was read by these local controls.

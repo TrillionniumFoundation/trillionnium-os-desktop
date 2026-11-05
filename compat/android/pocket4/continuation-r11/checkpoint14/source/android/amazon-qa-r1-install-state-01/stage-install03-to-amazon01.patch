@@ -1,0 +1,87 @@
+--- a/android-qa-r5-install-state-03/stage_execute.py
++++ b/stage_execute.py
+@@ -7,17 +7,14 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03')
++ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01')
+ SOURCE = ROOT/'source'
+-NONCE = 'a25b59395264b89f9f97d5f0db74a3c5'
++NONCE = 'f58bd1b568714618ad9767ce586ae12f'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+-FILES = {'install_state.py','stage_execute.py','make_request.py',
+-         'references/readonly_r3_coordinator.py','INPUTS.json','README.md',
+-         'references/R3-SOURCE-MANIFEST.json','r4/source-manifest.json',
+-         'r4/bound_android_transport.py','session_binding.py'}
+-BASE_ROOT = Path('/home/alex/work/pocket4-bilibili-readonly-r3-01/source/recorder-held-r3-freeze-01')
+-BASE_MANIFEST = '4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906'
+-R4_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
++FILES = {'install_state.py','amazon_context.py','amazon_transport.py','stage_execute.py',
++    'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',
++    'references/read_amazon.py','target-artifact-reference.json'}
++
+ 
+ 
+ def require(value, reason):
+@@ -60,44 +57,6 @@
+     return packet,encoded
+ 
+ 
+-def stage_recorder_r4(ref, files):
+-    base_raw = ref.read(BASE_ROOT/'source-manifest.json',131072,BASE_MANIFEST)
+-    require(base_raw == files['references/R3-SOURCE-MANIFEST.json'], 'ORIGINAL_R3_MANIFEST_CHANGED')
+-    base = json.loads(base_raw)
+-    base_contract = ref.module(ref.read(BASE_ROOT/'source_contract.py',131072,
+-        base['files']['source_contract.py']['sha256']),BASE_ROOT/'source_contract.py','qa_original_r3_contract')
+-    original = base_contract.SourceContract(BASE_ROOT/'source-manifest.json',BASE_MANIFEST)
+-    derived_raw = files['r4/source-manifest.json']
+-    require(digest(derived_raw) == R4_MANIFEST, 'DERIVED_R4_MANIFEST_CHANGED')
+-    derived = json.loads(derived_raw)
+-    require(derived['revision'] == 4 and derived['base_manifest_sha256'] == BASE_MANIFEST and
+-            set(derived['files']) == set(base['files']), 'EXACT_R4_DERIVATION_REQUIRED')
+-    changed = [name for name in base['files'] if base['files'][name] != derived['files'][name]]
+-    require(changed == ['bound_android_transport.py'], 'ONLY_PREFIX_TRANSPORT_MAY_CHANGE')
+-    expected = derived['files']['bound_android_transport.py']
+-    require(expected == {'bytes':len(files['r4/bound_android_transport.py']),
+-                         'sha256':digest(files['r4/bound_android_transport.py'])}, 'R4_TRANSPORT_PIN_CHANGED')
+-    target = SOURCE/'recorder-r4'
+-    target.mkdir(mode=0o700)
+-    for name,row in derived['files'].items():
+-        rel = PurePosixPath(name)
+-        require(not rel.is_absolute() and '..' not in rel.parts and str(rel) == name, 'EXACT_R4_PATH_REQUIRED')
+-        raw = (files['r4/bound_android_transport.py'] if name == 'bound_android_transport.py'
+-               else ref.read(BASE_ROOT/name,131072,row['sha256']))
+-        require(len(raw) == row['bytes'] and digest(raw) == row['sha256'], 'R4_COPY_PIN_CHANGED:'+name)
+-        path = target/name
+-        path.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
+-        ref.write_new(path,raw,mode=0o444)
+-    ref.write_new(target/'source-manifest.json',derived_raw,mode=0o444)
+-    contract_module = ref.module(ref.read(target/'source_contract.py',131072,
+-        derived['files']['source_contract.py']['sha256']),target/'source_contract.py','qa_private_r4_contract')
+-    contract_module.SourceContract(target/'source-manifest.json',R4_MANIFEST).verify()
+-    original.verify()
+-    return {'base_manifest_sha256':BASE_MANIFEST, 'derived_manifest_sha256':R4_MANIFEST,
+-            'files':len(derived['files']), 'changed_production_files':changed,
+-            'base_unchanged':True, 'private_copy_verified':True, 'Main_source_modified':False}
+-
+-
+ def main(raw=None):
+     if raw is None:
+         raw = sys.stdin.buffer.read(262145)
+@@ -130,14 +89,13 @@
+             path=SOURCE/name
+             path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+             ref.write_new(path,value,mode=0o444)
+-        result['private_recorder_r4'] = stage_recorder_r4(ref,files)
+         entry=load_text(files['install_state.py'],SOURCE/'install_state.py','qa_install_actual_entry')
+         code=entry.execute(packet['source_manifest_sha256'])
+         result['coordinator_returncode']=code
+         durable_raw=ref.read(ROOT/'result.json')
+         result['coordinator_result']={'path':str(ROOT/'result.json'),'bytes':len(durable_raw),'sha256':digest(durable_raw)}
+         durable=json.loads(durable_raw)
+-        require(code == 0 and durable.get('ok') is True,'ACTUAL_INSTALL_STATE_NOT_QUALIFIED')
++        require(code == 0 and durable.get('ok') is True,'ACTUAL_AMAZON_INSTALL_STATE_NOT_QUALIFIED')
+         result['ok']=True
+     except BaseException as error:
+         remember('stage_or_coordinator',error)

@@ -1,0 +1,15 @@
+--- a/unbound-read_cases.py
++++ b/read_cases.py
+@@ -9,9 +9,9 @@
+ import sys
+ 
+ ROOT = "/home/alex/work/pocket4-signal-canary-combined07-9b4f271386ac6d2d"
+-# This draft cannot collect until the actual root-retrieved result is bound.
+-EXPECTED_RUNTIME_SHA256 = None
+-EXPECTED_RUNTIME_BYTES = None
++# This actual result was independently retrieved after the unique runtime terminated.
++EXPECTED_RUNTIME_SHA256 = '4e1899db8d0f82a3d80df231f10b09fed644028440a1d77e820e50413c3378d1'
++EXPECTED_RUNTIME_BYTES = 30990
+ CASES = ("r2-svc", "r2-smc-handler", "r2-smc-default", "r3-smc-mask-edit")
+ SUFFIXES = (("-durable.json", 256 * 1024),
+             ("-durable.claim", 16 * 1024),

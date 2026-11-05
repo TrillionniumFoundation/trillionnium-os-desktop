@@ -1,0 +1,7 @@
+# Current AOSP app-zygote role and seccomp source observation
+
+This read-only request follows the actual three-Java caller receipt (89125 bytes, SHA-256 eb9d09492267b2e8cd8a20c0ff87114b8ef4fbf6f4e7a320388aa1df31e01352). The observed AppZygoteInit.main delegates to ChildZygoteInit.runZygoteServer. The current observed Zygote JNI calls the Bionic range and app-zygote filter APIs; official upstream seccomp_policy.cpp identifies their implementation and the Android.bp-generated policy input relationship. Those upstream references identify paths only and do not bind Pocket4 source or binaries.
+
+Exactly four files are read. ChildZygoteInit.java and seccomp_policy.cpp each have a 65536-byte maximum; bionic libc Android.bp has a 262144-byte maximum; SECCOMP_BLOCKLIST_APP.TXT has a 16384-byte maximum. All four held-file observation helpers are identical to the reviewed Java3 reader. Missing, oversized, aliased, changed or invalid-UTF8 observations remain failures. There is no source execution, directory discovery, policy change, service/build start, filesystem write, installation or Main action. CPU 25%, RAM 128 MiB and timeout 30 seconds remain unchanged.
+
+One gzip+base64 envelope records full compressed and uncompressed sizes and SHA-256. Its completion field is all_four_complete; it uses sha256 and gzip_sha256 like the Java/APEX reader family. Observation alone does not bind installed ART/libc or the compiled updater, certify a filter, or authorize an enabled native-generation role. No remote request was dispatched while creating this package.

@@ -1,0 +1,5 @@
+# Bounded transport revision for the unsubmitted builder462 request
+
+The original request remains frozen and unsubmitted. Its actual stdin is 1,408,472 bytes, beyond process_start's 1 MiB limit. This revision changes only args, stdin encoding and the idempotency key. The exact original stage plus all 23 packet members are gzip-compressed as one input. The boundary fixes envelope, compressed and uncompressed byte counts and SHA256 values, reads at most the fixed envelope length plus one, validates base64, decompresses to at most the fixed output length plus one and rejects incomplete streams, trailing members/data and unconsumed bytes. Only after every check does it compile and execute the byte-identical original stage. No source, test, resource, ownership or cleanup gate is reduced. The same never-created remote source root is used; no remote call was made by this freeze.
+
+The local check proves only bounded decode round-trip equality. It does not execute the decoded stage or any Rust/ART code. No APK, ELF, gzip archive or raw dependency cache is included as a standalone deliverable; the structured request contains its fixed source envelope.

@@ -1,0 +1,139 @@
+{
+  "Main_after_equals_prepared_Main_before": true,
+  "Main_deployment": false,
+  "Main_memory_event_delta_available_in_this_result": false,
+  "Main_resource_limits_unchanged": true,
+  "actor_cgroup_absence_after_outer_terminal_independently_checked_here": false,
+  "all_owned_memory_events_zero_is_not_a_valid_generalization": true,
+  "case_assessments": [
+    {
+      "case": "svc",
+      "checks": "0x000000000007e001",
+      "guest_pid": 5588,
+      "nonce": "5a7517935f9d49e183b8b4647d5bbd94",
+      "package": "org.droidloom.signalprobe",
+      "required_checks": "0x000000000007e001"
+    },
+    {
+      "case": "smc-handler",
+      "checks": "0x000000000007fffe",
+      "guest_pid": 5647,
+      "nonce": "c2ca535cfa9545c29f3f7e935ffba5fb",
+      "package": "org.droidloom.signalprobe",
+      "required_checks": "0x000000000007fffe"
+    },
+    {
+      "case": "smc-default",
+      "checks": "0x0000000000fc0000",
+      "guest_pid": 5709,
+      "nonce": "a350a2487c2c471b805bfe7287cb9688",
+      "package": "org.droidloom.signalprobe",
+      "required_checks": "0x0000000000fc0000"
+    },
+    {
+      "case": "smc-mask-edit",
+      "checks": "0x000000000707fffe",
+      "guest_pid": 5827,
+      "nonce": "ebdddcaf8b4e4d46abff14c3575e3f68",
+      "package": "org.droidloom.signalprobe.r3",
+      "required_checks": "0x000000000707fffe"
+    }
+  ],
+  "case_raw_native_assertions_independently_recomputed": false,
+  "current_template04_payloads_checked": 35,
+  "four_owned_service_hierarchies_retired": true,
+  "host_counts": {
+    "completed": 3788,
+    "disabled": 2,
+    "executed": 3791,
+    "failed": 0,
+    "registered": 3793,
+    "skipped": 3
+  },
+  "host_held_records_unchanged": 7,
+  "metadata_generation_enabled": false,
+  "new_test_execution": false,
+  "original_template03_payloads_checked": 31,
+  "own_packages_removed": true,
+  "production_ready": false,
+  "reference_files_checked": 24,
+  "resource_rows": [
+    {
+      "memory_events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_peak": null,
+      "properties": "MemoryCurrent=491520\nMemoryPeak=2105344\nCPUUsageNSec=12810000\nCPUQuotaPerSecUSec=20ms\nMemoryMax=33554432\nMemorySwapMax=0\n",
+      "unit": "p4-signal-combined07-9b4f271386ac6d2d-bus.service"
+    },
+    {
+      "memory_events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_peak": null,
+      "properties": "MemoryCurrent=91815936\nMemoryPeak=93933568\nCPUUsageNSec=142718000\nCPUQuotaPerSecUSec=80ms\nMemoryMax=268435456\nMemorySwapMax=0\n",
+      "unit": "p4-signal-combined07-9b4f271386ac6d2d-sway.service"
+    },
+    {
+      "memory_events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_peak": null,
+      "properties": "MemoryCurrent=8323072\nMemoryPeak=11141120\nCPUUsageNSec=203042000\nCPUQuotaPerSecUSec=500ms\nMemoryMax=536870912\nMemorySwapMax=0\n",
+      "unit": "p4-signal-combined07-9b4f271386ac6d2d-presenter.service"
+    },
+    {
+      "memory_events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_peak": null,
+      "properties": "MemoryCurrent=2608992256\nMemoryPeak=2886246400\nCPUUsageNSec=57779966000\nCPUQuotaPerSecUSec=1.300000s\nMemoryMax=4831838208\nMemorySwapMax=0\n",
+      "unit": "p4-signal-combined07-9b4f271386ac6d2d-daemon.service"
+    },
+    {
+      "memory_events": {
+        "high": 0,
+        "low": 0,
+        "max": 61356,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_peak": "268435456",
+      "properties": null,
+      "unit": "current-owned-controller-actor"
+    }
+  ],
+  "runtime_130_remote_source_files_re_read_by_this_offline_review": false,
+  "runtime_manifest_declared_files": 130,
+  "runtime_sha256": "4e1899db8d0f82a3d80df231f10b09fed644028440a1d77e820e50413c3378d1",
+  "runtime_source_before_after_contract_matches_admission": true,
+  "schema": 1,
+  "state": "OFFLINE_RECEIPT_CROSSCHECK_PASSED",
+  "whole_app_qualification": false
+}

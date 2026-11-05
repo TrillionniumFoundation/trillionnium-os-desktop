@@ -1,0 +1,47 @@
+{
+  "Hepta_calls": 0,
+  "Main_mutation": false,
+  "checks_file": "checks-result.json",
+  "findings": [
+    {
+      "blocker": false,
+      "evidence": "Java and Python use com.amazon.mShop.android.shopping / UID10129, self org.droidloom.qa.amazon.r1 and pocket4-owned-amazon-qa-v1. Java additionally obtains actual target ApplicationInfo.uid and requires exact UID; self instrumentation requires both context packages equal SELF. Escaped package regexes are full-match and retain the old resource/activity suffix classes.",
+      "id": "exact_target_identity"
+    },
+    {
+      "blocker": false,
+      "evidence": "Only usb c cable is admitted for set_text. The original successful-inspection nonce/hash/age, current tree/window, refreshed exact resource/class/capability and focused-window gates remain unchanged. The performed SET_TEXT bundle uses the same fixed query, then the actual target text must equal it; Python requires requested and observed value hashes equal the same query.",
+      "id": "public_query_effect_and_readback"
+    },
+    {
+      "blocker": false,
+      "evidence": "parse_completed retains explicit integer/range/self_uid equality and adds prior target/helper UIDs to the exclusion tuple. This narrows admission and does not substitute a static helper UID for actual installed identity.",
+      "id": "helper_uid_exclusions"
+    },
+    {
+      "blocker": false,
+      "evidence": "qa_adapter.execute unconditionally raises DEDICATED_AMAZON_HELD_FLOW_ADMISSION_REQUIRED. Existing Session is not accepted as a reviewed Amazon business Flow. No runtime request or UI capability is granted by this source review.",
+      "id": "standalone_scope_closed"
+    },
+    {
+      "blocker": false,
+      "evidence": "A few unchanged diagnostic strings contain BILI; predicates use the new exact PACKAGE/UID. These labels do not change authorization. No cosmetic source revision is requested during this freeze.",
+      "id": "legacy_message_labels"
+    }
+  ],
+  "frozen_source_changed": false,
+  "kind": "independent_Amazon_helper_target_delta_source_review",
+  "limits": [
+    "Source-only narrow review; no Java compilation, Android install, instrumentation, device, UI or commercial raw tree read.",
+    "No rerun of the authors 16 controls and no assertion that a live Amazon EditText/resource/Flow is supported.",
+    "No full builder/request/Session/old framework re-review and no overall App production qualification."
+  ],
+  "read_scope": [
+    "Complete two frozen target deltas",
+    "Java onStart request gates, validateScope, act and fixed target constants",
+    "Python scope, validate_request, parse_completed and select_unique_editable",
+    "Adapter execute/main only for unconditional standalone denial"
+  ],
+  "schema": 1,
+  "verdict": "NO_NEW_CONFIRMED_BLOCKER_IN_REVIEWED_TARGET_DELTA"
+}

@@ -1,0 +1,46 @@
+--- normal10-prepared/read.py
++++ normal10-runtime/read.py
+@@ -8,9 +8,9 @@
+ import traceback
+ 
+ ROOT_NAME = 'p4-owner10-normal-20261105-01-state'
+-EXPECTED_REPORT_BYTES = 55139
+-EXPECTED_REPORT_SHA256 = '53f327728b4daf732653a189d690f0c1d4e6374aeab5f7b9df7d666598f978e3'
+-NAMES = ('prepared.json',)
++EXPECTED_REPORT_BYTES = 58161
++EXPECTED_REPORT_SHA256 = '019d04a084f1cc7f028cfefc3277eb51e9dea6a89efc663c52daeff3e14b8190'
++NAMES = ('runtime-result.json',)
+ LIMIT = 1048576
+ 
+ 
+@@ -60,16 +60,16 @@
+         result = {'path': '/opt/' + ROOT_NAME + '/' + name, 'bytes': len(body),
+                   'sha256': hashlib.sha256(body).hexdigest(), 'identity': stamp(after),
+                   'content': body.decode('utf-8')}
+-        if name == 'prepared.json':
++        if name == 'runtime-result.json':
+             need(result['bytes'] == EXPECTED_REPORT_BYTES and result['sha256'] == EXPECTED_REPORT_SHA256,
+-                 'externally pinned actual prepared report differs')
++                 'externally pinned actual runtime report differs')
+         return result
+     finally:
+         os.close(fd)
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'fixed-owner10-normal01-prepared-read', 'collection_complete': False,
++    result = {'schema': 1, 'kind': 'fixed-owner10-normal01-runtime-read', 'collection_complete': False,
+               'files': {}, 'errors': [], 'mutations': False, 'qualification': False}
+     fds = []
+     try:
+@@ -84,8 +84,8 @@
+         need(sum(item['bytes'] for item in result['files'].values()) <= LIMIT,
+              'aggregate member bound exceeded')
+         need(stamp(os.fstat(root)) == identity and stamp(os.stat(ROOT_NAME, dir_fd=opt, follow_symlinks=False)) == identity,
+-             'held prepared directory changed')
+-        need(read_member(root, 'prepared.json') == result['files']['prepared.json'],
++             'held runtime directory changed')
++        need(read_member(root, 'runtime-result.json') == result['files']['runtime-result.json'],
+              'original report changed at end')
+         result['collection_complete'] = True
+     except BaseException as error:

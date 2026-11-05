@@ -1,0 +1,16 @@
+{
+  "source": "Exact local read-only Python tool output after the local03 failure; no production mutation",
+  "joined": true,
+  "pid": 3,
+  "tid": 3,
+  "task_names": ["828534"],
+  "self": ["Tgid:\t828534", "Pid:\t828534", "NStgid:\t828534\t3", "NSpid:\t828534\t3", "Threads:\t1"],
+  "worker": {
+    "pid": 3,
+    "tid": 4,
+    "task_names": ["828534", "828538"],
+    "thread_self": ["Tgid:\t828534", "Pid:\t828538", "NStgid:\t828534\t3", "NSpid:\t828538\t4", "Threads:\t2"]
+  },
+  "worker_lookup": {"errno": 2, "filename": "/proc/self/task/4/status", "type": "FileNotFoundError"},
+  "interpretation": "Current proc view reports ancestor namespace IDs; raw gettid is in the current PID namespace. Production namespace verification is not relaxed."
+}

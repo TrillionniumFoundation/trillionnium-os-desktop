@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "review": "builder462 source/controller/transport02 independent narrow review",
+  "reviewer": "/root/local_pocket4_inventory",
+  "created_utc": "2026-11-05T09:03:29.571564+00:00",
+  "verdict": "NO_NEW_CONCRETE_BLOCKER_FOUND_IN_REVIEWED_DELTA",
+  "qualification": false,
+  "inputs": {
+    "baseline451_controller": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder451-compile02/compile_builder.py",
+      "bytes": 62676,
+      "sha256": "80cd19aaf18563920b1d7aa02a2ff7a34e0693eefe0d0e8a20c6de478fe7d15b"
+    },
+    "compile462_manifest": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/SOURCE_PINS.json",
+      "bytes": 5316,
+      "sha256": "b4f3e78c61ddabd06fdf0e6c13cf4ed8206330b21448b928166890ebb59cd7d5"
+    },
+    "transport02_manifest": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01-transport02/SOURCE_PINS.json",
+      "bytes": 727,
+      "sha256": "5f8b187e82392010248b673f4db2c8dc41a7be66eac4bb5ccd9c893a343a2aaf"
+    },
+    "projection_source_manifest": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-normal-projection-next03/SOURCE_PINS.json",
+      "bytes": 4296,
+      "sha256": "d77b529f4295bafa19a91196354e14e70a64c5e7b63de4643fe267211e106566"
+    },
+    "actual451": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/compiled-parent451-result.json",
+      "bytes": 129787,
+      "sha256": "8c72e771c9ed5bd440b36aa8c7c3379b31ce8acccdc2b222fadad9e64cb28096"
+    },
+    "controller_diff": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/compiler451-to462.patch",
+      "bytes": 13627,
+      "sha256": "65396b4190971d87beaa2c29a7c4edb7ea688a13234fd00157a1a4c862977fe7"
+    },
+    "controller": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/compile_builder.py",
+      "bytes": 64192,
+      "sha256": "997a1024b3ede93afa4fad33858b00432b95cf73abb6819612b4c096e76e52fc"
+    },
+    "stage": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/stage.py",
+      "bytes": 5567,
+      "sha256": "eb7e00ddaecc5a47762d8ddcac375ec2335f0d4c83342bb64b5cba8e8850d126"
+    },
+    "new_module": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/delta/tools/droidloom-update/src/native_generation_art.rs",
+      "bytes": 11106,
+      "sha256": "2f6f6a799b90c3f534e89ce8015cae5e889bb59966e8894f9fbbfc58214b6905"
+    },
+    "transport_boundary": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01-transport02/transport-boundary.py",
+      "bytes": 1392,
+      "sha256": "e2ac038a0772c99f626397ba79184479fa9ecab4ae77da7e442e2b724a83f603"
+    },
+    "transport_request": {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01-transport02/exact-request.json",
+      "bytes": 334645,
+      "sha256": "0bddd975748ab73bd1a0690e865b09e06d1246a95c6f6c403d30d7e160279e08"
+    }
+  },
+  "local_checks": {
+    "program": {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/peer-builder462-source-transport-review-01/check_bindings.py",
+      "bytes": 14031,
+      "sha256": "059d527421a344f41764971bd551450d36b2fab189a4798a7bbe1e899a72ac8d"
+    },
+    "result": {
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/peer-builder462-source-transport-review-01/checks-result.json",
+      "bytes": 5086,
+      "sha256": "27de25b66170a5540cc3e6a636ec2d36d3c07686f5d9c96cb6fda36b035b8138"
+    },
+    "result_scope": "byte/AST/retained-evidence/decoder-prefix controls only",
+    "actual_commands": [
+      "python3 -I -B check_bindings.py"
+    ],
+    "result_exit_code": 0
+  },
+  "read_scope": [
+    "Read the entire 13627-byte compiler delta, full affected execute function, full stage, source packet/manifest relations, exact request and full transport boundary/make_request.",
+    "Read complete native_generation_art.rs and full android.rs/main.rs preimage-to-candidate changes, including CLI dispatch, ordinary None behavior, projection restore/completion ordering and the newly fixed two-target call.",
+    "Read focused_test/validate_focused_result and related inherited normal child/fakeroot cleanup. Independently confirmed all 34 unchanged controller functions and stage main retain their AST.",
+    "Verified all 13 ART projection data/module deltas against art-normal-projection-next03 exact frozen bytes; this is provenance checking, not a fresh full semantic review of every ART C++ translation unit."
+  ],
+  "findings": [
+    {
+      "id": "source-origin",
+      "conclusion": "Actual451 copied-source manifest is the exact preimage. New manifest retains449 records, changes android.rs/main.rs and adds native_generation_art.rs plus10 fixed ART data files. No deletion or engine source modification. Both Rust preimage bytes match the actual451 manifest and all13 delta bytes match independently frozen projection next03."
+    },
+    {
+      "id": "controller-scope",
+      "conclusion": "The full compiler delta changes fixed root/manifest/parent authority/source lists and execute test accounting. The root is create-only. Held path/hash/source/dependency checks, offline Rust/toolchain controls, CPU/RAM/deadline/signal handling and normal owned-child/fakeroot reap functions are unchanged. Stage main also remains exact AST; it validates all23 payloads before writing the new owned root."
+    },
+    {
+      "id": "tests-count",
+      "conclusion": "The actual451 baseline reports195 registered tests and22 executed exact tests, including five real-image controls. Candidate462 retains the original7 projection and15 pairing names/order and appends2 ART-projection controls, requiring197 registered/24 exact executed tests. Neither registration count is a full-suite execution claim. Every focused run retains independent exact libtest logfile plus stdout count gates; fakeroot-backed staging stays at original index20."
+    },
+    {
+      "id": "projection-only",
+      "conclusion": "The new CLI uses fixed targets libart-runtime and libnativebridge in a prepared locked worktree, with disabled/default or enabled-build-only flavor. Ordinary build_targets routes through the helper with None. Fresh output/source-disjoint and create-only record checks remain; journaled source restoration precedes command completion. The records explicitly do not grant full translation-unit, APEX-signature or enabled ART lifecycle qualification. Existing mixed-generation rejection remains unchanged among449 records and its15 controls remain selected."
+    },
+    {
+      "id": "transport",
+      "conclusion": "Only args, stdin and stable key differ between original and transport02 requests. The fixed1392-byte decoder verifies bounded envelope and packed bytes, exact schema, gzip EOF/no trailing data and bounded decoded size/SHA before the sole exec. Its output equals the exact original stage+PACKET+main(PACKET) bytes; all23 packet contents equal frozen files. Local decoder-prefix controls removed only final exec and retained every guard: exact positive decoded correctly; appended/truncated/same-size-corrupted/plain-uncompressed envelope inputs each failed the original first length/hash gate."
+    },
+    {
+      "id": "resource-boundary",
+      "conclusion": "Original451 resource receipt observes memory.swap.max=max with swap current/peak0; no hard SwapMax0 claim is made. The new transport preserves CPU1/1GiB/600s/nice15 request settings and unchanged controller resource checks. This review does not certify a future462 invocation or broaden the observed parent resource gate."
+    }
+  ],
+  "not_performed": {
+    "new_Rust_compile": true,
+    "new_Rust_tests": true,
+    "ART_translation_unit_build": true,
+    "full_APEX_build_or_signing": true,
+    "enabled_engine_pair_or_runtime": true,
+    "decoded_build_stage_execution": true,
+    "Hepta_or_device_calls": true,
+    "Main_or_UI_actions": true
+  },
+  "pending_actual_gate": "Root must independently dispatch and inspect the matching462 compile/report/24 exact tests. Two-library projection cannot qualify a complete ART APEX or be enabled with the flag0 engine.",
+  "original_failures_and_freezes_modified": false
+}

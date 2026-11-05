@@ -1,0 +1,52 @@
+--- owner09/freeze_runtime09.py
++++ owner10/freeze_runtime10.py
+@@ -1,4 +1,4 @@
+-"""Bind the one actual preparation receipt to the frozen Owner09 runtime template.
++"""Bind the one actual preparation receipt to the frozen Owner10 runtime template.
+ 
+ This local generator does not dispatch a request or execute a runtime.
+ """
+@@ -10,9 +10,9 @@
+ import re
+ 
+ BASE = Path('/workspace/scratch/94990735b266/lmkd-recovery-20261105-01')
+-SOURCE = BASE / 'owner09-normal01-freeze-01'
+-OUT = BASE / 'owner09-normal01-runtime-freeze-01'
+-SOURCE_MANIFEST_SHA256 = 'c3b70987189ac3621d819d3563b629510da69c9cbe780781ba3cbcd973bb871a'
++SOURCE = BASE / 'owner10-normal01-freeze-01'
++OUT = BASE / 'owner10-normal01-runtime-freeze-01'
++SOURCE_MANIFEST_SHA256 = '14f87c89b549d8a489ec58e953ac5eb2708857b90772779cc2e79be2e5ad1813'
+ 
+ 
+ def sha(value):
+@@ -41,8 +41,8 @@
+         assert len(data) == row['bytes'] and sha(data) == row['sha256']
+     plan_raw = (SOURCE / 'plan.json').read_bytes()
+     plan = json.loads(plan_raw)
+-    assert plan['kind'] == 'owned-real-producer09-normal01-cgroup-handoff01'
+-    assert plan['scope'] == 'REAL_OWNER_ABI3_CGROUP_HANDOFF_FIRST_ACTIVE_ORIGINAL_RETIREMENT'
++    assert plan['kind'] == 'owned-real-producer10-normal01-broker-holding01'
++    assert plan['scope'] == 'REAL_OWNER_ABI3_BROKER_HOLDING_FIRST_ACTIVE_ORIGINAL_RETIREMENT'
+     assert plan['init_protocol_abi'] == 3 and plan['entry_abi'] == 'droidloom-relay-entry-v3'
+     assert actual['success'] is True and actual['errors'] == []
+     assert actual['attempt_nonce'] == plan['attempt_nonce'] and actual['plan_sha256'] == sha(pretty(plan))
+@@ -79,7 +79,7 @@
+     request['idempotency_key'] = request['idempotency_key'].replace('__ACTUAL_PREPARED_SHA256_PREFIX16__', args.sha256[:16])
+     assert stdin.replace(args.sha256, '__ACTUAL_PREPARED_SHA256__') == template
+     ast.parse(stdin)
+-    compile(stdin, '<Owner09 exact runtime>', 'exec')
++    compile(stdin, '<Owner10 exact runtime>', 'exec')
+     raw = pretty(request)
+     result = {'schema': 1, 'actual_prepared_sha256': args.sha256,
+         'source_manifest_sha256': sha(manifest_raw), 'actual_prepared_plan_and_six_sources_and_five_artifacts_match': True,
+@@ -90,8 +90,8 @@
+         'runtime_executed': False, 'production_or_App_qualification': False}
+     OUT.mkdir(exist_ok=False)
+     members = {'request.json': raw, 'stdin.py': stdin.encode(), 'actual-prepared.json': body,
+-        'binding-result.json': pretty(result), 'freeze_runtime09.py': Path(__file__).read_bytes(),
+-        'README.md': b'# Exact fresh Owner09 NORMAL01 runtime request\n\nOnly the externally observed actual prepared SHA and its stable key were filled into the previously frozen runtime template. The local generator has not submitted this request. The ABI3 holding-view and bootstrap-leaf producer and init library are bound to their actual matching build receipts. Original Owner07 and Owner08 failures remain unchanged; this is a separate fresh cell. Runtime authorization, durable terminal, actual success/failure evidence, original retirement and exact cleanup remain the root coordinator\'s responsibility. This package does not qualify property reload, installed operation, pressure effects or commercial Apps.\n'}
++        'binding-result.json': pretty(result), 'freeze_runtime10.py': Path(__file__).read_bytes(),
++        'README.md': b'# Exact fresh Owner10 NORMAL01 runtime request\n\nOnly the externally observed actual prepared SHA and its stable key were filled into the previously frozen runtime template. The local generator has not submitted this request. The explicit P4BOOT2/layout3 broker, ABI3 holding-view and bootstrap-leaf producer, and init library are bound to actual matching build and ordinary receipts. Original Owner07, Owner08 and Owner09 failures remain unchanged; this is a separate fresh cell. Runtime authorization, durable terminal, actual success/failure evidence, original retirement and exact cleanup remain the root coordinator\'s responsibility. This package does not qualify property reload, installed operation, pressure effects or commercial Apps.\n'}
+     rows = []
+     for name, data in members.items():
+         (OUT / name).write_bytes(data)

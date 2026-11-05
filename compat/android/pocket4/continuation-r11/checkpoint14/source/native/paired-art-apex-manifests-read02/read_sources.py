@@ -1,0 +1,105 @@
+#!/usr/bin/env python3
+"""Read two manifest names from the held current ART APEX Android.bp; preserve prior partial failure."""
+import base64
+import datetime
+import gzip
+import hashlib
+import json
+import os
+from pathlib import Path
+import stat
+
+BASE = Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source')
+SOURCES = (
+    ('art/build/apex/manifest-art.json', 16384),
+    ('art/build/apex/manifest-art-debug.json', 16384),
+)
+
+
+def utc():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def digest(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def identity(info):
+    return {'device': info.st_dev, 'inode': info.st_ino, 'mode': info.st_mode,
+            'uid': info.st_uid, 'gid': info.st_gid, 'bytes': info.st_size,
+            'mtime_ns': info.st_mtime_ns, 'ctime_ns': info.st_ctime_ns}
+
+
+def observe(relative, limit):
+    path = BASE / relative
+    row = {'path': str(path), 'relative': relative, 'maximum_bytes': limit,
+           'started_utc': utc(), 'complete': False}
+    try:
+        parents = {}
+        for parent in path.parents:
+            info = parent.lstat()
+            if not stat.S_ISDIR(info.st_mode):
+                raise RuntimeError('source ancestor is not a real directory: ' + str(parent))
+            parents[str(parent)] = (info.st_dev, info.st_ino, info.st_mode)
+        named_before = path.lstat()
+        row['named_before'] = identity(named_before)
+        if not stat.S_ISREG(named_before.st_mode) or named_before.st_size > limit:
+            raise RuntimeError('source is not regular or exceeds its fixed bound')
+        fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(fd, 'rb') as stream:
+            row['held_before'] = identity(os.fstat(stream.fileno()))
+            if row['held_before'] != row['named_before']:
+                raise RuntimeError('named/held source identity differs before read')
+            raw = stream.read(limit + 1)
+            row['held_after'] = identity(os.fstat(stream.fileno()))
+            row['named_after'] = identity(path.lstat())
+            if not (row['held_before'] == row['held_after'] == row['named_after']):
+                raise RuntimeError('source changed while held')
+            if len(raw) != row['held_before']['bytes'] or len(raw) > limit:
+                raise RuntimeError('source read is incomplete or exceeds its fixed bound')
+            for name, expected in parents.items():
+                info = Path(name).lstat()
+                if (info.st_dev, info.st_ino, info.st_mode) != expected:
+                    raise RuntimeError('source ancestor identity changed: ' + name)
+            row['bytes'] = len(raw)
+            row['sha256'] = digest(raw)
+            row['text'] = raw.decode('utf-8', errors='strict')
+            row['complete'] = True
+    except Exception as error:
+        row['error'] = {'type': type(error).__name__, 'message': str(error),
+                        'errno': getattr(error, 'errno', None),
+                        'filename': getattr(error, 'filename', None)}
+    row['finished_utc'] = utc()
+    return row
+
+
+def main():
+    started = utc()
+    authority = observe('art/build/apex/Android.bp', 32768)
+    authority_bound = (authority['complete'] and authority['bytes'] == 14519 and
+        authority['sha256'] == '2f1d4ef144d51bc02d077e6e78670609734e64ed703e9d1bfeb4d518f9c3a6a1')
+    rows = [observe(relative, limit) for relative, limit in SOURCES] if authority_bound else []
+    complete = authority_bound and len(rows) == 2 and all(row['complete'] for row in rows)
+    result = {'schema': 1, 'scope': 'two manifest files explicitly named by the pinned current ART APEX definition',
+              'source_sha256': SOURCE_SHA256, 'started_utc': started, 'finished_utc': utc(),
+              'all_two_complete': complete, 'files': rows,
+              'android_bp_authority': authority, 'android_bp_authority_bound': authority_bound,
+              'previous_partial_failure_preserved': True,
+              'previous_report_sha256': 'd7c1af9d5b38fa0afbe58115a032623e2c5634de749e6d17af5a594d3ecdde9c',
+              'installed_ART_binary_bound': False, 'compiled451_source_bound': False,
+              'source_execution': False, 'recursive_scan': False, 'Main_actions': 0,
+              'files_written': 0, 'policy_or_resource_changes': 0,
+              'remote_service_or_build_started': False}
+    raw = (json.dumps(result, ensure_ascii=True, sort_keys=True) + '\n').encode()
+    if len(raw) > 20000000:
+        raise RuntimeError('bounded two-source result unexpectedly exceeds encoding bound')
+    packed = gzip.compress(raw, compresslevel=6, mtime=0)
+    envelope = {'schema': 1, 'encoding': 'gzip+base64', 'uncompressed_bytes': len(raw),
+                'sha256': digest(raw), 'gzip_bytes': len(packed), 'gzip_sha256': digest(packed),
+                'all_two_complete': complete, 'payload': base64.b64encode(packed).decode('ascii')}
+    print(json.dumps(envelope, sort_keys=True), flush=True)
+    return 0 if complete else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

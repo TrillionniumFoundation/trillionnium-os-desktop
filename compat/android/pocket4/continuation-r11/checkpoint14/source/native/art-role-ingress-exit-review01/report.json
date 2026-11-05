@@ -1,0 +1,132 @@
+{
+  "authority": {
+    "all_five_local_originals_equal_held_named_report": true,
+    "compiled451_source_bound": false,
+    "installed_ART_binary_bound": false,
+    "job": "1a1ab17c84e-fc05-4a39",
+    "reader_report": {
+      "bytes": 130603,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-role-ingress-exit-read01/reader-report.json",
+      "sha256": "07547751719bfb04d4707bef758868bb16e76811c95e3716dbf8a3f8682ba0e1"
+    },
+    "root_reported_terminal": "exit 0; output complete and durable"
+  },
+  "candidate07_and_ordinary_V2_modified": false,
+  "cross_source_ordering": [
+    {
+      "bytes": 66325,
+      "observed": "forkAndSpecialize invokes nativeForkAndSpecialize, then postForkCommon, then returns to ZygoteConnection.",
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-role-java-callers-read01/originals/Zygote.java",
+      "sha256": "1c9d8c4bc1235b514b01c7db81406a770ac7925659d1d7c00a0a7f5dbeac6423"
+    },
+    {
+      "bytes": 12097,
+      "observed": "postForkCommon invokes nativePostZygoteFork and then Daemons.startPostZygoteFork; postForkChild native initialization occurs earlier.",
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-role-java-callers-read01/originals/ZygoteHooks.java",
+      "sha256": "3aa1d4a3ebe1b801bf7ff0a9ae4ed60ef712e2fcc2757faeada319a438391263"
+    },
+    {
+      "bytes": 5020,
+      "observed": "The existing NNP and range-filter installation occurs later in child Java initialization. It cannot retroactively constrain an earlier native-bridge initialization.",
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/art-role-seccomp-source-read01/originals/ChildZygoteInit.java",
+      "sha256": "c3ac499508142d5f7cd3b91eb8ab08821ca8402b023538e3fe0496ed9ba5493e"
+    }
+  ],
+  "findings": [
+    {
+      "functions": [
+        "AppZygote constructor",
+        "connectToZygoteIfNeededLocked"
+      ],
+      "id": "I1",
+      "implication": "The first supported role must explicitly select the Java app-zygote path; this observation does not prove native-service or WebView role support, nor the upstream allocation provenance of every constructor argument.",
+      "observed": "The object stores the zygote UID and permitted UID/GID interval separately. The Java zygote path passes the interval to startChildZygote and waits for its socket before application preload. Native-service zygotes select a separate process interface.",
+      "source": "frameworks/base/core/java/android/os/AppZygote.java"
+    },
+    {
+      "functions": [
+        "startViaZygote argument construction",
+        "startChildZygote"
+      ],
+      "id": "I2",
+      "implication": "The matched request already transports the interval, but the current native fork signature does not consume it. A new typed field must be parsed before fork, with duplicate, range, class, invocation-wrapper and requester checks.",
+      "observed": "startChildZygote sends --start-child-zygote and places uid-range-start/end in the extra arguments after the class name. The UID and GID of the zygote are independent outer arguments.",
+      "source": "frameworks/base/core/java/android/os/ZygoteProcess.java"
+    },
+    {
+      "functions": [
+        "parseArgs"
+      ],
+      "id": "I3",
+      "implication": "Treating mStartChildZygote alone as a provenance grant would not attest a constrained interval. The pending factory challenge must not grant creation until an actual privileged parent approves the exact interval and live child.",
+      "observed": "The parser stores the start-child-zygote boolean. Its final validation only establishes presence of a child socket argument; the UID interval remains in mRemainingArgs.",
+      "source": "frameworks/base/core/java/com/android/internal/os/ZygoteArguments.java"
+    },
+    {
+      "functions": [
+        "processCommand",
+        "handleChildProc",
+        "handleParentProc"
+      ],
+      "id": "I4",
+      "implication": "handleParentProc is not an early pre-specialization approval hook. A matched native fork handshake must complete before guest-capable child initialization and before the parent returns to the Java post-fork daemon restart.",
+      "observed": "mStartChildZygote selects the Java fork path. It calls Zygote.forkAndSpecialize before either handleChildProc or handleParentProc. The child later invokes childZygoteInit.",
+      "source": "frameworks/base/core/java/com/android/internal/os/ZygoteConnection.java"
+    },
+    {
+      "functions": [
+        "pthread_exit"
+      ],
+      "id": "I5",
+      "implication": "A persistent clone worker absent from Bionic registration can survive the last normal thread. NativeBridge fork callbacks alone do not close this host-native exit boundary. Any future hook must account for destructors/creation synchronization and both final exit paths; this review does not invent a safe hook or mark it solved.",
+      "observed": "Cleanup/TLS destructors precede terminating=true under the creation lock, signal blocking, dynamic TLS cleanup and thread-exit callbacks. The terminal paths invoke stack teardown or __exit(0); this function contains no raw-metadata-owner retirement or last-nonowner-thread test.",
+      "source": "bionic/libc/bionic/pthread_exit.cpp"
+    }
+  ],
+  "planned_implementation_not_claimed_complete": {
+    "factory_authority": "Separate protocol: pending kernel-PIDFD-bound child challenge; one approval from the actual live privileged parent for the same child/range/pair; per-message kernel PIDFD identity; no role-label, seccomp-count or credential-text self-attestation.",
+    "raw_worker": "Zero-cap worker remains required; ordinary zero-cap provenance and NOFILE contracts stay intact. Capable-role factory authorization does not permit inherited privileged worker state.",
+    "supported_initial_role": "Matched LP64 x86_64 Java AppZygoteInit path only, with trusted request parsing, early native query-only base filter and range policy installed before guest initialization. Ordinary three base-filter entrypoints remain unchanged.",
+    "unclosed": [
+      "Trusted early Java/JNI range handoff and parent challenge channel have not been implemented or tested in the platform.",
+      "Actual range-policy permanence/architecture closure, credential and namespace transition behavior and paired binaries remain unqualified.",
+      "Host-native last-thread exit still needs a concrete lifetime mechanism.",
+      "Factory role registry is new local draft code; no server/client integration or actual kernel authorization positive has run."
+    ]
+  },
+  "review_bounds": [
+    "Read the named caller/parser/exit functions and their relevant surrounding branches. This is not a whole-file audit of unrelated methods.",
+    "All five received source bytes and metadata were independently reconciled offline. The sources are the observed AOSP working tree, not proof of installed ART/Bionic binaries or the compiled451 input set.",
+    "No Java, C++, ART, seccomp or platform test was executed in this source review; no Hepta or Main action occurred."
+  ],
+  "reviewer": "/root/native_bridge_repair",
+  "schema": 1,
+  "source_pins": [
+    {
+      "bytes": 26969,
+      "relative": "frameworks/base/core/java/com/android/internal/os/ZygoteConnection.java",
+      "sha256": "58f376c5f64387296ef5a669bddc84a5f3d74b94bc7b31b3834233a03aacf746"
+    },
+    {
+      "bytes": 22587,
+      "relative": "frameworks/base/core/java/com/android/internal/os/ZygoteArguments.java",
+      "sha256": "52e073e4c275f8ebf53b40d654fa3904318f57aedc9f958e64c40da70db5fde5"
+    },
+    {
+      "bytes": 55237,
+      "relative": "frameworks/base/core/java/android/os/ZygoteProcess.java",
+      "sha256": "9e05288273ed4677d8dfab1d610a63846322db7e42ffb3298bbd1b9f8a8d3b28"
+    },
+    {
+      "bytes": 9992,
+      "relative": "frameworks/base/core/java/android/os/AppZygote.java",
+      "sha256": "d1cf5bc7ce2636c9cf2e8be1c08f3f84274c689ad555085d509572c9e036c3f6"
+    },
+    {
+      "bytes": 5876,
+      "relative": "bionic/libc/bionic/pthread_exit.cpp",
+      "sha256": "a9f0d10de9b716ed17bb276fb9f4dbd2ed77c1e2c08a9a7d7eb6269339f51bab"
+    }
+  ],
+  "state": "FIXED_SOURCE_CALL_CHAIN_REVIEW_COMPLETE_NOT_ENABLED"
+}

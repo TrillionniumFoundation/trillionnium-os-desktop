@@ -1,0 +1,93 @@
+{
+  "binary": {
+    "bytes": 89144,
+    "sha256": "b2387ce02a4756eb87956f175520ab50ad75875aa0672016bfedc4259dfe0633"
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++17",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-O2",
+        "-pthread",
+        "-I/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local03/inputs/source",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local03/inputs/source/role_authorization.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local03/inputs/source/factory_context.cc",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local03/inputs/controls/protocol_controls.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local03/protocol_controls"
+      ],
+      "elapsed_ns": 2001529155,
+      "returncode": 0,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-auth-work01/local03/protocol_controls"
+      ],
+      "elapsed_ns": 15236674,
+      "returncode": 1,
+      "stderr": {
+        "bytes": 41,
+        "sha256": "a1a53855280127e2081c4bb3bac5887536981337c6ffbe7ea9e5eb6f8556a094"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    }
+  ],
+  "compiler": {
+    "bytes": 1027128,
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "error": {
+    "message": "run did not complete successfully",
+    "type": "RuntimeError"
+  },
+  "factory_service_started": false,
+  "forced_numeric_tid_reuse": false,
+  "main_actions": 0,
+  "platform_filter_executed": false,
+  "registry_positive_authorization_executed": false,
+  "schema": 1,
+  "scope": "Local exact-source protocol and held caller task controls",
+  "source_pins": {
+    "controls/protocol_controls.cc": {
+      "bytes": 15876,
+      "sha256": "2fe202795d14ba7bb9795f87da3e27dc3aa48bf56bea08d7c557c6709c799df7"
+    },
+    "source/factory_context.cc": {
+      "bytes": 5377,
+      "sha256": "afd7ed0688ac5d4ea5cfc5611c7a7f17572184547c2628f1fe888d491ee1479a"
+    },
+    "source/factory_context.h": {
+      "bytes": 954,
+      "sha256": "b27148d779b5626a1677f7b2e10333645de90c68b67716b851104eab7ad6c7d1"
+    },
+    "source/role_authorization.cc": {
+      "bytes": 38156,
+      "sha256": "ac6a79811bb1ddd7794f740ab4c2f69d6257c58a309a9cffe54abd6790e5e8b5"
+    },
+    "source/role_authorization.h": {
+      "bytes": 5394,
+      "sha256": "dacb5ec7262ef071378e1c81395e2d77941e1b8458ba2d38f8ebe12dde007f87"
+    }
+  },
+  "source_unchanged_after": true,
+  "state": "FAIL",
+  "tool_unchanged_after": true
+}

@@ -1,0 +1,145 @@
+{
+  "frozen_manifests": {
+    "compile462": {
+      "manifest": {
+        "bytes": 5316,
+        "sha256": "b4f3e78c61ddabd06fdf0e6c13cf4ed8206330b21448b928166890ebb59cd7d5"
+      },
+      "verified_members": 32
+    },
+    "transport02": {
+      "manifest": {
+        "bytes": 727,
+        "sha256": "5f8b187e82392010248b673f4db2c8dc41a7be66eac4bb5ccd9c893a343a2aaf"
+      },
+      "verified_members": 5
+    },
+    "projection_next03": {
+      "manifest": {
+        "bytes": 4296,
+        "sha256": "d77b529f4295bafa19a91196354e14e70a64c5e7b63de4643fe267211e106566"
+      },
+      "verified_members": 24
+    }
+  },
+  "actual451_to_462_source": {
+    "actual_result": {
+      "bytes": 129787,
+      "sha256": "8c72e771c9ed5bd440b36aa8c7c3379b31ce8acccdc2b222fadad9e64cb28096"
+    },
+    "parent_manifest": {
+      "bytes": 88664,
+      "sha256": "a5052accd9bb36231a3c59271f8bc35e464e5cf14d702787735feed0d86b7a13"
+    },
+    "expected_manifest": {
+      "bytes": 91148,
+      "sha256": "7eaf421cc911a8fec13945099f8d3758bada44b2331e4698dbefd472f535c8da"
+    },
+    "changed_existing": [
+      "tools/droidloom-update/src/android.rs",
+      "tools/droidloom-update/src/main.rs"
+    ],
+    "added": [
+      "android/native-generation-art/source/art/libnativebridge/Android.bp",
+      "android/native-generation-art/source/art/libnativebridge/droidloom_generation.cc",
+      "android/native-generation-art/source/art/libnativebridge/droidloom_generation.h",
+      "android/native-generation-art/source/art/libnativebridge/include/nativebridge/droidloom_generation_protocol.h",
+      "android/native-generation-art/source/art/libnativebridge/include/nativebridge/native_bridge.h",
+      "android/native-generation-art/source/art/libnativebridge/libnativebridge.map.txt",
+      "android/native-generation-art/source/art/libnativebridge/native_bridge.cc",
+      "android/native-generation-art/source/art/runtime/Android.bp",
+      "android/native-generation-art/source/art/runtime/native_bridge_art_interface.cc",
+      "android/native-generation-art/source/art/runtime/runtime.cc",
+      "tools/droidloom-update/src/native_generation_art.rs"
+    ],
+    "unchanged_existing": 449,
+    "all_13_delta_bytes_equal_projection_next03": true,
+    "both_preimages_equal_actual451_manifest": true,
+    "engine_source_changed": false,
+    "APEX_validated": false,
+    "ART_runtime_validated": false,
+    "actual451_swap_max": "max"
+  },
+  "controller_and_test_scope": {
+    "compiler_diff_reconstructed": true,
+    "stage_diff_reconstructed": true,
+    "controller_functions": 35,
+    "modified_functions": [
+      "execute"
+    ],
+    "unchanged_functions": 34,
+    "stage_main_AST_unchanged": true,
+    "old_actual_registered": 195,
+    "old_actual_focused_executed": 22,
+    "new_required_registered": 197,
+    "new_planned_focused": 24,
+    "new_full_197_suite_claimed": false,
+    "old_22_order_and_names_preserved": true,
+    "new_two_exact_names": [
+      "native_generation_art::tests::output_rejects_source_overlap_alias_and_reuse",
+      "native_generation_art::tests::records_are_create_only_and_never_grant_runtime_readiness"
+    ]
+  },
+  "transport": {
+    "original_request": {
+      "bytes": 1614105,
+      "sha256": "34b421d5661c48112073989779cfa70ffa458c0e4470c22331a7c4f9f24e728f"
+    },
+    "request": {
+      "bytes": 334645,
+      "sha256": "0bddd975748ab73bd1a0690e865b09e06d1246a95c6f6c403d30d7e160279e08"
+    },
+    "boundary": {
+      "bytes": 1392,
+      "sha256": "e2ac038a0772c99f626397ba79184479fa9ecab4ae77da7e442e2b724a83f603"
+    },
+    "changed_fields": [
+      "args",
+      "idempotency_key",
+      "stdin"
+    ],
+    "packet_files": 23,
+    "packet_content_and_expected_pins_match": true,
+    "stage_AST_only_PACKET_assignment_and_main_call_added": true,
+    "envelope": {
+      "bytes": 332858,
+      "sha256": "d1811c949aa0b05a65de7257096a4832d8099661bccc9f9813d9aff0466a75b9"
+    },
+    "decoded": {
+      "bytes": 1408472,
+      "sha256": "3365b2d2330c3bcc2927fbf454e781587363415d7255bd361ae6f80c93102e9d"
+    },
+    "actual_frozen_decoder_prefix_positive": true,
+    "negative_controls": [
+      {
+        "name": "one_trailing_byte",
+        "rejected": true,
+        "reason": "fixed compiler transport length/hash mismatch"
+      },
+      {
+        "name": "one_byte_truncated",
+        "rejected": true,
+        "reason": "fixed compiler transport length/hash mismatch"
+      },
+      {
+        "name": "same_size_last_byte_changed",
+        "rejected": true,
+        "reason": "fixed compiler transport length/hash mismatch"
+      },
+      {
+        "name": "uncompressed_original_as_envelope",
+        "rejected": true,
+        "reason": "fixed compiler transport length/hash mismatch"
+      }
+    ],
+    "only_final_exec_removed_for_local_control": true,
+    "decoded_stage_executed": false,
+    "new_CPU_RAM_timeout_nice_unchanged": true
+  },
+  "schema": 1,
+  "result": "PASS_LOCAL_BYTE_AST_TRANSPORT_ONLY",
+  "created_utc": "2026-11-05T09:02:47.968246+00:00",
+  "Rust_build_or_tests_executed": false,
+  "Hepta_calls": 0,
+  "Android_or_Main_actions": 0
+}

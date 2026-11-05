@@ -1,0 +1,117 @@
+{
+  "actual_runtime_executed": false,
+  "cases": [
+    {
+      "accepted": true,
+      "case": "exact_ABI3_nonce_phase_projection_echo"
+    },
+    {
+      "accepted": false,
+      "case": "old_numeric_abi2"
+    },
+    {
+      "accepted": false,
+      "case": "old_magic_v2"
+    },
+    {
+      "accepted": false,
+      "case": "old_numeric_abi1"
+    },
+    {
+      "accepted": false,
+      "case": "old_magic_v1"
+    },
+    {
+      "accepted": false,
+      "case": "wrong_actual_nonce"
+    },
+    {
+      "accepted": false,
+      "case": "wrong_phase"
+    },
+    {
+      "accepted": false,
+      "case": "changed_echo_payload"
+    },
+    {
+      "accepted": false,
+      "case": "unexpected_reserved_project_fields"
+    },
+    {
+      "accepted": false,
+      "case": "different_ready_inode"
+    },
+    {
+      "accepted": false,
+      "case": "nonhex_wire"
+    },
+    {
+      "accepted": true,
+      "case": "new_profile"
+    },
+    {
+      "accepted": true,
+      "case": "new_paths"
+    },
+    {
+      "accepted": false,
+      "case": "old_profile"
+    },
+    {
+      "accepted": false,
+      "case": "old_scope"
+    },
+    {
+      "accepted": false,
+      "case": "short_nonce"
+    },
+    {
+      "accepted": false,
+      "case": "old_unit"
+    },
+    {
+      "accepted": false,
+      "case": "old_package"
+    },
+    {
+      "accepted": false,
+      "case": "old_state"
+    }
+  ],
+  "kind": "owner11_exact_qualifier_and_profile_controls_01",
+  "passed": 19,
+  "scope": "Pure exact source ABI/echo/phase/profile controls; no full Owner qualification or device execution.",
+  "source_pins": [
+    {
+      "bytes": 26831,
+      "path": "actor.py",
+      "sha256": "1f2be54f474977174b86b22c7734ee2d7bd1e98d354fdeea4c13b0239a90813e"
+    },
+    {
+      "bytes": 14396,
+      "path": "coordinator.py",
+      "sha256": "bdfe33f54497b6f9c91a48a2491588a9b7fad06a9c3914ce4c9f4eeffa705847"
+    },
+    {
+      "bytes": 12338,
+      "path": "owned.py",
+      "sha256": "879ecb3df3165164124e12eac2f7a5549332b4909df2d6bed9d9055b685f05fb"
+    },
+    {
+      "bytes": 13377,
+      "path": "pinned_support.py",
+      "sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e"
+    },
+    {
+      "bytes": 15264,
+      "path": "prepare.py",
+      "sha256": "06ad62396c050aca583fee1f51367e16b2e43c63636f502e2ab40a85f8c47332"
+    },
+    {
+      "bytes": 10249,
+      "path": "qualify.py",
+      "sha256": "a843d4a0ac4da1dd1baa8707ff3d0f59e4ed4c3cd26fd6fa1eae2ed9f21a6fad"
+    }
+  ],
+  "success": true
+}
