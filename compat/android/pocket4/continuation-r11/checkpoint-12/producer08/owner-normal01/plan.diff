@@ -1,0 +1,214 @@
+--- normal07-03/plan.json
++++ normal08-01/plan.json
+@@ -1,23 +1,23 @@
+ {
+   "schema": 1,
+-  "kind": "owned-real-producer07-normal03-diagnostic01",
+-  "scope": "REAL_OWNER_INIT_PROJECT_DIAGNOSTIC_AND_ORIGINAL_ACTIVE_RETIREMENT_GATES",
+-  "attempt_nonce": "65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
+-  "package": "/opt/p4-owner07-normal-20261105-03",
+-  "state": "/opt/p4-owner07-normal-20261105-03-state",
+-  "unit": "p4-owner07-normal-20261105-03.service",
+-  "description": "Pocket4 Owner07 NORMAL diagnostic03 65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
++  "kind": "owned-real-producer08-normal01-detached01",
++  "scope": "REAL_OWNER_ABI2_DETACHED_PROJECTION_FIRST_ACTIVE_ORIGINAL_RETIREMENT",
++  "attempt_nonce": "1263e33ed55e57b4ec42ead6afd051ed1b8265e9bead44653b8a87e70ca74498",
++  "package": "/opt/p4-owner08-normal-20261105-01",
++  "state": "/opt/p4-owner08-normal-20261105-01-state",
++  "unit": "p4-owner08-normal-20261105-01.service",
++  "description": "Pocket4 Owner08 ABI2 NORMAL01 1263e33ed55e57b4ec42ead6afd051ed1b8265e9bead44653b8a87e70ca74498",
+   "control_socket": "/run/p4-owner07-control.sock",
+-  "claim_store_backing": "/opt/p4-owner07-normal-20261105-03-state/claims",
+-  "canonical_spec_sha256": "496529895916669515aa9118ec78e4853d94de654c04950b2ba5c6b64fec8207",
++  "claim_store_backing": "/opt/p4-owner08-normal-20261105-01-state/claims",
++  "canonical_spec_sha256": "0c97655923def5b22a7376d8e4e1c91a681123ffa910124854cdb5359567dd0d",
+   "spec": {
+-    "host_uid": 61279,
++    "host_uid": 61280,
+     "subordinate_uids": {
+-      "start": 20200000,
++      "start": 20300000,
+       "count": 100000
+     },
+     "subordinate_gids": {
+-      "start": 20200000,
++      "start": 20300000,
+       "count": 100000
+     },
+     "image_dir": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5",
+@@ -211,13 +211,13 @@
+         "target": "/droidloom/wifi-nohw"
+       }
+     ],
+-    "data_dir": "/opt/p4-owner07-normal-20261105-03-state/data",
+-    "runtime_dir": "/run/droidloom/cells/u61279",
++    "data_dir": "/opt/p4-owner08-normal-20261105-01-state/data",
++    "runtime_dir": "/run/droidloom/cells/u61280",
+     "render_node": "/dev/dri/renderD128",
+     "graphics_backend": "drm_media_dma_heap",
+     "denial_socket": "/run/p4-owner07-user/droidloom/native-bridge.sock",
+     "pressure_relay": {
+-      "cgroup_parent": "/sys/fs/cgroup/system.slice/p4-owner07-normal-20261105-03.service/domains",
++      "cgroup_parent": "/sys/fs/cgroup/system.slice/p4-owner08-normal-20261105-01.service/domains",
+       "memory_max_bytes": 4294967296,
+       "memory_high_bytes": 3758096384,
+       "memory_swap_max_bytes": 0,
+@@ -229,20 +229,20 @@
+       "lmkd_uid": 1069,
+       "lmkd_gid": 1069,
+       "broker": {
+-        "path": "/opt/p4-owner07-normal-20261105-03/bin/droidloom-psi-owner",
++        "path": "/opt/p4-owner08-normal-20261105-01/bin/droidloom-psi-owner",
+         "sha256": "09ee190013f27084ce9d2f6bbcc8098c5dd124ad7781ac1ecd7ab23e5cf667de"
+       },
+       "entry_supervisor": {
+-        "path": "/opt/p4-owner07-normal-20261105-03/bin/droidloom-supervisor",
+-        "sha256": "86f27b81da63b6eaab32588b21d16ca872b5de2ab38af08c8e357e1af7075843"
++        "path": "/opt/p4-owner08-normal-20261105-01/bin/droidloom-supervisor",
++        "sha256": "bac973049a590fc18dc3c8e9ee441df1b3724afc5d1c85a3b29c74ebcf1c4765"
+       },
+       "lmkd": {
+-        "path": "/opt/p4-owner07-normal-20261105-03/bin/lmkd",
++        "path": "/opt/p4-owner08-normal-20261105-01/bin/lmkd",
+         "sha256": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+       },
+       "init_barrier": {
+-        "path": "/opt/p4-owner07-normal-20261105-03/lib/libdroidloom_init_relay.so",
+-        "sha256": "19bdf87af5b4e7323a4420b6c14969e787cfe68a9ea7defbdea0a044bbbd6ed2"
++        "path": "/opt/p4-owner08-normal-20261105-01/lib/libdroidloom_init_relay.so",
++        "sha256": "74273805ab09605c6f9203f7541e21e83b6aa58ab327307b38e03a04d456ca24"
+       },
+       "init_sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73",
+       "init_linker_sha256": "b8f4ca47cfc88a815554d2c37cb9f56c91c715491493b2b48a8fd781fa625a9f",
+@@ -473,43 +473,43 @@
+     }
+   },
+   "actual_compile_receipt": {
+-    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/producer07-audit02/compile-result.json",
+-    "bytes": 39634,
+-    "sha256": "d5ead1b1e83447a4037a07262830fc2b8ad807e004c3dbca95ec0051b3e0fbcf"
++    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/producer08-compile01/compile-result.json",
++    "bytes": 39987,
++    "sha256": "0e77456cf7145dd3f81cbed8ccf0e17afe855963c712fc99171733541c932f87"
+   },
+-  "actual_ordinary_receipt_sha256": "82c1d9ce57467c173cd8ea2a50a2777a0898e3d58e5476ddbdef0a5502874a72",
++  "actual_ordinary_receipt_sha256": "87023d3f10b73b611d45abf1aa6b8cab91be48346c52e7404a9335bedeb82881",
+   "actual_original_rc_receipt_sha256": "7b54441ed291c0b2ddd50b8230d069591fbf1593935761198aa0920cc4bf1b9c",
+   "artifacts": {
+     "droidloomd": {
+-      "bytes": 6477672,
+-      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02/candidate/runtime/droidloom-supervisor#0.1.0",
+-      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02/candidate/runtime/droidloom-supervisor/src/bin/droidloomd.rs",
++      "bytes": 6480584,
++      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-supervisor#0.1.0",
++      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+       "device": 66306,
+-      "inode": 34781395,
++      "inode": 35923998,
+       "mode": 448,
+-      "path": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02/target/debug/droidloomd",
+-      "sha256": "db6929c9240c21d6c9c6f87f461dbf88468c8145394f510c466309a54e9e0605",
++      "path": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/target/debug/droidloomd",
++      "sha256": "d4be46138cf5f31c815c84713307f1427db019300e7901c8d6662c7dc1d06184",
+       "destination": "bin/droidloomd"
+     },
+     "droidloom-supervisor": {
+-      "bytes": 6494112,
+-      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02/candidate/runtime/droidloom-supervisor#0.1.0",
+-      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02/candidate/runtime/droidloom-supervisor/src/main.rs",
++      "bytes": 6496800,
++      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-supervisor#0.1.0",
++      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-supervisor/src/main.rs",
+       "device": 66306,
+-      "inode": 34781403,
++      "inode": 35924008,
+       "mode": 448,
+-      "path": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02/target/debug/droidloom-supervisor",
+-      "sha256": "86f27b81da63b6eaab32588b21d16ca872b5de2ab38af08c8e357e1af7075843",
++      "path": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/target/debug/droidloom-supervisor",
++      "sha256": "bac973049a590fc18dc3c8e9ee441df1b3724afc5d1c85a3b29c74ebcf1c4765",
+       "destination": "bin/droidloom-supervisor"
+     },
+     "droidloom-psi-owner": {
+       "bytes": 1231392,
+-      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02/candidate/runtime/droidloom-pressure-relay#0.1.0",
+-      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02/candidate/runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs",
++      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-pressure-relay#0.1.0",
++      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs",
+       "device": 66306,
+-      "inode": 34781415,
++      "inode": 35924012,
+       "mode": 448,
+-      "path": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-02/target/debug/droidloom-psi-owner",
++      "path": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/target/debug/droidloom-psi-owner",
+       "sha256": "09ee190013f27084ce9d2f6bbcc8098c5dd124ad7781ac1ecd7ab23e5cf667de",
+       "destination": "bin/droidloom-psi-owner"
+     },
+@@ -520,11 +520,11 @@
+       "destination": "bin/lmkd"
+     },
+     "init-barrier": {
+-      "path": "/opt/p4-init-project-diagnostic-20261105-build-03/libdroidloom_init_relay.so",
+-      "bytes": 23176,
+-      "sha256": "19bdf87af5b4e7323a4420b6c14969e787cfe68a9ea7defbdea0a044bbbd6ed2",
++      "path": "/opt/p4-init-socket-projection-20261105-build-01/libdroidloom_init_relay.so",
++      "bytes": 22832,
++      "sha256": "74273805ab09605c6f9203f7541e21e83b6aa58ab327307b38e03a04d456ca24",
+       "device": 66306,
+-      "inode": 44178479,
++      "inode": 44179248,
+       "mode": 448,
+       "destination": "lib/libdroidloom_init_relay.so"
+     }
+@@ -1476,21 +1476,38 @@
+     "/usr/bin/sway": "5a4c54c1bfbb2fb6fc190e817222c2b10bbec71e030c717f22608a2fae91bdd4",
+     "/usr/sbin/mkfs.ext4": "e42e49656dfc308efeed86f9bfad7746fc22ad1d4a3b0d508b5dba7a4b9a904f"
+   },
+-  "diagnostic_build_receipt_sha256": "15c122a42f1c0d81ff4d473925184a8f7aedb6babc84d9fa4036ae6378b44d02",
++  "projection_build_receipt_sha256": "b74dabc8c2cd8abcb4efe7de2cd35a95ec9ee5b29f364d33f055c0cd305972cd",
++  "paired_projection_source_manifest_sha256": "c2cc6b709c503e7dc5d273e9e400665356e7c0654adf3b828838870eb8a06891",
++  "init_protocol_abi": 2,
++  "entry_abi": "droidloom-relay-entry-v2",
++  "earlier_failure_chain": {
++    "predecessor_failure": {
++      "stdout_sha256": "8921a665badde77731239e59c1a823ce27318d7ef42e6d8d204a6088dbad707e",
++      "reconstructed_report_sha256": "d3876c6061cfaa3c9d55b1e302dd432768f8e1268e609f79c06b63a7518107bc",
++      "attempt_nonce": "021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
++      "replayed": false,
++      "runtime_executed": false,
++      "remote_prepared_file_written": false,
++      "observed_boundary": "prepare fixed scope guard rejected before owned root creation"
++    },
++    "earlier_runtime_failure": {
++      "runtime_sha256": "26f19099192d0bfd76740c535f30598c32e17718da58b9fbe63d134bfe5abd19",
++      "log_collection_sha256": "e33d5669498e7f290b3003913646f888d0e866d40c47d1f13daf7f062656346a",
++      "attempt_nonce": "06ad67978c234fe35388a364f82523aadc8dc25755030cb61ee88128b9ca5979",
++      "replayed": false,
++      "observed_boundary": "init_hello,broker_ready,init_project_sent; failed before PROJECTED; exact cleanup passed"
++    }
++  },
+   "predecessor_failure": {
+-    "stdout_sha256": "8921a665badde77731239e59c1a823ce27318d7ef42e6d8d204a6088dbad707e",
+-    "reconstructed_report_sha256": "d3876c6061cfaa3c9d55b1e302dd432768f8e1268e609f79c06b63a7518107bc",
+-    "attempt_nonce": "021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
++    "runtime_sha256": "b836404cc5011662239706418921758a4380b9c21d41534783f7fa64c8dfda7e",
++    "log_collection_sha256": "3d03b77dc6b929974eb1e53452b4d6309db43c8d1045feb693ddfdded93281fc",
++    "attempt_nonce": "65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
+     "replayed": false,
+-    "runtime_executed": false,
+-    "remote_prepared_file_written": false,
+-    "observed_boundary": "prepare fixed scope guard rejected before owned root creation"
++    "observed_boundary": "actual constructor project-bind-mount errno=22 after HELLO/READY/PROJECT; no ACTIVE",
++    "exact_cleanup_passed": true
+   },
+-  "earlier_runtime_failure": {
+-    "runtime_sha256": "26f19099192d0bfd76740c535f30598c32e17718da58b9fbe63d134bfe5abd19",
+-    "log_collection_sha256": "e33d5669498e7f290b3003913646f888d0e866d40c47d1f13daf7f062656346a",
+-    "attempt_nonce": "06ad67978c234fe35388a364f82523aadc8dc25755030cb61ee88128b9ca5979",
+-    "replayed": false,
+-    "observed_boundary": "init_hello,broker_ready,init_project_sent; failed before PROJECTED; exact cleanup passed"
++  "mechanism_evidence": {
++    "report_sha256": "4a6f12bac1b20679596f7e6b2484662adaa90299c823bd957e24e2919051b4a6",
++    "scope": "owned host shared-initial-userns distinct-mntns socket projection; not production constructor"
+   }
+ }

@@ -1,0 +1,11 @@
+# Paired LMKD property reload candidate: source snapshot only
+
+This snapshot is independent of the frozen and actually run Owner08 NORMAL01 candidate. It does not change the existing runtime, Main, deployed supervisor, or pressure thresholds.
+
+The new relay Session suspends all effects before a policy update, retains only the exact original live enrollment/configuration, and rejects pre-completion observations with a monotonic cutoff. Original generation, monitor FDs and contiguous message sequences remain intact. A changed count, level, threshold, window, scope, budget, lease or clock closes the old lease; restoring values cannot revive it. An attempted but revoked enrollment is distinguished from a genuinely boot-deferred first enrollment.
+
+The LMKD update-properties callsite uses this path only for an already initialized explicit relay. Ordinary direct PSI retains its destroy/recreate path. Failure returns the existing failure reply and exits after closing monitors, allowing the existing supervised generation to retire. Initial enrollment and deferred boot behavior keep their separate original entry.
+
+The Rust entry candidate reads the actual held/hash-verified image lmkd.rc, validates a bounded explicit service/helper layout, then changes only the native binary paths, numeric role identities and three relay environment options plus stdio redirection. Original critical, all boot/reinit/device-config actions, comments, additional existing policy and command parameters are retained. Unsupported or ambiguous layouts fail before image preparation effects.
+
+The seven native session source/test inputs were actually compiled with strict g++ and 65 local socketpair/SCM_RIGHTS assertions passed. That test does not compile lmkd.cpp, the Rust RC transform, Android, or real PSI. The original 63-control receipt remains in the separate work directory. Rust source includes the actual 2851-byte RC as a test fixture and two new rejection/preservation controls; those Rust controls have not been compiled or run. This snapshot is NOT_MATCHING_BUILT, NOT_INDEPENDENTLY_REVIEWED and NOT_RUNTIME_QUALIFIED. A paired Android+Rust build and fresh owned boot/reinit/retirement test remain required.

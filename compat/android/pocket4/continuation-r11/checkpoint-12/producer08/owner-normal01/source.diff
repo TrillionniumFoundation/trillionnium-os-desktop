@@ -1,0 +1,84 @@
+--- normal07-03/source/coordinator.py
++++ normal08-01/source/coordinator.py
+@@ -49,9 +49,9 @@
+     state = group_fd = -1; actor = None; fence = None; invocation = None; launched = False; tools = {}
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0, 'external controller requires original host root')
+-        owned.need(plan['unit'] == 'p4-owner07-normal-20261105-03.service' and
+-                   plan['package'] == '/opt/p4-owner07-normal-20261105-03' and
+-                   plan['state'] == '/opt/p4-owner07-normal-20261105-03-state', 'this controller accepts only its fixed fresh unit/package/state')
++        owned.need(plan['unit'] == 'p4-owner08-normal-20261105-01.service' and
++                   plan['package'] == '/opt/p4-owner08-normal-20261105-01' and
++                   plan['state'] == '/opt/p4-owner08-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
+         state = owned.root_directory(plan['state'])
+         owned.need(owned.file_id(state) == prepared['state_identity'], 'prepared state replaced')
+         for name in ('coordinator-claim.json', 'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json'):
+--- normal07-03/source/prepare.py
++++ normal08-01/source/prepare.py
+@@ -117,15 +117,15 @@
+ 
+ 
+ def main(plan, sources):
+-    result = {'schema': 1, 'kind': 'owner07-normal-preparation01', 'success': False,
++    result = {'schema': 1, 'kind': 'owner08-normal-preparation01', 'success': False,
+               'attempt_nonce': plan['attempt_nonce'], 'runtime_executed': False,
+               'namespace_or_network_changed': False, 'production_ready': False, 'errors': []}
+     package_fd = state_fd = data_fd = -1; tools = {}; fence = None
+     try:
+         owned.need(os.geteuid() == os.getuid() == os.getegid() == 0, 'preparation requires original host root')
+         owned.need(len(plan['attempt_nonce']) == 64 and
+-                   plan['scope'] == 'REAL_OWNER_INIT_PROJECT_DIAGNOSTIC_AND_ORIGINAL_ACTIVE_RETIREMENT_GATES' and
+-                   plan['kind'] == 'owned-real-producer07-normal03-diagnostic01', 'wrong fixed profile')
++                   plan['scope'] == 'REAL_OWNER_ABI2_DETACHED_PROJECTION_FIRST_ACTIVE_ORIGINAL_RETIREMENT' and
++                   plan['kind'] == 'owned-real-producer08-normal01-detached01', 'wrong fixed profile')
+         owned.need(not Path(plan['package']).exists() and not Path(plan['state']).exists(), 'preparation root already exists')
+         owned.need(support.props(plan['unit']).get('LoadState') == 'not-found', 'owned unit already exists')
+         fence = support.MainFence(plan, vars(support)); result['main_before'] = fence.check()
+--- normal07-03/source/qualify.py
++++ normal08-01/source/qualify.py
+@@ -9,6 +9,35 @@
+ 
+ def hex64(value):
+     return isinstance(value, str) and len(value) == 64 and value != '0' * 64 and all(c in '0123456789abcdef' for c in value)
++
++
++def qualify_init_v2(detail, generation_nonce):
++    """Observe the actual ABI2 handshake; these bytes grant no authority."""
++    need(hex64(generation_nonce), 'init actual generation nonce invalid')
++    records = [(1, detail['init_hello']['init']['hello_wire_hex'])] + [
++        (kind, detail[event]['wire_hex']) for kind, event in
++        ((2, 'init_project_sent'), (3, 'init_projected_accepted'),
++         (4, 'init_commit_sent'), (5, 'init_done_accepted'))]
++    decoded = []
++    for kind, text in records:
++        need(isinstance(text, str) and len(text) == 256 and
++             all(char in '0123456789abcdef' for char in text), 'init protocol wire is not exact hex')
++        wire = bytes.fromhex(text)
++        need(wire[:8] == b'P4IBV2!!' and int.from_bytes(wire[8:12], 'little') == 2 and
++             int.from_bytes(wire[12:16], 'little') == kind and
++             wire[16:48].hex() == generation_nonce, 'init ABI2/phase/actual nonce differs')
++        decoded.append(wire)
++    project = decoded[1]
++    need(all(wire[:12] == project[:12] and wire[16:] == project[16:] for wire in decoded[2:]),
++         'init PROJECTED/COMMIT/DONE changed the exact projection permit')
++    need(project[76:] == bytes(52) and int.from_bytes(project[72:76], 'little') == 0o600,
++         'init projection reserved fields or mode differ')
++    endpoint = detail['broker_ready']['status']['endpoint']
++    need(int.from_bytes(project[48:56], 'little') == endpoint['device'] and
++         int.from_bytes(project[56:64], 'little') == endpoint['inode'] and
++         int.from_bytes(project[64:68], 'little') == 1069 and int.from_bytes(project[68:72], 'little') == 1069,
++         'init projection differs from actual READY endpoint/role')
++    return True
+ 
+ 
+ def qualify_lifecycle(plan, actual):
+@@ -44,8 +73,7 @@
+     need(init['root'] == actual['init_root_identity'] and init['cgroup'] == actual['init_projected_cgroup_identity'] == detail['prepared']['domain'], 'actual init root/cgroup projection differs')
+     need(init['linker_sha256'] == plan['spec']['pressure_relay']['init_linker_sha256'] and
+          init['compat_sha256'] == plan['spec']['pressure_relay']['compat_preload_sha256'], 'actual init loader/preload pairing differs')
+-    need(len(init['hello_wire_hex']) == 256 and all(len(detail[key]['wire_hex']) == 256 for key in
+-        ('init_project_sent', 'init_projected_accepted', 'init_commit_sent', 'init_done_accepted')), 'real init protocol records missing')
++    qualify_init_v2(detail, b['nonce'])
+     native = actual['native_lmkd']
+     need(native['fixed_inherited_slots_absent'] is True and native['snapshot']['executable_sha256'] == plan['artifacts']['lmkd']['sha256'] and
+          native['snapshot']['identity']['uids'] == [1069] * 4 and native['snapshot']['namespaces'][0] == init['namespaces'][0], 'actual native LMKD executable/role/namespace differs')

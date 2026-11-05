@@ -1,0 +1,39 @@
+--- a/read_summary.py
++++ b/read_summary.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed summary-only reader for the fresh r3 owned bounded-results attempt."""
++"""Fixed summary-only reader for the fresh r3 owned course-card opening attempt."""
+ import argparse
+ import base64
+ import gzip
+@@ -11,15 +11,15 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r3-results-observe-01')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-6af0a9c20e8c06d7237d8635c46a166a')
+-NONCE='6af0a9c20e8c06d7237d8635c46a166a'
+-SOURCE_SHA='9015920277c0f732d8668bc8176d5ab1ec08576013908f922050e17494b5ed6e'
++ROOT=Path('/home/alex/work/pocket4-bilibili-r3-video-open-01')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-7561068625f1b605caacbe007f99ccd1')
++NONCE='7561068625f1b605caacbe007f99ccd1'
++SOURCE_SHA='6426ed88fba950f49c4fdc8c4f21d321f5fdc852318e1df3de3c0ee927ac3164'
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+     'launch.json':FLOW/'steps/launch-01/result.json',
+-    'navigation.json':FLOW/'steps/results-observe-01/result.json',
++    'navigation.json':FLOW/'steps/video-open-01/result.json',
+     'cleanup.json':FLOW/'steps/cleanup-01/result.json',
+     'launch-command-result.json':ROOT/'evidence/02-launch.result.json',
+     'navigation-command-result.json':ROOT/'evidence/03-navigate.result.json',
+@@ -110,7 +110,7 @@
+             need(value.get('helper_package')=='org.droidloom.qa.bili.r3' and value.get('helper_uid')==10166,
+                  'EXACT_R3_HELPER_SCOPE_REQUIRED')
+         files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    bundle={'schema':1,'scope':'fixed-r3-results-observe-summary-only','files':files,'missing':missing,
++    bundle={'schema':1,'scope':'fixed-r3-video-open-summary-only','files':files,'missing':missing,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}

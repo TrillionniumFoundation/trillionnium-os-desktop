@@ -1,0 +1,48 @@
+--- reviewed-single-report/read.py
++++ owner08-prepared/read.py
+@@ -7,10 +7,10 @@
+ import stat
+ import traceback
+ 
+-ROOT_NAME = 'p4-init-socket-projection-20261105-build-01'
+-EXPECTED_REPORT_BYTES = 445590
+-EXPECTED_REPORT_SHA256 = 'b74dabc8c2cd8abcb4efe7de2cd35a95ec9ee5b29f364d33f055c0cd305972cd'
+-NAMES = ('build-result.json',)
++ROOT_NAME = 'p4-owner08-normal-20261105-01-state'
++EXPECTED_REPORT_BYTES = 55138
++EXPECTED_REPORT_SHA256 = '7972563f7c4e56c89e51424a06c01d3250f51fa1c7836ec6d67ab9a06057e0fa'
++NAMES = ('prepared.json',)
+ LIMIT = 1048576
+ 
+ 
+@@ -60,16 +60,16 @@
+         result = {'path': '/opt/' + ROOT_NAME + '/' + name, 'bytes': len(body),
+                   'sha256': hashlib.sha256(body).hexdigest(), 'identity': stamp(after),
+                   'content': body.decode('utf-8')}
+-        if name == 'build-result.json':
++        if name == 'prepared.json':
+             need(result['bytes'] == EXPECTED_REPORT_BYTES and result['sha256'] == EXPECTED_REPORT_SHA256,
+-                 'externally pinned original build report differs')
++                 'externally pinned actual prepared report differs')
+         return result
+     finally:
+         os.close(fd)
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'fixed-init-projection-build01-read', 'collection_complete': False,
++    result = {'schema': 1, 'kind': 'fixed-owner08-normal01-prepared-read', 'collection_complete': False,
+               'files': {}, 'errors': [], 'mutations': False, 'qualification': False}
+     fds = []
+     try:
+@@ -84,8 +84,8 @@
+         need(sum(item['bytes'] for item in result['files'].values()) <= LIMIT,
+              'aggregate member bound exceeded')
+         need(stamp(os.fstat(root)) == identity and stamp(os.stat(ROOT_NAME, dir_fd=opt, follow_symlinks=False)) == identity,
+-             'held build directory changed')
+-        need(read_member(root, 'build-result.json') == result['files']['build-result.json'],
++             'held prepared directory changed')
++        need(read_member(root, 'prepared.json') == result['files']['prepared.json'],
+              'original report changed at end')
+         result['collection_complete'] = True
+     except BaseException as error:

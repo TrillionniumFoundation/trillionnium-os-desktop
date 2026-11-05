@@ -1,0 +1,22 @@
+--- a/art/runtime/Android.bp
++++ b/art/runtime/Android.bp
+@@ -620,6 +620,8 @@
+         "libcpu_features",
+     ],
+     cflags: [
++        // Opt-in qualification flavor: applies to both runtime translation units.
++        "-DDROIDLOOM_NATIVE_GENERATION_RUNTIME=1",
+         "-DBUILDING_LIBART",
+         // Clang removed a null check and causes test failure. Turn off
+         // the optimization as a temporary workaround.
+--- a/art/libnativebridge/Android.bp
++++ b/art/libnativebridge/Android.bp
+@@ -11,6 +11,8 @@
+ cc_defaults {
+     name: "libnativebridge-defaults",
+     defaults: ["art_defaults"],
++    // Same explicit qualification flavor as libart-runtime_common_defaults.
++    cflags: ["-DDROIDLOOM_NATIVE_GENERATION_RUNTIME=1"],
+     header_libs: [
+         "jni_headers",
+         "libnativebridge-headers",
