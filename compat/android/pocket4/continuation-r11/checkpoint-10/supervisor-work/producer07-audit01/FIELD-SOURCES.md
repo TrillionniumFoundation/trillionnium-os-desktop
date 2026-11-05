@@ -1,0 +1,41 @@
+# Evidence sources and unchanged retirement decisions
+
+No snapshot field is consumed by a capability or effect API. The external collector must bind the actual producer ELF/held process identity, unit InvocationID, held outer cgroup and initial Main fence; these external facts are deliberately not accepted as self-reported inputs to this module.
+
+| Fields / record | Actual source and point of collection | Meaning and limit |
+| --- | --- | --- |
+| `schema`, `retained_after_exit` | Fixed schema; the daemon marks a copied snapshot retained only when its original cleanup has succeeded and it is about to clear `active`. | Retention context, not a new lifecycle success decision. |
+| `nonce`, `canonical_spec_sha256`, `host_uid` | Existing random `PressureRelaySpec::nonce`, `entry::spec_digest(spec)` and admitted `CellSpec.host_uid` in `Owner::prepare`. | Identify the exact requested generation. They do not authenticate an external unit by themselves. |
+| `producer.process` | After the original `HostContext::open`, a leader-only self pidfd is opened; the existing `Process::from_received_pidfd` proves host PID/Tgid and proc birth. Fstat reads that held pidfd and proc directory; liveness/birth is checked again. | Observed actual producer process. Numeric self open is used only for self; no peer PID fallback is added. |
+| `producer.namespaces` | Ten fixed namespace links below the held self proc directory. Existing nsfs/type/order/inode validation compares every handle against that exact process. | Fixed order is pid, pid_for_children, mnt, cgroup, user, net, ipc, uts, time, time_for_children. It does not replace HostContext. |
+| `producer.executable`, `producer.executable_sha256` | Actual held `/proc/.../exe`; metadata before/after the bounded hash must agree, and process liveness is rechecked. | The collector must independently match this against its held producer ELF and build receipt. |
+| Header memory/CPU/tasks values | Existing explicit `PressureRelaySpec` values. | Declared policy. Actual finite domain checks remain in Domain and broker READY. No production budget is inferred from a fixture. |
+| `prepared.domain` | Held Android-domain identity returned by original `Domain::create`, after existing limit writes. | Allocation identity; it alone does not prove current limits or later emptiness. |
+| `owner_attached.process` | After `Process::from_child` has retained the exact unreaped Child, pidfd, proc directory and birth identity. | Exact namespace owner, captured before the existing Worker starts. No new role authority. |
+| `init_hello.init` | Only after original `InitPeer::accept` authenticates exact SCM credentials, twelve rights, owned PPid, PID1 and `/init second_stage`, ten namespaces, actual root/cgroup projection, immutable init/compat/linker/barrier images and exact preload. The final `Hello::validate` has succeeded. | Actual init process, held namespace/root/cgroup identities, validated artifact identities/digests and the exact accepted 128-byte HELLO wire. A later constructor result is still separate. |
+| `broker_ready.process` | `LifecycleBroker::process_observation` reads the already authenticated running ProcessPin after `initialize` succeeds, with unchanged HostContext worker checks and live/birth checks before/after fstat. | Exact broker process; the data cannot be passed back as authority. |
+| `broker_ready.status` | Exact validated `BootstrapStatus` returned by the original `initialize`. | State, nonce, generation, canonical budget bytes, endpoint/cgroup identities, granted/faulted flags. READY is not enrollment. |
+| `init_project_sent`, `init_commit_sent` | Exact 128-byte wire is copied after the original `Wait::send` succeeds. The final broker gate and real send syscall remain adjacent inside the unchanged method. | A send occurred; acceptance requires the corresponding received record. No supplied data changes the packet. |
+| `init_projected_accepted` | Exact received wire, after original echo/SCM/no-rights checks, held projected socket identity/owner/mode checks and repeated `Hello::validate`. | Projection was verified at this point, not indefinitely. |
+| `init_done_accepted` | Exact received wire, after echo/SCM/no-rights checks, owner/init liveness, domain validation and host channel closure. | The existing commit method completed. It does not independently enumerate all post-constructor descriptors. |
+| `broker_active.status` | Exact validated `receive_progress` result, only in the original ACTIVE + granted + not-faulted branch. | Actual grant delivery. No PSI event or kill is inferred. |
+| `retiring` | Immediately after the original phase is set RETIRING. | The original retirement path began. |
+| `broker_retired.receipt` | Only after original `retire(shared two-second limit)` returns true; then the already joined pressure audit is validated and projected. | Actual terminal status, authority/lease generations, cgroup/budget, granted/faulted/incomplete, two bounded registration records, counts/overflow/stop reason and monotonic retirement time. No event correlation or native effect qualification. |
+| `processes_dead` | Only after `stop_exact_processes` has succeeded, no earlier retirement error remains and an authenticated actual init exists. | Original held owner/init death proof; it references earlier identities. |
+| `domain_empty` | Only after the original `Domain::prove_empty` succeeds. | Original FD/limits/descendant emptiness proof at that point. |
+| `retired` | After the original `retire_generation` returns Ok and phase becomes RETIRED. | Preserves the existing state decision, even if the earlier run failed; failure fields remain present. |
+| `resources_removed` | After original worker join/proof and exact Domain and Endpoint removal succeed. | Does not include later network/runtime removal or final claim unlink. |
+| `claim_released` | After original `Claim::release_after` succeeds with joined worker, exact process/reaped Child, absent domain/endpoint/runtime proofs. | Final original successful release. Audit recording after it is infallible to the caller and cannot cause a failed release result. |
+| `records[].sequence`, `observed_monotonic_ns` | Journal assigns sequence and `CLOCK_MONOTONIC` while holding its separate short-lived mutex. | Record observation times, not fabricated native event times. Native registration/retirement times retain their original values. |
+| `first_failure` | First original admission, runtime, panic, retirement or cleanup error seen by the relevant owner path. | Never reset by later successful retirement. |
+| `retirement_failure`, `cleanup_failure` | First original error in those respective paths; repeated attempts do not overwrite it. | Supplement the first run failure, without changing the returned original error. |
+| `recording_incomplete`, `recording_error` | Failed observation, journal poison, bounds/order/clock errors or truncation. | Sticky logging integrity failure. False is not a lifecycle qualification. |
+
+## Decision preservation
+
+- No serialized audit value appears in `HostContext`, slot admission, bootstrap send, native enrollment, PSI worker, native kill gate, claim release or network selection inputs.
+- Source controls compare the relay core's pre-existing methods byte-for-byte after removing only the new getter/type. The entire authority/namespace/PSI/pressure modules are otherwise unchanged.
+- Owner and InitPeer diffs retain all original checks and effect statements. Added records have no `?` propagation: observation failure only marks the journal. The accept/commit method gains an observation reference, not a capability input.
+- The DevelopmentCell cleanup body and its original operation order are unchanged; a wrapper records its returned error and returns that same Result.
+- Status/Stop inclusion is applied after the original operation, including its failure response. Both active and retained reads enforce root or the original host UID. A new active generation takes precedence even when it has no audit.
+- There is no durable audit claim across daemon loss. A collector must capture the final response before exact unit cleanup, and a lost response remains unknown. Persistent generation claims and original poison rules remain in force.

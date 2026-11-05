@@ -1,0 +1,504 @@
+{
+  "schema": 1,
+  "scope": "two fixed source trees, no symlink traversal, Rust/linker metadata only",
+  "started_utc": "2026-11-05T01:01:32.039384+00:00",
+  "uid": 1000,
+  "Main_actions": 0,
+  "source_changes": 0,
+  "builds_started": 0,
+  "install_update_actions": 0,
+  "source_inventories": [
+    {
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/blueprint",
+      "symlinks": [
+        {
+          "relative": "pathtools/testdata/dangling/a/a/f",
+          "target": "../../f",
+          "lstat_before": [
+            66306,
+            40677834,
+            41471,
+            7,
+            1792770269740259294,
+            1792770269740259294
+          ],
+          "lstat_after": [
+            66306,
+            40677834,
+            41471,
+            7,
+            1792770269740259294,
+            1792770269740259294
+          ]
+        },
+        {
+          "relative": "pathtools/testdata/dangling/b",
+          "target": "a",
+          "lstat_before": [
+            66306,
+            40677835,
+            41471,
+            1,
+            1792770269740259294,
+            1792770269740259294
+          ],
+          "lstat_after": [
+            66306,
+            40677835,
+            41471,
+            1,
+            1792770269740259294,
+            1792770269740259294
+          ]
+        },
+        {
+          "relative": "pathtools/testdata/dangling/c",
+          "target": "a/a",
+          "lstat_before": [
+            66306,
+            40677836,
+            41471,
+            3,
+            1792770269740259294,
+            1792770269740259294
+          ],
+          "lstat_after": [
+            66306,
+            40677836,
+            41471,
+            3,
+            1792770269740259294,
+            1792770269740259294
+          ]
+        },
+        {
+          "relative": "pathtools/testdata/dangling/d",
+          "target": "c",
+          "lstat_before": [
+            66306,
+            40677837,
+            41471,
+            1,
+            1792770269740259294,
+            1792770269740259294
+          ],
+          "lstat_after": [
+            66306,
+            40677837,
+            41471,
+            1,
+            1792770269740259294,
+            1792770269740259294
+          ]
+        },
+        {
+          "relative": "pathtools/testdata/dangling/dangling",
+          "target": "missing",
+          "lstat_before": [
+            66306,
+            40677838,
+            41471,
+            7,
+            1792770269740259294,
+            1792770269740259294
+          ],
+          "lstat_after": [
+            66306,
+            40677838,
+            41471,
+            7,
+            1792770269740259294,
+            1792770269740259294
+          ]
+        },
+        {
+          "relative": "pathtools/testdata/dangling/e",
+          "target": "a/a/a",
+          "lstat_before": [
+            66306,
+            40677839,
+            41471,
+            5,
+            1792770269740259294,
+            1792770269740259294
+          ],
+          "lstat_after": [
+            66306,
+            40677839,
+            41471,
+            5,
+            1792770269740259294,
+            1792770269740259294
+          ]
+        },
+        {
+          "relative": "pathtools/testdata/symlinks/b",
+          "target": "a",
+          "lstat_before": [
+            66306,
+            40677878,
+            41471,
+            1,
+            1792770269740259294,
+            1792770269740259294
+          ],
+          "lstat_after": [
+            66306,
+            40677878,
+            41471,
+            1,
+            1792770269740259294,
+            1792770269740259294
+          ]
+        },
+        {
+          "relative": "pathtools/testdata/symlinks/c",
+          "target": "a/a",
+          "lstat_before": [
+            66306,
+            40677879,
+            41471,
+            3,
+            1792770269740259294,
+            1792770269740259294
+          ],
+          "lstat_after": [
+            66306,
+            40677879,
+            41471,
+            3,
+            1792770269740259294,
+            1792770269740259294
+          ]
+        },
+        {
+          "relative": "pathtools/testdata/symlinks/d",
+          "target": "c",
+          "lstat_before": [
+            66306,
+            40677880,
+            41471,
+            1,
+            1792770269740259294,
+            1792770269740259294
+          ],
+          "lstat_after": [
+            66306,
+            40677880,
+            41471,
+            1,
+            1792770269740259294,
+            1792770269740259294
+          ]
+        },
+        {
+          "relative": "pathtools/testdata/symlinks/e",
+          "target": "a/a/a",
+          "lstat_before": [
+            66306,
+            40677881,
+            41471,
+            5,
+            1792770269740259294,
+            1792770269740259294
+          ],
+          "lstat_after": [
+            66306,
+            40677881,
+            41471,
+            5,
+            1792770269740259294,
+            1792770269740259294
+          ]
+        }
+      ],
+      "directories": 55,
+      "regular_files": 202,
+      "other": [],
+      "skipped_metadata": [
+        {
+          "relative": ".git",
+          "lstat": [
+            66306,
+            40564460,
+            16832,
+            4096,
+            1793834512826689880,
+            1793834512826689880
+          ]
+        }
+      ],
+      "followed_symlinks": 0,
+      "held_before": [
+        66306,
+        40564459,
+        16832,
+        4096,
+        1792770269742259154,
+        1792770269742259154
+      ],
+      "held_after": [
+        66306,
+        40564459,
+        16832,
+        4096,
+        1792770269742259154,
+        1792770269742259154
+      ],
+      "named_after": [
+        66306,
+        40564459,
+        16832,
+        4096,
+        1792770269742259154,
+        1792770269742259154
+      ],
+      "complete": true
+    },
+    {
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/external/pogreb",
+      "symlinks": [],
+      "directories": 10,
+      "regular_files": 70,
+      "other": [],
+      "skipped_metadata": [
+        {
+          "relative": ".git",
+          "lstat": [
+            66306,
+            40418678,
+            16832,
+            4096,
+            1793834513278760295,
+            1793834513278760295
+          ]
+        }
+      ],
+      "followed_symlinks": 0,
+      "held_before": [
+        66306,
+        40418677,
+        16832,
+        4096,
+        1792770270430211117,
+        1792770270430211117
+      ],
+      "held_after": [
+        66306,
+        40418677,
+        16832,
+        4096,
+        1792770270430211117,
+        1792770270430211117
+      ],
+      "named_after": [
+        66306,
+        40418677,
+        16832,
+        4096,
+        1792770270430211117,
+        1792770270430211117
+      ],
+      "complete": true
+    }
+  ],
+  "tool_queries": [
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/rustup",
+        "which",
+        "cargo"
+      ],
+      "returncode": 0,
+      "stdout": "/home/alex/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+        "--version"
+      ],
+      "returncode": 0,
+      "stdout": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/rustup",
+        "which",
+        "rustc"
+      ],
+      "returncode": 0,
+      "stdout": "/home/alex/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/alex/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc",
+        "-vV"
+      ],
+      "returncode": 0,
+      "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+      "stderr": ""
+    }
+  ],
+  "tools": [
+    {
+      "requested_path": "/home/alex/.cargo/bin/rustup",
+      "resolved_path": "/home/alex/.cargo/bin/rustup",
+      "bytes": 20838840,
+      "sha256": "4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10",
+      "held_before": [
+        66306,
+        31732023,
+        33261,
+        20838840,
+        1773571247969072921,
+        1785828354765868529
+      ],
+      "held_after": [
+        66306,
+        31732023,
+        33261,
+        20838840,
+        1773571247969072921,
+        1785828354765868529
+      ]
+    },
+    {
+      "requested_path": "/home/alex/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+      "resolved_path": "/home/alex/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/cargo",
+      "bytes": 42185192,
+      "sha256": "841072d1d92f9e841d9ba5b0814182a0adf064acf4527cd120967b7bc49dcb66",
+      "held_before": [
+        66306,
+        31873579,
+        33261,
+        42185192,
+        1778671805292589193,
+        1785828467541929737
+      ],
+      "held_after": [
+        66306,
+        31873579,
+        33261,
+        42185192,
+        1778671805292589193,
+        1785828467541929737
+      ]
+    },
+    {
+      "requested_path": "/home/alex/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc",
+      "resolved_path": "/home/alex/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc",
+      "bytes": 644784,
+      "sha256": "bff349e72704ff70bc08a234a3847338e797065bbedde5e556808bc87b7bf7c6",
+      "held_before": [
+        66306,
+        31873586,
+        33261,
+        644784,
+        1778672074730251832,
+        1785828469757582307
+      ],
+      "held_after": [
+        66306,
+        31873586,
+        33261,
+        644784,
+        1778672074730251832,
+        1785828469757582307
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/cc",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+      "bytes": 1305304,
+      "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88",
+      "held_before": [
+        66306,
+        108008578,
+        33261,
+        1305304,
+        1774174097000000000,
+        1791083705251606151
+      ],
+      "held_after": [
+        66306,
+        108008578,
+        33261,
+        1305304,
+        1774174097000000000,
+        1791083705251606151
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/ld",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+      "bytes": 1890472,
+      "sha256": "97f48d93b8b076a92d2809ec29dcb17f0f37c8827358f832255e2ed22fef6075",
+      "held_before": [
+        66306,
+        108034599,
+        33261,
+        1890472,
+        1773538381000000000,
+        1791083704198584053
+      ],
+      "held_after": [
+        66306,
+        108034599,
+        33261,
+        1890472,
+        1773538381000000000,
+        1791083704198584053
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/ar",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-ar",
+      "bytes": 55944,
+      "sha256": "531473816bf553e863df5aab14c8177c72b732cf80c51dcf0fa990a50125041c",
+      "held_before": [
+        66306,
+        108008448,
+        33261,
+        55944,
+        1773538381000000000,
+        1791083704197584032
+      ],
+      "held_after": [
+        66306,
+        108008448,
+        33261,
+        55944,
+        1773538381000000000,
+        1791083704197584032
+      ]
+    },
+    {
+      "requested_path": "/usr/bin/as",
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-as",
+      "bytes": 826608,
+      "sha256": "4e5fcaa3cdc160173cb5cfe7aa35dc39d7aa1f06ba8d75b8d923bbae5473991b",
+      "held_before": [
+        66306,
+        108034591,
+        33261,
+        826608,
+        1773538381000000000,
+        1791083704197584032
+      ],
+      "held_after": [
+        66306,
+        108034591,
+        33261,
+        826608,
+        1773538381000000000,
+        1791083704197584032
+      ]
+    }
+  ],
+  "errors": [],
+  "finished_utc": "2026-11-05T01:01:32.545568+00:00",
+  "complete": true
+}

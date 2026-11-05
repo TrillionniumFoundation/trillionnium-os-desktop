@@ -1,0 +1,25 @@
+{
+  "revision": "r4",
+  "purpose": "actual production serializer runtime output/error/allocation comparison; inherited upstream vet result is separately preserved",
+  "prior_r3": {
+    "result_bytes": 11586,
+    "result_sha256": "53606b74dffae88a17640e1ed60fb442bc017512001af6fc1fd984c6a22c4283",
+    "preimage_compile_stderr_bytes": 371,
+    "preimage_compile_stderr_sha256": "4cae64d763e752015ee36e29d178be70a30ad8e35cab1cecfd4fe14224edf2a3",
+    "evidence_source": "parent exact actual receipt report; original bytes retained by root",
+    "state": "FAIL",
+    "dependencies_passed": true,
+    "tests_executed": false,
+    "inherited_vet_diagnostic": "non-constant format string in call to github.com/google/blueprint.newPanicErrorf",
+    "preimage_context_locations": [
+      "3673:36",
+      "4021:37",
+      "4146:35"
+    ]
+  },
+  "comparison_test_compile_vet": "off explicitly in both preimage and candidate",
+  "vet_pass_claimed": false,
+  "normal_builder_Go_build_command_changed": false,
+  "production_patch_and_owned_Go_tests_unchanged": true,
+  "remote_dispatch_performed": false
+}

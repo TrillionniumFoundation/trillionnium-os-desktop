@@ -1,0 +1,70 @@
+{
+  "actual_own_cgroup_sampled": false,
+  "actual_owner_lifecycle_qualified": false,
+  "check_count": 13,
+  "checks": [
+    {
+      "name": "exact AST/request/payload/source and resource budget bindings",
+      "passed": true
+    },
+    {
+      "name": "effect-denied definition-only PLAN and absent actual SHA rejection",
+      "passed": true
+    },
+    {
+      "name": "unchanged resource, command, held ELF, inventory and explicit lib-selection gates",
+      "passed": true
+    },
+    {
+      "name": "new module omitted denied",
+      "passed": true
+    },
+    {
+      "name": "new module claimed as preimage denied",
+      "passed": true
+    },
+    {
+      "name": "altered new source bytes denied",
+      "passed": true
+    },
+    {
+      "name": "wrong frozen source manifest denied",
+      "passed": true
+    },
+    {
+      "name": "actual controller overlay loop reconstructs 32 inputs and saves nine exact preimages",
+      "passed": true
+    },
+    {
+      "name": "actual new-module branch rejects existing",
+      "passed": true
+    },
+    {
+      "name": "actual new-module branch rejects leaf_symlink",
+      "passed": true
+    },
+    {
+      "name": "actual new-module branch rejects parent_symlink",
+      "passed": true
+    },
+    {
+      "name": "actual new-module branch rejects race",
+      "passed": true
+    },
+    {
+      "name": "unknown or parent-traversing create path denied",
+      "passed": true
+    }
+  ],
+  "compile_controller_sha256": "97febca7dce804b55a9e06cbe55ce5ba2d77d509d60eda079a3c864dd4e1551b",
+  "compile_request_sha256": "9ad4b2c6096049181a303ac51b15ba3001acab69029a610b2baeab39f28d02b7",
+  "owned_source_fixture_modes": "fresh writable byte copies; no prediction of remote candidate permissions",
+  "passed": true,
+  "resource_guard_retested": false,
+  "revision": "producer07-audit01",
+  "run_controller_sha256": "018bc2c0f4dd9e3ba0c80a02b918affdb987a8c947374a0afc5e9659d3899aa3",
+  "rust_or_device_execution": false,
+  "schema": 1,
+  "scope": "local controller AST, bindings and owned temporary source files only",
+  "unchanged_resource_guard_basis": "actual recovery04 compile and ordinary PASS; same source/AST"
+}

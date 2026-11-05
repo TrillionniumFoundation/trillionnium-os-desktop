@@ -1,0 +1,473 @@
+{
+  "all_source_inventory_after_failure_sha256": "3964393f9bb49369518a85441949b0881f9769f5130064195dd3e85a6b950e8f",
+  "all_source_inventory_before_sha256": "3964393f9bb49369518a85441949b0881f9769f5130064195dd3e85a6b950e8f",
+  "android_runtime_started": false,
+  "barrier_constructor_executed": false,
+  "build_environment_overrides": {
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_HOME": "/home/alex/.cargo",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0",
+    "CARGO_TARGET_DIR": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/target",
+    "RUSTUP_HOME": "/home/alex/.rustup",
+    "RUST_TEST_THREADS": "1"
+  },
+  "candidate": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/candidate",
+  "commands": [
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-pressure-relay",
+        "-p",
+        "droidloom-supervisor",
+        "--bins",
+        "--message-format=json"
+      ],
+      "cwd": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/candidate",
+      "exact_child_pid": 893686,
+      "finished_at": "2026-11-05T01:15:52.590856+00:00",
+      "returncode": 101,
+      "started_at": "2026-11-05T01:15:33.142229+00:00",
+      "stderr_excerpt": "   Compiling proc-macro2 v1.0.107\n   Compiling unicode-ident v1.0.24\n   Compiling quote v1.0.47\n   Compiling version_check v0.9.5\n   Compiling generic-array v0.14.7\n   Compiling libc v0.2.188\n   Compiling typenum v1.20.1\n   Compiling cfg-if v1.0.4\n   Compiling crypto-common v0.1.7\n   Compiling block-buffer v0.10.4\n   Compiling syn v3.0.2\n   Compiling serde_core v1.0.229\n   Compiling digest v0.10.7\n   Compiling cpufeatures v0.2.17\n   Compiling zmij v1.0.23\n   Compiling sha2 v0.10.9\n   Compiling rustix v1.1.4\n   Compiling serde_json v1.0.151\n   Compiling serde v1.0.229\n   Compiling thiserror v2.0.19\n   Compiling getrandom v0.4.3\n   Compiling utf8parse v0.2.2\n   Compiling anstyle-parse v1.0.0\n   Compiling thiserror-impl v2.0.19\n   Compiling serde_derive v1.0.229\n   Compiling itoa v1.0.18\n   Compiling bitflags v2.13.1\n   Compiling linux-raw-sys v0.12.1\n   Compiling memchr v2.8.3\n   Compiling is_terminal_polyfill v1.70.2\n   Compiling anstyle v1.0.14\n   Compiling colorchoice v1.0.5\n   Compiling anstyle-query v1.1.5\n   Compiling anstream v1.0.0\n   Compiling droidloom-pressure-relay v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/candidate/runtime/droidloom-pressure-relay)\n   Compiling syn v2.0.119\n   Compiling once_cell v1.21.4\n   Compiling clap_lex v1.1.0\n   Compiling heck v0.5.0\n   Compiling fastrand v2.5.0\n   Compiling strsim v0.11.1\n   Compiling clap_builder v4.6.0\n   Compiling tempfile v3.27.0\n   Compiling clap_derive v4.6.1\n   Compiling hex v0.4.3\n   Compiling droidloom-contracts v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/candidate/runtime/droidloom-contracts)\n   Compiling clap v4.6.1\n   Compiling droidloom-window-policy v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/candidate/runtime/droidloom-window-policy)\n   Compiling droidloom-cpu-placement v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/candidate/runtime/droidloom-cpu-placement)\n   Compiling droidloom-supervisor v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/candidate/runtime/droidloom-supervisor)\nerror: could not compile `droidloom-supervisor` (lib) due to 1 previous error\n",
+      "stderr_path": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/command-00.stderr",
+      "stderr_pin": {
+        "bytes": 2182,
+        "device": 66306,
+        "inode": 34758869,
+        "mode": 384,
+        "path": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/command-00.stderr",
+        "sha256": "b419421b8753d2682fd9997f5a773358762c50191c7b29a86f6b228ce735f5f9"
+      },
+      "stdout_excerpt": "6280fe4c/library/core/src/cmp.rs\",\"is_primary\":false,\"label\":null,\"line_end\":1887,\"line_start\":1885,\"suggested_replacement\":null,\"suggestion_applicability\":null,\"text\":[]}},\"file_name\":\"/rustc/254b59607d4417e9dffbc307138ae5c86280fe4c/library/core/src/cmp.rs\",\"is_primary\":true,\"label\":\"`usize` implements `PartialEq`\",\"line_end\":1863,\"line_start\":1863,\"suggested_replacement\":null,\"suggestion_applicability\":null,\"text\":[]}]}],\"level\":\"error\",\"message\":\"can't compare `usize` with `i32`\",\"spans\":[{\"byte_end\":8327,\"byte_start\":8325,\"column_end\":54,\"column_start\":52,\"expansion\":null,\"file_name\":\"runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs\",\"is_primary\":true,\"label\":\"no implementation for `usize == i32`\",\"line_end\":207,\"line_start\":207,\"suggested_replacement\":null,\"suggestion_applicability\":null,\"text\":[{\"highlight_end\":54,\"highlight_start\":52,\"text\":\"        let hex = |value: &str, bytes| value.len() == bytes * 2\"}]}],\"code\":{\"code\":\"E0277\",\"explanation\":\"You tried to use a type which doesn't implement some trait in a place which\\nexpected that trait.\\n\\nErroneous code example:\\n\\n```compile_fail,E0277\\n// here we declare the Foo trait with a bar method\\ntrait Foo {\\n    fn bar(&self);\\n}\\n\\n// we now declare a function which takes an object implementing the Foo trait\\nfn some_func<T: Foo>(foo: T) {\\n    foo.bar();\\n}\\n\\nfn main() {\\n    // we now call the method with the i32 type, which doesn't implement\\n    // the Foo trait\\n    some_func(5i32); // error: the trait bound `i32 : Foo` is not satisfied\\n}\\n```\\n\\nIn order to fix this error, verify that the type you're using does implement\\nthe trait. Example:\\n\\n```\\ntrait Foo {\\n    fn bar(&self);\\n}\\n\\n// we implement the trait on the i32 type\\nimpl Foo for i32 {\\n    fn bar(&self) {}\\n}\\n\\nfn some_func<T: Foo>(foo: T) {\\n    foo.bar(); // we can now use this method since i32 implements the\\n               // Foo trait\\n}\\n\\nfn main() {\\n    some_func(5i32); // ok!\\n}\\n```\\n\\nOr in a generic context, an erroneous code example would look like:\\n\\n```compile_fail,E0277\\nfn some_func<T>(foo: T) {\\n    println!(\\\"{:?}\\\", foo); // error: the trait `core::fmt::Debug` is not\\n                           //        implemented for the type `T`\\n}\\n\\nfn main() {\\n    // We now call the method with the i32 type,\\n    // which *does* implement the Debug trait.\\n    some_func(5i32);\\n}\\n```\\n\\nNote that the error here is in the definition of the generic function. Although\\nwe only call it with a parameter that does implement `Debug`, the compiler\\nstill rejects the function. It must work with all possible input types. In\\norder to make this example compile, we need to restrict the generic type we're\\naccepting:\\n\\n```\\nuse std::fmt;\\n\\n// Restrict the input type to types that implement Debug.\\nfn some_func<T: fmt::Debug>(foo: T) {\\n    println!(\\\"{:?}\\\", foo);\\n}\\n\\nfn main() {\\n    // Calling the method is still fine, as i32 implements Debug.\\n    some_func(5i32);\\n\\n    // This would fail to compile now:\\n    // struct WithoutDebug;\\n    // some_func(WithoutDebug);\\n}\\n```\\n\\nRust only looks at the signature of the called function, as such it must\\nalready specify all requirements that will be used for every type parameter.\\n\"}}}\n{\"reason\":\"compiler-message\",\"package_id\":\"path+file:///home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/candidate/runtime/droidloom-supervisor#0.1.0\",\"manifest_path\":\"/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/candidate/runtime/droidloom-supervisor/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"droidloom_supervisor\",\"src_path\":\"/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/candidate/runtime/droidloom-supervisor/src/lib.rs\",\"edition\":\"2024\",\"doc\":true,\"doctest\":true,\"test\":true},\"message\":{\"rendered\":\"For more information about this error, try `rustc --explain E0277`.\\n\",\"$message_type\":\"diagnostic\",\"children\":[],\"level\":\"failure-note\",\"message\":\"For more information about this error, try `rustc --explain E0277`.\",\"spans\":[],\"code\":null}}\n{\"reason\":\"build-finished\",\"success\":false}\n",
+      "stdout_path": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/command-00.stdout",
+      "stdout_pin": {
+        "bytes": 63232,
+        "device": 66306,
+        "inode": 34758865,
+        "mode": 384,
+        "path": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/command-00.stdout",
+        "sha256": "a28b8685d9dc8b7a9340f6b4457ec5da57f1332a1966d973d075875e168598fe"
+      },
+      "timed_out": false,
+      "timeout_seconds": 270
+    }
+  ],
+  "compile_only": true,
+  "cpu_quota_percent": 100,
+  "error": "RuntimeError: command failed or timed out: 0",
+  "failure_collection_errors": [],
+  "finished_at": "2026-11-05T01:15:52.632986+00:00",
+  "full_owner_runtime_qualified": false,
+  "inputs_before": {
+    "Cargo.lock": {
+      "bytes": 51976,
+      "sha256": "ee4ea5f370adc8a1861c4b5496c775a06b34fc733cb89eb0d873ab1eb2df0b98"
+    },
+    "Cargo.toml": {
+      "bytes": 2036,
+      "sha256": "1bae47451d41445b30933e0cd787ba5833842ea693c9e6231ee1281583323e85"
+    },
+    "runtime/droidloom-pressure-relay/Cargo.toml": {
+      "bytes": 349,
+      "sha256": "373050126db407c8ff001dabf59e62b29bea1ebfefa76fbdd578e1d0aabecb34"
+    },
+    "runtime/droidloom-pressure-relay/src/ancestry.rs": {
+      "bytes": 6882,
+      "sha256": "3a5fe5ce5fe921ca36b1ae0e8f92e2dff3d240cd29fb1e3e86a2d329cc847fc5"
+    },
+    "runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs": {
+      "bytes": 753,
+      "sha256": "d4e35cc52529d0f5ad779fe57b0fbd49743ee58f2c16b45a8d46cae9e346bc93"
+    },
+    "runtime/droidloom-pressure-relay/src/bin/owned_ipc_controls.rs": {
+      "bytes": 31007,
+      "sha256": "83d49c67ee264b4d765f98d4b99155bd8ad8de74ff9d38fd16333ad013066c56"
+    },
+    "runtime/droidloom-pressure-relay/src/enrollment.rs": {
+      "bytes": 19506,
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363"
+    },
+    "runtime/droidloom-pressure-relay/src/event_fixture.rs": {
+      "bytes": 23424,
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54"
+    },
+    "runtime/droidloom-pressure-relay/src/lib.rs": {
+      "bytes": 44547,
+      "sha256": "f2fd8a952171809256dd56ef75ff2ffe358b7e3c21279583d83ea20aea812c96"
+    },
+    "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs": {
+      "bytes": 54968,
+      "sha256": "3f3f7cc1accb8921b0248adb3257e3737879e90b10bf377231389d5eb18453c1"
+    },
+    "runtime/droidloom-pressure-relay/src/lifecycle_relay.rs": {
+      "bytes": 16229,
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a"
+    },
+    "runtime/droidloom-pressure-relay/src/pressure_audit.rs": {
+      "bytes": 20193,
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+    },
+    "runtime/droidloom-pressure-relay/src/psi.rs": {
+      "bytes": 16179,
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2"
+    },
+    "runtime/droidloom-pressure-relay/tests/data/grant.hex": {
+      "bytes": 353,
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29"
+    },
+    "runtime/droidloom-pressure-relay/tests/data/request.hex": {
+      "bytes": 289,
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede"
+    },
+    "runtime/droidloom-supervisor/Cargo.toml": {
+      "bytes": 954,
+      "sha256": "e2cee314482ae0d1782287e8de54ab238129fc914275c4122b6847c2e31850e9"
+    },
+    "runtime/droidloom-supervisor/src/control.rs": {
+      "bytes": 83587,
+      "sha256": "3818e0023f9dbc09a1b98986354147e5adc24f84f92b89e7f0db2f1872a54870"
+    },
+    "runtime/droidloom-supervisor/src/development.rs": {
+      "bytes": 95133,
+      "sha256": "f73b823d53e7bd6a6daca9fff34f7c1ff5844ab39ba55171384414d6d58544c4"
+    },
+    "runtime/droidloom-supervisor/src/development_network.rs": {
+      "bytes": 27453,
+      "sha256": "11a214c3d344cbe9fab82b99a3aab759217db128d781273f5c0573f60d010f1b"
+    },
+    "runtime/droidloom-supervisor/src/generation_claim.rs": {
+      "bytes": 15267,
+      "sha256": "2d37a43e58ba05c5ec014775174c4907effe1ac44b2604593a141197ba16ab32"
+    },
+    "runtime/droidloom-supervisor/src/lib.rs": {
+      "bytes": 34441,
+      "sha256": "2de510605987aa6f5486bc0edf6d0400bca9c7a8f5768dc37d66c06df5bd440a"
+    },
+    "runtime/droidloom-supervisor/src/linux_plan.rs": {
+      "bytes": 39632,
+      "sha256": "e9be621e1cf8d9536b8ade216a67b1f002768e4299ae2aa15e742f006c0f301b"
+    },
+    "runtime/droidloom-supervisor/src/main.rs": {
+      "bytes": 2872,
+      "sha256": "9b97063e9d41e21aa5b028d24328ea976186b9ecc6c2d28725653139792444d8"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs": {
+      "bytes": 20903,
+      "sha256": "f142b520b19748c80d466f5dd7b4e4e59f1706e76d3c3f2aecfbf5fc7855389c"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs": {
+      "bytes": 24407,
+      "sha256": "1c335ebf2c4892fae9cfae2081828e86ff121f0512ed9fbbb375e01d77f13137"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs": {
+      "bytes": 19521,
+      "sha256": "1ed089df4cedd9704b1b2b0425468fb7aa66c7cd837ab159e7c86f6a85daef38"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs": {
+      "bytes": 28104,
+      "sha256": "2907c716d982ef34885e36368d167d50eb30d2a5858208c62b0ba9196db896fc"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs": {
+      "bytes": 24924,
+      "sha256": "959b554c7be8a8d00cefb8e76097977d9074ea5f553978cc1d454ce9791a7cf4"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs": {
+      "bytes": 343,
+      "sha256": "f2eb90f9ff902e342f351318a53acc7d8d3255e2cefa93cc7d0b2e8b0fb4353e"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs": {
+      "bytes": 39599,
+      "sha256": "4011111e9e1a70dbcec449f1aa961204a8ab568671de29a4c7134b49d2c8ed92"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/policy.rs": {
+      "bytes": 10781,
+      "sha256": "eac34bb8e3dd1f7cf14bb74753554209e550beb413895871993a7bdfc03681b4"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs": {
+      "bytes": 6054,
+      "sha256": "c63978f9e77ce1e93ee2562dc6c7326b8593785897b0356d3cc341f8f466a562"
+    }
+  },
+  "installed_files_changed": false,
+  "memory_budget_bytes": 1073741824,
+  "namespace_or_network_effects_requested": false,
+  "ordinary_controls_executed": false,
+  "original_compile_request_recovered": false,
+  "original_source_diff_sha256": "4f25a4311f9b1f981af60f5600c1f1c9be260d12f962714d3061850dea8bdef7",
+  "payload_sha256": "f53cda4b2edb35710fbdb5ae9c41b298c1c25c6f237bc0f11325d6e6627339b1",
+  "pid": 893683,
+  "preimage_inputs": {
+    "Cargo.lock": {
+      "bytes": 51976,
+      "sha256": "ee4ea5f370adc8a1861c4b5496c775a06b34fc733cb89eb0d873ab1eb2df0b98"
+    },
+    "Cargo.toml": {
+      "bytes": 2036,
+      "sha256": "1bae47451d41445b30933e0cd787ba5833842ea693c9e6231ee1281583323e85"
+    },
+    "runtime/droidloom-pressure-relay/Cargo.toml": {
+      "bytes": 349,
+      "sha256": "373050126db407c8ff001dabf59e62b29bea1ebfefa76fbdd578e1d0aabecb34"
+    },
+    "runtime/droidloom-pressure-relay/src/ancestry.rs": {
+      "bytes": 6882,
+      "sha256": "3a5fe5ce5fe921ca36b1ae0e8f92e2dff3d240cd29fb1e3e86a2d329cc847fc5"
+    },
+    "runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs": {
+      "bytes": 753,
+      "sha256": "d4e35cc52529d0f5ad779fe57b0fbd49743ee58f2c16b45a8d46cae9e346bc93"
+    },
+    "runtime/droidloom-pressure-relay/src/bin/owned_ipc_controls.rs": {
+      "bytes": 31007,
+      "sha256": "83d49c67ee264b4d765f98d4b99155bd8ad8de74ff9d38fd16333ad013066c56"
+    },
+    "runtime/droidloom-pressure-relay/src/enrollment.rs": {
+      "bytes": 19506,
+      "sha256": "1321146aaaa4c0ff1865eab54568c1da821abc53d5c094473d936486d3da5363"
+    },
+    "runtime/droidloom-pressure-relay/src/event_fixture.rs": {
+      "bytes": 23424,
+      "sha256": "355105cd3d57307f1067893d6a65729731d735b41748f4a86ec028eddd311e54"
+    },
+    "runtime/droidloom-pressure-relay/src/lib.rs": {
+      "bytes": 44518,
+      "sha256": "ec0226b0025c6ffbff1b25aea61136437b061eaafa27d5b535dea288056338fa"
+    },
+    "runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs": {
+      "bytes": 53648,
+      "sha256": "5e96483abd45383f4e4cd233ee7d7441aa5259d0c6b0d7d1fc934f81e9a36732"
+    },
+    "runtime/droidloom-pressure-relay/src/lifecycle_relay.rs": {
+      "bytes": 16229,
+      "sha256": "29516250e21cfa6c8bdeedd676155fe34d53c608021e070a5c03635bba13950a"
+    },
+    "runtime/droidloom-pressure-relay/src/pressure_audit.rs": {
+      "bytes": 20193,
+      "sha256": "e68d76f8ce24b1994ddd3620fc04f4f25ac35e9e909e41f399b694443403f08c"
+    },
+    "runtime/droidloom-pressure-relay/src/psi.rs": {
+      "bytes": 16179,
+      "sha256": "4e8f566ed27250dd2055a03a5a06b6eda9937341400bb0aac9ccf6f08f101ba2"
+    },
+    "runtime/droidloom-pressure-relay/tests/data/grant.hex": {
+      "bytes": 353,
+      "sha256": "1d0c6ae3ad3700abbecb91e434e44ec07ce656812a8380495b3873e65fa1ae29"
+    },
+    "runtime/droidloom-pressure-relay/tests/data/request.hex": {
+      "bytes": 289,
+      "sha256": "b23769dba25eef8413378196948bb3bd1c2b30165affca8ccc7e341320adfede"
+    },
+    "runtime/droidloom-supervisor/Cargo.toml": {
+      "bytes": 954,
+      "sha256": "e2cee314482ae0d1782287e8de54ab238129fc914275c4122b6847c2e31850e9"
+    },
+    "runtime/droidloom-supervisor/src/control.rs": {
+      "bytes": 78441,
+      "sha256": "3039960c751d1aeec0554e0047ceba83b41eb7256d70c326f6664bc3877dba98"
+    },
+    "runtime/droidloom-supervisor/src/development.rs": {
+      "bytes": 94452,
+      "sha256": "b64453bf041d24210354dccc5cd93a629f30b6e66cbf2249646c53051e729710"
+    },
+    "runtime/droidloom-supervisor/src/development_network.rs": {
+      "bytes": 27453,
+      "sha256": "11a214c3d344cbe9fab82b99a3aab759217db128d781273f5c0573f60d010f1b"
+    },
+    "runtime/droidloom-supervisor/src/generation_claim.rs": {
+      "bytes": 15267,
+      "sha256": "2d37a43e58ba05c5ec014775174c4907effe1ac44b2604593a141197ba16ab32"
+    },
+    "runtime/droidloom-supervisor/src/lib.rs": {
+      "bytes": 34420,
+      "sha256": "4588181c5c6d509412d0678e9da312788f66073a45d274b946f73b26b356237d"
+    },
+    "runtime/droidloom-supervisor/src/linux_plan.rs": {
+      "bytes": 39632,
+      "sha256": "e9be621e1cf8d9536b8ade216a67b1f002768e4299ae2aa15e742f006c0f301b"
+    },
+    "runtime/droidloom-supervisor/src/main.rs": {
+      "bytes": 2872,
+      "sha256": "9b97063e9d41e21aa5b028d24328ea976186b9ecc6c2d28725653139792444d8"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs": {
+      "bytes": 22143,
+      "sha256": "acb0680897ffdc78423c9c692e9a665c9dde3a45c772a4714590d4a9994ac6b9"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs": {
+      "bytes": 19521,
+      "sha256": "1ed089df4cedd9704b1b2b0425468fb7aa66c7cd837ab159e7c86f6a85daef38"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs": {
+      "bytes": 28104,
+      "sha256": "2907c716d982ef34885e36368d167d50eb30d2a5858208c62b0ba9196db896fc"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs": {
+      "bytes": 24291,
+      "sha256": "cf9019d5993627ddb974e65bcb9d583e1911c33d54aec973b439bcb1345a7dda"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs": {
+      "bytes": 223,
+      "sha256": "85048032af0a842a6a2866c45e8f8f8cc7308a2d1cc4a070ff0031fc43672dd8"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs": {
+      "bytes": 37747,
+      "sha256": "5cceac40d2fff4f3a9234a0ecef9b04a2d0b6626f15e561f3f613472108fd715"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/policy.rs": {
+      "bytes": 10781,
+      "sha256": "eac34bb8e3dd1f7cf14bb74753554209e550beb413895871993a7bdfc03681b4"
+    },
+    "runtime/droidloom-supervisor/src/relay_lifecycle/worker.rs": {
+      "bytes": 6054,
+      "sha256": "c63978f9e77ce1e93ee2562dc6c7326b8593785897b0356d3cc341f8f466a562"
+    }
+  },
+  "prior_build_receipt_sha256": "2eb658308593cf760b7f99bbc9e3d7762295ef18c4628b050221838ffa274d4f",
+  "resource_health": {
+    "after": {
+      "cgroup_events": {
+        "frozen": 0,
+        "populated": 1
+      },
+      "cgroup_identity": [
+        30,
+        28900237
+      ],
+      "completed_monotonic_ns": 867061921525307,
+      "direct_cgroup_procs": [
+        893680,
+        893683
+      ],
+      "limits": {
+        "cpu.max": [
+          100000,
+          100000
+        ],
+        "memory.high": "max",
+        "memory.max": 1073741824,
+        "memory.swap.max": "max",
+        "pids.max": 30053
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1a9467daa-fc05-3399.service\n",
+      "memory_current": 430170112,
+      "memory_events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_peak": 611508224,
+      "memory_swap_current": 0,
+      "memory_swap_peak": 0,
+      "mount_identity": [
+        30,
+        1
+      ],
+      "namespaces": {
+        "cgroup": [
+          5,
+          4026531835
+        ],
+        "mnt": [
+          5,
+          4026531832
+        ]
+      },
+      "pid": 893683,
+      "pids_current": 4,
+      "started_monotonic_ns": 867061921271814
+    },
+    "before": {
+      "cgroup_events": {
+        "frozen": 0,
+        "populated": 1
+      },
+      "cgroup_identity": [
+        30,
+        28900237
+      ],
+      "completed_monotonic_ns": 867042304352435,
+      "direct_cgroup_procs": [
+        893680,
+        893683
+      ],
+      "limits": {
+        "cpu.max": [
+          100000,
+          100000
+        ],
+        "memory.high": "max",
+        "memory.max": 1073741824,
+        "memory.swap.max": "max",
+        "pids.max": 30053
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1a9467daa-fc05-3399.service\n",
+      "memory_current": 24207360,
+      "memory_events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "memory_peak": 24207360,
+      "memory_swap_current": 0,
+      "memory_swap_peak": 0,
+      "mount_identity": [
+        30,
+        1
+      ],
+      "namespaces": {
+        "cgroup": [
+          5,
+          4026531835
+        ],
+        "mnt": [
+          5,
+          4026531832
+        ]
+      },
+      "pid": 893683,
+      "pids_current": 4,
+      "started_monotonic_ns": 867042304093853
+    },
+    "cgroup_files_written": false,
+    "expected_cpu_count": 1,
+    "expected_memory_max": 1073741824,
+    "held_own_cgroup_gate_passed": true,
+    "memory_event_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "schema": 1,
+    "scope": "held own cgroup until final pre-receipt sample; durable outer terminal remains required",
+    "swap_zero_claimed": false,
+    "whole_invocation_resource_qualified": false
+  },
+  "revision": "producer07-audit01",
+  "schema": 1,
+  "source_origin": "/home/alex/work/pocket4-supervisor-lmkd-deadline-r11-build-06-recovery04/candidate",
+  "started_at": "2026-11-05T01:15:33.014623+00:00",
+  "success": false,
+  "target": "/home/alex/work/pocket4-supervisor-lmkd-audit-r11-build-07-01/target",
+  "test_binaries_executed": false,
+  "traceback": "Traceback (most recent call last):\n  File \"<stdin>\", line 664, in compile_recovery\n  File \"<stdin>\", line 231, in run_command\n  File \"<stdin>\", line 47, in need\nRuntimeError: command failed or timed out: 0\n",
+  "uid": 1000
+}

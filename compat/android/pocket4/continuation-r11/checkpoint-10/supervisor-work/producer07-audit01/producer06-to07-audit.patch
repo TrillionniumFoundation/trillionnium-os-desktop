@@ -1,0 +1,1103 @@
+--- a/runtime/droidloom-pressure-relay/src/lib.rs
++++ b/runtime/droidloom-pressure-relay/src/lib.rs
+@@ -35,7 +35,7 @@
+ mod lifecycle_relay;
+ pub use lifecycle_relay::{CellRelay, PreparedRelay, RelayPhase, RetirementReceipt};
+ mod lifecycle_bootstrap;
+-pub use lifecycle_bootstrap::{run_inherited_lifecycle, BootstrapSpec, BootstrapStatus, BootstrapState, LifecycleBroker, MAX_LIFECYCLE_IO_TIMEOUT};
++pub use lifecycle_bootstrap::{run_inherited_lifecycle, BootstrapSpec, BootstrapStatus, BootstrapState, LifecycleBroker, LifecycleProcessObservation, MAX_LIFECYCLE_IO_TIMEOUT};
+ 
+ const CGROUP2_MAGIC: libc::c_long = 0x6367_7270;
+ const PROC_MAGIC: libc::c_long = 0x9fa0;
+--- a/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
++++ b/runtime/droidloom-pressure-relay/src/lifecycle_bootstrap.rs
+@@ -475,6 +475,16 @@
+             Err(_) => thread::sleep(Duration::from_millis(100)), // permanently unproven, never fabricate a receipt
+         }
+     }
++}
++
++/// Read-only kernel identities from an existing authenticated broker pin.
++/// This serializable-by-the-caller data is never accepted as authority.
++#[derive(Clone, Debug, Eq, PartialEq)]
++pub struct LifecycleProcessObservation {
++    pub pid: i32,
++    pub birth: u64,
++    pub pidfd: FileId,
++    pub proc_dir: FileId,
+ }
+ 
+ /// Supervisor-side ownership adapter. It executes the exact verified broker
+@@ -561,6 +571,25 @@
+     pub fn pid(&self) -> u32 { self.child.id() }
+     pub fn latest_status(&self) -> Option<&BootstrapStatus> { self.latest.as_ref() }
+     pub fn retirement_complete(&self) -> bool { self.joined }
++    /// Data-only identity of the existing authenticated, live broker pin.
++    /// No API accepts this value as authority. The origin/worker validation is
++    /// unchanged, and neither a numeric PID nor a new process lookup is used.
++    pub fn process_observation(&self) -> Result<LifecycleProcessObservation> {
++        self.host.validate_current_thread()?;
++        let process = self.running.as_ref().ok_or(Error::Reject("broker process not authenticated"))?;
++        process.live()?;
++        let mut stat: libc::stat = unsafe { std::mem::zeroed() };
++        if unsafe { libc::fstat(process.pidfd.as_raw_fd(), &mut stat) } < 0 {
++            return Err(err("observe held broker pidfd"));
++        }
++        let result = LifecycleProcessObservation {
++            pid: process.pid, birth: process.start,
++            pidfd: FileId { device: stat.st_dev as u64, inode: stat.st_ino as u64 },
++            proc_dir: FileId::of(&process.proc_dir)?,
++        };
++        process.live()?;
++        Ok(result)
++    }
+     /// Close only this exact owned broker's authority channel after an
+     /// unproven retirement failure. This is revocation, never a joined receipt
+     /// or permission to release a generation. Keep this value retained.
+--- a/runtime/droidloom-supervisor/src/control.rs
++++ b/runtime/droidloom-supervisor/src/control.rs
+@@ -184,6 +184,10 @@
+     /// Android log snapshot or crash report, when requested.
+     #[serde(default, skip_serializing_if = "Option::is_none")]
+     pub diagnostics: Option<String>,
++    /// Authorized Status/Stop observations for one exact relay generation.
++    /// Neither Running nor this optional data is a qualification receipt.
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub relay_lifecycle: Option<crate::RelayLifecycleAudit>,
+ }
+ 
+ /// Daemon filesystem and executable configuration.
+@@ -228,6 +232,7 @@
+     last_exit: Option<String>,
+     last_run_failed: bool,
+     retirement_error: Option<String>,
++    last_relay_audit: Option<(u32, crate::RelayLifecycleAudit)>,
+     progress: Reporter,
+ }
+ 
+@@ -239,6 +244,7 @@
+             last_exit: None,
+             last_run_failed: false,
+             retirement_error: None,
++            last_relay_audit: None,
+             progress: Reporter::default(),
+         }
+     }
+@@ -257,6 +263,8 @@
+                 } else if !self.last_run_failed {
+                     self.last_exit = Some(format!("Android cell exited with {status}"));
+                 }
++                self.last_relay_audit = active.cell.relay_lifecycle_audit()
++                    .map(|audit| (active.spec.host_uid, audit.retained()));
+                 self.active = None;
+             }
+             Ok(None) => {
+@@ -280,12 +288,15 @@
+         request: ControlRequest,
+         file: Option<fs::File>,
+     ) -> ControlResponse {
++        let include_audit = matches!(&request, ControlRequest::Status | ControlRequest::Stop);
+         // Only an explicit stop can retry the retained failed owner. Routine
+         // polling and another start/restart must not turn failure into success.
+         if !matches!(&request, ControlRequest::Stop)
+             && let Err(error) = self.poll()
+         {
+-            return self.failure(error.to_string());
++            let mut response = self.failure(error.to_string());
++            if include_audit { response.relay_lifecycle = self.authorized_relay_audit(peer_uid); }
++            return response;
+         }
+         let result = match request {
+             ControlRequest::Install { user } => self.install(peer_uid, user, file),
+@@ -327,7 +338,20 @@
+             } => self.application_icon(peer_uid, &component, user, size),
+             ControlRequest::SetDpi { spec, dpi } => self.set_dpi(peer_uid, &spec, dpi),
+         };
+-        result.unwrap_or_else(|error| self.failure(error.to_string()))
++        let mut response = result.unwrap_or_else(|error| self.failure(error.to_string()));
++        if include_audit { response.relay_lifecycle = self.authorized_relay_audit(peer_uid); }
++        response
++    }
++    fn authorized_relay_audit(&self, peer_uid: u32) -> Option<crate::RelayLifecycleAudit> {
++        if let Some(active) = &self.active {
++            // A new active legacy cell must not inherit an older relay's data.
++            return if peer_uid == 0 || peer_uid == active.spec.host_uid {
++                active.cell.relay_lifecycle_audit()
++            } else { None };
++        }
++        self.last_relay_audit.as_ref().and_then(|(owner, audit)| {
++            if peer_uid == 0 || peer_uid == *owner { Some(audit.clone()) } else { None }
++        })
+     }
+ 
+     fn start(&mut self, peer_uid: u32, spec_path: &Path) -> Result<ControlResponse, ControlError> {
+@@ -375,6 +399,7 @@
+             applications: None,
+             application_icon: None,
+             diagnostics: None,
++            relay_lifecycle: None,
+         })
+     }
+ 
+@@ -389,6 +414,8 @@
+             return Err(self.record_retirement_failure(error));
+         }
+         let reason = active.cell.termination_reason().map(str::to_owned);
++        self.last_relay_audit = active.cell.relay_lifecycle_audit()
++            .map(|audit| (active.spec.host_uid, audit.retained()));
+         self.active = None;
+         self.retirement_error = None;
+         if let Some(reason) = &reason {
+@@ -483,6 +510,7 @@
+             applications: None,
+             application_icon: None,
+             diagnostics: None,
++            relay_lifecycle: None,
+         })
+     }
+ 
+@@ -514,6 +542,7 @@
+             applications: Some(applications),
+             application_icon: None,
+             diagnostics: None,
++            relay_lifecycle: None,
+         })
+     }
+ 
+@@ -587,6 +616,7 @@
+             applications: None,
+             application_icon: Some(icon),
+             diagnostics: None,
++            relay_lifecycle: None,
+         })
+     }
+ 
+@@ -615,6 +645,7 @@
+             applications: None,
+             application_icon: None,
+             diagnostics: None,
++            relay_lifecycle: None,
+         })
+     }
+ 
+@@ -707,6 +738,7 @@
+             applications: None,
+             application_icon: None,
+             diagnostics: None,
++            relay_lifecycle: None,
+         }
+     }
+ 
+@@ -726,6 +758,10 @@
+             self.last_run_failed = true;
+             self.last_exit = Some(format!("Android cell failed and has stopped: {reason}"));
+         }
++        if let Some(active) = &self.active {
++            self.last_relay_audit = active.cell.relay_lifecycle_audit()
++                .map(|audit| (active.spec.host_uid, audit.retained()));
++        }
+         self.active = None;
+         self.retirement_error = None;
+         Ok(())
+@@ -739,6 +775,7 @@
+     }
+ 
+     fn record_retirement_failure(&mut self, error: ControlError) -> ControlError {
++        if let Some(active) = &self.active { active.cell.record_relay_cleanup_failure(&error.to_string()); }
+         let message = format!(
+             "Android cell cleanup is incomplete; retained owner blocks start/restart: {error}"
+         );
+@@ -1551,6 +1588,61 @@
+ mod tests {
+     use super::*;
+     use std::sync::Arc;
++
++    #[test]
++    fn retained_relay_audit_is_authorized_and_cannot_clear_failure() {
++        let directory = tempfile::tempdir().unwrap();
++        let mut daemon = Daemon::new(DaemonConfig {
++            socket: directory.path().join("unused.sock"),
++            supervisor: directory.path().join("unused-supervisor"),
++            spec_directory: directory.path().join("unused-specs"),
++        });
++        let legacy = daemon.success("legacy");
++        let encoded = serde_json::to_string(&legacy).unwrap();
++        assert!(!encoded.contains("relay_lifecycle"));
++        assert_eq!(serde_json::from_str::<ControlResponse>(&encoded).unwrap(), legacy);
++        let snapshot = crate::relay_lifecycle::audit_test_snapshot().retained();
++        daemon.last_relay_audit = Some((1001, snapshot.clone()));
++        daemon.last_run_failed = true;
++        daemon.last_exit = Some("original native enrollment failure".into());
++        for uid in [0, 1001] {
++            let response = daemon.handle(uid, ControlRequest::Status, None);
++            assert!(!response.ok);
++            assert_eq!(response.relay_lifecycle, Some(snapshot.clone()));
++            assert!(response.message.contains("original native enrollment failure"));
++        }
++        assert!(daemon.handle(1002, ControlRequest::Status, None).relay_lifecycle.is_none());
++        daemon.retirement_error = Some("original cleanup failure".into());
++        for uid in [0, 1001, 1002] {
++            let response = daemon.handle(uid, ControlRequest::Status, None);
++            assert!(!response.ok);
++            assert!(response.message.contains("original cleanup failure"));
++            assert_eq!(response.relay_lifecycle.is_some(), uid != 1002);
++        }
++        assert_eq!(daemon.last_exit.as_deref(), Some("original native enrollment failure"));
++    }
++
++    #[test]
++    fn new_legacy_owner_never_inherits_old_relay_audit_even_on_cleanup_failure() {
++        let directory = tempfile::tempdir().unwrap();
++        let mut child = std::process::Command::new("/bin/true").spawn().unwrap();
++        assert!(child.wait().unwrap().success());
++        let (mut daemon, blocker) = daemon_with_owned_cleanup_failure(directory.path(), child);
++        daemon.last_relay_audit = Some((1001, crate::relay_lifecycle::audit_test_snapshot().retained()));
++        assert!(daemon.authorized_relay_audit(0).is_none());
++        let response = daemon.handle(1001, ControlRequest::Status, None);
++        assert!(!response.ok);
++        assert_eq!(response.state, CellState::CleanupFailed);
++        assert!(response.relay_lifecycle.is_none());
++        assert!(daemon.handle(1002, ControlRequest::Stop, None).relay_lifecycle.is_none());
++        assert!(daemon.active.is_some());
++        fs::remove_dir(&blocker).unwrap();
++        let stopped = daemon.handle(1001, ControlRequest::Stop, None);
++        assert!(stopped.ok);
++        assert!(stopped.relay_lifecycle.is_none());
++        assert!(daemon.active.is_none());
++        assert!(daemon.last_relay_audit.is_none());
++    }
+ 
+     #[test]
+     fn a_retired_run_failure_survives_poll_stop_shutdown_and_status_serialization() {
+@@ -1762,6 +1854,7 @@
+                         applications: None,
+                         application_icon: None,
+                         diagnostics: None,
++                        relay_lifecycle: None,
+                     },
+                 )
+                 .unwrap();
+--- a/runtime/droidloom-supervisor/src/development.rs
++++ b/runtime/droidloom-supervisor/src/development.rs
+@@ -294,6 +294,14 @@
+     pub(crate) fn relay_generation_enrolled(&self) -> bool {
+         self.relay.as_ref().is_some_and(|relay| relay.enrolled())
+     }
++    /// Bounded observations of this exact relay generation. No fields confer
++    /// authority or substitute for external process/unit/cleanup evidence.
++    pub fn relay_lifecycle_audit(&self) -> Option<crate::RelayLifecycleAudit> {
++        self.relay.as_ref().map(|relay| relay.audit())
++    }
++    pub(crate) fn record_relay_cleanup_failure(&self, message: &str) {
++        if let Some(relay) = &self.relay { relay.record_cleanup_failure(message); }
++    }
+ 
+     /// Return the child exit status without blocking.
+     ///
+@@ -381,6 +389,11 @@
+     }
+ 
+     fn cleanup(&mut self) -> Result<(), DevelopmentError> {
++        let result = self.cleanup_inner();
++        if let Err(error) = &result { self.record_relay_cleanup_failure(&error.to_string()); }
++        result
++    }
++    fn cleanup_inner(&mut self) -> Result<(), DevelopmentError> {
+         if self.cleaned {
+             return Ok(());
+         }
+--- a/runtime/droidloom-supervisor/src/lib.rs
++++ b/runtime/droidloom-supervisor/src/lib.rs
+@@ -10,7 +10,7 @@
+ pub mod development;
+ mod generation_claim;
+ mod relay_lifecycle;
+-pub use relay_lifecycle::{PressureRelaySpec, RelayArtifact};
++pub use relay_lifecycle::{PressureRelaySpec, RelayArtifact, RelayLifecycleAudit};
+ pub use relay_lifecycle::entry::ABI as RELAY_ENTRY_ABI;
+ mod development_network;
+ mod cpu_placement;
+--- /dev/null
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs
+@@ -0,0 +1,461 @@
++//! Bounded observations of the existing owner, never lifecycle authority.
++//!
++//! A reader must independently bind this producer to its held process/ELF,
++//! outer unit/cgroup and initial Main fence. No API accepts these serialized
++//! values as permission to spawn, commit, signal, retire or release a claim.
++use super::capability::{self, Process};
++use super::domain::{self, Identity};
++use super::init_peer::Hello;
++use super::policy::{self, PressureRelaySpec};
++use droidloom_pressure_relay::{BootstrapStatus, LifecycleBroker};
++use serde::{Deserialize, Serialize};
++use std::fs::File;
++use std::io;
++use std::os::unix::fs::MetadataExt;
++use std::sync::{Arc, Mutex, MutexGuard};
++
++const MAX_RECORDS: usize = 16;
++const MAX_ERROR_BYTES: usize = 512;
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
++pub(crate) struct FileRecord { pub device: u64, pub inode: u64 }
++impl From<Identity> for FileRecord {
++    fn from(id: Identity) -> Self { Self { device: id.device, inode: id.inode } }
++}
++impl From<droidloom_pressure_relay::FileId> for FileRecord {
++    fn from(id: droidloom_pressure_relay::FileId) -> Self {
++        Self { device: id.device, inode: id.inode }
++    }
++}
++fn file_record(file: &File) -> io::Result<FileRecord> { Ok(Identity::of(file)?.into()) }
++
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++pub(crate) struct ProcessRecord {
++    pub pid: i32,
++    pub birth: u64,
++    pub pidfd: FileRecord,
++    pub proc_dir: FileRecord,
++}
++impl From<droidloom_pressure_relay::LifecycleProcessObservation> for ProcessRecord {
++    fn from(value: droidloom_pressure_relay::LifecycleProcessObservation) -> Self {
++        Self { pid: value.pid, birth: value.birth, pidfd: value.pidfd.into(), proc_dir: value.proc_dir.into() }
++    }
++}
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++struct ProducerRecord {
++    process: ProcessRecord,
++    namespaces: [FileRecord; 10],
++    executable: FileRecord,
++    executable_sha256: String,
++}
++impl ProducerRecord {
++    fn capture() -> io::Result<Self> {
++        let process = Process::current_leader_for_observation()?;
++        let namespaces = process.namespaces_for_observation()?;
++        let executable = process.executable()?;
++        let before = executable.metadata()?;
++        let digest = capability::hash(&executable)?;
++        let after = executable.metadata()?;
++        let stamp = |m: &std::fs::Metadata| {
++            (m.dev(), m.ino(), m.size(), m.mtime(), m.mtime_nsec(), m.ctime(), m.ctime_nsec())
++        };
++        if stamp(&before) != stamp(&after) {
++            return Err(domain::error("audit producer executable changed while hashing"));
++        }
++        let result = Self {
++            process: process.observation()?,
++            namespaces,
++            executable: file_record(&executable)?,
++            executable_sha256: policy::hex(&digest),
++        };
++        process.live()?;
++        Ok(result)
++    }
++}
++
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++pub(crate) struct BrokerRecord {
++    state: u32,
++    nonce: String,
++    generation: String,
++    budget: String,
++    endpoint: FileRecord,
++    cgroup: FileRecord,
++    granted: bool,
++    faulted: bool,
++}
++impl From<&BootstrapStatus> for BrokerRecord {
++    fn from(status: &BootstrapStatus) -> Self {
++        Self {
++            state: status.state as u32, nonce: policy::hex(&status.nonce),
++            generation: policy::hex(&status.generation), budget: policy::hex(&status.budget),
++            endpoint: status.endpoint.into(), cgroup: status.cgroup.into(),
++            granted: status.granted, faulted: status.faulted,
++        }
++    }
++}
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++pub(crate) struct InitRecord {
++    process: ProcessRecord,
++    namespaces: [FileRecord; 10],
++    root: FileRecord,
++    cgroup: FileRecord,
++    executable: FileRecord,
++    executable_sha256: String,
++    compat: FileRecord,
++    compat_sha256: String,
++    linker: FileRecord,
++    linker_sha256: String,
++    hello_wire_hex: String,
++}
++impl InitRecord {
++    pub(crate) fn capture(hello: &Hello, wire: &[u8; 128]) -> io::Result<Self> {
++        let namespaces = hello.namespaces.iter().map(file_record).collect::<io::Result<Vec<_>>>()?;
++        Ok(Self {
++            process: hello.process.observation()?,
++            namespaces: namespaces.try_into().map_err(|_| domain::error("audit init namespace count differs"))?,
++            root: file_record(&hello.root)?, cgroup: file_record(&hello.guest_domain)?,
++            executable: hello.executable.identity().into(),
++            executable_sha256: policy::hex(&hello.executable.digest()),
++            compat: hello.compat.identity().into(), compat_sha256: policy::hex(&hello.compat.digest()),
++            linker: hello.linker.identity().into(), linker_sha256: policy::hex(&hello.linker.digest()),
++            hello_wire_hex: policy::hex(wire),
++        })
++    }
++}
++
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++struct RegistrationRecord {
++    level: u32,
++    window_us: u64,
++    stall_us: u64,
++    pressure: FileRecord,
++    write_started_ns: u64,
++    write_completed_ns: u64,
++    bytes_written: u64,
++    trigger: String,
++}
++/// Only the bounded registration/retirement summary is exposed here. Event
++/// correlation, native expiry and kill effects need their separate evidence.
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++pub(crate) struct RetirementRecord {
++    status: BrokerRecord,
++    authority_generation: String,
++    lease_generation: String,
++    cgroup: FileRecord,
++    budget: String,
++    granted: bool,
++    faulted: bool,
++    incomplete: bool,
++    registrations: Vec<RegistrationRecord>,
++    observations: u64,
++    packets_queued: u64,
++    event_records: u32,
++    event_overflow: bool,
++    stop_reason: u32,
++    retired_monotonic_ns: u64,
++}
++impl RetirementRecord {
++    pub(crate) fn capture(broker: &LifecycleBroker) -> io::Result<Self> {
++        if !broker.retirement_complete() {
++            return Err(domain::error("audit broker has not joined"));
++        }
++        let status = broker.latest_status().ok_or_else(|| domain::error("audit terminal status missing"))?;
++        let audit = broker.pressure_audit().ok_or_else(|| domain::error("audit joined pressure receipt missing"))?;
++        audit.validate().map_err(io::Error::other)?;
++        let registrations = audit.registrations.records[..audit.registrations.count as usize].iter()
++            .map(|r| Ok(RegistrationRecord {
++                level: r.level, window_us: r.window_us, stall_us: r.stall_us,
++                pressure: FileRecord { device: r.pressure_device, inode: r.pressure_inode },
++                write_started_ns: r.write_started_ns, write_completed_ns: r.write_completed_ns,
++                bytes_written: r.bytes_written, trigger: r.trigger_text().map_err(io::Error::other)?.to_owned(),
++            })).collect::<io::Result<Vec<_>>>()?;
++        Ok(Self {
++            status: status.into(), authority_generation: policy::hex(&audit.authority_generation),
++            lease_generation: policy::hex(&audit.registrations.lease_generation),
++            cgroup: audit.cgroup.into(), budget: policy::hex(&audit.budget),
++            granted: audit.granted, faulted: audit.faulted, incomplete: audit.incomplete,
++            registrations, observations: audit.observations, packets_queued: audit.packets_queued,
++            event_records: audit.events.count, event_overflow: audit.events.overflow,
++            stop_reason: audit.stop_reason, retired_monotonic_ns: audit.retired_monotonic_ns,
++        })
++    }
++}
++
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++#[serde(tag = "event", rename_all = "snake_case")]
++pub(crate) enum Event {
++    Prepared { domain: FileRecord },
++    OwnerAttached { process: ProcessRecord },
++    InitHello { init: InitRecord },
++    BrokerReady { process: ProcessRecord, status: BrokerRecord },
++    InitProjectSent { wire_hex: String },
++    InitProjectedAccepted { wire_hex: String },
++    InitCommitSent { wire_hex: String },
++    InitDoneAccepted { wire_hex: String },
++    BrokerActive { status: BrokerRecord },
++    Retiring,
++    BrokerRetired { receipt: RetirementRecord },
++    ProcessesDead,
++    DomainEmpty,
++    Retired,
++    ResourcesRemoved,
++    ClaimReleased,
++}
++impl Event {
++    fn bounded(&self) -> bool {
++        let hex = |value: &str, bytes| value.len() == bytes * 2
++            && value.bytes().all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c));
++        let broker = |value: &BrokerRecord| hex(&value.nonce, 32)
++            && hex(&value.generation, 32) && hex(&value.budget, 32);
++        match self {
++            Self::InitHello { init } => hex(&init.hello_wire_hex, 128)
++                && hex(&init.executable_sha256, 32) && hex(&init.compat_sha256, 32) && hex(&init.linker_sha256, 32),
++            Self::BrokerReady { status, .. } | Self::BrokerActive { status } => broker(status),
++            Self::InitProjectSent { wire_hex } | Self::InitProjectedAccepted { wire_hex }
++                | Self::InitCommitSent { wire_hex } | Self::InitDoneAccepted { wire_hex } => hex(wire_hex, 128),
++            Self::BrokerRetired { receipt } => broker(&receipt.status)
++                && hex(&receipt.authority_generation, 32) && hex(&receipt.lease_generation, 32)
++                && hex(&receipt.budget, 32) && receipt.registrations.len() <= 2
++                && receipt.registrations.iter().all(|r| r.trigger.len() <= 64),
++            _ => true,
++        }
++    }
++    fn rank(&self) -> u8 {
++        match self {
++            Self::Prepared { .. } => 1, Self::OwnerAttached { .. } => 2,
++            Self::InitHello { .. } => 3, Self::BrokerReady { .. } => 4,
++            Self::InitProjectSent { .. } => 5, Self::InitProjectedAccepted { .. } => 6,
++            Self::InitCommitSent { .. } => 7, Self::InitDoneAccepted { .. } => 8,
++            Self::BrokerActive { .. } => 9, Self::Retiring => 10,
++            Self::BrokerRetired { .. } => 11, Self::ProcessesDead => 12,
++            Self::DomainEmpty => 13, Self::Retired => 14,
++            Self::ResourcesRemoved => 15, Self::ClaimReleased => 16,
++        }
++    }
++}
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++struct Record { sequence: u32, observed_monotonic_ns: u64, detail: Event }
++#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
++#[serde(rename_all = "snake_case")]
++pub(crate) enum FailureOrigin { Admission, Runtime, Retirement, Cleanup, Panic }
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++struct FailureRecord { origin: FailureOrigin, observed_monotonic_ns: u64, message: String }
++
++/// Data-only, bounded lifecycle observations. This is not an enrollment,
++/// pressure, cleanup or production qualification by itself. Missing milestones
++/// and `recording_incomplete` must never be inferred as successful operations.
++#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
++pub struct RelayLifecycleAudit {
++    schema: u32,
++    retained_after_exit: bool,
++    nonce: String,
++    canonical_spec_sha256: String,
++    host_uid: u32,
++    producer: Option<ProducerRecord>,
++    memory_max_bytes: u64,
++    memory_high_bytes: u64,
++    memory_swap_max_bytes: u64,
++    cpu_quota_us: u64,
++    cpu_period_us: u64,
++    tasks_max: u32,
++    recording_incomplete: bool,
++    recording_error: Option<String>,
++    first_failure: Option<FailureRecord>,
++    retirement_failure: Option<FailureRecord>,
++    cleanup_failure: Option<FailureRecord>,
++    records: Vec<Record>,
++}
++impl RelayLifecycleAudit {
++    pub(crate) fn retained(mut self) -> Self { self.retained_after_exit = true; self }
++}
++struct Journal { snapshot: RelayLifecycleAudit, last_rank: u8 }
++#[derive(Clone)]
++pub(crate) struct Audit(Arc<Mutex<Journal>>);
++fn monotonic_ns() -> io::Result<u64> {
++    let mut value = libc::timespec { tv_sec: 0, tv_nsec: 0 };
++    if unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut value) } != 0 {
++        return Err(io::Error::last_os_error());
++    }
++    if value.tv_sec < 0 || value.tv_nsec < 0 || value.tv_nsec >= 1_000_000_000 {
++        return Err(domain::error("audit monotonic clock invalid"));
++    }
++    (value.tv_sec as u64).checked_mul(1_000_000_000)
++        .and_then(|n| n.checked_add(value.tv_nsec as u64))
++        .ok_or_else(|| domain::error("audit monotonic clock overflow"))
++}
++fn bounded(message: &str) -> (String, bool) {
++    let mut end = message.len().min(MAX_ERROR_BYTES);
++    while !message.is_char_boundary(end) { end -= 1; }
++    (message[..end].to_owned(), end != message.len())
++}
++impl Journal {
++    fn gap(&mut self, message: &str) {
++        self.snapshot.recording_incomplete = true;
++        if self.snapshot.recording_error.is_none() { self.snapshot.recording_error = Some(bounded(message).0); }
++    }
++    fn append(&mut self, event: Event, now: u64) {
++        if self.snapshot.records.len() >= MAX_RECORDS || !event.bounded() || event.rank() <= self.last_rank
++            || now == 0 || self.snapshot.records.last().is_some_and(|r| r.observed_monotonic_ns > now) {
++            self.gap("audit payload/order/capacity/clock violation");
++            return;
++        }
++        self.last_rank = event.rank();
++        self.snapshot.records.push(Record {
++            sequence: self.snapshot.records.len() as u32 + 1, observed_monotonic_ns: now, detail: event,
++        });
++    }
++}
++
++#[cfg(test)]
++fn fixture() -> Audit {
++    // Data-only recording fixture; no HostContext, process authority or cell.
++    Audit(Arc::new(Mutex::new(Journal {
++        snapshot: RelayLifecycleAudit {
++            schema: 1, retained_after_exit: false, nonce: "07".repeat(32),
++            canonical_spec_sha256: "08".repeat(32), host_uid: 1001, producer: None,
++            memory_max_bytes: 512 * 1024 * 1024, memory_high_bytes: 384 * 1024 * 1024,
++            memory_swap_max_bytes: 0, cpu_quota_us: 100000, cpu_period_us: 100000, tasks_max: 64,
++            recording_incomplete: false, recording_error: None, first_failure: None,
++            retirement_failure: None, cleanup_failure: None, records: Vec::with_capacity(MAX_RECORDS),
++        }, last_rank: 0,
++    })))
++}
++#[cfg(test)]
++pub(crate) fn test_snapshot() -> RelayLifecycleAudit {
++    let audit = fixture();
++    audit.lock().gap("synthetic data-only test snapshot; no lifecycle qualification");
++    audit.snapshot()
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    #[test]
++    fn missing_observation_and_clock_or_order_failure_remain_incomplete() {
++        let audit = fixture();
++        audit.record(Err(domain::error("failed held-pidfd observation")));
++        audit.record(Ok(Event::Retiring));
++        audit.record(Ok(Event::Retired));
++        let result = audit.snapshot();
++        assert!(result.recording_incomplete);
++        assert_eq!(result.recording_error.as_deref(), Some("failed held-pidfd observation"));
++        assert_eq!(result.records.len(), 2);
++        assert!(result.first_failure.is_none());
++        for (first, second, now) in [
++            (Event::Retiring, Event::Retiring, 2),
++            (Event::Retired, Event::Retiring, 2),
++            (Event::Retiring, Event::Retired, 0),
++            (Event::Retiring, Event::Retired, 1),
++        ] {
++            let audit = fixture();
++            audit.lock().append(first, 2);
++            audit.lock().append(second, now);
++            assert!(audit.snapshot().recording_incomplete);
++            assert_eq!(audit.snapshot().records.len(), 1);
++        }
++    }
++    #[test]
++    fn successful_retirement_does_not_erase_run_or_cleanup_failure() {
++        let audit = fixture();
++        audit.failure(FailureOrigin::Runtime, "actual native enrollment deadline");
++        audit.failure(FailureOrigin::Retirement, "broker receipt unavailable");
++        audit.failure(FailureOrigin::Cleanup, "owned runtime could not be removed");
++        audit.failure(FailureOrigin::Cleanup, "retry still blocked");
++        audit.record(Ok(Event::Retiring));
++        audit.record(Ok(Event::Retired));
++        audit.record(Ok(Event::ResourcesRemoved));
++        audit.record(Ok(Event::ClaimReleased));
++        let result = audit.snapshot();
++        assert_eq!(result.first_failure.as_ref().unwrap().origin, FailureOrigin::Runtime);
++        assert_eq!(result.first_failure.as_ref().unwrap().message, "actual native enrollment deadline");
++        assert_eq!(result.retirement_failure.as_ref().unwrap().message, "broker receipt unavailable");
++        assert_eq!(result.cleanup_failure.as_ref().unwrap().message, "owned runtime could not be removed");
++        assert!(!result.recording_incomplete);
++        let encoded = serde_json::to_vec(&result).unwrap();
++        assert_eq!(serde_json::from_slice::<RelayLifecycleAudit>(&encoded).unwrap(), result);
++    }
++    #[test]
++    fn oversized_payload_and_utf8_truncation_cannot_be_silent() {
++        let audit = fixture();
++        audit.record(Ok(Event::InitCommitSent { wire_hex: "ff".repeat(129) }));
++        assert!(audit.snapshot().records.is_empty());
++        assert!(audit.snapshot().recording_incomplete);
++        let audit = fixture();
++        audit.failure(FailureOrigin::Runtime, &"界".repeat(600));
++        let result = audit.snapshot();
++        assert!(result.recording_incomplete);
++        assert!(result.first_failure.as_ref().unwrap().message.len() <= MAX_ERROR_BYTES);
++        let encoded = serde_json::to_vec(&result).unwrap();
++        assert!(encoded.len() < 32768);
++        assert!(serde_json::from_slice::<RelayLifecycleAudit>(&encoded).is_ok());
++    }
++    #[test]
++    fn journal_poison_is_visible_and_never_panics_during_cleanup_recording() {
++        let audit = fixture();
++        let other = audit.clone();
++        assert!(std::thread::spawn(move || {
++            let _guard = other.0.lock().unwrap();
++            panic!("owned audit mutex poison control");
++        }).join().is_err());
++        audit.failure(FailureOrigin::Cleanup, "original cleanup error");
++        audit.record(Ok(Event::Retired));
++        let result = audit.snapshot();
++        assert!(result.recording_incomplete);
++        assert_eq!(result.first_failure.unwrap().message, "original cleanup error");
++        assert!(result.recording_error.unwrap().contains("mutex poisoned"));
++    }
++}
++impl Audit {
++    /// Called only after the original leader-only HostContext admission. Audit
++    /// errors are sticky observations and do not replace its capability token.
++    pub(crate) fn new(nonce: &[u8; 32], canonical_spec: &[u8; 32], host_uid: u32, policy: &PressureRelaySpec) -> Self {
++        let producer = ProducerRecord::capture();
++        let snapshot = RelayLifecycleAudit {
++            schema: 1, retained_after_exit: false,
++            nonce: policy::hex(nonce), canonical_spec_sha256: policy::hex(canonical_spec), host_uid,
++            producer: producer.as_ref().ok().cloned(),
++            memory_max_bytes: policy.memory_max_bytes, memory_high_bytes: policy.memory_high_bytes,
++            memory_swap_max_bytes: policy.memory_swap_max_bytes, cpu_quota_us: policy.cpu_quota_us,
++            cpu_period_us: policy.cpu_period_us, tasks_max: policy.tasks_max,
++            recording_incomplete: producer.is_err(), recording_error: producer.err().map(|e| bounded(&e.to_string()).0),
++            first_failure: None, retirement_failure: None, cleanup_failure: None,
++            records: Vec::with_capacity(MAX_RECORDS),
++        };
++        Self(Arc::new(Mutex::new(Journal { snapshot, last_rank: 0 })))
++    }
++    fn lock(&self) -> MutexGuard<'_, Journal> {
++        match self.0.lock() {
++            Ok(guard) => guard,
++            Err(poison) => {
++                let mut guard = poison.into_inner();
++                guard.gap("audit journal mutex poisoned");
++                guard
++            }
++        }
++    }
++    pub(crate) fn record(&self, event: io::Result<Event>) {
++        let mut journal = self.lock();
++        match event.and_then(|event| Ok((event, monotonic_ns()?))) {
++            Ok((event, now)) => journal.append(event, now),
++            Err(error) => journal.gap(&error.to_string()),
++        }
++    }
++    pub(crate) fn failure(&self, origin: FailureOrigin, message: &str) {
++        let mut journal = self.lock();
++        let (message, truncated) = bounded(message);
++        if truncated { journal.gap("audit failure text truncated"); }
++        let observed_monotonic_ns = monotonic_ns().unwrap_or_else(|error| {
++            journal.gap(&error.to_string()); 0
++        });
++        let failure = FailureRecord { origin, observed_monotonic_ns, message };
++        if journal.snapshot.first_failure.is_none() { journal.snapshot.first_failure = Some(failure.clone()); }
++        if origin == FailureOrigin::Retirement && journal.snapshot.retirement_failure.is_none() {
++            journal.snapshot.retirement_failure = Some(failure.clone());
++        }
++        if origin == FailureOrigin::Cleanup && journal.snapshot.cleanup_failure.is_none() {
++            journal.snapshot.cleanup_failure = Some(failure);
++        }
++    }
++    pub(crate) fn snapshot(&self) -> RelayLifecycleAudit { self.lock().snapshot.clone() }
++}
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/capability.rs
+@@ -122,6 +122,38 @@
+     start: u64,
+ }
+ impl Process {
++    /// Read-only self observation. This cannot replace HostContext::open and
++    /// does not accept a caller-selected PID or produce broker authority.
++    pub(crate) fn current_leader_for_observation() -> io::Result<Self> {
++        let pid = unsafe { libc::getpid() };
++        if unsafe { libc::syscall(libc::SYS_gettid) } != pid as libc::c_long {
++            return Err(error("audit producer capture requires the process leader"));
++        }
++        let raw = unsafe { libc::syscall(libc::SYS_pidfd_open, pid, 0) };
++        if raw < 0 { return Err(io::Error::last_os_error()); }
++        let result = Self::from_received_pidfd(unsafe { File::from_raw_fd(raw as i32) })?;
++        if result.pid != pid { return Err(error("audit self pidfd view differs")); }
++        Ok(result)
++    }
++    pub(crate) fn observation(&self) -> io::Result<super::audit::ProcessRecord> {
++        self.live()?;
++        let result = super::audit::ProcessRecord {
++            pid: self.pid, birth: self.start,
++            pidfd: Identity::of(&self.pidfd)?.into(),
++            proc_dir: Identity::of(&self.proc)?.into(),
++        };
++        self.live()?;
++        Ok(result)
++    }
++    pub(crate) fn namespaces_for_observation(&self) -> io::Result<[super::audit::FileRecord; 10]> {
++        let files = NS_NAMES.iter().map(|name| kernel_link(&self.proc, &format!("ns/{name}"), libc::O_RDONLY))
++            .collect::<io::Result<Vec<_>>>()?;
++        self.validate_namespaces(&files)?;
++        let ids = files.iter().map(|file| Ok(Identity::of(file)?.into()))
++            .collect::<io::Result<Vec<super::audit::FileRecord>>>()?;
++        self.live()?;
++        ids.try_into().map_err(|_| error("audit namespace count differs"))
++    }
+     /// Child ownership is retained by the caller throughout pinning.
+     pub(crate) fn from_child(child: &mut Child) -> io::Result<Self> {
+         if child.try_wait()?.is_some() {
+@@ -542,11 +574,21 @@
+         let process = Process::from_child(&mut child.0).unwrap();
+         process.live().unwrap();
+         assert!(!process.dead().unwrap());
++        let observed = process.observation().unwrap();
++        assert_eq!(observed.pid as u32, child.0.id());
++        assert_eq!(observed.birth, process.start());
++        assert_eq!(observed.pidfd, Identity::of(process.fd()).unwrap().into());
++        assert_eq!(observed.proc_dir, Identity::of(&process.proc).unwrap().into());
+         process.signal(libc::SIGTERM).unwrap();
+         child.0.wait().unwrap();
+         assert!(process.dead().unwrap());
+         assert!(process.live().is_err());
++        assert!(process.observation().is_err());
+         process.require_dead(Duration::from_millis(10)).unwrap();
++    }
++    #[test]
++    fn audit_self_capture_does_not_bypass_the_leader_rule() {
++        std::thread::spawn(|| assert!(Process::current_leader_for_observation().is_err())).join().unwrap();
+     }
+     #[test]
+     fn received_ordinary_descriptor_cannot_be_promoted_to_process_authority() {
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs
+@@ -2,7 +2,7 @@
+ //! all kernel identity, role, filesystem and budget evidence is held and checked.
+ use super::capability::{Artifact, Process};
+ use super::domain::{self, Domain, Identity};
+-use super::policy::{PressureRelaySpec, digest};
++use super::policy::{self, PressureRelaySpec, digest};
+ use droidloom_pressure_relay::{BootstrapState, BootstrapStatus, Budget};
+ use std::fs::File;
+ use std::io;
+@@ -405,6 +405,7 @@
+         policy: &PressureRelaySpec,
+         barrier: &Artifact,
+         cancel: &File,
++        audit: &super::audit::Audit,
+     ) -> io::Result<Hello> {
+         if self.phase != Phase::Fresh {
+             return Err(error("init HELLO is a single attempt"));
+@@ -494,6 +495,8 @@
+         hello.validate(owner, domain, barrier)?;
+         self.entry_deadline = Instant::now() + self.handshake;
+         self.phase = Phase::Hello;
++        audit.record(super::audit::InitRecord::capture(&hello, &packet.wire)
++            .map(|init| super::audit::Event::InitHello { init }));
+         Ok(hello)
+     }
+     pub(crate) fn commit(
+@@ -507,6 +510,7 @@
+         endpoint: &File,
+         cancel: &File,
+         broker_gate: &mut dyn FnMut() -> io::Result<()>,
++        audit: &super::audit::Audit,
+     ) -> io::Result<()> {
+         if self.phase != Phase::Hello {
+             return Err(error("init projection/COMMIT is a single attempt"));
+@@ -564,6 +568,7 @@
+         };
+         hello.validate(owner, domain, barrier)?;
+         wait.send(&wire, Some(endpoint), broker_gate)?;
++        audit.record(Ok(super::audit::Event::InitProjectSent { wire_hex: policy::hex(&wire) }));
+         let projected = wait.receive(false)?;
+         put(&mut wire, 12, PROJECTED as u64, 4);
+         require_exact_peer_packet(&projected, &wire, hello.process.pid())?;
+@@ -580,8 +585,10 @@
+             ));
+         }
+         hello.validate(owner, domain, barrier)?;
++        audit.record(Ok(super::audit::Event::InitProjectedAccepted { wire_hex: policy::hex(&projected.wire) }));
+         put(&mut wire, 12, COMMIT as u64, 4);
+         wait.send(&wire, None, broker_gate)?;
++        audit.record(Ok(super::audit::Event::InitCommitSent { wire_hex: policy::hex(&wire) }));
+         let done = wait.receive(true)?;
+         put(&mut wire, 12, DONE as u64, 4);
+         require_exact_peer_packet(&done, &wire, hello.process.pid())?;
+@@ -592,6 +599,7 @@
+         domain.validate()?;
+         self.phase = Phase::Done;
+         self.socket = None;
++        audit.record(Ok(super::audit::Event::InitDoneAccepted { wire_hex: policy::hex(&done.wire) }));
+         Ok(())
+     }
+ }
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs
+@@ -6,4 +6,8 @@
+ pub mod entry;
+ pub(crate) mod owner;
+ mod worker;
++mod audit;
+ pub use policy::{PressureRelaySpec, RelayArtifact};
++pub use audit::RelayLifecycleAudit;
++#[cfg(test)]
++pub(crate) use audit::test_snapshot as audit_test_snapshot;
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs
+@@ -1,5 +1,6 @@
+ //! One retained supervisor owner for claim, finite domain, real init and broker.
+ use super::capability::{Artifact, Process};
++use super::audit::{Audit, Event, FailureOrigin, RelayLifecycleAudit, RetirementRecord};
+ use super::domain::{self, Domain, Identity};
+ use super::entry;
+ use super::init_peer::{self, Hello, InitPeer};
+@@ -305,6 +306,7 @@
+ }
+ 
+ struct Session {
++    audit: Audit,
+     host: Option<HostContext>,
+     owner: Process,
+     domain: Option<Arc<Domain>>,
+@@ -329,6 +331,7 @@
+     fn run(&mut self) {
+         let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| self.run_inner()));
+         if let Err(payload) = outcome {
++            self.audit.failure(FailureOrigin::Panic, "lifecycle worker panicked; generation remains persistently closed");
+             self.phase.store(FAILED, Ordering::Release);
+             self.retirement_error =
+                 Some("lifecycle worker panicked; generation remains persistently closed".into());
+@@ -345,16 +348,20 @@
+     fn run_inner(&mut self) {
+         let outcome = self.run_generation();
+         if let Err(e) = outcome {
++            self.audit.failure(FailureOrigin::Runtime, &e.to_string());
+             self.reason = Some(e.to_string());
+         }
+         self.phase.store(RETIRING, Ordering::Release);
++        self.audit.record(Ok(Event::Retiring));
+         self.peer.close();
+         let retired = self.retire_generation();
+         if let Err(e) = retired {
++            self.audit.failure(FailureOrigin::Retirement, &e.to_string());
+             self.retirement_error = Some(e.to_string());
+             self.phase.store(FAILED, Ordering::Release);
+         } else {
+             self.phase.store(RETIRED, Ordering::Release);
++            self.audit.record(Ok(Event::Retired));
+         }
+     }
+     fn run_generation(&mut self) -> io::Result<()> {
+@@ -369,6 +376,7 @@
+             &self.policy,
+             &self.barrier,
+             &self.cancel.0,
++            &self.audit,
+         )?);
+         let hello = self.hello.as_ref().expect("retained actual init HELLO");
+         let spec = BootstrapSpec {
+@@ -402,6 +410,9 @@
+         self.initialize_started = true;
+         let broker = self.broker.as_mut().expect("retained real broker");
+         let ready = relay(broker.initialize())?.clone();
++        self.audit.record(relay(broker.process_observation()).map(|process| Event::BrokerReady {
++            process: process.into(), status: (&ready).into(),
++        }));
+         self.endpoint = Some(endpoint_proof(
+             &self.directory,
+             &self.nonce,
+@@ -419,6 +430,7 @@
+             &self.endpoint.as_ref().expect("held endpoint proof").socket,
+             &self.cancel.0,
+             &mut || relay(broker.ready_for_init_commit()),
++            &self.audit,
+         )?;
+         self.phase.store(COMMITTED, Ordering::Release);
+         // Enrollment has a finite window separate from the constructor's
+@@ -439,6 +451,7 @@
+                     BootstrapState::Active if status.granted && !status.faulted => {
+                         enrolled = true;
+                         self.phase.store(ACTIVE, Ordering::Release);
++                        self.audit.record(Ok(Event::BrokerActive { status: status.into() }));
+                     }
+                     BootstrapState::Retired => {
+                         return Err(error(
+@@ -475,6 +488,8 @@
+                 // Revokes the owned transport but explicitly supplies no
+                 // retirement receipt. The broker handle remains in Session.
+                 let _ = relay(broker.revoke_unproven_control());
++            } else if self.initialize_started {
++                self.audit.record(RetirementRecord::capture(broker).map(|receipt| Event::BrokerRetired { receipt }));
+             }
+         }
+         if let Err(e) = self.stop_exact_processes() {
+@@ -490,6 +505,7 @@
+                 "no authenticated actual init peer; generation remains persistently closed",
+             ));
+         }
++        self.audit.record(Ok(Event::ProcessesDead));
+         if self
+             .broker
+             .as_ref()
+@@ -504,6 +520,7 @@
+             .as_ref()
+             .ok_or_else(|| error("retirement domain missing"))?
+             .prove_empty()?;
++        self.audit.record(Ok(Event::DomainEmpty));
+         // Release all init root/mount/namespace file references after its
+         // exact death. Keep the pidfd as final immutable retirement evidence.
+         let Hello { process, .. } = self.hello.take().expect("checked actual init");
+@@ -565,6 +582,7 @@
+ }
+ 
+ pub(crate) struct Owner {
++    audit: Audit,
+     policy: PressureRelaySpec,
+     nonce: [u8; 32],
+     canonical_spec: [u8; 32],
+@@ -609,6 +627,7 @@
+         let host = relay(HostContext::open())?;
+         let nonce = PressureRelaySpec::nonce()?;
+         let canonical_spec = entry::spec_digest(spec)?;
++        let audit = Audit::new(&nonce, &canonical_spec, spec.host_uid, policy);
+         let record = serde_json::to_vec(&serde_json::json!({"schema":1,"entry_abi":entry::ABI,
+             "host_uid":spec.host_uid,"nonce":policy::hex(&nonce),"canonical_spec_sha256":policy::hex(&canonical_spec),
+             "runtime":spec.runtime_dir,"domain_name":format!("g-{}",policy::hex(&nonce)),"pressure_relay":policy}))
+@@ -617,8 +636,10 @@
+             Store::production(true)?.ok_or_else(|| error("generation store unavailable"))?;
+         let claim = store.claim(spec.host_uid, &record)?;
+         let domain = Arc::new(Domain::create(policy, &nonce)?);
++        audit.record(Ok(Event::Prepared { domain: domain.identity().into() }));
+         let (channel_host, channel_child) = init_peer::pair()?;
+         Ok(Some(Self {
++            audit,
+             policy: policy.clone(),
+             nonce,
+             canonical_spec,
+@@ -742,6 +763,7 @@
+         self.channel_child = None;
+         let result = self.attach_inner(child);
+         if let Err(error) = result {
++            self.audit.failure(FailureOrigin::Admission, &error.to_string());
+             self.failure = Some(error.to_string());
+             self.phase.store(FAILED, Ordering::Release);
+             self.channel_host = None;
+@@ -753,12 +775,15 @@
+             return Err(error("generation child attached twice"));
+         }
+         self.process = Some(Process::from_child(child)?);
++        self.audit.record(self.process.as_ref().expect("retained exact owner").observation()
++            .map(|process| Event::OwnerAttached { process }));
+         let process = self
+             .process
+             .as_ref()
+             .expect("retained exact owner")
+             .try_clone()?;
+         let session = Session {
++            audit: self.audit.clone(),
+             host: self.host.take(),
+             owner: process,
+             domain: Some(Arc::clone(&self.domain)),
+@@ -828,6 +853,10 @@
+     pub(crate) fn request_stop(&self) -> io::Result<()> {
+         self.cancel.request()
+     }
++    pub(crate) fn audit(&self) -> RelayLifecycleAudit { self.audit.snapshot() }
++    pub(crate) fn record_cleanup_failure(&self, message: &str) {
++        self.audit.failure(FailureOrigin::Cleanup, message);
++    }
+     pub(crate) fn termination_reason(&self) -> Option<&str> {
+         self.termination_reason.as_deref()
+     }
+@@ -886,6 +915,7 @@
+             || resources.prove_retired(),
+         )?;
+         self.resources_removed = true;
++        self.audit.record(Ok(Event::ResourcesRemoved));
+         Ok(())
+     }
+     /// Only after the exact network owner and entire runtime have cleaned up.
+@@ -926,6 +956,7 @@
+             }
+         })?;
+         self.released = true;
++        self.audit.record(Ok(Event::ClaimReleased));
+         Ok(())
+     }
+ }
