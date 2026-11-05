@@ -1,0 +1,28 @@
+--- normal02/source/coordinator.py
++++ normal03/source/coordinator.py
+@@ -49,9 +49,9 @@
+     state = group_fd = -1; actor = None; fence = None; invocation = None; launched = False; tools = {}
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0, 'external controller requires original host root')
+-        owned.need(plan['unit'] == 'p4-owner07-normal-20261105-02.service' and
+-                   plan['package'] == '/opt/p4-owner07-normal-20261105-02' and
+-                   plan['state'] == '/opt/p4-owner07-normal-20261105-02-state', 'this controller accepts only its fixed fresh unit/package/state')
++        owned.need(plan['unit'] == 'p4-owner07-normal-20261105-03.service' and
++                   plan['package'] == '/opt/p4-owner07-normal-20261105-03' and
++                   plan['state'] == '/opt/p4-owner07-normal-20261105-03-state', 'this controller accepts only its fixed fresh unit/package/state')
+         state = owned.root_directory(plan['state'])
+         owned.need(owned.file_id(state) == prepared['state_identity'], 'prepared state replaced')
+         for name in ('coordinator-claim.json', 'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json'):
+--- normal02/source/prepare.py
++++ normal03/source/prepare.py
+@@ -123,7 +123,9 @@
+     package_fd = state_fd = data_fd = -1; tools = {}; fence = None
+     try:
+         owned.need(os.geteuid() == os.getuid() == os.getegid() == 0, 'preparation requires original host root')
+-        owned.need(len(plan['attempt_nonce']) == 64 and plan['scope'] == 'FIRST_REAL_OWNER_INIT_LMKD_ENROLLMENT_AND_NORMAL_RETIREMENT_ONLY', 'wrong fixed profile')
++        owned.need(len(plan['attempt_nonce']) == 64 and
++                   plan['scope'] == 'REAL_OWNER_INIT_PROJECT_DIAGNOSTIC_AND_ORIGINAL_ACTIVE_RETIREMENT_GATES' and
++                   plan['kind'] == 'owned-real-producer07-normal03-diagnostic01', 'wrong fixed profile')
+         owned.need(not Path(plan['package']).exists() and not Path(plan['state']).exists(), 'preparation root already exists')
+         owned.need(support.props(plan['unit']).get('LoadState') == 'not-found', 'owned unit already exists')
+         fence = support.MainFence(plan, vars(support)); result['main_before'] = fence.check()

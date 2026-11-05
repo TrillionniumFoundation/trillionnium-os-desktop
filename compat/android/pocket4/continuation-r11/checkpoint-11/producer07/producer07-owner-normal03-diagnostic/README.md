@@ -1,0 +1,7 @@
+# Fresh Owner NORMAL03 with exact preparation profile repair
+
+This fresh attempt replaces only the paired init barrier with the actual matching diagnostic DSO. The same audit02 Rust Owner and native r6 LMKD remain pinned. The original NORMAL01 failed after PROJECT send and remains failed. Its package, state, nonce and results are not reused or modified.
+
+Four Python sources are unchanged; coordinator changes only its three exact package/state/unit literals. Preparation now exactly compares this diagnostic scope and dedicated NORMAL03 kind. NORMAL02 failed its scope guard before creating owned roots or a prepared file. Its raw stdout and reconstructed report remain unchanged. UID 61279 and subordinate range 20200000+100000 are proposed, subject to the original live absence gates; no account/subid tables are written. All outer 5 GiB/inner 4 GiB, swap zero, Main fence, one-shot claim, real private helpers, ACTIVE/retirement and exact cleanup gates remain. The original actor record kind is retained for schema compatibility; the attempt nonce, unit, package, state, plan and canonical CellSpec distinguish this new invocation.
+
+Preparation has not been submitted. The runtime template is not executable until a new actual prepared receipt is externally SHA-pinned and reviewed. Diagnostic output or a failed invocation cannot qualify ACTIVE, reload, pressure, production or commercial Apps.

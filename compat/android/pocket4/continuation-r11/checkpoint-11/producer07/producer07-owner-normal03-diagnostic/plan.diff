@@ -1,0 +1,94 @@
+--- normal02/plan.json
++++ normal03/plan.json
+@@ -1,23 +1,23 @@
+ {
+   "schema": 1,
+-  "kind": "owned-real-producer07-normal02-diagnostic01",
++  "kind": "owned-real-producer07-normal03-diagnostic01",
+   "scope": "REAL_OWNER_INIT_PROJECT_DIAGNOSTIC_AND_ORIGINAL_ACTIVE_RETIREMENT_GATES",
+-  "attempt_nonce": "021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
+-  "package": "/opt/p4-owner07-normal-20261105-02",
+-  "state": "/opt/p4-owner07-normal-20261105-02-state",
+-  "unit": "p4-owner07-normal-20261105-02.service",
+-  "description": "Pocket4 Owner07 NORMAL diagnostic02 021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
++  "attempt_nonce": "65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
++  "package": "/opt/p4-owner07-normal-20261105-03",
++  "state": "/opt/p4-owner07-normal-20261105-03-state",
++  "unit": "p4-owner07-normal-20261105-03.service",
++  "description": "Pocket4 Owner07 NORMAL diagnostic03 65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
+   "control_socket": "/run/p4-owner07-control.sock",
+-  "claim_store_backing": "/opt/p4-owner07-normal-20261105-02-state/claims",
+-  "canonical_spec_sha256": "bc88a9d11021f1bc2f48d912fbed7cb92f34d572ff36dcaafb45177718a31c78",
++  "claim_store_backing": "/opt/p4-owner07-normal-20261105-03-state/claims",
++  "canonical_spec_sha256": "496529895916669515aa9118ec78e4853d94de654c04950b2ba5c6b64fec8207",
+   "spec": {
+-    "host_uid": 61278,
++    "host_uid": 61279,
+     "subordinate_uids": {
+-      "start": 20100000,
++      "start": 20200000,
+       "count": 100000
+     },
+     "subordinate_gids": {
+-      "start": 20100000,
++      "start": 20200000,
+       "count": 100000
+     },
+     "image_dir": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5",
+@@ -211,13 +211,13 @@
+         "target": "/droidloom/wifi-nohw"
+       }
+     ],
+-    "data_dir": "/opt/p4-owner07-normal-20261105-02-state/data",
+-    "runtime_dir": "/run/droidloom/cells/u61278",
++    "data_dir": "/opt/p4-owner07-normal-20261105-03-state/data",
++    "runtime_dir": "/run/droidloom/cells/u61279",
+     "render_node": "/dev/dri/renderD128",
+     "graphics_backend": "drm_media_dma_heap",
+     "denial_socket": "/run/p4-owner07-user/droidloom/native-bridge.sock",
+     "pressure_relay": {
+-      "cgroup_parent": "/sys/fs/cgroup/system.slice/p4-owner07-normal-20261105-02.service/domains",
++      "cgroup_parent": "/sys/fs/cgroup/system.slice/p4-owner07-normal-20261105-03.service/domains",
+       "memory_max_bytes": 4294967296,
+       "memory_high_bytes": 3758096384,
+       "memory_swap_max_bytes": 0,
+@@ -229,19 +229,19 @@
+       "lmkd_uid": 1069,
+       "lmkd_gid": 1069,
+       "broker": {
+-        "path": "/opt/p4-owner07-normal-20261105-02/bin/droidloom-psi-owner",
++        "path": "/opt/p4-owner07-normal-20261105-03/bin/droidloom-psi-owner",
+         "sha256": "09ee190013f27084ce9d2f6bbcc8098c5dd124ad7781ac1ecd7ab23e5cf667de"
+       },
+       "entry_supervisor": {
+-        "path": "/opt/p4-owner07-normal-20261105-02/bin/droidloom-supervisor",
++        "path": "/opt/p4-owner07-normal-20261105-03/bin/droidloom-supervisor",
+         "sha256": "86f27b81da63b6eaab32588b21d16ca872b5de2ab38af08c8e357e1af7075843"
+       },
+       "lmkd": {
+-        "path": "/opt/p4-owner07-normal-20261105-02/bin/lmkd",
++        "path": "/opt/p4-owner07-normal-20261105-03/bin/lmkd",
+         "sha256": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+       },
+       "init_barrier": {
+-        "path": "/opt/p4-owner07-normal-20261105-02/lib/libdroidloom_init_relay.so",
++        "path": "/opt/p4-owner07-normal-20261105-03/lib/libdroidloom_init_relay.so",
+         "sha256": "19bdf87af5b4e7323a4420b6c14969e787cfe68a9ea7defbdea0a044bbbd6ed2"
+       },
+       "init_sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73",
+@@ -1478,6 +1478,15 @@
+   },
+   "diagnostic_build_receipt_sha256": "15c122a42f1c0d81ff4d473925184a8f7aedb6babc84d9fa4036ae6378b44d02",
+   "predecessor_failure": {
++    "stdout_sha256": "8921a665badde77731239e59c1a823ce27318d7ef42e6d8d204a6088dbad707e",
++    "reconstructed_report_sha256": "d3876c6061cfaa3c9d55b1e302dd432768f8e1268e609f79c06b63a7518107bc",
++    "attempt_nonce": "021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
++    "replayed": false,
++    "runtime_executed": false,
++    "remote_prepared_file_written": false,
++    "observed_boundary": "prepare fixed scope guard rejected before owned root creation"
++  },
++  "earlier_runtime_failure": {
+     "runtime_sha256": "26f19099192d0bfd76740c535f30598c32e17718da58b9fbe63d134bfe5abd19",
+     "log_collection_sha256": "e33d5669498e7f290b3003913646f888d0e866d40c47d1f13daf7f062656346a",
+     "attempt_nonce": "06ad67978c234fe35388a364f82523aadc8dc25755030cb61ee88128b9ca5979",

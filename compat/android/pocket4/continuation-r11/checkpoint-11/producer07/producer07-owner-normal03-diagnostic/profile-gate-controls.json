@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "source_expression_controls_passed": 10,
+  "records": [
+    {
+      "case": "actual_old_scope_guard_reproduces_NORMAL02_rejection",
+      "accepted": false,
+      "expected_acceptance": false
+    },
+    {
+      "case": "dedicated_NORMAL03_profile_is_accepted",
+      "accepted": true,
+      "expected_acceptance": true
+    },
+    {
+      "case": "old_NORMAL02_kind_remains_rejected",
+      "accepted": false,
+      "expected_acceptance": false
+    },
+    {
+      "case": "wrong_scope_rejected",
+      "accepted": false,
+      "expected_acceptance": false
+    },
+    {
+      "case": "wrong_kind_rejected",
+      "accepted": false,
+      "expected_acceptance": false
+    },
+    {
+      "case": "short_nonce_rejected",
+      "accepted": false,
+      "expected_acceptance": false
+    },
+    {
+      "case": "fresh03_exact_unit_package_state_accepted",
+      "accepted": true,
+      "expected_acceptance": true
+    },
+    {
+      "case": "old_unit_rejected",
+      "accepted": false,
+      "expected_acceptance": false
+    },
+    {
+      "case": "old_package_rejected",
+      "accepted": false,
+      "expected_acceptance": false
+    },
+    {
+      "case": "old_state_rejected",
+      "accepted": false,
+      "expected_acceptance": false
+    }
+  ],
+  "six_source_fixed_gate_inventory": {
+    "actor.py": [
+      {
+        "line": 26,
+        "expression": "str(here) == plan['package'] + '/source'"
+      },
+      {
+        "line": 26,
+        "expression": "str(args.prepared) == plan['state'] + '/prepared.json'"
+      },
+      {
+        "line": 135,
+        "expression": "group == '/system.slice/' + plan['unit']"
+      }
+    ],
+    "coordinator.py": [
+      {
+        "line": 25,
+        "expression": "str(here) == plan['package'] + '/source'"
+      },
+      {
+        "line": 25,
+        "expression": "str(args.prepared) == plan['state'] + '/prepared.json'"
+      },
+      {
+        "line": 65,
+        "expression": "support.props(plan['unit']).get('LoadState') == 'not-found'"
+      },
+      {
+        "line": 89,
+        "expression": "current['ControlGroup'] == '/system.slice/' + plan['unit']"
+      },
+      {
+        "line": 52,
+        "expression": "plan['unit'] == 'p4-owner07-normal-20261105-03.service'"
+      },
+      {
+        "line": 53,
+        "expression": "plan['package'] == '/opt/p4-owner07-normal-20261105-03'"
+      },
+      {
+        "line": 54,
+        "expression": "plan['state'] == '/opt/p4-owner07-normal-20261105-03-state'"
+      },
+      {
+        "line": 127,
+        "expression": "final['unit'] == plan['unit']"
+      },
+      {
+        "line": 158,
+        "expression": "support.props(plan['unit']).get('LoadState') != 'not-found'"
+      }
+    ],
+    "owned.py": [],
+    "pinned_support.py": [],
+    "prepare.py": [
+      {
+        "line": 130,
+        "expression": "support.props(plan['unit']).get('LoadState') == 'not-found'"
+      },
+      {
+        "line": 127,
+        "expression": "plan['scope'] == 'REAL_OWNER_INIT_PROJECT_DIAGNOSTIC_AND_ORIGINAL_ACTIVE_RETIREMENT_GATES'"
+      },
+      {
+        "line": 128,
+        "expression": "plan['kind'] == 'owned-real-producer07-normal03-diagnostic01'"
+      }
+    ],
+    "qualify.py": [
+      {
+        "line": 69,
+        "expression": "r['trigger'].strip() == f'{kind} {stall} 1000000'"
+      }
+    ]
+  },
+  "old_actor_result_kind_retained_as_non_authorizing_schema_label": "owner07-real-normal01",
+  "runtime_or_namespace_executed": false
+}

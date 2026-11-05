@@ -1,0 +1,31 @@
+--- make_runtime03.py
++++ make_runtime03_revision02.py
+@@ -8,7 +8,7 @@
+ 
+ BASE = Path('/workspace/scratch/94990735b266/lmkd-recovery-20261105-01')
+ SOURCE = BASE / 'owner07-normal03-diagnostic-freeze-01'
+-OUT = BASE / 'owner07-normal03-runtime01-freeze-01'
++OUT = BASE / 'owner07-normal03-runtime01-freeze-02'
+ 
+ 
+ def sha(value):
+@@ -36,7 +36,7 @@
+     plan_raw = (SOURCE / 'plan.json').read_bytes()
+     plan = json.loads(plan_raw)
+     assert actual['success'] is True and actual['errors'] == []
+-    assert actual['attempt_nonce'] == plan['attempt_nonce'] and actual['plan_sha256'] == sha(plan_raw)
++    assert actual['attempt_nonce'] == plan['attempt_nonce'] and actual['plan_sha256'] == sha(pretty(plan))
+     assert actual['canonical_spec_sha256'] == plan['canonical_spec_sha256']
+     assert actual['runtime_executed'] is False and actual['namespace_or_network_changed'] is False
+     expected_source = {f.name: {'bytes': len(f.read_bytes()), 'sha256': sha(f.read_bytes())}
+@@ -81,7 +81,9 @@
+         'runtime_executed': False, 'production_or_App_qualification': False}
+     OUT.mkdir(exist_ok=False)
+     members = {'request.json': raw, 'stdin.py': stdin.encode(), 'actual-prepared.json': body,
+-        'binding-result.json': pretty(result), 'make_runtime03.py': Path(__file__).read_bytes(),
++        'binding-result.json': pretty(result), 'make_runtime03_revision02.py': Path(__file__).read_bytes(),
++        'local-generator01-failure.json': (Path(__file__).parent / 'runtime03-generator01-failure.json').read_bytes(),
++        'generator01-to02.diff': (Path(__file__).parent / 'runtime03-generator01-to02.diff').read_bytes(),
+         'README.md': b'# Exact fresh NORMAL03 runtime request\n\nOnly the actual prepared SHA and stable key were filled into the previously reviewed runtime template. This request has not been submitted by this local generator. Original NORMAL01 runtime and NORMAL02 preparation remain failed and are not replayed. Runtime authorization, durable terminal, original success/failure evidence and exact cleanup remain the root coordinator\'s responsibility.\n'}
+     rows = []
+     for name, data in members.items():

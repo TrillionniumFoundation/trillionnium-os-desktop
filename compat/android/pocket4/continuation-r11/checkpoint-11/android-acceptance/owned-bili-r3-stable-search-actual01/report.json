@@ -1,0 +1,144 @@
+{
+  "actual_action": {
+    "action_returned": true,
+    "click_count": 1,
+    "click_sequence_restoration": true,
+    "node_action": "ACTION_CLICK",
+    "post_read_restoration": true,
+    "scope": {
+      "display": 0,
+      "focused": true,
+      "package": "tv.danmaku.bili",
+      "type": 1
+    }
+  },
+  "cleanup": {
+    "Main_exact_preserved": true,
+    "other_tasks_preserved": true,
+    "owned_task": 878,
+    "owned_task_absent": true,
+    "preexisting_tasks": [
+      851
+    ],
+    "remaining_tasks": [
+      851
+    ],
+    "source_and_artifact_preserved": true
+  },
+  "helper_package": "org.droidloom.qa.bili.r3",
+  "helper_uid": 10166,
+  "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "original_failures_and_prior_sources_unchanged": true,
+  "original_summary_files": {
+    "cleanup-command-result.json": {
+      "bytes": 1287,
+      "sha256": "9cac59472f00b333493692545ed5ab58ead61d48a63691738134742c0b033e6b"
+    },
+    "cleanup.json": {
+      "bytes": 448,
+      "sha256": "26172c61e68f86940671c1f5bdb147d5f11a9b2c9e71189a8509163907d57778"
+    },
+    "coordinator.json": {
+      "bytes": 40392,
+      "sha256": "5c1c7cdb5451e1e2c0c0e19504f9ab1e45f90a488292414db9c241e1efe06472"
+    },
+    "launch-command-result.json": {
+      "bytes": 1163,
+      "sha256": "c7b3f6f5cc15b0ca33d5ed2a64255e87af473d8178b71168c251d98d2a154285"
+    },
+    "launch.json": {
+      "bytes": 5085,
+      "sha256": "a11a2c8a9700f42b490d55addcd97f099cac2408718adbaee749f93f35461f3f"
+    },
+    "navigation-command-result.json": {
+      "bytes": 1168,
+      "sha256": "19a547c026303b586bab5bdaaf81368fef15815f44f07bf2158582ffd2b9dd5a"
+    },
+    "navigation.json": {
+      "bytes": 43174,
+      "sha256": "054c2b30e0484c426a293944bb03dec7673bb4f4a9d79b104c3e806584a620be"
+    },
+    "stage.json": {
+      "bytes": 1650,
+      "sha256": "d5e54cdc3208c3dd19ffee599623fda36600f283dbcc157c7e17a2fc97d50397"
+    }
+  },
+  "qualification_boundary": {
+    "audio_verified": false,
+    "cold_process_start_claimed": false,
+    "derived_search_entry_business_scope_pass": true,
+    "original_business_success_false_fields_unchanged": true,
+    "query_submission_verified": false,
+    "video_playback_verified_by_this_run": false,
+    "whole_app_ready": false
+  },
+  "raw_commercial_UI_or_private_text_included": false,
+  "reader_report": {
+    "bytes": 104231,
+    "sha256": "bcf23dd39822f173b0169f0d9456f50a3753983d58ebfe86f1a4b7bedbcef3dd"
+  },
+  "reported_authoritative_job": {
+    "complete_durable_output": true,
+    "evidence_origin": "parent authoritative tool result; this report independently verifies saved source/receipt bytes",
+    "exit_code": 0,
+    "id": "1a1a9b24b61-fc05-36cc",
+    "terminal": "succeeded"
+  },
+  "resources": {
+    "events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "own_ram_limit_bytes": 536870912,
+    "own_ram_peak_bytes": 131186688,
+    "swap_peak_bytes": 0
+  },
+  "schema": 1,
+  "scope": "fresh owned Bilibili task, bounded successful read stability, one exact search-entry click, real search page observed, exact owned task retired",
+  "search_page_postcondition": {
+    "activity": "tv.danmaku.bili/com.bilibili.search2.main.BiliMainSearchActivity",
+    "actual_contract_unique_selectors": true,
+    "complete_nodes": 27,
+    "input_resource": "tv.danmaku.bili:id/search_src_text",
+    "private_tree_external_pin": {
+      "bytes": 26771,
+      "node_count": 27,
+      "sha256": "cc93bc42d606cae55308086f602a084a710e00d8a25a5fcccdf4611a43dacc10",
+      "tree_sha256": "e3af7417af49c9dd49c51cc84dff945e4482b96d38528f20fea7771221bf469d",
+      "window_sha256": "b77a2ca09720fc0ff1f4cf9e588ecd50aa5c4260f6a76c050d2c5be0672f91be"
+    },
+    "submit_resource": "tv.danmaku.bili:id/action_search"
+  },
+  "source_manifest_sha256": "7e35e1696979b82993ee2f31e91215c72ba9d95e5c4752783ade750b289d9ecc",
+  "stability": {
+    "full_tree_window_foreground_accessibility_keys_equal": true,
+    "matching_observations": [
+      2,
+      3
+    ],
+    "observations": [
+      {
+        "elapsed_ms": 2039,
+        "index": 1,
+        "node_count": 73
+      },
+      {
+        "elapsed_ms": 4202,
+        "index": 2,
+        "node_count": 156
+      },
+      {
+        "elapsed_ms": 5390,
+        "index": 3,
+        "node_count": 156
+      }
+    ],
+    "strict_action_freshness_preserved": true
+  },
+  "state": "ACTUAL_SEARCH_ENTRY_SCOPE_PASS"
+}
