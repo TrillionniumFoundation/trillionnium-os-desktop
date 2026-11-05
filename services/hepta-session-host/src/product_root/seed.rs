@@ -129,7 +129,10 @@ pub(super) async fn create(inputs: &Inputs, fresh: &Product) -> Result<ThreadSee
     );
     fs::write_new(&home.join("config.toml"), config.as_bytes())?;
     fs::write_new(&home.join("environments.toml"), environments.as_bytes())?;
-    let path = fresh.prefix.join("seed.sock");
+    // App Server requires its socket parent to be private and may set it to
+    // 0700. Keep that contract inside the existing Root-only admin directory;
+    // the product prefix must remain traversable by the real Session owner.
+    let path = fresh.admin.join("seed.sock");
     if std::fs::symlink_metadata(&path).is_ok() {
         return Err("seed socket already exists".into());
     }
