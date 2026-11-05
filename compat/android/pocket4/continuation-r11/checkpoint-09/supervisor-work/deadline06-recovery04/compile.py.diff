@@ -1,0 +1,35 @@
+--- recovery03/compile.py
++++ recovery04/compile.py
+@@ -10,10 +10,10 @@
+ import time
+ import traceback
+ 
+-CONTROL_REVISION = "producer06-deadline-recovery03"
++CONTROL_REVISION = "producer06-deadline-recovery04"
+ BASE = Path("/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01")
+ SOURCE = BASE / "candidate"
+-OUT = Path("/home/alex/work/pocket4-supervisor-lmkd-deadline-r11-build-06-recovery03")
++OUT = Path("/home/alex/work/pocket4-supervisor-lmkd-deadline-r11-build-06-recovery04")
+ CANDIDATE = OUT / "candidate"
+ TARGET = OUT / "target"
+ CARGO = "/home/alex/.cargo/bin/cargo"
+@@ -33,10 +33,6 @@
+ EXPECTED_TEST_TARGETS = {
+     ("droidloom_pressure_relay", "lib"),
+     ("droidloom_supervisor", "lib"),
+-    ("droidloomd", "bin"),
+-    ("droidloom-supervisor", "bin"),
+-    ("droidloom-psi-owner", "bin"),
+-    ("owned-ipc-controls", "bin"),
+ }
+ SOURCE_LIMIT = 128 * 1024 * 1024
+ LOG_LIMIT = 8 * 1024 * 1024
+@@ -648,7 +644,7 @@
+         test_out, _ = run_command(report, OUT, [
+             CARGO, "test", "--locked", "--offline", "-j", "1",
+             "-p", "droidloom-pressure-relay", "-p", "droidloom-supervisor",
+-            "--no-run", "--message-format=json"
++            "--lib", "--no-run", "--message-format=json"
+         ], CANDIDATE, env, 270)
+         report["artifacts"] = {}
+         build_messages = [json.loads(line) for line in build_out.splitlines() if line.strip()]

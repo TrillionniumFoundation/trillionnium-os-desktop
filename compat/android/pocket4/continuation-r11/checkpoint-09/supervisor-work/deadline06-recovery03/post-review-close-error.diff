@@ -1,0 +1,50 @@
+--- reviewed-work01/resource_guard.py
++++ frozen-work02/resource_guard.py
+@@ -272,24 +272,39 @@
+         self.record["held_own_cgroup_gate_passed"] = True
+ 
+     def close(self):
++        first_error = None
+         for attribute in ("fd", "root_fd"):
+             fd = getattr(self, attribute)
+             if fd is not None:
+                 setattr(self, attribute, None)
+-                os.close(fd)
++                try:
++                    os.close(fd)
++                except OSError as error:
++                    if first_error is None:
++                        first_error = error
++        if first_error is not None:
++            raise first_error
++
++
++def _resource_record_error(report, resources, error):
++    report["success"] = False
++    resources.record["held_own_cgroup_gate_passed"] = False
++    detail = type(error).__name__ + ": " + str(error)
++    report.setdefault("resource_gate_errors", []).append(detail)
++    if "error" not in report:
++        report["error"] = detail
++        report["traceback"] = traceback.format_exc()
+ 
+ 
+ def finish_own_resource_gate(report, resources):
+     try:
+         resources.finish()
+     except Exception as error:
+-        report["success"] = False
+-        detail = type(error).__name__ + ": " + str(error)
+-        report.setdefault("resource_gate_errors", []).append(detail)
+         # A compile/test failure remains the primary error. A later collection
+         # problem cannot erase it or become an apparent cleanup success.
+-        if "error" not in report:
+-            report["error"] = detail
+-            report["traceback"] = traceback.format_exc()
++        _resource_record_error(report, resources, error)
+     finally:
+-        resources.close()
++        try:
++            resources.close()
++        except Exception as error:
++            _resource_record_error(report, resources, error)

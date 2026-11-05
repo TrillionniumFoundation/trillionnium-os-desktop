@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "created_utc": "2026-11-05T00:21:05.580416+00:00",
+  "state": "FROZEN_LOCAL_SOURCE_AND_PACKET_READY_FOR_ROOT_REVIEW_NOT_EXECUTED",
+  "source_manifest": {
+    "bytes": 994,
+    "sha256": "0afd486b9caa4f68fb9d53da3ed15dc97e56ac2b0022a923b8b9cfa2b1887bc8"
+  },
+  "production": {
+    "install_state.py": {
+      "bytes": 27445,
+      "sha256": "3c18f3e359af059818135dd2f643684876fc8a15368ea80d0f1c33afd447f541"
+    },
+    "stage_execute.py": {
+      "bytes": 5672,
+      "sha256": "19bb6bca04acfb65b165ffbcd9061eb3e761e2b522524a925e248365b2f31e16"
+    },
+    "make_request.py": {
+      "bytes": 3033,
+      "sha256": "a4e8336d8eec136213918fab7c483c55230fd867fb42e897b7b3ce0dedcb60e6"
+    },
+    "references/readonly_r3_coordinator.py": {
+      "bytes": 16900,
+      "sha256": "e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd"
+    },
+    "INPUTS.json": {
+      "bytes": 2356,
+      "sha256": "1188f5aafcb334dc682a9ceb41cf9849a1f29b58755e6f77fb11f83c31acf266"
+    },
+    "README.md": {
+      "bytes": 5417,
+      "sha256": "e49645a0b7fad0b6deb1e0e18aac1baca0f7b6d33651c445184a2094ad9693f7"
+    }
+  },
+  "request": {
+    "bytes": 66229,
+    "sha256": "dbad5ace5d9a04da19d9a17ef800fdb59b7f95f959f4fe289d6c36550ce203aa"
+  },
+  "stdin": {
+    "bytes": 63563,
+    "sha256": "48752b154f4e4a52b36e3916c6020119f8cc2b894c872605664c2a367d803287"
+  },
+  "stable_key": "pocket4-owned-bili-qa-install-state-01-20261105",
+  "runtime_root": "/home/alex/work/pocket4-owned-bili-qa-install-state-01",
+  "actual_packet_checked_by_production_function": true,
+  "AST_checked": 4,
+  "local_controls": {
+    "bytes": 796,
+    "sha256": "50c97fcc1a0e5b8c406330361de750e3a444b573910b1f1cc55692a1d92c18a5"
+  },
+  "executed_local_control_source": {
+    "bytes": 1967,
+    "sha256": "aafda832f113ca2e67737f842f8514915060d1685e8b3a518996d1bf7927f9f0"
+  },
+  "reference_input_pins": {
+    "recorder.py": {
+      "bytes": 40090,
+      "sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511"
+    },
+    "held_runtime_r5.py": {
+      "bytes": 22691,
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+    },
+    "source_contract_r3.py": {
+      "bytes": 9103,
+      "sha256": "51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d"
+    },
+    "main_binding_r3.py": {
+      "bytes": 8904,
+      "sha256": "da78aabbea484955bb3bfaedddee962aa030e160f6c4b38a386b5e33483a42b2"
+    }
+  },
+  "official_AOSP_body": {
+    "bytes": 220141,
+    "sha256": "f51101a2d5c4cd9df4283d9da73707b4d0edc189b75a391285a816931ad3e004"
+  },
+  "official_AOSP_git_blob": "aa235c2258ac152037b0bc33edf860de20624a7a",
+  "official_AOSP_url": "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/services/core/java/com/android/server/pm/PackageManagerShellCommand.java",
+  "upstream_commit_not_claimed": true,
+  "exact_device_framework_source_not_claimed": true,
+  "semantics": "replaceExisting=true by default; -r ignored; -R explicitly false. -u/--user all is used only for absence. Installed-only all-user postcheck excludes -u. No fallback.",
+  "main_count_gate": "No package count compared. Original R3 retains only Bili10117 and old v2 10125 UID guards and Bili data inode identities. No old182 count read or exception introduced.",
+  "package_retention": "exact owned helper retained for separately reviewed UI; unknown install is not retried/uninstalled automatically",
+  "Hepta_calls": 0,
+  "device_installs": 0,
+  "UI_actions": 0,
+  "independent_peer_review": "NOT_PERFORMED",
+  "whole_app_production_ready": false
+}
