@@ -1,0 +1,225 @@
+--- query/owned_navigation.py
++++ results-observe/owned_navigation.py
+@@ -16,23 +16,25 @@
+ import time
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-bilibili-r3-public-query-01')
++ROOT = Path('/home/alex/work/pocket4-bilibili-r3-results-observe-01')
+ SOURCE = ROOT / 'source'
+-NONCE = '04f5f21656d2d7fea73f57dcbad74894'
++NONCE = '6af0a9c20e8c06d7237d8635c46a166a'
+ FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r3-flow-' + NONCE)
+-PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/expand_search', 'class': 'android.widget.LinearLayout', 'content_desc': 'Search bar, button'}, 'nonces': {'before': 'daf4b55dc4093bf6186918835bcb0cd6', 'inspect': 'dd5d2a875c5ad71ce6baf04c8c8e97bf', 'action': '80340c52094048c69898fde9d7b77896', 'after': '3c12cb61ad2a94e1ee56138a6fe1e345'}}
+-POST_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '402a0a90dfd9680bb81d7a8117686ca8', 'inspect': '6090ec977615460e53a362198ce6e372', 'after': 'df164d752ca1a32d023ed72f00fea8d7'}}
+-STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c44cbd5ab90edd8513bf48052134527b', 'inspect': 'bdbdd17452a163d879ed41beab0cfd52', 'after': '27885e6df98e90ee9d43801695744c00'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '84796c47980e26f12cce65739ed46bf6', 'inspect': '533ab5f73aff8d073ce9607b60d53ade', 'after': 'b2951f1d5076d1cb6d8ba0d9e06b76e7'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '0e552ae52c25f3e9b71f9dd0777ac427', 'inspect': '0e094cfe6d8e6679b7852523b3ecb782', 'after': 'b39cd3a5c8f4f1f27d2b31b05916f5fe'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '46e42fbca29e64106e580fd81fcb9738', 'inspect': 'e8703a1fb51bd0e78383b7659b360f0b', 'after': '755f2da9292c084be5beda36f1ca66dc'}}]
++PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/expand_search', 'class': 'android.widget.LinearLayout', 'content_desc': 'Search bar, button'}, 'nonces': {'before': 'cde533ae021ec3dd84707b7e071d9fee', 'inspect': 'e84205e530f8eb4e7353b9ccdeed40a6', 'action': 'af648d43dbbf96f90bd2cd55c93d49d9', 'after': '94d69221004d7e13af189c716a2fb92f'}}
++POST_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '7117e14f85c81b34982953703ab2baec', 'inspect': 'a1949e7a79bf913294470d6baa9963f8', 'after': '8315e1e9d06a884a0edfdfe50ee18888'}}
++STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c773c130dbaabd44bbaad09f2317acb7', 'inspect': 'b9f9aff6081eb724938aaaff2f88cd8e', 'after': '87c01feed8b588e501dec29787acb648'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '5d2653423723a76798762c182980e086', 'inspect': 'a44014c72eaf970a34eb14c0d1738979', 'after': '3ea7b384e84528be822a92a1d58d34aa'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4c262f8d8fdce2e81fdebb2db24d3280', 'inspect': 'a7e15b351ba1035d068839fbc3b6eb42', 'after': 'cb8e06d13cf6fdf95d24d2051a632fe8'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4271f974a9d95d2e8753698351abcb5c', 'inspect': 'dcf1140375071d7da47e60e873b1c494', 'after': 'ca3b372ff80a527af522f974aaaaf88a'}}]
+ STABILITY_SECONDS = 12
++RESULT_OBSERVATION_SECONDS = 20
++RESULT_OBSERVATION_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '35f06f4cb11ff785308480f537b0b351', 'inspect': 'b8914b54dd677f236e0fc23241922c11', 'after': '3a92c9f2d07bf956c1ff4467088faa67'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '008714a01681f664ba225db7195f5eaf', 'inspect': '32bfc4093576415f05140361ca0e70a9', 'after': '711a6a823f591d2fb73ce692c4082753'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4e7bee6859c3ee4dec2c1c1a924f80cd', 'inspect': '57b7a4b2285a03299bf01702b6c5b814', 'after': 'dba82ff61bf9311f641e344d8a2b14b3'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '5257af8331751511ec7865df71af7824', 'inspect': 'c315a850e5f5cd0dc6ce5cd6c2cc0c3f', 'after': '7dac00902201defb2bd9ac17f31947a8'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9c5badc277bf7c64fe732f2cc3ad5546', 'inspect': '6ca10bbbe1a17b5281acf643afc9906c', 'after': '401a9d271dd9240893ff8f4804a275ac'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '90cec02e06038cdaadb2a2f84e0884a8', 'inspect': '155ece72a282b7a69ff15aafadb9b2b3', 'after': 'af47904d27b0d8a960dcb7a238b30b8a'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c7b580cff373d28479680f573844c2d6', 'inspect': '2a14e22ad8867ca4bf5eaba53e8b029c', 'after': '3cfe12dc7cb1c895f7048a491d8cf2d1'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a0b52faff042c01bf1ae956f2c72ca63', 'inspect': 'e2b6d1413d16553c717c11a68d9f07e0', 'after': 'c7c1ec5027b58856c133948f3a898ded'}}]
+ SEARCH_ACTIVITY = 'tv.danmaku.bili/com.bilibili.search2.main.BiliMainSearchActivity'
+ EDIT_SELECTOR = {'resource_id':'tv.danmaku.bili:id/search_src_text','class':'android.widget.EditText'}
+ SUBMIT_SELECTOR = {'resource_id':'tv.danmaku.bili:id/action_search','class':'android.widget.TextView'}
+ PUBLIC_QUERY = '微积分'
+-SET_TEXT_PLAN = {'schema': 1, 'operation': 'set_text', 'selector': {'resource_id': 'tv.danmaku.bili:id/search_src_text', 'class': 'android.widget.EditText'}, 'value': '微积分', 'nonces': {'before': '1140e3f3ac26b00427b64e41e56cf600', 'inspect': 'ecaf5058fbf2b5c492cae2f703974d60', 'action': 'f2d0062cd57481680cf04baad48268a1', 'after': '9e0fe58fcfc938844fed24a7645fce21'}}
+-SUBMIT_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/action_search', 'class': 'android.widget.TextView'}, 'nonces': {'before': 'bfda61eab40d42fd66cb9895762bf8f2', 'inspect': 'a0ac5be69c307d165b3e178b3d77fcb6', 'action': '2cd3f530da3d2325381b205db63dec5d', 'after': '92c1759e544a0e09978c212519ad57a7'}}
+-RESULTS_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '946c80e539c93cf181d67e26d4434a52', 'inspect': '684b82ba7beca8e0aebc2756f146d4ff', 'after': '3c7ef18b08a6dacbd1c062475f6d9370'}}
+-QUERY_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '3a44ec18291ebc05e3068e1d337a3adc', 'inspect': 'f77c68ebe0eb3473d92e7ca10fc71fe2', 'after': '1beda25e9003631dab18f2cae0821fc3'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '64d04f2cfdc5160937ca42857c858fc9', 'inspect': 'ed65b5f8b2010485d1cf013dcb22ed4e', 'after': 'a456c5505d40886ac40b4ae0ff8b404f'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '1a3b2dfc327717e4228dbdfd34e71803', 'inspect': '8288c8b72ea0691074b39bfff116bbbe', 'after': 'b0472efa154fbee9516d650d22be3e4a'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'e6f519717706a5f8cd29124a9e9cb68f', 'inspect': 'c7c6c85662757797fd4ad9e65b572f39', 'after': '074eac84874cd5cd10ec3ac64cd6f0da'}}]
+-SUBMIT_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '7181475752f7dd6f7f62a9da0e549e11', 'inspect': 'ba7aabe616ee7188bc45a8a4356f5c7d', 'after': 'b8d2c2421efaf164d5cd2e8265c7967b'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c737d520142863720ee53cc1dd825ead', 'inspect': '912a87a0bbf652a6eb7ccdfe5d33924f', 'after': '56d4a4642392f5cb29c4bcd0cc912ebb'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c6db60db9ae6c2b20d99f0d52c70a0a1', 'inspect': '26d2179bae071d6a4c4d8f9712ada272', 'after': 'b4f2d9ae3ade3003f6062b99611b66d5'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '8d845af8dcbdf6dbd45e6f10f10cda00', 'inspect': '66e68b91086a35f338209319735e572b', 'after': '533b3e96ee4fa322d719a945f8b28b10'}}]
++SET_TEXT_PLAN = {'schema': 1, 'operation': 'set_text', 'selector': {'resource_id': 'tv.danmaku.bili:id/search_src_text', 'class': 'android.widget.EditText'}, 'value': '微积分', 'nonces': {'before': '1a7e502926a1db8119c5f0967eacab32', 'inspect': '68524e2765fb161584135c76dc71467c', 'action': '36b6db44f24d75ad3ca9e50225090bba', 'after': '3c64e4316a11338d04602aef445270cf'}}
++SUBMIT_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/action_search', 'class': 'android.widget.TextView'}, 'nonces': {'before': '2c7844af34014df1cb1a1916022f3c6b', 'inspect': 'a626738a65896478de4ed5709563a63b', 'action': '0a5c0fb96b49ec61b58b07bfd1aa58d0', 'after': '466929370691ab0b2156062d734bb46f'}}
++RESULTS_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'b6a1d806b4c0a104bb67468b794ff158', 'inspect': '9e22d4f5a36dd2f762cf1a2858c9c301', 'after': '5b1f349fc2a34535f2bf015d0594c1cd'}}
++QUERY_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c1bb78d7fd59005475dc7be10878ff1e', 'inspect': '52459227fd1a8e1fb58743c66efbd7f1', 'after': 'ef779e73e59afef4ce002968afcfdba3'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4080b48b5fc383e76a6e6272d48be27e', 'inspect': 'cbe8e659dff74e35782848d7185f19bb', 'after': 'd29fa5c04dddabfa697074c4cba07076'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '15637c8a3cb69bfab6133b271faa17c3', 'inspect': '4586cacac78d91772c63c93d8aa632e9', 'after': '228927e97b6d2320dee19340f9a003bc'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '0c899a60caaf0394b43fbb42f9a7479c', 'inspect': '77b2537da059fe36cede663049ba0ce1', 'after': '3fd6592529d818b63e2daa8c3af8c5d1'}}]
++SUBMIT_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'aea25d085474bb190b70d24ea32b7c32', 'inspect': 'ea55002270530e67a3e1bb5be7b5a36b', 'after': 'eff695b15154d712845ee4de3da78685'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ecc2667525bae09d51031f83e9c5164b', 'inspect': '53e1a0fb5c34f4664f44e22217f96bee', 'after': 'aea0300cf760c52b6792395e25a24846'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'f16d6b0bc8798b8a69fe3969bff8bdb2', 'inspect': '610099346592322f2abe0d228ede6c6d', 'after': 'abf5dd75890834b3e3615826d9b1b3ba'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'd931efe59982f4f62d604747cbbf44ef', 'inspect': '49dab94b58a095e1582f973c35d31124', 'after': '2adb9234f8c2471c56a14fc0c1f9825e'}}]
+ SELF, UID = 'org.droidloom.qa.bili.r3', 10166
+ BILI, BILI_UID = 'tv.danmaku.bili', 10117
+ INSTALL_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r3-install-state-01')
+@@ -137,15 +139,18 @@
+     groups = (STABILITY_PLANS,QUERY_STABILITY_PLANS,SUBMIT_STABILITY_PLANS)
+     require(all(len(group) == 4 and all(p.get('operation') == 'inspect' for p in group) for group in groups),
+             'EXACT_READ_ONLY_STABILITY_PLANS_REQUIRED')
++    require(len(RESULT_OBSERVATION_PLANS) == 8 and
++            all(p.get('operation') == 'inspect' for p in RESULT_OBSERVATION_PLANS),
++            'ONLY_EIGHT_ADDITIONAL_READ_ONLY_RESULT_PLANS')
+     require(SET_TEXT_PLAN['operation'] == 'set_text' and SET_TEXT_PLAN['value'] == PUBLIC_QUERY == '微积分'
+             and SET_TEXT_PLAN['selector'] == EDIT_SELECTOR and SUBMIT_PLAN['operation'] == 'click'
+             and SUBMIT_PLAN['selector'] == SUBMIT_SELECTOR and RESULTS_PLAN['operation'] == 'inspect',
+             'ONLY_THE_FIXED_OBSERVED_PUBLIC_QUERY_PLAN')
+     plans = [PLAN,POST_PLAN,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN,
+-             *STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS]
++             *STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS]
+     values = [NONCE,*(nonce for plan in plans for nonce in plan['nonces'].values())]
+     require(all(re.fullmatch('[0-9a-f]{32}',value) for value in values) and
+-            len(set(values)) == 55 and OLD_STATE_NONCE not in values,'FRESH_DISTINCT_NONCES_REQUIRED')
++            len(set(values)) == 79 and OLD_STATE_NONCE not in values,'FRESH_DISTINCT_NONCES_REQUIRED')
+     return json.loads(json.dumps(PLAN))
+ 
+ 
+@@ -514,6 +519,79 @@
+     result['query_results_content_classification'] = 'PENDING_PRIVATE_RESULTS_TREE_REVIEW'
+ 
+ 
++def results_content_evidence(qa, inspection, scope):
++    """Recognize the observed loading shape without claiming video results."""
++    qa.scope(scope);qa.inspect_record(inspection)
++    require(scope['activity'] == SEARCH_ACTIVITY,'EXACT_RESULTS_ACTIVITY_REQUIRED')
++    nodes = inspection['nodes']
++    def exact(resource,kind):
++        found = [n for n in nodes if n.get('visible') is True and n.get('enabled') is True and
++            n.get('password') is False and n.get('resource_id') == resource and
++            n.get('resource_id_truncated') is False and n.get('class') == kind and
++            n.get('class_truncated') is False]
++        require(len(found) == 1,'EXACT_OBSERVED_RESULTS_CONTROL_REQUIRED:'+resource)
++        return found[0]
++    marker = exact('tv.danmaku.bili:id/search_fake_text','android.widget.TextView')
++    require(marker.get('text') == PUBLIC_QUERY and marker.get('text_truncated') is False and
++            marker.get('text_sha256') == sha(PUBLIC_QUERY.encode()),'RESULTS_PUBLIC_QUERY_MARKER_CHANGED')
++    exact('tv.danmaku.bili:id/search_result_layout','android.widget.FrameLayout')
++    pager = exact('tv.danmaku.bili:id/pager','androidx.viewpager.widget.ViewPager')
++    loading = [n for n in nodes if n.get('visible') is True and n.get('resource_id') in
++        {'tv.danmaku.bili:id/loading_view','tv.danmaku.bili:id/loading'}]
++    descendants = [n for n in nodes if n.get('visible') is True and
++        n['path'].startswith(pager['path']+'/')]
++    observed = not loading and bool(descendants)
++    return {'tree_sha256':inspection['tree_sha256'],'window_sha256':inspection['window_sha256'],
++        'node_count':len(nodes),'loading_control_count':len(loading),
++        'visible_pager_descendants':len(descendants),'public_query_marker_verified':True,
++        'public_query_sha256':sha(PUBLIC_QUERY.encode()),'container_content_observed':observed,
++        'classification':'CONTENT_PRESENT_PRIVATE_REVIEW_REQUIRED' if observed else 'LOADING_OR_EMPTY_CONTAINER',
++        'video_or_search_result_success_inferred':False,'raw_node_or_text_exported':False}
++
++
++def observe_result_content(prior, qa, flow, session, installed, result):
++    """Only successful reads can lead to another read; never resubmit a query."""
++    began = time.monotonic()
++    record = {'maximum_additional_sequences':8,'deadline_seconds':RESULT_OBSERVATION_SECONDS,
++        'observations':[],'qualified':False,'failed_reads_retried':False,'submit_retried':False}
++    result['result_content_observation'] = record
++    for index, plan in enumerate([None,*RESULT_OBSERVATION_PLANS]):
++        require(time.monotonic()-began <= RESULT_OBSERVATION_SECONDS,'RESULTS_OBSERVATION_DEADLINE')
++        if plan is None:
++            sequence = result['results_inspection_sequence'];summaries = result['results_assessments']
++        else:
++            sequence = session.sequence(json.loads(json.dumps(plan)))
++            require(sequence['installed_before'] == sequence['installed_after'] == installed and
++                    sequence['restoration_qualified'] is True and sequence['after_state_completed'] is True,
++                    'RESULTS_READ_IDENTITY_AND_RESTORATION_REQUIRED')
++            summaries = assessment_summary(prior,qa,flow.step,sequence,plan)
++        scope = sequence['foreground_after']
++        require(scope == sequence['foreground_before'],'RESULTS_READ_FOREGROUND_CHANGED')
++        row = summaries['inspect']
++        raw = read(flow.step/(row['nonce']+'.assessment.json'),1048576,row['assessment_sha256'],row['assessment_bytes'])
++        assessed = json.loads(raw);helper = assessed['helper']
++        require(assessed.get('actual_command_returncode') == 0 and assessed.get('actual_instrumentation_finish_code') == -1 and
++                helper.get('ok') is True and helper.get('error') is None and helper.get('secondary_errors') == [] and
++                helper.get('protocol') == qa.PROTOCOL and helper['host_scope_attestation'] == scope and
++                helper['self_uid'] == UID and helper['nonce'] == row['nonce'] and helper['op'] == 'inspect' and
++                assessed['wire_sha256'] == row['wire_sha256'] == sha(qa.canonical(helper)) and
++                assessed['held_transport_returned_after_post_guard'] is True,
++                'LIVE_RESULT_OBSERVATION_RECEIPT_REQUIRED')
++        proof = results_content_evidence(qa,helper['inspection'],scope)
++        record['observations'].append({'additional_sequence':index,'postcondition':proof,
++            'elapsed_ms':int((time.monotonic()-began)*1000),'assessments':summaries,
++            'restoration_qualified':sequence['restoration_qualified']})
++        require(time.monotonic()-began <= RESULT_OBSERVATION_SECONDS,'RESULTS_OBSERVATION_DEADLINE')
++        if proof['container_content_observed']:
++            record['qualified'] = True;record['selected_additional_sequence'] = index
++            result['observed_results_sequence'] = sequence
++            result['observed_results_assessments'] = summaries
++            result['results_container_content_observed'] = True
++            result['results_content_classification'] = 'PENDING_PRIVATE_RESULTS_CONTENT_REVIEW'
++            return
++    raise RuntimeError('RESULTS_CONTAINER_CONTENT_NOT_OBSERVED_IN_BOUNDED_READS')
++
++
+ def worker(expected, phase):
+     verify_source(expected); fixed_plan()
+     require(os.getuid() == os.geteuid() == 0 and HERE == SOURCE and phase in ('launch','navigate'),
+@@ -523,13 +601,13 @@
+     recorder = prior.recorder_module()
+     plan = adapter.validate_plan(fixed_plan(),qa)
+     adapter.validate_plan(POST_PLAN,qa)
+-    for stable_plan in [*STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN]: adapter.validate_plan(stable_plan,qa)
+-    step = 'launch-01' if phase == 'launch' else 'public-query-01'
++    for stable_plan in [*STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN]: adapter.validate_plan(stable_plan,qa)
++    step = 'launch-01' if phase == 'launch' else 'results-observe-01'
+     args = types.SimpleNamespace(operation='launch' if phase == 'launch' else 'owned-qa',
+         adapter_manifest_sha256=R4_MANIFEST,flow_dir=FLOW,
+         epoch_module=prior.RECORDER_ROOT/'references/framework_epoch.py',
+         task_source=prior.RECORDER_ROOT/'references/task_scope_baseline.py',step=step,
+-        request={'phase':phase,'nonce':NONCE,'plan':plan,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'actual_install':admission},
++        request={'phase':phase,'nonce':NONCE,'plan':plan,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'actual_install':admission},
+         unknown_step=None,observation_step=None,postcondition=None)
+     result = {'schema':1,'ok':False,'error':None,'secondary_errors':[],
+         'phase':phase,'nonce':NONCE,'package':BILI,'uid':BILI_UID,'helper_package':SELF,'helper_uid':UID,
+@@ -558,8 +636,11 @@
+             result['owned_task'] = flow.selected_task()
+         else:
+             public_query_sequences(prior,qa,flow,session,installed,result)
++            if result['error'] is None:
++                observe_result_content(prior,qa,flow,session,installed,result)
+         result['ok'] = result['error'] is None and result['secondary_errors'] == [] and (
+-            phase == 'launch' or result.get('query_submission_controls_completed') is True)
++            phase == 'launch' or (result.get('query_submission_controls_completed') is True and
++                                 result.get('results_container_content_observed') is True))
+     except BaseException as error:
+         if session is not None and hasattr(session,'sequence_observation'):
+             result['failed_inspection_sequence'] = session.sequence_observation
+@@ -596,7 +677,7 @@
+ 
+ 
+ def durable_phase(observed, phase):
+-    step = 'launch-01' if phase == 'launch' else 'public-query-01'
++    step = 'launch-01' if phase == 'launch' else 'results-observe-01'
+     path = FLOW/'steps'/step/'result.json'
+     raw = read(path); value = json.loads(raw)
+     require(observed == value and value.get('ok') is True and value.get('phase') == phase and
+@@ -617,6 +698,8 @@
+                 value.get('submit_action_bound_value',{}).get('public_value_observed') is True,
+                 'ACTUAL_EDIT_AND_SUBMIT_POSTCONDITION_REQUIRED')
+         require(value.get('action_attempted') is True and
++                value.get('results_container_content_observed') is True and
++                value.get('result_content_observation',{}).get('qualified') is True and
+                 value.get('scoped_click_and_post_observation_completed') is True and
+                 value.get('query_submission_controls_completed') is True and value.get('final_results_inspection_completed') is True and
+                 value.get('business_outcome_unknown') is True and value.get('business_success_verified') is False,
+@@ -663,7 +746,7 @@
+         _,result['actual_install'] = actual_install(prior,qa,proof)
+         adapter.validate_plan(fixed_plan(),qa)
+         adapter.validate_plan(POST_PLAN,qa)
+-        for stable_plan in [*STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN]: adapter.validate_plan(stable_plan,qa)
++        for stable_plan in [*STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN]: adapter.validate_plan(stable_plan,qa)
+         activation = json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+         epoch = ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'bili_inspect_epoch')
+         guard = lambda: ref.main_guard(activation,epoch)
+@@ -686,7 +769,10 @@
+         observed = ref.run_cli('03-navigate',['/usr/bin/python3','-I',str(HERE/'owned_navigation.py'),
+             '--worker-once','navigate','--source-manifest-sha256',expected],240,evidence,guard)
+         navigated,result['navigation_result'] = durable_phase(observed,'navigate')
+-        result['navigation'] = {'foreground':navigated['results_inspection_sequence']['foreground_after'],
++        result['navigation'] = {'foreground':navigated['observed_results_sequence']['foreground_after'],
++            'result_content_observation':navigated['result_content_observation'],
++            'observed_results_assessments':navigated['observed_results_assessments'],
++            'results_content_classification':navigated['results_content_classification'],
+             'query_submission_controls_completed':navigated['query_submission_controls_completed'],
+             'public_query_sha256':sha(PUBLIC_QUERY.encode()),
+             'search_page_stability':navigated['search_page_stability'],
+@@ -702,6 +788,7 @@
+             'business_outcome_unknown':True,'effect_classification':'PENDING_PRIVATE_POST_TREE_REVIEW'}
+         result['scoped_click_and_post_observation_completed'] = True
+         result['query_submission_controls_completed'] = True
++        result['results_container_content_observed'] = True
+         result['ok'] = True
+     except BaseException as error:
+         prior.remember(result,'coordinator',error)
+@@ -775,7 +862,7 @@
+     if not args.execute_once and args.worker_once is None:
+         print(json.dumps({'state':'PLAN_ONLY','root':str(ROOT),'flow':str(FLOW),'helper_uid':UID,
+             'operation':'original launch + stable search entry + exact public query edit + observed query submit + private results + exact-task cleanup',
+-            'plan':PLAN,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'click_limit':2,'text_action_limit':1,'audio_actions':0,'old_v2_helper_called':False,
++            'plan':PLAN,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'click_limit':2,'text_action_limit':1,'audio_actions':0,'old_v2_helper_called':False,
+             'private_raw_tree_not_for_Git':True,'remote_actions':0}))
+         return 0
+     os.umask(0o077)

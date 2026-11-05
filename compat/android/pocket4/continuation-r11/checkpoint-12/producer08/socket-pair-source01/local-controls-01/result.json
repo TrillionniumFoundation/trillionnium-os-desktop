@@ -1,0 +1,82 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/candidate/android/protocol_controls.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/local-controls-01/protocol"
+      ],
+      "elapsed_seconds": 0.48740691499915556,
+      "name": "protocol",
+      "phase": "compile",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/local-controls-01/protocol"
+      ],
+      "elapsed_seconds": 0.003613426999436342,
+      "name": "protocol",
+      "phase": "run",
+      "returncode": 1,
+      "stderr": "",
+      "stdout": "{\"case\":\"complete_handshake_closes_capabilities_before_next_exec\",\"ok\":false}\n",
+      "timed_out": false
+    }
+  ],
+  "compiler": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+    "sha256": "6117c52522997d2aaccb2b52b3c6bf42c0a6c5edb1d718431fed6b2fc5fec234"
+  },
+  "error": "RuntimeError('protocol run failed')",
+  "input_before": [
+    {
+      "bytes": 238,
+      "path": "Android.bp",
+      "sha256": "abc3b2e9e13ca70e1f443757b3534da3eeda50c16997b297ee3806604c386a5c"
+    },
+    {
+      "bytes": 364,
+      "path": "close_errno_seam.h",
+      "sha256": "cd784c248f1e4bc5e023bb7c312da6cdde74e873863d167ad62e09a114f76c49"
+    },
+    {
+      "bytes": 5414,
+      "path": "diagnostic_controls.c",
+      "sha256": "5d327dc126a67061e0a47b4b314a6e923ade76e9f440a3cc125df6d2f10436ae"
+    },
+    {
+      "bytes": 84,
+      "path": "exported.map.txt",
+      "sha256": "e5cacf61316cd57074bfcbf8117340d87e7c0b3be6208b20ca92f1b92965a74e"
+    },
+    {
+      "bytes": 20808,
+      "path": "init_relay_barrier.c",
+      "sha256": "eae26a21a0cc8466f7b5ad749d0900feef37c036072b87004bf1b53a2aa0ec25"
+    },
+    {
+      "bytes": 1360,
+      "path": "init_relay_protocol.h",
+      "sha256": "e529638743e667eb0187c427c0796bfd0701936769c0ac300970c458fec35c26"
+    },
+    {
+      "bytes": 15105,
+      "path": "protocol_controls.c",
+      "sha256": "3b162887a01fefc0b03594687824cf96fc4e5677e07a212f40bac6baa3ce8334"
+    }
+  ],
+  "kind": "paired_projection_local_owned_controls_01",
+  "scope": "Actual local C transport/close-error controls and explicit projection syscall seams only; no kernel mount, namespace or Android execution.",
+  "success": false
+}

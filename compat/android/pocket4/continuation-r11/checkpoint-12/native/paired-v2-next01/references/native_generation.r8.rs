@@ -1,0 +1,368 @@
+//! Bind the private ART/engine generation ABI to the actual staged bytes.
+//! This checks pairing. It does not certify an ART build, bypass APEX signature
+//! verification, or turn a host/fixture result into Android qualification.
+use crate::util::*;
+use serde::{Deserialize, Serialize};
+use std::{collections::BTreeSet, fs, io::{Read, Write}, path::Path, process::{Command, Stdio}};
+
+const PROTOCOL: &str = "DLOOMGE1-PROCMET1";
+const PRODUCT_RECORD: &str = "droidloom-native-generation-pair.json";
+pub(crate) const TREE_RECORD: &str = "system/etc/droidloom-native-generation-pair.json";
+const ENGINE: &str = "system/lib64/libberberis_arm64.so";
+const ART_APEX: &str = "system/apex/com.android.art.apex";
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub(crate) struct Contract {
+    schema: u32,
+    abi: u32,
+    protocol: String,
+    host_abi: String,
+    engine_sha256: String,
+    art_apex_sha256: String,
+    libart_sha256: String,
+    libnativebridge_sha256: String,
+    apex_pubkey_sha256: String,
+}
+impl Contract {
+    fn validate(&self) -> Result<()> {
+        if self.schema != 1 || self.abi != 1 || self.protocol != PROTOCOL || self.host_abi != "x86_64" {
+            return fail("unsupported private native-generation pair contract");
+        }
+        for digest in [&self.engine_sha256, &self.art_apex_sha256, &self.libart_sha256,
+                       &self.libnativebridge_sha256, &self.apex_pubkey_sha256] {
+            if digest.len() != 64 || !digest.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)) {
+                return fail("invalid native-generation component SHA256");
+            }
+        }
+        Ok(())
+    }
+}
+fn regular(path: &Path) -> Result<()> {
+    let meta = fs::symlink_metadata(path)?;
+    if !meta.is_file() || meta.len() == 0 {
+        return fail(format!("expected nonempty regular native-generation component: {}", path.display()));
+    }
+    Ok(())
+}
+fn marker(bytes: &[u8], role: &str) -> Result<bool> {
+    if bytes.len() < 20 || &bytes[..6] != b"\x7fELF\x02\x01"
+        || u16::from_le_bytes([bytes[16], bytes[17]]) != 3
+        || u16::from_le_bytes([bytes[18], bytes[19]]) != 62 {
+        return fail("native-generation pairing requires x86_64 little-endian shared ELF components");
+    }
+    let prefix = b"DROIDLOOM_NATIVE_GENERATION=";
+    let mut states = BTreeSet::new();
+    for (position, window) in bytes.windows(prefix.len()).enumerate() {
+        if window != prefix { continue; }
+        let rest = &bytes[position..];
+        let mut matched = false;
+        for enabled in [false, true] {
+            let expected = format!("DROIDLOOM_NATIVE_GENERATION={};ROLE={role};ABI=1;PROTOCOL={PROTOCOL};",
+                                   if enabled { 1 } else { 0 });
+            if rest.starts_with(expected.as_bytes()) && rest.get(expected.len()) == Some(&0) {
+                states.insert(enabled);
+                matched = true;
+            }
+        }
+        if !matched { return fail("malformed, foreign-role, or unsupported compiled generation marker"); }
+    }
+    match states.len() {
+        0 => Ok(false), // Legacy components are supported only with the feature disabled.
+        1 => Ok(*states.first().unwrap()),
+        _ => fail("ambiguous compiled generation modes"),
+    }
+}
+fn bytes_sha(bytes: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+    hex::encode(Sha256::digest(bytes))
+}
+struct Apex {
+    digest: String,
+    pubkey: Vec<u8>,
+    art: Vec<u8>,
+    bridge: Vec<u8>,
+}
+fn extract_zip_member(apex: &Path, member: &str, destination: &Path) -> Result<()> {
+    run(Command::new("unzip").args(["-p"]).arg(apex).arg(member)
+        .stdout(Stdio::from(fs::File::create(destination)?)))
+}
+fn inspect_apex(path: &Path) -> Result<Apex> {
+    regular(path)?;
+    let names = output(Command::new("unzip").arg("-Z1").arg(path))?;
+    for required in ["apex_payload.img", "apex_pubkey"] {
+        if names.lines().filter(|name| *name == required).count() != 1 {
+            return fail(format!("APEX must contain exactly one {required}"));
+        }
+    }
+    let before = hash(path)?;
+    let work = tempfile::Builder::new().prefix("generation-apex-").tempdir()?;
+    let payload = work.path().join("payload.img");
+    let key = work.path().join("apex_pubkey");
+    extract_zip_member(path, "apex_payload.img", &payload)?;
+    extract_zip_member(path, "apex_pubkey", &key)?;
+    regular(&key)?;
+    let mut header = [0u8; 1082];
+    fs::File::open(&payload)?.read_exact(&mut header)?;
+    let art = work.path().join("libart.so");
+    let bridge = work.path().join("libnativebridge.so");
+    if header[1080..1082] == [0x53, 0xef] {
+        // debugfs opens regular images read-only. All internal paths are constants.
+        for (internal, destination) in [("/lib64/libart.so", &art), ("/lib64/libnativebridge.so", &bridge)] {
+            run(Command::new("debugfs").arg("-R").arg(format!("cat {internal}")).arg(&payload)
+                .stdout(Stdio::from(fs::File::create(destination)?)))?;
+        }
+    } else if header[1024..1028] == [0xe2, 0xe1, 0xf5, 0xe0] {
+        let tree = work.path().join("tree");
+        fs::create_dir(&tree)?;
+        run(Command::new("fsck.erofs").arg(format!("--extract={}", tree.display())).arg(&payload))?;
+        regular(&tree.join("lib64/libart.so"))?;
+        regular(&tree.join("lib64/libnativebridge.so"))?;
+        fs::copy(tree.join("lib64/libart.so"), &art)?;
+        fs::copy(tree.join("lib64/libnativebridge.so"), &bridge)?;
+    } else {
+        return fail("unsupported ART APEX payload filesystem");
+    }
+    regular(&art)?;
+    regular(&bridge)?;
+    if hash(path)? != before { return fail("ART APEX changed while being inspected"); }
+    Ok(Apex { digest: before, pubkey: fs::read(key)?, art: fs::read(art)?, bridge: fs::read(bridge)? })
+}
+fn read_contract(path: &Path) -> Result<Contract> {
+    regular(path)?;
+    let contract: Contract = serde_json::from_slice(&fs::read(path)?)?;
+    contract.validate()?;
+    Ok(contract)
+}
+fn verify_components(engine: &[u8], apex: &Apex, contract: Option<&Contract>) -> Result<bool> {
+    let modes = [marker(engine, "ENGINE")?, marker(&apex.art, "ART_RUNTIME")?,
+                 marker(&apex.bridge, "ART_BRIDGE")?];
+    if modes.iter().all(|enabled| !enabled) {
+        if contract.is_some() { return fail("generation contract supplied for disabled or legacy components"); }
+        return Ok(false);
+    }
+    if !modes.iter().all(|enabled| *enabled) {
+        return fail("mixed ART/runtime/engine generation modes; rebuild the complete paired artifacts");
+    }
+    let contract = contract.ok_or("enabled generation requires an exact component pair contract")?;
+    contract.validate()?;
+    if bytes_sha(engine) != contract.engine_sha256 || apex.digest != contract.art_apex_sha256
+        || bytes_sha(&apex.art) != contract.libart_sha256
+        || bytes_sha(&apex.bridge) != contract.libnativebridge_sha256
+        || bytes_sha(&apex.pubkey) != contract.apex_pubkey_sha256 {
+        return fail("native-generation contract does not match actual staged component bytes");
+    }
+    Ok(true)
+}
+pub(crate) fn verify_tree(tree: &Path) -> Result<bool> {
+    let engine = tree.join(ENGINE);
+    regular(&engine)?;
+    let contract = if tree.join(TREE_RECORD).exists() {
+        Some(read_contract(&tree.join(TREE_RECORD))?)
+    } else { None };
+    let apex = inspect_apex(&tree.join(ART_APEX))?;
+    verify_components(&fs::read(engine)?, &apex, contract.as_ref())
+}
+/// Called in the existing fakeroot image transaction after copying the engine.
+/// Preserve the base APEX inode metadata; replace the entire signed APEX file.
+pub(crate) fn stage_product(product: &Path, tree: &Path) -> Result<Option<Contract>> {
+    if !product.join(PRODUCT_RECORD).exists() {
+        verify_tree(tree)?; // An enabled engine cannot silently use the old ART APEX.
+        return Ok(None);
+    }
+    let contract = read_contract(&product.join(PRODUCT_RECORD))?;
+    let proposed = inspect_apex(&product.join(ART_APEX))?;
+    let base = inspect_apex(&tree.join(ART_APEX))?;
+    if proposed.pubkey != base.pubkey {
+        return fail("candidate ART APEX uses a different payload verification key");
+    }
+    regular(&tree.join(ENGINE))?;
+    verify_components(&fs::read(tree.join(ENGINE))?, &proposed, Some(&contract))?;
+    let mut input = fs::File::open(product.join(ART_APEX))?;
+    let mut output = fs::OpenOptions::new().write(true).truncate(true).open(tree.join(ART_APEX))?;
+    std::io::copy(&mut input, &mut output)?;
+    output.flush()?;
+    let record = tree.join(TREE_RECORD);
+    fs::write(&record, serde_json::to_vec_pretty(&contract)?)?;
+    mode(&record, 0o644)?;
+    run(Command::new("chown").arg("0:0").arg(&record))?;
+    run(Command::new("setfattr").args(["-n", "security.selinux", "-v", "u:object_r:system_file:s0"]).arg(&record))?;
+    verify_tree(tree)?;
+    Ok(Some(contract))
+}
+/// The existing installer invokes bundle::verify on its private root-owned copy.
+/// Re-extract those actual image bytes so a stale JSON record cannot authorize
+/// an old ART or a different engine. This does not activate the image.
+pub(crate) fn verify_bundle(root: &Path) -> Result<()> {
+    let image = root.join("var/lib/droidloom/images/images/system.img");
+    if !image.exists() {
+        // Unit fixtures and historical non-image bundles have no enabled pair.
+        return Ok(());
+    }
+    regular(&image)?;
+    let before = hash(&image)?;
+    let work = tempfile::Builder::new().prefix("generation-image-verify-").tempdir()?;
+    let tree = work.path().join("tree");
+    fs::create_dir(&tree)?;
+    // Content verification only: no privileged ownership/xattrs need applying.
+    run(Command::new("fsck.erofs").arg(format!("--extract={}", tree.display())).arg(&image))?;
+    verify_tree(&tree)?;
+    if hash(&image)? != before { return fail("system image changed during generation verification"); }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn elf(role: &str, mode: Option<u8>) -> Vec<u8> {
+        let mut bytes = vec![0; 64];
+        bytes[..6].copy_from_slice(b"\x7fELF\x02\x01");
+        bytes[16] = 3; bytes[18] = 62;
+        if let Some(mode) = mode {
+            bytes.extend(format!("DROIDLOOM_NATIVE_GENERATION={mode};ROLE={role};ABI=1;PROTOCOL={PROTOCOL};\0").bytes());
+        }
+        bytes
+    }
+    fn fixture(modes: [Option<u8>; 3]) -> (Vec<u8>, Apex, Contract) {
+        let engine = elf("ENGINE", modes[0]);
+        let apex = Apex { digest: "a".repeat(64), pubkey: b"owned fixture key".to_vec(),
+                         art: elf("ART_RUNTIME", modes[1]), bridge: elf("ART_BRIDGE", modes[2]) };
+        let contract = Contract { schema: 1, abi: 1, protocol: PROTOCOL.into(), host_abi: "x86_64".into(),
+            engine_sha256: bytes_sha(&engine), art_apex_sha256: apex.digest.clone(),
+            libart_sha256: bytes_sha(&apex.art), libnativebridge_sha256: bytes_sha(&apex.bridge),
+            apex_pubkey_sha256: bytes_sha(&apex.pubkey) };
+        (engine, apex, contract)
+    }
+    #[test]
+    fn legacy_and_disabled_preserve_the_disabled_mode() {
+        for modes in [[None,None,None],[Some(0),Some(0),Some(0)],[None,Some(0),None]] {
+            let (engine, apex, _) = fixture(modes);
+            assert!(!verify_components(&engine, &apex, None).unwrap());
+        }
+    }
+    #[test]
+    fn rejects_every_mixed_old_new_combination() {
+        for bits in 1..7 {
+            let modes = std::array::from_fn(|i| if bits & (1 << i) != 0 { Some(1) } else { None });
+            let (engine, apex, contract) = fixture(modes);
+            assert!(verify_components(&engine, &apex, Some(&contract)).is_err(), "{bits}");
+        }
+    }
+    #[test]
+    fn enabled_triplet_requires_exact_contract() {
+        let (engine, apex, contract) = fixture([Some(1);3]);
+        assert!(verify_components(&engine, &apex, Some(&contract)).unwrap());
+        assert!(verify_components(&engine, &apex, None).is_err());
+        for key in ["engine_sha256","art_apex_sha256","libart_sha256","libnativebridge_sha256","apex_pubkey_sha256"] {
+            let mut json = serde_json::to_value(&contract).unwrap();
+            json[key] = "0".repeat(64).into();
+            let wrong: Contract = serde_json::from_value(json).unwrap();
+            assert!(verify_components(&engine, &apex, Some(&wrong)).is_err(), "{key}");
+        }
+    }
+    #[test]
+    fn rejects_malformed_foreign_or_ambiguous_marker() {
+        for bytes in [elf("ART_BRIDGE",Some(1)),elf("ENGINE",Some(2))] {
+            assert!(marker(&bytes,"ENGINE").is_err());
+        }
+        let mut ambiguous = elf("ENGINE",Some(0));
+        ambiguous.extend_from_slice(&elf("ENGINE",Some(1))[64..]);
+        assert!(marker(&ambiguous,"ENGINE").is_err());
+        let mut unknown = elf("ENGINE",Some(1));
+        *unknown.last_mut().unwrap() = b'x';
+        assert!(marker(&unknown,"ENGINE").is_err());
+    }
+    #[test]
+    fn rejects_foreign_elf_and_unrecognized_contract() {
+        let (mut engine, apex, contract) = fixture([Some(1);3]);
+        engine[18] = 183;
+        assert!(verify_components(&engine,&apex,Some(&contract)).is_err());
+        for (key,value) in [("abi",serde_json::json!(2)),("protocol",serde_json::json!("old")),
+                            ("host_abi",serde_json::json!("aarch64")),("engine_sha256",serde_json::json!("../bad"))] {
+            let mut json = serde_json::to_value(&contract).unwrap();json[key]=value;
+            assert!(serde_json::from_value::<Contract>(json).unwrap().validate().is_err());
+        }
+        let mut json = serde_json::to_value(&contract).unwrap();json["ignored"]=true.into();
+        assert!(serde_json::from_value::<Contract>(json).is_err());
+    }
+    #[test]
+    fn rejects_symlinked_components() {
+        let work=tempfile::tempdir().unwrap();
+        fs::write(work.path().join("real"),b"content").unwrap();
+        std::os::unix::fs::symlink("real",work.path().join("link")).unwrap();
+        assert!(regular(&work.path().join("link")).is_err());
+    }
+    fn image_fixture(work: &Path, modes: [Option<u8>;3]) -> (std::path::PathBuf, Contract) {
+        let (engine, apex, mut contract) = fixture(modes);
+        let payload_tree=work.join("payload-tree");fs::create_dir_all(payload_tree.join("lib64")).unwrap();
+        fs::write(payload_tree.join("lib64/libart.so"),&apex.art).unwrap();
+        fs::write(payload_tree.join("lib64/libnativebridge.so"),&apex.bridge).unwrap();
+        let payload=work.join("apex_payload.img");
+        fs::File::create(&payload).unwrap().set_len(16*1024*1024).unwrap();
+        run(Command::new("mke2fs").args(["-q","-F","-t","ext4","-d"]).arg(&payload_tree).arg(&payload)).unwrap();
+        fs::write(work.join("apex_pubkey"),&apex.pubkey).unwrap();
+        let archive=work.join("com.android.art.apex");
+        run(Command::new("zip").current_dir(work).arg("-q").arg(&archive).args(["apex_payload.img","apex_pubkey"])).unwrap();
+        contract.art_apex_sha256=hash(&archive).unwrap();
+        let tree=work.join("system-tree");
+        fs::create_dir_all(tree.join("system/lib64")).unwrap();
+        fs::create_dir_all(tree.join("system/apex")).unwrap();
+        fs::create_dir_all(tree.join("system/etc")).unwrap();
+        fs::write(tree.join(ENGINE),engine).unwrap();
+        fs::copy(archive,tree.join(ART_APEX)).unwrap();
+        (tree,contract)
+    }
+    #[test]
+    fn real_ext4_apex_extraction_rejects_changed_nested_component() {
+        let work=tempfile::tempdir().unwrap();
+        let (tree,contract)=image_fixture(work.path(),[Some(1);3]);
+        fs::write(tree.join(TREE_RECORD),serde_json::to_vec(&contract).unwrap()).unwrap();
+        assert!(verify_tree(&tree).unwrap());
+        let mut changed=contract.clone();changed.libart_sha256="0".repeat(64);
+        fs::write(tree.join(TREE_RECORD),serde_json::to_vec(&changed).unwrap()).unwrap();
+        assert!(verify_tree(&tree).is_err());
+        fs::remove_file(tree.join(TREE_RECORD)).unwrap();
+        assert!(verify_tree(&tree).is_err());
+    }
+    #[test]
+    fn real_erofs_bundle_verifies_its_embedded_pair() {
+        let work=tempfile::tempdir().unwrap();
+        let (tree,contract)=image_fixture(work.path(),[Some(1);3]);
+        fs::write(tree.join(TREE_RECORD),serde_json::to_vec(&contract).unwrap()).unwrap();
+        let bundle=work.path().join("bundle");
+        let image=bundle.join("var/lib/droidloom/images/images/system.img");
+        fs::create_dir_all(image.parent().unwrap()).unwrap();
+        run(Command::new("mkfs.erofs").arg("--workers=1").arg(&image).arg(&tree)).unwrap();
+        verify_bundle(&bundle).unwrap();
+        fs::write(tree.join(ENGINE),elf("ENGINE",None)).unwrap();
+        fs::remove_file(&image).unwrap();
+        run(Command::new("mkfs.erofs").arg("--workers=1").arg(&image).arg(&tree)).unwrap();
+        assert!(verify_bundle(&bundle).is_err());
+    }
+    #[test]
+    fn staging_replaces_the_whole_apex_and_preserves_its_metadata() {
+        if std::env::var_os("FAKEROOTKEY").is_none() {
+            run(Command::new("fakeroot").arg("--").arg(std::env::current_exe().unwrap())
+                .args(["--exact","native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata","--nocapture"])).unwrap();
+            return;
+        }
+        use std::os::unix::fs::MetadataExt;
+        let work=tempfile::tempdir().unwrap();
+        let base_dir=work.path().join("base");fs::create_dir(&base_dir).unwrap();
+        let product_dir=work.path().join("product-fixture");fs::create_dir(&product_dir).unwrap();
+        let (tree,_)=image_fixture(&base_dir,[None;3]);
+        let (product,contract)=image_fixture(&product_dir,[Some(1);3]);
+        fs::copy(product.join(ENGINE),tree.join(ENGINE)).unwrap(); // Existing derive_image order.
+        fs::write(product.join(PRODUCT_RECORD),serde_json::to_vec(&contract).unwrap()).unwrap();
+        mode(&tree.join(ART_APEX),0o640).unwrap();
+        run(Command::new("chown").arg("1000:2000").arg(tree.join(ART_APEX))).unwrap();
+        let before=fs::metadata(tree.join(ART_APEX)).unwrap();
+        let staged=stage_product(&product,&tree).unwrap().unwrap();
+        assert_eq!(staged,contract);
+        let after=fs::metadata(tree.join(ART_APEX)).unwrap();
+        assert_eq!((before.uid(),before.gid(),before.mode()),(after.uid(),after.gid(),after.mode()));
+        assert_eq!(hash(&tree.join(ART_APEX)).unwrap(),hash(&product.join(ART_APEX)).unwrap());
+        assert!(verify_tree(&tree).unwrap());
+    }
+
+}

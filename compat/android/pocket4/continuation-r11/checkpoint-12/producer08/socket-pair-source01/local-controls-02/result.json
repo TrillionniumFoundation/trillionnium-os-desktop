@@ -1,0 +1,165 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-include",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/candidate/android/close_errno_seam.h",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/candidate/android/protocol_controls.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/local-controls-02/protocol-close-errno"
+      ],
+      "elapsed_seconds": 0.4884906549996231,
+      "name": "close_errno_strict_compile",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/candidate/android/diagnostic_controls.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/local-controls-02/diagnostic"
+      ],
+      "elapsed_seconds": 0.21557484999902954,
+      "name": "diagnostic_strict_compile",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/local-controls-02/diagnostic"
+      ],
+      "elapsed_seconds": 0.003101171001617331,
+      "name": "actual_projection_seams",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"case\":\"root_group_write_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"dev_world_write_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"sockets_group_write_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"preexisting_target_rejected\",\"ok\":true}\n{\"case\":\"move_errno_survives_close_errors\",\"ok\":true}\n{\"case\":\"mounted_non_socket_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"failure_line_bounded\",\"ok\":true}\n{\"ok\":true,\"owned_diagnostic_controls_passed\":7,\"Android_executed\":false,\"kernel_mount_executed\":false}\n",
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-fPIC",
+        "-shared",
+        "-fvisibility=hidden",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/candidate/android/init_relay_barrier.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/socket-projection-pair-work-01/local-controls-02/libbarrier.host.so"
+      ],
+      "elapsed_seconds": 0.7052829269996437,
+      "name": "barrier_shared_strict_compile",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": false
+    }
+  ],
+  "input_after": [
+    {
+      "bytes": 238,
+      "path": "Android.bp",
+      "sha256": "abc3b2e9e13ca70e1f443757b3534da3eeda50c16997b297ee3806604c386a5c"
+    },
+    {
+      "bytes": 364,
+      "path": "close_errno_seam.h",
+      "sha256": "cd784c248f1e4bc5e023bb7c312da6cdde74e873863d167ad62e09a114f76c49"
+    },
+    {
+      "bytes": 5414,
+      "path": "diagnostic_controls.c",
+      "sha256": "5d327dc126a67061e0a47b4b314a6e923ade76e9f440a3cc125df6d2f10436ae"
+    },
+    {
+      "bytes": 84,
+      "path": "exported.map.txt",
+      "sha256": "e5cacf61316cd57074bfcbf8117340d87e7c0b3be6208b20ca92f1b92965a74e"
+    },
+    {
+      "bytes": 20808,
+      "path": "init_relay_barrier.c",
+      "sha256": "eae26a21a0cc8466f7b5ad749d0900feef37c036072b87004bf1b53a2aa0ec25"
+    },
+    {
+      "bytes": 1360,
+      "path": "init_relay_protocol.h",
+      "sha256": "e529638743e667eb0187c427c0796bfd0701936769c0ac300970c458fec35c26"
+    },
+    {
+      "bytes": 15105,
+      "path": "protocol_controls.c",
+      "sha256": "3b162887a01fefc0b03594687824cf96fc4e5677e07a212f40bac6baa3ce8334"
+    }
+  ],
+  "input_before": [
+    {
+      "bytes": 238,
+      "path": "Android.bp",
+      "sha256": "abc3b2e9e13ca70e1f443757b3534da3eeda50c16997b297ee3806604c386a5c"
+    },
+    {
+      "bytes": 364,
+      "path": "close_errno_seam.h",
+      "sha256": "cd784c248f1e4bc5e023bb7c312da6cdde74e873863d167ad62e09a114f76c49"
+    },
+    {
+      "bytes": 5414,
+      "path": "diagnostic_controls.c",
+      "sha256": "5d327dc126a67061e0a47b4b314a6e923ade76e9f440a3cc125df6d2f10436ae"
+    },
+    {
+      "bytes": 84,
+      "path": "exported.map.txt",
+      "sha256": "e5cacf61316cd57074bfcbf8117340d87e7c0b3be6208b20ca92f1b92965a74e"
+    },
+    {
+      "bytes": 20808,
+      "path": "init_relay_barrier.c",
+      "sha256": "eae26a21a0cc8466f7b5ad749d0900feef37c036072b87004bf1b53a2aa0ec25"
+    },
+    {
+      "bytes": 1360,
+      "path": "init_relay_protocol.h",
+      "sha256": "e529638743e667eb0187c427c0796bfd0701936769c0ac300970c458fec35c26"
+    },
+    {
+      "bytes": 15105,
+      "path": "protocol_controls.c",
+      "sha256": "3b162887a01fefc0b03594687824cf96fc4e5677e07a212f40bac6baa3ce8334"
+    }
+  ],
+  "kind": "paired_projection_local_compile_seams_02",
+  "local_seqpacket_listener_creation": {
+    "errno": 1,
+    "error": "[Errno 1] Operation not permitted",
+    "success": false
+  },
+  "owned_projection_seam_cases_passed": 7,
+  "prior_result_sha256": "01eb1c03d521b987801b3cb61919c01b323d85528c44674d03cc80186fdc3024",
+  "scope": "Local C strict compile and owned directory/projection syscall seams. No Rust, kernel mount, namespace, Android or successful transport qualification.",
+  "success": true,
+  "transport_controls_passed": false
+}

@@ -1,0 +1,293 @@
+--- a/host/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs
++++ b/host/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs
+@@ -18,6 +18,10 @@
+ pub(crate) const LIBRARY: &str = "/droidloom/lmkd-bootstrap/libdroidloom_init_relay.so";
+ pub(crate) const LMKD: &str = "/droidloom/lmkd-bootstrap/lmkd";
+ pub(crate) const ENDPOINT: &str = "droidloom-lmkd-psi";
++// ABI 2 PROJECT owns one detached mount cloned by the current source-namespace
++// owner. A raw foreign O_PATH descriptor is no longer a projection capability.
++pub(crate) const INIT_ABI_TEXT: &str = "2";
++const INIT_ABI: u32 = 2;
+ #[cfg(target_arch = "x86_64")]
+ pub(crate) const COMPAT: &str = "/system/lib64/libclang_rt.asan-x86_64-android.so";
+ #[cfg(target_arch = "aarch64")]
+@@ -44,8 +48,8 @@
+ }
+ fn frame(kind: u32, nonce: &[u8; 32]) -> [u8; WIRE] {
+     let mut wire = [0; WIRE];
+-    wire[..8].copy_from_slice(b"P4IBV1!!");
+-    put(&mut wire, 8, 1, 4);
++    wire[..8].copy_from_slice(b"P4IBV2!!");
++    put(&mut wire, 8, INIT_ABI as u64, 4);
+     put(&mut wire, 12, kind as u64, 4);
+     wire[16..48].copy_from_slice(nonce);
+     wire
+@@ -55,6 +59,47 @@
+         return Err(error("init protocol ABI/kind/nonce differs"));
+     }
+     Ok(())
++}
++fn detached_endpoint(endpoint: &File) -> io::Result<File> {
++    let original = endpoint.metadata()?;
++    let flags = unsafe { libc::fcntl(endpoint.as_raw_fd(), libc::F_GETFL) };
++    let descriptor = unsafe { libc::fcntl(endpoint.as_raw_fd(), libc::F_GETFD) };
++    if !original.file_type().is_socket()
++        || flags < 0 || flags & libc::O_PATH == 0
++        || descriptor < 0 || descriptor & libc::FD_CLOEXEC == 0
++    {
++        return Err(error("source endpoint is not a sealed O_PATH socket"));
++    }
++    // The caller has just validated the original HostContext and READY. The
++    // endpoint was opened in that same namespace, not received from init.
++    // OPEN_TREE_CLONE creates an owned anonymous mount; closing the last FD
++    // after any failure releases it. No path reopen or foreign-FD fallback.
++    const OPEN_TREE_CLONE: libc::c_uint = 1;
++    let raw = unsafe {
++        libc::syscall(
++            libc::SYS_open_tree,
++            endpoint.as_raw_fd(),
++            c"".as_ptr(),
++            OPEN_TREE_CLONE | libc::AT_EMPTY_PATH as libc::c_uint
++                | libc::O_CLOEXEC as libc::c_uint,
++        )
++    };
++    if raw < 0 { return Err(io::Error::last_os_error()); }
++    // SAFETY: open_tree returned a new owned descriptor.
++    let detached = unsafe { File::from_raw_fd(raw as RawFd) };
++    let cloned = detached.metadata()?;
++    let flags = unsafe { libc::fcntl(detached.as_raw_fd(), libc::F_GETFL) };
++    let descriptor = unsafe { libc::fcntl(detached.as_raw_fd(), libc::F_GETFD) };
++    if !cloned.file_type().is_socket()
++        || cloned.dev() != original.dev() || cloned.ino() != original.ino()
++        || cloned.uid() != original.uid() || cloned.gid() != original.gid()
++        || cloned.mode() != original.mode()
++        || flags < 0 || flags & libc::O_PATH == 0
++        || descriptor < 0 || descriptor & libc::FD_CLOEXEC == 0
++    {
++        return Err(error("detached endpoint identity or sealing differs"));
++    }
++    Ok(detached)
+ }
+ pub(crate) fn pair() -> io::Result<(File, File)> {
+     let mut fds = [-1; 2];
+@@ -567,7 +612,12 @@
+             deadline: self.entry_deadline,
+         };
+         hello.validate(owner, domain, barrier)?;
+-        wait.send(&wire, Some(endpoint), broker_gate)?;
++        // This gate revalidates the captured process-leader and current worker
++        // namespaces before cloning. Wait::send repeats it at actual transfer.
++        broker_gate()?;
++        let detached = detached_endpoint(endpoint)?;
++        wait.send(&wire, Some(&detached), broker_gate)?;
++        drop(detached);
+         audit.record(Ok(super::audit::Event::InitProjectSent { wire_hex: policy::hex(&wire) }));
+         let projected = wait.receive(false)?;
+         put(&mut wire, 12, PROJECTED as u64, 4);
+@@ -669,9 +719,23 @@
+         require_frame(&wire, HELLO, &nonce).unwrap();
+         assert!(require_frame(&wire, DONE, &nonce).is_err());
+         assert!(require_frame(&wire, HELLO, &[4; 32]).is_err());
++        for abi in [0, 1] {
++            let mut old = wire;
++            put(&mut old, 8, abi, 4);
++            assert!(require_frame(&old, HELLO, &nonce).is_err());
++        }
+         let mut old = wire;
+-        put(&mut old, 8, 0, 4);
++        old[..8].copy_from_slice(b"P4IBV1!!");
+         assert!(require_frame(&old, HELLO, &nonce).is_err());
++        assert_eq!(INIT_ABI_TEXT.parse::<u32>().unwrap(), INIT_ABI);
+         assert!(require_frame(&frame(HELLO, &[0; 32]), HELLO, &[0; 32]).is_err());
+     }
+-}
++    #[test]
++    fn detached_projection_rejects_non_path_capabilities_before_mount_creation() {
++        let file = tempfile::tempfile().unwrap();
++        assert_eq!(detached_endpoint(&file).unwrap_err().kind(), io::ErrorKind::Other);
++        let (socket, _peer) = std::os::unix::net::UnixStream::pair().unwrap();
++        let socket = File::from(std::os::fd::OwnedFd::from(socket));
++        assert_eq!(detached_endpoint(&socket).unwrap_err().kind(), io::ErrorKind::Other);
++    }
++}
+--- a/host/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
++++ b/host/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
+@@ -19,7 +19,7 @@
+ use std::process::Command;
+ 
+ /// Exact pure-CLI pairing value required before private relay entry may spawn.
+-pub const ABI: &str = "droidloom-relay-entry-v1";
++pub const ABI: &str = "droidloom-relay-entry-v2";
+ pub(crate) const ENTRY_ENV: [&str; 3] = [
+     "DROIDLOOM_RELAY_ENTRY_ABI",
+     "DROIDLOOM_RELAY_ENTRY_NONCE",
+@@ -361,7 +361,7 @@
+         command
+             .env("LD_PRELOAD", init_peer::preload())
+             .env(INIT_ENV[0], "1")
+-            .env(INIT_ENV[1], "1")
++            .env(INIT_ENV[1], init_peer::INIT_ABI_TEXT)
+             .env(INIT_ENV[2], init_peer::CONTROL_FD.to_string())
+             .env(INIT_ENV[3], policy::hex(&self.nonce))
+             .env(INIT_ENV[4], self.policy.bootstrap_timeout_ms.to_string());
+--- a/android/diagnostic_controls.c
++++ b/android/diagnostic_controls.c
+@@ -1,5 +1,5 @@
+ /* Actual owned temporary directories and production projection code. The root
+- * path and mount syscall alone are explicit seams. No namespace or mount is
++ * path and move_mount syscall alone are explicit seams. No namespace or mount is
+  * created, and this does not qualify Android or kernel socket projection. */
+ #define _GNU_SOURCE
+ #include <errno.h>
+@@ -10,41 +10,49 @@
+ #include <string.h>
+ #include <sys/mount.h>
+ #include <sys/stat.h>
++#include <sys/syscall.h>
+ #include <unistd.h>
+ 
+-static int fixture_root=-1,mount_calls=0,mount_error=EINVAL,mount_contract=0;
++static int fixture_root=-1,mount_calls=0,mount_error=EINVAL,mount_contract=0,target_seen=-1;
+ static int test_open(const char *path,int flags,...) {
+   if(!strcmp(path,"/"))return fcntl(fixture_root,F_DUPFD_CLOEXEC,3);
+   mode_t mode=0;
+   if(flags&O_CREAT){va_list args;va_start(args,flags);mode=(mode_t)va_arg(args,int);va_end(args);}
+   return open(path,flags,mode);
+ }
+-static int test_mount(const char *source,const char *target,const char *kind,
+-                      unsigned long flags,const void *data) {
++static long test_syscall(long number,...) {
++  if(number!=__NR_move_mount){errno=ENOSYS;return -1;}
++  va_list args;va_start(args,number);
++  int source=va_arg(args,int);const char *source_path=va_arg(args,const char *);
++  int target=va_arg(args,int);const char *target_path=va_arg(args,const char *);
++  unsigned flags=(unsigned)va_arg(args,int);va_end(args);
+   ++mount_calls;
+-  mount_contract=!strcmp(source,"/proc/self/fd/54")&&
+-    !strncmp(target,"/proc/self/fd/",14)&&strstr(target,"/droidloom-lmkd-psi")&&
+-    kind==NULL&&flags==MS_BIND&&data==NULL;
++  target_seen=target;
++  struct stat held;int descriptor=fcntl(target,F_GETFD),status=fcntl(target,F_GETFL);
++  mount_contract=source==54&&!strcmp(source_path,"")&&!strcmp(target_path,"")&&
++    flags==0x44&&target>=0&&descriptor>=0&&(descriptor&FD_CLOEXEC)&&
++    status>=0&&(status&O_ACCMODE)==O_WRONLY&&!fstat(target,&held)&&
++    S_ISREG(held.st_mode)&&held.st_uid==0&&held.st_gid==0&&(held.st_mode&07777)==0600&&held.st_nlink==1;
+   if(mount_error){errno=mount_error;return -1;}return 0;
+ }
+ static int test_close(int fd) {
+   int result=close(fd);errno=EBADF;return result;
+ }
+ #define open test_open
+-#define mount test_mount
++#define syscall test_syscall
+ #define close test_close
+ #define DROIDLOOM_BARRIER_TESTING 1
+ #include "init_relay_barrier.c"
+ #undef open
+-#undef mount
++#undef syscall
+ #undef close
+ 
+ static const char *const names[]={"root_group_write_rejected_with_metadata",
+   "dev_world_write_rejected_with_metadata","sockets_group_write_rejected_with_metadata",
+-  "preexisting_target_rejected","mount_errno_survives_close_errors",
++  "preexisting_target_rejected","move_errno_survives_close_errors",
+   "mounted_non_socket_rejected_with_metadata"};
+ static const char *const expected_stage[]={"project-root-policy","project-dev-policy",
+-  "project-sockets-policy","project-target-create","project-bind-mount","project-mounted-policy"};
++  "project-sockets-policy","project-target-create","project-move-mount","project-mounted-policy"};
+ static const int expected_error[]={EPERM,EPERM,EPERM,EEXIST,EINVAL,EPROTO};
+ 
+ int main(void) {
+@@ -62,7 +70,7 @@
+     if(which==1&&fchmod(dev,0702))return 2;
+     if(which==2&&fchmod(sockets,0770))return 2;
+     if(which==3){int target=openat(sockets,DIR_SOCKET_NAME,O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC,0600);if(target<0)return 2;close(target);}
+-    mount_calls=0;mount_contract=0;mount_error=which==5?0:EINVAL;
++    mount_calls=0;mount_contract=0;target_seen=-1;mount_error=which==5?0:EINVAL;
+     struct dir_failure failure;memset(&failure,0,sizeof(failure));
+     unsigned char wire[DIR_WIRE_SIZE]={0};
+     int rc=dir_project_real(54,wire,&failure),original=errno;
+@@ -73,6 +81,7 @@
+       !strcmp(failure.stage,expected_stage[which])&&failure.metadata==want_metadata&&
+       mount_calls==(which>=4?1:0)&&(which<4||mount_contract)&&
+       length>0&&length<320&&line[length-1]=='\n';
++    if(which>=4)ok=ok&&target_seen>=0&&fcntl(target_seen,F_GETFD)==-1&&errno==EBADF;
+     if(want_metadata)ok=ok&&failure.uid==0&&failure.gid==0&&failure.inode!=0;
+     if(which<3)ok=ok&&S_ISDIR(failure.mode)&&(failure.mode&0022);
+     if(which==5)ok=ok&&S_ISREG(failure.mode);
+--- a/android/init_relay_barrier.c
++++ b/android/init_relay_barrier.c
+@@ -32,9 +32,15 @@
+ #ifndef CGROUP2_SUPER_MAGIC
+ #define CGROUP2_SUPER_MAGIC 0x63677270
+ #endif
++#ifndef MOVE_MOUNT_F_EMPTY_PATH
++#define MOVE_MOUNT_F_EMPTY_PATH 0x00000004
++#endif
++#ifndef MOVE_MOUNT_T_EMPTY_PATH
++#define MOVE_MOUNT_T_EMPTY_PATH 0x00000040
++#endif
+ #define DIR_BAD (POLLERR | POLLHUP | POLLRDHUP | POLLNVAL)
+ 
+-static const unsigned char dir_magic[8] = {'P','4','I','B','V','1','!','!'};
++static const unsigned char dir_magic[8] = {'P','4','I','B','V','2','!','!'};
+ static const char *const dir_ns_names[10] = {
+   "pid", "pid_for_children", "mnt", "cgroup", "user",
+   "net", "ipc", "uts", "time", "time_for_children"
+@@ -329,14 +335,12 @@
+   dir_stage(failure,"project-target-create");
+   target=openat(sockets,DIR_SOCKET_NAME,O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);
+   if(target<0)goto done;
+-  dir_close(&target);
+-  dir_stage(failure,"project-path-format");
+-  char source[64],destination[96];
+-  int a=snprintf(source,sizeof(source),"/proc/self/fd/%d",socket_fd);
+-  int b=snprintf(destination,sizeof(destination),"/proc/self/fd/%d/%s",sockets,DIR_SOCKET_NAME);
+-  if(a<=0||(size_t)a>=sizeof(source)||b<=0||(size_t)b>=sizeof(destination)){errno=EOVERFLOW;goto done;}
+-  dir_stage(failure,"project-bind-mount");
+-  if(mount(source,destination,NULL,MS_BIND,NULL))goto done;
++  /* ABI 2 supplies a detached mount root, cloned by the source namespace
++   * owner. Keep our O_EXCL target held through the exact single attachment.
++   * A raw foreign FD or an old sender fails closed; there is no bind fallback. */
++  dir_stage(failure,"project-move-mount");
++  if(syscall(__NR_move_mount,socket_fd,"",target,"",
++             MOVE_MOUNT_F_EMPTY_PATH|MOVE_MOUNT_T_EMPTY_PATH))goto done;
+   struct stat st;
+   dir_stage(failure,"project-mounted-stat");
+   if(fstatat(sockets,DIR_SOCKET_NAME,&st,AT_SYMLINK_NOFOLLOW))goto done;
+@@ -410,7 +414,7 @@
+   if(!required&&!abi&&!fdtext&&!nonce_text&&!timeout)return;
+   unsigned fd=0,ms=0;unsigned char nonce[32];
+   const char *marker=getenv("DROIDLOOM_CELL");
+-  if(!required||strcmp(required,"1")||!abi||strcmp(abi,"1")||!marker||strcmp(marker,"1")||
++  if(!required||strcmp(required,"1")||!abi||strcmp(abi,DIR_ABI_TEXT)||!marker||strcmp(marker,"1")||
+      getpid()!=1||getuid()!=0||geteuid()!=0||getgid()!=0||getegid()!=0||dir_second_stage()||
+      dir_parse_decimal(fdtext,1023,&fd)||fd<3||dir_parse_decimal(timeout,20000,&ms)||ms<10||dir_nonce(nonce_text,nonce)) {
+     static const char message[]="Droidloom init relay bootstrap contract rejected\n";
+--- a/android/init_relay_protocol.h
++++ b/android/init_relay_protocol.h
+@@ -11,7 +11,10 @@
+ #define DIR_PROJECTED 3u
+ #define DIR_COMMIT 4u
+ #define DIR_DONE 5u
+-#define DIR_ABI 1u
++/* ABI 2 PROJECT carries a detached mount from the verified source namespace.
++ * It is attached exactly once by move_mount onto the init-owned held target. */
++#define DIR_ABI 2u
++#define DIR_ABI_TEXT "2"
+ #define DIR_SOCKET_NAME "droidloom-lmkd-psi"
+ #define DIR_ABI_ENV "DROIDLOOM_INIT_RELAY_ABI"
+ #define DIR_REQUIRED_ENV "DROIDLOOM_INIT_RELAY_REQUIRED"
+--- a/android/protocol_controls.c
++++ b/android/protocol_controls.c
+@@ -153,7 +153,8 @@
+   dir_put(ready,68,socket_stat.st_gid,4);dir_put(ready,72,0600,4);
+   int rights[2]={socket_path_fd,socket_path_fd};size_t rights_count=1;
+   if(which==1)ready[16]^=1;
+-  if(which==2)dir_put(ready,8,2,4);
++  /* The actual legacy sender's ABI must be refused before projection. */
++  if(which==2)dir_put(ready,8,1,4);
+   if(which==3)dir_put(ready,12,DIR_COMMIT,4);
+   if(which==4)rights_count=2;
+   if(which==5){regular=open("/dev/null",O_RDONLY|O_CLOEXEC);if(regular<0)goto cleanup;rights[0]=regular;}

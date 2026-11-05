@@ -1,0 +1,98 @@
+--- probe-source-01.c
++++ probe.c
+@@ -41,6 +41,7 @@
+     struct file_identity raw_source, local_source, detached_source;
+     struct file_identity local_target, moved_target;
+     struct file_identity parent_namespace, child_namespace;
++    struct file_identity parent_user_namespace, child_user_namespace;
+     uint64_t raw_mount_id, local_mount_id, detached_mount_id, moved_mount_id;
+     int rights_count, inherited_source_fds_closed, all_received_fds_closed;
+     int child_stage, child_error, child_success;
+@@ -71,6 +72,12 @@
+ }
+ static int namespace_identity(struct file_identity *out) {
+     int fd = open("/proc/self/ns/mnt", O_RDONLY | O_CLOEXEC);
++    if (fd < 0) return -1;
++    int rc = identity(fd, out), saved = errno;
++    close(fd); errno = saved; return rc;
++}
++static int user_namespace_identity(struct file_identity *out) {
++    int fd = open("/proc/self/ns/user", O_RDONLY | O_CLOEXEC);
+     if (fd < 0) return -1;
+     int rc = identity(fd, out), saved = errno;
+     close(fd); errno = saved; return rc;
+@@ -155,19 +162,23 @@
+     int saved = errno; close(fd); errno = saved; return rc;
+ }
+ static void child(int channel, int inherited_raw, int inherited_clone, int inherited_listener,
+-                  pid_t parent, const struct file_identity *parent_ns) {
++                  pid_t parent, const struct file_identity *parent_ns,
++                  const struct file_identity *parent_user_ns) {
+     struct evidence e;
+     memset(&e, 0, sizeof(e));
+     e.magic = MAGIC; memcpy(e.nonce, FIXTURE_NONCE, sizeof(e.nonce));
+     e.parent_namespace = *parent_ns;
++    e.parent_user_namespace = *parent_user_ns;
+     e.raw_foreign_bind = e.local_reopen_bind = e.detached_move = (struct operation){-99, 0};
+     int fds[2] = {-1, -1}, directory = -1, local = -1, targets[3] = {-1, -1, -1};
+     close(inherited_raw); close(inherited_clone); close(inherited_listener);
+     e.inherited_source_fds_closed = 1;
+     e.child_stage = 1;
+     if (prctl(PR_SET_PDEATHSIG, SIGKILL) || getppid() != parent || unshare(CLONE_NEWNS) ||
+-        mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL) || namespace_identity(&e.child_namespace)) goto done;
+-    if (equal_identity(&e.child_namespace, parent_ns)) { errno = EPROTO; goto done; }
++        mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL) || namespace_identity(&e.child_namespace) ||
++        user_namespace_identity(&e.child_user_namespace)) goto done;
++    if (equal_identity(&e.child_namespace, parent_ns) ||
++        !equal_identity(&e.child_user_namespace, parent_user_ns)) { errno = EPROTO; goto done; }
+     e.child_stage = 2;
+     if (send(channel, "R", 1, MSG_NOSIGNAL) != 1 || receive_rights(channel, fds, &e.rights_count)) goto done;
+     if (identity(fds[0], &e.raw_source) || identity(fds[1], &e.detached_source) ||
+@@ -233,8 +244,9 @@
+     int listener = -1, raw = -1, clone = -1, channels[2] = {-1, -1}, pidfd = -1;
+     int child_reaped = 0, child_status = -1, forced = 0, report_received = 0;
+     pid_t child_pid = -1;
+-    struct file_identity parent_ns;
++    struct file_identity parent_ns, parent_user_ns;
+     memset(&parent_ns, 0, sizeof(parent_ns));
++    memset(&parent_user_ns, 0, sizeof(parent_user_ns));
+     struct evidence e;
+     memset(&e, 0, sizeof(e));
+     struct utsname os;
+@@ -246,7 +258,7 @@
+         prctl(PR_SET_PDEATHSIG, SIGKILL) || getppid() != expected_parent) { errno = EPERM; goto done; }
+     stage = 1;
+     if (unshare(CLONE_NEWNS) || mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL) ||
+-        namespace_identity(&parent_ns) || uname(&os)) goto done;
++        namespace_identity(&parent_ns) || user_namespace_identity(&parent_user_ns) || uname(&os)) goto done;
+     struct stat st;
+     if (lstat(FIXTURE_ROOT, &st) || !S_ISDIR(st.st_mode) || st.st_uid || st.st_gid ||
+         (st.st_mode & 07777) != 0700) { errno = EPERM; goto done; }
+@@ -274,7 +286,7 @@
+     if (child_pid < 0) goto done;
+     if (!child_pid) {
+         close(channels[0]);
+-        child(channels[1], raw, clone, listener, self, &parent_ns);
++        child(channels[1], raw, clone, listener, self, &parent_ns, &parent_user_ns);
+     }
+     close_fd(&channels[1]);
+     pidfd = (int)syscall(SYS_pidfd_open, child_pid, 0);
+@@ -298,7 +310,8 @@
+               WIFEXITED(child_status) && WEXITSTATUS(child_status) == 0 && !forced && unmounted;
+     printf("{\"schema\":1,\"nonce\":\"%s\",\"success\":%s,\"stage\":%d,\"error\":%d,"
+            "\"kernel_release\":\"%s\",\"parent_mount_namespace\":[%llu,%llu],"
+-           "\"child_mount_namespace\":[%llu,%llu],\"child_stage\":%d,\"child_error\":%d,"
++           "\"child_mount_namespace\":[%llu,%llu],\"parent_user_namespace\":[%llu,%llu],"
++           "\"child_user_namespace\":[%llu,%llu],\"child_stage\":%d,\"child_error\":%d,"
+            "\"raw_foreign_bind\":{\"rc\":%d,\"errno\":%d},"
+            "\"local_reopen_bind\":{\"rc\":%d,\"errno\":%d},"
+            "\"detached_move\":{\"rc\":%d,\"errno\":%d},"
+@@ -311,6 +324,8 @@
+            FIXTURE_NONCE, success ? "true" : "false", stage, success ? 0 : saved, os.release,
+            (unsigned long long)parent_ns.device, (unsigned long long)parent_ns.inode,
+            (unsigned long long)e.child_namespace.device, (unsigned long long)e.child_namespace.inode,
++           (unsigned long long)parent_user_ns.device, (unsigned long long)parent_user_ns.inode,
++           (unsigned long long)e.child_user_namespace.device, (unsigned long long)e.child_user_namespace.inode,
+            e.child_stage, e.child_error, e.raw_foreign_bind.rc, e.raw_foreign_bind.error,
+            e.local_reopen_bind.rc, e.local_reopen_bind.error, e.detached_move.rc, e.detached_move.error,
+            (unsigned long long)e.raw_source.device, (unsigned long long)e.raw_source.inode,
