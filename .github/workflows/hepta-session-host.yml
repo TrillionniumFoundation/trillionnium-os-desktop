@@ -88,7 +88,7 @@ jobs:
           cargo -Vv | tee "$RUNNER_TEMP/hepta-session-host/cargo.txt"
           git rev-parse HEAD | tee "$RUNNER_TEMP/hepta-session-host/desktop-head.txt"
           cargo metadata --manifest-path services/hepta-session-host/Cargo.toml \
-            --locked --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
+            --locked --features product-root --format-version 1 --filter-platform x86_64-unknown-linux-gnu \
             > "$RUNNER_TEMP/hepta-session-host/metadata.json"
           python3 - <<'PY'
           import json, os, pathlib, re, subprocess, sys, tomllib
@@ -128,11 +128,14 @@ jobs:
           assert manifest.get('patch') == expected_patches, 'The host must preserve exactly the original pinned patch sources.'
           print('Original owner commit:', revision)
           PY
+      # The production Root binary is feature-gated. Default-feature checks
+      # omit it and its ordinary tests. Keep privileged ignored fixtures and
+      # installed lifecycle qualification as separate gates.
       - name: Execute real original-writer and Unix-socket integration tests
         run: |
           set -euo pipefail
           cargo test --manifest-path services/hepta-session-host/Cargo.toml \
-            --locked --all-targets --profile dev-small --jobs 1 -- --test-threads=1 \
+            --locked --features product-root --all-targets --profile dev-small --jobs 1 -- --test-threads=1 \
             2>&1 | tee "$RUNNER_TEMP/hepta-session-host/tests.log"
       - name: Enforce the host's formatting and warning gate
         run: |
@@ -140,7 +143,7 @@ jobs:
           cargo fmt --manifest-path services/hepta-session-host/Cargo.toml \
             --package hepta-session-host -- --check
           cargo clippy --manifest-path services/hepta-session-host/Cargo.toml \
-            --locked --all-targets --profile dev-small --jobs 1 -- -D warnings \
+            --locked --features product-root --all-targets --profile dev-small --jobs 1 -- -D warnings \
             2>&1 | tee "$RUNNER_TEMP/hepta-session-host/clippy.log"
       - name: Verify source and committed dependency locks remained exact
         if: always()
