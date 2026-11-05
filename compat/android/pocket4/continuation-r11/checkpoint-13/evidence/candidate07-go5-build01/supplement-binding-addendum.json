@@ -1,0 +1,88 @@
+{
+  "Android_executed": false,
+  "actual_held_artifacts": [
+    {
+      "bytes": 2708832,
+      "relative": "android-out/target/product/droidloom_x86_64/system/lib64/libberberis_arm64.so",
+      "sha256": "3aa9b479a9b66f56ae827477cf9f957fdeb6dcb21f1f8f981e34a1089f80048a"
+    },
+    {
+      "bytes": 33828216,
+      "relative": "android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/berberis_arm64_host_tests",
+      "sha256": "21970832f7b97a9bb9538eba5749cdd7217bd1741ddd606ffa4e897666095ae3"
+    },
+    {
+      "bytes": 703363,
+      "relative": "android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/decoder/arm64_test/arm64_decoder_encodings.txt",
+      "sha256": "3c07b2f3e9e1121ee8b0a413a77ed6d76021e68dcf732b3aae613302ee728505"
+    },
+    {
+      "bytes": 2105,
+      "relative": "android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/decoder/arm64_test/arm64_decoder_undefined_baseline.txt",
+      "sha256": "402fe6c840a188f392cf95a7c774ff156a049c8bc2324e906c7794fc9b8be121"
+    },
+    {
+      "bytes": 13185,
+      "relative": "android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/heavy_optimizer/arm64/arm64_tier_coverage.txt",
+      "sha256": "1925182f2f2e0ac598a548bef73c6ea4f57ab6e5e8c2b62eebc2e117c6680e47"
+    },
+    {
+      "bytes": 849648,
+      "relative": "android-out/host/linux-x86/lib64/libbase.so",
+      "sha256": "64ed09763bc786598efd694dbed64219704915754859c472db2ca88f89aaae93"
+    },
+    {
+      "bytes": 190080,
+      "relative": "android-out/host/linux-x86/lib64/liblog.so",
+      "sha256": "936872310a280e215e254c0b327731ebfd0d4000c8b98e92258ab4278e74a912"
+    },
+    {
+      "bytes": 1759704,
+      "relative": "android-out/host/linux-x86/lib64/libc++.so",
+      "sha256": "acca15da090d439bbd4f6d7bbfb43bd53652639ad20487ea87304c8d00edb306"
+    }
+  ],
+  "artifact_qualification_still_pending": true,
+  "host_suite_executed": false,
+  "input_receipt_sha256": "97c3b9e686ee2c1d2ac2a5f996cc2cee0a7f54dcb939f09bb44c3f5278f9a5b5",
+  "kind": "independent-local-binding-addendum-after-exact-terminal-supplement",
+  "local_review_correction": {
+    "correction": "use original collector Path join representation for the two exact fixed directory strings",
+    "initial_assertion": "directory comparison mistakenly retained a trailing slash",
+    "production_or_remote_source_changed": false
+  },
+  "new_remote_execution": false,
+  "normal_projection_journal_absent": true,
+  "original_files_modified": false,
+  "original_reader_report": {
+    "bytes": 1679155,
+    "collection_complete": false,
+    "original_errors": [
+      {
+        "error": {
+          "errno": null,
+          "filename": null,
+          "message": "source is not regular or exceeds its fixed bound",
+          "type": "RuntimeError"
+        },
+        "path": "attempt-01/terminal.json"
+      },
+      {
+        "error": "KeyError('text')",
+        "path": "terminal/source/artifact binding"
+      }
+    ],
+    "sha256": "2493e51be7ae2d25fef5206859b8e4c499ac60d451de79a2422befc8d89c956a"
+  },
+  "pass": true,
+  "schema": 1,
+  "source_receipt_sha256": "648cc61ba4652df24061b45cf7875f7c880d1793e8c217bc519e21e2f3677b90",
+  "successfully_read_text_files": 15,
+  "supplement": {
+    "bytes": 332929,
+    "external_pin_origin": "actual durable build stdout; fixed-version binary_read",
+    "reason": "successful terminal record exceeds original 131072-byte reader limit",
+    "sha256": "388ab68cd73a932addc43b6a39b334628a619e2a84bf894609047c5d6f852587"
+  },
+  "whole_app_production_ready": false
+}

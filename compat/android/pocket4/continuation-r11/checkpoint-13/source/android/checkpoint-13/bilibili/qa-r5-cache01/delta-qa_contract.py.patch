@@ -1,0 +1,72 @@
+--- r4/qa_contract.py
++++ r5/qa_contract.py
+@@ -5,8 +5,8 @@
+ import re
+ import zlib
+ 
+-PROTOCOL = 'pocket4-owned-bili-qa-v4'
+-SELF = 'org.droidloom.qa.bili.r4'
++PROTOCOL = 'pocket4-owned-bili-qa-v5'
++SELF = 'org.droidloom.qa.bili.r5'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'tv.danmaku.bili'
+ UID = 10117
+@@ -319,25 +319,44 @@
+         return value
+     require(set(value) <= {'requested_display','selection','wait_budget_ms','ready','first','last',
+                           'samples','waited_ms','selected_display','selected_window_id',
+-                          'recheck_max_ms','sample_timings'} and
++                          'recheck_max_ms','sample_timings','cache_api','cache_policy',
++                          'cache_runtime_sdk','cache_attempts','cache_clears','cache_last_result','cache_last_exception'} and
+             value.get('requested_display') == 0 and value.get('wait_budget_ms') == 2000 and
+             value.get('recheck_max_ms') == 100 and
+             value.get('selection') == 'exact-display-0-focused-application' and
+             type(value.get('ready')) is bool,'EXACT_WINDOW_OBSERVATION_SCOPE')
+     timings = value.get('sample_timings')
+     require(isinstance(timings,list) and len(timings) <= 64,'BOUNDED_WINDOW_SAMPLE_TIMINGS_REQUIRED')
++    attempts, clears = value.get('cache_attempts'), value.get('cache_clears')
++    samples = value.get('samples',0)
++    require({'cache_api','cache_policy','cache_runtime_sdk','cache_attempts','cache_clears',
++             'cache_last_result','cache_last_exception'} <= set(value) and
++            value.get('cache_api') == 'android.app.UiAutomation.clearCache()' and
++            value.get('cache_policy') == 'require_public_own_connection_clear_before_each_query' and
++            type(value.get('cache_runtime_sdk')) is int and value['cache_runtime_sdk'] >= 0 and
++            type(samples) is int and type(attempts) is int and type(clears) is int and
++            0 <= samples <= clears <= attempts <= min(samples+1,64) and
++            (value.get('cache_last_result') is None or type(value['cache_last_result']) is bool) and
++            (value.get('cache_last_exception') is None or
++             (isinstance(value['cache_last_exception'],str) and
++              re.fullmatch(r'[A-Za-z_$][A-Za-z0-9_$.]{0,255}',value['cache_last_exception']))),
++            'EXACT_PUBLIC_OWN_CACHE_CLEAR_EVIDENCE_REQUIRED')
+     previous_elapsed = previous_serial = -1
+     for index, row in enumerate(timings,1):
+-        require(isinstance(row,dict) and set(row) == {'sample','event_serial','elapsed_ms'} and
++        require(isinstance(row,dict) and set(row) == {'sample','event_serial','elapsed_ms','cache_cleared'} and
+                 type(row['sample']) is int and row['sample'] == index and
+                 type(row['event_serial']) is int and row['event_serial'] >= 0 and
+                 type(row['elapsed_ms']) is int and row['elapsed_ms'] >= 0 and
+-                row['event_serial'] >= previous_serial and row['elapsed_ms'] >= previous_elapsed,
++                row['event_serial'] >= previous_serial and row['elapsed_ms'] >= previous_elapsed and
++                row['cache_cleared'] is True,
+                 'ORDERED_METADATA_ONLY_WINDOW_SAMPLE_TIMINGS_REQUIRED')
+         previous_elapsed, previous_serial = row['elapsed_ms'], row['event_serial']
+     require(('samples' not in value and not timings) or value.get('samples') == len(timings),
+             'WINDOW_SAMPLE_COUNT_MISMATCH')
+     if ready_required:
++        require(attempts == clears == samples and value.get('cache_last_result') is True and
++                value.get('cache_last_exception') is None and value['cache_runtime_sdk'] >= 34,
++                'EVERY_WINDOW_QUERY_NEEDS_CONFIRMED_CACHE_CLEAR')
+         require(value['ready'] is True and value.get('selected_display') == 0 and
+                 type(value.get('selected_window_id')) is int and
+                 type(value.get('samples')) is int and 1 <= value['samples'] <= 64 and
+@@ -362,8 +381,8 @@
+                     window['display'] in row['displays'] and
+                     all(type(window[k]) is bool for k in ('focused','active','accessibility_focused')),
+                     'METADATA_ONLY_WINDOW_CENSUS_REQUIRED')
+-        require(timings and {key:row[key] for key in ('sample','event_serial','elapsed_ms')} ==
+-                timings[0 if name == 'first' else -1], 'WINDOW_CENSUS_TIMING_MISMATCH')
++        require(timings and all(row[key] == timings[0 if name == 'first' else -1][key]
++                for key in ('sample','event_serial','elapsed_ms')), 'WINDOW_CENSUS_TIMING_MISMATCH')
+     if ready_required:
+         require(value['first']['sample'] == 1 and value['last']['sample'] == value['samples'] and
+                 sum(window['display'] == 0 and window['type'] == 1 and window['focused'] is True

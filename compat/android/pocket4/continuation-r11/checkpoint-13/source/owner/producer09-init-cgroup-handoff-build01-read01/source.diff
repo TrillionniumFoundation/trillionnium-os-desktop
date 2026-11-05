@@ -1,0 +1,24 @@
+--- projection01/read.py
++++ cgroup-handoff01/read.py
+@@ -7,9 +7,9 @@
+ import stat
+ import traceback
+ 
+-ROOT_NAME = 'p4-init-socket-projection-20261105-build-01'
+-EXPECTED_REPORT_BYTES = 445590
+-EXPECTED_REPORT_SHA256 = 'b74dabc8c2cd8abcb4efe7de2cd35a95ec9ee5b29f364d33f055c0cd305972cd'
++ROOT_NAME = 'p4-init-cgroup-handoff-20261105-build-01'
++EXPECTED_REPORT_BYTES = 540269
++EXPECTED_REPORT_SHA256 = '718b131c94126d6d7f9df30a2f164e8f85335fc027a2db3101b0e5904c291b64'
+ NAMES = ('build-result.json',)
+ LIMIT = 1048576
+ 
+@@ -69,7 +69,7 @@
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'fixed-init-projection-build01-read', 'collection_complete': False,
++    result = {'schema': 1, 'kind': 'fixed-init-cgroup-handoff-build01-read', 'collection_complete': False,
+               'files': {}, 'errors': [], 'mutations': False, 'qualification': False}
+     fds = []
+     try:

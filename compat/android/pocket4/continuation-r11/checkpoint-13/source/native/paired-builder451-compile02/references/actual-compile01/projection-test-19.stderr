@@ -1,0 +1,18 @@
++ "mke2fs" "-q" "-F" "-t" "ext4" "-d" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/.tmpmUP962/payload-tree" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/.tmpmUP962/apex_payload.img"
++ cd "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/.tmpmUP962" && "zip" "-q" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/.tmpmUP962/com.android.art.apex" "apex_payload.img" "apex_pubkey"
++ "mkfs.erofs" "--workers=1" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/.tmpmUP962/bundle/var/lib/droidloom/images/images/system.img" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/.tmpmUP962/system-tree"
++ "fsck.erofs" "--extract=/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/generation-image-verify-Q6LlLL/tree" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/.tmpmUP962/bundle/var/lib/droidloom/images/images/system.img"
++ "unzip" "-p" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/generation-image-verify-Q6LlLL/tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/generation-image-verify-Q6LlLL/tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/generation-apex-VMRwVq/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/generation-apex-VMRwVq/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "mkfs.erofs" "--workers=1" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/.tmpmUP962/bundle/var/lib/droidloom/images/images/system.img" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/.tmpmUP962/system-tree"
++ "fsck.erofs" "--extract=/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/generation-image-verify-VRv1Qr/tree" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/.tmpmUP962/bundle/var/lib/droidloom/images/images/system.img"
++ "unzip" "-p" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/generation-image-verify-VRv1Qr/tree/system/apex/com.android.art.apex" "apex_payload.img"
++ "unzip" "-p" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/generation-image-verify-VRv1Qr/tree/system/apex/com.android.art.apex" "apex_pubkey"
++ "debugfs" "-R" "cat /lib64/libart.so" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/generation-apex-NAeN63/payload.img"
+debugfs 1.47.2 (1-Jan-2025)
++ "debugfs" "-R" "cat /lib64/libnativebridge.so" "/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105/attempt01/tmp/generation-apex-NAeN63/payload.img"
+debugfs 1.47.2 (1-Jan-2025)

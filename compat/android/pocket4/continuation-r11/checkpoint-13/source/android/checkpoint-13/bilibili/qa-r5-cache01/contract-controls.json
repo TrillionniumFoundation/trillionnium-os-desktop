@@ -1,0 +1,191 @@
+{
+  "Android_or_UI_actions": 0,
+  "actual_Java_observation_file_sha256": "94f682f3b506c466f37d3846cab87b838ca102b3ece537ea8a513737dc9829e7",
+  "contract_sha256": "f31f55de33d940d247cacbf3277b11760b7a774e4a3da8b2d5969d0dd0466643",
+  "controls": [
+    {
+      "accepted": false,
+      "case": "r4_cache_latched_False",
+      "error": {
+        "message": "EXACT_PUBLIC_OWN_CACHE_CLEAR_EVIDENCE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_cache_latched_True",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_cache_false_False",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_cache_exception_False",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_cache_error_False",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_immediate_False",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_cache_late_False",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_never_ready_False",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_wrong_display_False",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_immediate_True",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_event_storm_False",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "r5_query_error_False",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "cache_false_cannot_qualify",
+      "error": {
+        "message": "EVERY_WINDOW_QUERY_NEEDS_CONFIRMED_CACHE_CLEAR",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "cache_exception_cannot_qualify",
+      "error": {
+        "message": "EVERY_WINDOW_QUERY_NEEDS_CONFIRMED_CACHE_CLEAR",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "unconfirmed_sample_cannot_qualify",
+      "error": {
+        "message": "ORDERED_METADATA_ONLY_WINDOW_SAMPLE_TIMINGS_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "missing_api_evidence_cannot_qualify",
+      "error": {
+        "message": "EXACT_PUBLIC_OWN_CACHE_CLEAR_EVIDENCE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "wrong_api_cannot_qualify",
+      "error": {
+        "message": "EXACT_PUBLIC_OWN_CACHE_CLEAR_EVIDENCE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "uncleared_query_cannot_qualify",
+      "error": {
+        "message": "EXACT_PUBLIC_OWN_CACHE_CLEAR_EVIDENCE_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "extra_attempt_cannot_qualify",
+      "error": {
+        "message": "EVERY_WINDOW_QUERY_NEEDS_CONFIRMED_CACHE_CLEAR",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "old_sdk_cannot_qualify",
+      "error": {
+        "message": "EVERY_WINDOW_QUERY_NEEDS_CONFIRMED_CACHE_CLEAR",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "longer_deadline_cannot_qualify",
+      "error": {
+        "message": "EXACT_WINDOW_OBSERVATION_SCOPE",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "unfocused_cannot_qualify",
+      "error": {
+        "message": "UNIQUE_DISPLAY_ZERO_FOCUSED_WINDOW_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "missing_timing_cannot_qualify",
+      "error": {
+        "message": "WINDOW_SAMPLE_COUNT_MISMATCH",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "state_without_UiAutomation_observation_preserved",
+      "error": null,
+      "expected_met": true
+    }
+  ],
+  "observation_scope": "Owned Java seams, consumed by production validator; not Android evidence",
+  "runtime_cache_cause_proven": false,
+  "schema": 1,
+  "status": "PASS"
+}

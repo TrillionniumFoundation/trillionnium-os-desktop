@@ -1,0 +1,30 @@
+--- ABI2/build-template.py
++++ ABI3/build-template.py
+@@ -131,7 +131,7 @@
+ 
+ 
+ def main():
+-    require(CFG['kind'] == 'p4-init-socket-projection-build01', 'wrong controller kind')
++    require(CFG['kind'] == 'p4-init-cgroup-handoff-build01', 'wrong controller kind')
+     guard = base64.b64decode(CFG['resource_guard']['base64'], validate=True)
+     require(digest(guard) == CFG['resource_guard']['sha256'], 'resource source pin differs')
+     namespace = {'__name__': 'frozen_resource_guard'}
+@@ -148,7 +148,7 @@
+     try:
+         require(os.geteuid() == 0 and os.getegid() == 0, 'root-owned sealed build required')
+         resources.begin()
+-        require(root.parent == Path('/opt') and root.name == 'p4-init-socket-projection-20261105-build-01',
++        require(root.parent == Path('/opt') and root.name == 'p4-init-cgroup-handoff-20261105-build-01',
+                 'unexpected create-only root')
+         for parent in (Path('/'), root.parent):
+             meta = parent.lstat()
+@@ -192,7 +192,8 @@
+         for name, source, seam, expected_count, marker in [
+             ('protocol', 'protocol_controls.c', False, 20, 'owned_controls_passed'),
+             ('protocol-close-errno', 'protocol_controls.c', True, 20, 'owned_controls_passed'),
+-            ('diagnostic', 'diagnostic_controls.c', False, 7, 'owned_diagnostic_controls_passed')]:
++            ('diagnostic', 'diagnostic_controls.c', False, 7, 'owned_diagnostic_controls_passed'),
++            ('cgroup-view', 'cgroup_view_controls.c', False, 8, 'cases')]:
+             flags = ['/usr/bin/cc', '-std=c17', '-O2', '-Wall', '-Wextra', '-Werror', '-Wno-unused-function']
+             if seam:
+                 flags += ['-include', str(root / 'source' / 'close_errno_seam.h')]

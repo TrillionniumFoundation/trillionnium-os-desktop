@@ -1,0 +1,105 @@
+{
+  "auxiliary_reference": {
+    "bytes": 15291,
+    "new_matching_binary_binding_verified": false,
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/private-owner-normal-work-01/references/cpu_placement.rs",
+    "sha256": "e21d849f086e28b8e9e16cc29aa62bd163a200282bdc03ca0e48293fc85137a6"
+  },
+  "conclusion": "No new concrete blocker found in the limited holding-view/ABI3 source delta. This is not runtime admission or full Owner qualification.",
+  "created_utc": "2026-11-05T05:38:16.573970+00:00",
+  "findings": [
+    {
+      "assessment": "No concrete source blocker found in this delta. C ABI integer/text and P4IBV3!! magic agree with Rust. Entry ABI is v3. C common frame checks and Rust require_frame reject old integers/magic; 128-byte framing and 12 HELLO descriptors remain unchanged.",
+      "item": "ABI pairing"
+    },
+    {
+      "assessment": "Rust creates a fresh relay-v2 child beneath a held root-owned non-writable TMPFS holding directory. It mounts only after the cgroup namespace seal, validates the resulting CGROUP2 dev/inode against its already-held domain, and rechecks the untouched native target identity. C opens each path component with NOFOLLOW, requires root-owned directories, proves holding TMPFS and domain CGROUP2, and serializes finite memory limits. Host remains the budget/domain authority and compares the transmitted dev/inode and limits with its own domain and policy.",
+      "item": "Private finite holding view"
+    },
+    {
+      "assessment": "Both sides require /sys and /sys/fs/cgroup to remain TMPFS on the same device. Rust additionally checks the native target is empty at creation and unchanged across holding mount creation. No CgroupSetup result is fabricated, and no Android mount error is swallowed. This source review does not prove the actual device first/repeated/fresh mount behavior or Android controller activation.",
+      "item": "Original Android mount entry"
+    },
+    {
+      "assessment": "The new C helper preserves errno across local cleanup, closes all temporary path descriptors, and transfers exactly the held view fd on success. If later domain validation fails, the fd remains in the caller-owned rights array and dir_run closes it. The actual constructor passes the same initialized failure object through operations.opaque, so the new collector diagnostics do not dereference a missing context in the production path.",
+      "item": "Descriptor ownership and early errors"
+    },
+    {
+      "assessment": "The after-leaf delta preserves entry single-attempt poison, seal-then-leaf migration, final pre-exec membership guard, pidfd/credential/namespace checks, host HELLO revalidation before PROJECT/COMMIT, detached-socket move_mount, final DONE ownership, and aggregate recursive retirement. HELLO checks occur before Android is released; DONE retains the existing domain validation instead of incorrectly requiring a permanently empty Android root.",
+      "item": "Existing lifecycle boundaries"
+    }
+  ],
+  "frozen_source_modified": false,
+  "kind": "independent-source-review-ABI3-holding-view-delta",
+  "limits": {
+    "Hepta_calls": 0,
+    "Main_actions": 0,
+    "local_controls_executed_by_reviewer": false,
+    "matching_Android_build_performed": false,
+    "matching_Rust_build_performed": false,
+    "service_or_namespace_execution": false,
+    "unchanged_transport_parser_full_reaudit": false,
+    "whole_Owner_qualified": false,
+    "whole_app_production_ready": false
+  },
+  "manifest": {
+    "all_listed_payloads_verified": 31,
+    "bytes": 5638,
+    "sha256": "64200d271f96217fbdb8518960250661dff4211dc62fa94a575c165eedd88de5"
+  },
+  "prior_failures_preserved": true,
+  "production_and_control_pins": {
+    "candidate/android/Android.bp": {
+      "bytes": 238,
+      "sha256": "abc3b2e9e13ca70e1f443757b3534da3eeda50c16997b297ee3806604c386a5c"
+    },
+    "candidate/android/cgroup_view_controls.c": {
+      "bytes": 6473,
+      "sha256": "4f4522e5def6ded05f567e06993e4810cba4788bcda474e9acd1e51efb2c20e9"
+    },
+    "candidate/android/close_errno_seam.h": {
+      "bytes": 364,
+      "sha256": "cd784c248f1e4bc5e023bb7c312da6cdde74e873863d167ad62e09a114f76c49"
+    },
+    "candidate/android/diagnostic_controls.c": {
+      "bytes": 5414,
+      "sha256": "5d327dc126a67061e0a47b4b314a6e923ade76e9f440a3cc125df6d2f10436ae"
+    },
+    "candidate/android/exported.map.txt": {
+      "bytes": 84,
+      "sha256": "e5cacf61316cd57074bfcbf8117340d87e7c0b3be6208b20ca92f1b92965a74e"
+    },
+    "candidate/android/init_relay_barrier.c": {
+      "bytes": 23803,
+      "sha256": "dded59777f3dbbd86c6794a37315b878eb63417bbcdad08278ea7d8e2b0e245a"
+    },
+    "candidate/android/init_relay_protocol.h": {
+      "bytes": 1480,
+      "sha256": "b1016268f6c632307e47aa2ef4b602639ea6e3245835f90561c24ff7f36f8368"
+    },
+    "candidate/android/protocol_controls.c": {
+      "bytes": 15105,
+      "sha256": "1a9b796fb761b9c64e1a8804dc95570aaebb49cbb206b07d2c8d76995a934f1c"
+    },
+    "candidate/host/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs": {
+      "bytes": 30475,
+      "sha256": "7bfeffd8f71e8e6bb92c5445fb585e828a6eedb77ba57bd0c76b259a99cad5a1"
+    },
+    "candidate/host/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs": {
+      "bytes": 29561,
+      "sha256": "43617fab408b379f7fe6c413931be8bbe4db032c94a5ed084d030989dcd700cc"
+    },
+    "candidate/host/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs": {
+      "bytes": 28235,
+      "sha256": "f3fdb0736697e2a6e06328a38178c7db07127ecc23b50e92d40d241f9a311892"
+    }
+  },
+  "reviewed": [
+    "Complete 21424-byte holding-after-leaf.diff and complete current C barrier/header; full ABI3 changed Rust functions plus their actual entry/HELLO/PROJECT/COMMIT/DONE call sites.",
+    "Prior 3-file bootstrap-leaf review 212df0f979f07930e2b28a4ae3caae999b356ab3ccec04dd9c4b1768149a1f61 remains separate; the after-leaf delta changes only entry ABI and the holding-view functions in those paths.",
+    "Local cpu_placement.rs prepare_legacy creates dev/.droidloom-cgroups with mode0700 before CLONE_NEWCGROUP; this reference is not independently bound here to a new matching binary."
+  ],
+  "reviewer": "native_bridge_repair",
+  "schema": 1,
+  "source_root": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-freeze-01"
+}

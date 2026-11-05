@@ -1,0 +1,3 @@
+# R5 build02: correct exact self-instrumentation identity gates
+
+The original build01 remains failed. Its eleven tool commands, including Java/D8/signing/XML, completed, but two frozen regex literals still selected R4. This revision derives those two exact identities from the existing PACKAGE constant and uses fresh source/output roots and a new build key. No Java, contract, adapter, deadlines, permissions, input tools or resource gate changed. The retained actual owned manifest reproduces both old gate rejections and passes both new gates; an explicitly derived R4 XML is rejected. Full build02 remains pending. Neither the old APK nor local controls qualify Android runtime caching, installation or whole-App readiness.

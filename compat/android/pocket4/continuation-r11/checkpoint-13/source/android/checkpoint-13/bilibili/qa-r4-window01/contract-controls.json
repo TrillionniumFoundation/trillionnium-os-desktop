@@ -1,0 +1,66 @@
+{
+  "Android_or_UI_actions": 0,
+  "contract_sha256": "12e39a5e2e350a6737e3cc95f3e74fe53cd5547937634a5aaf7b1ee8d246b336",
+  "controls": [
+    {
+      "accepted": true,
+      "case": "complete_two_sample_success",
+      "error": null,
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "omitted_sample_rejected",
+      "error": {
+        "message": "WINDOW_SAMPLE_COUNT_MISMATCH",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "event_census_mismatch_rejected",
+      "error": {
+        "message": "WINDOW_CENSUS_TIMING_MISMATCH",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "sample_after_claimed_wait_rejected",
+      "error": {
+        "message": "ACTUAL_DISPLAY_ZERO_WINDOW_READINESS_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "unfocused_never_accepted",
+      "error": {
+        "message": "UNIQUE_DISPLAY_ZERO_FOCUSED_WINDOW_REQUIRED",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": false,
+      "case": "longer_deadline_rejected",
+      "error": {
+        "message": "EXACT_WINDOW_OBSERVATION_SCOPE",
+        "type": "ProtocolError"
+      },
+      "expected_met": true
+    },
+    {
+      "accepted": true,
+      "case": "failure_before_first_census_preserved",
+      "error": null,
+      "expected_met": true
+    }
+  ],
+  "fixture": "synthetic metadata only; actual production validator",
+  "schema": 1,
+  "status": "PASS"
+}

@@ -1,0 +1,431 @@
+--- /dev/null
++++ handoff/android/cgroup_view_controls.c
+@@ -0,0 +1,138 @@
++/* Ordinary owned-directory controls. fstatfs is an explicit seam; no mount,
++ * namespace, Android or PSI execution is claimed by these controls. */
++#define _GNU_SOURCE
++#include <dirent.h>
++#include <errno.h>
++#include <fcntl.h>
++#include <stdarg.h>
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/stat.h>
++#include <sys/statfs.h>
++#include <unistd.h>
++
++static char fixture_root[256];
++static ino_t view_ino, target_ino;
++static int variant;
++static int test_open(const char *path,int flags,...) {
++  mode_t mode=0;
++  if(flags&O_CREAT){va_list args;va_start(args,flags);mode=(mode_t)va_arg(args,int);va_end(args);}
++  return open(!strcmp(path,"/")?fixture_root:path,flags,mode);
++}
++static int test_fstatfs(int fd,struct statfs *out) {
++  int result=fstatfs(fd,out);struct stat st;
++  if(result||fstat(fd,&st))return -1;
++  out->f_type=st.st_ino==view_ino?0x63677270:0x01021994;
++  if(variant==1&&st.st_ino==target_ino)out->f_type=0x63677270;
++  if(variant==6&&st.st_ino==view_ino)out->f_type=0x01021994;
++  return 0;
++}
++static int test_fstat(int fd,struct stat *out) {
++  int result=fstat(fd,out);
++  if(!result&&variant==2&&out->st_ino==target_ino)++out->st_dev;
++  return result;
++}
++static int test_close(int fd) { int result=close(fd);errno=EBADF;return result; }
++#define open test_open
++#define fstatfs test_fstatfs
++#define fstat test_fstat
++#define close test_close
++#define DROIDLOOM_BARRIER_TESTING 1
++#include "init_relay_barrier.c"
++#undef open
++#undef fstatfs
++#undef fstat
++#undef close
++
++static int fd_count(void) {
++  DIR *directory=opendir("/proc/self/fd");if(!directory)return -1;
++  int count=0;struct dirent *entry;
++  while((entry=readdir(directory)))if(strcmp(entry->d_name,".")&&strcmp(entry->d_name,".."))++count;
++  closedir(directory);return count;
++}
++static int path(char *out,size_t size,const char *relative) {
++  int n=snprintf(out,size,"%s/%s",fixture_root,relative);
++  return n>0&&(size_t)n<size?0:-1;
++}
++static int new_directory(const char *relative) {
++  char p[512];return path(p,sizeof(p),relative)?-1:mkdir(p,0700);
++}
++static int new_file(const char *relative,const char *data) {
++  char p[512];if(path(p,sizeof(p),relative))return -1;
++  int fd=open(p,O_WRONLY|O_CREAT|O_EXCL|O_CLOEXEC|O_NOFOLLOW,0600);if(fd<0)return -1;
++  size_t len=strlen(data);ssize_t n=write(fd,data,len);int saved=errno;close(fd);errno=saved;
++  return n==(ssize_t)len?0:-1;
++}
++static const char *const names[]={"holding_domain_and_stock_tmpfs_target_accepted",
++  "premounted_native_cgroup_target_rejected","foreign_tmpfs_target_rejected",
++  "writable_holding_rejected","symlink_domain_rejected","symlink_native_target_rejected",
++  "non_cgroup_holding_view_rejected","missing_holding_preserves_errno"};
++static const char *const stages[]={"collect-domain-filesystem","collect-native-target-filesystem",
++  "collect-native-target-filesystem","collect-holding-policy","collect-domain-open",
++  "collect-native-target-open","collect-domain-filesystem","collect-holding-open"};
++static const int errors[]={0,EPROTO,EPROTO,EPERM,ENOTDIR,ENOTDIR,EPROTO,ENOENT};
++
++static int run_case(int which) {
++  char p[512],backup[512];int good=0,before=-1,after=-1;
++  strcpy(fixture_root,"/tmp/p4-cgroup-view-controls-XXXXXX");
++  if(!mkdtemp(fixture_root))return -1;
++  variant=0;
++  if(new_directory("dev")||new_directory("dev/.droidloom-cgroups")||
++     new_directory("dev/.droidloom-cgroups/relay-v2")||new_directory("sys")||
++     new_directory("sys/fs")||new_directory("sys/fs/cgroup")||
++     new_file("dev/.droidloom-cgroups/relay-v2/memory.max","536870912\n")||
++     new_file("dev/.droidloom-cgroups/relay-v2/memory.high","402653184\n")||
++     new_file("dev/.droidloom-cgroups/relay-v2/memory.swap.max","0\n"))goto done;
++  struct stat st;
++  if(path(p,sizeof(p),"dev/.droidloom-cgroups/relay-v2")||stat(p,&st))goto done;
++  view_ino=st.st_ino;
++  if(path(p,sizeof(p),"sys/fs/cgroup")||stat(p,&st))goto done;
++  target_ino=st.st_ino;
++  if(which==3){if(path(p,sizeof(p),"dev/.droidloom-cgroups")||chmod(p,0770))goto done;}
++  if(which==4||which==5||which==7){
++    const char *relative=which==4?"dev/.droidloom-cgroups/relay-v2":which==5?"sys/fs/cgroup":"dev/.droidloom-cgroups";
++    if(path(p,sizeof(p),relative)||snprintf(backup,sizeof(backup),"%s-held",p)<0||rename(p,backup))goto done;
++    if(which!=7&&symlink(backup,p))goto done;
++  }
++  variant=which;
++  int rights[DIR_HELLO_RIGHTS];for(size_t i=0;i<DIR_HELLO_RIGHTS;++i)rights[i]=-1;
++  unsigned char wire[DIR_WIRE_SIZE];memset(wire,0,sizeof(wire));
++  struct dir_failure failure={.stage="initial"};
++  before=fd_count();int result=dir_collect_domain(&rights[0],wire,&failure),saved=errno;
++  if(!result){
++    int flags=fcntl(rights[0],F_GETFD);
++    if(fstat(rights[0],&st)||st.st_ino!=view_ino||flags<0||!(flags&FD_CLOEXEC)||
++       dir_get(wire,64,8)!=536870912||dir_get(wire,72,8)!=402653184||dir_get(wire,80,8)!=0)result=-2;
++  }
++  dir_close_rights(rights,DIR_HELLO_RIGHTS);after=fd_count();
++  good=(which==0?result==0:result==-1&&saved==errors[which])&&
++       !strcmp(failure.stage,stages[which])&&before>=0&&before==after;
++  if(!good)fprintf(stderr,"case=%d rc=%d errno=%d stage=%s before=%d after=%d\n",
++                  which,result,saved,failure.stage,before,after);
++done:
++  variant=0;
++  if(which==4||which==5||which==7){
++    const char *relative=which==4?"dev/.droidloom-cgroups/relay-v2":which==5?"sys/fs/cgroup":"dev/.droidloom-cgroups";
++    if(!path(p,sizeof(p),relative)&&snprintf(backup,sizeof(backup),"%s-held",p)>0){
++      if(which!=7)unlink(p);
++      if(rename(backup,p)&&errno!=ENOENT)good=0;
++    }
++  }
++  for(size_t i=0;i<3;++i){
++    const char *files[]={"memory.max","memory.high","memory.swap.max"};
++    char relative[128];snprintf(relative,sizeof(relative),"dev/.droidloom-cgroups/relay-v2/%s",files[i]);
++    if(!path(p,sizeof(p),relative)&&unlink(p)&&errno!=ENOENT)good=0;
++  }
++  const char *dirs[]={"dev/.droidloom-cgroups/relay-v2","dev/.droidloom-cgroups","dev","sys/fs/cgroup","sys/fs","sys"};
++  for(size_t i=0;i<sizeof(dirs)/sizeof(dirs[0]);++i)if(!path(p,sizeof(p),dirs[i])&&rmdir(p)&&errno!=ENOENT)good=0;
++  if(rmdir(fixture_root))good=0;
++  printf("{\"case\":\"%s\",\"ok\":%s,\"scope\":\"owned_files_with_filesystem_seam\"}\n",names[which],good?"true":"false");
++  return good?0:-1;
++}
++int main(void) {
++  if(getuid()||geteuid()||getgid()||getegid())return 2;
++  for(int which=0;which<8;++which)if(run_case(which))return 1;
++  printf("{\"ok\":true,\"cases\":8,\"namespace_or_mount_executed\":false}\n");return 0;
++}
+--- leaf/android/init_relay_barrier.c
++++ handoff/android/init_relay_barrier.c
+@@ -32,6 +32,9 @@
+ #ifndef CGROUP2_SUPER_MAGIC
+ #define CGROUP2_SUPER_MAGIC 0x63677270
+ #endif
++#ifndef TMPFS_MAGIC
++#define TMPFS_MAGIC 0x01021994
++#endif
+ #ifndef MOVE_MOUNT_F_EMPTY_PATH
+ #define MOVE_MOUNT_F_EMPTY_PATH 0x00000004
+ #endif
+@@ -40,7 +43,7 @@
+ #endif
+ #define DIR_BAD (POLLERR | POLLHUP | POLLRDHUP | POLLNVAL)
+ 
+-static const unsigned char dir_magic[8] = {'P','4','I','B','V','2','!','!'};
++static const unsigned char dir_magic[8] = {'P','4','I','B','V','3','!','!'};
+ static const char *const dir_ns_names[10] = {
+   "pid", "pid_for_children", "mnt", "cgroup", "user",
+   "net", "ipc", "uts", "time", "time_for_children"
+@@ -291,22 +294,70 @@
+   }
+   *out=value;return 0;
+ }
+-static int dir_collect_real(int rights[DIR_HELLO_RIGHTS],unsigned char wire[DIR_WIRE_SIZE],void *unused) {
+-  (void)unused;
+-  rights[0]=open("/sys/fs/cgroup",O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++static int dir_root_directory(int fd,struct dir_failure *failure,
++                              const char *stat_stage,const char *policy_stage);
++/* ABI3 uses an owned holding view. Do not mount over, skip, or fabricate
++ * success for the stock Android target. Both sides check that target is
++ * still on the original synthetic sys tmpfs before returning to real init. */
++static int dir_open_cgroup_view(struct dir_failure *failure) {
++  int root=-1,dev=-1,holding=-1,view=-1,sys=-1,fsdir=-1,target=-1,result=-1,saved=0;
++  struct statfs sysfs,targetfs,holdingfs;struct stat sys_st,target_st;
++  dir_stage(failure,"collect-root-open");
++  root=open("/",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(root,failure,"collect-root-stat","collect-root-policy"))goto done;
++  dir_stage(failure,"collect-dev-open");
++  dev=openat(root,"dev",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(dev,failure,"collect-dev-stat","collect-dev-policy"))goto done;
++  dir_stage(failure,"collect-holding-open");
++  holding=openat(dev,".droidloom-cgroups",O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(holding,failure,"collect-holding-stat","collect-holding-policy"))goto done;
++  dir_stage(failure,"collect-holding-filesystem");
++  if(fstatfs(holding,&holdingfs))goto done;
++  if(holdingfs.f_type!=TMPFS_MAGIC){errno=EPROTO;goto done;}
++  dir_stage(failure,"collect-domain-open");
++  view=openat(holding,"relay-v2",O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(view,failure,"collect-domain-stat","collect-domain-policy"))goto done;
++  dir_stage(failure,"collect-sys-open");
++  sys=openat(root,"sys",O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(sys,failure,"collect-sys-stat","collect-sys-policy"))goto done;
++  dir_stage(failure,"collect-fs-open");
++  fsdir=openat(sys,"fs",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(fsdir,failure,"collect-fs-stat","collect-fs-policy"))goto done;
++  dir_stage(failure,"collect-native-target-open");
++  target=openat(fsdir,"cgroup",O_RDONLY|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW);
++  if(!dir_root_directory(target,failure,"collect-native-target-stat","collect-native-target-policy"))goto done;
++  dir_stage(failure,"collect-native-target-filesystem");
++  if(fstatfs(sys,&sysfs)||fstatfs(target,&targetfs)||fstat(sys,&sys_st)||fstat(target,&target_st))goto done;
++  if(sysfs.f_type!=TMPFS_MAGIC||targetfs.f_type!=TMPFS_MAGIC||sys_st.st_dev!=target_st.st_dev){errno=EPROTO;goto done;}
++  result=view;view=-1;
++done:
++  saved=errno;
++  dir_close(&target);dir_close(&fsdir);dir_close(&sys);dir_close(&view);
++  dir_close(&holding);dir_close(&dev);dir_close(&root);
++  errno=saved;return result;
++}
++static int dir_collect_domain(int *domain,unsigned char wire[DIR_WIRE_SIZE],struct dir_failure *failure) {
++  *domain=dir_open_cgroup_view(failure);
+   struct statfs fs;struct stat st;
+-  if(rights[0]<0||fstatfs(rights[0],&fs)||fs.f_type!=CGROUP2_SUPER_MAGIC||fstat(rights[0],&st))return -1;
++  if(*domain<0)return -1;
++  dir_stage(failure,"collect-domain-filesystem");
++  if(fstatfs(*domain,&fs)||fstat(*domain,&st))return -1;
++  if(fs.f_type!=CGROUP2_SUPER_MAGIC)return dir_error(EPROTO);
+   uint64_t maximum,high,swap;
+-  if(dir_u64_file(rights[0],"memory.max",&maximum)||dir_u64_file(rights[0],"memory.high",&high)||
+-     dir_u64_file(rights[0],"memory.swap.max",&swap)||!maximum||!high||high>=maximum||swap!=0)return dir_error(EPROTO);
++  if(dir_u64_file(*domain,"memory.max",&maximum)||dir_u64_file(*domain,"memory.high",&high)||
++     dir_u64_file(*domain,"memory.swap.max",&swap)||!maximum||!high||high>=maximum||swap!=0)return dir_error(EPROTO);
++  dir_put(wire,48,(uint64_t)st.st_dev,8);dir_put(wire,56,(uint64_t)st.st_ino,8);
++  dir_put(wire,64,maximum,8);dir_put(wire,72,high,8);dir_put(wire,80,swap,8);
++  return 0;
++}
++static int dir_collect_real(int rights[DIR_HELLO_RIGHTS],unsigned char wire[DIR_WIRE_SIZE],void *opaque) {
++  if(dir_collect_domain(&rights[0],wire,(struct dir_failure *)opaque))return -1;
+   rights[1]=(int)syscall(__NR_pidfd_open,getpid(),0);if(rights[1]<0)return -1;
+   for(size_t i=0;i<10;++i){
+     char path[64];int n=snprintf(path,sizeof(path),"/proc/self/ns/%s",dir_ns_names[i]);
+     if(n<=0||(size_t)n>=sizeof(path))return dir_error(EOVERFLOW);
+     rights[2+i]=open(path,O_RDONLY|O_CLOEXEC);if(rights[2+i]<0)return -1;
+   }
+-  dir_put(wire,48,(uint64_t)st.st_dev,8);dir_put(wire,56,(uint64_t)st.st_ino,8);
+-  dir_put(wire,64,maximum,8);dir_put(wire,72,high,8);dir_put(wire,80,swap,8);
+   dir_put(wire,88,DIR_HELLO_RIGHTS,4);
+   return 0;
+ }
+--- leaf/android/init_relay_protocol.h
++++ handoff/android/init_relay_protocol.h
+@@ -11,10 +11,12 @@
+ #define DIR_PROJECTED 3u
+ #define DIR_COMMIT 4u
+ #define DIR_DONE 5u
+-/* ABI 2 PROJECT carries a detached mount from the verified source namespace.
+- * It is attached exactly once by move_mount onto the init-owned held target. */
+-#define DIR_ABI 2u
+-#define DIR_ABI_TEXT "2"
++/* ABI 3 HELLO proves the finite domain through a private holding mount.
++ * The real Android cgroup mount point stays untouched. PROJECT retains the
++ * detached mount contract and the one-shot init-owned held target. */
++#define DIR_ABI 3u
++#define DIR_ABI_TEXT "3"
++#define DIR_CGROUP_VIEW "/dev/.droidloom-cgroups/relay-v2"
+ #define DIR_SOCKET_NAME "droidloom-lmkd-psi"
+ #define DIR_ABI_ENV "DROIDLOOM_INIT_RELAY_ABI"
+ #define DIR_REQUIRED_ENV "DROIDLOOM_INIT_RELAY_REQUIRED"
+--- leaf/android/protocol_controls.c
++++ handoff/android/protocol_controls.c
+@@ -154,7 +154,7 @@
+   int rights[2]={socket_path_fd,socket_path_fd};size_t rights_count=1;
+   if(which==1)ready[16]^=1;
+   /* The actual legacy sender's ABI must be refused before projection. */
+-  if(which==2)dir_put(ready,8,1,4);
++  if(which==2)dir_put(ready,8,2,4);
+   if(which==3)dir_put(ready,12,DIR_COMMIT,4);
+   if(which==4)rights_count=2;
+   if(which==5){regular=open("/dev/null",O_RDONLY|O_CLOEXEC);if(regular<0)goto cleanup;rights[0]=regular;}
+--- leaf/host/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs
++++ handoff/host/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs
+@@ -14,7 +14,9 @@
+ use std::path::{Component, Path};
+ 
+ const CGROUP2_MAGIC: libc::c_long = 0x6367_7270;
++const TMPFS_MAGIC: libc::c_long = 0x0102_1994;
+ const BOOTSTRAP_LEAF: &CStr = c"init-bootstrap";
++pub(crate) const BOOTSTRAP_VIEW: &str = "dev/.droidloom-cgroups/relay-v2";
+ #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+ pub(crate) struct Identity {
+     pub device: u64,
+@@ -619,11 +621,56 @@
+     }
+     Ok(())
+ }
+-/// After CLONE_NEWCGROUP, expose only the current private domain. The outer
+-/// finite envelope is absent from this mount's namespace root.
++fn owned_directory(file: &File) -> io::Result<()> {
++    let m = file.metadata()?;
++    if !m.is_dir() || m.uid() != 0 || m.gid() != 0 || m.mode() & 0o022 != 0 {
++        return Err(error("private bootstrap directory owner/type/mode differs"));
++    }
++    Ok(())
++}
++/// Keep the stock Android target on the original synthetic sys tmpfs. A
++/// pre-mounted cgroup2 at this path would make Android's real mount fail.
++fn native_mount_target(root: &File) -> io::Result<File> {
++    let sys = beneath(root, "sys", libc::O_RDONLY | libc::O_DIRECTORY)?;
++    let target = beneath(root, "sys/fs/cgroup", libc::O_RDONLY | libc::O_DIRECTORY)?;
++    owned_directory(&sys)?;
++    owned_directory(&target)?;
++    filesystem(&sys, TMPFS_MAGIC)?;
++    filesystem(&target, TMPFS_MAGIC)?;
++    if Identity::of(&sys)?.device != Identity::of(&target)?.device {
++        return Err(error("native cgroup target is not the original private sys tmpfs"));
++    }
++    Ok(target)
++}
++/// Read only the ABI3 holding view. The root remains the same finite Android
++/// cgroup; its final /sys mount is owned by real Android CgroupSetup.
++pub(crate) fn bootstrap_view(root: &File) -> io::Result<File> {
++    let holding = beneath(root, "dev/.droidloom-cgroups", libc::O_RDONLY | libc::O_DIRECTORY)?;
++    owned_directory(&holding)?;
++    filesystem(&holding, TMPFS_MAGIC)?;
++    native_mount_target(root)?;
++    let view = beneath(root, BOOTSTRAP_VIEW, libc::O_RDONLY | libc::O_DIRECTORY)?;
++    root_directory(&view)?;
++    Ok(view)
++}
++/// After CLONE_NEWCGROUP, expose only the current private domain at an owned
++/// holding mount. Leave Android's original /sys/fs/cgroup target untouched so
++/// its real mount, permissions, controller setup and subtrees still execute.
+ pub(crate) fn mount_private_view(root: &Path, expected: Identity) -> io::Result<()> {
+     let root = directory(root)?;
+-    let target = beneath(&root, "sys/fs/cgroup", libc::O_PATH | libc::O_DIRECTORY)?;
++    let native = native_mount_target(&root)?;
++    if std::fs::read_dir(format!("/proc/self/fd/{}", native.as_raw_fd()))?.next().is_some() {
++        return Err(error("native Android cgroup mount target is not empty"));
++    }
++    let native_id = Identity::of(&native)?;
++    let holding = beneath(&root, "dev/.droidloom-cgroups", libc::O_RDONLY | libc::O_DIRECTORY)?;
++    owned_directory(&holding)?;
++    filesystem(&holding, TMPFS_MAGIC)?;
++    if unsafe { libc::mkdirat(holding.as_raw_fd(), c"relay-v2".as_ptr(), 0o700) } != 0 {
++        return Err(io::Error::last_os_error());
++    }
++    let target = named(&holding, "relay-v2", libc::O_PATH | libc::O_DIRECTORY)?;
++    owned_directory(&target)?;
+     let target_path =
+         CString::new(format!("/proc/self/fd/{}", target.as_raw_fd())).expect("descriptor path");
+     // SAFETY: owned target descriptor and static filesystem/options.
+@@ -639,9 +686,8 @@
+     {
+         return Err(io::Error::last_os_error());
+     }
+-    let projected = beneath(&root, "sys/fs/cgroup", libc::O_RDONLY | libc::O_DIRECTORY)?;
+-    filesystem(&projected, CGROUP2_MAGIC)?;
+-    if Identity::of(&projected)? != expected {
++    let projected = bootstrap_view(&root)?;
++    if Identity::of(&projected)? != expected || Identity::of(&native_mount_target(&root)?)? != native_id {
+         return Err(error("private cgroup mount is not the held Android domain"));
+     }
+     Ok(())
+--- leaf/host/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
++++ handoff/host/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
+@@ -20,7 +20,7 @@
+ use std::process::Command;
+ 
+ /// Exact pure-CLI pairing value required before private relay entry may spawn.
+-pub const ABI: &str = "droidloom-relay-entry-v2";
++pub const ABI: &str = "droidloom-relay-entry-v3";
+ pub(crate) const ENTRY_ENV: [&str; 3] = [
+     "DROIDLOOM_RELAY_ENTRY_ABI",
+     "DROIDLOOM_RELAY_ENTRY_NONCE",
+--- leaf/host/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs
++++ handoff/host/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs
+@@ -18,10 +18,10 @@
+ pub(crate) const LIBRARY: &str = "/droidloom/lmkd-bootstrap/libdroidloom_init_relay.so";
+ pub(crate) const LMKD: &str = "/droidloom/lmkd-bootstrap/lmkd";
+ pub(crate) const ENDPOINT: &str = "droidloom-lmkd-psi";
+-// ABI 2 PROJECT owns one detached mount cloned by the current source-namespace
+-// owner. A raw foreign O_PATH descriptor is no longer a projection capability.
+-pub(crate) const INIT_ABI_TEXT: &str = "2";
+-const INIT_ABI: u32 = 2;
++// ABI 3 HELLO proves the finite cgroup through a private holding view, leaving
++// the stock Android mount target empty. PROJECT retains the ABI2 detached-mount contract.
++pub(crate) const INIT_ABI_TEXT: &str = "3";
++const INIT_ABI: u32 = 3;
+ #[cfg(target_arch = "x86_64")]
+ pub(crate) const COMPAT: &str = "/system/lib64/libclang_rt.asan-x86_64-android.so";
+ #[cfg(target_arch = "aarch64")]
+@@ -48,7 +48,7 @@
+ }
+ fn frame(kind: u32, nonce: &[u8; 32]) -> [u8; WIRE] {
+     let mut wire = [0; WIRE];
+-    wire[..8].copy_from_slice(b"P4IBV2!!");
++    wire[..8].copy_from_slice(b"P4IBV3!!");
+     put(&mut wire, 8, INIT_ABI as u64, 4);
+     put(&mut wire, 12, kind as u64, 4);
+     wire[16..48].copy_from_slice(nonce);
+@@ -406,7 +406,7 @@
+             return Err(error("init root changed"));
+         }
+         let projection =
+-            domain::beneath(&root, "sys/fs/cgroup", libc::O_RDONLY | libc::O_DIRECTORY)?;
++            domain::bootstrap_view(&root)?;
+         domain::filesystem(&projection, 0x6367_7270)?;
+         if Identity::of(&projection)? != domain.identity()
+             || Identity::of(&self.guest_domain)? != domain.identity()
+@@ -506,7 +506,7 @@
+         // copy is evidence of the projection, never the source of authority.
+         let root = process.root()?;
+         let projection =
+-            domain::beneath(&root, "sys/fs/cgroup", libc::O_RDONLY | libc::O_DIRECTORY)?;
++            domain::bootstrap_view(&root)?;
+         if Identity::of(&projection)? != domain.identity() {
+             return Err(error("actual init root exposes a different cgroup"));
+         }
+@@ -721,14 +721,16 @@
+         require_frame(&wire, HELLO, &nonce).unwrap();
+         assert!(require_frame(&wire, DONE, &nonce).is_err());
+         assert!(require_frame(&wire, HELLO, &[4; 32]).is_err());
+-        for abi in [0, 1] {
++        for abi in [0, 1, 2] {
+             let mut old = wire;
+             put(&mut old, 8, abi, 4);
+             assert!(require_frame(&old, HELLO, &nonce).is_err());
+         }
+-        let mut old = wire;
+-        old[..8].copy_from_slice(b"P4IBV1!!");
+-        assert!(require_frame(&old, HELLO, &nonce).is_err());
++        for magic in [b"P4IBV1!!", b"P4IBV2!!"] {
++            let mut old = wire;
++            old[..8].copy_from_slice(magic);
++            assert!(require_frame(&old, HELLO, &nonce).is_err());
++        }
+         assert_eq!(INIT_ABI_TEXT.parse::<u32>().unwrap(), INIT_ABI);
+         assert!(require_frame(&frame(HELLO, &[0; 32]), HELLO, &[0; 32]).is_err());
+     }

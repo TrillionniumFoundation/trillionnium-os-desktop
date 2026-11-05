@@ -1,0 +1,824 @@
+{
+  "Android_runtime_qualification": false,
+  "arm": "candidate",
+  "assessment": {
+    "all_expected_registered_executed": true,
+    "completed_count": 3788,
+    "disabled": [
+      "Arm64LiteTranslateRegionDispatchTest.DISABLED_MemsetAarch64_FullBodyFrom0x49cc0_1024ByteZeroFill",
+      "Arm64TierCoverage.DISABLED_RegenerateTable"
+    ],
+    "executed_count": 3791,
+    "failed_cases": [],
+    "registered_count": 3793,
+    "skipped": {
+      "Arm64HeavyOptimizerFrontendTest.FcmpHBailsWithoutF16C": "F16C present; FCMP H lowers in-tier",
+      "Arm64HeavyOptimizerFrontendTest.FmaxvVecHBailsWithoutF16C": "F16C present; FMAXV H lowers in-tier",
+      "Arm64MmapNoreserveTest.UnrealSizedArenaReservesAddressSpaceWithoutCommittingRam": "opt-in policy is disabled"
+    }
+  },
+  "automatic_retry": false,
+  "binding_after": {
+    "arm": "candidate",
+    "engine": {
+      "bytes": 2708832,
+      "device": 66306,
+      "inode": 35955322,
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/target/product/droidloom_x86_64/system/lib64/libberberis_arm64.so",
+      "sha256": "3aa9b479a9b66f56ae827477cf9f957fdeb6dcb21f1f8f981e34a1089f80048a"
+    },
+    "records": [
+      {
+        "bytes": 33828216,
+        "device": 66306,
+        "inode": 35955308,
+        "kind": "binary",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/berberis_arm64_host_tests",
+        "relative": "bin/berberis_arm64_host_tests",
+        "sha256": "21970832f7b97a9bb9538eba5749cdd7217bd1741ddd606ffa4e897666095ae3"
+      },
+      {
+        "bytes": 703363,
+        "device": 66306,
+        "inode": 35955297,
+        "kind": "data",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/decoder/arm64_test/arm64_decoder_encodings.txt",
+        "relative": "bin/decoder/arm64_test/arm64_decoder_encodings.txt",
+        "sha256": "3c07b2f3e9e1121ee8b0a413a77ed6d76021e68dcf732b3aae613302ee728505"
+      },
+      {
+        "bytes": 2105,
+        "device": 66306,
+        "inode": 35955293,
+        "kind": "data",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/decoder/arm64_test/arm64_decoder_undefined_baseline.txt",
+        "relative": "bin/decoder/arm64_test/arm64_decoder_undefined_baseline.txt",
+        "sha256": "402fe6c840a188f392cf95a7c774ff156a049c8bc2324e906c7794fc9b8be121"
+      },
+      {
+        "bytes": 13185,
+        "device": 66306,
+        "inode": 35955301,
+        "kind": "data",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/heavy_optimizer/arm64/arm64_tier_coverage.txt",
+        "relative": "bin/heavy_optimizer/arm64/arm64_tier_coverage.txt",
+        "sha256": "1925182f2f2e0ac598a548bef73c6ea4f57ab6e5e8c2b62eebc2e117c6680e47"
+      },
+      {
+        "bytes": 849648,
+        "device": 66306,
+        "inode": 35955211,
+        "kind": "library",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/lib64/libbase.so",
+        "relative": "lib/libbase.so",
+        "sha256": "64ed09763bc786598efd694dbed64219704915754859c472db2ca88f89aaae93"
+      },
+      {
+        "bytes": 190080,
+        "device": 66306,
+        "inode": 35955204,
+        "kind": "library",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/lib64/liblog.so",
+        "relative": "lib/liblog.so",
+        "sha256": "936872310a280e215e254c0b327731ebfd0d4000c8b98e92258ab4278e74a912"
+      },
+      {
+        "bytes": 1759704,
+        "device": 66306,
+        "inode": 35951473,
+        "kind": "library",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/lib64/libc++.so",
+        "relative": "lib/libc++.so",
+        "sha256": "acca15da090d439bbd4f6d7bbfb43bd53652639ad20487ea87304c8d00edb306"
+      }
+    ],
+    "source_receipt": {
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-source.json",
+      "sha256": "648cc61ba4652df24061b45cf7875f7c880d1793e8c217bc519e21e2f3677b90"
+    }
+  },
+  "binding_before": {
+    "arm": "candidate",
+    "engine": {
+      "bytes": 2708832,
+      "device": 66306,
+      "inode": 35955322,
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/target/product/droidloom_x86_64/system/lib64/libberberis_arm64.so",
+      "sha256": "3aa9b479a9b66f56ae827477cf9f957fdeb6dcb21f1f8f981e34a1089f80048a"
+    },
+    "records": [
+      {
+        "bytes": 33828216,
+        "device": 66306,
+        "inode": 35955308,
+        "kind": "binary",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/berberis_arm64_host_tests",
+        "relative": "bin/berberis_arm64_host_tests",
+        "sha256": "21970832f7b97a9bb9538eba5749cdd7217bd1741ddd606ffa4e897666095ae3"
+      },
+      {
+        "bytes": 703363,
+        "device": 66306,
+        "inode": 35955297,
+        "kind": "data",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/decoder/arm64_test/arm64_decoder_encodings.txt",
+        "relative": "bin/decoder/arm64_test/arm64_decoder_encodings.txt",
+        "sha256": "3c07b2f3e9e1121ee8b0a413a77ed6d76021e68dcf732b3aae613302ee728505"
+      },
+      {
+        "bytes": 2105,
+        "device": 66306,
+        "inode": 35955293,
+        "kind": "data",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/decoder/arm64_test/arm64_decoder_undefined_baseline.txt",
+        "relative": "bin/decoder/arm64_test/arm64_decoder_undefined_baseline.txt",
+        "sha256": "402fe6c840a188f392cf95a7c774ff156a049c8bc2324e906c7794fc9b8be121"
+      },
+      {
+        "bytes": 13185,
+        "device": 66306,
+        "inode": 35955301,
+        "kind": "data",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/nativetest64/berberis_arm64_host_tests/heavy_optimizer/arm64/arm64_tier_coverage.txt",
+        "relative": "bin/heavy_optimizer/arm64/arm64_tier_coverage.txt",
+        "sha256": "1925182f2f2e0ac598a548bef73c6ea4f57ab6e5e8c2b62eebc2e117c6680e47"
+      },
+      {
+        "bytes": 849648,
+        "device": 66306,
+        "inode": 35955211,
+        "kind": "library",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/lib64/libbase.so",
+        "relative": "lib/libbase.so",
+        "sha256": "64ed09763bc786598efd694dbed64219704915754859c472db2ca88f89aaae93"
+      },
+      {
+        "bytes": 190080,
+        "device": 66306,
+        "inode": 35955204,
+        "kind": "library",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/lib64/liblog.so",
+        "relative": "lib/liblog.so",
+        "sha256": "936872310a280e215e254c0b327731ebfd0d4000c8b98e92258ab4278e74a912"
+      },
+      {
+        "bytes": 1759704,
+        "device": 66306,
+        "inode": 35951473,
+        "kind": "library",
+        "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/host/linux-x86/lib64/libc++.so",
+        "relative": "lib/libc++.so",
+        "sha256": "acca15da090d439bbd4f6d7bbfb43bd53652639ad20487ea87304c8d00edb306"
+      }
+    ],
+    "source_receipt": {
+      "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-source.json",
+      "sha256": "648cc61ba4652df24061b45cf7875f7c880d1793e8c217bc519e21e2f3677b90"
+    }
+  },
+  "claim_sha256": "22f09680284da07f208613ffc8d47e61630e76818ac98db4978c0b22d90164c2",
+  "cpu": 6,
+  "filter": "*",
+  "finished_utc": "2026-11-05T06:01:40.712875+00:00",
+  "inputs": {
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/qualification-inputs-9b4f271386ac6d2dfbe18594c5b92380/host-candidate-inputs.json",
+    "sha256": "22ef628bc6dfde895925db5a2b37f3e2b8a90d9133eb7b11be5d25a14532d601"
+  },
+  "main_after": {
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "daemon": {
+      "ActiveState": "active",
+      "ControlGroup": "/system.slice/droidloomd.service",
+      "Description": "Droidloom Android cell lifecycle daemon",
+      "ExecStart": "{ path=/usr/bin/droidloomd ; argv[]=/usr/bin/droidloomd ; ignore_errors=no ; start_time=[Wed 2026-11-04 00:51:00 PST] ; stop_time=[n/a] ; pid=3588022 ; code=(null) ; status=0/0 }",
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "LoadState": "loaded",
+      "MainPID": "3588022"
+    },
+    "data_directory": {
+      "device": 66306,
+      "gid": 0,
+      "inode": 111810947,
+      "uid": 0
+    },
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "framework_binding": {
+      "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+      "processes": {
+        "init": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service"
+          ],
+          "cmdline": [
+            "/init",
+            "second_stage"
+          ],
+          "executable": "/system/bin/init",
+          "host_pid": 3588093,
+          "namespace_pids": [
+            3588093,
+            1
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533284]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588092,
+          "start_ticks": 80797014,
+          "uids": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "surfaceflinger": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_1000/pid_672"
+          ],
+          "cmdline": [
+            "/system/bin/surfaceflinger"
+          ],
+          "executable": "/system/bin/surfaceflinger",
+          "host_pid": 3588912,
+          "namespace_pids": [
+            3588912,
+            672
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533284]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588093,
+          "start_ticks": 80797155,
+          "uids": [
+            1000,
+            1000,
+            1000,
+            1000
+          ]
+        },
+        "system_server": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_1000/pid_830"
+          ],
+          "cmdline": [
+            "system_server"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 3589120,
+          "namespace_pids": [
+            3589120,
+            830
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533727]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588887,
+          "start_ticks": 80797249,
+          "uids": [
+            1000,
+            1000,
+            1000,
+            1000
+          ]
+        },
+        "zygote64": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_0/pid_649"
+          ],
+          "cmdline": [
+            "zygote64"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 3588887,
+          "namespace_pids": [
+            3588887,
+            649
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533726]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588093,
+          "start_ticks": 80797153,
+          "uids": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    },
+    "retained_processes": {
+      "daemon_process": {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service"
+        ],
+        "cmdline": [
+          "/usr/bin/droidloomd"
+        ],
+        "executable": "/usr/bin/droidloomd",
+        "host_pid": 3588022,
+        "namespace_pids": [
+          3588022
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026531832]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 1,
+        "start_ticks": 80796995,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "launcher_process": {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service"
+        ],
+        "cmdline": [
+          "/usr/bin/python3",
+          "-I",
+          "/usr/local/libexec/droidloom-compat/unshare",
+          "--mount",
+          "--pid",
+          "--mount-proc",
+          "--ipc",
+          "--uts",
+          "--fork",
+          "--kill-child=TERM",
+          "--forward-signals",
+          "--propagation=private",
+          "/usr/bin/droidloom-supervisor",
+          "development-enter",
+          "--spec",
+          "/etc/droidloom/cell.json"
+        ],
+        "executable": "/usr/bin/python3.14",
+        "host_pid": 3588089,
+        "namespace_pids": [
+          3588089
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533281]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 3588022,
+        "start_ticks": 80797013,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "presenter_process": {
+        "cgroup": [
+          "0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service"
+        ],
+        "cmdline": [
+          "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland"
+        ],
+        "executable": "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland",
+        "host_pid": 3588024,
+        "namespace_pids": [
+          3588024
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026531832]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 2472,
+        "start_ticks": 80796995,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      }
+    }
+  },
+  "main_before": {
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "daemon": {
+      "ActiveState": "active",
+      "ControlGroup": "/system.slice/droidloomd.service",
+      "Description": "Droidloom Android cell lifecycle daemon",
+      "ExecStart": "{ path=/usr/bin/droidloomd ; argv[]=/usr/bin/droidloomd ; ignore_errors=no ; start_time=[Wed 2026-11-04 00:51:00 PST] ; stop_time=[n/a] ; pid=3588022 ; code=(null) ; status=0/0 }",
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "LoadState": "loaded",
+      "MainPID": "3588022"
+    },
+    "data_directory": {
+      "device": 66306,
+      "gid": 0,
+      "inode": 111810947,
+      "uid": 0
+    },
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "framework_binding": {
+      "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+      "processes": {
+        "init": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service"
+          ],
+          "cmdline": [
+            "/init",
+            "second_stage"
+          ],
+          "executable": "/system/bin/init",
+          "host_pid": 3588093,
+          "namespace_pids": [
+            3588093,
+            1
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533284]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588092,
+          "start_ticks": 80797014,
+          "uids": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "surfaceflinger": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_1000/pid_672"
+          ],
+          "cmdline": [
+            "/system/bin/surfaceflinger"
+          ],
+          "executable": "/system/bin/surfaceflinger",
+          "host_pid": 3588912,
+          "namespace_pids": [
+            3588912,
+            672
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533284]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588093,
+          "start_ticks": 80797155,
+          "uids": [
+            1000,
+            1000,
+            1000,
+            1000
+          ]
+        },
+        "system_server": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_1000/pid_830"
+          ],
+          "cmdline": [
+            "system_server"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 3589120,
+          "namespace_pids": [
+            3589120,
+            830
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533727]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588887,
+          "start_ticks": 80797249,
+          "uids": [
+            1000,
+            1000,
+            1000,
+            1000
+          ]
+        },
+        "zygote64": {
+          "cgroup": [
+            "0::/system.slice/droidloomd.service/system/uid_0/pid_649"
+          ],
+          "cmdline": [
+            "zygote64"
+          ],
+          "executable": "/system/bin/app_process64",
+          "host_pid": 3588887,
+          "namespace_pids": [
+            3588887,
+            649
+          ],
+          "namespaces": {
+            "mnt": "mnt:[4026533726]",
+            "pid": "pid:[4026533288]"
+          },
+          "parent_host_pid": 3588093,
+          "start_ticks": 80797153,
+          "uids": [
+            0,
+            0,
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "resources": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    },
+    "retained_processes": {
+      "daemon_process": {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service"
+        ],
+        "cmdline": [
+          "/usr/bin/droidloomd"
+        ],
+        "executable": "/usr/bin/droidloomd",
+        "host_pid": 3588022,
+        "namespace_pids": [
+          3588022
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026531832]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 1,
+        "start_ticks": 80796995,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "launcher_process": {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service"
+        ],
+        "cmdline": [
+          "/usr/bin/python3",
+          "-I",
+          "/usr/local/libexec/droidloom-compat/unshare",
+          "--mount",
+          "--pid",
+          "--mount-proc",
+          "--ipc",
+          "--uts",
+          "--fork",
+          "--kill-child=TERM",
+          "--forward-signals",
+          "--propagation=private",
+          "/usr/bin/droidloom-supervisor",
+          "development-enter",
+          "--spec",
+          "/etc/droidloom/cell.json"
+        ],
+        "executable": "/usr/bin/python3.14",
+        "host_pid": 3588089,
+        "namespace_pids": [
+          3588089
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533281]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 3588022,
+        "start_ticks": 80797013,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "presenter_process": {
+        "cgroup": [
+          "0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service"
+        ],
+        "cmdline": [
+          "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland"
+        ],
+        "executable": "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland",
+        "host_pid": 3588024,
+        "namespace_pids": [
+          3588024
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026531832]",
+          "pid": "pid:[4026531836]"
+        },
+        "parent_host_pid": 2472,
+        "start_ticks": 80796995,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      }
+    }
+  },
+  "main_config": {
+    "framework_guard": {
+      "path": "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+    },
+    "main_activation": {
+      "path": "/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json",
+      "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+    },
+    "main_resource_baseline": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    }
+  },
+  "main_preserved": true,
+  "production_ready": false,
+  "repeat": 1,
+  "resources_after": {
+    "affinity": [
+      6
+    ],
+    "cgroup": "/system.slice/p4-signal-host-candidate-9b4f271386ac.service",
+    "controller_pid": 1371880,
+    "limits": {
+      "cpu.max": "100000 100000",
+      "memory.high": "max",
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "pids.max": "128"
+    },
+    "memory_current": 172457984,
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "processes": [
+      1371880
+    ],
+    "threads": 1
+  },
+  "resources_before": {
+    "affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "cgroup": "/system.slice/p4-signal-host-candidate-9b4f271386ac.service",
+    "controller_pid": 1371880,
+    "limits": {
+      "cpu.max": "100000 100000",
+      "memory.high": "max",
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "pids.max": "128"
+    },
+    "memory_current": 108527616,
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "processes": [
+      1371880
+    ],
+    "threads": 1
+  },
+  "resources_complete": true,
+  "schema": 1,
+  "sharding": false,
+  "state": "PASS_FULL_HOST_SUITE",
+  "terminals": {
+    "full-suite": "d27adddf80165e55e66c65abfa64adaf8ed9c55757aa6bc895d40b04dd3c08bb",
+    "registration": "c0c25dc0c9200980cce0c31ef7c195f81fba9d85b1dcc53ab1cb4e0b86aff311"
+  },
+  "test_contract_sha256": "5e6fce662b8e08b8c0397b09df7425e60f522dde86847f2c86b899f38f24fc41",
+  "tested_fixture_after": [
+    {
+      "bytes": 33828216,
+      "device": 66306,
+      "inode": 34125936,
+      "kind": "binary",
+      "path": "/home/alex/work/pocket4-signal-host-candidate-combined07-9b4f271386ac/fixture/bin/berberis_arm64_host_tests",
+      "relative": "bin/berberis_arm64_host_tests",
+      "sha256": "21970832f7b97a9bb9538eba5749cdd7217bd1741ddd606ffa4e897666095ae3"
+    },
+    {
+      "bytes": 703363,
+      "device": 66306,
+      "inode": 34125939,
+      "kind": "data",
+      "path": "/home/alex/work/pocket4-signal-host-candidate-combined07-9b4f271386ac/fixture/bin/decoder/arm64_test/arm64_decoder_encodings.txt",
+      "relative": "bin/decoder/arm64_test/arm64_decoder_encodings.txt",
+      "sha256": "3c07b2f3e9e1121ee8b0a413a77ed6d76021e68dcf732b3aae613302ee728505"
+    },
+    {
+      "bytes": 2105,
+      "device": 66306,
+      "inode": 34125940,
+      "kind": "data",
+      "path": "/home/alex/work/pocket4-signal-host-candidate-combined07-9b4f271386ac/fixture/bin/decoder/arm64_test/arm64_decoder_undefined_baseline.txt",
+      "relative": "bin/decoder/arm64_test/arm64_decoder_undefined_baseline.txt",
+      "sha256": "402fe6c840a188f392cf95a7c774ff156a049c8bc2324e906c7794fc9b8be121"
+    },
+    {
+      "bytes": 13185,
+      "device": 66306,
+      "inode": 34125943,
+      "kind": "data",
+      "path": "/home/alex/work/pocket4-signal-host-candidate-combined07-9b4f271386ac/fixture/bin/heavy_optimizer/arm64/arm64_tier_coverage.txt",
+      "relative": "bin/heavy_optimizer/arm64/arm64_tier_coverage.txt",
+      "sha256": "1925182f2f2e0ac598a548bef73c6ea4f57ab6e5e8c2b62eebc2e117c6680e47"
+    },
+    {
+      "bytes": 849648,
+      "device": 66306,
+      "inode": 34125945,
+      "kind": "library",
+      "path": "/home/alex/work/pocket4-signal-host-candidate-combined07-9b4f271386ac/fixture/lib/libbase.so",
+      "relative": "lib/libbase.so",
+      "sha256": "64ed09763bc786598efd694dbed64219704915754859c472db2ca88f89aaae93"
+    },
+    {
+      "bytes": 190080,
+      "device": 66306,
+      "inode": 34125946,
+      "kind": "library",
+      "path": "/home/alex/work/pocket4-signal-host-candidate-combined07-9b4f271386ac/fixture/lib/liblog.so",
+      "relative": "lib/liblog.so",
+      "sha256": "936872310a280e215e254c0b327731ebfd0d4000c8b98e92258ab4278e74a912"
+    },
+    {
+      "bytes": 1759704,
+      "device": 66306,
+      "inode": 34125947,
+      "kind": "library",
+      "path": "/home/alex/work/pocket4-signal-host-candidate-combined07-9b4f271386ac/fixture/lib/libc++.so",
+      "relative": "lib/libc++.so",
+      "sha256": "acca15da090d439bbd4f6d7bbfb43bd53652639ad20487ea87304c8d00edb306"
+    }
+  ],
+  "tested_fixture_sha256": "7c5feadad2e213e0b3d71cfb9db4f734d8775fecc6709962b34bebf31a148072",
+  "tests_complete": true,
+  "wrapper_manifest_sha256": "ad47718c72d7fd8ecb3ce4147fd3e6dbc2ec6f662d079103bd7ecb5a55863bc5",
+  "xml_sha256": "f497a0b8eafab72e8b67e2f891685d3e5a8115daf11ce706b31ae3d850c66000"
+}

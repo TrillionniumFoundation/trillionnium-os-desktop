@@ -1,0 +1,117 @@
+{
+  "schema": 1,
+  "state": "STARTING_COMBINED07_GO5_STREAMING_FLAG0_COLD_BUILD",
+  "started_utc": "2026-11-05T04:48:51.217870+00:00",
+  "preparation_sha256": "0db7bdac207cab7bd800f6c9948d41b530da1d6ccb077897a508e641c7abee2c",
+  "plan": {
+    "schema": 1,
+    "state": "PLAN_ONLY",
+    "candidate": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-11/candidate-07",
+    "candidate_manifest_sha256": "e10024548a5b2b5a391ecc9ddb3ea2f19b95a6fea3437f40207a0f4721745a93",
+    "candidate_files": 949,
+    "engine_files": 926,
+    "parent_candidate_manifest_sha256": "3c780a398075f77d1f6b1c477c6ceaa35349de17b88e77896aa22820259c0376",
+    "actual_complete_TU_gate_sha256": "5a09aa094c960a2bcc2d357fa732aac0cdb95203d25d3b690ced62497bb1c1d1",
+    "actual_candidate07_composition_sha256": "44d4b170ed158802cd12a5f59fd3ebf31d86bce6a621b6f2904f13fed8737f08",
+    "actual_NOFILE_Android_runtime_sha256": "fbc3ca4d6e861b50da8ee537c90908b5308249015a31220acdd2d09b00f42b13",
+    "actual_NOFILE_host_runtime_sha256": "b0a03b1b95e3292131105dcb22fd59f4a767e63017197e29f4482036976a4ac2",
+    "new_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01",
+    "new_output": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out",
+    "new_attempt": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/attempt-01",
+    "targets": [
+      "libberberis_arm64",
+      "berberis_arm64_host_tests"
+    ],
+    "argv": [
+      "/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-03-20261105/attempt01/cargo-target/debug/droidloom-update",
+      "--source",
+      "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/builder-source",
+      "--jobs",
+      "1",
+      "native-engine-build",
+      "--work",
+      "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1",
+      "--tests",
+      "--out",
+      "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/android-out"
+    ],
+    "source_env": {
+      "DROIDLOOM_NATIVE_BRIDGE_SOURCE": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined07-go5-streaming-01/engine-working"
+    },
+    "CPUQuota": 200,
+    "MemoryMax": 10737418240,
+    "MemorySwapMax": 1073741824,
+    "MemAvailable_minimum": 13958643712,
+    "SwapFree_minimum": 2147483648,
+    "admission_difference_bytes": 3221225472,
+    "swap_admission_difference_bytes": 1073741824,
+    "physical_reservation_claimed": false,
+    "compiled_builder_source_delta": {
+      "changed_existing": [
+        "tools/droidloom-update/src/android.rs"
+      ],
+      "added": [
+        "android/apex-compat/0009-blueprint-stream-uncached-module-actions.patch"
+      ],
+      "unchanged_existing": 448
+    },
+    "runtime_data_delta": {
+      "changed": [
+        "android/apex-compat/0008-soong-leaf-go-memory-budget.patch"
+      ],
+      "changed_bytes": 1,
+      "other_449_files_unchanged": true,
+      "Rust_recompiled": false
+    },
+    "compiled_builder_manifest_sha256": "6834ea57e4d0402bd5c6e6c405728a111af77fb54ea0e0bea407ba9647fa41b4",
+    "expected_runtime_builder_manifest_sha256": "776435c88ca6ddb983456c639ca051e586731140394756f33abe53dc478357e3",
+    "builder_source_files": 450,
+    "actual_builder_compile_sha256": "a1d8fe1e891c876baeff555b18fce9bafe6a895d379d9e55261c6df1981785de",
+    "Blueprint_streaming_patch_sha256": "9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307",
+    "Go_soft_heap": "5GiB",
+    "feature_default_enabled": false,
+    "ART_target_built": false,
+    "factory_target_built": false,
+    "tests_executed_by_build": false,
+    "service_started": false,
+    "Android_actions": 0,
+    "Main_actions": 0,
+    "production_ready": false
+  },
+  "mem_available_before": 15124082688,
+  "swap_free_before": 3761086464,
+  "cpu_affinity_before": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "cpu_affinity": [
+    22,
+    23
+  ],
+  "unit": "hepta-runtime-job-1a1aa09c5d6-fc05-3bd3.service",
+  "normal_builder_lock_and_recovery": true,
+  "automatic_retry": false,
+  "Main_resource_changes": false
+}

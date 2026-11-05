@@ -1,0 +1,373 @@
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/domain.rs
+@@ -14,6 +14,7 @@
+ use std::path::{Component, Path};
+ 
+ const CGROUP2_MAGIC: libc::c_long = 0x6367_7270;
++const BOOTSTRAP_LEAF: &CStr = c"init-bootstrap";
+ #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+ pub(crate) struct Identity {
+     pub device: u64,
+@@ -227,9 +228,11 @@
+     parent: File,
+     outer: File,
+     android: File,
++    bootstrap: File,
+     name: CString,
+     outer_id: Identity,
+     android_id: Identity,
++    bootstrap_id: Identity,
+     policy: PressureRelaySpec,
+     removed: bool,
+     failed_retirement: bool,
+@@ -263,15 +266,23 @@
+         write_name(&outer, "cgroup.subtree_control", "+memory +cpu +pids\n")?;
+         let android = child(&outer, c"android")?;
+         set_limits(&android, policy)?;
++        // The entry first joins android and seals that namespace root. It
++        // moves into this leaf only after sealing, before releasing init.
++        // Never enable a controller below a leaf that will contain init.
++        let bootstrap = child(&android, BOOTSTRAP_LEAF)?;
++        empty_descendant(&bootstrap)?;
+         let outer_id = Identity::of(&outer)?;
+         let android_id = Identity::of(&android)?;
++        let bootstrap_id = Identity::of(&bootstrap)?;
+         Ok(Self {
+             parent,
+             outer,
+             android,
++            bootstrap,
+             name,
+             outer_id,
+             android_id,
++            bootstrap_id,
+             policy: policy.clone(),
+             removed: false,
+             failed_retirement: false,
+@@ -294,15 +305,32 @@
+             0,
+         )?;
+         let android = named(&outer, "android", libc::O_RDONLY | libc::O_DIRECTORY)?;
++        let bootstrap = at(android.as_raw_fd(), BOOTSTRAP_LEAF,
++                           libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++        filesystem(&bootstrap, CGROUP2_MAGIC)?;
+         if Identity::of(&outer)? != self.outer_id
+             || Identity::of(&android)? != self.android_id
+             || Identity::of(&self.outer)? != self.outer_id
+             || Identity::of(&self.android)? != self.android_id
++            || Identity::of(&bootstrap)? != self.bootstrap_id
++            || Identity::of(&self.bootstrap)? != self.bootstrap_id
++            || self.bootstrap_id.device != self.android_id.device
+         {
+             return Err(error("generation cgroup identity was replaced"));
+         }
+         limits(&self.outer, &self.policy)?;
+         limits(&self.android, &self.policy)
++    }
++    /// Called only after the received init pidfd/credential/parent/birth have
++    /// been checked. These fresh cgroup.procs reads use the host PID view.
++    /// Recursive populated/pids.current must stay nonzero while init lives.
++    pub(crate) fn validate_bootstrap_init(&self, init_pid: libc::pid_t) -> io::Result<()> {
++        self.validate()?;
++        require_bootstrap_membership(
++            &read_name(&self.android, "cgroup.procs")?,
++            &read_name(&self.bootstrap, "cgroup.procs")?,
++            init_pid,
++        )
+     }
+     pub(crate) fn prove_empty(&self) -> io::Result<()> {
+         self.validate()?;
+@@ -447,6 +475,150 @@
+     write_name(domain, "cgroup.procs", "0\n")?;
+     limits(domain, policy)
+ }
++fn require_bootstrap_membership(root_procs: &str, leaf_procs: &str, pid: libc::pid_t) -> io::Result<()> {
++    if pid <= 0 || !root_procs.is_empty() || leaf_procs != format!("{pid}\n") {
++        return Err(error("bootstrap requires empty Android root and the exact init in its leaf"));
++    }
++    Ok(())
++}
++/// Capture only the host-precreated leaf beneath the inherited domain. This
++/// capability is CLOEXEC and is never transferred to Android or its apps.
++pub(crate) fn open_bootstrap(domain: &File) -> io::Result<File> {
++    root_directory(domain)?;
++    let leaf = at(domain.as_raw_fd(), BOOTSTRAP_LEAF,
++                  libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++    root_directory(&leaf)?;
++    if Identity::of(&leaf)?.device != Identity::of(domain)?.device
++        || read_name(&leaf, "cgroup.type")? != "domain\n"
++        || !read_name(&leaf, "cgroup.subtree_control")?.trim().is_empty()
++    {
++        return Err(error("bootstrap leaf type/filesystem/controllers differ"));
++    }
++    empty_descendant(&leaf)?;
++    Ok(leaf)
++}
++fn validate_bootstrap_descriptor(domain: &File, leaf: &File, expected: Identity,
++                                 policy: &PressureRelaySpec) -> io::Result<()> {
++    root_directory(domain)?;
++    root_directory(leaf)?;
++    limits(domain, policy)?;
++    let named_leaf = at(domain.as_raw_fd(), BOOTSTRAP_LEAF,
++                        libc::O_RDONLY | libc::O_DIRECTORY, 0)?;
++    filesystem(&named_leaf, CGROUP2_MAGIC)?;
++    if Identity::of(leaf)? != expected || Identity::of(&named_leaf)? != expected
++        || expected.device != Identity::of(domain)?.device
++        || read_name(leaf, "cgroup.type")? != "domain\n"
++        || !read_name(leaf, "cgroup.subtree_control")?.trim().is_empty()
++    {
++        return Err(error("held bootstrap leaf identity or controller policy changed"));
++    }
++    Ok(())
++}
++/// This is intentionally after the private cgroup namespace has been sealed
++/// at android and its mounted root identity checked. Only "0" is migrated.
++pub(crate) fn enter_bootstrap(domain: &File, leaf: &File, expected: Identity,
++                             policy: &PressureRelaySpec) -> io::Result<()> {
++    validate_bootstrap_descriptor(domain, leaf, expected, policy)?;
++    let pid = unsafe { libc::getpid() };
++    if read_name(domain, "cgroup.procs")? != format!("{pid}\n") {
++        return Err(error("entry is not the sole current Android-root process"));
++    }
++    empty_descendant(leaf)?;
++    write_name(leaf, "cgroup.procs", "0\n")?;
++    validate_entry_bootstrap(domain, leaf, expected, policy)
++}
++pub(crate) fn validate_entry_bootstrap(domain: &File, leaf: &File, expected: Identity,
++                                     policy: &PressureRelaySpec) -> io::Result<()> {
++    validate_bootstrap_descriptor(domain, leaf, expected, policy)?;
++    require_bootstrap_membership(
++        &read_name(domain, "cgroup.procs")?, &read_name(leaf, "cgroup.procs")?,
++        unsafe { libc::getpid() },
++    )
++}
++fn exact_pid_bytes(bytes: &[u8], expected: libc::pid_t) -> bool {
++    if expected <= 0 || bytes.len() < 2 || bytes.last() != Some(&b'\n') || bytes[0] == b'0' {
++        return false;
++    }
++    let mut value = 0u32;
++    for byte in &bytes[..bytes.len() - 1] {
++        if !byte.is_ascii_digit() {
++            return false;
++        }
++        let Some(next) = value.checked_mul(10).and_then(|x| x.checked_add(u32::from(*byte - b'0'))) else {
++            return false;
++        };
++        value = next;
++    }
++    value == expected as u32
++}
++fn raw_directory_identity(fd: RawFd, expected: Identity) -> io::Result<()> {
++    let mut metadata = std::mem::MaybeUninit::<libc::stat>::uninit();
++    if unsafe { libc::fstat(fd, metadata.as_mut_ptr()) } != 0 {
++        return Err(io::Error::last_os_error());
++    }
++    let metadata = unsafe { metadata.assume_init() };
++    let flags = unsafe { libc::fcntl(fd, libc::F_GETFD) };
++    if metadata.st_dev as u64 != expected.device || metadata.st_ino as u64 != expected.inode
++        || metadata.st_mode & libc::S_IFMT != libc::S_IFDIR
++        || metadata.st_uid != 0 || metadata.st_gid != 0 || metadata.st_mode & 0o022 != 0
++        || flags < 0 || flags & libc::FD_CLOEXEC == 0
++    {
++        return Err(error("bootstrap held directory identity or CLOEXEC changed before init"));
++    }
++    Ok(())
++}
++fn raw_procs(fd: RawFd, bytes: &mut [u8; 33]) -> io::Result<usize> {
++    let input = unsafe { libc::openat(fd, c"cgroup.procs".as_ptr(),
++        libc::O_RDONLY | libc::O_NOFOLLOW | libc::O_CLOEXEC) };
++    if input < 0 {
++        return Err(io::Error::last_os_error());
++    }
++    let result = (|| {
++        let mut used = 0;
++        let mut interruptions = 0;
++        loop {
++            if used == bytes.len() {
++                return Err(error("bootstrap membership exceeds final-exec bound"));
++            }
++            let count = unsafe { libc::read(input, bytes[used..].as_mut_ptr().cast(), bytes.len() - used) };
++            if count < 0 {
++                let error = io::Error::last_os_error();
++                if error.kind() == io::ErrorKind::Interrupted && interruptions < 8 {
++                    interruptions += 1;
++                    continue;
++                }
++                return Err(error);
++            }
++            if count == 0 {
++                return Ok(used);
++            }
++            used += count as usize;
++        }
++    })();
++    let closed = unsafe { libc::close(input) };
++    match result {
++        Err(error) => Err(error),
++        Ok(_) if closed != 0 => Err(io::Error::last_os_error()),
++        Ok(value) => Ok(value),
++    }
++}
++/// Final callback after CPU-placement callbacks. Fixed-size stack buffers and
++/// libc descriptor syscalls only on success; no new capability is inherited.
++pub(crate) fn validate_bootstrap_before_exec(domain: RawFd, domain_id: Identity,
++                                             leaf: RawFd, leaf_id: Identity) -> io::Result<()> {
++    raw_directory_identity(domain, domain_id)?;
++    raw_directory_identity(leaf, leaf_id)?;
++    let mut root_procs = [0u8; 33];
++    let mut leaf_procs = [0u8; 33];
++    if raw_procs(domain, &mut root_procs)? != 0 {
++        return Err(error("Android root regained an internal process before init exec"));
++    }
++    let length = raw_procs(leaf, &mut leaf_procs)?;
++    if !exact_pid_bytes(&leaf_procs[..length], unsafe { libc::getpid() }) {
++        return Err(error("entry left its exact bootstrap leaf before init exec"));
++    }
++    Ok(())
++}
+ /// After CLONE_NEWCGROUP, expose only the current private domain. The outer
+ /// finite envelope is absent from this mount's namespace root.
+ pub(crate) fn mount_private_view(root: &Path, expected: Identity) -> io::Result<()> {
+@@ -479,6 +651,26 @@
+ mod tests {
+     use super::*;
+     #[test]
++    fn bootstrap_membership_rejects_root_processes_and_extra_leaf_members() {
++        require_bootstrap_membership("", "17\n", 17).unwrap();
++        for (root, leaf, pid) in [
++            ("17\n", "", 17), ("18\n", "17\n", 17),
++            ("", "17\n18\n", 17), ("", "18\n", 17),
++            ("\n", "17\n", 17), ("", "0\n", 0),
++        ] {
++            assert!(require_bootstrap_membership(root, leaf, pid).is_err());
++        }
++    }
++    #[test]
++    fn final_exec_pid_parser_rejects_extra_ambiguous_and_overflowed_members() {
++        assert!(exact_pid_bytes(b"1\n", 1));
++        assert!(exact_pid_bytes(b"2147483647\n", 2147483647));
++        for bytes in [b"".as_slice(), b"1", b"01\n", b"1\n2\n", b"0\n", b"-1\n",
++                      b"4294967297\n", b" 1\n", b"1\n\n"] {
++            assert!(!exact_pid_bytes(bytes, 1));
++        }
++    }
++    #[test]
+     fn foreign_filesystem_is_rejected_without_creating_a_cgroup() {
+         let temp = tempfile::tempdir().unwrap();
+         let root = directory(temp.path()).unwrap();
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
+@@ -9,6 +9,7 @@
+ use super::policy::{self, PressureRelaySpec};
+ use crate::CellSpec;
+ use sha2::{Digest, Sha256};
++use std::cell::Cell;
+ use std::ffi::{CString, OsString};
+ use std::fs::File;
+ use std::io::{self, Write};
+@@ -40,6 +41,8 @@
+ ];
+ const BOOTSTRAP: &str = "droidloom/lmkd-bootstrap";
+ const INIT_LINKER: &str = "/system/bin/bootstrap/linker64";
++#[derive(Clone, Copy, Eq, PartialEq)]
++enum ProjectionPhase { Fresh, Poisoned, Ready }
+ fn error(message: &'static str) -> io::Error {
+     domain::error(message)
+ }
+@@ -148,6 +151,9 @@
+ pub(crate) struct Entry {
+     channel: File,
+     domain: File,
++    bootstrap_leaf: File,
++    bootstrap_identity: Identity,
++    projection: Cell<ProjectionPhase>,
+     owner: File,
+     executable: Artifact,
+     policy: PressureRelaySpec,
+@@ -233,11 +239,16 @@
+         let barrier = Artifact::open(&policy.init_barrier, false)?;
+         let lmkd = Artifact::open(&policy.lmkd, true)?;
+         let domain_identity = Identity::of(&domain_fd)?;
++        let bootstrap_leaf = domain::open_bootstrap(&domain_fd)?;
++        let bootstrap_identity = Identity::of(&bootstrap_leaf)?;
+         domain::enter_self(&domain_fd, policy)?;
+         pidfd_alive(&owner)?;
+         Ok(Some(Self {
+             channel,
+             domain: domain_fd,
++            bootstrap_leaf,
++            bootstrap_identity,
++            projection: Cell::new(ProjectionPhase::Fresh),
+             owner,
+             executable,
+             policy: policy.clone(),
+@@ -339,20 +350,29 @@
+         if !self.prepared || self.sealed {
+             return Err(error("relay image is not prepared"));
+         }
++        if self.projection.replace(ProjectionPhase::Poisoned) != ProjectionPhase::Fresh {
++            return Err(error("relay cgroup projection is a single attempt"));
++        }
+         pidfd_alive(&self.owner)?;
+         if Identity::of(&self.domain)? != self.domain_identity {
+             return Err(error("held domain identity changed"));
+         }
+-        domain::mount_private_view(root, self.domain_identity)
++        domain::mount_private_view(root, self.domain_identity)?;
++        domain::enter_bootstrap(&self.domain, &self.bootstrap_leaf,
++                                self.bootstrap_identity, &self.policy)?;
++        self.projection.set(ProjectionPhase::Ready);
++        Ok(())
+     }
+ 
+     /// Attach only to the final /init second_stage command. No ordinary
+     /// helper may inherit these capabilities or the private opt-in variables.
+     pub(crate) fn configure_init(&mut self, command: &mut Command) -> io::Result<()> {
+-        if !self.prepared || self.sealed {
++        if !self.prepared || self.sealed || self.projection.get() != ProjectionPhase::Ready {
+             return Err(error("init release preparation reused or incomplete"));
+         }
+         self.sealed = true;
++        domain::validate_entry_bootstrap(&self.domain, &self.bootstrap_leaf,
++                                         self.bootstrap_identity, &self.policy)?;
+         require_init_command(command)?;
+         pidfd_alive(&self.owner)?;
+         self.barrier.validate(false)?;
+@@ -367,6 +387,10 @@
+             .env(INIT_ENV[4], self.policy.bootstrap_timeout_ms.to_string());
+         let control = self.channel.as_raw_fd();
+         let owner = self.owner.as_raw_fd();
++        let domain = self.domain.as_raw_fd();
++        let domain_identity = self.domain_identity;
++        let bootstrap = self.bootstrap_leaf.as_raw_fd();
++        let bootstrap_identity = self.bootstrap_identity;
+         // SAFETY: the entry is single-threaded. This pre-exec closure performs
+         // only async-signal-safe syscalls and changes no shared parent state.
+         unsafe {
+@@ -394,6 +418,8 @@
+                         "entry owner died immediately before init exec",
+                     ));
+                 }
++                domain::validate_bootstrap_before_exec(domain, domain_identity,
++                                                       bootstrap, bootstrap_identity)?;
+                 close_on_exec(control, false)
+             });
+         }
+--- a/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs
++++ b/runtime/droidloom-supervisor/src/relay_lifecycle/init_peer.rs
+@@ -400,6 +400,7 @@
+         self.process.validate_init_child(owner)?;
+         self.process.validate_namespaces(&self.namespaces)?;
+         domain.validate()?;
++        domain.validate_bootstrap_init(self.process.pid())?;
+         let root = self.process.root()?;
+         if Identity::of(&root)? != Identity::of(&self.root)? {
+             return Err(error("init root changed"));
+@@ -417,6 +418,7 @@
+         self.linker.validate(false)?;
+         barrier.validate(false)?;
+         self.process.require_preload(&preload())?;
++        domain.validate_bootstrap_init(self.process.pid())?;
+         self.process.live()
+     }
+ }

@@ -1,0 +1,56 @@
+--- r3/qa_contract.py
++++ r4/qa_contract.py
+@@ -5,8 +5,8 @@
+ import re
+ import zlib
+ 
+-PROTOCOL = 'pocket4-owned-bili-qa-v3'
+-SELF = 'org.droidloom.qa.bili.r3'
++PROTOCOL = 'pocket4-owned-bili-qa-v4'
++SELF = 'org.droidloom.qa.bili.r4'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'tv.danmaku.bili'
+ UID = 10117
+@@ -318,15 +318,31 @@
+     if not value and not ready_required:
+         return value
+     require(set(value) <= {'requested_display','selection','wait_budget_ms','ready','first','last',
+-                          'samples','waited_ms','selected_display','selected_window_id'} and
++                          'samples','waited_ms','selected_display','selected_window_id',
++                          'recheck_max_ms','sample_timings'} and
+             value.get('requested_display') == 0 and value.get('wait_budget_ms') == 2000 and
++            value.get('recheck_max_ms') == 100 and
+             value.get('selection') == 'exact-display-0-focused-application' and
+             type(value.get('ready')) is bool,'EXACT_WINDOW_OBSERVATION_SCOPE')
++    timings = value.get('sample_timings')
++    require(isinstance(timings,list) and len(timings) <= 64,'BOUNDED_WINDOW_SAMPLE_TIMINGS_REQUIRED')
++    previous_elapsed = previous_serial = -1
++    for index, row in enumerate(timings,1):
++        require(isinstance(row,dict) and set(row) == {'sample','event_serial','elapsed_ms'} and
++                type(row['sample']) is int and row['sample'] == index and
++                type(row['event_serial']) is int and row['event_serial'] >= 0 and
++                type(row['elapsed_ms']) is int and row['elapsed_ms'] >= 0 and
++                row['event_serial'] >= previous_serial and row['elapsed_ms'] >= previous_elapsed,
++                'ORDERED_METADATA_ONLY_WINDOW_SAMPLE_TIMINGS_REQUIRED')
++        previous_elapsed, previous_serial = row['elapsed_ms'], row['event_serial']
++    require(('samples' not in value and not timings) or value.get('samples') == len(timings),
++            'WINDOW_SAMPLE_COUNT_MISMATCH')
+     if ready_required:
+         require(value['ready'] is True and value.get('selected_display') == 0 and
+                 type(value.get('selected_window_id')) is int and
+                 type(value.get('samples')) is int and 1 <= value['samples'] <= 64 and
+-                type(value.get('waited_ms')) is int and 0 <= value['waited_ms'] <= 2000,
++                type(value.get('waited_ms')) is int and 0 <= value['waited_ms'] <= 2000 and
++                timings and timings[-1]['elapsed_ms'] <= value['waited_ms'],
+                 'ACTUAL_DISPLAY_ZERO_WINDOW_READINESS_REQUIRED')
+     for name in ('first','last'):
+         if name not in value:
+@@ -346,6 +362,8 @@
+                     window['display'] in row['displays'] and
+                     all(type(window[k]) is bool for k in ('focused','active','accessibility_focused')),
+                     'METADATA_ONLY_WINDOW_CENSUS_REQUIRED')
++        require(timings and {key:row[key] for key in ('sample','event_serial','elapsed_ms')} ==
++                timings[0 if name == 'first' else -1], 'WINDOW_CENSUS_TIMING_MISMATCH')
+     if ready_required:
+         require(value['first']['sample'] == 1 and value['last']['sample'] == value['samples'] and
+                 sum(window['display'] == 0 and window['type'] == 1 and window['focused'] is True

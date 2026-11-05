@@ -1,0 +1,9 @@
+# ART normal projection route — source-only checkpoint
+
+This is a new, uncompiled draft against the frozen paired builder451 source. It is not candidate07, not the actual compiled450 builder, and not an executable admission request. No Rust compilation, source projection, ART build or runtime has run for this draft.
+
+The new explicit native-generation-art-build command requires a canonical existing package work tree and a fresh absolute output, acquires the existing normal locks and recovery path, uses the normal Projection journal for ten pinned ART sources, and fixes the targets to libart-runtime and libnativebridge with Strict dependency semantics. Existing callers retain their previous wrapper with no ART flavor. Both common-defaults macros are projected together; default flavor is zero, while the separate enabled-build-only flag does not authorize runtime use. The Go/Blueprint patches are selected explicitly for this route rather than assuming the native-engine-only leaf-mode condition covers ART.
+
+Parent451 to draft462 changes exactly two existing Rust files and adds one Rust module plus ten source data files; 449 existing paths are byte-identical. The source-only expected manifest is distinct from every actual compiled/runtime manifest. The three-file Rust integration diff is separate from the full source-data diff for review.
+
+The two new Rust unit tests are written but unexecuted. Actual matching Rust compile, all original paired tests, actual full ART TU/command/dependency qualification, paired signed APEX closure and runtime lifecycle still require independent gates. App-zygote capability/preload ordering, host-native authority transitions and final native-thread exit remain unresolved. No zero-capability guard is relaxed. This draft is persisted now to avoid loss; Root must review a later concrete execution request before any remote action.

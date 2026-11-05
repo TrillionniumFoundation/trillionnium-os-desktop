@@ -1,0 +1,3 @@
+# Original candidate07 full-host result read
+
+This request reads only the exact root-owned result of host run job1a1aa4c44e6-fc05-409b. The 1MiB limit is explicit; absence, excess size, alias, wrong owner/mode/type or changing identity fail without retry. Named and held identity are compared before/after, original UTF8 bytes are hashed, and one lossless gzip+base64 envelope carries the report. No directory enumeration, evidence write, child, test, namespace or Main action occurs. Root access is only for the existing root-owned evidence. A successful read is not Android runtime admission; the unchanged qualification template must still validate the original complete result.

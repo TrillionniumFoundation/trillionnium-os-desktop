@@ -1,0 +1,130 @@
+--- readonly01/collect.py
++++ readonly02/collect.py
+@@ -81,9 +81,21 @@
+             'memory_peak':int(after['fields']['memory.peak']), 'memory_swap_peak':int(after['fields']['memory.swap.peak']),
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+-ROOT = Path('/home/alex/work/pocket4-native-generation-image-tools-readonly-01-20261105')
+-TOOLS = ('zip', 'unzip', 'debugfs', 'mke2fs', 'fsck.erofs', 'mkfs.erofs',
+-         'fakeroot', 'chown', 'setfattr')
++ROOT = Path('/home/alex/work/pocket4-native-generation-image-tools-readonly-02-20261105')
++TOOLS = {
++    'zip': ('/usr/bin/zip',),
++    'unzip': ('/usr/bin/unzip',),
++    'debugfs': ('/usr/bin/debugfs', '/usr/sbin/debugfs'),
++    'mke2fs': ('/usr/bin/mke2fs', '/usr/sbin/mke2fs'),
++    'fsck.erofs': ('/usr/bin/fsck.erofs', '/usr/sbin/fsck.erofs'),
++    'mkfs.erofs': ('/usr/bin/mkfs.erofs', '/usr/sbin/mkfs.erofs'),
++    'fakeroot': ('/usr/bin/fakeroot',),
++    'chown': ('/usr/bin/chown',),
++    'setfattr': ('/usr/bin/setfattr',),
++}
++CONTROLLED_PATH = '/usr/bin:/usr/sbin:/bin:/sbin'
++PRIOR_PATH = Path('/home/alex/work/pocket4-native-generation-image-tools-readonly-01-20261105/result.json')
++PRIOR_SHA = '85ba1d47a80f57de6ba5af983cf90d89171f7139de66a5a7136daabfbbca5a7d'
+ BACKENDS = (
+     '/usr/bin/faked', '/usr/bin/faked-sysv', '/usr/bin/faked-tcp',
+     '/usr/lib/libfakeroot.so', '/usr/lib/libfakeroot/libfakeroot.so',
+@@ -99,7 +111,7 @@
+     try:
+         resolved = path.resolve(strict=True)
+         require(any(resolved.is_relative_to(root) for root in
+-                    (Path('/usr/bin'), Path('/usr/lib'))),
++                    (Path('/usr/bin'), Path('/usr/sbin'), Path('/usr/lib'))),
+                 'resolved system input outside fixed roots: ' + str(path))
+         fd = os.open(resolved, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+     except FileNotFoundError as error:
+@@ -139,6 +151,29 @@
+         os.close(fd)
+ 
+ 
++def prior_failure():
++    fd = os.open(PRIOR_PATH, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
++    try:
++        before = os.fstat(fd)
++        require(stat.S_ISREG(before.st_mode) and before.st_uid == 1000 and
++                not (before.st_mode & 0o022) and before.st_size <= 16384,
++                'prior owned observation type/owner/bound differs')
++        raw = os.read(fd, 16385)
++        require(len(raw) == before.st_size and len(raw) <= 16384 and sha(raw) == PRIOR_SHA and
++                identity(before) == identity(os.fstat(fd)) == identity(PRIOR_PATH.lstat()),
++                'prior failure receipt changed')
++        observed = json.loads(raw)
++        require(observed['state'] == 'FAIL' and list(observed['tools']) == ['zip', 'unzip'] and
++                observed['backend_observations'] == [] and observed['commands_executed'] == 0 and
++                observed['error'] == "RuntimeError('required fixed test tool absent from controlled PATH: debugfs')",
++                'prior observation is not the recorded PATH failure')
++        return {'path': str(PRIOR_PATH), 'bytes': len(raw), 'sha256': sha(raw),
++                'held_before': identity(before), 'held_after': identity(os.fstat(fd)),
++                'named_after': identity(PRIOR_PATH.lstat()), 'state': observed['state']}
++    finally:
++        os.close(fd)
++
++
+ def execute():
+     require(os.getuid() == os.geteuid() == 1000, 'ordinary operator required')
+     for path in (ROOT.parent, *ROOT.parent.parents):
+@@ -149,7 +184,8 @@
+     report = {'schema': 1, 'state': 'RUNNING', 'started_utc': utc(),
+               'Main_actions': 0, 'commands_executed': 0, 'builds_started': 0,
+               'image_or_mount_actions': 0, 'install_update_actions': 0,
+-              'tools': {}, 'backend_observations': [],
++              'tools': {}, 'tool_candidate_observations': {}, 'missing_required_tools': [],
++              'backend_observations': [], 'controlled_selection_PATH': CONTROLLED_PATH,
+               'fakeroot_backend_selection_qualified': False,
+               'dynamic_library_closure_qualified': False,
+               'purpose': 'Read exact existing image-test tools and complete fakeroot wrapper before any tool execution.'}
+@@ -158,20 +194,35 @@
+     try:
+         resource_fd, resource_before = begin_resources()
+         report['owned_resources_before'] = resource_before
+-        for name in TOOLS:
+-            found = shutil.which(name, path='/usr/bin:/bin')
+-            require(found is not None, 'required fixed test tool absent from controlled PATH: ' + name)
+-            row = observe(found)
+-            require(row.get('absent') is not True and row['held_before'][2] & 0o111,
+-                    'fixed test tool is absent or not executable: ' + name)
+-            report['tools'][name] = row
++        report['prior_failed_observation'] = prior_failure()
++        for name, paths in TOOLS.items():
++            rows = [observe(path) for path in paths]
++            report['tool_candidate_observations'][name] = rows
++            available = [row for row in rows if row.get('absent') is not True]
++            if not available:
++                report['missing_required_tools'].append(name)
++                continue
++            selected = available[0]
++            require(selected['held_before'][2] & 0o111,
++                    'selected fixed system input is not executable: ' + name)
++            require(shutil.which(name, path=CONTROLLED_PATH) == selected['requested_path'],
++                    'controlled selection differs from the fixed observed path: ' + name)
++            report['tools'][name] = selected
+         for name in BACKENDS:
+             report['backend_observations'].append(observe(name))
++        # Missing fixed tools do not suppress the remaining readonly evidence.
++        # They still make the completed observation ineligible for execution.
++        for name, rows in report['tool_candidate_observations'].items():
++            for row in rows:
++                require(observe(row['requested_path']) == row,
++                        'fixed tool candidate changed after read: ' + name)
+         for name, row in report['tools'].items():
+-            require(shutil.which(name, path='/usr/bin:/bin') == row['requested_path'] and
+-                    observe(row['requested_path']) == row, 'system tool changed after read: ' + name)
++            require(shutil.which(name, path=CONTROLLED_PATH) == row['requested_path'],
++                    'controlled tool selection changed after read: ' + name)
+         for row in report['backend_observations']:
+             require(observe(row['requested_path']) == row, 'fixed backend observation changed after read')
++        require(prior_failure() == report['prior_failed_observation'], 'prior receipt changed during observation')
++        require(not report['missing_required_tools'], 'one or more required fixed tools remain absent')
+         report['observations_unchanged_after'] = True
+         report['state'] = 'PASS_FIXED_READ_ONLY_OBSERVATIONS'
+     except Exception as error:
+@@ -204,7 +255,7 @@
+ 
+ if __name__ == '__main__':
+     if sys.argv[1:] == []:
+-        print(json.dumps({'state': 'PLAN_ONLY', 'fixed_tool_names': TOOLS,
++        print(json.dumps({'state': 'PLAN_ONLY', 'fixed_tool_candidates': TOOLS,
+                           'fixed_backend_paths': BACKENDS, 'commands_executed': 0,
+                           'remote_actions': 0, 'requires_explicit_execute_once': True}))
+     elif sys.argv[1:] == ['--execute-once']:

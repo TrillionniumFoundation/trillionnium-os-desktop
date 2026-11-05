@@ -1,0 +1,226 @@
+{
+  "Android_executed": false,
+  "Rust_compiled": false,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/candidate/android/cgroup_view_controls.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/local-controls-01/holding-controls"
+      ],
+      "elapsed_ns": 539078047,
+      "name": "holding_controls_compile",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": false
+    },
+    {
+      "actual_cases_passed": 8,
+      "argv": [
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/local-controls-01/holding-controls"
+      ],
+      "elapsed_ns": 5059002,
+      "name": "holding_controls_run",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"case\":\"holding_domain_and_stock_tmpfs_target_accepted\",\"ok\":true,\"scope\":\"owned_files_with_filesystem_seam\"}\n{\"case\":\"premounted_native_cgroup_target_rejected\",\"ok\":true,\"scope\":\"owned_files_with_filesystem_seam\"}\n{\"case\":\"foreign_tmpfs_target_rejected\",\"ok\":true,\"scope\":\"owned_files_with_filesystem_seam\"}\n{\"case\":\"writable_holding_rejected\",\"ok\":true,\"scope\":\"owned_files_with_filesystem_seam\"}\n{\"case\":\"symlink_domain_rejected\",\"ok\":true,\"scope\":\"owned_files_with_filesystem_seam\"}\n{\"case\":\"symlink_native_target_rejected\",\"ok\":true,\"scope\":\"owned_files_with_filesystem_seam\"}\n{\"case\":\"non_cgroup_holding_view_rejected\",\"ok\":true,\"scope\":\"owned_files_with_filesystem_seam\"}\n{\"case\":\"missing_holding_preserves_errno\",\"ok\":true,\"scope\":\"owned_files_with_filesystem_seam\"}\n{\"ok\":true,\"cases\":8,\"namespace_or_mount_executed\":false}\n",
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/candidate/android/diagnostic_controls.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/local-controls-01/projection-controls"
+      ],
+      "elapsed_ns": 211445856,
+      "name": "projection_controls_compile",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": false
+    },
+    {
+      "actual_cases_passed": 7,
+      "argv": [
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/local-controls-01/projection-controls"
+      ],
+      "elapsed_ns": 2474860,
+      "name": "projection_controls_run",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"case\":\"root_group_write_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"dev_world_write_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"sockets_group_write_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"preexisting_target_rejected\",\"ok\":true}\n{\"case\":\"move_errno_survives_close_errors\",\"ok\":true}\n{\"case\":\"mounted_non_socket_rejected_with_metadata\",\"ok\":true}\n{\"case\":\"failure_line_bounded\",\"ok\":true}\n{\"ok\":true,\"owned_diagnostic_controls_passed\":7,\"Android_executed\":false,\"kernel_mount_executed\":false}\n",
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/candidate/android/protocol_controls.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/local-controls-01/protocol-controls"
+      ],
+      "elapsed_ns": 444650493,
+      "name": "protocol_controls_compile_only",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-include",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/candidate/android/close_errno_seam.h",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/candidate/android/protocol_controls.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/local-controls-01/protocol-close-errno"
+      ],
+      "elapsed_ns": 479481907,
+      "name": "close_errno_controls_compile_only",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": false
+    },
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-fPIC",
+        "-shared",
+        "-fvisibility=hidden",
+        "-Wl,--version-script=/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/candidate/android/exported.map.txt",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/candidate/android/init_relay_barrier.c",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/cgroup-handoff-pair-work-01/local-controls-01/libbarrier.host.so"
+      ],
+      "elapsed_ns": 385333728,
+      "name": "host_DSO_compile_only",
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": false
+    }
+  ],
+  "input_after": [
+    {
+      "bytes": 238,
+      "path": "Android.bp",
+      "sha256": "abc3b2e9e13ca70e1f443757b3534da3eeda50c16997b297ee3806604c386a5c"
+    },
+    {
+      "bytes": 6473,
+      "path": "cgroup_view_controls.c",
+      "sha256": "4f4522e5def6ded05f567e06993e4810cba4788bcda474e9acd1e51efb2c20e9"
+    },
+    {
+      "bytes": 364,
+      "path": "close_errno_seam.h",
+      "sha256": "cd784c248f1e4bc5e023bb7c312da6cdde74e873863d167ad62e09a114f76c49"
+    },
+    {
+      "bytes": 5414,
+      "path": "diagnostic_controls.c",
+      "sha256": "5d327dc126a67061e0a47b4b314a6e923ade76e9f440a3cc125df6d2f10436ae"
+    },
+    {
+      "bytes": 84,
+      "path": "exported.map.txt",
+      "sha256": "e5cacf61316cd57074bfcbf8117340d87e7c0b3be6208b20ca92f1b92965a74e"
+    },
+    {
+      "bytes": 23803,
+      "path": "init_relay_barrier.c",
+      "sha256": "dded59777f3dbbd86c6794a37315b878eb63417bbcdad08278ea7d8e2b0e245a"
+    },
+    {
+      "bytes": 1480,
+      "path": "init_relay_protocol.h",
+      "sha256": "b1016268f6c632307e47aa2ef4b602639ea6e3245835f90561c24ff7f36f8368"
+    },
+    {
+      "bytes": 15105,
+      "path": "protocol_controls.c",
+      "sha256": "1a9b796fb761b9c64e1a8804dc95570aaebb49cbb206b07d2c8d76995a934f1c"
+    }
+  ],
+  "input_before": [
+    {
+      "bytes": 238,
+      "path": "Android.bp",
+      "sha256": "abc3b2e9e13ca70e1f443757b3534da3eeda50c16997b297ee3806604c386a5c"
+    },
+    {
+      "bytes": 6473,
+      "path": "cgroup_view_controls.c",
+      "sha256": "4f4522e5def6ded05f567e06993e4810cba4788bcda474e9acd1e51efb2c20e9"
+    },
+    {
+      "bytes": 364,
+      "path": "close_errno_seam.h",
+      "sha256": "cd784c248f1e4bc5e023bb7c312da6cdde74e873863d167ad62e09a114f76c49"
+    },
+    {
+      "bytes": 5414,
+      "path": "diagnostic_controls.c",
+      "sha256": "5d327dc126a67061e0a47b4b314a6e923ade76e9f440a3cc125df6d2f10436ae"
+    },
+    {
+      "bytes": 84,
+      "path": "exported.map.txt",
+      "sha256": "e5cacf61316cd57074bfcbf8117340d87e7c0b3be6208b20ca92f1b92965a74e"
+    },
+    {
+      "bytes": 23803,
+      "path": "init_relay_barrier.c",
+      "sha256": "dded59777f3dbbd86c6794a37315b878eb63417bbcdad08278ea7d8e2b0e245a"
+    },
+    {
+      "bytes": 1480,
+      "path": "init_relay_protocol.h",
+      "sha256": "b1016268f6c632307e47aa2ef4b602639ea6e3245835f90561c24ff7f36f8368"
+    },
+    {
+      "bytes": 15105,
+      "path": "protocol_controls.c",
+      "sha256": "1a9b796fb761b9c64e1a8804dc95570aaebb49cbb206b07d2c8d76995a934f1c"
+    }
+  ],
+  "kind": "cgroup_handoff_pair_local_controls01",
+  "namespace_mount_or_pressure_executed": false,
+  "schema": 1,
+  "scope": "Strict C compile plus real owned files with explicit filesystem/syscall seams",
+  "success": true,
+  "transport_controls_executed": false
+}

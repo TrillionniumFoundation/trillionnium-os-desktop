@@ -1,0 +1,393 @@
+--- a/tools/droidloom-update/src/main.rs
++++ b/tools/droidloom-update/src/main.rs
+@@ -9,6 +9,7 @@
+ mod native_bridge;
+ mod native_engine;
+ mod native_generation;
++mod native_generation_art;
+ mod package;
+ mod python;
+ mod util;
+@@ -40,6 +41,19 @@
+ }
+ #[derive(Subcommand)]
+ enum Action {
++    /// Build only the paired ART libraries through the normal strict source projection.
++    /// Builds no image and does not install, activate, or enable a running component.
++    NativeGenerationArtBuild {
++        /// Existing package workspace containing aosp-source.
++        #[arg(long)]
++        work: PathBuf,
++        /// Required fresh absolute output directory, separate from aosp-source.
++        #[arg(long)]
++        out: PathBuf,
++        /// Compile the enabled ABI flavor only; runtime qualification remains separate.
++        #[arg(long)]
++        enabled_build_only: bool,
++    },
+     /// Record the exact enabled ART/engine pair from existing product files.
+     /// Does not enable a feature, build, install, or activate any component.
+     NativeGenerationPair {
+@@ -167,6 +181,9 @@
+     Ok(path)
+ }
+ fn selected_build_out(command: Option<&Action>, work: &std::path::Path) -> Result<PathBuf> {
++    if let Some(Action::NativeGenerationArtBuild { out, .. }) = command {
++        return native_generation_art::validated_output(work, out);
++    }
+     if let Some(Action::NativeEngineBuild { out: Some(out), .. }) = command {
+         let source = work.join("aosp-source");
+         if !out.is_absolute()
+@@ -271,6 +288,7 @@
+         })
+         | Some(Action::AudioApexBuild { work })
+         | Some(Action::NativeEngineBuild { work, .. })
++        | Some(Action::NativeGenerationArtBuild { work, .. })
+         | Some(Action::MinigbmBuild { work }) => Some(work.canonicalize()?),
+         _ => None,
+     };
+@@ -323,6 +341,12 @@
+     }
+     if work.join("source-projection.json").exists() {
+         android::recover(&work.join("source-projection.json"), &source)?;
++    }
++    if let Some(Action::NativeGenerationArtBuild { enabled_build_only, .. }) = args.command {
++        return android::build_native_generation_art(
++            &repo, &source, &out, &work, product, jobs,
++            native_generation_art::Flavor::from_build_only_flag(enabled_build_only),
++        );
+     }
+     if let Some(Action::TargetClosureBuild { tests, .. }) = args.command {
+         eprintln!("Building only the NativeBridge target closure; full-product validation and runtime tests remain separate.");
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -2187,8 +2187,48 @@
+     targets: &[&str],
+     dependency_mode: SoongDependencyMode,
+ ) -> Result<()> {
++    build_targets_with_art_projection(
++        repo, source, out, work, product, jobs, targets, dependency_mode, None,
++    )
++}
++
++/// Fixed ART-only build entry. Normal callers retain the exact previous wrapper.
++pub fn build_native_generation_art(
++    repo: &Path,
++    source: &Path,
++    out: &Path,
++    work: &Path,
++    product: &str,
++    jobs: usize,
++    flavor: crate::native_generation_art::Flavor,
++) -> Result<()> {
++    build_targets_with_art_projection(
++        repo, source, out, work, product, jobs,
++        crate::native_generation_art::TARGETS, SoongDependencyMode::Strict, Some(flavor),
++    )
++}
++
++fn build_targets_with_art_projection(
++    repo: &Path,
++    source: &Path,
++    out: &Path,
++    work: &Path,
++    product: &str,
++    jobs: usize,
++    targets: &[&str],
++    dependency_mode: SoongDependencyMode,
++    art_flavor: Option<crate::native_generation_art::Flavor>,
++) -> Result<()> {
+     // Reject a widened closure before materializing or projecting any source.
+     validate_soong_dependency_mode(dependency_mode, targets)?;
++    if let Some(flavor) = art_flavor {
++        if dependency_mode != SoongDependencyMode::Strict
++            || targets != crate::native_generation_art::TARGETS
++        {
++            return fail("paired ART projection requires only its fixed targets and strict dependencies");
++        }
++        crate::native_generation_art::begin_attempt(work, out, flavor)?;
++    }
+     if dependency_mode == SoongDependencyMode::NativeEngineTargetClosure {
+         crate::native_engine::begin_attempt(out, product)?;
+     }
+@@ -2226,6 +2266,9 @@
+         }
+     }
+     let mut p = Projection::new(work.join("source-projection.json"))?;
++    if let Some(flavor) = art_flavor {
++        crate::native_generation_art::project(repo, source, &mut p, flavor)?;
++    }
+     for (cwd, patch) in PATCHES {
+         p.patch(source, cwd, &repo.join(patch))?;
+     }
+@@ -2236,7 +2279,7 @@
+         p.patch(source, "build/soong", &repo.join(
+             "android/apex-compat/0007-transitive-default-missing-dependencies.patch"))?;
+     }
+-    if leaf_go_memory_mode(dependency_mode) {
++    if leaf_go_memory_mode(dependency_mode) || art_flavor.is_some() {
+         p.patch(source, "build/soong", &repo.join(
+             "android/apex-compat/0008-soong-leaf-go-memory-budget.patch"))?;
+         p.patch(source, "build/blueprint", &repo.join(
+@@ -2575,6 +2618,12 @@
+     copy(&init.path().join("rootdir/init.rc"), &work.join("init.rc"))?;
+     p.stabilize_all()?;
+     let selected_targets = selected_soong_targets(dependency_mode, targets, out, product)?;
++    if let Some(flavor) = art_flavor {
++        crate::native_generation_art::write_inputs(
++            out, flavor, &selected_targets,
++            serde_json::to_value(p.effective_inventory(repo, source)?)?,
++        )?;
++    }
+     let engine_inputs = if dependency_mode == SoongDependencyMode::NativeEngineTargetClosure {
+         Some(crate::native_engine::engine_build_inputs(
+             repo, source, &vendor, work, out, &native_bridge_source,
+@@ -2620,6 +2669,9 @@
+     let result = run_build(&mut cmd);
+     p.restore()?;
+     result?;
++    if let Some(flavor) = art_flavor {
++        crate::native_generation_art::write_command_completion(out, flavor)?;
++    }
+     if let Some(inputs) = engine_inputs {
+         crate::native_engine::write_engine_build_receipt(source, out, product, inputs)?;
+     }
+--- /dev/null
++++ b/tools/droidloom-update/src/native_generation_art.rs
+@@ -0,0 +1,236 @@
++//! Explicit build-only projection for the paired ART generation ABI.
++//!
++//! This route preserves the normal source lock, projection journal and strict
++//! dependency semantics. It does not build an APEX, install artifacts, or grant
++//! runtime readiness. The caller must separately qualify the actual compile
++//! commands, dependency closure, linked artifacts and lifecycle behavior.
++use crate::util::*;
++use serde::Serialize;
++use sha2::{Digest, Sha256};
++use std::fs::{self, OpenOptions};
++use std::io::Write;
++use std::os::unix::fs::MetadataExt;
++use std::path::{Component, Path, PathBuf};
++
++pub const TARGETS: &[&str] = &["libart-runtime", "libnativebridge"];
++const INPUT_ROOT: &str = "android/native-generation-art/source";
++const MACRO_ENABLED: &str = "-DDROIDLOOM_NATIVE_GENERATION_RUNTIME=1";
++const MACRO_DISABLED: &str = "-DDROIDLOOM_NATIVE_GENERATION_RUNTIME=0";
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
++pub enum Flavor {
++    Disabled,
++    EnabledBuildOnly,
++}
++impl Flavor {
++    pub fn from_build_only_flag(enabled: bool) -> Self {
++        if enabled { Self::EnabledBuildOnly } else { Self::Disabled }
++    }
++    fn value(self) -> u8 {
++        match self { Self::Disabled => 0, Self::EnabledBuildOnly => 1 }
++    }
++}
++
++#[derive(Clone, Copy, Serialize)]
++struct Input {
++    path: &'static str,
++    bytes: usize,
++    sha256: &'static str,
++}
++const INPUTS: &[Input] = &[
++    Input { path: "art/libnativebridge/Android.bp", bytes: 2840, sha256: "33ea5fb3bdcfe55c038ef5599b08fb643276aa50fe05a8757e351bf7478f7e74" },
++    Input { path: "art/libnativebridge/droidloom_generation.cc", bytes: 2462, sha256: "1e43381bdb0eba44777317bb1372346eca99322139c5b2662932724fdc82aa68" },
++    Input { path: "art/libnativebridge/droidloom_generation.h", bytes: 410, sha256: "28facfdf31818b2dd7e4f08b3ca0359dae0e5fdb2f5b243dc7455ac3edd966fe" },
++    Input { path: "art/libnativebridge/include/nativebridge/droidloom_generation_protocol.h", bytes: 1110, sha256: "913d7a0dd717ff9d697bc926906958029b1be7ba9fb612b57218bc40fe6e27dd" },
++    Input { path: "art/libnativebridge/include/nativebridge/native_bridge.h", bytes: 20874, sha256: "664dd6ed2a71d90f4bc3f84ab621d7ebbdedc148284c452d6ca2f8e8d9888760" },
++    Input { path: "art/libnativebridge/libnativebridge.map.txt", bytes: 1062, sha256: "5b64217bcc16eba7083942783b920da59de9e16255ba5a3adb92e8ce7428de31" },
++    Input { path: "art/libnativebridge/native_bridge.cc", bytes: 24851, sha256: "4fc33d917915886fccabaf76dbf7a6bee949cf08cd6b8ac9be429dc8614706a4" },
++    Input { path: "art/runtime/Android.bp", bytes: 47356, sha256: "deac350bd467f39dddb657c8a137ef7800998d4039381045875cf41fd8af8cf9" },
++    Input { path: "art/runtime/native_bridge_art_interface.cc", bytes: 5919, sha256: "d71e569e0f782ed461bdc167c6228e35414a02b209072b8cba9b7534bc8b3a5a" },
++    Input { path: "art/runtime/runtime.cc", bytes: 148153, sha256: "ec7105503380ec505dbe58b822a4ac46edb48311e6093eb3e396d0768e111bc3" },
++];
++
++fn digest(data: &[u8]) -> String {
++    format!("{:x}", Sha256::digest(data))
++}
++
++fn real_existing_parents(path: &Path) -> Result<()> {
++    for parent in path.ancestors().skip(1) {
++        let metadata = fs::symlink_metadata(parent)?;
++        if !metadata.is_dir() || metadata.file_type().is_symlink() {
++            return fail("paired ART input/output parent is not a real directory");
++        }
++    }
++    Ok(())
++}
++
++pub fn validated_output(work: &Path, out: &Path) -> Result<PathBuf> {
++    let source = work.join("aosp-source");
++    if !out.is_absolute()
++        || out.components().any(|part| matches!(part, Component::CurDir | Component::ParentDir))
++        || out.starts_with(&source) || source.starts_with(out)
++    {
++        return fail("paired ART output must be fresh, absolute and separate from aosp-source");
++    }
++    real_existing_parents(out)?;
++    match fs::symlink_metadata(out) {
++        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(out.to_owned()),
++        Err(error) => Err(error.into()),
++        Ok(_) => fail("paired ART output already exists; a new flavor/attempt requires a fresh path"),
++    }
++}
++
++fn create_record(path: &Path, value: serde_json::Value) -> Result<()> {
++    let mut file = OpenOptions::new().write(true).create_new(true).open(path)?;
++    file.write_all(&serde_json::to_vec_pretty(&value)?)?;
++    file.write_all(b"\n")?;
++    file.sync_all()?;
++    Ok(())
++}
++
++pub fn begin_attempt(work: &Path, out: &Path, flavor: Flavor) -> Result<()> {
++    validated_output(work, out)?;
++    fs::create_dir(out)?;
++    create_record(&out.join("droidloom-art-generation-attempt.json"), serde_json::json!({
++        "schema": 1, "state": "CLAIMED_BEFORE_SOURCE_PROJECTION", "flavor": flavor,
++        "macro_value": flavor.value(), "targets": TARGETS, "dependency_mode": "Strict",
++        "source_projection_journal": work.join("source-projection.json"),
++        "installation_performed": false, "runtime_enabled": false,
++        "full_tu_qualification_verified": false,
++    }))
++}
++
++fn frozen_inputs(repo: &Path, flavor: Flavor) -> Result<Vec<(PathBuf, Vec<u8>)>> {
++    let mut values = Vec::with_capacity(INPUTS.len());
++    for input in INPUTS {
++        let relative = Path::new(input.path);
++        if relative.is_absolute()
++            || relative.components().any(|part| !matches!(part, Component::Normal(_)))
++            || !input.path.starts_with("art/")
++        {
++            return fail("invalid fixed paired ART source table");
++        }
++        let path = repo.join(INPUT_ROOT).join(relative);
++        real_existing_parents(&path)?;
++        let before = fs::symlink_metadata(&path)?;
++        if !before.is_file() || before.file_type().is_symlink()
++            || before.len() != input.bytes as u64 || input.bytes > 1024 * 1024
++        {
++            return fail("paired ART source type, size or fixed bound differs");
++        }
++        let mut data = fs::read(&path)?;
++        let after = fs::symlink_metadata(&path)?;
++        if (before.dev(), before.ino(), before.len(), before.mtime(), before.mtime_nsec(),
++            before.ctime(), before.ctime_nsec())
++            != (after.dev(), after.ino(), after.len(), after.mtime(), after.mtime_nsec(),
++                after.ctime(), after.ctime_nsec())
++            || digest(&data) != input.sha256
++        {
++            return fail("paired ART source identity or frozen bytes changed");
++        }
++        if input.path.ends_with("/Android.bp") {
++            let text = std::str::from_utf8(&data)?;
++            if text.matches(MACRO_ENABLED).count() != 1 || text.contains(MACRO_DISABLED) {
++                return fail("paired ART common-defaults macro does not match its frozen source");
++            }
++            if flavor == Flavor::Disabled {
++                data = text.replacen(MACRO_ENABLED, MACRO_DISABLED, 1).into_bytes();
++            }
++        }
++        values.push((relative.to_owned(), data));
++    }
++    if values.len() != 10 {
++        return fail("paired ART source table is incomplete");
++    }
++    Ok(values)
++}
++
++pub fn project(
++    repo: &Path,
++    source: &Path,
++    projection: &mut crate::android::Projection,
++    flavor: Flavor,
++) -> Result<()> {
++    // Read and verify the whole immutable input set before the first mutation.
++    // Every write uses the normal journal and is restored by that same owner.
++    let inputs = frozen_inputs(repo, flavor)?;
++    for (relative, data) in inputs {
++        projection.put(&source.join(relative), data)?;
++    }
++    Ok(())
++}
++
++pub fn write_inputs(
++    out: &Path,
++    flavor: Flavor,
++    selected_targets: &[PathBuf],
++    projection_inventory: serde_json::Value,
++) -> Result<()> {
++    let selected: Vec<_> = selected_targets.iter().map(|path| path.to_str()).collect();
++    if selected != TARGETS.iter().map(|name| Some(*name)).collect::<Vec<_>>() {
++        return fail("paired ART resolved target list was widened");
++    }
++    create_record(&out.join("droidloom-art-generation-inputs.json"), serde_json::json!({
++        "schema": 1, "flavor": flavor, "macro_value": flavor.value(),
++        "targets": selected_targets, "dependency_mode": "Strict",
++        "frozen_art_inputs": INPUTS, "source_projection": projection_inventory,
++        "required_actual_compile_sources": ["art/runtime/runtime.cc",
++            "art/runtime/native_bridge_art_interface.cc", "art/libnativebridge/native_bridge.cc",
++            "art/libnativebridge/droidloom_generation.cc"],
++        "required_matching_defaults": ["libart-runtime_common_defaults", "libnativebridge-defaults"],
++        "full_tu_qualification_verified": false,
++        "complete_APEX_signature_and_runtime_pair_verified": false,
++    }))
++}
++
++pub fn write_command_completion(out: &Path, flavor: Flavor) -> Result<()> {
++    // A normal build exit is deliberately not called an artifact/runtime gate.
++    // Exact command/dependency/linked-output qualification remains external.
++    create_record(&out.join("droidloom-art-generation-command.json"), serde_json::json!({
++        "schema": 1, "state": "NORMAL_BUILD_COMMAND_SUCCEEDED", "flavor": flavor,
++        "source_projection_restored": true, "full_tu_qualification_verified": false,
++        "actual_enabled_ART_lifecycle_validated": false,
++        "installation_performed": false, "runtime_enabled": false,
++    }))
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    #[test]
++    fn output_rejects_source_overlap_alias_and_reuse() {
++        let temp = tempfile::tempdir().unwrap();
++        let work = temp.path().join("work");
++        fs::create_dir_all(work.join("aosp-source")).unwrap();
++        assert!(validated_output(&work, Path::new("relative")).is_err());
++        assert!(validated_output(&work, &work).is_err());
++        assert!(validated_output(&work, &work.join("aosp-source/out")).is_err());
++        let output = temp.path().join("out");
++        assert_eq!(validated_output(&work, &output).unwrap(), output);
++        fs::create_dir(&output).unwrap();
++        assert!(validated_output(&work, &output).is_err());
++        let alias = temp.path().join("alias");
++        std::os::unix::fs::symlink(&output, &alias).unwrap();
++        assert!(validated_output(&work, &alias.join("new")).is_err());
++    }
++
++    #[test]
++    fn records_are_create_only_and_never_grant_runtime_readiness() {
++        let temp = tempfile::tempdir().unwrap();
++        let work = temp.path().join("work");
++        fs::create_dir(&work).unwrap();
++        let out = temp.path().join("art-out");
++        begin_attempt(&work, &out, Flavor::EnabledBuildOnly).unwrap();
++        let claim = out.join("droidloom-art-generation-attempt.json");
++        let original = fs::read(&claim).unwrap();
++        assert!(begin_attempt(&work, &out, Flavor::EnabledBuildOnly).is_err());
++        assert_eq!(fs::read(&claim).unwrap(), original);
++        write_command_completion(&out, Flavor::EnabledBuildOnly).unwrap();
++        assert!(write_command_completion(&out, Flavor::EnabledBuildOnly).is_err());
++        let result: serde_json::Value = serde_json::from_slice(
++            &fs::read(out.join("droidloom-art-generation-command.json")).unwrap()).unwrap();
++        assert_eq!(result["full_tu_qualification_verified"], false);
++        assert_eq!(result["runtime_enabled"], false);
++    }
++}

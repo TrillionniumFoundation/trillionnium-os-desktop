@@ -1,0 +1,237 @@
+--- normal07-03/plan.json
++++ normal09-01/plan.json
+@@ -1,23 +1,23 @@
+ {
+   "schema": 1,
+-  "kind": "owned-real-producer08-normal01-detached01",
+-  "scope": "REAL_OWNER_ABI2_DETACHED_PROJECTION_FIRST_ACTIVE_ORIGINAL_RETIREMENT",
+-  "attempt_nonce": "1263e33ed55e57b4ec42ead6afd051ed1b8265e9bead44653b8a87e70ca74498",
+-  "package": "/opt/p4-owner08-normal-20261105-01",
+-  "state": "/opt/p4-owner08-normal-20261105-01-state",
+-  "unit": "p4-owner08-normal-20261105-01.service",
+-  "description": "Pocket4 Owner08 ABI2 NORMAL01 1263e33ed55e57b4ec42ead6afd051ed1b8265e9bead44653b8a87e70ca74498",
++  "kind": "owned-real-producer09-normal01-cgroup-handoff01",
++  "scope": "REAL_OWNER_ABI3_CGROUP_HANDOFF_FIRST_ACTIVE_ORIGINAL_RETIREMENT",
++  "attempt_nonce": "03f75dd099814dce95d8367beac8b10bdc03c90af3bbbc8e3af91986679c02f7",
++  "package": "/opt/p4-owner09-normal-20261105-01",
++  "state": "/opt/p4-owner09-normal-20261105-01-state",
++  "unit": "p4-owner09-normal-20261105-01.service",
++  "description": "Pocket4 Owner09 ABI3 NORMAL01 03f75dd099814dce95d8367beac8b10bdc03c90af3bbbc8e3af91986679c02f7",
+   "control_socket": "/run/p4-owner07-control.sock",
+-  "claim_store_backing": "/opt/p4-owner08-normal-20261105-01-state/claims",
+-  "canonical_spec_sha256": "0c97655923def5b22a7376d8e4e1c91a681123ffa910124854cdb5359567dd0d",
++  "claim_store_backing": "/opt/p4-owner09-normal-20261105-01-state/claims",
++  "canonical_spec_sha256": "155a1dd601f7a46a6afac8517618d48b81765f66cc941e55576b055609b2804b",
+   "spec": {
+-    "host_uid": 61280,
++    "host_uid": 61281,
+     "subordinate_uids": {
+-      "start": 20300000,
++      "start": 20400000,
+       "count": 100000
+     },
+     "subordinate_gids": {
+-      "start": 20300000,
++      "start": 20400000,
+       "count": 100000
+     },
+     "image_dir": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5",
+@@ -211,13 +211,13 @@
+         "target": "/droidloom/wifi-nohw"
+       }
+     ],
+-    "data_dir": "/opt/p4-owner08-normal-20261105-01-state/data",
+-    "runtime_dir": "/run/droidloom/cells/u61280",
++    "data_dir": "/opt/p4-owner09-normal-20261105-01-state/data",
++    "runtime_dir": "/run/droidloom/cells/u61281",
+     "render_node": "/dev/dri/renderD128",
+     "graphics_backend": "drm_media_dma_heap",
+     "denial_socket": "/run/p4-owner07-user/droidloom/native-bridge.sock",
+     "pressure_relay": {
+-      "cgroup_parent": "/sys/fs/cgroup/system.slice/p4-owner08-normal-20261105-01.service/domains",
++      "cgroup_parent": "/sys/fs/cgroup/system.slice/p4-owner09-normal-20261105-01.service/domains",
+       "memory_max_bytes": 4294967296,
+       "memory_high_bytes": 3758096384,
+       "memory_swap_max_bytes": 0,
+@@ -229,20 +229,20 @@
+       "lmkd_uid": 1069,
+       "lmkd_gid": 1069,
+       "broker": {
+-        "path": "/opt/p4-owner08-normal-20261105-01/bin/droidloom-psi-owner",
++        "path": "/opt/p4-owner09-normal-20261105-01/bin/droidloom-psi-owner",
+         "sha256": "09ee190013f27084ce9d2f6bbcc8098c5dd124ad7781ac1ecd7ab23e5cf667de"
+       },
+       "entry_supervisor": {
+-        "path": "/opt/p4-owner08-normal-20261105-01/bin/droidloom-supervisor",
+-        "sha256": "bac973049a590fc18dc3c8e9ee441df1b3724afc5d1c85a3b29c74ebcf1c4765"
++        "path": "/opt/p4-owner09-normal-20261105-01/bin/droidloom-supervisor",
++        "sha256": "7b50d8228e5a3c174521f26d1d31525706fa8929e5f7c11fbb5c89b1bb9bae10"
+       },
+       "lmkd": {
+-        "path": "/opt/p4-owner08-normal-20261105-01/bin/lmkd",
++        "path": "/opt/p4-owner09-normal-20261105-01/bin/lmkd",
+         "sha256": "bd794b7b59d1047523cea6174bcd230c75aa2eececd1900b23f3f33a86061dde"
+       },
+       "init_barrier": {
+-        "path": "/opt/p4-owner08-normal-20261105-01/lib/libdroidloom_init_relay.so",
+-        "sha256": "74273805ab09605c6f9203f7541e21e83b6aa58ab327307b38e03a04d456ca24"
++        "path": "/opt/p4-owner09-normal-20261105-01/lib/libdroidloom_init_relay.so",
++        "sha256": "3af46c2dd6e833b8ae40991d2c7325c093ed1fc6bd28918300a10ccf04329822"
+       },
+       "init_sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73",
+       "init_linker_sha256": "b8f4ca47cfc88a815554d2c37cb9f56c91c715491493b2b48a8fd781fa625a9f",
+@@ -473,43 +473,43 @@
+     }
+   },
+   "actual_compile_receipt": {
+-    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/producer08-compile01/compile-result.json",
+-    "bytes": 39987,
+-    "sha256": "0e77456cf7145dd3f81cbed8ccf0e17afe855963c712fc99171733541c932f87"
++    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/producer09-cgroup-compile01/result.json",
++    "bytes": 39858,
++    "sha256": "415c12d44b3f2c568c8914126f61c4844b6a1238a565eabc488b8145c64eaae1"
+   },
+-  "actual_ordinary_receipt_sha256": "87023d3f10b73b611d45abf1aa6b8cab91be48346c52e7404a9335bedeb82881",
++  "actual_ordinary_receipt_sha256": "cfe09d2e28094bfb637376f1fd0aebf81f85c90904b54577dd21e9eefd69f896",
+   "actual_original_rc_receipt_sha256": "7b54441ed291c0b2ddd50b8230d069591fbf1593935761198aa0920cc4bf1b9c",
+   "artifacts": {
+     "droidloomd": {
+-      "bytes": 6480584,
+-      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-supervisor#0.1.0",
+-      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-supervisor/src/bin/droidloomd.rs",
++      "bytes": 6489320,
++      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/candidate/runtime/droidloom-supervisor#0.1.0",
++      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/candidate/runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+       "device": 66306,
+-      "inode": 35923998,
++      "inode": 35956169,
+       "mode": 448,
+-      "path": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/target/debug/droidloomd",
+-      "sha256": "d4be46138cf5f31c815c84713307f1427db019300e7901c8d6662c7dc1d06184",
++      "path": "/home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/target/debug/droidloomd",
++      "sha256": "d4a4c6e4997b10972ff4b79a4224ad109a7ab214613faeaf4fce871da210e9f9",
+       "destination": "bin/droidloomd"
+     },
+     "droidloom-supervisor": {
+-      "bytes": 6496800,
+-      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-supervisor#0.1.0",
+-      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-supervisor/src/main.rs",
++      "bytes": 6524096,
++      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/candidate/runtime/droidloom-supervisor#0.1.0",
++      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/candidate/runtime/droidloom-supervisor/src/main.rs",
+       "device": 66306,
+-      "inode": 35924008,
++      "inode": 35956179,
+       "mode": 448,
+-      "path": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/target/debug/droidloom-supervisor",
+-      "sha256": "bac973049a590fc18dc3c8e9ee441df1b3724afc5d1c85a3b29c74ebcf1c4765",
++      "path": "/home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/target/debug/droidloom-supervisor",
++      "sha256": "7b50d8228e5a3c174521f26d1d31525706fa8929e5f7c11fbb5c89b1bb9bae10",
+       "destination": "bin/droidloom-supervisor"
+     },
+     "droidloom-psi-owner": {
+       "bytes": 1231392,
+-      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-pressure-relay#0.1.0",
+-      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/candidate/runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs",
++      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/candidate/runtime/droidloom-pressure-relay#0.1.0",
++      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/candidate/runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs",
+       "device": 66306,
+-      "inode": 35924012,
++      "inode": 35956185,
+       "mode": 448,
+-      "path": "/home/alex/work/pocket4-supervisor-lmkd-projection-r11-build-08-01/target/debug/droidloom-psi-owner",
++      "path": "/home/alex/work/pocket4-supervisor-lmkd-cgroup-r11-build-09-01/target/debug/droidloom-psi-owner",
+       "sha256": "09ee190013f27084ce9d2f6bbcc8098c5dd124ad7781ac1ecd7ab23e5cf667de",
+       "destination": "bin/droidloom-psi-owner"
+     },
+@@ -520,11 +520,11 @@
+       "destination": "bin/lmkd"
+     },
+     "init-barrier": {
+-      "path": "/opt/p4-init-socket-projection-20261105-build-01/libdroidloom_init_relay.so",
+-      "bytes": 22832,
+-      "sha256": "74273805ab09605c6f9203f7541e21e83b6aa58ab327307b38e03a04d456ca24",
++      "path": "/opt/p4-init-cgroup-handoff-20261105-build-01/libdroidloom_init_relay.so",
++      "bytes": 25360,
++      "sha256": "3af46c2dd6e833b8ae40991d2c7325c093ed1fc6bd28918300a10ccf04329822",
+       "device": 66306,
+-      "inode": 44179248,
++      "inode": 44181713,
+       "mode": 448,
+       "destination": "lib/libdroidloom_init_relay.so"
+     }
+@@ -1476,38 +1476,52 @@
+     "/usr/bin/sway": "5a4c54c1bfbb2fb6fc190e817222c2b10bbec71e030c717f22608a2fae91bdd4",
+     "/usr/sbin/mkfs.ext4": "e42e49656dfc308efeed86f9bfad7746fc22ad1d4a3b0d508b5dba7a4b9a904f"
+   },
+-  "projection_build_receipt_sha256": "b74dabc8c2cd8abcb4efe7de2cd35a95ec9ee5b29f364d33f055c0cd305972cd",
+-  "paired_projection_source_manifest_sha256": "c2cc6b709c503e7dc5d273e9e400665356e7c0654adf3b828838870eb8a06891",
+-  "init_protocol_abi": 2,
+-  "entry_abi": "droidloom-relay-entry-v2",
++  "projection_build_receipt_sha256": "718b131c94126d6d7f9df30a2f164e8f85335fc027a2db3101b0e5904c291b64",
++  "paired_projection_source_manifest_sha256": "64200d271f96217fbdb8518960250661dff4211dc62fa94a575c165eedd88de5",
++  "init_protocol_abi": 3,
++  "entry_abi": "droidloom-relay-entry-v3",
+   "earlier_failure_chain": {
+-    "predecessor_failure": {
+-      "stdout_sha256": "8921a665badde77731239e59c1a823ce27318d7ef42e6d8d204a6088dbad707e",
+-      "reconstructed_report_sha256": "d3876c6061cfaa3c9d55b1e302dd432768f8e1268e609f79c06b63a7518107bc",
+-      "attempt_nonce": "021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
++    "earlier": {
++      "predecessor_failure": {
++        "stdout_sha256": "8921a665badde77731239e59c1a823ce27318d7ef42e6d8d204a6088dbad707e",
++        "reconstructed_report_sha256": "d3876c6061cfaa3c9d55b1e302dd432768f8e1268e609f79c06b63a7518107bc",
++        "attempt_nonce": "021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
++        "replayed": false,
++        "runtime_executed": false,
++        "remote_prepared_file_written": false,
++        "observed_boundary": "prepare fixed scope guard rejected before owned root creation"
++      },
++      "earlier_runtime_failure": {
++        "runtime_sha256": "26f19099192d0bfd76740c535f30598c32e17718da58b9fbe63d134bfe5abd19",
++        "log_collection_sha256": "e33d5669498e7f290b3003913646f888d0e866d40c47d1f13daf7f062656346a",
++        "attempt_nonce": "06ad67978c234fe35388a364f82523aadc8dc25755030cb61ee88128b9ca5979",
++        "replayed": false,
++        "observed_boundary": "init_hello,broker_ready,init_project_sent; failed before PROJECTED; exact cleanup passed"
++      }
++    },
++    "previous": {
++      "runtime_sha256": "b836404cc5011662239706418921758a4380b9c21d41534783f7fa64c8dfda7e",
++      "log_collection_sha256": "3d03b77dc6b929974eb1e53452b4d6309db43c8d1045feb693ddfdded93281fc",
++      "attempt_nonce": "65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
+       "replayed": false,
+-      "runtime_executed": false,
+-      "remote_prepared_file_written": false,
+-      "observed_boundary": "prepare fixed scope guard rejected before owned root creation"
+-    },
+-    "earlier_runtime_failure": {
+-      "runtime_sha256": "26f19099192d0bfd76740c535f30598c32e17718da58b9fbe63d134bfe5abd19",
+-      "log_collection_sha256": "e33d5669498e7f290b3003913646f888d0e866d40c47d1f13daf7f062656346a",
+-      "attempt_nonce": "06ad67978c234fe35388a364f82523aadc8dc25755030cb61ee88128b9ca5979",
+-      "replayed": false,
+-      "observed_boundary": "init_hello,broker_ready,init_project_sent; failed before PROJECTED; exact cleanup passed"
++      "observed_boundary": "actual constructor project-bind-mount errno=22 after HELLO/READY/PROJECT; no ACTIVE",
++      "exact_cleanup_passed": true
+     }
+   },
+   "predecessor_failure": {
+-    "runtime_sha256": "b836404cc5011662239706418921758a4380b9c21d41534783f7fa64c8dfda7e",
+-    "log_collection_sha256": "3d03b77dc6b929974eb1e53452b4d6309db43c8d1045feb693ddfdded93281fc",
+-    "attempt_nonce": "65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
++    "runtime_sha256": "027848bec17ae20259e3ab2ddd8637bc820608b7f62e580c06b019f0e9ff8f16",
++    "log_collection_sha256": "0d3a5ced4144310fed7650b4f31e14dcf1fd17df620e9c7b2b0c31fa408faef4",
++    "attempt_nonce": "1263e33ed55e57b4ec42ead6afd051ed1b8265e9bead44653b8a87e70ca74498",
+     "replayed": false,
+-    "observed_boundary": "actual constructor project-bind-mount errno=22 after HELLO/READY/PROJECT; no ACTIVE",
++    "observed_boundary": "actual ABI2 HELLO/PROJECTED/COMMIT/DONE completed; init exited SIGHUP before ACTIVE; old kernel journal sender/cause unproved",
+     "exact_cleanup_passed": true
+   },
+   "mechanism_evidence": {
+     "report_sha256": "4a6f12bac1b20679596f7e6b2484662adaa90299c823bd957e24e2919051b4a6",
+     "scope": "owned host shared-initial-userns distinct-mntns socket projection; not production constructor"
++  },
++  "cgroup_mount_mechanism_evidence": {
++    "report_sha256": "b634140f6554cf017763891f55b737e6013461d641b33de75e346c9e9409f9c9",
++    "scope": "owned shared-initial-userns/new-cgroup-mntns first/repeated/fresh mount with exact cleanup; not old Owner08 sender attribution"
+   }
+ }

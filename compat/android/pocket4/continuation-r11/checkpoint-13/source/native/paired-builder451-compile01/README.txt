@@ -1,0 +1,5 @@
+Actual-bound paired builder451 source and 22-test compile-only request. No Main, Android, ART or full-engine action.
+The 3-edit/1-addition Rust source delta is unchanged from frozen next01. Existing 7 projection tests and 15 paired-record/image tests remain required. The 5 image tests use real ext4/erofs/zip/fakeroot tools on disposable ordinary test bytes; no platform APEX signature or enabled lifecycle is claimed.
+Reader02 binds nine actual tools and four selected fakeroot backend/interpreter inputs. Fixed sed/cut/cat are new held root-owned observations before execution and are recorded honestly as such. Controlled test PATH includes actual /usr/sbin; no inherited loader/fakeroot state. Actual dynamic closure and uutils chown behavior must pass.
+Only the exact fakeroot metadata test may waitpid its one adopted daemon for up to 2 seconds, without signals. An alive daemon, unexpected status or extra child remains a failure; final forced cleanup never produces PASS.
+Root alone schedules the exact request after review; no remote action was performed while generating this freeze.

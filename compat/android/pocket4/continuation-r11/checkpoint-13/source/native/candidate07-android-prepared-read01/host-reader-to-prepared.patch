@@ -1,0 +1,27 @@
+--- host/read_result.py
++++ prepared/read_prepared.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Read one root-owned original host-suite result; no files are written."""
++"""Read one root-owned actual Android preparation; no files are written."""
+ import base64
+ import gzip
+ import hashlib
+@@ -8,7 +8,7 @@
+ import stat
+ import sys
+ 
+-PATH = "/home/alex/work/pocket4-signal-host-candidate-combined07-9b4f271386ac/result.json"
++PATH = "/home/alex/work/pocket4-signal-canary-combined07-9b4f271386ac6d2d/prepared.json"
+ MAXIMUM = 1024 * 1024
+ 
+ 
+@@ -59,7 +59,7 @@
+         need(report["named_before"] == report["held_before"] ==
+              report["held_after"] == report["named_after"] and len(raw) == before.st_size,
+              "original result changed during the held read")
+-        report.update(state="ORIGINAL_HOST_RESULT_READ", bytes=len(raw),
++        report.update(state="ORIGINAL_ANDROID_PREPARATION_READ", bytes=len(raw),
+                       sha256=hashlib.sha256(raw).hexdigest(), text=raw.decode("utf-8"),
+                       original_file_modified=False, runtime_admitted=False)
+         code = 0

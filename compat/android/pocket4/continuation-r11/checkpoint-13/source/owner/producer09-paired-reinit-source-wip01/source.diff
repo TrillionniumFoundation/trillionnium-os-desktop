@@ -1,0 +1,601 @@
+--- preimage/android-r6/lmkd.cpp
++++ candidate/android-r6/lmkd.cpp
+@@ -608,7 +608,7 @@
+ static long page_k; /* page size in kB */
+ 
+ static bool update_props();
+-static bool init_monitors();
++static bool init_monitors(bool retain_cell_relay = false);
+ static void destroy_monitors();
+ static void init_memevent();
+ 
+@@ -1623,15 +1623,22 @@
+         /* This command code is NOT expected at all */
+         ALOGE("Received unexpected command code %d", cmd);
+         break;
+-    case LMK_UPDATE_PROPS:
++    case LMK_UPDATE_PROPS: {
+         if (nargs != 0)
+             goto wronglen;
+         result = -1;
+-        if (update_props()) {
++        // Suspend every relay effect before update_props mutates policy globals.
++        // Reuse only the live original enrollment with identical PSI settings.
++        const bool retain_cell_relay = cell_relay_required && monitors_initialized;
++        const bool revoked_cell_relay = cell_relay_required && !monitors_initialized &&
++                                        cell_relay_session.enrollment_attempted();
++        if (retain_cell_relay) cell_memory_reader.ClearHighEvidence();
++        if (!revoked_cell_relay &&
++            (!retain_cell_relay || cell_relay_session.BeginPolicyUpdate()) && update_props()) {
+             if (!use_inkernel_interface && monitors_initialized) {
+-                /* Reinitialize monitors to apply new settings */
+-                destroy_monitors();
+-                if (init_monitors()) {
++                /* Direct PSI retains the original destroy/recreate behavior. */
++                if (!retain_cell_relay) destroy_monitors();
++                if (init_monitors(retain_cell_relay)) {
+                     result = 0;
+                 }
+             } else {
+@@ -1652,10 +1659,12 @@
+             ALOGI("Properties reinitilized");
+         } else {
+             /* New settings can't be supported, crash to be restarted */
++            if (cell_relay_required) destroy_monitors();
+             ALOGE("New configuration is not supported. Exiting...");
+             exit(1);
+         }
+         break;
++    }
+     case LMK_START_MONITORING:
+         if (nargs != 0)
+             goto wronglen;
+@@ -3706,17 +3715,12 @@
+            (info->handler == cell_relay_event || info->handler == cell_relay_control_event);
+ }
+ 
+-static bool init_cell_relay_monitors() {
++static bool init_cell_relay_monitors(bool retain_existing) {
+     cell_memory::Snapshot snapshot{};
+     cell_memory::ScopeIdentity identity{};
+     cell_relay::EnrollmentRequest request{};
+-    if (!cell_memory_enabled || psi_window_size_ms < 500 || psi_window_size_ms > 10000 ||
+-        !cell_memory_reader.ReadScoped(&snapshot, &identity) ||
+-        !cell_relay::FreshRequestNonce(&request.nonce)) return false;
+-    request.cgroup_device = identity.device;
+-    request.cgroup_inode = identity.inode;
+-    request.budget = cell_relay::BindBudget(snapshot.max, snapshot.high, snapshot.swap_max,
+-                                           snapshot.high_unlimited, snapshot.swap_unlimited);
++    if (!cell_memory_enabled || psi_window_size_ms < 500 || psi_window_size_ms > 10000)
++        return false;
+     for (int level = VMPRESS_LEVEL_MEDIUM; level <= VMPRESS_LEVEL_CRITICAL; ++level) {
+         const int stall_ms = psi_thresholds[level].threshold_ms;
+         if (!stall_ms) continue;
+@@ -3725,6 +3729,19 @@
+             static_cast<uint64_t>(psi_window_size_ms) * 1000,
+             static_cast<uint64_t>(stall_ms) * 1000};
+     }
++    if (retain_existing) {
++        // This branch performs no connect, enrollment, fd transfer, sequence
++        // reset or epoll replacement. Completion independently revalidates the
++        // held scope/budget and lease, and rejects changed PSI configuration.
++        return monitors_initialized && cell_relay_session.CompleteUnchangedPolicyUpdate(
++            request.count, request.configs);
++    }
++    if (!cell_memory_reader.ReadScoped(&snapshot, &identity) ||
++        !cell_relay::FreshRequestNonce(&request.nonce)) return false;
++    request.cgroup_device = identity.device;
++    request.cgroup_inode = identity.inode;
++    request.budget = cell_relay::BindBudget(snapshot.max, snapshot.high, snapshot.swap_max,
++                                           snapshot.high_unlimited, snapshot.swap_unlimited);
+     if (!cell_relay::ValidRequest(request)) return false;
+     cell_relay::Credentials server{};
+     const int connected = cell_relay::ConnectLifecycleEndpoint(&server);
+@@ -3939,7 +3956,7 @@
+     }
+ }
+ 
+-static bool init_psi_monitors() {
++static bool init_psi_monitors(bool retain_cell_relay) {
+     /*
+      * When PSI is used on low-ram devices or on high-end devices without memfree levels
+      * use new kill strategy based on zone watermarks, free swap and thrashing stats.
+@@ -3967,7 +3984,7 @@
+ 
+     // Explicit lifecycle mode only. Failure cannot fall through to direct PSI
+     // or a global/cgroup-v1 event source.
+-    if (cell_relay_required) return init_cell_relay_monitors();
++    if (cell_relay_required) return init_cell_relay_monitors(retain_cell_relay);
+ 
+     if (!init_mp_psi(VMPRESS_LEVEL_LOW, use_new_strategy)) {
+         return false;
+@@ -3989,11 +4006,12 @@
+     poll_kernel(kpoll_fd);
+ }
+ 
+-static bool init_monitors() {
++static bool init_monitors(bool retain_cell_relay) {
++    if (retain_cell_relay && !cell_relay_required) return false;
+     ALOGI("Wakeup counter is reset from %" PRIu64 " to 0", mp_event_count);
+     mp_event_count = 0;
+ 
+-    if (!init_psi_monitors()) {
++    if (!init_psi_monitors(retain_cell_relay)) {
+         ALOGE("Failed to initialize PSI monitors");
+         return false;
+     }
+--- preimage/android-r6/relay_session.cpp
++++ candidate/android-r6/relay_session.cpp
+@@ -51,7 +51,8 @@
+ 
+ bool Session::FreshDecision() {
+     uint64_t now = 0;
+-    if (!active_ || !decision_observed_ns_ || !decision_window_ns_) return false;
++    if (!active_ || policy_update_pending_ || !decision_observed_ns_ ||
++        !decision_window_ns_) return false;
+     if (!CheckClock(&now) || now < decision_observed_ns_) {
+         active_ = false;
+         decision_observed_ns_ = decision_window_ns_ = 0;
+@@ -135,8 +136,41 @@
+     std::lock_guard<std::mutex> lock(mutex_);
+     return active_;
+ }
++bool Session::enrollment_attempted() const {
++    std::lock_guard<std::mutex> lock(mutex_);
++    return attempted_;
++}
++bool Session::BeginPolicyUpdate() {
++    std::lock_guard<std::mutex> lock(mutex_);
++    if (policy_update_pending_ || !CheckScopeAndTransport()) {
++        StopLocked();
++        return false;
++    }
++    decision_observed_ns_ = decision_window_ns_ = 0;
++    policy_update_pending_ = true;
++    return true;
++}
++bool Session::CompleteUnchangedPolicyUpdate(
++        uint32_t count, const std::array<Config, kMaxMonitors>& configs) {
++    std::lock_guard<std::mutex> lock(mutex_);
++    uint64_t after = 0;
++    if (!policy_update_pending_ || count != grant_.request.count ||
++        configs != grant_.request.configs || !CheckScopeAndTransport() ||
++        !CheckClock(&after)) {
++        StopLocked();
++        return false;
++    }
++    // Even a still-fresh packet observed under the previous policy must not
++    // become evidence for the new policy. Consume still enforces all original
++    // scope, timestamp, contiguous sequence and expiry checks before this cutoff.
++    policy_observed_after_ns_ = after;
++    decision_observed_ns_ = decision_window_ns_ = 0;
++    policy_update_pending_ = false;
++    return true;
++}
+ void Session::StopLocked() {
+     active_ = false;
++    policy_update_pending_ = false;
+     decision_observed_ns_ = decision_window_ns_ = 0;
+     client_.Close();
+     for (Monitor& monitor : monitors_) monitor.Revoke();
+@@ -153,6 +187,7 @@
+         active_ = false;
+         return Ready::Revoked;
+     }
++    if (policy_update_pending_) return Ready::Stale;
+     if (!events) return FreshDecision() ? Ready::Polling : Ready::Stale;
+     const size_t i = static_cast<size_t>(index);
+     const Result result = monitors_[i].Consume(scope_);
+@@ -166,7 +201,8 @@
+             active_ = false;
+             return Ready::Revoked;
+         }
+-        if (after - result.observed_monotonic_ns >= grant_.request.configs[i].window_us * 1000) {
++        if (result.observed_monotonic_ns <= policy_observed_after_ns_ ||
++            after - result.observed_monotonic_ns >= grant_.request.configs[i].window_us * 1000) {
+             decision_observed_ns_ = decision_window_ns_ = 0;
+             return Ready::Stale;
+         }
+--- preimage/android-r6/relay_session.h
++++ candidate/android-r6/relay_session.h
+@@ -34,8 +34,17 @@
+     int fd(Level level) const;
+     int control_fd() const;
+     Ready Handle(Level level, uint32_t events);
++    // Property reload may retain only the existing generation and exact PSI
++    // configuration. Begin disables every effect before policy globals change;
++    // completion requires the same live lease and records a monotonic cutoff.
++    // This never enrolls, adopts an fd, resets sequence, or revives a stopped lease.
++    bool BeginPolicyUpdate();
++    bool CompleteUnchangedPolicyUpdate(uint32_t count,
++                                      const std::array<Config, kMaxMonitors>& configs);
+     void Stop();
+     bool active() const;
++    // Distinguish boot-deferred first enrollment from a revoked old generation.
++    bool enrollment_attempted() const;
+     template <class F> Dispatch Perform(F&& operation) {
+         std::unique_lock<std::mutex> lock(mutex_, std::try_to_lock);
+         if (!lock.owns_lock() || !FreshDecision() || !CheckScopeAndTransport() ||
+@@ -52,6 +61,7 @@
+     mutable std::mutex mutex_;
+     bool attempted_ = false;
+     bool active_ = false;
++    bool policy_update_pending_ = false;
+     EnrollmentClient client_;
+     std::array<Monitor, kMaxMonitors> monitors_;
+     EnrollmentGrant grant_{};
+@@ -60,6 +70,7 @@
+     uint64_t last_clock_ns_ = 0;
+     uint64_t decision_observed_ns_ = 0;
+     uint64_t decision_window_ns_ = 0;
++    uint64_t policy_observed_after_ns_ = 0;
+ };
+ 
+ // Exact lifecycle endpoint only. This function retains each /dev/socket
+--- preimage/host/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
++++ candidate/host/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs
+@@ -298,6 +298,16 @@
+             policy::digest(&self.policy.lmkd_rc_sha256).map_err(error)?,
+             false,
+         )?;
++        let old_rc_size = old_rc.file().metadata()?.len();
++        if old_rc_size == 0 || old_rc_size > 65536 {
++            return Err(error("original lmkd.rc outside bounded text contract"));
++        }
++        let mut old_rc_bytes = vec![0; old_rc_size as usize];
++        read_exact(old_rc.file(), &mut old_rc_bytes, 0)?;
++        let original_rc = std::str::from_utf8(&old_rc_bytes)
++            .map_err(|_| error("original lmkd.rc is not UTF-8"))?;
++        let native_rc = lmkd_rc(original_rc, self.policy.lmkd_uid, self.policy.lmkd_gid)?;
++        old_rc.validate(true)?;
+         let droidloom = make_parent(&root, "droidloom")?;
+         if unsafe { libc::mkdirat(droidloom.as_raw_fd(), c"lmkd-bootstrap".as_ptr(), 0o755) } != 0 {
+             return Err(io::Error::last_os_error());
+@@ -327,7 +337,7 @@
+             libc::O_RDWR | libc::O_CREAT | libc::O_EXCL,
+             0o644,
+         )?;
+-        generated.write_all(lmkd_rc(self.policy.lmkd_uid, self.policy.lmkd_gid).as_bytes())?;
++        generated.write_all(native_rc.as_bytes())?;
+         generated.sync_all()?;
+         old_rc.validate(true)?;
+         bind_readonly(&root, "system/etc/init/lmkd.rc", &generated)?;
+@@ -600,34 +610,149 @@
+     }
+     Ok(())
+ }
+-fn lmkd_rc(uid: u32, gid: u32) -> String {
+-    // Do not use escaped physical newlines: Rust strips their leading
+-    // whitespace and would remove the service-option indentation.
+-    format!(
+-        concat!(
+-            "# Package-owned native relay LMKD; init constructor owns the startup barrier.\n",
+-            "service lmkd {}\n",
+-            "    class core\n",
+-            "    user {}\n",
+-            "    group {} system readproc\n",
+-            "    capabilities DAC_OVERRIDE KILL IPC_LOCK SYS_NICE SYS_RESOURCE\n",
+-            "    socket lmkd seqpacket+passcred 0660 system system\n",
+-            "    task_profiles ServiceCapacityLow\n",
+-            "    stdio_to_kmsg\n",
+-            "    setenv DROIDLOOM_CELL 1\n",
+-            "    setenv DROIDLOOM_LMKD_CGROUP /sys/fs/cgroup\n",
+-            "    setenv DROIDLOOM_LMKD_PRESSURE relay-required\n",
+-        ),
+-        init_peer::LMKD,
+-        uid,
+-        gid
+-    )
++fn lmkd_rc(original: &str, uid: u32, gid: u32) -> io::Result<String> {
++    // Transform the actual held/hash-verified image RC; do not reconstruct its
++    // service policy or property actions from an incomplete hardcoded template.
++    // Unsupported layouts are rejected before any image preparation effects.
++    if original.is_empty() || original.len() > 65536 || !original.ends_with('\n')
++        || original.contains('\0') || original.contains('\r') || original.contains("DROIDLOOM_")
++    {
++        return Err(error("original lmkd.rc text/layout is unsupported"));
++    }
++    let lines: Vec<_> = original.split_inclusive('\n').collect();
++    let required = [
++        "service lmkd /system/bin/lmkd\n",
++        "    user lmkd\n",
++        "    group lmkd system readproc\n",
++        "    critical\n",
++        "    task_profiles ServiceCapacityLow\n",
++        "    exec_background /system/bin/lmkd --reinit\n",
++        "    exec_background /system/bin/lmkd --boot_completed\n",
++    ];
++    if required.iter().any(|line| lines.iter().filter(|actual| **actual == *line).count() != 1)
++        || lines.iter().filter(|line| line.split_whitespace().next() == Some("service")).count() != 1
++        || lines.iter().filter(|line| !line.trim_start().starts_with('#')
++            && line.contains("/system/bin/lmkd")).count() != 3
++    {
++        return Err(error("original lmkd service/helper command contract differs"));
++    }
++    let service = lines.iter().position(|line| *line == required[0]).expect("checked service");
++    let end = lines[service + 1..].iter().position(|line| {
++        let trimmed = line.trim();
++        !trimmed.is_empty() && !trimmed.starts_with('#')
++            && !line.starts_with(' ') && !line.starts_with('\t')
++    }).map_or(lines.len(), |offset| service + 1 + offset);
++    let options = &lines[service + 1..end];
++    if required[1..5].iter().any(|line| !options.contains(line))
++        || options.iter().any(|line| line.trim_start().starts_with("stdio_to_kmsg"))
++    {
++        return Err(error("required lmkd options are outside the original service"));
++    }
++    let mut generated = String::with_capacity(original.len() + 256);
++    for line in lines {
++        match line {
++            "service lmkd /system/bin/lmkd\n" =>
++                generated.push_str(&format!("service lmkd {}\n", init_peer::LMKD)),
++            "    user lmkd\n" => generated.push_str(&format!("    user {uid}\n")),
++            "    group lmkd system readproc\n" =>
++                generated.push_str(&format!("    group {gid} system readproc\n")),
++            "    task_profiles ServiceCapacityLow\n" => {
++                generated.push_str(line);
++                generated.push_str(concat!(
++                    "    stdio_to_kmsg\n",
++                    "    setenv DROIDLOOM_CELL 1\n",
++                    "    setenv DROIDLOOM_LMKD_CGROUP /sys/fs/cgroup\n",
++                    "    setenv DROIDLOOM_LMKD_PRESSURE relay-required\n",
++                ));
++            }
++            "    exec_background /system/bin/lmkd --reinit\n" =>
++                generated.push_str(&format!("    exec_background {} --reinit\n", init_peer::LMKD)),
++            "    exec_background /system/bin/lmkd --boot_completed\n" =>
++                generated.push_str(&format!("    exec_background {} --boot_completed\n", init_peer::LMKD)),
++            _ => generated.push_str(line),
++        }
++    }
++    Ok(generated)
+ }
+ 
+ #[cfg(test)]
+ mod tests {
+     use super::*;
+     use std::os::unix::fs::symlink;
++    // Actual Pocket4 image RC, extracted with full image/tool digest binding.
++    const ORIGINAL_LMKD_RC: &str = r##"service lmkd /system/bin/lmkd
++    class core
++    user lmkd
++    group lmkd system readproc
++    capabilities DAC_OVERRIDE KILL IPC_LOCK SYS_NICE SYS_RESOURCE
++    critical
++    socket lmkd seqpacket+passcred 0660 system system
++    task_profiles ServiceCapacityLow
++
++on property:lmkd.reinit=1
++    exec_background /system/bin/lmkd --reinit
++
++on property:sys.boot_completed=1
++    exec_background /system/bin/lmkd --boot_completed
++
++# reinitialize lmkd after device finished booting if experiments set any flags during boot
++on property:sys.boot_completed=1 && property:lmkd.reinit=0
++    setprop lmkd.reinit 1
++
++# properties most likely to be used in experiments
++# setting persist.device_config.* property either triggers immediate lmkd re-initialization
++# if the device finished booting or sets lmkd.reinit=0 to re-initialize lmkd after boot completes
++on property:persist.device_config.lmkd_native.debug=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.kill_heaviest_task=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.kill_timeout_ms=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.relaxed_available_memory=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.swap_free_low_percentage=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.psi_partial_stall_ms=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.psi_complete_stall_ms=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.psi_window_size_ms=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.thrashing_limit=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.thrashing_limit_decay=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.thrashing_limit_critical=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.swap_util_max=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.filecache_min_kb=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.direct_reclaim_threshold_ms=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.swap_compression_ratio=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.swap_compression_ratio_div=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++
++on property:persist.device_config.lmkd_native.lowmem_min_oom_score=*
++    setprop lmkd.reinit ${sys.boot_completed:-0}
++"##;
+     #[test]
+     fn final_init_exec_contract_rejects_wrappers_and_other_stage() {
+         let mut command = Command::new("/init");
+@@ -643,25 +768,51 @@
+         assert!(require_init_command(&wrapper).is_err());
+     }
+     #[test]
+-    fn generated_native_lmkd_options_remain_inside_one_service_block() {
+-        let text = lmkd_rc(1069, 1069);
+-        let mut lines = text
+-            .lines()
+-            .filter(|line| !line.is_empty() && !line.starts_with('#'));
+-        assert_eq!(
+-            lines.next(),
+-            Some("service lmkd /droidloom/lmkd-bootstrap/lmkd")
+-        );
++    fn generated_native_lmkd_preserves_original_critical_and_all_property_actions() {
++        let text = lmkd_rc(ORIGINAL_LMKD_RC, 1069, 1069).unwrap();
++        let (service, actions) = text.split_once("\n\n").unwrap();
++        let mut lines = service.lines();
++        assert_eq!(lines.next(), Some("service lmkd /droidloom/lmkd-bootstrap/lmkd"));
+         let options: Vec<_> = lines.collect();
+-        assert_eq!(options.len(), 10);
+-        assert!(
+-            options
+-                .iter()
+-                .all(|line| line.starts_with("    ") && !line.starts_with("     "))
+-        );
++        assert_eq!(options.len(), 11);
++        assert!(options.iter().all(|line| line.starts_with("    ") && !line.starts_with("     ")));
++        assert!(options.contains(&"    critical"));
+         assert!(options.contains(&"    user 1069"));
+         assert!(options.contains(&"    group 1069 system readproc"));
+         assert!(options.contains(&"    setenv DROIDLOOM_LMKD_PRESSURE relay-required"));
++        let original_actions = ORIGINAL_LMKD_RC.split_once("\n\n").unwrap().1;
++        assert_eq!(actions.replace(init_peer::LMKD, "/system/bin/lmkd"), original_actions);
++        let restored = text.replace(init_peer::LMKD, "/system/bin/lmkd")
++            .replace("    user 1069\n", "    user lmkd\n")
++            .replace("    group 1069 system readproc\n", "    group lmkd system readproc\n")
++            .replace(concat!(
++                "    stdio_to_kmsg\n",
++                "    setenv DROIDLOOM_CELL 1\n",
++                "    setenv DROIDLOOM_LMKD_CGROUP /sys/fs/cgroup\n",
++                "    setenv DROIDLOOM_LMKD_PRESSURE relay-required\n",
++            ), "");
++        assert_eq!(restored, ORIGINAL_LMKD_RC);
++    }
++    #[test]
++    fn generated_native_lmkd_rejects_ambiguous_or_changed_source_contract() {
++        for bad in [
++            ORIGINAL_LMKD_RC.replace("    critical\n", ""),
++            format!("{ORIGINAL_LMKD_RC}service unexpected /system/bin/true\n"),
++            ORIGINAL_LMKD_RC.replace("--reinit\n", "--reinit --extra\n"),
++            ORIGINAL_LMKD_RC.replace("    user lmkd\n", "    user root\n"),
++            ORIGINAL_LMKD_RC.replace("    task_profiles ServiceCapacityLow\n",
++                "    task_profiles ServiceCapacityLow\n    setenv DROIDLOOM_CELL 0\n"),
++            ORIGINAL_LMKD_RC.replace("    critical\n", "critical\n"),
++        ] {
++            assert!(lmkd_rc(&bad, 1069, 1069).is_err());
++        }
++    }
++    #[test]
++    fn generated_native_lmkd_keeps_additional_existing_service_policy() {
++        let original = ORIGINAL_LMKD_RC.replace("    critical\n",
++            "    critical\n    oom_score_adjust -900\n");
++        let text = lmkd_rc(&original, 1069, 1069).unwrap();
++        assert!(text.contains("    critical\n    oom_score_adjust -900\n"));
+     }
+     #[test]
+     fn init_alias_cannot_escape_the_private_image() {
+--- preimage/tests/test_session.cpp
++++ candidate/tests/test_session.cpp
+@@ -13,6 +13,7 @@
+ #include <poll.h>
+ #include <sys/epoll.h>
+ #include <sys/socket.h>
++#include <sys/stat.h>
+ #include <thread>
+ #include <time.h>
+ #include <unistd.h>
+@@ -299,6 +300,89 @@
+         Check(f.session.fd(Level::Critical) < 0 && f.session.control_fd() < 0,
+               "re-enrollment rejection closes previously claimed recipients");
+     }
++    {
++        Fixture f;
++        f.FreezeClock();
++        const uint64_t prior_observed = f.Fresh();
++        const int control = f.session.control_fd();
++        const int critical = f.session.fd(Level::Critical);
++        struct stat control_before{}, critical_before{}, control_after{}, critical_after{};
++        Need(!fstat(control, &control_before) && !fstat(critical, &critical_before),
++             "original enrolled endpoint identities");
++        Check(f.session.BeginPolicyUpdate(), "policy update begins only on the live original lease");
++        unsigned effects = 0;
++        Check(f.session.Perform([&]() { ++effects; return true; }) == Dispatch::Denied && !effects,
++              "property update suspends a previously fresh watchdog decision");
++        f.Packet(1, 2, prior_observed);
++        Check(f.session.Handle(Level::Critical, EPOLLIN) == Ready::Stale && f.session.active(),
++              "policy update cannot consume a queued packet into new authority");
++        test_clock = prior_observed + 100;
++        Check(f.session.CompleteUnchangedPolicyUpdate(f.request.count, f.request.configs),
++              "same PSI configuration completes without a second enrollment");
++        Need(!fstat(control, &control_after) && !fstat(critical, &critical_after),
++             "retained enrolled endpoint identities");
++        Check(f.session.control_fd() == control && f.session.fd(Level::Critical) == critical &&
++              control_before.st_dev == control_after.st_dev && control_before.st_ino == control_after.st_ino &&
++              critical_before.st_dev == critical_after.st_dev && critical_before.st_ino == critical_after.st_ino,
++              "unchanged property reload retains exact control and notification fd identities");
++        Check(f.session.Handle(Level::Critical, EPOLLIN) == Ready::Stale,
++              "still-fresh pre-update packet is not evidence for changed policy");
++        f.Packet(1, 3, test_clock.load());
++        Check(f.session.Handle(Level::Critical, EPOLLIN) == Ready::Stale,
++              "packet observed exactly at policy completion cutoff is rejected");
++        test_clock = test_clock.load() + 1;
++        f.Packet(1, 4, test_clock.load());
++        Check(f.session.Handle(Level::Critical, EPOLLIN) == Ready::Event &&
++              f.session.Perform([&]() { ++effects; return true; }) == Dispatch::Sent && effects == 1,
++              "new contiguous packet after policy completion restores only its original window");
++        f.Packet(1, 4, test_clock.load());
++        Check(f.session.Handle(Level::Critical, EPOLLIN) == Ready::Revoked,
++              "property reload never resets notification replay protection");
++    }
++    for (unsigned change = 0; change < 4; ++change) {
++        Fixture f;
++        Check(f.session.BeginPolicyUpdate(), "configuration-change control begins on original lease");
++        auto configs = f.request.configs;
++        uint32_t count = f.request.count;
++        if (change == 0) --count;
++        if (change == 1) ++configs[1].stall_us;
++        if (change == 2) ++configs[1].window_us;
++        if (change == 3) configs[1].level = Level::Medium;
++        Check(!f.session.CompleteUnchangedPolicyUpdate(count, configs) && !f.session.active(),
++              "any monitor count level threshold or window change closes existing lease");
++        Check(!f.session.CompleteUnchangedPolicyUpdate(f.request.count, f.request.configs) &&
++              f.session.fd(Level::Critical) < 0 && f.session.control_fd() < 0,
++              "restoring old configuration cannot resurrect rejected generation");
++    }
++    for (unsigned change = 0; change < 3; ++change) {
++        Fixture f;
++        f.FreezeClock();
++        Check(f.session.BeginPolicyUpdate(), "liveness-change control begins on original lease");
++        if (change == 0) { close(f.control[0]); f.control[0] = -1; }
++        if (change == 1) ++f.probe.scope.inode;
++        if (change == 2) test_clock = test_clock.load() - 1;
++        Check(!f.session.CompleteUnchangedPolicyUpdate(f.request.count, f.request.configs) &&
++              !f.session.active(), "policy completion rechecks HUP scope and monotonic clock");
++    }
++    {
++        Fixture f;
++        Check(!f.session.CompleteUnchangedPolicyUpdate(f.request.count, f.request.configs) &&
++              !f.session.active(), "policy completion without a matching begin is not authority");
++    }
++    {
++        Fixture f;
++        Check(f.session.BeginPolicyUpdate() && !f.session.BeginPolicyUpdate() && !f.session.active(),
++              "nested property update permanently closes the original lease");
++    }
++    {
++        Session unstarted;
++        Check(!unstarted.enrollment_attempted(),
++              "boot-deferred monitoring is distinguishable before the first enrollment");
++        Fixture f;
++        f.session.Stop();
++        Check(f.session.enrollment_attempted() && !f.session.active(),
++              "revoked monitoring retains its attempt state and cannot look boot-deferred");
++    }
+     Check(Fds() == before, "all session paths close every owned control pidfd and recipient");
+     std::printf("RESULT %u assertions passed; local packet/session controls, no Android or real PSI\n", passed);
+     return 0;

@@ -1,0 +1,278 @@
+{
+  "Main_actions": 0,
+  "Main_identity_observed": false,
+  "actual_commands_rerun_by_this_review": 0,
+  "actual_enabled_ART_lifecycle_validated": false,
+  "authority": {
+    "bytes": 129787,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/paired-builder451-compile02/result.json",
+    "sha256": "8c72e771c9ed5bd440b36aa8c7c3379b31ce8acccdc2b222fadad9e64cb28096"
+  },
+  "builder_elf": {
+    "bytes": 32654784,
+    "identity": [
+      66306,
+      35961152,
+      33216,
+      32654784,
+      1793860145412227460,
+      1793860145444228510
+    ],
+    "path": "/home/alex/work/pocket4-native-generation-builder451-compile-02-20261105/attempt01/cargo-target/debug/droidloom-update",
+    "sha256": "34c04271f1a3095cedb0b57eece7749958622754a864202b17a54abb174e0e3e"
+  },
+  "cleanup": {
+    "errors": [],
+    "forced_cleanup": false,
+    "initial_owned_children": [],
+    "reaped": [],
+    "remaining": []
+  },
+  "commands_returned_zero": 55,
+  "focused_tests": [
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "1f5c4e76029f9eca8e41df0461c587cf389bec2486293082f4d1f865f248cc95",
+      "name": "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes",
+      "stdout_sha256": "876ed997b2fa4619c082d8db58d41c355efc745a4c5188118dcde9287719ac64"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "a728299d41b5625eafafcaa6d23565032b6a6b45df27a03ff7eb55d28218625d",
+      "name": "android::tests::restoration_preserves_original_and_removes_created_file",
+      "stdout_sha256": "e939e8b79873b413bd2e9a90c559081344d30928c2db6c29b176c6e5ee2f52c5"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "c635bfbb83bc8203c702f0ef3113a71361b041a67677032db26c89e0f344fdd2",
+      "name": "android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch",
+      "stdout_sha256": "b25ed52b2561dc7eb94ad78d6727690166539edacb2352d09607e17a735d40ca"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "aa6d354f87d9952fc06206bdd5d5383a0394c1b0989d8666a9143930f794fba3",
+      "name": "android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout",
+      "stdout_sha256": "81794b5c102743dcd059f32e415c77aa7bf5c1fb48ff0fbf87d4db3c2ff690b1"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "b04cd8b6de120ad5af5214784fc334309f8583af498fec18ae4f6acd4fc1803c",
+      "name": "android::patch_tests::interrupted_projection_recovers_before_next_build",
+      "stdout_sha256": "79c239479cf9b4d3c46571a751fd2cba4075e47986f042947fe63849b6e5660f"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "f5cf4e84278a08b440411dd1ea574226456196cc0707584148a3911652f91d11",
+      "name": "tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets",
+      "stdout_sha256": "e870e86d3658611ae0173b400ec51eeea600146a6b6405a8ec6ec7d239b1e6e3"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "56e3da9808ccc027cf1b218b0a0ce1e83e8eb7a7eda734951dde697496b8e5a9",
+      "name": "tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory",
+      "stdout_sha256": "b62b401842e45a22c42d2e2f6f3e5c0d9f89a4a722bc3dc0d58d586474d4a5b3"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "6c33d18799ecfb5d0f5013e1b9215663264ef50ad71df605197c400aa84d3513",
+      "name": "native_generation::tests::legacy_and_disabled_preserve_the_disabled_mode",
+      "stdout_sha256": "ee3106bebaae221c637099d61dc2e1d1dbe6b3b87860cd4f435254d4c7882eb3"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "9e30e031392e41cadb907fa34bcafe03548a799babef8dd0a3c14238e47c904c",
+      "name": "native_generation::tests::rejects_every_mixed_old_new_combination",
+      "stdout_sha256": "d844b4cd5ec20732ed6ba274a198257fc0bc8dabf5d7a036c0b9934fe71e95ab"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "e0b107ad1e3fee4996625262dc0ad9fea126fe58d22951942c2d146afe220c59",
+      "name": "native_generation::tests::enabled_triplet_requires_exact_contract",
+      "stdout_sha256": "a05acfb86d7cddf1b114474573593c7406eaa4666d5e75cc9610a3fae0a92db4"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "ad5b2dee0c0771c5006c51e61c6df8d59023ce6823516b82df11562f76775347",
+      "name": "native_generation::tests::rejects_malformed_foreign_or_ambiguous_marker",
+      "stdout_sha256": "cc4ad6b9fcbdd8da92aeade1ccc0cb5709478460147557148515bddac58ec8af"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "7c912451e3519364f2d1734a345aff2a656e0631b307916fd29e7cb554c59395",
+      "name": "native_generation::tests::rejects_foreign_elf_and_unrecognized_contract",
+      "stdout_sha256": "ef7814c9d5cfec9d0fcc7c338346d2cf81a53cff3fd40ecb2b23a6e2da27d490"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "8f4b0679a804135831cb0411ac2736c4264c106ad1ed57ff18937ed7898c2106",
+      "name": "native_generation::tests::rejects_symlinked_components",
+      "stdout_sha256": "71497c283f0ec34ec2eaecb7362833944c1424b1472e5a8faba0c91f5c139a78"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "b10b0a9ba5b61c616bd8f40c05bdf6d5d779117513a37062d43193784caa1d3a",
+      "name": "native_generation::tests::rejects_previous_protocol_for_each_role_and_mode",
+      "stdout_sha256": "e1eec0d3e322f9322cc94605cbf394503211100f2b680eecbb9e05295d5aa3ca"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "516e076563f2c712c0193ee6ccf3d92935a704f7c5ac7433957353ebda17bfc5",
+      "name": "native_generation::tests::rejects_previous_protocol_inside_self_consistent_enabled_contract",
+      "stdout_sha256": "c887586508498a0f66387493b74defcf994a5fc546e39498a1c45c5ddf3c5f4b"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "8d45001f7864f4871535e41ff8306df81fd04b58658d1f6301c8cccdf83dfa73",
+      "name": "native_generation::tests::rejects_previous_protocol_contract",
+      "stdout_sha256": "9cbb35d2cd9755a57547de83d694836d379de0edeb2f39d0eb90d387d9ad2bc3"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "c64e50cc90392dbe1c4f83876d56fe3d6ca7335a389a4aa61447d5cc5d9840c0",
+      "name": "native_generation::tests::real_ext4_apex_extraction_rejects_changed_nested_component",
+      "stdout_sha256": "6b94e323c30a86b80f3517251621848fec960f5c7ad7af570a35277b567557c9"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "0b5ef5f8dd0d904bcddb5078b879a7f36d7f04cecdb3aa9bea883881925fa8a5",
+      "name": "native_generation::tests::product_contract_generation_requires_enabled_triplet",
+      "stdout_sha256": "ea8c3a848b1ce82b5c5df05d01c82baeb7dd6f8cc829c7683aefbbbff4d1ef05"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "dd39b20051e5cb8a0a720de0de0e26891841168078a4ea7cfeab2a7b6f346efb",
+      "name": "native_generation::tests::product_contract_generation_is_create_only_and_binds_components",
+      "stdout_sha256": "08829c6c3370b668b1425377c8bf3d3b386ead0f2ff4a2df6b11ee1b3f4894a4"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "19f338fb2cdcad36967e0807e23ab42f3a8a7203d74e05b1ebf168d58c6dc4f7",
+      "name": "native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair",
+      "stdout_sha256": "15c547d5f0600012140ae249164ae6f01bd14e4f61826cac04266e962c58dbff"
+    },
+    {
+      "expected_stdout_runs": 2,
+      "independent_result_sha256": "c4eae26986de4f62b918ac378f079e47340668fb056ea5e6a0cf22044de13439",
+      "name": "native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata",
+      "stdout_sha256": "965aad2b28769b475209bda42e603186952887789a986e9fd19065e7a16cca4b"
+    },
+    {
+      "expected_stdout_runs": 1,
+      "independent_result_sha256": "c22b824bb7d7a0aae203b4bfdc866f4eb6c28167de5070f782e7da06af761a33",
+      "name": "tests::native_generation_pair_cli_requires_one_explicit_product",
+      "stdout_sha256": "b19093c51ad97043cafc8cde54c4695adccf23d26ff24e8f5967b8c07c610e6e"
+    }
+  ],
+  "independent_remote_tool_or_ELF_reread_performed": false,
+  "next03_ART_sources_compiled_by_this_builder": false,
+  "original_projection_tests_passed": 7,
+  "owned_resource_gate": {
+    "after": {
+      "controller_pid": 1414716,
+      "directory_identity": [
+        30,
+        29617568
+      ],
+      "events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "fields": {
+        "cgroup.procs": "1414714\n1414716",
+        "cpu.max": "100000 100000",
+        "memory.current": "859385856",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "max",
+        "memory.max": "1073741824",
+        "memory.peak": "946839552",
+        "memory.swap.current": "0",
+        "memory.swap.max": "max",
+        "memory.swap.peak": "0"
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa65028c-fc05-425d.service",
+      "observed_utc": "2026-11-05T06:29:13.559034+00:00",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa65028c-fc05-425d.service"
+    },
+    "before": {
+      "controller_pid": 1414716,
+      "directory_identity": [
+        30,
+        29617568
+      ],
+      "events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "fields": {
+        "cgroup.procs": "1414714\n1414716",
+        "cpu.max": "100000 100000",
+        "memory.current": "24092672",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "max",
+        "memory.max": "1073741824",
+        "memory.peak": "24092672",
+        "memory.swap.current": "0",
+        "memory.swap.max": "max",
+        "memory.swap.peak": "0"
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa65028c-fc05-425d.service",
+      "observed_utc": "2026-11-05T06:28:33.868329+00:00",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1aa65028c-fc05-425d.service"
+    },
+    "memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak": 946839552,
+    "memory_swap_peak": 0,
+    "pass": true,
+    "resource_settings_changed": false,
+    "swap_max_observed_only": "max"
+  },
+  "pairing_tests_passed": 15,
+  "platform_APEX_signature_validated": false,
+  "preserved_failures": [
+    "451 compile01 noisy external stdout interrupted contiguous libtest name line"
+  ],
+  "production_ready": false,
+  "real_test_image_controls": 5,
+  "registered_tests": 195,
+  "schema": 1,
+  "scope": "Independent source/authority/result consistency review of the complete actual 451 compile02 receipt; not an ART image or runtime qualification.",
+  "source_delta": {
+    "Blueprint_streaming_patch_changed": false,
+    "Go6_patch_changed": false,
+    "added": [
+      "tools/droidloom-update/src/native_generation.rs"
+    ],
+    "changed_existing": [
+      "tools/droidloom-update/src/bundle.rs",
+      "tools/droidloom-update/src/main.rs",
+      "tools/droidloom-update/src/native_bridge.rs"
+    ],
+    "engine_source_files_changed": 0,
+    "unchanged_existing": 447
+  },
+  "source_manifest": {
+    "bytes": 88664,
+    "path": "/home/alex/work/pocket4-native-generation-builder451-compile-02-20261105/attempt01/copied-builder-source-manifest.json",
+    "sha256": "a5052accd9bb36231a3c59271f8bc35e464e5cf14d702787735feed0d86b7a13"
+  },
+  "source_tools_dependencies_configs_unchanged_according_to_complete_receipt": true,
+  "state": "PASS_LOCAL_REVIEW_OF_COMPLETE_ACTUAL_RECEIPT"
+}

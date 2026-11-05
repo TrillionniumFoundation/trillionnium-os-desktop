@@ -1,0 +1,109 @@
+--- compile01/compile_builder.py
++++ compile02/compile_builder.py
+@@ -123,7 +123,8 @@
+     records.append(row)
+     require(code == 0 and not timeout, 'command failed: '+label)
+     if label == 'projection-test-20':
+-        require(argv[1:] == ['--exact',FAKEROOT_TEST,'--test-threads=1','--nocapture'],
++        require(argv[1:] == ['--exact',FAKEROOT_TEST,'--test-threads=1','--nocapture',
++                            '--logfile',str(OUT/'projection-test-20.libtest')],
+                 'normal daemon retirement is restricted to the exact fakeroot metadata test')
+         row['normal_fakeroot_daemon_retirement'] = {}
+         reap_normal_fakeroot_daemon(row['normal_fakeroot_daemon_retirement'])
+@@ -196,7 +197,7 @@
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+ BASE_SOURCE = Path('/home/alex/work/pocket4-blueprint-streaming-builder-450-compile-03-20261105/builder-source')
+-ROOT = Path('/home/alex/work/pocket4-native-generation-builder451-compile-01-20261105')
++ROOT = Path('/home/alex/work/pocket4-native-generation-builder451-compile-02-20261105')
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+@@ -725,6 +726,58 @@
+             return
+         require(time.monotonic()<deadline,'owned fakeroot daemon remained live after bounded normal retirement')
+         time.sleep(0.01)
++
++
++
++def validate_focused_result(name, index, output, log, registered_count):
++    # Rust 1.93 libtest writes this one result directly to its own File, so
++    # inherited stdout from mkfs.erofs or a nested fakeroot test cannot splice it.
++    require(log == ('ok '+name+'\n').encode(),
++            'independent libtest result is not exactly one success for the selected test')
++    expected_runs = 2 if index == 20 else 1
++    require((index == 20) == (name == FAKEROOT_TEST), 'nested fakeroot test index differs')
++    summaries = [line for line in output.splitlines() if line.startswith('test result:')]
++    pattern = r'test result: ok\. 1 passed; 0 failed; 0 ignored; 0 measured; (\d+) filtered out; finished in \d+(?:\.\d+)?s'
++    parsed = [re.fullmatch(pattern, line) for line in summaries]
++    require(len(parsed) == expected_runs and all(parsed) and
++            all(int(match.group(1)) == registered_count-1 for match in parsed),
++            'complete libtest summary/count/filter contract differs')
++    require(output.splitlines().count('running 1 test') == expected_runs and
++            output.count('test '+name+' ... ') == expected_runs,
++            'selected test start/count differs from the exact registration')
++    return {'outer_results': 1, 'expected_stdout_runs': expected_runs,
++            'registered_tests': registered_count, 'filtered_out_per_run': registered_count-1,
++            'exact_name': name, 'summary_and_independent_result_agree': True}
++
++
++def focused_test(test_binary, name, index, registered_count, environment, records):
++    label = 'projection-test-'+str(index)
++    path = OUT/(label+'.libtest')
++    # Claim a new regular file and retain the descriptor while libtest opens
++    # that exact private path. Replacement, aliases and extra records fail.
++    fd = os.open(path, os.O_RDWR|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW|os.O_CLOEXEC, 0o600)
++    try:
++        before = os.fstat(fd)
++        require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and
++                before.st_uid == os.geteuid() and stat.S_IMODE(before.st_mode) == 0o600 and
++                before.st_size == 0, 'fresh libtest result claim differs')
++        output = command([str(test_binary),'--exact',name,'--test-threads=1','--nocapture',
++                          '--logfile',str(path)],COPIED,environment,label,records,30).decode()
++        after = os.fstat(fd)
++        require((after.st_dev,after.st_ino,after.st_mode,after.st_uid,after.st_gid,after.st_nlink) ==
++                (before.st_dev,before.st_ino,before.st_mode,before.st_uid,before.st_gid,before.st_nlink) and
++                after.st_size <= 4096, 'held libtest result object or bound differs')
++        log = os.pread(fd,4097,0)
++        final = os.fstat(fd)
++        require(len(log) == after.st_size and identity(after) == identity(final) == identity(path.lstat()),
++                'libtest result changed while read or named path was replaced')
++        records[-1]['independent_libtest_result'] = {
++            'path': str(path), 'bytes': len(log), 'sha256': sha(log), 'identity': identity(final)}
++        result = validate_focused_result(name,index,output,log,registered_count)
++        records[-1]['focused_result_gate'] = result
++        return result
++    finally:
++        os.close(fd)
+ 
+ 
+ def execute():
+@@ -878,15 +931,25 @@
+         require(len(ORIGINAL_TESTS)==7 and len(PAIR_TESTS)==15 and len(TESTS)==len(set(TESTS))==22 and
+                 all(test_list.splitlines().count(name+': test')==1 for name in TESTS),
+                 'original seven or new 15 exact tests absent/duplicated in actual test executable')
++        listed_names=[line[:-6] for line in test_list.splitlines() if line.endswith(': test')]
++        require(listed_names and len(listed_names)==len(set(listed_names)) and
++                not any(line.endswith(': benchmark') for line in test_list.splitlines()),
++                'actual registration list is duplicate/empty or contains unqualified benchmarks')
++        libtest_help=command([str(test_binary),'--help'],COPIED,env,'builder-test-help',report['commands'],10).decode()
++        require(re.search(r'^\s*--logfile\s',libtest_help,re.MULTILINE) is not None and
++                'Write logs to the specified file' in libtest_help,
++                'actual pinned libtest does not advertise the independently reviewed logfile option')
++        report['actual_libtest_logfile_support']=True
++        report['actual_registered_test_count']=len(listed_names)
+         test_env=dict(env)
+         test_env['PATH']=IMAGE_TEST_PATH
+         require(all(name not in test_env for name in ('FAKEROOTKEY','LD_PRELOAD','LD_LIBRARY_PATH')),
+                 'test environment already contains fakeroot state')
+         report['test_environment']=test_env
++        report['focused_result_gates']=[]
+         for index,name in enumerate(TESTS):
+-            output=command([str(test_binary),'--exact',name,'--test-threads=1','--nocapture'],COPIED,test_env,'projection-test-'+str(index),report['commands'],30).decode()
+-            require('test result: ok. 1 passed; 0 failed;' in output and 'test '+name+' ... ok' in output,
+-                    'focused test did not actually execute exactly once: '+name)
++            report['focused_result_gates'].append(focused_test(
++                test_binary,name,index,len(listed_names),test_env,report['commands']))
+         require(hash_held(builder)==builder_pin and hash_held(test_binary)==test_pin,'actual ELF changed while tested')
+         report['builder_elf']=builder_pin
+         report['test_elf']=test_pin
