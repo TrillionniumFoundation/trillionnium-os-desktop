@@ -1,0 +1,53 @@
+{
+  "arm": "candidate",
+  "baseline_result": {
+    "path": "/home/alex/work/pocket4-signal-host-baseline-r11-01-ff3127ab/result.json",
+    "sha256": "d99ee51205eeab9b6d33a2fcd6b4fa3d51304b06bc2fc638a470677a8f3a5a2e"
+  },
+  "binding": {
+    "candidate_build_inputs": {
+      "path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-inputs.json",
+      "sha256": "ccf2ebc89bfb4a06722719e292723669332e69691894717d702ff96eaf30e898"
+    },
+    "candidate_build_receipt": {
+      "path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/target/product/droidloom_x86_64/droidloom-native-engine-source.json",
+      "sha256": "4096ca1581c648063b16375786ca207be360e8fe788da68a523c16c602e4c4de"
+    },
+    "engine": {
+      "path": "/home/alex/work/pocket4-signal-mask-r11-build-01/android-out/target/product/droidloom_x86_64/system/lib64/libberberis_arm64.so",
+      "sha256": "643db1c51e98a32df10dce57fe7199408ed3c78b0cbe50e0358312700203cdd0"
+    },
+    "signal_fix_pins": {
+      "path": "/home/alex/work/pocket4-owned-signal-host-r11-source-01/candidate-attempt-01/signal-mask-r1-pins.json",
+      "sha256": "6a24ef53595e9d8da458a626effbfca4280a5de18c90ad1d5dd036ad3e936bf2"
+    }
+  },
+  "cpu": 6,
+  "evidence": "/home/alex/work/pocket4-signal-host-candidate-r11-01-9d630262",
+  "kind": "owned-full-host-suite-r1",
+  "main": {
+    "framework_guard": {
+      "path": "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+    },
+    "main_activation": {
+      "path": "/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json",
+      "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+    },
+    "main_resource_baseline": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    }
+  },
+  "nonce": "9d630262872f4a09acf4ae710974d5f3",
+  "preparation_source": "/home/alex/work/pocket4-owned-signal-host-r11-source-01/isolated-signal-canary-r1",
+  "schema": 1,
+  "tools": {
+    "/usr/bin/python3": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+    "/usr/bin/systemctl": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082"
+  },
+  "unit": "p4-signal-host-candidate-9d630262872f.service"
+}
