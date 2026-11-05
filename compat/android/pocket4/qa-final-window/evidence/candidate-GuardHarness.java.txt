@@ -1,0 +1,104 @@
+
+import java.util.HashMap;
+import java.util.Map;
+
+public final class GuardHarness {
+    static final class Rejected extends Exception {
+        Rejected(String code) { super(code); }
+    }
+    static void need(boolean value, String code) throws Rejected {
+        if (!value) throw new Rejected(code);
+    }
+
+    static final String TREE = "f792c0b11a7ac7c2d04d8715405c402d8ca6bd54bbb6b66f83c7d02c49d037fb";
+    static final String WINDOW = "28dbadac36ff13349fac849f2a01837cf869b01537a2bdd23e2a1fae3a9dda15";
+    static final String EXPANDED_WINDOW = "b56dda646880c7ccc3de9574c6b023efa8bec997e3ed88d4c206717e8312f674";
+    static final class Json {
+        final Map<String,String> values = new HashMap<String,String>();
+        String getString(String name) {
+            if (!values.containsKey(name)) throw new IllegalStateException("MISSING_" + name);
+            return values.get(name);
+        }
+    }
+    static final class Capture {
+        int windowId;
+        final Json json = new Json();
+        int closes;
+        Capture(int id, String tree, String window) {
+            windowId = id;
+            if (tree != null) json.values.put("tree_sha256", tree);
+            if (window != null) json.values.put("window_sha256", window);
+        }
+        void close() { closes++; }
+    }
+    Capture supplied;
+    boolean failInspect, failDeadline, actionAttempted, dispatchMarker;
+    int inspectCalls, deadlineCalls;
+    Capture inspect(String wanted, String purpose) throws Exception {
+        if (wanted != null || !"action_final_window".equals(purpose))
+            throw new AssertionError("wrong production inspect arguments");
+        inspectCalls++;
+        if (failInspect) throw new Rejected("CONTROL_INSPECT_FAILED");
+        return supplied;
+    }
+    void timeBound() throws Exception {
+        deadlineCalls++;
+        if (failDeadline) throw new Rejected("OWNED_DEADLINE");
+    }
+    void execute(Capture current) throws Exception {
+            Capture finalWindow = inspect(null, "action_final_window");
+            try {
+                need(finalWindow.windowId == current.windowId
+                     && finalWindow.json.getString("tree_sha256").equals(current.json.getString("tree_sha256"))
+                     && finalWindow.json.getString("window_sha256").equals(current.json.getString("window_sha256")), "FOCUS_CHANGED_BEFORE_ACTION");
+            } finally { finalWindow.close(); }
+            timeBound(); actionAttempted = true;
+        dispatchMarker = true;
+    }
+    static int failures;
+    static void check(String name, int finalId, String finalTree, String finalWindow,
+                      boolean inspectFailure, boolean deadlineFailure,
+                      String expectedError, int expectedCloses, int expectedDeadlines) {
+        GuardHarness host = new GuardHarness();
+        Capture current = new Capture(17, TREE, WINDOW);
+        host.supplied = new Capture(finalId, finalTree, finalWindow);
+        host.failInspect = inspectFailure;
+        host.failDeadline = deadlineFailure;
+        String error = null;
+        try { host.execute(current); }
+        catch (Exception failure) { error = failure.getClass().getSimpleName() + ":" + failure.getMessage(); }
+        boolean expectedAccepted = expectedError == null;
+        boolean ok = java.util.Objects.equals(error, expectedError)
+            && host.inspectCalls == 1 && host.supplied.closes == expectedCloses
+            && current.closes == 0 && host.deadlineCalls == expectedDeadlines
+            && host.actionAttempted == expectedAccepted && host.dispatchMarker == expectedAccepted;
+        if (!ok) failures++;
+        System.out.println("{\"case\":\"" + name + "\",\"passed\":" + ok
+            + ",\"actual_error\":" + (error == null ? "null" : "\"" + error + "\"")
+            + ",\"expected_error\":" + (expectedError == null ? "null" : "\"" + expectedError + "\"")
+            + ",\"action_attempted_marker\":" + host.actionAttempted
+            + ",\"dispatch_marker_reached\":" + host.dispatchMarker
+            + ",\"final_capture_closes\":" + host.supplied.closes
+            + ",\"current_capture_closes_in_fragment\":" + current.closes
+            + ",\"inspect_calls\":" + host.inspectCalls
+            + ",\"deadline_calls\":" + host.deadlineCalls + "}");
+    }
+    public static void main(String[] args) {
+        check("unchanged_window_and_tree", 17, TREE, WINDOW, false, false, null, 1, 1);
+        check("same_id_tree_changed_window_envelope", 17, TREE, EXPANDED_WINDOW, false, false,
+              "Rejected:FOCUS_CHANGED_BEFORE_ACTION", 1, 0);
+        check("window_id_changed", 18, TREE, WINDOW, false, false,
+              "Rejected:FOCUS_CHANGED_BEFORE_ACTION", 1, 0);
+        check("tree_changed", 17, "changed-tree-digest", WINDOW, false, false,
+              "Rejected:FOCUS_CHANGED_BEFORE_ACTION", 1, 0);
+        check("final_window_digest_missing", 17, TREE, null, false, false,
+              "IllegalStateException:MISSING_window_sha256", 1, 0);
+        check("final_tree_digest_missing", 17, null, WINDOW, false, false,
+              "IllegalStateException:MISSING_tree_sha256", 1, 0);
+        check("final_inspection_failure", 17, TREE, WINDOW, true, false,
+              "Rejected:CONTROL_INSPECT_FAILED", 0, 0);
+        check("deadline_before_dispatch", 17, TREE, WINDOW, false, true,
+              "Rejected:OWNED_DEADLINE", 1, 1);
+        System.exit(failures == 0 ? 0 : 1);
+    }
+}

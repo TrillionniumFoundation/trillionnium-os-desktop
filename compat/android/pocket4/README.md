@@ -1,5 +1,13 @@
 # Pocket4 Android application repair snapshot
 
+## Current continuation — 2026-11-05
+
+**Whole-App production readiness remains 0/45 in the tracked launcher scope.** The new [Camera2 checked-disconnect repair](camera/checked-disconnect/README.md) fixes a reproduced enumeration error, passes the original 15 and 11 new cases, and has a newly built and signed release08 APK. The [final-window QA repair](qa-final-window/README.md) fixes a reproduced last-use window check and passes complete compilation with Pocket4's real SDK. Device installation and App acceptance remain separate from these source/build results.
+
+The following original snapshot is retained with its 2026-11-04 scope. New Bilibili runs in [checkpoint 12](continuation-r11/checkpoint-12/README.md) reach DetailsActivity but still observe buffering; the earlier scoped visual playback is not a substitute for the new run. Native candidate07's full build has since reached a successful terminal; its test and deployment qualifications must be read separately.
+
+## Historical snapshot — 2026-11-04
+
 Status: **NO-GO**, observed 2026-11-04. The presenter timing repair and R16 native engine are now deployed to Main and verified. Business acceptance is in progress: Bilibili public search and visual playback passed; Marriott still has a fresh native crash, Beike reaches a blank login router, and Meituan repeatedly exits during startup. LMKD integration remains unqualified.
 
 This directory preserves repair source and dated evidence for Android 17 in DroidLoom on the Pocket4 Linux host. These results do not qualify Android on this repository's Asterinas kernel.

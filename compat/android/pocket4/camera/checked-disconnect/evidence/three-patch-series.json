@@ -1,0 +1,181 @@
+{
+  "schema": "pocket4-camera-three-patch-source-verification-v1",
+  "source_commit": "9b8f4fb09e6c9d12f23f83ccd7a0071b699a7f54",
+  "original_patch_stages_verified": 2,
+  "new_patch_stages_verified": 1,
+  "original_upstream_hashes_recovered": 6,
+  "only_manager_changed": true,
+  "old_40_payloads_unchanged": true,
+  "third_patch_reverse_restores_exact_six": true,
+  "remote_sources_changed": false,
+  "files": [
+    {
+      "path": "frameworks/ex/camera2/portability/src/com/android/ex/camera2/portability/AndroidCameraAgentImpl.java",
+      "upstream_sha256": "36ce8fb1ffc36d752018f7529fa3055ed2ca9f5f6c977a7905a96b7162406e32",
+      "release07_preimage_sha256": "163ebc77289491740161e0e9be3f67267727dd2a5c2b03e514b3a7688c2028f2",
+      "candidate_sha256": "163ebc77289491740161e0e9be3f67267727dd2a5c2b03e514b3a7688c2028f2",
+      "changed": false
+    },
+    {
+      "path": "packages/apps/Camera2/src/com/android/camera/CameraActivity.java",
+      "upstream_sha256": "b25515cba3d1373b69cc9560fa694487cc6e68fa97682ac8cd7548e72cf7151c",
+      "release07_preimage_sha256": "2928977f5e7f4a3c293f7e74ca99ea3d1c837f18e4cbbf2ae7050a46eac6f68c",
+      "candidate_sha256": "2928977f5e7f4a3c293f7e74ca99ea3d1c837f18e4cbbf2ae7050a46eac6f68c",
+      "changed": false
+    },
+    {
+      "path": "packages/apps/Camera2/src/com/android/camera/CaptureModule.java",
+      "upstream_sha256": "a4edf76e6037fc62a97c5cc6c4cae24505c2c1e117b214cfbb93b65561c0bea6",
+      "release07_preimage_sha256": "8f2c94f9bcc0694948b74301e03d80b74f4a3fb3611456e33badf4269314e38c",
+      "candidate_sha256": "8f2c94f9bcc0694948b74301e03d80b74f4a3fb3611456e33badf4269314e38c",
+      "changed": false
+    },
+    {
+      "path": "packages/apps/Camera2/src/com/android/camera/app/CameraController.java",
+      "upstream_sha256": "8241555d7b50238660afa523071ffaf314bb19cda1cd4db67967384b8b9bf138",
+      "release07_preimage_sha256": "23f79ae26a46de7bad11df9bb350d465b9061f9ff8622dc23acff16f3c80c305",
+      "candidate_sha256": "23f79ae26a46de7bad11df9bb350d465b9061f9ff8622dc23acff16f3c80c305",
+      "changed": false
+    },
+    {
+      "path": "packages/apps/Camera2/src/com/android/camera/one/OneCameraManager.java",
+      "upstream_sha256": "fb63280b46191c3d1605af9622b1ad8e11931c0951595cab51d4710c9a2fbfae",
+      "release07_preimage_sha256": "92e3de8a44a9b45a2623b032d0dcf3e0bc9227a9db2e9e16a674349c93326657",
+      "candidate_sha256": "92e3de8a44a9b45a2623b032d0dcf3e0bc9227a9db2e9e16a674349c93326657",
+      "changed": false
+    },
+    {
+      "path": "packages/apps/Camera2/src/com/android/camera/one/v2/Camera2OneCameraManagerImpl.java",
+      "upstream_sha256": "3fed869dc71da4c7bf3c85a80e9c891de16b12c17207ef3b2333c3a829398f23",
+      "release07_preimage_sha256": "2b112a02eadd4c2db0a642c3263207cfc55ad9930e1a4399c06c219c480e2bca",
+      "candidate_sha256": "0f35f1675d8977aed5b80141b380bd29bf995c8c48db73d688eff46b879c39ad",
+      "changed": true
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "--whitespace=error-all",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/baseline/patches/0002-camera-hotplug.patch"
+      ],
+      "cwd": "/workspace/scratch/4c1c408226df/camera-disconnect-fix/upstream-six-reconstructed",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--whitespace=error-all",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/baseline/patches/0002-camera-hotplug.patch"
+      ],
+      "cwd": "/workspace/scratch/4c1c408226df/camera-disconnect-fix/upstream-six-reconstructed",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "--whitespace=error-all",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/baseline/patches/0001-zero-camera-and-teardown.patch"
+      ],
+      "cwd": "/workspace/scratch/4c1c408226df/camera-disconnect-fix/upstream-six-reconstructed",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--whitespace=error-all",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/baseline/patches/0001-zero-camera-and-teardown.patch"
+      ],
+      "cwd": "/workspace/scratch/4c1c408226df/camera-disconnect-fix/upstream-six-reconstructed",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "python",
+        "-I",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/baseline/tools/verify_source_series.py",
+        "--aosp-root",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/upstream-six-reconstructed",
+        "--output-json",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/validation/original-six-file-patch-series.json"
+      ],
+      "cwd": "/workspace/scratch/4c1c408226df/camera-disconnect-fix",
+      "exit_code": 0,
+      "stdout": "{\n  \"schema\": \"pocket4-camera-source-series-verification-v1\",\n  \"success\": true,\n  \"upstream_files_verified\": 6,\n  \"patches_verified\": 2,\n  \"final_manager_sha256\": \"2b112a02eadd4c2db0a642c3263207cfc55ad9930e1a4399c06c219c480e2bca\",\n  \"original_source_tree_modified\": false,\n  \"full_apk_reproduction_verified\": false\n}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--check",
+        "--whitespace=error-all",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/patches/0003-checked-camera-disconnect.patch"
+      ],
+      "cwd": "/workspace/scratch/4c1c408226df/camera-disconnect-fix/six-file-candidate",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--whitespace=error-all",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/patches/0003-checked-camera-disconnect.patch"
+      ],
+      "cwd": "/workspace/scratch/4c1c408226df/camera-disconnect-fix/six-file-candidate",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--check",
+        "--whitespace=error-all",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/patches/0003-checked-camera-disconnect.patch"
+      ],
+      "cwd": "/workspace/scratch/4c1c408226df/camera-disconnect-fix/reverse-third-verified",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "apply",
+        "--reverse",
+        "--whitespace=error-all",
+        "/workspace/scratch/4c1c408226df/camera-disconnect-fix/candidate/checked-disconnect/patches/0003-checked-camera-disconnect.patch"
+      ],
+      "cwd": "/workspace/scratch/4c1c408226df/camera-disconnect-fix/reverse-third-verified",
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "host_source_only": true,
+  "apk_built": false,
+  "production_ready": false
+}
