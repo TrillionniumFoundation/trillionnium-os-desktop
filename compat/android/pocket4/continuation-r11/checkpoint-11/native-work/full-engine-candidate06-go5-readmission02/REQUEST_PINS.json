@@ -1,0 +1,85 @@
+{
+  "state": "SEPARATELY_REVIEWED_READMISSION_REQUEST_NOT_SUBMITTED",
+  "controller_sha256": "b42ee9229dfac7b62bb04472e39568867fc53d695389b2214c8bbfd9e0f83619",
+  "new_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/full-build-combined06-go5-streaming-01",
+  "actual_preparation_sha256": "ea14a9f968f84c5ab02c6f0c03d61ab4cad30f4374cb6662c825621644d71c2a",
+  "actual_builder_manifest_sha256": "776435c88ca6ddb983456c639ca051e586731140394756f33abe53dc478357e3",
+  "base_builder_manifest_sha256": "6834ea57e4d0402bd5c6e6c405728a111af77fb54ea0e0bea407ba9647fa41b4",
+  "candidate06_manifest_sha256": "3c780a398075f77d1f6b1c477c6ceaa35349de17b88e77896aa22820259c0376",
+  "Go5_runtime_patch_sha256": "39211a784284ed319b6abbbe4b327a88896931d39c6bdb91fe727a9a7589325f",
+  "actual_builder_compile_sha256": "a1d8fe1e891c876baeff555b18fce9bafe6a895d379d9e55261c6df1981785de",
+  "Blueprint_streaming_patch_sha256": "9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307",
+  "Main_snapshot_source_sha256": "f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb",
+  "main_observed_invariants_and_oom_gate": true,
+  "resource_budget": {
+    "cpu_quota_percent": 200,
+    "memory_max_bytes": 10737418240,
+    "minimum_MemAvailable_bytes": 13958643712,
+    "minimum_SwapFree_bytes": 2147483648,
+    "own_memory_swap_max_bytes": 1073741824,
+    "normal_builder_jobs": 1,
+    "admission_difference_bytes": 3221225472,
+    "swap_admission_difference_bytes": 1073741824,
+    "physical_reservation_claimed": false
+  },
+  "feature_enabled": false,
+  "ART_built": false,
+  "factory_service_started": false,
+  "whole_apps_ready": false,
+  "schema": 1,
+  "files": {
+    "fenced_build_streaming.py": {
+      "bytes": 12221,
+      "sha256": "9acf74e1b706753fd12753b38bfce1aa054be31da722cd7f2e03a87a9a8f8abc"
+    },
+    "verified-source-packet.json": {
+      "bytes": 80652,
+      "sha256": "1418c1336d09a72a364254e6bd96aab1f850f1bf74beb02474475ee178c08fad"
+    },
+    "exact-request.json": {
+      "bytes": 86902,
+      "sha256": "d9f442c7d1830156229ac37864476a6ca24161cc489ce5e2385548a0c5dc4a42"
+    },
+    "outer01-to-readmission02.patch": {
+      "bytes": 5502,
+      "sha256": "3f4d5cb913610bf18dca95f021465cb61d4f2c771f74d812a1e09f5abab0a34d"
+    },
+    "references/prior-failed-fence-terminal.json": {
+      "bytes": 1172,
+      "sha256": "8b74d6b0351db5823c4e183c222783b94ada34369f1eede78289ac3b6d20146a"
+    },
+    "references/postfailure-memory-sample.json": {
+      "bytes": 3812,
+      "sha256": "650a723bc5ea3a71446f3f33430e4c71bf961a1d1454ca4798e80690360ce526"
+    }
+  },
+  "submitted": false,
+  "remote_actions": 0,
+  "original_failed_fence_preserved": true,
+  "new_fence_directory": "build-fences-02",
+  "original_inner_attempt_directory": "attempt-01",
+  "original_attempt_must_remain_absent": true,
+  "prior_failure_sha256": "8b74d6b0351db5823c4e183c222783b94ada34369f1eede78289ac3b6d20146a",
+  "postfailure_memory_evidence_sha256": "650a723bc5ea3a71446f3f33430e4c71bf961a1d1454ca4798e80690360ce526",
+  "historical_sample_used_for_admission": false,
+  "unchanged_outer_functions_by_AST": [
+    "capture",
+    "compare",
+    "require",
+    "save",
+    "sha"
+  ],
+  "unchanged_request_fields": [
+    "cpu_quota_percent",
+    "cwd",
+    "env",
+    "executable",
+    "host",
+    "memory_max_bytes",
+    "nice",
+    "timeout_seconds"
+  ],
+  "inner_controller_byte_identical": true,
+  "Main_snapshot_byte_identical": true,
+  "idempotency_key": "pocket4-native-combined06-go5-streaming-fenced-cold-engine-flag0-build-02-20261105"
+}
