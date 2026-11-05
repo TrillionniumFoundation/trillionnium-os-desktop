@@ -57,6 +57,21 @@ class SourceIntegrityTests(unittest.TestCase):
             (root / path).unlink()
             self.assert_rejected(root, path, "presence")
 
+    def test_missing_bound_receiver_source_or_gate_is_rejected(self):
+        paths = (
+            "support/android/receiver/organ_extension.py",
+            "support/android/receiver/reviewed-live-helper-delta-v1.json",
+            "support/android/receiver/runner/OrganBinding.java",
+            "tests/workloads/android/test_bound_receiver.py",
+            "tests/workloads/android/test_receiver_effect_boundary.py",
+            "tests/workloads/android/test_receiver_qualification.py",
+        )
+        for path in paths:
+            with self.subTest(path=path), tempfile.TemporaryDirectory() as directory:
+                root = self.fixture(directory)
+                (root / path).unlink()
+                self.assert_rejected(root, path, "presence")
+
     def test_invalid_utf8_in_each_previously_corrupt_blob_is_rejected(self):
         paths = ("compat/android/aosp-profile.json",
                  "support/android/capture_guest_logs.py",

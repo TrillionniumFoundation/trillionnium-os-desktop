@@ -4,24 +4,26 @@ This source increment extends the existing Pocket4 helper and the existing
 `local.pocket4.actions.v2/.ActionRunner`. It does not install a service, start an
 Agentd, issue authority, retain an operation ledger, enable ADB, or register an
 effect destination by default. The existing `device_organ.py` profile remains
-read only and retains its deployed helper pin.
+read only and pins the independently reviewed deployed legacy helper.
 
-**Current local qualification:** source generation and host protocol/transport
-tests pass. Android compilation, original signer equality, installation,
-actual native observation, a real text effect and original-owner durable
-reconciliation still require recorded execution. Host tests are not device
-evidence. The original signing password and key were not read or copied.
+**Qualification boundary:** host protocol tests, Android compilation and APK
+signature inspection each require receipts tied to the actual source candidate.
+Installation with the original signer, native observation, a real text effect
+and original-owner durable reconciliation remain separate gates. An unsigned
+APK cannot qualify an installed receiver. The build never creates signing
+material or reads the original signing password.
 
 ## Source and compatibility
 
 | Source | Purpose |
 | --- | --- |
-| `upstream/android_app.py` | Exact deployed 34,048-byte original helper, SHA256 `8c9856a3791f0a208e59b00137547466c9f84d3a60d7a2cae700980de43f677b` |
+| `upstream/android_app.py` | Frozen originally reviewed 34,048-byte helper, SHA256 `8c9856a3791f0a208e59b00137547466c9f84d3a60d7a2cae700980de43f677b` |
 | `upstream/ActionRunner.java` | Exact deployed 21,421-byte runner source, SHA256 `bf3a577bfbb9b0f4b9c6035c0423e73f8fef0e1df34dd7dea2140efbe6308570` |
 | `organ_extension.py` | Strict opt-in dispatcher compiled into the original helper file |
 | `runner/OrganJson.java` | Exact canonical UTF-8 payload identity and bounded schema |
 | `runner/OrganSnapshot.java` | Actual native window, cell/app incarnation, node and screenshot observations |
 | `runner/OrganBinding.java` | Native preconditions, final deadline and independent readback |
+| `reviewed-live-helper-delta-v1.json` | Exact reviewed restoration and launch-receipt changes after the legacy Enter intermediate |
 | `build_receiver.py` | Pinned-preimage source generation, original SDK build and optional same-signer check |
 | `qualify_receiver.py` | Explicit javac, APK signature and installed-source read-only qualification gates |
 
@@ -38,25 +40,37 @@ package, manifest, permissions, instrumentation target and signing identity.
 The build does not generate a signing key and rejects a candidate whose signer
 certificate differs from the verified original APK.
 
-### Reviewed legacy Enter derivation
+### Reviewed live helper derivation
 
 The frozen `upstream/android_app.py` remains 34,048 bytes at SHA256
 `8c9856a3791f0a208e59b00137547466c9f84d3a60d7a2cae700980de43f677b`.
-A read-only comparison on 2026-11-03 found exactly one change in the existing
-Pocket4 helper: legacy `enter` adds the `keyboard` source argument before
-`keyevent`; `home` and `back` retain their original argument lists. That
-34,094-byte intermediate is SHA256
+The reviewed 2026-11-03 Enter change selects the keyboard source and produces
+the 34,094-byte intermediate at SHA256
 `196fbfe525e9813a79a1582994445c63929f2998448d46ebee7c9ac582f66eec`.
 
-The generator now applies that one exact-context change after checking the
-frozen input, verifies the complete intermediate hash, and only then composes
-the strict organ extension. `reviewed_helper_derivation` records both identities
-in the build receipt. It does not read or accept arbitrary live code, change the
-read-only adapter's pin, or modify the deployed helper. The home/back/enter
-regression uses a mocked `arun` and sends no key events. Previous e1 build
-receipts remain tied to their unmodified source and generated helper; a new
-candidate needs its own build and qualification receipt. This compatibility
-change grants no organ effect authority or native-device qualification.
+The complete helper measured on 2026-11-04 is 36,401 bytes at SHA256
+`088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae`.
+Its additional three exact-context changes are retained in
+`reviewed-live-helper-delta-v1.json`. Accessibility restoration must be verified
+before either a successful or failed instrumentation reply is accepted.
+Unverified restoration remains unknown even after a find-only request.
+A verified original error retains that restoration result. Launch accepts one
+unambiguous ActivityManager status, reads foreground at most once, and reports
+transport timeout, wait timeout, missing status or foreground drift without
+relaunch. Foreground presence does not assert business or visual success.
+
+The generator verifies the frozen input, Enter intermediate, delta identities
+and complete current-helper hash before composing the strict organ extension.
+`reviewed_helper_derivation` retains all these identities and the delta hash.
+It never reads arbitrary live code, replaces the deployed helper, or expands
+the read-only adapter's operation allowlist. The adapter's pin is updated
+separately to these reviewed legacy bytes. No organ effect authority is added.
+
+Host regressions mock every legacy transport and foreground query; they send
+no key event, launch or instrumentation request. They preserve unknown outcomes,
+enforce one attempt and reject changed patch contexts or output bytes. Existing
+receipts remain bound to their original sources. Every newly generated
+candidate needs its own build, signer and installed-source receipts.
 
 ## Exact receiver protocol
 
@@ -70,8 +84,7 @@ reply cannot supply that qualification. The original APK ignores the new
 top-level `organ` field and could otherwise write before the helper rejects its
 legacy reply. The reply check alone is too late to prevent that effect.
 
-`organ-observe` and `organ-readback` retain their find-only paths. The deployed
-read-only adapter, original signer and APK are unchanged. This guard does not
+`organ-observe` and `organ-readback` retain their find-only paths. The read-only operation allowlist, original signer and deployed APK are unchanged. This guard does not
 qualify P1 Android delivery or enable an effect lane. A future enablement needs
 separate review of trusted installed-byte, original-signer and peer checks
 before any native write; an unsigned candidate is insufficient.

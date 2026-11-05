@@ -78,6 +78,115 @@ class BoundReceiverTests(unittest.TestCase):
                 arun.assert_called_once_with(argv)
                 self.assertEqual(result, {'ok': True, 'performed': operation, 'visual_verified': False})
 
+
+    def test_reviewed_restoration_is_required_before_success_or_failure(self):
+        for ok in (True, False):
+            for restored in (None, False, 'true'):
+                reply = {'ok': ok, 'error': 'ORIGINAL_FAILURE', 'outcome_unknown': False,
+                         'automatic_retry': False, 'accessibility_mode_restoration_verified': restored}
+                raw = b'INSTRUMENTATION_RESULT: sidecar_result_base64=' + base64.b64encode(canonical(reply)) + b'\n'
+                with self.subTest(ok=ok, restored=restored), \
+                        patch.object(self.receiver, 'arun', return_value=raw) as arun, \
+                        self.assertRaises(self.receiver.ControlError) as failed:
+                    self.receiver.ui({'op': 'find'})
+                self.assertEqual(str(failed.exception), 'ACCESSIBILITY_MODE_RESTORATION_UNVERIFIED')
+                self.assertTrue(failed.exception.details['outcome_unknown'])
+                self.assertFalse(failed.exception.details['automatic_retry'])
+                arun.assert_called_once()
+
+    def test_reviewed_original_failure_retains_confirmed_restoration(self):
+        reply = {'ok': False, 'error': 'ORIGINAL_FAILURE', 'outcome_unknown': False,
+                 'automatic_retry': False, 'accessibility_mode_restoration_verified': True}
+        raw = b'INSTRUMENTATION_RESULT: sidecar_result_base64=' + base64.b64encode(canonical(reply)) + b'\n'
+        with patch.object(self.receiver, 'arun', return_value=raw) as arun, \
+                self.assertRaises(self.receiver.ControlError) as failed:
+            self.receiver.ui({'op': 'find'})
+        self.assertEqual(str(failed.exception), 'ORIGINAL_FAILURE')
+        self.assertTrue(failed.exception.details['accessibility_mode_restoration_verified'])
+        self.assertFalse(failed.exception.details['outcome_unknown'])
+        self.assertFalse(failed.exception.details['automatic_retry'])
+        arun.assert_called_once()
+
+    def test_reviewed_launch_acknowledgement_requires_one_foreground_observation(self):
+        observed = {'package': 'com.example', 'activity': '.Main', 'window_token': 'a1'}
+        with patch.object(self.receiver, 'foreground', return_value=observed) as foreground:
+            result = self.receiver.launch_receipt('com.example/.Main', 'com.example', 'Status: ok\n')
+        foreground.assert_called_once_with()
+        self.assertTrue(result['launch_accepted'])
+        self.assertTrue(result['foreground_verified'])
+        self.assertFalse(result['outcome_unknown'])
+        self.assertFalse(result['automatic_retry'])
+        self.assertFalse(result['business_success_verified'])
+        self.assertFalse(result['visual_verified'])
+        self.assertEqual(result['foreground'], observed)
+
+    def test_reviewed_launch_ambiguous_or_timed_out_acknowledgement_never_relaunches(self):
+        cases = [('Status: timeout\n', 'LAUNCH_WAIT_TIMEOUT', True),
+                 ('Status: ok\nStatus: ok\n', 'LAUNCH_STATUS_UNVERIFIED', None),
+                 ('Starting: Intent\n', 'LAUNCH_STATUS_UNVERIFIED', None),
+                 ('Status: ok\nError: failure\n', 'LAUNCH_FAILED', False)]
+        for output, code, accepted in cases:
+            with self.subTest(output=output), \
+                    patch.object(self.receiver, 'foreground') as foreground, \
+                    patch.object(self.receiver, 'arun') as arun, \
+                    self.assertRaises(self.receiver.ControlError) as failed:
+                self.receiver.launch_receipt('com.example/.Main', 'com.example', output)
+            self.assertEqual(str(failed.exception), code)
+            self.assertIs(failed.exception.details['launch_accepted'], accepted)
+            self.assertTrue(failed.exception.details['outcome_unknown'])
+            self.assertFalse(failed.exception.details['automatic_retry'])
+            foreground.assert_not_called()
+            arun.assert_not_called()
+
+    def test_reviewed_launch_foreground_drift_or_failure_retains_unknown_outcome(self):
+        for observed in ({'package': 'com.other'}, {}, RuntimeError('unavailable')):
+            with self.subTest(observed=observed), \
+                    patch.object(self.receiver, 'foreground') as foreground, \
+                    patch.object(self.receiver, 'arun') as arun, \
+                    self.assertRaises(self.receiver.ControlError) as failed:
+                if isinstance(observed, Exception):
+                    foreground.side_effect = observed
+                else:
+                    foreground.return_value = observed
+                self.receiver.launch_receipt('com.example/.Main', 'com.example', 'Status: ok\n')
+            self.assertTrue(failed.exception.details['launch_accepted'])
+            self.assertTrue(failed.exception.details['outcome_unknown'])
+            self.assertFalse(failed.exception.details['automatic_retry'])
+            self.assertFalse(failed.exception.details['foreground_verified'])
+            foreground.assert_called_once_with()
+            arun.assert_not_called()
+
+    def test_reviewed_launch_transport_failure_preserves_one_attempt(self):
+        cases = [(subprocess.TimeoutExpired('fixture-only', 35), 'LAUNCH_RESPONSE_TIMEOUT'),
+                 (RuntimeError('fixture-only'), 'LAUNCH_RESPONSE_UNAVAILABLE')]
+        for error, code in cases:
+            with self.subTest(code=code), \
+                    patch.object(self.receiver, 'arun', side_effect=[b'com.example/.Main\n', error]) as arun, \
+                    patch.object(self.receiver, 'foreground') as foreground, \
+                    self.assertRaises(self.receiver.ControlError) as failed:
+                self.receiver.dispatch({'op': 'launch', 'package': 'com.example'})
+            self.assertEqual(str(failed.exception), code)
+            self.assertTrue(failed.exception.details['outcome_unknown'])
+            self.assertFalse(failed.exception.details['automatic_retry'])
+            self.assertIsNone(failed.exception.details['launch_accepted'])
+            self.assertEqual(arun.call_count, 2)
+            self.assertEqual(arun.call_args.args[0],
+                             ['/system/bin/am', 'start', '-W', '-n', 'com.example/.Main'])
+            foreground.assert_not_called()
+
+    def test_reviewed_delta_rejects_changed_context_and_changed_postimage(self):
+        import shutil
+        for field in ('old', 'new'):
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory) / 'reviewed'
+                shutil.copytree(build_receiver.ROOT, root)
+                path = root / 'reviewed-live-helper-delta-v1.json'
+                delta = json.loads(path.read_text())
+                delta['patches'][0][field] += '# unreviewed fixture drift\n'
+                path.write_text(json.dumps(delta))
+                with patch.object(build_receiver, 'ROOT', root), self.assertRaises(ValueError):
+                    build_receiver.sources(Path(directory) / 'rejected-candidate')
+
     def test_unknown_fields_and_nonexact_resource_fail_before_discovery(self):
         cases = [
             {'op': 'organ-observe', 'package': 'com.android.settings', 'resource_id': 'editable'},

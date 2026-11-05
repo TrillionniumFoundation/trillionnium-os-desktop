@@ -22,7 +22,7 @@ else:
 
 HELPER_PATH = "/usr/local/libexec/android-digitalis-observe-helper"
 CTL_PATH = "/usr/bin/droidloomctl"
-REVIEWED_HELPER_SHA256 = "8c9856a3791f0a208e59b00137547466c9f84d3a60d7a2cae700980de43f677b"
+REVIEWED_HELPER_SHA256 = "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae"
 DEVICE_REF = "pocket4"
 PACKAGE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+")
 SHA256 = re.compile(r"[0-9a-f]{64}")
