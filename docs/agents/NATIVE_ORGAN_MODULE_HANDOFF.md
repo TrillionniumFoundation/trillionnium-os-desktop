@@ -5,7 +5,7 @@
 
 独立后继的 [Calculator organ 合同](../../ui/core/CALCULATOR_PROTOCOL.md)
 连接[共同模型](../../ui/core/README.md)、[双目标 Session 开发](../../ui/session/README.md#explicit-two-target-candidate)
-和[应用接线/验证](../../ui/app-window/README.md#calculator-organ-candidate)。它沿用现有
+和[应用接线/验证](../../ui/app-window/README.md#calculator-organ-and-durable-state)。它沿用现有
 16 个 Cargo 入口，在原 writer/outbox/Objective/FinalUse 上新增显式 profile 与新
 Core thread；旧 Notes catalog 和历史不迁移。当前候选的模型/组件命令与未验收
 范围见该合同，未承接本页任何历史运行计数或冻结 fd8/a39 产品资格。

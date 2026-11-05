@@ -67,3 +67,14 @@ Recovery still rejects effects. Negative subprocesses vary parent/UID/GID/boot/
 birth/target/purpose/version, malformed metadata and missing required storage;
 rejection must create no document. These fixtures do not claim a Root grant,
 model turn, final packaged ELF acceptance, power loss or full owner recovery.
+
+## Joint Calculator counterpart
+
+Joint desktop Root bootstrap also requires the independent Calculator lifetime
+contract and existing private TRILL_CALCULATOR_STATE_DIR namespace. Its schema-1
+metadata includes the exact Calculator target and explicit storage requirement;
+missing or mismatched metadata is refused. Calculator retains the actual Session
+pidfd and owns a separate worker and target directory. See
+[Calculator durability](../support/ui/CALCULATOR_DURABILITY.md) for its storage
+and recovery behavior. The Notes saved-text picker does not imply automatic
+Calculator history migration.

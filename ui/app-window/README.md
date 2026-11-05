@@ -51,24 +51,38 @@ for the bounded catalogue, lock/custody checks and race/failure behavior.
 The Terminal is an explicit built-in command allowlist; it does not execute
 arbitrary user shell commands. Preserve that boundary when adding commands.
 
-## Calculator organ candidate
+## Calculator organ and durable state
 
-[calculator_organ.rs](src/calculator_organ.rs) queues a bounded private effect or
-readback request onto the actual egui thread. The same shared model holds visible
-operands/result, revision and one pending causal receipt. Checked canonical i64
-arithmetic applies only to the explicit organ profile; ordinary standalone
-Calculator behavior remains available. The [protocol](../core/CALCULATOR_PROTOCOL.md)
-specifies separate identity, exact raw hashes, observation/retirement, unknown
-results, the total BOOTTIME budget and original writer boundaries.
+[calculator_organ.rs](src/calculator_organ.rs) connects the inherited effect and
+recovery lanes to [calculator_worker.rs](src/calculator_worker.rs). The single
+worker owns state, serializes local revision-CAS edits and external effects,
+and persists causal receipts before publishing its bounded renderer projection.
+Checked canonical i64 arithmetic applies to the explicit organ profile.
+The [protocol](../core/CALCULATOR_PROTOCOL.md) defines the separate target,
+exact bytes, original turn fence, BOOTTIME budget and FinalUse boundary.
 
-The inherited Session pidfd is required for this profile. An idle window requests
-a read-only lifetime repaint within 100 ms and closes on Session loss; effect
-threads never mutate the model. This profile has no crash/reboot receipt store.
-The [transport tests](src/calculator_organ_tests.rs) exercise real socket pairs;
-the [lifetime tests](src/calculator_lifetime_tests.rs) use real parent/App processes
-and egui output-driven empty-input frames. They are host component evidence,
-separate from native compositor pixels and the original Core/Objective/FinalUse
-application-effect acceptance required by the protocol.
+TRILL_CALCULATOR_STATE_DIR selects the private
+[CalculatorStore](../core/src/calculator_store.rs). Joint original Root startup
+requires durable storage; explicitly optional profiles can retain temporary
+memory behavior. Each target creates a distinct directory. A successor starts
+a new document, while the old target remains available only for original-owner
+readback and exact retirement metadata.
+
+The inherited Session pidfd remains required for this profile. The worker
+checks that actual lifetime before and after commands; the idle GUI schedules
+a read-only repaint and closes on Session loss. Persistence failure freezes
+further mutation. The independent
+[trill-calculator-recovery](src/bin/trill-calculator-recovery.rs) helper can reopen
+a terminated target without an effect endpoint. See
+[Calculator durability](../../support/ui/CALCULATOR_DURABILITY.md) for storage,
+worker, crash/unknown and metadata-ACK rules.
+
+The [transport tests](src/calculator_organ_tests.rs),
+[lifetime tests](src/calculator_lifetime_tests.rs) and
+[real helper process test](tests/calculator_recovery.rs) provide host component
+evidence. Original Core/Objective/FinalUse, the same installed source pair,
+two real owner successors and native compositor pixels have separate
+acceptance requirements.
 
 ## Development and validation
 

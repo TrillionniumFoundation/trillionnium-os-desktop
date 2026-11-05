@@ -51,3 +51,44 @@ The durable Calculator checkpoint, single state worker and real recovery helper 
 This lifecycle source is integrated against the new Hepta successor, issuer renewal, original-record selector and retirement APIs. The Desktop Git dependency must be pinned to the final combined Hepta commit before compilation and packaging. Required acceptance is the original test suite plus an installed, same-source-pair Linux run through two actual successive owner/Session generations, followed by revoked-authority refusal. A source check, fixture, single recovery attempt, QEMU run, or an old source pair cannot substitute for that evidence.
 
 Native Asterinas G2 and physical Android remain separate qualifications. This document describes the Linux original-host composition only.
+
+## Per-target data and original issuer revocation
+
+The shared u/notes and u/calculator paths are namespaces. The stores create
+a distinct session_instance-task_id-incarnation directory for every new target;
+an existing target is never reset as fresh. Old recovery helpers open only the
+explicit previous target in RecoveryOnly mode and retain its exclusive lock.
+A successor starts new documents. Notes offers an explicit saved-text copy
+with revision/digest checks; Calculator does not automatically inherit values
+or history. Neither path imports an old effect or retirement receipt.
+
+The original local admin client can revoke only the currently configured issuer:
+
+~~~text
+admin --instance-file <generation admin/root-admin-instance.json>
+  revoke-issuer --expected-lease-id <original issuer ID>
+  --expected-revision <current configured revision>
+  --reason-sha256 <nonzero lowercase 64-hex digest>
+~~~
+
+Generation 1 uses admin/root-admin-instance.json; later descriptors live in
+admin/recovery-N/root-admin-instance.json. The existing private socket, actual
+Root credentials, nonce, pinned peer and cumulative deadline remain mandatory.
+The exact original lease, including epoch and binding, is compared inside the
+same registry CAS lock. Only its committed self-revocation can use the private
+terminal-confirmation path that no longer asks the revoked issuer to be live.
+
+A successful issuer_revoked reply is a verified terminal fact, not a use token.
+A lost or late reply remains unknown and must not trigger a mutation retry.
+Record registry revocation and client confirmation separately. A real rejected
+Gen4 recover-desktop attempt proves the recovery entry refused; if it fails
+before renewal or writer rotation, it does not prove those later functions were
+executed. Their detailed revoked-state cases require the original Rust tests.
+Already-issued effects retain their own original finite FinalUse semantics.
+
+For the two-successor scenario, use separate original Chat turns for Notes and
+Calculator: the joint turn fence admits only one effect across both Apps per
+turn. Retain the original request, target, operation, terminal, actual target
+ACK and protected Current evidence for each generation. Preserve all per-call
+timeouts and finite leases; an explicitly budgeted whole scenario does not
+extend any individual deadline.

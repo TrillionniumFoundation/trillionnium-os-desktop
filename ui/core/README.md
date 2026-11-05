@@ -18,6 +18,12 @@ not issue grants, sign requests, own a durable effect journal, or implement HOS2
   the separate candidate Calculator identity, checked integer state/receipt model
   and versioned joint reservation. [Calculator protocol](CALCULATOR_PROTOCOL.md)
   defines exact bytes, one pending receipt, recovery, lifecycle and acceptance scope.
+- [calculator_checkpoint.rs](src/calculator_checkpoint.rs) and
+  [calculator_store.rs](src/calculator_store.rs): exact-target application data
+  and receipt persistence, exclusive incarnation lock, recovery-only reopening
+  and failure freezing. [Shared private IO](src/app_checkpoint_store.rs) supplies
+  synchronized file replacement. See
+  [Calculator durability](../../support/ui/CALCULATOR_DURABILITY.md).
 - [notes_recovery.rs](src/notes_recovery.rs) and
   [notes_private_unix.rs](src/notes_private_unix.rs): separately inherited
   recovery datagrams, exact acknowledgement and private descriptor checks.

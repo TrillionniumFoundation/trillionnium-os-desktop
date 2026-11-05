@@ -1,6 +1,6 @@
-# Calculator organ v1 — candidate development contract
+# Calculator organ v1 — development and storage contract
 
-This candidate follows frozen Desktop fd8 / Hepta a39. No real Calculator organ acceptance is claimed here. Existing Notes identities, catalogs, threads and history remain unchanged.
+The current source adds durable application state and joint original-owner recovery to the original Calculator candidate. The machine-selected source pair and historical evidence remain recorded in [SOURCES](../../docs/SOURCES.md). A protocol or component test alone does not qualify the installed product; historical fd8/a39 receipts do not qualify a later source pair.
 
 Calculator owns its visible state and one pending causal receipt. The original Hepta writer, Objective sender, outbox and FinalUse retain authority, history and retry policy. Public Session IPC cannot submit Calculator effects or retire receipts.
 
@@ -26,7 +26,7 @@ Envelope: `{schema_version:1,target,operation_id,payload_sha256,result}`. Result
 - `{status:"not_applied",reason,current_revision}`. Reasons: `revision_conflict`, `operation_conflict`, `revision_exhausted`, `target_mismatch`, `ui_deadline_elapsed`, `receipt_pending`, `invalid_operand`, `overflow`, `division_by_zero`, `non_integral_division`.
 - `{status:"unknown",current_revision}`; current arithmetic values never prove a missing historical effect.
 
-Capacity is one pending Applied response and one last retirement identity. Identical pending repeats return that receipt without applying again, including after a deadline. Within these two retained entries, reused IDs with different bytes are refused. An exact last-retired operation is Unknown at the app, while the original writer retains its terminal. Older history and global operation identity are protected by the original writer ledger, not an unbounded app cache. New effects wait for exact original-writer retirement. The receipt proves app state mutation, not compositor pixels or durable application persistence.
+Capacity is one pending Applied response and one last retirement identity. Identical pending repeats return that receipt without applying again, including after a deadline. Within these two retained entries, reused IDs with different bytes are refused. An exact last-retired operation is Unknown at the app, while the original writer retains its terminal. Older history and global operation identity are protected by the original writer ledger, not an unbounded app cache. New effects wait for exact original-writer retirement. The in-memory model receipt alone proves neither compositor pixels nor persistence. In the durable profile, CalculatorStore synchronizes the complete state and causal receipt before returning Applied; the original Hepta writer must still verify and retain its own terminal.
 
 ## Readback and retirement
 
@@ -36,7 +36,7 @@ Only these requests are accepted on the datagram lane:
 2. `{schema_version:1,action:"observe",target,operation_id,payload_sha256}`. Exact pending-receipt match returns its original Applied response; otherwise Unknown.
 3. `{schema_version:1,action:"acknowledge",target,operation_id,payload_sha256,receipt_sha256}`. The digest covers the exact app-serialized Applied response bytes. Only the original writer, after verifying its matching durable terminal, sends this. Response: `{schema_version:1,action:"acknowledged",target,operation_id,payload_sha256,receipt_sha256,status}`, where status is `retired`, `already_retired`, or `not_retired`.
 
-The app retains one last exact retirement for idempotent acknowledgement, without a second operation ledger. No evaluate payload is accepted on this lane. App loss leaves an unrecoverable operation unknown; this volatile profile does not inherit Notes persistence or reboot recovery.
+The app retains one last exact retirement for idempotent acknowledgement, without a second operation ledger. No evaluate payload is accepted on this lane. The optional temporary profile loses its volatile receipt on App exit. The durable profile preserves the exact target checkpoint and permits an independent recovery-only helper to read or acknowledge it. It never inherits Notes persistence, creates a replacement operation or treats missing evidence as success. [Calculator durability](../../support/ui/CALCULATOR_DURABILITY.md) specifies the 16 KiB format, physical synchronization, worker and helper contracts.
 
 ## Versioned multi-target startup
 
@@ -81,7 +81,7 @@ Close without an input or effect. This establishes host process/egui component
 behavior, not native compositor window exit or visible pixels.
 
 The candidate Session flag requires the private original Root handshake, exact
-Notes storage/helper configuration and new owner profile; it is not a standalone
+Notes/Calculator storage and helper configuration and the joint owner profile; it is not a standalone
 command for granting authority. The complete Root launcher, paired Hepta source,
 six-tool original Core thread, real writer/FinalUse effect, independent app
 readback and original terminal must be separately compiled and executed before
