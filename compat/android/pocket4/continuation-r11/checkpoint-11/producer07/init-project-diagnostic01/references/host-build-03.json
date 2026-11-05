@@ -1,0 +1,113 @@
+{
+  "Android_PID1_executed": false,
+  "actual_host_controls_only": true,
+  "barrier_Android_or_supervisor_integration_qualified": false,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-fPIC",
+        "-fvisibility=hidden",
+        "-shared",
+        "init_relay_barrier.c",
+        "-Wl,-z,relro,-z,now",
+        "-Wl,--version-script=exported.map.txt",
+        "-o",
+        "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/init-barrier-host-build-03/libdroidloom_init_relay.host.so"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/cc",
+        "-std=c11",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "protocol_controls.c",
+        "-o",
+        "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/init-barrier-host-build-03/protocol-controls"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": ""
+    },
+    {
+      "argv": [
+        "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/init-barrier-host-build-03/protocol-controls"
+      ],
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "{\"case\":\"complete_handshake_closes_capabilities_before_next_exec\",\"ok\":true}\n{\"case\":\"wrong_nonce_rejected\",\"ok\":true}\n{\"case\":\"wrong_abi_rejected\",\"ok\":true}\n{\"case\":\"wrong_phase_rejected\",\"ok\":true}\n{\"case\":\"extra_rights_closed\",\"ok\":true}\n{\"case\":\"wrong_descriptor_type_rejected\",\"ok\":true}\n{\"case\":\"wrong_socket_identity_rejected\",\"ok\":true}\n{\"case\":\"wrong_socket_mode_rejected\",\"ok\":true}\n{\"case\":\"short_packet_rights_closed\",\"ok\":true}\n{\"case\":\"oversized_packet_rights_closed\",\"ok\":true}\n{\"case\":\"hup_before_projection_rejected\",\"ok\":true}\n{\"case\":\"hup_after_projection_rejected\",\"ok\":true}\n{\"case\":\"bounded_timeout_rejected\",\"ok\":true}\n{\"case\":\"projection_error_rejected\",\"ok\":true}\n{\"case\":\"finish_error_rejected\",\"ok\":true}\n{\"case\":\"wrong_commit_nonce_rejected\",\"ok\":true}\n{\"case\":\"commit_rights_closed\",\"ok\":true}\n{\"case\":\"reserved_bytes_rejected\",\"ok\":true}\n{\"case\":\"zero_nonce_rejected\",\"ok\":true}\n{\"case\":\"daemon_exit_with_socket_still_held_rejected\",\"ok\":true}\n{\"ok\":true,\"owned_controls_passed\":20,\"Android_PID1_executed\":false,\"mounts_or_pressure_executed\":false}\n"
+    }
+  ],
+  "finished_at": "2026-11-04T18:56:10.283194+00:00",
+  "inputs_after": {
+    "Android.bp": {
+      "bytes": 238,
+      "sha256": "abc3b2e9e13ca70e1f443757b3534da3eeda50c16997b297ee3806604c386a5c"
+    },
+    "README.md": {
+      "bytes": 2946,
+      "sha256": "71082133b66e2ca7ff1610fb0d1835feaf850bf706df59cb4f3be9cd8b6c2972"
+    },
+    "exported.map.txt": {
+      "bytes": 84,
+      "sha256": "e5cacf61316cd57074bfcbf8117340d87e7c0b3be6208b20ca92f1b92965a74e"
+    },
+    "init_relay_barrier.c": {
+      "bytes": 17282,
+      "sha256": "d3e6c69159efb6a7ec87306d27ebb5610972c1a05b38c5a57d946806e004c3e6"
+    },
+    "init_relay_protocol.h": {
+      "bytes": 1176,
+      "sha256": "5be7972ec8245bafd3226493ed1c5df0fcbadceb3447cf9cc9b0ccbc1d91fdcb"
+    },
+    "protocol_controls.c": {
+      "bytes": 14164,
+      "sha256": "7a4b6f1dfa6b5a1c0a9dc8be84e32f514ea18ed0a118eb73253649f735218e75"
+    }
+  },
+  "inputs_before": {
+    "Android.bp": {
+      "bytes": 238,
+      "sha256": "abc3b2e9e13ca70e1f443757b3534da3eeda50c16997b297ee3806604c386a5c"
+    },
+    "README.md": {
+      "bytes": 2946,
+      "sha256": "71082133b66e2ca7ff1610fb0d1835feaf850bf706df59cb4f3be9cd8b6c2972"
+    },
+    "exported.map.txt": {
+      "bytes": 84,
+      "sha256": "e5cacf61316cd57074bfcbf8117340d87e7c0b3be6208b20ca92f1b92965a74e"
+    },
+    "init_relay_barrier.c": {
+      "bytes": 17282,
+      "sha256": "d3e6c69159efb6a7ec87306d27ebb5610972c1a05b38c5a57d946806e004c3e6"
+    },
+    "init_relay_protocol.h": {
+      "bytes": 1176,
+      "sha256": "5be7972ec8245bafd3226493ed1c5df0fcbadceb3447cf9cc9b0ccbc1d91fdcb"
+    },
+    "protocol_controls.c": {
+      "bytes": 14164,
+      "sha256": "7a4b6f1dfa6b5a1c0a9dc8be84e32f514ea18ed0a118eb73253649f735218e75"
+    }
+  },
+  "installed_files_changed": false,
+  "mounts_or_pressure_executed": false,
+  "ordinary_owned_controls_passed": 20,
+  "schema": 1,
+  "source": "/home/alex/work/pocket4-supervisor-lmkd-lifecycle-r11-work-01/candidate/android/init-relay-barrier",
+  "started_at": "2026-11-04T18:56:09.747449+00:00",
+  "success": true
+}

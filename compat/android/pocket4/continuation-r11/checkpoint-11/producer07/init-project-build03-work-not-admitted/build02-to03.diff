@@ -1,0 +1,63 @@
+--- build02/build-template.py
++++ build03/build-template.py
+@@ -77,11 +77,11 @@
+         os.close(fd)
+ 
+ 
+-def dependencies(path):
++def dependencies(path, expected_target):
+     text = path.read_text('utf-8')
+     require(len(text.encode()) < 262144 and ': ' in text, 'invalid dependency file')
+     target, payload = text.replace('\\\n', ' ').split(': ', 1)
+-    require(target.strip() == 'barrier.o', 'unexpected dependency target')
++    require(target.strip() == expected_target, 'unexpected dependency target')
+     names = shlex.split(payload)
+     require(names and len(names) == len(set(names)), 'empty/repeated dependencies')
+     require(all(Path(name).is_absolute() for name in names), 'relative dependency')
+@@ -131,7 +131,7 @@
+ 
+ 
+ def main():
+-    require(CFG['kind'] == 'p4-init-project-diagnostic-build02', 'wrong controller kind')
++    require(CFG['kind'] == 'p4-init-project-diagnostic-build03', 'wrong controller kind')
+     guard = base64.b64decode(CFG['resource_guard']['base64'], validate=True)
+     require(digest(guard) == CFG['resource_guard']['sha256'], 'resource source pin differs')
+     namespace = {'__name__': 'frozen_resource_guard'}
+@@ -148,7 +148,7 @@
+     try:
+         require(os.geteuid() == 0 and os.getegid() == 0, 'root-owned sealed build required')
+         resources.begin()
+-        require(root.parent == Path('/opt') and root.name == 'p4-init-project-diagnostic-20261105-build-02',
++        require(root.parent == Path('/opt') and root.name == 'p4-init-project-diagnostic-20261105-build-03',
+                 'unexpected create-only root')
+         for parent in (Path('/'), root.parent):
+             meta = parent.lstat()
+@@ -172,12 +172,12 @@
+         remap = lambda arg: arg.replace(old_root, str(root))
+         android = [[remap(arg) for arg in argv] for argv in CFG['original_android_argv']]
+         command(report, root, android[0])
+-        preflight = dependencies(root / 'preflight.d')
++        preflight = dependencies(root / 'preflight.d', 'barrier.o')
+         expected_dependencies = {remap(path) for path in CFG['original_inputs'] if path not in CFG['non_MD_inputs']}
+         require(preflight == expected_dependencies, 'Android preflight differs from exact original header closure')
+         android_before = {path: snapshot(path) for path in sorted(preflight)}
+         command(report, root, android[1])
+-        require(dependencies(root / 'barrier.d') == preflight, 'actual Android MD differs')
++        require(dependencies(root / 'barrier.d', str(root / 'barrier.o')) == preflight, 'actual Android MD differs')
+         command(report, root, android[2])
+         elf = command(report, root, android[3])['stdout']
+         needed = re.findall(r'\(NEEDED\).*\[([^\]]+)\]', elf)
+@@ -199,11 +199,11 @@
+             source_path = str(root / 'source' / source)
+             dep_path = root / (name + '.preflight.d')
+             command(report, root, flags + ['-M', '-MF', str(dep_path), '-MT', 'barrier.o', source_path])
+-            headers = dependencies(dep_path)
++            headers = dependencies(dep_path, 'barrier.o')
+             headers_before = {path: snapshot(path) for path in sorted(headers)}
+             actual_md = root / (name + '.actual.d')
+             command(report, root, flags + ['-MD', '-MF', str(actual_md), '-MT', 'barrier.o', source_path, '-o', str(root / name)])
+-            require(dependencies(actual_md) == headers, 'host MD closure differs')
++            require(dependencies(actual_md, 'barrier.o') == headers, 'host MD closure differs')
+             artifact = snapshot(root / name)
+             result = command(report, root, [str(root / name)])
+             records = [json.loads(line) for line in result['stdout'].splitlines()]

@@ -1,0 +1,61 @@
+{
+  "Rust_compilation_run": false,
+  "controls_run": false,
+  "device_or_Hepta_calls": 0,
+  "files": {
+    "ControlResponse_none_serialization_sections": {
+      "bytes": 83587,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer07-audit-freeze-02/source/runtime/droidloom-supervisor/src/control.rs",
+      "sha256": "3818e0023f9dbc09a1b98986354147e5adc24f84f92b89e7f0db2f1872a54870"
+    },
+    "actor_evidence_and_retirement_sections": {
+      "bytes": 24403,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/private-owner-normal-work-02/source/actor.py",
+      "sha256": "0771e1d3e7f062f07614028c1192ce2095abc1a2af884cbe3fb8576ba9a844b9"
+    },
+    "audit_schema": {
+      "bytes": 20910,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer07-audit-freeze-02/source/runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs",
+      "sha256": "ec021636841d88bb2cd52981c0143685593e87750b97073af99a7f3ea4f8038a"
+    },
+    "held_Process_snapshot_sections": {
+      "bytes": 12338,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/private-owner-normal-work-02/source/owned.py",
+      "sha256": "879ecb3df3165164124e12eac2f7a5549332b4909df2d6bed9d9055b685f05fb"
+    },
+    "qualifier": {
+      "bytes": 7496,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/private-owner-normal-work-02/source/qualify.py",
+      "sha256": "f8061669626ca9bd9f6c90a46fdc61523c1f25f0203a488b826d93629180693a"
+    }
+  },
+  "findings": [
+    "ProcessRecord and held Process.snapshot.process keys agree; producer and init comparisons use matching actual shapes.",
+    "The ten namespace and FileRecord arrays used by qualifier agree with source schemas; LMKD identity access uses snapshot.identity.uids.",
+    "The expected 9 active/16 complete milestones match the ordered Rust Event variants.",
+    "The initial absent relay_lifecycle test agrees with serde Option::is_none omission.",
+    "runtime_claim_domain_absent only has a length test in qualifier, but this actual actor performs all-not-lexists before assigning the three fixed paths; no false success from that producer path was established.",
+    "Actual actor success additionally requires no errors and a final outer snapshot; qualifier True alone is not presented as aggregate runtime success."
+  ],
+  "full_read": [
+    "qualifier"
+  ],
+  "not_qualified": [
+    "whole owner lifecycle",
+    "real Android first enrollment",
+    "restart/reload",
+    "pressure effects",
+    "Main deployment",
+    "whole App production readiness"
+  ],
+  "reviewer": "android_acceptance",
+  "schema": 1,
+  "section_read": [
+    "actor evidence construction and Stop/retirement",
+    "owned.Process snapshot",
+    "audit types and serialization",
+    "ControlResponse optional audit serialization"
+  ],
+  "source_modified": false,
+  "state": "NARROW_READ_ONLY_SCHEMA_REVIEW_NO_NEW_CONCRETE_BLOCKER"
+}

@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "records": [
+    {
+      "kind": "preimage-compile",
+      "argv": [
+        "gcc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-project-repair-work-01/local-evidence-01/preimage-protocol-controls",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-project-repair-work-01/preimage/protocol_controls.c"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "kind": "preimage-run",
+      "returncode": 1,
+      "stdout": "{\"case\":\"complete_handshake_closes_capabilities_before_next_exec\",\"ok\":false}\n",
+      "stderr": ""
+    },
+    {
+      "kind": "candidate-compile",
+      "argv": [
+        "gcc",
+        "-std=c17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "-Wno-unused-function",
+        "-o",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-project-repair-work-01/local-evidence-01/candidate-protocol-controls",
+        "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/init-project-repair-work-01/candidate/protocol_controls.c"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "kind": "candidate-run",
+      "returncode": 1,
+      "stdout": "{\"case\":\"complete_handshake_closes_capabilities_before_next_exec\",\"ok\":false}\n",
+      "stderr": ""
+    },
+    {
+      "SO_PEERPIDFD": 5
+    }
+  ],
+  "Android_executed": false,
+  "mount_or_namespace_executed": false
+}
