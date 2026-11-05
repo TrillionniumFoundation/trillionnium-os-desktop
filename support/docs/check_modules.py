@@ -16,6 +16,11 @@ from urllib.parse import unquote, urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
 CATALOGUE = "docs/modules/catalogue.json"
+DEVELOPMENT_DOMAINS = frozenset(f"A{number:02d}" for number in range(11))
+CURRENT_SOURCE_CONTRACT = "support/ui/HEPTA_SHARED_PRESENTER.json"
+CURRENT_SOURCE_DOCUMENTS = ("README.md", "docs/CURRENT_CAPABILITIES.md", "docs/SOURCES.md")
+CURRENT_SOURCE_START = "<!-- current-hepta-source:start -->"
+CURRENT_SOURCE_END = "<!-- current-hepta-source:end -->"
 HANDBOOK_LABELS = (
     "**职责与接口。**", "**状态、所有权与失败边界。**",
     "**开发与回归。**", "**实际覆盖与待验证。**",
@@ -176,15 +181,54 @@ def check_domains(root, catalogue):
     errors, documents, identities = [], set(), set()
     for record in catalogue.get("domains", []):
         identity = record.get("id", "")
-        if not re.fullmatch(r"A\d\d", identity) or identity in identities:
-            errors.append("invalid or duplicate development domain: " + identity)
-        identities.add(identity)
-        record_errors, record_documents = check_contract(root, record, identity)
+        label = identity if isinstance(identity, str) else repr(identity)
+        if (not isinstance(identity, str) or not re.fullmatch(r"A[0-9]{2}", identity)
+                or identity in identities):
+            errors.append("invalid or duplicate development domain: " + label)
+        else:
+            identities.add(identity)
+        record_errors, record_documents = check_contract(root, record, label)
         errors.extend(record_errors)
         documents.update(record_documents)
     if not identities:
         errors.append("missing cross-module development domains")
+    missing = DEVELOPMENT_DOMAINS - identities
+    unexpected = identities - DEVELOPMENT_DOMAINS
+    if missing:
+        errors.append("missing development domains: " + ", ".join(sorted(missing)))
+    if unexpected:
+        errors.append("unexpected development domains: " + ", ".join(sorted(unexpected)))
     return errors, documents, identities
+
+
+def check_current_sources(root):
+    """Bind declared current source blocks to the canonical contract, not history."""
+    selected = json.loads((root / CURRENT_SOURCE_CONTRACT).read_text())
+    for field in ("commit", "tree"):
+        value = selected.get(field)
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{40}", value):
+            raise ValueError("invalid canonical Hepta " + field)
+    errors, documents = [], set(CURRENT_SOURCE_DOCUMENTS)
+    for path in CURRENT_SOURCE_DOCUMENTS:
+        text = prose((root / path).read_text())
+        if (text.count(CURRENT_SOURCE_START) != 1 or text.count(CURRENT_SOURCE_END) != 1
+                or text.index(CURRENT_SOURCE_START) >= text.index(CURRENT_SOURCE_END)):
+            errors.append(path + ": expected one ordered current Hepta source block")
+            continue
+        current = text.split(CURRENT_SOURCE_START, 1)[1].split(CURRENT_SOURCE_END, 1)[0]
+        for field in ("commit", "tree"):
+            rows = re.findall(r"^\| Hepta " + field + r" \| (.+?) \|\s*$", current, re.MULTILINE)
+            values = re.findall(r"`([^`\n]+)`", rows[0]) if len(rows) == 1 else []
+            if values != [selected[field]]:
+                errors.append(f"{path}: current Hepta {field} differs from canonical contract")
+        references = re.findall(
+            r"https://github\.com/TrillionniumFoundation/hepta-private-ci/(?:blob|commit)/([^/\s)#]+)",
+            current,
+        )
+        for reference in sorted(set(references)):
+            if reference != selected["commit"]:
+                errors.append(f"{path}: current Hepta link differs from canonical contract: {reference}")
+    return errors, documents
 
 
 def check_kernel(root, catalogue):
@@ -238,6 +282,9 @@ def validate(root):
     domain_errors, domain_documents, domains = check_domains(root, catalogue)
     errors.extend(domain_errors)
     documents.update(domain_documents)
+    source_errors, source_documents = check_current_sources(root)
+    errors.extend(source_errors)
+    documents.update(source_documents)
     kernel_errors, kernel_documents, members, kernel_manifests = check_kernel(root, catalogue)
     errors.extend(kernel_errors)
     documents.update(kernel_documents)
@@ -250,7 +297,7 @@ def validate(root):
                     links += 1
             except ValueError as error:
                 errors.append(str(error))
-    inputs = sorted(documents | {CATALOGUE, catalogue["kernel_workspace"]}
+    inputs = sorted(documents | {CATALOGUE, CURRENT_SOURCE_CONTRACT, catalogue["kernel_workspace"]}
                     | kernel_manifests
                     | {record["manifest"] for record in catalogue["packages"]}
                     | {source for record in catalogue["packages"] + catalogue.get("domains", []) for source in record.get("sources", [])
@@ -262,7 +309,7 @@ def validate(root):
         "schema_version": 1, "ok": not errors, "execution_evidence": False,
         "scope": "live documentation contracts and direct local links; external URLs are not fetched",
         "first_party_cargo_entries": len(catalogue["packages"]),
-        "development_domains": len(domains),
+        "development_domains": len(domains), "current_source_documents": len(source_documents),
         "kernel_members": len(members), "documents": len(documents), "local_links": links,
         "input_digest_sha256": digest, "inputs_sha256": hashes, "errors": errors,
     }
