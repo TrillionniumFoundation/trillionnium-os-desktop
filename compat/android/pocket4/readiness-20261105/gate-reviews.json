@@ -28,6 +28,138 @@
         "Earlier repeated USB disappearance remains unexplained; continuous/reconnect/video/audio and whole-App release coverage are unqualified."
       ],
       "qualification_scope": "One visually reviewed real preview, matching physical/producer frame session and normal owned close. No shutter, photo, persistence or whole-App pass."
+    },
+    {
+      "id": "root_camera_accept03_current_hardware_absence",
+      "reviewer": "root",
+      "package": "com.android.camera2",
+      "scope": "scoped",
+      "observed_at_utc": "2026-11-05T07:48:19.509789+00:00",
+      "reviewed_at_utc": "2026-11-05T08:31:23.660854+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "version_code": 20002000,
+      "uid": 10062,
+      "apk_sha256": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
+      "evidence": [
+        {
+          "path": "inputs/camera-accept03-device-unavailable.json",
+          "sha256": "26a1c5c048fc9ee4d500d5bb8c7eae0e500fb025cfce27700c08694d758b1776",
+          "bytes": 1997
+        },
+        {
+          "path": "inputs/camera-usb-after-accept03.json",
+          "sha256": "a32215bd83b77cfe976a797a94c500ef8eb0f302041c9a108ab82835cd5c831a",
+          "bytes": 8455
+        }
+      ],
+      "checks": {
+        "camera.preview": "failed",
+        "camera.photo": "blocked",
+        "camera.persist": "blocked"
+      },
+      "unresolved_findings": [
+        "Physical USB camera is absent; repeated disconnect cause unresolved.",
+        "No current photo/video/persistence/recovery or complete release coverage."
+      ],
+      "qualification_scope": "Latest actual Camera failure supersedes current preview credit; the prior real preview remains historical evidence."
+    },
+    {
+      "id": "root_contacts_crud10_scoped_edit_and_lifecycle",
+      "reviewer": "root",
+      "package": "com.android.contacts",
+      "scope": "scoped",
+      "observed_at_utc": "2026-11-05T08:14:42.349963+00:00",
+      "reviewed_at_utc": "2026-11-05T08:31:23.660854+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "version_code": 10734,
+      "uid": 10055,
+      "apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+      "evidence": [
+        {
+          "path": "inputs/contacts-crud10.json",
+          "sha256": "c96f55a81b268efc126435a610fef4d2044a3540897c7b89b03235eda1b3479b",
+          "bytes": 3055
+        }
+      ],
+      "checks": {
+        "contacts.edit": "passed",
+        "lifecycle": "passed",
+        "ui_observation": "blocked",
+        "contacts.cleanup": "pending"
+      },
+      "unresolved_findings": [
+        "Owned More-options action acknowledged and popup observed in retained records, but adapter could not continue; actual UI deletion remains unverified.",
+        "Search, complete permission/sync/error paths and repeat/stability release scope remain unqualified."
+      ],
+      "qualification_scope": "One exact local contact created/edited and retrieved/opened after separate owned close/reopen. Exact fallback provider cleanup is verified but does not count as App UI deletion. Identity checked at start only for this attempt."
+    },
+    {
+      "id": "root_webview04_scoped_ui_and_lifecycle",
+      "reviewer": "root",
+      "package": "org.chromium.webview_shell",
+      "scope": "scoped",
+      "observed_at_utc": "2026-11-05T08:18:33.666000+00:00",
+      "reviewed_at_utc": "2026-11-05T08:31:23.660854+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "version_code": 1,
+      "uid": 10060,
+      "apk_sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df",
+      "evidence": [
+        {
+          "path": "inputs/webview-flow04-result.json",
+          "sha256": "e45625da6c5a31a3cca62d92453d32393000198ca1d3382dd78c44ccb77412c6",
+          "bytes": 2483
+        },
+        {
+          "path": "inputs/webview-flow04-reviewed.json",
+          "sha256": "d76e7778ff7354ceb477898cefad3222c8383b849fce6f5aa3690f7e61b697d0",
+          "bytes": 13530
+        },
+        {
+          "path": "inputs/webview-reconcile03-result.json",
+          "sha256": "a1770757d9c9b26dfa43feeef157beaf7af4584cad8d19833d5c01ce56b7b4fb",
+          "bytes": 2600
+        }
+      ],
+      "checks": {
+        "lifecycle": "passed",
+        "ui_observation": "passed"
+      },
+      "unresolved_findings": [
+        "Composite WebView checks also require HTTPS, image/media and error-path coverage.",
+        "Repeat/stability and full release scope remain unqualified."
+      ],
+      "qualification_scope": "Complete controlled local Unicode/form-event/JavaScript/storage/history/close-reopen/owned-key-removal flow. Original native-click-only failure is retained and old key separately proved absent."
+    },
+    {
+      "id": "root_contacts_crud11_ui_complete_scoped",
+      "reviewer": "root",
+      "package": "com.android.contacts",
+      "scope": "scoped",
+      "observed_at_utc": "2026-11-05T08:30:11.095000+00:00",
+      "reviewed_at_utc": "2026-11-05T08:34:08.579787+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "version_code": 10734,
+      "uid": 10055,
+      "apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+      "evidence": [
+        {
+          "path": "inputs/contacts-crud11.json",
+          "sha256": "0dfa6cb26059bd4bab94a287e3cdd01cd01f10bb3579ea31b7951a94a6251b00",
+          "bytes": 5519
+        }
+      ],
+      "checks": {
+        "contacts.edit": "passed",
+        "contacts.cleanup": "passed",
+        "lifecycle": "passed",
+        "ui_observation": "passed"
+      },
+      "unresolved_findings": [
+        "Search UI and complete permission/sync/error paths remain unqualified.",
+        "Repeat/stability and whole-release feature review remain unqualified."
+      ],
+      "qualification_scope": "Actual local UI create/edit, normal close/reopen of the same exact contact, and UI Delete+confirmation followed by empty database and zero tombstones. No fallback provider deletion. Contacts and provider full APK hashes/UID/version verified before and after."
     }
   ]
 }

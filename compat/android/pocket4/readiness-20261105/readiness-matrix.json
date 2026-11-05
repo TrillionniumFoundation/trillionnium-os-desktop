@@ -20,8 +20,8 @@
     },
     "progress": {
       "file": "progress.json",
-      "sha256": "79d306ad04adb9041e4c61023cf2be29d7f6b3918b0de09bc6163315c91e5b11",
-      "bytes": 8217
+      "sha256": "631fad4dbd92368f8308345d18d986b1596823bc105ee229edcfa9cf3334994e",
+      "bytes": 16304
     },
     "inventory": {
       "file": "current-installed-inventory-derived-20261105.json",
@@ -30,8 +30,8 @@
     },
     "gate_reviews": {
       "file": "gate-reviews.json",
-      "sha256": "f5d71bf3a95777c514f74f6731ce98aa021349010958d7d4101f0ad3b736f789",
-      "bytes": 1438
+      "sha256": "7eb6d027323a6985d5ef577994e411915fc82a80163233debea860c7a6376eea",
+      "bytes": 7372
     }
   },
   "baseline_observed_at_utc": "2026-11-04T12:00:30.044481+00:00",
@@ -328,9 +328,53 @@
         "sha256": "499f31cba90ac410b8f37c18e801e8eed6c75c118cfcaae54eae61dc93111f6b",
         "bytes": 7781
       }
+    },
+    {
+      "id": "shared_storage_recovery_and_session_lifecycle",
+      "status": "PATH_IO_RESTORED_SOURCE_FIX_UNDEPLOYED",
+      "observed_at_utc": "2026-11-05T07:47:31.554913+00:00",
+      "not_an_app_pass": true,
+      "actual_unmount_calls": 1,
+      "actual_mount_calls": 1,
+      "path_readability_verified": [
+        "/storage/emulated/0",
+        "/sdcard"
+      ],
+      "same_Main_provider_vold_preserved": true,
+      "original_failed_qualification_retained": true,
+      "source_candidates": [
+        "main VolumeInfo reference, nine host method cases",
+        "locked ImmutableVolumeInfo reference, clean-apply only at this checkpoint"
+      ],
+      "remaining": [
+        "Complete actual installed-code candidate and build qualification",
+        "Persistent lifecycle fix deployment qualification",
+        "App-level file save/reopen qualification"
+      ],
+      "evidence": [
+        {
+          "path": "inputs/storage-recovery-verified.json",
+          "sha256": "92b81d3da1ef1bb611a9325192bce6fdf7ec1f300b10c5a3acc2a2fd50995452",
+          "bytes": 2753
+        },
+        {
+          "path": "inputs/storage-source-runtime-provenance.json",
+          "sha256": "ede6a4bd49ec57545b403e445182161fe078453ec5c95e2bc1c58d473adf2d16",
+          "bytes": 6147
+        }
+      ]
     }
   ],
-  "ignored_reviews": [],
+  "ignored_reviews": [
+    {
+      "id": "root_camera_live_preview_r16_release08_accept02",
+      "reason": "stale_or_different_inventory_epoch_uid_version"
+    },
+    {
+      "id": "root_contacts_crud10_scoped_edit_and_lifecycle",
+      "reason": "stale_or_different_inventory_epoch_uid_version"
+    }
+  ],
   "apps": [
     {
       "package": "com.Hyatt.hyt",
@@ -678,6 +722,47 @@
               "bytes": 5710
             }
           ]
+        },
+        {
+          "id": "camera_accept03_hardware_absent_after_storage_recovery",
+          "package": "com.android.camera2",
+          "version_code": 20002000,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-05T07:48:19.509789+00:00",
+          "status": "CAMERA_CONNECTION_ERROR_PHYSICAL_USB_SOURCE_ABSENT",
+          "job_id": "1a1aaadea6f-fc05-45f9",
+          "native_launch_calls": 1,
+          "shutter_calls": 0,
+          "owned_task_remove_calls": 1,
+          "outcome_unknown": false,
+          "actual_photo_taken": false,
+          "visible_dialog": "Camera error / Can't connect to the camera.",
+          "unpassed_checks": {
+            "camera.preview": "failed",
+            "camera.photo": "blocked",
+            "camera.persist": "blocked"
+          },
+          "historical_accept02_real_preview_retained": true,
+          "shared_storage_readability_recovered_before_this_run": true,
+          "apk_causality_established": false,
+          "next_action": "Re-establish a present stable physical source through its existing owner, then independently qualify a real photo/save/reopen. No controller/port reset or PM write was used.",
+          "evidence": [
+            {
+              "path": "inputs/camera-accept03-device-unavailable.json",
+              "sha256": "26a1c5c048fc9ee4d500d5bb8c7eae0e500fb025cfce27700c08694d758b1776",
+              "bytes": 1997
+            },
+            {
+              "path": "inputs/camera-usb-after-accept03.json",
+              "sha256": "a32215bd83b77cfe976a797a94c500ef8eb0f302041c9a108ab82835cd5c831a",
+              "bytes": 8455
+            },
+            {
+              "path": "inputs/storage-recovery-verified.json",
+              "sha256": "92b81d3da1ef1bb611a9325192bce6fdf7ec1f300b10c5a3acc2a2fd50995452",
+              "bytes": 2753
+            }
+          ]
         }
       ],
       "gate_results": {
@@ -687,7 +772,7 @@
         "data_permissions": "pending",
         "release_scope": "blocked",
         "ui_observation": "pending",
-        "camera.preview": "passed",
+        "camera.preview": "failed",
         "camera.photo": "blocked",
         "camera.persist": "blocked",
         "camera.video": "pending",
@@ -700,18 +785,19 @@
         "data_permissions",
         "release_scope",
         "ui_observation",
+        "camera.preview",
         "camera.photo",
         "camera.persist",
         "camera.video",
         "camera.recovery"
       ],
       "gate_evidence": {
-        "camera.preview": "root_camera_live_preview_r16_release08_accept02",
-        "camera.photo": "root_camera_live_preview_r16_release08_accept02",
-        "camera.persist": "root_camera_live_preview_r16_release08_accept02"
+        "camera.preview": "root_camera_accept03_current_hardware_absence",
+        "camera.photo": "root_camera_accept03_current_hardware_absence",
+        "camera.persist": "root_camera_accept03_current_hardware_absence"
       },
       "accepted_reviews": [
-        "root_camera_live_preview_r16_release08_accept02"
+        "root_camera_accept03_current_hardware_absence"
       ],
       "reviewed_apk_sha256": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
       "prerequisites": [],
@@ -785,37 +871,117 @@
               "bytes": 938
             }
           ]
+        },
+        {
+          "id": "contacts_crud10_create_edit_reopen_detail",
+          "package": "com.android.contacts",
+          "version_code": 10734,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-05T08:14:42.349963+00:00",
+          "timestamp_semantics": "Original result-file last-write time, not an inferred precise process-exit instant.",
+          "status": "CREATE_EDIT_PERSISTED_DETAIL_VERIFIED_MENU_OBSERVATION_BLOCKED",
+          "job_id": "1a1aac4d605-fc05-4706",
+          "owned_raw_contact_id": 2,
+          "device_local_null_account": true,
+          "created_and_edited_verified": true,
+          "same_record_opened_after_reopen": true,
+          "ui_delete_calls": 0,
+          "fallback_exact_owned_provider_delete_calls": 1,
+          "remaining_owned_contacts": 0,
+          "ui_actions": 8,
+          "owned_tasks_closed": [
+            904,
+            905
+          ],
+          "original_pending_effect_retained": "c08-more-options",
+          "unpassed_checks": {
+            "ui_observation": "blocked",
+            "contacts.cleanup": "pending"
+          },
+          "not_an_app_crash_claim": true,
+          "next_action": "Use the observed Contacts popup format with its exact owned task and native window binding; finish actual UI deletion in a new fixture flow.",
+          "evidence": [
+            {
+              "path": "inputs/contacts-crud09.json",
+              "sha256": "b5bdc629339c2dbadbeb99815962c78d758a1efa62c618d9646437a5de4da547",
+              "bytes": 2845
+            },
+            {
+              "path": "inputs/contacts-crud10.json",
+              "sha256": "c96f55a81b268efc126435a610fef4d2044a3540897c7b89b03235eda1b3479b",
+              "bytes": 3055
+            }
+          ]
+        },
+        {
+          "id": "contacts_crud11_ui_crud_persistence_cleanup",
+          "package": "com.android.contacts",
+          "version_code": 10734,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-05T08:30:11.095000+00:00",
+          "timestamp_semantics": "Actual process terminal publication time.",
+          "status": "OWNED_LOCAL_UI_CRUD_REOPEN_AND_CLEANUP_VERIFIED",
+          "job_id": "1a1aad2af33-fc05-47b8",
+          "scoped_business_flow_completed": true,
+          "whole_app_production_ready": false,
+          "owned_raw_contact_id": 3,
+          "ui_actions": 10,
+          "launches": 2,
+          "normal_owned_removals": 2,
+          "provider_fallback_delete_calls": 0,
+          "remaining_owned_contacts": 0,
+          "pending_effect": null,
+          "apk_identity_before_and_after_verified": true,
+          "unpassed_checks": {
+            "contacts.persist": "pending",
+            "contacts.sync": "pending",
+            "stability": "pending",
+            "release_scope": "pending"
+          },
+          "limits": "Same edited record was actually reopened in detail, but the composite persist check also names Search UI. Full permission/sync/error and release stability coverage remain.",
+          "evidence": [
+            {
+              "path": "inputs/contacts-crud11.json",
+              "sha256": "0dfa6cb26059bd4bab94a287e3cdd01cd01f10bb3579ea31b7951a94a6251b00",
+              "bytes": 5519
+            }
+          ]
         }
       ],
       "gate_results": {
         "identity": "pending",
-        "lifecycle": "pending",
+        "lifecycle": "passed",
         "stability": "pending",
         "data_permissions": "pending",
-        "release_scope": "pending",
-        "ui_observation": "blocked",
-        "contacts.edit": "pending",
+        "release_scope": "blocked",
+        "ui_observation": "passed",
+        "contacts.edit": "passed",
         "contacts.persist": "pending",
-        "contacts.cleanup": "pending",
+        "contacts.cleanup": "passed",
         "contacts.sync": "pending"
       },
       "unpassed_gates": [
         "identity",
-        "lifecycle",
         "stability",
         "data_permissions",
         "release_scope",
-        "ui_observation",
-        "contacts.edit",
         "contacts.persist",
-        "contacts.cleanup",
         "contacts.sync"
       ],
       "gate_evidence": {
-        "ui_observation": "contacts_ui_observation_blocked"
+        "ui_observation": "root_contacts_crud11_ui_complete_scoped",
+        "contacts.cleanup": "root_contacts_crud11_ui_complete_scoped",
+        "contacts.persist": "contacts_crud11_ui_crud_persistence_cleanup",
+        "contacts.sync": "contacts_crud11_ui_crud_persistence_cleanup",
+        "stability": "contacts_crud11_ui_crud_persistence_cleanup",
+        "release_scope": "contacts_crud11_ui_crud_persistence_cleanup",
+        "contacts.edit": "root_contacts_crud11_ui_complete_scoped",
+        "lifecycle": "root_contacts_crud11_ui_complete_scoped"
       },
-      "accepted_reviews": [],
-      "reviewed_apk_sha256": null,
+      "accepted_reviews": [
+        "root_contacts_crud11_ui_complete_scoped"
+      ],
+      "reviewed_apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false
@@ -2875,32 +3041,81 @@
           "gate_credit": false
         }
       ],
-      "progress": [],
+      "progress": [
+        {
+          "id": "webview_flow04_complete_owned_local_business",
+          "package": "org.chromium.webview_shell",
+          "version_code": 1,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-05T08:18:33.666000+00:00",
+          "timestamp_semantics": "Actual job terminal publication timestamp; individual native capture times are retained in the review evidence.",
+          "status": "LOCAL_UNICODE_JS_STORAGE_HISTORY_REOPEN_CLEANUP_VERIFIED",
+          "job_id": "1a1aac8d1e8-fc05-473c",
+          "scoped_business_flow_completed": true,
+          "whole_app_production_ready": false,
+          "action_calls": 14,
+          "launch_calls": 2,
+          "owned_task_remove_calls": 2,
+          "owned_storage_key_removal_verified": true,
+          "pending_effects": [],
+          "outcome_unknown": false,
+          "unpassed_checks": {
+            "webview.render": "pending",
+            "webview.input": "pending",
+            "webview.navigation": "pending"
+          },
+          "limits": "The composite release checks additionally include HTTPS, image/media and error-path coverage, not exercised by this controlled local flow.",
+          "next_action": "Retain this scoped pass; qualify the remaining image/media/HTTPS/error/stability and release checks separately.",
+          "evidence": [
+            {
+              "path": "inputs/webview-flow04-result.json",
+              "sha256": "e45625da6c5a31a3cca62d92453d32393000198ca1d3382dd78c44ccb77412c6",
+              "bytes": 2483
+            },
+            {
+              "path": "inputs/webview-flow04-reviewed.json",
+              "sha256": "d76e7778ff7354ceb477898cefad3222c8383b849fce6f5aa3690f7e61b697d0",
+              "bytes": 13530
+            },
+            {
+              "path": "inputs/webview-reconcile03-result.json",
+              "sha256": "a1770757d9c9b26dfa43feeef157beaf7af4584cad8d19833d5c01ce56b7b4fb",
+              "bytes": 2600
+            }
+          ]
+        }
+      ],
       "gate_results": {
         "identity": "pending",
-        "lifecycle": "pending",
+        "lifecycle": "passed",
         "stability": "pending",
         "data_permissions": "pending",
-        "release_scope": "pending",
-        "ui_observation": "pending",
+        "release_scope": "blocked",
+        "ui_observation": "passed",
         "webview.render": "pending",
         "webview.input": "pending",
         "webview.navigation": "pending"
       },
       "unpassed_gates": [
         "identity",
-        "lifecycle",
         "stability",
         "data_permissions",
         "release_scope",
-        "ui_observation",
         "webview.render",
         "webview.input",
         "webview.navigation"
       ],
-      "gate_evidence": {},
-      "accepted_reviews": [],
-      "reviewed_apk_sha256": null,
+      "gate_evidence": {
+        "webview.render": "webview_flow04_complete_owned_local_business",
+        "webview.input": "webview_flow04_complete_owned_local_business",
+        "webview.navigation": "webview_flow04_complete_owned_local_business",
+        "lifecycle": "root_webview04_scoped_ui_and_lifecycle",
+        "ui_observation": "root_webview04_scoped_ui_and_lifecycle"
+      },
+      "accepted_reviews": [
+        "root_webview04_scoped_ui_and_lifecycle"
+      ],
+      "reviewed_apk_sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df",
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false

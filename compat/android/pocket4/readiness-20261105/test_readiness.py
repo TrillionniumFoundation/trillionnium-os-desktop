@@ -76,13 +76,22 @@ class Integrity(unittest.TestCase):
         package = 'com.android.camera2'
         identity = next(r for r in self.inv['installed_packages'] if r['package'] == package)
         gates = set(self.plans['common_gates']) | set(self.plans['profiles']['camera']['checks'])
+        cutoff = matrix.stamp(self.inv['observed_at_utc'])
+        for observation in self.progress['apps']:
+            if (observation['package'] == package and observation.get('unpassed_checks')
+                    and observation.get('framework_epoch_sha256') == self.inv['framework_epoch_sha256']
+                    and observation.get('version_code') == identity['version_code']):
+                observed = matrix.stamp(observation.get('observed_at_utc') or observation['reviewed_at_utc'])
+                cutoff = max(cutoff, observed)
         review = {'id': 'synthetic-test-only-A', '_evidence_verified': True, 'package': package,
             'scope': 'whole_app_release', 'framework_epoch_sha256': self.inv['framework_epoch_sha256'],
             'version_code': identity['version_code'], 'uid': identity['uid'], 'apk_sha256': 'a' * 64,
-            'observed_at_utc': (matrix.stamp(self.inv['observed_at_utc']) + timedelta(minutes=30)).isoformat(),
+            'observed_at_utc': (cutoff + timedelta(seconds=1)).isoformat(),
             'checks': {key: 'passed' for key in gates}, 'all_features_reviewed': True,
             'retained_failures_reconciled': True, 'unresolved_findings': []}
         self.assertEqual(self.build([review])['production_ready_count'], 1)
+        earlier = {**review, 'observed_at_utc': (cutoff - timedelta(seconds=1)).isoformat()}
+        self.assertEqual(self.build([earlier])['production_ready_count'], 0)
         scoped = {**review, 'scope': 'scoped'}
         with self.assertRaises(ValueError):
             self.build([scoped])

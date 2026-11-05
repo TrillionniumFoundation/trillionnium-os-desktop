@@ -1,6 +1,19 @@
-# Pocket4 camera: prepared single-device runtime-PM contrast
+# Pocket4 camera: read-only USB evidence and prepared runtime-PM contrast
 
-**Preparation only. No Pocket4 preflight, experiment, sysfs write, provider change, USB reset, capture, or UI action was performed by this task.** The executable defaults to an inert JSON plan. The current device is absent, so the available evidence does not permit an actual power-management contrast yet.
+**The PM contrast remains unexecuted.** Its default invocation is an inert JSON
+plan. A real read-only preflight found the target absent. Later read-only checks
+and `watch_device_pm_readonly.py` observed the same device path without writing
+sysfs or changing the provider. The preparation-only manifest is preserved in
+`historical-preparation-manifest.json`; the current manifest separates these
+executed observations from the unexecuted contrast.
+
+The latest bounded watcher ran from 08:15:37.696605 to 08:18:37.808420 UTC and
+found no exact target during its 180-second window. The observed root-hub
+descriptor reports no power switching, so a controllable per-port VBUS cycle
+has not been established. No port, hub, controller, driver, provider or Android
+reset was attempted. These observations do not determine the disconnect cause.
+See `../../evidence/camera-usb-after-accept03.json` and
+`../../evidence/camera-usb-arrival-readonly01.json`.
 
 ## What the actual evidence establishes
 
@@ -33,7 +46,7 @@ The script observes the same device generation for 30 seconds after verified `on
 
 Linux documents `on` as preventing device autosuspend and resuming a suspended device; `auto` permits runtime PM. System-wide sleep is a separate mechanism. The script therefore rejects a material difference between monotonic and boot-time elapsed time during the contrast. See the [Linux 7.0 USB PM interface](https://docs.kernel.org/7.0/driver-api/usb/power-management.html).
 
-No interface, port, hub, controller, driver-binding, quirk, global module parameter, udev rule, provider service, or Android state is changed. No video node or usbfs device is opened. Nothing waits for a future attachment and no watcher or service is installed.
+No interface, port, hub, controller, driver-binding, quirk, global module parameter, udev rule, provider service, or Android state is changed. No video node or usbfs device is opened. The contrast itself does not wait for a future attachment. The separate bounded read-only watcher has completed; no watcher or service remains.
 
 ## Invocation modes
 

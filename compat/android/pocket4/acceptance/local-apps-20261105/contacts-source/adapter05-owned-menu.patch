@@ -1,0 +1,109 @@
+--- contacts-flow08/ui_preflight04.py	2026-11-05 14:45:04.129820757 +0800
++++ contacts-flow08/ui_preflight05.py	2026-11-05 16:25:08.253137575 +0800
+@@ -17,11 +17,12 @@
+ 
+ SOURCE = Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ SOURCE_SHA = 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-ROOT = Path('/home/alex/work/pocket4-contacts-ui-preflight-20261105-r12-04')
++ROOT = Path('/home/alex/work/pocket4-contacts-ui-preflight-20261105-r12-05')
+ PACKAGE = 'com.android.contacts'
+ PERMISSION = 'com.android.permissioncontroller'
+ STORAGE_PACKAGE = 'com.android.settings'
+ STORAGE_ACTIVITY = 'com.android.settings.Settings$ContactsStorageSettingsActivity'
++QUICK_ACTIVITY = 'com.android.contacts.quickcontact.QuickContactActivity'
+ COMPONENT = PACKAGE + '/.activities.PeopleActivity'
+ APK_PATH = '/product/priv-app/Contacts/Contacts.apk'
+ APK_SHA = '11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0'
+@@ -90,6 +91,23 @@
+             'focused_activity': app_activity, 'task': int(task), 'user': int(user)}
+ 
+ 
++def contacts_popup_metadata(raw):
++    """Recognize only the actual owned Contacts overflow window format."""
++    lines = [line.strip() for line in raw.splitlines() if 'mCurrentFocus=' in line]
++    app_lines = [line.strip() for line in raw.splitlines() if 'mFocusedApp=' in line]
++    focus = re.findall(r'mCurrentFocus=Window\{([0-9a-f]+) u0 (PopupWindow:[0-9a-f]+)\}', raw)
++    apps = re.findall(r'mFocusedApp=ActivityRecord\{[^\n]*? u0 com\.android\.contacts/([A-Za-z0-9_.$]+) t(\d+)\}', raw)
++    if len(set(lines)) != 1 or len(set(app_lines)) != 1 or len(focus) != 1 or len(apps) != 1:
++        return None
++    activity, task = apps[0]
++    if activity not in (QUICK_ACTIVITY, '.quickcontact.QuickContactActivity'):
++        return None
++    token, title = focus[0]
++    return {'verified': True, 'package': PACKAGE, 'activity': QUICK_ACTIVITY,
++            'focused_activity': activity, 'window_token': token, 'task': int(task), 'user': 0,
++            'window_kind': 'owned_contacts_more_popup', 'actual_window_title': title}
++
++
+ class Trial:
+     def __init__(self, session, tx):
+         self.s, self.tx, self.owned = session, tx, None
+@@ -97,6 +115,8 @@
+         self.denials = 0
+         self.last_observation = None
+         self.storage_from_create = None
++        self.menu_contact = self.menu_from_more = None
++        self.s.helper.foreground = self.owned_foreground
+         self.result = {'state': 'NOT_STARTED', 'ui_launch_calls': 0, 'open_editor_clicks': 0,
+             'contact_field_entries': 0, 'contact_save_calls': 0, 'contact_delete_calls': 0,
+             'account_actions': 0, 'sync_actions': 0, 'whole_app_production_ready': False}
+@@ -138,9 +158,59 @@
+     def focus(self, label):
+         raw = self.s.android(['/system/bin/dumpsys', 'window', 'displays'], 6).decode('utf-8', 'strict')
+         value = focus_metadata(raw)
++        if value.get('verified') is not True:
++            popup = contacts_popup_metadata(raw)
++            grant = self.menu_from_more
++            if (popup and grant and self.owned is not None
++                    and popup['task'] == self.owned[0] == grant['owned_task']
++                    and popup['window_token'] != grant['parent_window_token']
++                    and grant.get('popup_window_token') in (None, popup['window_token'])):
++                grant['popup_window_token'] = popup['window_token']
++                value = popup
+         self.record(label, value)
+         return value
+ 
++    def owned_foreground(self):
++        # Only this imported helper instance changes. Frozen window_state still
++        # requires the native selected window to be focused, type 1 and Contacts;
++        # capture still checks it before/after and binds the real popup token.
++        value = self.focus('helper-owned-foreground')
++        require(self.focus_allowed(value, allow_permission=False), 'HELPER_FOREGROUND_OUTSIDE_OWNED_TASK')
++        return {key: value[key] for key in ('package', 'activity', 'window_token')}
++
++    def bind_owned_contact_menu(self, proof):
++        require(self.owned is not None and self.menu_contact is None
++                and proof.get('name') == 'Pocket4 Local QA r12 9c38f5a1 Edited'
++                and proof.get('local_null_account') is True
++                and all(re.fullmatch('[1-9][0-9]*', proof.get(key, '')) for key in
++                        ('raw_contact_id', 'contact_id', 'name_data_id')),
++                'MORE_MENU_REQUIRES_EXACT_OWNED_LOCAL_CONTACT')
++        scope = self.last_observation['screenshot']['scope']
++        require(scope['package'] == PACKAGE and scope['activity'] == QUICK_ACTIVITY,
++                'MORE_MENU_SOURCE_IS_NOT_OWNED_QUICK_CONTACT')
++        self.menu_contact = dict(proof)
++        self.record('owned-contact-menu-proof', proof)
++
++    def authorize_contacts_menu_from_more(self, acknowledgement):
++        target = acknowledgement.get('actual_target', {})
++        require(self.menu_contact is not None and self.menu_from_more is None
++                and self.owned is not None and acknowledgement.get('ok') is True
++                and acknowledgement.get('performed') == 'click'
++                and acknowledgement.get('outcome_unknown') is not True
++                and acknowledgement.get('accessibility_mode_restoration_verified') is True
++                and target.get('package') == PACKAGE
++                and target.get('content-desc') == 'More options'
++                and target.get('class') == 'android.widget.ImageButton'
++                and all(target.get(key) is True for key in ('visible', 'enabled', 'clickable')),
++                'CONTACTS_POPUP_HAS_NO_SUCCESSFUL_OWNED_MORE_ACK')
++        scope = self.last_observation['screenshot']['scope']
++        require(scope['package'] == PACKAGE and scope['activity'] == QUICK_ACTIVITY,
++                'MORE_ACK_SOURCE_ACTIVITY_CHANGED')
++        self.menu_from_more = {'owned_task': self.owned[0],
++            'parent_window_token': scope['window_token'], 'popup_window_token': None,
++            'source': 'successful_native_more_options_ack', 'contact': self.menu_contact}
++        self.record('authorize-owned-contacts-more-popup', self.menu_from_more)
++
+     def authorize_storage_from_create(self, acknowledgement):
+         target = acknowledgement.get('actual_target', {})
+         require(acknowledgement.get('ok') is True and acknowledgement.get('performed') == 'click'

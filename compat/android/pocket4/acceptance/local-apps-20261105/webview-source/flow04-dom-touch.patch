@@ -1,0 +1,64 @@
+--- ui_flow02.py
++++ ui_flow04.py
+@@ -10,9 +10,9 @@
+ 
+ SESSION_SOURCE = Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ SESSION_SHA = 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-FIXTURE_SOURCE = Path('/home/alex/work/pocket4-webview-flow-20261105-r12-tools-02/fixture_server.py')
++FIXTURE_SOURCE = Path('/home/alex/work/pocket4-webview-flow-20261105-r12-tools-04/fixture_server.py')
+ FIXTURE_SHA = 'f8370d09cc670d24e2ae12e995e04d5c6a1a3bfefa3157c6e95c12c62bc68bb3'
+-ROOT = Path('/home/alex/work/pocket4-webview-flow-20261105-r12-02')
++ROOT = Path('/home/alex/work/pocket4-webview-flow-20261105-r12-04')
+ PACKAGE = 'org.chromium.webview_shell'
+ COMPONENT = PACKAGE + '/.WebViewBrowserActivity'
+ APK_PATH = '/product/app/Browser2/Browser2.apk'
+@@ -224,7 +224,7 @@
+         require(value['screenshot']['scope']['package']==PACKAGE and
+                 value['screenshot']['scope']['window_token']==focus['window_token'],'OBSERVATION_SCOPE_CHANGED')
+         self.owned_check('observed-owned')
+-        return {'focus':focus,'nodes':[n for n in native.get('nodes',[]) if n.get('package')==PACKAGE and n.get('visible') is True]}
++        return {'focus':focus,'screenshot':value['screenshot'],'nodes':[n for n in native.get('nodes',[]) if n.get('package')==PACKAGE and n.get('visible') is True]}
+ 
+     def one(self, obs, predicate, reason):
+         nodes = [n for n in obs['nodes'] if predicate(n)]
+@@ -267,9 +267,37 @@
+         self.pending.remove(label)
+ 
+     def button(self, obs, label, text):
+-        node = self.one(obs,lambda n:n.get('enabled') is True and n.get('clickable') is True and
+-                        (n.get('text')==text or n.get('content-desc')==text),'ONE_SEMANTIC_BUTTON_REQUIRED:'+text)
+-        self.mutate(obs,label,'click',node)
++        # These IDs and labels belong to the fixed, hashed fixture HTML.
++        identifiers={'save-owned-key':'save','next-page':'next','increment':'increment',
++                     'history-back':'back','remove-owned-key':'cleanup'}
++        require(label in identifiers,'UNKNOWN_FIXTURE_CONTROL')
++        node = self.one(obs,lambda n:n.get('resource-id')==identifiers[label] and
++                        n.get('enabled') is True and n.get('clickable') is True and
++                        (n.get('text')==text or n.get('content-desc')==text),
++                        'ONE_SEMANTIC_FIXTURE_CONTROL_REQUIRED:'+text)
++        bounds=node.get('bounds_array');shot=obs['screenshot'];scope=shot['scope_bounds']
++        require(isinstance(bounds,list) and len(bounds)==4 and all(type(x) is int for x in bounds) and
++                scope[0]<=bounds[0]<bounds[2]<=scope[2] and scope[1]<=bounds[1]<bounds[3]<=scope[3],
++                'FIXTURE_CONTROL_OUTSIDE_OBSERVED_SCOPE')
++        self.budget();self.owned_check('before-'+label)
++        require(self.focus()==obs['focus'],'ACTION_FOCUS_CHANGED')
++        require(shot['scope']['package']==PACKAGE and shot['scope']['display_id']==0 and
++                shot['scope']['window_token']==obs['focus']['window_token'],'TOUCH_OBSERVATION_SCOPE_CHANGED')
++        request={'op':'snapshot-tap','package':PACKAGE,'display':0,'accessibility_mode':'none',
++                 'input_source':'touch','window_token':obs['focus']['window_token'],
++                 'frame_sha256':shot['frame_sha256'],'scope_sha256':shot['scope_sha256'],
++                 'context_token':shot['context_token'],
++                 'coords':[(bounds[0]+bounds[2])//2,(bounds[1]+bounds[3])//2]}
++        self.record(label+'-intent',{'request':request,'observed_node':node,'automatic_retry':False,
++            'method':'single touch bound to actual fixture control and fresh full snapshot'})
++        self.actions+=1;self.pending.add(label);self.s.guard()
++        reply=self.s.helper.dispatch(request);self.s.guard();self.record(label+'-response',reply)
++        require(reply.get('ok') is True and reply.get('performed')=='snapshot-tap' and
++                reply.get('input_command_completed') is True and reply.get('outcome_unknown') is not True,
++                'TOUCH_OUTCOME_UNVERIFIED_NO_REPLAY')
++        self.pending.remove(label)
++        # Input acknowledgement is still not business success; run() requires
++        # the unchanged explicit DOM/storage/navigation readbacks after this.
+ 
+     def expect(self, label, text):
+         for attempt in range(3):

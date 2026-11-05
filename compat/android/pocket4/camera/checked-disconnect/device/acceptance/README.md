@@ -1,7 +1,15 @@
 # Camera release08 acceptance runner
 
-This directory contains a prepared acceptance runner. **No device UI has been
-executed during its preparation.** The default invocation prints an inert plan.
+This directory contains the reviewed acceptance runner and its executed
+revisions. The default invocation prints an inert plan. The original preparation
+record remains under `validation-r3/previous-source-manifest.json`.
+
+The latest actual revision03 trial ran at 07:48:15–07:48:19 UTC after shared
+storage had recovered. It launched once, observed the Camera connection-error
+dialog with the physical USB source absent, pressed no shutter, and normally
+closed its owned task. This is a failed current preview and blocked photo flow.
+The earlier revision02 live preview remains historical evidence; no trial has
+taken a photo. See `../../evidence/camera-accept03-device-unavailable.json`.
 
 `accept_camera.py` requires the separately reviewed `CameraSession` transport in
 `camera-install08/camera_transaction.py`, frozen at SHA-256
@@ -29,7 +37,8 @@ It checks the installed Camera APK is the signed release08 artifact:
    actual `Keys`, `SettingsManager`, `CameraActivity`, and photo-mode resource.
 5. Poll read-only for exactly one new image ID while preserving all old IDs.
    Require a completed JPEG row owned by Camera, a fresh date, and a path inside
-   its DCIM/Camera directory. Read only that new file through the held root,
+   its DCIM/Camera directory or the provider's default Pictures directory in
+   revision03. Read only that new file through the held root,
    fully decode it with the already installed Pillow, and record its byte hash.
 6. Normally remove only the newly created Camera task once. Verify other tasks
    remain, inspect new provider journal events after this phase's cursor, and
@@ -107,6 +116,14 @@ provider counts and event ordering, unknown/fresh crash diagnostics, exact
 photo-mode typing, no removal replay, and preservation of uncertain shutter
 state through cleanup. A self-exited task is preserved but does not qualify as
 a normally closed task. The tests do not claim device execution.
+
+`accept_camera_ready02.py` adds a bounded read-only wait for an observed disabled
+shutter. Missing controls and actual error dialogs still fail immediately.
+`accept_camera_ready03.py` additionally accepts the two exact image directories
+above, retaining the ownership, date, single-new-ID and complete JPEG checks.
+`test_image_path03.py` runs all 19 inherited and new local controls. The packaged
+sources passed those controls in 0.315 seconds; this does not turn the failed
+hardware-dependent trial into a pass.
 
 Only the runner, tests, this README, the source-evidence JSON, and the local
 validation/manifest are intended as reviewable source deliverables. The

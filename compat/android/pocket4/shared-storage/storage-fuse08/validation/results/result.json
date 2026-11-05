@@ -1,0 +1,300 @@
+{
+  "kind": "verbatim-production-method-host-regression",
+  "device_actions": 0,
+  "framework_or_kernel_integration": false,
+  "variants": {
+    "upstream": {
+      "compile": {
+        "argv": [
+          "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+          "-m",
+          "jdk.compiler/com.sun.tools.javac.Main",
+          "-encoding",
+          "UTF-8",
+          "-d",
+          "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/classes",
+          "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/android/os/ParcelableException.java",
+          "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/LifecycleHarness.java"
+        ],
+        "rc": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "cases": {
+        "waits_for_exit": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/classes",
+            "LifecycleHarness",
+            "waits_for_exit"
+          ],
+          "rc": 2,
+          "stdout": "",
+          "stderr": "java.lang.AssertionError: END_SESSION_NOT_SENT\n\tat LifecycleHarness.check(LifecycleHarness.java:594)\n\tat LifecycleHarness.run(LifecycleHarness.java:603)\n\tat LifecycleHarness.main(LifecycleHarness.java:652)\n",
+          "expected_rc": 2,
+          "expected_result": true
+        },
+        "rapid_remount": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/classes",
+            "LifecycleHarness",
+            "rapid_remount"
+          ],
+          "rc": 2,
+          "stdout": "",
+          "stderr": "java.lang.AssertionError: NEW_DEVICE_FD_NOT_CONSUMED\n\tat LifecycleHarness.check(LifecycleHarness.java:594)\n\tat LifecycleHarness.run(LifecycleHarness.java:613)\n\tat LifecycleHarness.main(LifecycleHarness.java:652)\n",
+          "expected_rc": 2,
+          "expected_result": true
+        },
+        "duplicate_start": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/classes",
+            "LifecycleHarness",
+            "duplicate_start"
+          ],
+          "rc": 0,
+          "stdout": "PASS duplicate_start\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "remove_without_wait": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/classes",
+            "LifecycleHarness",
+            "remove_without_wait"
+          ],
+          "rc": 0,
+          "stdout": "PASS remove_without_wait\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "only_target_session": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/classes",
+            "LifecycleHarness",
+            "only_target_session"
+          ],
+          "rc": 0,
+          "stdout": "PASS only_target_session\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "unsupported_and_reset": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/classes",
+            "LifecycleHarness",
+            "unsupported_and_reset"
+          ],
+          "rc": 0,
+          "stdout": "PASS unsupported_and_reset\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "missing_connection": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/classes",
+            "LifecycleHarness",
+            "missing_connection"
+          ],
+          "rc": 0,
+          "stdout": "PASS missing_connection\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "error_restores_identity": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/classes",
+            "LifecycleHarness",
+            "error_restores_identity"
+          ],
+          "rc": 0,
+          "stdout": "PASS error_restores_identity\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "clone_parent_connection": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/upstream/classes",
+            "LifecycleHarness",
+            "clone_parent_connection"
+          ],
+          "rc": 0,
+          "stdout": "PASS clone_parent_connection\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        }
+      }
+    },
+    "candidate": {
+      "compile": {
+        "argv": [
+          "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+          "-m",
+          "jdk.compiler/com.sun.tools.javac.Main",
+          "-encoding",
+          "UTF-8",
+          "-d",
+          "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/classes",
+          "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/android/os/ParcelableException.java",
+          "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/LifecycleHarness.java"
+        ],
+        "rc": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      "cases": {
+        "waits_for_exit": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/classes",
+            "LifecycleHarness",
+            "waits_for_exit"
+          ],
+          "rc": 0,
+          "stdout": "PASS waits_for_exit\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "rapid_remount": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/classes",
+            "LifecycleHarness",
+            "rapid_remount"
+          ],
+          "rc": 0,
+          "stdout": "PASS rapid_remount\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "duplicate_start": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/classes",
+            "LifecycleHarness",
+            "duplicate_start"
+          ],
+          "rc": 0,
+          "stdout": "PASS duplicate_start\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "remove_without_wait": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/classes",
+            "LifecycleHarness",
+            "remove_without_wait"
+          ],
+          "rc": 0,
+          "stdout": "PASS remove_without_wait\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "only_target_session": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/classes",
+            "LifecycleHarness",
+            "only_target_session"
+          ],
+          "rc": 0,
+          "stdout": "PASS only_target_session\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "unsupported_and_reset": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/classes",
+            "LifecycleHarness",
+            "unsupported_and_reset"
+          ],
+          "rc": 0,
+          "stdout": "PASS unsupported_and_reset\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "missing_connection": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/classes",
+            "LifecycleHarness",
+            "missing_connection"
+          ],
+          "rc": 0,
+          "stdout": "PASS missing_connection\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "error_restores_identity": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/classes",
+            "LifecycleHarness",
+            "error_restores_identity"
+          ],
+          "rc": 0,
+          "stdout": "PASS error_restores_identity\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        },
+        "clone_parent_connection": {
+          "argv": [
+            "/usr/lib/jvm/java-17-openjdk-amd64/bin/java",
+            "-cp",
+            "/workspace/scratch/4c1c408226df/publication/compat/android/pocket4/shared-storage/storage-fuse08/validation/results/candidate/classes",
+            "LifecycleHarness",
+            "clone_parent_connection"
+          ],
+          "rc": 0,
+          "stdout": "PASS clone_parent_connection\n",
+          "stderr": "",
+          "expected_rc": 0,
+          "expected_result": true
+        }
+      }
+    }
+  },
+  "passed": true
+}

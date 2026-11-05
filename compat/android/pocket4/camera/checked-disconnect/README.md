@@ -204,6 +204,39 @@ semantics, and separate unknown outcomes from success. Current-epoch physical
 preview, photo persistence, normal reopen and provider-disconnect recovery remain
 unqualified. Historical R14 preview evidence does not qualify those gates.
 
+## Storage recovered; latest Camera trial again lacks hardware
+
+The prior disconnected storage prerequisite was restored with one standard
+unmount/mount of `emulated;0`, preserving Main, MediaProvider, vold and the lower
+data directories. At **07:47:31 UTC**, actual directory opens, `stat` and `statfs`
+succeeded for `/storage/emulated/0` and `/sdcard`. The original recovery verifier
+failed because the kernel reused the retired FUSE connection number; its failed
+receipt remains intact and later read-only checks establish the recovery. The
+[storage bundle](../../shared-storage/storage-fuse08/README.md) separates this
+actual recovery from the still-undeployed lifecycle source fix.
+
+The [next Camera trial](evidence/camera-accept03-device-unavailable.json),
+**07:48:15–07:48:19 UTC**, made one launch, zero shutter calls and one normal owned
+close. It displayed **Camera error / Can't connect to the camera**. A separate
+read-only observation found the USB source absent and no provider capture events
+in the matching interval. This newer failure invalidates current preview credit;
+the earlier real preview remains historical evidence. No photo has been taken.
+
+The [USB follow-up](evidence/camera-usb-after-accept03.json) records repeated
+physical disconnect/re-enumeration, including the last observed disconnect at
+07:56:57 UTC. The port was enabled, hardwired, runtime-active and had no
+reported overcurrent. The root-hub descriptor reports no power switching, so no
+individual Vbus power cycle is claimed or attempted. A separate bounded
+[180-second read-only arrival observation](evidence/camera-usb-arrival-readonly01.json)
+saw no target at all. Device-level runtime-PM values and the disconnect cause
+remain unresolved. No PM store, port/controller reset or provider restart was
+performed by these diagnostics.
+
+The acceptance source now permits the observed MediaStore default Pictures
+location as well as DCIM/Camera, while retaining exact new-row ownership,
+filename, byte/hash/decode and traversal constraints. This is an acceptance-path
+correction, not evidence that a photo was captured or that the source is stable.
+
 ## API references
 
 The checked-disconnect behavior is documented by Android's

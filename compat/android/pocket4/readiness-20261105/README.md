@@ -10,8 +10,9 @@ The complete 2026-11-05 05:46:49.686297 UTC inventory contains **186 installed p
 
 | App / workstream | Latest evidence and next required result |
 |---|---|
-| Camera | Release08 is installed and its later real preview is visually verified, with 64 physical / 63 producer frames and one normal owned close. The shutter is disabled and no photo was taken. Current shared storage reports mounted but `/storage/emulated/0` and `/sdcard` return ENOTCONN. Recover and qualify the exact storage session, then actual photo/persistence/video/recovery. Earlier USB/cannot-connect failures remain retained. |
-| Contacts | Latest owned launch reached an observation mismatch. **0 Create clicks, field entries, saves, deletes or account actions**; task 886 was normally removed and the empty database/account topology were preserved. This is an **UI observation gate block**, not proof of an App crash or failed contact business behavior. Diagnose the saved observation before another admitted step. |
+| Camera | Release08 remains installed. Earlier real preview delivered 64 physical / 63 producer frames. Shared storage is now actually readable, but the newer 07:48 trial displayed a connection error with the physical USB source absent. Zero photos. Restore stable hardware, then photo/persistence/video/recovery. |
+| Contacts | Contacts11 completed actual Device-only UI create/edit, normal close/reopen of the same ID3, menu Delete+confirmation and exact empty-database cleanup. Ten inputs, two normal closes, no fallback delete, matching APK/UID/version before and after. Search UI, remaining permission/sync/error and repeat/stability scope remain. |
+| WebView shell | WebView04 completed local Unicode/form-event/JavaScript/storage/history/close-reopen and exact-key cleanup. Two launches/two normal closes, no pending effect, fixture reaped/socket closed. HTTPS, image/media, error paths and stability/release scope remain. |
 | Bilibili | The newer retained video transition opened the intended course page and closed only its owned task, but retained buffering and no verified advancing frames/audio. Keep the earlier Nov4 scoped visual result as history; do not transfer it into a current whole-App pass. |
 | Marriott / China Eastern | Retained Nov4 current-R16 evidence records native SIG11 with an observed virtual proc-fd mismatch / native SIGILL respectively. Corrected-runtime and actual business requalification remain absent. |
 | Meituan / Beike | Retained evidence records startup self-exit / a blank login router. Stable merchant/item or listing detail completion remains unverified. |
@@ -21,6 +22,21 @@ The complete 2026-11-05 05:46:49.686297 UTC inventory contains **186 installed p
 | LMKD / Owner | Actual Owner08 stopped before ACTIVE and did not qualify installed operation or pressure survival. The mount mechanism recorded expected syscalls but failed its parent protocol/cleanup qualification; revision03's 15 local collection controls are not a namespace/Owner/pressure pass. Producer09/init ABI3 requests still need their matching actual receipts in this evidence set. |
 
 Platform state is a read-only snapshot of retained files from the parallel owner's workspace. Another owner may have advanced since that snapshot. This bundle starts or repeats none of its builds/tests. Platform candidate progress is never treated as an App pass or proof of causality.
+
+## Shared storage prerequisite
+
+One standard unmount and one mount restored the existing `emulated;0` session.
+Fresh read-only open/stat/statfs checks succeeded for both shared-storage paths
+at 07:47:31 UTC. Main/provider/vold identity and lower data metadata were
+preserved. The original numerical-FUSE-ID qualification failure remains retained;
+it was resolved by separate I/O and retired/new-session evidence, not another
+mount attempt. App file-save qualification is separate.
+
+The [session lifecycle patch and reference evidence](../shared-storage/storage-fuse08/README.md)
+fix the reproduced double-removal/missing-wait logic. The main reference passed
+nine host method cases; the matching `ImmutableVolumeInfo` reference variant is
+clean-apply verified only at this checkpoint. The actual installed services JAR
+is pinned, but persistent deployment is not claimed.
 
 ## Exact inventory reconciliation
 
@@ -41,7 +57,7 @@ Every row also requires exact installation/runtime identity, usable scoped UI, n
 | `com.amazon.mShop.android.shopping` | Amazon | retail: Enter a product query; verify matching populated search results. |
 | `com.android.calendar` | Calendar | calendar: Create/edit one uniquely owned local event; verify dates, timezone and recurrence. |
 | `com.android.camera2` | Camera | camera: Observe a real live preview without the cannot-connect dialog; correlate the exact provider session. |
-| `com.android.contacts` | Contacts | contacts: Create and edit one uniquely owned contact fixture with exact field readback. |
+| `com.android.contacts` | Contacts | contacts: Extend the verified local CRUD flow to Search UI, remaining permission/sync/error behavior and repeat/stability coverage. |
 | `com.android.deskclock` | DeskClock | clock: Create one owned alarm, observe delivery and dismiss it; preserve pre-existing alarms. |
 | `com.android.dialer` | Dialer | dialer: Verify number entry/editing, contact lookup and supported dialer routes. |
 | `com.android.documentsui` | DocumentsUI | documents: Create, rename, open and read a uniquely owned file with content hash verification. |
@@ -103,10 +119,10 @@ For later complete inventories, pass the new receipt to `--inventory`. The updat
 
 Add hash-referenced scoped observations to `progress.json`; they can retain failed/blocked/pending gates but **cannot pass a gate**. Historical snapshot booleans and install/build/launch success cannot promote readiness.
 
-Optional `--gate-reviews review.json` accepts only schema `pocket4-reviewed-app-gates-v1` with a `reviews` array. Each review needs a unique `id`, `reviewer`, `package`, `scope` (`scoped` or `whole_app_release`), `observed_at_utc`, exact `framework_epoch_sha256`, `version_code`, `uid`, `apk_sha256`, nonempty `evidence` containing bundle-relative `path` and `sha256`, and `checks` mapping known gate IDs to `passed/failed/blocked/pending`. The files must exist and match their hashes; the review must follow the current inventory and any newer retained failure cutoff. A passed `release_scope` additionally requires `scope=whole_app_release`, `all_features_reviewed=true`, `retained_failures_reconciled=true` and `unresolved_findings=[]`. These are explicit reviewer attestations backed by inspected evidence, not semantic proof extracted automatically from arbitrary documents. Every required gate must pass on the same exact binary before an App can qualify. This delivered matrix contains **one scoped passing preview gate review** for Camera release08. It does not pass a whole-App release gate; all 45 Apps remain in scope.
+Optional `--gate-reviews review.json` accepts only schema `pocket4-reviewed-app-gates-v1` with a `reviews` array. Each review needs a unique `id`, `reviewer`, `package`, `scope` (`scoped` or `whole_app_release`), `observed_at_utc`, exact `framework_epoch_sha256`, `version_code`, `uid`, `apk_sha256`, nonempty `evidence` containing bundle-relative `path` and `sha256`, and `checks` mapping known gate IDs to `passed/failed/blocked/pending`. The files must exist and match their hashes; the review must follow the current inventory and any newer retained failure cutoff. A passed `release_scope` additionally requires `scope=whole_app_release`, `all_features_reviewed=true`, `retained_failures_reconciled=true` and `unresolved_findings=[]`. These are explicit reviewer attestations backed by inspected evidence, not semantic proof extracted automatically from arbitrary documents. Every required gate must pass on the same exact binary before an App can qualify. This matrix retains the historical Camera preview review but rejects its current credit after the newer hardware-absence failure. Current scoped reviews pass Contacts edit/cleanup/UI/lifecycle and WebView UI/lifecycle checks. The composite business checks remain open wherever Search, HTTPS, media or error coverage is still missing. No whole-App release gate passes; all 45 Apps remain in scope.
 
 ## Local validation and evidence limits
 
-Four focused local integrity regressions passed in 0.014 seconds: actual inventory/45-entry preservation; rejection of incomplete/malformed/reordered/duplicate input and historical readiness booleans; union retention when a fixture disappears and a new launcher appears; and prevention of scoped/stale/mixed-APK review promotion. The tests' positive review objects are explicitly synthetic and never enter the delivered matrix. `validation.json` records this scope. No parallel owner's tests were rerun.
+Four focused local integrity regressions passed in 0.015 seconds: actual inventory/45-entry preservation; rejection of incomplete/malformed/reordered/duplicate input and historical readiness booleans; union retention when a fixture disappears and a new launcher appears; and prevention of scoped/stale/mixed-APK review promotion. The tests' positive review objects are explicitly synthetic and never enter the delivered matrix. `validation.json` records this scope. No parallel owner's tests were rerun.
 
 `SOURCE_MANIFEST.json` binds this bundle. Raw personal images, contact rows and account names are absent. `inputs/platform-observations.json` retains the original source hashes and selected facts; its source locators identify the retained receipts reviewed locally. Where this bundle contains an extract rather than the full original, that distinction remains explicit. Earlier evidence is not silently superseded or deleted.

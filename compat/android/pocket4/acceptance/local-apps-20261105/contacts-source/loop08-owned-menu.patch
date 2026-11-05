@@ -1,0 +1,21 @@
+--- contacts-flow08/session_loop07.py	2026-11-05 16:06:13.238815778 +0800
++++ contacts-flow08/session_loop08.py	2026-11-05 16:25:08.253328331 +0800
+@@ -11,7 +11,7 @@
+ import sys
+ import types
+ 
+-ADAPTER_SHA = 'd02821d751736a9e3cf275ec0b27383852e24362928fd4257ebb6d3dee7f6a58'
++ADAPTER_SHA = '2e99a4d0b2a9f4be7046c3504ec65d754bd91c959cb0f4f1adfe873aa3a16237'
+ TRANSPORT_SHA = 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ FIELDS = {'id': 'resource-id', 'text': 'text', 'desc': 'content-desc', 'class': 'class',
+           'focused': 'focused', 'editable': 'editable'}
+@@ -220,6 +220,9 @@
+                 preserved = copy.deepcopy(value)
+                 native_ack.append(preserved)
+                 self.t.record('native-ack-' + ident, preserved)
++                if (op == 'click' and chosen.get('package') == 'com.android.contacts'
++                        and chosen.get('content-desc') == 'More options'):
++                    self.t.authorize_contacts_menu_from_more(preserved)
+             return value
+         self.t.s.helper.ui = record_native
+         try:

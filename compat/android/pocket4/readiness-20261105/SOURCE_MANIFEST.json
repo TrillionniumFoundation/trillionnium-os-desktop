@@ -1,17 +1,24 @@
 {
-  "device_UI_actions": 0,
+  "schema": "pocket4-all-app-readiness-source-manifest-v2",
+  "generation_scope": "Matrix generated from retained sources and reviewed actual receipts; generation performs no device operations.",
+  "new_device_queries": 0,
+  "production_ready_count": 0,
+  "tracked_apps": 45,
+  "retained_review_count": 5,
+  "accepted_review_count": 3,
+  "ignored_older_review_count": 2,
   "files": {
     "README.md": {
-      "bytes": 15225,
-      "sha256": "6fb0283b83e73909b465b70527a6bf38a41a3151af6d721479148c266fdb653d"
+      "bytes": 16472,
+      "sha256": "6194025f84222040f86949f3e19f1a7decaff2e415b7cfb1ce17afa111284565"
     },
     "app-gates.json": {
       "bytes": 24135,
       "sha256": "441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78"
     },
     "gate-reviews.json": {
-      "bytes": 1438,
-      "sha256": "f5d71bf3a95777c514f74f6731ce98aa021349010958d7d4101f0ad3b736f789"
+      "bytes": 7372,
+      "sha256": "7eb6d027323a6985d5ef577994e411915fc82a80163233debea860c7a6376eea"
     },
     "inputs/bili-video-transition-review.json": {
       "bytes": 4109,
@@ -20,6 +27,10 @@
     "inputs/camera-accept01-unready-shutter.json": {
       "bytes": 1761,
       "sha256": "2de2828be20532be0d26a0f4c19c7c75abc0a79b6ac637b38076aa2a96c33843"
+    },
+    "inputs/camera-accept03-device-unavailable.json": {
+      "bytes": 1997,
+      "sha256": "26a1c5c048fc9ee4d500d5bb8c7eae0e500fb025cfce27700c08694d758b1776"
     },
     "inputs/camera-installed-verified.json": {
       "bytes": 5292,
@@ -32,6 +43,22 @@
     "inputs/camera-preview-storage-blocker.json": {
       "bytes": 5710,
       "sha256": "33e13bf8131ea77f6f521e244203d75d8feee80404fc159150111c4b7d76f062"
+    },
+    "inputs/camera-usb-after-accept03.json": {
+      "bytes": 8455,
+      "sha256": "a32215bd83b77cfe976a797a94c500ef8eb0f302041c9a108ab82835cd5c831a"
+    },
+    "inputs/contacts-crud09.json": {
+      "bytes": 2845,
+      "sha256": "b5bdc629339c2dbadbeb99815962c78d758a1efa62c618d9646437a5de4da547"
+    },
+    "inputs/contacts-crud10.json": {
+      "bytes": 3055,
+      "sha256": "c96f55a81b268efc126435a610fef4d2044a3540897c7b89b03235eda1b3479b"
+    },
+    "inputs/contacts-crud11.json": {
+      "bytes": 5519,
+      "sha256": "0dfa6cb26059bd4bab94a287e3cdd01cd01f10bb3579ea31b7951a94a6251b00"
     },
     "inputs/contacts-ui-preflight-result.json": {
       "bytes": 938,
@@ -69,35 +96,49 @@
       "bytes": 7781,
       "sha256": "499f31cba90ac410b8f37c18e801e8eed6c75c118cfcaae54eae61dc93111f6b"
     },
+    "inputs/storage-recovery-verified.json": {
+      "bytes": 2753,
+      "sha256": "92b81d3da1ef1bb611a9325192bce6fdf7ec1f300b10c5a3acc2a2fd50995452"
+    },
+    "inputs/storage-source-runtime-provenance.json": {
+      "bytes": 6147,
+      "sha256": "ede6a4bd49ec57545b403e445182161fe078453ec5c95e2bc1c58d473adf2d16"
+    },
+    "inputs/webview-flow04-result.json": {
+      "bytes": 2483,
+      "sha256": "e45625da6c5a31a3cca62d92453d32393000198ca1d3382dd78c44ccb77412c6"
+    },
+    "inputs/webview-flow04-reviewed.json": {
+      "bytes": 13530,
+      "sha256": "d76e7778ff7354ceb477898cefad3222c8383b849fce6f5aa3690f7e61b697d0"
+    },
+    "inputs/webview-reconcile03-result.json": {
+      "bytes": 2600,
+      "sha256": "a1770757d9c9b26dfa43feeef157beaf7af4584cad8d19833d5c01ce56b7b4fb"
+    },
     "parse_launcher_inventory.py": {
       "bytes": 5849,
       "sha256": "a858c79db8663b08d24d32261873cef4e5335e56c99996564913de29b00943f2"
     },
     "progress.json": {
-      "bytes": 8217,
-      "sha256": "79d306ad04adb9041e4c61023cf2be29d7f6b3918b0de09bc6163315c91e5b11"
+      "bytes": 16304,
+      "sha256": "631fad4dbd92368f8308345d18d986b1596823bc105ee229edcfa9cf3334994e"
     },
     "readiness-matrix.json": {
-      "bytes": 106106,
-      "sha256": "a2541c280bde01b068edbbb7f69851adfe6239573033def76fc873a2b477d0ac"
+      "bytes": 116077,
+      "sha256": "a3f3463ef60406033b67fccd85c2abf61fe47e6431df7dab81244b693771cd5c"
     },
     "test_readiness.py": {
-      "bytes": 5506,
-      "sha256": "6d511fecb1edf6b0b2647574a95a3cb9f84ebc7ba1dddd677bd51c7d08a240ec"
+      "bytes": 6185,
+      "sha256": "42e5df3a650e26ef9cbb4c7857a949b0d67b6f4f9063c266438c3d368b4d04f9"
     },
     "update_matrix.py": {
       "bytes": 16349,
       "sha256": "200d739ced070c9affbac05a2a8cb434cfd904c370f71da3ea845af6fedfb880"
     },
     "validation.json": {
-      "bytes": 594,
-      "sha256": "b02ce20ec123de733c9df6573263614ef6e8ec0af1073e6ce2989ef58137b34b"
+      "bytes": 649,
+      "sha256": "0dfa810d0044bd4ec592a742cdaadc192a3e3ca3b250c47f9dfb9dfd3a9ecb10"
     }
-  },
-  "generation_scope": "Matrix generated from retained source and receipts; actual UI counts remain in original per-trial evidence.",
-  "new_device_queries": 0,
-  "production_ready_count": 0,
-  "schema": "pocket4-all-app-readiness-source-manifest-v1",
-  "scoped_passing_review_count": 1,
-  "tracked_apps": 45
+  }
 }
