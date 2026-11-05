@@ -1,0 +1,36 @@
+--- a/collect.py
++++ b/collect.py
+@@ -10,21 +10,9 @@
+ 
+ PREFIX = "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/"
+ SCOPES = [
+-    {"job": "1a1a97d5080-fc05-3585", "role": "builder450_compile03",
+-     "path_authority": "actual compile03 receipt",
+-     "receipt_sha256": "a1d8fe1e891c876baeff555b18fce9bafe6a895d379d9e55261c6df1981785de"},
+-    {"job": "1a1a97796a0-fc05-3568", "role": "nofile_host_build01",
+-     "path_authority": "actual NOFILE build receipt",
+-     "receipt_sha256": "bb575a8030aa086e9622dd25c814190821199991461e1f0b094aca44f7e76fdd"},
+-    {"job": "1a1a97d246d-fc05-3583", "role": "nofile_host_run01",
+-     "path_authority": "actual NOFILE run receipt",
+-     "receipt_sha256": "b0a03b1b95e3292131105dcb22fd59f4a767e63017197e29f4482036976a4ac2"},
+-    {"job": "1a1a9835957-fc05-35ab", "role": "streaming_engine_prepare01",
+-     "path_authority": "expected manager scope derived from root-confirmed owned job ID",
+-     "receipt_sha256": "c477825f24b1eefa07b853f12330049283856987e2e1e6dee3b25017451e5654"},
+-    {"job": "1a1a98601cf-fc05-35bd", "role": "streaming_engine_build_admission01",
+-     "path_authority": "expected manager scope derived from root-confirmed owned job ID",
+-     "receipt_sha256": "f9c595a044dc01dfd0d266fb4d8a3c59fb8e1915c7661f19928a15f5748d3c93"},
++    {"job": "1a1a995794e-fc05-3625", "role": "nofile_Android_matching_build01",
++     "path_authority": "actual matching Android coordinator before/after receipt",
++     "receipt_sha256": "f3617407f8c624357f4bf9a9cc53e1e78a217b3c0b8bc9a51448c09569e2ea06"},
+ ]
+ FIELDS = ("cgroup.procs", "cgroup.events", "memory.current", "memory.stat",
+           "memory.swap.current", "memory.events", "memory.peak", "memory.swap.peak",
+@@ -102,7 +90,7 @@
+     if os.getuid() != 1000 or os.geteuid() != 1000:
+         raise RuntimeError("fixed collector requires ordinary operator UID1000")
+     result = {"schema": 1, "started_utc": utc(),
+-              "scope": "fixed memory files and five explicitly owned job scopes only",
++              "scope": "fixed memory files and one explicitly owned Android-build job scope only",
+               "source_execution": False, "process_scan": False,
+               "files_written": 0, "resource_or_policy_changes": 0,
+               "stop_or_kill_actions": 0, "Main_actions": 0,

@@ -1,0 +1,294 @@
+{
+  "schema": 1,
+  "scope": "new actual-source ordinary metadata owner controls; no trusted factory service",
+  "production_sources_changed_since_recovery02": false,
+  "cases": [
+    {
+      "index": 0,
+      "name": "legacy_real_metadata_three_entrypoints",
+      "function": "Basic",
+      "unchanged_r21_index": 0,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 1,
+      "name": "legacy_forged_app_tag_stays_ordinary",
+      "function": "ForgedAppFile",
+      "unchanged_r21_index": 1,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 2,
+      "name": "legacy_ordinary_O_PATH",
+      "function": "OrdinaryOPath",
+      "unchanged_r21_index": 2,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 3,
+      "name": "legacy_warm_AS1_restart",
+      "function": "WarmLimitedAddressSpace",
+      "unchanged_r21_index": 3,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 4,
+      "name": "legacy_raw_private_fork_AS1",
+      "function": "RawForkLimitedAddressSpace",
+      "unchanged_r21_index": 4,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 5,
+      "name": "legacy_full_caller_table",
+      "function": "FullCallerTable",
+      "unchanged_r21_index": 5,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 6,
+      "name": "legacy_badfd_atomicity_mask",
+      "function": "BadFdAndMask",
+      "unchanged_r21_index": 6,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 7,
+      "name": "legacy_quiesce_closed_generation",
+      "function": "ExplicitQuiesce",
+      "unchanged_r21_index": 7,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 8,
+      "name": "legacy_twelve_restart_clear_tid",
+      "function": "RestartRounds",
+      "unchanged_r21_index": 8,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 9,
+      "name": "legacy_private_caller_fdtable",
+      "function": "PrivateCallerTable",
+      "unchanged_r21_index": 9,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 10,
+      "name": "legacy_shared_VM_new_TGID_rejected",
+      "function": "SharedVmGeneration",
+      "unchanged_r21_index": 10,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 11,
+      "name": "legacy_raw_and_libc_dual_oracles",
+      "function": "KernelStatfsDualOracles",
+      "unchanged_r21_index": 12,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 12,
+      "name": "legacy_badfd_kernel_guest_atomicity",
+      "function": "KernelStatfsBadFdAtomicity",
+      "unchanged_r21_index": 13,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 13,
+      "name": "legacy_guest_EFAULT_partial_bounds",
+      "function": "KernelStatfsGuestFaults",
+      "unchanged_r21_index": 14,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 14,
+      "name": "NOFILE0_three_objects_all_metadata_views",
+      "function": "ZeroAllViews",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 15,
+      "name": "NOFILE1_getfd_allocation_stage",
+      "function": "OneSlotPinGetfd",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 16,
+      "name": "NOFILE0_AS1_warm_fixed_stacks",
+      "function": "ZeroAndAddressSpaceOne",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 17,
+      "name": "NOFILE0_badfd_atomicity_mask",
+      "function": "ZeroBadFdAtomicityMask",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 18,
+      "name": "NOFILE0_guest_EFAULT_partial_bounds",
+      "function": "ZeroGuestFaults",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 19,
+      "name": "NOFILE0_24_one_shot_clear_tid_rounds",
+      "function": "ZeroRepeatedOneShot",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 20,
+      "name": "NOFILE0_actual_private_caller_table",
+      "function": "ZeroPrivateCallerTable",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 21,
+      "name": "NOFILE0_quiesce_and_restart_rejection",
+      "function": "ZeroQuiesce",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 22,
+      "name": "private_fork_start_before_NOFILE0",
+      "function": "ZeroAfterPrivateFork",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 23,
+      "name": "NOFILE0_shared_fdtable_close_reuse",
+      "function": "ZeroCloseReuseRace",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": false
+    },
+    {
+      "index": 24,
+      "name": "initial_NOFILE0_authority_still_rejected",
+      "function": "InitiallyZeroRemainsRejected",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": true,
+      "preimage_required_failure_errno": null,
+      "known_red_boundary_remains": true
+    },
+    {
+      "index": 25,
+      "name": "fork_after_NOFILE0_child_rejected_parent_works",
+      "function": "ForkAfterZeroRemainsRejectedParentWorks",
+      "unchanged_r21_index": null,
+      "candidate_expected_function_pass": true,
+      "preimage_expected_function_pass": false,
+      "preimage_required_failure_errno": "EMFILE",
+      "known_red_boundary_remains": true
+    }
+  ],
+  "positive_runtime_executed": false,
+  "candidate26_PASS_claimed": false,
+  "baseline_11_specific_EMFILE_failures_observed": false,
+  "original_R21_functions_reused_unmodified": 14,
+  "base_R21_file_only_delta": "conditional include selecting exact candidate or preimage raw owner",
+  "known_red": [
+    "Start first invoked after RLIMIT_NOFILE=0 cannot perform authoritative initial user-namespace admission",
+    "new private-fork child first started after NOFILE=0 remains rejected; already-admitted parent is tested separately",
+    "trusted virtual O_PATH requiring reopen still lacks a NOFILE0 positive control",
+    "raw worker lifecycle across credential/root/mount/namespace transitions and Main ART integration remain outside this harness"
+  ],
+  "all_cases_require": [
+    "fresh owned direct child with exact wait/reap and bounded watchdog",
+    "only owned child capability E/P/I clear with capget verification; parent caps unchanged",
+    "Stop result and both kernel clear-tid words observed",
+    "original caller signal mask restored",
+    "no unexpected adopted/live child and no forced cleanup"
+  ],
+  "newcase_oracles": [
+    "full 120-byte raw kernel versus fixed owner versus guest adapter",
+    "host libc full statfs separate from raw ABI",
+    "native errors/output atomicity/mask and EFAULT writable-prefix bounds",
+    "RLIMIT_NOFILE 0,1 and RLIMIT_AS1 intersection",
+    "actual unshared caller fdtable and shared-fdtable close/reuse"
+  ],
+  "Android_execution": false,
+  "lost_harness_results_inherited": false
+}
