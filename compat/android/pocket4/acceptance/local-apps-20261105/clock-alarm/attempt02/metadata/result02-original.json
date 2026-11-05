@@ -1,0 +1,680 @@
+{
+  "SQL_write_commands": 0,
+  "UI_actions": 2,
+  "acknowledged_input_count": 2,
+  "acknowledged_inputs": [
+    {
+      "id": "a01-alarm-tab",
+      "label": "alarm-tab",
+      "op": "click"
+    },
+    {
+      "id": "a02-open-time-picker",
+      "label": "open-time-picker",
+      "op": "click"
+    }
+  ],
+  "actual_resource_contract": {
+    "ids": {
+      "alarm_button": "com.android.deskclock:id/alarm",
+      "alert_title": "com.android.deskclock:id/alert_title",
+      "arrow": "com.android.deskclock:id/arrow",
+      "clock": "com.android.deskclock:id/digital_clock",
+      "delete": "com.android.deskclock:id/delete",
+      "dismiss": "com.android.deskclock:id/dismiss",
+      "label": "com.android.deskclock:id/edit_label",
+      "onoff": "com.android.deskclock:id/onoff",
+      "repeat": "com.android.deskclock:id/repeat_onoff"
+    },
+    "numeric_ids_from_actual_installed_methods": {
+      "add": "0x7f1201ba",
+      "alarm_button": "0x7f0a004b",
+      "alert_title": "0x7f0a0053",
+      "arrow": "0x7f0a0064",
+      "clock": "0x7f0a00c4",
+      "delete": "0x7f0a00ba",
+      "dismiss": "0x7f0a00cd",
+      "label": "0x7f0a00de",
+      "label_description": "0x7f12028d",
+      "label_message": "0x7f1201fc",
+      "onoff": "0x7f0a01a0",
+      "repeat": "0x7f0a01d9"
+    },
+    "resources_arsc_sha256": "1d1bd30eaf7e6942d0bb572945be03d3044e24800588250493b5099af43d97fb",
+    "texts": {
+      "add": "Add alarm",
+      "label_description": "No label specified",
+      "label_message": "Label"
+    }
+  },
+  "alert_self_finished_tasks": [],
+  "automatic_retry": false,
+  "business_success_verified": false,
+  "cleanup": {
+    "SQL_or_provider_fallback": false,
+    "close_pending_retained": null,
+    "database_effect_pending_retained": null,
+    "new_inputs": 0,
+    "no_alarm_created": true,
+    "original_failure_retained": true,
+    "pending_retained": null
+  },
+  "cleanup_seconds": 90,
+  "close_pending": null,
+  "creation_native_ACK": false,
+  "delete_native_ACK": false,
+  "desktop_popup_qualification": false,
+  "dismiss_native_ACK": false,
+  "empty_alarm_state_at_final_read": true,
+  "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "error": "RuntimeError: OBSERVED_TIME_PICKER_TEXT_MODE_REQUIRED",
+  "final_alarm_readback": {
+    "enabled_count": 0,
+    "instance_count": 0,
+    "instance_ids": [],
+    "marker_count": 0,
+    "original_enabled": 0,
+    "template_count": 2,
+    "template_ids": [
+      1,
+      2
+    ]
+  },
+  "finished_utc": "2026-11-05T18:25:00.063988+00:00",
+  "global_volume_or_ringtone_changes": 0,
+  "identity_after": {
+    "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+    "notifications_granted": true,
+    "uid": 10063,
+    "version_code": 37
+  },
+  "identity_before": {
+    "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+    "notifications_granted": true,
+    "uid": 10063,
+    "version_code": 37
+  },
+  "label_native_ACK": false,
+  "maximum_inputs": 24,
+  "maximum_new_alarms": 1,
+  "native_accessibility_policy_changes": 0,
+  "native_dispatch_attempts": 2,
+  "native_launched_tasks": [
+    973
+  ],
+  "normally_closed_tasks": [
+    973
+  ],
+  "owned_alarm_cleanup_verified": true,
+  "owned_task_remaining": null,
+  "pending_database_effect": null,
+  "pending_effect": null,
+  "phases": {
+    "before": {
+      "enabled_count": 0,
+      "instance_count": 0,
+      "instance_ids": [],
+      "marker_count": 0,
+      "original_enabled": 0,
+      "template_count": 2,
+      "template_ids": [
+        1,
+        2
+      ]
+    }
+  },
+  "physical_audio_qualification": false,
+  "protected_after": {
+    "alarm_content_sha256": "655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea",
+    "alarm_state": {
+      "counts": [
+        {
+          "count": 2,
+          "kind": "alarm_templates"
+        },
+        {
+          "count": 0,
+          "kind": "alarm_instances"
+        }
+      ],
+      "enabled-count": [
+        {
+          "enabled_count": 0
+        }
+      ],
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "instance-ids": [],
+      "marker-count": [
+        {
+          "marker_count": 0
+        }
+      ],
+      "template-ids": [
+        {
+          "_id": 1
+        },
+        {
+          "_id": 2
+        }
+      ]
+    },
+    "apk": {
+      "bytes": 7593129,
+      "guest_path": "/data/app/~~IbaHjOhSap41lASiYb4RDQ==/com.android.deskclock-WSxg1z5KSAFk5lJv8t51zw==/base.apk",
+      "sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172"
+    },
+    "directories": {
+      "ce": {
+        "device": 1811,
+        "gid": 10063,
+        "inode": 131889,
+        "mode": 448,
+        "uid": 10063
+      },
+      "de": {
+        "device": 1811,
+        "gid": 10063,
+        "inode": 131892,
+        "mode": 448,
+        "uid": 10063
+      }
+    },
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "identity": {
+      "ce_inode": 131889,
+      "data_dir": "/data/user/0/com.android.deskclock",
+      "de_inode": 131892,
+      "first_install_time": "2026-10-07 03:30:59",
+      "min_sdk": 37,
+      "runtime_permissions": {
+        "android.permission.POST_NOTIFICATIONS": {
+          "flags": " USER_SET|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED",
+          "granted": true
+        },
+        "android.permission.READ_EXTERNAL_STORAGE": {
+          "flags": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_INSTALLER_EXEMPT|RESTRICTION_UPGRADE_EXEMPT",
+          "granted": false
+        },
+        "android.permission.READ_MEDIA_AUDIO": {
+          "flags": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_UPGRADE_EXEMPT",
+          "granted": false
+        },
+        "android.permission.READ_MEDIA_IMAGES": {
+          "flags": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_UPGRADE_EXEMPT",
+          "granted": false
+        },
+        "android.permission.READ_MEDIA_VIDEO": {
+          "flags": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_UPGRADE_EXEMPT",
+          "granted": false
+        },
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED": {
+          "flags": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_UPGRADE_EXEMPT",
+          "granted": false
+        }
+      },
+      "target_sdk": 30,
+      "uid": 10063,
+      "version": 37
+    },
+    "notification_appop_allow": true,
+    "package": "com.android.deskclock",
+    "preferences_metadata": {
+      "all_other_preference_bytes_sha256": "3c3d7eef6a4f2d36f085bbb5f0832d9a3c5f3b66dabbfa8b0dd4e3089e251e8d",
+      "global_intent_id": 121
+    },
+    "preferences_sha256": "035189ab217bdf167f360d2e98fbddc224d956044e1e371598f7504809ffd517",
+    "sound_state": {
+      "settings": {
+        "alarm_alert": "null",
+        "notification_sound": "content://media/internal/audio/media/92?title=Pixie%20Dust&canonical=1",
+        "ringtone": "content://media/internal/audio/media/170?title=Flutey%20Phone&canonical=1",
+        "volume_alarm": "6",
+        "volume_music": "5",
+        "volume_notification": "5",
+        "volume_ring": "5"
+      },
+      "streams": {
+        "STREAM_ACCESSIBILITY": {
+          "alias": "STREAM_MUSIC",
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 1",
+            "Max: 15",
+            "streamVolume:6",
+            "Current: 1000000 (bus): 6, 4000000 (usb_headset): 4, 40000000 (default): 6"
+          ]
+        },
+        "STREAM_ALARM": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 1",
+            "Max: 7",
+            "streamVolume:6",
+            "Current: 1000000 (bus): 6, 40000000 (default): 6"
+          ]
+        },
+        "STREAM_ASSISTANT": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 15",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_DTMF": {
+          "alias": "STREAM_RING",
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 15",
+            "streamVolume:11",
+            "Current: 1000000 (bus): 11, 40000000 (default): 11"
+          ]
+        },
+        "STREAM_MUSIC": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 15",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 4000000 (usb_headset): 3, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_NOTIFICATION": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 7",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_RING": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 7",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_SYSTEM": {
+          "alias": "STREAM_RING",
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 7",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_SYSTEM_ENFORCED": {
+          "alias": "STREAM_RING",
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 7",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_TTS": {
+          "alias": "STREAM_MUSIC",
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 15",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 4000000 (usb_headset): 3, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_VOICE_CALL": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 1",
+            "Max: 15",
+            "streamVolume:3",
+            "Current: 1000000 (bus): 3, 40000000 (default): 3"
+          ]
+        }
+      }
+    },
+    "tasks_sha256": "1402ee6eb186ecda31466bdb84783d5e05098bafad6e5994caa293677b7ef7c1",
+    "timer_and_stopwatch_empty": true
+  },
+  "protected_before": {
+    "alarm_content_sha256": "655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea",
+    "alarm_state": {
+      "counts": [
+        {
+          "count": 2,
+          "kind": "alarm_templates"
+        },
+        {
+          "count": 0,
+          "kind": "alarm_instances"
+        }
+      ],
+      "enabled-count": [
+        {
+          "enabled_count": 0
+        }
+      ],
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "instance-ids": [],
+      "marker-count": [
+        {
+          "marker_count": 0
+        }
+      ],
+      "template-ids": [
+        {
+          "_id": 1
+        },
+        {
+          "_id": 2
+        }
+      ]
+    },
+    "apk": {
+      "bytes": 7593129,
+      "guest_path": "/data/app/~~IbaHjOhSap41lASiYb4RDQ==/com.android.deskclock-WSxg1z5KSAFk5lJv8t51zw==/base.apk",
+      "sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172"
+    },
+    "directories": {
+      "ce": {
+        "device": 1811,
+        "gid": 10063,
+        "inode": 131889,
+        "mode": 448,
+        "uid": 10063
+      },
+      "de": {
+        "device": 1811,
+        "gid": 10063,
+        "inode": 131892,
+        "mode": 448,
+        "uid": 10063
+      }
+    },
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "identity": {
+      "ce_inode": 131889,
+      "data_dir": "/data/user/0/com.android.deskclock",
+      "de_inode": 131892,
+      "first_install_time": "2026-10-07 03:30:59",
+      "min_sdk": 37,
+      "runtime_permissions": {
+        "android.permission.POST_NOTIFICATIONS": {
+          "flags": " USER_SET|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED",
+          "granted": true
+        },
+        "android.permission.READ_EXTERNAL_STORAGE": {
+          "flags": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_INSTALLER_EXEMPT|RESTRICTION_UPGRADE_EXEMPT",
+          "granted": false
+        },
+        "android.permission.READ_MEDIA_AUDIO": {
+          "flags": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_UPGRADE_EXEMPT",
+          "granted": false
+        },
+        "android.permission.READ_MEDIA_IMAGES": {
+          "flags": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_UPGRADE_EXEMPT",
+          "granted": false
+        },
+        "android.permission.READ_MEDIA_VIDEO": {
+          "flags": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_UPGRADE_EXEMPT",
+          "granted": false
+        },
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED": {
+          "flags": " USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED|RESTRICTION_UPGRADE_EXEMPT",
+          "granted": false
+        }
+      },
+      "target_sdk": 30,
+      "uid": 10063,
+      "version": 37
+    },
+    "notification_appop_allow": true,
+    "package": "com.android.deskclock",
+    "preferences_metadata": {
+      "all_other_preference_bytes_sha256": "3274a6723fe0971b8c8e05a2af0f6cf155fb82561a70914eb3d5b2e51f4b33a2",
+      "global_intent_id": 121
+    },
+    "preferences_sha256": "ac11db35d5dcceb9fbbc07ed28144f9c244a16ef785476b0d37ff7c7e0813eb3",
+    "sound_state": {
+      "settings": {
+        "alarm_alert": "null",
+        "notification_sound": "content://media/internal/audio/media/92?title=Pixie%20Dust&canonical=1",
+        "ringtone": "content://media/internal/audio/media/170?title=Flutey%20Phone&canonical=1",
+        "volume_alarm": "6",
+        "volume_music": "5",
+        "volume_notification": "5",
+        "volume_ring": "5"
+      },
+      "streams": {
+        "STREAM_ACCESSIBILITY": {
+          "alias": "STREAM_MUSIC",
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 1",
+            "Max: 15",
+            "streamVolume:6",
+            "Current: 1000000 (bus): 6, 4000000 (usb_headset): 4, 40000000 (default): 6"
+          ]
+        },
+        "STREAM_ALARM": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 1",
+            "Max: 7",
+            "streamVolume:6",
+            "Current: 1000000 (bus): 6, 40000000 (default): 6"
+          ]
+        },
+        "STREAM_ASSISTANT": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 15",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_DTMF": {
+          "alias": "STREAM_RING",
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 15",
+            "streamVolume:11",
+            "Current: 1000000 (bus): 11, 40000000 (default): 11"
+          ]
+        },
+        "STREAM_MUSIC": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 15",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 4000000 (usb_headset): 3, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_NOTIFICATION": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 7",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_RING": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 7",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_SYSTEM": {
+          "alias": "STREAM_RING",
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 7",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_SYSTEM_ENFORCED": {
+          "alias": "STREAM_RING",
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 7",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_TTS": {
+          "alias": "STREAM_MUSIC",
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 0",
+            "Max: 15",
+            "streamVolume:5",
+            "Current: 1000000 (bus): 5, 4000000 (usb_headset): 3, 40000000 (default): 5"
+          ]
+        },
+        "STREAM_VOICE_CALL": {
+          "alias": null,
+          "fields": [
+            "Muted: false",
+            "Muted Internally: false",
+            "Min: 1",
+            "Max: 15",
+            "streamVolume:3",
+            "Current: 1000000 (bus): 3, 40000000 (default): 3"
+          ]
+        }
+      }
+    },
+    "tasks_sha256": "1402ee6eb186ecda31466bdb84783d5e05098bafad6e5994caa293677b7ef7c1",
+    "timer_and_stopwatch_empty": true
+  },
+  "provider_write_commands": 0,
+  "runtime_evidence": {
+    "failure": {
+      "commands": {
+        "notifications": {
+          "alarm_record": {
+            "active_clock_count": 0,
+            "present": false
+          },
+          "bytes": 6421,
+          "private_path": "/home/alex/work/pocket4-clock-alarm-accept-20261105-r12-02/failure-notifications-private.txt",
+          "sha256": "caa6697367ab433a0ba4e4cfdfbc33e63a20366c4da2ffa4cac07519b0e23593"
+        },
+        "scheduler": {
+          "bytes": 47283,
+          "clock_uid_current_pending_alarm_count": 0,
+          "private_path": "/home/alex/work/pocket4-clock-alarm-accept-20261105-r12-02/failure-scheduler-private.txt",
+          "sha256": "b23d2ec413a51decd00c7e29506a49ef633f34f9a55febe52a48deafaf25ffc0"
+        },
+        "services": {
+          "bytes": 66,
+          "private_path": "/home/alex/work/pocket4-clock-alarm-accept-20261105-r12-02/failure-services-private.txt",
+          "sha256": "e9990d2b9ce9e862271712ca1ecd0c280ac8cd7a2fd48fc18fb69623521c33b0"
+        }
+      },
+      "observed_utc": "2026-11-05T18:24:58.178778+00:00"
+    },
+    "final": {
+      "commands": {
+        "notifications": {
+          "alarm_record": {
+            "active_clock_count": 0,
+            "present": false
+          },
+          "bytes": 6421,
+          "private_path": "/home/alex/work/pocket4-clock-alarm-accept-20261105-r12-02/final-notifications-private.txt",
+          "sha256": "2ec59fd991bd59b19a3d6ed86aa99bcb4d89ab28b43c0c743dace1a9e2eafad2"
+        },
+        "scheduler": {
+          "bytes": 47230,
+          "clock_uid_current_pending_alarm_count": 0,
+          "private_path": "/home/alex/work/pocket4-clock-alarm-accept-20261105-r12-02/final-scheduler-private.txt",
+          "sha256": "0a9dc34878e56574e4e841f0fb616d24aeb75c682a398403a46907cdd7d19d61"
+        },
+        "services": {
+          "bytes": 66,
+          "private_path": "/home/alex/work/pocket4-clock-alarm-accept-20261105-r12-02/final-services-private.txt",
+          "sha256": "e9990d2b9ce9e862271712ca1ecd0c280ac8cd7a2fd48fc18fb69623521c33b0"
+        }
+      },
+      "observed_utc": "2026-11-05T18:24:59.061105+00:00"
+    }
+  },
+  "setting_changes": 0,
+  "source_pins": {
+    "base": [
+      "/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01/ui_preflight04.py",
+      "d02821d751736a9e3cf275ec0b27383852e24362928fd4257ebb6d3dee7f6a58"
+    ],
+    "installer": [
+      "/home/alex/work/pocket4-clock-expired-text-20261105-r12-02/transaction03/clock_install03.py",
+      "0f7d01f428d1b472e48327df66111d22dbd0551dc5a090faf8c4f5627aff1b48"
+    ],
+    "model": [
+      "/home/alex/work/pocket4-clock-alarm-tools-20261105-r12-02/read_clock_expired_text02.py",
+      "93a25eacc015e5e87a12a0cd55a9b97c8a7fd7068dd6c691a56b9c77b2a1af6f"
+    ],
+    "reader": [
+      "/home/alex/work/pocket4-clock-alarm-tools-20261105-r12-02/read_owned_alarm01.py",
+      "926129def477b063d4003c3c7b3919dba3f15f020ff821fd384befa3395996b8"
+    ],
+    "timer": [
+      "/home/alex/work/pocket4-clock-session-tools-20261105-r12-01/read_timer.py",
+      "c3bf02f38e05ab7a55285ca2245ffe2bda3eb528cc1f85d54723294047948b08"
+    ]
+  },
+  "started_utc": "2026-11-05T18:24:42.433460+00:00",
+  "state": "FAILED",
+  "task_set_restored": true,
+  "whole_app_production_ready": false,
+  "work_seconds": 600
+}

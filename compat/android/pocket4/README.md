@@ -8,7 +8,82 @@ The [complete current 45-App matrix](readiness-20261105/README.md) binds the 202
 
 The following original snapshot is retained with its 2026-11-04 scope. New Bilibili runs in [checkpoint 12](continuation-r11/checkpoint-12/README.md) reach DetailsActivity but still observe buffering; the earlier scoped visual playback is not a substitute for the new run. Native candidate07 now has a retained full-host result (3,793 registered, 3,791 executed, 3,788 completed, three skips, two disabled, zero failures) and four passing Android signal cases in its owned runtime. The controller recorded memory-limit events; Main deployment and commercial-App qualification remain open.
 
-## Latest recorded results — checkpoint9
+## Latest recorded results — checkpoint10
+
+This checkpoint covers completed device observations through **2026-11-05
+20:14:45 UTC** and their subsequent independent local reviews. Later active
+continuation runs are retained separately for the next checkpoint.
+
+[Calendar11](calendar-functional-repair-20261105/CURRENT_STATUS.md) is installed
+as00cb0b0a… after116 host checks and actual ART verification of66 target classes.
+It fixes the Provider receipt rejection observed after creating a LOCAL calendar:
+the exact returned sync-adapter query is validated without weakening the generic
+event receipt parser. The single preserving installation finished at19:09:22 UTC.
+
+The [Core12 actual run](calendar-functional-repair-20261105/core12-acceptance/README.md)
+verified LOCAL calendar creation, Cancel/Discard without an event write, and one
+UI event Save with exact Provider and detail readback. It failed at its original
+720-second lease; edit Save, separate reopen and UI delete remain incomplete.
+Two Save decisions were rejected before input by the snapshot guard. A later
+transport UNKNOWN remains unchanged, with no matching original journal command.
+Separate read-only reconciliation found the original unedited event. At20:01:44
+UTC, one exact event deletion followed by one exact empty-calendar deletion
+restored all eight physical tables and task851, preserving Main and package
+identities. Provider cleanup earns no UI delete credit.
+
+[Clock alarm03](acceptance/local-apps-20261105/clock-alarm/attempt03/README.md)
+retains an actual due-delivery failure on the current e4ff APK. The owned alarm
+was scheduled, but the saved due chain did not reach the firing state or firing
+notification. Its separate exact UI cleanup restored the two original disabled
+templates and zero instances. This evidence sets only clock.alarm to failed;
+the existing timer result on the same binary remains accepted. The exact AMS
+rejection point was not retained and is not invented from missing logs.
+
+The [signed Clock dispatch candidate04](acceptance/local-apps-20261105/clock-alarm/candidate04-build/README.md)
+uses foreground-service scheduling for the firing transition and the existing
+receiver for non-firing transitions. It binds new envelopes to the occurrence,
+parent, source state and generation and preserves legacy action contracts.
+The actual build compared all2,941 classes/19,744 methods: five original methods
+changed, six were added, and the other43 original methods in the four target
+classes stayed unchanged. Only classes.dex changed among1,281 ZIP payloads.
+Its53 host cases double several App delegates and do not replace device
+acceptance. Separate [actual ART04 verification](acceptance/local-apps-20261105/clock-alarm/candidate04-art/README.md)
+now confirms all four modified classes as Verified, with the real optional
+shared-library context,52 boot-classpath files and87 guest inputs unchanged.
+The signed433ff501… candidate is uninstalled at this checkpoint. New-binary alarm
+delivery, runtime identity and timer regression remain required.
+
+[Files feature10](acceptance/local-apps-20261105/documents-features/flow10/README.md)
+completed all12 declared scoped checks. Copy and Move preserve the generated
+59/118-byte hashes. Two actual OK confirmations deleted the two copies and then
+four remaining owned entries, with physical readbacks and zero host file-unlink
+fallbacks. Close/reopen returned the same content; revoking the tree grant caused
+an actual SecurityException for an existing file before any new grant; a later
+GET_CONTENT selection returned the exact bytes. All URI grants, five owned tasks,
+files/directories and the helper were cleaned. The earlier09 failed/unknown result
+remains preserved. The [provider-clause review](acceptance/local-apps-20261105/documents-features/provider-clause-review10.json)
+identifies remaining ArchivesProvider and dedicated Downloads navigation evidence.
+Search, sort, name-conflict handling and whole release remain separate open work.
+
+[Contacts search preparation](acceptance/local-apps-20261105/contacts-search/preparation01/README.md)
+retains the installed search-method review, a bounded owned-contact flow and its
+pending-state tests, and the independently reviewed passive runtime observer.
+This preparation bundle itself contains no actual search execution or gate pass.
+A separate [actual search01 and runtime02 review](acceptance/local-apps-20261105/contacts-search/runtime-identity02/README.md)
+preserves the original search-widget mismatch and exact fixture cleanup. Five
+stable snapshots across two Contacts process generations bind the unchanged
+signed APK and381 full ELF hashes; only observed runtime identity receives new
+credit. Search and whole-App readiness remain open. The newer [Bilibili R6 controls observation](acceptance/commercial-apps-20261105/bilibili-controls-r6/README.md)
+found visible player controls in a later complete observation. The original
+business-success false and unknown-outcome flags remain; advancing video and
+audio are still unverified.
+
+All45 Apps remain tracked, with52 installed-package observations and18 retained
+reviews. Twelve reviews currently provide scoped statuses, including negative
+Camera and Clock results; six older reviews have no current credit. Whole-App
+production readiness remains0/45. The original12288 task profile remains in use.
+
+## Earlier actual results — checkpoint9
 
 [Calendar candidate10](calendar-functional-repair-20261105/CURRENT_STATUS.md) is
 installed as7872aa56… following actual verification of all66 added/modified

@@ -645,6 +645,112 @@
         "Immutable or universally root-owned system-code assertion"
       ],
       "version_code": 40030
+    },
+    {
+      "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+      "checks": {
+        "clock.alarm": "failed"
+      },
+      "evidence": [
+        {
+          "bytes": 2957,
+          "path": "inputs/clock-alarm03/REVIEW.json",
+          "sha256": "ce68b7683196ac0eec2138d6d119dbe6bd6a9cb5e1f10057c5923cb46d622984"
+        },
+        {
+          "bytes": 1933,
+          "path": "inputs/clock-alarm03/ROOT_NEGATIVE_GATE_REVIEW.json",
+          "sha256": "f8671b4b61a44cca33cf72aeb68abdf4e92014d541606f2d561332040a78f82a"
+        },
+        {
+          "bytes": 2744,
+          "path": "inputs/clock-alarm03/metadata/alarm03-original-selected.json",
+          "sha256": "2a816cc87fed461920a4767feb2f5046ea0d90dd5ae4c61ba4c8d3b5a7459c74"
+        },
+        {
+          "bytes": 3141,
+          "path": "inputs/clock-alarm03/metadata/cleanup03-original-selected.json",
+          "sha256": "0da0ea3acdb3d28e4842d7c59c86362b6d0bd4bb7ddaa4e0e65da0e1a5d1c6cf"
+        },
+        {
+          "bytes": 2900,
+          "path": "inputs/clock-alarm03/metadata/due-logs01-selected.json",
+          "sha256": "91564ae822490feba420ba71d58f722c9e70e59d47dea3278daff34b4c056670"
+        },
+        {
+          "bytes": 39716,
+          "path": "inputs/clock-alarm03/source/installed-alarm-methods.json",
+          "sha256": "0b0f2d51ab757120044a4ce32f16e456aef0432001379c4ab2323f094fcb3264"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "root_clock_alarm03_due_delivery_failed",
+      "observed_at_utc": "2026-11-05T19:03:13.192712+00:00",
+      "package": "com.android.deskclock",
+      "qualification_scope": "Exact alarm3 / instance1 due 18:54 GMT did not fire: one due scheduler attempt per PendingIntent, receiver process startup, unattached AlarmService and unchanged state3 observed independently before exact cleanup.",
+      "reviewed_at_utc": "2026-11-05T19:33:11.622358+00:00",
+      "reviewer": "root",
+      "scope": "scoped",
+      "uid": 10063,
+      "unresolved_findings": [
+        "Alarm delivery and Dismiss on the current e4ff binary failed this owned trial.",
+        "The specific ActivityManager rejection path is not established by the retained historical logs.",
+        "Physical speaker output, timezone persistence, runtime identity, stability and whole App release remain unqualified."
+      ],
+      "version_code": 37
+    },
+    {
+      "android_user": 0,
+      "apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+      "checks": {
+        "identity": "passed"
+      },
+      "evidence": [
+        {
+          "bytes": 15972,
+          "path": "inputs/contacts-runtime02/PEER_REVIEW.json",
+          "sha256": "a5251ecbb09fd6d3607332cee0ffc259e22e0e815d4865acc07933fae72c7427"
+        },
+        {
+          "bytes": 83249,
+          "path": "inputs/contacts-runtime02/ELF_INVENTORY.json",
+          "sha256": "067fdb292c94c215f58034f04dda1bd648331f1e5601f291735f979cbe4a45b8"
+        },
+        {
+          "bytes": 1796,
+          "path": "inputs/contacts-runtime02/SIGNATURE_BINDING.json",
+          "sha256": "a79715473f57db1c424eb724234e4b988aa436460479ea8fbcaccbb693f90a15"
+        },
+        {
+          "bytes": 1632,
+          "path": "inputs/contacts-runtime02/ROOT_QUALIFICATION.json",
+          "sha256": "fc24da46b120962a71987069ade59238468f68d243937a35e1b717d6d981a866"
+        },
+        {
+          "bytes": 3991,
+          "path": "inputs/contacts-runtime02/runtime-result-original.json",
+          "sha256": "612e91ac38c9d07d1d27a16ada46c5b1215c7901ca56ee65900833605653405a"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "root_contacts_runtime02_observed_identity",
+      "observed_at_utc": "2026-11-05T20:04:35.178268+00:00",
+      "package": "com.android.contacts",
+      "qualification_scope": "Only this exact Contacts APK and five actual stable process/code snapshots; no business or whole release credit.",
+      "reviewed_at_utc": "2026-11-05T20:21:50.154402+00:00",
+      "reviewer": "root_with_independent_calendar_peer",
+      "scope": "scoped",
+      "uid": 10055,
+      "unresolved_findings": [
+        "The original aggregate completeness count remains zero; this is a separate classification and identity review.",
+        "Five selected stable snapshots bind this Contacts run. The other 99 index entries are not claimed as full mapping snapshots.",
+        "Four distinct phase labels contain five snapshots because interval-01 contains both process generations.",
+        "JIT caches, vDSO and vsyscall names and permissions are observed; their memory bytes are neither read nor hashed.",
+        "No claim covers arbitrary anonymous code, every future load, all-workload ARM translation exclusion, stress or leak qualification.",
+        "The failed search business flow remains failed. No business, visual, lifecycle, crash or whole-App gate is granted here.",
+        "Raw maps and full proc stat are absent from the public selected export; exact original sample hashes and the pinned selection source bind the preserved fields."
+      ],
+      "version_code": 10734
     }
   ],
   "schema": "pocket4-reviewed-app-gates-v1"

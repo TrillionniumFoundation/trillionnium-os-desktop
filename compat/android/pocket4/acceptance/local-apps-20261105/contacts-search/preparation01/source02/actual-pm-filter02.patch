@@ -1,0 +1,20 @@
+--- source01/capture_contacts_search01.py
++++ source02/capture_contacts_search02.py
+@@ -4,7 +4,7 @@
+ from datetime import datetime, timezone
+ import argparse, gzip, hashlib, io, json, os, re, struct, types, zipfile, zlib
+ 
+-OUT = Path('/home/alex/work/pocket4-contacts-search-source-20261105-r12-01')
++OUT = Path('/home/alex/work/pocket4-contacts-search-source-20261105-r12-02')
+ TX = Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TX_SHA = 'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ ACTIVATION_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+@@ -136,7 +136,7 @@
+             lines = session.android(['/system/bin/pm', 'path', '--user', '0', PACKAGE]).decode().splitlines()
+             need(lines == ['package:' + APK], 'ACTIVE_APK_CHANGED')
+             listed = session.android(['/system/bin/pm', 'list', 'packages', '-U', '--user', '0', PACKAGE]).decode().splitlines()
+-            need(listed == ['package:' + PACKAGE + ' uid:10055'], 'CONTACTS_UID_CHANGED')
++            need(len(listed) == 2 and set(listed) == {'package:com.android.contactspicker uid:10019', 'package:' + PACKAGE + ' uid:10055'}, 'EXACT_PM_FILTER_UID_SET_CHANGED')
+             apk, before = session.target.read_file(APK, 16 * 1024 * 1024, single_link=True)
+             need(len(apk) == 11839391 and sha(apk) == APK_SHA, 'INSTALLED_APK_CHANGED')
+             result['APK'] = {'path': APK, 'sha256': sha(apk), 'bytes': len(apk), 'metadata': before}

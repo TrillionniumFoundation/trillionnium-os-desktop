@@ -1,0 +1,21 @@
+{
+  "RPC": 0,
+  "device_actions": 0,
+  "findings": [
+    "Calendar-only method binds exact submitted LOCAL collection query and rejects fragment or any raw-query difference",
+    "Original generic/event id validator remains byte-identical",
+    "Store passes internally constructed local.toString and keeps exact id/owner/type/name/label readback",
+    "Unknown write classification remains IllegalStateException and prevents replay"
+  ],
+  "pins": {
+    "calendar-receipt.patch": "95403e6efe8369caf538678dc1d68a9095ed8d3717c12ce674c57d6bba1e57df",
+    "src/com/android/calendar/event/EventEditorStore.java": "4645a93249c48fe6a6072a2bc2b6b5b38fd91ced8ab392da169fed4b236b3ebf",
+    "src/com/android/calendar/event/ProviderReceipt.java": "04c7c010b923473dfc535b533472f82053c525b6fb8a436a7a2d95e366d521ed",
+    "tests/ProviderReceiptTest.java": "62fd75a860d4a0e9230a794d16d895c50ebb003c4072ee244bbe7f5b32c73774"
+  },
+  "reviewer": "/root/review_android_acceptance",
+  "schema": "calendar11-receipt-source-peer-review-v1",
+  "scope": "Actual installed provider contract and production Java source; real SDK build and UI pending",
+  "status": "NO_DEFINITE_BLOCKER_IN_REVIEWED_NARROW_DIFF",
+  "test_pass_claimed": false
+}

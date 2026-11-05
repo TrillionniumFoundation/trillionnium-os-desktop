@@ -1,0 +1,55 @@
+{
+  "actual_checks": {
+    "PIDfd_birth_UID_root_map_file_device_inode_rechecked": true,
+    "actual_APK_before_after_pin_and_metadata": true,
+    "actual_code_object_hashes_do_not_automatically_qualify_engine": true,
+    "collector_narrowing_from_Docs09_only": true,
+    "flow_terminal_read_is_read_only_and_does_not_clear_original_pending": true,
+    "no_UI_or_Android_dispatch_or_Provider_or_package_mutation_calls_in_driver_or_sampler": true,
+    "no_remote_execution": true,
+    "only_exact_Contacts_UID10055_process_name_and_Main_PID_namespace_sampled": true,
+    "python_compile_only_passed": true,
+    "request_embeds_exact_two_source_bytes": true,
+    "stage_create_only_and_exec_without_swallowing_exit_code": true,
+    "strict_b227_7e49_profile": true
+  },
+  "blocker": {
+    "condition": "CameraSession.__exit__ raises after the inner body has set BOUNDED_CONTACTS_RUNTIME_OBSERVATIONS_CAPTURED_REVIEW_REQUIRED state.",
+    "function": "execute",
+    "minimal_requested_change": "Set result[state]=FAILED in the outer except; retain the original revision01 and failure review.",
+    "observed_control_flow": "The outer except adds error without resetting state; return then yields 0 for the previous captured state.",
+    "scope": "Definite source control flow; not an observed device failure.",
+    "source": "capture_runtime01.py"
+  },
+  "bounds": {
+    "affinity_cpu": 21,
+    "cpu_quota_percent": 100,
+    "join_seconds": 20,
+    "lease_seconds": 350,
+    "memory_max_bytes": 536870912,
+    "nice": 10,
+    "outer_job_timeout_seconds": 390,
+    "private_own_journal_only": true,
+    "sampler_max_seconds": 355
+  },
+  "qualification_limits": [
+    "Collector capture success is not UI business/cleanup success; original flow result hash remains authoritative, including any unknown effects.",
+    "Worker scan/hash errors are retained and require downstream review, not silently promoted to identity success.",
+    "The raw name-based engine candidates include non-executable paths; stable_complete count is not final engine coverage.",
+    "Own-job outer timeout is the final bound if a host read or join cannot finish; no Main process or service is restarted."
+  ],
+  "review_only_Main_calls": 0,
+  "review_only_UI_actions": 0,
+  "reviewed_pins": {
+    "capture_runtime01.py": "891a6be5a4b12c691a18e9e57b2aec8f30ca444f1bd6f30b2700aa1279011b88",
+    "runtime-request01.json": "320e597b159eb4db2243162d1d70001a6bec4f0e2d1be8184a16b34c1b1cc25c",
+    "runtime_evidence.py": "8018acc97132f3e417cbcb47a23071a45849f7e52f197a6aa250ccab7cce9422"
+  },
+  "reviewer": "recover_android_state",
+  "sampler_diff": {
+    "bytes": 4362,
+    "sha256": "5bc06c22016d6db4e4de15c74e3d1c9a9812758ab79cda996946127e4c063678"
+  },
+  "schema": "contacts-passive-runtime-independent-peer-v1",
+  "verdict": "BLOCKED_BY_CONCRETE_TERMINAL_EXCEPTION_STATE_BUG"
+}

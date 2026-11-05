@@ -1,0 +1,80 @@
+{
+  "schema": "actual-calendar-events-delete-source-peer-v1",
+  "review": "READ_ONLY_LOCAL_SOURCE_CONCLUSION",
+  "device_commands": 0,
+  "apk_sha256": "eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff",
+  "dex_sha256": "f82eb5a869731b069f0fa1cae09c0d85ef787d249e0c8d6149c9470f8b7bed8c",
+  "files": {
+    "calendar-repair08/provider-alarm07/sources/CalendarProvider2.smali": {
+      "bytes": 485849,
+      "sha256": "adf08be5685d0c7c4610887e3135512ac4950cee0c78ccfb5b2696a5fbf18a2a"
+    },
+    "calendar-repair08/provider-alarm07/sources/CalendarDatabaseHelper.smali": {
+      "bytes": 163405,
+      "sha256": "e151cc6edc46f8bfed7fb7f2f730efa683ae9dc1679d8a04248f28936790075f"
+    },
+    "calendar-flow08/source02-result.json": {
+      "bytes": 157646,
+      "sha256": "685718b071dd5ba215976ebed30f40692644a0961a9bd47567e08938701e0c00"
+    }
+  },
+  "method_sha256": {
+    "deleteInTransactionInner(": "cb9e3c6d25be8de2849c64464c594551b269bc01c0770f82d56c49924b8bac5b",
+    "deleteEventInternal(": "cc682df27652b47d9431834374c389d29aaeec5c20878907fc8f25113387e44c",
+    "verifyTransactionAllowed(": "bc8110bce93f7380e35a24b1cdaed4973a3e2fa5892719b581bb5a1a047c2643",
+    "public delete(": "491c7688c7d3ab4bfd35155b1d38a48f7d63275145a39b8617eed18090055276",
+    "protected deleteInTransaction(": "763649c943ce5af93f9105000594a5c88a6c8e099a576a2b1763352f1b6c7dc8",
+    "SQLiteContentProvider.delete": "57b33a2ac12dc8eea3347ec0b6a8b3c90220efa8ad65ba0d38d9ba829d3395fc"
+  },
+  "full_predicate_atomicity": {
+    "supported_path": "content://com.android.calendar/events collection; nonempty exact selection",
+    "uri_matcher": 1,
+    "selection_query_table": "view_events",
+    "selection_projection": "_id",
+    "same_database_transaction": true,
+    "sequence": [
+      "SQLiteContentProvider.delete beginTransactionWithListener",
+      "deleteInTransaction -> deleteInTransactionInner verifyTransactionAllowed",
+      "appendAccountToSelection preserves supplied predicate and appends exact query account",
+      "mDb.query(view_events, ID_ONLY_PROJECTION, full selection, args)",
+      "cursor IDs -> deleteEventInternal(ID, callerSyncAdapter, true)",
+      "setTransactionSuccessful then endTransaction"
+    ],
+    "yield_in_single_delete_path": false,
+    "events_id_uri_safe_for_selection": false,
+    "events_id_uri_warning": "events/# passes parsed ID directly; selected collection is required"
+  },
+  "delete_scope": {
+    "physical_delete_condition": "callerSyncAdapter or empty _sync_id; actual row snapshot must establish chosen branch",
+    "nonrecurring_guard_required": [
+      "empty rrule",
+      "empty rdate",
+      "no unrelated original_id child event"
+    ],
+    "recurring_warning": "unsynced recurring parent can additionally delete Events original_id=ID",
+    "events_cleanup_trigger_source": "CREATE TRIGGER events_cleanup_delete DELETE ON Events BEGIN DELETE FROM Instances WHERE event_id=old._id;DELETE FROM EventsRawTimes WHERE event_id=old._id;DELETE FROM Attendees WHERE event_id=old._id;DELETE FROM Reminders WHERE event_id=old._id;DELETE FROM CalendarAlerts WHERE event_id=old._id;DELETE FROM ExtendedProperties WHERE event_id=old._id;END",
+    "trigger_child_filter": "event_id=old._id",
+    "child_tables": [
+      "Instances",
+      "EventsRawTimes",
+      "Attendees",
+      "Reminders",
+      "CalendarAlerts",
+      "ExtendedProperties"
+    ],
+    "provider_followup": "checkNextAlarm(false) and sendUpdateNotification after collection loop; normal Provider behavior"
+  },
+  "conditions_for_controller": [
+    "actual same APK/DEX and namespace identity",
+    "exact current event and parent full-snapshot selection",
+    "fresh one-row collection query is a preflight only; same full predicate must be submitted in sole delete",
+    "no retry after unknown return",
+    "verify actual row and every owned child absent after effect; source trigger is not observed deletion proof"
+  ],
+  "not_claimed": [
+    "UI delete gate",
+    "actual retained event already deleted",
+    "all live DB triggers independently inspected",
+    "Main execution or mutation"
+  ]
+}

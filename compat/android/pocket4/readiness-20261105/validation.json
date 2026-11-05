@@ -3,8 +3,8 @@
   "command": "python -m unittest discover -s publication/compat/android/pocket4/readiness-20261105 -p 'test_readiness.py' -v",
   "returncode": 0,
   "tests_passed": 9,
-  "source_tool_chunk_id": "124263",
-  "reported_seconds": 0.041,
+  "source_tool_chunk_id": "fa251a",
+  "reported_seconds": 0.043,
   "scope": "Local input integrity, independent installed-APK binding and false-readiness regressions. Positive reviews in tests are synthetic.",
   "device_ui_actions": 0,
   "new_package_manager_queries": 0,
@@ -13,7 +13,7 @@
   "saved_raw_reader_output_complete": true,
   "saved_raw_reader_output_durable": true,
   "latest_failure_cutoff_covered": true,
-  "current_checkpoint": 9,
+  "current_checkpoint": 10,
   "new_boundaries": [
     "same-version install with no new review",
     "same-byte read-only observation versus reinstall",
@@ -21,5 +21,12 @@
     "complete base/split binding",
     "tampered identity evidence"
   ],
-  "peer_readonly_review": "review_android_acceptance inspected the installed-identity selection and cutoff behavior; no separate device operation or test replay."
+  "peer_readonly_review": "review_android_acceptance inspected the installed-identity selection and cutoff behavior; no separate device operation or test replay.",
+  "previous_checkpoint_validation": {
+    "current_checkpoint": 9,
+    "source_tool_chunk_id": "124263",
+    "tests_passed": 9,
+    "reported_seconds": 0.041,
+    "returncode": 0
+  }
 }

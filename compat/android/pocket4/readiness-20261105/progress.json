@@ -1235,6 +1235,410 @@
       "uid": 10061,
       "version_code": 37,
       "whole_app_production_ready": false
+    },
+    {
+      "actual_App_business_qualified": false,
+      "all_66_new_or_modified_classes_ART_verified": true,
+      "apk_sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f",
+      "evidence": [
+        {
+          "bytes": 10454,
+          "path": "inputs/calendar11-install-result-original.json",
+          "sha256": "0ca5846a91a737ff795ce7f856b3916e3903bb2f6498f5f5ad25e1a893fb420a"
+        },
+        {
+          "bytes": 2792,
+          "path": "inputs/calendar11-build11-signature-selected.json",
+          "sha256": "12a70dfa8365e0eb0166e69304e59aaded4738143da2c8b9db7a03f3e44be682"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "calendar_functional11_installed_after_ART",
+      "job_id": "1a1ad1d7c49-fc05-5897",
+      "observed_at_utc": "2026-11-05T19:09:22.490884+00:00",
+      "package": "com.android.calendar",
+      "prior_binary_reviews_inherited": false,
+      "status": "INSTALLED_VERIFIED_NOT_BUSINESS_QUALIFIED",
+      "uid": 10061,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+      "controller_precondition_failure": true,
+      "evidence": [
+        {
+          "bytes": 2904,
+          "path": "acceptance/local-apps-20261105/clock-alarm/attempt02/REVIEW.json",
+          "sha256": "9dcb2020f11694f826942820fb3c0a99bd3af1ee911bb78ded3e2a9a6736878e"
+        },
+        {
+          "bytes": 21416,
+          "path": "acceptance/local-apps-20261105/clock-alarm/attempt02/metadata/result02-original.json",
+          "sha256": "b7d533e98a5164de04a459e5ec44447de6cac5ec7b513e382b54f973545b7695"
+        },
+        {
+          "bytes": 1558,
+          "path": "acceptance/local-apps-20261105/clock-alarm/attempt02/SOURCE_MANIFEST.json",
+          "sha256": "abab9688a50785159413dbd55dbab268b41da0c3a72f600d8e2ff3779bd56403"
+        }
+      ],
+      "existing_clock_timer_credit_unchanged": true,
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "clock_alarm02_actual_pre_save_controller_failure",
+      "job_id": "1a1acf4b359-fc05-57c0",
+      "new_alarm_saved": false,
+      "observed_at_utc": "2026-11-05T18:25:00.063988+00:00",
+      "original_exit_code": 1,
+      "package": "com.android.deskclock",
+      "scoped_gate_credit_granted": false,
+      "status": "ACTUAL_FAILED_BEFORE_NEW_ALARM_SAVE_OWNED_TASK_CLEAN",
+      "uid": 10063,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+      "cleanup_exit_code": 0,
+      "cleanup_job_id": "1a1ad179cb9-fc05-5878",
+      "evidence": [
+        {
+          "bytes": 2957,
+          "path": "acceptance/local-apps-20261105/clock-alarm/attempt03/REVIEW.json",
+          "sha256": "ce68b7683196ac0eec2138d6d119dbe6bd6a9cb5e1f10057c5923cb46d622984"
+        },
+        {
+          "bytes": 1933,
+          "path": "acceptance/local-apps-20261105/clock-alarm/attempt03/ROOT_NEGATIVE_GATE_REVIEW.json",
+          "sha256": "f8671b4b61a44cca33cf72aeb68abdf4e92014d541606f2d561332040a78f82a"
+        },
+        {
+          "bytes": 2924,
+          "path": "acceptance/local-apps-20261105/clock-alarm/attempt03/SOURCE_MANIFEST.json",
+          "sha256": "fda8361d0e0b61532bc18cd5fb6c66f339d88f569770234d94cb75a1ce5496e9"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "gates": {
+        "clock.alarm": "failed"
+      },
+      "id": "clock_alarm03_actual_due_failure_with_independent_owned_cleanup",
+      "limits": "Due PendingIntent dispatch and receiver cold-start are observed; the specific rejecting ActivityManager policy branch is not established. No actual Dismiss or physical-audio qualification.",
+      "observed_at_utc": "2026-11-05T19:03:13.192712+00:00",
+      "original_exit_code": 1,
+      "original_job_id": "1a1ad0bccbc-fc05-5840",
+      "owned_cleanup_verified": true,
+      "package": "com.android.deskclock",
+      "scoped_gate_review_id": "root_clock_alarm03_due_delivery_failed",
+      "status": "SCHEDULED_DUE_DELIVERY_DID_NOT_ATTACH_ALARM_SERVICE_OR_ADVANCE_INSTANCE",
+      "uid": 10063,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "Files_UI_delete_credit": false,
+      "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "baseline_tasks_restored": [
+        851
+      ],
+      "evidence": [
+        {
+          "bytes": 7077,
+          "path": "inputs/documents-features09-PUBLIC_RESULT09.json",
+          "sha256": "cd6ff1df366b404366d2d787afdbc2c66fb998ab0b4ed64e23de7c34bd975011"
+        },
+        {
+          "bytes": 9210,
+          "path": "inputs/documents-features09-SCOPED_GATE_RESULTS09.json",
+          "sha256": "252d4f604e9e6e7e9ca5645cee9c28ebc0389092153a5b1dc20345b5cba17926"
+        },
+        {
+          "bytes": 731,
+          "path": "inputs/documents-features09-flow09-terminal-original.json",
+          "sha256": "c2fa5336e4c9233fefcf7c81a440544e5e8036f233f83ac5b371040043a1819b"
+        },
+        {
+          "bytes": 735,
+          "path": "inputs/documents-features09-cleanup-final-terminal-original.json",
+          "sha256": "cb98338ff75ef8a55e44f56f4d668b3dfe105e99d7980761562ef8f1e1401e1f"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "full_move_hashes_and_inodes_preserved": true,
+      "gates": {
+        "documents.provider": "pending"
+      },
+      "host_fallback_file_unlinks": 4,
+      "id": "documents_features09_actual_copy_move_and_independent_cleanup",
+      "limits": [
+        "The original failed/1 and unknown receipt remain; the saved OK dialog, zero confirm intent and exact fresh ledger establish that final confirmation was not dispatched.",
+        "A separate preflight cleanup failed before any mutation on a compact-versus-pretty receipt hash mismatch. Its failure remains unchanged.",
+        "Later exact fallback cleanup is independently verified and grants no Files UI-delete credit.",
+        "Earlier Documents11 I/O/persistence/lifecycle remains accepted. Broader Provider, search/sort, runtime/stability and full release remain open."
+      ],
+      "new_app_delete_failure_claimed": false,
+      "new_feature_this_run": "FILES_MULTIPLE_MOVE",
+      "observed_at_utc": "2026-11-05T19:15:51.200236+00:00",
+      "original_error": "RuntimeError: FILE_OPERATION_UNRESOLVED_PRESERVE:RuntimeError: EXACT_GENERATED_LAYOUT_REQUIRED:delete-copies-readback",
+      "original_exit_code": 1,
+      "original_job_id": "1a1ad1f3231-fc05-589f",
+      "original_job_state": "failed",
+      "original_unknown_preserved": true,
+      "owned_cleanup_verified": true,
+      "owned_file_bytes": [
+        59,
+        118
+      ],
+      "owned_tasks_normally_closed": [
+        978,
+        977
+      ],
+      "package": "com.android.documentsui",
+      "separate_cleanup_finished_utc": "2026-11-05T19:36:46.940738+00:00",
+      "separate_cleanup_job": "1a1ad369e5b-fc05-58ff",
+      "separate_readonly_reconciliation_job": "1a1ad2ef35c-fc05-58ce",
+      "status": "SIX_SCOPED_FEATURE_CHECKS_VERIFIED_CONFIRMATION_NOT_SENT_AND_EXACT_FIXTURE_LATER_CLEANED",
+      "subordinate_feature_results": {
+        "EXACT_TREE_GRANT": true,
+        "FILES_MULTIPLE_COPY": true,
+        "FILES_MULTIPLE_MOVE": true,
+        "FILES_NEW_FOLDER": true,
+        "GET_CONTENT_CANCEL": true,
+        "TREE_CANCEL": true
+      },
+      "ui_actions": 43,
+      "uid": 10022,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "evidence": [
+        {
+          "bytes": 3257,
+          "path": "acceptance/commercial-apps-20261105/bilibili-controls-r6/SELECTED_OBSERVATION.json",
+          "sha256": "ae10b0c27d09c0b56431a1fc33526c1e9183b6668997fbc32163514104fe3946"
+        },
+        {
+          "bytes": 388,
+          "path": "acceptance/commercial-apps-20261105/bilibili-controls-r6/SOURCE_MANIFEST.json",
+          "sha256": "cee3cfac3c71ced098fffc41e2ba53c6dc14d04a2700f0512d268d2b4268fb2f"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "bilibili_r6_later_controls_observed_same_Main",
+      "job_id": "1a1acd28c21-fc05-5723",
+      "limits": "Control visibility only; no advancing playback, media pause/resume, audio or whole-App result. Other-owner work was read only.",
+      "observed_at_utc": "2026-11-05T17:48:04.318000+00:00",
+      "original_business_outcome_unknown": true,
+      "package": "tv.danmaku.bili",
+      "status": "PLAYER_CONTROLS_VISIBLE_IN_INDEPENDENT_LATER_OBSERVATION_BUSINESS_OUTCOME_UNQUALIFIED",
+      "uid": 10117,
+      "whole_app_production_ready": false
+    },
+    {
+      "added_methods": 6,
+      "all_classes_roundtrip_compared": 2941,
+      "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+      "candidate_apk_bytes": 7597225,
+      "candidate_apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+      "evidence": [
+        {
+          "bytes": 3115,
+          "path": "acceptance/local-apps-20261105/clock-alarm/candidate04-build/REVIEW.json",
+          "sha256": "907295b017e14af64afed39b9ec4b0131d77c4f28124b6c3367fff881e129135"
+        },
+        {
+          "bytes": 4695,
+          "path": "acceptance/local-apps-20261105/clock-alarm/candidate04-build/MANIFEST.json",
+          "sha256": "5b3e5196287105fe4a676a466a24e4f0187d46b9e7982504bddc5549f6c3d67f"
+        }
+      ],
+      "explicit_application_delegates_are_doubled": true,
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "host_instruction_cases": 53,
+      "id": "clock_alarm_dispatch04_signed_candidate_host_build",
+      "installed": false,
+      "job_id": "1a1ad409af9-fc05-5933",
+      "limits": "Actual APK signing, full DEX roundtrip and payload comparisons passed. Host cases double several App delegates and Android APIs. Actual ART, installation, owned alarm delivery/Dismiss and new-binary timer regression are still separate.",
+      "modified_original_methods": 5,
+      "observed_at_utc": "2026-11-05T19:47:52.468321+00:00",
+      "old_timer_credit_transferred_to_candidate": false,
+      "package": "com.android.deskclock",
+      "status": "SIGNED_ALARM_FGS_RECEIVER_CANDIDATE_UNINSTALLED_ART_AND_BUSINESS_PENDING",
+      "uid": 10063,
+      "unchanged_original_methods_in_four_targets": 43,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "apk_sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f",
+      "cleanup_counts_as_UI_delete": false,
+      "cleanup_job_id": "1a1ad4d74bf-fc05-5959",
+      "evidence": [
+        {
+          "bytes": 3257,
+          "path": "calendar-functional-repair-20261105/core12-acceptance/RESULT_SUMMARY.json",
+          "sha256": "10f94aa0284291404eb4979b4d663091edff156789631377623b7036010525a7"
+        },
+        {
+          "bytes": 3069,
+          "path": "calendar-functional-repair-20261105/core12-acceptance/SOURCE_MANIFEST.json",
+          "sha256": "ec5e59bc61a91dbc6bcc70469a46dae257d9ae19aef8aba0f9144aa74fb6cd9c"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "gates": {
+        "calendar.edit": "pending",
+        "calendar.persist": "pending"
+      },
+      "id": "calendar_core12_actual_partial_then_independent_exact_cleanup",
+      "limits": "The original 720-second run failed. Same-event edit save, close/reopen and UI delete are incomplete. Separate read-only evidence found the original unedited event. Exact Provider cleanup restored all eight tables; neither cleanup nor partial behavior closes the composite gates. Final original crash diagnosis was not reached.",
+      "observed_at_utc": "2026-11-05T20:01:44.415949+00:00",
+      "original_late_transport_outcome": "UNKNOWN_PRESERVED_NO_JOURNAL_ENTRY",
+      "package": "com.android.calendar",
+      "partial_observed_behaviors": [
+        "explicit_LOCAL_calendar_creation",
+        "cancel_and_discard_without_event_write",
+        "one_UI_event_save_and_exact_details_read"
+      ],
+      "status": "ORIGINAL_LEASE_FAILURE_RETAINED_THREE_PARTIAL_BEHAVIORS_EXACT_CLEANUP_PASSED",
+      "uid": 10061,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "actual_process_generations": 2,
+      "android_user": 0,
+      "apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+      "cleanup_is_not_UI_delete_credit": true,
+      "evidence": [
+        {
+          "bytes": 15972,
+          "path": "inputs/contacts-runtime02/PEER_REVIEW.json",
+          "sha256": "a5251ecbb09fd6d3607332cee0ffc259e22e0e815d4865acc07933fae72c7427"
+        },
+        {
+          "bytes": 83249,
+          "path": "inputs/contacts-runtime02/ELF_INVENTORY.json",
+          "sha256": "067fdb292c94c215f58034f04dda1bd648331f1e5601f291735f979cbe4a45b8"
+        },
+        {
+          "bytes": 1796,
+          "path": "inputs/contacts-runtime02/SIGNATURE_BINDING.json",
+          "sha256": "a79715473f57db1c424eb724234e4b988aa436460479ea8fbcaccbb693f90a15"
+        },
+        {
+          "bytes": 1632,
+          "path": "inputs/contacts-runtime02/ROOT_QUALIFICATION.json",
+          "sha256": "fc24da46b120962a71987069ade59238468f68d243937a35e1b717d6d981a866"
+        },
+        {
+          "bytes": 3991,
+          "path": "inputs/contacts-runtime02/runtime-result-original.json",
+          "sha256": "612e91ac38c9d07d1d27a16ada46c5b1215c7901ca56ee65900833605653405a"
+        }
+      ],
+      "exact_provider_fallbacks": 1,
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "full_ELF_hashes": 381,
+      "gates": {
+        "contacts.persist": "pending",
+        "identity": "passed"
+      },
+      "id": "contacts_search01_failed_observed_runtime02_identity_review",
+      "native_inputs": 7,
+      "observed_at_utc": "2026-11-05T20:04:35.178268+00:00",
+      "original_complete_counter": 0,
+      "package": "com.android.contacts",
+      "stable_snapshots": 5,
+      "status": "OBSERVED_RUNTIME_IDENTITY_REVIEWED_SEARCH_NOT_EXERCISED_ORIGINAL_FAILURE_RETAINED",
+      "uid": 10055,
+      "version_code": 10734,
+      "whole_app_production_ready": false
+    },
+    {
+      "actual_target_classes_verified": 4,
+      "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+      "boot_classpath_files": 52,
+      "candidate_apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+      "candidate_installed": false,
+      "class_loader_context": "PCL[]{PCL[/system_ext/framework/androidx.window.extensions.jar]#PCL[/system_ext/framework/androidx.window.sidecar.jar]}",
+      "evidence": [
+        {
+          "bytes": 5490,
+          "path": "acceptance/local-apps-20261105/clock-alarm/candidate04-art/REVIEW.json",
+          "sha256": "1acc6e0fde2fa929e46fe06d4341607e5ac2d09c9f72e85d5895c07eca070f2a"
+        },
+        {
+          "bytes": 11080,
+          "path": "acceptance/local-apps-20261105/clock-alarm/candidate04-art/SOURCE_MANIFEST.json",
+          "sha256": "9c6a59fbab0e3210fe2f0a5cd4038e38b6f661c4693d965cfb7cc382dd390b25"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "guest_input_files": 87,
+      "id": "clock_alarm_dispatch04_actual_ART_four_classes_verified",
+      "observed_at_utc": "2026-11-05T20:14:45.797997+00:00",
+      "old_timer_credit_transferred": false,
+      "package": "com.android.deskclock",
+      "status": "SIGNED_CANDIDATE_ACTUAL_ART_VERIFIED_UNINSTALLED_ALARM_AND_NEW_TIMER_PENDING",
+      "uid": 10063,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "actual_scoped_checks": [
+        "EXACT_TREE_GRANT",
+        "FILES_MULTIPLE_COPY",
+        "FILES_MULTIPLE_DELETE_COPIES",
+        "FILES_MULTIPLE_MOVE",
+        "FILES_NEW_FOLDER",
+        "FILES_UI_FINAL_DELETE",
+        "FINAL_GRANTS_EMPTY",
+        "GET_CONTENT_CANCEL",
+        "GET_CONTENT_EXACT_FILE_READ",
+        "NORMAL_CLOSE_REOPEN_APP_READBACK",
+        "REVOKED_EXISTING_URI_SECURITY_DENIAL",
+        "TREE_CANCEL"
+      ],
+      "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+      "deferred_supported_features": [
+        "search",
+        "sort"
+      ],
+      "evidence": [
+        {
+          "bytes": 13043,
+          "path": "acceptance/local-apps-20261105/documents-features/flow10/SCOPED_GATE_RESULTS10.json",
+          "sha256": "b934d39eae6904b70ae88779c1b8badf983c1e31e05221d09779660dbc5fef30"
+        },
+        {
+          "bytes": 2713,
+          "path": "acceptance/local-apps-20261105/documents-features/flow10/PUBLICATION_MANIFEST.json",
+          "sha256": "dc8a831a60f88ef4b80688c0899a8a1381b728b7f527918932b5618ea5af0c99"
+        }
+      ],
+      "final_grants_empty": true,
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "gates": {
+        "documents.provider": "pending"
+      },
+      "host_fallback_file_unlinks": 0,
+      "id": "documents_features10_twelve_actual_scoped_checks_cleaned",
+      "normally_removed_tasks": [
+        983,
+        982,
+        984,
+        986,
+        985
+      ],
+      "observed_at_utc": "2026-11-05T20:14:00.941483+00:00",
+      "package": "com.android.documentsui",
+      "status": "TWELVE_LOCAL_PROVIDER_AND_FILES_OPERATIONS_COMPLETED_FULL_PROVIDER_RELEASE_SCOPE_STILL_OPEN",
+      "ui_actions": 58,
+      "uid": 10022,
+      "version_code": 37,
+      "whole_app_production_ready": false
     }
   ],
   "gate_promotion_from_progress": false,
@@ -1368,6 +1772,6 @@
       "status": "ACTUAL_FULL_HOST_AND_FOUR_ANDROID_SIGNAL_CASES_PASSED_IN_OWNED_RUNTIME"
     }
   ],
-  "reviewed_at_utc": "2026-11-05T18:30:04.200642+00:00",
+  "reviewed_at_utc": "2026-11-05T19:40:08.686259+00:00",
   "schema": "pocket4-app-progress-v1"
 }

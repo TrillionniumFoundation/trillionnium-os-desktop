@@ -1,0 +1,17 @@
+import hashlib,os,sys
+from pathlib import Path
+raw=sys.stdin.buffer.read(131073)
+assert len(raw)<=131072 and hashlib.sha256(raw).hexdigest()=='e802c3feba90d09318a5bc9c9d21b66084edc95b84cb7c0b729a9b2831570fca'
+root=Path('/home/alex/work/pocket4-clock-art-context-tools-20261105-r12-04')
+assert os.geteuid()==0 and not os.path.lexists(root)
+os.umask(0o077);root.mkdir(mode=0o750);os.chown(root,0,1000);os.chmod(root,0o750)
+p=root/'read_context04.py'
+fd=os.open(p,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o640)
+with os.fdopen(fd,'wb') as f:
+ f.write(raw);f.flush();os.fsync(f.fileno());os.fchown(f.fileno(),0,1000);os.fchmod(f.fileno(),0o640)
+os.execv('/usr/bin/systemd-run',['/usr/bin/systemd-run','--quiet','--wait','--pipe','--collect',
+ '--unit=p4-clock-art-context-20261105-r12-04','--property=Type=exec','--property=CPUQuota=100%',
+ '--property=MemoryMax=536870912','--property=MemorySwapMax=0','--property=TasksMax=48',
+ '--property=RuntimeMaxSec=90','--property=AllowedCPUs=20','--property=LimitCORE=0',
+ '--property=LimitFSIZE=2097152','--property=TimeoutStopSec=5','--property=KillMode=control-group',
+ '/usr/bin/python3','-I',str(p),'--execute'])

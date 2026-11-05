@@ -1,0 +1,196 @@
+{
+  "bounded_runtime_observation": {
+    "Android_commands_from_sampler_thread": 0,
+    "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+    "bounded_process_resource_observations": [
+      {
+        "first_observed_utc": "2026-11-05T19:11:08.561034+00:00",
+        "host_pid": 2686015,
+        "last_observed_utc": "2026-11-05T19:15:50.187117+00:00",
+        "maximum_fd_count": 188,
+        "maximum_threads": 67,
+        "memory_kib_max": {
+          "VmHWM": 198832,
+          "VmRSS": 198572,
+          "VmSize": 16912540
+        },
+        "process_name": "com.android.documentsui",
+        "samples": 545,
+        "start_ticks": "92857534"
+      },
+      {
+        "first_observed_utc": "2026-11-05T19:11:08.890814+00:00",
+        "host_pid": 3593977,
+        "last_observed_utc": "2026-11-05T19:15:50.191069+00:00",
+        "maximum_fd_count": 78,
+        "maximum_threads": 21,
+        "memory_kib_max": {
+          "VmHWM": 103296,
+          "VmRSS": 51444,
+          "VmSize": 16789152
+        },
+        "process_name": "com.android.externalstorage",
+        "samples": 545,
+        "start_ticks": "80801834"
+      },
+      {
+        "first_observed_utc": "2026-11-05T19:13:43.437030+00:00",
+        "host_pid": 2777216,
+        "last_observed_utc": "2026-11-05T19:15:50.188225+00:00",
+        "maximum_fd_count": 84,
+        "maximum_threads": 22,
+        "memory_kib_max": {
+          "VmHWM": 100332,
+          "VmRSS": 100332,
+          "VmSize": 17072488
+        },
+        "process_name": "com.android.documentsui:com.android.documentsui.services",
+        "samples": 246,
+        "start_ticks": "93173261"
+      }
+    ],
+    "elapsed_seconds": 282.0510754350107,
+    "errors": [],
+    "exact_engine_review_required": true,
+    "file_operation_service_observed": true,
+    "long_duration_leak_or_stress_qualification": false,
+    "process_memory_or_environment_read": false,
+    "processes_observed": [
+      "com.android.documentsui",
+      "com.android.documentsui:com.android.documentsui.services",
+      "com.android.externalstorage"
+    ],
+    "sample_count": 545,
+    "scan_error_count": 0,
+    "schema": "pocket4-documents-active-runtime-evidence-v1",
+    "stable_complete_mapping_samples": 0,
+    "stable_complete_mapping_samples_scope": "stable filesystem object observations without unresolved name candidates; excludes dynamic code qualification",
+    "target_android_uids": {
+      "com.android.documentsui": 10022,
+      "com.android.externalstorage": 10024
+    },
+    "target_host_uids": {
+      "com.android.documentsui": 10022,
+      "com.android.externalstorage": 10024
+    },
+    "thread_joined": true,
+    "uid_map": "         0          0 4294967295\n",
+    "user_document_contents_read": false,
+    "whole_app_production_ready": false
+  },
+  "cleanup_preflight_failure": {
+    "exit_code": 2,
+    "job_id": "1a1ad345a8a-fc05-58eb",
+    "mutation_attempts": 0,
+    "old_failure_unchanged": true,
+    "raw_result_sha256": "b80bb79eec32a275715c127af70bdef579d49926236065597e1fc9a4f4c00c24",
+    "reason": "compact stdout hash differed from tx.write_new pretty file serialization",
+    "session_entered": false,
+    "terminal_state": "failed"
+  },
+  "final_exact_cleanup": {
+    "CE_DE_absent": true,
+    "Main_guard": {
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "host_pid": 3588089,
+      "init_pid": 3588093,
+      "init_start_ticks": 80797014
+    },
+    "UI_actions": 0,
+    "cleanup_pending": null,
+    "exact_own_URI_grants_empty": true,
+    "exit_code": 0,
+    "fallback_owned_files_unlinked": 4,
+    "final_task_ids": [
+      851
+    ],
+    "finished_utc": "2026-11-05T19:36:46.940738+00:00",
+    "install_pending": false,
+    "job_id": "1a1ad369e5b-fc05-58ff",
+    "output_complete": true,
+    "output_durable": true,
+    "owned_directories_removed": 2,
+    "owned_root_removed": true,
+    "package_uninstalled_once": true,
+    "provider_or_UI_delete_credit": false,
+    "raw_result_sha256": "acc812ffdb49180bed3e2614ecb7f8b289d1ac6aabea5506c9a80ef6b96e819c",
+    "source_sha256": "5998d719310f84aef28bd325ab082847361a673bcc7e8438bc5bb6c2df4985ad",
+    "staged_input_absent": true,
+    "started_utc": "2026-11-05T19:36:45.188720+00:00",
+    "state": "EXACT_RETAINED_FIXTURE_AND_PACKAGE_CLEANED",
+    "temporary_helper_package_UID": 10192,
+    "terminal_state": "succeeded",
+    "timed_out": false,
+    "uninstall_pending": false
+  },
+  "full_feature_flow_passed": false,
+  "independent_readonly_reconciliation": {
+    "UI_actions": 0,
+    "exact_six_entry_completed_move_ledger_unchanged": true,
+    "exit_code": 0,
+    "finished_utc": "2026-11-05T19:28:20.796597+00:00",
+    "job_id": "1a1ad2ef35c-fc05-58ce",
+    "old_failure_overwritten": false,
+    "output_complete": true,
+    "output_durable": true,
+    "pretty_file_sha256_verified_by_final_cleanup": "09a29f432fc508959586af50fc36ca3ac589ee061a1aa2bddabefc85909fc524",
+    "raw_compact_result_sha256": "3204628b940400826a8adebcd1997e2390ed827a9ab24c6184a15c0f27d23bce",
+    "started_utc": "2026-11-05T19:28:19.729526+00:00",
+    "state": "FINAL_CONFIRMATION_NOT_DISPATCHED_AND_RETAINED_LAYOUT_UNCHANGED",
+    "terminal_state": "succeeded"
+  },
+  "new_global_unpassed_cutoff_added": false,
+  "old_Documents11_scope_preserved": true,
+  "original_flow": {
+    "UI_pending": {},
+    "error": "RuntimeError: FILE_OPERATION_UNRESOLVED_PRESERVE:RuntimeError: EXACT_GENERATED_LAYOUT_REQUIRED:delete-copies-readback",
+    "exit_code": 1,
+    "finished_utc": "2026-11-05T19:15:51.200236+00:00",
+    "helper_pending": {},
+    "job_id": "1a1ad1f3231-fc05-589f",
+    "normally_closed_task_ids": [
+      978,
+      977
+    ],
+    "original_failure_unchanged": true,
+    "original_file_operation_pending": {
+      "before": [
+        "alpha-eeff7aa90e47139a.txt",
+        "beta-eeff7aa90e47139a.txt",
+        "copies-eeff7aa90e47139a",
+        "copies-eeff7aa90e47139a/alpha-eeff7aa90e47139a.txt",
+        "copies-eeff7aa90e47139a/beta-eeff7aa90e47139a.txt",
+        "source-eeff7aa90e47139a"
+      ],
+      "business_result_verified": false,
+      "expected": [
+        "alpha-eeff7aa90e47139a.txt",
+        "beta-eeff7aa90e47139a.txt",
+        "copies-eeff7aa90e47139a",
+        "source-eeff7aa90e47139a"
+      ],
+      "input_replayed": false,
+      "label": "delete-copies"
+    },
+    "outcome_unknown": true,
+    "output_complete": true,
+    "output_durable": true,
+    "passed_scoped_checks": [
+      "EXACT_TREE_GRANT",
+      "FILES_MULTIPLE_COPY",
+      "FILES_MULTIPLE_MOVE",
+      "FILES_NEW_FOLDER",
+      "GET_CONTENT_CANCEL",
+      "TREE_CANCEL"
+    ],
+    "raw_result_sha256": "4361723c1bca9601a0770feb6492aa93ad3bfa9f4eeb6eebafcec01b2f7ac4be",
+    "source_sha256": "9dbfa3eb072efc77a4872c86c5392103f2a58efd92a2679aa8fd8a94a3650210",
+    "started_utc": "2026-11-05T19:11:07.488413+00:00",
+    "state": "OWNED_CLEANUP_UNVERIFIED",
+    "terminal_state": "failed",
+    "timed_out": false,
+    "ui_actions": 43
+  },
+  "schema": "pocket4-documents09-actual-scope-and-reconciliation/v1",
+  "whole_app_production_ready": false
+}

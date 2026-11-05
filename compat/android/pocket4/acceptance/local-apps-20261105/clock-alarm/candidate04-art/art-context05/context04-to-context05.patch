@@ -1,0 +1,83 @@
+--- read_context04.py
++++ read_context05.py
+@@ -4,7 +4,7 @@
+ import argparse, contextlib, datetime, gzip, hashlib, io, json, os, re, resource
+ import time, types, xml.etree.ElementTree as ET, zipfile
+ 
+-ROOT=Path('/home/alex/work/pocket4-clock-art-context-20261105-r12-04')
++ROOT=Path('/home/alex/work/pocket4-clock-art-context-20261105-r12-05')
+ STORAGE=Path('/home/alex/work/pocket4-storage-session-candidate-20261105-r12')
+ TX=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TX_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+@@ -16,7 +16,7 @@
+ APK_SHA='e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172'
+ LIBRARIES=['androidx.window.extensions','androidx.window.sidecar']
+ LIBRARY_FILES=['/system_ext/framework/'+n+'.jar' for n in LIBRARIES]
+-UNIT='p4-clock-art-context-20261105-r12-04.service'
++UNIT='p4-clock-art-context-20261105-r12-05.service'
+ 
+ def need(value, reason):
+     if not value: raise RuntimeError(reason)
+@@ -100,6 +100,13 @@
+             result['manifest_sha256']=sha(z.read('AndroidManifest.xml'))
+         result['library_config_before']=xml_config(s,art,peer)
+         result['library_files_before']={p:art.pin_guest(s,peer,p) for p in LIBRARY_FILES}
++        old=json.loads(tx.read_regular(Path('/home/alex/work/pocket4-clock-art-context-20261105-r12-04/result.json'),
++            '7d74d136e4e49af81196a16254c9174ec346a2ab9a1e8be4e2171432d64f56d1',maximum=131072))
++        need(old['state']=='DECLARED_CONTEXT_METADATA_COLLECTED_NOT_ART_VERIFIED'
++            and old['closure_unchanged'],'ACTUAL_CONTEXT04_REQUIRED')
++        for key in ('package_before','apk_before','manifest_sha256','library_config_before','library_files_before'):
++            need(result[key]==old[key],'CONTEXT04_INPUT_CHANGED:'+key)
++        result['prior_context04_sha256']='7d74d136e4e49af81196a16254c9174ec346a2ab9a1e8be4e2171432d64f56d1'
+         need(sum(x['bytes'] for x in result['library_files_before'].values())<=32*1024*1024,'LIBRARY_BYTES')
+         result['art_bin_names']=names(s,'/apex/com.android.art/bin')
+         tools={}
+@@ -114,12 +121,22 @@
+         else:
+             stack.callback(os.close,fd); pin=art.pin_fd(fd,64*1024*1024)
+             result['existing_oat']={'path':oat,'present':True,'pin':pin}
+-            reply=art.command(s,'clock-current-oat-header',[art.OATDUMP,'--oat-file=/proc/self/fd/'+str(fd),'--header-only'],(fd,),15)
+-            receipt=art.record_command(tx,'clock-current-oat-header',reply)
+-            result['artifact_commands'].append(receipt)
+-            need(len(reply['stdout'])<=128*1024,'OAT_HEADER_OUTPUT_LIMIT')
+-            result['existing_oat']['header_rc']=reply['rc']
+-            result['existing_oat']['header_utf8']=reply['stdout'].decode('utf-8','strict')
++            need(pin['sha256']=='f9bd1ff8feda33004e2052369f64fac534efb461b389831b68ced3b5e262fea6'
++                and pin['bytes']==33536,'KNOWN_EXISTING_OAT_CHANGED')
++            raw=os.pread(fd,pin['bytes'],0)
++            need(len(raw)==pin['bytes'] and sha(raw)==pin['sha256'],'OAT_READ_CHANGED')
++            tx.write_new(ROOT/'current-oat.bin',raw,alex_readable=True)
++            # Preserve candidate NUL-terminated strings as byte evidence, not
++            # as a parsed OAT header or a running class-loader heap claim.
++            strings=[]
++            for match in re.finditer(rb'(?:PCL|DLC|IMC)\[',raw):
++                end=raw.find(b'\0',match.start())
++                need(0<=end-match.start()<=8192,'OAT_CONTEXT_STRING_NOT_BOUNDED')
++                value=raw[match.start():end].decode('ascii','strict')
++                strings.append({'byte_offset':match.start(),'value':value})
++            need(len(strings)<=16,'OAT_CONTEXT_STRING_COUNT')
++            result['existing_oat']['candidate_context_strings']=strings
++            result['existing_oat']['context_header_parsed']=False
+             need(art.pin_fd(fd,64*1024*1024)==pin,'EXISTING_OAT_CHANGED')
+         deps={n:v.get('dependency','') for n,v in result['library_config_before']['declarations'].items()}
+         result['declared_dependencies']=deps
+@@ -128,8 +145,8 @@
+         if not any(deps.values()):
+             context='PCL[]{'+'#'.join('PCL['+p+']' for p in LIBRARY_FILES)+'}'
+             result['declared_candidate_context']=context
+-            analyzer='/apex/com.android.art/bin/dexoptanalyzer64'
+-            if 'dexoptanalyzer64' in result['art_bin_names']:
++            analyzer='/apex/com.android.art/bin/dexoptanalyzer'
++            if 'dexoptanalyzer' in result['art_bin_names']:
+                 tools[analyzer]=art.pin_guest(s,peer,analyzer)
+                 reply=art.command(s,'clock-flatten-context',[analyzer,'--class-loader-context='+context,
+                     '--flatten-class-loader-context','--image=/system/framework/boot.art'],(),12)
+@@ -157,7 +174,7 @@
+     discovery=json.loads(tx.read_regular(STORAGE/'art-discovery16/result.json',DISCOVERY_SHA,maximum=1048576))
+     art.OUT=ROOT; art.DEADLINE=time.monotonic()+85
+     os.umask(0o077); ROOT.mkdir(mode=0o750); os.chown(ROOT,0,1000); os.chmod(ROOT,0o750)
+-    result={'schema':'clock-art-declared-context04-v1','state':'FAILED','started_utc':stamp(),
++    result={'schema':'clock-art-declared-context05-v1','state':'FAILED','started_utc':stamp(),
+         'reader_sha256':sha(Path(__file__).read_bytes()),'transport_sha256':TX_SHA,
+         'activation_sha256':ACTIVATION_SHA,'read_only':True,'planned_read_only_PM_queries':4,
+         'UI_actions':0,'compiler_run':False,'installed':False,'app_code_executed':False,

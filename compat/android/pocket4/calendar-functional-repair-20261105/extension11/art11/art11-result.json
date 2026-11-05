@@ -1,0 +1,995 @@
+{
+  "UI_actions": 0,
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "all_66_target_classes_stored_status_verified": true,
+  "all_runtime_writes_observed": false,
+  "android_compiler_log": {
+    "joined": true,
+    "rc": 0,
+    "spawned": true,
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 5057,
+      "sha256": "46280c68f52239652325e5314d8642e545457d36d99d2fd9f7ea721cd0ca531e"
+    },
+    "timed_out": false
+  },
+  "apk_sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f",
+  "automatic_retry": false,
+  "build_result_sha256": "ec9ce6f9c8e31d021992d59d86ce4319743496debff50e24ef7da8be544c96e9",
+  "cache_observation": {
+    "complete": true,
+    "interpretation": "Only metadata of two fixed cache roots. Does not capture transient writes; concurrent App changes are not attributed to this compiler.",
+    "persistent_delta_observed": false
+  },
+  "class_loader_context": "PCL[]",
+  "compiler": {
+    "joined": true,
+    "rc": 0,
+    "spawned": true,
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "timed_out": false
+  },
+  "compiler_argv": [
+    "/apex/com.android.art/bin/dex2oat64",
+    "--zip-fd=70",
+    "--zip-location=/data/app/~~bG7Z17T3fbN-hkmw7injoQ==/com.android.calendar-TqJMtrvwRWoacNfF0hKuBQ==/base.apk",
+    "--oat-fd=73",
+    "--output-vdex-fd=74",
+    "--oat-location=/proc/self/fd/75/candidate.odex",
+    "--instruction-set=x86_64",
+    "--boot-image=/system/framework/boot.art",
+    "--runtime-arg",
+    "-Xbootclasspath:/apex/com.android.art/javalib/core-oj.jar:/apex/com.android.art/javalib/core-libart.jar:/apex/com.android.art/javalib/okhttp.jar:/apex/com.android.art/javalib/bouncycastle.jar:/apex/com.android.art/javalib/apache-xml.jar:/system/framework/framework.jar:/system/framework/framework-graphics.jar:/system/framework/framework-location.jar:/system/framework/ext.jar:/system/framework/telephony-common.jar:/system/framework/voip-common.jar:/system/framework/ims-common.jar:/system/framework/framework-ondeviceintelligence-platform.jar:/apex/com.android.i18n/javalib/core-icu4j.jar:/apex/com.android.adservices/javalib/framework-adservices.jar:/apex/com.android.adservices/javalib/framework-sdksandbox.jar:/apex/com.android.appsearch/javalib/framework-appsearch.jar:/apex/com.android.bt/javalib/framework-bluetooth.jar:/apex/com.android.configinfrastructure/javalib/framework-configinfrastructure.jar:/apex/com.android.conscrypt/javalib/conscrypt.jar:/apex/com.android.conscrypt/javalib/framework-conscrypt-nsc.jar:/apex/com.android.crashrecovery/javalib/framework-crashrecovery.jar:/apex/com.android.devicelock/javalib/framework-devicelock.jar:/apex/com.android.healthfitness/javalib/framework-healthfitness.jar:/apex/com.android.ipsec/javalib/android.net.ipsec.ike.jar:/apex/com.android.media/javalib/updatable-media.jar:/apex/com.android.mediaprovider/javalib/framework-mediaprovider.jar:/apex/com.android.mediaprovider/javalib/framework-pdf.jar:/apex/com.android.mediaprovider/javalib/framework-pdf-v.jar:/apex/com.android.mediaprovider/javalib/framework-photopicker.jar:/apex/com.android.nfcservices/javalib/framework-nfc.jar:/apex/com.android.npumanager/javalib/framework-npumanager.jar:/apex/com.android.ondevicepersonalization/javalib/framework-ondevicepersonalization.jar:/apex/com.android.os.statsd/javalib/framework-statsd.jar:/apex/com.android.permission/javalib/framework-permission.jar:/apex/com.android.permission/javalib/framework-permission-s.jar:/apex/com.android.profiling/javalib/framework-anomaly-detector.jar:/apex/com.android.profiling/javalib/framework-profiling.jar:/apex/com.android.scheduling/javalib/framework-scheduling.jar:/apex/com.android.sdkext/javalib/framework-sdkextensions.jar:/apex/com.android.telephonycore/javalib/framework-telecom.jar:/apex/com.android.telephonycore/javalib/framework-telephony.jar:/apex/com.android.tethering/javalib/framework-connectivity.jar:/apex/com.android.tethering/javalib/framework-connectivity-b.jar:/apex/com.android.tethering/javalib/framework-connectivity-t.jar:/apex/com.android.tethering/javalib/framework-tethering.jar:/apex/com.android.uprobestats/javalib/framework-uprobestats.jar:/apex/com.android.uwb/javalib/framework-ranging.jar:/apex/com.android.uwb/javalib/framework-uwb.jar:/apex/com.android.virt/javalib/framework-virtualization.jar:/apex/com.android.webapp/javalib/framework-webapp.jar:/apex/com.android.wifi/javalib/framework-wifi.jar",
+    "--runtime-arg",
+    "-Xbootclasspathfds:17:18:19:20:21:22:23:24:25:26:27:28:29:30:31:32:33:34:35:36:37:38:39:40:41:42:43:44:45:46:47:48:49:50:51:52:53:54:55:56:57:58:59:60:61:62:63:64:65:66:67:68",
+    "--class-loader-context=PCL[]",
+    "--compiler-filter=verify",
+    "--abort-on-hard-verifier-error",
+    "--abort-on-soft-verifier-error",
+    "--copy-dex-files=always",
+    "--runtime-arg",
+    "-Xms32m",
+    "--runtime-arg",
+    "-Xmx768m",
+    "-j2"
+  ],
+  "compiler_attempted": true,
+  "context_basis": "Pinned unchanged APK manifest has no uses-library/uses-static-library entries; all original and restored application DEX are in this same ZIP. This is an isolated artifact gate, not a running process class-loader capture.",
+  "expected_targets": [
+    "Lcom/android/calendar/AllInOneActivity$QueryHandler;",
+    "Lcom/android/calendar/AllInOneActivity;",
+    "Lcom/android/calendar/CalendarController;",
+    "Lcom/android/calendar/EventInfoActivity;",
+    "Lcom/android/calendar/alerts/AlertIdentity;",
+    "Lcom/android/calendar/alerts/AlertReceiver;",
+    "Lcom/android/calendar/alerts/AlertService;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda0;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda1;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda2;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda3;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$1;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$Alert;",
+    "Lcom/android/calendar/alerts/RestoredAlerts$DueBatch;",
+    "Lcom/android/calendar/alerts/RestoredAlerts;",
+    "Lcom/android/calendar/alerts/SnoozeAlarmsService;",
+    "Lcom/android/calendar/alerts/SnoozeJournal$1;",
+    "Lcom/android/calendar/alerts/SnoozeJournal$EventSnapshot;",
+    "Lcom/android/calendar/alerts/SnoozeJournal$Record;",
+    "Lcom/android/calendar/alerts/SnoozeJournal$Target;",
+    "Lcom/android/calendar/alerts/SnoozeJournal;",
+    "Lcom/android/calendar/alerts/SnoozeState$Decision;",
+    "Lcom/android/calendar/alerts/SnoozeState;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda0;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda10;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda11;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda12;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda13;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda14;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda15;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda16;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda17;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda18;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda19;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda1;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda20;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda21;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda22;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda2;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda3;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda4;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda5;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda6;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda7;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda8;",
+    "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda9;",
+    "Lcom/android/calendar/event/EditEventActivity$1;",
+    "Lcom/android/calendar/event/EditEventActivity$2;",
+    "Lcom/android/calendar/event/EditEventActivity$3;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda0;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda1;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda2;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda3;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda4;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda5;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda6;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda7;",
+    "Lcom/android/calendar/event/EditEventActivity$Worker;",
+    "Lcom/android/calendar/event/EditEventActivity;",
+    "Lcom/android/calendar/event/EventDraft;",
+    "Lcom/android/calendar/event/EventEditorStore$CalendarChoice;",
+    "Lcom/android/calendar/event/EventEditorStore$Loaded;",
+    "Lcom/android/calendar/event/EventEditorStore;",
+    "Lcom/android/calendar/event/EventReference;",
+    "Lcom/android/calendar/event/ProviderReceipt;",
+    "Lcom/android/calendar/repair/CalendarActions;"
+  ],
+  "fd_proof": {
+    "all_descriptor_identities_exact": true,
+    "marker_direct_and_directory_equal": true,
+    "records": [
+      {
+        "access": "read-only",
+        "bytes": 6070748,
+        "device": 1824,
+        "fd": 17,
+        "inode": 47
+      },
+      {
+        "access": "read-only",
+        "bytes": 632213,
+        "device": 1824,
+        "fd": 18,
+        "inode": 46
+      },
+      {
+        "access": "read-only",
+        "bytes": 368789,
+        "device": 1824,
+        "fd": 19,
+        "inode": 48
+      },
+      {
+        "access": "read-only",
+        "bytes": 1029025,
+        "device": 1824,
+        "fd": 20,
+        "inode": 45
+      },
+      {
+        "access": "read-only",
+        "bytes": 1056063,
+        "device": 1824,
+        "fd": 21,
+        "inode": 44
+      },
+      {
+        "access": "read-only",
+        "bytes": 48701049,
+        "device": 1807,
+        "fd": 22,
+        "inode": 16601088
+      },
+      {
+        "access": "read-only",
+        "bytes": 4073,
+        "device": 1807,
+        "fd": 23,
+        "inode": 11924217
+      },
+      {
+        "access": "read-only",
+        "bytes": 537045,
+        "device": 1807,
+        "fd": 24,
+        "inode": 16600171
+      },
+      {
+        "access": "read-only",
+        "bytes": 2297087,
+        "device": 1807,
+        "fd": 25,
+        "inode": 11920858
+      },
+      {
+        "access": "read-only",
+        "bytes": 5631781,
+        "device": 1807,
+        "fd": 26,
+        "inode": 16600191
+      },
+      {
+        "access": "read-only",
+        "bytes": 826065,
+        "device": 1807,
+        "fd": 27,
+        "inode": 11914847
+      },
+      {
+        "access": "read-only",
+        "bytes": 546553,
+        "device": 1807,
+        "fd": 28,
+        "inode": 16601844
+      },
+      {
+        "access": "read-only",
+        "bytes": 224489,
+        "device": 1807,
+        "fd": 29,
+        "inode": 16600182
+      },
+      {
+        "access": "read-only",
+        "bytes": 3078621,
+        "device": 1815,
+        "fd": 30,
+        "inode": 21
+      },
+      {
+        "access": "read-only",
+        "bytes": 564165,
+        "device": 1816,
+        "fd": 31,
+        "inode": 31
+      },
+      {
+        "access": "read-only",
+        "bytes": 96845,
+        "device": 1816,
+        "fd": 32,
+        "inode": 32
+      },
+      {
+        "access": "read-only",
+        "bytes": 386441,
+        "device": 1833,
+        "fd": 33,
+        "inode": 25
+      },
+      {
+        "access": "read-only",
+        "bytes": 1322550,
+        "device": 1831,
+        "fd": 34,
+        "inode": 44
+      },
+      {
+        "access": "read-only",
+        "bytes": 170045,
+        "device": 1820,
+        "fd": 35,
+        "inode": 28
+      },
+      {
+        "access": "read-only",
+        "bytes": 594545,
+        "device": 1819,
+        "fd": 36,
+        "inode": 174
+      },
+      {
+        "access": "read-only",
+        "bytes": 79142,
+        "device": 1819,
+        "fd": 37,
+        "inode": 175
+      },
+      {
+        "access": "read-only",
+        "bytes": 17501,
+        "device": 1830,
+        "fd": 38,
+        "inode": 23
+      },
+      {
+        "access": "read-only",
+        "bytes": 35781,
+        "device": 1817,
+        "fd": 39,
+        "inode": 27
+      },
+      {
+        "access": "read-only",
+        "bytes": 992117,
+        "device": 1829,
+        "fd": 40,
+        "inode": 31
+      },
+      {
+        "access": "read-only",
+        "bytes": 752329,
+        "device": 1814,
+        "fd": 41,
+        "inode": 24
+      },
+      {
+        "access": "read-only",
+        "bytes": 793609,
+        "device": 1850,
+        "fd": 42,
+        "inode": 33
+      },
+      {
+        "access": "read-only",
+        "bytes": 214281,
+        "device": 1813,
+        "fd": 43,
+        "inode": 32
+      },
+      {
+        "access": "read-only",
+        "bytes": 130297,
+        "device": 1813,
+        "fd": 44,
+        "inode": 34
+      },
+      {
+        "access": "read-only",
+        "bytes": 14885,
+        "device": 1813,
+        "fd": 45,
+        "inode": 33
+      },
+      {
+        "access": "read-only",
+        "bytes": 52501,
+        "device": 1813,
+        "fd": 46,
+        "inode": 35
+      },
+      {
+        "access": "read-only",
+        "bytes": 420281,
+        "device": 1846,
+        "fd": 47,
+        "inode": 27
+      },
+      {
+        "access": "read-only",
+        "bytes": 33397,
+        "device": 1827,
+        "fd": 48,
+        "inode": 23
+      },
+      {
+        "access": "read-only",
+        "bytes": 294145,
+        "device": 1834,
+        "fd": 49,
+        "inode": 26
+      },
+      {
+        "access": "read-only",
+        "bytes": 107173,
+        "device": 1845,
+        "fd": 50,
+        "inode": 27
+      },
+      {
+        "access": "read-only",
+        "bytes": 1093,
+        "device": 1837,
+        "fd": 51,
+        "inode": 31
+      },
+      {
+        "access": "read-only",
+        "bytes": 300953,
+        "device": 1837,
+        "fd": 52,
+        "inode": 30
+      },
+      {
+        "access": "read-only",
+        "bytes": 23641,
+        "device": 1825,
+        "fd": 53,
+        "inode": 24
+      },
+      {
+        "access": "read-only",
+        "bytes": 57393,
+        "device": 1825,
+        "fd": 54,
+        "inode": 25
+      },
+      {
+        "access": "read-only",
+        "bytes": 13137,
+        "device": 1835,
+        "fd": 55,
+        "inode": 18
+      },
+      {
+        "access": "read-only",
+        "bytes": 8089,
+        "device": 1851,
+        "fd": 56,
+        "inode": 23
+      },
+      {
+        "access": "read-only",
+        "bytes": 761147,
+        "device": 1822,
+        "fd": 57,
+        "inode": 31
+      },
+      {
+        "access": "read-only",
+        "bytes": 539925,
+        "device": 1822,
+        "fd": 58,
+        "inode": 32
+      },
+      {
+        "access": "read-only",
+        "bytes": 1538803,
+        "device": 1838,
+        "fd": 59,
+        "inode": 52
+      },
+      {
+        "access": "read-only",
+        "bytes": 122809,
+        "device": 1838,
+        "fd": 60,
+        "inode": 50
+      },
+      {
+        "access": "read-only",
+        "bytes": 573561,
+        "device": 1838,
+        "fd": 61,
+        "inode": 51
+      },
+      {
+        "access": "read-only",
+        "bytes": 85709,
+        "device": 1838,
+        "fd": 62,
+        "inode": 53
+      },
+      {
+        "access": "read-only",
+        "bytes": 24917,
+        "device": 1852,
+        "fd": 63,
+        "inode": 35
+      },
+      {
+        "access": "read-only",
+        "bytes": 208369,
+        "device": 1821,
+        "fd": 64,
+        "inode": 22
+      },
+      {
+        "access": "read-only",
+        "bytes": 204601,
+        "device": 1821,
+        "fd": 65,
+        "inode": 23
+      },
+      {
+        "access": "read-only",
+        "bytes": 216853,
+        "device": 66306,
+        "fd": 66,
+        "inode": 108134775
+      },
+      {
+        "access": "read-only",
+        "bytes": 23485,
+        "device": 1839,
+        "fd": 67,
+        "inode": 28
+      },
+      {
+        "access": "read-only",
+        "bytes": 1616365,
+        "device": 66306,
+        "fd": 68,
+        "inode": 52488541
+      },
+      {
+        "access": "read-only",
+        "bytes": 2635213,
+        "device": 66306,
+        "fd": 70,
+        "inode": 44347789
+      },
+      {
+        "access": "new-output-read-write",
+        "bytes": 0,
+        "device": 66306,
+        "fd": 73,
+        "inode": 44347791
+      },
+      {
+        "access": "new-output-read-write",
+        "bytes": 0,
+        "device": 66306,
+        "fd": 74,
+        "inode": 44347792
+      },
+      {
+        "access": "read-only",
+        "bytes": 4096,
+        "device": 66306,
+        "fd": 75,
+        "inode": 44347788
+      },
+      {
+        "access": "read-only",
+        "bytes": 80,
+        "device": 66306,
+        "fd": 72,
+        "inode": 44347790
+      }
+    ],
+    "stdout_sha256": "61c0b5397c77124f371465d117b12cdcdc3cf3a6bb1a8f8e2f404a51cceec75e",
+    "uid": 2000
+  },
+  "finished_utc": "2026-11-05T18:59:26.739457+00:00",
+  "guard_after": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "guard_before": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "input_boot_apex_classpaths_unchanged": true,
+  "installed": false,
+  "installed_calendar10_unchanged": true,
+  "installed_runtime_mutations_requested": false,
+  "oatdump": {
+    "joined": true,
+    "rc": 0,
+    "spawned": true,
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 8881329,
+      "sha256": "b945e4c4cb33a1a7f62662a6661f08d98f1c0279105ad89bc0232b48a8991bc8"
+    },
+    "timed_out": false
+  },
+  "oatdump_argv": [
+    "/apex/com.android.art/bin/oatdump",
+    "--oat-file=/proc/self/fd/75/candidate.odex",
+    "--dex-file=/proc/self/fd/75/candidate.apk",
+    "--class-filter=com.android.calendar",
+    "--no-disassemble",
+    "--no-dump:vmap"
+  ],
+  "outputs": {
+    "oat": {
+      "bytes": 17152,
+      "ctime_ns": 1793905166173155211,
+      "device": 66306,
+      "gid": 1000,
+      "inode": 44347791,
+      "mode": 33056,
+      "mtime_ns": 1793905166173155211,
+      "nlink": 1,
+      "sha256": "49edd298e4e6fa3d148b1b89f29b7f307b61c20538ace6a576c7b43152a914e0",
+      "uid": 2000
+    },
+    "vdex": {
+      "bytes": 543424,
+      "ctime_ns": 1793905166171155129,
+      "device": 66306,
+      "gid": 1000,
+      "inode": 44347792,
+      "mode": 33056,
+      "mtime_ns": 1793905166171155129,
+      "nlink": 1,
+      "sha256": "5c1834f732a4135d910f7cb315f6bec12edf0f848d621b175586824079faa251",
+      "uid": 2000
+    }
+  },
+  "provider_mutations": 0,
+  "resource_admission": {
+    "cpu_stat": "usage_usec 67248\nuser_usec 55552\nsystem_usec 11695\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "pids.max": "64"
+    },
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 14798848
+  },
+  "resource_usage": {
+    "cpu_stat": "usage_usec 1052600\nuser_usec 768977\nsystem_usec 283622\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 12\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0\n",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.max": "2147483648",
+      "memory.swap.max": "0",
+      "pids.max": "64"
+    },
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 164073472
+  },
+  "reused_art_transport_sha256": "e5de57780be072ced10a5beba049fe89e89e381d6a66a974a8f298ef34cf2742",
+  "runner_sha256": "ffa7a9b9c801470addb1dc0cc2bb669e21f70d5ef433e22eafe5c2cd9a620f99",
+  "runtime_business_success": false,
+  "schema": "calendar11-installed-art-isolated-verification-v1",
+  "started_utc": "2026-11-05T18:59:25.566098+00:00",
+  "state": "ALL_66_NEW_AND_MODIFIED_CALENDAR_CLASSES_ART_VERIFIED_NOT_INSTALLED",
+  "target_status_proof": {
+    "expected_target_classes": 66,
+    "missing": [],
+    "other_nonverified_statuses": {},
+    "parsed_class_headers": 199,
+    "target_statuses": {
+      "Lcom/android/calendar/AllInOneActivity$QueryHandler;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "134: Lcom/android/calendar/AllInOneActivity$QueryHandler; (offset=0x00002a84) (type_idx=403) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/AllInOneActivity;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "140: Lcom/android/calendar/AllInOneActivity; (offset=0x00002a9c) (type_idx=408) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/CalendarController;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "150: Lcom/android/calendar/CalendarController; (offset=0x00002ac4) (type_idx=419) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/EventInfoActivity;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "186: Lcom/android/calendar/EventInfoActivity; (offset=0x00002b54) (type_idx=455) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/AlertIdentity;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "0: Lcom/android/calendar/alerts/AlertIdentity; (offset=0x00002f60) (type_idx=91) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/AlertReceiver;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "212: Lcom/android/calendar/alerts/AlertReceiver; (offset=0x00002bbc) (type_idx=480) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/AlertService;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "214: Lcom/android/calendar/alerts/AlertService; (offset=0x00002bc4) (type_idx=482) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda0;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "1: Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda0; (offset=0x00002f64) (type_idx=92) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "2: Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda1; (offset=0x00002f68) (type_idx=93) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda2;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "3: Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda2; (offset=0x00002f6c) (type_idx=94) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda3;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "4: Lcom/android/calendar/alerts/RestoredAlerts$$ExternalSyntheticLambda3; (offset=0x00002f70) (type_idx=95) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "5: Lcom/android/calendar/alerts/RestoredAlerts$1; (offset=0x00002f74) (type_idx=96) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$Alert;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "6: Lcom/android/calendar/alerts/RestoredAlerts$Alert; (offset=0x00002f78) (type_idx=97) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts$DueBatch;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "7: Lcom/android/calendar/alerts/RestoredAlerts$DueBatch; (offset=0x00002f7c) (type_idx=98) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/RestoredAlerts;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "8: Lcom/android/calendar/alerts/RestoredAlerts; (offset=0x00002f80) (type_idx=99) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeAlarmsService;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "9: Lcom/android/calendar/alerts/SnoozeAlarmsService; (offset=0x00002f84) (type_idx=100) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeJournal$1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "10: Lcom/android/calendar/alerts/SnoozeJournal$1; (offset=0x00002f88) (type_idx=101) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeJournal$EventSnapshot;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "11: Lcom/android/calendar/alerts/SnoozeJournal$EventSnapshot; (offset=0x00002f8c) (type_idx=102) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeJournal$Record;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "12: Lcom/android/calendar/alerts/SnoozeJournal$Record; (offset=0x00002f90) (type_idx=103) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeJournal$Target;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "13: Lcom/android/calendar/alerts/SnoozeJournal$Target; (offset=0x00002f94) (type_idx=104) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeJournal;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "14: Lcom/android/calendar/alerts/SnoozeJournal; (offset=0x00002f98) (type_idx=105) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeState$Decision;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "15: Lcom/android/calendar/alerts/SnoozeState$Decision; (offset=0x00002f9c) (type_idx=106) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/alerts/SnoozeState;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "16: Lcom/android/calendar/alerts/SnoozeState; (offset=0x00002fa0) (type_idx=107) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda0;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "17: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda0; (offset=0x00002fa4) (type_idx=108) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda10;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "18: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda10; (offset=0x00002fa8) (type_idx=109) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda11;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "19: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda11; (offset=0x00002fac) (type_idx=110) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda12;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "20: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda12; (offset=0x00002fb0) (type_idx=111) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda13;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "21: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda13; (offset=0x00002fb4) (type_idx=112) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda14;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "22: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda14; (offset=0x00002fb8) (type_idx=113) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda15;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "23: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda15; (offset=0x00002fbc) (type_idx=114) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda16;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "24: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda16; (offset=0x00002fc0) (type_idx=115) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda17;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "25: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda17; (offset=0x00002fc4) (type_idx=116) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda18;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "26: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda18; (offset=0x00002fc8) (type_idx=117) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda19;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "27: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda19; (offset=0x00002fcc) (type_idx=118) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "28: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda1; (offset=0x00002fd0) (type_idx=119) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda20;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "29: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda20; (offset=0x00002fd4) (type_idx=120) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda21;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "30: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda21; (offset=0x00002fd8) (type_idx=121) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda22;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "31: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda22; (offset=0x00002fdc) (type_idx=122) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda2;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "32: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda2; (offset=0x00002fe0) (type_idx=123) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda3;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "33: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda3; (offset=0x00002fe4) (type_idx=124) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda4;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "34: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda4; (offset=0x00002fe8) (type_idx=125) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda5;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "35: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda5; (offset=0x00002fec) (type_idx=126) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda6;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "36: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda6; (offset=0x00002ff0) (type_idx=127) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda7;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "37: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda7; (offset=0x00002ff4) (type_idx=128) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda8;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "38: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda8; (offset=0x00002ff8) (type_idx=129) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda9;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "39: Lcom/android/calendar/event/EditEventActivity$$ExternalSyntheticLambda9; (offset=0x00002ffc) (type_idx=130) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "40: Lcom/android/calendar/event/EditEventActivity$1; (offset=0x00003000) (type_idx=131) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$2;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "41: Lcom/android/calendar/event/EditEventActivity$2; (offset=0x00003004) (type_idx=132) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$3;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "42: Lcom/android/calendar/event/EditEventActivity$3; (offset=0x00003008) (type_idx=133) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda0;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "43: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda0; (offset=0x0000300c) (type_idx=134) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda1;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "44: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda1; (offset=0x00003010) (type_idx=135) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda2;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "45: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda2; (offset=0x00003014) (type_idx=136) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda3;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "46: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda3; (offset=0x00003018) (type_idx=137) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda4;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "47: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda4; (offset=0x0000301c) (type_idx=138) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda5;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "48: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda5; (offset=0x00003020) (type_idx=139) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda6;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "49: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda6; (offset=0x00003024) (type_idx=140) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda7;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "50: Lcom/android/calendar/event/EditEventActivity$Worker$$ExternalSyntheticLambda7; (offset=0x00003028) (type_idx=141) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity$Worker;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "51: Lcom/android/calendar/event/EditEventActivity$Worker; (offset=0x0000302c) (type_idx=142) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EditEventActivity;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "52: Lcom/android/calendar/event/EditEventActivity; (offset=0x00003030) (type_idx=143) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EventDraft;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "53: Lcom/android/calendar/event/EventDraft; (offset=0x00003034) (type_idx=144) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EventEditorStore$CalendarChoice;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "54: Lcom/android/calendar/event/EventEditorStore$CalendarChoice; (offset=0x00003038) (type_idx=145) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EventEditorStore$Loaded;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "55: Lcom/android/calendar/event/EventEditorStore$Loaded; (offset=0x0000303c) (type_idx=146) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EventEditorStore;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "56: Lcom/android/calendar/event/EventEditorStore; (offset=0x00003040) (type_idx=147) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/EventReference;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "57: Lcom/android/calendar/event/EventReference; (offset=0x00003044) (type_idx=148) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/event/ProviderReceipt;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "58: Lcom/android/calendar/event/ProviderReceipt; (offset=0x00003048) (type_idx=149) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      },
+      "Lcom/android/calendar/repair/CalendarActions;": {
+        "compilation_kind": "NoneCompiled",
+        "header": "59: Lcom/android/calendar/repair/CalendarActions; (offset=0x0000304c) (type_idx=150) (Verified) (NoneCompiled)",
+        "status": "Verified"
+      }
+    },
+    "unverified": {}
+  },
+  "transport_sha256": "b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470",
+  "whole_app_production_ready": false
+}

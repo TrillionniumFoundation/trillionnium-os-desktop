@@ -1,0 +1,37 @@
+{
+  "Android_and_runtime_doubles": [
+    "ContentResolver/provider instance reads and state",
+    "Calendar/time",
+    "PendingIntent identity and AlarmManager queues",
+    "Service.stopSelf",
+    "goAsync result finish",
+    "WakeLock.release",
+    "DataModel.getGlobalIntentId",
+    "LogUtils and Java/Android boundary operations"
+  ],
+  "application_method_doubles": {
+    "AlarmService.startAlarm": "Records invocation and current-alarm assignment; the actual prior-alarm stop, notification/startForeground, audio/vibration, receiver broadcast, and phone-listener implementation are not executed.",
+    "AlarmStateManager.Companion.createStateChangeIntent": "Constructs an intent using the independently read unchanged factory contract; the factory smali is not executed.",
+    "AlarmStateManager.Companion.handleIntent": "Explicit model of generation rejection and provider transition, plus injected no-write/delete/reuse/generation-change/throw outcomes. For candidate tests it invokes the actual new validator, but not the complete original handler body.",
+    "AlarmStateManager.Companion.registerInstance": "Records invocation and models a transition to MISSED; the real recovery handler, parent update, service stop, and scheduling body are not executed."
+  },
+  "candidate_instructions_executed": "New scheduler/cancel, scheduled validator/occurrence comparison, scheduled service helper, receiver completion helpers; actual old onStartCommand used for the negative control. Execution is an offline Python instruction VM, not ART.",
+  "not_proven": [
+    "Actual Android class verification",
+    "Actual AlarmManager scheduling or cancellation",
+    "Actual SQLite/provider persistence or state transitions",
+    "Foreground-service admission",
+    "Notification/startForeground success",
+    "Ringer, audible output, vibration",
+    "Actual background delivery, receiver/service lifecycle, or complete alarm business flow"
+  ],
+  "original_result_preserved": true,
+  "original_result_sha256": "46fc7436034e984837bfed7ee60a052d8d5a6c61114c39d650cfc745f0bd9152",
+  "schema": "clock-alarm-host-test-scope-clarification-v1",
+  "separate_required_gates": [
+    "Whole DEX roundtrip and all-class IR/ZIP comparison",
+    "Actual installed ART isolated verification",
+    "Bounded owned-alarm actual acceptance plus new-binary Timer regression"
+  ],
+  "test_source_sha256": "600cf2beedcda6d261bff8c3332b89fe5c5e7d49423796c17a7c9385b5b60b86"
+}

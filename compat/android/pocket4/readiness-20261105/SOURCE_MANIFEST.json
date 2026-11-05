@@ -1,29 +1,29 @@
 {
-  "schema": "pocket4-checkpoint9-aggregate/v1",
-  "checkpoint": 9,
-  "retained_review_count": 16,
-  "accepted_review_count": 10,
+  "schema": "pocket4-checkpoint10-aggregate/v1",
+  "checkpoint": 10,
+  "retained_review_count": 18,
+  "accepted_review_count": 12,
   "ignored_older_review_count": 6,
   "production_ready_count": 0,
   "tracked_apps": 45,
-  "independent_package_observations": 51,
+  "independent_package_observations": 52,
   "package_identity_input": {
     "path": "../package-identity-observations-20261105.json",
-    "bytes": 72612,
-    "sha256": "0e039a1233bb69499152ade04324a6833f8d015f769391df3bb469b10234a80a"
+    "bytes": 74182,
+    "sha256": "1df355c8aec5618018d6e66635677fcfd7802563539926cf690c6c37ba8bed75"
   },
   "files": {
     "README.md": {
-      "bytes": 22861,
-      "sha256": "3ff68d85278ff0e515ad066d415f206905fc12c53435253aaabb9932d3a30223"
+      "bytes": 24234,
+      "sha256": "46270b4a454d31926cfce57d16eb73d5b3cc2220fc77740a9111ba9d1056358a"
     },
     "app-gates.json": {
       "bytes": 24135,
       "sha256": "441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78"
     },
     "gate-reviews.json": {
-      "bytes": 29827,
-      "sha256": "6f8eb6ec7b36a359b48ffc8c88ae55cd2eddc1bb215aa0a183daf909bd29f931"
+      "bytes": 35087,
+      "sha256": "e8f16c438196faa574793c8f394bcd36197b6ff36ec50c822fcd913795d49fde"
     },
     "inputs/bili-video-transition-review.json": {
       "bytes": 4109,
@@ -60,6 +60,14 @@
     "inputs/calendar10-install-result-original.json": {
       "bytes": 10345,
       "sha256": "253c98a9d27f1b5bb45e01cdda6042e0d43b2f268b3c0a228bf93a639b38f957"
+    },
+    "inputs/calendar11-build11-signature-selected.json": {
+      "bytes": 2792,
+      "sha256": "12a70dfa8365e0eb0166e69304e59aaded4738143da2c8b9db7a03f3e44be682"
+    },
+    "inputs/calendar11-install-result-original.json": {
+      "bytes": 10454,
+      "sha256": "0ca5846a91a737ff795ce7f856b3916e3903bb2f6498f5f5ad25e1a893fb420a"
     },
     "inputs/camera-accept01-unready-shutter.json": {
       "bytes": 1761,
@@ -100,6 +108,30 @@
     "inputs/clock-after-expiry02-readonly.json": {
       "bytes": 16243,
       "sha256": "318758070a3eedd74b678886f3e2d1d5618b1367175e2dfc69ccdd5a6fb7999f"
+    },
+    "inputs/clock-alarm03/REVIEW.json": {
+      "bytes": 2957,
+      "sha256": "ce68b7683196ac0eec2138d6d119dbe6bd6a9cb5e1f10057c5923cb46d622984"
+    },
+    "inputs/clock-alarm03/ROOT_NEGATIVE_GATE_REVIEW.json": {
+      "bytes": 1933,
+      "sha256": "f8671b4b61a44cca33cf72aeb68abdf4e92014d541606f2d561332040a78f82a"
+    },
+    "inputs/clock-alarm03/metadata/alarm03-original-selected.json": {
+      "bytes": 2744,
+      "sha256": "2a816cc87fed461920a4767feb2f5046ea0d90dd5ae4c61ba4c8d3b5a7459c74"
+    },
+    "inputs/clock-alarm03/metadata/cleanup03-original-selected.json": {
+      "bytes": 3141,
+      "sha256": "0da0ea3acdb3d28e4842d7c59c86362b6d0bd4bb7ddaa4e0e65da0e1a5d1c6cf"
+    },
+    "inputs/clock-alarm03/metadata/due-logs01-selected.json": {
+      "bytes": 2900,
+      "sha256": "91564ae822490feba420ba71d58f722c9e70e59d47dea3278daff34b4c056670"
+    },
+    "inputs/clock-alarm03/source/installed-alarm-methods.json": {
+      "bytes": 39716,
+      "sha256": "0b0f2d51ab757120044a4ce32f16e456aef0432001379c4ab2323f094fcb3264"
     },
     "inputs/clock-core03-e4ff-original.json": {
       "bytes": 20732,
@@ -197,6 +229,26 @@
       "bytes": 5519,
       "sha256": "0dfa6cb26059bd4bab94a287e3cdd01cd01f10bb3579ea31b7951a94a6251b00"
     },
+    "inputs/contacts-runtime02/ELF_INVENTORY.json": {
+      "bytes": 83249,
+      "sha256": "067fdb292c94c215f58034f04dda1bd648331f1e5601f291735f979cbe4a45b8"
+    },
+    "inputs/contacts-runtime02/PEER_REVIEW.json": {
+      "bytes": 15972,
+      "sha256": "a5251ecbb09fd6d3607332cee0ffc259e22e0e815d4865acc07933fae72c7427"
+    },
+    "inputs/contacts-runtime02/ROOT_QUALIFICATION.json": {
+      "bytes": 1632,
+      "sha256": "fc24da46b120962a71987069ade59238468f68d243937a35e1b717d6d981a866"
+    },
+    "inputs/contacts-runtime02/SIGNATURE_BINDING.json": {
+      "bytes": 1796,
+      "sha256": "a79715473f57db1c424eb724234e4b988aa436460479ea8fbcaccbb693f90a15"
+    },
+    "inputs/contacts-runtime02/runtime-result-original.json": {
+      "bytes": 3991,
+      "sha256": "612e91ac38c9d07d1d27a16ada46c5b1215c7901ca56ee65900833605653405a"
+    },
     "inputs/contacts-ui-preflight-result.json": {
       "bytes": 938,
       "sha256": "a5a7277cae428a1e2f1142c964469fd330cfb9cf7a6e6b5e92a891c8ad0ce7f2"
@@ -264,6 +316,22 @@
     "inputs/documents-features08-flow08-terminal-original.json": {
       "bytes": 731,
       "sha256": "4e27936728fc84e5ea15f7ed195cc404b5ba1b4660a1c8eadb005b2260dc563e"
+    },
+    "inputs/documents-features09-PUBLIC_RESULT09.json": {
+      "bytes": 7077,
+      "sha256": "cd6ff1df366b404366d2d787afdbc2c66fb998ab0b4ed64e23de7c34bd975011"
+    },
+    "inputs/documents-features09-SCOPED_GATE_RESULTS09.json": {
+      "bytes": 9210,
+      "sha256": "252d4f604e9e6e7e9ca5645cee9c28ebc0389092153a5b1dc20345b5cba17926"
+    },
+    "inputs/documents-features09-cleanup-final-terminal-original.json": {
+      "bytes": 735,
+      "sha256": "cb98338ff75ef8a55e44f56f4d668b3dfe105e99d7980761562ef8f1e1401e1f"
+    },
+    "inputs/documents-features09-flow09-terminal-original.json": {
+      "bytes": 731,
+      "sha256": "c2fa5336e4c9233fefcf7c81a440544e5e8036f233f83ac5b371040043a1819b"
     },
     "inputs/documents09-actual-result.json": {
       "bytes": 4747,
@@ -438,12 +506,12 @@
       "sha256": "a858c79db8663b08d24d32261873cef4e5335e56c99996564913de29b00943f2"
     },
     "progress.json": {
-      "bytes": 58544,
-      "sha256": "41bcc657f8079bc8d5f7b32b2fb3a50eb8627d60ddac9b202889ed145b3635b6"
+      "bytes": 76531,
+      "sha256": "cfa30ae8833db2d84f85f3018a822032a2fb41fe38580702b87595bf5709002e"
     },
     "readiness-matrix.json": {
-      "bytes": 202362,
-      "sha256": "3a4730e103a8471ce7db9d76d50810447ab7a9db03d347cbab197f43eb19cdc4"
+      "bytes": 222181,
+      "sha256": "33eec84fb1c7950f8c30854cb46a90b439b89e1e7304afd4ee2eedb1878f7e72"
     },
     "test_readiness.py": {
       "bytes": 11772,
@@ -454,8 +522,8 @@
       "sha256": "efedcd5010909a9ada1546aeed4b6307cc371217da37e06bc40323a41e32df7f"
     },
     "validation.json": {
-      "bytes": 1126,
-      "sha256": "351dc57244b13f91dd06541863d66e61c4d2552c336909c325000d17e6576705"
+      "bytes": 1311,
+      "sha256": "e916d627ec085480b6f4930357f41c6fbe747c2060a81979c63b1cc8aaf93511"
     }
   }
 }

@@ -1,0 +1,81 @@
+{
+  "actual_ART_verification_completed": false,
+  "actual_alarm_business_success": false,
+  "actual_build_result_sha256": "4b4e23003f52b80f896cff316b930095ef4dd959e0fdbcb99b2ea0fc674b6881",
+  "actual_interval_utc": [
+    "2026-11-05T19:47:37.001824+00:00",
+    "2026-11-05T19:47:52.468321+00:00"
+  ],
+  "actual_job": "1a1ad409af9-fc05-5933",
+  "actual_terminal": {
+    "exit_code": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "timed_out": false
+  },
+  "added_methods": 6,
+  "all_classes_compared": 2941,
+  "candidate_apk": {
+    "bytes": 7597225,
+    "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+    "path": "/home/alex/work/pocket4-clock-alarm-dispatch-20261105-r12-04/build/DeskClock-pocket4-alarm-dispatch.apk",
+    "sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d"
+  },
+  "candidate_dex": {
+    "bytes": 3023456,
+    "format": "039",
+    "header_verified": true,
+    "sha256": "deff3873f215d97ab47908c7f60cb6ab62d4a6e4f6274dc3f3130023f0630c98"
+  },
+  "changed_original_methods": 5,
+  "clock_state_preferences_template_contents_notifications_and_Main_preserved_during_build": true,
+  "host_control_flow_tests": {
+    "Android_or_complete_App_delegates_executed": false,
+    "actual_instruction_VM": true,
+    "passed": 53,
+    "scope_file": "source/HOST_TEST_SCOPE.json"
+  },
+  "installed": false,
+  "installed_current_binary_unchanged": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+  "methods_after": 19744,
+  "next_required": [
+    "Actual installed ART verification using held declared optional-library inputs",
+    "Reviewed Clock-only reversible candidate update",
+    "Bounded owned-alarm arrival/dismiss/delete and new-binary timer core/cancellation regression"
+  ],
+  "only_changed_payload": "classes.dex",
+  "original_apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+  "prior_timer_binary_credit_inherited": false,
+  "resource_usage": {
+    "cpu_affinity": [
+      20,
+      21
+    ],
+    "cpu_max": [
+      "180000",
+      "100000"
+    ],
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_max_bytes": 2147483648,
+    "memory_peak_bytes": 644521984,
+    "memory_swap_max_bytes": 0,
+    "own_cgroup": "/sys/fs/cgroup/system.slice/p4-clock-alarm-dispatch-build-20261105-r12-04.service",
+    "pids_max": 64,
+    "runtime_max_seconds_requested": 480
+  },
+  "same_certificate_v3_and_16KiB_alignment": true,
+  "schema": "clock-alarm-dispatch04-offline-candidate-selected-v1",
+  "scope_clarification": "Frozen sources were hash-checked when read; tools were checked before/after. The builder does not reread every frozen source after compilation. Actual complete candidate DEX IR matches the reviewed input and all other classes, and ZIP payload comparison is complete.",
+  "unchanged_original_methods_within_four_target_classes": 43,
+  "whole_app_production_ready": false,
+  "zip_payload_members": 1281
+}

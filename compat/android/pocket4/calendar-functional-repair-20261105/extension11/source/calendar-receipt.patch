@@ -1,0 +1,87 @@
+--- revision10/src/com/android/calendar/event/ProviderReceipt.java
++++ revision11/src/com/android/calendar/event/ProviderReceipt.java
+@@ -28,4 +28,31 @@
+                 invalidReceipt);
+         }
+     }
++    /** Accept only this store's exact submitted LOCAL sync-adapter collection query.
++     * The installed provider appends the new ID while retaining that query. */
++    public static long calendarId(String value,String expectedInsertUri) {
++        try {
++            URI expected=new URI(expectedInsertUri);
++            if(!"content".equals(expected.getScheme()) ||
++               !"com.android.calendar".equals(expected.getRawAuthority()) ||
++               !"/calendars".equals(expected.getRawPath()) ||
++               expected.getRawFragment()!=null || expected.getRawQuery()==null)
++                throw new IllegalArgumentException();
++            String[] query=expected.getRawQuery().split("&",-1);
++            if(query.length!=3 || !"caller_is_syncadapter=true".equals(query[0]) ||
++               !query[1].startsWith("account_name=") || query[1].length()==13 ||
++               !"account_type=LOCAL".equals(query[2])) throw new IllegalArgumentException();
++            URI returned=new URI(value);
++            if(returned.getRawFragment()!=null ||
++               !expected.getRawQuery().equals(returned.getRawQuery()))
++                throw new IllegalArgumentException();
++            // Preserve the existing exact authority/path/numeric-ID checks. No
++            // percent decoding or normalization can turn an invalid ID into a valid one.
++            return id(value.substring(0,value.indexOf('?')),"calendars");
++        } catch(Exception invalidReceipt) {
++            throw new IllegalStateException(
++                "The change may have completed, but the saved item could not be confirmed. Check Calendar before trying again.",
++                invalidReceipt);
++        }
++    }
+ }
+--- revision10/src/com/android/calendar/event/EventEditorStore.java
++++ revision11/src/com/android/calendar/event/EventEditorStore.java
+@@ -223,7 +223,7 @@
+         ops.add(ContentProviderOperation.newInsert(local).withValues(values).build());
+         ContentProviderResult[] results=resolver.applyBatch(CalendarContract.AUTHORITY,ops);
+         require(results.length==2 && results[1].uri!=null,"The new calendar could not be confirmed.");
+-        long id=ProviderReceipt.id(results[1].uri.toString(),"calendars");
++        long id=ProviderReceipt.calendarId(results[1].uri.toString(),local.toString());
+         require(id>=0,"The provider returned an invalid calendar ID.");
+         try(Cursor c=resolver.query(Calendars.CONTENT_URI,
+                 new String[]{Calendars._ID,Calendars.CALENDAR_DISPLAY_NAME,Calendars.OWNER_ACCOUNT},
+--- revision10/tests/ProviderReceiptTest.java
++++ revision11/tests/ProviderReceiptTest.java
+@@ -11,6 +11,10 @@
+         try { ProviderReceipt.id(uri,"events"); throw new AssertionError("invalid receipt accepted"); }
+         catch(IllegalStateException outcomeUnknown) { checks++; }
+     }
++    private static void invalidCalendar(String receipt,String submitted) {
++        try { ProviderReceipt.calendarId(receipt,submitted); throw new AssertionError("invalid calendar receipt accepted"); }
++        catch(IllegalStateException outcomeUnknown) { checks++; }
++    }
+     public static void main(String[] args) {
+         check(ProviderReceipt.id("content://com.android.calendar/events/9","events")==9);
+         check(ProviderReceipt.id("content://com.android.calendar/calendars/1","calendars")==1);
+@@ -19,6 +23,28 @@
+             "content://com.android.calendar/events/-1","content://com.android.calendar/events/9?x=y",
+             "content://com.android.calendar/events/9#fragment","content://com.android.calendar/events/9/10",
+             "content://com.android.calendar/events/9223372036854775808"}) committedButInvalid(value);
++        String query="caller_is_syncadapter=true&account_name=Droidloom%20local%20calendars&account_type=LOCAL";
++        String submitted="content://com.android.calendar/calendars?"+query;
++        String receipt="content://com.android.calendar/calendars/1?"+query;
++        // The actual provider returns its incoming collection URI with the ID appended,
++        // retaining the query. The old generic validator must remain strict.
++        try { ProviderReceipt.id(receipt,"calendars"); throw new AssertionError("generic query rule changed"); }
++        catch(IllegalStateException stillStrict) { checks++; }
++        check(ProviderReceipt.calendarId(receipt,submitted)==1);
++        check(ProviderReceipt.calendarId("content://com.android.calendar/calendars/17?"+query,submitted)==17);
++        for(String bad:new String[]{null,"",receipt+"#fragment",receipt+"&x=y",
++            receipt+"&account_name=extra",receipt.replace("%20","+"),
++            receipt.replace("account_type=LOCAL","account_type=other"),
++            receipt.replace("calendars/1?","events/1?"),receipt.replace("com.android.calendar/","other/"),
++            receipt.replace("calendars/1?","calendars/%31?"),receipt.replace("calendars/1?","calendars/-1?"),
++            receipt.replace("calendars/1?","calendars/9223372036854775808?"),
++            "content://com.android.calendar/calendars/1"}) invalidCalendar(bad,submitted);
++        for(String bad:new String[]{null,"",submitted+"#fragment",submitted+"&x=y",
++            submitted.replace("caller_is_syncadapter=true","caller_is_syncadapter=false"),
++            submitted.replace("account_name=Droidloom%20local%20calendars","account_name="),
++            submitted.replace("account_type=LOCAL","account_type=other"),
++            submitted.replace("/calendars?","/events?"),submitted.replace("com.android.calendar/","other/")})
++            invalidCalendar(receipt,bad);
+         System.out.println("ProviderReceiptTest: "+checks+" checks passed");
+     }
+ }

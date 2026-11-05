@@ -1,0 +1,105 @@
+{
+  "against_previous10": {
+    "all_other_methods_IR_equal": true,
+    "all_other_non_signature_payloads_byte_equal": true,
+    "apk_sha256": "7872aa56b6aa35f4509a27a2c3c0ebb8743da7096136155e425f5b1e4499ae8e",
+    "changed_methods": [],
+    "classes2_dex_byte_equal": false,
+    "classes2_preserved_except_reviewed_receipt_path": true,
+    "classes_compared": 445,
+    "classes_dex_byte_equal": true,
+    "compared_non_signature_payloads": 664,
+    "methods_compared": 2327
+  },
+  "alignment_16k_verified": true,
+  "android_commands": 0,
+  "art_runtime_verified": false,
+  "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+  "finished_utc": "2026-11-05T18:55:06.193315+00:00",
+  "host_check_count": 116,
+  "host_tests": {
+    "AlertIdentityTest": "AlertIdentityTest: 9 checks passed\n",
+    "EventDraftTest": "EventDraftTest: 22 checks passed\n",
+    "EventReferenceTest": "EventReferenceTest: 17 checks passed\n",
+    "ProviderReceiptTest": "ProviderReceiptTest: 37 checks passed\n",
+    "SnoozeStateTest": "SnoozeStateTest: 31 checks passed\n"
+  },
+  "input_postcheck_passed": true,
+  "installed": false,
+  "job_id": "1a1ad104314-fc05-5854",
+  "limits": {
+    "cpu.max": "100000 100000",
+    "memory.max": "805306368",
+    "memory.swap.max": "0",
+    "pids.max": "128"
+  },
+  "package_mutations": 0,
+  "payload_proof": {
+    "all_non_dex_payloads_byte_equal": true,
+    "manifest_resources_permissions_unchanged": true,
+    "only_added_payload": "classes2.dex",
+    "only_replaced_payload": "classes.dex",
+    "original_payloads": 663
+  },
+  "provider_mutations": 0,
+  "raw": {
+    "bytes": 43703,
+    "sha256": "ec9ce6f9c8e31d021992d59d86ce4319743496debff50e24ef7da8be544c96e9"
+  },
+  "resource_usage": {
+    "cpu.stat": "usage_usec 17085357\nuser_usec 16187391\nsystem_usec 897966\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 176\nnr_throttled 8\nthrottled_usec 922\nnr_bursts 0\nburst_usec 0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.peak": "595394560"
+  },
+  "restored_code_proof": {
+    "actual_method_changes": {
+      "com/android/calendar/event/EventEditorStore.smali": {
+        "added_methods": [],
+        "changed_methods": [
+          "createLocalCalendar(Ljava/lang/String;)J"
+        ]
+      },
+      "com/android/calendar/event/ProviderReceipt.smali": {
+        "added_methods": [
+          "calendarId(Ljava/lang/String;Ljava/lang/String;)J"
+        ],
+        "changed_methods": []
+      }
+    },
+    "changed_classes": [
+      "com/android/calendar/event/EventEditorStore.smali",
+      "com/android/calendar/event/ProviderReceipt.smali"
+    ],
+    "classes_compared": 60,
+    "original_generic_receipt_validator_IR_unchanged": true,
+    "proof": {
+      "bytes": 17998,
+      "path": "/home/alex/work/pocket4-calendar-repair-build-20261105-r12-11/restored-class-ir-proof.json",
+      "sha256": "0de14455372b7273f9c6d91c7a9799deb67bffba56a12ffe15be1ccc87c1568e"
+    },
+    "unchanged_classes": 58
+  },
+  "schema": "calendar11-actual-build-selected-v1",
+  "semantic_proof": {
+    "changed_methods": 14,
+    "classes": 445,
+    "methods": 2327,
+    "only_expected_methods_changed": true,
+    "proof": {
+      "bytes": 131597,
+      "path": "/home/alex/work/pocket4-calendar-repair-build-20261105-r12-11/class-ir-proof.json",
+      "sha256": "1776c516ee5e6264d7c1e16860a4c5278cfee3c1fe08d6993393bed69bdd3099"
+    },
+    "roundtrip_equal_all_classes": true
+  },
+  "signature_v3_verified": true,
+  "signed_apk": {
+    "bytes": 2635213,
+    "sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f"
+  },
+  "source_manifest_sha256": "38086511d62aedec793a879bd2e009a051b2d709dd32364944a9033aeefaf93a",
+  "started_utc": "2026-11-05T18:54:48.647392+00:00",
+  "state": "BUILT_SIGNED_NOT_INSTALLED",
+  "ui_inputs": 0,
+  "whole_app_production_ready": false
+}

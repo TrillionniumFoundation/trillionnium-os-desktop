@@ -1,0 +1,42 @@
+{
+  "cause": "Calendar branch preserves the submitted URI in v6 and returns ContentUris.withAppendedId(v6,id). The old generic validator rejected any query, after the insert had committed.",
+  "class_file": {
+    "bytes": 485849,
+    "sha256": "adf08be5685d0c7c4610887e3135512ac4950cee0c78ccfb5b2696a5fbf18a2a"
+  },
+  "encoding_cause_scope": "The separate plus versus percent20 cleanup behavior is supported by the actual readonly comparison, not an unobserved QueryParameterUtils implementation.",
+  "exact_source_excerpts": [
+    {
+      "first_line": 8456,
+      "last_line": 8463,
+      "text": ".method private insertInTransactionInner(Landroid/net/Uri;Landroid/content/ContentValues;Z)Landroid/net/Uri;\n    .registers 28\n\n    move-object/from16 v0, p0\n\n    move-object/from16 v2, p1\n\n    .line 2367\n"
+    },
+    {
+      "first_line": 8492,
+      "last_line": 8558,
+      "text": "    :cond_20\n    iget-object v1, v0, Lcom/android/providers/calendar/CalendarProvider2;->mConfidenceChecker:Lcom/android/providers/calendar/CalendarConfidenceChecker;\n\n    invoke-virtual {v1}, Lcom/android/providers/calendar/CalendarConfidenceChecker;->checkLastCheckTime()Z\n\n    .line 2372\n    invoke-virtual {v2}, Landroid/net/Uri;->getQueryParameterNames()Ljava/util/Set;\n\n    move-result-object v1\n\n    invoke-direct {v0, v1}, Lcom/android/providers/calendar/CalendarProvider2;->validateUriParameters(Ljava/util/Set;)V\n\n    .line 2373\n    sget-object v1, Lcom/android/providers/calendar/CalendarProvider2;->sUriMatcher:Landroid/content/UriMatcher;\n\n    invoke-virtual {v1, v2}, Landroid/content/UriMatcher;->match(Landroid/net/Uri;)I\n\n    move-result v5\n\n    const/4 v6, 0x0\n\n    const/4 v7, 0x0\n\n    const/4 v1, 0x1\n\n    move-object/from16 v3, p2\n\n    move/from16 v4, p3\n\n    .line 2374\n    invoke-direct/range {v0 .. v7}, Lcom/android/providers/calendar/CalendarProvider2;->verifyTransactionAllowed(ILandroid/net/Uri;Landroid/content/ContentValues;ZILjava/lang/String;[Ljava/lang/String;)V\n\n    move-object v6, v2\n\n    move-object v7, v3\n\n    .line 2376\n    iget-object v1, v0, Lcom/android/providers/calendar/CalendarProvider2;->mDbHelper:Lcom/android/providers/calendar/CalendarDatabaseHelper;\n\n    invoke-virtual {v1}, Lcom/android/providers/calendar/CalendarDatabaseHelper;->getWritableDatabase()Landroid/database/sqlite/SQLiteDatabase;\n\n    move-result-object v1\n\n    iput-object v1, v0, Lcom/android/providers/calendar/SQLiteContentProvider;->mDb:Landroid/database/sqlite/SQLiteDatabase;\n\n    const/4 v1, 0x1\n\n    const/4 v13, 0x0\n\n    if-eq v5, v1, :cond_28f\n\n    if-eq v5, v10, :cond_289\n\n    const/4 v2, 0x3\n\n    if-eq v5, v2, :cond_289\n\n    const/4 v3, 0x4\n\n    const/4 v10, 0x0\n\n    .line 2380\n    const-string v14, \"account_type\"\n\n    const-string v15, \"account_name\"\n\n    if-eq v5, v3, :cond_236\n"
+    },
+    {
+      "first_line": 9105,
+      "last_line": 9108,
+      "text": "    :goto_22b\n    move-wide v0, v1\n\n    goto/16 :goto_3ed\n"
+    },
+    {
+      "first_line": 9205,
+      "last_line": 9217,
+      "text": "    .line 2516\n    :cond_27f\n    iget-object v1, v0, Lcom/android/providers/calendar/CalendarProvider2;->mDbHelper:Lcom/android/providers/calendar/CalendarDatabaseHelper;\n\n    invoke-virtual {v1, v7}, Lcom/android/providers/calendar/CalendarDatabaseHelper;->calendarsInsert(Landroid/content/ContentValues;)J\n\n    move-result-wide v1\n\n    .line 2517\n    invoke-direct {v0, v1, v2, v4}, Lcom/android/providers/calendar/CalendarProvider2;->sendUpdateNotification(JZ)V\n\n    goto :goto_22b\n\n"
+    },
+    {
+      "first_line": 9640,
+      "last_line": 9653,
+      "text": "    :goto_3ed\n    cmp-long v2, v0, v16\n\n    if-gez v2, :cond_3f2\n\n    return-object v13\n\n    .line 2663\n    :cond_3f2\n    invoke-static {v6, v0, v1}, Landroid/content/ContentUris;->withAppendedId(Landroid/net/Uri;J)Landroid/net/Uri;\n\n    move-result-object v0\n\n    return-object v0\n"
+    }
+  ],
+  "fix": "Only calendarId binds the exact internally submitted LOCAL collection query, then reuses the original strict numeric path validator. Event/generic validation is unchanged.",
+  "method": "insertInTransactionInner(Landroid/net/Uri;Landroid/content/ContentValues;Z)Landroid/net/Uri;",
+  "method_bytes": 33972,
+  "method_sha256": "e0827765659290a2ed5ed86f249b2f2c7ea320bf461b0edde8041993eac3dd5d",
+  "provider_apk_sha256": "eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff",
+  "provider_dex_sha256": "f82eb5a869731b069f0fa1cae09c0d85ef787d249e0c8d6149c9470f8b7bed8c",
+  "schema": "actual-provider-returned-calendar-uri-v1"
+}

@@ -1,13 +1,78 @@
-# Current Calendar repair status
+# Calendar status at checkpoint10 — installed candidate11
 
-Candidate10 is installed and independently read back. The single update completed at 2026-11-05 18:32:09.210226 UTC with APK `7872aa56b6aa35f4509a27a2c3c0ebb8743da7096136155e425f5b1e4499ae8e`, UID10061, Android user0 and version37. The original signing certificate and v3 signature were verified. Permissions, first-install time, CE/DE directory identities, the CalendarProvider identity, eight empty Provider tables and original task851 were preserved. There was one install call, no unknown pending effect and no rollback. The [actual installation identity](install10-identity/IDENTITY_REVIEW.json) invalidates any earlier binary's business review.
+Device-observation cutoff: **2026-11-05 20:14:45 UTC**. Later continuation runs
+are outside this frozen checkpoint.
 
-The [installed08 delta](extension08/README.md) preserves the exact source changes, 91 host checks, narrow class/method/payload comparisons and the original installation receipt. It adds a complete alert identity to notification actions so an old PendingIntent cannot target a different alert after SQLite row-ID reuse. [Revision07](extension07/README.md) separately adds a durable journal for genuine user snooze actions because actual Provider reset deletes all scheduled alert rows. Ordinary reminders remain Provider-owned.
+**Candidate11 is installed; business requalification remains open.** The one
+preserving update completed at 2026-11-05 19:09:22.490884 UTC. The installed APK is
+2,635,213 bytes with SHA256
+`00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f`.
+It remains com.android.calendar, user 0, UID 10061, version 37 and the original
+signing certificate. UID, first-install time, CE/DE directory identities,
+permissions, CalendarProvider identity, eight empty tables, task 851 and the same
+Main generation were verified before and after this single update. No data clear
+or rollback occurred. Full identity evidence is in
+[install11-identity](install11-identity/IDENTITY_REVIEW.json).
 
-The [candidate09 delta](extension09/README.md) fixes the actual candidate08 `AllInOneActivity.onOptionsItemSelected` VerifyError without changing its restored second DEX. All65 added or modified classes then passed actual isolated ART verification against the installed framework. This artifact result does not qualify a running App's business behavior. Candidates04–07 were never installed; candidate08 and the original missing-editor crash remain exact historical evidence against their own APKs.
+## Actual fault and repair
 
-Actual Core10 launched candidate09 at17:36:42 UTC. Calendar task968 automatically opened microG login task969 before event creation. A separate read-only record review identified Calendar UID10061 as the login caller, with no new Calendar crash or ANR. No account input occurred. Cleanup02 normally closed exactly969 then968 at18:14:07–09 UTC, leaving only baseline851 and all eight tables empty. The original failed launch receipt and its historical pending field remain unchanged; cleanup is a separate result. A normal-close exit record is retained and is not reported as zero exits.
+On candidate10, Core11 entered New event and explicitly created one local
+calendar. That write committed, but the App rejected its returned URI because
+the generic validator prohibited query parameters. The installed Provider
+returns the new ID appended to the original sync-adapter URI, retaining its
+query. Core11 stopped, wrote no event, normally closed task 974 and initially
+retained only its exact empty calendar. The original failed result remains a
+failure; its final nonempty-baseline check did not reach final guard success.
 
-The [candidate10 delta](extension10/README.md) makes a narrow first-use change: an empty calendar list now gives local guidance, while account setup remains an explicit menu action. Ninety-one host checks passed;59 of60 restored classes are bytecode-identical and only the reviewed CalendarActions class changes within that set. Actual ART10 verified all66 added or modified classes at18:19:04–06 UTC, with complete dependency and installed09 pre/post checks. Both compiler and oatdump completed normally, and no memory-limit or OOM event occurred. This isolated verification preceded the single installation.
+Candidate11 adds a Calendar-specific receipt path bound to the exact internally
+submitted LOCAL URI query. The original generic/event receipt validator is
+unchanged, and the App still requires a complete provider readback. The generic
+ID parser accepts **nonnegative** decimal integers, including zero; see the
+[documentation clarification](extension11-id-domain-addendum.json) for the
+frozen extension README's stronger wording. This run's actual owned ID was 1.
 
-Actual event creation/editing, reminder delivery, recurrence and sync for installed candidate10 remain pending. No installation, host check or source inspection is presented as restored App business behavior or whole-App production readiness.
+The acceptance cleanup independently encoded account-name spaces as `+`.
+Actual read-only comparison found no row with that URI and exactly ID 1 with
+`%20`, using the same full ownership and no-events predicate. A separate guarded,
+single deletion at 19:07:25–19:07:28 UTC restored all eight physical tables to
+zero. Its original readback and the original failure are retained separately.
+
+## Verification scope
+
+The real build passed 116 Java checks. Relative to installed10, the original
+445 classes/2,327 methods and primary DEX are identical. Of 60 restored classes,
+58 remain entirely identical in IR; only one Store call changes and the new
+Calendar-specific receipt method is added. Manifest, resources and permissions
+remain byte-identical. Same-certificate v3 signing and 16 KiB alignment passed.
+
+Actual installed ART verified all 66 new/modified target classes in the isolated
+candidate, with unchanged boot/APEX/classpath inputs, current installed10 bytes
+and Main guards. This is an artifact verification result, not a running App
+business or process-identity qualification. The full scope and original receipts
+are in [extension11](extension11/README.md).
+
+## Remaining acceptance
+
+The extension11 bundle froze before Core12 execution. The separate
+[Core12 acceptance bundle](core12-acceptance/README.md) retains its actual
+19:37:24–19:49:25 UTC run and original lease failure. LOCAL calendar creation,
+Cancel/Discard without an event write, and one UI event Save with exact Provider
+and detail readback were observed. Edit Save, close/reopen and UI delete remain
+incomplete. Two Save decisions stopped before input at the snapshot guard; a
+later transport UNKNOWN remains unchanged and has no original journal entry.
+Fresh read-only reconciliation found the original unedited event and no Calendar
+Activity. Independent exact Provider cleanup completed at20:01:44 UTC, with one
+event delete and one empty-calendar delete, eight empty physical tables, task851,
+no pending effect and unchanged Main/package/permission identities. That cleanup
+does not pass UI deletion or change the original failed result.
+
+The next actual run still needs the full create/edit/persist/reopen/UI-delete
+sequence. Repeated-event instances, reminder delivery, notification interaction,
+Snooze/recovery, runtime identity and stability remain separate gates. No older
+binary's business review is inherited by this installation, and the whole App
+has not been declared production ready.
+
+Earlier actual results remain in [extension10](extension10/README.md),
+[extension09](extension09/README.md), and their original installation and
+acceptance receipts. All 45 Apps remain tracked by the
+[current readiness matrix](../readiness-20261105/README.md).

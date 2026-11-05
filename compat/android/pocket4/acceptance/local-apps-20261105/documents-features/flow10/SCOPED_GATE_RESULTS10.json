@@ -1,0 +1,424 @@
+{
+  "actual_identity_records_sha256": "60f8561837656ea71f92d95ea169914ae03ce75d17e4ff40ba2d4505d70c0d41",
+  "add_global_unpassed_cutoff": false,
+  "all_12_declared_checks_passed": true,
+  "deferred_supported_features": [
+    "search",
+    "sort"
+  ],
+  "engine_qualification_granted": false,
+  "evidence_result_sha256": "59860aba0b6e576b271566c92133e2233a1d3f14383a6183b1536c9198720853",
+  "full_flow_passed": true,
+  "long_duration_stability_granted": false,
+  "new_scope_since09": [
+    "FILES_MULTIPLE_DELETE_COPIES",
+    "FILES_UI_FINAL_DELETE",
+    "FINAL_GRANTS_EMPTY",
+    "GET_CONTENT_EXACT_FILE_READ",
+    "NORMAL_CLOSE_REOPEN_APP_READBACK",
+    "REVOKED_EXISTING_URI_SECURITY_DENIAL"
+  ],
+  "observed_utc": "2026-11-05T20:14:00.941483+00:00",
+  "old_Documents11_scope_preserved": true,
+  "package": "com.android.documentsui",
+  "prior_failed_attempts_preserved": true,
+  "remaining_in_this_batch": [],
+  "required_APK_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+  "schema": "pocket4-documents-flow10-scoped-gate-results-v1",
+  "scoped_gate_results": [
+    {
+      "gate": "EXACT_TREE_GRANT",
+      "passed": true,
+      "scope": {
+        "broader_root_granted": false,
+        "passed": true,
+        "persisted_read_write_grants": 1,
+        "tree": "primary:Pocket4_DocFeatures_r12_eeff7aa90e47139a"
+      }
+    },
+    {
+      "gate": "FILES_MULTIPLE_COPY",
+      "passed": true,
+      "scope": {
+        "destination": "copies-eeff7aa90e47139a",
+        "files": [
+          "alpha-eeff7aa90e47139a.txt",
+          "beta-eeff7aa90e47139a.txt"
+        ],
+        "layout": {
+          "copies-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167645,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          },
+          "copies-eeff7aa90e47139a/alpha-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 163749,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 59,
+            "ctime_ns": "1793909465545524203",
+            "kind": "file",
+            "mtime_ns": "1793909465545524203",
+            "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+          },
+          "copies-eeff7aa90e47139a/beta-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167663,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 118,
+            "ctime_ns": "1793909465561525106",
+            "kind": "file",
+            "mtime_ns": "1793909465561525106",
+            "sha256": "a57fd69e8058d3534a67c331e12042b370be4c7ce496b971e1e31ce06bc88842"
+          },
+          "source-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167405,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          },
+          "source-eeff7aa90e47139a/alpha-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167650,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 59,
+            "ctime_ns": "1793909368782985681",
+            "kind": "file",
+            "mtime_ns": "1793909368782985681",
+            "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+          },
+          "source-eeff7aa90e47139a/beta-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167658,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 118,
+            "ctime_ns": "1793909368839988995",
+            "kind": "file",
+            "mtime_ns": "1793909368839988995",
+            "sha256": "a57fd69e8058d3534a67c331e12042b370be4c7ce496b971e1e31ce06bc88842"
+          }
+        },
+        "operation_replayed": false,
+        "passed": true,
+        "source": "source-eeff7aa90e47139a"
+      }
+    },
+    {
+      "gate": "FILES_MULTIPLE_DELETE_COPIES",
+      "passed": true,
+      "scope": {
+        "all_selected_entries_preverified_owned": true,
+        "deleted_entries": [
+          "copies-eeff7aa90e47139a/alpha-eeff7aa90e47139a.txt",
+          "copies-eeff7aa90e47139a/beta-eeff7aa90e47139a.txt"
+        ],
+        "host_unlink_used_for_gate": false,
+        "passed": true,
+        "physical_absence_and_remaining_hashes": {
+          "alpha-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167650,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 59,
+            "ctime_ns": "1793909519482543204",
+            "kind": "file",
+            "mtime_ns": "1793909368782985681",
+            "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+          },
+          "beta-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167658,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 118,
+            "ctime_ns": "1793909519535546149",
+            "kind": "file",
+            "mtime_ns": "1793909368839988995",
+            "sha256": "a57fd69e8058d3534a67c331e12042b370be4c7ce496b971e1e31ce06bc88842"
+          },
+          "copies-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167645,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          },
+          "source-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167405,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          }
+        }
+      }
+    },
+    {
+      "gate": "FILES_MULTIPLE_MOVE",
+      "passed": true,
+      "scope": {
+        "destination": "",
+        "files": [
+          "alpha-eeff7aa90e47139a.txt",
+          "beta-eeff7aa90e47139a.txt"
+        ],
+        "layout": {
+          "alpha-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167650,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 59,
+            "ctime_ns": "1793909519482543204",
+            "kind": "file",
+            "mtime_ns": "1793909368782985681",
+            "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+          },
+          "beta-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167658,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 118,
+            "ctime_ns": "1793909519535546149",
+            "kind": "file",
+            "mtime_ns": "1793909368839988995",
+            "sha256": "a57fd69e8058d3534a67c331e12042b370be4c7ce496b971e1e31ce06bc88842"
+          },
+          "copies-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167645,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          },
+          "copies-eeff7aa90e47139a/alpha-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 163749,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 59,
+            "ctime_ns": "1793909465545524203",
+            "kind": "file",
+            "mtime_ns": "1793909465545524203",
+            "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+          },
+          "copies-eeff7aa90e47139a/beta-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167663,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 118,
+            "ctime_ns": "1793909465561525106",
+            "kind": "file",
+            "mtime_ns": "1793909465561525106",
+            "sha256": "a57fd69e8058d3534a67c331e12042b370be4c7ce496b971e1e31ce06bc88842"
+          },
+          "source-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167405,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          }
+        },
+        "operation_replayed": false,
+        "passed": true,
+        "source": "source-eeff7aa90e47139a"
+      }
+    },
+    {
+      "gate": "FILES_NEW_FOLDER",
+      "passed": true,
+      "scope": {
+        "app_ui_created_directory": "copies-eeff7aa90e47139a",
+        "layout": {
+          "copies-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167645,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          },
+          "source-eeff7aa90e47139a": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167405,
+              "st_mode": 17912,
+              "st_uid": 10108
+            },
+            "kind": "directory"
+          },
+          "source-eeff7aa90e47139a/alpha-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167650,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 59,
+            "ctime_ns": "1793909368782985681",
+            "kind": "file",
+            "mtime_ns": "1793909368782985681",
+            "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+          },
+          "source-eeff7aa90e47139a/beta-eeff7aa90e47139a.txt": {
+            "birth": {
+              "st_dev": 158,
+              "st_gid": 1023,
+              "st_ino": 167658,
+              "st_mode": 33200,
+              "st_uid": 10108
+            },
+            "bytes": 118,
+            "ctime_ns": "1793909368839988995",
+            "kind": "file",
+            "mtime_ns": "1793909368839988995",
+            "sha256": "a57fd69e8058d3534a67c331e12042b370be4c7ce496b971e1e31ce06bc88842"
+          }
+        },
+        "passed": true
+      }
+    },
+    {
+      "gate": "FILES_UI_FINAL_DELETE",
+      "passed": true,
+      "scope": {
+        "all_selected_entries_preverified_owned": true,
+        "deleted_entries": [
+          "alpha-eeff7aa90e47139a.txt",
+          "beta-eeff7aa90e47139a.txt",
+          "copies-eeff7aa90e47139a",
+          "source-eeff7aa90e47139a"
+        ],
+        "host_unlink_used_for_gate": false,
+        "passed": true,
+        "physical_absence_and_remaining_hashes": {}
+      }
+    },
+    {
+      "gate": "FINAL_GRANTS_EMPTY",
+      "passed": true,
+      "scope": {
+        "URI_permission_section_empty": true,
+        "all_owned_tasks_normally_closed": true,
+        "passed": true
+      }
+    },
+    {
+      "gate": "GET_CONTENT_CANCEL",
+      "passed": true,
+      "scope": {
+        "RESULT_CANCELED": true,
+        "URI_returned": false,
+        "grants_empty": true,
+        "passed": true
+      }
+    },
+    {
+      "gate": "GET_CONTENT_EXACT_FILE_READ",
+      "passed": true,
+      "scope": {
+        "bytes": 59,
+        "file": "alpha-eeff7aa90e47139a.txt",
+        "passed": true,
+        "persisted_grants": 0,
+        "previous_tree_grant_absent": true,
+        "sha256": "5cffe960dad99f99bdc3aeace1389e7a67a03e478c17bf92e689999a7fc8ffe1"
+      }
+    },
+    {
+      "gate": "NORMAL_CLOSE_REOPEN_APP_READBACK",
+      "passed": true,
+      "scope": {
+        "content_readbacks_total": 4,
+        "expected_payloads_verified_by_app": 2,
+        "passed": true,
+        "same_generated_tree": true
+      }
+    },
+    {
+      "gate": "REVOKED_EXISTING_URI_SECURITY_DENIAL",
+      "passed": true,
+      "scope": {
+        "checked_before_any_GET_CONTENT_grant": true,
+        "exception": "SecurityException",
+        "existing_file": "beta-eeff7aa90e47139a.txt",
+        "passed": true,
+        "persisted_grants_empty": true
+      }
+    },
+    {
+      "gate": "TREE_CANCEL",
+      "passed": true,
+      "scope": {
+        "RESULT_CANCELED": true,
+        "URI_returned": false,
+        "grants_empty": true,
+        "passed": true
+      }
+    }
+  ],
+  "whole_app_production_ready": false
+}

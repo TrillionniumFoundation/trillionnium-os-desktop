@@ -1,0 +1,284 @@
+{
+  "ART_verified": false,
+  "UI_actions": 0,
+  "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "apk_before": {
+    "bytes": 7593129,
+    "ctime_ns": 1793887862223728194,
+    "device": 1811,
+    "gid": 1000,
+    "inode": 789285,
+    "mode": 33188,
+    "mtime_ns": 1793887862223728194,
+    "nlink": 1,
+    "sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+    "uid": 1000
+  },
+  "app_code_executed": false,
+  "art_bin_names": [
+    "art_boot",
+    "art_exec",
+    "artd",
+    "dalvikvm",
+    "dalvikvm64",
+    "dex2oat",
+    "dex2oat64",
+    "dexdump",
+    "dexlist",
+    "dexopt_chroot_setup",
+    "dexoptanalyzer",
+    "oatdump",
+    "odrefresh",
+    "profman"
+  ],
+  "artifact_commands": [
+    {
+      "joined": true,
+      "rc": 1,
+      "spawned": true,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "timed_out": false
+    }
+  ],
+  "automatic_retry": false,
+  "classloader_heap_capture": false,
+  "closure_unchanged": true,
+  "compiler_run": false,
+  "context_basis": "Package optional-library order plus exact installed XML/JAR bytes; not a running Java ClassLoader capture. Any dependencies or after-app policy still require explicit review.",
+  "declared_candidate_context": "PCL[]{PCL[/system_ext/framework/androidx.window.extensions.jar]#PCL[/system_ext/framework/androidx.window.sidecar.jar]}",
+  "declared_dependencies": {
+    "androidx.window.extensions": "",
+    "androidx.window.sidecar": ""
+  },
+  "existing_oat": {
+    "header_rc": 1,
+    "header_utf8": "",
+    "path": "/data/app/~~IbaHjOhSap41lASiYb4RDQ==/com.android.deskclock-WSxg1z5KSAFk5lJv8t51zw==/oat/x86_64/base.odex",
+    "pin": {
+      "bytes": 33536,
+      "ctime_ns": 1793887862478954208,
+      "device": 1811,
+      "gid": 50063,
+      "inode": 789289,
+      "mode": 33188,
+      "mtime_ns": 1793887862470731814,
+      "nlink": 1,
+      "sha256": "f9bd1ff8feda33004e2052369f64fac534efb461b389831b68ced3b5e262fea6",
+      "uid": 1000
+    },
+    "present": true
+  },
+  "finished_utc": "2026-11-05T20:02:34.026664+00:00",
+  "flatten_observation": {
+    "path": "/apex/com.android.art/bin/dexoptanalyzer64",
+    "present": false,
+    "verified": false
+  },
+  "guard_after": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "guard_before": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "installed": false,
+  "library_config_before": {
+    "declarations": {
+      "androidx.window.extensions": {
+        "file": "/system_ext/framework/androidx.window.extensions.jar",
+        "name": "androidx.window.extensions"
+      },
+      "androidx.window.sidecar": {
+        "file": "/system_ext/framework/androidx.window.sidecar.jar",
+        "name": "androidx.window.sidecar"
+      }
+    },
+    "directory": "/system_ext/etc/permissions",
+    "files": {
+      "/system_ext/etc/permissions/androidx.window.extensions.xml": {
+        "library_declarations": [
+          {
+            "file": "/system_ext/framework/androidx.window.extensions.jar",
+            "name": "androidx.window.extensions"
+          }
+        ],
+        "pin": {
+          "bytes": 830,
+          "ctime_ns": 1230768000000000000,
+          "device": 1808,
+          "gid": 0,
+          "inode": 276304,
+          "mode": 33188,
+          "mtime_ns": 1230768000000000000,
+          "nlink": 1,
+          "sha256": "e649efa502e3b67e894c5aded59b1b2de4dad4e1303f0d3e7fae29fe4a43b9ac",
+          "uid": 0
+        },
+        "xml_utf8": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!--\n  ~ Copyright (C) 2021 The Android Open Source Project\n  ~\n  ~ Licensed under the Apache License, Version 2.0 (the \"License\");\n  ~ you may not use this file except in compliance with the License.\n  ~ You may obtain a copy of the License at\n  ~\n  ~      http://www.apache.org/licenses/LICENSE-2.0\n  ~\n  ~ Unless required by applicable law or agreed to in writing, software\n  ~ distributed under the License is distributed on an \"AS IS\" BASIS,\n  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n  ~ See the License for the specific language governing permissions and\n  ~ limitations under the License.\n  -->\n<permissions>\n    <library\n        name=\"androidx.window.extensions\"\n        file=\"/system_ext/framework/androidx.window.extensions.jar\"/>\n</permissions>\n"
+      },
+      "/system_ext/etc/permissions/androidx.window.sidecar.xml": {
+        "library_declarations": [
+          {
+            "file": "/system_ext/framework/androidx.window.sidecar.jar",
+            "name": "androidx.window.sidecar"
+          }
+        ],
+        "pin": {
+          "bytes": 824,
+          "ctime_ns": 1230768000000000000,
+          "device": 1808,
+          "gid": 0,
+          "inode": 276659,
+          "mode": 33188,
+          "mtime_ns": 1230768000000000000,
+          "nlink": 1,
+          "sha256": "2ff1b4ad3a4f54659bc6a30a7026fe8b6a90b09e6723988ca0aff261944a8e89",
+          "uid": 0
+        },
+        "xml_utf8": "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<!--\n  ~ Copyright (C) 2020 The Android Open Source Project\n  ~\n  ~ Licensed under the Apache License, Version 2.0 (the \"License\");\n  ~ you may not use this file except in compliance with the License.\n  ~ You may obtain a copy of the License at\n  ~\n  ~      http://www.apache.org/licenses/LICENSE-2.0\n  ~\n  ~ Unless required by applicable law or agreed to in writing, software\n  ~ distributed under the License is distributed on an \"AS IS\" BASIS,\n  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n  ~ See the License for the specific language governing permissions and\n  ~ limitations under the License.\n  -->\n<permissions>\n    <library\n        name=\"androidx.window.sidecar\"\n        file=\"/system_ext/framework/androidx.window.sidecar.jar\"/>\n</permissions>\n"
+      }
+    },
+    "selected_files": [
+      "androidx.window.extensions.xml",
+      "androidx.window.sidecar.xml"
+    ]
+  },
+  "library_files_before": {
+    "/system_ext/framework/androidx.window.extensions.jar": {
+      "bytes": 307266,
+      "ctime_ns": 1230768000000000000,
+      "device": 1808,
+      "gid": 0,
+      "inode": 278867,
+      "mode": 33188,
+      "mtime_ns": 1230768000000000000,
+      "nlink": 1,
+      "sha256": "a53622be04acd34bc0f6c60cc83606156dfaeec48555645e68cd7074aad9563e",
+      "uid": 0
+    },
+    "/system_ext/framework/androidx.window.sidecar.jar": {
+      "bytes": 319583,
+      "ctime_ns": 1230768000000000000,
+      "device": 1808,
+      "gid": 0,
+      "inode": 278879,
+      "mode": 33188,
+      "mtime_ns": 1230768000000000000,
+      "nlink": 1,
+      "sha256": "3d4a0125878aad38729d3ad14d2df74ad026e62fef4d18aa08f2a72907d9cc08",
+      "uid": 0
+    }
+  },
+  "manifest_sha256": "3fb40dbed7f0e41c0d0cabcdc5e39a0c10f841701ba59a19156e5a72323ec9f5",
+  "package_after": {
+    "apk_path": "/data/app/~~IbaHjOhSap41lASiYb4RDQ==/com.android.deskclock-WSxg1z5KSAFk5lJv8t51zw==/base.apk",
+    "uid": 10063,
+    "usesLibraries": [],
+    "usesLibraryFiles": [
+      "/system_ext/framework/androidx.window.extensions.jar",
+      "/system_ext/framework/androidx.window.sidecar.jar"
+    ],
+    "usesOptionalLibraries": [
+      "androidx.window.extensions",
+      "androidx.window.sidecar"
+    ],
+    "usesStaticLibraries": [],
+    "version_code": 37
+  },
+  "package_before": {
+    "apk_path": "/data/app/~~IbaHjOhSap41lASiYb4RDQ==/com.android.deskclock-WSxg1z5KSAFk5lJv8t51zw==/base.apk",
+    "uid": 10063,
+    "usesLibraries": [],
+    "usesLibraryFiles": [
+      "/system_ext/framework/androidx.window.extensions.jar",
+      "/system_ext/framework/androidx.window.sidecar.jar"
+    ],
+    "usesOptionalLibraries": [
+      "androidx.window.extensions",
+      "androidx.window.sidecar"
+    ],
+    "usesStaticLibraries": [],
+    "version_code": 37
+  },
+  "planned_read_only_PM_queries": 4,
+  "read_only": true,
+  "reader_sha256": "e802c3feba90d09318a5bc9c9d21b66084edc95b84cb7c0b729a9b2831570fca",
+  "resource_after": {
+    "limits": {
+      "cpu.max": "100000 100000",
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "pids.max": "48"
+    },
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 50536448
+  },
+  "resource_before": {
+    "limits": {
+      "cpu.max": "100000 100000",
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "pids.max": "48"
+    },
+    "memory_events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 14741504
+  },
+  "schema": "clock-art-declared-context04-v1",
+  "started_utc": "2026-11-05T20:02:33.605493+00:00",
+  "state": "DECLARED_CONTEXT_METADATA_COLLECTED_NOT_ART_VERIFIED",
+  "tools_before": {
+    "/apex/com.android.art/bin/dex2oat64": {
+      "bytes": 1385312,
+      "ctime_ns": 0,
+      "device": 1824,
+      "gid": 2000,
+      "inode": 19,
+      "mode": 33261,
+      "mtime_ns": 0,
+      "nlink": 1,
+      "sha256": "8e9e861e0cf4e1f74020172e7791c52c6f97939e72b99be6f4f8862049fc3b8e",
+      "uid": 0
+    },
+    "/apex/com.android.art/bin/oatdump": {
+      "bytes": 367352,
+      "ctime_ns": 0,
+      "device": 1824,
+      "gid": 2000,
+      "inode": 24,
+      "mode": 33261,
+      "mtime_ns": 0,
+      "nlink": 1,
+      "sha256": "4b95cedd2d66250d220a0d650de0a619fa7256099830e0e3fb273e4e99db0a3b",
+      "uid": 0
+    }
+  },
+  "transport_sha256": "b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470"
+}

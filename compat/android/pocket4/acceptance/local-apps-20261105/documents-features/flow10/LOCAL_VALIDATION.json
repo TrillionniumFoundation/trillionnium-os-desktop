@@ -1,0 +1,23 @@
+{
+  "schema": "docs10-actual-saved-delete-confirmation-boundary-v1",
+  "command": "python -m unittest -v test_delete_confirmation.py",
+  "exit_code": 0,
+  "tests_run": 10,
+  "passed": 10,
+  "duration_seconds": 0.112,
+  "test_source_sha256": "cb0a842ddebb7700cbfcc59a137af3c99abb36619dc3dec24d2bc4c40796eb67",
+  "actual_saved_dialog_export_sha256": "cfeb5e0a153cba63a8822382db4e2b7a5f383f02f84af4c6191d24e478ed3f03",
+  "negative_control": "actual old delete_entries with actual OK dialog sends toolbar only, no final confirmation, then layout mismatch",
+  "important_boundaries": [
+    "wrong count/title/package",
+    "duplicate positive",
+    "cross-window/bounds/unsupported click",
+    "changed owned file",
+    "unknown confirmation kept without replay",
+    "pointer/cleanup/runtime/install/dependency logic unchanged"
+  ],
+  "four_item_message_case": "explicit synthetic same-plural-contract boundary; actual four-item UI remains to be observed",
+  "prior_test_shim_error_corrected": "test fixture initially omitted Flow.runtime; set None to represent no sampler at the isolated boundary. No production source change was required.",
+  "Android_UI_actions": 0,
+  "production_mutations": 0
+}

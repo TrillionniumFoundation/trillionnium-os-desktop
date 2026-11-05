@@ -1,0 +1,54 @@
+{
+  "actual_uid_changed": false,
+  "business_or_runtime_gate_credit": false,
+  "cause": "PackageManager substring matching returned both contactspicker UID10019 and contacts UID10055; the original exact-one-line assumption rejected the actual output.",
+  "original_capture_state": "FAILED",
+  "original_error_label": "CONTACTS_UID_CHANGED",
+  "original_failure_preserved": true,
+  "records": [
+    {
+      "command_guard_after": true,
+      "intent_sha256": "3ca7025e8e4cff05ac7238daf33c8c4f5f266cbec14eb0584c8166025dec6491",
+      "joined": true,
+      "pm_argv": [
+        "/system/bin/pm",
+        "path",
+        "--user",
+        "0",
+        "com.android.contacts"
+      ],
+      "rc": 0,
+      "result_sha256": "06bd31414ac7177c20700049971e83ffafcbac322f8c679f8dd314feba7e9837",
+      "stderr": "",
+      "stdout": "package:/product/priv-app/Contacts/Contacts.apk\n",
+      "stdout_sha256": "29917a562ffce2937ce04b6ffd926b428c04c27f269c36f2518707b81f4618ff",
+      "stem": "002-android"
+    },
+    {
+      "command_guard_after": true,
+      "intent_sha256": "9fa1ae963de69c8c33f460abde52814a521eb7279f66147d1b40f8933d1683ac",
+      "joined": true,
+      "pm_argv": [
+        "/system/bin/pm",
+        "list",
+        "packages",
+        "-U",
+        "--user",
+        "0",
+        "com.android.contacts"
+      ],
+      "rc": 0,
+      "result_sha256": "37b1b2cd087fed31b7665ba20073dc86a56ec36a38e91ab3a827ccc7eebc5770",
+      "stderr": "",
+      "stdout": "package:com.android.contactspicker uid:10019\npackage:com.android.contacts uid:10055\n",
+      "stdout_sha256": "eb3d60f82c7cc45fa21eed959f9ef7726669c700ce29e0783845174d4f49ccac",
+      "stem": "003-android"
+    }
+  ],
+  "saved_journal_source": {
+    "bytes": 2514,
+    "sha256": "7ce03113b4fad6e2acec56993dc89365356ce7c3a9869bb8eb57c39eea340a3c"
+  },
+  "schema": "contacts-first-capture-precondition-reconciliation/v1",
+  "source02_change": "Accept exactly these two distinct verified rows, preserving full APK/UID validation and rejecting extras, duplicates or omissions."
+}
