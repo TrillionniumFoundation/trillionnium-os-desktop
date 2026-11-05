@@ -1,0 +1,42 @@
+{
+  "schema": "calendar-semantic-button13-independent-source-peer-v1",
+  "result": "NO_DETERMINATE_BLOCKER_IN_NARROW_MODULE",
+  "review_scope": "actual semantic module plus installed-v2 smali and frozen python helper; final Core13 integration not included",
+  "files": {
+    "calendar-repair08/execution13/semantic_button13.py": {
+      "bytes": 5219,
+      "sha256": "a4b25c9d9c1164e0fa3c422bba2acb53be230ed1cb64468899076765f540ccca"
+    },
+    "native-action-source08/actual01/smali/local/pocket4/actions/v2/ActionRunner.smali": {
+      "bytes": 132822,
+      "sha256": "548dc51db06a267849eedf250847676f1f97641d58f73a3de0b940e9c22e0d42"
+    },
+    "camera-accept08/reference/android-app.py": {
+      "bytes": 37574,
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+    }
+  },
+  "checks": [
+    "only explicitly observed named Calendar android.widget.Button targets with clickable/enabled/visible/noneditable/nonpassword true",
+    "two captured scope/context/geometry checks and fresh complete unique node before final owned task/focus check",
+    "native selector includes package/class/id/text/desc/enabled/clickable; fresh non-connection node fields must be unchanged",
+    "actual native execute resolves selector uniquely twice, compares identity, refreshes and checks visibility/enabled",
+    "clickable=true target bypasses ancestor climb; ACTION_CLICK has before-action target and actual_target describe records",
+    "native dump and click receipts use identical describe schema; no dump-only index field is compared",
+    "ack requires exact original node except connection window_id and target==actual_target; mismatches retain pending",
+    "unknown input never replayed; nonmatching nodes/non-tap invoke unchanged superclass pointer/input path"
+  ],
+  "remaining_integration": [
+    "pin this module in final Core13 source",
+    "assign base.Adapter=extend(base) before Flow construction",
+    "actual native APK identity before/after plus business Provider readback remain separate gates"
+  ],
+  "not_claimed": [
+    "Main execution",
+    "actual Calendar Button business success",
+    "complete Core13 source frozen"
+  ],
+  "remote_calls": 0,
+  "UI_inputs": 0,
+  "files_other_than_this_review_modified": false
+}

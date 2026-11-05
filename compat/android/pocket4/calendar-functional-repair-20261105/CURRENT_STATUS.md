@@ -1,9 +1,10 @@
-# Calendar status at checkpoint10 — installed candidate11
+# Calendar status at checkpoint11 — installed candidate11
 
-Device-observation cutoff: **2026-11-05 20:14:45 UTC**. Later continuation runs
+Device-observation cutoff: **2026-11-05 21:54:28 UTC**. Later continuation runs
 are outside this frozen checkpoint.
 
-**Candidate11 is installed; business requalification remains open.** The one
+**Candidate11 is installed; exact event persistence, UI observation and normal
+close/reopen are independently accepted. Complete business qualification remains open.** The one
 preserving update completed at 2026-11-05 19:09:22.490884 UTC. The installed APK is
 2,635,213 bytes with SHA256
 `00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f`.
@@ -51,7 +52,7 @@ and Main guards. This is an artifact verification result, not a running App
 business or process-identity qualification. The full scope and original receipts
 are in [extension11](extension11/README.md).
 
-## Remaining acceptance
+## Retained Core12 failure and cleanup
 
 The extension11 bundle froze before Core12 execution. The separate
 [Core12 acceptance bundle](core12-acceptance/README.md) retains its actual
@@ -66,11 +67,31 @@ event delete and one empty-calendar delete, eight empty physical tables, task851
 no pending effect and unchanged Main/package/permission identities. That cleanup
 does not pass UI deletion or change the original failed result.
 
-The next actual run still needs the full create/edit/persist/reopen/UI-delete
-sequence. Repeated-event instances, reminder delivery, notification interaction,
-Snooze/recovery, runtime identity and stability remain separate gates. No older
-binary's business review is inherited by this installation, and the whole App
-has not been declared production ready.
+## Actual Core13 and its precise qualification
+
+The [Core13 evidence](core13-acceptance/README.md) covers the actual20:18:00–20:20:31
+UTC session on this same installed APK. It observed explicit LOCAL calendar
+creation, cancellation without an event write, creation of event2, title editing
+of that same event, normal close and separate reopen with its exact edited data,
+and deletion through the real App UI. Twenty inputs were used. Tasks987/988 were
+normally closed; the exact empty calendar was then removed, all eight tables
+returned to zero and no UI, Provider or close effect remained pending.
+
+The original overall result is still **FAILED** with
+`CRASH_OBSERVATION_WINDOW_TRUNCATED`. Independent inspection of the saved
+diagnostics found that the bounded global log omitted the first7.634 seconds of
+the run. The retained suffix contains no new selected Calendar crash, but cannot
+prove the missing interval. The final eight commands each have their original
+successful guarded receipts; that does not manufacture a missing top-level
+final guard or a whole-session stability pass.
+
+Root independently accepted only `calendar.persist`, `ui_observation` and
+`lifecycle`. The frozen `calendar.edit` requirement includes dates, timezone and
+recurrence: Core13 edited the title and retained a null recurrence rule, so that
+composite gate remains pending. Repeated-event instances, reminder delivery,
+notification interaction, Snooze/recovery, sync, runtime identity, stability and
+the complete release scope remain open. No older binary's business review is
+inherited, and the whole App has not been declared production ready.
 
 Earlier actual results remain in [extension10](extension10/README.md),
 [extension09](extension09/README.md), and their original installation and

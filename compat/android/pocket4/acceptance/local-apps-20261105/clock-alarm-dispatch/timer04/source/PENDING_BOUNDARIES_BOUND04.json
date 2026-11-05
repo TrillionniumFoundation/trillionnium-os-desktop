@@ -1,0 +1,52 @@
+{
+  "UI_actions": 0,
+  "candidate_identity_bound": true,
+  "cases": [
+    {
+      "case": "old_close_negative_control_dispatches_with_native_unknown",
+      "passed": true
+    },
+    {
+      "case": "new_native_pending_blocks_actual_close",
+      "passed": true
+    },
+    {
+      "case": "new_effect_pending_blocks_actual_close",
+      "passed": true
+    },
+    {
+      "case": "new_close_pending_blocks_actual_close",
+      "passed": true
+    },
+    {
+      "case": "actual_unknown_remove_keeps_fence_after_Trial_loses_owned_field",
+      "passed": true
+    },
+    {
+      "case": "ack_without_prefs_readback_effect_precedes_dispatch_and_no_implicit_cleanup",
+      "passed": true
+    },
+    {
+      "case": "unknown_native_effect_precedes_dispatch_and_no_implicit_cleanup",
+      "passed": true
+    },
+    {
+      "case": "preinput_rejected_effect_precedes_dispatch_and_no_implicit_cleanup",
+      "passed": true
+    },
+    {
+      "case": "delete_retains_owned_ID_until_exact_empty_readback",
+      "passed": true
+    },
+    {
+      "case": "unbound_candidate_execute_is_inert",
+      "passed": true
+    }
+  ],
+  "device_commands": 0,
+  "failed": 0,
+  "passed": 10,
+  "schema": "timer04-pending-boundary-review-v1",
+  "scope": "Actual old/new close, act, cleanup and delete control methods with explicit Trial/native/prefs reader boundary doubles. No native input, timer creation or device business proof.",
+  "source_sha256": "59598a298f768bd63f535efb5216233f916383bc4411e7d98531e3d078a6b69b"
+}

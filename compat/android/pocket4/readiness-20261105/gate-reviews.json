@@ -751,6 +751,215 @@
         "Raw maps and full proc stat are absent from the public selected export; exact original sample hashes and the pinned selection source bind the preserved fields."
       ],
       "version_code": 10734
+    },
+    {
+      "android_user": 0,
+      "apk_sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f",
+      "checks": {
+        "calendar.persist": "passed",
+        "lifecycle": "passed",
+        "ui_observation": "passed"
+      },
+      "evidence": [
+        {
+          "bytes": 19261,
+          "path": "inputs/calendar-core13/core13-result-original.json",
+          "sha256": "fb7f0382a2ae437cb7e74886eb76dce3fc08027a8d47a93b394b7bfdf5025f4c"
+        },
+        {
+          "bytes": 733,
+          "path": "inputs/calendar-core13/core13-terminal-tool-value.json",
+          "sha256": "a120201f84ade8fb12c6e38c32b88e7fa0615f310690087e8fedef7342e203ee"
+        },
+        {
+          "bytes": 5180,
+          "path": "inputs/calendar-core13/saved-diagnostics-selected.json",
+          "sha256": "0ce6f5948d9aa3e7d3b2c162a1c4582096dbb2369e1921292fd14571e81f146a"
+        },
+        {
+          "bytes": 1802,
+          "path": "inputs/calendar-core13/core13-scoped-review.json",
+          "sha256": "2ddb8c77f914b4158f2688010656107c51db9c9ae2b4e54b851baa6b73e34a5a"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "root_calendar_core13_persistence_and_owned_ui",
+      "observed_at_utc": "2026-11-05T20:20:31.459813+00:00",
+      "package": "com.android.calendar",
+      "qualification_scope": "Only exact edited event persistence and the observed owned UI/lifecycle; original diagnostic failure retained.",
+      "reviewed_at_utc": "2026-11-05T21:05:47.256077+00:00",
+      "reviewer": "root_independent_completed_result_and_saved_command_review",
+      "scope": "scoped",
+      "uid": 10061,
+      "unresolved_findings": [
+        "Original overall run remains FAILED/1. Final post-command guards do not recreate its missing top-level guard_after.",
+        "The events tail begins 7.634 seconds after diagnostic start; no full-window crash/ANR or stability pass.",
+        "Only title was edited. Dates, timezone and positive recurrence acceptance remain pending under calendar.edit.",
+        "Reminder delivery, snooze/dismiss, account/sync and denied-permission paths remain unqualified.",
+        "No runtime engine identity, common data_permissions or complete release acceptance is granted."
+      ],
+      "version_code": 37
+    },
+    {
+      "android_user": 0,
+      "apk_sha256": "11f8be5fd46dd79ee4f7524d5d1334e21ce0f9e23892b2940a5b6091e2f349d0",
+      "checks": {
+        "contacts.persist": "passed"
+      },
+      "evidence": [
+        {
+          "bytes": 17927,
+          "path": "inputs/contacts-search03/actual03-result-selected.json",
+          "sha256": "33ea076b24e2f32f04c56d3c893fc5923c849974c3ab9e4d32450b0a8f62e056"
+        },
+        {
+          "bytes": 1054,
+          "path": "inputs/contacts-search03/actual03-status-selected.json",
+          "sha256": "e74deb482beae4546af0c55e55586b1e0edb591f078660aa17441a902c3cb6ab"
+        },
+        {
+          "bytes": 2943,
+          "path": "inputs/contacts-search03/ACTUAL_REVIEW.json",
+          "sha256": "870e1c4bf90255935c1a5b95697f6cd5576c02d2a8c3ca293b41b0a12868d69d"
+        },
+        {
+          "bytes": 7335,
+          "path": "inputs/contacts-search03/EXECUTED_SOURCE_PROVENANCE.json",
+          "sha256": "6ad5961d3de491a5c52f7386893d204bf810fc76bccde54fe03d29ad979a1a51"
+        },
+        {
+          "bytes": 2158,
+          "path": "inputs/contacts-search03/flow03-scoped-review.json",
+          "sha256": "8e5445727acc3095dd2ad289facde644b34aa89f0d401a6f9412529b41a5e9e2"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "root_contacts_search03_edited_record_persistence",
+      "observed_at_utc": "2026-11-05T20:58:07.033261+00:00",
+      "package": "com.android.contacts",
+      "qualification_scope": "Same edited local contact persisted through normal close and separate reopen, then actual search query opened the exact matching record.",
+      "reviewed_at_utc": "2026-11-05T21:37:31.307165+00:00",
+      "reviewer": "root_independent_original_result_and_terminal_review",
+      "scope": "scoped",
+      "uid": 10055,
+      "unresolved_findings": [
+        "This grants only the composite contacts.persist scope. Earlier current-APK edit/cleanup/UI/lifecycle/identity reviews retain their own evidence.",
+        "Existing account topology and raw UI metadata remain private; this run performed no account or synchronization action.",
+        "Complete data/permissions, account synchronization, independent full-window crash/ANR diagnostics, repeat/stress stability and whole release acceptance remain unqualified."
+      ],
+      "version_code": 10734
+    },
+    {
+      "android_user": 0,
+      "apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+      "checks": {
+        "identity": "passed"
+      },
+      "evidence": [
+        {
+          "bytes": 94159,
+          "path": "inputs/clock-runtime04/ELF_INVENTORY.json",
+          "sha256": "c4f526bc60d577a0f047008654e810be7d7a994d5bc63008533f983e815d3f1e"
+        },
+        {
+          "bytes": 87264,
+          "path": "inputs/clock-runtime04/SELECTED_CODE_OBSERVATIONS.json",
+          "sha256": "99e383bc64ce736255aba526474f7b01e67522c7f19e28d49cc1ccf2aa68afd4"
+        },
+        {
+          "bytes": 5295,
+          "path": "inputs/clock-runtime04/INDEPENDENT_REVIEW_SELECTED.json",
+          "sha256": "ebb05ec8b26154cd7ad2637277ecc9a4628b12d186de817ee908f86392ba5169"
+        },
+        {
+          "bytes": 1704,
+          "path": "inputs/clock-runtime04/SIGNATURE_BINDING.json",
+          "sha256": "67b7418d9d4f7137ea4484e1998d126d403e2ac0731af30f35f5c286b44a5524"
+        },
+        {
+          "bytes": 1239,
+          "path": "inputs/clock-runtime04/RUNTIME_TERMINAL_SELECTED.json",
+          "sha256": "7da291301a03acc14712f8d61e06cc688b61b870d68a77dfb82101f416bcef3b"
+        },
+        {
+          "bytes": 1938,
+          "path": "inputs/clock-runtime04/ALARM04_TERMINAL_SELECTED.json",
+          "sha256": "349786bce0f71decee863bf0c8ac22cc197c393a43b61ef4e889d271f7acb1bc"
+        },
+        {
+          "bytes": 2329,
+          "path": "inputs/clock-runtime04/ROOT_QUALIFICATION.json",
+          "sha256": "fc2d996ea3e4716ebc03510662926ec640e0b83820b3727feb01a13d30fde2b3"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "root_clock_runtime04_current433ff_observed_identity",
+      "observed_at_utc": "2026-11-05T21:07:25.654128+00:00",
+      "package": "com.android.deskclock",
+      "qualification_scope": "Only the exact installed 433ff APK/signing identity, UID/user/version/epoch and four actual stable process/code snapshots from two generations.",
+      "reviewed_at_utc": "2026-11-05T21:49:03.529000+00:00",
+      "reviewer": "root_independent_rederivation_with_Clock_saved_inventory_peer",
+      "scope": "scoped",
+      "uid": 10063,
+      "unresolved_findings": [
+        "Only first and last selected stable full snapshots of each of two actual process generations were independently inventoried.",
+        "The original complete-mapping counter and automatic engine qualification remain unchanged.",
+        "One overlay APK was identified from its first 64 bytes only; its whole bytes are not qualified by this collector.",
+        "The two unresolved labels correspond to read-only, non-executable property/idmap mappings in the captured engine-name candidate rows. Their contents were not read.",
+        "Both Dalvik JIT mappings and the kernel vdso/vsyscall mappings have names and boundaries only; no process-memory contents were read.",
+        "Library names containing engine or nativebridge are heuristic candidates, not independent proof of an emulator or of its absence.",
+        "These bounded process observations do not prove long-duration memory stability, UI delivery, Dismiss, audio output, or an entire App production-ready.",
+        "Alarm04 remains FAILED. Firing and notification are partial observations, not a complete alarm gate.",
+        "No prior APK timer, alarm, lifecycle, stability, audio or release-scope qualification is inherited."
+      ],
+      "version_code": 37
+    },
+    {
+      "android_user": 0,
+      "apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+      "checks": {
+        "lifecycle": "passed",
+        "ui_observation": "passed"
+      },
+      "evidence": [
+        {
+          "bytes": 6241,
+          "path": "inputs/clock-timer04/TIMER04_TERMINAL_SELECTED.json",
+          "sha256": "dbbdeffb3382f24355ee667d65f69b905ed8513accfbbf3607418e66ebe6205d"
+        },
+        {
+          "bytes": 4322,
+          "path": "inputs/clock-timer04/SCHEDULER_INDEPENDENT_REVIEW04.json",
+          "sha256": "1215cc30cb7d21b29b42f06ef3a5525d7fd93412641e07b342de5beb4c95cb52"
+        },
+        {
+          "bytes": 326,
+          "path": "inputs/clock-timer04/TERMINAL_JOB_SELECTED.json",
+          "sha256": "46579fb8dea41fadd81bfa84c01059c53aa49b6362d0e03d46fd9bef2f6ca943"
+        },
+        {
+          "bytes": 1627,
+          "path": "inputs/clock-timer04/ROOT_QUALIFICATION.json",
+          "sha256": "50d96640bf0b9607df0183b26172f9036374a3e7a4d0da114b1bf968dacf0f19"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "root_clock_timer04_current433ff_ui_and_lifecycle",
+      "observed_at_utc": "2026-11-05T21:50:38.976796+00:00",
+      "package": "com.android.deskclock",
+      "qualification_scope": "This exact current APK: real owned timer controls, exact readback, two owned normal task closes and paused-state reopen.",
+      "reviewed_at_utc": "2026-11-05T22:06:18.410054+00:00",
+      "reviewer": "root_independent_saved_result_and_scheduler_review",
+      "scope": "scoped",
+      "uid": 10063,
+      "unresolved_findings": [
+        "clock.timer explicitly includes completion; this core trial deliberately did not expire.",
+        "clock.persist explicitly includes alarm/timezone behavior; timer persistence does not satisfy it.",
+        "The original scheduler_cancellation_verified=false is preserved; the separate saved review verifies the current cancellation records.",
+        "No stress, audio output, real desktop notification interaction or complete release-scope qualification is granted.",
+        "No business qualification from a prior APK is inherited."
+      ],
+      "version_code": 37
     }
   ],
   "schema": "pocket4-reviewed-app-gates-v1"

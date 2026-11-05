@@ -1,0 +1,78 @@
+--- Core12 frozen
++++ Core13 same-budget local driver and semantic Buttons
+@@ -8,19 +8,23 @@
+ PROFILE_ACTIVATION_SHA='7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-calendar-accept-core-20261105-r12-12')
++ROOT=Path('/home/alex/work/pocket4-calendar-accept-core-20261105-r12-13')
+ ORIGINAL=Path('/home/alex/work/pocket4-calendar-flow-tools-20261105-r12-01/run_calendar01.py')
+ ORIGINAL_SHA='d307f4ceda9fc80e216f280cb1a9558fbe4e27b43cd659ecc83a1c6edab9c8fa'
+ INSTALL=Path('/home/alex/work/pocket4-calendar-repair-install-20261105-r12-11/result.json')
+ NEW_SHA='00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f'
+ PROVIDER_SHA='eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff'
+-READER_SHA='5cae87cf11dab38ad838ee97b43d652fd9f772348030e3cacec138f3fe5fef4e'
++READER_SHA='3dedcccec129a0a238cf4d6e64f02fa41863af7ff7f5b42d15f6a640f794d1ce'
+ ADAPTER_SHA='e983973141e4cb77cf5c26f9e9526fdec25fa3331cd3f24a313bef7704878aa9'
+ PROBE=Path('/home/alex/work/pocket4-calendar-shell-query-tools-20261105-r12-02/probe_shell_cleanup02.py')
+ PROBE_SHA='3696994fe45fba3152418e32667ac3ac6ed437cf5191189bfe65a27f21bccb88'
+ ATOMIC_SHA='1d66de839c05c11983196764d44c518175bc10481cff754b850d6034c8533796'
+ LEASE_SECONDS=720
+ CLEANUP_SECONDS=90
++DRIVER_SHA='ca376c37e91457a829f7f6e322fdb6105258dd378c7c8921131972303d86115b'
++SEMANTIC_BUTTON_SHA='a4b25c9d9c1164e0fa3c422bba2acb53be230ed1cb64468899076765f540ccca'
++NATIVE_PACKAGE='local.pocket4.actions.v2'
++NATIVE_APK_SHA='a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058'
+ REQUIRED={'explicit_first_use_local_calendar','cancel_unsaved_without_event_write',
+           'created_in_calendar_ui','edited_same_event','normal_close_reopen_detail','deleted_in_calendar_ui'}
+ 
+@@ -302,9 +306,12 @@
+     m.PINS={str(PROFILE_TX) if path==previous_tx else path: PROFILE_TX_SHA if path==previous_tx else pin
+             for path,pin in m.PINS.items()}
+     m.TX=PROFILE_TX
+-    model=load(HERE/'read_owned_calendar12.py',READER_SHA,'calendar_core_owned_reader')
++    model=load(HERE/'read_owned_calendar13.py',READER_SHA,'calendar_core_owned_reader')
++    driver=load(HERE/'local_driver13.py',DRIVER_SHA,'calendar_core_local_driver')
+     tx,oldbase,doc,diag=[m.load(Path(p),pin,'calendar_core_dependency_'+str(i)) for i,(p,pin) in enumerate(m.PINS.items())]
+-    base=load(HERE/'calendar_ui12.py',ADAPTER_SHA,'calendar_private_ui')
++    base=load(HERE/'calendar_ui13.py',ADAPTER_SHA,'calendar_private_ui')
++    semantic=load(HERE/'semantic_button13.py',SEMANTIC_BUTTON_SHA,'calendar_semantic_button')
++    base.Adapter=semantic.extend(base)
+     probe=load(PROBE,PROBE_SHA,'calendar_existing_shell_grants')
+     proof_raw=(HERE/'atomic-delete-review.json').read_bytes()
+     need(hashlib.sha256(proof_raw).hexdigest()==ATOMIC_SHA and
+@@ -326,21 +333,12 @@
+             signal.setitimer(signal.ITIMER_REAL,LEASE_SECONDS)
+             with tx.CameraSession(ROOT/'commands') as s:
+                 flow=cls(s,tx,base,doc,diag);result=flow.result
++                result['native_actions_before']=doc.identity(s,NATIVE_PACKAGE,NATIVE_APK_SHA,10125,2)
++                result['semantic_button_source_sha256']=SEMANTIC_BUTTON_SHA
++                result['local_driver_source_sha256']=DRIVER_SHA
+                 try:
+                     flow.setup()
+-                    for _ in range(48):
+-                        raw=sys.stdin.buffer.readline(16385)
+-                        need(raw and len(raw)<=16384 and raw.endswith(b'\n'),'EOF_OR_COMMAND_BOUND')
+-                        c=json.loads(raw)
+-                        try:
+-                            if not flow.step(c):break
+-                        except Exception as exc:
+-                            flow.record('command-error',{'request':c,'error':type(exc).__name__+':'+str(exc),
+-                                'ui_pending':flow.ui.pending,'business_pending':flow.business_pending,'action_replayed':False})
+-                            emit({'type':'command-failed','request_id':c.get('id'),'error':str(exc),'phase':flow.phase,
+-                                'ui_pending':flow.ui.pending,'business_pending':flow.business_pending,'session_still_held':True})
+-                        else:emit({'type':'command-complete','request_id':c.get('id'),'phase':flow.phase})
+-                    else:raise RuntimeError('COMMAND_LIMIT_REACHED')
++                    driver.run(flow,model)
+                 except BaseException as exc:result['error']=type(exc).__name__+':'+str(exc)
+                 finally:
+                     signal.setitimer(signal.ITIMER_REAL,CLEANUP_SECONDS);result['cleanup']=flow.cleanup()
+@@ -349,6 +347,8 @@
+                         need(result['calendar_after']==result['calendar_before'],'CALENDAR_IDENTITY_CHANGED')
+                         result['provider_after']=doc.identity(s,'com.android.providers.calendar',PROVIDER_SHA,10017,37)
+                         need(result['provider_after']==result['provider_before'],'PROVIDER_IDENTITY_CHANGED')
++                        result['native_actions_after']=doc.identity(s,NATIVE_PACKAGE,NATIVE_APK_SHA,10125,2)
++                        need(result['native_actions_after']==result['native_actions_before'],'NATIVE_ACTIONS_IDENTITY_CHANGED')
+                         result['final_counts']=flow.counts('final');need(not any(result['final_counts'].values()),'BASELINE_NOT_RESTORED')
+                         _,tasks=flow.ui.check_tasks('final');result['task_set_restored']=not flow.ui.owned and tasks==flow.ui.baseline
+                         need(result['task_set_restored'],'TASK_SET_NOT_RESTORED')

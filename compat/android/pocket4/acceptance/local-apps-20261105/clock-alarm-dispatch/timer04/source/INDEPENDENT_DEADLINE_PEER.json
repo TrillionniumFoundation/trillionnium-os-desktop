@@ -1,0 +1,49 @@
+{
+  "UI_actions": 0,
+  "actual_changed_functions": [
+    "cleanup",
+    "execute"
+  ],
+  "findings": [],
+  "limits": [
+    "This is a local source review, not actual timer business validation.",
+    "Actual expiry, scheduler cancellation, reminders and audio remain outside this core controller review."
+  ],
+  "narrow_diff": {
+    "byte_exact_reconstruction": true,
+    "bytes": 3158,
+    "path": "clock-flow08/timer-regression04/timer04-single-cleanup-deadline.patch",
+    "sha256": "74b9ee11ebcabb694a5c10749ebe874f7ac14e120751735bb22c237cb9052c35"
+  },
+  "preserved_preimage": {
+    "bytes": 26221,
+    "path": "clock-flow08/timer-regression04/timer_core04-reviewed-cd041.py",
+    "sha256": "cd041f5a355e4e9da1a3a7c2a6712ce355c6f6023a9752a650410b31586f7916"
+  },
+  "remote_calls": 0,
+  "reviewed_behavior": [
+    "The first exception cleanup entry creates one absolute cleanup_until. The successful-work final path creates it only if still None. Finally never grants a second 35-second lease.",
+    "Final close is preceded by an explicit remaining-time check and the signal is armed only for the remaining absolute budget. Flow.cleanup uses min(cleanup_until - 5, now + 30), retaining time for close/readback without extending the boundary.",
+    "If the absolute boundary is exhausted, the outer failure path retains FAILED/business_success_verified false and pending/owned state. The added owned_task_remaining is reporting only.",
+    "Only cleanup and execute ASTs changed. Existing native/timer-effect/close pending fences, exact owned ID and acknowledged readback behavior from the earlier review are unchanged."
+  ],
+  "reviewed_sources_modified": false,
+  "schema": "clock-timer04-independent-peer-followup/v1",
+  "source": {
+    "bytes": 26793,
+    "path": "clock-flow08/timer-regression04/timer_core04.py",
+    "sha256": "59598a298f768bd63f535efb5216233f916383bc4411e7d98531e3d078a6b69b"
+  },
+  "state": "NO_NEW_DEFINITE_BLOCKER_AFTER_SINGLE_DEADLINE_FIX",
+  "supersedes_finding_only": {
+    "finding": "declared-bound-mismatch",
+    "review": "clock-flow08/timer-regression04-peer-recover/REVIEW_CD041.json",
+    "sha256": "6c951b0d4588966fce63d9d1916247a57c453d34395186e569957a67149880db"
+  },
+  "validation": {
+    "diff_byte_match": true,
+    "existing_ten_case_results_not_rerun_or_overwritten": true,
+    "old_source_sha_matches": true,
+    "syntax_compiles": true
+  }
+}

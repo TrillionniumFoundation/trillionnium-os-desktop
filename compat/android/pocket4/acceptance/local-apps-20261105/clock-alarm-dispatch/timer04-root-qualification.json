@@ -1,0 +1,52 @@
+{
+  "checks_supported": {
+    "lifecycle": "passed",
+    "ui_observation": "passed"
+  },
+  "independently_rederived": {
+    "all_pending_effects_empty": true,
+    "both_active_foreground_service_deadlines_match_exact_timer": true,
+    "final_timer_and_stopwatch_empty": true,
+    "historical_tags_excluded": true,
+    "native_inputs": 11,
+    "owned_tasks_normally_closed": [
+      996,
+      997
+    ],
+    "owned_timer_id": 0,
+    "paused_remaining_preserved_across_close_and_reopen_ms": 891266,
+    "protected_alarm_sound_permission_identity_and_task_state_preserved": true,
+    "remaining_after_resume_and_pause_ms": 881985,
+    "reset_remaining_ms": 900000,
+    "scheduler_current_pending_sequence": [
+      0,
+      1,
+      0,
+      1,
+      0,
+      0
+    ]
+  },
+  "limits": [
+    "clock.timer still requires actual completion on current 433ff.",
+    "clock.persist still requires alarm/timezone behavior.",
+    "No audio, desktop notification interaction, stability or whole-App qualification."
+  ],
+  "new_device_operations": 0,
+  "original_result": {
+    "bytes": 37124,
+    "sha256": "bc3fd55145039228f27f7ef0a23e48f899cc4b1a64d0f8fb06cdc9e4545feebb"
+  },
+  "original_scheduler_false_preserved": true,
+  "public_manifest": {
+    "bytes": 4320,
+    "sha256": "8281910ffd94acee97292d635bd94f0e76eaea1c959f661ec756a534c0ae58e2"
+  },
+  "reviewed_at_utc": "2026-11-05T22:06:18.410054+00:00",
+  "saved_scheduler_export": {
+    "bytes": 219150,
+    "sha256": "81b12baa291b0d93cf30cb0933949129478fa12448aec6852c7f1b9c5f13af18"
+  },
+  "schema": "clock-timer04-root-scoped-review/v1",
+  "whole_app_production_ready": false
+}

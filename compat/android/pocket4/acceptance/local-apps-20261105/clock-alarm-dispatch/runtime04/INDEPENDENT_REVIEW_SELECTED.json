@@ -1,0 +1,133 @@
+{
+  "ELF_hash_or_size_drift": false,
+  "ELF_inventory_sha256": "c4f526bc60d577a0f047008654e810be7d7a994d5bc63008533f983e815d3f1e",
+  "all_observed_ELF_headers_x86_64": true,
+  "all_scope_checks_passed": true,
+  "business_or_engine_gate_automatically_granted": false,
+  "index_count": 626,
+  "index_error_count": 0,
+  "inputs": {
+    "UI_original": "d67ee63b7762adb2a5f4ee66455d15dbd50ab1c41a46683f9172ec8b513b2cec",
+    "runtime_original": "ef32be14277156c79f653c942c9d55b32addc8b293ad6e886c3b2508173c5143",
+    "saved_export": "d6131a5f9a4c3907717caa3d013cfa42afe26b78d808f5d5f5d0c36a5ec95706"
+  },
+  "later_added_paths": [
+    "/vendor/lib64/dri/radeonsi_dri.so",
+    "/vendor/lib64/hw/mapper.minigbm.so",
+    "/vendor/lib64/libdmabufheap.so",
+    "/vendor/lib64/libgbm_mesa.so",
+    "/vendor/lib64/libminigbm_gralloc.so"
+  ],
+  "limits": [
+    "Only first and last selected stable full snapshots of each of two actual process generations were independently inventoried.",
+    "The original complete-mapping counter and automatic engine qualification remain unchanged.",
+    "One overlay APK was identified from its first 64 bytes only; its whole bytes are not qualified by this collector.",
+    "The two unresolved labels correspond to read-only, non-executable property/idmap mappings in the captured engine-name candidate rows. Their contents were not read.",
+    "Both Dalvik JIT mappings and the kernel vdso/vsyscall mappings have names and boundaries only; no process-memory contents were read.",
+    "Library names containing engine or nativebridge are heuristic candidates, not independent proof of an emulator or of its absence.",
+    "These bounded process observations do not prove long-duration memory stability, UI delivery, Dismiss, audio output, or an entire App production-ready."
+  ],
+  "new_device_or_UI_calls": 0,
+  "original_UI_business_success": false,
+  "original_automatic_runtime_qualification": false,
+  "original_files_modified": false,
+  "original_stable_complete_mapping_samples": 0,
+  "private_original_review": {
+    "bytes": 7097,
+    "sha256": "03758fd88f59ae6cf4252b8517c2337afbd2524e3ab79ef1dee7a70973ba3971"
+  },
+  "sample_rows_by_generation": {
+    "generation-1": 235,
+    "generation-2": 46
+  },
+  "schema": "clock-runtime04-privacy-limited-independent-review/v1",
+  "selected_code_details": "SELECTED_CODE_OBSERVATIONS.json",
+  "selected_snapshots": [
+    {
+      "fd_count": 82,
+      "generation": "generation-1",
+      "header_only_non_ELF_count": 1,
+      "maps_before_after_equal": true,
+      "original_automatic_engine_qualification": false,
+      "phase": "before-ui",
+      "source_name": "sample-000.json",
+      "source_sha256": "b77597340239c54f6d3d8ef54892d7cc3e99113504744a01eb20cd35e978c06d",
+      "stable_process_identity": true,
+      "status": {
+        "Threads": "15",
+        "VmHWM": "81960 kB",
+        "VmRSS": "79724 kB",
+        "VmSize": "16789136 kB"
+      },
+      "utc": "2026-11-05T21:02:01.112845+00:00",
+      "which": "first",
+      "whole_hashed_ELF_count": 376
+    },
+    {
+      "fd_count": 141,
+      "generation": "generation-1",
+      "header_only_non_ELF_count": 1,
+      "maps_before_after_equal": true,
+      "original_automatic_engine_qualification": false,
+      "phase": "interval-06",
+      "source_name": "sample-231.json",
+      "source_sha256": "a096e06cd43e8702195337cf76760928c67e0b884ec6d67a658172f110c2cf6b",
+      "stable_process_identity": true,
+      "status": {
+        "Threads": "38",
+        "VmHWM": "182728 kB",
+        "VmRSS": "182476 kB",
+        "VmSize": "16842260 kB"
+      },
+      "utc": "2026-11-05T21:04:01.554371+00:00",
+      "which": "last",
+      "whole_hashed_ELF_count": 381
+    },
+    {
+      "fd_count": 87,
+      "generation": "generation-2",
+      "header_only_non_ELF_count": 1,
+      "maps_before_after_equal": true,
+      "original_automatic_engine_qualification": false,
+      "phase": "interval-14",
+      "source_name": "sample-577.json",
+      "source_sha256": "1f73ba1bcbc437fe43acdc7706469ff43c251674fdae167fd5753dcc5f35b778",
+      "stable_process_identity": true,
+      "status": {
+        "Threads": "16",
+        "VmHWM": "92628 kB",
+        "VmRSS": "92628 kB",
+        "VmSize": "17059296 kB"
+      },
+      "utc": "2026-11-05T21:07:00.279611+00:00",
+      "which": "first",
+      "whole_hashed_ELF_count": 376
+    },
+    {
+      "fd_count": 144,
+      "generation": "generation-2",
+      "header_only_non_ELF_count": 1,
+      "maps_before_after_equal": true,
+      "original_automatic_engine_qualification": false,
+      "phase": "interval-16",
+      "source_name": "sample-617.json",
+      "source_sha256": "7146ca825001152c3392e34c5f66471a53f74f2784acafa335d1eed4e7829bb0",
+      "stable_process_identity": true,
+      "status": {
+        "Threads": "36",
+        "VmHWM": "175948 kB",
+        "VmRSS": "175948 kB",
+        "VmSize": "17104232 kB"
+      },
+      "utc": "2026-11-05T21:07:21.252222+00:00",
+      "which": "last",
+      "whole_hashed_ELF_count": 381
+    }
+  ],
+  "separate_scoped_identity_recommendation": "Supported for these four actual snapshots of the exact current APK; root review remains separate.",
+  "stable_full_counts_by_generation": {
+    "generation-1": 8,
+    "generation-2": 3
+  },
+  "whole_hashed_ELF_union_count": 381
+}

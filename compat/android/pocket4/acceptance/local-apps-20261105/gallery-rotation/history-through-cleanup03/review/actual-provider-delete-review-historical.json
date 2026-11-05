@@ -1,0 +1,132 @@
+{
+  "artifact_sha256": {
+    "controller01/cleanup-seed02-request.json": "32dec0ccfaee8e68359590f9bef9557792ae427aa56738393ffb4dfa71da64ee",
+    "controller01/cleanup02-provider-selection.patch": "fbcb60747158cc9852e4ebef1a88f1b1c82b3c3e7a2b783e7f5589608955db95",
+    "controller01/cleanup_seed02.py": "ee813ac479099597825c879df52dc30265c63cea27e308ff3dea37fa17476369",
+    "provider-source08/result08-original.json": "9d96400df1243358d6b3b24406048d598e0442431150a0d7ea4ce60cdd99e40f",
+    "provider-source08/source-export-original.json": "31a0951f0d958962cf918ab9f4acbbceb6076d23217d6e5262931818d82d20c0",
+    "provider-source08/status08-original.json": "de3515f24734c9916b0dae077a4ca6a2bd996a91a888572f6523460a9e03d0e9",
+    "provider-source08/summary08-original.json": "aee0459e235fe6bf3d871010db3ad252cba009440ecb22d4aeeb4518a7bfa35f",
+    "provider-source09/schema-source-original.json": "54fe34c3f53707f7721a32f075876eb3e1e32c31715d28cd1c91ea42553861f9",
+    "provider-source10/listener-source-original.json": "1ffd73cc345970b9c49201cf9e2dd393d41efa92a0150109462b803fc55c3763",
+    "provider-source11/trash-source-original.json": "75b53cca6ab71ca82055cda0d5dffcc03d1c8fc1590186f6296bde898173c484"
+  },
+  "cleanup02_guards": [
+    "Original seed is terminal, old helper pending preserved; first cleanup is authoritative zero-effect terminal.",
+    "Fresh full15 tuples, private phase/payload hashes, held directory/file identities, two exclusive physical paths and original-media snapshot must still match.",
+    "Delete image92 once; clear pending only after row/path absence and original held file nlink0.",
+    "Require zero indexed children; kernel-rmdir only the same fresh-empty directory, then held nlink0 and both exclusive paths absent.",
+    "Immediately before index91 delete, repeat its exact full tuple, zero children, held parent identity and old directory nlink0/path absence; delete only once.",
+    "Uninstall exact helper10194 only after index+physical namespace absent and protected original media preserved.",
+    "Any unknown effect or post-context failure stays FAILED; no replay, no rollback, no UI-delete business credit."
+  ],
+  "conclusion": "No recursive physical-directory or parent-to-child files-row deletion was found on this exact non-trash MediaStore delete path. cleanup02 may be reviewed for its explicit guarded sequential operations; it is not a cross-row atomic transaction.",
+  "execution": "cleanup02 and controller02 not submitted; waiting Root formal handoff",
+  "facts": [
+    {
+      "claim": "Physical deletion for the selected row calls File.getCanonicalFile, checkAccess, then File.delete; no recursive walk in this path. File.delete return is ignored and exceptions are logged, so Provider ACK cannot prove physical removal.",
+      "method_names": [
+        "deleteIfAllowed",
+        "deleteAndInvalidate"
+      ]
+    },
+    {
+      "claim": "deleteInternal first selects rows with the user selection. In its data-removal loop it then deletes each selected row using _id=<selected ID>. It does not re-evaluate the full 15-field predicate under one transaction spanning the initial read and physical deletion.",
+      "method_names": [
+        "deleteInternal"
+      ]
+    },
+    {
+      "claim": "deleteRecursive clears the directory cache, then repeats the same original selection in runWithTransaction until a call returns0. SQLiteQueryBuilder combines its internal WHERE and user WHERE with AND. It does not replace the exact predicate with parent=<id> or a descendant-path predicate.",
+      "method_names": [
+        "deleteRecursive",
+        "lambda$deleteRecursive$28",
+        "runWithTransaction",
+        "computeWhere"
+      ]
+    },
+    {
+      "claim": "The current source files table defines parent INTEGER, without a self-reference/ON DELETE CASCADE. createLatestTriggers removes old application triggers and installs files_delete that passes only the deleted row to _DELETE.",
+      "method_names": [
+        "createLatestSchema",
+        "createLatestTriggers"
+      ]
+    },
+    {
+      "claim": "_DELETE constructs one FileRow and calls OnFilesChangeListener.onDelete. The only actual implementation in this DEX is MediaProvider$5. It schedules same-ID grant/cache/index/backup notifications; playlist member removal is restricted to media types2/4, whereas this fixture has image1 and directory0.",
+      "method_names": [
+        "lambda$onConfigure$2",
+        "onDelete",
+        "lambda$onDelete$9"
+      ]
+    },
+    {
+      "claim": "The listener has a deleteAllParentIfNonTrashed branch only when FileUtils.isTrashedFileInTrashDirectory(path) is true. Actual FileUtils first requires expiration-prefix group1==trashed, then relative path starts .trash-storage/. The observed .pending-1794515573-...png and Pocket4_Rotate_Control... directory both fail the first condition, so this branch is excluded for these exact paths.",
+      "method_names": [
+        "lambda$onDelete$9",
+        "isTrashedPath",
+        "isTrashedFileInTrashDirectory",
+        "<clinit>"
+      ]
+    }
+  ],
+  "installed_source": {
+    "apk_bytes": 15447727,
+    "apk_sha256": "b98258475c14043fe1f7e0d5a61caa13aa22dea426ffc589e83012f0377ce0f4",
+    "certificate_sha256": "465983f7791f2abeb43ea2cbdc7f21a8260b72bc08a55c839fc1a43bc741a81e",
+    "dex": [
+      {
+        "bytes": 7621632,
+        "class_count": 7978,
+        "name": "classes.dex",
+        "selected": [
+          "Lcom/android/providers/media/DatabaseHelper;",
+          "Lcom/android/providers/media/MediaProvider;",
+          "Lcom/android/providers/media/util/FileUtils;",
+          "Lcom/android/providers/media/util/SQLiteQueryBuilder;"
+        ],
+        "sha256": "28852098ad142e383143f8b62154dd2fe8d4a702c29489b5717722d0909141ad"
+      }
+    ],
+    "same_held_Main_and_whole_APK_before_after": true,
+    "source08_full_result_sha256": "9d96400df1243358d6b3b24406048d598e0442431150a0d7ea4ce60cdd99e40f",
+    "source08_job": "1a1ad8b3bba-fc05-5a32",
+    "source08_terminal": "succeeded/0/output_complete/output_durable"
+  },
+  "limitations": [
+    "The provided installed-source schema is source evidence, not a new live sqlite_master dump.",
+    "No claim of a single atomic 15-field check+physical delete or cross-row empty guard; cleanup02 explicitly records cross_row_SQL_atomicity_claimed=false.",
+    "Asynchronous same-ID observer/cache/backup bookkeeping is part of Provider behavior; no claim that Binder ACK cancels or waits for every background callback.",
+    "Source08 export embeds an intermediate FAILED_READ_ONLY state because it was serialized before final state assignment; authoritative source08 result.json and process terminal are separately preserved as verified success.",
+    "This review does not make Gallery/App production-ready or qualify rotation/renderer."
+  ],
+  "method_sha256": {
+    "Lcom/android/providers/media/DatabaseHelper;->createLatestSchema(Landroid/database/sqlite/SQLiteDatabase;)V": "a4e2109deedfad2f4fa99434f735f331270372c95e96a2e25cd9eab7d950746a",
+    "Lcom/android/providers/media/DatabaseHelper;->createLatestTriggers(Landroid/database/sqlite/SQLiteDatabase;)V": "6c245eff9d9901a4a6b09fcbb2e8bb4afe1fa14d7d3f5daa29c50e6bef858609",
+    "Lcom/android/providers/media/DatabaseHelper;->lambda$onConfigure$2(Ljava/lang/String;)Ljava/lang/String;": "559e4c673d0d713427375a8b4a50cbc6a2dcd72207ffc9c0f2acd81ec390505c",
+    "Lcom/android/providers/media/DatabaseHelper;->runWithTransaction(Ljava/util/function/Function;)Ljava/lang/Object;": "dba33952f764d00e58a4ac9d14321621c184690606c2f4e7331274fa3cfd01d5",
+    "Lcom/android/providers/media/MediaProvider$5;->lambda$onDelete$9(Lcom/android/providers/media/dao/FileRow;Lcom/android/providers/media/DatabaseHelper;)V": "ea80296796172170b24f4d8a182e9d5c8953052d50b03e836c646feecd30d261",
+    "Lcom/android/providers/media/MediaProvider$5;->onDelete(Lcom/android/providers/media/DatabaseHelper;Lcom/android/providers/media/dao/FileRow;)V": "48d345cfdd84c21839cee592d8568ba0b9621e5f8da4d37d8bca419d2386d0bc",
+    "Lcom/android/providers/media/MediaProvider;->deleteAndInvalidate(Ljava/io/File;)V": "1b78dbd91a6e63bd68f78e4ab2d0f3f26df1d17f0acb843c90631c2b44be1d11",
+    "Lcom/android/providers/media/MediaProvider;->deleteAndInvalidate(Ljava/nio/file/Path;)V": "a98c702f2ac5142098b56cdbac82b2d15c49fbd389309e1cf69423dd6fda94fe",
+    "Lcom/android/providers/media/MediaProvider;->deleteIfAllowed(Landroid/net/Uri;Landroid/os/Bundle;Ljava/lang/String;)V": "7212a321883a4a9ae64b97e4d6fd841a2582fe4db8fcdafe891ea4e5ea3be701",
+    "Lcom/android/providers/media/MediaProvider;->deleteInternal(Landroid/net/Uri;Landroid/os/Bundle;)I": "8c3b38140eee1a54b8442ea4562ee9fb78524c7e5083cf7bfe1d3e88bce5a771",
+    "Lcom/android/providers/media/MediaProvider;->deleteRecursive(Lcom/android/providers/media/util/SQLiteQueryBuilder;Lcom/android/providers/media/DatabaseHelper;Ljava/lang/String;[Ljava/lang/String;)I": "337de36d8fee9e4e0222167a27701db0f51731e833981db27ab3c4590e5ddeef",
+    "Lcom/android/providers/media/MediaProvider;->lambda$deleteRecursive$28(Lcom/android/providers/media/util/SQLiteQueryBuilder;Lcom/android/providers/media/DatabaseHelper;Ljava/lang/String;[Ljava/lang/String;Landroid/database/sqlite/SQLiteDatabase;)Ljava/lang/Integer;": "a33d85bf5d65b845d7cd44ef664efa05bdac6cce1545744cf617df9a2c256b53",
+    "Lcom/android/providers/media/util/FileUtils;-><clinit>()V": "4a23859c7619737a4c2a6f443c176c1a40c231471fe9f4cddfd265a89e8bbb04",
+    "Lcom/android/providers/media/util/FileUtils;->isTrashedFileInTrashDirectory(Ljava/lang/String;)Z": "382f1af1dfc9d357030dba2d431a228cf2bf4a739f2598151aa4aa25d46d4964",
+    "Lcom/android/providers/media/util/FileUtils;->isTrashedPath(Ljava/lang/String;)Z": "34f58d212dc01630d54d4b0ee9a6b856ea378a4c233db2442346befa570d11d8",
+    "Lcom/android/providers/media/util/SQLiteQueryBuilder;->buildDelete(Ljava/lang/String;)Ljava/lang/String;": "9f49904fcbcfa3c44a8d258ee8d59f3bf785425cd934ac526cda93c8e613b235",
+    "Lcom/android/providers/media/util/SQLiteQueryBuilder;->computeWhere(Ljava/lang/String;)Ljava/lang/String;": "11219558c9105ace482f20a89a155696d3a02b11feecdddb402c52753d70a7bd",
+    "Lcom/android/providers/media/util/SQLiteQueryBuilder;->delete(Landroid/database/sqlite/SQLiteDatabase;Ljava/lang/String;[Ljava/lang/String;)I": "3bbb72251365543ef7bdd45e6d0e13f5b798b38b8c395a8ad18f666ce5c99ebb",
+    "Lcom/android/providers/media/util/SQLiteQueryBuilder;->delete(Lcom/android/providers/media/DatabaseHelper;Ljava/lang/String;[Ljava/lang/String;)I": "0e410e058db9d00b2b13293582bd0cedbc3579effa56bc7c06cd3e83d447b9f0"
+  },
+  "performed_actions": {
+    "Android_commands": 0,
+    "Main_mutations": 0,
+    "Provider_writes": 0,
+    "UI_actions": 0
+  },
+  "schema": "actual-installed-mediaprovider-exact-owned-cleanup-review-v1",
+  "scope": "Only pending fixture image92, physically removed empty directory91 and exact helper10194; no Gallery business/UI credit"
+}

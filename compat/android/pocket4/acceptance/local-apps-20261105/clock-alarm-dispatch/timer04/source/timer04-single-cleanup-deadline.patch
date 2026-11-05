@@ -1,0 +1,56 @@
+--- peer/cd041-timer_core04.py
++++ final/timer_core04.py
+@@ -299,13 +299,14 @@
+         self.deleted('deleted')
+         self.r['state'] = 'OWNED_TIMER_CORE_FLOW_VERIFIED_CLEAN'
+ 
+-    def cleanup(self):
++    def cleanup(self, cleanup_until):
+         self.r['cleanup'] = {'original_failure_retained': True, 'new_inputs': 0,
+                              'pending_retained': self.c.pending,
+                              'timer_effect_retained':self.effect_pending,'close_pending_retained':self.close_pending}
+         if self.c.pending is not None or self.effect_pending is not None or self.close_pending is not None or self.t.owned is None:
+             return
+-        self.deadline = time.monotonic() + 30
++        require(time.monotonic() < cleanup_until, 'TIMER_CLEANUP_BUDGET_EXPIRED')
++        self.deadline = min(cleanup_until - 5, time.monotonic() + 30)
+         current = self.m.read(self.t.s)
+         if not current['ids']:
+             self.m.empty(current)
+@@ -362,6 +363,7 @@
+         'lease_seconds': 360, 'cleanup_budget_seconds': 35, 'timer_duration_ms': DURATION,
+         'started_utc': datetime.now(timezone.utc).isoformat()}
+     prior = signal.signal(signal.SIGALRM, expired); trial = flow = None
++    cleanup_until = None
+     try:
+         signal.setitimer(signal.ITIMER_REAL, 360)
+         with tx.ui_lock():
+@@ -382,13 +384,17 @@
+                     result['business_success_verified'] = True
+                 except BaseException as exc:
+                     result.update(state='FAILED', error=type(exc).__name__ + ': ' + str(exc))
+-                    signal.setitimer(signal.ITIMER_REAL, 35)
++                    cleanup_until = time.monotonic() + 35
++                    signal.setitimer(signal.ITIMER_REAL, max(.001, cleanup_until - time.monotonic()))
+                     try:
+-                        flow.cleanup()
++                        flow.cleanup(cleanup_until)
+                     except BaseException as cleanup:
+                         result['cleanup_error'] = type(cleanup).__name__ + ': ' + str(cleanup)
+                 finally:
+-                    signal.setitimer(signal.ITIMER_REAL, 35)
++                    if cleanup_until is None:
++                        cleanup_until = time.monotonic() + 35
++                    require(time.monotonic() < cleanup_until, 'TIMER_FINAL_CLEANUP_BUDGET_EXPIRED')
++                    signal.setitimer(signal.ITIMER_REAL, max(.001, cleanup_until - time.monotonic()))
+                     if flow.c.pending is None and flow.effect_pending is None and flow.close_pending is None:
+                         flow.close()
+                     else:
+@@ -421,6 +427,7 @@
+             pending_timer_effect=flow.effect_pending if flow else None,
+             close_pending=flow.close_pending if flow else None,
+             owned_tasks=flow.owned if flow else [], closed_tasks=flow.closed if flow else [],
++            owned_task_remaining=trial.owned if trial else None,
+             owned_task_remove_calls=trial.removals if trial else 0, finished_utc=datetime.now(timezone.utc).isoformat())
+         if ROOT.is_dir():
+             tx.write_new(ROOT / 'result.json', result)

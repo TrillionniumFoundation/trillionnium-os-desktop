@@ -1,33 +1,50 @@
 {
-  "schema": "pocket4-checkpoint10-aggregate/v1",
-  "checkpoint": 10,
-  "retained_review_count": 18,
-  "accepted_review_count": 12,
-  "ignored_older_review_count": 6,
+  "schema": "pocket4-checkpoint11-aggregate/v1",
+  "checkpoint": 11,
+  "device_observation_cutoff_utc": "2026-11-05T21:54:28.172790+00:00",
+  "retained_review_count": 22,
+  "accepted_review_count": 14,
+  "ignored_older_review_count": 8,
   "production_ready_count": 0,
   "tracked_apps": 45,
-  "independent_package_observations": 52,
+  "independent_package_observations": 53,
   "package_identity_input": {
     "path": "../package-identity-observations-20261105.json",
-    "bytes": 74182,
-    "sha256": "1df355c8aec5618018d6e66635677fcfd7802563539926cf690c6c37ba8bed75"
+    "bytes": 76162,
+    "sha256": "4719ac64e40088b28cb42425b51ea877f8b688a4624d907a588229b766a92995"
   },
   "files": {
     "README.md": {
-      "bytes": 24234,
-      "sha256": "46270b4a454d31926cfce57d16eb73d5b3cc2220fc77740a9111ba9d1056358a"
+      "bytes": 25188,
+      "sha256": "f81bd92ecb19fe378e075a5119bf7942074462632972968cd7c7e8b2abb04ff7"
     },
     "app-gates.json": {
       "bytes": 24135,
       "sha256": "441289f9c04b46f38e1dd6e19f23ec6e4c6729b6a6f814cab81c0ae6fbbb1e78"
     },
     "gate-reviews.json": {
-      "bytes": 35087,
-      "sha256": "e8f16c438196faa574793c8f394bcd36197b6ff36ec50c822fcd913795d49fde"
+      "bytes": 45658,
+      "sha256": "a5a68b0450391bd2b129f67397b5c60e4c5af0397b2f307338268f7e1e3a50aa"
     },
     "inputs/bili-video-transition-review.json": {
       "bytes": 4109,
       "sha256": "93c41023b3f49d13e1df43aa826fe0f97a46cb0b9e8e945e0ebc40de96daec7b"
+    },
+    "inputs/calendar-core13/core13-result-original.json": {
+      "bytes": 19261,
+      "sha256": "fb7f0382a2ae437cb7e74886eb76dce3fc08027a8d47a93b394b7bfdf5025f4c"
+    },
+    "inputs/calendar-core13/core13-scoped-review.json": {
+      "bytes": 1802,
+      "sha256": "2ddb8c77f914b4158f2688010656107c51db9c9ae2b4e54b851baa6b73e34a5a"
+    },
+    "inputs/calendar-core13/core13-terminal-tool-value.json": {
+      "bytes": 733,
+      "sha256": "a120201f84ade8fb12c6e38c32b88e7fa0615f310690087e8fedef7342e203ee"
+    },
+    "inputs/calendar-core13/saved-diagnostics-selected.json": {
+      "bytes": 5180,
+      "sha256": "0ce6f5948d9aa3e7d3b2c162a1c4582096dbb2369e1921292fd14571e81f146a"
     },
     "inputs/calendar-original-editor-crash.json": {
       "bytes": 3080,
@@ -104,6 +121,14 @@
     "inputs/camera05-terminal05-original.json": {
       "bytes": 732,
       "sha256": "574c56108fef38b385df8cae400111a15182b4e089273c77aee829057f616901"
+    },
+    "inputs/camera06-current-usb-provider06.json": {
+      "bytes": 1908,
+      "sha256": "1dfad9459edf04a7a316e9d5862cecf0a2ac065c4a2222e034fc7ee410c3aff9"
+    },
+    "inputs/camera06-terminal06-selected.json": {
+      "bytes": 881,
+      "sha256": "99c77479008390a4f39909cd5fe3208bd151e35e2a76852828f87d9c88f9cb6f"
     },
     "inputs/clock-after-expiry02-readonly.json": {
       "bytes": 16243,
@@ -189,6 +214,18 @@
       "bytes": 787,
       "sha256": "abb50d3830069b1aa4cb5eb848e287de824d4f4f23ccef9958ef59e640adf215"
     },
+    "inputs/clock-install04/artifact-binding-selected.json": {
+      "bytes": 2520,
+      "sha256": "49054ed61568aa4f196b9961826db933dee42d037759bddc838993bb2ea4a66d"
+    },
+    "inputs/clock-install04/install04-result-original.json": {
+      "bytes": 3091,
+      "sha256": "efaf58417685c13d7abb6a2c1a9687ee0b70a998d5ded76cdb029376cef4e936"
+    },
+    "inputs/clock-install04/latest-installed-identity.json": {
+      "bytes": 1427,
+      "sha256": "1750f0c49dad70f0fb8178655ba82dcc5ef6e6b2a195c06c45e49571bca9c314"
+    },
     "inputs/clock-notification03.json": {
       "bytes": 3710,
       "sha256": "a4dd92f637c433adec8c5d8b00c7a670c8854b18540d762405dbef96e196a7cc"
@@ -196,6 +233,34 @@
     "inputs/clock-notification04.json": {
       "bytes": 4430,
       "sha256": "77de2a8c846936a3beb352bc71454b2276a0e4430720c5095d2e42d0774c661c"
+    },
+    "inputs/clock-runtime04/ALARM04_TERMINAL_SELECTED.json": {
+      "bytes": 1938,
+      "sha256": "349786bce0f71decee863bf0c8ac22cc197c393a43b61ef4e889d271f7acb1bc"
+    },
+    "inputs/clock-runtime04/ELF_INVENTORY.json": {
+      "bytes": 94159,
+      "sha256": "c4f526bc60d577a0f047008654e810be7d7a994d5bc63008533f983e815d3f1e"
+    },
+    "inputs/clock-runtime04/INDEPENDENT_REVIEW_SELECTED.json": {
+      "bytes": 5295,
+      "sha256": "ebb05ec8b26154cd7ad2637277ecc9a4628b12d186de817ee908f86392ba5169"
+    },
+    "inputs/clock-runtime04/ROOT_QUALIFICATION.json": {
+      "bytes": 2329,
+      "sha256": "fc2d996ea3e4716ebc03510662926ec640e0b83820b3727feb01a13d30fde2b3"
+    },
+    "inputs/clock-runtime04/RUNTIME_TERMINAL_SELECTED.json": {
+      "bytes": 1239,
+      "sha256": "7da291301a03acc14712f8d61e06cc688b61b870d68a77dfb82101f416bcef3b"
+    },
+    "inputs/clock-runtime04/SELECTED_CODE_OBSERVATIONS.json": {
+      "bytes": 87264,
+      "sha256": "99e383bc64ce736255aba526474f7b01e67522c7f19e28d49cc1ccf2aa68afd4"
+    },
+    "inputs/clock-runtime04/SIGNATURE_BINDING.json": {
+      "bytes": 1704,
+      "sha256": "67b7418d9d4f7137ea4484e1998d126d403e2ac0731af30f35f5c286b44a5524"
     },
     "inputs/clock-stopwatch01.json": {
       "bytes": 4683,
@@ -216,6 +281,22 @@
     "inputs/clock-timer01.json": {
       "bytes": 5404,
       "sha256": "9bb98285dce9e13f8c1ab31f179f5696c7a1292bbaac3cf52b8f40b1ccff4883"
+    },
+    "inputs/clock-timer04/ROOT_QUALIFICATION.json": {
+      "bytes": 1627,
+      "sha256": "50d96640bf0b9607df0183b26172f9036374a3e7a4d0da114b1bf968dacf0f19"
+    },
+    "inputs/clock-timer04/SCHEDULER_INDEPENDENT_REVIEW04.json": {
+      "bytes": 4322,
+      "sha256": "1215cc30cb7d21b29b42f06ef3a5525d7fd93412641e07b342de5beb4c95cb52"
+    },
+    "inputs/clock-timer04/TERMINAL_JOB_SELECTED.json": {
+      "bytes": 326,
+      "sha256": "46579fb8dea41fadd81bfa84c01059c53aa49b6362d0e03d46fd9bef2f6ca943"
+    },
+    "inputs/clock-timer04/TIMER04_TERMINAL_SELECTED.json": {
+      "bytes": 6241,
+      "sha256": "dbbdeffb3382f24355ee667d65f69b905ed8513accfbbf3607418e66ebe6205d"
     },
     "inputs/contacts-crud09.json": {
       "bytes": 2845,
@@ -248,6 +329,26 @@
     "inputs/contacts-runtime02/runtime-result-original.json": {
       "bytes": 3991,
       "sha256": "612e91ac38c9d07d1d27a16ada46c5b1215c7901ca56ee65900833605653405a"
+    },
+    "inputs/contacts-search03/ACTUAL_REVIEW.json": {
+      "bytes": 2943,
+      "sha256": "870e1c4bf90255935c1a5b95697f6cd5576c02d2a8c3ca293b41b0a12868d69d"
+    },
+    "inputs/contacts-search03/EXECUTED_SOURCE_PROVENANCE.json": {
+      "bytes": 7335,
+      "sha256": "6ad5961d3de491a5c52f7386893d204bf810fc76bccde54fe03d29ad979a1a51"
+    },
+    "inputs/contacts-search03/actual03-result-selected.json": {
+      "bytes": 17927,
+      "sha256": "33ea076b24e2f32f04c56d3c893fc5923c849974c3ab9e4d32450b0a8f62e056"
+    },
+    "inputs/contacts-search03/actual03-status-selected.json": {
+      "bytes": 1054,
+      "sha256": "e74deb482beae4546af0c55e55586b1e0edb591f078660aa17441a902c3cb6ab"
+    },
+    "inputs/contacts-search03/flow03-scoped-review.json": {
+      "bytes": 2158,
+      "sha256": "8e5445727acc3095dd2ad289facde644b34aa89f0d401a6f9412529b41a5e9e2"
     },
     "inputs/contacts-ui-preflight-result.json": {
       "bytes": 938,
@@ -397,6 +498,22 @@
       "bytes": 6977,
       "sha256": "0bd1326de7431246f694a946b2b7fc52cfc06ba7fabf3ca50ef32fe18385efed"
     },
+    "inputs/gallery-rotation-cleanup03/PROVENANCE_ADDENDUM.json": {
+      "bytes": 2306,
+      "sha256": "bcd81c2c6e7a3e640af26597ca8de84edcc1fee9424d21027c60594832711066"
+    },
+    "inputs/gallery-rotation-cleanup03/ROOT_HISTORY_REVIEW.json": {
+      "bytes": 973,
+      "sha256": "309ea115cbbd0542161fd8a00668a36e260c190143d83c924c2052b4ea65299a"
+    },
+    "inputs/gallery-rotation-cleanup03/SCOPED_RESULT.json": {
+      "bytes": 2404,
+      "sha256": "18ea0f4a315c09a16af25475ff0a5c5cbf3c66bbee5a1e9fb86acc9f9f5fb6d4"
+    },
+    "inputs/gallery-rotation-cleanup03/cleanup03-result-original.json": {
+      "bytes": 6106,
+      "sha256": "3b6a480a470d927bbe0dcd5d3873f7f91c70991146115d8c69dfdb68cb45263e"
+    },
     "inputs/gallery-runtime04-DERIVED_OBSERVATIONS.json": {
       "bytes": 97108,
       "sha256": "390888ac6e6f8a76c0557421fb9b294e6fe60606b12985cb3fd7e7eb48228345"
@@ -506,12 +623,12 @@
       "sha256": "a858c79db8663b08d24d32261873cef4e5335e56c99996564913de29b00943f2"
     },
     "progress.json": {
-      "bytes": 76531,
-      "sha256": "cfa30ae8833db2d84f85f3018a822032a2fb41fe38580702b87595bf5709002e"
+      "bytes": 89280,
+      "sha256": "d2944e5ffd2009f9d51cb0812af04843dfa86dff12790f6a96a2ae40e92d30e2"
     },
     "readiness-matrix.json": {
-      "bytes": 222181,
-      "sha256": "33eec84fb1c7950f8c30854cb46a90b439b89e1e7304afd4ee2eedb1878f7e72"
+      "bytes": 236970,
+      "sha256": "3d475225ccde5eba0f69bade2b05bac9ec76c611bfe9ebac674014cf2d6bf99e"
     },
     "test_readiness.py": {
       "bytes": 11772,
@@ -522,8 +639,8 @@
       "sha256": "efedcd5010909a9ada1546aeed4b6307cc371217da37e06bc40323a41e32df7f"
     },
     "validation.json": {
-      "bytes": 1311,
-      "sha256": "e916d627ec085480b6f4930357f41c6fbe747c2060a81979c63b1cc8aaf93511"
+      "bytes": 1312,
+      "sha256": "bf50dd2533b9c9a7cd84d00e8d26dcb1f209928e9433bb9250c4e2ae20f456db"
     }
   }
 }

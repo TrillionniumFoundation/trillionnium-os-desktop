@@ -1,5 +1,9 @@
 # Pocket4 local App business acceptance — 2026-11-05
 
+Current checkpoint11 device cutoff: **21:54:28 UTC**. Earlier sections retain
+their chronological results and binary-specific limits. Current Clock is433ff;
+older e4ff timer results remain historical. No whole App is production ready.
+
 Contacts completed an actual local UI create/edit/close/reopen/delete flow. WebView Shell completed an actual controlled local Unicode/JavaScript/storage/history/close/reopen/cleanup flow. These are scoped business results; neither is a whole-App release qualification.
 
 ## Actual results
@@ -28,7 +32,10 @@ The WebView acceptance adapter now touches the five exact observed HTML controls
 
 ## Remaining qualification
 
-Contacts still needs Search UI, the remaining permission/sync/error paths and repeat/stability coverage. Its successful return to the same record is recorded accurately without silently treating a list-row selection as an exercised Search field.
+Contacts Search03 now independently closes the edited-contact Search/reopen
+clause described below. The remaining permission/sync/error paths and
+repeat/stability coverage are open. Earlier list-row selection was not silently
+relabeled as Search evidence.
 
 WebView's composite release checks additionally include HTTPS, images/media and error handling. This local text/JavaScript/form/history/storage trial does not close those checks. Both Apps also retain the common whole-release gates in the [45-App matrix](../../readiness-20261105/README.md). Earlier failed observations remain available beside the later successes.
 
@@ -125,7 +132,7 @@ These results pass the stated local I/O/render and lifecycle scopes. Files tree
 and content routes, copy/move/folder/search, Gallery video/rotation/copy editing,
 remaining errors and complete release qualification continue separately.
 
-## Installed Clock background-expiry repair
+## Historical installed Clock background-expiry repair
 
 [The foreground timer candidate](clock-foreground-timer/README.md) changes only
 two PendingIntent factory calls in one TimerModel method. It was built, signed
@@ -143,3 +150,45 @@ permission gained an installer flag and the global alarm intent counter changed
 Original alarms, data-directory identity, other permission entries, observed
 volume streams and ringtone settings remained the same. New-package core timer
 regression, owned alarms/timezone and complete release qualification remain open.
+
+## Current Contacts Search03
+
+[Search03](contacts-search/flow03-acceptance/README.md) completed actual edit,
+normal close/reopen, query of the edited name, opening of the matching result and
+UI deletion. The contact, raw-contact and name-data IDs remained6 throughout.
+Twelve inputs and normal closes of tasks992/993 left no pending operation,
+Provider fallback delete or owned tombstone. This passes `contacts.persist`;
+Search02's earlier snapshot-guard failure remains unchanged. Private account
+topology is omitted from the public projection and was preserved by the run.
+
+## Current Clock433ff installation, runtime and timer core
+
+[Install04](clock-alarm-dispatch/install04/README.md) installed433ff once with the
+same signing certificate and preserved the original alarms, UID/data-directory
+identity, permissions and sounds. All older APK-specific business reviews lost
+current credit. [Runtime04](clock-alarm-dispatch/runtime04/README.md) independently
+binds four stable saved snapshots from two process generations and381 full ELF
+hashes to this installation; its original automatic completeness counter stays0.
+
+Alarm04 reached actual firing state and posted its exact notification. Its
+original result remains FAILED because no alert task appeared. A real desktop
+notification Open/Dismiss interaction and the complete alarm gate remain open.
+[Timer04](clock-alarm-dispatch/timer04/README.md) completed11 inputs across one
+15-minute timer: start, pause, normal close/reopen, resume, pause, reset and
+delete. Paused891266ms persisted exactly; the second pause was881985ms and reset
+returned900000ms. Tasks996/997 closed normally and the timer/stopwatch state was
+empty. Independent saved scheduler analysis proves0→1→0→1→0→0; the original
+conservative scheduler field is retained. Current identity/UI/lifecycle pass;
+timer completion on433ff, alarm/timezone, audio and whole release do not.
+
+## Gallery rotation setup and completed exact cleanup
+
+[The Gallery history](gallery-rotation/README.md) records a controlled-fixture
+seed failure before any Gallery launch or rotation input. Image92 was deleted
+once; the original cleanup02 unknown result was retained and independently
+reconciled by read-only absence proofs. Cleanup03 removed only the remaining
+empty directory/index and temporary helper, preserving original media and
+Gallery permissions/identity. The helper correction was built but uninstalled
+at the cutoff. The accompanying addendum distinguishes original stdout from the
+remote result serialization and labels the ENOENT stack-location inference.
+No Gallery business gate is added by fixture cleanup.
