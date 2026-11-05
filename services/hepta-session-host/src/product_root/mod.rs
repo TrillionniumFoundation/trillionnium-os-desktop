@@ -20,6 +20,7 @@ mod replay;
 mod seed;
 mod session;
 mod supervisor;
+mod supervisor_diagnostics;
 
 pub(super) use recovery::RecoverySelection;
 
@@ -256,6 +257,7 @@ fn run(
         &inherited,
         inputs.uid,
         inputs.gid,
+        &fresh.admin,
     )?;
     drop(inherited);
     // Root keeps no unneeded inherited endpoint aliases.
