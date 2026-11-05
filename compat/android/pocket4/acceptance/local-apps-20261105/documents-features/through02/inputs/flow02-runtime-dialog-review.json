@@ -1,0 +1,603 @@
+{
+  "dialog": {
+    "actual_controls": [
+      "Name editable field",
+      "CANCEL android:id/button2",
+      "OK android:id/button1"
+    ],
+    "actual_title": {
+      "class": "android.widget.TextView",
+      "editable": false,
+      "enabled": true,
+      "package": "com.android.documentsui",
+      "resource-id": "com.android.documentsui:id/alertTitle",
+      "text": "New folder"
+    },
+    "business_failure_claimed": false,
+    "new_folder_create_confirmation_sent": false,
+    "png_sha256": "a897cf75d37d6e67fa5f5600de3ca41cdf2b9ea9b89e435facadb81f9c639b9e",
+    "source": {
+      "bytes": 21619,
+      "name": "281-new-folder-dialog.json",
+      "sha256": "d61357c6ffb340d2ee7d0fe6f212e38489383cb03eab23eac3e777d8ca771eca"
+    },
+    "title_gate_old_android_namespace_matches": 0
+  },
+  "original_result_sha256": "dcb68ce19b9ffdac949654150110a18dd39f7e31873bd851e7315e5ff79c1074",
+  "original_scoped_result": {
+    "path": "FLOW02_SCOPED_RESULT.json",
+    "sha256": "dbc6e9cc650ba95915909f7e958a6ee482f2bef81519fcc6e307b14b8b1db6c9",
+    "unchanged": true
+  },
+  "package_identities": {
+    "after": {
+      "source": {
+        "bytes": 1269,
+        "file": "297-target-packages-after.json",
+        "sha256": "37d4afa9561eac8c30f42071b0d63d87e9affd565e71377f1dde96cabf787864"
+      },
+      "value": {
+        "com.android.documentsui": {
+          "apk_bytes": 8599849,
+          "apk_path": "/system/priv-app/DocumentsUI/DocumentsUI.apk",
+          "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+          "directories": {
+            "ce": {
+              "st_dev": 1811,
+              "st_gid": 10022,
+              "st_ino": 131331,
+              "st_mode": 16832,
+              "st_uid": 10022
+            },
+            "de": {
+              "st_dev": 1811,
+              "st_gid": 10022,
+              "st_ino": 131334,
+              "st_mode": 16832,
+              "st_uid": 10022
+            }
+          },
+          "package": "com.android.documentsui",
+          "uid": 10022,
+          "version_code": 37
+        },
+        "com.android.externalstorage": {
+          "apk_bytes": 61663,
+          "apk_path": "/system/priv-app/ExternalStorageProvider/ExternalStorageProvider.apk",
+          "apk_sha256": "50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea",
+          "directories": {
+            "ce": {
+              "st_dev": 1811,
+              "st_gid": 10024,
+              "st_ino": 131337,
+              "st_mode": 16832,
+              "st_uid": 10024
+            },
+            "de": {
+              "st_dev": 1811,
+              "st_gid": 10024,
+              "st_ino": 131340,
+              "st_mode": 16832,
+              "st_uid": 10024
+            }
+          },
+          "package": "com.android.externalstorage",
+          "uid": 10024,
+          "version_code": 37
+        }
+      }
+    },
+    "before": {
+      "source": {
+        "bytes": 1269,
+        "file": "002-target-packages-before.json",
+        "sha256": "37d4afa9561eac8c30f42071b0d63d87e9affd565e71377f1dde96cabf787864"
+      },
+      "value": {
+        "com.android.documentsui": {
+          "apk_bytes": 8599849,
+          "apk_path": "/system/priv-app/DocumentsUI/DocumentsUI.apk",
+          "apk_sha256": "757feffc32440dd371eaab4fb91f45273a621ee45b848e2dc734b386ac6e2086",
+          "directories": {
+            "ce": {
+              "st_dev": 1811,
+              "st_gid": 10022,
+              "st_ino": 131331,
+              "st_mode": 16832,
+              "st_uid": 10022
+            },
+            "de": {
+              "st_dev": 1811,
+              "st_gid": 10022,
+              "st_ino": 131334,
+              "st_mode": 16832,
+              "st_uid": 10022
+            }
+          },
+          "package": "com.android.documentsui",
+          "uid": 10022,
+          "version_code": 37
+        },
+        "com.android.externalstorage": {
+          "apk_bytes": 61663,
+          "apk_path": "/system/priv-app/ExternalStorageProvider/ExternalStorageProvider.apk",
+          "apk_sha256": "50d1e6f2be950e049cdc898dd812c8e609f421cc167013d4ee2c795dcdc0e5ea",
+          "directories": {
+            "ce": {
+              "st_dev": 1811,
+              "st_gid": 10024,
+              "st_ino": 131337,
+              "st_mode": 16832,
+              "st_uid": 10024
+            },
+            "de": {
+              "st_dev": 1811,
+              "st_gid": 10024,
+              "st_ino": 131340,
+              "st_mode": 16832,
+              "st_uid": 10024
+            }
+          },
+          "package": "com.android.externalstorage",
+          "uid": 10024,
+          "version_code": 37
+        }
+      }
+    }
+  },
+  "package_identities_equal": true,
+  "process_mapping_evidence": [
+    {
+      "android_uid": 10022,
+      "anonymous_executable_mapping_names": [
+        "[vdso]",
+        "[vsyscall]"
+      ],
+      "engine_candidate_paths": [
+        "/apex/com.android.art/lib64/libnativebridge.so",
+        "/apex/com.android.tethering/lib64/libcrypto_httpengine.so",
+        "/apex/com.android.tethering/lib64/libhttpengine.so",
+        "/data/resource-cache/vendor@overlay@DroidloomFrameworkDisplayOverlay.apk@idmap",
+        "/dev/__properties__/u:object_r:qemu_sf_lcd_density_prop:s0",
+        "/system/lib64/libnativebridge_lazy.so",
+        "/vendor/overlay/DroidloomFrameworkDisplayOverlay.apk"
+      ],
+      "executable": {
+        "architecture": "x86_64",
+        "bits": 64,
+        "byte_order": "little",
+        "elf": true,
+        "identity": {
+          "st_ctime_ns": 1230768000000000000,
+          "st_dev": 1807,
+          "st_gid": 2000,
+          "st_ino": 10363633,
+          "st_mode": 33261,
+          "st_mtime_ns": 1230768000000000000,
+          "st_size": 51616,
+          "st_uid": 0
+        },
+        "machine": 62,
+        "sha256": "456322c6cc424d228d153623717e8a6b1ac7d0b3aa48f0f1948380412f54ac73"
+      },
+      "file_objects_with_executable_segment": 376,
+      "file_objects_with_executable_segment_but_first_segment_nonexecutable": 375,
+      "host_identity": {
+        "exe": "/system/bin/app_process64",
+        "ns": {
+          "cgroup": "cgroup:[4026533394]",
+          "ipc": "ipc:[4026533286]",
+          "mnt": "mnt:[4026533063]",
+          "net": "net:[4026533041]",
+          "pid": "pid:[4026533288]",
+          "uts": "uts:[4026533285]"
+        },
+        "nspid": [
+          "2003022",
+          "622706"
+        ],
+        "pid": 2003022,
+        "start": "90369513",
+        "uid": [
+          "10022",
+          "10022",
+          "10022",
+          "10022"
+        ]
+      },
+      "mapped_code_objects": [
+        {
+          "architecture": "x86_64",
+          "bits": 64,
+          "byte_order": "little",
+          "elf": true,
+          "engine_name_candidate": true,
+          "identity": {
+            "st_ctime_ns": 0,
+            "st_dev": 1838,
+            "st_gid": 1000,
+            "st_ino": 66,
+            "st_mode": 33188,
+            "st_mtime_ns": 0,
+            "st_size": 1075032,
+            "st_uid": 1000
+          },
+          "machine": 62,
+          "path": "/apex/com.android.tethering/lib64/libcrypto_httpengine.so",
+          "sha256": "e2494fb6a1f848f6b322bdcda90b6c4b6b611ebf54ebd7d14161a2ee40d1dd65"
+        },
+        {
+          "architecture": "x86_64",
+          "bits": 64,
+          "byte_order": "little",
+          "elf": true,
+          "engine_name_candidate": true,
+          "identity": {
+            "st_ctime_ns": 0,
+            "st_dev": 1838,
+            "st_gid": 1000,
+            "st_ino": 70,
+            "st_mode": 33188,
+            "st_mtime_ns": 0,
+            "st_size": 8609040,
+            "st_uid": 1000
+          },
+          "machine": 62,
+          "path": "/apex/com.android.tethering/lib64/libhttpengine.so",
+          "sha256": "57fa5ef2ffcb76c6f266c23791c011c8741b3fda3a47f2b52ba90d827f19eff2"
+        },
+        {
+          "architecture": "x86_64",
+          "bits": 64,
+          "byte_order": "little",
+          "elf": true,
+          "engine_name_candidate": true,
+          "identity": {
+            "st_ctime_ns": 0,
+            "st_dev": 1824,
+            "st_gid": 1000,
+            "st_ino": 70,
+            "st_mode": 33188,
+            "st_mtime_ns": 0,
+            "st_size": 51336,
+            "st_uid": 1000
+          },
+          "machine": 62,
+          "path": "/apex/com.android.art/lib64/libnativebridge.so",
+          "sha256": "800c7968a03e3d3c673771110aa1249c296c3a7963398c3a9856311db67252cc"
+        },
+        {
+          "architecture": "x86_64",
+          "bits": 64,
+          "byte_order": "little",
+          "elf": true,
+          "engine_name_candidate": false,
+          "identity": {
+            "st_ctime_ns": 1230768000000000000,
+            "st_dev": 1807,
+            "st_gid": 0,
+            "st_ino": 21459603,
+            "st_mode": 33188,
+            "st_mtime_ns": 1230768000000000000,
+            "st_size": 224512,
+            "st_uid": 0
+          },
+          "machine": 62,
+          "path": "/system/lib64/libcycleperuid.so",
+          "sha256": "fbdb5ef00726087e4d664de712b147b5821f2eea4b8d5a513ca7feac73132589"
+        },
+        {
+          "architecture": "x86_64",
+          "bits": 64,
+          "byte_order": "little",
+          "elf": true,
+          "engine_name_candidate": true,
+          "identity": {
+            "st_ctime_ns": 1230768000000000000,
+            "st_dev": 1807,
+            "st_gid": 0,
+            "st_ino": 21460704,
+            "st_mode": 33188,
+            "st_mtime_ns": 1230768000000000000,
+            "st_size": 51424,
+            "st_uid": 0
+          },
+          "machine": 62,
+          "path": "/system/lib64/libnativebridge_lazy.so",
+          "sha256": "5b1b02f4de4966ddd1dc817a1d36ac26f647bc201538e09ad8ab84f3faf0df7b"
+        },
+        {
+          "content_read": "first_64_code_bytes_only",
+          "elf": false,
+          "engine_name_candidate": true,
+          "identity": {
+            "st_ctime_ns": 1789131989000000000,
+            "st_dev": 1810,
+            "st_gid": 0,
+            "st_ino": 172,
+            "st_mode": 33188,
+            "st_mtime_ns": 1789131989000000000,
+            "st_size": 8351,
+            "st_uid": 0
+          },
+          "path": "/vendor/overlay/DroidloomFrameworkDisplayOverlay.apk"
+        }
+      ],
+      "maps_before_after_equal": true,
+      "maps_bytes": 289178,
+      "maps_row_count": 3175,
+      "maps_sha256": "e64705d812ea73aac54e0bca7302fd5637aaa7ef56b5fd579312097a2a1e7ed6",
+      "native_or_engine_exclusion_qualified": false,
+      "old_collector_all_executable_files_hashed": false,
+      "package": "com.android.documentsui",
+      "phase": "before-ui",
+      "process_name": "com.android.documentsui",
+      "source_sample": {
+        "bytes": 1808642,
+        "file": "sample-000.json",
+        "sha256": "70e68d65f40d76309e63289d0676989433176834757d76f8b04846733a2a9bdc"
+      },
+      "stable_process_identity": true,
+      "unresolved_name_candidates": [
+        {
+          "any_executable_segment": false,
+          "observed_permissions": [
+            "r--s"
+          ],
+          "path": "/dev/__properties__/u:object_r:qemu_sf_lcd_density_prop:s0",
+          "reason": "UNTRUSTED_CODE_ROOT_OR_DELETED_MAPPING"
+        },
+        {
+          "any_executable_segment": false,
+          "observed_permissions": [
+            "r--s"
+          ],
+          "path": "/data/resource-cache/vendor@overlay@DroidloomFrameworkDisplayOverlay.apk@idmap",
+          "reason": "UNTRUSTED_CODE_ROOT_OR_DELETED_MAPPING"
+        }
+      ],
+      "utc": "2026-11-05T13:35:25.803872+00:00"
+    },
+    {
+      "android_uid": 10024,
+      "anonymous_executable_mapping_names": [
+        "[vdso]",
+        "[vsyscall]"
+      ],
+      "engine_candidate_paths": [
+        "/apex/com.android.art/lib64/libnativebridge.so",
+        "/apex/com.android.tethering/lib64/libcrypto_httpengine.so",
+        "/apex/com.android.tethering/lib64/libhttpengine.so",
+        "/data/resource-cache/vendor@overlay@DroidloomFrameworkDisplayOverlay.apk@idmap",
+        "/dev/__properties__/u:object_r:qemu_sf_lcd_density_prop:s0",
+        "/system/lib64/libnativebridge_lazy.so",
+        "/vendor/overlay/DroidloomFrameworkDisplayOverlay.apk"
+      ],
+      "executable": {
+        "architecture": "x86_64",
+        "bits": 64,
+        "byte_order": "little",
+        "elf": true,
+        "identity": {
+          "st_ctime_ns": 1230768000000000000,
+          "st_dev": 1807,
+          "st_gid": 2000,
+          "st_ino": 10363633,
+          "st_mode": 33261,
+          "st_mtime_ns": 1230768000000000000,
+          "st_size": 51616,
+          "st_uid": 0
+        },
+        "machine": 62,
+        "sha256": "456322c6cc424d228d153623717e8a6b1ac7d0b3aa48f0f1948380412f54ac73"
+      },
+      "file_objects_with_executable_segment": 376,
+      "file_objects_with_executable_segment_but_first_segment_nonexecutable": 375,
+      "host_identity": {
+        "exe": "/system/bin/app_process64",
+        "ns": {
+          "cgroup": "cgroup:[4026533394]",
+          "ipc": "ipc:[4026533286]",
+          "mnt": "mnt:[4026533780]",
+          "net": "net:[4026533041]",
+          "pid": "pid:[4026533288]",
+          "uts": "uts:[4026533285]"
+        },
+        "nspid": [
+          "3593977",
+          "3595"
+        ],
+        "pid": 3593977,
+        "start": "80801834",
+        "uid": [
+          "10024",
+          "10024",
+          "10024",
+          "10024"
+        ]
+      },
+      "mapped_code_objects": [
+        {
+          "architecture": "x86_64",
+          "bits": 64,
+          "byte_order": "little",
+          "elf": true,
+          "engine_name_candidate": true,
+          "identity": {
+            "st_ctime_ns": 0,
+            "st_dev": 1838,
+            "st_gid": 1000,
+            "st_ino": 66,
+            "st_mode": 33188,
+            "st_mtime_ns": 0,
+            "st_size": 1075032,
+            "st_uid": 1000
+          },
+          "machine": 62,
+          "path": "/apex/com.android.tethering/lib64/libcrypto_httpengine.so",
+          "sha256": "e2494fb6a1f848f6b322bdcda90b6c4b6b611ebf54ebd7d14161a2ee40d1dd65"
+        },
+        {
+          "architecture": "x86_64",
+          "bits": 64,
+          "byte_order": "little",
+          "elf": true,
+          "engine_name_candidate": true,
+          "identity": {
+            "st_ctime_ns": 0,
+            "st_dev": 1838,
+            "st_gid": 1000,
+            "st_ino": 70,
+            "st_mode": 33188,
+            "st_mtime_ns": 0,
+            "st_size": 8609040,
+            "st_uid": 1000
+          },
+          "machine": 62,
+          "path": "/apex/com.android.tethering/lib64/libhttpengine.so",
+          "sha256": "57fa5ef2ffcb76c6f266c23791c011c8741b3fda3a47f2b52ba90d827f19eff2"
+        },
+        {
+          "architecture": "x86_64",
+          "bits": 64,
+          "byte_order": "little",
+          "elf": true,
+          "engine_name_candidate": true,
+          "identity": {
+            "st_ctime_ns": 0,
+            "st_dev": 1824,
+            "st_gid": 1000,
+            "st_ino": 70,
+            "st_mode": 33188,
+            "st_mtime_ns": 0,
+            "st_size": 51336,
+            "st_uid": 1000
+          },
+          "machine": 62,
+          "path": "/apex/com.android.art/lib64/libnativebridge.so",
+          "sha256": "800c7968a03e3d3c673771110aa1249c296c3a7963398c3a9856311db67252cc"
+        },
+        {
+          "architecture": "x86_64",
+          "bits": 64,
+          "byte_order": "little",
+          "elf": true,
+          "engine_name_candidate": false,
+          "identity": {
+            "st_ctime_ns": 1230768000000000000,
+            "st_dev": 1807,
+            "st_gid": 0,
+            "st_ino": 21459603,
+            "st_mode": 33188,
+            "st_mtime_ns": 1230768000000000000,
+            "st_size": 224512,
+            "st_uid": 0
+          },
+          "machine": 62,
+          "path": "/system/lib64/libcycleperuid.so",
+          "sha256": "fbdb5ef00726087e4d664de712b147b5821f2eea4b8d5a513ca7feac73132589"
+        },
+        {
+          "architecture": "x86_64",
+          "bits": 64,
+          "byte_order": "little",
+          "elf": true,
+          "engine_name_candidate": true,
+          "identity": {
+            "st_ctime_ns": 1230768000000000000,
+            "st_dev": 1807,
+            "st_gid": 0,
+            "st_ino": 21460704,
+            "st_mode": 33188,
+            "st_mtime_ns": 1230768000000000000,
+            "st_size": 51424,
+            "st_uid": 0
+          },
+          "machine": 62,
+          "path": "/system/lib64/libnativebridge_lazy.so",
+          "sha256": "5b1b02f4de4966ddd1dc817a1d36ac26f647bc201538e09ad8ab84f3faf0df7b"
+        },
+        {
+          "content_read": "first_64_code_bytes_only",
+          "elf": false,
+          "engine_name_candidate": true,
+          "identity": {
+            "st_ctime_ns": 1789131989000000000,
+            "st_dev": 1810,
+            "st_gid": 0,
+            "st_ino": 172,
+            "st_mode": 33188,
+            "st_mtime_ns": 1789131989000000000,
+            "st_size": 8351,
+            "st_uid": 0
+          },
+          "path": "/vendor/overlay/DroidloomFrameworkDisplayOverlay.apk"
+        }
+      ],
+      "maps_before_after_equal": true,
+      "maps_bytes": 284492,
+      "maps_row_count": 3117,
+      "maps_sha256": "3bbae8c5b07b5dd55d9333ecccb661c35f94f04051a8cbc736c446ea649358b5",
+      "native_or_engine_exclusion_qualified": false,
+      "old_collector_all_executable_files_hashed": false,
+      "package": "com.android.externalstorage",
+      "phase": "before-ui",
+      "process_name": "com.android.externalstorage",
+      "source_sample": {
+        "bytes": 1808642,
+        "file": "sample-000.json",
+        "sha256": "70e68d65f40d76309e63289d0676989433176834757d76f8b04846733a2a9bdc"
+      },
+      "stable_process_identity": true,
+      "unresolved_name_candidates": [
+        {
+          "any_executable_segment": false,
+          "observed_permissions": [
+            "r--s"
+          ],
+          "path": "/dev/__properties__/u:object_r:qemu_sf_lcd_density_prop:s0",
+          "reason": "UNTRUSTED_CODE_ROOT_OR_DELETED_MAPPING"
+        },
+        {
+          "any_executable_segment": false,
+          "observed_permissions": [
+            "r--s"
+          ],
+          "path": "/data/resource-cache/vendor@overlay@DroidloomFrameworkDisplayOverlay.apk@idmap",
+          "reason": "UNTRUSTED_CODE_ROOT_OR_DELETED_MAPPING"
+        }
+      ],
+      "utc": "2026-11-05T13:35:25.833013+00:00"
+    }
+  ],
+  "runtime_collector_defect": {
+    "description": "Object was added to seen before executable-or-name eligibility, so a nonexecutable first segment hid subsequent executable segments for the same file. Full maps were still saved.",
+    "fix_device_execution_verified": false,
+    "fixed_source_sha256": "cf88000ea1a82ffd8c24daea26140ae1d76d21f9b48dd782e84ae674a863d82b",
+    "local_actual_maps_regression_passed": true,
+    "source_sha256": "a3aa153e57ddde7a06e04594de3b50834d2acea59f3db2fad1857af150260704"
+  },
+  "runtime_summary_source": {
+    "bytes": 1896,
+    "file": "summary.json",
+    "sha256": "e2a4ec41ca5b4f5fec1c61bebe453a52b260e9964232ce2275e5bfea7eaa2954"
+  },
+  "saved_export": {
+    "Android_actions": 0,
+    "UI_actions": 0,
+    "exit_code": 0,
+    "gzip_sha256": "bb1a3ab3e48895f83df233267ec0d9a55855e96a708c275eaab49e368ffb4a87",
+    "job_id": "1a1ac0c27cc-fc05-51e7",
+    "output_complete": true,
+    "output_durable": true,
+    "sha256": "9bcc2942ebedbe8b7619813daa5874bc363a5794158a3ec97e898c3514e7d9b1"
+  },
+  "schema": "documents-features-flow02-runtime-and-dialog-review-v1",
+  "scope_limits": [
+    "Filename regex matches are candidates for source review, not proof of a translation engine. The unresolved property/idmap paths have only r--s mappings in the saved maps.",
+    "The executable app_process64 was actually ELF64 x86_64 with a verified full-file SHA; this does not by itself qualify the whole App or exclude all execution engines.",
+    "The corrected sampler still needs to run during real copy/move and capture the manifest-declared separate file-operation service.",
+    "Finite 77-second resource observations do not establish long-duration leak/stress qualification."
+  ],
+  "whole_app_production_ready": false
+}

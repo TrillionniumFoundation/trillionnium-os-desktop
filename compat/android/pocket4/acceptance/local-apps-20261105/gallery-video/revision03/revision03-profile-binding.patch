@@ -1,0 +1,31 @@
+--- original-gallery-base.py
++++ revision03/gallery_base.py
+@@ -7,11 +7,11 @@
+ 
+ HERE=Path(__file__).resolve().parent
+ ROOT=Path('/home/alex/work/pocket4-gallery-image-20261105-r12-01')
+-TX=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
++TX=Path('/home/alex/work/pocket4-runtime-profile-20261105-r12-6144-01/camera_transaction.py')
+ BASE=Path('/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01/ui_preflight04.py')
+ DOC=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-10/run_saf10.py')
+ DIAG=Path('/home/alex/work/pocket4-qa-fixture-ui-tools-20261105-r12-01/diagnostics_source.py')
+-PINS={str(TX):'b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470',
++PINS={str(TX):'e65a47bea8b3800d0b1a89247bd8c356dd291523c2d248d401d05d1d3b55fb83',
+     str(BASE):'d02821d751736a9e3cf275ec0b27383852e24362928fd4257ebb6d3dee7f6a58',
+     str(DOC):'d1426a5d52e80d4064430070193e5b4c083f69ae7b7a44a733e6cbb413edaae4',
+     str(DIAG):'93cf4567c19f6033dce0b120d068a7120a2b27952a4a1d0d4cfdd8b988ebfbcb'}
+--- revision02/run_video01.py
++++ revision03/run_video01.py
+@@ -6,9 +6,9 @@
+ import xml.etree.ElementTree as ET
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-gallery-video-flow-20261105-r12-02')
+-BASE=Path('/home/alex/work/pocket4-gallery-tools-20261105-r12-01/run_gallery01.py')
+-BASE_SHA='1373820f8c1a39203bb764d3b5f5859b1ef91387cc4b04fb564d4d4d3cd7f40e'
++ROOT=Path('/home/alex/work/pocket4-gallery-video-flow-20261105-r12-03')
++BASE=HERE/'gallery_base.py'
++BASE_SHA='06a182dae066e4d1c9d0387371711145754378747e561f16543e5315051aefb2'
+ CODE=Path('/home/alex/work/pocket4-gallery-movie-source-20261105-r12-01/result.json')
+ CODE_SHA='9d655713eb1201f3d4accbe295d8f47b80cc6eaca14e202f53d5b1b29cb05cf2'
+ RUN='c92c3d79180955ef';PACKAGE='org.droidloom.qa.media.r12.n'+RUN

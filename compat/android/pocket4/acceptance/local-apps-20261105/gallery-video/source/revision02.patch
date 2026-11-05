@@ -1,0 +1,59 @@
+--- flow01/run_video01.py
++++ revision02/run_video01.py
+@@ -6,7 +6,7 @@
+ import xml.etree.ElementTree as ET
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-gallery-video-flow-20261105-r12-01')
++ROOT=Path('/home/alex/work/pocket4-gallery-video-flow-20261105-r12-02')
+ BASE=Path('/home/alex/work/pocket4-gallery-tools-20261105-r12-01/run_gallery01.py')
+ BASE_SHA='1373820f8c1a39203bb764d3b5f5859b1ef91387cc4b04fb564d4d4d3cd7f40e'
+ CODE=Path('/home/alex/work/pocket4-gallery-movie-source-20261105-r12-01/result.json')
+@@ -16,10 +16,7 @@
+ RELATIVE='DCIM/'+FOLDER+'/';GUEST_FOLDER='/storage/emulated/0/DCIM/'+FOLDER;GUEST_FILE=GUEST_FOLDER+'/'+NAME
+ GALLERY='com.android.gallery3d';MAIN=GALLERY+'.app.GalleryActivity';MOVIE=GALLERY+'.app.MovieActivity'
+ VIDEO_SHA='eaeb797bff8f610373204451f5885dcba2fb1ffa2530410468b7dc480d5588da'
+-PINS={'package_fixture.py':'5cb30798c5ce70e5dd56175e7a7d4382908086f30c3cbeda16b6dc10c18ab068',
+-      'runtime_evidence.py':'3b68854c19037f50eef9f0fc5e462372c2f1e05914382c9d752776fc8e027629',
+-      'verify_pattern.py':'0206850626989ddd3a52693252d211dbd5e03addfe86332190da8ca1cb6951e9',
+-      'verify_video.py':'2b52f1514fff4507a9618ac5695d0dd64820f2e34f9c242cb5d640f6c79fe93d'}
++PINS={'package_fixture.py': '5cb30798c5ce70e5dd56175e7a7d4382908086f30c3cbeda16b6dc10c18ab068', 'runtime_evidence.py': '670af6f9a2ecd16591babc3e40387dc6f25474d27f73fc93f42b881d3d60d5df', 'verify_pattern.py': '80cd758ca6da90fa404368907fc645adb9524b86be96966dc328599c2e8f7e7f', 'verify_video.py': '2b52f1514fff4507a9618ac5695d0dd64820f2e34f9c242cb5d640f6c79fe93d'}
+ WORK_SECONDS=600;CLEANUP_SECONDS=120;MAX_INPUTS=12
+ PLAY_LABELS={'Play','Play video','播放','播放视频'}
+ PAUSE_LABELS={'Pause','Pause video','暂停','暂停视频'}
+--- flow01/verify_pattern.py
++++ revision02/verify_pattern.py
+@@ -1,7 +1,20 @@
+ """Verify the four known quadrants occupy a full Gallery image, not a thumbnail."""
+ import math
+ 
+-COLORS=((255,59,48),(52,199,89),(0,122,255),(255,204,0))
++# Video-only reference for the fixed, untagged YCbCr fixture.
++# Android's documented default video transfer is SMPTE 170M; an sRGB
++# capture therefore uses sRGB_OETF(SMPTE170M_inverse_OETF(encoded_value)).
++# This reference is derived from the standard, never fitted to a screenshot.
++# https://android.googlesource.com/platform/frameworks/native/+/db4192ada9dee591ec897a51c07c489c84c860c1/libs/nativewindow/include/android/data_space.h
++# It recognizes this fixture; it does not qualify color fidelity or bind the
++# installed compositor to that upstream implementation.
++SOURCE_COLORS=((255,59,48),(52,199,89),(0,122,255),(255,204,0))
++def video_channel_in_srgb(value):
++    encoded=value/255.0
++    linear=encoded/4.5 if encoded<0.081 else ((encoded+0.099)/1.099)**(1/0.45)
++    srgb=12.92*linear if linear<0.0031308 else 1.055*linear**(1/2.4)-0.055
++    return round(255*srgb)
++COLORS=tuple(tuple(video_channel_in_srgb(c) for c in rgb) for rgb in SOURCE_COLORS)
+ 
+ def verify_pattern(image):
+     def need(value,reason):
+--- flow01/runtime_evidence.py
++++ revision02/runtime_evidence.py
+@@ -122,8 +122,8 @@
+                 for m in parsed:
+                     path=m['path'];key=(m['device_major'],m['device_minor'],m['inode'],path)
+                     if key in seen or not m['inode'] or not path.startswith('/'):continue
++                    if not ('x' in m['permissions'] or ENGINE_NAME.search(path)):continue
+                     seen.add(key)
+-                    if not ('x' in m['permissions'] or ENGINE_NAME.search(path)):continue
+                     if path.endswith(' (deleted)') or not path.startswith(CODE_ROOTS):
+                         unresolved.append({'path':path,'reason':'UNTRUSTED_CODE_ROOT_OR_DELETED_MAPPING'});continue
+                     try:

@@ -1,0 +1,175 @@
+--- timer_expiry02.py
++++ timer_expiry03.py
+@@ -5,15 +5,16 @@
+ import argparse, copy, hashlib, json, re, signal, time, types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-clock-timer-expiry-20261105-r12-02')
+-PUBLIC = HERE / 'clock-timer-expiry02-result.json'
++ROOT = Path('/home/alex/work/pocket4-clock-timer-expiry-20261105-r12-03')
++PUBLIC = HERE / 'clock-timer-expiry03-result.json'
+ PACKAGE = 'com.android.deskclock'
+ ALERT = PACKAGE + '.timer.ExpiredTimersActivity'
+ DURATION = 60000
+ PINS = {
+-    'core': (str(HERE / 'timer01.py'), '873c5e61a0c87658d81cce5b2a085b3516515a8bbe61e4ba5e18f69d23a3b041'),
+-    'notifications': (str(HERE / 'notification_ui04.py'), '1c986fab2058b3270320139a1346260be4e3313a3fdc9dc3dc82e07c52eab85d'),
++    'core': ('/home/alex/work/pocket4-clock-session-tools-20261105-r12-01/timer01.py', '873c5e61a0c87658d81cce5b2a085b3516515a8bbe61e4ba5e18f69d23a3b041'),
++    'notifications': ('/home/alex/work/pocket4-clock-session-tools-20261105-r12-01/notification_ui04.py', '1c986fab2058b3270320139a1346260be4e3313a3fdc9dc3dc82e07c52eab85d'),
+ }
++OBSERVER_PINS = {'read_clock_expired_text02.py': '93a25eacc015e5e87a12a0cd55a9b97c8a7fd7068dd6c691a56b9c77b2a1af6f', 'notify_watch02.py': '231c1010769d10c134576c2514f0874ae4d7f2b71254433feedb0b954e3fa329', 'notify_proof.py': '9e8c5df6fda3ac2e80d8674f8717ad7916de99f4b945692c6c8bdccbfcd6ffdb', 'audio_observe.py': '5c6a49c7ee119c457d60072fbd25ea5ff1b23a577ad2504ba5fcbfc3fe01fdac'}
+ ALARM_SHA = '655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea'
+ 
+ 
+@@ -91,7 +92,7 @@
+             return {'parsed': False, 'reason': 'ACTIVE_RECORD_IDENTITY_UNKNOWN'}
+         channel = bool(re.search(r'\bchannel=TimerModelNotification\b', block)
+                        or "mId='TimerModelNotification'" in block)
+-        fullscreen = bool(re.search(r'\bfullScreenIntent=PendingIntent\{', block))
++        fullscreen = bool(re.search(r'\bfullscreenIntent=PendingIntent\{', block))
+         records.append({'uid': 10063, 'user': 0, 'timer_channel': channel,
+                         'full_screen_pending_intent': fullscreen,
+                         'record_sha256': hashlib.sha256(block.encode()).hexdigest()})
+@@ -100,7 +101,7 @@
+             'records': records}
+ 
+ 
+-def make_flow(core, base):
++def make_flow(core, base, notify, audio, proof):
+     class ExpiryFlow(core.Flow):
+         def __init__(self, trial, loop, timer, result):
+             super().__init__(trial, loop, timer, result)
+@@ -109,6 +110,8 @@
+             self.alert_task = None
+             self.alert_self_finished = []
+             self.stop_dispatched = False
++            self.watch = notify.Watch(trial.s, trial.tx, ROOT / "notify-private")
++            self.audio = audio.Observe(trial.s, trial.tx, ROOT / "audio-private")
+             original_leaf = base.exact_leaf
+             base.exact_leaf = lambda roots, task: (exact_alert(roots, task)
+                 if task == self.alert_task else original_leaf(roots, task))
+@@ -336,6 +339,9 @@
+                     'EMPTY_ACTIVE_CLOCK_NOTIFICATION_BASELINE_REQUIRED')
+             roots, tasks = self.topology('baseline-tasks')
+             self.baseline, self.baseline_map = set(tasks), task_map(roots)
++            self.r['notify_watch_start'] = self.watch.start()
++            require(self.watch.baseline['record'] is None, 'OLD_EXPIRED_DESKTOP_RECORD_PRESENT')
++            self.audio.start()
+             self.launch('initial'); self.setup((0, 0, 0))
+             for digit, expected in (('1', (0, 0, 1)), ('0', (0, 0, 10)), ('0', (0, 1, 0))):
+                 self.act('digit-' + digit, self.node('timer_setup_digit_' + digit, (digit,)))
+@@ -345,12 +351,41 @@
+             self.act('create-start', self.node('fab', ('Start',))); self.claim_created()
+             self.close()
+             self.closed_wait_started = time.monotonic()
++            clock_before = time.monotonic_ns(); clock_uptime = self.uptime(); clock_after = time.monotonic_ns()
++            clock_basis = {'before_ns':clock_before,'after_ns':clock_after,'uptime_ms':clock_uptime}
++            running_raw = self.t.s.android(['/system/bin/dumpsys','notification','--noredact','--package',PACKAGE],12)
++            self.t.tx.write_new(ROOT/'running-text-private.txt',running_raw)
++            running_text = proof.parse_nms(running_raw)
++            self.r['host_notify_running'] = self.watch.snapshot()
++            self.r['running_notification_text'] = running_text
+             self.observe_service_process('after-owned-close')
+             self.wait_expiry()
+             self.observe_service_process('actual-expired')
+             delivered = self.notifications('expired')
+             self.r['notification_posted_verified'] = bool(delivered.get('parsed') is True
+                                                           and delivered.get('expired_heads_up_count') == 1)
++            def verify_own_expired():
++                current = timer_owned(self.m.read(self.t.s), self.timer_id)
++                require(current['state'] == 3, 'AUDIO_REQUIRES_THIS_SOLE_EXPIRED_TIMER')
++            verify_own_expired()
++            self.r['expiry_audio_evidence'] = self.audio.expired(verify_own_expired,
++                self.r['expiry_timing']['expected_due_ms'], self.uptime)
++            verify_own_expired()
++            observed = self.watch.snapshot()
++            self.r['host_notify_expired'] = observed
++            text_raw = self.t.s.android(['/system/bin/dumpsys','notification','--noredact','--package',PACKAGE],12)
++            self.t.tx.write_new(ROOT/'expired-text-private.txt',text_raw)
++            self.r['expired_notification_text'] = proof.parse_nms(text_raw)
++            self.r['Notify_scope'] = proof.associate(self.r['expired_notification_text'],running_text,
++                observed,self.r['host_notify_running'],clock_basis,self.r['expiry_timing']['expected_due_ms'])
++            self.r['standard_title_body_to_host_Notify_observed'] = bool(
++                self.r['notification_posted_verified'] and self.r['Notify_scope']['verified'])
++            self.r['Notify_scope'].update(owned_timer_id=self.timer_id,duration_ms=DURATION,
++                snapshot_utc=observed['utc'],expiry_timing=self.r['expiry_timing'])
++            self.r['Notify_scope_context'] = {'owned_timer_id':self.timer_id,'duration_ms':DURATION,
++                'expired_key':observed['own_state']['key'],'snapshot_utc':observed['utc'],
++                'expiry_timing':self.r['expiry_timing'],
++                'actual_desktop_popup_observed':False,'absence_is_not_App_failure':True}
+             if not self.claim_alert():
+                 self.launch('expired-main')
+                 self.r['actual_expired_main_window_verified'] = True
+@@ -366,7 +401,9 @@
+                     'CLOCK_TIMER_NOTIFICATION_NOT_CLEARED')
+             require(self.r['notification_posted_verified'] or self.r.get('actual_alert_window_verified') is True,
+                     'EXPIRY_REMINDER_DELIVERY_NOT_VERIFIED')
+-            self.r['state'] = 'OWNED_TIMER_EXPIRY_STOP_DELETE_VERIFIED_CLEAN'
++            self.r['host_notify_after_delete'] = self.watch.snapshot()
++            self.r['expired_desktop_state_removed'] = self.r['host_notify_after_delete']['own_state']['record'] is None
++            self.r['state'] = 'OWNED_TIMER_EXPIRY_STOP_DELETE_VERIFIED_CLEAN' 
+ 
+         def cleanup(self):
+             self.r['cleanup'] = {'original_failure_retained': True, 'new_inputs': 0,
+@@ -404,8 +441,11 @@
+ 
+ def execute():
+     core = load(*PINS['core']); notifications = load(*PINS['notifications'])
++    notify = load(str(HERE/'notify_watch02.py'), OBSERVER_PINS['notify_watch02.py'])
++    proof = load(str(HERE/'notify_proof.py'), OBSERVER_PINS['notify_proof.py'])
++    audio = load(str(HERE/'audio_observe.py'), OBSERVER_PINS['audio_observe.py'])
+     core.PINS = dict(core.PINS)
+-    core.PINS['model'] = (str(HERE / 'read_clock_foreground01.py'), '5591b37c256f1e8927f34cd1d7f89e6489add4bdde714198cf3f6d872c72b89e')
++    core.PINS['model'] = (str(HERE / 'read_clock_expired_text02.py'), '93a25eacc015e5e87a12a0cd55a9b97c8a7fd7068dd6c691a56b9c77b2a1af6f')
+     core.DURATION = DURATION  # Private module only; frozen timer01 bytes stay unchanged.
+     modules = {name: core.load(*pin) for name, pin in core.PINS.items()}
+     base, loop, model, shared, timer = [modules[x] for x in ('base', 'loop', 'model', 'shared', 'timer')]
+@@ -416,10 +456,11 @@
+         'alarm_write_actions': 0, 'global_volume_or_ringtone_actions': 0, 'notification_permission_actions': 0,
+         'automatic_retry': False, 'timer_duration_ms': DURATION, 'lease_seconds': 240,
+         'cleanup_budget_seconds': 45, 'source_pins': PINS, 'inherited_source_pins': core.PINS,
+-        'installed_dex_sha256': '8b7f0094b816a758d86599ba9c19866314dbb37cf78f57187a8602c2f3e3b77b',
+-        'prior_failure_sha256': '90617209a0ed0ca29f13872293f1d5ed33e82b1ba8825fc54c9c29b58a6ca7f2',
+-        'prior_install_strict_state': 'POST_INSTALL_STATE_DIFFERS',
+-        'install_delta_review': 'READ_EXTERNAL remains denied; installer exemption added; global intent counter 119 -> 120; other protected state unchanged',
++        'installed_dex_sha256': 'c6721db34c21c5bab07712a6ddc3eaaf9c6617196856f9abf29741c18f956d22',
++        'prior_expiry02_original_failure_sha256': '61f2bd63c63f637d858417e89f831bceb107d23432ed4815e0e77a8b5299d0cb',
++        'current_install_state': 'INSTALLED_VERIFIED',
++        'install_result_sha256': '8c6571736a221d78178bec412fdc771b56ca1dc7655907c7b715afeb87aa1bf6',
++        'install_delta_review': 'global intent counter 120 -> 121; all other preference bytes and protected state preserved',
+         'started_utc': datetime.now(timezone.utc).isoformat()}
+     prior = signal.signal(signal.SIGALRM, expired); trial = flow = None
+     cleanup_deadline = None
+@@ -428,7 +469,7 @@
+         with tx.ui_lock():
+             ROOT.mkdir(mode=0o700)
+             with tx.CameraSession(ROOT / 'commands') as session:
+-                trial = base.Trial(session, tx); flow = make_flow(core, base)(trial, loop, timer, result)
++                trial = base.Trial(session, tx); flow = make_flow(core, base, notify, audio, proof)(trial, loop, timer, result)
+                 try:
+                     result['identity_before'] = model.identity(session)
+                     require(result['identity_before']['notifications_granted'] is True, 'CLOCK_NOTIFICATIONS_MUST_REMAIN_ENABLED')
+@@ -454,6 +495,14 @@
+                         cleanup_deadline = time.monotonic() + 45
+                     signal.setitimer(signal.ITIMER_REAL, max(.001, cleanup_deadline - time.monotonic()))
+                     try:
++                        result['notify_watch_child_started'] = flow.watch.process is not None
++                        result['notify_watch_stop'] = flow.watch.stop()
++                        result['notify_monitor_closed_verified'] = proof.monitor_closed(
++                            result['notify_watch_stop'], result['notify_watch_child_started'])
++                    except BaseException as observer:
++                        result['notify_monitor_closed_verified'] = False
++                        result['notify_watch_stop_error'] = type(observer).__name__ + ': ' + str(observer)
++                    try:
+                         flow.close()
+                     except BaseException as close:
+                         result['close_error'] = type(close).__name__ + ': ' + str(close)
+@@ -476,6 +525,8 @@
+                 and result['appop_after']['allow_verified'] is True and 'close_error' not in result
+                 and result.get('task_set_restored') is True,
+                 'EXPIRY_SUCCESS_REQUIRES_IDENTITY_AND_TWO_NORMAL_CLOSES')
++            require(result.get('notify_monitor_closed_verified') is True,
++                    'NOTIFY_MONITOR_CLEANUP_REQUIRES_CHILD_READER_AND_BOTH_PIPE_EOF')
+     except BaseException as exc:
+         result.update(state='FAILED', business_success_verified=False,
+                       terminal_error=type(exc).__name__ + ': ' + str(exc))

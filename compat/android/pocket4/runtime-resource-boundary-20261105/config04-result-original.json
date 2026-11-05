@@ -1,0 +1,273 @@
+{
+  "after": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "6144"
+    },
+    "pids_current": "3244",
+    "pids_events": "max 0",
+    "utc": "2026-11-05T15:49:24.079879+00:00"
+  },
+  "before": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "limits": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "6144"
+    },
+    "pids_current": "3244",
+    "pids_events": "max 0",
+    "utc": "2026-11-05T15:49:23.984503+00:00"
+  },
+  "expected_frozen_limits": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "fixed_framework_and_host_identity_verified_twice": true,
+  "journal_scope": "PID1 manager records matching resource/reload/unit names; bounded160 entries in fixed UTC window. Absence is not proof of no direct cgroup writes.",
+  "limit_consistency": true,
+  "new_runtime_baseline_authorized_or_created": false,
+  "optional_unreported_properties": [],
+  "pinned_input_metadata": {
+    "/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json": {
+      "bytes": 63675,
+      "ctime_ns": "1793782513084171135",
+      "device": 66306,
+      "gid": 0,
+      "inode": 43950275,
+      "mode": "0o600",
+      "mtime_ns": "1793782513084171135",
+      "nlink": 1,
+      "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+      "uid": 0
+    },
+    "/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py": {
+      "bytes": 29099,
+      "ctime_ns": "1793857161074913738",
+      "device": 66306,
+      "gid": 0,
+      "inode": 33994986,
+      "mode": "0o444",
+      "mtime_ns": "1793857161074913738",
+      "nlink": 1,
+      "sha256": "b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470",
+      "uid": 0
+    },
+    "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py": {
+      "bytes": 8658,
+      "ctime_ns": "1793772341125809242",
+      "device": 66306,
+      "gid": 1000,
+      "inode": 43686189,
+      "mode": "0o600",
+      "mtime_ns": "1793772341125809242",
+      "nlink": 1,
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "uid": 1000
+    }
+  },
+  "resource_configuration_files": [
+    {
+      "bytes": 291,
+      "canonical": "/usr/lib/systemd/system/droidloomd.service",
+      "ctime_ns": "1791343620822587766",
+      "device": 66306,
+      "gid": 1000,
+      "inode": 108004280,
+      "mode": "0o644",
+      "mtime_ns": "1789132464000000000",
+      "nlink": 1,
+      "path": "/usr/lib/systemd/system/droidloomd.service",
+      "selected_resource_directives": [],
+      "sha256": "3dc60679d7d65c2fb051a75733ea0cab888e501f280ff37afcf20d5167305d2d",
+      "uid": 1000
+    },
+    {
+      "bytes": 115,
+      "canonical": "/etc/systemd/system/droidloomd.service.d/10-ubuntu-unshare-compat.conf",
+      "ctime_ns": "1791343856114439187",
+      "device": 66306,
+      "gid": 0,
+      "inode": 76546696,
+      "mode": "0o644",
+      "mtime_ns": "1791343856113654322",
+      "nlink": 1,
+      "path": "/etc/systemd/system/droidloomd.service.d/10-ubuntu-unshare-compat.conf",
+      "selected_resource_directives": [],
+      "sha256": "0774a57ca16ad6952ccf422b96af6b6e17898fde922b97081453da47035f7c0e",
+      "uid": 0
+    },
+    {
+      "bytes": 160,
+      "canonical": "/etc/systemd/system.control/droidloomd.service.d/50-AllowedCPUs.conf",
+      "ctime_ns": "1791418956483312554",
+      "device": 66306,
+      "gid": 0,
+      "inode": 76546664,
+      "mode": "0o644",
+      "mtime_ns": "1791418956483312554",
+      "nlink": 1,
+      "path": "/etc/systemd/system.control/droidloomd.service.d/50-AllowedCPUs.conf",
+      "selected_resource_directives": [],
+      "sha256": "d0dd31a01ec90d2b69722caab2c68bc76960bd922c66b2a4ce80031750fbf405",
+      "uid": 0
+    },
+    {
+      "bytes": 146,
+      "canonical": "/etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf",
+      "ctime_ns": "1793757666595952630",
+      "device": 66306,
+      "gid": 0,
+      "inode": 76546888,
+      "mode": "0o644",
+      "mtime_ns": "1793757666595952630",
+      "nlink": 1,
+      "path": "/etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf",
+      "selected_resource_directives": [
+        {
+          "line": 4,
+          "section": "[Service]",
+          "text": "TasksMax=12288"
+        }
+      ],
+      "sha256": "efc86c948c22294919c23c43fa11382b6e0c13d96883239e7d79a24c027d0f63",
+      "uid": 0
+    },
+    {
+      "bytes": 132,
+      "canonical": "/etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+      "ctime_ns": "1791606739021216291",
+      "device": 66306,
+      "gid": 0,
+      "inode": 76546864,
+      "mode": "0o644",
+      "mtime_ns": "1791606739021216291",
+      "nlink": 1,
+      "path": "/etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+      "selected_resource_directives": [
+        {
+          "line": 2,
+          "section": "[Service]",
+          "text": "CPUQuota=200%"
+        },
+        {
+          "line": 3,
+          "section": "[Service]",
+          "text": "MemoryHigh=5G"
+        },
+        {
+          "line": 4,
+          "section": "[Service]",
+          "text": "MemoryMax=6G"
+        },
+        {
+          "line": 5,
+          "section": "[Service]",
+          "text": "TasksMax=6144"
+        }
+      ],
+      "sha256": "1ddafeb233beabb556bdc9f1cbd3a1af78d00a0489675facad2d02493ba431a7",
+      "uid": 0
+    }
+  ],
+  "schema": "pocket4-main-configured-task-limit-readonly/v1",
+  "scope": {
+    "android_commands": 0,
+    "cgroup_writes": 0,
+    "guard_updates": 0,
+    "package_actions": 0,
+    "service_actions": 0,
+    "signals_to_existing_processes": 0,
+    "ui_actions": 0
+  },
+  "source_pins": {
+    "activation": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "epoch": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+    "transaction": "b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470"
+  },
+  "system_manager_journal_query": {
+    "argv": [
+      "/usr/bin/journalctl",
+      "--system",
+      "--no-pager",
+      "--utc",
+      "-o",
+      "short-iso-precise",
+      "--since=2026-11-05 14:45:00 UTC",
+      "--until=2026-11-05 15:45:00 UTC",
+      "_PID=1",
+      "--grep=Reload|droidloomd|TasksMax",
+      "-n",
+      "160"
+    ],
+    "executable": "/usr/bin/journalctl",
+    "exit_code": 0,
+    "joined": true,
+    "stderr": "",
+    "stdout": "2026-11-05T14:57:59.484306+00:00 alex-G1628-04 systemd[1]: Reloading finished in 527 ms.\n2026-11-05T14:57:58.956004+00:00 alex-G1628-04 systemd[1]: Reloading...\n2026-11-05T14:57:58.955152+00:00 alex-G1628-04 systemd[1]: Reload requested from client PID 2333094 ('systemctl') (unit apt-daily-upgrade.service)...\n",
+    "tool": {
+      "bytes": 97472,
+      "ctime_ns": "1792945456488110570",
+      "device": 66306,
+      "gid": 0,
+      "inode": 108017352,
+      "mode": "0o755",
+      "mtime_ns": "1789570531000000000",
+      "nlink": 1,
+      "sha256": "d91b5f8629d41d7503fa00d8f4d58b6d0b72b5f0ca7b46667c8b5b1c59d460a2",
+      "uid": 0
+    }
+  },
+  "systemd_properties": {
+    "ActiveEnterTimestampMonotonic": "807969951230",
+    "CPUQuotaPerSecUSec": "2s",
+    "ControlGroup": "/system.slice/droidloomd.service",
+    "DropInPaths": "/etc/systemd/system/droidloomd.service.d/10-ubuntu-unshare-compat.conf /etc/systemd/system.control/droidloomd.service.d/50-AllowedCPUs.conf /etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf /etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+    "EffectiveTasksMax": "6144",
+    "ExecMainPID": "3588022",
+    "FragmentPath": "/usr/lib/systemd/system/droidloomd.service",
+    "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+    "MemoryHigh": "5368709120",
+    "MemoryMax": "6442450944",
+    "MemorySwapMax": "infinity",
+    "NeedDaemonReload": "no",
+    "TasksAccounting": "yes",
+    "TasksMax": "6144"
+  },
+  "systemd_query": {
+    "argv": [
+      "/usr/bin/systemctl",
+      "--system",
+      "show",
+      "droidloomd.service",
+      "--no-pager",
+      "--property=TasksMax,EffectiveTasksMax,TasksAccounting,ControlGroup,FragmentPath,DropInPaths,NeedDaemonReload,InvocationID,ExecMainPID,ActiveEnterTimestampMonotonic,CPUQuotaPerSecUSec,MemoryHigh,MemoryMax,MemorySwapMax"
+    ],
+    "executable": "/usr/bin/systemctl",
+    "exit_code": 0,
+    "joined": true,
+    "stderr": "",
+    "stdout": "FragmentPath=/usr/lib/systemd/system/droidloomd.service\nDropInPaths=/etc/systemd/system/droidloomd.service.d/10-ubuntu-unshare-compat.conf /etc/systemd/system.control/droidloomd.service.d/50-AllowedCPUs.conf /etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf /etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf\nActiveEnterTimestampMonotonic=807969951230\nNeedDaemonReload=no\nInvocationID=67cdc2375f394012ad9d7f39b0d77426\nExecMainPID=3588022\nControlGroup=/system.slice/droidloomd.service\nEffectiveTasksMax=6144\nCPUQuotaPerSecUSec=2s\nMemoryHigh=5368709120\nMemoryMax=6442450944\nMemorySwapMax=infinity\nTasksAccounting=yes\nTasksMax=6144\n",
+    "tool": {
+      "bytes": 302112,
+      "ctime_ns": "1792945456488110570",
+      "device": 66306,
+      "gid": 0,
+      "inode": 108017358,
+      "mode": "0o755",
+      "mtime_ns": "1789570531000000000",
+      "nlink": 1,
+      "sha256": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082",
+      "uid": 0
+    }
+  }
+}

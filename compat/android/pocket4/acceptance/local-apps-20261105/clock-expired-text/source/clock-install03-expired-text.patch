@@ -1,0 +1,154 @@
+--- clock_install02.py
++++ clock_install03.py
+@@ -3,19 +3,20 @@
+ from pathlib import Path
+ from datetime import datetime, timezone
+ import argparse, hashlib, io, json, os, re, stat, time, types, zipfile
+-
+-ROOT = Path('/home/alex/work/pocket4-clock-foreground-timer-20261105-r12-01')
+-RUN = ROOT / 'install-02'
++import xml.etree.ElementTree as ET
++
++ROOT = Path('/home/alex/work/pocket4-clock-expired-text-20261105-r12-02')
++RUN = ROOT / 'install-03'
+ CLOCK = Path('/home/alex/work/pocket4-clock-session-tools-20261105-r12-01')
+-CANDIDATE = ROOT / 'build/DeskClock-pocket4-foreground-timer.apk'
+-OLD_SHA = 'ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae'
+-NEW_SHA = 'cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73'
+-OLD_BYTES, NEW_BYTES = 7449572, 7593129
++CANDIDATE = ROOT / 'build/DeskClock-pocket4-expired-text.apk'
++OLD_SHA = 'cc7eece9d0429267d1950f0ca9287b041493bc5c05602ffc2119e1866381fb73'
++NEW_SHA = 'e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172'
++OLD_BYTES, NEW_BYTES = 7593129, 7593129
+ PACKAGE, UID, VERSION = 'com.android.deskclock', 10063, 37
+ FACTORY = '/product/app/DeskClock/DeskClock.apk'
+ MODEL_SHA = 'fd3ffdfbb397b561bf251236c117966ea18b2ca176e4908c6a31ad0db4cc0048'
+ TIMER_SHA = 'c3bf02f38e05ab7a55285ca2245ffe2bda3eb528cc1f85d54723294047948b08'
+-BUILD_SHA = 'cdc31d06f7d43cb9e6de5a7a67bbbc89301b6c4456b644e3b8dcb79ec5a6394a'
++BUILD_SHA = 'bc68d095b4aedfbc5d66763a5095bc2d0192ac79bdf68f596f7c2eb5dee278d8'
+ ALARM_SHA = '655c545ee9487dc380100d6300376d0bb82d0d12beddd96f283ab7814ff19fea'
+ SOUND_KEYS = ('volume_alarm','volume_ring','volume_notification','volume_music',
+               'alarm_alert','notification_sound','ringtone')
+@@ -105,6 +106,45 @@
+             and sum(line.startswith('streamVolume:') for line in fields) <= 1,
+                 'AUDIO_VOLUME_FIELDS_AMBIGUOUS')
+     return values
++
++
++def preference_metadata(raw):
++    """Only mask the one observed Android-generated global intent counter value.
++
++    All other bytes, including unrelated keys, order and XML formatting, remain
++    part of the hash. No preference content is written or returned.
++    """
++    root = ET.fromstring(raw)
++    require(root.tag == 'map', 'PREFERENCES_XML_MAP_REQUIRED')
++    items = [item for item in root if item.get('name') == 'intent.extra.alarm.global.id']
++    require(len(items) == 1 and items[0].tag == 'int'
++        and set(items[0].attrib) == {'name','value'}, 'ONE_GLOBAL_INTENT_COUNTER_REQUIRED')
++    value = items[0].get('value')
++    require(re.fullmatch(r'-?(?:0|[1-9][0-9]*)',value or '') is not None
++        and -2147483648 <= int(value) < 2147483647, 'GLOBAL_INTENT_COUNTER_OUT_OF_SCOPE')
++    pattern = rb'(<int name="intent\.extra\.alarm\.global\.id" value=")(-?[0-9]+)(" />)'
++    matches = list(re.finditer(pattern,raw))
++    require(len(matches) == 1 and matches[0][2].decode() == value, 'OBSERVED_COUNTER_XML_FORMAT_CHANGED')
++    match = matches[0]
++    masked = raw[:match.start(2)] + b'REVIEWED_GLOBAL_INTENT_COUNTER' + raw[match.end(2):]
++    return {'global_intent_id':int(value),'all_other_preference_bytes_sha256':sha(masked)}
++
++
++def preference_review(before,after):
++    old_hash,new_hash = before.get('preferences_sha256'),after.get('preferences_sha256')
++    same = (isinstance(old_hash,str) and re.fullmatch('[0-9a-f]{64}',old_hash) is not None
++        and old_hash == new_hash)
++    a,b = before.get('preferences_metadata',{}),after.get('preferences_metadata',{})
++    delta = (type(a.get('global_intent_id')) is int and type(b.get('global_intent_id')) is int
++        and b['global_intent_id'] == a['global_intent_id'] + 1
++        and isinstance(a.get('all_other_preference_bytes_sha256'),str)
++        and re.fullmatch('[0-9a-f]{64}',a['all_other_preference_bytes_sha256']) is not None
++        and a['all_other_preference_bytes_sha256'] == b.get('all_other_preference_bytes_sha256'))
++    return {'preferences_bytes_identical':same,'accepted':same or delta,
++        'only_documented_global_intent_counter_increment':not same and delta,
++        'global_intent_id_before':a.get('global_intent_id'),
++        'global_intent_id_after':b.get('global_intent_id'),
++        'other_preference_bytes_preserved':same or delta,'preference_write_commands':0}
+ 
+ 
+ def snapshot(session, tx, model, timers, label):
+@@ -140,6 +180,7 @@
+         and value['stdout'].decode().strip() == ALARM_SHA+'  -', 'ORIGINAL_ALARM_CONTENT_CHANGED')
+     preferences,_ = session.target.read_file(timers.PREFS,2*1024*1024)
+     timer_state = timers.parse(preferences); timers.empty(timer_state)
++    pref_meta = preference_metadata(preferences)
+     op = session.android(['/system/bin/cmd','appops','get','--user','0',PACKAGE,'POST_NOTIFICATION']).decode()
+     require(appop_allow(op), 'CLOCK_NOTIFICATION_APPOP_NOT_ALLOW')
+     tx.write_new(session.journal_dir/(label+'-notification-appop.txt'),op.encode())
+@@ -154,6 +195,7 @@
+     session.guard()
+     result = {'package':PACKAGE,'epoch_sha256':session.epoch_sha256,'identity':identity,'directories':directories,
+         'alarm_state':alarms,'alarm_content_sha256':ALARM_SHA,'preferences_sha256':sha(preferences),
++        'preferences_metadata':pref_meta,
+         'timer_and_stopwatch_empty':True,'notification_appop_allow':True,'sound_state':sounds,'tasks_sha256':sha(tasks.encode()),
+         'apk':{'guest_path':guest,'bytes':len(apk),'sha256':sha(apk)}}
+     tx.write_new(session.journal_dir/(label+'.json'),result)
+@@ -165,9 +207,8 @@
+             'timer_and_stopwatch_empty','notification_appop_allow','sound_state']
+     if include_tasks:
+         keys.append('tasks_sha256')
+-    if include_preferences:
+-        keys.append('preferences_sha256')
+-    return all(before.get(k) == after.get(k) for k in keys)
++    return (all(before.get(k) == after.get(k) for k in keys)
++        and (not include_preferences or preference_review(before,after)['accepted']))
+ 
+ 
+ def verify_payload(original,candidate):
+@@ -180,7 +221,7 @@
+         require(names == {n for n in b.namelist() if keep(n)} and len(names) == 1281, 'CLOCK_APK_PAYLOAD_SET_CHANGED')
+         changed = [n for n in sorted(names) if a.read(n) != b.read(n)]
+         require(changed == ['classes.dex'] and sha(b.read('classes.dex')) ==
+-            '8b7f0094b816a758d86599ba9c19866314dbb37cf78f57187a8602c2f3e3b77b', 'CLOCK_PAYLOAD_CHANGE_EXCEEDS_REVIEW')
++            'c6721db34c21c5bab07712a6ddc3eaaf9c6617196856f9abf29741c18f956d22', 'CLOCK_PAYLOAD_CHANGE_EXCEEDS_REVIEW')
+ 
+ 
+ def verify_signature(session,tx,path,label):
+@@ -244,7 +285,8 @@
+                 else:
+                     result['state'] = 'INSTALLED_VERIFIED'
+                 result['observed_apk'] = after['apk'] if after else None
+-                result['data_and_sound_state_preserved'] = after is not None and preserved(before,after)
++                result['protected_business_and_sound_state_preserved'] = after is not None and preserved(before,after)
++                result['preferences_review'] = preference_review(before,after) if after else None
+                 session.caller_status('clock-install-caller-after');session.guard()
+         except BaseException as error:
+             result['error'] = type(error).__name__+':'+str(error)
+@@ -278,7 +320,8 @@
+                 current = snapshot(session,tx,model,timers,'before-rollback')
+                 require(current['apk']['sha256'] == NEW_SHA and current['apk']['bytes'] == NEW_BYTES, 'ROLLBACK_REFUSES_FOREIGN_APK')
+                 # A completed owned timer test may change an empty allocation counter.
+-                # Preserve the CURRENT preferences byte-for-byte across rollback.
++                # Preserve current preferences except the separately reported one
++                # global intent counter increment generated by package replacement.
+                 require(preserved(original,current,include_preferences=False,include_tasks=False),
+                         'ROLLBACK_IDENTITY_OR_PROTECTED_STATE_CHANGED')
+                 verify_signature(session,tx,backup,'clock-rollback-signature')
+@@ -287,7 +330,8 @@
+                 result['rollback_response_verified'] = tx.verified_response(call)
+                 after = snapshot(session,tx,model,timers,'after-rollback')
+                 result['observed_apk'] = after['apk']
+-                result['current_data_and_sound_preserved'] = preserved(current,after)
++                result['current_protected_business_and_sound_preserved'] = preserved(current,after)
++                result['preferences_review'] = preference_review(current,after)
+                 result['state'] = ('ROLLBACK_OUTCOME_UNKNOWN' if not result['rollback_response_verified'] else
+                     'ROLLED_BACK_VERIFIED' if after['apk']['sha256'] == OLD_SHA and after['apk']['bytes'] == OLD_BYTES
+                         and preserved(current,after) else 'ROLLBACK_READBACK_DIFFERS')
+@@ -314,7 +358,8 @@
+         os.chown(session.journal_dir,0,1000); os.chmod(session.journal_dir,0o750)
+         current = snapshot(session,tx,model,timers,'reconciled-current')
+         result = {'state':'READ_ONLY_RECONCILIATION','package':PACKAGE,'observed_apk':current['apk'],
+-            'data_and_sound_state_preserved':preserved(before,current),'installation_replayed':False,
++            'protected_business_and_sound_state_preserved':preserved(before,current),
++            'preferences_review':preference_review(before,current),'installation_replayed':False,
+             'rollback_dispatched':False,'historical_outcome_rewritten':False,'production_ready':False}
+         tx.write_new(session.journal_dir/'reconciliation.json',result,alex_readable=True)
+         return result

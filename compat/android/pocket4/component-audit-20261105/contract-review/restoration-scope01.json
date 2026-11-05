@@ -1,0 +1,84 @@
+{
+  "schema": "pocket4-webview-source-restoration-scope/v1",
+  "state": "SOURCE_AND_RESOURCE_MAPPING_VERIFIED_CANDIDATE_NOT_BUILT",
+  "actual_review_sha256": "74833accd770b2156e083abc092b23c8e08434d66537f176e6349abd6e59d02a",
+  "upstream_contract_review_sha256": "f9be548bbf4930ed1f97e38592da0cbab5b1398763430f38075db47c9a042a84",
+  "base": {
+    "package": "org.chromium.webview_shell",
+    "apk_bytes": 70877,
+    "apk_sha256": "0f9dbb8ef3af284a08eb86f9558cd6c21a35dbeca2482b4b6e4b85ea49c183df",
+    "dex_sha256": "c1b969aba7363bebe8b54a83c6115165cc8bfca82ca3536cf6d8bdc9f29c624e",
+    "certificate_sha256": "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc",
+    "existing_class_count": 19
+  },
+  "observed_source_findings": [
+    "Five missing shell activities are explicitly included in the normal shell APK source list of the frozen Chromium reference revision.",
+    "Their real layout, view ID and title resources remain in the installed APK; no resource rewrite is needed to express the reference contracts.",
+    "The installed manifest has no custom Application, appComponentFactory or classLoader override.",
+    "All 19 APK-owned classes contain no static references to the six missing activities and no ClassLoader, DexClassLoader, loadClass or Class.forName calls.",
+    "This excludes an APK-owned redirection found in the inspected source; it is not an executed proof about every framework or instrumentation classpath."
+  ],
+  "five_normal_apk_contracts": [
+    {
+      "class": "org.chromium.webview_shell.WebViewCreateDestroyActivity",
+      "contract": "Create and attach a WebView, destroy the previous instance on new intent, load the supplied URL or about:blank, and destroy on Activity teardown.",
+      "actual_resource_bindings": {
+        "layout.activity_empty": "0x7f030000",
+        "id.emptyview": "0x7f020001",
+        "string.title_activity_create_destroy": "0x7f05000d"
+      },
+      "actual_layout_type": "RelativeLayout"
+    },
+    {
+      "class": "org.chromium.webview_shell.WebViewLayoutTestActivity",
+      "contract": "Expose a real WebView with console capture, explicit completion sentinel, bounded wait/result APIs, and caller-controlled permission test hooks.",
+      "actual_resource_bindings": {
+        "layout.activity_webview": "0x7f030001",
+        "id.webview": "0x7f02000e"
+      }
+    },
+    {
+      "class": "org.chromium.webview_shell.WebViewThreadTestActivity",
+      "contract": "Create WebViews on the UI thread or a dedicated Looper, send load operations on the correct thread, expose bounded completion APIs, and tear down only the owned view and thread.",
+      "resource_requirement": "Programmatic UI; no additional APK resource required.",
+      "actual_dependency_gap": "The reference uses org.chromium.base.Log in two diagnostic paths; that class is absent from all 19 installed classes.",
+      "minimal_dependency_option": "Use the framework android.util.Log for those two diagnostic calls rather than importing a Chromium base library solely for logging.",
+      "lifecycle_review_needed": "Review callback/latch races, a teardown before Handler publication, and the reference's unbounded thread join before proposing a production candidate."
+    },
+    {
+      "class": "org.chromium.webview_shell.PageCyclerTestActivity",
+      "contract": "Inflate the actual WebView layout and return the live WebView through the instrumentation-facing getWebView API.",
+      "actual_resource_bindings": {
+        "layout.activity_webview": "0x7f030001",
+        "id.webview": "0x7f02000e"
+      }
+    },
+    {
+      "class": "org.chromium.webview_shell.WebViewTracingActivity",
+      "contract": "Load an intent URL, optionally start WebView tracing, stop it into an output stream, report load/tracing duration and finish only after completion.",
+      "resource_requirement": "Programmatic UI; no additional APK resource required.",
+      "lifecycle_review_needed": "The reference has a fixed private trace filename and a newly created executor; ownership of a pre-existing trace file, executor shutdown and destroy/error paths need explicit review."
+    }
+  ],
+  "narrow_candidate_boundary_if_authorized": [
+    "Add functioning versions of only the five normal APK component contracts and their required nested classes.",
+    "Do not remove manifest declarations, add empty activities, modify the existing browser's classes, or import an unused generic instrumentation broker.",
+    "Preserve all existing 19 classes' method semantics and every non-DEX payload member; verify the exact added class set and resource references.",
+    "Use the existing verified signing identity and retain the exact installed base for reversible upgrade and data preservation review.",
+    "Treat the pinned upstream revision as a contract source, not as an established complete source baseline for this installed build."
+  ],
+  "instrumentation_components_kept_separate": {
+    "com.android.contacts.test.FragmentTestActivity": "The frozen upstream Contacts test build puts this real fragment test container in ContactsTests; normal Contacts source globs exclude the test tree. No production patch is proposed solely from base-APK absence.",
+    "org.chromium.test.broker.OnDeviceInstrumentationBroker": "The Chromium instrumentation APK template injects broker_java and the driver launches it in the chosen instrumentation target package. The intended installed test package/classpath remains unverified; do not transplant it into the browser merely to change coverage counts."
+  },
+  "runtime_validation_still_required": [
+    "An explicit launch or instrumentation invocation of the real component contracts with owned loopback content and exact task/data cleanup.",
+    "Create/destroy resource release, layout completion/result behavior, UI and worker-thread WebView paths, page loading and tracing completion.",
+    "The existing browser core scope must be rebound to any new installed APK hash; an old binary's pass is not inherited automatically."
+  ],
+  "builds": 0,
+  "installs": 0,
+  "ui_actions": 0,
+  "runtime_class_resolution_verified": false,
+  "whole_app_production_ready": false
+}

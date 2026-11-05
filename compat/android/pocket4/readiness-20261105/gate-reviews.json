@@ -455,6 +455,107 @@
         "The new binary still needs pause/resume/persist/reset/cancellation regression; old-binary core results are historical.",
         "Owned alarm/timezone behavior, active per-App engine mapping, stability and complete release remain open."
       ]
+    },
+    {
+      "id": "root_clock_e4ff_core03_and_expiry05_timer_scope",
+      "reviewer": "root",
+      "package": "com.android.deskclock",
+      "scope": "scoped",
+      "observed_at_utc": "2026-11-05T16:18:16.958837+00:00",
+      "reviewed_at_utc": "2026-11-05T16:41:18.589342+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "version_code": 37,
+      "uid": 10063,
+      "apk_sha256": "e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172",
+      "checks": {
+        "clock.timer": "passed",
+        "ui_observation": "passed",
+        "lifecycle": "passed"
+      },
+      "evidence": [
+        {
+          "path": "inputs/clock-core03-e4ff-original.json",
+          "bytes": 20732,
+          "sha256": "ed01ff52b5dfee169a1218e23836ebe5eb6392cf8e589d3082fd172bc1223c6d"
+        },
+        {
+          "path": "inputs/clock-core03-scheduler-review.json",
+          "bytes": 2686,
+          "sha256": "0d92e6e471bad95ad7cd0e5a251c6b5945f39a3e83690abf5380f8536a1822e1"
+        },
+        {
+          "path": "inputs/clock-expiry05-selected.json",
+          "bytes": 6800,
+          "sha256": "cb23569eaa406b83cb811c8d6eaf2bcd8bdd7d38f7198279c59b4de0c212e7af"
+        },
+        {
+          "path": "inputs/clock-expiry05-outer-original.json",
+          "bytes": 4608,
+          "sha256": "2c552c341e0c69400cc0f9a6a5b725f59eeb386b7b992830b8bfbcd8bfa0d9ec"
+        },
+        {
+          "path": "inputs/clock-expiry05-terminal.json",
+          "bytes": 675,
+          "sha256": "4776610e0f696bd460bfa079bad108cd9507058805431f1a9082804adcb3cbd2"
+        },
+        {
+          "path": "inputs/clock-expiry05-notify-review.json",
+          "bytes": 3401,
+          "sha256": "426a0f1a34377b99ca86cd5a5ae70ef31538ac239bedc1747897be57b5d7157e"
+        },
+        {
+          "path": "inputs/clock-expiry05-audio-saved-review.json",
+          "bytes": 9965,
+          "sha256": "a78992a712d0b0f7976a13fd16e17e4cc9fa98be0640f7100695405022d06e36"
+        },
+        {
+          "path": "inputs/clock-e4ff-installed-identity.json",
+          "bytes": 2446,
+          "sha256": "a10ece24cd9dfc11ea50f5d232b7ccbdad048a52ab113fc8f9e7e42e88541644"
+        },
+        {
+          "path": "inputs/clock-timer-gate-definition-review.json",
+          "bytes": 2117,
+          "sha256": "0e90284a1e3e05015dd6ac36eb7818e8c81c43163d647da395cb9595416da16b"
+        }
+      ],
+      "qualification_scope": "The frozen timer check is satisfied jointly by two actual owned fixtures on the same installed e4ff binary: core03 start/pause/normal-close/reopen/resume/reset/delete and expiry05 background completion/Stop/Delete. These are separate fixtures, not one timer that underwent every step. Expiry05 delivered the exact standard text through host Notify; a separate unchanged-record review establishes concurrent nonzero HAL power. The original expiry05 outer failed/1 receipt and false HAL field remain unchanged.",
+      "unresolved_findings": [
+        "Physical speaker audibility, matched host Pulse stream and visible desktop popup remain unverified.",
+        "Owned alarm create/fire/snooze/dismiss, alarm/timezone persistence, multiple timers, full engine identity, stability and whole-App release remain open."
+      ]
+    },
+    {
+      "id": "root_calendar_original_missing_editor_failure",
+      "reviewer": "root",
+      "package": "com.android.calendar",
+      "scope": "scoped",
+      "observed_at_utc": "2026-11-05T12:46:40.946Z",
+      "reviewed_at_utc": "2026-11-05T16:41:18.589342+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "version_code": 37,
+      "uid": 10061,
+      "apk_sha256": "7522e88fe03f4997513b0e03591da215b8ebc67f6c933939a73addc3c75495a9",
+      "checks": {
+        "calendar.edit": "failed"
+      },
+      "evidence": [
+        {
+          "path": "inputs/calendar-original-editor-crash.json",
+          "bytes": 3080,
+          "sha256": "c67d50ba1b9e9068678c0695967aff9204a6860a75b35d84ca732342fc0311dd"
+        },
+        {
+          "path": "inputs/calendar-original-fixture-cleanup02.json",
+          "bytes": 1941,
+          "sha256": "2c0b3f168cfbec7bdb8179b22d74216e67b7820d603abf79a0251e561e65cfd3"
+        }
+      ],
+      "qualification_scope": "One actual event-editor launch crashed with a missing EditEventActivity before Save or any event write. The task was removed by the crash, not a normal close. The earlier empty-calendar cleanup failure was separately resolved by cleanup02; original receipts remain unchanged.",
+      "unresolved_findings": [
+        "The replacement candidate is built but not installed or functionally accepted.",
+        "Reminder lifecycle and stale action identity are still under repair; recurrence/sync/full release remain unqualified."
+      ]
     }
   ]
 }

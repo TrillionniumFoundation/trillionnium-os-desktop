@@ -1,0 +1,154 @@
+{
+  "apk_sha256": "eebf12f81981f7d8c59a9b9ed465945818d2ab0208c121d858cbc4e6426f5fff",
+  "candidate06_apk_sha256": "cf06143a7f90aa28607dd32e85a41b897ef4634fc602c50da47a9a1352e095f7",
+  "candidate06_changed": false,
+  "causal_boundary": "If the decoded reset path runs after a snooze is committed, that scheduled row is removed. Candidate06 does not contain enough independent durable snooze state to reconstruct that requested time. This is a concrete source-level recovery gap, not a claim that a device reboot or live reset was executed.",
+  "classes": {
+    "com/android/providers/calendar/CalendarAlarmManager": {
+      "bytes": 31340,
+      "sha256": "d94f1e60b21f4258ba97416d0ab6d166f29d79ebfbc2f2c3ddf0b94e948183b6"
+    },
+    "com/android/providers/calendar/CalendarDatabaseHelper": {
+      "bytes": 163405,
+      "sha256": "e151cc6edc46f8bfed7fb7f2f730efa683ae9dc1679d8a04248f28936790075f"
+    },
+    "com/android/providers/calendar/CalendarProviderBroadcastReceiver": {
+      "bytes": 4943,
+      "sha256": "8fffd7d53a1cd58fba541e54f7032383bf21a1524eb441e996df3aaddfdc9632"
+    },
+    "com/android/providers/calendar/CalendarReceiver": {
+      "bytes": 7074,
+      "sha256": "452acddcd599382619635e7006edae5abf390122c7bc432aba715bf55a937f62"
+    }
+  },
+  "dex_sha256": "f82eb5a869731b069f0fa1cae09c0d85ef787d249e0c8d6149c9470f8b7bed8c",
+  "exit_code": 0,
+  "facts": [
+    "Actual CalendarReceiver accepts BOOT_COMPLETED and its async body calls removeScheduledAlarms, which updates SCHEDULE_ALARM_REMOVE_URI.",
+    "Actual CalendarAlarmManager.runScheduleNextAlarm(true, provider) begins one transaction and calls removeScheduledAlarmsLocked before rescheduling.",
+    "Actual removeScheduledAlarmsLocked deletes CalendarAlerts where state=0, with no exception for future alarms or minutes=0 snoozes.",
+    "The normal non-reset stale-alert cleanup does explicitly retain minutes=0 when there is no matching Reminders row; this exception does not exist in reset.",
+    "The actual future alarm search uses Instances joined with Reminders and skips already represented event/begin/alarm tuples; it cannot derive an arbitrary ten-minute user snooze time from an ordinary reminder definition.",
+    "Candidate06 stores a snooze as a new state=0 minutes=0 CalendarAlerts row and arms its one-shot before its no-yield batch. It has no independent persisted user snooze intent and no future snooze restoration in boot/refresh handlers."
+  ],
+  "host_sql_counterexample": {
+    "after": [
+      [
+        3,
+        2,
+        15
+      ]
+    ],
+    "android_test": false,
+    "before": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        2,
+        0,
+        15
+      ],
+      [
+        3,
+        2,
+        15
+      ]
+    ],
+    "delete_predicate": "state=0",
+    "qualification": "Exact decoded predicate exercised on host SQLite only",
+    "rows_removed": 2
+  },
+  "job_id": "1a1ac6c618b-fc05-5431",
+  "job_terminal": "succeeded",
+  "known_chain_limit": "CalendarProviderJobService body and PostInitializeThread are not in this four-class decode. The final async delivery from the boot remove URI to the reset boolean is not independently completed here; the directly decoded reset method effect itself is exact.",
+  "limits": {
+    "cpu.max": "100000 100000",
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "pids.max": "128"
+  },
+  "next_fix_direction": "Keep ordinary reminder scheduling in CalendarProvider. Persist only an authenticated user snooze request, bind it to the original event/occurrence and state transition, and reconcile its owned wakeup/row after provider reset or reboot without resurrecting dismissed/deleted/changed events. Do not simply mirror all future Reminders or treat a CalendarAlerts row as reboot persistence.",
+  "resource_usage": {
+    "cpu.stat": "usage_usec 868758\nuser_usec 808775\nsystem_usec 59983\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 10\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.peak": "49000448"
+  },
+  "result_sha256": "1a07ae4ff306f91b56c066667707289a82cfdd88b7fe760e89532b89af28e2d9",
+  "runtime_actions": {
+    "android_commands": 0,
+    "live_Main_reads": 0,
+    "package_mutations": 0,
+    "provider_mutations": 0,
+    "ui_inputs": 0
+  },
+  "schema": "calendar-installed-provider-snooze-lifecycle-findings-v1",
+  "selected_methods": {
+    "CalendarAlarmManager-checkNextAlarm-0.smali": {
+      "bytes": 2423,
+      "sha256": "e7070308aa9ab89248b43e5dd0e4a716939553aba6ed50bf5d6b2054a1ef85e5",
+      "signature": ".method checkNextAlarm(Z)V"
+    },
+    "CalendarAlarmManager-getCheckNextAlarmIntent-0.smali": {
+      "bytes": 830,
+      "sha256": "0d8dd83de59fde4bd6b9ea3b34855f6e9ddc51b31d8271c6fbb35bf9be33f84c",
+      "signature": ".method static getCheckNextAlarmIntent(Landroid/content/Context;Z)Landroid/content/Intent;"
+    },
+    "CalendarAlarmManager-removeScheduledAlarmsLocked-0.smali": {
+      "bytes": 761,
+      "sha256": "bf4d5b282df2df30480296aa5c1035ded7124ee054d35f686312c7901139db43",
+      "signature": ".method private static removeScheduledAlarmsLocked(Landroid/database/sqlite/SQLiteDatabase;)V"
+    },
+    "CalendarAlarmManager-runScheduleNextAlarm-0.smali": {
+      "bytes": 1879,
+      "sha256": "90adaecaa211f66044c65332cd8ca6be0c7ebfa2b5c819c4365c022256ed7de0",
+      "signature": ".method runScheduleNextAlarm(ZLcom/android/providers/calendar/CalendarProvider2;)V"
+    },
+    "CalendarAlarmManager-scheduleNextAlarmLocked-0.smali": {
+      "bytes": 18044,
+      "sha256": "4520ae87dc288ccc19bfb51c321903d7edcfabe7fd30d094efa9d07df11f2fbd",
+      "signature": ".method private scheduleNextAlarmLocked(Landroid/database/sqlite/SQLiteDatabase;Lcom/android/providers/calendar/CalendarProvider2;)V"
+    },
+    "CalendarProvider2-update-0.smali": {
+      "bytes": 1545,
+      "sha256": "bd5592e1b2614eece369a2622767fdcd032099898278d70fcb13cb4672b034f1",
+      "signature": ".method public update(Landroid/net/Uri;Landroid/content/ContentValues;Ljava/lang/String;[Ljava/lang/String;)I"
+    },
+    "CalendarProvider2-updateInTransactionInner-0.smali": {
+      "bytes": 27268,
+      "sha256": "ee2d8ad577ef0834826395974e16493802df8ba5421a7b6feedcb3cffd25b518",
+      "signature": ".method private updateInTransactionInner(Landroid/net/Uri;Landroid/content/ContentValues;Ljava/lang/String;[Ljava/lang/String;Z)I"
+    },
+    "CalendarProviderBroadcastReceiver-onReceive-0.smali": {
+      "bytes": 4564,
+      "sha256": "cf858f9d2df615debf009f91608e22cddf65d89ed79bcf9a3226ed606c3094a3",
+      "signature": ".method public onReceive(Landroid/content/Context;Landroid/content/Intent;)V"
+    },
+    "CalendarReceiver-lambda_onReceive_0-0.smali": {
+      "bytes": 795,
+      "sha256": "bc3ae3e1cbd4e9d3d2d92d95ad697b4cc6a490c0596d3fb07b7ee091cc2e5df7",
+      "signature": ".method private synthetic lambda$onReceive$0(Landroid/content/Context;Landroid/content/ContentResolver;Landroid/content/BroadcastReceiver$PendingResult;)V"
+    },
+    "CalendarReceiver-onReceive-0.smali": {
+      "bytes": 3293,
+      "sha256": "ab60814297e22f1bd138252cf6637b2b93e1c16b8228688b31fda788e02fdf5d",
+      "signature": ".method public onReceive(Landroid/content/Context;Landroid/content/Intent;)V"
+    },
+    "CalendarReceiver-removeScheduledAlarms-0.smali": {
+      "bytes": 446,
+      "sha256": "3558397b5c2b1e78a8bfc6508d759ec08ccbdaee48a57ffcfaa393845e381f35",
+      "signature": ".method static removeScheduledAlarms(Landroid/content/ContentResolver;)V"
+    }
+  },
+  "source_bundle": {
+    "gzip": {
+      "bytes": 23591,
+      "sha256": "4b75fa85dd2182f945e61cf29edbabb718a743d2410babc44a6aca56f23d9432"
+    },
+    "uncompressed_bytes": 214847,
+    "uncompressed_sha256": "53988dee4ff23e73eca97776b449886fba2fddee6cc36a0dbc873f29d9f50f1b"
+  },
+  "whole_app_production_ready": false
+}

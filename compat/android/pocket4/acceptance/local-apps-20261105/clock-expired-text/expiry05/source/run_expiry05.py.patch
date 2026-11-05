@@ -1,0 +1,39 @@
+--- frozen04/run_expiry04.py
++++ profile6144-05/run_expiry05.py
+@@ -5,11 +5,11 @@
+ import argparse,hashlib,json,signal,time,types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-clock-expiry-delivery-20261105-r12-04')
++ROOT=Path('/home/alex/work/pocket4-clock-expiry-delivery-20261105-r12-05')
+ INSTALLER=Path('/home/alex/work/pocket4-clock-expired-text-20261105-r12-02/transaction03/clock_install03.py')
+ INSTALLER_SHA='0f7d01f428d1b472e48327df66111d22dbd0551dc5a090faf8c4f5627aff1b48'
+ CURRENT='e4ff4b46a651ff3ac77397705b7b749c7fbaaeb94fe1d00818debb31dea34172'
+-PINS={'timer_expiry04.py':'7ef4e449d2d32a60dca6adcb6f4bd66462071184fae2cc79c8723ac095d732d6'}
++PINS={'timer_expiry05.py': '0de3eb1792af737e0ade160a3d201db22ff4c9db15eb4084b1016d3acf099703', 'read_clock_expired_text02.py': '6f996dc4d8544d54520c76121308d7dba0cdbd58bbeda9a06fd84889dc3373b6'}
+ CORE_RESULT=Path('/home/alex/work/pocket4-clock-delivery-tools-20261105-r12-03/clock-timer03-result.json')
+ CORE_RESULT_SHA='ed01ff52b5dfee169a1218e23836ebe5eb6392cf8e589d3082fd172bc1223c6d'
+ 
+@@ -54,9 +54,11 @@
+ 
+ 
+ def execute():
+-    installer=load(INSTALLER,INSTALLER_SHA);model,tx,timers=installer.modules()
++    installer=load(INSTALLER,INSTALLER_SHA)
+     phases={name:load(HERE/name,pin) for name,pin in PINS.items()}
+-    expiry=phases['timer_expiry04.py']
++    model=phases['read_clock_expired_text02.py'];tx=model.load_session()
++    timers=installer.load(installer.CLOCK/'read_timer.py',installer.TIMER_SHA)
++    expiry=phases['timer_expiry05.py']
+     result={'state':'FAILED','started_utc':stamp(),'whole_app_production_ready':False,
+         'expected_apk_sha256':CURRENT,'automatic_retry':False,'audio_bytes_recorded':0,
+         'microphone_access':False,'global_sound_changes':0,'notification_settings_changes':0,
+@@ -129,7 +131,7 @@
+             result['state']='CURRENT_EXPIRY_NOTIFY_AND_HAL_OUTPUT_SCOPES_VERIFIED'
+         result['finished_utc']=stamp()
+         tx.write_new(ROOT/'result.json',result,alex_readable=True)
+-        tx.write_new(HERE/'clock-expiry-delivery04-result.json',result,alex_readable=True)
++        tx.write_new(HERE/'clock-expiry-delivery05-result.json',result,alex_readable=True)
+         print(json.dumps(result,sort_keys=True))
+     return 0 if result['state']=='CURRENT_EXPIRY_NOTIFY_AND_HAL_OUTPUT_SCOPES_VERIFIED' else 1
+ 

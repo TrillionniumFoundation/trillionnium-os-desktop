@@ -1,0 +1,31 @@
+{
+  "build_result_sha256": "a5100a2d71d90ef3f20701a87239d5631b3c163afdd72706fdcdb846d03ba320",
+  "candidate_sha256": "cf06143a7f90aa28607dd32e85a41b897ef4634fc602c50da47a9a1352e095f7",
+  "checked": [
+    "default inert; exclusive root under nonblocking UI lock",
+    "frozen original held guard with exact epoch/caller identity; no resource relaxation",
+    "exact original/candidate APK hash and build provenance, certificate v3, non-DEX payload equality",
+    "same UID, CE/DE inode and ownership/mode, first install time, all permission rows",
+    "unchanged provider APK/UID/data-directory identity and six exact empty provider tables",
+    "exclusive durable dispatch journal before one native install as uid1000/android user0",
+    "unknown completion retains pending and exact backup/candidate; no retry/uninstall/data-clear/automatic rollback",
+    "final package/readback/task/caller/epoch before qualification"
+  ],
+  "cleanup_result_sha256": "185ce605ff4f1caefbcb7fc37773658899b90b82078b9def2e8391a80b874019",
+  "conclusion": "NO_NEW_DEFINITE_CODE_BLOCKER_FOUND; WAIT_FOR_ROOT_MAIN_LIMITS_RESOLUTION",
+  "default_invocation": {
+    "inert": true,
+    "rc": 0
+  },
+  "limits": [
+    "data_identity_preserved does not claim full private preferences or all app-data bytes unchanged",
+    "ACK-success plus later postcheck failure remains conservatively unresolved in the original result; raw journal/readback can distinguish these later",
+    "current externally observed MAIN_LIMITS_CHANGED remains a real global preflight blocker and was not bypassed"
+  ],
+  "remote_calls_or_UI_actions_for_review": 0,
+  "review": "calendar-install06-readonly-peer-review",
+  "source": "calendar-repair08/calendar_install06.py",
+  "source_modified": false,
+  "source_sha256": "a8fa10cc6dd920060bacac056a046f5ce201a86f63e7ca2870bdd085ad6e1da9",
+  "syntax_checked": true
+}

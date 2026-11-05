@@ -1,0 +1,9 @@
+# Current Calendar repair status
+
+Candidate08 is installed and independently read back. The single update completed at 2026-11-05 16:43:02.788293 UTC with APK `95633138efb7209631638eef05ad54021b647740a6278d7de8976bb499f6b935`, UID10061, Android user0 and version37. The original signing certificate and v3 signature were verified. Permissions, first-install time, CE/DE directory identities, the CalendarProvider identity, the six empty Provider tables and original task851 were preserved. There was one install call, no unknown pending effect and no rollback.
+
+The [installed08 delta](extension08/README.md) preserves the exact source changes, 91 host checks, narrow class/method/payload comparisons and the original installation receipt. It adds a complete alert identity to notification actions so an old PendingIntent cannot target a different alert after SQLite row-ID reuse. [Revision07](extension07/README.md) separately adds a durable journal for genuine user snooze actions because actual Provider reset deletes all scheduled alert rows. Ordinary reminders remain Provider-owned.
+
+Candidates04–07 and their original failures/successful builds remain historical evidence. None was installed. The original installed Calendar's missing-editor crash remains recorded against its original APK and no longer supplies current gate credit for candidate08.
+
+The first actual CRUD acceptance has **not started**. Its create-only host stage completed; its UI process was held before any launch or Provider write when review identified the same whole-frame text-entry precondition that rejected the blinking Files caret. A separate controller revision will use the reviewed semantic-input contract. No installation, host check or source inspection is presented as restored event editing, reminder delivery, recurrence, sync, Android runtime or whole-App production readiness.
