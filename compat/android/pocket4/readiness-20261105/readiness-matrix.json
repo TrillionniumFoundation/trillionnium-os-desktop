@@ -20,13 +20,18 @@
     },
     "progress": {
       "file": "progress.json",
-      "sha256": "8d42e3cd6b8a100724726e07145927603a5df8d14e02a5ce2b1422a220d63315",
-      "bytes": 6986
+      "sha256": "79d306ad04adb9041e4c61023cf2be29d7f6b3918b0de09bc6163315c91e5b11",
+      "bytes": 8217
     },
     "inventory": {
       "file": "current-installed-inventory-derived-20261105.json",
       "sha256": "00318b2cb727e042b23901315ed93ca1a4410712a3f3a47e086f9f9cc6b95e35",
       "bytes": 34940
+    },
+    "gate_reviews": {
+      "file": "gate-reviews.json",
+      "sha256": "f5d71bf3a95777c514f74f6731ce98aa021349010958d7d4101f0ad3b736f789",
+      "bytes": 1438
     }
   },
   "baseline_observed_at_utc": "2026-11-04T12:00:30.044481+00:00",
@@ -645,6 +650,34 @@
               "bytes": 7781
             }
           ]
+        },
+        {
+          "id": "camera_actual_live_preview_storage_blocker",
+          "package": "com.android.camera2",
+          "version_code": 20002000,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-05T06:32:30.395517+00:00",
+          "status": "REAL_PREVIEW_VERIFIED_PHOTO_BLOCKED_BY_DISCONNECTED_FUSE",
+          "actual_photo_taken": false,
+          "scoped_preview_verified": true,
+          "physical_frames": 64,
+          "producer_frames": 63,
+          "native_launch_calls": 1,
+          "shutter_calls": 0,
+          "owned_task_remove_calls": 1,
+          "storage_readonly_observed_at_utc": "2026-11-05T06:45:00.921528+00:00",
+          "unpassed_checks": {
+            "camera.photo": "blocked",
+            "camera.persist": "blocked"
+          },
+          "next_action": "Recover the exact failed external-storage session through its reviewed normal lifecycle, then requalify one photo and persistence. No permission widening or storage bypass is a qualification.",
+          "evidence": [
+            {
+              "path": "inputs/camera-preview-storage-blocker.json",
+              "sha256": "33e13bf8131ea77f6f521e244203d75d8feee80404fc159150111c4b7d76f062",
+              "bytes": 5710
+            }
+          ]
         }
       ],
       "gate_results": {
@@ -652,11 +685,11 @@
         "lifecycle": "pending",
         "stability": "pending",
         "data_permissions": "pending",
-        "release_scope": "pending",
+        "release_scope": "blocked",
         "ui_observation": "pending",
-        "camera.preview": "failed",
-        "camera.photo": "pending",
-        "camera.persist": "pending",
+        "camera.preview": "passed",
+        "camera.photo": "blocked",
+        "camera.persist": "blocked",
         "camera.video": "pending",
         "camera.recovery": "pending"
       },
@@ -667,17 +700,20 @@
         "data_permissions",
         "release_scope",
         "ui_observation",
-        "camera.preview",
         "camera.photo",
         "camera.persist",
         "camera.video",
         "camera.recovery"
       ],
       "gate_evidence": {
-        "camera.preview": "camera_accept01_device_unavailable"
+        "camera.preview": "root_camera_live_preview_r16_release08_accept02",
+        "camera.photo": "root_camera_live_preview_r16_release08_accept02",
+        "camera.persist": "root_camera_live_preview_r16_release08_accept02"
       },
-      "accepted_reviews": [],
-      "reviewed_apk_sha256": null,
+      "accepted_reviews": [
+        "root_camera_live_preview_r16_release08_accept02"
+      ],
+      "reviewed_apk_sha256": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
       "prerequisites": [],
       "production_ready": false,
       "installed_version_changed": false

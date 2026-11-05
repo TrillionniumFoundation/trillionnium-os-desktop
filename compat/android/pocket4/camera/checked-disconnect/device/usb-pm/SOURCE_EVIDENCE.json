@@ -1,0 +1,151 @@
+{
+  "actual_kernel": "7.0.0-38-generic",
+  "actual_kernel_source_rebuilt": false,
+  "current_target_presence": "ABSENT_AT_LAST_READ_ONLY_OBSERVATION",
+  "historical_presence_intervals": [
+    {
+      "device_number": 8,
+      "disconnected_utc": "2026-11-05T04:17:21+00:00",
+      "enumerated_utc": "2026-11-05T04:17:07+00:00",
+      "seconds": 14.0
+    },
+    {
+      "device_number": 9,
+      "disconnected_utc": "2026-11-05T04:20:50+00:00",
+      "enumerated_utc": "2026-11-05T04:20:36+00:00",
+      "seconds": 14.0
+    },
+    {
+      "device_number": 10,
+      "disconnected_utc": "2026-11-05T04:23:35+00:00",
+      "enumerated_utc": "2026-11-05T04:23:21+00:00",
+      "seconds": 14.0
+    },
+    {
+      "device_number": 11,
+      "disconnected_utc": "2026-11-05T04:25:10+00:00",
+      "enumerated_utc": "2026-11-05T04:24:56+00:00",
+      "seconds": 14.0
+    },
+    {
+      "device_number": 12,
+      "disconnected_utc": "2026-11-05T05:00:40+00:00",
+      "enumerated_utc": "2026-11-05T05:00:26+00:00",
+      "seconds": 14.0
+    },
+    {
+      "device_number": 13,
+      "disconnected_utc": "2026-11-05T05:21:23+00:00",
+      "enumerated_utc": "2026-11-05T05:21:09+00:00",
+      "seconds": 14.0
+    },
+    {
+      "device_number": 14,
+      "disconnected_utc": "2026-11-05T05:33:36+00:00",
+      "enumerated_utc": "2026-11-05T05:33:22+00:00",
+      "seconds": 14.0
+    }
+  ],
+  "latest_observation_utc": "2026-11-05T06:01:03.098003+00:00",
+  "latest_power_objects": [
+    {
+      "connect_type": "hardwired",
+      "exists": true,
+      "over_current_count": "0",
+      "path": "/sys/bus/usb/devices/usb3/3-0:1.0/usb3-port4",
+      "power/control": "auto",
+      "power/runtime_active_time": "884170874",
+      "power/runtime_status": "active",
+      "power/runtime_suspended_time": "0",
+      "resolved": "/sys/devices/pci0000:00/0000:00:08.3/0000:c7:00.0/usb3/3-0:1.0/usb3-port4",
+      "state": "not attached"
+    },
+    {
+      "exists": false,
+      "path": "/sys/bus/usb/devices/3-4"
+    },
+    {
+      "authorized": "1",
+      "busnum": "3",
+      "devnum": "1",
+      "exists": true,
+      "idProduct": "0002",
+      "idVendor": "1d6b",
+      "manufacturer": "Linux 7.0.0-38-generic xhci-hcd",
+      "path": "/sys/bus/usb/devices/usb3",
+      "power/active_duration": "884170879",
+      "power/autosuspend": "0",
+      "power/autosuspend_delay_ms": "0",
+      "power/connected_duration": "884170879",
+      "power/control": "auto",
+      "power/runtime_active_time": "884170877",
+      "power/runtime_status": "active",
+      "power/runtime_suspended_time": "0",
+      "power/wakeup": "disabled",
+      "product": "xHCI Host Controller",
+      "removable": "unknown",
+      "resolved": "/sys/devices/pci0000:00/0000:00:08.3/0000:c7:00.0/usb3",
+      "speed": "480"
+    }
+  ],
+  "limits": [
+    "No runtime-PM cause established.",
+    "A parent port or root hub control value is not the target USB device control value.",
+    "No camera captures or App qualification performed by this task.",
+    "Upstream Linux 7.0 documentation describes interface semantics, not an exact reconstruction of Ubuntu 7.0.0-38-generic."
+  ],
+  "observed_target": {
+    "bcd_device": "9.23",
+    "manufacturer": "SunplusIT Inc",
+    "pid": "5520",
+    "product": "Integrated Camera",
+    "serial": "JX20250923V2",
+    "usb_name": "3-4",
+    "vid": "1e08"
+  },
+  "prepared_only": true,
+  "primary_documentation": [
+    {
+      "scope": "power/control=on resumes and prevents device autosuspend; auto permits it; global autosuspend is an initialization default for new devices.",
+      "url": "https://docs.kernel.org/7.0/driver-api/usb/power-management.html"
+    },
+    {
+      "scope": "Single complete-buffer store; pread offset zero refreshes show; object reference does not guarantee physical presence.",
+      "url": "https://docs.kernel.org/7.0/filesystems/sysfs.html"
+    }
+  ],
+  "provider_history": {
+    "counts": {
+      "child_started": 14,
+      "child_stopped": 14,
+      "generation_started": 7,
+      "producer": 7,
+      "provider": 14,
+      "waiting": 14
+    },
+    "parsed_events": 70,
+    "record_limit": 2000
+  },
+  "schema": "pocket4-usb-pm-preparation-evidence-v1",
+  "serial_kernel_evidence": "2026-11-04T21:33:22-08:00 alex-G1628-04 kernel: usb 3-4: SerialNumber: JX20250923V2",
+  "source_files": {
+    "camera-accept01-root-cause-summary-r2.json": {
+      "bytes": 8920,
+      "path": "/workspace/scratch/4c1c408226df/camera-accept08/analysis-accept01/camera-accept01-root-cause-summary-r2.json",
+      "sha256": "844fcafab4847f2bf1bc1d790ffc0a7038c659483c06f32529fe2bddb164a8f5"
+    },
+    "usb-history-readonly.json": {
+      "bytes": 59220,
+      "path": "/workspace/scratch/4c1c408226df/camera-accept08/analysis-accept01/usb-history-readonly.json",
+      "sha256": "4a5f6a9dc72da8020d5803bd7d65f1c8b538d906aa2bebbc19ce7091f92cf992"
+    },
+    "usb-power-metadata-readonly.json": {
+      "bytes": 19187,
+      "path": "/workspace/scratch/4c1c408226df/camera-accept08/analysis-accept01/usb-power-metadata-readonly.json",
+      "sha256": "f052cec2a67c4cd1858a96d7467505d2dc7a17faad10f61fdea42896225a6ab1"
+    }
+  },
+  "target_identity_source": "Historical kernel messages and installed provider source; must be reread on future device generation.",
+  "target_own_power_control_observed": false,
+  "target_own_runtime_status_observed": false
+}

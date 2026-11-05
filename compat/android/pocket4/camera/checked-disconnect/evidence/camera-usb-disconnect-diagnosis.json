@@ -1,0 +1,208 @@
+{
+  "schema": "pocket4-camera-accept01-readonly-root-cause-v2",
+  "classification": "camera_unavailable_after_usb_device_disconnect",
+  "production_ready": false,
+  "preview_capture_qualified": false,
+  "photo_persistence_qualified": false,
+  "apk_sha256": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
+  "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "diagnostic_mutations": {
+    "ui_actions": 0,
+    "app_launches": 0,
+    "shutter_actions": 0,
+    "provider_changes": 0,
+    "power_or_usb_resets": 0
+  },
+  "acceptance": {
+    "started_utc": "2026-11-05T05:42:48.602040+00:00",
+    "finished_utc": "2026-11-05T05:42:53.087460+00:00",
+    "state": "failed",
+    "error": "ONE_READY_SHUTTER_REQUIRED",
+    "native_launch_calls": 1,
+    "shutter_calls": 0,
+    "own_task_remove_calls": 1,
+    "outcome_unknown": false
+  },
+  "actual_preview": {
+    "original_json_sha256": "7d2641ae9d1261eb307c14c874d1455a33b9acdeff9d457d6df9c3db085dd66c",
+    "original_json_bytes": 19034,
+    "native_ok": true,
+    "accessibility_restoration_verified": true,
+    "node_count": 17,
+    "node_grammar_matches_reader": true,
+    "visible_alert_title": "Camera error",
+    "visible_alert_message": "Can't connect to the camera.",
+    "ready_shutter_present": false,
+    "classification": "real_camera_connection_error_dialog"
+  },
+  "current_camera_service": {
+    "device_count": 0,
+    "normal_device_count": 0,
+    "api1_visible_device_count": 0,
+    "active_clients": 0,
+    "same_main_guard_before_after": true,
+    "provider_owner_active": true,
+    "provider_generation_running": false,
+    "provider_cleanup_errors": []
+  },
+  "last_registration_timeline_utc": [
+    {
+      "at": "2026-11-05T05:33:22Z",
+      "event": "USB enumerates and uvcvideo identifies Integrated Camera"
+    },
+    {
+      "at": "2026-11-05T05:33:24Z",
+      "event": "uvcvideo disables Gain control 980913 due to error -5"
+    },
+    {
+      "at": "2026-11-05T05:33:25Z",
+      "event": "current Main registers v0_1000, idle=no_capture"
+    },
+    {
+      "at": "2026-11-05T05:33:36Z",
+      "event": "kernel USB disconnect"
+    },
+    {
+      "at": "2026-11-05T05:33:37Z",
+      "event": "manager stops provider/producer after source path disappears"
+    },
+    {
+      "at": "2026-11-05T05:33:39Z",
+      "event": "manager waits for physical camera"
+    },
+    {
+      "at": "2026-11-05T05:42:48.602040Z",
+      "event": "acceptance begins with no registered device"
+    }
+  ],
+  "usb": {
+    "vid_pid": "1e08:5520",
+    "manufacturer": "SunplusIT Inc",
+    "product": "Integrated Camera",
+    "bcd_device": "9.23",
+    "uvc_version": "1.00",
+    "driver": "uvcvideo",
+    "controller_driver": "xhci_hcd",
+    "port": "3-4",
+    "current_video4linux_node_count": 0,
+    "source_by_id_path_exists": false,
+    "current_matching_usb_device_count": 0,
+    "current_presence_observation_utc": "2026-11-05T05:51:50.890642+00:00"
+  },
+  "observed_idle_pattern": {
+    "since_utc": "2026-11-05T04:00:00Z",
+    "collected_at_utc": "2026-11-05T05:54:37.682730+00:00",
+    "provider_journal_records": 70,
+    "provider_record_limit": 2000,
+    "registered_generations": 7,
+    "physical_camera_open_events": 0,
+    "physical_camera_closed_events": 0,
+    "repeated_gain_error_count": 7,
+    "usb_presence_duration_approx_seconds": "14",
+    "capture_triggered_by_this_owner_in_window": false
+  },
+  "source_findings": {
+    "manager_disconnect_predicate": "not os.path.exists(DEVICE)",
+    "manager_calls_probe_at_generation_start": false,
+    "manager_starts_uvc_capture_only_on_validated_producer_socket_connection": true,
+    "producer_connects_source_only_after_onStreamConfigured": true,
+    "adjacent_uvc_capture_source_has_gain_or_VIDIOC_control_operations": false
+  },
+  "limits": [
+    "UID-filtered and camera-service-tag logcat reads returned zero bytes; no exact Java exception/callsite is established.",
+    "Gain -5 precedes each observed disconnect but causation is not established.",
+    "USB disconnect does not identify a human unplug, hardware failure, autosuspend, firmware fault, or kernel cause.",
+    "No capture by this owner occurred in the complete observed service window; unrelated historical host process activity was not audited.",
+    "Installed adjacent C/Java source was inspected; this investigation did not rebuild their binaries.",
+    "The port and root-hub auto values are not the missing camera device power/control value.",
+    "This metadata run did not establish that camera autosuspend caused disconnects.",
+    "Actual running kernel is 7.0.0-38-generic; any earlier-version source explanation must be checked for that implementation.",
+    "The control-query warning issuer is not identified by these journals; do not attribute the query to this Camera app, manager startup, or kernel enumeration without a fresh trace."
+  ],
+  "raw_kernel_parameters": {
+    "/sys/module/usbcore/parameters/autosuspend": "2",
+    "/sys/module/usbcore/parameters/quirks": "",
+    "/sys/module/uvcvideo/parameters/quirks": "4294967295"
+  },
+  "next_conditions": [
+    "Keep the existing owner service untouched; it has already demonstrated current-Main re-registration when the physical source returns.",
+    "Investigate the target 1e08:5520 port/control/idle power behavior against authoritative Linux source before changing a quirk.",
+    "Before another Camera launch require actual current-Main CameraService device registration and a present source surviving beyond the observed short disconnect cycle.",
+    "Retain the exact ready-shutter requirement; do not reinterpret this error dialog as an initializing preview.",
+    "A future diagnostic-only improvement may classify this visible alert explicitly and gather failure-time read-only provider/exit diagnostics without replaying any UI action."
+  ],
+  "source_artifacts": {
+    "read-only-preview-summary.json": {
+      "bytes": 8512,
+      "sha256": "60d504bdc365b11c7733f175aa94e614cfe1a87da143cdc449510998bbb5744d"
+    },
+    "held-readonly-diagnostic.json": {
+      "bytes": 13081,
+      "sha256": "15a33aedeb107c820c5c41a8132354a1b3f40d91977db81d06e6b9ff506df0a7"
+    },
+    "provider-source-readonly.json": {
+      "bytes": 16057,
+      "sha256": "dc99c1940992a0ca2d8b2c7c752c2ffb18fce593c6bc4ef58ca269b57a0fc3f9"
+    },
+    "usb-history-readonly.json": {
+      "bytes": 59220,
+      "sha256": "4a5f6a9dc72da8020d5803bd7d65f1c8b538d906aa2bebbc19ce7091f92cf992"
+    },
+    "installed-manager.py": {
+      "bytes": 15034,
+      "sha256": "38357312bc841ab076de5c1036ef9c96e64b6c88158a790b431e3dc022c6ba50"
+    },
+    "uvc_capture.c": {
+      "bytes": 15709,
+      "sha256": "70f6d88f6438604fc90d1b33541d2cbd09d4e3a4e29f254d99925435d7bc6fcc"
+    },
+    "LiveCameraProducer.java": {
+      "bytes": 27025,
+      "sha256": "672187e7ec2f74902266c40c783ed55122c9e398f0fec01d0d873bdb639eb267"
+    },
+    "usb-power-metadata-readonly.json": {
+      "bytes": 19187,
+      "sha256": "f052cec2a67c4cd1858a96d7467505d2dc7a17faad10f61fdea42896225a6ab1"
+    }
+  },
+  "prior_summary_sha256": "d1a06a8cc5a895edb0e6959833d2bdaf061a4d9825930c67d14dcf39532cdd9f",
+  "current_kernel": {
+    "release": "7.0.0-38-generic",
+    "uvcvideo_modinfo": [
+      "filename:       /lib/modules/7.0.0-38-generic/kernel/drivers/media/usb/uvc/uvcvideo.ko.zst",
+      "version:        1.1.1",
+      "srcversion:     8DDC0550AF9B7F712DD34EC",
+      "depends:        videodev,videobuf2-v4l2,mc,uvc,videobuf2-common,videobuf2-vmalloc",
+      "intree:         Y",
+      "name:           uvcvideo",
+      "retpoline:      Y",
+      "vermagic:       7.0.0-38-generic SMP preempt mod_unload modversions ",
+      "signer:         Build time autogenerated kernel key",
+      "parm:           clock:Video buffers timestamp clock",
+      "parm:           hwtimestamps:Use hardware timestamps (uint)",
+      "parm:           nodrop:Don't drop incomplete frames (uint)",
+      "parm:           quirks:Forced device quirks (uint)",
+      "parm:           trace:Trace level bitmask (uint)",
+      "parm:           timeout:Streaming control requests timeout (uint)"
+    ]
+  },
+  "usb_power_observation": {
+    "at_utc": "2026-11-05T06:01:03.098003+00:00",
+    "target_device_present": false,
+    "target_device_power_control": "unobserved because device absent",
+    "port_connect_type": "hardwired",
+    "port_state": "not attached",
+    "port_over_current_count": 0,
+    "port_power_control": "auto",
+    "port_runtime_status": "active",
+    "port_runtime_suspended_time_ms": 0,
+    "root_hub_runtime_status": "active",
+    "root_hub_runtime_suspended_time_ms": 0,
+    "no_target_specific_rule_found_in_scanned_rules_conf_units": true,
+    "scan_did_not_query_a_live_target_hwdb_or_target_pm_policy": true,
+    "tlp_service": "not-found",
+    "laptop_mode_service": "not-found",
+    "power_profiles_daemon": "active",
+    "changes_made": 0
+  }
+}

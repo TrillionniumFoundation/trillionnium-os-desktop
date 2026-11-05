@@ -1,0 +1,33 @@
+{
+  "schema": "pocket4-reviewed-app-gates-v1",
+  "reviews": [
+    {
+      "id": "root_camera_live_preview_r16_release08_accept02",
+      "reviewer": "root",
+      "package": "com.android.camera2",
+      "scope": "scoped",
+      "observed_at_utc": "2026-11-05T06:32:30.395517+00:00",
+      "reviewed_at_utc": "2026-11-05T06:53:37.010979+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "version_code": 20002000,
+      "uid": 10062,
+      "apk_sha256": "0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e",
+      "evidence": [
+        {
+          "path": "inputs/camera-preview-storage-blocker.json",
+          "sha256": "33e13bf8131ea77f6f521e244203d75d8feee80404fc159150111c4b7d76f062"
+        }
+      ],
+      "checks": {
+        "camera.preview": "passed",
+        "camera.photo": "blocked",
+        "camera.persist": "blocked"
+      },
+      "unresolved_findings": [
+        "External-storage FUSE endpoint disconnected while framework reports mounted; storage recovery and photo persistence unverified.",
+        "Earlier repeated USB disappearance remains unexplained; continuous/reconnect/video/audio and whole-App release coverage are unqualified."
+      ],
+      "qualification_scope": "One visually reviewed real preview, matching physical/producer frame session and normal owned close. No shutter, photo, persistence or whole-App pass."
+    }
+  ]
+}

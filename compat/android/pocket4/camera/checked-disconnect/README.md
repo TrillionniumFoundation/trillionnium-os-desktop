@@ -149,6 +149,55 @@ unknown action remains. Its original failure is retained in
 enumeration fix and successful update do not resolve or qualify this observed
 connection failure. CameraService/provider diagnosis is continuing.
 
+The subsequent [read-only USB diagnosis](evidence/camera-usb-disconnect-diagnosis.json)
+places the immediate blocker below Android: Linux removed the physical
+`1e08:5520` camera before the manager unregistered its provider. Seven observed
+idle registration periods lasted approximately 14 seconds, with no physical
+capture request by this owner in the retained window. The last recorded source
+loss predates release08 installation. Gain-control warnings precede those losses,
+but their causal role and the actual query issuer remain unresolved.
+
+The running kernel is `7.0.0-38-generic`. The [upstream v7.0 source review](evidence/usb-upstream-source-review.json)
+confirms that the all-ones unsigned quirk parameter is the default sentinel and
+that the Gain warning disables a control mapping; it does not establish a USB
+disconnect cause or reconstruct Ubuntu's exact module. The camera's own PM
+attributes could not be read while it was absent. Parent-port `auto` values are
+not substituted for them.
+
+A [single-device PM contrast tool](device/usb-pm/README.md) is prepared, with nine
+offline failure-handling controls. Its actual [read-only preflight](evidence/camera-usb-pm-readonly-preflight.json)
+refused the unavailable bound target and performed zero sysfs writes. Execute
+mode has not been called. The tool requires the exact present device and its own
+eligible PM values, holds the original sysfs descriptors, and restores the same
+generation. Neither this preparation nor a future short observation can qualify
+Camera or prove autosuspend causality on its own.
+
+## Later actual live preview and storage blocker
+
+At 06:30:51 UTC, a new read-only check found the same physical USB camera present,
+with its current generation enumerated since 06:23:02. No port reset, PM write,
+provider restart or USB configuration change was used. The next actual trial at
+06:32:25–06:32:30 opened one owned Camera task and closed it normally. CameraService
+connected the client; the physical source delivered **64 frames**, of which the
+producer delivered **63**, and capture exited normally. The original private
+preview was visually inspected: it contains the real camera image and the toast
+**“Insert an SD card before using the camera.”** Its visible shutter is disabled.
+This is a verified scoped live preview, with **zero shutter calls and no photo**.
+The earlier cannot-connect failure remains a separate historical observation.
+
+The [new preview/storage receipt](evidence/camera-preview-storage-blocker.json)
+binds the exact image hash, native observation, provider session, release08 APK,
+framework epoch and completed jobs. Images remain private. A subsequent
+[read-only storage diagnostic](evidence/camera-storage-enotconn-readonly.json)
+found `emulated;0` reported as `MOUNTED`, while `/storage/emulated/0` and `/sdcard`
+actually returned **errno 107 / ENOTCONN**. The live mount table identifies the
+failed FUSE filesystem as device `0:158`. The backing `/data/media/0` remains
+accessible, user 0 is unlocked and the backing filesystem has 16,694,508 KiB
+available. This shared storage failure is now the immediate photo prerequisite;
+its recovery and persistent lifecycle repair are under investigation. No storage
+mount, unmount, format, permission change or service restart was performed by
+this diagnostic. Other Apps' storage paths are not declared tested from it.
+
 The reviewed [device transaction and acceptance sources](device/README.md)
 preserve the exact epoch, scoped task ownership, one-shot installation and shutter
 semantics, and separate unknown outcomes from success. Current-epoch physical

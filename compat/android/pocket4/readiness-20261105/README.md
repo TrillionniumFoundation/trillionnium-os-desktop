@@ -10,7 +10,7 @@ The complete 2026-11-05 05:46:49.686297 UTC inventory contains **186 installed p
 
 | App / workstream | Latest evidence and next required result |
 |---|---|
-| Camera | Exact release08 SHA `0218041bc46f49c0c9622196e2a3610c641e0cc8f12386f23cdd88dc3a3ce18e` installed once; UID/CE/DE/permissions identity preserved. Acceptance then observed the cannot-connect dialog: 1 launch, **0 shutters**, 1 owned close. CameraService exposes **0 cameras** and the provider manager is waiting for its physical source. The 05:33:37 source-loss event predates the update/acceptance; the new APK is not established as its cause. Restore/diagnose availability, then qualify preview, real photo output, persistence, video and recovery. |
+| Camera | Release08 is installed and its later real preview is visually verified, with 64 physical / 63 producer frames and one normal owned close. The shutter is disabled and no photo was taken. Current shared storage reports mounted but `/storage/emulated/0` and `/sdcard` return ENOTCONN. Recover and qualify the exact storage session, then actual photo/persistence/video/recovery. Earlier USB/cannot-connect failures remain retained. |
 | Contacts | Latest owned launch reached an observation mismatch. **0 Create clicks, field entries, saves, deletes or account actions**; task 886 was normally removed and the empty database/account topology were preserved. This is an **UI observation gate block**, not proof of an App crash or failed contact business behavior. Diagnose the saved observation before another admitted step. |
 | Bilibili | The newer retained video transition opened the intended course page and closed only its owned task, but retained buffering and no verified advancing frames/audio. Keep the earlier Nov4 scoped visual result as history; do not transfer it into a current whole-App pass. |
 | Marriott / China Eastern | Retained Nov4 current-R16 evidence records native SIG11 with an observed virtual proc-fd mismatch / native SIGILL respectively. Corrected-runtime and actual business requalification remain absent. |
@@ -95,6 +95,7 @@ python -B parse_launcher_inventory.py \
   --output inventory-reproduced.json
 python -B update_matrix.py \
   --inventory inputs/current-installed-inventory-derived-20261105.json \
+  --gate-reviews gate-reviews.json \
   --output readiness-next.json
 ```
 
@@ -102,7 +103,7 @@ For later complete inventories, pass the new receipt to `--inventory`. The updat
 
 Add hash-referenced scoped observations to `progress.json`; they can retain failed/blocked/pending gates but **cannot pass a gate**. Historical snapshot booleans and install/build/launch success cannot promote readiness.
 
-Optional `--gate-reviews review.json` accepts only schema `pocket4-reviewed-app-gates-v1` with a `reviews` array. Each review needs a unique `id`, `reviewer`, `package`, `scope` (`scoped` or `whole_app_release`), `observed_at_utc`, exact `framework_epoch_sha256`, `version_code`, `uid`, `apk_sha256`, nonempty `evidence` containing bundle-relative `path` and `sha256`, and `checks` mapping known gate IDs to `passed/failed/blocked/pending`. The files must exist and match their hashes; the review must follow the current inventory and any newer retained failure cutoff. A passed `release_scope` additionally requires `scope=whole_app_release`, `all_features_reviewed=true`, `retained_failures_reconciled=true` and `unresolved_findings=[]`. These are explicit reviewer attestations backed by inspected evidence, not semantic proof extracted automatically from arbitrary documents. Every required gate must pass on the same exact binary before an App can qualify. This delivered matrix contains **no passing gate review**.
+Optional `--gate-reviews review.json` accepts only schema `pocket4-reviewed-app-gates-v1` with a `reviews` array. Each review needs a unique `id`, `reviewer`, `package`, `scope` (`scoped` or `whole_app_release`), `observed_at_utc`, exact `framework_epoch_sha256`, `version_code`, `uid`, `apk_sha256`, nonempty `evidence` containing bundle-relative `path` and `sha256`, and `checks` mapping known gate IDs to `passed/failed/blocked/pending`. The files must exist and match their hashes; the review must follow the current inventory and any newer retained failure cutoff. A passed `release_scope` additionally requires `scope=whole_app_release`, `all_features_reviewed=true`, `retained_failures_reconciled=true` and `unresolved_findings=[]`. These are explicit reviewer attestations backed by inspected evidence, not semantic proof extracted automatically from arbitrary documents. Every required gate must pass on the same exact binary before an App can qualify. This delivered matrix contains **one scoped passing preview gate review** for Camera release08. It does not pass a whole-App release gate; all 45 Apps remain in scope.
 
 ## Local validation and evidence limits
 

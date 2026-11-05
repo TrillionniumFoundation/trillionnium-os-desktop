@@ -1,0 +1,194 @@
+{
+  "result": {
+    "directories": {
+      "/data/media": {
+        "dev": 1811,
+        "gid": 1023,
+        "inode": 131084,
+        "is_directory": true,
+        "mode": "0o550",
+        "uid": 1023
+      },
+      "/data/media/0": {
+        "dev": 1811,
+        "gid": 1023,
+        "inode": 131958,
+        "is_directory": true,
+        "mode": "0o2770",
+        "uid": 1023
+      },
+      "/data/media/0/DCIM": {
+        "dev": 1811,
+        "gid": 1023,
+        "inode": 132066,
+        "is_directory": true,
+        "mode": "0o2770",
+        "uid": 10108
+      },
+      "/mnt/runtime/default/emulated": {
+        "dev": 112,
+        "gid": 0,
+        "inode": 40,
+        "is_directory": true,
+        "mode": "0o700",
+        "uid": 0
+      },
+      "/mnt/user/0/primary": {
+        "errno": 2,
+        "error": "FileNotFoundError"
+      },
+      "/sdcard": {
+        "errno": 107,
+        "error": "OSError"
+      },
+      "/storage": {
+        "dev": 112,
+        "gid": 9997,
+        "inode": 12,
+        "is_directory": true,
+        "mode": "0o710",
+        "uid": 2000
+      },
+      "/storage/emulated": {
+        "dev": 158,
+        "gid": 1023,
+        "inode": 131084,
+        "is_directory": true,
+        "mode": "0o550",
+        "uid": 1023
+      },
+      "/storage/emulated/0": {
+        "errno": 107,
+        "error": "OSError"
+      },
+      "/storage/emulated/0/DCIM": {
+        "errno": 107,
+        "error": "OSError"
+      },
+      "/storage/emulated/0/DCIM/Camera": {
+        "errno": 107,
+        "error": "OSError"
+      }
+    },
+    "guard_after": {
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "host_pid": 3588089,
+      "init_pid": 3588093,
+      "init_start_ticks": 80797014
+    },
+    "guard_before": {
+      "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "host_pid": 3588089,
+      "init_pid": 3588093,
+      "init_start_ticks": 80797014
+    },
+    "observed_at_utc": "2026-11-05T06:45:00.921528+00:00",
+    "queries": {
+      "camera_appops": {
+        "full_stdout_bytes": 1456,
+        "full_stdout_sha256": "90fa2573870731c7a6e428fffb7965bf8bab43e934330030ca328af681a71bf0",
+        "rc": 0,
+        "stderr": "",
+        "stdout": "Uid mode: COARSE_LOCATION: ignore\nFINE_LOCATION: ignore\nREAD_CONTACTS: ignore\nWRITE_CONTACTS: ignore\nREAD_CALL_LOG: ignore\nWRITE_CALL_LOG: ignore\nREAD_CALENDAR: ignore\nWRITE_CALENDAR: ignore\nPOST_NOTIFICATION: ignore\nCALL_PHONE: ignore\nREAD_SMS: ignore\nRECEIVE_SMS: ignore\nRECEIVE_MMS: ignore\nRECEIVE_WAP_PUSH: ignore\nSEND_SMS: ignore\nCAMERA: foreground\nRECORD_AUDIO: foreground\nREAD_PHONE_STATE: ignore\nADD_VOICEMAIL: ignore\nUSE_SIP: ignore\nPROCESS_OUTGOING_CALLS: ignore\nBODY_SENSORS: ignore\nREAD_CELL_BROADCASTS: ignore\nREAD_EXTERNAL_STORAGE: ignore\nWRITE_EXTERNAL_STORAGE: ignore\nGET_ACCOUNTS: ignore\nREAD_PHONE_NUMBERS: ignore\nANSWER_PHONE_CALLS: ignore\nACCEPT_HANDOVER: ignore\nBLUETOOTH_SCAN: ignore\nACTIVITY_RECOGNITION: ignore\nREAD_MEDIA_AUDIO: ignore\nREAD_MEDIA_VIDEO: ignore\nREAD_MEDIA_IMAGES: ignore\nACCESS_MEDIA_LOCATION: ignore\nBLUETOOTH_CONNECT: ignore\nUWB_RANGING: ignore\nBLUETOOTH_ADVERTISE: ignore\nNEARBY_WIFI_DEVICES: ignore\nREAD_MEDIA_VISUAL_USER_SELECTED: ignore\nREAD_HEART_RATE: ignore\nREAD_SKIN_TEMPERATURE: ignore\nRANGING: ignore\nREAD_OXYGEN_SATURATION: ignore\nACCESS_LOCAL_NETWORK: ignore\nREAD_BLOOD_PRESSURE: ignore\nREAD_HEART_RATE_VARIABILITY: ignore\nREAD_RESPIRATORY_RATE: ignore\nREAD_VO2_MAX: ignore\nCAMERA: allow; time=+12m34s185ms ago; duration=+2s728ms\nWRITE_MEDIA_VIDEO: deny; rejectTime=+1h2m11s102ms ago\nWRITE_MEDIA_IMAGES: deny; rejectTime=+1h2m11s108ms ago\nMANAGE_EXTERNAL_STORAGE: default; rejectTime=+1h2m11s109ms ago\n",
+        "timed_out": false
+      },
+      "camera_package": {
+        "full_stdout_bytes": 16156,
+        "full_stdout_sha256": "76b5b44036ba203e8918dda01ec0c2dce78337b1fecbf2531e7f49acd1629904",
+        "rc": 0,
+        "stderr": "",
+        "stdout": "    appId=10062\n    legacyNativeLibraryDir=/data/app/~~t5_bCX13EV-Niq2rRruJgw==/com.android.camera2-rpW2WFYomnV3C0b-7TCXsg==/lib\n    versionCode=20002000 minSdk=37 targetSdk=1000\n    privateFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_UNRESIZEABLE ALLOW_AUDIO_PLAYBACK_CAPTURE PRODUCT PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]\n      org.apache.http.legacy\n      /system/framework/org.apache.http.legacy.jar\n    pkgFlags=[ SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA UPDATED_SYSTEM_APP ALLOW_BACKUP KILL_AFTER_RESTORE RESTORE_ANY_VERSION LARGE_HEAP ]\n      android.permission.WRITE_SETTINGS\n      android.permission.POST_NOTIFICATIONS\n      android.permission.ACCESS_FINE_LOCATION\n      android.permission.USE_CREDENTIALS\n      android.permission.NFC\n      android.permission.BIND_WALLPAPER\n      android.permission.WRITE_SYNC_SETTINGS\n      android.permission.RECEIVE_BOOT_COMPLETED\n      android.permission.SUBSCRIBED_FEEDS_READ\n      android.permission.SUBSCRIBED_FEEDS_WRITE\n      android.permission.INTERNET\n      android.permission.ACCESS_COARSE_LOCATION\n      android.permission.CHANGE_WIFI_STATE\n      android.permission.ACCESS_NETWORK_STATE\n      android.permission.CAMERA\n      android.permission.SET_WALLPAPER\n      android.permission.READ_SYNC_SETTINGS\n      android.permission.VIBRATE\n      android.permission.ACCESS_WIFI_STATE\n      android.permission.RECORD_AUDIO\n      android.permission.WAKE_LOCK\n      android.permission.WRITE_SETTINGS: granted=true\n      android.permission.USE_CREDENTIALS: granted=true\n      android.permission.NFC: granted=true\n      android.permission.WRITE_SYNC_SETTINGS: granted=true\n      android.permission.RECEIVE_BOOT_COMPLETED: granted=true\n      android.permission.SUBSCRIBED_FEEDS_READ: granted=true\n      android.permission.SUBSCRIBED_FEEDS_WRITE: granted=true\n      android.permission.INTERNET: granted=true\n      android.permission.CHANGE_WIFI_STATE: granted=true\n      android.permission.ACCESS_NETWORK_STATE: granted=true\n      android.permission.SET_WALLPAPER: granted=true\n      android.permission.READ_SYNC_SETTINGS: granted=true\n      android.permission.VIBRATE: granted=true\n      android.permission.ACCESS_WIFI_STATE: granted=true\n      android.permission.WAKE_LOCK: granted=true\n      dataDir=/data/user/0/com.android.camera2\n        android.permission.POST_NOTIFICATIONS: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n        android.permission.ACCESS_FINE_LOCATION: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n        android.permission.ACCESS_COARSE_LOCATION: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n        android.permission.CAMERA: granted=true, flags=[ GRANTED_BY_DEFAULT|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n        android.permission.RECORD_AUDIO: granted=true, flags=[ GRANTED_BY_DEFAULT|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n    appId=10062\n    legacyNativeLibraryDir=/product/app/Camera2/lib\n    versionCode=20002000 minSdk=37 targetSdk=1000\n    privateFlags=[ PRIVATE_FLAG_ACTIVITIES_RESIZE_MODE_UNRESIZEABLE ALLOW_AUDIO_PLAYBACK_CAPTURE PRODUCT PRIVATE_FLAG_ALLOW_NATIVE_HEAP_POINTER_TAGGING ]\n      org.apache.http.legacy\n    pkgFlags=[ SYSTEM HAS_CODE ALLOW_CLEAR_USER_DATA ALLOW_BACKUP KILL_AFTER_RESTORE RESTORE_ANY_VERSION LARGE_HEAP ]\n      android.permission.WRITE_SETTINGS\n      android.permission.POST_NOTIFICATIONS\n      android.permission.ACCESS_FINE_LOCATION\n      android.permission.USE_CREDENTIALS\n      android.permission.NFC\n      android.permission.BIND_WALLPAPER\n      android.permission.WRITE_SYNC_SETTINGS\n      android.permission.RECEIVE_BOOT_COMPLETED\n      android.permission.SUBSCRIBED_FEEDS_READ\n      android.permission.SUBSCRIBED_FEEDS_WRITE\n      android.permission.INTERNET\n      android.permission.ACCESS_COARSE_LOCATION\n      android.permission.CHANGE_WIFI_STATE\n      android.permission.ACCESS_NETWORK_STATE\n      android.permission.CAMERA\n      android.permission.SET_WALLPAPER\n      android.permission.READ_SYNC_SETTINGS\n      android.permission.VIBRATE\n      android.permission.ACCESS_WIFI_STATE\n      android.permission.RECORD_AUDIO\n      android.permission.WAKE_LOCK\n      android.permission.WRITE_SETTINGS: granted=true\n      android.permission.USE_CREDENTIALS: granted=true\n      android.permission.NFC: granted=true\n      android.permission.WRITE_SYNC_SETTINGS: granted=true\n      android.permission.RECEIVE_BOOT_COMPLETED: granted=true\n      android.permission.SUBSCRIBED_FEEDS_READ: granted=true\n      android.permission.SUBSCRIBED_FEEDS_WRITE: granted=true\n      android.permission.INTERNET: granted=true\n      android.permission.CHANGE_WIFI_STATE: granted=true\n      android.permission.ACCESS_NETWORK_STATE: granted=true\n      android.permission.SET_WALLPAPER: granted=true\n      android.permission.READ_SYNC_SETTINGS: granted=true\n      android.permission.VIBRATE: granted=true\n      android.permission.ACCESS_WIFI_STATE: granted=true\n      android.permission.WAKE_LOCK: granted=true\n      dataDir=/data/user/0/com.android.camera2\n        android.permission.POST_NOTIFICATIONS: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n        android.permission.ACCESS_FINE_LOCATION: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n        android.permission.ACCESS_COARSE_LOCATION: granted=false, flags=[ USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n        android.permission.CAMERA: granted=true, flags=[ GRANTED_BY_DEFAULT|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n        android.permission.RECORD_AUDIO: granted=true, flags=[ GRANTED_BY_DEFAULT|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]",
+        "timed_out": false
+      },
+      "ce_available": {
+        "full_stdout_bytes": 5,
+        "full_stdout_sha256": "a17fcf0a2f50e2d495e4f90ce263410edc183add6c62699a2facbccf60410f74",
+        "rc": 0,
+        "stderr": "",
+        "stdout": "true\n",
+        "timed_out": false
+      },
+      "disks": {
+        "full_stdout_bytes": 0,
+        "full_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "rc": 0,
+        "stderr": "",
+        "stdout": "",
+        "timed_out": false
+      },
+      "filesystem_space": {
+        "full_stdout_bytes": 138,
+        "full_stdout_sha256": "7c8153be6ad5cd8d054fd67aa4434b813d5e7b47e35e20f5ac037827a6ef6ed2",
+        "rc": 1,
+        "stderr": "df: '/storage/emulated/0': Transport endpoint is not connected\ndf: '/sdcard': Transport endpoint is not connected\n",
+        "stdout": "Filesystem     1K-blocks     Used Available Use% Mounted on\n/dev/loop19     32913264 16218756  16694508  50% /mnt/pass_through/0/emulated\n",
+        "timed_out": false
+      },
+      "mount": {
+        "full_stdout_bytes": 494,
+        "full_stdout_sha256": "6693ace5c507a20250f2e92a13fa473035e6e845274ff6b86b1556f7f06f6d4a",
+        "rc": 0,
+        "stderr": "",
+        "stdout": "Disks:\n\nVolumes:\n  VolumeInfo{emulated;0}:\n    type=EMULATED diskId=null partGuid= mountFlags=PRIMARY|VISIBLE_FOR_WRITE mountUserId=0 state=MOUNTED \n    fsType=null fsUuid=null fsLabel=null \n    path=/storage/emulated internalPath=/data/media \n\nRecords:\n\nPrimary storage UUID: null\n\nInternal storage (null) total size: 64000000000 (61035 MiB)\n\nCE unlocked users: [0]\nSystem unlocked users: [0]\n\nmObbMounts:\n\nmObbPathToStateMap:\n\nMedia cloud providers: {}\n\nLast maintenance: 2026-11-01 15:14:56\n",
+        "timed_out": false
+      },
+      "mountinfo": {
+        "full_stdout_bytes": 28457,
+        "full_stdout_sha256": "819f2d91a09823a385253ccdc19c8f84ce2f4c1700f563e97d450fc57158c533",
+        "rc": 0,
+        "stderr": "",
+        "stdout": "3846 3842 7:15 /data /data ro,nosuid,nodev,relatime shared:859 - erofs /dev/loop15 ro,user_xattr,acl,cache_strategy=readaround\n3861 3842 7:15 /storage /storage ro,nosuid,nodev,relatime shared:901 - erofs /dev/loop15 ro,user_xattr,acl,cache_strategy=readaround\n3878 3863 259:2 /usr/lib/droidloom/storage/vold /system/bin/vold ro,nosuid,nodev,relatime shared:985 - ext4 /dev/nvme0n1p2 rw\n4012 3846 7:19 / /data rw,nosuid,nodev,relatime shared:860 - ext4 /dev/loop19 rw\n1247 4032 0:112 /user /mnt/installer rw,nosuid,nodev,noexec,relatime shared:856 master:877 - tmpfs tmpfs rw,mode=755,gid=1000,inode64\n1283 4032 0:112 /user /mnt/androidwritable rw,nosuid,nodev,noexec,relatime shared:873 master:877 - tmpfs tmpfs rw,mode=755,gid=1000,inode64\n4102 4021 0:37 / /sys/fs/fuse/connections rw,relatime shared:1094 - fusectl none rw\n4104 4032 0:122 / /mnt/vm rw,nosuid,nodev,noexec,relatime shared:1096 - tmpfs tmpfs rw,inode64\n4107 3861 0:112 /user/0 /storage rw,nosuid,nodev,noexec,relatime master:877 - tmpfs tmpfs rw,mode=755,gid=1000,inode64\n4114 4109 7:19 /storage_area /data_mirror/storage_area rw,nosuid,nodev,relatime shared:860 - ext4 /dev/loop19 rw\n4118 4012 7:19 /data /data/user/0 rw,nosuid,nodev,relatime shared:860 - ext4 /dev/loop19 rw\n4119 4110 7:19 /data /data_mirror/data_ce/null/0 rw,nosuid,nodev,relatime shared:860 - ext4 /dev/loop19 rw\n8446 4032 0:158 / /mnt/user/0/emulated rw,nosuid,nodev,noexec,noatime shared:1098 - fuse /dev/fuse rw,lazytime,user_id=0,group_id=0,allow_other\n8468 4107 0:158 / /storage/emulated rw,nosuid,nodev,noexec,noatime master:1098 - fuse /dev/fuse rw,lazytime,user_id=0,group_id=0,allow_other\n8469 1283 0:158 / /mnt/androidwritable/0/emulated rw,nosuid,nodev,noexec,noatime shared:1099 master:1098 - fuse /dev/fuse rw,lazytime,user_id=0,group_id=0,allow_other\n8482 1247 0:158 / /mnt/installer/0/emulated rw,nosuid,nodev,noexec,noatime shared:1100 master:1098 - fuse /dev/fuse rw,lazytime,user_id=0,group_id=0,allow_other\n8496 4032 7:19 /media /mnt/pass_through/0/emulated rw,nosuid,nodev,relatime shared:860 - ext4 /dev/loop19 rw",
+        "timed_out": false
+      },
+      "volumes": {
+        "full_stdout_bytes": 45,
+        "full_stdout_sha256": "30c299455ec1e731fedb1ce9398ff54ef5f0d5fff695e787800115dc4ddccfc7",
+        "rc": 0,
+        "stderr": "",
+        "stdout": "private mounted null\nemulated;0 mounted null\n",
+        "timed_out": false
+      }
+    },
+    "read_only": true,
+    "storage_writes": 0,
+    "ui_actions": 0
+  },
+  "coordinator": {
+    "at_unix_ms": 1793861101685,
+    "audit_recorded": true,
+    "automatic_retry": false,
+    "cancelled": false,
+    "exit_code": 0,
+    "job_id": "1a1aa74217a-fc05-434d",
+    "launch_nonce": "184f5745b72e75e6e5cdf28f277c7a7e",
+    "log_bytes": {
+      "stderr": {
+        "seen": 0,
+        "stored": 0
+      },
+      "stdout": {
+        "seen": 14085,
+        "stored": 14085
+      }
+    },
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_synced": {
+      "stderr": true,
+      "stdout": true
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    },
+    "output_complete": true,
+    "output_durable": true,
+    "state": "succeeded",
+    "terminal_publication_confirmed": true,
+    "terminal_publication_protocol": 1,
+    "timed_out": false
+  }
+}
+

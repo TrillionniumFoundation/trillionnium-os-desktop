@@ -1,6 +1,6 @@
 {
   "schema": "pocket4-app-progress-v1",
-  "reviewed_at_utc": "2026-11-05T05:54:45.271048+00:00",
+  "reviewed_at_utc": "2026-11-05T06:53:37.010979+00:00",
   "gate_promotion_from_progress": false,
   "apps": [
     {
@@ -109,6 +109,34 @@
           "path": "inputs/contacts-ui-preflight-result.json",
           "sha256": "a5a7277cae428a1e2f1142c964469fd330cfb9cf7a6e6b5e92a891c8ad0ce7f2",
           "bytes": 938
+        }
+      ]
+    },
+    {
+      "id": "camera_actual_live_preview_storage_blocker",
+      "package": "com.android.camera2",
+      "version_code": 20002000,
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "observed_at_utc": "2026-11-05T06:32:30.395517+00:00",
+      "status": "REAL_PREVIEW_VERIFIED_PHOTO_BLOCKED_BY_DISCONNECTED_FUSE",
+      "actual_photo_taken": false,
+      "scoped_preview_verified": true,
+      "physical_frames": 64,
+      "producer_frames": 63,
+      "native_launch_calls": 1,
+      "shutter_calls": 0,
+      "owned_task_remove_calls": 1,
+      "storage_readonly_observed_at_utc": "2026-11-05T06:45:00.921528+00:00",
+      "unpassed_checks": {
+        "camera.photo": "blocked",
+        "camera.persist": "blocked"
+      },
+      "next_action": "Recover the exact failed external-storage session through its reviewed normal lifecycle, then requalify one photo and persistence. No permission widening or storage bypass is a qualification.",
+      "evidence": [
+        {
+          "path": "inputs/camera-preview-storage-blocker.json",
+          "sha256": "33e13bf8131ea77f6f521e244203d75d8feee80404fc159150111c4b7d76f062",
+          "bytes": 5710
         }
       ]
     }

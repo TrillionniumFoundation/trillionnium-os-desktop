@@ -1,0 +1,53 @@
+{
+  "schema": "pocket4-usb-upstream-source-review-v1",
+  "actual_host_kernel": "7.0.0-38-generic",
+  "review_scope": "Upstream Linux v7.0 control flow. This does not reconstruct Ubuntu's exact installed module.",
+  "sources": [
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "drivers/media/usb/uvc/uvc_driver.c",
+      "git_blob_sha": "b0ca81d924b6a33dacac9fc91e33defe7dea8ff8",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/drivers/media/usb/uvc/uvc_driver.c"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "drivers/media/usb/uvc/uvc_ctrl.c",
+      "git_blob_sha": "b9a3d9257a11b4ad9ebb4c28a3a0c8f39ecdd864",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/drivers/media/usb/uvc/uvc_ctrl.c"
+    },
+    {
+      "repository": "torvalds/linux",
+      "ref": "v7.0",
+      "path": "drivers/media/usb/uvc/uvc_v4l2.c",
+      "git_blob_sha": "d5860661c115980339e0dbbc802e8c2bb33b47c5",
+      "url": "https://github.com/torvalds/linux/blob/v7.0/drivers/media/usb/uvc/uvc_v4l2.c"
+    }
+  ],
+  "findings": [
+    {
+      "id": "quirks_default",
+      "finding": "The unsigned module default is -1. Value 4294967295 selects device-info quirks rather than forcing all quirk bits."
+    },
+    {
+      "id": "runtime_pm",
+      "finding": "uvc_probe calls usb_enable_autosuspend unless the device has UVC_QUIRK_DISABLE_AUTOSUSPEND. The absent camera's current per-device PM attributes were not observed."
+    },
+    {
+      "id": "gain_warning",
+      "finding": "The reported warning follows a control-boundary query failure, marks that control mapping disabled, sets V4L2_CTRL_FLAG_DISABLED and returns zero. This branch does not itself unregister the USB device."
+    },
+    {
+      "id": "query_entry",
+      "finding": "The V4L2 query-ext-control ioctl calls the control-query path. The process that issued the actual recorded query is unknown."
+    },
+    {
+      "id": "id_table",
+      "finding": "The examined upstream v7.0 uvc_driver.c does not contain vendor 1e08 or product 5520. This is not a claim that all other quirk, firmware or policy mechanisms were examined."
+    }
+  ],
+  "causality_established": false,
+  "configuration_changes": 0
+}
+
