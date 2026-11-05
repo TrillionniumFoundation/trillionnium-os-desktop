@@ -1,0 +1,277 @@
+--- verify_art20.py@e2dfabd5
++++ verify_candidate22.py
+@@ -1,4 +1,4 @@
+-"""Bounded, isolated installed-ART comparison; inert without --execute.
++"""One candidate ART run linked to the retained verified original; inert by default.
+ 
+ The runner records real compiler/target dumps and never labels an unseen
+ oatdump class-status grammar as Verified. It does not deploy its candidate.
+@@ -7,7 +7,12 @@
+ import argparse,contextlib,datetime,fcntl,hashlib,json,os,re,resource,stat,sys,time,types
+ 
+ ROOT=Path('/home/alex/work/pocket4-storage-session-candidate-20261105-r12')
+-OUT=ROOT/'art-pair20'
++OUT=ROOT/'art-candidate22'
++BASE=ROOT/'art-pair20'
++BASE_RESULT_SHA='1138ea24880808e639112691c5e224497705a82b289aa646d1687c0117583292'
++BASE_CLOSURE_SHA='0fc09f9cbeaba50f128aaefc47bd2725a5bf4381ffb9f52452c7ad947c07f710'
++BASE_REVIEW_SHA='dbf9b5d74fa4c58fc3e1a3126fb3bc82ce7632a71febba9febb176333970ed69'
++BASE_ARGV=[]
+ TX=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ TX_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+ LIB_SHA='605a30fe58ad9fb49bb62d85750a2d558686ea5730d000b3d703e88dde9e8aa5'
+@@ -142,7 +147,7 @@
+     # Input and marker are reopened read-only; only two output FDs are writable.
+     source=os.open(directory/(label+'.jar'),os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC)
+     stack.callback(os.close,source)
+-    marker=('pocket4-art-pair20:'+label+':'+pin+'\n').encode()
++    marker=('pocket4-art-candidate22:'+label+':'+pin+'\n').encode()
+     own_file(directory/'marker',marker,stack,mode=0o444,uid=0)
+     markfd=os.open(directory/'marker',os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC)
+     stack.callback(os.close,markfd)
+@@ -178,12 +183,112 @@
+     return {k:r[k] for k in ('rc','timed_out','joined','spawned')}|{
+         stream:dict(bytes=len(r[stream]),sha256=sha(r[stream])) for stream in ('stdout','stderr')}
+ 
++def target_proof(text):
++    header=re.compile(r'^\d+: Lcom/android/server/storage/StorageSessionController; '
++        r'\(offset=0x[0-9a-f]+\) \(type_idx=\d+\) \(([^)]+)\) \(([^)]+)\)$',re.M)
++    hits=list(header.finditer(text));require(len(hits)==1,'EXACT_TARGET_CLASS_NOT_UNIQUE')
++    h=hits[0];require(h[1]=='Verified','EXACT_TARGET_CLASS_NOT_VERIFIED')
++    next_class=re.compile(r'^\d+: L[^;]+; \(offset=',re.M).search(text,h.end())
++    end=next_class.start() if next_class else len(text)
++    method=re.compile(r'^\s*\d+: void com\.android\.server\.storage\.StorageSessionController\.'
++        r'onVolumeUnmount\(com\.android\.server\.storage\.ImmutableVolumeInfo\) '
++        r'\(dex_method_idx=\d+\)$',re.M)
++    methods=list(method.finditer(text,h.end(),end))
++    require(len(methods)==1,'EXACT_METHOD_NOT_IN_EXACT_CLASS')
++    window=text[h.start():end]
++    require(len(window.encode())<=65536,'EXACT_CLASS_BLOCK_TOO_LARGE')
++    return dict(class_header=h[0],status=h[1],compilation_kind=h[2],
++        method_header=methods[0][0].strip(),unique_exact_class=True,method_in_exact_class=True),window
++
++def normalized_argv(argv):
++    result=[]
++    for arg in argv:
++        if re.fullmatch(r'--(?:zip|oat|output-vdex|class-loader-context)-fd[s]?=\d+',arg):
++            arg=arg.split('=')[0]+'=<FD>'
++        elif re.fullmatch(r'--oat-location=/proc/self/fd/\d+/(?:original|candidate)\.odex',arg):
++            arg='--oat-location=<OWNED_DIRECTORY>/<PHASE>.odex'
++        elif arg.startswith('-Xbootclasspathfds:'):
++            entries=arg.split(':')[1:]
++            require(len(entries)==52 and all(x.isdigit() for x in entries),'BCP_FD_ARGUMENT_SHAPE')
++            arg='-Xbootclasspathfds:<52_FDS_IN_OBSERVED_ORDER>'
++        result.append(arg)
++    return result
++
++def baseline_gate(tx):
++    global BASE_ARGV
++    r=json.loads(tx.read_regular(BASE/'result.json',BASE_RESULT_SHA,maximum=1024*1024))
++    tx.read_regular(ROOT/'verify_art20.py',
++        'e2dfabd5a0b01316c05181c5c06e35ab980c108c8c40d51746a0f79a38ddf80b')
++    review=json.loads(tx.read_regular(ROOT/'art-baseline-review21/result.json',BASE_REVIEW_SHA))
++    require(review['original_result_sha256']==BASE_RESULT_SHA and not review['candidate_attempted'],
++            'BASELINE_REVIEW_LINK_DIFFERS')
++    require(list(r['phases'])==['original'] and r['error']=='RuntimeError:TARGET_DUMP_NOT_BOUNDED',
++            'BASELINE_TERMINAL_STATE_DIFFERS')
++    v=r['phases']['original']
++    for key in ('compiler','target_dump','android_log'):
++        require(v[key]['rc']==0 and v[key]['joined'] and not v[key]['timed_out'],'BASELINE_TOOL_FAILED')
++    require(v['fd_proof']['all_descriptor_identities_exact'] and r['input_boot_apex_classpaths_unchanged'],
++            'BASELINE_FD_OR_INPUT_CLOSURE_FAILED')
++    for flag in ('--compiler-filter=verify','--abort-on-hard-verifier-error','--abort-on-soft-verifier-error'):
++        require(v['argv'].count(flag)==1,'BASELINE_COMPILER_FLAGS_MISSING')
++    for name,file in (('oat','original.odex'),('vdex','original.vdex')):
++        pin_host(BASE/'original'/file,v['outputs'][name]['sha256'])
++    pin_host(BASE/'original/original.jar',ORIGINAL_SHA)
++    raw=tx.read_regular(BASE/'original-target-dump.stdout',v['target_dump']['stdout']['sha256'],
++                       maximum=8*1024*1024)
++    proof,_=target_proof(raw.decode())
++    before=tx.read_regular(BASE/'before.json',BASE_CLOSURE_SHA,maximum=1024*1024)
++    after=tx.read_regular(BASE/'after.json',BASE_CLOSURE_SHA,maximum=1024*1024)
++    require(before==after,'RETAINED_BASELINE_CLOSURE_DIFFERS')
++    BASE_ARGV=list(v['argv'])
++    return json.loads(before),dict(result_sha256=BASE_RESULT_SHA,closure_sha256=BASE_CLOSURE_SHA,
++        reconciliation_sha256=BASE_REVIEW_SHA,target=proof,
++        original_output_sha256=v['target_dump']['stdout']['sha256'],
++        original_reexecuted=False,original_exit2_preserved=True,
++        boot_image_inference_warning_retained=True,
++        runtime_cache_write_observation_for_original='not collected; no retrospective zero-write claim')
++
++def cache_inventory(s):
++    # These are fixed cache candidates under the observed ANDROID_DATA=/data.
++    # Presence is measured, never assumed. No user data/content is opened.
++    require(s.environment['ANDROID_DATA']=='/data','ANDROID_DATA_DIFFERS')
++    s.guard();result=dict(complete=True,roots={});count=0
++    def walk(fd,depth):
++        nonlocal count
++        budget();require(depth<=3,'CACHE_DEPTH_LIMIT')
++        first=meta(os.fstat(fd));entries={}
++        for name in sorted(os.listdir(fd)):
++            count+=1;require(count<=512,'CACHE_ENTRY_LIMIT')
++            st=os.stat(name,dir_fd=fd,follow_symlinks=False)
++            entry={'metadata':meta(st)}
++            if stat.S_ISDIR(st.st_mode):
++                child=os.open(name,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=fd)
++                try:entry['directory']=walk(child,depth+1)
++                finally:os.close(child)
++            entries[name]=entry
++        require(meta(os.fstat(fd))==first,'CACHE_DIRECTORY_CHANGED_DURING_READ')
++        return dict(metadata=first,entries=entries)
++    for path in ('/data/dalvik-cache','/data/misc/apexdata/com.android.art/dalvik-cache'):
++        fd=-1
++        try:
++            try:fd=s.target.open_root(path,os.O_RDONLY|os.O_DIRECTORY)
++            except FileNotFoundError:
++                result['roots'][path]=dict(exists=False)
++                continue
++            result['roots'][path]=dict(exists=True,tree=walk(fd,0))
++        except BaseException as e:
++            result['complete']=False
++            result['roots'][path]=dict(error=type(e).__name__+':'+str(e))
++        finally:
++            if fd>=0:os.close(fd)
++    result['entries']=count;s.guard();return result
++
+ def phase(s,label,tx,stack,bcp,context,classpath,result):
+     budget(120)
+     own=prepare_phase(label,tx,stack)
+     extras=tuple([*bcp,context,own['source'],own['oat'],own['vdex'],own['directory'],own['marker']])
+     read_only=set(extras)-{own['oat'],own['vdex']}
+-    value=dict(attempted=False,verified=False)
++    value=dict(attempted=False,target_status_verified=False)
+     result['phases'][label]=value
+     value['fd_proof']=prove_fds(s,label,extras,read_only,{own['oat'],own['vdex']},own['marker'],own['directory'])
+     before_input=pin_fd(own['source'])
+@@ -197,6 +302,7 @@
+           '--class-loader-context=PCL['+CONTEXT+']',f'--class-loader-context-fds={context}',
+           '--compiler-filter=verify','--abort-on-hard-verifier-error','--abort-on-soft-verifier-error',
+           '--copy-dex-files=always','--runtime-arg','-Xms32m','--runtime-arg','-Xmx768m','-j2']
++    require(normalized_argv(args)==normalized_argv(BASE_ARGV),'COMPILER_FLAGS_DIFFER_FROM_BASELINE')
+     value['argv']=args;value['attempted']=True
+     try:
+         r=command(s,label+'-compiler',args,extras,85)
+@@ -213,11 +319,13 @@
+         require(r['rc']==0,'TARGET_OATDUMP_FAILED')
+         text=r['stdout'].decode('utf-8','strict')
+         require('StorageSessionController' in text and 'onVolumeUnmount' in text,'TARGET_CLASS_OR_METHOD_NOT_IN_DUMP')
+-        value['target_status_lines']=[line for line in text.splitlines()
+-                                      if re.search(r'StorageSessionController|onVolumeUnmount|[Ss]tatus|[Vv]erifi',line)]
+-        require(len(value['target_status_lines'])<=128,'TARGET_DUMP_NOT_BOUNDED')
++        proof,window=target_proof(text)
++        value['target']=proof
++        value['target_status_verified']=True
++        tx.write_new(OUT/(label+'-target.txt'),window.encode(),alex_readable=True)
++        value['target_window_sha256']=sha(window.encode())
+         value['compiler_and_target_dump_completed']=True
+-        value['qualification']='TARGET_STATUS_REQUIRES_REVIEW_OF_ACTUAL_FORMAT'
++        value['qualification']='EXACT_TARGET_STORED_STATUS_VERIFIED'
+     finally:
+         final_errors=[]
+         try:
+@@ -238,7 +346,7 @@
+             raise RuntimeError('PHASE_FINAL_COLLECTION_FAILED:'+repr(final_errors))
+ 
+ def resource_admission():
+-    cgroup='/system.slice/pocket4-art-pair20-r12.service'
++    cgroup='/system.slice/pocket4-art-candidate22-r12.service'
+     require(Path('/proc/self/cgroup').read_text().strip()=='0::'+cgroup,'NOT_IN_OWNED_ART_UNIT')
+     base=Path('/sys/fs/cgroup')/cgroup.lstrip('/')
+     limits={n:(base/n).read_text().strip() for n in ('memory.max','memory.swap.max','cpu.max','pids.max')}
+@@ -251,7 +359,7 @@
+     return limits
+ 
+ def resource_usage():
+-    cgroup='/system.slice/pocket4-art-pair20-r12.service'
++    cgroup='/system.slice/pocket4-art-candidate22-r12.service'
+     require(Path('/proc/self/cgroup').read_text().strip()=='0::'+cgroup,'RESOURCE_UNIT_DIFFERS')
+     base=Path('/sys/fs/cgroup')/cgroup.lstrip('/')
+     peak=(base/'memory.peak').read_text().strip()
+@@ -260,14 +368,17 @@
+     return dict(memory_peak_bytes=int(peak),memory_events={k:int(v) for k,v in
+         (line.split() for line in events.splitlines())},scope='this owned ART unit only')
+ 
+-def execute(result,tx,lib,discovery):
++def execute(result,tx,lib,discovery,baseline):
+     with tx.CameraSession(OUT/'journal') as s,contextlib.ExitStack() as stack:
+         result['epoch_sha256']=s.epoch_sha256
+         expected=s.activation['framework_epoch']['binding']['processes']['system_server']
+         require(expected==discovery['system_server_identity'],'SYSTEMSERVER_GENERATION_DIFFERS')
+         peer=s.held.HeldZygoteRoot(expected,DEADLINE);stack.callback(peer.close)
+         before=snapshot(s,peer,lib,discovery)
++        require(before==baseline,'FRESH_DEPENDENCIES_DIFFER_FROM_VERIFIED_BASELINE')
+         tx.write_new(OUT/'before.json',before,alex_readable=False)
++        cache_before=cache_inventory(s)
++        tx.write_new(OUT/'cache-before.json',cache_before,alex_readable=False)
+         bcp=[]
+         for path in before['values']['BOOTCLASSPATH'].split(':'):
+             fd=s.target.open_root(path,os.O_RDONLY);stack.callback(os.close,fd)
+@@ -279,9 +390,7 @@
+         context=s.target.open_root(CONTEXT,os.O_RDONLY);stack.callback(os.close,context)
+         require(pin_fd(context)==before['guest_files'][CONTEXT],'HELD_PREFIX_DIFFERS')
+         try:
+-            for label in ('original','candidate'):
+-                # A failed original compiler/dump raises before candidate is prepared.
+-                phase(s,label,tx,stack,bcp,context,before['values']['BOOTCLASSPATH'],result)
++            phase(s,'candidate',tx,stack,bcp,context,before['values']['BOOTCLASSPATH'],result)
+             result['commands_completed']=True
+         finally:
+             after=snapshot(s,peer,lib,discovery)
+@@ -289,8 +398,17 @@
+             result['input_boot_apex_classpaths_unchanged']=after==before
+             require(after==before,'INPUT_BOOT_APEX_CLASSPATH_OR_GENERATION_CHANGED')
+             require(s.epoch.process_identity(expected['host_pid'])==expected,'SYSTEMSERVER_CHANGED_AFTER_RUN')
++            cache_after=cache_inventory(s)
++            tx.write_new(OUT/'cache-after.json',cache_after,alex_readable=False)
++            complete=cache_before['complete'] and cache_after['complete']
++            result['cache_observation']=dict(complete=complete,
++                persistent_delta_observed=(cache_before!=cache_after) if complete else None,
++                before_sha256=sha(json.dumps(cache_before,sort_keys=True).encode()),
++                after_sha256=sha(json.dumps(cache_after,sort_keys=True).encode()),
++                interpretation='Metadata delta only in two scoped cache roots; not a trace of transient writes, not attributed to this compiler, and not retrospective evidence for ART20.')
+             result['guard_after']=s.guard()
+-    result['state']='PAIR_COMMANDS_COMPLETED_TARGET_STATUS_REVIEW_REQUIRED'
++    result['state']='CANDIDATE_TARGET_ART_VERIFIED_AGAINST_RETAINED_ORIGINAL'
++    result['verified']=True
+ 
+ def main():
+     parser=argparse.ArgumentParser();parser.add_argument('--execute',action='store_true');args=parser.parse_args()
+@@ -308,29 +426,32 @@
+     OUT.mkdir(mode=0o750);os.chown(OUT,0,1000);os.chmod(OUT,0o750)
+     result=dict(started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),state='STARTED',
+         phases={},commands_completed=False,verified=False,deployed=False,UI_actions=0,volume_actions=0,
+-        installed_runtime_writes=False,output_scope=str(OUT),automatic_retry=False,
++        installed_runtime_mutations_requested=False,all_runtime_writes_observed=False,
++        original_reexecuted=False,baseline=None,output_scope=str(OUT),automatic_retry=False,
+         limits=dict(memory_bytes=2147483648,swap_bytes=0,cpus=[20,21],compile_threads=2,
+                     outer_seconds=240,internal_seconds=225,compiler_seconds=85,compiler_inner_seconds=80))
+     rc=0
+     try:
+         result['actual_unit_limits']=resource_admission()
+         result['runner_sha256']=sha(Path(__file__).read_bytes())
++        baseline,baseline_proof=baseline_gate(tx)
++        result['baseline']=baseline_proof
+         tx.write_new(OUT/'intent.json',dict(runner_sha256=result['runner_sha256'],
+             original_sha256=ORIGINAL_SHA,candidate_sha256=CANDIDATE_SHA,
+             limits=result['limits'],actual_unit_limits=result['actual_unit_limits'],
+-            order=['original','candidate'],automatic_retry=False,deployed=False),alex_readable=True)
+-        execute(result,tx,lib,discovery)
++            order=['candidate'],baseline_result_sha256=BASE_RESULT_SHA,automatic_retry=False,deployed=False),alex_readable=True)
++        execute(result,tx,lib,discovery,baseline)
+     except BaseException as e:
+-        result.update(state='PAIR_INCOMPLETE_UNQUALIFIED',verified=False,error=type(e).__name__+':'+str(e));rc=2
++        result.update(state='CANDIDATE_CHECK_INCOMPLETE',verified=False,error=type(e).__name__+':'+str(e));rc=2
+     try:result['resource_usage']=resource_usage()
+     except BaseException as e:
+-        result.update(state='PAIR_INCOMPLETE_UNQUALIFIED',verified=False,
++        result.update(state='CANDIDATE_CHECK_INCOMPLETE',verified=False,
+             resource_error=type(e).__name__+':'+str(e));rc=2
+     result['finished_utc']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+     tx.write_new(OUT/'result.json',result,alex_readable=True)
+     data=(OUT/'result.json').read_bytes()
+     print(json.dumps(dict(state=result['state'],error=result.get('error'),phases=list(result['phases']),
+-        verified=False,commands_completed=result['commands_completed'],result_sha256=sha(data),
++        verified=result['verified'],commands_completed=result['commands_completed'],result_sha256=sha(data),
+         result_bytes=len(data),result_path=str(OUT/'result.json'),deployed=False),sort_keys=True));return rc
+ 
+ if __name__=='__main__':sys.exit(main())

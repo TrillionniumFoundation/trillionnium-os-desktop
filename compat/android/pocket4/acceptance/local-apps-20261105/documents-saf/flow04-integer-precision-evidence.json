@@ -1,0 +1,22 @@
+{
+  "source": {
+    "path": "flow03-directory-readonly-exact-stdout.json",
+    "bytes": 2822,
+    "sha256": "6c0b812371e6f848db8fd70eb1e727b3456ece7d525c112e311fc33686e79075"
+  },
+  "actual_timestamp_ns_decimal": "1793872497685431975",
+  "incorrect_flow04_emitted_pin_decimal": "1793872497685432000",
+  "incorrect_pin_minus_actual_ns": "25",
+  "failure_classification": "tool preparation JSON binary64 rounding, not established file modification",
+  "flow04_actual": {
+    "job_id": "1a1ab2f7691-fc05-4b38",
+    "state": "failed",
+    "exit_code": 1,
+    "ui_actions": 0,
+    "launches": 0,
+    "pending_effects": {}
+  },
+  "correction": "Preserve process_read bytes_hex as UTF-8 bytes; parse JSON with Python integers; serialize nanoseconds as decimal strings for JS-visible summaries.",
+  "source_pin_corrected_in": "run_saf05.py",
+  "precise_identity_gate_passed_in_flow05": true
+}

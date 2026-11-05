@@ -1,0 +1,32 @@
+--- run_saf04.py
++++ run_saf05.py
+@@ -6,9 +6,9 @@
+ 
+ SOURCE=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ SOURCE_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-04/ui_adapter01.py')
++ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-05/ui_adapter01.py')
+ ADAPTER_SHA='0dc186a9bc552b576a361b2c3e18128d31f2473ae9344ade1a1089f0f1d147d3'
+-ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-04')
++ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-05')
+ APK=Path('/home/alex/work/pocket4-documents-saf-build-20261105-r12-02/owned-saf.apk')
+ APK_SHA='3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6'
+ CERT_SHA='f772d334443bb5cd71abcc179d04e21ee3e70d424290df69828b94e42bc448f2'
+@@ -22,7 +22,7 @@
+ CREATED='created-'+RUN+'.txt';PROVIDER='provider-'+RUN+'.txt';FILES='files-ui-'+RUN+'.txt'
+ NAMES={CREATED,PROVIDER,FILES}
+ PAYLOAD_SHA='5e8ee8b6e154ade076e1f62e1ff0bc206ae69ba41982ac1c7a048c303f0503e7'
+-MAX_SECONDS=300;CLEANUP_RESERVE=90
++MAX_SECONDS=180;CLEANUP_RESERVE=60
+ DOCS='com.android.documentsui';AUTHORITY='com.android.externalstorage.documents'
+ CLIENT_ROUTE=(PACKAGE,PACKAGE+'.SafActivity');PICKER_ROUTE=(DOCS,DOCS+'.picker.PickActivity')
+ FILES_ROUTE=(DOCS,DOCS+'.files.FilesActivity');RESOLVER_ROUTE=('android','com.android.internal.app.ResolverActivity')
+@@ -319,7 +319,7 @@
+         self.folder.birth=born['identity'];self.folder.created=True
+         proof=self.folder.verify(CREATED,'original-created-file-fresh-readback')
+         need(proof['identity']=={'st_dev':158,'st_ino':166916,'st_uid':10108,'st_gid':1023,'st_mode':33200}
+-            and proof['mtime_ns']==proof['ctime_ns']==1793872497685432000,'RETAINED_CREATED_FILE_IDENTITY_CHANGED')
++            and proof['mtime_ns']==proof['ctime_ns']==1793872497685431975,'RETAINED_CREATED_FILE_IDENTITY_CHANGED')
+         self.installed=current;self.result['installed_identity']=current
+         self.result['continued_from']={'job_id':'1a1ab21c7dc-fc05-4ac6','original_result_sha256':
+             'c3243ed89e9edbc53f773e6211c3728c0654549e795044267003a522792d8eb0',

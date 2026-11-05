@@ -1,0 +1,19 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.droidloom.qa.saf.r12.n69814e80ea71f485"
+    android:versionCode="1" android:versionName="1">
+  <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+  <queries><package android:name="com.android.documentsui" /></queries>
+  <application android:label="Pocket4 Owned SAF 69814e80" android:allowBackup="false"
+      android:debuggable="false" android:testOnly="true" android:usesCleartextTraffic="false"
+      android:theme="@android:style/Theme.Material.Light.NoActionBar">
+    <activity android:name=".SafActivity" android:exported="true" android:launchMode="singleTask">
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:scheme="content" android:host="com.android.externalstorage.documents"
+            android:path="/document/primary:Pocket4_SAF_r12_69814e80ea71f485/files-ui-69814e80ea71f485.txt"
+            android:mimeType="text/plain" />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>

@@ -1,0 +1,39 @@
+{
+  "tests_passed": 11,
+  "cases": [
+    "empty baseline does not expose unrelated preferences",
+    "timer id zero and exact signed 64-bit sentinel preserved",
+    "hidden delete_after_use orphan is not treated as empty",
+    "empty membership and retained allocation counter are preserved as metadata",
+    "empty ID set does not hide orphan object fields",
+    "unlisted timer fields rejected",
+    "duplicate timer IDs rejected",
+    "a second timer prevents singleton mutation",
+    "same ID with changed length is not owned",
+    "nonempty stopwatch prevents creation",
+    "all request IDs fit the unchanged continuation schema"
+  ],
+  "device_calls": 0,
+  "UI_inputs": 0,
+  "default_entrypoint": {
+    "state": "PLAN_ONLY",
+    "UI_actions": 0,
+    "alarm_writes": 0,
+    "timer_writes": 0
+  },
+  "syntax": "passed",
+  "source_files": {
+    "read_timer.py": {
+      "bytes": 5434,
+      "sha256": "c3bf02f38e05ab7a55285ca2245ffe2bda3eb528cc1f85d54723294047948b08"
+    },
+    "timer01.py": {
+      "bytes": 17612,
+      "sha256": "873c5e61a0c87658d81cce5b2a085b3516515a8bbe61e4ba5e18f69d23a3b041"
+    },
+    "test_timer01.py": {
+      "bytes": 3804,
+      "sha256": "864548fd80cd0a4f81a49903d62c3d790b42ace52956d54f16fed4d12fb298a3"
+    }
+  }
+}

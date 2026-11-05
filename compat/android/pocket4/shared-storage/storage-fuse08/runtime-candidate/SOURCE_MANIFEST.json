@@ -1,8 +1,13 @@
 {
-  "schema": "pocket4-installed-storage-dex-candidate-v1",
+  "schema": "pocket4-installed-storage-dex-candidate-v2",
   "deployed": false,
-  "art_verified": false,
+  "exact_target_art_verified": true,
+  "whole_boot_image_verified": false,
   "lifecycle_verified": false,
+  "original_parser_test_source": {
+    "bytes": 3008,
+    "sha256": "df12975becb3dea556c3d77d6108e6c4e3a472379126675344f8e98395105238"
+  },
   "files": {
     "0001-runtime-storage-single-removal.patch": {
       "bytes": 3249,
@@ -13,8 +18,8 @@
       "sha256": "9ce62067718776a417722294379c4b5b15880f7f1189bb7fe17896c8e0df2875"
     },
     "README.md": {
-      "bytes": 2868,
-      "sha256": "db74004fcf7f16b1cb4b5a38139907ef097ba61ad89b03191b326b518d884e8b"
+      "bytes": 3890,
+      "sha256": "b6dcb661e9e657199e2f591aacec5d7c05f37cb871f96353e68a213fe5b10e77"
     },
     "StorageSessionController.smali": {
       "bytes": 57239,
@@ -28,13 +33,33 @@
       "bytes": 5375,
       "sha256": "f20b98082406abb352c965dfcaa589aa91c462f56bdadfe225c3c84ee6e03bce"
     },
+    "art22-parser-regression.txt": {
+      "bytes": 840,
+      "sha256": "df693379a2536820764134db0395dca10396beebc65ec749239d82b2ddcebb24"
+    },
     "build_runtime13.py": {
       "bytes": 10061,
       "sha256": "757dc7cd0c04ee1d7ddb6f4fa05457867b410e6f4c4ce30f5656eb590b25c5a8"
     },
+    "candidate22-execution-review.json": {
+      "bytes": 3623,
+      "sha256": "52e205c38c51e8af25a0841eebed1465103b208ae793734644364023c3b23286"
+    },
+    "candidate22-review.patch": {
+      "bytes": 16752,
+      "sha256": "08ba99031b40913d937728e197e48c87a35976b52887c8eeaae6ed2a4753e803"
+    },
     "execute_runtime14.py": {
       "bytes": 2126,
       "sha256": "46a08dc9d2fdd3b55a4c0f4f793e18e2f71aebdc15899136b9839a40128d16b5"
+    },
+    "fixtures/original-compiler-argv.json": {
+      "bytes": 4055,
+      "sha256": "f8b4bcd322ee3e55f8f9b94cc18fecbfe6851e0e1a8344126a3e754bc9bc49ac"
+    },
+    "fixtures/original-target-window.txt": {
+      "bytes": 12054,
+      "sha256": "ca8268b45d3b9ceae7ca87dc0d7164d9bc009c4bfd85adfbb0e6635113fbb3f2"
     },
     "method-ir-review.json": {
       "bytes": 7507,
@@ -48,21 +73,57 @@
       "bytes": 3481,
       "sha256": "2e22c6020b2fa78abd94d273f2e07aa09036fe1ef89e15d0630595fee2f0fe62"
     },
+    "public-metadata/ART_VERIFICATION22.md": {
+      "bytes": 4840,
+      "sha256": "c9fd3cbbd502157fee4eeac991f765aef8ab013c821799a8e16dc7b95ff26a0e"
+    },
+    "public-metadata/alignment15-summary.json": {
+      "bytes": 4669,
+      "sha256": "e6f85b01979728191a79d42118434bb2dcc74c590c7757ef324af3707c2894d8"
+    },
     "public-metadata/art-discovery.json": {
       "bytes": 2149,
       "sha256": "4490fa4864bc5814ae12fbd45b630d85a8a4752c3ad73128e8928737cfe4758a"
+    },
+    "public-metadata/art-verification22.json": {
+      "bytes": 10294,
+      "sha256": "a150317a28f8a0434509fa4318b345aee7a85ff22ce808c2d39a92ca092591ee"
+    },
+    "public-metadata/art22-source-manifest.json": {
+      "bytes": 2936,
+      "sha256": "2d7c07ef537c5b4473f5166f018d41cda0344a56b678461faefa18cd6575a35a"
+    },
+    "public-metadata/build14-summary.json": {
+      "bytes": 3398,
+      "sha256": "11ed9a6f4179390089b2919f1fddb9cab104bab25220a76bffa0d316467b3819"
     },
     "public-metadata/offline-candidate.json": {
       "bytes": 3964,
       "sha256": "6e031619cea0ca33b084fa064de791573d5dd2bbaa9d29f722af168e2bf3f701"
     },
+    "read_baseline21.py": {
+      "bytes": 5000,
+      "sha256": "4e701d37c1e7ae399a6cb17e938ffcfa134f8a55af9f79816191cf1b4c8d134d"
+    },
     "smali_equivalence.py": {
       "bytes": 6289,
       "sha256": "a895a4e3963f958ea6a6ff45b9d0c51f6239118b3a10fddff6d0f17e22e25f9f"
     },
+    "test_art_target22.py": {
+      "bytes": 3003,
+      "sha256": "6528e376f7133ee6ac63bce639434c8cbfdb57032c25d3e7137f2961838e86da"
+    },
     "test_smali_equivalence.py": {
       "bytes": 2899,
       "sha256": "c9260836a52e6c5de90c53232bdb21b59319e32600f7a6e2a7b7de00113df847"
+    },
+    "verify_art20.py": {
+      "bytes": 20053,
+      "sha256": "e2dfabd5a0b01316c05181c5c06e35ab980c108c8c40d51746a0f79a38ddf80b"
+    },
+    "verify_candidate22.py": {
+      "bytes": 27227,
+      "sha256": "e5de57780be072ced10a5beba049fe89e89e381d6a66a974a8f298ef34cf2742"
     }
   }
 }

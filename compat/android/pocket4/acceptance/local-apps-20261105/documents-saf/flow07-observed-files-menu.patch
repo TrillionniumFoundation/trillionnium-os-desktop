@@ -1,0 +1,98 @@
+--- run_saf06.py
++++ run_saf07.py
+@@ -6,9 +6,9 @@
+ 
+ SOURCE=Path('/home/alex/work/pocket4-camera-release08-20261105-r12/transaction-tools-01/camera_transaction.py')
+ SOURCE_SHA='b2274355ea9acc9d3f82f4e245dceef01aae86e689221744f0fb2afaff679470'
+-ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-06/ui_adapter01.py')
++ADAPTER=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-07/ui_adapter01.py')
+ ADAPTER_SHA='0dc186a9bc552b576a361b2c3e18128d31f2473ae9344ade1a1089f0f1d147d3'
+-ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-06')
++ROOT=Path('/home/alex/work/pocket4-documents-flow-20261105-r12-07')
+ APK=Path('/home/alex/work/pocket4-documents-saf-build-20261105-r12-02/owned-saf.apk')
+ APK_SHA='3b2b8d01b551f68256a25c351b34f2a6c74f74cbfc9b44b226ea708dba9fffe6'
+ CERT_SHA='f772d334443bb5cd71abcc179d04e21ee3e70d424290df69828b94e42bc448f2'
+@@ -260,6 +260,36 @@
+             and (str(n.get('text','')).strip().casefold()==text.casefold()
+                 or str(n.get('content-desc','')).strip().casefold()==text.casefold()),'ONE_VISIBLE_CONTROL_REQUIRED:'+text)
+ 
++    def files_more(self,obs):
++        need((obs['focus']['package'],obs['focus']['activity'])==FILES_ROUTE,'FILES_MENU_ROUTE_REQUIRED')
++        # Actual flow06 node: AppCompat overflow exposes ImageView, not Button.
++        return self.ui.one(obs,lambda n:n.get('package')==DOCS and n.get('enabled') is True
++            and n.get('class')=='android.widget.ImageView' and n.get('content-desc')=='More options'
++            and n.get('clickable') is True and n.get('editable') is False
++            and 16 in n.get('supported_actions',[]),'ONE_ACTUAL_FILES_OVERFLOW_REQUIRED')
++
++    def select_single_owned_file(self,obs):
++        self.own_location(obs);self.folder.verify(PROVIDER,'sole-file-before-menu-selection')
++        row=self.row(obs,PROVIDER)
++        roots=[n for n in obs['nodes'] if n.get('resource-id')==DOCS+':id/item_root']
++        need(roots==[row],'ONLY_ONE_OBSERVED_OWNED_FILE_CARD_REQUIRED')
++        self.ui.input(obs,'files-selection-menu',self.files_more(obs),popup=True)
++        menu=self.ui.observe('files-selection-menu',[FILES_ROUTE])
++        # Select all is used only inside this identity-bound, single-file folder.
++        # The menu label must actually exist in the fresh native tree before input.
++        self.folder.verify(PROVIDER,'sole-file-before-select-all')
++        self.ui.input(menu,'select-only-owned-file',self.control(menu,'Select all'))
++        selected=self.ui.observe('files-selected',[FILES_ROUTE]);self.own_location(selected)
++        self.folder.verify(PROVIDER,'sole-file-after-menu-selection')
++        self.row(selected,PROVIDER)
++        count=self.ui.one(selected,lambda n:n.get('enabled') is True
++            and n.get('class')=='android.widget.TextView'
++            and re.fullmatch(r'1(?:\s+item)?\s+selected',str(n.get('text','')).strip(),re.I),
++            'EXACTLY_ONE_FILE_SELECTION_COUNT_REQUIRED')
++        self.ui.record('selection-mode-verified',{'count':1,'filename':PROVIDER,'count_node':count,
++            'sole_owned_file_hash_verified':True,'selection_via_observed_menu':True,'long_press_used':False})
++        return selected
++
+     def row(self,obs,name,longpress=False):
+         label=self.ui.one(obs,lambda n:n.get('text')==name and n.get('editable') is False,'ONE_EXACT_OWNED_FILENAME_REQUIRED')
+         box=label.get('bounds_array');need(isinstance(box,list) and len(box)==4,'FILENAME_BOUNDS')
+@@ -294,13 +324,15 @@
+     def business(self):
+         # This is a new trial only after the previous known document and package
+         # were removed. The indeterminate stage02 remains permanently fenced.
+-        prior=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-05/result.json'),
+-            '41ad815d545365a2419b06b2eced943f559308ad7305655a40c05cffba9da827',65536))
++        prior=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-06/result.json'),
++            '3a5f3eb56a2ea6ebf44e7be940f43b4fe685afb336a38c3c42e4dda9a9fb2f56',65536))
+         fence=json.loads(self.tx.read_regular(Path('/home/alex/work/pocket4-documents-flow-20261105-r12-tools-02/NEVER_EXECUTE_OR_REUSE.json'),
+             '6a98cf8d82ead8506afeb1ff831d1e9fd99d1c8e112f5f750c828125dc6debe1',16384))
+-        need(prior['state']=='DOCUMENTS_FLOW_STOPPED' and prior['error']=='RuntimeError: ORIGINAL_LEASE_INSUFFICIENT_CLEANUP_ONLY'
++        need(prior['state']=='DOCUMENTS_FLOW_STOPPED' and prior['error']=='RuntimeError: OBSERVED_FILE_ROW_CAPABILITY_MISSING'
+             and prior['pending_effects']=={} and prior['outcome_unknown'] is False
+-            and prior['ui_actions']==prior['native_launch_calls']==prior['owned_remove_calls']==0
++            and prior['ui_actions']==7 and prior['native_launch_calls']==1 and prior['owned_remove_calls']==2
++            and prior['owned_task_ids_closed']==[925,924] and prior['source_bound_adopted_tasks']==[925]
++            and prior['cleanup']['staged_apk_removed'] is True
+             and prior['cleanup']['errors']==[] and prior['cleanup']['package_absent_verified'] is True
+             and prior['cleanup']['package_uninstalled_verified'] is True
+             and prior['cleanup']['file_cleanup']['directory_removed_verified'] is True
+@@ -308,8 +340,8 @@
+             and prior['final_guard']==self.s.guard(),'PRIOR_EXACT_CLEANUP_RECEIPT_CHANGED')
+         need(fence['state']=='OLD_STAGE_ENTRY_FENCED' and fence['job_id']=='1a1ab190ab3-fc05-4a51'
+             and fence['must_never_remove_or_reuse'] is True,'ORIGINAL_UNKNOWN_STAGE_FENCE_CHANGED')
+-        self.result['new_trial_after_verified_cleanup']={'prior_cleanup_job':'1a1ab31f7dc-fc05-4b4e',
+-            'prior_cleanup_result_sha256':'41ad815d545365a2419b06b2eced943f559308ad7305655a40c05cffba9da827',
++        self.result['new_trial_after_verified_cleanup']={'prior_cleanup_job':'1a1ab3c4c08-fc05-4b95',
++            'prior_cleanup_result_sha256':'3a5f3eb56a2ea6ebf44e7be940f43b4fe685afb336a38c3c42e4dda9a9fb2f56',
+             'previous_created_document_removed':True,'previous_package_uninstalled':True,
+             'original_stage02_fenced':True,'previous_failures_preserved':True}
+         self.ui.record('prior-known-cleanup-and-old-entry-fence',self.result['new_trial_after_verified_cleanup'])
+@@ -327,13 +359,12 @@
+         obs=self.status_ui('PROVIDER_RENAME_OK');self.folder.verify(PROVIDER,'provider-rename-readback')
+         self.client_button(obs,'open_files','open-files',FILES_ROUTE)
+         obs=self.ui.observe('files-owned-folder',[FILES_ROUTE],admit=True);self.own_location(obs)
+-        row=self.row(obs,PROVIDER,True);self.ui.input(obs,'select-owned-file',row,kind='long-press')
+-        obs=self.ui.observe('files-selected',[FILES_ROUTE])
++        obs=self.select_single_owned_file(obs)
+         self.ui.one(obs,lambda n:n.get('text')==PROVIDER,'SELECTED_OWNED_FILENAME_MISSING')
+         direct=[n for n in obs['nodes'] if n.get('enabled') is True and n.get('clickable') is True
+             and (n.get('text')=='Rename' or n.get('content-desc')=='Rename')]
+         if not direct:
+-            self.ui.input(obs,'files-more',self.control(obs,'More options'),popup=True)
++            self.ui.input(obs,'files-more',self.files_more(obs),popup=True)
+             obs=self.ui.observe('files-owned-menu',[FILES_ROUTE])
+         self.ui.input(obs,'files-rename-menu',self.control(obs,'Rename'))
+         obs=self.ui.observe('files-rename-dialog',[FILES_ROUTE])

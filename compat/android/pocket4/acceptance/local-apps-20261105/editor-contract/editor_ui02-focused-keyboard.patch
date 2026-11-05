@@ -1,0 +1,95 @@
+--- editor_ui01.py
++++ editor_ui02.py
+@@ -5,13 +5,13 @@
+ import argparse, hashlib, json, os, re, signal, stat, time, types
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT=Path('/home/alex/work/pocket4-editor-ui-20261105-r12-01')
++ROOT=Path('/home/alex/work/pocket4-editor-ui-20261105-r12-02')
+ CONTACT=Path('/home/alex/work/pocket4-contacts-session-tools-20261105-r12-01')
+ DIAGNOSTIC=Path('/home/alex/work/pocket4-qa-fixture-ui-tools-20261105-r12-01/diagnostics_source.py')
+ PACKAGE='org.droidloom.qa.editorcontract';COMPONENT=PACKAGE+'/.EditorContractActivity'
+ APK='/data/app/~~azb5Z9bqpcSnfR4fbzSWoA==/org.droidloom.qa.editorcontract-bpP3Aa1qzcaX1a7uHGVhTw==/base.apk'
+ APK_SHA='0d08f59024e4228e5d5b8f56742aafd1fbc04966d74224acd48542e09482743d'
+-UID=10149;RUN='p4r12_editor_c749a031';LEASE=360;RESERVE=45
++UID=10149;RUN='p4r12_editor_9af372b0';LEASE=360;RESERVE=45
+ TASK_PROOF=HERE/'task-option-proof.json'
+ TASK_PROOF_SHA='9cb008b7050d3bb0b8da2221140c02b39ebde973833b5ee24039932e266e90a5'
+ PINS={str(CONTACT/'ui_preflight04.py'):'d02821d751736a9e3cf275ec0b27383852e24362928fd4257ebb6d3dee7f6a58',
+@@ -27,6 +27,18 @@
+     module=types.ModuleType('editor_owned_'+Path(path).stem);module.__file__=str(path)
+     exec(compile(raw,str(path),'exec'),module.__dict__);return module
+ def expired(signum,frame):raise TimeoutError('EDITOR_DEADLINE_NO_REPLAY')
++
++def key_context(reference,current):
++    # Keyboard events target the native focused editor. Pixel repainting is
++    # observed, but a pixel hash is not the identity of that keyboard target.
++    fields=('package','activity','window_token','display_id','window_bounds','android_init_host_pid')
++    need(all(reference['scope'][k]==current['scope'][k] for k in fields)
++        and reference['context_token']==current['context_token'],'KEY_WINDOW_CONTEXT_CHANGED')
++    need(current['scope']['package']==PACKAGE
++        and current['scope']['activity']==PACKAGE+'.EditorContractActivity'
++        and current['scope']['display_id']==0,'KEY_TARGET_SCOPE_CHANGED')
++    return {k:current[k] for k in ('frame_sha256','scope_sha256','context_token','captured_unix_ms')}
++
+ def fp(info):return {k:getattr(info,k) for k in ('st_dev','st_ino','st_uid','st_gid','st_mode','st_nlink','st_size','st_mtime_ns','st_ctime_ns')}
+ 
+ def identity(session):
+@@ -134,16 +146,29 @@
+     def key(self,label,key,expected):
+         need(key in ('KEYCODE_ENTER','KEYCODE_MOVE_END','KEYCODE_DEL') and self.actions<20
+             and self.c.pending is None,'KEY_SCOPE_OR_ACTION_BOUND')
+-        old=self.node(expected);shot=self.t.last_observation['screenshot']
+-        request={k:shot[k] for k in ('frame_sha256','scope_sha256','context_token')}
+-        request.update(package=PACKAGE,display=0,accessibility_mode='none',window_token=shot['scope']['window_token'])
++        old=self.node(expected);previous=self.t.last_observation['screenshot']
+         self.c.observe('fresh-'+label,publish=False);new=self.node(expected)
+         need(self.loop.node_identity(new)==self.loop.node_identity(old),'EDITOR_NODE_CHANGED')
++        current=self.t.last_observation['screenshot'];key_context(previous,current)
++        request={'package':PACKAGE,'display':0,'accessibility_mode':'none',
++            'window_token':current['scope']['window_token']}
++        observed=[key_context(previous,current)]
+         for _ in range(2):
+-            frame=self.t.s.helper.capture(request);self.t.s.helper.validate_snapshot(request,frame)
+-        focus=self.t.ready_focus(False);need(focus['window_token']==request['window_token'],'KEY_FOCUS_CHANGED')
++            frame=self.t.s.helper.capture(request)
++            observed.append(key_context(current,frame['meta']))
++        # Re-query the actual native focused field after captures. Do not mask
++        # changed text, a second editor, lost focus, a task switch or geometry.
++        self.c.observe('native-before-'+label,publish=False);final=self.node(expected)
++        need(self.loop.node_identity(final)==self.loop.node_identity(new),'EDITOR_CHANGED_BEFORE_KEY')
++        finalshot=self.t.last_observation['screenshot'];observed.append(key_context(current,finalshot))
++        self.current.read('app-ready-before-'+label,True)
++        focus=self.t.ready_focus(False)
++        need(self.t.s.helper.stable_window(focus)==self.t.s.helper.stable_window(finalshot['scope']),
++            'KEY_FOCUS_CHANGED')
+         argv=['/system/bin/input','keyboard','-d','0','keyevent',key]
+-        self.t.record(label+'-intent',{'argv':argv,'node':new,'owned_task':self.t.owned[0],'automatic_retry':False})
++        self.t.record(label+'-intent',{'argv':argv,'node':final,'owned_task':self.t.owned[0],
++            'automatic_retry':False,'target_binding':'same native focused editor plus fixed window/task/context',
++            'pixel_observations':observed,'pixel_equality_required_for_keyboard':False})
+         self.c.pending=label;self.actions+=1
+         self.t.s.android(argv,12);self.t.s.guard();self.c.observe('after-'+label)
+         self.c.pending=None
+@@ -196,9 +221,10 @@
+     need(sha(TASK_PROOF.read_bytes())==TASK_PROOF_SHA,'TASK_OPTION_PROOF_CHANGED')
+     base,loop,diagnostic=[load(p,h) for p,h in PINS.items()];tx=base.load_session()
+     base.PACKAGE,base.COMPONENT,base.ROOT=PACKAGE,COMPONENT,ROOT;diagnostic.PACKAGE=PACKAGE;loop.emit=lambda value:None
+-    result={'schema':'pocket4-editor-ui-core-v1','state':'FAILED','whole_app_production_ready':False,
++    result={'schema':'pocket4-editor-ui-core-v2','state':'FAILED','whole_app_production_ready':False,
+         'automatic_retry':False,'source_pins':PINS,'task_option_proof_sha256':TASK_PROOF_SHA,'rounds':[],'started_utc':stamp(),'lease_seconds':LEASE,'cleanup_seconds':RESERVE,
+-        'scope':'Native task plus exact owned-task intent; Unicode, two keyboard Enter commands, emoji deletion and independent reopen.'}
++        'scope':'Native task plus exact owned-task intent; focused-native-editor keyboard binding; Unicode, two keyboard Enter commands, emoji deletion and independent reopen.',
++        'prior_editor01_exact_cleanup_result_sha256':'3dd4f2c5aaf76a6e9a2f6821e73ff256a063e87dda7f7b0c4ed5fe1498b13f51'}
+     flow=None;old=signal.signal(signal.SIGALRM,expired)
+     try:
+         with tx.ui_lock():
+@@ -228,7 +254,7 @@
+             owned_tasks=flow.owned if flow else [],closed_tasks=flow.closed if flow else [],
+             native_launch_calls=flow.t.launches if flow else 0,nonce_intent_calls=flow.intent_calls if flow else 0)
+         if ROOT.is_dir():tx.write_new(ROOT/'result.json',result)
+-        tx.write_new(HERE/'editor-ui01-result.json',result,alex_readable=True)
++        tx.write_new(HERE/'editor-ui02-result.json',result,alex_readable=True)
+         print(json.dumps({k:result.get(k) for k in ('state','error','terminal_error','ui_actions','pending_effect','owned_tasks','closed_tasks','owned_nonces_requiring_reconciliation')}))
+     return 0 if result['state']=='UNICODE_KEYBOARD_ENTER_DELETE_REOPEN_CLEANUP_VERIFIED' else 1
+ 

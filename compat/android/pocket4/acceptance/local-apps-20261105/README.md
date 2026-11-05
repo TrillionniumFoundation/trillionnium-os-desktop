@@ -46,3 +46,56 @@ and 14 inputs covering Unicode, field isolation, positive and empty confirmation
 clear and normal close/reopen. Its five installed classes were reviewed. Neither
 of the two earlier adapter failures is relabeled an App fault or success. The
 ambiguous-selector negative case and full release gates remain open.
+
+## Actual timer core flow
+
+[Clock Timer01](clock-timer/README.md) completed an actual 15-minute timer
+create/start/pause/normal-close/reopen/resume/pause/reset/delete flow. The paused
+891,439-ms value survived normal close and a fresh launch exactly; resume and
+pause reduced it to 882,695 ms. Reset restored 900,000 ms, and UI deletion removed
+the timer and allocation fields. Eleven inputs and two owned task closes were
+recorded. The two existing disabled alarms, zero alarm instances, Clock APK/UID
+and notification permission were unchanged. Expiry, alarm delivery and sound
+were not exercised, so the composite clock.timer and clock.persist release gates
+remain open.
+
+## Clock notification repair
+
+[Notification04](clock-notifications/README.md) enabled Clock notifications
+through its exact App notification settings page. The single observed touch
+changed POST_NOTIFICATIONS from false to true; final AppOps explicitly reported
+`No operations.` and `Default mode: allow`. This is an intended persistent
+Clock-only repair. Two original disabled alarm templates, zero instances, an
+empty timer/stopwatch state and the installed APK/UID/version were preserved.
+The prior Notification03 title-observation failure remains unchanged.
+
+The corrected selector binds the real toolbar and icon descriptions, the exact
+All Clock notifications label and its observed clickable parent. Connection
+scoped accessibility window IDs are compared within each observation; actual
+WindowManager token, geometry, node semantics and snapshot hashes bind the
+input across observations. Notification permission is a prerequisite: expiry,
+alarm delivery, audio and complete Clock/Settings release coverage remain open.
+
+## Later timer expiry failure
+
+[Expiry01](clock-expiry/README.md) tested a new actual 60-second timer after the
+notification repair. It remained RUNNING through 28.245 seconds past due; the
+bounded trial failed. Cleanup reopened Clock, paused the exact timer at a stored
+remaining -42,145 ms, then deleted it. Both owned tasks closed and timer/stopwatch
+state returned to empty, with original alarms unchanged. The core flow and
+notification results above remain scoped facts, not a timer-completion pass.
+
+## Editor core and DocumentsUI progress
+
+[Editor03](editor-contract/README.md) completed two actual Unicode/Enter/delete/
+clear rounds and independent launches, 12 inputs and two normal closes. Exact
+owned record files were removed; identity/permissions remained equal and fresh
+diagnostics found no crash or ANR. Original frame and focus-schema failures are
+retained with separate exact cleanup. Composition and selection remain open.
+
+[Documents09](documents-saf/CURRENT_STATUS.md) completed CREATE_DOCUMENT save,
+single content write/read, provider rename and the actual Files UI rename.
+The next open tap was acknowledged but post-observation failed across packages;
+it is retained as unknown and was not repeated. Both owned tasks closed, while
+the own file/directory/temporary package were retained for reconciliation.
+Complete open/grants/reopen/delete and cleanup receive no passing credit.

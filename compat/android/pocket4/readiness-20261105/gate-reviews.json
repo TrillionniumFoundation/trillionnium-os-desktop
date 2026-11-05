@@ -225,6 +225,81 @@
       "unresolved_findings": [
         "Ambiguous-selector negative control, full signing/engine/resource and whole-release scope remain unqualified."
       ]
+    },
+    {
+      "id": "root_editor03_two_round_scoped_ui_lifecycle",
+      "reviewer": "root",
+      "package": "org.droidloom.qa.editorcontract",
+      "scope": "scoped",
+      "observed_at_utc": "2026-11-05T10:46:05.836704+00:00",
+      "reviewed_at_utc": "2026-11-05T11:01:19.302372+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "uid": 10149,
+      "version_code": 1,
+      "apk_sha256": "0d08f59024e4228e5d5b8f56742aafd1fbc04966d74224acd48542e09482743d",
+      "checks": {
+        "ui_observation": "passed",
+        "lifecycle": "passed"
+      },
+      "evidence": [
+        {
+          "path": "inputs/editor-ui03-result.json",
+          "bytes": 3113,
+          "sha256": "54fa83a8eb5f8de9ebd09825ab63694aa9f1b92974e51d7f2a1820ab607558bc"
+        },
+        {
+          "path": "inputs/editor-contract-review.json",
+          "bytes": 2790,
+          "sha256": "a2f35bd4cde92c302a056deefa44960f072bf3a3f2f8f8eb89c5860a43e3a2be"
+        },
+        {
+          "path": "inputs/editor-execution-receipts.json",
+          "bytes": 1309,
+          "sha256": "366b9e871790daa575e6831b8dbd4ba483ab2f3bde3c19617b5419596e4e24a4"
+        },
+        {
+          "path": "inputs/editor-failed-attempt-cleanups.json",
+          "bytes": 5224,
+          "sha256": "27be4fac50d8bf1591749947d6416047e19899b38a08e825b2c3464275b95776"
+        }
+      ],
+      "qualification_scope": "Two fresh nonce rounds; Unicode/native readback, physical Enter callbacks, one trailing emoji deletion, clear, normal close, exact two-file cleanup and separate launch.",
+      "unresolved_findings": [
+        "IME composition/candidate selection",
+        "selection ranges and paste",
+        "resize and focus-transition matrix",
+        "configuration recreation with an existing nonce",
+        "complete release stability/signing/engine/resource scope"
+      ]
+    },
+    {
+      "id": "root_clock_expiry01_actual_failure_clean_lifecycle",
+      "reviewer": "root",
+      "package": "com.android.deskclock",
+      "scope": "scoped",
+      "observed_at_utc": "2026-11-05T10:57:22.846273+00:00",
+      "reviewed_at_utc": "2026-11-05T11:04:29.600377+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "uid": 10063,
+      "version_code": 37,
+      "apk_sha256": "ded49b00e5045bdd184c2a4f09b1b8650ce8f708134ac9f0f8c4cf0594bb0fae",
+      "checks": {
+        "clock.timer": "failed",
+        "ui_observation": "passed",
+        "lifecycle": "passed"
+      },
+      "evidence": [
+        {
+          "path": "inputs/clock-timer-expiry01-failed.json",
+          "bytes": 3008,
+          "sha256": "40f6eaae0a3b6e650e8363fc88d44f25614e21b9bc4b4a9ce16aed282975aafa"
+        }
+      ],
+      "qualification_scope": "Actual owned UI create/start/close; bounded overdue failure; separate reopen, exact pause/delete cleanup and second normal close. Prior timer core evidence is not expiry credit.",
+      "unresolved_findings": [
+        "Timer expiry failed with granted notifications/AppOps allow; cause unestablished.",
+        "Alarm/timezone/audio, complete identity, stability/resources and release qualification remain open."
+      ]
     }
   ]
 }

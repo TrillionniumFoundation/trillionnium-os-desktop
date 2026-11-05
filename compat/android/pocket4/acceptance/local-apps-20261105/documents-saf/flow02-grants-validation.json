@@ -1,0 +1,31 @@
+{
+  "source_raw_sha256": "e55d67c6516766be452a9f823b267c4ff9f523978417ec9dc447755b28d45823",
+  "checks": [
+    {
+      "case": "actual retained full dump old gate",
+      "outcome": "rejected",
+      "reason": "URI_GRANT_DUMP_GRAMMAR_UNRECOGNIZED"
+    },
+    {
+      "case": "actual retained full dump unique section",
+      "outcome": "passed"
+    },
+    {
+      "case": "duplicate header",
+      "outcome": "rejected",
+      "reason": "URI_GRANT_SECTION_NOT_UNIQUE"
+    },
+    {
+      "case": "missing header",
+      "outcome": "rejected",
+      "reason": "URI_GRANT_SECTION_NOT_UNIQUE"
+    },
+    {
+      "case": "extra unknown grant row",
+      "outcome": "rejected",
+      "reason": "OWNED_URI_GRANTS_NOT_EMPTY"
+    }
+  ],
+  "new_runner_sha256": "a43001481cbd01bd38d4b261d72bf1e3ea8eca7a8d56f2ee1e67d65cb5d072a1",
+  "device_queries": 0
+}

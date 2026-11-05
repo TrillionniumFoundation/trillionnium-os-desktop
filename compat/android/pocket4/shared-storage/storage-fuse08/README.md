@@ -71,3 +71,14 @@ The separate alignment step passed for original and candidate. Actual installed
 ART tools and classpaths have been discovered read-only. ART verification, live
 lifecycle behavior and persistent Main deployment remain open; the prior
 source-reference limitations and failed preparation receipts remain retained.
+
+## Later installed ART target result
+
+[ART22](runtime-candidate/public-metadata/ART_VERIFICATION22.md) completed the
+candidate-only verification against the retained original baseline using the
+installed tools. Both compiler and target dump returned 0; the exact
+StorageSessionController class containing the reviewed ImmutableVolumeInfo
+method is Verified. The original ART20 observer failure is preserved, and its
+baseline was reconciled from saved output without recompiling it. Both logs
+retain the inferred boot-extension Wi-Fi checksum warning. The whole boot image,
+live storage lifecycle and Main deployment remain unqualified.

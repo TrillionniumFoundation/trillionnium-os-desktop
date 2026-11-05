@@ -2,11 +2,30 @@
 
 ## Current continuation — 2026-11-05
 
-**Whole-App production readiness remains 0/45 in the tracked launcher scope.** The [Camera2 checked-disconnect repair](camera/checked-disconnect/README.md) is installed as release08 with exact APK readback and preserved UID/data identity. Its real preview was verified earlier, but the latest trial again found the physical USB source absent; no photo has been taken. [Shared storage has been recovered](shared-storage/storage-fuse08/README.md) through one normal unmount/mount, with subsequent path I/O verified in the same Main. The separate persistent session-lifecycle source fix remains undeployed. [Contacts, WebView, the Clock stopwatch and the local two-field fixture now have scoped functional evidence](acceptance/local-apps-20261105/README.md), including owned close/reopen and exact cleanup. The installed-code storage candidate has been assembled and aligned offline; actual ART/lifecycle qualification remains open. The [final-window QA repair](qa-final-window/README.md) remains separately compiled but not installed. Source/build/runtime recovery and complete App release acceptance remain distinct.
+**Whole-App production readiness remains 0/45 in the tracked launcher scope.** The [Camera2 checked-disconnect repair](camera/checked-disconnect/README.md) is installed as release08 with exact APK readback and preserved UID/data identity. Its real preview was verified earlier, but the latest trial again found the physical USB source absent; no photo has been taken. [Shared storage has been recovered](shared-storage/storage-fuse08/README.md) through one normal unmount/mount, with subsequent path I/O verified in the same Main. The separate persistent session-lifecycle source fix remains undeployed. [Contacts, WebView, the Clock stopwatch and the local two-field fixture now have scoped functional evidence](acceptance/local-apps-20261105/README.md), including owned close/reopen and exact cleanup. The installed-code storage candidate has been assembled, aligned and verified by the installed ART tools for the exact target class; live lifecycle and deployment remain open, with the inferred boot-extension checksum warning retained. The [final-window QA repair](qa-final-window/README.md) remains separately compiled but not installed. Source/build/runtime recovery and complete App release acceptance remain distinct.
 
 The [complete current 45-App matrix](readiness-20261105/README.md) binds the 2026-11-05 05:46:49 UTC inventory: 186 installed packages, 45 launcher Apps and 44 third-party packages. It retains every original App, including system utilities and QA fixtures, and lists the remaining business checks for each one. Zero fully qualified Apps does not mean every App has reproduced a fault. The original conservative inventory result and its strict completed derivation are preserved separately.
 
 The following original snapshot is retained with its 2026-11-04 scope. New Bilibili runs in [checkpoint 12](continuation-r11/checkpoint-12/README.md) reach DetailsActivity but still observe buffering; the earlier scoped visual playback is not a substitute for the new run. Native candidate07 now has a retained full-host result (3,793 registered, 3,791 executed, 3,788 completed, three skips, two disabled, zero failures) and four passing Android signal cases in its owned runtime. The controller recorded memory-limit events; Main deployment and commercial-App qualification remain open.
+
+## Further actual results — checkpoint6
+
+The Clock timer core create/pause/reopen/resume/reset/delete flow passed, and
+Clock notifications were enabled through its actual settings page. A subsequent
+60-second background timer **failed to expire**, still RUNNING 28.245 seconds
+past due. The exact timer was paused/deleted and both owned tasks closed. This
+failure remains open despite the successful notification repair.
+
+The Editor Contract QA App completed two actual Unicode/Enter/emoji-delete/clear
+rounds and separate launches, with 12 inputs and exact record cleanup. Only its
+observed UI and tested lifecycle receive credit; composition, selection and the
+remaining release scope are open.
+
+DocumentsUI completed actual create/write/read, provider rename and Files UI
+rename with exact byte/hash preservation. Attempt09's following open tap was
+acknowledged but its cross-package observation failed. The effect remains
+unknown; the own file/directory/temporary package are retained for reconciliation.
+Both own tasks closed. See the [current Documents scope](acceptance/local-apps-20261105/documents-saf/CURRENT_STATUS.md).
 
 ## Historical snapshot — 2026-11-04
 

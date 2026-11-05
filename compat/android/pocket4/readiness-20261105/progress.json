@@ -1,6 +1,6 @@
 {
   "schema": "pocket4-app-progress-v1",
-  "reviewed_at_utc": "2026-11-05T09:36:06.735899+00:00",
+  "reviewed_at_utc": "2026-11-05T11:05:17.706639+00:00",
   "gate_promotion_from_progress": false,
   "apps": [
     {
@@ -343,6 +343,143 @@
           "sha256": "14d642ba280cf37fcc8f99a1d61de3409057011b91e769710cf8fab325e44d55"
         }
       ]
+    },
+    {
+      "id": "clock_timer01_core_verified",
+      "package": "com.android.deskclock",
+      "version_code": 37,
+      "observed_at_utc": "2026-11-05T09:40:48.024504+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "status": "TIMER_CREATE_PAUSE_REOPEN_RESUME_RESET_DELETE_VERIFIED",
+      "scoped_business_flow_completed": true,
+      "whole_app_production_ready": false,
+      "limits": "Timer expiry, alarm delivery/timezone, actual sound output and remaining release gates are unqualified.",
+      "evidence": [
+        {
+          "path": "inputs/clock-timer01.json",
+          "bytes": 5404,
+          "sha256": "9bb98285dce9e13f8c1ab31f179f5696c7a1292bbaac3cf52b8f40b1ccff4883"
+        }
+      ]
+    },
+    {
+      "id": "clock_notifications04_enabled",
+      "package": "com.android.deskclock",
+      "version_code": 37,
+      "observed_at_utc": "2026-11-05T10:30:23.239481+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "status": "CLOCK_NOTIFICATION_PERMISSION_ENABLED_AND_APPOP_ALLOW_VERIFIED",
+      "scoped_business_flow_completed": true,
+      "whole_app_production_ready": false,
+      "intended_persistent_permission_change": {
+        "permission": "android.permission.POST_NOTIFICATIONS",
+        "before": false,
+        "after": true,
+        "input_count": 1,
+        "scope": "Clock-only exact App notification Settings UI"
+      },
+      "limits": "Timer expiry, alarm delivery, actual audio and complete Clock/Settings release qualification remain unverified.",
+      "evidence": [
+        {
+          "path": "inputs/clock-notification03.json",
+          "bytes": 3710,
+          "sha256": "a4dd92f637c433adec8c5d8b00c7a670c8854b18540d762405dbef96e196a7cc"
+        },
+        {
+          "path": "inputs/clock-notification04.json",
+          "bytes": 4430,
+          "sha256": "77de2a8c846936a3beb352bc71454b2276a0e4430720c5095d2e42d0774c661c"
+        }
+      ]
+    },
+    {
+      "id": "editor03_core_verified",
+      "package": "org.droidloom.qa.editorcontract",
+      "version_code": 1,
+      "observed_at_utc": "2026-11-05T10:46:05.836704+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "status": "UNICODE_KEYBOARD_ENTER_DELETE_REOPEN_CLEANUP_VERIFIED",
+      "scoped_business_flow_completed": true,
+      "whole_app_production_ready": false,
+      "limits": "Composition, selection, resize/focus transitions and complete release qualification remain open.",
+      "evidence": [
+        {
+          "path": "inputs/editor-ui03-result.json",
+          "bytes": 3113,
+          "sha256": "54fa83a8eb5f8de9ebd09825ab63694aa9f1b92974e51d7f2a1820ab607558bc"
+        },
+        {
+          "path": "inputs/editor-contract-review.json",
+          "bytes": 2790,
+          "sha256": "a2f35bd4cde92c302a056deefa44960f072bf3a3f2f8f8eb89c5860a43e3a2be"
+        },
+        {
+          "path": "inputs/editor-execution-receipts.json",
+          "bytes": 1309,
+          "sha256": "366b9e871790daa575e6831b8dbd4ba483ab2f3bde3c19617b5419596e4e24a4"
+        },
+        {
+          "path": "inputs/editor-failed-attempt-cleanups.json",
+          "bytes": 5224,
+          "sha256": "27be4fac50d8bf1591749947d6416047e19899b38a08e825b2c3464275b95776"
+        }
+      ]
+    },
+    {
+      "id": "clock_expiry01_failed_clean",
+      "package": "com.android.deskclock",
+      "version_code": 37,
+      "observed_at_utc": "2026-11-05T10:57:22.846273+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "status": "FAILED_TIMER_EXPIRY_NOT_OBSERVED_WITHIN_BOUNDED_TRIAL",
+      "scoped_business_flow_completed": false,
+      "whole_app_production_ready": false,
+      "unpassed_checks": {
+        "clock.timer": "failed"
+      },
+      "owned_cleanup_verified": true,
+      "limits": "Notification permission is enabled. Background expiry remained RUNNING 28.245s past due; exact cause is unresolved. No alert/audio/alarm delivery pass.",
+      "evidence": [
+        {
+          "path": "inputs/clock-timer-expiry01-failed.json",
+          "bytes": 3008,
+          "sha256": "40f6eaae0a3b6e650e8363fc88d44f25614e21b9bc4b4a9ce16aed282975aafa"
+        }
+      ]
+    },
+    {
+      "id": "documents09_ui_rename_open_unknown",
+      "package": "com.android.documentsui",
+      "version_code": 37,
+      "observed_at_utc": "2026-11-05T11:01:06.605000+00:00",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "status": "CREATE_PROVIDER_RENAME_FILES_UI_RENAME_VERIFIED_OPEN_OUTCOME_UNKNOWN",
+      "scoped_business_flow_completed": false,
+      "whole_app_production_ready": false,
+      "unpassed_checks": {
+        "documents.io": "pending",
+        "documents.provider": "pending",
+        "documents.persist": "pending"
+      },
+      "owned_cleanup_verified": false,
+      "limits": "Open tap acknowledged but post-observation failed; no replay. Own file/directory/fixture package retained pending exact reconciliation. Both own tasks closed.",
+      "evidence": [
+        {
+          "path": "inputs/documents09-scoped-result.json",
+          "bytes": 10812,
+          "sha256": "96e4764e058c0295ed5038e603c117427f7ccd4a9ae84b104599be6e52c68a39"
+        },
+        {
+          "path": "inputs/documents09-actual-result.json",
+          "bytes": 4747,
+          "sha256": "6048be3b22be228dc6f1a845ab8c7d94afa4ceddd185900e402e93f004e62e15"
+        },
+        {
+          "path": "inputs/documents09-terminal.json",
+          "bytes": 729,
+          "sha256": "9ccf10302cfa25eb29556d0db54cd13fd0f79bbb830306ffe5b407986078cd6c"
+        }
+      ]
     }
   ],
   "platform_workstreams": [
@@ -399,7 +536,7 @@
     },
     {
       "id": "shared_storage_recovery_and_session_lifecycle",
-      "status": "PATH_IO_RESTORED_OFFLINE_INSTALLED_DEX_CANDIDATE_BUILT_ALIGNED_UNDEPLOYED",
+      "status": "PATH_IO_RESTORED_INSTALLED_DEX_TARGET_ART_VERIFIED_UNDEPLOYED",
       "observed_at_utc": "2026-11-05T07:47:31.554913+00:00",
       "not_an_app_pass": true,
       "actual_unmount_calls": 1,
@@ -416,8 +553,9 @@
         "Exact installed services.jar DEX candidate: 7582 classes/53839 methods compared; only target method changed; all 65 ZIP members checked."
       ],
       "remaining": [
-        "Actual installed ART verifier comparison",
         "Persistent lifecycle fix deployment qualification",
+        "Actual live volume session lifecycle",
+        "Existing inferred boot-extension Wi-Fi checksum warning",
         "App-level file save/reopen qualification"
       ],
       "evidence": [
@@ -435,8 +573,14 @@
           "path": "inputs/storage-installed-dex-candidate.json",
           "bytes": 3964,
           "sha256": "6e031619cea0ca33b084fa064de791573d5dd2bbaa9d29f722af168e2bf3f701"
+        },
+        {
+          "path": "inputs/storage-art22-target-verification.json",
+          "bytes": 10294,
+          "sha256": "a150317a28f8a0434509fa4318b345aee7a85ff22ce808c2d39a92ca092591ee"
         }
-      ]
+      ],
+      "art_verification_scope": "Exact StorageSessionController class and ImmutableVolumeInfo method only; not entire boot image."
     },
     {
       "id": "native_candidate07_actual_host_android",

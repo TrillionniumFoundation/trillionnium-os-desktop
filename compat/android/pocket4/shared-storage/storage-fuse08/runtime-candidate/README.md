@@ -43,3 +43,20 @@ in public-metadata. This bundle excludes JAR/DEX binaries, complete environments
 process maps, captures, source-directory inventories and embedded stage payloads.
 The fixed device/build source is an audit record; completed run paths are
 create-only and must not be replayed.
+
+## Later actual target verification
+
+[ART22](public-metadata/ART_VERIFICATION22.md) has now verified the exact
+StorageSessionController class with the installed ART tools and original-input
+baseline. Candidate compiler and target dump both exited 0, and the exact class
+status was Verified. ART20's observer failure remains failed; ART21 reconciled
+its already-existing original output without recompiling it. The original and
+candidate retain the same inferred boot-extension Wi-Fi checksum warning.
+Neither the whole boot image nor live storage lifecycle is qualified, and the
+candidate is still undeployed. The earlier discovery paragraph records its
+historical checkpoint, not the current ART target status.
+
+Run `python test_art_target22.py` for the eight packaged parser/command-boundary
+controls. The actual target window and compiler argv are selected technical
+fixtures; complete raw process maps, environments and cache names are omitted.
+The executed fixed-device runners and exact source hashes are retained.
