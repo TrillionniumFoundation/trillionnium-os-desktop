@@ -172,3 +172,94 @@ fn lock_custody_rejects_shared_writes_aliases_and_nonempty_state() {
     symlink(alias, path).unwrap();
     assert!(RecoveryPreparation::lock_directory(directory.path()).is_err());
 }
+
+#[test]
+fn distinct_successor_generations_preserve_consumed_attempts_under_one_actual_lock() {
+    let directory = private_admin();
+    let sockets = serde_json::json!({"paths":[]});
+    let first = RecoveryPreparation::lock_generation(directory.path(), 1).unwrap();
+    assert_eq!(first.directory, directory.path().join("recovery-2"));
+    first.admit(&admission("generation-one-operation")).unwrap();
+    first.sockets_retired(&sockets).unwrap();
+    first.consume_spawn().unwrap();
+    let first_marker = std::fs::read(first.directory.join(SPAWN_CONSUMED)).unwrap();
+    assert!(RecoveryPreparation::lock_generation(directory.path(), 2).is_err());
+    drop(first);
+
+    let second = RecoveryPreparation::lock_generation(directory.path(), 2).unwrap();
+    assert_eq!(second.directory, directory.path().join("recovery-3"));
+    second
+        .admit(&admission("generation-two-operation"))
+        .unwrap();
+    second.sockets_retired(&sockets).unwrap();
+    second.consume_spawn().unwrap();
+    assert_eq!(
+        std::fs::read(directory.path().join("recovery-2").join(SPAWN_CONSUMED)).unwrap(),
+        first_marker
+    );
+    drop(second);
+    let stale = RecoveryPreparation::lock_generation(directory.path(), 1).unwrap();
+    assert!(stale.admit(&admission("generation-one-operation")).is_err());
+}
+
+#[test]
+fn legacy_fixed_directory_and_exhausted_generations_never_rearm_a_spawn() {
+    let directory = private_admin();
+    assert!(RecoveryPreparation::lock_generation(directory.path(), 0).is_err());
+    assert!(RecoveryPreparation::lock_generation(directory.path(), u64::MAX).is_err());
+    std::fs::create_dir(directory.path().join("recovery")).unwrap();
+    assert!(RecoveryPreparation::lock_generation(directory.path(), 1).is_err());
+}
+
+#[test]
+fn fixed_issuer_plan_requires_exact_commit_before_spawn() {
+    // Real durable stage files only; these fixture values are not authority.
+    let directory = private_admin();
+    let prep = RecoveryPreparation::lock_generation(directory.path(), 1).unwrap();
+    prep.admit(&admission("original")).unwrap();
+    let lease = codex_hepta_contracts::authority_lease::AuthorityLease {
+        schema_version: 1,
+        lease_id: "original-issuer".into(),
+        authority_epoch: 1,
+        revision: 1,
+        binding: codex_hepta_contracts::authority_lease::AuthorityLeaseBinding {
+            principal_id: "original-agent".into(),
+            operation_class: "runtime.agentd.root_issuer".into(),
+            destination_id: "original-issuer".into(),
+            scope_sha256: [1; 32],
+            payload_sha256: [2; 32],
+        },
+        issued_at_unix_ms: 10,
+        expires_at_unix_ms: 100,
+    };
+    let mut renewed = lease.clone();
+    renewed.revision = 2;
+    renewed.issued_at_unix_ms = 100;
+    renewed.expires_at_unix_ms = 200;
+    let plan = codex_hepta_agentd::HostIssuerLeaseRenewalPlan {
+        schema_version: 1,
+        signer_id: "original-issuer".into(),
+        verifying_key: [3; 32],
+        previous_lease: lease,
+        renewed_lease: renewed.clone(),
+    };
+    prep.issuer_planned(&plan).unwrap();
+    let saved = std::fs::read(prep.directory.join(ISSUER_PLANNED)).unwrap();
+    prep.issuer_planned(&plan).unwrap();
+    prep.sockets_retired(&serde_json::json!({"paths":[]}))
+        .unwrap();
+    assert!(prep.consume_spawn().is_err());
+    let mut different = renewed.clone();
+    different.expires_at_unix_ms += 1;
+    assert!(prep.issuer_committed(&different).is_err());
+    assert!(!prep.directory.join(ISSUER_COMMITTED).exists());
+    prep.issuer_committed(&renewed).unwrap();
+    prep.issuer_committed(&renewed).unwrap();
+    assert_eq!(
+        std::fs::read(prep.directory.join(ISSUER_PLANNED)).unwrap(),
+        saved
+    );
+    prep.consume_spawn().unwrap();
+    assert!(prep.issuer_planned(&plan).is_err());
+    assert!(prep.issuer_committed(&renewed).is_err());
+}

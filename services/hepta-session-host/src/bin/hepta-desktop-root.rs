@@ -14,7 +14,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let flag = args.next();
         let path = args.next();
         if flag.as_deref() != Some(std::ffi::OsStr::new("--config")) || path.is_none() {
-            return Err("expected initialize --config <Notes-Root0600-input>, initialize-desktop --config <joint-v2-Root0600-input>, or recover --config <same-Notes-input> (--operation-id <original-id> | --latest-original-notes)".into());
+            return Err("expected initialize --config <Notes-Root0600-input>, initialize-desktop --config <joint-v2-Root0600-input>, recover --config <same-Notes-input> (--operation-id <original-id> | --latest-original-notes), or recover-desktop --config <same-joint-input> --previous-generation <n> (--latest-original-desktop | --notes-operation-id <id> --calculator-operation-id <id>)".into());
         }
         let path = std::path::Path::new(path.as_ref().ok_or("missing config")?);
         match action.as_deref().and_then(std::ffi::OsStr::to_str) {
@@ -25,6 +25,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Some("recover") => {
                 let selection = product_root::RecoverySelection::from_arguments(args)?;
                 product_root::recover(path, selection)
+            }
+            Some("recover-desktop") => {
+                let (generation, selection) =
+                    product_root::RecoverySelection::from_desktop_arguments(args)?;
+                product_root::recover_desktop(path, generation, selection)
             }
             _ => Err("unknown or repeated original Root action".into()),
         }

@@ -8,9 +8,12 @@ use super::{
     recovery::Existing,
 };
 use codex_hepta_agentd::{
-    HostAuthorityRegistration, HostAuthorityServiceConfig, rotate_host_writer_authorization,
+    HostAuthorityRegistration, HostAuthorityServiceConfig, HostIssuerLeaseRenewalPlan,
+    rotate_host_writer_authorization,
 };
-use codex_hepta_contracts::authority_lease::{AuthorityLeaseFrontier, AuthorityLeaseRegistry};
+use codex_hepta_contracts::authority_lease::{
+    AuthorityLease, AuthorityLeaseFrontier, AuthorityLeaseRegistry,
+};
 use codex_hepta_contracts::{
     AuthorityClock, HostAuthorityClock, HostAuthorityFrontierStore, RootAuthorityDirectory,
 };
@@ -29,11 +32,14 @@ pub(super) fn writer_expiry(now: u64, issuer_expiry: u64) -> Result<u64> {
         .ok_or("writer expiry overflow")?)
 }
 
-pub(super) fn wait_retirement(existing: &Existing) -> Result<u64> {
+pub(super) fn wait_retirement(
+    existing: &Existing,
+    renewal: Option<&HostIssuerLeaseRenewalPlan>,
+) -> Result<AuthorityLease> {
     let config = &existing.config;
     super::geometry::verify_existing_bind(&config.required_bind)?;
-    // The original registry can initialize missing paths: refuse those before
-    // calling it. Clock/frontier open their existing protected owners only.
+    // Open-existing checks prevent registry initialization from replacing a
+    // missing canonical owner. These reads are observations, never use tokens.
     for name in ["authority-leases.lock", "authority-leases.json"] {
         fs::root_file(&config.state_dir.join("leases").join(name), false)?;
     }
@@ -52,30 +58,58 @@ pub(super) fn wait_retirement(existing: &Existing) -> Result<u64> {
         clock.clone(),
         frontier,
     )?;
-    let issuer = registry
-        .read_lease(&config.lease_id)?
-        .ok_or("original issuer lease missing")?
-        .lease;
     let old = config.writer.as_ref().ok_or("original writer absent")?;
-    if registry
-        .read_lease(&old.authority_lease.lease_id)?
-        .is_none_or(|value| value.lease != old.authority_lease)
-        || issuer.revision != config.lease_revision
-        || old.authority_lease.expires_at_unix_ms >= issuer.expires_at_unix_ms
-    {
-        return Err(
-            "original writer/issuer has changed or no legal recovery window was provisioned".into(),
-        );
+    let joint = existing.calculator.is_some();
+    if renewal.is_some() && !joint {
+        return Err("legacy Notes recovery cannot adopt an issuer renewal plan".into());
     }
     let end = Instant::now() + Duration::from_secs(185);
     loop {
+        let issuer = registry
+            .read_lease(&config.lease_id)?
+            .ok_or("original issuer lease missing")?
+            .lease;
+        let issuer_matches = match renewal {
+            Some(plan) => {
+                plan.signer_id == config.signer_id
+                    && plan.verifying_key == config.expected_verifying_key
+                    && plan.previous_lease.lease_id == config.lease_id
+                    && plan.previous_lease.revision == config.lease_revision
+                    && (issuer == plan.previous_lease || issuer == plan.renewed_lease)
+            }
+            None => issuer.revision == config.lease_revision,
+        };
+        let original_expiry = renewal.map_or(issuer.expires_at_unix_ms, |plan| {
+            plan.previous_lease.expires_at_unix_ms
+        });
+        let epoch = registry.frontier()?.authority_epoch;
+        if !issuer_matches
+            || issuer.lease_id != config.lease_id
+            || issuer.authority_epoch != epoch
+            || old.authority_lease.authority_epoch != epoch
+            || registry.read_revocation(&config.lease_id)?.is_some()
+            || registry
+                .read_revocation(&old.authority_lease.lease_id)?
+                .is_some()
+            || registry
+                .read_lease(&old.authority_lease.lease_id)?
+                .is_none_or(|value| value.lease != old.authority_lease)
+            || old.authority_lease.expires_at_unix_ms >= original_expiry
+        {
+            return Err(
+                "original writer/issuer changed, was revoked, or lost its original finite window"
+                    .into(),
+            );
+        }
         let now = clock.now_unix_ms()?;
-        writer_expiry(
-            now.max(old.authority_lease.expires_at_unix_ms),
-            issuer.expires_at_unix_ms,
-        )?;
+        if !joint {
+            writer_expiry(
+                now.max(old.authority_lease.expires_at_unix_ms),
+                issuer.expires_at_unix_ms,
+            )?;
+        }
         if now >= old.authority_lease.expires_at_unix_ms {
-            return Ok(issuer.expires_at_unix_ms);
+            return Ok(issuer);
         }
         if Instant::now() >= end {
             return Err("original writer did not expire in its finite recovery window".into());
@@ -89,7 +123,7 @@ pub(super) fn rotate(
     product: &Product,
     old: &Existing,
     actual: &HostAuthorityRegistration,
-    issuer_expiry: u64,
+    issuer: &AuthorityLease,
 ) -> Result<RegistrationFiles> {
     let mut registration = actual.clone();
     registration.publisher_epoch = old
@@ -98,13 +132,23 @@ pub(super) fn rotate(
         .checked_add(1)
         .ok_or("publisher epoch exhausted")?;
     let mut config: HostAuthorityServiceConfig = old.config.clone();
+    if issuer.lease_id != config.lease_id
+        || (issuer.revision != config.lease_revision
+            && (!inputs.is_desktop()
+                || config.lease_revision.checked_add(1) != Some(issuer.revision)))
+    {
+        return Err(
+            "successor requires the same original issuer and exact selected revision".into(),
+        );
+    }
+    config.lease_revision = issuer.revision;
     let prior = config.writer.as_ref().ok_or("original writer absent")?;
     let mut writer = prior.clone();
-    let now = u64::try_from(
-        std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)?
-            .as_millis(),
-    )?;
+    let now = {
+        let root = RootAuthorityDirectory::open(&config.state_dir)?;
+        let clock = HostAuthorityClock::open(root, "root-authority-clock-v1".into())?;
+        clock.now_unix_ms()?
+    }; // Release the original administrative clock before the issuer factory.
     writer.spawn_generation = registration.registered_identity.spawn_generation;
     writer.owner_epoch = prior
         .owner_epoch
@@ -120,7 +164,7 @@ pub(super) fn rotate(
     );
     writer.authority_lease.revision = 1;
     writer.authority_lease.issued_at_unix_ms = now;
-    writer.authority_lease.expires_at_unix_ms = writer_expiry(now, issuer_expiry)?;
+    writer.authority_lease.expires_at_unix_ms = writer_expiry(now, issuer.expires_at_unix_ms)?;
     config.writer = Some(writer);
     let config_path = product.admin.join("authority-config.json");
     let registration_path = product.admin.join("owner-registration.json");
@@ -142,10 +186,29 @@ pub(super) fn rotate(
     route.control_socket = actual.control_socket;
     let mut profile = old.profile.clone();
     profile["interaction"]["route"] = serde_json::to_value(&route)?;
-    profile["previous_recovery"] = json!({"helper":inputs.programs.app_window.with_file_name("trill-notes-recovery"),
+    let notes_recovery = json!({
+        "helper":inputs.programs.app_window.with_file_name("trill-notes-recovery"),
         "helper_sha256":fs::digest(&inputs.programs.app_window.with_file_name("trill-notes-recovery"))?,
-        "state_directory":product.user.join("notes"),"previous_target":old.target,"selector":old.selection});
-    let profile_path = product.admin.join("notes-startup.json");
+        "state_directory":product.user.join("notes"),
+        "previous_target":old.target,"selector":old.selection.notes()
+    });
+    let profile_path = product.admin.join(if inputs.is_desktop() {
+        profile["schema"] = "hepta.root.desktop_launch_profile.v2".into();
+        profile["previous_recovery"] = json!({
+            "notes":notes_recovery,
+            "calculator":{
+                "helper":inputs.programs.app_window.with_file_name("trill-calculator-recovery"),
+                "helper_sha256":fs::digest(&inputs.programs.app_window.with_file_name("trill-calculator-recovery"))?,
+                "state_directory":product.user.join("calculator"),
+                "previous_target":old.calculator.as_ref().ok_or("original Calculator target absent")?,
+                "selector":old.selection.calculator()?
+            }
+        });
+        "desktop-startup.json"
+    } else {
+        profile["previous_recovery"] = notes_recovery;
+        "notes-startup.json"
+    });
     fs::json_new(&profile_path, &profile)?;
     Ok(RegistrationFiles {
         config: config_path,
@@ -155,7 +218,7 @@ pub(super) fn rotate(
             .record
             .layout
             .home_root()
-            .join("notes-thread-profile.json"),
+            .join(inputs.objective_profile_name()),
         route,
         verifying_key: config.expected_verifying_key,
         signer_id: config.signer_id,

@@ -40,7 +40,7 @@ struct PromptRegistry {
 
 /// The selected receipt keeps its original JSON shape, but is never deserialized
 /// through an untagged enum: Notes and Desktop metadata have overlapping fields.
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(untagged)]
 pub(super) enum ThreadSeed {
     Notes(NotesThreadSeedReceipt),

@@ -11,7 +11,10 @@ mod packet;
 mod process;
 mod recovery;
 mod recovery_authority;
+mod recovery_composition;
+mod recovery_issuer;
 mod recovery_preparation;
+mod recovery_selection;
 mod recovery_sockets;
 mod replay;
 mod seed;
@@ -58,23 +61,41 @@ fn initialize_selected(path: &Path, desktop: bool) -> Result<()> {
 }
 
 pub(super) fn recover(path: &Path, selection: RecoverySelection) -> Result<()> {
+    recover_selected(path, selection, 1, false)
+}
+
+/// Explicit same-boot Root continuation. Every generation keeps finite leases
+/// and reopens the original issuer after its exact same-ID revision CAS.
+pub(super) fn recover_desktop(
+    path: &Path,
+    generation: u64,
+    selection: RecoverySelection,
+) -> Result<()> {
+    recover_selected(path, selection, generation, true)
+}
+
+fn recover_selected(
+    path: &Path,
+    selection: RecoverySelection,
+    generation: u64,
+    desktop: bool,
+) -> Result<()> {
     root_environment()?;
     let inputs = config::Inputs::read_recovery(path)?;
-    let (old, fresh) = recovery::Existing::open(&inputs, selection)?;
-    let issuer_expiry = recovery_authority::wait_retirement(&old)?;
+    inputs.require_entry(desktop)?;
+    let (old, fresh) = recovery::Existing::open(&inputs, selection, generation)?;
+    let issuer = if desktop {
+        recovery_issuer::continue_joint(&inputs, &old)?
+    } else {
+        recovery_authority::wait_retirement(&old, None)?
+    };
     recovery_sockets::retire(&inputs, &fresh, &old)?;
     let replay = replay::existing(&inputs, &fresh)?;
     let runtime = tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()?;
-    run(
-        inputs,
-        fresh,
-        seed::ThreadSeed::Notes(old.seed.clone()),
-        replay,
-        runtime,
-        Some((old, issuer_expiry)),
-    )
+    let seed = old.seed.clone();
+    run(inputs, fresh, seed, replay, runtime, Some((old, issuer)))
 }
 
 fn root_environment() -> Result<()> {
@@ -100,9 +121,12 @@ fn run(
     seed: seed::ThreadSeed,
     replay: std::path::PathBuf,
     runtime: tokio::runtime::Runtime,
-    previous: Option<(recovery::Existing, u64)>,
+    previous: Option<(
+        recovery::Existing,
+        codex_hepta_contracts::authority_lease::AuthorityLease,
+    )>,
 ) -> Result<()> {
-    if inputs.is_desktop() != seed.is_desktop() || (inputs.is_desktop() && previous.is_some()) {
+    if inputs.is_desktop() != seed.is_desktop() {
         return Err("Root target profile differs from the original seed or recovery entry".into());
     }
     if let Some((old, _)) = &previous {
@@ -254,8 +278,8 @@ fn run(
             &staged.target,
             staged.calculator.as_ref(),
         )?,
-        Some((old, expiry)) => {
-            recovery_authority::rotate(&inputs, &fresh, old, &owner.registration, *expiry)?
+        Some((old, issuer)) => {
+            recovery_authority::rotate(&inputs, &fresh, old, &owner.registration, issuer)?
         }
     };
     if previous.is_none() {
@@ -316,6 +340,22 @@ fn run(
             deployment,
             end,
         )?,
+        Some((old, _)) if inputs.is_desktop() => prepared
+            .with_desktop_recovery_startup_from_session_before(
+                &files.profile,
+                application_pair,
+                session_owner.pidfd.try_clone()?,
+                deployment,
+                end,
+                codex_hepta_agentd::RootDesktopPolicy {
+                    notes: &old.target,
+                    calculator: old
+                        .calculator
+                        .as_ref()
+                        .ok_or("original Calculator target absent")?,
+                    grant_lifetime_ms: inputs.grant_lifetime_ms,
+                },
+            )?,
         Some((old, _)) => prepared.with_notes_recovery_startup_from_session_before(
             &files.profile,
             application_pair,
@@ -344,12 +384,13 @@ fn run(
         "bootstrap_model_turn_sent":false,
     });
     if inputs.is_desktop() {
-        composition["schema"] = "trill.original-desktop-root.composition.v2".into();
+        composition["schema"] = "trill.original-desktop-root.composition.v3".into();
+        composition["calculator_state_dir"] = serde_json::to_value(fresh.user.join("calculator"))?;
         composition["profile"] = "notes_calculator_v1".into();
         composition["calculator_target"] = serde_json::to_value(
             calculator.ok_or("joint composition lost its actual Calculator target")?,
         )?;
-        composition["scope"] = "fresh joint Root bootstrap and original process composition; original owner, model, Notes and Calculator effect acceptance require their actual runtime receipts".into();
+        composition["scope"] = "joint Root bootstrap with required durable App state; original owner, model, Notes and Calculator effect acceptance require their actual runtime receipts".into();
     }
     fs::json_new(&fresh.admin.join("actual-composition.json"), &composition)?;
     let (profile, leader) = human::capture(&inputs, &fresh, &files, &human_owner, &environment)?;

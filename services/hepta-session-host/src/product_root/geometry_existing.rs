@@ -110,6 +110,9 @@ impl Product {
         for name in ["home", "state", "replay", "notes"] {
             fs::user_directory(&user.join(name), inputs.uid)?;
         }
+        if inputs.is_desktop() {
+            fs::user_directory(&user.join("calculator"), inputs.uid)?;
+        }
         Ok(Self {
             prefix: inputs.prefix.clone(),
             admin,

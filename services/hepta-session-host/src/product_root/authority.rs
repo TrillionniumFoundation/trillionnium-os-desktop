@@ -290,7 +290,7 @@ pub(super) fn initialize(
 }
 
 pub(super) fn artifacts(inputs: &Inputs) -> Result<serde_json::Value> {
-    Ok(json!({
+    let mut artifacts = json!({
         "schema":"trill.original-product-artifacts.v1",
         "agentd":fs::digest(&inputs.programs.agentd)?,
         "app_server":fs::digest(&inputs.programs.app_server)?,
@@ -302,5 +302,16 @@ pub(super) fn artifacts(inputs: &Inputs) -> Result<serde_json::Value> {
         "human_provider":fs::digest(&inputs.programs.human_provider)?,
         "sdk":fs::digest(&inputs.sources.sdk)?,
         "source_freeze":fs::digest(&inputs.sources.source_freeze)?,
-    }))
+    });
+    if inputs.is_desktop() {
+        artifacts["schema"] = "trill.original-product-artifacts.v2".into();
+        artifacts["calculator_recovery"] = fs::digest(
+            &inputs
+                .programs
+                .app_window
+                .with_file_name("trill-calculator-recovery"),
+        )?
+        .into();
+    }
+    Ok(artifacts)
 }

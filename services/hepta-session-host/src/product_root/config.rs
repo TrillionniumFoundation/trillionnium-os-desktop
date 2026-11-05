@@ -200,19 +200,12 @@ impl Inputs {
     }
 }
 
-fn validate_selection(schema: &str, profile: Option<DesktopProfile>, fresh: bool) -> Result<()> {
-    match (schema, profile, fresh) {
-        ("trill.original-desktop-root.initialize.v1", None, _) => Ok(()),
-        (
-            "trill.original-desktop-root.initialize.v2",
-            Some(DesktopProfile::NotesCalculatorV1),
-            true,
-        ) => Ok(()),
-        (
-            "trill.original-desktop-root.initialize.v2",
-            Some(DesktopProfile::NotesCalculatorV1),
-            false,
-        ) => Err("joint Desktop recovery requires its own reviewed profile; old Notes recovery cannot migrate it".into()),
+fn validate_selection(schema: &str, profile: Option<DesktopProfile>, _fresh: bool) -> Result<()> {
+    match (schema, profile) {
+        ("trill.original-desktop-root.initialize.v1", None) => Ok(()),
+        ("trill.original-desktop-root.initialize.v2", Some(DesktopProfile::NotesCalculatorV1)) => {
+            Ok(())
+        }
         _ => Err("Root schema and explicit target profile do not match".into()),
     }
 }
@@ -276,7 +269,7 @@ mod tests {
     }
 
     #[test]
-    fn joint_profile_requires_new_schema_and_fresh_entry() {
+    fn joint_profile_requires_new_schema_and_explicit_matching_entry() {
         let legacy = "trill.original-desktop-root.initialize.v1";
         let joint = "trill.original-desktop-root.initialize.v2";
         let both = Some(DesktopProfile::NotesCalculatorV1);
@@ -285,7 +278,7 @@ mod tests {
         assert!(validate_selection(joint, both, true).is_ok());
         assert!(validate_selection(legacy, both, true).is_err());
         assert!(validate_selection(joint, None, true).is_err());
-        assert!(validate_selection(joint, both, false).is_err());
+        assert!(validate_selection(joint, both, false).is_ok());
         assert!(
             validate_selection("trill.original-desktop-root.initialize.v3", both, true).is_err()
         );

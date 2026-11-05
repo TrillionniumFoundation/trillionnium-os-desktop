@@ -1,76 +1,29 @@
-//! One same-boot recovery with repeatable preparation before child creation.
+//! Same-boot recovery of the exact selected original generation.
 //! No fresh fallback, repeated spawn or effect replay.
 use super::recovery_preparation::RecoveryPreparation;
 use super::{Result, authority, config::Inputs, fs, geometry::Product};
 use codex_hepta_agentd::{
     HostAuthorityRegistration, HostAuthorityServiceConfig, HostSignedWriterAuthorizationV1,
-    NotesThreadSeedReceipt, RetiredCheckpointPublisher,
+    RetiredCheckpointPublisher,
 };
-use codex_hepta_memory::{CognitiveCheckpointPeerLifetime, NotesTargetIdentity};
-use serde::{Deserialize, Serialize};
+use codex_hepta_memory::{
+    CalculatorTargetIdentity, CognitiveCheckpointPeerLifetime, NotesTargetIdentity,
+};
 use serde_json::Value;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-/// A request to select original records after the canonical owner has opened.
-/// Root does not resolve latest by reading the database or inventing an ID.
-#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
-#[serde(tag = "kind", rename_all = "snake_case")]
-pub(crate) enum RecoverySelection {
-    ExactOperation { operation_id: String },
-    LatestRecordedOriginalNotes,
-}
-
-impl RecoverySelection {
-    pub(crate) fn from_arguments(
-        mut args: impl Iterator<Item = std::ffi::OsString>,
-    ) -> Result<Self> {
-        let selection = match args.next().as_deref().and_then(std::ffi::OsStr::to_str) {
-            Some("--operation-id") => Self::ExactOperation {
-                operation_id: args
-                    .next()
-                    .ok_or("missing original operation selector")?
-                    .into_string()
-                    .map_err(|_| "operation selector must be UTF-8")?,
-            },
-            Some("--latest-original-notes") => Self::LatestRecordedOriginalNotes,
-            _ => return Err("recovery requires an explicit original operation selector".into()),
-        };
-        if args.next().is_some() {
-            return Err("unexpected or competing recovery selector".into());
-        }
-        selection.validate()?;
-        Ok(selection)
-    }
-
-    fn validate(&self) -> Result<()> {
-        if let Self::ExactOperation { operation_id } = self {
-            codex_hepta_types::StableId::new(operation_id)?;
-        }
-        Ok(())
-    }
-}
-
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-struct Composition {
-    schema: String,
-    scope: String,
-    registration: HostAuthorityRegistration,
-    original_thread_seed: NotesThreadSeedReceipt,
-    objective_profile: PathBuf,
-    notes_state_dir: PathBuf,
-    notes_target: NotesTargetIdentity,
-    session_pid: u32,
-    session_birth: String,
-    bootstrap_model_turn_sent: bool,
-}
+use super::recovery_composition::Composition;
+pub(crate) use super::recovery_selection::RecoverySelection;
 
 pub(super) struct Existing {
     pub config: HostAuthorityServiceConfig,
     pub registration: HostAuthorityRegistration,
     pub proof: HostSignedWriterAuthorizationV1,
-    pub seed: NotesThreadSeedReceipt,
+    pub seed: super::seed::ThreadSeed,
+    pub calculator: Option<CalculatorTargetIdentity>,
+    pub generation: u64,
+    pub source_admin: PathBuf,
     pub target: NotesTargetIdentity,
     pub profile: Value,
     pub selection: RecoverySelection,
@@ -78,10 +31,16 @@ pub(super) struct Existing {
 }
 
 impl Existing {
-    pub(super) fn open(inputs: &Inputs, selection: RecoverySelection) -> Result<(Self, Product)> {
-        selection.validate()?;
+    pub(super) fn open(
+        inputs: &Inputs,
+        selection: RecoverySelection,
+        generation: u64,
+    ) -> Result<(Self, Product)> {
+        selection.validate_for(inputs)?;
         let admin = inputs.prefix.join("admin");
-        let preparation = Arc::new(RecoveryPreparation::acquire(&admin)?);
+        let preparation = Arc::new(RecoveryPreparation::acquire(&admin, generation)?);
+        let source_admin = super::recovery_selection::generation_directory(&admin, generation)?;
+        fs::root_directory(&source_admin)?;
         let original_inputs: Inputs = fs::read_root_json(&admin.join("original-inputs.json"))?;
         let mut expected = serde_json::to_value(original_inputs)?;
         let mut actual = serde_json::to_value(inputs)?;
@@ -100,40 +59,48 @@ impl Existing {
             );
         }
         let config: HostAuthorityServiceConfig =
-            fs::read_root_json(&admin.join("authority-config.json"))?;
+            fs::read_root_json(&source_admin.join("authority-config.json"))?;
         let registration: HostAuthorityRegistration =
-            fs::read_root_json(&admin.join("owner-registration.json"))?;
-        let composition: Composition = fs::read_root_json(&admin.join("actual-composition.json"))?;
-        let seed: NotesThreadSeedReceipt =
-            fs::read_root_json(&admin.join("original-thread-seed.json"))?;
-        seed.verify_persisted()?;
-        let proof = fs::read_root_json(&admin.join("original-writer-proof.json"))?;
-        let profile: Value = fs::read_root_json(&admin.join("notes-startup.json"))?;
+            fs::read_root_json(&source_admin.join("owner-registration.json"))?;
+        let writer = config
+            .writer
+            .as_ref()
+            .ok_or("original writer registration absent")?;
+        if writer.local_lease_generation != generation
+            || writer.spawn_generation != registration.registered_identity.spawn_generation
+            || writer.registered_agent_id != registration.registered_identity.agent_id
+        {
+            return Err(
+                "selected generation differs from the original writer and actual registration"
+                    .into(),
+            );
+        }
+        let composition: Composition =
+            fs::read_root_json(&source_admin.join("actual-composition.json"))?;
+        let proof = fs::read_root_json(&source_admin.join(if generation == 1 {
+            "original-writer-proof.json"
+        } else {
+            "successor-writer-proof.json"
+        }))?;
+        let profile: Value = fs::read_root_json(&source_admin.join(if inputs.is_desktop() {
+            "desktop-startup.json"
+        } else {
+            "notes-startup.json"
+        }))?;
         let layout = codex_hepta_paths::HeptaFleetRoot::parse(
             registration.registered_identity.fleet_root.clone(),
         )?
         .layout()
         .agent(&registration.registered_identity.agent_id);
-        if composition.schema != "trill.original-desktop-root.composition.v1"
-            || composition.scope.len() > 4096
-            || composition.bootstrap_model_turn_sent
-            || serde_json::to_value(&composition.registration)?
-                != serde_json::to_value(&registration)?
-            || serde_json::to_value(&composition.original_thread_seed)?
-                != serde_json::to_value(&seed)?
-            || composition.notes_state_dir != inputs.prefix.join("u/notes")
-            || composition.objective_profile != layout.home_root().join("notes-thread-profile.json")
-            || seed.codex_home != layout.home_root()
-            || profile["interaction"]["seed"] != serde_json::to_value(&seed)?
-            || profile["interaction"]["kind"] != "original_thread_tool_v1"
-            || profile["bindings"]["model_tuple_digest"] != seed.model_tuple_digest()?.to_string()
-            || profile["grant_lifetime_ms"] != inputs.grant_lifetime_ms
-        {
-            return Err(
-                "original composition/thread/Notes bindings differ or are incomplete".into(),
-            );
-        }
-        composition.notes_target.validate()?;
+        let seed = super::recovery_composition::original_seed(inputs, &admin, layout.home_root())?;
+        composition.validate(
+            inputs,
+            &registration,
+            &seed,
+            &profile,
+            layout.home_root(),
+            generation,
+        )?;
         let boot = std::fs::read_to_string("/proc/sys/kernel/random/boot_id")?;
         let session = session_lifetime(
             composition.session_pid,
@@ -167,13 +134,16 @@ impl Existing {
             registration,
             proof,
             seed,
+            calculator: composition.calculator_target,
+            generation,
+            source_admin,
             target: composition.notes_target,
             profile,
             selection,
             preparation,
         };
         old.preparation.admit(&serde_json::json!({"original_owner":old.registration,
-            "old_target":old.target,"original_thread":old.seed,"operation_selector":old.selection,
+            "old_target":old.target,"old_calculator":old.calculator,"original_thread":old.seed,"operation_selector":old.selection,"previous_generation":old.generation,
             "scope":"same-boot existing state selected; no recovery success or operation outcome asserted"}))?;
         Ok((old, product))
     }
@@ -188,6 +158,26 @@ impl Existing {
             return self.preparation.sockets_retired(value);
         }
         fs::json_new(&product.admin.join(format!("{name}.json")), value)
+    }
+
+    pub(super) fn issuer_plan(
+        &self,
+    ) -> Result<Option<codex_hepta_agentd::HostIssuerLeaseRenewalPlan>> {
+        self.preparation.issuer_plan()
+    }
+
+    pub(super) fn record_issuer_plan(
+        &self,
+        plan: &codex_hepta_agentd::HostIssuerLeaseRenewalPlan,
+    ) -> Result<()> {
+        self.preparation.issuer_planned(plan)
+    }
+
+    pub(super) fn record_issuer_commit(
+        &self,
+        lease: &codex_hepta_contracts::authority_lease::AuthorityLease,
+    ) -> Result<()> {
+        self.preparation.issuer_committed(lease)
     }
 
     pub(super) fn consume_spawn(&self) -> Result<()> {

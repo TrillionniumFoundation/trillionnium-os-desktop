@@ -10,6 +10,8 @@ use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
 
 const ADMITTED: &str = "00-admitted.json";
+const ISSUER_PLANNED: &str = "02-issuer-renewal-plan.json";
+const ISSUER_COMMITTED: &str = "03-issuer-renewal-committed.json";
 const SOCKETS_RETIRED: &str = "05-old-sockets-retired.json";
 const SPAWN_CONSUMED: &str = "06-spawn-consumed.json";
 
@@ -21,9 +23,23 @@ pub(super) struct RecoveryPreparation {
 impl RecoveryPreparation {
     /// Acquire before reading the old deployment or changing its mount/socket
     /// state. The descriptor stays live through the entire recovered Root run.
-    pub(super) fn acquire(admin: &Path) -> Result<Self> {
+    pub(super) fn acquire(admin: &Path, previous_generation: u64) -> Result<Self> {
         fs::root_directory(admin)?;
-        Self::lock_directory(admin)
+        Self::lock_generation(admin, previous_generation)
+    }
+
+    fn lock_generation(admin: &Path, previous_generation: u64) -> Result<Self> {
+        let mut locked = Self::lock_directory(admin)?;
+        // Old fixed-directory attempts have no authenticated generation
+        // locator. Preserve them; never reinterpret or rearm their spawn.
+        if std::fs::symlink_metadata(admin.join("recovery")).is_ok() {
+            return Err(
+                "legacy recovery preparation requires original-owner reconciliation".into(),
+            );
+        }
+        let next = super::recovery_selection::successor_generation(previous_generation)?;
+        locked.directory = super::recovery_selection::generation_directory(admin, next)?;
+        Ok(locked)
     }
 
     fn lock_directory(admin: &Path) -> Result<Self> {
@@ -59,7 +75,7 @@ impl RecoveryPreparation {
         lock.sync_all()?;
         File::open(admin)?.sync_all()?;
         Ok(Self {
-            directory: admin.join("recovery"),
+            directory: admin.join("recovery-2"),
             _lock: lock,
         })
     }
@@ -87,19 +103,58 @@ impl RecoveryPreparation {
         // began. Refuse those too, even without this version's consume marker.
         for entry in std::fs::read_dir(&self.directory)? {
             let entry = entry?;
-            if !matches!(entry.file_name().to_str(), Some(ADMITTED | SOCKETS_RETIRED)) {
+            if !matches!(
+                entry.file_name().to_str(),
+                Some(ADMITTED | ISSUER_PLANNED | ISSUER_COMMITTED | SOCKETS_RETIRED)
+            ) {
                 return Err(
                     "original recovery may have started: original-owner reconciliation is required"
                         .into(),
                 );
             }
         }
-        if self.directory.join(SOCKETS_RETIRED).try_exists()?
+        if self.directory.join(ISSUER_COMMITTED).try_exists()?
+            && !self.directory.join(ISSUER_PLANNED).try_exists()?
+        {
+            return Err("original issuer commit observation has no fixed plan".into());
+        }
+        if (self.directory.join(SOCKETS_RETIRED).try_exists()?
+            || self.directory.join(ISSUER_PLANNED).try_exists()?)
             && !self.directory.join(ADMITTED).try_exists()?
         {
             return Err("original recovery socket observation has no admission".into());
         }
         self.record(ADMITTED, observation)
+    }
+
+    pub(super) fn issuer_plan(
+        &self,
+    ) -> Result<Option<codex_hepta_agentd::HostIssuerLeaseRenewalPlan>> {
+        match std::fs::symlink_metadata(self.directory.join(ISSUER_PLANNED)) {
+            Ok(_) => Ok(Some(serde_json::from_value(self.read(ISSUER_PLANNED)?)?)),
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+            Err(error) => Err(error.into()),
+        }
+    }
+
+    pub(super) fn issuer_planned(
+        &self,
+        plan: &codex_hepta_agentd::HostIssuerLeaseRenewalPlan,
+    ) -> Result<()> {
+        self.read(ADMITTED)?;
+        self.record(ISSUER_PLANNED, plan)
+    }
+
+    pub(super) fn issuer_committed(
+        &self,
+        lease: &codex_hepta_contracts::authority_lease::AuthorityLease,
+    ) -> Result<()> {
+        self.read(ADMITTED)?;
+        let plan = self.issuer_plan()?.ok_or("original issuer plan absent")?;
+        if plan.renewed_lease != *lease {
+            return Err("issuer commit differs from the immutable original plan".into());
+        }
+        self.record(ISSUER_COMMITTED, lease)
     }
 
     pub(super) fn sockets_retired(&self, observation: &impl Serialize) -> Result<()> {
@@ -113,6 +168,13 @@ impl RecoveryPreparation {
     pub(super) fn consume_spawn(&self) -> Result<()> {
         let admitted = self.read(ADMITTED)?;
         self.read(SOCKETS_RETIRED)?;
+        if let Some(plan) = self.issuer_plan()? {
+            let committed: codex_hepta_contracts::authority_lease::AuthorityLease =
+                serde_json::from_value(self.read(ISSUER_COMMITTED)?)?;
+            if committed != plan.renewed_lease {
+                return Err("unconfirmed issuer plan cannot consume a successor spawn".into());
+            }
+        }
         fs::json_new(
             &self.directory.join(SPAWN_CONSUMED),
             &serde_json::json!({
