@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "package": "org.droidloom.qa.bili.r1",
+  "scope": "install fixed built APK and one state operation only; no UiAutomation connection",
+  "build": {
+    "path": "/home/alex/work/pocket4-owned-bili-qa-r1-build-02/build-result.json",
+    "bytes": 17047,
+    "sha256": "914500629ff59c1a27b3f67b962d883bae6f5b6f68dbca335a73de10dfbea03a"
+  },
+  "stage": {
+    "path": "/home/alex/work/pocket4-owned-bili-qa-r1-source-02/stage-result.json",
+    "bytes": 1935,
+    "sha256": "15bf5790804808b95f05151aa866bed86ef5173b621c07e5ab30617c282111db"
+  },
+  "apk": {
+    "path": "/home/alex/work/pocket4-owned-bili-qa-r1-build-02/owned-bili-qa.apk",
+    "bytes": 20624,
+    "sha256": "d40804b28f13adac16cd66ec8f32560d6083424c673eb94f543a23ee2ac81e27",
+    "signer_certificate_sha256": "65d64cd59b94c92b8a18bc3ba0d352aa160a2d9c74dc55448683d5df84cca134"
+  },
+  "qa_source_manifest_sha256": "d0f9f0f45d0e94a3d6b4a46e0ae0d9048ea2e6ff6c60550b39f54a75029d5aba",
+  "recorder": {
+    "root": "/home/alex/work/pocket4-owned-bili-qa-install-state-02/source/recorder-r4",
+    "manifest_sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1",
+    "base_root": "/home/alex/work/pocket4-bilibili-readonly-r3-01/source/recorder-held-r3-freeze-01",
+    "base_manifest_sha256": "4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906",
+    "source_sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511",
+    "held_runtime_sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4",
+    "production_transport_sha256": "7edecc741b8a61bea30d885ab9107666aab9407d6a6928bf799bd8efd4b4a23b",
+    "only_changed_inherited_production_file": "bound_android_transport.py",
+    "staged_private_copy_only": true
+  },
+  "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "official_cli_reference": {
+    "upstream_url": "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/services/core/java/com/android/server/pm/PackageManagerShellCommand.java",
+    "immutable_blob_url": "https://api.github.com/repos/aosp-mirror/platform_frameworks_base/git/blobs/aa235c2258ac152037b0bc33edf860de20624a7a",
+    "git_blob_sha": "aa235c2258ac152037b0bc33edf860de20624a7a",
+    "bytes": 220141,
+    "sha256": "f51101a2d5c4cd9df4283d9da73707b4d0edc189b75a391285a816931ad3e004",
+    "upstream_commit_not_asserted": true,
+    "not_exact_device_framework_source": true,
+    "semantics": "replaceExisting defaults true; -r ignored; -R sets false. -u includes uninstalled records and --user all iterates actual users. Unsupported commands remain failure; no fallback."
+  },
+  "source_review_only": true,
+  "actual_install_state_not_run": true,
+  "whole_app_production_ready": false,
+  "prior_install01_failure": {
+    "worker_sha256": "5e9277c9e97539b7b0d2bbcb518c4107160e78de2bbbf107a0d0619789b9d61b",
+    "bytes": 3055,
+    "error": "NUMERIC_PID_ENTRY_FORBIDDEN",
+    "install_command_spawned": false,
+    "state_attempted": false,
+    "original_failure_unchanged": true
+  }
+}

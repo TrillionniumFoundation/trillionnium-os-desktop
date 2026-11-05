@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "state": "FROZEN_PREFIX_FIX_LOCAL_CONTROLS_PASS_ANDROID_UNRUN",
+  "files": {
+    "preimage/bound_android_transport.py": {
+      "bytes": 14376,
+      "sha256": "ca3e30796961acc38737b6a9f22c3519abc9da1a7a6a384b732dd5a374a325d9"
+    },
+    "source/bound_android_transport.py": {
+      "bytes": 15601,
+      "sha256": "7edecc741b8a61bea30d885ab9107666aab9407d6a6928bf799bd8efd4b4a23b"
+    },
+    "namespace-prefix-r4.patch": {
+      "bytes": 2068,
+      "sha256": "4f5f6eaeb4f8d3f3feeb67190d9c8bc1ee1b658061fed18bc019687c0f1d528c"
+    },
+    "controls.py": {
+      "bytes": 6923,
+      "sha256": "c7ebc262c264bb0df7ef5fe66a02e1e2cca8f23e60bd308536aa23052b0bc58b"
+    },
+    "controls-result.json": {
+      "bytes": 5184,
+      "sha256": "d63780a3b969341cca187d8cbfe8fae4547fdbc6bc76537b2c3b475aa6f462f9"
+    }
+  },
+  "controls": 17,
+  "baseline": "actual original R3 BoundArun rejects legitimate Android install -t before runner; negative retained",
+  "candidate": "exact first -- separates namespace-helper prefix; prefix equals held helper/current parent/7 passed FDs; suffix equals original constructed Android command",
+  "lifecycle": "original guard, poison, first-error, lease exit, postguard and evidence logic unchanged",
+  "limitations": "synthetic target/runner callbacks; real owned FDs closed; no actual namespace/helper/Android/Main executed",
+  "known_actual_install01_failure": {
+    "source": "parent provided verified actual worker receipt",
+    "sha256": "5e9277c9e97539b7b0d2bbcb518c4107160e78de2bbbf107a0d0619789b9d61b",
+    "bytes": 3055,
+    "error": "NUMERIC_PID_ENTRY_FORBIDDEN",
+    "Android_install_runner_attempted": false,
+    "state_attempted": false,
+    "original_FAILURE_unchanged": true
+  },
+  "requires_new_recorder_manifest_and_host_session_binding": true,
+  "old_R3_or_install01_modified": false,
+  "whole_app_production_ready": false
+}

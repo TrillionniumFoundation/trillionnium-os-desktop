@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "state": "EXPECTED_SOURCE_DELTA_ONLY_NOT_COMPILED_OR_PROJECTED",
+  "original_449_manifest_sha256": "e7c225bd2842c260d9f4149aca3c4483ed31c569efb31068b6d787892bd17017",
+  "expected_450_manifest_sha256": "6834ea57e4d0402bd5c6e6c405728a111af77fb54ea0e0bea407ba9647fa41b4",
+  "changed": [
+    "tools/droidloom-update/src/android.rs"
+  ],
+  "added": [
+    "android/apex-compat/0009-blueprint-stream-uncached-module-actions.patch"
+  ],
+  "removed": [],
+  "inherited_entries_unchanged": 448,
+  "new_patch_mode": 436,
+  "go6_patch_unchanged": {
+    "kind": "file",
+    "sha256": "6aaaf5ec96a75bb6480c202d6483a5b22bdd4963d6d3b66bbfad4d80ee5ed20e",
+    "bytes": 583,
+    "mode": 436
+  },
+  "engine_candidate05_files": 925,
+  "engine_candidate05_bytes_changed": 0,
+  "projection_entry": "existing leaf_go_memory_mode branch -> Projection.patch(source, build/blueprint, new patch)",
+  "projection_invariants": [
+    "existing apply --check",
+    "save original bytes and mtime in normal journal",
+    "normal apply and patch SHA map",
+    "normal effective file inventory",
+    "normal restore/recover and global builder locks"
+  ],
+  "requires_before_full_build": [
+    "actual complete-package Go control PASS",
+    "new 450-file builder copy verified against expected map",
+    "matching new Rust builder compiled and its real binary SHA bound",
+    "normal lock/recover path; no manual AOSP edits",
+    "new fresh engine output root",
+    "existing Go6/11GiB +1GiB swap/fresh available14GiB and SwapFree2GiB admission and Main before/after fences",
+    "final engine inputs contain new Blueprint context and patch SHA",
+    "complete 3793 host suite and four isolated Android signal cases after artifact binding"
+  ],
+  "not_proven": [
+    "Go test compile/runtime",
+    "Rust builder compile",
+    "full cold engine build",
+    "whole-build OOM removal",
+    "specific OOM victim",
+    "Android or whole app readiness"
+  ],
+  "remote_actions": 0
+}

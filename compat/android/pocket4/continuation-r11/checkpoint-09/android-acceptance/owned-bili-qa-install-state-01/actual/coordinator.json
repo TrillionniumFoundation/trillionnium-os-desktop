@@ -1,0 +1,71 @@
+{
+  "Main_after": {
+    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "resource_limits_match": true,
+    "three_host_processes_match": true,
+    "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "Main_before": {
+    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "resource_limits_match": true,
+    "three_host_processes_match": true,
+    "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "UI_actions": 0,
+  "audio_actions": 0,
+  "automatic_retry": false,
+  "error": {
+    "message": "02-install-state did not complete exactly once with a preserved Main fence",
+    "phase": "coordinator",
+    "type": "RuntimeError"
+  },
+  "failed_worker_result": {
+    "bytes": 3055,
+    "path": "/home/alex/work/pocket4-bilibili-owned-qa-r1-flow-2e6088a9c624c4aee7251795c9c7e018/steps/install-state-01/result.json",
+    "sha256": "5e9277c9e97539b7b0d2bbcb518c4107160e78de2bbbf107a0d0619789b9d61b"
+  },
+  "flow": "/home/alex/work/pocket4-bilibili-owned-qa-r1-flow-2e6088a9c624c4aee7251795c9c7e018",
+  "install_state_worker_requested": true,
+  "nonce": "2e6088a9c624c4aee7251795c9c7e018",
+  "ok": false,
+  "old_v2_helper_called": false,
+  "owned_after": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 28788561,
+    "memory.current": "69070848",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "89903104",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1a918c2d9-fc05-3140.service",
+    "pids.max": "128"
+  },
+  "owned_before": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 28788561,
+    "memory.current": "25378816",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "25518080",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1a918c2d9-fc05-3140.service",
+    "pids.max": "128"
+  },
+  "package": "org.droidloom.qa.bili.r1",
+  "package_outcome_requires_exact_worker_reconciliation": true,
+  "schema": 1,
+  "secondary_errors": [],
+  "source_and_artifact_unchanged": true,
+  "source_manifest_sha256": "0afd486b9caa4f68fb9d53da3ed15dc97e56ac2b0022a923b8b9cfa2b1887bc8",
+  "whole_app_production_ready": false
+}

@@ -1,0 +1,33 @@
+--- a/bound_android_transport.py
++++ b/bound_android_transport.py
+@@ -191,9 +191,28 @@
+                 require(len(descriptors) == 7 and len(set(descriptors)) == 7
+                         and all(type(fd) is int and fd >= 3 for fd in descriptors),
+                         "HELD_AUTHORITY_SET_DIFFERS")
+-                require("--target" not in argv and "-t" not in argv
+-                        and all(not part.startswith("--target=") for part in argv),
++                require(isinstance(argv, (list, tuple)) and
++                        all(isinstance(part, str) and part and "\0" not in part for part in argv),
++                        "HELD_ENTRY_ARGV_INVALID")
++                try:
++                    boundary = argv.index("--")
++                except ValueError:
++                    raise TransportError("HELD_ENTRY_SEPARATOR_MISSING")
++                prefix = list(argv[:boundary])
++                require("--target" not in prefix and "-t" not in prefix and
++                        all(not part.startswith("--target=") for part in prefix),
+                         "NUMERIC_PID_ENTRY_FORBIDDEN")
++                require(list(argv[boundary + 1:]) == command,
++                        "HELD_ENTRY_COMMAND_SUFFIX_DIFFERS")
++                # Match the qualified R5 helper protocol and the exact passed
++                # authority FDs. Only the helper prefix is a namespace entry;
++                # Android command options such as pm install -t follow "--".
++                expected_prefix = [str(self.target.helper_path),
++                    "--parent-pid=" + str(os.getpid()),
++                    "--root-fd=" + str(descriptors[0])]
++                expected_prefix += ["--" + name + "-fd=" + str(fd) for name, fd in
++                    zip(("mnt", "pid", "uts", "ipc", "net", "cgroup"), descriptors[1:])]
++                require(prefix == expected_prefix, "HELD_ENTRY_PREFIX_DIFFERS")
+                 attempted = True
+                 try:
+                     completed = self.runner(argv, stdout=subprocess.PIPE, stderr=subprocess.PIPE,

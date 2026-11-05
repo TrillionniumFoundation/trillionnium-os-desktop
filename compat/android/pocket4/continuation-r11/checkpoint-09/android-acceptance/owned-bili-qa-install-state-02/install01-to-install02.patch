@@ -1,0 +1,266 @@
+--- install01/install_state.py
++++ install02/install_state.py
+@@ -17,12 +17,12 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-install-state-02')
+ SOURCE = ROOT / 'source'
+-NONCE = '2e6088a9c624c4aee7251795c9c7e018'
+-STATE_NONCE = '3aa5fbe3f1de9d756b35d0775275cd91'
++NONCE = '9eb2de4b3fa0576fd89afc046f8dfb23'
++STATE_NONCE = '298ed69e503c77c4b1f5e321ea6cf17a'
+ FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r1-flow-' + NONCE)
+-STEP = 'install-state-01'
++STEP = 'install-state-02'
+ SELF = 'org.droidloom.qa.bili.r1'
+ QA_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r1-source-02/source')
+ QA_MANIFEST = 'd0f9f0f45d0e94a3d6b4a46e0ae0d9048ea2e6ff6c60550b39f54a75029d5aba'
+@@ -36,8 +36,8 @@
+ APK_SHA = 'd40804b28f13adac16cd66ec8f32560d6083424c673eb94f543a23ee2ac81e27'
+ APK_BYTES = 20624
+ SIGNER_SHA = '65d64cd59b94c92b8a18bc3ba0d352aa160a2d9c74dc55448683d5df84cca134'
+-RECORDER_ROOT = Path('/home/alex/work/pocket4-bilibili-readonly-r3-01/source/recorder-held-r3-freeze-01')
+-RECORDER_MANIFEST = '4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906'
++RECORDER_ROOT = SOURCE / 'recorder-r4'
++RECORDER_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ GUEST_DIR_NAME = 'pocket4-owned-bili-qa-' + NONCE
+ GUEST_DIR = '/data/local/tmp/' + GUEST_DIR_NAME
+@@ -46,7 +46,9 @@
+ INSTALLED_ALL_USERS = ['/system/bin/cmd', 'package', 'list', 'packages', '-U', '--user', 'all', SELF]
+ INSTALL = ['/system/bin/cmd', 'package', 'install', '-R', '-t', '--user', '0', '--pkg', SELF, GUEST_APK]
+ EXPECTED_SOURCE_FILES = {'install_state.py', 'stage_execute.py', 'make_request.py',
+-                         'references/readonly_r3_coordinator.py', 'INPUTS.json', 'README.md'}
++                         'references/readonly_r3_coordinator.py', 'INPUTS.json', 'README.md',
++                         'references/R3-SOURCE-MANIFEST.json', 'r4/source-manifest.json',
++                         'r4/bound_android_transport.py', 'session_binding.py'}
+ 
+ 
+ def require(value, message):
+@@ -267,7 +269,7 @@
+ 
+ 
+ def worker(expected):
+-    verify_source(expected)
++    runtime_manifest = verify_source(expected)
+     require(os.getuid() == os.geteuid() == 0 and HERE == SOURCE and ROOT.is_dir(), 'EXACT_ROOT_WORKER_REQUIRED')
+     adapter, qa, proof, apk = qualified_inputs()
+     recorder = recorder_module()
+@@ -305,7 +307,11 @@
+         result['install_command'] = install_command
+         uid_raw, uid_command = command(flow, ['/system/bin/cmd','package','list','packages','-U','--user','0',SELF])
+         uid = uid_from(uid_raw)
+-        session = adapter.Session(flow, recorder, qa, proof, uid)
++        session_module = module(HERE/'session_binding.py',
++            runtime_manifest['files']['session_binding.py']['sha256'], 'qa_owned_r4_session')
++        session = session_module.new_session(adapter, flow, recorder, qa, proof, uid)
++        result['runtime_recorder_manifest_sha256'] = RECORDER_MANIFEST
++        result['runtime_session_binding_sha256'] = runtime_manifest['files']['session_binding.py']['sha256']
+         result['installed_before_state'] = session.installed()
+         result['uid_command'] = uid_command
+         request = {'protocol':qa.PROTOCOL, 'nonce':STATE_NONCE, 'op':'state'}
+@@ -472,6 +478,7 @@
+         try:
+             verify_source(expected)
+             qualified_inputs()
++            recorder_module().source_contract(RECORDER_MANIFEST)[1].verify()
+             result['source_and_artifact_unchanged'] = True
+         except BaseException as error:
+             remember(result,'final_source_and_artifact',error)
+--- install01/stage_execute.py
++++ install02/stage_execute.py
+@@ -7,12 +7,17 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-install-state-02')
+ SOURCE = ROOT/'source'
+-NONCE = '2e6088a9c624c4aee7251795c9c7e018'
++NONCE = '9eb2de4b3fa0576fd89afc046f8dfb23'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ FILES = {'install_state.py','stage_execute.py','make_request.py',
+-         'references/readonly_r3_coordinator.py','INPUTS.json','README.md'}
++         'references/readonly_r3_coordinator.py','INPUTS.json','README.md',
++         'references/R3-SOURCE-MANIFEST.json','r4/source-manifest.json',
++         'r4/bound_android_transport.py','session_binding.py'}
++BASE_ROOT = Path('/home/alex/work/pocket4-bilibili-readonly-r3-01/source/recorder-held-r3-freeze-01')
++BASE_MANIFEST = '4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906'
++R4_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+ 
+ 
+ def require(value, reason):
+@@ -55,6 +60,44 @@
+     return packet,encoded
+ 
+ 
++def stage_recorder_r4(ref, files):
++    base_raw = ref.read(BASE_ROOT/'source-manifest.json',131072,BASE_MANIFEST)
++    require(base_raw == files['references/R3-SOURCE-MANIFEST.json'], 'ORIGINAL_R3_MANIFEST_CHANGED')
++    base = json.loads(base_raw)
++    base_contract = ref.module(ref.read(BASE_ROOT/'source_contract.py',131072,
++        base['files']['source_contract.py']['sha256']),BASE_ROOT/'source_contract.py','qa_original_r3_contract')
++    original = base_contract.SourceContract(BASE_ROOT/'source-manifest.json',BASE_MANIFEST)
++    derived_raw = files['r4/source-manifest.json']
++    require(digest(derived_raw) == R4_MANIFEST, 'DERIVED_R4_MANIFEST_CHANGED')
++    derived = json.loads(derived_raw)
++    require(derived['revision'] == 4 and derived['base_manifest_sha256'] == BASE_MANIFEST and
++            set(derived['files']) == set(base['files']), 'EXACT_R4_DERIVATION_REQUIRED')
++    changed = [name for name in base['files'] if base['files'][name] != derived['files'][name]]
++    require(changed == ['bound_android_transport.py'], 'ONLY_PREFIX_TRANSPORT_MAY_CHANGE')
++    expected = derived['files']['bound_android_transport.py']
++    require(expected == {'bytes':len(files['r4/bound_android_transport.py']),
++                         'sha256':digest(files['r4/bound_android_transport.py'])}, 'R4_TRANSPORT_PIN_CHANGED')
++    target = SOURCE/'recorder-r4'
++    target.mkdir(mode=0o700)
++    for name,row in derived['files'].items():
++        rel = PurePosixPath(name)
++        require(not rel.is_absolute() and '..' not in rel.parts and str(rel) == name, 'EXACT_R4_PATH_REQUIRED')
++        raw = (files['r4/bound_android_transport.py'] if name == 'bound_android_transport.py'
++               else ref.read(BASE_ROOT/name,131072,row['sha256']))
++        require(len(raw) == row['bytes'] and digest(raw) == row['sha256'], 'R4_COPY_PIN_CHANGED:'+name)
++        path = target/name
++        path.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
++        ref.write_new(path,raw,mode=0o444)
++    ref.write_new(target/'source-manifest.json',derived_raw,mode=0o444)
++    contract_module = ref.module(ref.read(target/'source_contract.py',131072,
++        derived['files']['source_contract.py']['sha256']),target/'source_contract.py','qa_private_r4_contract')
++    contract_module.SourceContract(target/'source-manifest.json',R4_MANIFEST).verify()
++    original.verify()
++    return {'base_manifest_sha256':BASE_MANIFEST, 'derived_manifest_sha256':R4_MANIFEST,
++            'files':len(derived['files']), 'changed_production_files':changed,
++            'base_unchanged':True, 'private_copy_verified':True, 'Main_source_modified':False}
++
++
+ def main(raw=None):
+     if raw is None:
+         raw = sys.stdin.buffer.read(262145)
+@@ -87,6 +130,7 @@
+             path=SOURCE/name
+             path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
+             ref.write_new(path,value,mode=0o444)
++        result['private_recorder_r4'] = stage_recorder_r4(ref,files)
+         entry=load_text(files['install_state.py'],SOURCE/'install_state.py','qa_install_actual_entry')
+         code=entry.execute(packet['source_manifest_sha256'])
+         result['coordinator_returncode']=code
+--- install01/make_request.py
++++ install02/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bili-qa-install-state-01-20261105'
+-ROOT='/home/alex/work/pocket4-owned-bili-qa-install-state-01'
+-NONCE='2e6088a9c624c4aee7251795c9c7e018'
++KEY='pocket4-owned-bili-qa-install-state-02-20261105'
++ROOT='/home/alex/work/pocket4-owned-bili-qa-install-state-02'
++NONCE='9eb2de4b3fa0576fd89afc046f8dfb23'
+ 
+ 
+ def sha(raw):
+--- install01/INPUTS.json
++++ install02/INPUTS.json
+@@ -20,10 +20,15 @@
+   },
+   "qa_source_manifest_sha256": "d0f9f0f45d0e94a3d6b4a46e0ae0d9048ea2e6ff6c60550b39f54a75029d5aba",
+   "recorder": {
+-    "root": "/home/alex/work/pocket4-bilibili-readonly-r3-01/source/recorder-held-r3-freeze-01",
+-    "manifest_sha256": "4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906",
++    "root": "/home/alex/work/pocket4-owned-bili-qa-install-state-02/source/recorder-r4",
++    "manifest_sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1",
++    "base_root": "/home/alex/work/pocket4-bilibili-readonly-r3-01/source/recorder-held-r3-freeze-01",
++    "base_manifest_sha256": "4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906",
+     "source_sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511",
+-    "held_runtime_sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
++    "held_runtime_sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4",
++    "production_transport_sha256": "7edecc741b8a61bea30d885ab9107666aab9407d6a6928bf799bd8efd4b4a23b",
++    "only_changed_inherited_production_file": "bound_android_transport.py",
++    "staged_private_copy_only": true
+   },
+   "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+   "official_cli_reference": {
+@@ -38,5 +43,13 @@
+   },
+   "source_review_only": true,
+   "actual_install_state_not_run": true,
+-  "whole_app_production_ready": false
++  "whole_app_production_ready": false,
++  "prior_install01_failure": {
++    "worker_sha256": "5e9277c9e97539b7b0d2bbcb518c4107160e78de2bbbf107a0d0619789b9d61b",
++    "bytes": 3055,
++    "error": "NUMERIC_PID_ENTRY_FORBIDDEN",
++    "install_command_spawned": false,
++    "state_attempted": false,
++    "original_failure_unchanged": true
++  }
+ }
+--- install01/README.md
++++ install02/README.md
+@@ -6,11 +6,11 @@
+ 
+ ## Exact operation
+ 
+-The request creates only /home/alex/work/pocket4-owned-bili-qa-install-state-01
++The request creates only /home/alex/work/pocket4-owned-bili-qa-install-state-02
+ and a new original-recorder flow whose suffix is the fixed 32-hex NONCE.
+ The original recorder init and this worker run as separate joined processes,
+ so flow.lock is never reacquired recursively in one process. All Android
+-commands use frozen R3 Flow.android, its held namespace/root helper and Main
++commands use the R4 private copy of frozen R3 Flow.android, its held namespace/root helper and Main
+ epoch/source/config/three-host-process/resource/data-directory fences.
+ The original ACTION_LOCK covers absence, staging, install and state.
+ 
+@@ -89,3 +89,24 @@
+ the actual own-ServiceInfo readback. Click is dispatch acknowledgement, keeps
+ outcome_unknown=true, and cannot stand in for playback/audio or business success.
+ No later operation is part of this request.
++
++## R4 prefix fix and separate host binding
++
++Install01's actual failure remains unchanged: original R3 checked -t across the
++entire helper argv and rejected the legal Android test-APK argument before
++spawning its install command. No state ran. The owned staging inodes were
++retired and Main stayed unchanged. This is a new root, flow, nonce and request.
++
++The new private recorder is copied only after every original R3 payload and
++manifest is verified. Its 44-file manifest changes only the production
++bound_android_transport.py hash. The original R3 files and installed helpers
++are never modified. R4 checks the first exact --, the exact helper/current
++parent/7-FD prefix, and the unchanged complete Android suffix. It still rejects
++numeric namespace-target prefixes. The separate 17-control source/report pins
++are retained, with synthetic target/runner scope explicit.
++
++The actual compiled QA source and APK remain recovery02. session_binding.py is
++a new explicit host-only constructor tied to the new R4 manifest; it inherits
++the original installed/instrument/foreground/task/sequence methods unchanged.
++It does not mutate the original adapter's R3 global pin or fake a R3 contract.
++Full original build/manifest/APK/signer verification remains mandatory.
+--- /dev/null
++++ install02/session_binding.py
+@@ -0,0 +1,24 @@
++"""Explicit host-only R4 recorder binding; actual compiled QA source stays fixed.
++
++The five operational Session methods are inherited unchanged from the pinned
++actual-build QA adapter. This constructor declares the new recorder dependency;
++it neither edits that adapter's global R3 pin nor forges a R3 SourceContract.
++"""
++R3_MANIFEST = '4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906'
++R4_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
++QA_MANIFEST = 'd0f9f0f45d0e94a3d6b4a46e0ae0d9048ea2e6ff6c60550b39f54a75029d5aba'
++
++
++def new_session(adapter, flow, recorder, qa, proof, helper_uid):
++    adapter.require(adapter.RECORDER_MANIFEST_SHA == R3_MANIFEST and
++                    proof['source_manifest_sha256'] == QA_MANIFEST,
++                    'ACTUAL_BUILT_QA_BASE_ADAPTER_REQUIRED')
++    class RecorderR4Session(adapter.Session):
++        def __init__(self):
++            adapter.require(flow.contract.sha256 == R4_MANIFEST and not flow._private_backend_transport,
++                            'EXACT_NEW_R4_PUBLIC_TRANSPORT_REQUIRED')
++            adapter.require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and
++                            helper_uid not in (10117,10125), 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
++            self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
++            self.nonces = set()
++    return RecorderR4Session()
