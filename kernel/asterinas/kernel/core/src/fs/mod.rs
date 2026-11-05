@@ -46,7 +46,12 @@ pub(crate) fn init_in_first_kthread(path_resolver: &PathResolver) {
 
 pub(crate) fn init_in_first_process(ctx: &Context) {
     // The exact image runs directly as rdinit, without the base /init mounts.
-    if init::booted_from_rootfs() || cfg!(feature = "g2-original-owner-a39-v1") {
+    if init::booted_from_rootfs()
+        || cfg!(any(
+            feature = "g2-original-owner-a39-v1",
+            feature = "g2-original-owner-publish-v1"
+        ))
+    {
         let fs = ctx.thread_local.borrow_fs();
         let path_resolver = fs.resolver().read();
         let dev_path = lookup_or_create_dev(&path_resolver).unwrap();
@@ -60,7 +65,10 @@ pub(crate) fn init_in_first_process(ctx: &Context) {
             .unwrap();
     }
 
-    #[cfg(feature = "g2-original-owner-a39-v1")]
+    #[cfg(any(
+        feature = "g2-original-owner-a39-v1",
+        feature = "g2-original-owner-publish-v1"
+    ))]
     mount_original_owner_runtime_fs(ctx).expect("mount original owner runtime filesystems");
 
     init_console_file_table(ctx);
@@ -69,7 +77,10 @@ pub(crate) fn init_in_first_process(ctx: &Context) {
 /// Supplies the skipped fixed initramfs mounts for the exact original image.
 /// PID 1 runs this before its startup hook releases the prepared children.
 /// All roles retain the original shared namespace and registered filesystems.
-#[cfg(feature = "g2-original-owner-a39-v1")]
+#[cfg(any(
+    feature = "g2-original-owner-a39-v1",
+    feature = "g2-original-owner-publish-v1"
+))]
 fn mount_original_owner_runtime_fs(ctx: &Context) -> Result<()> {
     use crate::fs::vfs::{file_system::FsFlags, registry::FsCreationCtx};
 

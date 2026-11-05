@@ -18,14 +18,15 @@ sys.dont_write_bytecode = True
 
 MAX_FILE_BYTES = 8 * 1024 * 1024
 ORIGINAL_OWNER_PROFILE = "g2-original-owner-a39-v1"
+ORIGINAL_OWNER_PROFILES = (ORIGINAL_OWNER_PROFILE, "g2-original-owner-publish-v1")
 
 
-def original_owner_profile():
+def original_owner_profile(profile):
     path = Path(__file__).with_name("original_owner_image.py")
     spec = importlib.util.spec_from_file_location("trusted_original_owner_image", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module
+    return module.select_profile(profile)
 
 
 def main():
@@ -33,10 +34,10 @@ def main():
     parser.add_argument("--input", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--manifest", type=Path, required=True)
-    parser.add_argument("--profile", choices=("g1c-trusted-observe", "g1d-trusted-control", "g2-trusted-daemon", ORIGINAL_OWNER_PROFILE),
+    parser.add_argument("--profile", choices=("g1c-trusted-observe", "g1d-trusted-control", "g2-trusted-daemon", *ORIGINAL_OWNER_PROFILES),
                         default="g1c-trusted-observe")
     args = parser.parse_args()
-    exact = original_owner_profile() if args.profile == ORIGINAL_OWNER_PROFILE else None
+    exact = original_owner_profile(args.profile) if args.profile in ORIGINAL_OWNER_PROFILES else None
     file_limit = exact.descriptor()["image"]["file_bytes"] if exact else MAX_FILE_BYTES
     source = args.input.resolve(strict=True)
     if not source.is_file():
@@ -70,7 +71,7 @@ def main():
         "period_ns": 100_000_000,
         "lease_ns": 300_000_000_000,
     }
-    if args.profile in ("g1d-trusted-control", "g2-trusted-daemon", ORIGINAL_OWNER_PROFILE):
+    if args.profile in ("g1d-trusted-control", "g2-trusted-daemon", *ORIGINAL_OWNER_PROFILES):
         manifest.update({
             "schema": "hepta-g1d-trusted-initial-v1",
             "supported_ops": 62,
@@ -83,7 +84,7 @@ def main():
         # Role-specific slots are defined by the sealed v2 bootstrap page.
         del manifest["slot"]
         del manifest["generation"]
-    if args.profile in ("g2-trusted-daemon", ORIGINAL_OWNER_PROFILE):
+    if args.profile in ("g2-trusted-daemon", *ORIGINAL_OWNER_PROFILES):
         manifest.update({
             "schema": "hepta-g2-trusted-initial-v1",
             "bootstrap_version": 3,

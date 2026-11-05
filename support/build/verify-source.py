@@ -102,6 +102,19 @@ ORIGINAL_OWNER_IMAGE_FEATURE_ADDITIONS = {
         b'g2-original-owner-a39-v1 = ["g2-trusted-daemon"]\n',
     ),
 }
+PUBLICATION_OWNER_IMAGE_FEATURE_ADDITIONS = {
+    "kernel/Cargo.toml": (
+        b'g2-original-owner-a39-v1 = ["aster-core/g2-original-owner-a39-v1"]\n',
+        b'g2-original-owner-a39-v1 = ["aster-core/g2-original-owner-a39-v1"]\n'
+        b'g2-original-owner-publish-v1 = ["aster-core/g2-original-owner-publish-v1"]\n',
+    ),
+    "kernel/core/Cargo.toml": (
+        b'g2-original-owner-a39-v1 = ["g2-trusted-daemon"]\n',
+        b'g2-original-owner-a39-v1 = ["g2-trusted-daemon"]\n'
+        b'# Corrected owner identity; original A39 image capacities are not enlarged.\n'
+        b'g2-original-owner-publish-v1 = ["g2-trusted-daemon"]\n',
+    ),
+}
 ROOT_LOCK_ADDITIONS = (
     (b' "miniz_oxide",\n "osdk-frame-allocator",\n',
      b' "miniz_oxide",\n "os-control",\n "osdk-frame-allocator",\n'),
@@ -144,6 +157,8 @@ def derive_downstream_input(name, original):
             additions += (G2_FEATURE_ADDITIONS[name],)
         if name in ORIGINAL_OWNER_IMAGE_FEATURE_ADDITIONS:
             additions += (ORIGINAL_OWNER_IMAGE_FEATURE_ADDITIONS[name],)
+        if name in PUBLICATION_OWNER_IMAGE_FEATURE_ADDITIONS:
+            additions += (PUBLICATION_OWNER_IMAGE_FEATURE_ADDITIONS[name],)
         if name == "kernel/core/Cargo.toml":
             additions += (PERMISSION_SMP_FEATURE_ADDITION,)
         if name == "osdk/deps/test-kernel/Cargo.toml":
@@ -199,6 +214,7 @@ def main():
                 or name in PHYSICAL_RESERVE_FEATURE_ADDITIONS
                 or name in G2_FEATURE_ADDITIONS
                 or name in ORIGINAL_OWNER_IMAGE_FEATURE_ADDITIONS
+                or name in PUBLICATION_OWNER_IMAGE_FEATURE_ADDITIONS
                 or name in {"Cargo.lock", "osdk/deps/test-kernel/Cargo.toml"}
             ):
                 original = subprocess.check_output(["git", "cat-file", "blob", expected], cwd=ROOT)
@@ -215,6 +231,7 @@ def main():
                         (PHYSICAL_RESERVE_FEATURE_ADDITIONS, "physical-reserve"),
                         (G2_FEATURE_ADDITIONS, "g2-trusted-daemon"),
                         (ORIGINAL_OWNER_IMAGE_FEATURE_ADDITIONS, "g2-original-owner-a39-v1"),
+                        (PUBLICATION_OWNER_IMAGE_FEATURE_ADDITIONS, "g2-original-owner-publish-v1"),
                     ) if name in additions],
                 }
                 expected = hashlib.sha1(f"blob {len(derived)}\0".encode() + derived).hexdigest()

@@ -50,7 +50,10 @@ pub(super) fn spawn(
         println!("[hepta-g2] rejected trusted startup: entropy-not-ready");
         return Err(error);
     }
-    #[cfg(feature = "g2-original-owner-a39-v1")]
+    #[cfg(any(
+        feature = "g2-original-owner-a39-v1",
+        feature = "g2-original-owner-publish-v1"
+    ))]
     super::memory_observation::system("before_snapshot", 0);
     let fs = ThreadFsInfo::new(path_resolver);
     let abs_path = fs
@@ -65,7 +68,10 @@ pub(super) fn spawn(
     // One original immutable snapshot feeds all final VMARs. There is no later
     // pathname lookup, shared writable image or userspace-selected grant.
     let snapshot = executable.snapshot_trusted_initial()?;
-    #[cfg(feature = "g2-original-owner-a39-v1")]
+    #[cfg(any(
+        feature = "g2-original-owner-a39-v1",
+        feature = "g2-original-owner-publish-v1"
+    ))]
     super::memory_observation::system("snapshot_retained", 0);
     let root = allocate_initial_process(&executable_path, new_resource_limits_for_init());
     if root.0.pid() != 1 {
@@ -154,7 +160,10 @@ pub(super) fn spawn(
             credentials,
             startup,
         )?);
-        #[cfg(feature = "g2-original-owner-a39-v1")]
+        #[cfg(any(
+            feature = "g2-original-owner-a39-v1",
+            feature = "g2-original-owner-publish-v1"
+        ))]
         super::memory_observation::role(
             "initial_image_prepared",
             0,
@@ -220,7 +229,10 @@ pub(super) fn spawn(
         "[hepta-g2] initial roles activated: root={} manager={} workload={} recovery={} workload_uid=60002 bootstrap_version=3 bytes=200 hepta_durability=false",
         root_pid, pids[0], pids[1], pids[2]
     );
-    #[cfg(feature = "g2-original-owner-a39-v1")]
+    #[cfg(any(
+        feature = "g2-original-owner-a39-v1",
+        feature = "g2-original-owner-publish-v1"
+    ))]
     super::memory_observation::system("initial_roles_ready", 0);
     let result = root.process.clone();
     *pending_children.lock() = Some([

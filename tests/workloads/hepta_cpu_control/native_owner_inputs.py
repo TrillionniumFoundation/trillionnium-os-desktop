@@ -21,7 +21,9 @@ MAX_OWNER_BYTES = 8 * 1024**2
 MAX_KERNEL_BYTES = 64 * 1024**2
 PROFILE = "g2-trusted-daemon"
 EXACT_IMAGE_PROFILE = "g2-original-owner-a39-v1"
-IMAGE_PROFILES = (PROFILE, EXACT_IMAGE_PROFILE)
+PUBLICATION_IMAGE_PROFILE = "g2-original-owner-publish-v1"
+EXACT_IMAGE_PROFILES = (EXACT_IMAGE_PROFILE, PUBLICATION_IMAGE_PROFILE)
+IMAGE_PROFILES = (PROFILE, *EXACT_IMAGE_PROFILES)
 EMPTY_ORIGINAL_COMMAND_LOGS = ("original-packaging.log",)
 
 
@@ -30,7 +32,7 @@ def image_module(profile):
     if profile == PROFILE:
         return None
     root = Path(__file__).resolve().parents[3]
-    return load_module("g2_exact_original_owner_image", root / "support/build/original_owner_image.py")
+    return load_module("g2_exact_original_owner_image", root / "support/build/original_owner_image.py").select_profile(profile)
 
 
 def owner_file_limit(profile):
@@ -279,7 +281,7 @@ def kernel_build(directory, expected, review, owner_bytes, ordinary, profile=PRO
     prefix = ["make", "-C", str(desktop / "kernel/asterinas"), "-f", "Makefile", "-f",
               str(desktop / "support/build/minimal.mk"), "kernel"]
     required = {"TARGET_ARCH=x86_64", "SMP=1", "MEM=512M", "ENABLE_KVM=0", "BOOT_PROTOCOL=multiboot", "INITRAMFS=on", "AUTO_TEST=none",
-                "HEPTA_G2_ORIGINAL_OWNER_A39_V1=1" if exact else "HEPTA_G2_TRUSTED_DAEMON=1",
+                exact.KERNEL_FLAG + "=1" if exact else "HEPTA_G2_TRUSTED_DAEMON=1",
                 "FEATURES=" + profile, f"A01_INITRAMFS={build / 'initramfs.cpio.gz'}",
                 f"A01_QEMU_WRAPPER={desktop / 'support/build/record-qemu.py'}"}
     require(make[:8] == prefix and len(make) == 20 and make[8].startswith("CARGO_OSDK=") and set(make[9:]) == required,

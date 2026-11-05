@@ -3,13 +3,28 @@
 //! Only the new image experiment hashes/freezes a reviewed owner build input.
 //! Ordinary/legacy builds require no additional input or host hashing command.
 
+#[cfg(all(
+    feature = "g2-original-owner-a39-v1",
+    feature = "g2-original-owner-publish-v1"
+))]
+compile_error!("select only one original-owner image version");
+
 #[allow(dead_code)]
-#[path = "src/process/program_loader/elf/original_owner_profile.rs"]
+#[cfg_attr(
+    not(feature = "g2-original-owner-publish-v1"),
+    path = "src/process/program_loader/elf/original_owner_profile.rs"
+)]
+#[cfg_attr(
+    feature = "g2-original-owner-publish-v1",
+    path = "src/process/program_loader/elf/publication_owner_profile.rs"
+)]
 mod profile;
 
 fn main() {
     println!("cargo:rerun-if-env-changed=HEPTA_TRUSTED_INITIAL_ELF");
-    if std::env::var_os("CARGO_FEATURE_G2_ORIGINAL_OWNER_A39_V1").is_none() {
+    if std::env::var_os("CARGO_FEATURE_G2_ORIGINAL_OWNER_A39_V1").is_none()
+        && std::env::var_os("CARGO_FEATURE_G2_ORIGINAL_OWNER_PUBLISH_V1").is_none()
+    {
         return;
     }
     #[cfg(unix)]

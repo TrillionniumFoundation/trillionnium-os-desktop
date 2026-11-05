@@ -2,7 +2,19 @@
 
 mod elf_file;
 mod load_elf;
-#[cfg(feature = "g2-original-owner-a39-v1")]
+#[cfg(all(
+    feature = "g2-original-owner-a39-v1",
+    feature = "g2-original-owner-publish-v1"
+))]
+compile_error!("select only one original-owner image version");
+#[cfg(any(
+    feature = "g2-original-owner-a39-v1",
+    feature = "g2-original-owner-publish-v1"
+))]
+#[cfg_attr(
+    feature = "g2-original-owner-publish-v1",
+    path = "publication_owner_profile.rs"
+)]
 #[allow(dead_code)]
 mod original_owner_profile;
 mod relocate;

@@ -95,6 +95,8 @@ g1d-trusted-control = ["g1c-trusted-observe", "osdk-frame-allocator/physical-res
 g2-trusted-daemon = ["g1d-trusted-control"]
 # Exact a39 owner image experiment; legacy profiles retain their 8/16 MiB bounds.
 g2-original-owner-a39-v1 = ["g2-trusted-daemon"]
+# Corrected owner identity; original A39 image capacities are not enlarged.
+g2-original-owner-publish-v1 = ["g2-trusted-daemon"]
 
 [lints]
 workspace = true

@@ -26,14 +26,16 @@ import tomllib
 
 LEGACY_IMAGE_PROFILE = "g2-trusted-daemon"
 EXACT_IMAGE_PROFILE = "g2-original-owner-a39-v1"
+PUBLICATION_IMAGE_PROFILE = "g2-original-owner-publish-v1"
+EXACT_IMAGE_PROFILES = (EXACT_IMAGE_PROFILE, PUBLICATION_IMAGE_PROFILE)
 
 
-def exact_image_module(desktop):
+def exact_image_module(desktop, profile=EXACT_IMAGE_PROFILE):
     path = desktop / "support/build/original_owner_image.py"
     spec = importlib.util.spec_from_file_location("original_owner_image_profile", path)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module
+    return module.select_profile(profile)
 
 sys.dont_write_bytecode = True
 TARGET = "x86_64-unknown-linux-gnu"
@@ -289,7 +291,7 @@ def execute(args, report):
         before[name] = source_snapshot(root, getattr(args, name + "_head"), getattr(args, name + "_tree"))
     save(args.output / "source-before.json", before)
     report["sources"] = {name: {key: value[key] for key in ("head", "tree")} for name, value in before.items()}
-    exact = exact_image_module(args.desktop_source) if args.image_profile == EXACT_IMAGE_PROFILE else None
+    exact = exact_image_module(args.desktop_source, args.image_profile) if args.image_profile in EXACT_IMAGE_PROFILES else None
     if exact:
         report.update(image_profile_descriptor=exact.descriptor(),
                       image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256)
@@ -367,7 +369,7 @@ def execute(args, report):
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--execute", action="store_true")
-    parser.add_argument("--image-profile", choices=(LEGACY_IMAGE_PROFILE, EXACT_IMAGE_PROFILE),
+    parser.add_argument("--image-profile", choices=(LEGACY_IMAGE_PROFILE, *EXACT_IMAGE_PROFILES),
                         default=LEGACY_IMAGE_PROFILE)
     for name in ("desktop", "hepta"):
         parser.add_argument("--" + name + "-source", type=Path, required=True)
@@ -391,12 +393,12 @@ def main(argv=None):
               "features_disabled": False, "profile_overridden": False, "limits_changed": False,
               "fixture_created": False, "executed_binary": False, "native_role_verified": False,
               "persistent_cpu_verified": False, "recovery_verified": False, "g2_complete": False}
-    if args.image_profile == EXACT_IMAGE_PROFILE:
+    if args.image_profile in EXACT_IMAGE_PROFILES:
         # The new schema carries no legacy success field. Original v1
         # consumers cannot credit this as an 8/16 MiB static-profile pass.
         report.pop("static_profile_passed")
         report.pop("limits_changed")
-        report.update(schema="hepta.original-owner-image-entry-build.v1", image_profile=EXACT_IMAGE_PROFILE,
+        report.update(schema="hepta.original-owner-image-entry-build.v1", image_profile=args.image_profile,
                       image_profile_passed=False, legacy_static_profile_passed=False,
                       legacy_limits_unchanged=True, selected_image_limits_differ_from_legacy=True,
                       release_profile_unchanged=True, whole_guest_peak_verified=False,
@@ -416,7 +418,7 @@ def main(argv=None):
     if report.get("output_created"):
         save(args.output / "result.json", report)
     print(json.dumps(report, sort_keys=True))
-    admitted = report.get("image_profile_passed") if args.image_profile == EXACT_IMAGE_PROFILE else report["static_profile_passed"]
+    admitted = report.get("image_profile_passed") if args.image_profile in EXACT_IMAGE_PROFILES else report["static_profile_passed"]
     return 0 if admitted and report.get("source_inputs_unchanged") and "error" not in report else 1
 
 

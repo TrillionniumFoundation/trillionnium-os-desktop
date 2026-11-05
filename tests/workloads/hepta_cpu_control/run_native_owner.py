@@ -68,17 +68,18 @@ def tool(path, expected=None):
     return selected, {"path": str(selected), "bytes": len(content), "sha256": hashlib.sha256(content).hexdigest()}
 
 
-def original_owner_archive_contract():
-    """One source-owned envelope for the pinned base and original a39 image."""
-    exact = inputs.image_module(inputs.EXACT_IMAGE_PROFILE)
+def original_owner_archive_contract(image_profile=inputs.EXACT_IMAGE_PROFILE):
+    """The unchanged A39 archive capacity with one exact selected owner image."""
+    exact = inputs.image_module(image_profile)
+    require(exact is not None, "exact original-owner archive profile required")
     image = exact.descriptor()["image"]
-    require(image["file_bytes"] == 20_138_584, "archive contract requires the reviewed original image length")
+    require(0 < image["file_bytes"] <= 20_138_584, "archive contract exceeds the original A39 image capacity")
     # newc header/name padding is 132 bytes for the owner and 136 for the plan.
     # The larger reviewed compact plan is 140 bytes, already four-byte aligned.
-    maximum = 2_129_504 + image["file_bytes"] + 132 + 136 + 140
+    maximum = 2_129_504 + 20_138_584 + 132 + 136 + 140
     require(maximum == 22_268_496, "fixed original-owner archive budget differs")
     return {"schema": "hepta.original-owner-image-archive.v1",
-            "image_profile": inputs.EXACT_IMAGE_PROFILE,
+            "image_profile": image_profile,
             "image_profile_descriptor_sha256": exact.DESCRIPTOR_SHA256,
             "base_gzip_sha256": "86be65ab9234cd20ea6ec8d44a12b8765fd7a3e241fde920c71b3621ca0047f3",
             "base_gzip_bytes": 1_107_990, "base_raw_bytes": 2_129_920,
@@ -112,8 +113,8 @@ def build_initramfs(original, owner, plan, replay, image_profile=inputs.PROFILE)
             "original base initramfs must contain one test directory")
     contract = None
     encoded_plan = (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()
-    if image_profile == inputs.EXACT_IMAGE_PROFILE:
-        contract = original_owner_archive_contract()
+    if image_profile in inputs.EXACT_IMAGE_PROFILES:
+        contract = original_owner_archive_contract(image_profile)
         require(len(original) == contract["base_gzip_bytes"]
                 and hashlib.sha256(original).hexdigest() == contract["base_gzip_sha256"]
                 and len(raw) == contract["base_raw_bytes"]
@@ -314,7 +315,7 @@ def execute(args, report):
     if exact:
         report.update(image_profile_descriptor=exact.descriptor(),
                       image_profile_descriptor_sha256=exact.DESCRIPTOR_SHA256,
-                      initramfs_archive_contract=original_owner_archive_contract())
+                      initramfs_archive_contract=original_owner_archive_contract(args.image_profile))
     freeze_bytes(output / "source-review.json",
                  inputs.read(args.source_review, 1024**2, args.expected_source_review_sha256))
     save(output / "source-before.json", snapshots)
@@ -431,7 +432,7 @@ def main(argv=None):
               "unbounded_persistent_cpu_verified": False, "power_loss_verified": False,
               "hardware_qualification": False, "production_ready": False, "g2_complete": False,
               "started_at_utc": datetime.now(timezone.utc).isoformat()}
-    if args.image_profile == inputs.EXACT_IMAGE_PROFILE:
+    if args.image_profile in inputs.EXACT_IMAGE_PROFILES:
         report.update(schema="hepta.original-owner-image-runtime.v1", image_profile=args.image_profile,
                       legacy_static_profile_passed=False, legacy_limits_unchanged=True,
                       whole_guest_peak_verified=False, global_memory_reserve=False)

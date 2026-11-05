@@ -24,12 +24,13 @@ else
 fi
 run_dir=$(cd "$run_dir" && pwd)
 trusted_profile=
-case "${HEPTA_G1C_TRUSTED_OBSERVE:-0}:${HEPTA_G1D_TRUSTED_CONTROL:-0}:${HEPTA_G2_TRUSTED_DAEMON:-0}:${HEPTA_G2_ORIGINAL_OWNER_A39_V1:-0}" in
-    0:0:0:0) ;;
-    1:0:0:0) trusted_profile=g1c-trusted-observe ;;
-    0:1:0:0) trusted_profile=g1d-trusted-control ;;
-    0:0:1:0) trusted_profile=g2-trusted-daemon ;;
-    0:0:0:1) trusted_profile=g2-original-owner-a39-v1 ;;
+case "${HEPTA_G1C_TRUSTED_OBSERVE:-0}:${HEPTA_G1D_TRUSTED_CONTROL:-0}:${HEPTA_G2_TRUSTED_DAEMON:-0}:${HEPTA_G2_ORIGINAL_OWNER_A39_V1:-0}:${HEPTA_G2_ORIGINAL_OWNER_PUBLISH_V1:-0}" in
+    0:0:0:0:0) ;;
+    1:0:0:0:0) trusted_profile=g1c-trusted-observe ;;
+    0:1:0:0:0) trusted_profile=g1d-trusted-control ;;
+    0:0:1:0:0) trusted_profile=g2-trusted-daemon ;;
+    0:0:0:1:0) trusted_profile=g2-original-owner-a39-v1 ;;
+    0:0:0:0:1) trusted_profile=g2-original-owner-publish-v1 ;;
     *) echo "trusted profile flags must be 0 or 1; select at most one G1-c/G1-d/G2 profile" >&2; exit 2 ;;
 esac
 if [[ -n "$trusted_profile" ]]; then
@@ -111,6 +112,8 @@ elif [[ ${HEPTA_G2_TRUSTED_DAEMON:-0} == 1 ]]; then
     command+=(HEPTA_G2_TRUSTED_DAEMON=1 FEATURES=g2-trusted-daemon)
 elif [[ ${HEPTA_G2_ORIGINAL_OWNER_A39_V1:-0} == 1 ]]; then
     command+=(HEPTA_G2_ORIGINAL_OWNER_A39_V1=1 FEATURES=g2-original-owner-a39-v1)
+elif [[ ${HEPTA_G2_ORIGINAL_OWNER_PUBLISH_V1:-0} == 1 ]]; then
+    command+=(HEPTA_G2_ORIGINAL_OWNER_PUBLISH_V1=1 FEATURES=g2-original-owner-publish-v1)
 fi
 printf '%q ' "${command[@]}" > "$run_dir/command.sh"
 printf '\n' >> "$run_dir/command.sh"

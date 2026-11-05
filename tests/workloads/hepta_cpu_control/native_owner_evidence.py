@@ -293,16 +293,17 @@ def evaluate(raw, code, timed_out, excessive, scenario, nonce, elf_info, image_p
     require(type(code) is int and code == 33 and timed_out is False and excessive is False,
             "QEMU must finish the bounded actual boot with the original success exit")
     lines, events = parse(raw, scenario, nonce)
-    require(image_profile in ("g2-trusted-daemon", "g2-original-owner-a39-v1"), "unknown owner image profile")
+    require(image_profile in ("g2-trusted-daemon", "g2-original-owner-a39-v1", "g2-original-owner-publish-v1"), "unknown owner image profile")
     exact = None
     profile_record = None
-    if image_profile == "g2-original-owner-a39-v1":
+    if image_profile in ("g2-original-owner-a39-v1", "g2-original-owner-publish-v1"):
         import importlib.util
         from pathlib import Path
         path = Path(__file__).resolve().parents[3] / "support/build/original_owner_image.py"
         spec = importlib.util.spec_from_file_location("g2_evidence_exact_owner_image", path)
         exact = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(exact)
+        exact = exact.select_profile(image_profile)
         image = exact.descriptor()["image"]
         require(elf_info["bytes"] == image["file_bytes"] and elf_info["sha256"] == image["sha256"],
                 "exact image oracle received another original ELF identity")

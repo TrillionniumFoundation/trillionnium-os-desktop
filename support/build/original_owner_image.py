@@ -1,7 +1,8 @@
-"""One source-owned original owner image profile; no caller-supplied budgets.
+"""Closed source-owned owner image versions; no caller-supplied budgets.
 
-This profile admits only the already measured a39 original ELF. It does not
-claim a runtime result, a whole-guest memory bound, or the legacy 8/16 MiB gate.
+The original a39 descriptor is unchanged. A corrected owner must fit within
+that version's F/L/S capacities and bind its own measured complete ELF. Neither
+version claims the legacy 8/16 MiB gate or whole-guest/runtime qualification.
 The kernel build script independently checks the complete digest before embed.
 """
 
@@ -19,6 +20,55 @@ RUST_PROFILE_PATH = ROOT / "kernel/asterinas/kernel/core/src/process/program_loa
 BUILD_SCHEMA = "hepta.original-owner-image-entry-build.v1"
 INITIAL_MANIFEST_SCHEMA = "hepta.g2-original-owner-initial.v1"
 RUNTIME_SCHEMA = "hepta.original-owner-image-runtime.v1"
+PUBLICATION_PROFILE = "g2-original-owner-publish-v1"
+IMAGE_PROFILES = (PROFILE, PUBLICATION_PROFILE)
+
+
+def profile_inputs(profile):
+    """Select only a reviewed source version, never a supplied path or budget."""
+    if profile == PROFILE:
+        return (DESCRIPTOR_PATH, DESCRIPTOR_SHA256, RUST_PROFILE_PATH,
+                "HEPTA_G2_ORIGINAL_OWNER_A39_V1")
+    if profile == PUBLICATION_PROFILE:
+        return (ROOT / "tests/workloads/hepta_cpu_control/publication-owner-image-profile.json",
+                "59ecc27bffb2b8c1e77236f29cab83d8a3e6479f9390a5fa3861ae94b4cd292a",
+                ROOT / "kernel/asterinas/kernel/core/src/process/program_loader/elf/publication_owner_profile.rs",
+                "HEPTA_G2_ORIGINAL_OWNER_PUBLISH_V1")
+    raise ValueError("unknown original-owner image profile")
+
+
+class SelectedProfile:
+    """Bind the existing image checks to one name from the closed version set."""
+
+    BUILD_SCHEMA = BUILD_SCHEMA
+    INITIAL_MANIFEST_SCHEMA = INITIAL_MANIFEST_SCHEMA
+    RUNTIME_SCHEMA = RUNTIME_SCHEMA
+
+    def __init__(self, profile):
+        _, self.DESCRIPTOR_SHA256, _, self.KERNEL_FLAG = profile_inputs(profile)
+        self.PROFILE = profile
+
+    def descriptor(self):
+        return descriptor(self.PROFILE)
+
+    def bind_source_review(self, review):
+        return bind_source_review(review, self.PROFILE)
+
+    def bind_build(self, sources, entry, lock_sha256, toolchain_manifest_sha256, toolchain):
+        return bind_build(sources, entry, lock_sha256, toolchain_manifest_sha256, toolchain, self.PROFILE)
+
+    def inspect_elf(self, data):
+        return inspect_elf(data, self.PROFILE)
+
+    def manifest_fields(self):
+        return manifest_fields(self.PROFILE)
+
+    def kernel_selection_record(self):
+        return kernel_selection_record(self.PROFILE)
+
+
+def select_profile(profile):
+    return SelectedProfile(profile)
 
 
 def require(condition, message):
@@ -26,38 +76,60 @@ def require(condition, message):
         raise ValueError(message)
 
 
-def descriptor():
+def descriptor(profile=PROFILE):
     # There is no external descriptor path option. This named version binds
     # the exact tracked JSON bytes and cross-checks independently compiled Rust
     # constants; an arbitrary source-review object cannot change the budget.
-    content = DESCRIPTOR_PATH.read_bytes()
-    require(len(content) <= 16 * 1024 and hashlib.sha256(content).hexdigest() == DESCRIPTOR_SHA256,
+    path, expected_sha256, rust_path, _ = profile_inputs(profile)
+    content = path.read_bytes()
+    require(len(content) <= 16 * 1024 and hashlib.sha256(content).hexdigest() == expected_sha256,
             "source-owned original-owner descriptor differs from its reviewed version")
     value = json.loads(content)
-    require(value["schema"] == "hepta.original-owner-image-profile.v1" and value["profile"] == PROFILE,
+    require(value["schema"] == "hepta.original-owner-image-profile.v1" and value["profile"] == profile,
             "original-owner descriptor profile/version differs")
     declarations = re.findall(r'\bpub const ([A-Z0-9_]+): (&str|usize)\s*=\s*("[^"\r\n]*"|[0-9_]+);',
-                              RUST_PROFILE_PATH.read_text())
+                              rust_path.read_text())
     constants = {name: json.loads(raw) if kind == "&str" else int(raw.replace("_", ""))
                  for name, kind, raw in declarations}
     image = value["image"]
-    expected = {"PROFILE": PROFILE, "OWNER_SHA256": image["sha256"], "FILE_BYTES": image["file_bytes"],
+    expected = {"PROFILE": profile, "OWNER_SHA256": image["sha256"], "FILE_BYTES": image["file_bytes"],
                 "MAPPED_BYTES": image["mapped_load_bytes"], "MAX_SEGMENT_BYTES": image["largest_load_range_bytes"],
                 "LOAD_SEGMENTS": image["load_segments"], "INITIAL_ROLES": len(value["roles"])}
     require(len(declarations) == len(expected) and constants == expected,
             "kernel constants and source-owned original-owner descriptor differ")
+    if profile != PROFILE:
+        require_within_a39_capacities(value)
     return value
 
 
-def bind_source_review(review):
-    value = descriptor()
+def require_within_a39_capacities(value):
+    """A source repair can change exact bytes, never enlarge the A39 capacities."""
+    baseline = descriptor()
+    image = value["image"]
+    for key in ("file_bytes", "mapped_load_bytes", "largest_load_range_bytes"):
+        require(type(image[key]) is int and 0 < image[key] <= baseline["image"][key],
+                "corrected owner exceeds original A39 capacity: " + key)
+    require(type(image["load_segments"]) is int and image["load_segments"] == 4
+            and value["roles"] == baseline["roles"]
+            and value["guest_memory_bytes"] == baseline["guest_memory_bytes"]
+            and value["legacy_profile"] == baseline["legacy_profile"],
+            "corrected owner changes original role, guest or legacy capacity")
+    known = (2 * image["file_bytes"] + 4 * image["mapped_load_bytes"]
+             + 2 * image["largest_load_range_bytes"] + 4 * 4096 + 4 * 8 * 1024**2)
+    require(value["known_image_verification_and_full_stack_bytes"] == known
+            and known <= baseline["known_image_verification_and_full_stack_bytes"],
+            "corrected owner changes original image verification capacity")
+
+
+def bind_source_review(review, profile=PROFILE):
+    value = descriptor(profile)
     for key in ("hepta", "entry", "userspace_toolchain"):
         require(review.get(key) == value[key], "exact image profile source review differs: " + key)
     return value
 
 
-def bind_build(sources, entry, lock_sha256, toolchain_manifest_sha256, toolchain):
-    value = descriptor()
+def bind_build(sources, entry, lock_sha256, toolchain_manifest_sha256, toolchain, profile=PROFILE):
+    value = descriptor(profile)
     require(sources.get("hepta") == value["hepta"], "image profile requires the exact original Hepta source/tree")
     selected = {key: entry.get(key) for key in ("package", "name", "kind", "path")}
     selected["sha256"] = entry.get("entry_sha256")
@@ -69,8 +141,8 @@ def bind_build(sources, entry, lock_sha256, toolchain_manifest_sha256, toolchain
     return value
 
 
-def inspect_elf(data):
-    value = descriptor()
+def inspect_elf(data, profile=PROFILE):
+    value = descriptor(profile)
     image = value["image"]
     require(type(data) is bytes and len(data) == image["file_bytes"], "original-owner exact file length differs")
     sha256 = hashlib.sha256(data).hexdigest()
@@ -111,17 +183,18 @@ def inspect_elf(data):
     return {"entry": entry, "bytes": len(data), "loads": loads, "sha256": sha256}
 
 
-def manifest_fields():
+def manifest_fields(profile=PROFILE):
+    _, expected_sha256, _, _ = profile_inputs(profile)
     return {"schema": INITIAL_MANIFEST_SCHEMA,
-            "image_profile_descriptor_sha256": DESCRIPTOR_SHA256,
-            "image_profile_descriptor": descriptor(), "legacy_limits_unchanged": True,
+            "image_profile_descriptor_sha256": expected_sha256,
+            "image_profile_descriptor": descriptor(profile), "legacy_limits_unchanged": True,
             "legacy_static_profile_passed": False, "whole_guest_peak_verified": False,
             "global_memory_reserve": False, "production_ready": False}
 
 
-def kernel_selection_record():
-    image = descriptor()["image"]
-    return ("[hepta-g2] original owner image profile selected: profile=" + PROFILE
+def kernel_selection_record(profile=PROFILE):
+    image = descriptor(profile)["image"]
+    return ("[hepta-g2] original owner image profile selected: profile=" + profile
             + " sha256=" + image["sha256"] + " file_bytes=" + str(image["file_bytes"])
             + " mapped_bytes=" + str(image["mapped_load_bytes"])
             + " max_segment_bytes=" + str(image["largest_load_range_bytes"])
