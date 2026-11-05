@@ -1,0 +1,40 @@
+{
+  "android_user": 0,
+  "apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+  "decision_owner": "root",
+  "each_fixture_started_and_ended_empty": true,
+  "frozen_checkpoint11_modified": false,
+  "frozen_gate_literal": "Start/pause/resume an owned timer and observe completion.",
+  "not_qualified_by_this_bundle": [
+    "clock.alarm actual user Dismiss",
+    "clock.persist alarm/timezone behavior",
+    "desktop notification Open/Dismiss",
+    "physical audio",
+    "whole Clock production readiness"
+  ],
+  "old_APK_business_credit_inherited": false,
+  "original_scheduler_false_fields_preserved": true,
+  "package": "com.android.deskclock",
+  "registry_modified": false,
+  "same_numeric_ID_does_not_mean_same_object_across_trials": true,
+  "schema": "pocket4-current-clock-timer-review-proposal/v1",
+  "separate_fixtures": [
+    {
+      "actual_scope": "UI create/start/pause, normal close/reopen preserving paused remaining, resume/pause/reset/delete; independent pending sequence0,1,0,1,0,0.",
+      "duration_ms": 900000,
+      "original_result_sha256": "bc3fd55145039228f27f7ef0a23e48f899cc4b1a64d0f8fb06cdc9e4545feebb",
+      "public_manifest_sha256": "8281910ffd94acee97292d635bd94f0e76eaea1c959f661ec756a534c0ae58e2",
+      "scheduler_review_sha256": "1215cc30cb7d21b29b42f06ef3a5525d7fd93412641e07b342de5beb4c95cb52",
+      "trial": "Timer04"
+    },
+    {
+      "actual_scope": "UI create/start, normal close, actual persisted expiry and active own NMS record, native main-window Stop/reset and UI delete; pending sequence0,1,0,0.",
+      "duration_ms": 60000,
+      "original_result_sha256": "6b584428d4145416d26c72400ab966b9be8df185aec35655177ad799f62ea86e",
+      "saved_review_sha256": "72f702d90cb2d16a5c680cdf7fa353c370874a0e8222c96f7b3789cc24d35aa5",
+      "trial": "Expiry06"
+    }
+  ],
+  "suggested_scope": "clock.timer only, using both current-APK fixtures together",
+  "uid": 10063
+}

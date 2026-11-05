@@ -1,0 +1,27 @@
+{
+  "schema": "pocket4-expiry06-source-review-v1",
+  "controller_sha256": "fba956b1b2a681d5181b60ab5fccad55964a46029b89970ad1c9ad646a0776fc",
+  "pre_review_reconstructed_matches_observed_hash": "4e51f6f9ea4f35b9e9b19db89a658af986bb952df5638674c2e635044fb7c27f",
+  "patch_sha256": "a7296157ad94d8e6258882979bc7377d6694c0a83025aae08bd07b60cd722a24",
+  "actual_Timer_smali_sha256": "999de734494ec038b09dd43dd3c119483cb194a58f2f9ebf872861ebd96c6e3c",
+  "current_build_result_sha256": "4b4e23003f52b80f896cff316b930095ef4dd959e0fdbcb99b2ea0fc674b6881",
+  "current_build_all_IR_proof_sha256": "07aef12618bdf82f10c07b58872f41d4684aa5760a6113e9dc418b1179adcc14",
+  "actual_native_ActionRunner_smali_sha256": "548dc51db06a267849eedf250847676f1f97641d58f73a3de0b940e9c22e0d42",
+  "actual_native_Python_wrapper_sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66",
+  "current_native_APK_sha256": "a5368465d5f6faef3299bf1ba6d6bde268cc8b37c72401c6e668872b24725058",
+  "key_contracts": [
+    "Timer.pause stores getRemainingTime without a positive clamp; prior same-ID start/remaining plus pre/post uptime bound failure cleanup including legitimate negatives.",
+    "Eight explicitly reviewed no-action error branches plus actual ControlError type, false outcome_unknown, restoration=true and post-exception guard are required before pending is cleared; other errors remain unknown.",
+    "Native stop actual_target must match every field of the fresh selector, including class and label.",
+    "Native ACK only clears input pending; exact same-ID reset and allowed task topology clear timer effect.",
+    "One absolute 45-second cleanup_until is shared by failure cleanup and final guard/readback; no second reserve.",
+    "The absence of a new ExpiredTimersActivity is recorded; normal launcher shows the exact owned expired timer, and does not impersonate a notification click."
+  ],
+  "not_qualified": [
+    "No new actual device result before execution.",
+    "No old e4ff business inheritance.",
+    "No desktop popup, host notification action or audible speaker qualification."
+  ],
+  "frozen_parent_controller_sha256": "59598a298f768bd63f535efb5216233f916383bc4411e7d98531e3d078a6b69b",
+  "parent_file_modified": false
+}

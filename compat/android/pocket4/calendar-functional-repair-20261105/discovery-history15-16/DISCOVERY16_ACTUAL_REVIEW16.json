@@ -1,0 +1,112 @@
+{
+  "actual_collect_method": {
+    "sha256": "f12a578248a1647f47767b96c780a258a49e10c1b3d63bc851d8ef82be8a53cb",
+    "text": ".method private collect(Landroid/view/accessibility/AccessibilityNodeInfo;Ljava/util/List;IZ)V\n    .registers 11\n    .annotation system Ldalvik/annotation/Signature;\n        value = {\n            \"(\",\n            \"Landroid/view/accessibility/AccessibilityNodeInfo;\",\n            \"Ljava/util/List<\",\n            \"Landroid/view/accessibility/AccessibilityNodeInfo;\",\n            \">;IZ)V\"\n        }\n    .end annotation\n\n    .line 59\n    const/4 v0, 0x1\n\n    if-nez p1, :cond_9\n\n    iget p1, p0, Llocal/pocket4/actions/v2/ActionRunner;->nullChildren:I\n\n    add-int/2addr p1, v0\n\n    iput p1, p0, Llocal/pocket4/actions/v2/ActionRunner;->nullChildren:I\n\n    return-void\n\n    :cond_9\n    iget-object v1, p0, Llocal/pocket4/actions/v2/ActionRunner;->retained:Ljava/util/List;\n\n    invoke-interface {v1, p1}, Ljava/util/List;->add(Ljava/lang/Object;)Z\n\n    .line 60\n    const/16 v1, 0x64\n\n    if-ge p3, v1, :cond_50\n\n    iget v1, p0, Llocal/pocket4/actions/v2/ActionRunner;->visited:I\n\n    const/16 v2, 0x7d0\n\n    if-lt v1, v2, :cond_19\n\n    goto :goto_50\n\n    :cond_19\n    iget v1, p0, Llocal/pocket4/actions/v2/ActionRunner;->visited:I\n\n    add-int/2addr v1, v0\n\n    iput v1, p0, Llocal/pocket4/actions/v2/ActionRunner;->visited:I\n\n    .line 61\n    invoke-virtual {p1}, Landroid/view/accessibility/AccessibilityNodeInfo;->isVisibleToUser()Z\n\n    move-result v1\n\n    if-eqz v1, :cond_2d\n\n    iget v1, p0, Llocal/pocket4/actions/v2/ActionRunner;->visible:I\n\n    add-int/2addr v1, v0\n\n    iput v1, p0, Llocal/pocket4/actions/v2/ActionRunner;->visible:I\n\n    :goto_29\n    invoke-interface {p2, p1}, Ljava/util/List;->add(Ljava/lang/Object;)Z\n\n    goto :goto_30\n\n    :cond_2d\n    if-eqz p4, :cond_30\n\n    goto :goto_29\n\n    .line 62\n    :cond_30\n    :goto_30\n    invoke-virtual {p1}, Landroid/view/accessibility/AccessibilityNodeInfo;->getChildCount()I\n\n    move-result v1\n\n    if-le v1, v2, :cond_39\n\n    iput-boolean v0, p0, Llocal/pocket4/actions/v2/ActionRunner;->truncated:Z\n\n    return-void\n\n    .line 63\n    :cond_39\n    const/4 v3, 0x0\n\n    :goto_3a\n    if-ge v3, v1, :cond_4f\n\n    iget v4, p0, Llocal/pocket4/actions/v2/ActionRunner;->visited:I\n\n    if-lt v4, v2, :cond_43\n\n    iput-boolean v0, p0, Llocal/pocket4/actions/v2/ActionRunner;->truncated:Z\n\n    goto :goto_4f\n\n    :cond_43\n    invoke-virtual {p1, v3}, Landroid/view/accessibility/AccessibilityNodeInfo;->getChild(I)Landroid/view/accessibility/AccessibilityNodeInfo;\n\n    move-result-object v4\n\n    add-int/lit8 v5, p3, 0x1\n\n    invoke-direct {p0, v4, p2, v5, p4}, Llocal/pocket4/actions/v2/ActionRunner;->collect(Landroid/view/accessibility/AccessibilityNodeInfo;Ljava/util/List;IZ)V\n\n    add-int/lit8 v3, v3, 0x1\n\n    goto :goto_3a\n\n    .line 64\n    :cond_4f\n    :goto_4f\n    return-void\n\n    .line 60\n    :cond_50\n    :goto_50\n    iput-boolean v0, p0, Llocal/pocket4/actions/v2/ActionRunner;->truncated:Z\n\n    return-void\n.end method"
+  },
+  "actual_control_dispatches": 0,
+  "actual_result": {
+    "bytes": 11042,
+    "path": "calendar-repair08/discovery16/actual-result16-original.json",
+    "sha256": "f490e5fafd553b8a1f6ca93ab96bffae626a072c209adb714719dc0e2bdf5b80"
+  },
+  "baseline_tasks": [
+    851
+  ],
+  "failed_preflight": {
+    "null_child_count": 1,
+    "semantic_controls_available": false,
+    "snapshot_complete": false,
+    "tree_status": "incomplete",
+    "truncated": false,
+    "visible_count": 23,
+    "visited_count": 24
+  },
+  "initial": {
+    "null_child_count": 0,
+    "semantic_controls_available": true,
+    "snapshot_complete": true,
+    "tree_status": "available",
+    "truncated": false,
+    "visible_count": 24,
+    "visited_count": 25
+  },
+  "native_source": {
+    "bytes": 132822,
+    "path": "native-action-source08/actual01/smali/local/pocket4/actions/v2/ActionRunner.smali",
+    "sha256": "548dc51db06a267849eedf250847676f1f97641d58f73a3de0b940e9c22e0d42"
+  },
+  "new_event_target_present_and_unchanged": true,
+  "normal_close_tasks": [
+    1001
+  ],
+  "old15_and16_initial_24_nodes_equal_except_connection_id": true,
+  "original_failure_preserved": true,
+  "proposed_not_executed": {
+    "acceptance_unchanged": "complete=true/null0/no truncation plus full 24-node equality, task/WM/context/geometry and whole frame/scope hashes before one unchanged snapshot-tap.",
+    "incomplete_allowed_only_for_waiting": "Same single absent focused content View; all remaining node fields/order, target and owned window unchanged; null_child_count=1; truncated=false.",
+    "maximum_first_input_readonly_samples": 6,
+    "other_change_or_unknown": "Stop immediately; no input replay, no additional task or lease.",
+    "required_consecutive_complete_samples": 2
+  },
+  "provider_eight_tables_zero": true,
+  "remaining_23_nodes_ordered_byte_semantics_equal_except_connection_id": true,
+  "retained_export": {
+    "bytes": 136461,
+    "path": "calendar-repair08/discovery16/retained-records16-original.json",
+    "sha256": "e2b32e9787583af6a85ded1df9697c814d291bee1e631e6460da11f34c15496f"
+  },
+  "same_calendar_root_and_selected_window_package_geometry_focus": true,
+  "schema": "calendar-discovery16-retained-completeness-diagnosis/v1",
+  "source_bound_cause": "The traversal encountered one null child. The actual collect method increments nullChildren only for a null node passed by getChild. No traversal truncation occurred. The target Button was still present.",
+  "source_records": {
+    "failed_preflight": {
+      "bytes": 20970,
+      "path": "calendar-repair08/discovery16/retained-records16/025-core-discover-01-open-new-complete-native-first.json",
+      "sha256": "c91fbb176208ae5c1e9210ba61a28653299d9e4d2c421e562dbb50363403bd7d"
+    },
+    "initial": {
+      "bytes": 25003,
+      "path": "calendar-repair08/discovery16/retained-records16/014-first-use-calendar.json",
+      "sha256": "d4344611d030463af52c88e69819754be8028e6812d1f9fe2a6630b6c969241b"
+    }
+  },
+  "underlying_reason_for_getChild_null": "Not captured; no causal claim about Binder, timing, Toast, hardware or the application implementation.",
+  "unique_missing_node": {
+    "bounds": "[0,121][1200,1497]",
+    "bounds_array": [
+      0,
+      121,
+      1200,
+      1497
+    ],
+    "checked": false,
+    "class": "android.view.View",
+    "clickable": true,
+    "content-desc": "",
+    "editable": false,
+    "enabled": true,
+    "focused": true,
+    "hint": "",
+    "important_for_accessibility": true,
+    "package": "com.android.calendar",
+    "password": false,
+    "resource-id": "",
+    "scrollable": false,
+    "selected": false,
+    "showing-hint": false,
+    "source": "native_accessibility",
+    "supported_actions": [
+      2,
+      4,
+      8,
+      16,
+      32,
+      64,
+      16908342
+    ],
+    "text": "",
+    "value": null,
+    "visible": true
+  },
+  "whole_app_ready": false
+}

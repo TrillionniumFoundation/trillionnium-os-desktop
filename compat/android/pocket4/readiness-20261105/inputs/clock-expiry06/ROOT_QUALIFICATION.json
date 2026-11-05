@@ -1,0 +1,75 @@
+{
+  "checks_supported": {
+    "clock.timer": "passed"
+  },
+  "current_apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+  "expiry06_original": {
+    "bytes": 38001,
+    "sha256": "6b584428d4145416d26c72400ab966b9be8df185aec35655177ad799f62ea86e"
+  },
+  "expiry06_private_saved_export": {
+    "bytes": 255838,
+    "sha256": "41a9ffd9b73efc62efa48c533c543363b7baab35083241ff3f2416dfd9c596e6"
+  },
+  "expiry06_public_manifest": {
+    "bytes": 5129,
+    "sha256": "9a36e7680d1019cda3282776f80e4a751d253df1e226ff178ed1c48e009769e8"
+  },
+  "frozen_gate_literal": "Start/pause/resume an owned timer and observe completion.",
+  "independently_rederived": {
+    "actual_native_Stop_same_ID_reset_and_UI_delete": true,
+    "all_pending_and_owned_tasks_clean": true,
+    "expiry06_current_pending_sequence": [
+      0,
+      1,
+      0,
+      0
+    ],
+    "expiry06_duration_ms": 60000,
+    "expiry06_observed_after_due_ms": 1037,
+    "expiry06_protected_before_after_identical_except_observed_timestamp": true,
+    "owned_active_notification_sequence": [
+      0,
+      1,
+      0
+    ],
+    "timer04_after_resume_pause_ms": 881985,
+    "timer04_current_pending_sequence": [
+      0,
+      1,
+      0,
+      1,
+      0,
+      0
+    ],
+    "timer04_paused_remaining_reopened_ms": 891266,
+    "timer04_start_pause_reopen_resume_reset_delete": true
+  },
+  "new_device_operations": 0,
+  "not_qualified": [
+    "clock.alarm Dismiss",
+    "clock.persist alarm/timezone",
+    "Host notification interaction",
+    "Physical audio",
+    "Whole-App stability",
+    "Whole Clock release scope"
+  ],
+  "original_scheduler_false_fields_preserved": true,
+  "review_rationale": "The frozen timer feature checklist is covered by two independently owned fixtures on the exact same current APK and epoch. Timer04 proves the controls and actual rescheduled foreground-service deadline; Expiry06 proves the real expiry/service/notification and same-ID Stop/reset/delete path. Neither fixture is represented as the other, and the repeated numeric ID0 is not a shared object identity.",
+  "reviewed_at_utc": "2026-11-05T23:02:17.288829+00:00",
+  "schema": "clock-current433ff-timer-root-qualification/v1",
+  "separate_fixtures_and_durations_explicit": true,
+  "timer04_original": {
+    "bytes": 37124,
+    "sha256": "bc3fd55145039228f27f7ef0a23e48f899cc4b1a64d0f8fb06cdc9e4545feebb"
+  },
+  "timer04_prior_root_review": {
+    "bytes": 1627,
+    "sha256": "50d96640bf0b9607df0183b26172f9036374a3e7a4d0da114b1bf968dacf0f19"
+  },
+  "timer04_scheduler_review": {
+    "bytes": 4322,
+    "sha256": "1215cc30cb7d21b29b42f06ef3a5525d7fd93412641e07b342de5beb4c95cb52"
+  },
+  "whole_app_production_ready": false
+}

@@ -1938,6 +1938,141 @@
       "uid": 10064,
       "version_code": 40030,
       "whole_app_production_ready": false
+    },
+    {
+      "actual_scope_completed": true,
+      "android_user": 0,
+      "apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+      "evidence": [
+        {
+          "bytes": 6736,
+          "path": "inputs/clock-expiry06/EXPIRY06_TERMINAL_SELECTED.json",
+          "sha256": "61c47a784e97faeee20ab4d8dc3774847bd0444f84091287a43c79681b9cc59a"
+        },
+        {
+          "bytes": 5379,
+          "path": "inputs/clock-expiry06/INDEPENDENT_SAVED_REVIEW06.json",
+          "sha256": "72f702d90cb2d16a5c680cdf7fa353c370874a0e8222c96f7b3789cc24d35aa5"
+        },
+        {
+          "bytes": 348,
+          "path": "inputs/clock-expiry06/TERMINAL_JOB_SELECTED.json",
+          "sha256": "9a9ad9dc5e1c8d1c5657ce46663075415f1e740974d6a65948d88552b514afcf"
+        },
+        {
+          "bytes": 2702,
+          "path": "inputs/clock-expiry06/ROOT_QUALIFICATION.json",
+          "sha256": "7959376cb7088463a26747b90bc83c5d23fa8031cc3c232aed4e072597706d2d"
+        },
+        {
+          "bytes": 6241,
+          "path": "inputs/clock-timer04/TIMER04_TERMINAL_SELECTED.json",
+          "sha256": "dbbdeffb3382f24355ee667d65f69b905ed8513accfbbf3607418e66ebe6205d"
+        },
+        {
+          "bytes": 4322,
+          "path": "inputs/clock-timer04/SCHEDULER_INDEPENDENT_REVIEW04.json",
+          "sha256": "1215cc30cb7d21b29b42f06ef3a5525d7fd93412641e07b342de5beb4c95cb52"
+        },
+        {
+          "bytes": 1627,
+          "path": "inputs/clock-timer04/ROOT_QUALIFICATION.json",
+          "sha256": "50d96640bf0b9607df0183b26172f9036374a3e7a4d0da114b1bf968dacf0f19"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "clock_current433ff_timer_completion06",
+      "independent_saved_scheduler_reviewed": true,
+      "job_id": "1a1addef7ac-fc05-5b48",
+      "observed_at_utc": "2026-11-05T22:42:42.574016+00:00",
+      "original_scheduler_cancellation_verified": false,
+      "original_state": "CURRENT_CLOCK_TIMER_EXPIRY_STOP_DELETE_VERIFIED_CLEAN",
+      "owned_cleanup_verified": true,
+      "package": "com.android.deskclock",
+      "status": "CURRENT_APK_TIMER_CONTROLS_AND_REAL_COMPLETION_REVIEWED",
+      "two_independent_owned_fixtures": true,
+      "uid": 10063,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "actual_controls_performed": 0,
+      "android_user": 0,
+      "apk_sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f",
+      "business_or_stability_gate_credit": false,
+      "error": "ControlError:INCOMPLETE_TREE_NO_ACTION_TAKEN",
+      "evidence": [
+        {
+          "bytes": 2914,
+          "path": "inputs/calendar-discovery15/TERMINAL_SELECTED.json",
+          "sha256": "c1324a269c0a9425d72672e00809cbe6b856a59f2fdf35d530653f8392602369"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "calendar_discovery15_clean_preinput_failure",
+      "job_id": "1a1adc13181-fc05-5ac5",
+      "limits": "A controller observation boundary prevented input; this is not an observed Calendar business failure. No per-App gate or global business-failure cutoff is added.",
+      "observed_at_utc": "2026-11-05T22:08:12.440333+00:00",
+      "original_state": "FAILED",
+      "owned_cleanup_verified": true,
+      "package": "com.android.calendar",
+      "status": "DISCOVERY_FAILED_BEFORE_CONTROL_EFFECT_WITH_CLEAN_HANDOFF",
+      "uid": 10061,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "actual_controls_performed": 0,
+      "android_user": 0,
+      "apk_sha256": "00cb0b0a3e33a0bf79814a83c3c5900a3c10d9c41719d38e1e146a0ae134a85f",
+      "business_or_stability_gate_credit": false,
+      "error": "RuntimeError:FIRST_OPEN_COMPLETE_NATIVE_TREE_REQUIRED",
+      "evidence": [
+        {
+          "bytes": 2924,
+          "path": "inputs/calendar-discovery16/TERMINAL_SELECTED.json",
+          "sha256": "52a4f35848c98918e51b563d6ee12ef4d7dbbb70061d3b96b068f6a957747f7a"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "calendar_discovery16_clean_preinput_failure",
+      "job_id": "1a1add12551-fc05-5aeb",
+      "limits": "A controller observation boundary prevented input; this is not an observed Calendar business failure. No per-App gate or global business-failure cutoff is added.",
+      "observed_at_utc": "2026-11-05T22:25:37.584161+00:00",
+      "original_state": "FAILED",
+      "owned_cleanup_verified": true,
+      "package": "com.android.calendar",
+      "status": "DISCOVERY_FAILED_BEFORE_CONTROL_EFFECT_WITH_CLEAN_HANDOFF",
+      "uid": 10061,
+      "version_code": 37,
+      "whole_app_production_ready": false
+    },
+    {
+      "actual_business_credit": false,
+      "android_user": 0,
+      "apk_sha256": "347c376f07a4365fa3828ddf9f011994fe527a53fd2f5bd059997ffd3904d46e",
+      "evidence": [
+        {
+          "bytes": 1907,
+          "path": "inputs/gallery-rotation02/TERMINAL_SELECTED.json",
+          "sha256": "f544fb61e39843e0c99689b17a01a1a9dddc3b2b4f89877904a0fec7fb3f7539"
+        },
+        {
+          "bytes": 735,
+          "path": "inputs/gallery-rotation02/ROOT_TERMINAL_REVIEW.json",
+          "sha256": "074fe23298cfd86bf1d7bfdf3fc90958744897b52df38b4d81ce7717ebc574d8"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "gallery_rotation02_preinput_failure_clean",
+      "observed_at_utc": "2026-11-05T22:15:05.399771+00:00",
+      "original_state": "FAILED",
+      "owned_cleanup_verified": true,
+      "package": "com.android.gallery3d",
+      "status": "PREINPUT_SELECTOR_FAILURE_WITH_EXACT_FIXTURE_CLEANUP",
+      "uid": 10064,
+      "version_code": 40030,
+      "whole_app_production_ready": false
     }
   ],
   "gate_promotion_from_progress": false,

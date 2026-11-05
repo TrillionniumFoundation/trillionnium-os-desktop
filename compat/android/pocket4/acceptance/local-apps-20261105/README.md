@@ -1,6 +1,6 @@
 # Pocket4 local App business acceptance — 2026-11-05
 
-Current checkpoint11 device cutoff: **21:54:28 UTC**. Earlier sections retain
+Current checkpoint12 device cutoff: **22:42:42 UTC**. Earlier sections retain
 their chronological results and binary-specific limits. Current Clock is433ff;
 older e4ff timer results remain historical. No whole App is production ready.
 
@@ -178,8 +178,20 @@ notification Open/Dismiss interaction and the complete alarm gate remain open.
 delete. Paused891266ms persisted exactly; the second pause was881985ms and reset
 returned900000ms. Tasks996/997 closed normally and the timer/stopwatch state was
 empty. Independent saved scheduler analysis proves0→1→0→1→0→0; the original
-conservative scheduler field is retained. Current identity/UI/lifecycle pass;
-timer completion on433ff, alarm/timezone, audio and whole release do not.
+conservative scheduler field is retained.
+
+[Expiry06](clock-alarm-dispatch/expiry06/README.md) separately observed a real
+60-second completion on the same433ff APK. The timer reached its expired state
+1,037ms after the scheduled deadline, its exact notification was active, and
+one native Stop reset that same timer before UI deletion. Current scheduler
+records independently show0→1→0→0; final notifications, timer state and owned
+tasks were empty. Tasks1003/1004 closed normally. The original scheduler false
+field remains unchanged beside the separate saved review.
+
+These two independently owned fixtures now pass clock.timer alongside current
+identity/UI/lifecycle. They do not represent a single paused/resumed timer
+subsequently allowed to expire. Alarm/timezone, desktop Open/Dismiss, physical
+audio, whole-App stability and release remain open.
 
 ## Gallery rotation setup and completed exact cleanup
 
@@ -189,6 +201,22 @@ once; the original cleanup02 unknown result was retained and independently
 reconciled by read-only absence proofs. Cleanup03 removed only the remaining
 empty directory/index and temporary helper, preserving original media and
 Gallery permissions/identity. The helper correction was built but uninstalled
-at the cutoff. The accompanying addendum distinguishes original stdout from the
-remote result serialization and labels the ENOENT stack-location inference.
-No Gallery business gate is added by fixture cleanup.
+at the earlier cleanup03 cutoff. The accompanying addendum distinguishes
+original stdout from remote result serialization and labels the ENOENT
+stack-location inference.
+
+[Rotation02](gallery-rotation/rotation02-clean-history/README.md) later seeded
+two owned images but stopped before Open when the button-label selector did not
+match its actual uppercase text. Its original FAILED result remains. Task1000,
+both images, empty directories, exact directory index rows, helper CE/DE state
+and staged APK were removed. No Gallery business gate is added by cleanup.
+
+## Calendar discovery15 and16
+
+[The retained discovery history](../../calendar-functional-repair-20261105/discovery-history15-16/README.md)
+records two failures before any control effect. Discovery15 rejected an
+incomplete action-local native tree; Discovery16 observed one null child in a
+fresh preflight tree. The underlying null-child cause remains unknown. Both
+closed only their owned task, restored baseline851, left all eight Provider
+tables empty and cleared every pending field. They add history without changing
+the accepted Core13 persistence/UI/lifecycle scope.

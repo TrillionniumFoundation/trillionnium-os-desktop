@@ -960,6 +960,67 @@
         "No business qualification from a prior APK is inherited."
       ],
       "version_code": 37
+    },
+    {
+      "android_user": 0,
+      "apk_sha256": "433ff501b92a21bb9265c896add220b52bc16fc4124662eaf45310da99243a0d",
+      "checks": {
+        "clock.timer": "passed"
+      },
+      "evidence": [
+        {
+          "bytes": 6736,
+          "path": "inputs/clock-expiry06/EXPIRY06_TERMINAL_SELECTED.json",
+          "sha256": "61c47a784e97faeee20ab4d8dc3774847bd0444f84091287a43c79681b9cc59a"
+        },
+        {
+          "bytes": 5379,
+          "path": "inputs/clock-expiry06/INDEPENDENT_SAVED_REVIEW06.json",
+          "sha256": "72f702d90cb2d16a5c680cdf7fa353c370874a0e8222c96f7b3789cc24d35aa5"
+        },
+        {
+          "bytes": 348,
+          "path": "inputs/clock-expiry06/TERMINAL_JOB_SELECTED.json",
+          "sha256": "9a9ad9dc5e1c8d1c5657ce46663075415f1e740974d6a65948d88552b514afcf"
+        },
+        {
+          "bytes": 2702,
+          "path": "inputs/clock-expiry06/ROOT_QUALIFICATION.json",
+          "sha256": "7959376cb7088463a26747b90bc83c5d23fa8031cc3c232aed4e072597706d2d"
+        },
+        {
+          "bytes": 6241,
+          "path": "inputs/clock-timer04/TIMER04_TERMINAL_SELECTED.json",
+          "sha256": "dbbdeffb3382f24355ee667d65f69b905ed8513accfbbf3607418e66ebe6205d"
+        },
+        {
+          "bytes": 4322,
+          "path": "inputs/clock-timer04/SCHEDULER_INDEPENDENT_REVIEW04.json",
+          "sha256": "1215cc30cb7d21b29b42f06ef3a5525d7fd93412641e07b342de5beb4c95cb52"
+        },
+        {
+          "bytes": 1627,
+          "path": "inputs/clock-timer04/ROOT_QUALIFICATION.json",
+          "sha256": "50d96640bf0b9607df0183b26172f9036374a3e7a4d0da114b1bf968dacf0f19"
+        }
+      ],
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "id": "root_clock_current433ff_timer_controls_and_completion",
+      "observed_at_utc": "2026-11-05T22:42:42.574016+00:00",
+      "package": "com.android.deskclock",
+      "qualification_scope": "Current APK timer controls, paused-state reopen, actual scheduling/rescheduling, real completion and native Stop/reset/delete, across two separately owned fixtures.",
+      "reviewed_at_utc": "2026-11-05T23:02:17.288829+00:00",
+      "reviewer": "root_actual_results_saved_scheduler_native_ACK_and_cleanup_review",
+      "scope": "scoped",
+      "uid": 10063,
+      "unresolved_findings": [
+        "Two separate fixtures; not one paused/resumed timer subsequently allowed to expire.",
+        "No desktop notification action or physical audio qualification.",
+        "Alarm Dismiss and alarm/timezone persistence remain unqualified.",
+        "Original scheduler_cancellation_verified=false fields remain unchanged; saved reviews are separate.",
+        "Whole-App stability/data/release review remains open."
+      ],
+      "version_code": 37
     }
   ],
   "schema": "pocket4-reviewed-app-gates-v1"
