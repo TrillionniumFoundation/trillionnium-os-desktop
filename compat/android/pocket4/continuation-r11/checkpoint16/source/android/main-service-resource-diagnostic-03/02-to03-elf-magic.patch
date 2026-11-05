@@ -1,0 +1,10 @@
+--- diagnostic02/read_main_service.py
++++ diagnostic03/read_main_service.py
+@@ -136,6 +136,7 @@
+                 first['mode'] & 0o111 and not first['mode'] & 0o022 and
+                 0 < first['size'] <= TOOL_MAX, 'FIXED_SYSTEMCTL_METADATA_BOUND')
+         body = read_bounded(tool, TOOL_MAX, deadline)
++        require(body.startswith(b'\x7fELF'), 'FIXED_SYSTEMCTL_ELF_MAGIC')
+         require(len(body) == first['size'] and metadata(tool) == first, 'SYSTEMCTL_HELD_INPUT_CHANGED')
+         record['tool'] = dict(path=SYSTEMCTL, bytes=len(body), sha256=hashlib.sha256(body).hexdigest(),
+                               metadata=first, binding='current held root-owned ELF; not an invented prior tool SHA')

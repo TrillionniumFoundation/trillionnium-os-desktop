@@ -1,0 +1,25 @@
+--- draft/install_state.py
++++ actual/install_state.py
+@@ -31,15 +31,15 @@
+ QA_ROOT = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-source-01/source')
+ QA_MANIFEST = '6347d21db7018471ddfa96297f54a4bd77aa98b98a59588e3869bacdabd30632'
+ BUILD = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-build-01/build-result.json')
+-BUILD_SHA = None  # PENDING_ACTUAL_TICKET_BUILD_RECEIPT
+-BUILD_BYTES = None  # PENDING_ACTUAL_TICKET_BUILD_RECEIPT
++BUILD_SHA = 'd97e05bb923be43ca427a0526fa581b59534d5c5cb0957f1a402ed0f194ca976'
++BUILD_BYTES = 17389
+ STAGE = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-source-01/stage-result.json')
+-STAGE_SHA = None  # PENDING_ACTUAL_TICKET_BUILD_RECEIPT
+-STAGE_BYTES = None  # PENDING_ACTUAL_TICKET_BUILD_RECEIPT
++STAGE_SHA = 'd4f9e0fcc261769b63b7b883270241597939d45c3a2060c9fbea841e0a4ef821'
++STAGE_BYTES = 1947
+ APK = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-build-01/owned-ticket-qa.apk')
+-APK_SHA = None  # PENDING_ACTUAL_TICKET_BUILD_RECEIPT
+-APK_BYTES = None  # PENDING_ACTUAL_TICKET_BUILD_RECEIPT
+-SIGNER_SHA = None  # PENDING_ACTUAL_TICKET_BUILD_RECEIPT
++APK_SHA = 'b138eee4a638e90e02b4ea55a4cad3a6c5d24f7fb09b9e2536d4378f19a1dbdb'
++APK_BYTES = 24720
++SIGNER_SHA = '91fbef4532e24cce6667f7f049e50ab227c14c622f3f6c7d7b05a3959595138b'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ READER_SHA = '77e6a5056f0de303ab8d81b0864999cdbf5d244442eb31d48c65ce49f4981d9d'
+ GUEST_DIR_NAME = 'pocket4-owned-ticket-qa-'+NONCE

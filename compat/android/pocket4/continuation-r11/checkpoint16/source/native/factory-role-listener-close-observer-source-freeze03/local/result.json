@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "state": "PASS",
+  "scope": "actual extracted fixture observer plus real local socketpair/poll/recvmsg/clock; no role authority or service",
+  "inputs_before": [
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/candidate/admission_controls.cc",
+      "bytes": 28379,
+      "sha256": "2f62cf48ae6fcea36f23fdfacab2e4acaadffaf5712543b8a1b88d0a6791a31e"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/controls/actual_observer.inc",
+      "bytes": 1613,
+      "sha256": "5e7b3074354b95917661c887df203129ab2a42037d71c79d9c637807bbdcf66f"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/controls/observer_controls.cc",
+      "bytes": 5646,
+      "sha256": "0df99f8af8be7401767458e8c34e2bc310e2b223ede816815a3c806131adcd92"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/controls/EXTRACTION.json",
+      "bytes": 387,
+      "sha256": "4db8e8c2f05275d5c7f96f50e0d03b88be983c7fc9b04574d0e124f226e908a8"
+    }
+  ],
+  "inputs_after": [
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/candidate/admission_controls.cc",
+      "bytes": 28379,
+      "sha256": "2f62cf48ae6fcea36f23fdfacab2e4acaadffaf5712543b8a1b88d0a6791a31e"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/controls/actual_observer.inc",
+      "bytes": 1613,
+      "sha256": "5e7b3074354b95917661c887df203129ab2a42037d71c79d9c637807bbdcf66f"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/controls/observer_controls.cc",
+      "bytes": 5646,
+      "sha256": "0df99f8af8be7401767458e8c34e2bc310e2b223ede816815a3c806131adcd92"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/controls/EXTRACTION.json",
+      "bytes": 387,
+      "sha256": "4db8e8c2f05275d5c7f96f50e0d03b88be983c7fc9b04574d0e124f226e908a8"
+    }
+  ],
+  "compiler_before": {
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "bytes": 1027128,
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "compiler_after": {
+    "path": "/usr/bin/x86_64-linux-gnu-g++-13",
+    "bytes": 1027128,
+    "sha256": "52f1ddb33fe78b9441e0f42e9cd22c571f1101938e046c8a26582494e041cc73"
+  },
+  "commands": [
+    {
+      "name": "build",
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-g++-13",
+        "-std=c++17",
+        "-O2",
+        "-Wall",
+        "-Wextra",
+        "-Werror",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/controls/observer_controls.cc",
+        "-o",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/local/observer_controls"
+      ],
+      "started_ns": 1793898420194647171,
+      "finished_ns": 1793898420973248922,
+      "returncode": 0,
+      "stdout": {
+        "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/local/build.stdout",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/local/build.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "run",
+      "argv": [
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/local/observer_controls"
+      ],
+      "started_ns": 1793898420974743611,
+      "finished_ns": 1793898421029913901,
+      "returncode": 0,
+      "stdout": {
+        "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/local/run.stdout",
+        "bytes": 986,
+        "sha256": "1ab5910397483e3c9bb17886913b02b17cfd35f1f065e0c46e8caf7132538b95"
+      },
+      "stderr": {
+        "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-listener-close-observer-work03/local/run.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "Android_execution": false,
+  "root_listener_cases_executed": false,
+  "platform_policy_qualified": false,
+  "Main_actions": 0
+}

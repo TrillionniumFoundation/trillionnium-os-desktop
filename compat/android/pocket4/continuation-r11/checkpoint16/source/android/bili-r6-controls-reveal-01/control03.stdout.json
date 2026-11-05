@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "passed": 11,
+  "controls": [
+    {
+      "case": "complete_hidden_player_is_not_revealed",
+      "passed": true,
+      "controls_revealed_observed": false
+    },
+    {
+      "case": "complete_in_scope_interactive_control_observed",
+      "passed": true,
+      "controls_revealed_observed": true
+    },
+    {
+      "case": "descendant_outside_absolute_player_crop_not_revealed",
+      "passed": true,
+      "controls_revealed_observed": false
+    },
+    {
+      "case": "path_prefix_sibling_not_control_descendant",
+      "passed": true,
+      "controls_revealed_observed": false
+    },
+    {
+      "case": "disabled_control_does_not_establish_reveal",
+      "passed": true,
+      "controls_revealed_observed": false
+    },
+    {
+      "case": "duplicate_control_container_rejected",
+      "passed": true,
+      "rejected": "UNIQUE_CURRENT_REVEAL_CONTROL_ROLE_REQUIRED"
+    },
+    {
+      "case": "partial_tree_not_readback_success",
+      "passed": true,
+      "rejected": "COMPLETE_INSPECTION_REQUIRED"
+    },
+    {
+      "case": "foreign_window_not_readback_success",
+      "passed": true,
+      "rejected": "FOCUSED_BILI_WINDOW_REQUIRED"
+    },
+    {
+      "case": "actual_run_failed_input_keeps_first_error_and_independent_read_no_replay",
+      "passed": true,
+      "Session_IO_is_explicit_seam": true
+    },
+    {
+      "case": "unqualified_course_open_cannot_start_reveal_or_followup",
+      "passed": true
+    },
+    {
+      "case": "old_sequence_object_not_relabelled_after_first_step_failure",
+      "passed": true,
+      "preimage_diagnostic_counterexample_observed": true,
+      "first_and_secondary_errors_unchanged": true,
+      "Session_IO_is_explicit_seam": true
+    }
+  ],
+  "actual_production_functions": [
+    "controls_evidence",
+    "run"
+  ],
+  "synthetic_tree_fixture": true,
+  "Session_IO_explicit_seam_for_two_orchestration_controls": true,
+  "Android_actions": 0,
+  "actual_controls_revealed": false,
+  "input_lifecycle_or_whole_app_qualification": false,
+  "production_sha256": "8836a366f995f07470210c1ab2d6e25e265572bc1c8aed3685f30a94cf7c8a9b",
+  "frozen_fixture_sha256": "fc3d79a94365e86cbfee7c2e3bfc3c2ae8276e6dfefc890783a8a378995b9beb"
+}

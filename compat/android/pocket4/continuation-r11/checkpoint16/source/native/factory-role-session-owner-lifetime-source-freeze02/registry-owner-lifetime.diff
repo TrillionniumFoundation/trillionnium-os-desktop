@@ -1,0 +1,71 @@
+--- preimage/source/role_authorization.cc
++++ candidate/source/role_authorization.cc
+@@ -12,6 +12,7 @@
+ #include <linux/magic.h>
+ #include <linux/nsfs.h>
+ #include <new>
++#include <memory>
+ #include <poll.h>
+ #include <sched.h>
+ #include <stdio.h>
+@@ -448,12 +449,22 @@
+   }
+ };
+ 
+-Registry::~Registry(){delete impl_;}
++Registry::~Registry(){
++  // A foreign CLONE_VM process can reach an inherited RAII destructor. Its
++  // private fdtable does not make the shared Impl/allocator private. Reuse
++  // the same held-proc current-caller check as every mutating owner entry.
++  // Do not clear impl_ on the rejected path: that would also modify the owner.
++  const int before=errno;
++  if(impl_&&impl_->OwnThread()==0)delete impl_;
++  errno=before;
++}
+ int Registry::Initialize(const unsigned char pair[kDigestBytes]) {
+   if(impl_||!pair||!Nonzero(pair,kDigestBytes)||syscall(SYS_gettid)!=getpid())return Error(EINVAL);
+   Impl* value=new(std::nothrow) Impl;if(!value)return Error(ENOMEM);
+-  // Construct under a temporary owner so every failure closes only new FDs.
+-  Registry cleanup;cleanup.impl_=value;value->owner=static_cast<uint32_t>(getpid());
++  // This unexposed construction belongs to this call even before the proc
++  // owner proof is ready. Do not use the public destructor's completed-owner
++  // check to clean a partially initialized object.
++  std::unique_ptr<Impl> cleanup(value);value->owner=static_cast<uint32_t>(getpid());
+   value->self_pidfd.reset(static_cast<int>(syscall(SYS_pidfd_open,static_cast<long>(getpid()),0UL)));
+   if(value->self_pidfd.get()<0)return -1;
+   Descriptor user(ioctl(value->self_pidfd.get(),kGetUserNs,0UL)),pidns(ioctl(value->self_pidfd.get(),kGetPidNs,0UL));struct stat pidns_identity{};
+@@ -461,7 +472,7 @@
+   value->proc.reset(open("/proc",O_PATH|O_DIRECTORY|O_CLOEXEC|O_NOFOLLOW));
+   if(value->proc.get()<0||VerifyProc(value->proc.get(),pidns_identity)<0||Capture(value->proc.get(),value->self_pidfd.get(),&value->self)<0)return -1;
+   if(!RootProfile(value->self.status)||value->self.status.threads!=1)return Error(EPERM);
+-  memcpy(value->pair,pair,kDigestBytes);impl_=value;cleanup.impl_=nullptr;return 0;
++  memcpy(value->pair,pair,kDigestBytes);impl_=cleanup.release();return 0;
+ }
+ int Registry::Begin(Descriptor* connection,const Received& message,Challenge* output) {
+   if(!impl_)return Error(ESHUTDOWN);
+--- preimage/source/role_authorization.h
++++ candidate/source/role_authorization.h
+@@ -94,6 +94,11 @@
+ class Registry {
+  public:
+   Registry() = default;
++  // Only the creating owner thread may destroy Impl. A foreign fork/CLONE_VM
++  // destructor leaves that shared state untouched. This does not authorize
++  // the caller to free or overwrite the Registry object's external storage.
++  // If the held-proc owner check itself fails, destruction fails closed and
++  // leaves resources to the owner's enclosing process-lifetime cleanup.
+   ~Registry();
+   Registry(const Registry&) = delete;
+   Registry& operator=(const Registry&) = delete;
+@@ -114,8 +119,9 @@
+   int IsActive(GrantHandle handle);
+   int Connection(GrantHandle handle) const;
+   int AuthorizeCreate(GrantHandle handle, const Received& message, SnapshotAuthority* output);
+-  // MUST succeed before a role-created snapshot is sent. Clears busy state on
+-  // failure too; a changed/dead subject is closed and never silently renewed.
++  // MUST succeed before a role-created snapshot is sent. A changed/dead
++  // subject is revoked. An owner check can fail before reaching the slot;
++  // the same owner must then Close(handle), as the snapshot wrapper does.
+   int FinishCreate(GrantHandle handle);
+   // Pin the supplied caller task inode/birth within this grant while paused.
+   // The owner sends the acknowledgement, then calls Detach while the original

@@ -1,0 +1,90 @@
+{
+  "schema": 1,
+  "status": "SOURCE_REQUEST_NOT_DISPATCHED",
+  "request": {
+    "bytes": 18806,
+    "sha256": "36184228300039139cb605611226fdf3f48a8864498e669892878276f45554c3",
+    "stdin_bytes": 18114,
+    "stdin_sha256": "a7d7577333aa2faa79fb0e55cb84800cecbd0e066a9a079f978eae45e66259dd"
+  },
+  "tool_authority": {
+    "local_path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/paired-builder462-compile01/rust193-tools-read02-result.json",
+    "bytes": 9419,
+    "sha256": "45d3a3307cf40c57c1835f1a275be7cb2e920f0d2b703880756ce0bd89386cfd",
+    "entry": "tools[7]",
+    "git_bytes": 4547768,
+    "git_sha256": "ed8b2df973b28c0fb773b9c0dc0816d3ee2b3835bb932d9153c21417bb51b362"
+  },
+  "old_resource_helper_source": "/workspace/scratch/94990735b266/native-recovery-20261105-02/native-generation-image-tools-read02/collect.py",
+  "unchanged_AST_functions": [
+    "require",
+    "utc",
+    "sha",
+    "identity",
+    "resource_text",
+    "resource_events",
+    "resource_snapshot",
+    "begin_resources",
+    "finish_resources"
+  ],
+  "fixed_projects": [
+    {
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/frameworks/base",
+      "commit": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d"
+    },
+    {
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/frameworks/native",
+      "commit": "ae266dcb706d083868578cfedce381ef44488a07"
+    },
+    {
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/external/skia",
+      "commit": "508606366e71a3daa933a4e08bc49b84e387ec18"
+    }
+  ],
+  "per_command_limits": {
+    "entries": 128,
+    "stdout_bytes": 32768,
+    "stderr_bytes": 32768,
+    "seconds": 6
+  },
+  "all_command_deadline_seconds": 22,
+  "qualification": {
+    "local_syntax_and_AST_only": true,
+    "remote_git_executed": false,
+    "no_fetch_blob_or_recursive_reads": true,
+    "old_lock_unchanged": true,
+    "directory_append_is_not_transitive_closure": true,
+    "Java_compilation": false,
+    "Android_TU_compilation": false,
+    "Main_actions": 0
+  },
+  "preimage": {
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-sparse-root-tree-read01/read_trees.py",
+    "bytes": 16993,
+    "sha256": "be80ed70ae4ae522ed54903ba1187347f0cb150f13be56027f2e847ced5a3e47",
+    "dispatched": false,
+    "changed_functions": [
+      "read_tree",
+      "main"
+    ],
+    "other_functions_AST_unchanged": [
+      "require",
+      "utc",
+      "sha",
+      "identity",
+      "resource_text",
+      "resource_events",
+      "resource_snapshot",
+      "begin_resources",
+      "finish_resources",
+      "error_row",
+      "fail",
+      "tool_snapshot",
+      "directory_snapshot",
+      "output_row",
+      "stop_signal"
+    ],
+    "module_constants_AST_unchanged": true
+  },
+  "change": "Each owned selector/pipe/directory/Git/resource close executes independently; the original primary exception remains first and subsequent cleanup errors are retained. Popen pipes close even when selector registration never completed."
+}

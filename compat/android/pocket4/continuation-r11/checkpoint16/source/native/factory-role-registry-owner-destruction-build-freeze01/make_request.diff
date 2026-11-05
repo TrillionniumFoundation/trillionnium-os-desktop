@@ -1,0 +1,49 @@
+--- preimage/make_request.py
++++ candidate/make_request.py
+@@ -7,11 +7,11 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-CORE=HERE.parent/'factory-snapshot-nofollow-source-freeze01'
+-ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105'
+-KEY='pocket4-snapshot-nofollow-host-build-01-20261105'
+-MANIFEST_SHA='310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36'
+-CONTROLLER_SHA='15b2e0140a10477f06a02afcf0fa38cdfa6523294edce38f77598d18201fd86f'
++CORE=HERE.parent/'factory-role-registry-owner-destruction-source-freeze01'
++ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/registry-owner-destruction-host-build-01-20261105'
++KEY='pocket4-registry-owner-destruction-host-build-01-20261105'
++MANIFEST_SHA='3cca0b23c8b84de8a072d13206ddf7fa2dc018be37f86f6c3dc8a1cf654432f0'
++CONTROLLER_SHA='8aca23879e7e5220dedc9c3a6f5ad59d90d7d028411d0be52840ad76635ab028'
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+ def write(path,data):
+@@ -25,16 +25,16 @@
+     if pin(raw)['sha256']!=MANIFEST_SHA:raise RuntimeError('immutable source authority differs')
+     authority={row['path']:row for row in json.loads(raw)['files']}
+     expected=json.loads((HERE/'source-inputs.json').read_text())
+-    if len(expected)!=15:raise RuntimeError('exact fifteen source/reference inputs required')
+-    files={'nofollow-source-pins.json':raw.decode()}
++    if len(expected)!=8:raise RuntimeError('exact eight source/reference inputs required')
++    files={'registry-source-pins.json':raw.decode()}
+     for name,row in expected.items():
+         data=(CORE/name).read_bytes()
+         if pin(data)!=row or any(authority[name][key]!=row[key]for key in ['bytes','sha256']):
+             raise RuntimeError('frozen input differs: '+name)
+         files[name]=data.decode()
+-    controller=(HERE/'build_nofollow.py').read_bytes()
++    controller=(HERE/'build_destruction.py').read_bytes()
+     if pin(controller)['sha256']!=CONTROLLER_SHA:raise RuntimeError('matching controller differs')
+-    files['build_nofollow.py']=controller.decode()
++    files['build_destruction.py']=controller.decode()
+     pins={name:pin(text.encode())for name,text in files.items()}
+     stage='''import hashlib,json,os,stat
+ from pathlib import Path
+@@ -72,7 +72,7 @@
+         if (after.st_dev,after.st_ino,after.st_uid,after.st_gid,stat.S_IMODE(after.st_mode))!=(66306,34351895,1000,1000,0o700)or (after.st_dev,after.st_ino)!=(named.st_dev,named.st_ino):
+             raise RuntimeError('private parent changed during create-only staging')
+     finally:os.close(parent)
+-    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'build_nofollow.py'),'--execute-once'],
++    os.execve('/usr/bin/python3',['/usr/bin/python3','-I','-B',str(source/'build_destruction.py'),'--execute-once'],
+               {'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C'})
+ '''%(ROOT,pins)
+     entry=stage+'\nPACKET=json.loads('+repr(json.dumps(files,sort_keys=True))+')\nmain(PACKET)\n'

@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import base64,hashlib,json,sys;raw=sys.stdin.buffer.read(131818);assert len(raw)==131817 and hashlib.sha256(raw).hexdigest()=='1a431ca51e3da037d14bde70b14dfc8853b3672c293fa32c3216aec6cfce842d';p=json.loads(raw);s=base64.b64decode(p['files']['stage_execute.py'],validate=True);assert len(s)==3974 and hashlib.sha256(s).hexdigest()=='2c79e96266a5aa3cc18ccf2e5c1d42278c82e02354b3ba3c0f73b560c19767f3';g={'__name__':'fixed_main_restore_stage','__file__':'<verified-in-memory-main-restore-stage>'};exec(compile(s,g['__file__'],'exec'),g);raise SystemExit(g['main'](p,'8513d03daf642ea959c8d00a821e0a9a6e56ec14067f82070d090cd93f59a31e',True))"
+    ],
+    "created_unix_ms": 1793900373664,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1accb66a0-fc05-56ed",
+    "idempotency_key": "pocket4-main-tasksmax-restore-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1accb66a0-fc05-56ed",
+    "request_digest": "9777cb4576df0db1094cfbe777226d28eb923efbdd35beefd2e0af84b8930f8c",
+    "request_fingerprint": 10914415721163197873,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1accb66a0-fc05-56ed"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1accb66a0-fc05-56ed"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

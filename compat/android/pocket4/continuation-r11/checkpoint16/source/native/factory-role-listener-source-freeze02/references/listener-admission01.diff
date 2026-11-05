@@ -1,0 +1,308 @@
+--- a/source/role_authorization.h
++++ b/source/role_authorization.h
+@@ -111,6 +111,10 @@
+   // Root admin must be the subject's actual live parent in the same PID ns.
+   // The trusted parent supplies the fork-return PID and original range/IDs.
+   int Approve(int admin_connection, const Received& message);
++  // Same authenticated transition, with its actual handle returned only after
++  // success. The listener uses it to revoke this exact grant if the approval
++  // acknowledgement cannot be sent. Failure leaves output untouched.
++  int ApproveAndIdentify(int admin_connection, const Received& message, GrantHandle* output);
+   // An explicitly suspended grant can reattach only the same live PIDFD-bound
+   // process in its unchanged context. A fork child or an unexpected lost
+   // connection cannot use this as a new authorization.
+@@ -137,6 +141,7 @@
+   void Close(GrantHandle handle);
+ 
+  private:
++  int ApproveImpl(int admin_connection, const Received& message, GrantHandle* output);
+   struct Impl;
+   Impl* impl_ = nullptr;
+ };
+--- a/source/role_authorization.cc
++++ b/source/role_authorization.cc
+@@ -499,6 +499,13 @@
+   *output=challenge;return 0;
+ }
+ int Registry::Approve(int admin_connection,const Received& message) {
++  return ApproveImpl(admin_connection, message, nullptr);
++}
++int Registry::ApproveAndIdentify(int admin_connection,const Received& message,GrantHandle* output) {
++  if(!output)return Error(EINVAL);
++  return ApproveImpl(admin_connection, message, output);
++}
++int Registry::ApproveImpl(int admin_connection,const Received& message,GrantHandle* output) {
+   if(!impl_)return Error(ESHUTDOWN);
+   if(!message.received_||message.request_.operation!=Operation::kApprove)return Error(EINVAL);
+   if(impl_->Owner()<0||Sweep()<0)return -1;
+@@ -521,7 +528,9 @@
+   const uint64_t now=Now();if(!now||now>=slot->deadline){impl_->Revoke(*slot);return Error(ETIMEDOUT);}
+   // Root approval attests the matched pre-guest platform transition. NNP,
+   // seccomp mode and this bounded snapshot alone are not filter attestation.
+-  slot->phase=Impl::Phase::kActive;slot->deadline=0;return 0;
++  slot->phase=Impl::Phase::kActive;slot->deadline=0;
++  if(output)*output={static_cast<uint32_t>(slot-impl_->slots),slot->serial};
++  return 0;
+ }
+ int Registry::Attach(Descriptor* connection,const Received& message,GrantHandle* output) {
+   if(!impl_)return Error(ESHUTDOWN);
+--- /dev/null
++++ b/source/role_admission.h
+@@ -0,0 +1,47 @@
++// SPDX-License-Identifier: Apache-2.0
++#ifndef DROIDLOOM_PROC_MAPS_ROLE_ADMISSION_H_
++#define DROIDLOOM_PROC_MAPS_ROLE_ADMISSION_H_
++
++#include "role_session.h"
++
++namespace droidloom::proc_maps_factory::role_v1 {
++inline constexpr size_t kAdmissionReplyBytes = 64 + kWireBytes;
++enum class AdmissionState : uint32_t { kPending = 1, kApproved = 2, kAttached = 3 };
++struct AdmissionReply {
++  Request request{};
++  AdmissionState state{};
++  // Populated only for Begin. This is a challenge, not permission to create.
++  unsigned char token[kDigestBytes]{};
++  uint32_t visible_pid{};
++};
++bool EncodeAdmissionReply(const AdmissionReply&, unsigned char output[kAdmissionReplyBytes]);
++bool DecodeAdmissionReply(const unsigned char*, size_t, AdmissionReply*);
++// Nonblocking receive on an independently authenticated root-factory socket.
++// Requires the exact outstanding request and no descriptors. All known received
++// FD-bearing ancillary records are closed on rejection. Output is atomic.
++int ReceiveAdmissionReply(int connection, const Request& expected, AdmissionReply*);
++
++struct Admission {
++  AdmissionReply reply{};
++  // Kernel-authenticated Registry transition identifies this local handle.
++  // A request never supplies a slot or a serial number.
++  GrantHandle handle{};
++};
++
++// One bounded actual accept4 -> Receive -> Begin/Approve/Attach -> reply path.
++// The trusted caller holds the listener for this call and must configure its
++// identity reception BEFORE accepting any peer. No listener is created, bound,
++// published or enabled here. The existing V2 main and zero-cap gate are intact.
++// The same two-second deadline covers accept, first frame and acknowledgement.
++// Begin yields only a pending handle. It MUST NOT be dispatched until a real
++// trusted-parent Approve succeeds; IsActive remains the authority gate.
++// Approve attests the typed pre-guest policy transition through the original
++// Registry kernel-parent checks. This function does not invent those inputs.
++// Any error after a transition revokes exactly the returned Registry handle;
++// other grants are not revoked based on a rejected token from an unknown peer.
++// The accepted connection is retained only by successful Begin/Attach.
++// Owner loss must also stop the enclosing service; no fallback is provided.
++// No root service, Android early-fork caller or policy is activated by this API.
++int AdmitOne(Registry&, const OwnerLease&, int inherited_listener, Admission*);
++}  // namespace droidloom::proc_maps_factory::role_v1
++#endif
+--- /dev/null
++++ b/source/role_admission.cc
+@@ -0,0 +1,207 @@
++// SPDX-License-Identifier: Apache-2.0
++#ifndef _GNU_SOURCE
++#define _GNU_SOURCE
++#endif
++#include "role_admission.h"
++
++#include <errno.h>
++#include <fcntl.h>
++#include <limits.h>
++#include <poll.h>
++#include <string.h>
++#include <time.h>
++
++namespace droidloom::proc_maps_factory::role_v1 {
++namespace {
++constexpr unsigned char kMagic[8] = {'D','P','4','A','D','M','0','1'};
++constexpr int kPassPidfd = 76, kScmPidfd = 4;
++#ifdef SO_PASSPIDFD
++static_assert(kPassPidfd == SO_PASSPIDFD);
++#endif
++#ifdef SCM_PIDFD
++static_assert(kScmPidfd == SCM_PIDFD);
++#endif
++constexpr short kDead = POLLERR | POLLHUP | POLLNVAL | POLLRDHUP;
++int Error(int value) { errno = value; return -1; }
++uint32_t U32(const unsigned char* p) {
++  return uint32_t{p[0]} | uint32_t{p[1]} << 8 | uint32_t{p[2]} << 16 | uint32_t{p[3]} << 24;
++}
++void Put32(unsigned char* p, uint32_t value) {
++  for (unsigned i = 0; i < 4; ++i) p[i] = static_cast<unsigned char>(value >> (i * 8));
++}
++bool Nonzero(const unsigned char* p, size_t size) {
++  unsigned value = 0; for (size_t i = 0; i < size; ++i) value |= p[i]; return value != 0;
++}
++bool Supported(Operation operation) {
++  return operation == Operation::kBegin || operation == Operation::kApprove || operation == Operation::kAttach;
++}
++bool Valid(const AdmissionReply& value) {
++  if (!Supported(value.request.operation)) return false;
++  if (value.request.operation == Operation::kBegin) {
++    return value.state == AdmissionState::kPending && value.visible_pid && value.visible_pid <= INT_MAX &&
++           Nonzero(value.token, sizeof(value.token));
++  }
++  return !value.visible_pid && !Nonzero(value.token, sizeof(value.token)) &&
++         value.state == (value.request.operation == Operation::kApprove ?
++                         AdmissionState::kApproved : AdmissionState::kAttached);
++}
++uint64_t Now() {
++  timespec t{};
++  if (clock_gettime(CLOCK_MONOTONIC, &t) < 0 || t.tv_sec < 0 || t.tv_nsec < 0 || t.tv_nsec >= 1000000000 ||
++      static_cast<uint64_t>(t.tv_sec) > (UINT64_MAX - 999999999) / 1000000000) return 0;
++  return static_cast<uint64_t>(t.tv_sec) * 1000000000 + static_cast<uint64_t>(t.tv_nsec);
++}
++int Option(int fd, int name, int* value) {
++  socklen_t size = sizeof(*value);
++  if (getsockopt(fd, SOL_SOCKET, name, value, &size) < 0) return -1;
++  return size == sizeof(*value) ? 0 : Error(EPROTO);
++}
++int Socket(int fd, bool listener, bool identity) {
++  int domain, type, accepting, credentials, pidfd;
++  if (Option(fd, SO_DOMAIN, &domain) < 0 || Option(fd, SO_TYPE, &type) < 0 ||
++      Option(fd, SO_ACCEPTCONN, &accepting) < 0) return -1;
++  const int status = fcntl(fd, F_GETFL), flags = fcntl(fd, F_GETFD);
++  if (status < 0 || flags < 0) return -1;
++  if (domain != AF_UNIX || type != SOCK_SEQPACKET || accepting != (listener ? 1 : 0) ||
++      !(status & O_NONBLOCK) || !(flags & FD_CLOEXEC)) return Error(EPROTO);
++  if (identity && (Option(fd, SO_PASSCRED, &credentials) < 0 || Option(fd, kPassPidfd, &pidfd) < 0)) return -1;
++  return !identity || (credentials == 1 && pidfd == 1) ? 0 : Error(EPROTO);
++}
++int Check(Registry& registry, const OwnerLease& owner, uint64_t deadline, uint64_t* previous,
++          const GrantHandle* handle, bool active, int role_connection) {
++  const uint64_t now = Now();
++  if (!now || now < *previous) return Error(EIO);
++  *previous = now;
++  if (now >= deadline) return Error(ETIMEDOUT);
++  if (owner.Verify() < 0 || registry.Sweep() < 0) return -1;
++  if (handle) {
++    if (active && registry.IsActive(*handle) < 0) return -1;
++    const int current = registry.Connection(*handle);
++    if (current < 0) return -1;
++    if (current != role_connection) return Error(ESTALE);
++  }
++  return 0;
++}
++int Wait(Registry& registry, const OwnerLease& owner, int connection, short events,
++         uint64_t deadline, uint64_t* previous, const GrantHandle* handle = nullptr,
++         bool active = false, int role_connection = -1) {
++  for (;;) {
++    if (Check(registry, owner, deadline, previous, handle, active, role_connection) < 0) return -1;
++    const int control = owner.control_fd(), pidfd = owner.owner_pidfd();
++    if (control < 0 || pidfd < 0) return -1;
++    int timeout = static_cast<int>((deadline - *previous + 999999) / 1000000);
++    if (timeout > 100) timeout = 100;
++    pollfd items[3] = {{connection, static_cast<short>(events | POLLRDHUP), 0},
++                      {control, static_cast<short>(POLLIN | POLLRDHUP), 0}, {pidfd, POLLIN, 0}};
++    const int count = poll(items, 3, timeout);
++    if (count < 0) { if (errno == EINTR) continue; return -1; }
++    if (items[1].revents || items[2].revents) return Error(ECANCELED);
++    if (items[0].revents & kDead) return Error(EPIPE);
++    if (items[0].revents & events) return Check(registry, owner, deadline, previous, handle, active, role_connection);
++  }
++}
++int CloseError(Registry& registry, const GrantHandle* handle, int error) {
++  if (handle) registry.Close(*handle);
++  return Error(error > 0 && error <= 4095 ? error : EIO);
++}
++}  // namespace
++
++bool EncodeAdmissionReply(const AdmissionReply& value, unsigned char output[kAdmissionReplyBytes]) {
++  if (!output || !Valid(value)) return false;
++  unsigned char bytes[kAdmissionReplyBytes]{};
++  if (!EncodeRequest(value.request, bytes + 64)) return false;
++  memcpy(bytes, kMagic, sizeof(kMagic)); Put32(bytes + 8, 1); Put32(bytes + 12, sizeof(bytes));
++  Put32(bytes + 16, static_cast<uint32_t>(value.state)); Put32(bytes + 24, value.visible_pid);
++  memcpy(bytes + 32, value.token, sizeof(value.token)); memcpy(output, bytes, sizeof(bytes)); return true;
++}
++bool DecodeAdmissionReply(const unsigned char* bytes, size_t size, AdmissionReply* output) {
++  if (!bytes || !output || size != kAdmissionReplyBytes || memcmp(bytes, kMagic, sizeof(kMagic)) ||
++      U32(bytes + 8) != 1 || U32(bytes + 12) != size || U32(bytes + 20) || U32(bytes + 28)) return false;
++  AdmissionReply value{};
++  value.state = static_cast<AdmissionState>(U32(bytes + 16)); value.visible_pid = U32(bytes + 24);
++  memcpy(value.token, bytes + 32, sizeof(value.token));
++  if (!DecodeRequest(bytes + 64, kWireBytes, &value.request) || !Valid(value)) return false;
++  *output = value; return true;
++}
++int ReceiveAdmissionReply(int connection, const Request& expected, AdmissionReply* output) {
++  if (!output || !Supported(expected.operation)) return Error(EINVAL);
++  unsigned char original[kWireBytes];
++  if (!EncodeRequest(expected, original)) return Error(EINVAL);
++  if (Socket(connection, false, false) < 0) return -1;
++  unsigned char bytes[kAdmissionReplyBytes]{};
++  union { cmsghdr align; unsigned char bytes[CMSG_SPACE(253 * sizeof(int)) +
++      CMSG_SPACE(sizeof(ucred)) + CMSG_SPACE(sizeof(int))]; } ancillary{};
++  iovec vector{bytes, sizeof(bytes)}; msghdr message{};
++  message.msg_iov = &vector; message.msg_iovlen = 1;
++  message.msg_control = ancillary.bytes; message.msg_controllen = sizeof(ancillary.bytes);
++  const ssize_t count = recvmsg(connection, &message, MSG_DONTWAIT | MSG_CMSG_CLOEXEC | MSG_TRUNC);
++  if (count < 0) return -1;
++  bool valid = count == sizeof(bytes) && !(message.msg_flags & (MSG_TRUNC | MSG_CTRUNC));
++  for (cmsghdr* header = CMSG_FIRSTHDR(&message); header; header = CMSG_NXTHDR(&message, header)) {
++    valid = false;  // This protocol never returns a descriptor or credentials.
++    const size_t offset = reinterpret_cast<unsigned char*>(header) - ancillary.bytes;
++    if (offset > message.msg_controllen || header->cmsg_len < CMSG_LEN(0) ||
++        header->cmsg_len > message.msg_controllen - offset) break;
++    const size_t size = header->cmsg_len - CMSG_LEN(0);
++    if (header->cmsg_level == SOL_SOCKET && (header->cmsg_type == SCM_RIGHTS || header->cmsg_type == kScmPidfd)) {
++      for (size_t i = 0; i < size / sizeof(int); ++i) {
++        int fd; memcpy(&fd, CMSG_DATA(header) + i * sizeof(int), sizeof(fd)); Descriptor owned(fd);
++      }
++    }
++  }
++  AdmissionReply value{};
++  if (!valid || !DecodeAdmissionReply(bytes, sizeof(bytes), &value) || memcmp(bytes + 64, original, sizeof(original))) return Error(EPROTO);
++  *output = value; return 0;
++}
++
++int AdmitOne(Registry& registry, const OwnerLease& owner, int listener, Admission* result) {
++  if (!result || listener < 3) return Error(EINVAL);
++  const uint64_t now = Now();
++  if (!now || now > UINT64_MAX - kSessionRequestNanos) return Error(EIO);
++  const uint64_t deadline = now + kSessionRequestNanos; uint64_t previous = now;
++  if (owner.Verify() < 0 || registry.Sweep() < 0 || Socket(listener, true, true) < 0) return -1;
++  Descriptor connection;
++  for (;;) {
++    if (Wait(registry, owner, listener, POLLIN, deadline, &previous) < 0) return -1;
++    const int accepted = accept4(listener, nullptr, nullptr, SOCK_NONBLOCK | SOCK_CLOEXEC);
++    if (accepted >= 0) { connection.reset(accepted); break; }
++    if (errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK) return -1;
++  }
++  if (Socket(connection.get(), false, true) < 0) return -1;
++  Received message;
++  for (;;) {
++    if (Wait(registry, owner, connection.get(), POLLIN, deadline, &previous) < 0) return -1;
++    if (Receive(connection.get(), &message) == 0) break;
++    if (errno != EINTR && errno != EAGAIN && errno != EWOULDBLOCK) return -1;
++  }
++  const auto& request = message.request();
++  Admission value{}; value.reply.request = request;
++  bool active = false;
++  if (request.operation == Operation::kBegin) {
++    Challenge challenge;
++    if (registry.Begin(&connection, message, &challenge) < 0) return -1;
++    value.handle = challenge.handle; value.reply.state = AdmissionState::kPending;
++    value.reply.visible_pid = challenge.visible_pid; memcpy(value.reply.token, challenge.token, sizeof(challenge.token));
++  } else if (request.operation == Operation::kApprove) {
++    if (registry.ApproveAndIdentify(connection.get(), message, &value.handle) < 0) return -1;
++    value.reply.state = AdmissionState::kApproved; active = true;
++  } else if (request.operation == Operation::kAttach) {
++    if (registry.Attach(&connection, message, &value.handle) < 0) return -1;
++    value.reply.state = AdmissionState::kAttached; active = true;
++  } else return Error(EPROTO);
++  const int role_connection = registry.Connection(value.handle);
++  if (role_connection < 0) return CloseError(registry, &value.handle, errno);
++  const int reply_connection = connection.get() >= 0 ? connection.get() : role_connection;
++  unsigned char bytes[kAdmissionReplyBytes];
++  if (!EncodeAdmissionReply(value.reply, bytes)) return CloseError(registry, &value.handle, EPROTO);
++  for (;;) {
++    if (Wait(registry, owner, reply_connection, POLLOUT, deadline, &previous,
++             &value.handle, active, role_connection) < 0) return CloseError(registry, &value.handle, errno);
++    const ssize_t count = send(reply_connection, bytes, sizeof(bytes), MSG_DONTWAIT | MSG_NOSIGNAL);
++    if (count < 0 && (errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK)) continue;
++    if (count != sizeof(bytes)) return CloseError(registry, &value.handle, count < 0 ? errno : EPROTO);
++    break;
++  }
++  *result = value; return 0;
++}
++}  // namespace droidloom::proc_maps_factory::role_v1

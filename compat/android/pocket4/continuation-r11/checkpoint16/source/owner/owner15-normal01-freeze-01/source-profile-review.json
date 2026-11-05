@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "scope": "profile literal substitutions only; no runtime execution",
+  "sources": [
+    {
+      "path": "actor.py",
+      "old_sha256": "4683a1e68b3ad5e794597f5e65ae2b2c69e794dd4afc58cee7fa1101f15c2483",
+      "new_sha256": "af07d7ddb4034f0ea841fbcf53ef76ad37a009cd2b75ab433f8ea16526c5bf4d",
+      "new_bytes": 26831,
+      "reverse_fixed_literals_exact": true,
+      "unchanged": false
+    },
+    {
+      "path": "coordinator.py",
+      "old_sha256": "756be7dcef874537b081b51417a760a65f0479986e381bcdc88040c47b15ab15",
+      "new_sha256": "374dccc6b6788f0a6254849cbc6e190bcdbe8b413e4972726ce55a7a40bfc0fd",
+      "new_bytes": 14396,
+      "reverse_fixed_literals_exact": true,
+      "unchanged": false
+    },
+    {
+      "path": "prepare.py",
+      "old_sha256": "ecb48f5f18b47d288b5682a6e877eef6a9d56660950bebbc25c1259ffa4858f6",
+      "new_sha256": "e8b334966a4e705d09281dbad49ea4f20018ca0a90b30ea058b43cf0a8be891d",
+      "new_bytes": 15281,
+      "reverse_fixed_literals_exact": true,
+      "unchanged": false
+    },
+    {
+      "path": "owned.py",
+      "old_sha256": "879ecb3df3165164124e12eac2f7a5549332b4909df2d6bed9d9055b685f05fb",
+      "new_sha256": "879ecb3df3165164124e12eac2f7a5549332b4909df2d6bed9d9055b685f05fb",
+      "new_bytes": 12338,
+      "reverse_fixed_literals_exact": true,
+      "unchanged": true
+    },
+    {
+      "path": "pinned_support.py",
+      "old_sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e",
+      "new_sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e",
+      "new_bytes": 13377,
+      "reverse_fixed_literals_exact": true,
+      "unchanged": true
+    },
+    {
+      "path": "qualify.py",
+      "old_sha256": "a843d4a0ac4da1dd1baa8707ff3d0f59e4ed4c3cd26fd6fa1eae2ed9f21a6fad",
+      "new_sha256": "a843d4a0ac4da1dd1baa8707ff3d0f59e4ed4c3cd26fd6fa1eae2ed9f21a6fad",
+      "new_bytes": 10249,
+      "reverse_fixed_literals_exact": true,
+      "unchanged": true
+    }
+  ],
+  "fixed_guard_expression_checks": [
+    {
+      "case": "new_profile",
+      "accepted": true
+    },
+    {
+      "case": "new_paths",
+      "accepted": true
+    },
+    {
+      "case": "old_kind_rejected",
+      "accepted": false
+    },
+    {
+      "case": "short_nonce_rejected",
+      "accepted": false
+    },
+    {
+      "case": "old_scope_rejected",
+      "accepted": false
+    },
+    {
+      "case": "old_unit_rejected",
+      "accepted": false
+    },
+    {
+      "case": "old_package_rejected",
+      "accepted": false
+    },
+    {
+      "case": "old_state_rejected",
+      "accepted": false
+    }
+  ],
+  "unchanged_sources": [
+    "owned.py",
+    "pinned_support.py",
+    "qualify.py"
+  ],
+  "no_runtime_module_imported_or_executed": true
+}

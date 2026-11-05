@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "success": true,
+  "scope": "one fixed original ACK-unknown NOFOLLOW request metadata and stdin reconciliation only",
+  "preimage": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/ordinary14-reconciliation-reader-freeze03/read_requests.py",
+    "bytes": 14810,
+    "sha256": "03afe3b603e8b7b22b52fa00f6511d4f2ca50736293123a1182a820024409752"
+  },
+  "source": {
+    "bytes": 14066,
+    "sha256": "c9a8154c9c9f3de09f5f34120b4f6244361cdebdf1da0899773443ce20fd14d3"
+  },
+  "request": {
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/native-nofollow-reconciliation-reader-freeze04/exact-request.json",
+    "bytes": 14728,
+    "sha256": "6ae6ed19ba644bee032543513a08701574fe33b3354a52e04f3b509e1e3704ff",
+    "key": "p4-native-nofollow-reconcile04-c9a8154c9c9f3de0"
+  },
+  "source_changes": [
+    "TARGETS replaces two old requests with the one fixed NOFOLLOW runtime request",
+    "inert top docstring and result scope TWO to ONE only"
+  ],
+  "functions_and_classes": 16,
+  "exact_unchanged_function_or_class_bodies": [
+    "BoundError",
+    "MetadataError",
+    "NotTargetStdin",
+    "identity",
+    "tick",
+    "close_fd",
+    "open_jobs",
+    "read_regular",
+    "unique_object",
+    "request_object",
+    "tuple_matches",
+    "stdin_matches",
+    "matching_metadata",
+    "scan",
+    "error_summary"
+  ],
+  "only_main_difference": "inert result scope constant; all remaining bytes reconstruct exactly",
+  "all_bound_constants_unchanged": true,
+  "stdin_138246_allowed_under_existing_exact_target_max_sizes": true,
+  "request_json_limit_stays_131072": true,
+  "total_read_limit_stays_33554432": true,
+  "scan_deadline_stays_10s": true,
+  "entries_stay_4096": true,
+  "matches_stay_8_and_output_stays_65536": true,
+  "main_source_UID_remains_1000": true,
+  "Owner14_runtime_target_excluded_known_job": "1a1abf6ba7f-fc05-516f",
+  "local_controls_passed": 18,
+  "local_controls_scope": "actual local owned files and synthetic metadata only",
+  "local_control_module_only_UID_seam": 0,
+  "runtime_reader_main_real_job_tree_not_executed": true,
+  "original_idempotency_key_not_verified": true,
+  "zero_match_not_proof_of_no_execution": true,
+  "automatic_runtime_retry": false,
+  "Hepta_calls": false
+}

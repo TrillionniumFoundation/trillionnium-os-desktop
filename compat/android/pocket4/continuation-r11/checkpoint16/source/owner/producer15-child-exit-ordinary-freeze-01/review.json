@@ -1,0 +1,235 @@
+{
+  "Hepta_called_by_this_script": false,
+  "actual_Owner_qualified": false,
+  "actual_cargo_commands": [
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-pressure-relay",
+        "-p",
+        "droidloom-supervisor",
+        "--bins",
+        "--message-format=json"
+      ],
+      "cwd": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate",
+      "exact_child_pid": 2522417,
+      "finished_at": "2026-11-05T16:41:58.267265+00:00",
+      "returncode": 0,
+      "started_at": "2026-11-05T16:41:35.348688+00:00",
+      "stderr_excerpt": "   Compiling proc-macro2 v1.0.107\n   Compiling quote v1.0.47\n   Compiling unicode-ident v1.0.24\n   Compiling version_check v0.9.5\n   Compiling generic-array v0.14.7\n   Compiling libc v0.2.188\n   Compiling typenum v1.20.1\n   Compiling cfg-if v1.0.4\n   Compiling block-buffer v0.10.4\n   Compiling crypto-common v0.1.7\n   Compiling syn v3.0.2\n   Compiling serde_core v1.0.229\n   Compiling digest v0.10.7\n   Compiling cpufeatures v0.2.17\n   Compiling zmij v1.0.23\n   Compiling sha2 v0.10.9\n   Compiling serde v1.0.229\n   Compiling utf8parse v0.2.2\n   Compiling thiserror v2.0.19\n   Compiling serde_json v1.0.151\n   Compiling getrandom v0.4.3\n   Compiling rustix v1.1.4\n   Compiling anstyle-parse v1.0.0\n   Compiling thiserror-impl v2.0.19\n   Compiling serde_derive v1.0.229\n   Compiling anstyle-query v1.1.5\n   Compiling colorchoice v1.0.5\n   Compiling itoa v1.0.18\n   Compiling is_terminal_polyfill v1.70.2\n   Compiling bitflags v2.13.1\n   Compiling anstyle v1.0.14\n   Compiling linux-raw-sys v0.12.1\n   Compiling memchr v2.8.3\n   Compiling anstream v1.0.0\n   Compiling droidloom-pressure-relay v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay)\n   Compiling syn v2.0.119\n   Compiling strsim v0.11.1\n   Compiling fastrand v2.5.0\n   Compiling once_cell v1.21.4\n   Compiling clap_lex v1.1.0\n   Compiling heck v0.5.0\n   Compiling clap_derive v4.6.1\n   Compiling clap_builder v4.6.0\n   Compiling tempfile v3.27.0\n   Compiling hex v0.4.3\n   Compiling droidloom-contracts v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-contracts)\n   Compiling droidloom-window-policy v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-window-policy)\n   Compiling clap v4.6.1\n   Compiling droidloom-cpu-placement v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-cpu-placement)\n   Compiling droidloom-supervisor v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor)\n    Finished `dev` profile [unoptimized] target(s) in 22.83s\n",
+      "stderr_path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/command-00.stderr",
+      "stderr_pin": {
+        "bytes": 2190,
+        "device": 66306,
+        "inode": 44335335,
+        "mode": 384,
+        "path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/command-00.stderr",
+        "sha256": "7040f0264a13cbb2da0679c7bfd28bc318ae6abb564f137e70324162c3260c20"
+      },
+      "stdout_excerpt": "e,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloom-supervisor\"],\"executable\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloom-supervisor\",\"fresh\":false}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor#0.1.0\",\"manifest_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor/Cargo.toml\",\"target\":{\"kind\":[\"bin\"],\"crate_types\":[\"bin\"],\"name\":\"droidloomctl\",\"src_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor/src/bin/droidloomctl.rs\",\"edition\":\"2024\",\"doc\":true,\"doctest\":false,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloomctl\"],\"executable\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloomctl\",\"fresh\":false}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor#0.1.0\",\"manifest_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor/Cargo.toml\",\"target\":{\"kind\":[\"bin\"],\"crate_types\":[\"bin\"],\"name\":\"droidloomd\",\"src_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor/src/bin/droidloomd.rs\",\"edition\":\"2024\",\"doc\":true,\"doctest\":false,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloomd\"],\"executable\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloomd\",\"fresh\":false}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay#0.1.0\",\"manifest_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/Cargo.toml\",\"target\":{\"kind\":[\"bin\"],\"crate_types\":[\"bin\"],\"name\":\"droidloom-psi-owner\",\"src_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":false,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloom-psi-owner\"],\"executable\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloom-psi-owner\",\"fresh\":false}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay#0.1.0\",\"manifest_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/Cargo.toml\",\"target\":{\"kind\":[\"bin\"],\"crate_types\":[\"bin\"],\"name\":\"owned-ipc-controls\",\"src_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/src/bin/owned_ipc_controls.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":false,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/owned-ipc-controls\"],\"executable\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/owned-ipc-controls\",\"fresh\":false}\n{\"reason\":\"build-finished\",\"success\":true}\n",
+      "stdout_path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/command-00.stdout",
+      "stdout_pin": {
+        "bytes": 61002,
+        "device": 66306,
+        "inode": 44335334,
+        "mode": 384,
+        "path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/command-00.stdout",
+        "sha256": "d3b559265026a34c5e4feb0383cc4712f0c6c60c0fe836a088ddba32f66abf5a"
+      },
+      "timed_out": false,
+      "timeout_seconds": 270
+    },
+    {
+      "argv": [
+        "/home/alex/.cargo/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-pressure-relay",
+        "-p",
+        "droidloom-supervisor",
+        "--lib",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "cwd": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate",
+      "exact_child_pid": 2524326,
+      "finished_at": "2026-11-05T16:42:03.440679+00:00",
+      "returncode": 0,
+      "started_at": "2026-11-05T16:41:58.267625+00:00",
+      "stderr_excerpt": "   Compiling droidloom-supervisor v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor)\n   Compiling droidloom-pressure-relay v0.1.0 (/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay)\n    Finished `test` profile [unoptimized] target(s) in 5.13s\n",
+      "stderr_path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/command-01.stderr",
+      "stderr_pin": {
+        "bytes": 367,
+        "device": 66306,
+        "inode": 44335979,
+        "mode": 384,
+        "path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/command-01.stderr",
+        "sha256": "94f42ad38eb97edc86c3a974d4dc310bfa1cf4d79a0d58cfd9358a7049be7de1"
+      },
+      "stdout_excerpt": "132773.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay#0.1.0\",\"manifest_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"droidloom_pressure_relay\",\"src_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/deps/libdroidloom_pressure_relay-bea9e192efbce3b4.rlib\",\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/deps/libdroidloom_pressure_relay-bea9e192efbce3b4.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-cpu-placement#0.1.0\",\"manifest_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-cpu-placement/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"droidloom_cpu_placement\",\"src_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-cpu-placement/src/lib.rs\",\"edition\":\"2024\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":false},\"features\":[],\"filenames\":[\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/deps/libdroidloom_cpu_placement-e197bc34862fcdf3.rlib\",\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/deps/libdroidloom_cpu_placement-e197bc34862fcdf3.rmeta\"],\"executable\":null,\"fresh\":true}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor#0.1.0\",\"manifest_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"droidloom_supervisor\",\"src_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor/src/lib.rs\",\"edition\":\"2024\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":true},\"features\":[],\"filenames\":[\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/deps/droidloom_supervisor-526bcdc774eeed68\"],\"executable\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/deps/droidloom_supervisor-526bcdc774eeed68\",\"fresh\":false}\n{\"reason\":\"compiler-artifact\",\"package_id\":\"path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay#0.1.0\",\"manifest_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/Cargo.toml\",\"target\":{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"droidloom_pressure_relay\",\"src_path\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/src/lib.rs\",\"edition\":\"2021\",\"doc\":true,\"doctest\":true,\"test\":true},\"profile\":{\"opt_level\":\"0\",\"debuginfo\":0,\"debug_assertions\":true,\"overflow_checks\":true,\"test\":true},\"features\":[],\"filenames\":[\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/deps/droidloom_pressure_relay-358016de748e6c1f\"],\"executable\":\"/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/deps/droidloom_pressure_relay-358016de748e6c1f\",\"fresh\":false}\n{\"reason\":\"build-finished\",\"success\":true}\n",
+      "stdout_path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/command-01.stdout",
+      "stdout_pin": {
+        "bytes": 57232,
+        "device": 66306,
+        "inode": 44335978,
+        "mode": 384,
+        "path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/command-01.stdout",
+        "sha256": "0b1286855611f2643494ca5e79e7af4e50a8852abee2fec13b1050ac3dc974ff"
+      },
+      "timed_out": false,
+      "timeout_seconds": 270
+    }
+  ],
+  "authoritative_terminal": {
+    "bytes": 729,
+    "exit_code": 0,
+    "job_id": "1a1ac964e6f-fc05-5590",
+    "output_complete": true,
+    "output_durable": true,
+    "sha256": "5b77749fcc76f1f14776d66f1958de4e5b7f75e268ae68e162f71c87f78dc66f",
+    "source_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-compile01/status01.tool-original.json",
+    "state": "succeeded",
+    "terminal_publication_confirmed": true
+  },
+  "compile_receipt_bytes": 39999,
+  "compile_receipt_sha256": "3327495b8cc3302dcc18ac72a7495f88d3354788404d2b05d1194d1e6e89ee30",
+  "compiled_binary_artifacts": {
+    "droidloom-psi-owner": {
+      "bytes": 1327624,
+      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay#0.1.0",
+      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/src/bin/droidloom_psi_owner.rs",
+      "device": 66306,
+      "inode": 44335973,
+      "mode": 448,
+      "path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloom-psi-owner",
+      "sha256": "1630cdb449bd52dc6e228575f18cfe88a20bec9bf6eaac87a0b043cb8aac8a35"
+    },
+    "droidloom-supervisor": {
+      "bytes": 6562904,
+      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor#0.1.0",
+      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor/src/main.rs",
+      "device": 66306,
+      "inode": 44335956,
+      "mode": 448,
+      "path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloom-supervisor",
+      "sha256": "d8b99a077fc0595f983061b8b0835051ba171645ab65d1ffd6976e70a6e0a657"
+    },
+    "droidloomd": {
+      "bytes": 6537576,
+      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor#0.1.0",
+      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor/src/bin/droidloomd.rs",
+      "device": 66306,
+      "inode": 44335966,
+      "mode": 448,
+      "path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/droidloomd",
+      "sha256": "bc20f626a642bb488cbe519234c8c7fcc7d30949c1fdd2ec2a6eda6e5d86c3c3"
+    },
+    "owned-ipc-controls": {
+      "bytes": 1616024,
+      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay#0.1.0",
+      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/src/bin/owned_ipc_controls.rs",
+      "device": 66306,
+      "inode": 44335988,
+      "mode": 448,
+      "path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/owned-ipc-controls",
+      "sha256": "e9e1dff29096fda02be9510c0119ca4d242a100d7bac2ea47b37a10ca966321b"
+    }
+  },
+  "compiled_children": {
+    "both_no_timeout": true,
+    "both_returncode_zero": true,
+    "complete_descendant_cleanup_claimed": false,
+    "exact_direct_children_waited": [
+      2522417,
+      2524326
+    ]
+  },
+  "compiled_library_test_artifacts": [
+    {
+      "bytes": 2037000,
+      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay#0.1.0",
+      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-pressure-relay/src/lib.rs",
+      "device": 66306,
+      "inode": 44336016,
+      "mode": 448,
+      "path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/deps/droidloom_pressure_relay-358016de748e6c1f",
+      "sha256": "f0f4082747f204fbab791b5f3c15d6aee4e0e052867c0520fc1c772b141fab59",
+      "target_kind": "lib",
+      "target_name": "droidloom_pressure_relay"
+    },
+    {
+      "bytes": 7866776,
+      "cargo_package_id": "path+file:///home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor#0.1.0",
+      "cargo_target_source": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/candidate/runtime/droidloom-supervisor/src/lib.rs",
+      "device": 66306,
+      "inode": 44336010,
+      "mode": 448,
+      "path": "/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01/target/debug/deps/droidloom_supervisor-526bcdc774eeed68",
+      "sha256": "b73775d1edecfb36aa4bf5f8197b470a19a543030bf2ea6689ba442257b41805",
+      "target_kind": "lib",
+      "target_name": "droidloom_supervisor"
+    }
+  ],
+  "controller_payload_count": 15,
+  "exact_source_inputs_count": 32,
+  "expected_ordinary": {
+    "IPC": 7,
+    "actual_entry_ABI3": true,
+    "public_retirement_targeted": 2,
+    "relay_library": 39,
+    "supervisor_library": 128,
+    "targeted_each_filtered": 38,
+    "targeted_each_pass": 1,
+    "worker_context": true
+  },
+  "full_source_inventory_unchanged": true,
+  "matching_stdout": {
+    "bytes": 363,
+    "sha256": "3120bc478b6ee9b617af40f6fb4331b39b9d8592ae8236716322864f0558d217",
+    "source_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-compile01/stdout.log"
+  },
+  "ordinary_executed": false,
+  "overlay_count": 4,
+  "request_bytes": 37671,
+  "request_sha256": "0a4f21333555ddd486308e1c9f65c245d2f31525ac312f7cfb6132159fd6d1d3",
+  "resource": {
+    "memory_event_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak_bytes": 739328000,
+    "memory_swap_limit": "max",
+    "memory_swap_observed_current_peak": [
+      0,
+      0
+    ],
+    "own_cgroup_gate_passed": true,
+    "whole_invocation_resource_qualified": false
+  },
+  "result": "ACTUAL_MATCHING_COMPILE_VERIFIED_ORDINARY_NOT_SUBMITTED",
+  "run_source_bytes": 35535,
+  "run_source_sha256": "32f3875a20fb3da3bccf77235e77937c396881f024d9a457bb2a0a17634c0e94",
+  "schema": 1,
+  "source_manifest_sha256": "a50606bd1352c885fe98a20733d340b565a87849413f579321e86e40fecc2634",
+  "source_payload_count": 17,
+  "template_changed_fields_only": [
+    "args[-1]",
+    "idempotency_key"
+  ],
+  "test_binaries_executed_during_compile": false
+}

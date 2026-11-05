@@ -1,0 +1,77 @@
+{
+  "findings": [
+    {
+      "author_acknowledgement": "Native acknowledged this exact gap in collaboration and is preparing a separate successor; this frozen source remains unchanged.",
+      "id": "OWNERLEASE_FOREIGN_SHARED_VM_DESTRUCTOR",
+      "locations": [
+        "source/role_session.h OwnerLease members/default lifetime",
+        "source/role_authorization.cc Descriptor::~Descriptor and Descriptor::reset"
+      ],
+      "observed_source": "OwnerLease has three Descriptor members and no owner-aware destructor. Implicit destruction invokes each member destructor; reset closes its current numeric FD and writes value_=-1 without checking the owning thread/task.",
+      "reasoning": "If a foreign CLONE_VM task reaches destruction of this shared OwnerLease object, the shared member values are changed. With CLONE_FILES the owner descriptor table is also closed; with a private file table, the shared object values are still overwritten. Method-level Verify cannot guard implicit member destruction.",
+      "recommended_boundary": "Use an owner-proved private implementation and explicit guarded lifetime, keeping failed unpublished initialization owned locally; do not use a foreign release/reset operation that changes shared fields.",
+      "scope_limit": "Source-confirmed cleanup gap under the stated foreign shared-VM lifetime case. No Android, platform hook, live service or concrete foreign-destructor control was run by this reviewer. It is not a claim that a currently deployed Main path triggered it.",
+      "severity_for_declared_foreign_shared_VM_lifetime": "BLOCKER"
+    },
+    {
+      "classification": "LIMITATION_NOT_PROVEN_DISPATCH_BYPASS",
+      "id": "OWNERLEASE_CURRENT_CALLER_PROOF_SCOPE",
+      "locations": [
+        "source/role_session.cc OwnerLease::Verify",
+        "source/role_session.cc DispatchOne initial Registry::IsActive gate"
+      ],
+      "observed_source": "Verify compares current numeric getpid/gettid to stored service_pid_ and then validates the retained original self_/owner_ pidfds and their namespaces. It does not independently open or hold the current caller task identity here. DispatchOne calls Registry::IsActive first, preserving the separate stronger Registry owner gate.",
+      "scope_limit": "Do not claim standalone OwnerLease method proof or any namespace/PID alias bypass from this source review. Kernel PIDFD namespace translation and a concrete cross-namespace control were not exercised. The observed DispatchOne order prevents treating this limitation alone as an admitted dispatch authorization failure."
+    }
+  ],
+  "inputs": {
+    "role_authorization.cc": {
+      "bytes": 38998,
+      "sha256": "5d9a43b4f9d51ddfe7896de563353c96f75856171d39c1af9a5816394247a03c"
+    },
+    "role_authorization.h": {
+      "bytes": 5539,
+      "sha256": "320933ecda593fdb98b16b7bcd506d48ab81e15c0bd5903b38fe4dde49404d8c"
+    },
+    "role_session.cc": {
+      "bytes": 17240,
+      "sha256": "ba298a4d5bce4bf1079fdbdccc867ee0ac837f6a7d6e7f78e25268f97db22bdb"
+    },
+    "role_session.h": {
+      "bytes": 3741,
+      "sha256": "f4b31944536a286d38151e5c1e736fe73b4886373f33dc295518708bb24decc4"
+    }
+  },
+  "manifest_payload_pins_verified": 36,
+  "old_freeze_and_prior_review_preserved": true,
+  "other_paths_read": [
+    "ReceiveResponse owns known SCM_RIGHTS and SCM_PIDFD descriptors before rejection and keeps outputs unpublished until exact framing/request checks complete.",
+    "Send waits under the single absolute deadline, preserves local unpublished snapshot ownership, and uses a held duplicate only for Release acknowledgement.",
+    "Suspend sends acknowledgement before Detach; the source explicitly does not equate acknowledgement with completed reattachment.",
+    "Create checks active handle and exact current connection again after snapshot creation; CloseError preserves the primary errno value."
+  ],
+  "qualification_boundaries": {
+    "17_author_transport_controls_rerun": false,
+    "Hepta_calls": 0,
+    "Main_Android_UI_actions": 0,
+    "compile_or_PLAN_executed": false,
+    "full_Registry_or_snapshot_requalification": false,
+    "new_successor_source_reviewed": false,
+    "production_ready": false,
+    "root_or_namespace_fixture_executed": false,
+    "source_edit": false
+  },
+  "read_scope": [
+    "Full role_session.h and role_session.cc",
+    "Descriptor declaration and destructor/move/reset implementations",
+    "Previously reviewed Registry owner gates, with DispatchOne call order checked here"
+  ],
+  "reviewer": "android_acceptance",
+  "schema": 1,
+  "source_manifest": {
+    "bytes": 8446,
+    "sha256": "3dba90f1dead4424d995767111c519d521f0b9b1f8172ddb96055b48880282a7"
+  },
+  "source_root": "/workspace/scratch/94990735b266/native-recovery-20261105-02/factory-role-session-dispatch-source-freeze01",
+  "state": "SOURCE_REVIEW_WITH_CONFIRMED_OWNER_DESTRUCTION_GAP"
+}

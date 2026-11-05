@@ -1,0 +1,73 @@
+{
+  "actual_observed_event_names": [
+    "prepared",
+    "owner_attached",
+    "init_hello",
+    "broker_ready",
+    "init_project_sent",
+    "init_projected_accepted",
+    "init_commit_sent",
+    "init_done_accepted",
+    "retiring",
+    "broker_retired",
+    "processes_dead",
+    "domain_empty",
+    "retired",
+    "resources_removed",
+    "claim_released"
+  ],
+  "diagnostic_reason": "lifecycle init identity open ns/pid_for_children ENOENT on retained proc directory; original snapshot error bypassed its final live check",
+  "directory_lookup_error_is_not_boot_cause": true,
+  "directory_read": [
+    {
+      "image_path": "/tombstones",
+      "returncode": 0,
+      "stderr": "debugfs 1.47.2 (1-Jan-2025)\n/tombstones: File not found by ext2_lookup \n",
+      "stderr_sha256": "8f97a5b1b9d31e487e7a7984646d834a6cc4418354b0ca80738821120bc62ec2",
+      "stdout_bytes": 0
+    },
+    {
+      "image_path": "/system/shutdown-checkpoints",
+      "returncode": 0,
+      "stderr": "debugfs 1.47.2 (1-Jan-2025)\n/system/shutdown-checkpoints: File not found by ext2_lookup \n",
+      "stderr_sha256": "29699194a02f7340f05e302502abbad272fc60ffd067d70dfe20fe4cadd2d0a0",
+      "stdout_bytes": 0
+    }
+  ],
+  "guest_boot_first_cause_proved": false,
+  "inputs": {
+    "directory_report": {
+      "bytes": 5058,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner14-data-directories01/report.json",
+      "sha256": "6f7f854d2fe1d3e2052662fc6a460030706ac0169b8f5b4f5c405a0639efbcc5"
+    },
+    "logs": {
+      "all_15_contents_verified": true,
+      "bytes": 177449,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner14-normal01-logs01/stdout.log",
+      "sha256": "111c8d2fe0537f9fb683885204fbe3081ea34cc2eeb2b1affe67b060e187edbb"
+    },
+    "runtime": {
+      "bytes": 57774,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner14-normal01-runtime-read01/runtime-result.json",
+      "sha256": "954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea"
+    }
+  },
+  "main_current_pids_change_unresolved": true,
+  "namespace_open_failure_implies_init_death": false,
+  "new_owner_runtime_admitted": false,
+  "original_latest_status": {
+    "cleanup_failure": null,
+    "first_failure": null,
+    "message": "Android cell exited with signal: 1 (SIGHUP)",
+    "ok": true,
+    "retirement_failure": null,
+    "state": "stopped"
+  },
+  "original_owner14_success": false,
+  "original_raw_wait_status_not_exported": true,
+  "repair_scope": "retain exact parent Child wait status before cleanup cancellation; preserve first recorded failure; post-error held pidfd observation is later evidence only",
+  "schema": 1,
+  "scope": "existing actual Owner14 retained evidence only; no new runtime",
+  "sighup_sender_proved": false
+}

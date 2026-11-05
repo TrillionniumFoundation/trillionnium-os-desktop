@@ -1,0 +1,807 @@
+--- amazon-install01/install_state.py
++++ ticket-install01/install_state.py
+@@ -1,10 +1,10 @@
+ #!/usr/bin/env python3
+-"""One independent Amazon QA install and no-UiAutomation state observation.
++"""One independent 12306 QA install and no-UiAutomation state observation.
+ 
+ Default PLAN has no device or filesystem action. The exact signed new helper
+ must be absent, including retained records/all users. Only one explicit -R/-t
+-install is allowed, with no retry or automatic uninstall. Commercial Amazon
+-is never launched; its exact three current APKs are held/read-only before and
++install is allowed, with no retry or automatic uninstall. Commercial 12306
++is never launched; its exact one current APK are held/read-only before and
+ after. No Bili Flow, legacy helper, permission grant, settings, UI or audio.
+ """
+ import argparse
+@@ -21,39 +21,39 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-install-state-01')
+ SOURCE = ROOT/'source'
+ WORKER_ROOT = ROOT/'worker'
+ STEP = WORKER_ROOT/'steps/install-state-01'
+-NONCE = 'f58bd1b568714618ad9767ce586ae12f'
+-STATE_NONCE = '918bf87b0f3f08c62ab630a96b2bfcdc'
+-SELF = 'org.droidloom.qa.amazon.r1'
+-QA_ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r1-source-01/source')
+-QA_MANIFEST = '08e2a223acae096d6ce4beb5d611395892fe1b2b26d593832510c11af36a4cf3'
+-BUILD = Path('/home/alex/work/pocket4-owned-amazon-qa-r1-build-01/build-result.json')
+-BUILD_SHA = '1289d422062dabcd68706d0e7fa39475687ca956b34a5e35e2a2c8fe90387cb2'
+-BUILD_BYTES = 17390
+-STAGE = Path('/home/alex/work/pocket4-owned-amazon-qa-r1-source-01/stage-result.json')
+-STAGE_SHA = '6743f4f5780a6b916f9e5855ab956b01c073a5e06ff757941c6c5a4c32f2b253'
++NONCE = 'd02f83f91e88717ef2df006369881189'
++STATE_NONCE = '3e666f36e9eb4a9a4260408c325b420d'
++SELF = 'org.droidloom.qa.ticket.r1'
++QA_ROOT = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-source-01/source')
++QA_MANIFEST = '6347d21db7018471ddfa96297f54a4bd77aa98b98a59588e3869bacdabd30632'
++BUILD = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-build-01/build-result.json')
++BUILD_SHA = 'd97e05bb923be43ca427a0526fa581b59534d5c5cb0957f1a402ed0f194ca976'
++BUILD_BYTES = 17389
++STAGE = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-source-01/stage-result.json')
++STAGE_SHA = 'd4f9e0fcc261769b63b7b883270241597939d45c3a2060c9fbea841e0a4ef821'
+ STAGE_BYTES = 1947
+-APK = Path('/home/alex/work/pocket4-owned-amazon-qa-r1-build-01/owned-amazon-qa.apk')
+-APK_SHA = 'f3a7bb2133049022a7d622d35ea2db3390d2804e51ebe344b1d5adcde4437118'
++APK = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-build-01/owned-ticket-qa.apk')
++APK_SHA = 'b138eee4a638e90e02b4ea55a4cad3a6c5d24f7fb09b9e2536d4378f19a1dbdb'
+ APK_BYTES = 24720
+-SIGNER_SHA = '1f63759487a0b04e8da9b4088c11dbac8140bf63cb2d64d91460e2525924f424'
++SIGNER_SHA = '91fbef4532e24cce6667f7f049e50ab227c14c622f3f6c7d7b05a3959595138b'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+-READER_SHA = '22a6552111154156004aff344d6929db436d5c3fe084893abea931f1399b0588'
+-GUEST_DIR_NAME = 'pocket4-owned-amazon-qa-'+NONCE
++READER_SHA = '77e6a5056f0de303ab8d81b0864999cdbf5d244442eb31d48c65ce49f4981d9d'
++GUEST_DIR_NAME = 'pocket4-owned-ticket-qa-'+NONCE
+ GUEST_DIR = '/data/local/tmp/'+GUEST_DIR_NAME
+-GUEST_APK = GUEST_DIR+'/owned-amazon-qa.apk'
++GUEST_APK = GUEST_DIR+'/owned-ticket-qa.apk'
+ PACKAGE_LIST = ['/system/bin/cmd','package','list','packages','-u','-U','--user','all',SELF]
+ INSTALLED_ALL_USERS = ['/system/bin/cmd','package','list','packages','-U','--user','all',SELF]
+ INSTALL = ['/system/bin/cmd','package','install','-R','-t','--user','0','--pkg',SELF,GUEST_APK]
+ ACTION_LOCK_WAIT_SECONDS = 5.0
+ ACTION_LOCK_POLL_SECONDS = 0.05
+ WORK_SECONDS = 175
+-EXPECTED_SOURCE_FILES = {'install_state.py','amazon_context.py','amazon_transport.py','stage_execute.py',
++EXPECTED_SOURCE_FILES = {'install_state.py','ticket_context.py','ticket_transport.py','stage_execute.py',
+     'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',
+-    'references/read_amazon.py','target-artifact-reference.json'}
++    'references/read_12306.py','target-artifact-reference.json'}
+ 
+ def require(value, message):
+     if not value:
+@@ -193,7 +193,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
+-    require(10000 <= uid < 100000 and uid not in (10129,10117,10125,10164,10165,10166,10169,10170), 'NEW_APP_UID_REQUIRED')
++    require(10000 <= uid < 100000 and uid not in (10121,10129,10117,10125,10164,10165,10166,10169,10170,10175), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ class OwnedApk:
+@@ -222,7 +222,7 @@
+         require(self.directory_identity['uid'] == 0, 'OWNED_DIRECTORY_UID_CHANGED')
+         os.fchmod(self.directory, 0o711)
+         self.directory_identity = self.identity_of(self.directory)
+-        self.file = os.open('owned-amazon-qa.apk', os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
++        self.file = os.open('owned-ticket-qa.apk', os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                             0o600, dir_fd=self.directory)
+         self.file_created = True
+         count = 0
+@@ -250,11 +250,11 @@
+             if self.file_created:
+                 require(self.directory >= 0 and self.file >= 0, 'OWNED_FILE_FDS_REQUIRED')
+                 expected = os.fstat(self.file)
+-                current = os.stat('owned-amazon-qa.apk', dir_fd=self.directory, follow_symlinks=False)
++                current = os.stat('owned-ticket-qa.apk', dir_fd=self.directory, follow_symlinks=False)
+                 require(stat.S_ISREG(current.st_mode) and current.st_nlink == 1 and
+                         (current.st_dev,current.st_ino) == (expected.st_dev,expected.st_ino),
+                         'OWNED_APK_CLEANUP_IDENTITY_CHANGED')
+-                os.unlink('owned-amazon-qa.apk', dir_fd=self.directory)
++                os.unlink('owned-ticket-qa.apk', dir_fd=self.directory)
+                 os.fsync(self.directory)
+         except BaseException as error:
+             errors.append(error_record('owned_staged_file_retire',error))
+@@ -335,7 +335,7 @@
+     for name,row in manifest['files'].items():
+         read(HERE/name,expected=row['sha256'],size=row['bytes'])
+     require(manifest['files']['references/readonly_r3_coordinator.py']['sha256'] == REFERENCE_SHA and
+-            manifest['files']['references/read_amazon.py']['sha256'] == READER_SHA,
++            manifest['files']['references/read_12306.py']['sha256'] == READER_SHA,
+             'EXACT_SHARED_REFERENCES_REQUIRED')
+     return manifest
+ 
+@@ -363,8 +363,8 @@
+             'ACTUAL_AMAZON_BUILD_STAGE_REQUIRED')
+     data=read(APK,APK_BYTES,APK_SHA,APK_BYTES)
+     proof['stage_receipt_sha256']=STAGE_SHA
+-    require(adapter.SELF == qa.SELF == SELF and qa.PACKAGE == 'com.amazon.mShop.android.shopping' and
+-            qa.UID == 10129,'EXACT_DEDICATED_AMAZON_QA_REQUIRED')
++    require(adapter.SELF == qa.SELF == SELF and qa.PACKAGE == 'com.MobileTicket' and
++            qa.UID == 10121,'EXACT_DEDICATED_AMAZON_QA_REQUIRED')
+     return adapter,qa,proof,data
+ 
+ 
+@@ -379,7 +379,7 @@
+     ref.write_new(WORKER_ROOT/'once.claim.json',{'nonce':NONCE,'state_nonce':STATE_NONCE,
+         'source_manifest_sha256':expected,'package':SELF,'automatic_retry':False})
+     result={'schema':1,'ok':False,'error':None,'secondary_errors':[],
+-        'package':SELF,'target_package':'com.amazon.mShop.android.shopping','nonce':NONCE,
++        'package':SELF,'target_package':'com.MobileTicket','nonce':NONCE,
+         'state_nonce':STATE_NONCE,'source_manifest_sha256':expected,
+         'install_attempted':False,'install_success_observed':False,'state_attempted':False,
+         'package_retained':False,'UI_actions':0,'audio_actions':0,'App_launches':0,
+@@ -390,9 +390,9 @@
+     started=time.monotonic()
+     try:
+         adapter,qa,proof,apk=qualified_inputs();result['build']=proof
+-        context=module(HERE/'amazon_context.py',manifest['files']['amazon_context.py']['sha256'],'amazon_install_context')
+-        transport=module(HERE/'amazon_transport.py',manifest['files']['amazon_transport.py']['sha256'],'amazon_r4_transport')
+-        reader=module(HERE/'references/read_amazon.py',READER_SHA,'amazon_metadata_primitives')
++        context=module(HERE/'ticket_context.py',manifest['files']['ticket_context.py']['sha256'],'amazon_install_context')
++        transport=module(HERE/'ticket_transport.py',manifest['files']['ticket_transport.py']['sha256'],'amazon_r4_transport')
++        reader=module(HERE/'references/read_12306.py',READER_SHA,'amazon_metadata_primitives')
+         activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))
+         epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_worker_epoch')
+         guard=lambda:ref.main_guard(activation,epoch)
+@@ -428,8 +428,8 @@
+         uid=uid_from(uid_raw);result['uid_command']=uid_command
+         session=adapter.Session(ctx,recorder,qa,proof,uid)
+         result['runtime_shared_recorder_manifest_sha256']=context.SHARED_MANIFEST
+-        result['runtime_amazon_context_sha256']=manifest['files']['amazon_context.py']['sha256']
+-        result['runtime_amazon_transport_sha256']=manifest['files']['amazon_transport.py']['sha256']
++        result['runtime_ticket_context_sha256']=manifest['files']['ticket_context.py']['sha256']
++        result['runtime_ticket_transport_sha256']=manifest['files']['ticket_transport.py']['sha256']
+         phase='installed_before_state';result['installed_before_state']=session.installed()
+         phase='one_state_only';result['state_attempted']=True
+         result['state']=session.instrument({'protocol':qa.PROTOCOL,'nonce':STATE_NONCE,'op':'state'})
+@@ -453,7 +453,7 @@
+             except BaseException as error:remember(result,'staging_cleanup',error)
+         if artifacts is not None:
+             try:
+-                if len(artifacts.records)==3 and 'target_after' not in result:
++                if len(artifacts.records)==1 and 'target_after' not in result:
+                     result['failure_target_files_revalidated']=artifacts.revalidate_files()
+             except BaseException as error:remember(result,'failed_scope_target_revalidation',error)
+             try:result['target_FD_cleanup']=artifacts.close()
+@@ -492,7 +492,7 @@
+             claim.get('automatic_retry') is False,'EXACT_ONCE_CLAIM_REQUIRED')
+     evidence=ROOT/'evidence';evidence.mkdir(mode=0o700)
+     result={'schema':1,'ok':False,'error':None,'secondary_errors':[],
+-        'source_manifest_sha256':expected,'package':SELF,'target_package':'com.amazon.mShop.android.shopping',
++        'source_manifest_sha256':expected,'package':SELF,'target_package':'com.MobileTicket',
+         'nonce':NONCE,'worker_root':str(WORKER_ROOT),'automatic_retry':False,
+         'UI_actions':0,'audio_actions':0,'App_launches':0,'whole_app_production_ready':False,
+         'old_v2_helper_called':False,'Bili_Flow_instantiated':False,'install_state_worker_requested':False}
+@@ -553,7 +553,7 @@
+     require(re.fullmatch('[0-9a-f]{32}',NONCE) and re.fullmatch('[0-9a-f]{32}',STATE_NONCE) and
+             NONCE!=STATE_NONCE,'EXACT_DISTINCT_NONCES_REQUIRED')
+     if not a.execute_once and not a.worker_once:
+-        print(json.dumps({'state':'PLAN_ONLY','package':SELF,'target':'com.amazon.mShop.android.shopping',
++        print(json.dumps({'state':'PLAN_ONLY','package':SELF,'target':'com.MobileTicket',
+             'root':str(ROOT),'actual_build_sha256':BUILD_SHA,'APK_sha256':APK_SHA,'signer_sha256':SIGNER_SHA,
+             'install_argv':INSTALL,'state_nonce':STATE_NONCE,'UiAutomation_connection_requested':False,
+             'permission_grants':0,'UI_actions':0,'App_launches':0,'old_v2_helper_called':False,
+--- amazon-install01/amazon_context.py
++++ ticket-install01/ticket_context.py
+@@ -1,4 +1,4 @@
+-"""Amazon-only install/state context using immutable shared recorder primitives.
++"""12306-only install/state context using immutable shared recorder primitives.
+ 
+ No Bili Flow or legacy client is instantiated. The actual Flow.command body,
+ held Main/root/classpath primitives and R4 BoundArun body are reused; the new
+@@ -14,9 +14,9 @@
+ import time
+ import types
+ 
+-PACKAGE = 'com.amazon.mShop.android.shopping'
+-UID = 10129
+-VERSION = 1243240206
++PACKAGE = 'com.MobileTicket'
++UID = 10121
++VERSION = 275
+ INSTALLED_SHARED = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/recorder-r4')
+ SHARED_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+ CONTRACT_SHA = '51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d'
+@@ -44,7 +44,7 @@
+ 
+ def ordered_commands(qa, self_package, guest_apk, state_nonce):
+     require(qa.PACKAGE == PACKAGE and qa.UID == UID and
+-            qa.SELF == self_package == 'org.droidloom.qa.amazon.r1', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
++            qa.SELF == self_package == 'org.droidloom.qa.ticket.r1', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
+     state = {'protocol':qa.PROTOCOL,'nonce':state_nonce,'op':'state'}
+     qa.validate_request(state)
+     own_uid = ['/system/bin/cmd','package','list','packages','-U','--user','0',self_package]
+@@ -183,7 +183,7 @@
+ 
+ 
+ class ArtifactSet:
+-    """The exact three installed commercial APKs, read-only and held to exit."""
++    """The exact one installed commercial APK, read-only and held to exit."""
+     def __init__(self, context, expected, reader):
+         require(expected['target'] == {'package':PACKAGE,'uid':UID,'user':0,'version_code':VERSION},
+                 'ACTUAL_AMAZON_METADATA_REFERENCE_REQUIRED')
+@@ -199,8 +199,8 @@
+ 
+     def _paths(self, raw):
+         values = self.reader.apk_paths(raw)
+-        require(values == sorted(row['path'] for row in self.expected['artifacts']) and len(values) == 3,
+-                'ACTUAL_THREE_AMAZON_APK_PATHS_CHANGED')
++        require(values == sorted(row['path'] for row in self.expected['artifacts']) and len(values) == 1,
++                'ACTUAL_ONE_12306_APK_PATH_CHANGED')
+         return values
+ 
+     def _hash(self, fd, expected, deadline):
+@@ -226,19 +226,19 @@
+         self._metadata(self.context.android(LIST,15))
+         self._paths(self.context.android(PATHS,15))
+         require(sum(row['held_file']['bytes'] for row in self.expected['artifacts']) <= TOTAL_LIMIT,
+-                'THREE_APK_TOTAL_BOUND')
++                'ONE_APK_TOTAL_BOUND')
+         deadline = min(self.context.deadline,time.monotonic()+HASH_SECONDS)
+         for row in self.expected['artifacts']:
+             fd = self.context.target.open_root(row['path'],os.O_RDONLY|os.O_NOFOLLOW)
+             self.opened.append(fd)
+             self.records.append(self._hash(fd,row,deadline))
+-        require(len(self.opened) == len(self.records) == 3,'EXACT_THREE_HELD_APKS_REQUIRED')
++        require(len(self.opened) == len(self.records) == 1,'EXACT_ONE_HELD_APK_REQUIRED')
+         self.context.artifacts = self
+         return {'metadata':self.expected['target'],'artifacts':self.records,
+                 'fresh_streaming_hashes':True,'signer_independently_verified':False}
+ 
+     def verify_held(self):
+-        require(not self.closed and len(self.opened) == len(self.records) == 3,'OPEN_THREE_APK_SET_REQUIRED')
++        require(not self.closed and len(self.opened) == len(self.records) == 1,'OPEN_ONE_APK_SET_REQUIRED')
+         for fd,row in zip(self.opened,self.records):
+             require(identity(fd) == row['held_file'],'HELD_AMAZON_APK_CHANGED')
+ 
+--- amazon-install01/amazon_transport.py
++++ ticket-install01/ticket_transport.py
+@@ -20,8 +20,8 @@
+ ANDROID_APP_SHA256 = "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+ FRAMEWORK_EPOCH_SHA256 = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f"
+ HELD_HELPER_SHA256 = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+-EXPECTED_PACKAGE = "com.amazon.mShop.android.shopping"
+-EXPECTED_UID = 10129
++EXPECTED_PACKAGE = "com.MobileTicket"
++EXPECTED_UID = 10121
+ HOST_ENV = {"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "HOME": "/root", "LANG": "C.UTF-8"}
+ REQUIRED_ENV = {"PATH", "BOOTCLASSPATH", "DEX2OATBOOTCLASSPATH",
+                 "ANDROID_ROOT", "ANDROID_DATA", "ANDROID_ART_ROOT"}
+--- amazon-install01/stage_execute.py
++++ ticket-install01/stage_execute.py
+@@ -7,13 +7,13 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-install-state-01')
+ SOURCE = ROOT/'source'
+-NONCE = 'f58bd1b568714618ad9767ce586ae12f'
++NONCE = 'd02f83f91e88717ef2df006369881189'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+-FILES = {'install_state.py','amazon_context.py','amazon_transport.py','stage_execute.py',
++FILES = {'install_state.py','ticket_context.py','ticket_transport.py','stage_execute.py',
+     'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',
+-    'references/read_amazon.py','target-artifact-reference.json'}
++    'references/read_12306.py','target-artifact-reference.json'}
+ 
+ 
+ 
+--- amazon-install01/make_request.py
++++ ticket-install01/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-amazon-qa-r1-install-state-01-20261105'
+-ROOT='/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01'
+-NONCE='f58bd1b568714618ad9767ce586ae12f'
++KEY='pocket4-owned-ticket-qa-r1-install-state-01-20261105'
++ROOT='/home/alex/work/pocket4-owned-ticket-qa-r1-install-state-01'
++NONCE='d02f83f91e88717ef2df006369881189'
+ 
+ 
+ def sha(raw):
+--- amazon-install01/INPUTS.json
++++ ticket-install01/INPUTS.json
+@@ -1,17 +1,22 @@
+ {
+   "APK": {
+     "bytes": 24720,
+-    "sha256": "f3a7bb2133049022a7d622d35ea2db3390d2804e51ebe344b1d5adcde4437118"
++    "sha256": "b138eee4a638e90e02b4ea55a4cad3a6c5d24f7fb09b9e2536d4378f19a1dbdb"
+   },
+   "Bili_Flow_used": false,
+   "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+   "UiAutomation_requested": false,
++  "actual_build_job": "1a1ac316cf0-fc05-52c2",
++  "actual_build_review": {
++    "bytes": 2907,
++    "sha256": "9779ffe7d851bc707ea2e596264f74ea9a3e99a4f55f83cea07a50d01a88e3b7"
++  },
+   "build_receipt": {
+-    "bytes": 17390,
+-    "sha256": "1289d422062dabcd68706d0e7fa39475687ca956b34a5e35e2a2c8fe90387cb2"
++    "bytes": 17389,
++    "sha256": "d97e05bb923be43ca427a0526fa581b59534d5c5cb0957f1a402ed0f194ca976"
+   },
+   "commands": 13,
+-  "helper_UID": "MUST_BE_ACTUAL_AFTER_NEW_INSTALL",
++  "helper_UID": "MUST_BE_OBSERVED_AFTER_NEW_INSTALL",
+   "install_commands": 1,
+   "instrumentation_commands": 1,
+   "instrumentation_operation": "state",
+@@ -27,27 +32,28 @@
+     "worker_child_seconds": 190
+   },
+   "nonces": {
+-    "install_nonce": "f58bd1b568714618ad9767ce586ae12f",
+-    "state_nonce": "918bf87b0f3f08c62ab630a96b2bfcdc"
++    "install_nonce": "d02f83f91e88717ef2df006369881189",
++    "state_nonce": "3e666f36e9eb4a9a4260408c325b420d"
+   },
+   "old_v2_helper_called": false,
+-  "owned_package": "org.droidloom.qa.amazon.r1",
+-  "purpose": "only exact new Amazon QA helper install and no-UiAutomation state",
++  "owned_package": "org.droidloom.qa.ticket.r1",
++  "purpose": "only new dedicated 12306 QA helper install and no-UiAutomation state; not executed",
+   "schema": 1,
+-  "signer_certificate_sha256": "1f63759487a0b04e8da9b4088c11dbac8140bf63cb2d64d91460e2525924f424",
+-  "source_manifest_sha256": "08e2a223acae096d6ce4beb5d611395892fe1b2b26d593832510c11af36a4cf3",
++  "signer_certificate_sha256": "91fbef4532e24cce6667f7f049e50ab227c14c622f3f6c7d7b05a3959595138b",
++  "source_manifest_sha256": "6347d21db7018471ddfa96297f54a4bd77aa98b98a59588e3869bacdabd30632",
+   "stage_receipt": {
+     "bytes": 1947,
+-    "sha256": "6743f4f5780a6b916f9e5855ab956b01c073a5e06ff757941c6c5a4c32f2b253"
++    "sha256": "d4f9e0fcc261769b63b7b883270241597939d45c3a2060c9fbea841e0a4ef821"
+   },
++  "state": "SOURCE_FROZEN_ACTUAL_TICKET_BUILD_BOUND_INSTALL_NOT_RUN",
+   "target": {
+-    "package": "com.amazon.mShop.android.shopping",
+-    "uid": 10129,
++    "package": "com.MobileTicket",
++    "uid": 10121,
+     "user": 0,
+-    "version_code": 1243240206
++    "version_code": 275
+   },
+-  "target_APK_bytes": 177026053,
++  "target_APK_bytes": 150377492,
+   "target_APK_hash_reads": "before and after; fixed current identities held to cleanup",
+-  "target_APKs": 3,
++  "target_APKs": 1,
+   "whole_app_production_ready": false
+ }
+--- amazon-install01/README.md
++++ ticket-install01/README.md
+@@ -1,65 +1,39 @@
+-# Amazon QA R1: exact installation and state only
++# Dedicated 12306 helper install and no-automation state
+ 
+-This is a new, once-only install of `org.droidloom.qa.amazon.r1`, built from the
+-frozen dedicated Amazon source. It does not launch Amazon, inspect or click UI,
+-connect UiAutomation, change permissions/settings, replace an installed helper,
+-or execute the legacy v2/Bili recorder CLI. The previous Bili source is unchanged.
++This source freeze preserves the reviewed Amazon install/state lifecycle and
++shared held Main transport, with a separate fixed com.MobileTicket UID 10121
++context. The original commercial package is not launched or instrumented.
++Exactly the one APK observed by the actual five-command metadata/launcher reader
++is held and stream-hashed before and after. Its exact current path, complete file
++identity, digest and version 275 are revalidated; no Amazon artifact identity is
++inherited. The original writer-reconstruction limitation is recorded explicitly.
+ 
+-The actual build receipt, stage receipt, APK bytes and signer are external fixed
+-inputs. All eleven completed build commands, source/tool equality, self target,
+-SDK31 compile/minimum and target33, no permissions/components, and signed APK are
+-checked by the actual built adapter before installation and at exit. The new
+-helper must be absent for all users including uninstalled records. Installation
+-uses `-R -t --user 0 --pkg <exact self>` once, without fallback. Its resulting UID,
+-base APK bytes/signature binding and one no-UiAutomation state result are checked
+-and retained. No automatic uninstall/reinstall follows an ambiguous result.
++The new helper is org.droidloom.qa.ticket.r1. Its actual build/stage/APK/signer
++pins are now bound to the original successful dedicated build. All eleven build
++commands joined with return code zero, source/tool identities remained unchanged,
++and the original built adapter qualified the exact retained receipt. The actual
++installed helper UID remains unknown until this new install. The prepared exact
++request is for Root review and has not been submitted. Installation uses explicit
++-R -t, requires absence including retained records across users, and issues only
++self state without UiAutomation, grants, replacement fallback or retry.
+ 
+-## Shared implementation and independent scope
++The original exact ordered thirteen-command plan, source/Main checks, held
++namespace/root descriptor transport, same-inode bounded action lock, owned
++staging cleanup, independent original error handling and final held-file release
++remain. Only the declared target APK count is one rather than Amazon's three.
++Installation is followed by live helper UID/base APK/state qualification; that
++qualification does not authorize a future 12306 UI flow. Root owns execution.
+ 
+-`amazon_transport.py` is the frozen R4 BoundArun with only EXPECTED_PACKAGE and
+-EXPECTED_UID changed to Amazon/10129. All function bodies, exact seven held-FD
+-entry checks, original timeout semantics, first-error/lease-exit/post-guard
+-recording and failure poison are unchanged. The shared R4 manifest is an actual
+-immutable library dependency; it is not presented as the new transport manifest.
+-The new runtime source manifest binds the separate Amazon transport and context.
+-The original Flow.command body is called directly by the new context; no Bili
+-Flow or MainBinding business constructor is instantiated. Original Main identity,
+-classpaths with both roots, helper qualification and held namespaces/root remain
+-mandatory. No numeric target entry is used.
++The original held transport functions, command first-error handling, same-inode
++lock, staged APK identity cleanup and process ownership remain unchanged. The
++source delta changes the dedicated target/self package literals, observed target
++artifact count three to one, fixed current artifact reference and actual build
++pins. Legacy AMAZON error/module labels are retained as diagnostics only and do
++not authorize Amazon commands or identities. No source/tool receipt substitutes
++for the subsequent live installed APK and no-automation state checks.
+ 
+-`amazon_context.Context` allows exactly thirteen ordered commands, including one
+-install and one state call. It closes admission after any rejected/failed call.
+-The state adapter Session itself is the actual built Amazon source, without any
+-method override; inspection/action/launch cannot pass this context's command
+-plan. Its standalone execute() remains closed. A future Amazon business flow
+-requires separate reviewed entry, actual installed UID and current UI selectors.
+-
+-The existing installation lock function (same inode, EX|NB, five-second admission)
+-and owned APK staging/retirement are derived from frozen install03. The temporary
+-APK is cleaned only through its held file/directory identities. Worker receipt
+-writing, lock release, held binding release, target FD closure and final Main
+-checks preserve the first error. The exact managed job keeps one CPU, 512 MiB,
+-zero swap and 128 tasks; its post counters must have zero limit/OOM events.
+-
+-## Commercial target binding
+-
+-Before installing the new helper, the exact current Amazon UID, version and three
+-APK paths are read under the held Main entry. Each commercial APK is held read-only
+-and streamed against the prior actual identity/hash reference. Metadata is checked
+-at every command guard; final paths/UID/version and all three held hashes must
+-match again. No target package inventory count is assumed. This does not independently
+-establish Amazon's signer and it does not authorize App launch or whole-App readiness.
+-
+-## Use and boundaries
+-
+-Default install_state.py and make_request.py are PLAN_ONLY. The exact request is
+-for Root to review and dispatch once after the current owned runtime cleanup.
+-Partial staging/unknown outcomes are retained, never automatically replayed. Actual
+-installation/Android state are NOT RUN by local controls. Twelve local controls cover new source binding, ordered admission, exact artifact
+-predicates and first-error cleanup seams. The local filesystem rejects chown to
+-UID1000 (EINVAL); that original failed fixture is retained. Subsequent hash/FD
+-controls project only UID/GID in their explicit test identity seam: actual inode,
+-mode, links, size, timestamps, file reads/hashes and closure remain real. A separate
+-negative verifies that the unchanged production gate rejects the actual local
+-UID0 file. None of these controls qualifies Android ownership/namespace behavior.
+-Original real flock controls are retained references, not rerun.
++The prior target declaration control and actual build receipt review are retained
++with their separate scopes. No installation, Android command, target APK open, UI
++action, new fixture or peer device test was performed during this freeze. The
++actual build report establishes direct child joins; it does not claim the build
++outputs or private signing artifacts were deleted.
+--- amazon-install01/references/read_amazon.py
++++ ticket-install01/references/read_12306.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One fixed Amazon metadata read, with the qualified held Main primitives.
++"""One fixed 12306 metadata read, with the qualified held Main primitives.
+ 
+ No App launch, instrumentation, v2 helper, permission or settings operation.
+ The original Bili Flow/BoundArun business scope is never instantiated or patched.
+@@ -16,12 +16,12 @@
+ import time
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-amazon-artifact-readonly-01')
+-SOURCE_PATH = ROOT/'source/read_amazon.py'
+-NONCE = '42110205266d417c33e33607204a5d8d'
+-PACKAGE = 'com.amazon.mShop.android.shopping'
++ROOT = Path('/home/alex/work/pocket4-12306-artifact-launcher-readonly-01')
++SOURCE_PATH = ROOT/'source/read_12306.py'
++NONCE = 'a08bcaaa2480f0aafcdaa0d5ac6c315a'
++PACKAGE = 'com.MobileTicket'
+ USER = 0
+-HISTORICAL_VERSION = 1243240206
++HISTORICAL_VERSION = 275
+ INSTALLED_SOURCE = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source')
+ INSTALL_SHA = '6614f2eb92ffd2a339c733d6fc58262fbb918d3e9c8eb15cfca3fa275b8bd329'
+ INSTALL_BYTES = 34852
+@@ -31,7 +31,9 @@
+ SOURCE_CONTRACT_SHA = '51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d'
+ LIST = ['/system/bin/cmd','package','list','packages','-U','--show-versioncode','--user','0',PACKAGE]
+ PATHS = ['/system/bin/cmd','package','path','--user','0',PACKAGE]
+-COMMANDS = [LIST, PATHS, PATHS, LIST]
++RESOLVE = ['/system/bin/cmd','package','resolve-activity','--brief','--user','0',
++           '-a','android.intent.action.MAIN','-c','android.intent.category.LAUNCHER',PACKAGE]
++COMMANDS = [LIST, PATHS, RESOLVE, PATHS, LIST]
+ FILE_LIMIT = 256 * 1024 * 1024
+ TOTAL_LIMIT = 512 * 1024 * 1024
+ HASH_SECONDS = 45
+@@ -95,34 +97,53 @@
+ def metadata(raw):
+     match=re.fullmatch(re.escape('package:'+PACKAGE)+r' versionCode:([0-9]+) uid:([0-9]+)\n',
+                        raw.decode('utf-8','strict'))
+-    need(match is not None,'ONE_EXACT_AMAZON_USER0_METADATA_ROW_REQUIRED')
++    need(match is not None,'ONE_EXACT_TICKET12306_USER0_METADATA_ROW_REQUIRED')
+     version,uid=map(int,match.groups())
+-    need(0<version<2**63 and 10000<=uid<100000,'AMAZON_METADATA_RANGE')
++    need(0<version<2**63 and 10000<=uid<100000,'TICKET12306_METADATA_RANGE')
+     return {'package':PACKAGE,'user':USER,'uid':uid,'version_code':version}
+ 
+ 
+ def apk_paths(raw):
+     text=raw.decode('utf-8','strict')
+-    need(text.endswith('\n') and len(raw)<=16384,'AMAZON_PATH_OUTPUT_BOUND')
++    need(text.endswith('\n') and len(raw)<=16384,'TICKET12306_PATH_OUTPUT_BOUND')
+     lines=text.splitlines()
+     need(1<=len(lines)<=FILE_COUNT and all(x.startswith('package:') for x in lines),
+-         'AMAZON_APK_PATH_ROWS_REQUIRED')
++         'TICKET12306_APK_PATH_ROWS_REQUIRED')
+     paths=[x[len('package:'):] for x in lines]
+     need(len(set(paths))==len(paths),'DUPLICATE_APK_PATH')
+     parents=set()
+     for path in paths:
+         need(isinstance(path,str) and '\x00' not in path and len(path.encode())<=4096,
+-             'AMAZON_PATH_SHAPE')
++             'TICKET12306_PATH_SHAPE')
+         parts=Path(path).parts
+         need(len(parts)==6 and parts[:3]==('/','data','app') and
+              re.fullmatch(r'~~[A-Za-z0-9_=-]+',parts[3]) and
+              re.fullmatch(re.escape(PACKAGE)+r'-[A-Za-z0-9_=-]+',parts[4]) and
+              (parts[5]=='base.apk' or re.fullmatch(r'split_[A-Za-z0-9_.-]+\.apk',parts[5])),
+-             'ONLY_EXACT_AMAZON_INSTALL_DIRECTORY_APKS_MAY_BE_READ')
++             'ONLY_EXACT_TICKET12306_INSTALL_DIRECTORY_APKS_MAY_BE_READ')
+         parents.add(str(Path(path).parent))
+     need(len(parents)==1 and sum(Path(x).name=='base.apk' for x in paths)==1,
+-         'ONE_AMAZON_BASE_AND_ONE_INSTALL_DIRECTORY_REQUIRED')
++         'ONE_TICKET12306_BASE_AND_ONE_INSTALL_DIRECTORY_REQUIRED')
+     return sorted(paths)
++
++
++def component(raw):
++    need(isinstance(raw,bytes) and 0<len(raw)<=4096,'RESOLVE_OUTPUT_BOUND')
++    text=raw.decode('ascii','strict')
++    need(text.endswith('\n') and '\x00' not in text and
++         all(c=='\n' or 32<=ord(c)<127 for c in text),'RESOLVE_OUTPUT_TEXT_SHAPE')
++    lines=text.splitlines()
++    need(1<=len(lines)<=16,'RESOLVE_OUTPUT_LINE_BOUND')
++    candidates=[line.strip() for line in lines if
++        re.fullmatch(r'[A-Za-z0-9_.$]+/[A-Za-z0-9_.$]+',line.strip())]
++    need(len(candidates)==1,'ONE_CURRENT_LAUNCHER_COMPONENT_REQUIRED')
++    value=candidates[0]
++    need(re.fullmatch(re.escape(PACKAGE)+r'/(?:\.[A-Za-z_][A-Za-z0-9_.$]*|[A-Za-z_][A-Za-z0-9_.$]*)',value)
++         is not None,'LAUNCHER_MUST_BELONG_TO_EXACT_TICKET12306_PACKAGE')
++    return {'package':PACKAGE,'user':0,'component':value,
++        'query_action':'android.intent.action.MAIN','query_category':'android.intent.category.LAUNCHER',
++        'resolve_stdout_sha256':sha(raw),'fallback_used':False,
++        'launch_performed':False,'later_launch_requires_new_current_binding':True}
+ 
+ 
+ def identity(fd):
+@@ -145,7 +166,7 @@
+ 
+     def command(self, arguments, environment):
+         need(self.command_index<len(COMMANDS) and arguments==COMMANDS[self.command_index],
+-             'ONLY_FOUR_ORDERED_FIXED_READ_ONLY_COMMANDS_ALLOWED')
++             'ONLY_FIVE_ORDERED_FIXED_READ_ONLY_COMMANDS_ALLOWED')
+         self.guard()
+         expected_index=self.command_index+1
+         command=['/system/bin/env','-i']
+@@ -182,7 +203,7 @@
+                 except BaseException as error:fail('entry_release',error)
+             try:self.guard()
+             except BaseException as error:fail('post_command_Main_guard',error)
+-            row={'index':self.command_index,'argv':arguments,'operation':'package_metadata_read',
++            row={'index':self.command_index,'argv':arguments,'operation':'package_identity_or_launcher_read',
+                  'Android_UI_action':False,'entry_entered':entered,
+                  'first_error':error_row('command',primary) if primary else None,
+                  'secondary_errors':secondary}
+@@ -206,35 +227,37 @@
+          'EXACT_NEW_SOURCE_PATH_AND_EXTERNAL_PIN_REQUIRED')
+     read(SOURCE_PATH,expected=source_sha)
+     need(ROOT.is_dir() and not (ROOT/'claim.json').exists(),'FRESH_SINGLE_ATTEMPT_ROOT_REQUIRED')
+-    reference=load(INSTALLED_SOURCE/'references/readonly_r3_coordinator.py',REFERENCE_SHA,'amazon_main_reference')
++    reference=load(INSTALLED_SOURCE/'references/readonly_r3_coordinator.py',REFERENCE_SHA,'ticket12306_main_reference')
+     root_stat=ROOT.lstat()
+     need(stat.S_ISDIR(root_stat.st_mode) and root_stat.st_uid==0 and not root_stat.st_mode&0o077,
+          'ROOT_PRIVATE_NEW_EVIDENCE_DIRECTORY_REQUIRED')
+     reference.write_new(ROOT/'claim.json',{'schema':1,'nonce':NONCE,'package':PACKAGE,
+                                          'source_sha256':source_sha,'automatic_retry':False})
+     (ROOT/'evidence').mkdir(mode=0o700)
+-    result={'schema':1,'scope':'one exact Amazon user0 installed artifact metadata read',
++    result={'schema':1,'scope':'one exact 12306 user0 installed artifact and current launcher metadata read',
+             'nonce':NONCE,'package':PACKAGE,'source_sha256':source_sha,'ok':False,
+             'error':None,'secondary_errors':[],'UI_actions':0,'App_launches':0,
+             'instrumentation_calls':0,'permission_grants':0,'settings_writes':0,
+             'old_v2_helper_called':False,'Bili_scope_modified':False,'automatic_retry':False,
+             'whole_app_production_ready':False,'signer_certificate_independently_verified':False,
+-            'APK_bytes_exported':False,'current_package_inventory_scanned_or_exported':False}
++            'APK_bytes_exported':False,'current_package_inventory_scanned_or_exported':False,
++            'UID_version_APK_paths_are_current_observations_not_historical_assumptions':True,
++            'historical_matrix_sha256':'05e74a719281abab717464978d85393dec8d0d528c1e7ccbd93691f156ce56e4'}
+     target=ctx=None;lock=None;opened=[];phase='source';started=time.monotonic();guard=None
+     try:
+-        source=load(RECORDER_ROOT/'source_contract.py',SOURCE_CONTRACT_SHA,'amazon_shared_source_contract')
++        source=load(RECORDER_ROOT/'source_contract.py',SOURCE_CONTRACT_SHA,'ticket12306_shared_source_contract')
+         contract=source.SourceContract(RECORDER_ROOT/'source-manifest.json',RECORDER_MANIFEST)
+-        recorder=contract.load('recorder.py','amazon_command_reference')
+-        held=contract.load('references/held_runtime_r5.py','amazon_held_reference')
+-        binding=contract.load('main_binding.py','amazon_classpath_reference')
+-        transport=contract.load('bound_android_transport.py','amazon_environment_reference')
+-        install=load(INSTALLED_SOURCE/'install_state.py',INSTALL_SHA,'amazon_lock_reference',INSTALL_BYTES)
++        recorder=contract.load('recorder.py','ticket12306_command_reference')
++        held=contract.load('references/held_runtime_r5.py','ticket12306_held_reference')
++        binding=contract.load('main_binding.py','ticket12306_classpath_reference')
++        transport=contract.load('bound_android_transport.py','ticket12306_environment_reference')
++        install=load(INSTALLED_SOURCE/'install_state.py',INSTALL_SHA,'ticket12306_lock_reference',INSTALL_BYTES)
+         activation=json.loads(reference.read(reference.ACTIVATION,expected=reference.ACTIVATION_SHA))
+         verified=json.loads(reference.read(reference.VERIFIED,expected=reference.VERIFIED_SHA))
+         need(activation['main_deployed'] is True and verified['main_deployed'] is True and
+              verified['framework_epoch_sha256']==reference.EPOCH,'ACTIVATION_NOT_VERIFIED')
+         epoch=reference.module(reference.read(reference.EPOCH_SOURCE,expected=reference.EPOCH_SOURCE_SHA),
+-                               reference.EPOCH_SOURCE,'amazon_epoch_reference')
++                               reference.EPOCH_SOURCE,'ticket12306_epoch_reference')
+         def fixed_guard(check_deadline=True):
+             if check_deadline:
+                 need(time.monotonic()-started<WORK_SECONDS,'WHOLE_READ_DEADLINE')
+@@ -259,7 +282,7 @@
+         need(binding.same_epoch_identity(actual,expected),'FIXED_MAIN_INIT_IDENTITY_CHANGED')
+         target=held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA)
+         guard()
+-        app=load(Path(recorder.APP),recorder.APP_SHA,'amazon_existing_discovery_reference',37574)
++        app=load(Path(recorder.APP),recorder.APP_SHA,'ticket12306_existing_discovery_reference',37574)
+         init,discovered,status=app.discover()
+         need(init==expected['host_pid'] and status['host_pid']==activation['status']['host_pid'],
+              'FIXED_MAIN_DISCOVERY_CHANGED')
+@@ -271,7 +294,7 @@
+         ctx=Context(recorder,contract,target,guard,result)
+         phase='before_package_metadata';before=metadata(ctx.command(LIST,environment))
+         result['metadata_before']=before
+-        need(activation['packages'].get(PACKAGE)==before['uid'],'AMAZON_UID_CHANGED_FROM_FIXED_ACTIVATION')
++        need(activation['packages'].get(PACKAGE)==before['uid'],'TICKET12306_UID_CHANGED_FROM_FIXED_ACTIVATION')
+         result['historical_version_code']=HISTORICAL_VERSION
+         result['historical_version_still_matches']=before['version_code']==HISTORICAL_VERSION
+         phase='before_package_paths';paths=apk_paths(ctx.command(PATHS,environment));result['apk_paths_before']=paths
+@@ -283,8 +306,8 @@
+             first=identity(fd)
+             need(stat.S_ISREG(first['mode']) and first['nlink']==1 and
+                  first['uid']==first['gid']==1000 and not first['mode']&0o022 and
+-                 0<first['bytes']<=FILE_LIMIT,'AMAZON_INSTALLED_APK_SHAPE_OR_BOUND')
+-            need(total+first['bytes']<=TOTAL_LIMIT,'AMAZON_APK_TOTAL_BOUND')
++                 0<first['bytes']<=FILE_LIMIT,'TICKET12306_INSTALLED_APK_SHAPE_OR_BOUND')
++            need(total+first['bytes']<=TOTAL_LIMIT,'TICKET12306_APK_TOTAL_BOUND')
+             digest=hashlib.sha256();count=0
+             while True:
+                 need(time.monotonic()<deadline,'APK_STREAM_HASH_DEADLINE')
+@@ -294,16 +317,19 @@
+             need(count==first['bytes'] and identity(fd)==first,'APK_CHANGED_DURING_HASH')
+             artifacts.append({'path':path,'sha256':digest.hexdigest(),'held_file':first})
+             total+=count
++        phase='current_launcher_resolution'
++        result['launcher_resolution']=component(ctx.command(RESOLVE,environment))
+         phase='after_package_paths'
+-        need(apk_paths(ctx.command(PATHS,environment))==paths,'AMAZON_INSTALL_PATHS_CHANGED')
++        need(apk_paths(ctx.command(PATHS,environment))==paths,'TICKET12306_INSTALL_PATHS_CHANGED')
+         phase='after_package_metadata';after=metadata(ctx.command(LIST,environment))
+-        result['metadata_after']=after;need(after==before,'AMAZON_PACKAGE_METADATA_CHANGED')
++        result['metadata_after']=after;need(after==before,'TICKET12306_PACKAGE_METADATA_CHANGED')
+         phase='held_APK_revalidation'
+         for fd,row in zip(opened,artifacts):
+             need(identity(fd)==row['held_file'],'HELD_APK_CHANGED_AFTER_PACKAGE_RECHECK')
+             again=target.open_root(row['path'],os.O_RDONLY|os.O_NOFOLLOW)
+             try:need(identity(again)==row['held_file'],'APK_PATH_NO_LONGER_NAMES_HELD_FILE')
+             finally:os.close(again)
++        need(ctx.command_index==len(COMMANDS)==5,'EXACT_FIVE_READ_COMMANDS_COMPLETED')
+         target.verify();guard()
+         result.update(artifacts=artifacts,total_apk_bytes=total,actual_package_UID_version_APK_chain_stable=True,
+                       package_read_commands_completed=ctx.command_index,ok=True)
+--- amazon-install01/target-artifact-reference.json
++++ ticket-install01/target-artifact-reference.json
+@@ -1,83 +1,50 @@
+ {
+-  "Main": {
+-    "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+-    "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+-    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+-    "resource_limits_match": true,
+-    "three_host_processes_match": true,
+-    "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+-  },
+-  "actual_command_count": 4,
+   "artifacts": [
+     {
+       "held_file": {
+-        "bytes": 108964755,
+-        "ctime_ns": 1791397154845146986,
++        "bytes": 150377492,
++        "ctime_ns": 1791394388492211750,
+         "device": 1811,
+         "gid": 1000,
+-        "inode": 142748,
++        "inode": 1522,
+         "mode": 33188,
+-        "mtime_ns": 1791397154667142180,
++        "mtime_ns": 1791394388492211750,
+         "nlink": 1,
+         "uid": 1000
+       },
+-      "path": "/data/app/~~f40Bc_Kdu4iCypk0HxKLuQ==/com.amazon.mShop.android.shopping-56ZHsYZNdUrqbmrqz8ZX0g==/base.apk",
+-      "sha256": "4dedce3983286cd19e990de172d3db1155f7d5eeba4c8b2746bf12c1bb1c0089"
+-    },
+-    {
+-      "held_file": {
+-        "bytes": 63904213,
+-        "ctime_ns": 1791397154851320961,
+-        "device": 1811,
+-        "gid": 1000,
+-        "inode": 142746,
+-        "mode": 33188,
+-        "mtime_ns": 1791397154851320961,
+-        "nlink": 1,
+-        "uid": 1000
+-      },
+-      "path": "/data/app/~~f40Bc_Kdu4iCypk0HxKLuQ==/com.amazon.mShop.android.shopping-56ZHsYZNdUrqbmrqz8ZX0g==/split_config.arm64_v8a.apk",
+-      "sha256": "33fdd54130fd3b6a8161ef121e25ede85d79ac9c7ba18862b922aa8fb4754590"
+-    },
+-    {
+-      "held_file": {
+-        "bytes": 4157085,
+-        "ctime_ns": 1791397154845146986,
+-        "device": 1811,
+-        "gid": 1000,
+-        "inode": 142747,
+-        "mode": 33188,
+-        "mtime_ns": 1791397154652050212,
+-        "nlink": 1,
+-        "uid": 1000
+-      },
+-      "path": "/data/app/~~f40Bc_Kdu4iCypk0HxKLuQ==/com.amazon.mShop.android.shopping-56ZHsYZNdUrqbmrqz8ZX0g==/split_config.xxhdpi.apk",
+-      "sha256": "d8835c789ce742e6983b504afe4ba49fa0ce3671559fa8538ff9bd527e6f6f4e"
++      "path": "/data/app/~~8WknGWY1_FaWNGDrKZ_NZg==/com.MobileTicket-nuq4iEBbbWYXMgd8cHBMIA==/base.apk",
++      "sha256": "c7e56101e5753002bba220ce40d07b00d4bc822e1eeef12bbe36ec9e2f8e272d"
+     }
+   ],
++  "current_launcher_reference_only": {
++    "component": "com.MobileTicket/.ui.activity.WelcomeGuideActivity",
++    "fallback_used": false,
++    "later_launch_requires_new_current_binding": true,
++    "launch_performed": false,
++    "package": "com.MobileTicket",
++    "query_action": "android.intent.action.MAIN",
++    "query_category": "android.intent.category.LAUNCHER",
++    "resolve_stdout_sha256": "c2d47c9d1179d1f5350838e8dae3d70b49ade40028be9aa5234a9fc27fc6fe6e",
++    "user": 0
++  },
++  "data_source": "Exact original stdout/writer reconstruction matched emitted file hash; not a second held remote file read.",
+   "future_target_APK_hashes_and_UID_require_revalidation": true,
+-  "job": "1a1ab190ab3-fc05-4a52",
++  "job": "1a1abb1469c-fc05-4fcf",
+   "remote_held_result_file_readback_performed": false,
+   "runtime_UI_or_launch_actions": 0,
+   "schema": 1,
+   "signer_certificate_independently_verified": false,
+-  "source_reader_sha256": "22a6552111154156004aff344d6929db436d5c3fe084893abea931f1399b0588",
++  "source_reader_sha256": "77e6a5056f0de303ab8d81b0864999cdbf5d244442eb31d48c65ce49f4981d9d",
+   "state": "ACTUAL_READONLY_IDENTITY_REFERENCE_REQUIRES_FRESH_RUNTIME_REVALIDATION",
+   "target": {
+-    "package": "com.amazon.mShop.android.shopping",
+-    "uid": 10129,
++    "package": "com.MobileTicket",
++    "uid": 10121,
+     "user": 0,
+-    "version_code": 1243240206
++    "version_code": 275
+   },
+   "whole_app_production_ready": false,
+-  "wire": {
+-    "bytes": 8622,
+-    "sha256": "956819cf0caac5bb4ba13147107e419319d9d8c06b84400954de821b08d28a31"
+-  },
+-  "worker_bytes_method": "exact stdout object serialized with original sorted UTF8 pretty writer; hash matched original result_file pin",
+   "worker_result": {
+-    "bytes": 8549,
+-    "path": "/home/alex/work/pocket4-amazon-artifact-readonly-01/result.json",
+-    "sha256": "0e0e81540f3366ce8627336d21caa125b8f84db51b98361f195b3cf9e625faad"
++    "bytes": 8835,
++    "sha256": "7ec1d8756cefd536a04d3459041dd302b49bc0e50047c8ddf1f83418bc444abb"
+   }
+ }

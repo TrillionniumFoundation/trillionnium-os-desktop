@@ -1,0 +1,19 @@
+--- build01/make_request
++++ build02/make_request
+@@ -8,11 +8,11 @@
+ 
+ HERE=Path(__file__).resolve().parent
+ CORES={'listener-source-pins.json':HERE.parent/'factory-role-listener-source-freeze02',
+-       'owner-lifetime-source-pins.json':HERE.parent/'factory-role-session-owner-lifetime-source-freeze02'}
+-ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-01-20261105'
+-KEY='pocket4-role-listener-lifetime-host-build-01-20261105'
+-AUTHORITIES={'listener-source-pins.json': {'bytes': 9518, 'sha256': '7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'}, 'owner-lifetime-source-pins.json': {'bytes': 7698, 'sha256': '072315957a20bd8fdd83efccbea0ca633a3815f867bb07d6091bc42b07762db5'}}
+-CONTROLLER_SHA='b8bc223e8438a56308acf52a965c062814be0ace6d5eef476a056aacc702d17c'
++       'owner-lifetime-source-pins.json':HERE.parent/'factory-role-lease-fixture-spawn-safety-freeze01'}
++ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-02-20261105'
++KEY='pocket4-role-listener-lifetime-host-build-02-20261105'
++AUTHORITIES={'listener-source-pins.json': {'bytes': 9518, 'sha256': '7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'}, 'owner-lifetime-source-pins.json': {'bytes': 1698, 'sha256': 'de1ef1fb3044b9bdc935fe32b812bb53e88aaf4be54b439df7d78f963e813209'}}
++CONTROLLER_SHA='81c2367785b8ff173e2640ecb71c68604c186cc629e2e5d2963289a8b83761be'
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+ def write(path,data):

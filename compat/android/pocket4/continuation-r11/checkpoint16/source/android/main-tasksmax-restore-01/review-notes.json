@@ -1,0 +1,42 @@
+{
+  "actual_identity_bound": {
+    "bytes": 23490,
+    "sha256": "5b05db0897b2eb85dbd4e71df77bbbb24ff481d78a8965492c0729bcd9e4de99"
+  },
+  "failure_protocol": [
+    "primary error plus secondary notes preserved",
+    "all post observations independent once mutation preflight completes",
+    "partial config write never retried and never given a new_claim",
+    "automatic config-only rollback allowed before property admission only and only same exact transaction-new133 bytes/metadata/held-named original inode",
+    "after property admission any failure retains partial state; no reverse property command",
+    "disk result.json remains FINAL_EVIDENCE_CLOSE_PENDING or FAIL; authoritative full stdout is produced after evidence FD close and carries exact disk result pin"
+  ],
+  "limitations": [
+    "single pwrite is not atomic whole-file replacement",
+    "action flock excludes cooperating QA, not arbitrary privileged writers; no global check-and-write CAS claim",
+    "/home/alex/work is the existing operator-writable parent, not claimed root-owned; new child is root0700, parent+child held/named checks are recorded",
+    "SIGKILL, host loss or a blocked kernel filesystem operation can leave partial state; terminal or unknown job is never replayed",
+    "local12 controls test owned filesystem/FD paths and explicit seams, not actual Main/systemd behavior"
+  ],
+  "main_constraints": [
+    "old guard and five-input identity collector exact bytes",
+    "all seven identity maps, boot and original three input SHAs rechecked before and after",
+    "before only pids.max=6144 mismatch; four others exact",
+    "after original guard must PASS; full expected five limits, current service identity and TasksMax12288 match",
+    "no reload, restart, additional dropin, engine/supervisor replacement, Android, APK or UI"
+  ],
+  "purpose": "Restore only original Main TasksMax=12288, while preserving original activation and guard",
+  "remaining": [
+    "Root/Owner final source+request review",
+    "Root unique dispatch and authoritative full original result",
+    "independent post-exit readback before reopening QA runtime window"
+  ],
+  "schema": 1,
+  "source_readiness": "READY_FOR_ROOT_AND_OWNER_REVIEW_NOT_EXECUTED",
+  "source_review_history": "unsubmitted draft01 preserved with Journal constructor exception gap, old ten controls did not cover it; final two controls cover precisely that gap",
+  "writes": [
+    "one 133-byte pwrite to already-held original90 inode after exact old132 bytes/fullmetadata/named-parent checks",
+    "single held ELF systemctl set-property droidloomd.service TasksMax=12288; existing50 body must stay original146 bytes",
+    "fresh root-owned0700 evidence only under existing /home/alex/work"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "QA_actions_not_executed_by_this_review": true,
+  "all_five_limits": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "all_three_input_and_two_source_metadata_hashes_unchanged": true,
+  "boot_same": true,
+  "both_seven_process_maps_equal_original_activation": true,
+  "collection_elapsed_ms": 15,
+  "collector_complete": true,
+  "error": null,
+  "no_child_no_UI_no_writes": true,
+  "original": {
+    "bytes": 23171,
+    "job_id": "1a1acce7e5d-fc05-5704",
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/main-identity-readonly02/stdout.log",
+    "root_reported_terminal": {
+      "complete": true,
+      "durable": true,
+      "exit_code": 0
+    },
+    "sha256": "e9344b538fbf6f6f06442b27d81d772be40db0ee3f3805823648a0a733055116"
+  },
+  "original_guard_or_activation_changed": false,
+  "owned_fds_closed": true,
+  "result": "ORIGINAL_MAIN_IDENTITY_AND_RESOURCE_GUARD_PASS_POST_EXIT",
+  "runtime_dispatch_owner": "Root, exact reviewed requests only",
+  "schema": 1,
+  "scope": "independent post-exit original read-only result review; no new device access",
+  "secondary_errors": [],
+  "source_bytes_unchanged": 18537,
+  "source_sha256": "4b955afce019418e98282aa4af549ab1089afc040a5c8990b7713be5f8b4585e",
+  "unchanged_original_guard": {
+    "attempted": true,
+    "completed": true,
+    "passed": true,
+    "return_value": {
+      "Main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+      "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+      "resource_limits_match": true,
+      "three_host_processes_match": true,
+      "verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+    }
+  },
+  "whole_app_production_ready": false
+}

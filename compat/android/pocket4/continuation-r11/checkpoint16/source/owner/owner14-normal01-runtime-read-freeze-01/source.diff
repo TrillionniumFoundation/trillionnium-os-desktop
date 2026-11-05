@@ -1,0 +1,48 @@
+--- owner11-prepared/read.py
++++ owner14-runtime/read.py
+@@ -7,10 +7,10 @@
+ import stat
+ import traceback
+ 
+-ROOT_NAME = 'p4-owner11-normal-20261105-01-state'
+-EXPECTED_REPORT_BYTES = 55139
+-EXPECTED_REPORT_SHA256 = 'd48a503751555736dd85b54211a89c4a2b51371adf41c860f44cd3887b8c5bf5'
+-NAMES = ('prepared.json',)
++ROOT_NAME = 'p4-owner14-normal-20261105-01-state'
++EXPECTED_REPORT_BYTES = 57774
++EXPECTED_REPORT_SHA256 = '954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea'
++NAMES = ('runtime-result.json',)
+ LIMIT = 1048576
+ 
+ 
+@@ -60,16 +60,16 @@
+         result = {'path': '/opt/' + ROOT_NAME + '/' + name, 'bytes': len(body),
+                   'sha256': hashlib.sha256(body).hexdigest(), 'identity': stamp(after),
+                   'content': body.decode('utf-8')}
+-        if name == 'prepared.json':
++        if name == 'runtime-result.json':
+             need(result['bytes'] == EXPECTED_REPORT_BYTES and result['sha256'] == EXPECTED_REPORT_SHA256,
+-                 'externally pinned actual prepared report differs')
++                 'externally pinned actual runtime report differs')
+         return result
+     finally:
+         os.close(fd)
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'fixed-owner11-normal01-prepared-read', 'collection_complete': False,
++    result = {'schema': 1, 'kind': 'fixed-owner14-normal01-runtime-read', 'collection_complete': False,
+               'files': {}, 'errors': [], 'mutations': False, 'qualification': False}
+     fds = []
+     try:
+@@ -84,8 +84,8 @@
+         need(sum(item['bytes'] for item in result['files'].values()) <= LIMIT,
+              'aggregate member bound exceeded')
+         need(stamp(os.fstat(root)) == identity and stamp(os.stat(ROOT_NAME, dir_fd=opt, follow_symlinks=False)) == identity,
+-             'held prepared directory changed')
+-        need(read_member(root, 'prepared.json') == result['files']['prepared.json'],
++             'held runtime directory changed')
++        need(read_member(root, 'runtime-result.json') == result['files']['runtime-result.json'],
+              'original report changed at end')
+         result['collection_complete'] = True
+     except BaseException as error:

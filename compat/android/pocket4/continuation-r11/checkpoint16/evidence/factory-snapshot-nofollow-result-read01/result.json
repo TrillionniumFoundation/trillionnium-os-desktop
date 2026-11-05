@@ -1,0 +1,347 @@
+{
+  "Android_execution": false,
+  "Main_actions": 0,
+  "Main_identity_observed": false,
+  "actual_build_receipt": {
+    "bytes": 91682,
+    "identity": [
+      66306,
+      36972772,
+      33152,
+      91682,
+      1793883980261569345,
+      1793883980261569345
+    ],
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/result.json",
+    "sha256": "818bab5d2c0daead8cd597228480b15d7fc12ef7be06cd2b143f316c7f57a4e0"
+  },
+  "assessment": {
+    "cases": [
+      {
+        "actual_kernel_identity": true,
+        "case": "authorized_root_sealed_v2_snapshot",
+        "maps_formatter": "owned_fixture",
+        "production_platform_policy": false,
+        "snapshot_created": true,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "wrong_source_rejected_then_same_grant_recovers",
+        "maps_formatter": "owned_fixture",
+        "production_platform_policy": false,
+        "snapshot_created": true,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "unsealed_input_rejected_then_same_grant_recovers",
+        "maps_formatter": "owned_fixture",
+        "production_platform_policy": false,
+        "snapshot_created": true,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "size_mismatch_rejected_then_same_grant_recovers",
+        "maps_formatter": "owned_fixture",
+        "production_platform_policy": false,
+        "snapshot_created": true,
+        "state": "PASS"
+      },
+      {
+        "actual_kernel_identity": true,
+        "case": "nofollow_status_flags_and_kernel_reopen",
+        "maps_formatter": "owned_fixture",
+        "production_platform_policy": false,
+        "snapshot_created": true,
+        "state": "PASS"
+      }
+    ],
+    "summary": {
+      "Main_actions": 0,
+      "assertions": 449,
+      "cases": 5,
+      "cleanup_unreaped": 0,
+      "direct_children_reaped": 5,
+      "factory_service_started": false,
+      "forced_cleanup": 0,
+      "maps_formatter": "owned_fixture",
+      "nested_children_reaped": 0,
+      "platform_policy_qualified": false,
+      "snapshot_created": true,
+      "state": "PASS_OWNED_ROLE_SNAPSHOT"
+    }
+  },
+  "authority_unchanged_after": true,
+  "cleanup": {
+    "errors": [],
+    "forced_cleanup": false,
+    "initial_owned_children": [],
+    "reaped": [],
+    "remaining": []
+  },
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/ldd",
+        "/proc/self/fd/5"
+      ],
+      "cwd": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source",
+      "finished_utc": "2026-11-05T13:39:12.707639+00:00",
+      "label": "runtime-libraries",
+      "returncode": 0,
+      "started_utc": "2026-11-05T13:39:12.701887+00:00",
+      "stderr": {
+        "bytes": 0,
+        "identity": [
+          28,
+          1312821,
+          33152,
+          0,
+          1793885952700462349,
+          1793885952700462349
+        ],
+        "path": "/run/pocket4-snapshot-nofollow-host-run-01-20261105/run01/runtime-libraries.stderr",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 390,
+        "identity": [
+          28,
+          1312820,
+          33152,
+          390,
+          1793885952704462393,
+          1793885952704462393
+        ],
+        "path": "/run/pocket4-snapshot-nofollow-host-run-01-20261105/run01/runtime-libraries.stdout",
+        "sha256": "cf8be9933c4582b4427b8c7d67d262d33957036ccbd91bf24076648b2056470c"
+      },
+      "timed_out": false
+    }
+  ],
+  "execution": {
+    "child_pid": 2194086,
+    "child_reaped": true,
+    "fd_exec": true,
+    "finished_utc": "2026-11-05T13:39:12.736613+00:00",
+    "held_elf_path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/build01/snapshot_controls",
+    "returncode": 0,
+    "started_utc": "2026-11-05T13:39:12.715696+00:00",
+    "stderr": {
+      "bytes": 0,
+      "identity": [
+        28,
+        1312824,
+        33152,
+        0,
+        1793885952715600205,
+        1793885952715600205
+      ],
+      "path": "/run/pocket4-snapshot-nofollow-host-run-01-20261105/run01/snapshot.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stdout": {
+      "bytes": 1257,
+      "identity": [
+        28,
+        1312823,
+        33152,
+        1257,
+        1793885952726186313,
+        1793885952726186313
+      ],
+      "path": "/run/pocket4-snapshot-nofollow-host-run-01-20261105/run01/snapshot.stdout",
+      "sha256": "7b817fc3c4ec032f33b5697b0b72e3c5395f56ab12ebdf9500e44bd7b4aafa43"
+    },
+    "timed_out": false,
+    "wait_status": 0
+  },
+  "factory_service_started": false,
+  "finished_utc": "2026-11-05T13:39:12.783249+00:00",
+  "held_ELF_unchanged_after": true,
+  "library_changes": [],
+  "maps_formatter": "owned_fixture",
+  "owned_memory_events_delta": {
+    "high": 0,
+    "low": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0,
+    "sock_throttled": 0
+  },
+  "owned_memory_peak": 25538560,
+  "owned_memory_swap_peak": 0,
+  "owned_resource_gate": {
+    "after": {
+      "controller_pid": 2194066,
+      "directory_identity": [
+        30,
+        30645295
+      ],
+      "events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "fields": {
+        "cgroup.procs": "2194053\n2194060\n2194066",
+        "cpu.max": "50000 100000",
+        "memory.current": "23822336",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "max",
+        "memory.max": "268435456",
+        "memory.peak": "25538560",
+        "memory.swap.current": "0",
+        "memory.swap.max": "max",
+        "memory.swap.peak": "0"
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abef43f5-fc05-5156.service",
+      "observed_utc": "2026-11-05T13:39:12.783184+00:00",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abef43f5-fc05-5156.service"
+    },
+    "before": {
+      "controller_pid": 2194066,
+      "directory_identity": [
+        30,
+        30645295
+      ],
+      "events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "fields": {
+        "cgroup.procs": "2194053\n2194060\n2194066",
+        "cpu.max": "50000 100000",
+        "memory.current": "20230144",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "max",
+        "memory.max": "268435456",
+        "memory.peak": "20230144",
+        "memory.swap.current": "0",
+        "memory.swap.max": "max",
+        "memory.swap.peak": "0"
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abef43f5-fc05-5156.service",
+      "observed_utc": "2026-11-05T13:39:12.686056+00:00",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abef43f5-fc05-5156.service"
+    },
+    "memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak": 25538560,
+    "memory_swap_peak": 0,
+    "pass": true,
+    "resource_settings_changed": false,
+    "swap_max_observed_only": "max"
+  },
+  "owned_resources_after": {
+    "controller_pid": 2194066,
+    "directory_identity": [
+      30,
+      30645295
+    ],
+    "events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "fields": {
+      "cgroup.procs": "2194053\n2194060\n2194066",
+      "cpu.max": "50000 100000",
+      "memory.current": "23822336",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "max",
+      "memory.max": "268435456",
+      "memory.peak": "25538560",
+      "memory.swap.current": "0",
+      "memory.swap.max": "max",
+      "memory.swap.peak": "0"
+    },
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abef43f5-fc05-5156.service",
+    "observed_utc": "2026-11-05T13:39:12.783184+00:00",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abef43f5-fc05-5156.service"
+  },
+  "owned_resources_before": {
+    "controller_pid": 2194066,
+    "directory_identity": [
+      30,
+      30645295
+    ],
+    "events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "fields": {
+      "cgroup.procs": "2194053\n2194060\n2194066",
+      "cpu.max": "50000 100000",
+      "memory.current": "20230144",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "max",
+      "memory.max": "268435456",
+      "memory.peak": "20230144",
+      "memory.swap.current": "0",
+      "memory.swap.max": "max",
+      "memory.swap.peak": "0"
+    },
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abef43f5-fc05-5156.service",
+    "observed_utc": "2026-11-05T13:39:12.686056+00:00",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1abef43f5-fc05-5156.service"
+  },
+  "platform_policy_qualified": false,
+  "production_source_changed": false,
+  "runtime_libraries": {
+    "bytes": 2346,
+    "path": "/run/pocket4-snapshot-nofollow-host-run-01-20261105/run01/runtime-libraries-before.json",
+    "sha256": "e889b5d723d1026d97cee2a75a6ce1bc0e824f6ea6a4377ab4bc3faa289f9318"
+  },
+  "schema": 1,
+  "scope": "fixed root / owned O_RDONLY and exact O_NOFOLLOW sealed snapshot; no policy change",
+  "selected_cpus": [
+    23
+  ],
+  "snapshot_created": true,
+  "source_authority": {
+    "bytes": 4866,
+    "identity": [
+      66306,
+      36972662,
+      33024,
+      4866,
+      1793883977098978249,
+      1793883977098978249
+    ],
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/snapshot-nofollow-host-build-01-20261105/source/nofollow-source-pins.json",
+    "sha256": "310e7370a78cc63f0ad72527fbeb37f58f884fdf3ca45ee0acc37e1aee46ad36"
+  },
+  "source_unchanged_after": true,
+  "started_utc": "2026-11-05T13:39:12.685590+00:00",
+  "state": "PASS_OWNED_ROLE_SNAPSHOT",
+  "tool_changes": []
+}

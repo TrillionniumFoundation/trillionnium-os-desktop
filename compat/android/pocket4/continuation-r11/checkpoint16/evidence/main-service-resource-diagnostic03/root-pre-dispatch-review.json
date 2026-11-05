@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "scope": "One fixed read-only systemctl show and same held Main cgroup before/after; no new Main runtime authorization",
+  "root_full_source_read": {
+    "predecessor_bytes": 22807,
+    "predecessor_sha256": "2a23f28c9cb76f5029f4d4a86402946894c3c909dccc8070008220513d2eb0ce",
+    "final_source_bytes": 22881,
+    "final_source_sha256": "d785f4b0fd6d137a6677c811296eeae187afe0086afbeef142e12bac127e35e6",
+    "one_line_delta_bytes": 709,
+    "one_line_delta_sha256": "3080ede6dba954e7f95bebab78d2b28f79babaf82a78f1be7ecca0c10f968b9c"
+  },
+  "request_wrapper_full_read": true,
+  "request_stdin_byte_equal": true,
+  "frozen_payloads_verified": 6,
+  "previous_diagnostic": {
+    "job_id": "1a1ac68ec9a-fc05-5421",
+    "stdout_sha256": "021fec618c68b59a9ee836b7eb76e7325566c16e960e3f07fe40603969001a9a",
+    "only_observed_difference": "pids.max expected12288 current6144"
+  },
+  "expected_service": {
+    "unit": "droidloomd.service",
+    "scope": "system",
+    "MainPID": 3588022,
+    "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+    "cgroup_device": 30,
+    "cgroup_inode": 26651611
+  },
+  "read_limits_and_counters": 7,
+  "systemctl_properties": 12,
+  "config_file_bodies_read": 0,
+  "service_or_cgroup_writes": 0,
+  "Android_UI_actions": 0,
+  "gate_or_activation_changes": 0,
+  "baseline_rebinding": false,
+  "exact_child_signal_and_wait_independent": true,
+  "tool_current_held_root_owned_ELF_and_hash_verified_before_after": true,
+  "limits": {
+    "read_deadline_seconds": 12,
+    "systemctl_deadline_seconds": 5,
+    "independent_reap_seconds": 2,
+    "stdout_stderr_each_maximum": 16384,
+    "outer_timeout_seconds": 30,
+    "memory_max_bytes": 134217728,
+    "cpu_quota_percent": 100
+  },
+  "automatic_retry": false
+}

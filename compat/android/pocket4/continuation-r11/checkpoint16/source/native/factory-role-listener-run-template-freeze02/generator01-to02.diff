@@ -1,0 +1,20 @@
+--- template01/generator
++++ template02/generator
+@@ -7,12 +7,12 @@
+ import json
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT='/run/pocket4-role-listener-lifetime-host-run-01-20261105'
+-KEY='pocket4-role-listener-lifetime-host-runtime-01-20261105'
++ROOT='/run/pocket4-role-listener-lifetime-host-run-02-20261105'
++KEY='pocket4-role-listener-lifetime-host-runtime-02-20261105'
+ SOURCE_MANIFEST='7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'
+-TEMPLATE_SHA='053e26699c72f98b98109eff218c549f029de5688d368e996c0af94348cb694d'
+-PLAN_SHA='ad48e72af621816d6b5f9672cba8673aa8f2e11abe53013111bc4fd379928a30'
+-BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-01-20261105'
++TEMPLATE_SHA='9b814e77514c0e57da467e4f15ddb3d61db3c299c30f07a24d6d4bf78875eb09'
++PLAN_SHA='b440df29027c3b0516ef09e457346a1577d42545a4e373e69d1b22821f055a9a'
++BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-02-20261105'
+ 
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}

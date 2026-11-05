@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "phase": "local manifest-shape validation",
+  "error": "AttributeError: 'list' object has no attribute 'items'",
+  "cause": "Root checker assumed SOURCE_PINS.files was a map; actual frozen schema is a list.",
+  "before_remote_dispatch": true,
+  "request_source_unchanged": true,
+  "correction": "Iterate each existing row and use its path."
+}

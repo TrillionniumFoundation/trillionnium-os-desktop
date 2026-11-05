@@ -1,0 +1,61 @@
+--- reconciliation03/read_requests.py
++++ reconciliation04/read_requests.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""One read-only scan for two fixed, independently pinned ACK-unknown requests."""
++"""One read-only scan for one fixed, independently pinned ACK-unknown runtime request."""
+ import hashlib
+ import json
+ import os
+@@ -10,34 +10,18 @@
+ 
+ JOBS = '/home/alex/.local/state/hepta-runtime-mac-worker/jobs'
+ EXPECTED_UID = 1000
+-TARGETS = [{'label': 'ordinary14',
+-  'approved_request_sha256': 'd383190cf90e1d752e1fcc3de757c9c9cb9092e1646235ad33e40cd71d535fc6',
+-  'stdin_bytes': 35263,
+-  'stdin_sha256': '9eef9bf99c688d128467c9962f7aec8d077a2e65b39042e3a1236f663cbe4ec4',
+-  'execution': {'executable': '/usr/bin/python3',
+-                'args': ['-I',
+-                         '-B',
+-                         '-',
+-                         '--compile-sha256',
+-                         'a916592cc708dc76411b482a371214410bca4662f6ff72dccd5083d88872b6a6'],
+-                'cwd': '/home/alex/work',
+-                'env': {},
+-                'cpu_quota_percent': 100,
+-                'memory_max_bytes': 536870912,
+-                'nice': 10,
+-                'timeout_seconds': 180}},
+- {'label': 'native_snapshot_result_reader01',
+-  'approved_request_sha256': '1abe8d99f05c416230160e0c91954044f41e0baee7a44a7d11efb5c349ecdec8',
+-  'stdin_bytes': 3998,
+-  'stdin_sha256': '6131191253a9a22666cfd74f2e1fd1e7fa22d9fa4457084512e5cccc144005b3',
++TARGETS = [{'label': 'native_nofollow_runtime01',
++  'approved_request_sha256': '407b5a345263ecdf8a8b6e7582edf4484fa898053cfe930abc23c3498ca3cd8e',
++  'stdin_bytes': 138246,
++  'stdin_sha256': '80ae75307eb4043f28857a67d5b5989933260c610a588c63c18298d9b4a5e799',
+   'execution': {'executable': '/usr/bin/sudo',
+-                'args': ['-n', '/usr/bin/python3', '-I', '-', '--collect'],
++                'args': ['-n', '/usr/bin/python3', '-I', '-B', '-'],
+                 'cwd': '/',
+                 'env': {},
+-                'cpu_quota_percent': 25,
+-                'memory_max_bytes': 134217728,
++                'cpu_quota_percent': 50,
++                'memory_max_bytes': 268435456,
+                 'nice': 15,
+-                'timeout_seconds': 30}}]
++                'timeout_seconds': 120}}]
+ ENTRY_LIMIT = 4096
+ REQUEST_LIMIT = 131072
+ TOTAL_READ_LIMIT = 32 * 1024 * 1024
+@@ -312,7 +296,7 @@
+                 not state['unreadable_or_rejected_counts'] and not state['unrecognized_names'] and
+                 not state['close_errors'])
+     result = {
+-        'schema': 1, 'scope': 'READ_ONLY_TWO_FIXED_EXECUTION_METADATA_RECONCILIATION',
++        'schema': 1, 'scope': 'READ_ONLY_ONE_FIXED_EXECUTION_METADATA_RECONCILIATION',
+         'targets': targets,
+         'idempotency_key_present_or_verified': False,
+         'request_digest_recomputed': False,

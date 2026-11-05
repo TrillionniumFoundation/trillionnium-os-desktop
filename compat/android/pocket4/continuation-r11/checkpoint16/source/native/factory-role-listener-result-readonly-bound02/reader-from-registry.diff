@@ -1,0 +1,16 @@
+--- registry-result-readonly01/read_result.py
++++ listener-result-readonly02/read_result.py
+@@ -8,10 +8,10 @@
+ import stat
+ import sys
+ 
+-PATH = "/run/pocket4-registry-owner-destruction-host-run-01-20261105/run01/result.json"
++PATH = "/run/pocket4-role-listener-lifetime-host-run-02-20261105/run01/result.json"
+ MAXIMUM = 131072
+-EXPECTED_BYTES = 14960
+-EXPECTED_SHA256 = "e30bd4e0e1451a10ace755c235755b57d1fd630c74d99a4a9cd95a6b63e70afb"
++EXPECTED_BYTES = 18856
++EXPECTED_SHA256 = "aa9ab8288afe323943c71d99a0ccc07d6f79ee100a242a5dadbbf9f43a2cd9d7"
+ 
+ 
+ def need(value, message):

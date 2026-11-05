@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "review": "Root exact source/actual-build/runtime binding review",
+  "actual_build": {
+    "bytes": 88374,
+    "sha256": "e2ac7f9204b7bf9a2f53f11f28f02ac0c7f9e56202a33e1b4f71b69636e5116d",
+    "original_job": "1a1ac4d8da0-fc05-5380",
+    "state": "PASS_BUILD_ONLY",
+    "commands": 37,
+    "commands_zero_no_timeout": true,
+    "dependency_count": 357,
+    "source_unchanged": true,
+    "tools_unchanged": true,
+    "cleanup_empty": true
+  },
+  "root_read_complete": {
+    "runtime_diff": {
+      "bytes": 21489,
+      "sha256": "294d39964b57c7ba28825aaa02d48f513e1b4d052e894d8487721d3eb31e1a60"
+    },
+    "generator_diff": {
+      "bytes": 4429,
+      "sha256": "38a5380c8e67faca76535c1cda9bb3441152018b50513f058dd0e824dd838202"
+    }
+  },
+  "original_reviewed_control_source": {
+    "bytes": 12355,
+    "sha256": "4657b472cc15dc6e6fcd992d69739062df805b490ca8f2ff5113de23ad5ee614"
+  },
+  "independent_actual_build_review": {
+    "bytes": 10993,
+    "sha256": "13b85cfead604386a6e5659425514cb39e5654eda88f1b35dd4ca222a4a9b1f9"
+  },
+  "request_and_stdin_pins_verified": true,
+  "packet_entries": 3,
+  "packet_source_byte_equal": true,
+  "runner_only_single_actual_sha_substitution": true,
+  "plan": {
+    "preimage_cases": 2,
+    "candidate_cases": 4,
+    "sequential_arms": true,
+    "hold_both_exact_elfs_and_verify_libraries_before_either": true,
+    "normal_reaping_required": true,
+    "any_failure_stops": true
+  },
+  "limits": {
+    "cpu_quota_percent": 50,
+    "memory_max_bytes": 268435456,
+    "inner_deadline_seconds": 90,
+    "outer_timeout_seconds": 120,
+    "leave_two_logical_cpus_free": true,
+    "swap_observation_only": true
+  },
+  "scope": {
+    "Main_actions": 0,
+    "Main_identity_observed": false,
+    "Android_execution": false,
+    "production_deployment": false,
+    "platform_policy_qualified": false
+  },
+  "automatic_retry": false
+}

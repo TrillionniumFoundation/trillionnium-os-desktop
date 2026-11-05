@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "scope": "Matching non-root ordinary Rust library controls and existing IPC/worker/ABI controls; no namespace/Android/Owner runtime.",
+  "actual_compile": {
+    "bytes": 39999,
+    "sha256": "3327495b8cc3302dcc18ac72a7495f88d3354788404d2b05d1194d1e6e89ee30",
+    "full_original_read_verified": true,
+    "independent_owner_peer_full_verification": true
+  },
+  "source_input_pins_exact": 32,
+  "overlay_sources_exact": 4,
+  "source_inventory_before_after": "acd7a623dc28f83363d67aec1d4befe64c85cf852fa564312783005abc7a05b8",
+  "compile_commands_0": 2,
+  "compiled_binaries": 4,
+  "compiled_library_test_targets": 2,
+  "ordinary_payload_pins_verified": 5,
+  "template_changes_only": [
+    "args[-1] actual compile SHA256",
+    "idempotency_key"
+  ],
+  "stdin_exact_frozen_run_py": {
+    "bytes": 35535,
+    "sha256": "32f3875a20fb3da3bccf77235e77937c396881f024d9a457bb2a0a17634c0e94"
+  },
+  "expected_not_yet_executed": {
+    "relay": 39,
+    "supervisor": 128,
+    "ipc": 7,
+    "targeted_retirement": 2,
+    "worker_context": true,
+    "entry_abi": 3
+  },
+  "limits": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912,
+    "timeout_seconds": 180
+  },
+  "Main_actions": 0,
+  "full_owner_runtime_qualified": false
+}

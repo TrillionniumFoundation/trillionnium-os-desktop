@@ -1,0 +1,467 @@
+{
+  "action_lock": {
+    "identity": {
+      "device": 28,
+      "gid": 0,
+      "inode": 8312,
+      "mode": 33152,
+      "nlink": 1,
+      "uid": 0
+    },
+    "path": "/run/lock/android-digitalis-actions.lock"
+  },
+  "config_evidence": {
+    "bytes": 3947,
+    "job_id": "1a1ac95db0a-fc05-5588",
+    "sha256": "5f7902846380b501d51ed7fffa46ed07f057cf650a524674cdbbd0113701984d"
+  },
+  "configs": [
+    {
+      "before": {
+        "ctime_ns": 1793757666595952630,
+        "device": 66306,
+        "gid": 0,
+        "inode": 76546888,
+        "mode": 33188,
+        "mtime_ns": 1793757666595952630,
+        "nlink": 1,
+        "size": 146,
+        "uid": 0
+      },
+      "bytes": 146,
+      "original_base64": "IyBUaGlzIGlzIGEgZHJvcC1pbiB1bml0IGZpbGUgZXh0ZW5zaW9uLCBjcmVhdGVkIHZpYSAic3lzdGVtY3RsIHNldC1wcm9wZXJ0eSIKIyBvciBhbiBlcXVpdmFsZW50IG9wZXJhdGlvbi4gRG8gbm90IGVkaXQuCltTZXJ2aWNlXQpUYXNrc01heD0xMjI4OAo=",
+      "path": "/etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf",
+      "sha256": "efc86c948c22294919c23c43fa11382b6e0c13d96883239e7d79a24c027d0f63"
+    },
+    {
+      "before": {
+        "ctime_ns": 1791606739021216291,
+        "device": 66306,
+        "gid": 0,
+        "inode": 76546864,
+        "mode": 33188,
+        "mtime_ns": 1791606739021216291,
+        "nlink": 1,
+        "size": 132,
+        "uid": 0
+      },
+      "bytes": 132,
+      "original_base64": "W1NlcnZpY2VdCkNQVVF1b3RhPTIwMCUKTWVtb3J5SGlnaD01RwpNZW1vcnlNYXg9NkcKVGFza3NNYXg9NjE0NApFeGVjU3RhcnRQcmU9L29wdC9hbmRyb2lkLWRpZ2l0YWxpcy12YWxpZGF0aW9uL2NoZWNrLWtlcm5lbC1jb21wYXQK",
+      "path": "/etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+      "sha256": "1ddafeb233beabb556bdc9f1cbd3a1af78d00a0489675facad2d02493ba431a7"
+    }
+  ],
+  "expected_boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+  "expected_limits": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "expected_processes": {
+    "daemon_process": {
+      "cgroup": [
+        "0::/system.slice/droidloomd.service"
+      ],
+      "cmdline": [
+        "/usr/bin/droidloomd"
+      ],
+      "executable": "/usr/bin/droidloomd",
+      "host_pid": 3588022,
+      "namespace_pids": [
+        3588022
+      ],
+      "namespaces": {
+        "mnt": "mnt:[4026531832]",
+        "pid": "pid:[4026531836]"
+      },
+      "parent_host_pid": 1,
+      "start_ticks": 80796995,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "init": {
+      "cgroup": [
+        "0::/system.slice/droidloomd.service"
+      ],
+      "cmdline": [
+        "/init",
+        "second_stage"
+      ],
+      "executable": "/system/bin/init",
+      "host_pid": 3588093,
+      "namespace_pids": [
+        3588093,
+        1
+      ],
+      "namespaces": {
+        "mnt": "mnt:[4026533284]",
+        "pid": "pid:[4026533288]"
+      },
+      "parent_host_pid": 3588092,
+      "start_ticks": 80797014,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "launcher_process": {
+      "cgroup": [
+        "0::/system.slice/droidloomd.service"
+      ],
+      "cmdline": [
+        "/usr/bin/python3",
+        "-I",
+        "/usr/local/libexec/droidloom-compat/unshare",
+        "--mount",
+        "--pid",
+        "--mount-proc",
+        "--ipc",
+        "--uts",
+        "--fork",
+        "--kill-child=TERM",
+        "--forward-signals",
+        "--propagation=private",
+        "/usr/bin/droidloom-supervisor",
+        "development-enter",
+        "--spec",
+        "/etc/droidloom/cell.json"
+      ],
+      "executable": "/usr/bin/python3.14",
+      "host_pid": 3588089,
+      "namespace_pids": [
+        3588089
+      ],
+      "namespaces": {
+        "mnt": "mnt:[4026533281]",
+        "pid": "pid:[4026531836]"
+      },
+      "parent_host_pid": 3588022,
+      "start_ticks": 80797013,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "presenter_process": {
+      "cgroup": [
+        "0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service"
+      ],
+      "cmdline": [
+        "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland"
+      ],
+      "executable": "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland",
+      "host_pid": 3588024,
+      "namespace_pids": [
+        3588024
+      ],
+      "namespaces": {
+        "mnt": "mnt:[4026531832]",
+        "pid": "pid:[4026531836]"
+      },
+      "parent_host_pid": 2472,
+      "start_ticks": 80796995,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ]
+    },
+    "surfaceflinger": {
+      "cgroup": [
+        "0::/system.slice/droidloomd.service/system/uid_1000/pid_672"
+      ],
+      "cmdline": [
+        "/system/bin/surfaceflinger"
+      ],
+      "executable": "/system/bin/surfaceflinger",
+      "host_pid": 3588912,
+      "namespace_pids": [
+        3588912,
+        672
+      ],
+      "namespaces": {
+        "mnt": "mnt:[4026533284]",
+        "pid": "pid:[4026533288]"
+      },
+      "parent_host_pid": 3588093,
+      "start_ticks": 80797155,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ]
+    },
+    "system_server": {
+      "cgroup": [
+        "0::/system.slice/droidloomd.service/system/uid_1000/pid_830"
+      ],
+      "cmdline": [
+        "system_server"
+      ],
+      "executable": "/system/bin/app_process64",
+      "host_pid": 3589120,
+      "namespace_pids": [
+        3589120,
+        830
+      ],
+      "namespaces": {
+        "mnt": "mnt:[4026533727]",
+        "pid": "pid:[4026533288]"
+      },
+      "parent_host_pid": 3588887,
+      "start_ticks": 80797249,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ]
+    },
+    "zygote64": {
+      "cgroup": [
+        "0::/system.slice/droidloomd.service/system/uid_0/pid_649"
+      ],
+      "cmdline": [
+        "zygote64"
+      ],
+      "executable": "/system/bin/app_process64",
+      "host_pid": 3588887,
+      "namespace_pids": [
+        3588887,
+        649
+      ],
+      "namespaces": {
+        "mnt": "mnt:[4026533726]",
+        "pid": "pid:[4026533288]"
+      },
+      "parent_host_pid": 3588093,
+      "start_ticks": 80797153,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "new90": {
+    "base64": "W1NlcnZpY2VdCkNQVVF1b3RhPTIwMCUKTWVtb3J5SGlnaD01RwpNZW1vcnlNYXg9NkcKVGFza3NNYXg9MTIyODgKRXhlY1N0YXJ0UHJlPS9vcHQvYW5kcm9pZC1kaWdpdGFsaXMtdmFsaWRhdGlvbi9jaGVjay1rZXJuZWwtY29tcGF0Cg==",
+    "bytes": 133,
+    "sha256": "9ce11617715c28e3dc3a0a8a7446d29d93e0684490ce9ef69777bb47853bac22"
+  },
+  "nonce": "7fec81044748ffad41b9f2c589fb0ccf",
+  "prior_identity": {
+    "authoritative_terminal_reported_by_root": {
+      "durable": true,
+      "exit_code": 0,
+      "output_complete": true
+    },
+    "bytes": 23490,
+    "job_id": "1a1acab495b-fc05-5646",
+    "sha256": "5b05db0897b2eb85dbd4e71df77bbbb24ff481d78a8965492c0729bcd9e4de99"
+  },
+  "prior_input_metadata": {
+    "activation": {
+      "after": {
+        "ctime_ns": 1793782513084171135,
+        "device": 66306,
+        "gid": 0,
+        "inode": 43950275,
+        "mode": 33152,
+        "mtime_ns": 1793782513084171135,
+        "nlink": 1,
+        "size": 63675,
+        "uid": 0
+      },
+      "before": {
+        "ctime_ns": 1793782513084171135,
+        "device": 66306,
+        "gid": 0,
+        "inode": 43950275,
+        "mode": 33152,
+        "mtime_ns": 1793782513084171135,
+        "nlink": 1,
+        "size": 63675,
+        "uid": 0
+      },
+      "bytes": 63675,
+      "path": "/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json",
+      "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+    },
+    "cell": {
+      "after": {
+        "ctime_ns": 1793782249626393760,
+        "device": 66306,
+        "gid": 0,
+        "inode": 76546863,
+        "mode": 33188,
+        "mtime_ns": 1793782249626393760,
+        "nlink": 1,
+        "size": 7656,
+        "uid": 0
+      },
+      "before": {
+        "ctime_ns": 1793782249626393760,
+        "device": 66306,
+        "gid": 0,
+        "inode": 76546863,
+        "mode": 33188,
+        "mtime_ns": 1793782249626393760,
+        "nlink": 1,
+        "size": 7656,
+        "uid": 0
+      },
+      "bytes": 7656,
+      "path": "/etc/droidloom/cell.json",
+      "sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc"
+    },
+    "epoch_source": {
+      "after": {
+        "ctime_ns": 1793772341125809242,
+        "device": 66306,
+        "gid": 1000,
+        "inode": 43686189,
+        "mode": 33152,
+        "mtime_ns": 1793772341125809242,
+        "nlink": 1,
+        "size": 8658,
+        "uid": 1000
+      },
+      "before": {
+        "ctime_ns": 1793772341125809242,
+        "device": 66306,
+        "gid": 1000,
+        "inode": 43686189,
+        "mode": 33152,
+        "mtime_ns": 1793772341125809242,
+        "nlink": 1,
+        "size": 8658,
+        "uid": 1000
+      },
+      "bytes": 8658,
+      "path": "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+    },
+    "reference_source": {
+      "after": {
+        "ctime_ns": 1793875271406501745,
+        "device": 66306,
+        "gid": 0,
+        "inode": 36735686,
+        "mode": 33024,
+        "mtime_ns": 1793875271406501745,
+        "nlink": 1,
+        "size": 16900,
+        "uid": 0
+      },
+      "before": {
+        "ctime_ns": 1793875271406501745,
+        "device": 66306,
+        "gid": 0,
+        "inode": 36735686,
+        "mode": 33024,
+        "mtime_ns": 1793875271406501745,
+        "nlink": 1,
+        "size": 16900,
+        "uid": 0
+      },
+      "bytes": 16900,
+      "path": "/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py",
+      "sha256": "e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd"
+    },
+    "verified": {
+      "after": {
+        "ctime_ns": 1793782513084949058,
+        "device": 66306,
+        "gid": 0,
+        "inode": 43950276,
+        "mode": 33152,
+        "mtime_ns": 1793782513084949058,
+        "nlink": 1,
+        "size": 324,
+        "uid": 0
+      },
+      "before": {
+        "ctime_ns": 1793782513084949058,
+        "device": 66306,
+        "gid": 0,
+        "inode": 43950276,
+        "mode": 33152,
+        "mtime_ns": 1793782513084949058,
+        "nlink": 1,
+        "size": 324,
+        "uid": 0
+      },
+      "bytes": 324,
+      "path": "/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-verified-01.json",
+      "sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+    }
+  },
+  "readiness": "ACTUAL_IDENTITY_BOUND_ROOT_REVIEW_REQUIRED",
+  "root": "/home/alex/work/pocket4-main-tasksmax-restore-01",
+  "schema": 1,
+  "scope": {
+    "UI_or_APK_actions": 0,
+    "daemon_reload": false,
+    "engine_or_supervisor_changes": false,
+    "expected_old_kernel_TasksMax": "6144",
+    "extra_dropins": false,
+    "new_TasksMax": "12288",
+    "property_command_maximum": 1,
+    "restart": false,
+    "runtime_authorized_by_this_source": false,
+    "target_unit": "droidloomd.service",
+    "write90_maximum": 1
+  },
+  "service_evidence": {
+    "bytes": 96513,
+    "sha256": "8545c6b1e77cd2716c3a386bd0008f1fdbb350c6261b93f4d7152b5c5fb36e23"
+  },
+  "service_properties_before": {
+    "ActiveState": "active",
+    "ControlGroup": "/system.slice/droidloomd.service",
+    "DropInPaths": "/etc/systemd/system/droidloomd.service.d/10-ubuntu-unshare-compat.conf /etc/systemd/system.control/droidloomd.service.d/50-AllowedCPUs.conf /etc/systemd/system.control/droidloomd.service.d/50-TasksMax.conf /etc/systemd/system/droidloomd.service.d/90-digitalis-validation-resources.conf",
+    "FragmentPath": "/usr/lib/systemd/system/droidloomd.service",
+    "Id": "droidloomd.service",
+    "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+    "MainPID": "3588022",
+    "NRestarts": "0",
+    "SubState": "running",
+    "TasksCurrent": "3248",
+    "TasksMax": "6144",
+    "UnitFileState": "enabled"
+  },
+  "source_identity": {
+    "bytes": 18537,
+    "sha256": "4b955afce019418e98282aa4af549ab1089afc040a5c8990b7713be5f8b4585e"
+  },
+  "stable_key": "pocket4-main-tasksmax-restore-01-20261105",
+  "tool": {
+    "bytes": 302112,
+    "metadata": {
+      "ctime_ns": 1792945456488110570,
+      "device": 66306,
+      "gid": 0,
+      "inode": 108017358,
+      "mode": 33261,
+      "mtime_ns": 1789570531000000000,
+      "nlink": 1,
+      "size": 302112,
+      "uid": 0
+    },
+    "path": "/usr/bin/systemctl",
+    "sha256": "639bce3ce5c06b605079ea56f74e3f08216ddffcfa76e11f62073aa775180082"
+  }
+}

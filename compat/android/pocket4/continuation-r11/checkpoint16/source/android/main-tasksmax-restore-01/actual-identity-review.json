@@ -1,0 +1,39 @@
+{
+  "activation_original": {
+    "bytes": 63675,
+    "sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615"
+  },
+  "all_owned_fds_closed": true,
+  "all_three_inputs_and_two_source_pins_unchanged": true,
+  "boot_and_both_original_require_unchanged_match": true,
+  "both_complete_seven_process_maps_equal_original_activation": true,
+  "local_only": true,
+  "only_difference": {
+    "actual_after": "6144",
+    "actual_before": "6144",
+    "expected": "12288",
+    "field": "pids.max"
+  },
+  "original_identity": {
+    "bytes": 23490,
+    "job_id": "1a1acab495b-fc05-5646",
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/main-identity-readonly01/stdout.log",
+    "sha256": "5b05db0897b2eb85dbd4e71df77bbbb24ff481d78a8965492c0729bcd9e4de99",
+    "terminal_source": "Root authoritative terminal0/complete/durable, not queried again"
+  },
+  "runtime_authorized": false,
+  "schema": 1,
+  "scope": "independent retained-byte validation; no new Main collection or mutation",
+  "unchanged_original_main_guard_failed": {
+    "attempted": true,
+    "completed": true,
+    "error": {
+      "errno": null,
+      "message": "Main resource limits differ",
+      "phase": "unchanged_original_main_guard",
+      "type": "RuntimeError"
+    },
+    "passed": false,
+    "traceback": "Traceback (most recent call last):\n  File \"read_main_identity.py\", line 273, in collect\n  File \"/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py\", line 111, in main_guard\n    require(limits == activation['limits'], 'Main resource limits differ')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/alex/work/pocket4-owned-amazon-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py\", line 46, in require\n    raise RuntimeError(message)\nRuntimeError: Main resource limits differ\n"
+  }
+}

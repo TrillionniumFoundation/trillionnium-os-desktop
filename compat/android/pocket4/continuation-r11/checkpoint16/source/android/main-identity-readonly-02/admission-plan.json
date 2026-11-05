@@ -1,0 +1,26 @@
+{
+  "baseline_unmodified": true,
+  "condition_for_root_dispatch": "unique restore01 original job authoritative PASS and complete result; actual repair pins supplied by Root at dispatch",
+  "expected_by_consumer": {
+    "all_five_limits_match_original_activation": true,
+    "both_identity_observations_match": true,
+    "collection_complete": true,
+    "error": null,
+    "original_guard.passed": true,
+    "owned_fds_closed": true,
+    "pids.max": "12288",
+    "secondary_errors": []
+  },
+  "important_exit_semantics": "collector exit0 proves collection complete only; original_guard.passed and all original limits must independently be true",
+  "new_expected_limit_not_injected": true,
+  "no_extra_paths_or_children_or_mutations": true,
+  "no_local_controls_repeated": true,
+  "only_request_difference": "idempotency_key",
+  "original_collector_and_main_guard_unmodified": true,
+  "purpose": "independent post-exit complete original identity and resource observation",
+  "request_submitted": false,
+  "runtime_authorized_by_collector": false,
+  "schema": 1,
+  "source_byte_identical_to_readonly01": true,
+  "state": "SOURCE_FROZEN_AWAIT_ROOT_REPAIR_TERMINAL_PASS"
+}

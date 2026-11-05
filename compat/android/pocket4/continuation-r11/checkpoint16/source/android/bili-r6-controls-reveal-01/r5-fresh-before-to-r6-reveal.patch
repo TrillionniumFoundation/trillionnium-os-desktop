@@ -1,0 +1,873 @@
+--- r5/owned_navigation.py
++++ r6/owned_navigation.py
+@@ -3,7 +3,7 @@
+ 
+ Default PLAN is inert. Three exact clicks and one fixed public-query edit are
+ allowed only after fresh complete observations. Original after-state and task
+-retirement remain mandatory. No playback controls, audio capture or installation.
++retirement remain mandatory. One R6 reveal input is separately constrained; no pause, seek, audio capture or installation.
+ """
+ import argparse
+ import hashlib
+@@ -16,47 +16,47 @@
+ import time
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-bilibili-r5-player-fresh-before-01')
++ROOT = Path('/home/alex/work/pocket4-bilibili-r6-controls-reveal-01')
+ SOURCE = ROOT / 'source'
+-NONCE = 'c1eaefa79cbafc86cb32f638900443bf'
+-FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-' + NONCE)
+-PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/expand_search', 'class': 'android.widget.LinearLayout', 'content_desc': 'Search bar, button'}, 'nonces': {'before': 'aa6f38b2a404defaf87cddac07242f36', 'inspect': 'd7db18523e4d1a3edbaa51780dda06d8', 'action': 'a52aa7d8ab6bdb4abbf517583f73d0ae', 'after': 'f161c9afe6ccd9f09ddd5452c1b758ba'}}
+-POST_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '2d8f63f0a2e24f7adca882a0a08d83af', 'inspect': '1c4e56d86ecf3c4b397cd2887422faff', 'after': 'd549905db14db27ca4812c4eda5fa49e'}}
+-STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4050ff180f457bc68e2e8eeb0b92e275', 'inspect': '578911bcb632407f08650d2cc60ba790', 'after': '9b65cd547388cd66916de53058d336d2'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '7ff24803cca44294908c5b7c7a7c2a33', 'inspect': '45b21bfad09fbe81a0d54faaa06bbe3e', 'after': '4d71b28559afe82a6890dbae4b255541'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'e1296c26c81ce734d350c93c15f134e2', 'inspect': '10bdfad256ba0547fd5332534f685323', 'after': 'aad3149d75a0c897dcaaa7f5b0216fac'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9934ba4235da97c1327a1875a511dd72', 'inspect': 'b64ecc171664ff46a967f58a06c75c34', 'after': 'a049befaecbd68e68d9550eeeaaf4004'}}]
++NONCE = '395ea60f6cff2da163672b2f660131a4'
++FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-' + NONCE)
++PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/expand_search', 'class': 'android.widget.LinearLayout', 'content_desc': 'Search bar, button'}, 'nonces': {'before': '629f4327d4d1c4f42a6ad1383ee137c9', 'inspect': 'c35abf332e2ff87a54e9e378939042c2', 'action': 'fc85643fbd013b54821391987093f31e', 'after': 'cb85428bb92f08d30f5babfb4e013a36'}}
++POST_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '0c6d4d99ee5555c7384da850f3bfcf45', 'inspect': 'aa7ee29029d16f6b4fb83f7a77dbba49', 'after': '1b7fe32989a4b329e0dad6aad84ccd9f'}}
++STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'df9d3a1f61b8e98dd6437eb068f5f5fb', 'inspect': 'c74acf25071f0307ffedf46f61319587', 'after': '025948df412f1a9abb82f8509e314ac4'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'de9d3e3818f7a28db476b38e344f2f65', 'inspect': 'ca791e4cacdbadad48db324ecb399b75', 'after': 'e2b0834a0b81ce96e46eb8b319d91f8c'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '63f0b3435f6dc3d85387940dfc60d76b', 'inspect': 'f8d5ad1ca2dcd19572a156b6dd636f30', 'after': '505b8762e3bd9aff08410b2fdf42f39e'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'd71a5375142f9ee54fc039255d3c7fad', 'inspect': 'd4ec97db8be7ee9de3862ee0848e0212', 'after': 'a8f580d7b1b18778aabe4f9b79ce9c1c'}}]
+ STABILITY_SECONDS = 12
+ RESULT_OBSERVATION_SECONDS = 20
+-RESULT_OBSERVATION_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '0450cf662b3ac357cbf3361e30276a3b', 'inspect': '4ff59a03d494ba8c400bdeea71b6faa8', 'after': 'db0f699c5a134824423fe289d0ede328'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ca6069419ef63edb8a56076c167cd409', 'inspect': '15ca344fe4e33cb7a03758bf154783b3', 'after': '3c7272741d117d2d7c9e2d97be186b7c'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a4ee01143ed34b144ba681e004f6537d', 'inspect': '9651e82a045191d10f97cdf2cdb99c29', 'after': '8d28de6c13e77be1295933cc30672e9c'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '2f4a7e83b06d988940369692df202f5d', 'inspect': 'd57f49fb7179f1a1813b36a3ac9fac1d', 'after': '71d4dced63d2ecdf4f8cc78b9a1211a7'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '66a752e6f67a6994f33076d98a0ae753', 'inspect': 'b14707432f95c554c8607274c2f283f1', 'after': 'e718320d0ccb59182eb8652108b81881'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4c29578add3930cd45d7dca3068a6666', 'inspect': '33056b8570aae3edba363d323269f0f7', 'after': 'ae93da3ec537dbd595d1d420050d4485'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'f5bec8b9e62e87fbc8a9c13e4a7d239e', 'inspect': '083d84cfd299f581126915d33551892b', 'after': '6e94f6ab28dd076d439073ad7bd54f04'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '6142009b98b2e5ee9900953e3e740faa', 'inspect': 'f2a91ebd2949dc6e471f057e56766f00', 'after': '9b267fdb6c9be9d73b5dca92f101e591'}}]
++RESULT_OBSERVATION_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ba44552416df5d5a5e16d2b113cad6e4', 'inspect': '4704c1093d00089a0db0bc801d67ce1b', 'after': '7466ae9f63b7fbe1de2aa2904b8d5055'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '150255be754998aaf7b827360787c77f', 'inspect': '20d67369cb3011580e20f6d9ed0c6459', 'after': '8461ea086d16626c6d905a94a3729ecf'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'bde854ac2637d31e7e105a947f6e5052', 'inspect': 'dae5f40094e2b532de48b8fc7e5327bd', 'after': '338ec84a68aa6e3fba208981c31f173a'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a86db1d0e4efc084c30970497ba6510f', 'inspect': '12687eaaa75cbddc65e2c29094650d00', 'after': '515ef24700b96878e70576d1ff8c8041'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'e183d1f124b7b5e0513087c0a9a54d8f', 'inspect': 'f8e45316cc802aacba66c15094e56b5c', 'after': '1498c2cfa52695548fb1e262dca1f918'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'be7aade21866c02b9975d18048350b0c', 'inspect': '4e6eeeb376151b41edbd43f3cfd72a33', 'after': '3d1f1c775f42c3aedcd4bca168c12ec8'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '60ed6d1d44f66364fb0f028a2e330d5c', 'inspect': '4e7ff2fac2dddb641c6da27767b93b8f', 'after': '6b08a396c8a31735426ca5f58d5d1ee9'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '2f63490581dde767935ecfd23e2603ed', 'inspect': 'c5ade26b6cc21cacfd730e3928935227', 'after': '8d59b58dba0faa9ab7f6d33c770a9ebb'}}]
+ SEARCH_ACTIVITY = 'tv.danmaku.bili/com.bilibili.search2.main.BiliMainSearchActivity'
+ EDIT_SELECTOR = {'resource_id':'tv.danmaku.bili:id/search_src_text','class':'android.widget.EditText'}
+ SUBMIT_SELECTOR = {'resource_id':'tv.danmaku.bili:id/action_search','class':'android.widget.TextView'}
+ PUBLIC_QUERY = '微积分'
+-SET_TEXT_PLAN = {'schema': 1, 'operation': 'set_text', 'selector': {'resource_id': 'tv.danmaku.bili:id/search_src_text', 'class': 'android.widget.EditText'}, 'value': '微积分', 'nonces': {'before': 'feb1b5a0370806c1e325cc3ae3c8feb6', 'inspect': '3bcebd5778f2715e1a64f149ed0929d2', 'action': '6017b98480e5e5984982ff9161acc408', 'after': '6bfafda45881c0ecb2e14d2af3c9db35'}}
+-SUBMIT_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/action_search', 'class': 'android.widget.TextView'}, 'nonces': {'before': 'db5cd56c7345c18ea73cf294906609ea', 'inspect': '8e0f243e51ec8b2ea2d80b6229779cba', 'action': '29034679ba3f0b56a1965988a853690e', 'after': '4ac441317cc573d43a8a040116bb0847'}}
+-RESULTS_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '4caa23176df5a436519efe59f0164133', 'inspect': '9f41d66250eb1ed54a5c39f82deaca21', 'after': '52f0f36903d85149dd9b8e774c00efb5'}}
+-QUERY_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '355dbda9d3bd9fc2bbb4bb37f1b9f394', 'inspect': '574073ac439d3bae23bf7f6680e894a5', 'after': '37f31b37ad5840ad2b360e7054733631'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '69c000c88e4d40690699900f4dd37e31', 'inspect': '8e0a871adc109aa36fa36269730b21bc', 'after': '03c9421232f5b5c88c73023c387662ec'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '37a407ef80df305e814584b431d52fd0', 'inspect': '9d1f32fe6ec797024cf5b0b90328ba75', 'after': '765e840760b9c6c4a8f1c0a35d44d157'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '13d0ef64fa9f32d10b5d2ff399a310db', 'inspect': '9452a7263438d5e8ac85a8c360fb586f', 'after': '8478b8e8a561c01ddad8195cb31a0ecd'}}]
+-SUBMIT_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a7525d53aac2bd4d9e0c712eb2b53b52', 'inspect': 'f639f2449a34efc1c969daecff49c3a6', 'after': 'a65007f3ab4bbe177a2bd2e3a5806fa2'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c0dfe935cc7a4c87fc40509064901d88', 'inspect': '796248a0fe1fabca16345317b482f820', 'after': 'c5e8c54f51e8b5991bad711178561581'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'af9b50072548ca04f07c544142637566', 'inspect': 'e70c449f61010be6aa815f48b9e9e64e', 'after': '53fd05253febceeb743bb27c07455fd0'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'd12b782704023578b1a675de782d3a72', 'inspect': '57854a7204fdcb9a382b45ccf4264a41', 'after': 'd977903199dbf1fe289c07198d20611e'}}]
+-SELF, UID = 'org.droidloom.qa.bili.r5', 10170
++SET_TEXT_PLAN = {'schema': 1, 'operation': 'set_text', 'selector': {'resource_id': 'tv.danmaku.bili:id/search_src_text', 'class': 'android.widget.EditText'}, 'value': '微积分', 'nonces': {'before': 'a0ee00d5faa30c3d9df292ae0a6c2ba5', 'inspect': '0c29a4330c244d2e85405a7f27c5bb81', 'action': '31df4c84d9780df3ad7d49e3316e548c', 'after': '633c4c577b6ed7152e0c337e4d109034'}}
++SUBMIT_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'resource_id': 'tv.danmaku.bili:id/action_search', 'class': 'android.widget.TextView'}, 'nonces': {'before': '0b36f29f94d322448f9912b3648561f1', 'inspect': 'a80521efa87cd69f1e67bda7bac0416f', 'action': '7341a05a71f60dd1cea307061695495c', 'after': '407e7b317d46698d5abd4ff4381fb4aa'}}
++RESULTS_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'f698fd1df63d8beffb9bc878ac765992', 'inspect': 'c50d5a13c4f2330d078554a8218e55e6', 'after': 'df379a0bc06ae8a982d7b739c7bd2828'}}
++QUERY_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '22a61c11e7dc3a13a3531e29a73e42b3', 'inspect': '29bb2219b00afae66fd01305e82961cf', 'after': '6603196f80dd5c4d784f25c7e1465050'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '2a06d1cdee25f934b747567fcb78684c', 'inspect': '1cfe50fe06d801b5f93d8e334d89d2b0', 'after': 'b086a6c3b12c70d53a12dacd1e5e4131'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a9cfb7261ae022f20694eba87369e84d', 'inspect': '9b29f3e9e84de9afbd96b6af279fa1fb', 'after': 'e348562540520d04ed9baa30cb542f2a'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '85a2d636ca87e865116ce8abde674af5', 'inspect': '3c1052f7c2b420bd659249f959b4801b', 'after': '3d91a98ed44e5613913823ceb6f63923'}}]
++SUBMIT_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '8d0093320abe8294b4483d5896b621a7', 'inspect': 'eae7b5838c504c8ecf7f15b68c6e8595', 'after': 'c9306cfd77527b9b3a636d3ce5c7e4eb'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '82fa09bbd529854304f17a60b178c71d', 'inspect': '82601751b9e5a15fd722fd3b5bf1f605', 'after': 'cd80ca91056009a750788fed7c143e71'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9733725cf39556c8cd86e32975fd30ad', 'inspect': 'ce0d946705128443aea6d0c76c20981d', 'after': 'd4c092f58dddae242c0764f29d67258f'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ed47f77a482e45317a7f7b8a8eeb4086', 'inspect': '8f377720eb730d3185b059c8e228fba6', 'after': '8301d9f292b7df5cca89acf2ce9f8e51'}}]
++SELF, UID = 'org.droidloom.qa.bili.r6', 10184
+ BILI, BILI_UID = 'tv.danmaku.bili', 10117
+-INSTALL_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03')
++INSTALL_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01')
+ INSTALL_SOURCE = INSTALL_ROOT / 'source'
+-INSTALL_ENTRY_SHA = '6614f2eb92ffd2a339c733d6fc58262fbb918d3e9c8eb15cfca3fa275b8bd329'
+-INSTALL_ENTRY_BYTES = 34852
+-INSTALL_MANIFEST_SHA = '7b69a52f2ee8f7471e3ad36a5f75a83be6093bfdf0e21b951b3bb36f3a2de811'
++INSTALL_ENTRY_SHA = 'e948703fb0fc41dfaf3130f40bbb5f31fbb7a87f2822ba1657cdefdb454b9f7d'
++INSTALL_ENTRY_BYTES = 31980
++INSTALL_MANIFEST_SHA = '8c02c3bf010998e23ed30ae13b88c5e4f5d824775702e055e772788966b93e59'
+ R4_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SESSION_SHA = '8f2dc867adf356ac65e64fde100e85f47003d369983c31deca768a618c37edfd'
+-OLD_FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-a25b59395264b89f9f97d5f0db74a3c5')
+-OLD_STEP = OLD_FLOW / 'steps/install-state-r5-03'
+-OLD_STATE_NONCE = '2ad38fb92a0c5cfd6cde23b0c03c4ae6'
+-OLD_STATE_WIRE = 'd6ea152c1dcd395f02b2e0fe8002d98bcdf5203251463fd40ae6a17315ca9d98'
+-OLD_PACKET = 'f0256c564e9662b9990b6d64a824e55d2cebfb9c394e11cfbd446e27347fdd37'
++SESSION_SHA = '0af414abcab8020e7ab95e7ec15047489b70e83cddb84ba483d05e8cf330dd71'
++OLD_FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-2a1065bc6af8a39e6518bd61d8581978')
++OLD_STEP = OLD_FLOW / 'steps/install-state-r6-01'
++OLD_STATE_NONCE = '38224815112bbffd278ea0f29ab48c82'
++OLD_STATE_WIRE = '7244569c8b48dd0e6e73409a780c054f08a065f86709f7866d832a264291fd17'
++OLD_PACKET = 'edbe8202b9fec462be7907007b59a8960391b42e719079f86da9f4ce000f712c'
+ MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+-FILES = {'owned_navigation.py','stage_execute.py','make_request.py','INPUTS.json','README.md','video_navigation.py','viewport_observation.py'}
+-# Actual install03 receipts were independently read and reparsed; old failures stay failed.
+-INSTALL_JOB_ID = '1a1aab82bec-fc05-467d'
++FILES = {'owned_navigation.py','stage_execute.py','make_request.py','INPUTS.json','README.md','video_navigation.py','controls_reveal.py'}
++# Exact original R6 installation bindings; no old helper qualification is inherited.
++INSTALL_JOB_ID = '1a1ac2038e8-fc05-5267'
+ STATE_COMMAND_INDEX = 6
+-STATE_COMMAND_SHA = '998a8875e370094253b81444ceacb4bac7cb9ab1e78389f7d54add80f6002781'
+-EXPECTED_INSTALLED_IDENTITY = {'package': 'org.droidloom.qa.bili.r5', 'uid': 10170, 'base_apk': '/data/app/~~Oe5CLAmhtH5r5QTWzbzukA==/org.droidloom.qa.bili.r5-i09w1S2dwR4iy8S_4bRb_Q==/base.apk', 'apk_sha256': '16d3d1252b84accf0b454b8d9c3dd350031cca3a228cc9a772914d74a0c66b68', 'bytes': 24720, 'held_file': {'device': 1811, 'inode': 789062, 'mode': 33188, 'uid': 1000, 'gid': 1000, 'bytes': 24720, 'mtime_ns': 1793865564713699148, 'nlink': 1}, 'signer_bound_by_exact_signed_apk_bytes': '940f32ee3ebf685806fcf4bf82c44fdfec7b13464d5b5ef8aacc1d92e57d1670'}
+-INSTALL_RECORDS = {'coordinator':(INSTALL_ROOT/'result.json',3025,'4c20fda8fdcc74c28ed8c4054f84caede0a40f0c46a76a329ac662a562d0972d'),'stage':(INSTALL_ROOT/'stage-result.json',2032,'d9fad2a683aabf133541e5cb44897735a7d90a14847b4874fa5bae618eda99f9'),'worker':(OLD_STEP/'result.json',7546,'5c2e6615221bfc9a50a06130525bdc3650fd1ff2bd22c255fe67a57b07940f7a'),'worker_command':(INSTALL_ROOT/'evidence/02-install-state.result.json',1152,'d29d96cdf24ebfd27f8b06822f8f7ab4af7783a0a4f9125937e373db1dae8352')}
++STATE_COMMAND_SHA = '33f4b912348161d5c54ce3d5da2cb884565a204a680b9805d74a4ff766787514'
++EXPECTED_INSTALLED_IDENTITY = {'package': 'org.droidloom.qa.bili.r6', 'uid': 10184, 'base_apk': '/data/app/~~kxjfqYMnkBued9RiLnMFqg==/org.droidloom.qa.bili.r6-kuXyZGGSRfNZ4a7nV1nNkA==/base.apk', 'apk_sha256': 'f7df7d6ce8dd0ed2ab7a8cda929d5b06e2b097c358490b32450c4a238bc1562a', 'bytes': 32912, 'held_file': {'device': 1811, 'inode': 789229, 'mode': 33188, 'uid': 1000, 'gid': 1000, 'bytes': 32912, 'mtime_ns': 1793889162644800190, 'nlink': 1}, 'signer_bound_by_exact_signed_apk_bytes': '45e4127727aca864ee976c95c667cc8707566ece6a0f940ba8c53b158192f611'}
++INSTALL_RECORDS = {'coordinator': (Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/result.json'), 3025, '31aa367cc9d33680af8e1f95b9f4e2a14624499321481704ab14cb3737f23279'), 'stage': (Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/stage-result.json'), 2032, '8cee9c51b1620965253baa4a2328a1ab358dd893b5891310dbc3810fe40a13e1'), 'worker': (Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-2a1065bc6af8a39e6518bd61d8581978/steps/install-state-r6-01/result.json'), 7547, 'abf5647d5074c6ed555691f3a4f306d0192491782c2422ec9fff44c12b642691'), 'worker_command': (Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/evidence/02-install-state.result.json'), 1152, '03e7fb6fe99cd67247d5235f5910b3ff48339f81c968990aebbdab4938f144fb')}
+ 
+ 
+ def require(value, reason):
+@@ -94,19 +94,19 @@
+ 
+ 
+ def require_actual_install_binding():
+-    require(type(UID) is int and 10000 <= UID < 100000 and UID not in (10117,10125,10164,10165,10166,10169),
+-            'ACTUAL_R5_INSTALL_UID_PENDING')
++    require(type(UID) is int and 10000 <= UID < 100000 and UID not in (10117,10125,10164,10165,10166,10169,10170,10175),
++            'ACTUAL_R6_INSTALL_UID_PENDING')
+     require(type(STATE_COMMAND_INDEX) is int and 1 <= STATE_COMMAND_INDEX <= 16 and
+             isinstance(STATE_COMMAND_SHA,str) and re.fullmatch('[0-9a-f]{64}',STATE_COMMAND_SHA) and
+             isinstance(OLD_STATE_WIRE,str) and re.fullmatch('[0-9a-f]{64}',OLD_STATE_WIRE),
+-            'ACTUAL_R5_STATE_COMMAND_BINDING_PENDING')
++            'ACTUAL_R6_STATE_COMMAND_BINDING_PENDING')
+     require(isinstance(EXPECTED_INSTALLED_IDENTITY,dict) and
+             EXPECTED_INSTALLED_IDENTITY.get('package') == SELF and
+             EXPECTED_INSTALLED_IDENTITY.get('uid') == UID,
+-            'ACTUAL_R5_INSTALLED_FILE_IDENTITY_PENDING')
++            'ACTUAL_R6_INSTALLED_FILE_IDENTITY_PENDING')
+     for name,(path,size,pin) in INSTALL_RECORDS.items():
+         require(type(size) is int and 0 < size <= 65536 and isinstance(pin,str) and
+-                re.fullmatch('[0-9a-f]{64}',pin),'ACTUAL_R5_INSTALL_RECEIPT_PENDING:'+name)
++                re.fullmatch('[0-9a-f]{64}',pin),'ACTUAL_R6_INSTALL_RECEIPT_PENDING:'+name)
+ 
+ 
+ def load_prior():
+@@ -192,8 +192,6 @@
+             installed.get('signer_bound_by_exact_signed_apk_bytes') == prior.SIGNER_SHA and
+             installed == EXPECTED_INSTALLED_IDENTITY and
+             installed['held_file']['nlink'] == 1,'ACTUAL_INSTALLED_APK_IDENTITY_REQUIRED')
+-    # The historical command number is read only from the fixed Install02
+-    # record. New UI commands are never assumed to share transport numbering.
+     previous = w['state']
+     stem = OLD_STEP/('command-%03d' % STATE_COMMAND_INDEX)
+     command_raw = read(str(stem)+'.result.json',65536,
+@@ -596,11 +594,11 @@
+     plans=[PLAN,POST_PLAN,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN,
+         *STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS]
+     module.validate(adapter,qa,[NONCE,*(n for p in plans for n in p['nonces'].values())])
+-    path=HERE/'viewport_observation.py';pin=manifest['files'][path.name]
+-    module.viewport=types.ModuleType('fixed_player_viewport');module.viewport.__file__=str(path)
+-    exec(compile(read(path,65536,pin['sha256'],pin['bytes']),str(path),'exec'),module.viewport.__dict__)
++    path=HERE/'controls_reveal.py';pin=manifest['files'][path.name]
++    module.reveal=types.ModuleType('fixed_player_controls_reveal');module.reveal.__file__=str(path)
++    exec(compile(read(path,65536,pin['sha256'],pin['bytes']),str(path),'exec'),module.reveal.__dict__)
+     plans += [module.VIDEO_PLAN,*module.VIDEO_STABILITY_PLANS,*module.VIDEO_POST_PLANS]
+-    module.viewport.validate(adapter,qa,[NONCE,*(n for p in plans for n in p['nonces'].values())])
++    module.reveal.validate(adapter,qa,[NONCE,*(n for p in plans for n in p['nonces'].values())])
+     return module
+ 
+ 
+@@ -615,18 +613,18 @@
+     plan = adapter.validate_plan(fixed_plan(),qa)
+     adapter.validate_plan(POST_PLAN,qa)
+     for stable_plan in [*STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN]: adapter.validate_plan(stable_plan,qa)
+-    step = 'launch-01' if phase == 'launch' else 'buffer-viewport-01'
++    step = 'launch-01' if phase == 'launch' else 'controls-reveal-01'
+     args = types.SimpleNamespace(operation='launch' if phase == 'launch' else 'owned-qa',
+         adapter_manifest_sha256=R4_MANIFEST,flow_dir=FLOW,
+         epoch_module=prior.RECORDER_ROOT/'references/framework_epoch.py',
+         task_source=prior.RECORDER_ROOT/'references/task_scope_baseline.py',step=step,
+-        request={'phase':phase,'nonce':NONCE,'plan':plan,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'video_plan':video.VIDEO_PLAN,'video_post_plans':video.VIDEO_POST_PLANS,'viewport_plans':video.viewport.PLANS,'actual_install':admission},
++        request={'phase':phase,'nonce':NONCE,'plan':plan,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'video_plan':video.VIDEO_PLAN,'video_post_plans':video.VIDEO_POST_PLANS,'reveal_plan':video.reveal.REVEAL_PLAN,'reveal_post_plan':video.reveal.POST_PLAN,'actual_install':admission},
+         unknown_step=None,observation_step=None,postcondition=None)
+     result = {'schema':1,'ok':False,'error':None,'secondary_errors':[],
+         'phase':phase,'nonce':NONCE,'package':BILI,'uid':BILI_UID,'helper_package':SELF,'helper_uid':UID,
+         'source_manifest_sha256':expected,'runtime_recorder_manifest_sha256':R4_MANIFEST,
+         'actual_install':admission,'build':proof,'automatic_retry':False,
+-        'click_limit':3,'text_action_limit':1,'audio_actions':0,'permission_grants':0,'settings_writes':0,
++        'click_limit':3,'text_action_limit':1,'reveal_input_limit':1,'audio_actions':0,'permission_grants':0,'settings_writes':0,
+         'old_v2_helper_called':False,'raw_ui_tree_private_only':True,
+         'host_foreground_display_independently_verified':False,'required_helper_display':0,
+         'business_success_verified':False,'whole_app_production_ready':False,
+@@ -655,7 +653,7 @@
+         result['ok'] = result['error'] is None and result['secondary_errors'] == [] and (
+             phase == 'launch' or (result.get('query_submission_controls_completed') is True and
+                                  result.get('results_container_content_observed') is True and
+-                                 result.get('video_click_and_observations_completed') is True and result.get('buffer_viewport_observation_completed') is True))
++                                 result.get('video_click_and_observations_completed') is True and result.get('controls_reveal_and_observation_completed') is True))
+     except BaseException as error:
+         if session is not None and hasattr(session,'sequence_observation'):
+             result['failed_inspection_sequence'] = session.sequence_observation
+@@ -692,7 +690,7 @@
+ 
+ 
+ def durable_phase(observed, phase):
+-    step = 'launch-01' if phase == 'launch' else 'buffer-viewport-01'
++    step = 'launch-01' if phase == 'launch' else 'controls-reveal-01'
+     path = FLOW/'steps'/step/'result.json'
+     raw = read(path); value = json.loads(raw)
+     require(observed == value and value.get('ok') is True and value.get('phase') == phase and
+@@ -714,7 +712,7 @@
+                 'ACTUAL_EDIT_AND_SUBMIT_POSTCONDITION_REQUIRED')
+         require(value.get('action_attempted') is True and
+                 value.get('video_click_and_observations_completed') is True and
+-                value.get('buffer_viewport_observation_completed') is True and
++                value.get('controls_reveal_and_observation_completed') is True and
+                 value.get('results_container_content_observed') is True and
+                 value.get('result_content_observation',{}).get('qualified') is True and
+                 value.get('scoped_click_and_post_observation_completed') is True and
+@@ -752,7 +750,7 @@
+         'source_manifest_sha256':expected,'nonce':NONCE,'flow':str(FLOW),
+         'package':BILI,'uid':BILI_UID,'helper_package':SELF,'helper_uid':UID,
+         'automatic_retry':False,'launch_worker_requested':False,'navigation_worker_requested':False,
+-        'cleanup_requested':False,'click_limit':3,'text_action_limit':1,'audio_actions':0,
++        'cleanup_requested':False,'click_limit':3,'text_action_limit':1,'reveal_input_limit':1,'audio_actions':0,
+         'old_v2_helper_called':False,'raw_ui_tree_private_only':True,
+         'business_success_verified':False,'whole_app_production_ready':False,
+         'business_outcome_unknown':True}
+@@ -787,8 +785,8 @@
+         observed = ref.run_cli('03-navigate',['/usr/bin/python3','-I',str(HERE/'owned_navigation.py'),
+             '--worker-once','navigate','--source-manifest-sha256',expected],240,evidence,guard)
+         navigated,result['navigation_result'] = durable_phase(observed,'navigate')
+-        result['navigation'] = {'foreground':navigated['buffer_viewport_observation']['final_scope'],
+-            'buffer_viewport_observation':navigated['buffer_viewport_observation'],
++        result['navigation'] = {'foreground':navigated['controls_reveal_observation']['final_scope'],
++            'controls_reveal_observation':navigated['controls_reveal_observation'],
+              'video_selection':navigated['video_action_bound_selection'],
+             'video_stability':navigated['video_stability'],
+             'video_click_assessments':navigated['video_click_assessments'],
+@@ -813,7 +811,7 @@
+         result['query_submission_controls_completed'] = True
+         result['results_container_content_observed'] = True
+         result['video_click_and_observations_completed'] = True
+-        result['buffer_viewport_observation_completed'] = True
++        result['controls_reveal_and_observation_completed'] = True
+         result['ok'] = True
+     except BaseException as error:
+         prior.remember(result,'coordinator',error)
+@@ -886,8 +884,8 @@
+     args = parser.parse_args(); fixed_plan()
+     if not args.execute_once and args.worker_once is None:
+         print(json.dumps({'state':'PLAN_ONLY','root':str(ROOT),'flow':str(FLOW),'helper_uid':UID,
+-            'operation':'original launch/query/course open + bounded buffer reads + private viewport crops + exact-task cleanup',
+-            'plan':PLAN,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'click_limit':3,'text_action_limit':1,'audio_actions':0,'old_v2_helper_called':False,
++            'operation':'original launch/query/course open + one R6 reveal input + independent controls read + exact-task cleanup',
++            'plan':PLAN,'post_plan':POST_PLAN,'stability_plans':STABILITY_PLANS,'set_text_plan':SET_TEXT_PLAN,'submit_plan':SUBMIT_PLAN,'results_plan':RESULTS_PLAN,'query_stability_plans':QUERY_STABILITY_PLANS,'submit_stability_plans':SUBMIT_STABILITY_PLANS,'result_observation_plans':RESULT_OBSERVATION_PLANS,'click_limit':3,'text_action_limit':1,'reveal_input_limit':1,'audio_actions':0,'old_v2_helper_called':False,
+             'private_raw_tree_not_for_Git':True,'remote_actions':0}))
+         return 0
+     os.umask(0o077)
+--- r5/video_navigation.py
++++ r6/video_navigation.py
+@@ -6,9 +6,9 @@
+ UPLOADER_SHA='3355707b07511199c7d280b9a77510b5e9b8698c7c7e4aedcf938805a3822d64'
+ DURATION_SHA='137ed61cdad38eb26c79124e18cb04925f8ac831f042169328a35d25520db3fa'
+ CARD_SELECTOR={'class':'android.view.ViewGroup'}
+-VIDEO_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'class': 'android.view.ViewGroup'}, 'nonces': {'before': '8ae8a69d9dec3f9bea9528df2609e4e4', 'inspect': 'c53ca9994c8a125eadfb0c90a43d84cc', 'action': 'b47fcda9583b45d164e30d1fe29e7fc0', 'after': '7f7feca51687599e147e11e38c989a71'}}
+-VIDEO_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '18475055ed7454e148dff00ae3e0ed03', 'inspect': '037b5b7c04e13581669cf1417eb396d7', 'after': '4b4141fe7bfcdf8877050da034e40670'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'cc8ef5f7c9edf9889bde6f0b35d88aaf', 'inspect': 'dbca55f9eca8d276faf8a395b5cf5e93', 'after': '9b323f71f61c9a05275a874228829550'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '05d1049dede52e5988d698263bdd4394', 'inspect': '6cb005abdb2de8e57fb74ebb7099a8eb', 'after': '3e7325b7acd1f8f385eb7d5987c8059d'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '566afbed8062866f4df4ce4da7ed6633', 'inspect': '2a40a5826184bf958ba3e7cec77704d0', 'after': 'a8fe11c937d770c8cf3c66e4d70f485e'}}]
+-VIDEO_POST_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '0f4fd76d5494f56995711ee9d6eea9aa', 'inspect': 'aacbe4552232313c120b536984f8bc5a', 'after': '819e51b86835dd1d4bd34602139389bd'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '3e3b7989ab061c84f4c2118e79d61123', 'inspect': 'f61820bca2f1de8c17db9d9c365f36b9', 'after': '86a619e4a7e07e2b6ee885852bea57e5'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '00579ba2404bb75da8459a5cc20f8c67', 'inspect': '516222ba785b20c13dca446532439002', 'after': 'cf60d585a10d250219d314e6d313b9f2'}}]
++VIDEO_PLAN = {'schema': 1, 'operation': 'click', 'selector': {'class': 'android.view.ViewGroup'}, 'nonces': {'before': 'b94b1809b8cdd2d6dbcb628a0957e4bb', 'inspect': 'bdeba073eb72bc54c11d8d101faa2b64', 'action': '88ff94bcdc7837f884731ce86cd7b3d6', 'after': '16ecedd91ddb3229f66d646f1a4045c1'}}
++VIDEO_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '0f6658069a6af8dc59a6de0b27909864', 'inspect': '51e837b5a900f0d2b6fea0cd593490d7', 'after': '7b255f273eba283a072e05907293be53'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'c57d54819c1c26210405a9aa82fbdb2d', 'inspect': '76f16602e069cce194495ea69ac0bcb3', 'after': '58ec1548937ac2d26209e1d8a3dc9306'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'd1ed3e9fa88f1f93a3c3ead9fb2990ef', 'inspect': '12f0c7a220cf5eee7e2f4d20e6bd56b6', 'after': '92e155da5a75ae12f41865fbbd474019'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'd0ead3f4937ee5eefa2e786f62f1f764', 'inspect': '3667b22ab8001a655a8154e3f6aeb4e0', 'after': '28f4bec16a1a8891c13a827a30e76328'}}]
++VIDEO_POST_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'cee73badb339f3fae3b205d815f30347', 'inspect': 'c7b09f1e551b8c1aa2f1c4b72724a39a', 'after': 'e20b8096fdced545ca5f80c6a7960c60'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9c99b5efd3939ff76891123ddf43a5c4', 'inspect': '47f1b7d57f6b79cbef7faa2be060d683', 'after': '2c124234942853494fc48e63dd068096'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'b90a96463e56da4b069eb44285074618', 'inspect': 'e04c24dd68e6fad9f15720dad11e3403', 'after': '9fd4b421ede9b76c33ce1e61c57d0344'}}]
+ 
+ 
+ def validate(adapter,qa,base_nonces):
+@@ -242,4 +242,4 @@
+     result['business_outcome_unknown']=True
+     result['playback_or_audio_success_inferred']=False
+     if result['video_click_and_observations_completed']:
+-        viewport.run(base,prior,qa,flow,session,installed,result)
++        reveal.run(base,prior,qa,flow,session,installed,result)
+--- /dev/null
++++ r6/controls_reveal.py
+@@ -0,0 +1,163 @@
++"""One current-player reveal input, then one independent controls observation.
++
++This module has no command transport or selector fallback. It uses the exact
++R6 Session and its fresh complete-tree/player proof. Full assessments remain
++private; its result contains only scoped hashes, counts and input lifecycle.
++"""
++import json
++
++REVEAL_PLAN = {'schema': 1, 'operation': 'reveal_controls', 'nonces': {'before': 'cbbc4acce223bfd32bdefe3d2d559d21', 'inspect': '93596efb86bc6ac0b7b0ad06f33cf788', 'action': '5f04f79b9d0520e01cfe7c6044c63ee9', 'after': '88c15c65ab23830855262d4de75af632'}}
++POST_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '8a35025f37131394c7622dedf22d7fbc', 'inspect': '234fec58dcab499091b31feb950ec438', 'after': '91942b636467e4167f6617aa566532c2'}}
++
++
++def validate(adapter, qa, used):
++    qa.require(qa.PROTOCOL == 'pocket4-owned-bili-qa-v6', 'EXACT_R6_REVEAL_PROTOCOL_REQUIRED')
++    for plan in (REVEAL_PLAN, POST_PLAN):
++        adapter.validate_plan(plan, qa)
++    qa.require(REVEAL_PLAN['operation'] == 'reveal_controls' and POST_PLAN['operation'] == 'inspect',
++               'ONE_REVEAL_AND_ONE_INDEPENDENT_READ_REQUIRED')
++    nonces = [n for plan in (REVEAL_PLAN, POST_PLAN) for n in plan['nonces'].values()]
++    qa.require(len(nonces) == len(set(nonces)) == 7 and not set(nonces) & set(used),
++               'SEVEN_FRESH_DISTINCT_REVEAL_NONCES_REQUIRED')
++
++
++def assessment(base, qa, flow, nonce, operation, scope, expected_wire=None):
++    path = flow.step / (nonce + '.assessment.json')
++    raw = base.read(path, 1048576)
++    value = json.loads(raw)
++    helper = value['helper']
++    base.require(value['held_transport_returned_after_post_guard'] is True and
++                 value['actual_command_returncode'] == 0 and
++                 value['actual_instrumentation_finish_code'] == -1 and
++                 helper['ok'] is True and helper['error'] is None and helper['secondary_errors'] == [] and
++                 helper['self_uid'] == base.UID and helper['nonce'] == nonce and
++                 helper['protocol'] == qa.PROTOCOL and helper['op'] == operation and
++                 helper['host_scope_attestation'] == scope and
++                 value['wire_sha256'] == base.sha(qa.canonical(helper)) and
++                 (expected_wire is None or value['wire_sha256'] == expected_wire),
++                 'EXACT_CURRENT_REVEAL_ASSESSMENT_REQUIRED')
++    pin = {'nonce':nonce, 'operation':operation, 'assessment_bytes':len(raw),
++           'assessment_sha256':base.sha(raw), 'wire_sha256':value['wire_sha256'],
++           'recorder_command_result_sha256':value['recorder_command_result_sha256'],
++           'actual_command_returncode':0, 'actual_instrumentation_finish_code':-1}
++    return helper, pin
++
++
++def controls_evidence(qa, inspection, scope):
++    """Observe controls inside the complete, fixed public-course player only."""
++    proof = qa.player_reveal_scope(inspection, scope, False)
++    nodes = inspection['nodes']
++    def eligible(n):
++        return (n['visible'] is True and n['enabled'] is True and n['password'] is False and
++                n['class_truncated'] is False and n['resource_id_truncated'] is False)
++    def one(resource):
++        rows = [n for n in nodes if n['resource_id'] == qa.PACKAGE + ':id/' + resource and
++                n['class'] == 'android.widget.FrameLayout' and eligible(n)]
++        qa.require(len(rows) == 1, 'UNIQUE_CURRENT_REVEAL_CONTROL_ROLE_REQUIRED')
++        return rows[0]
++    container = one('video_container')
++    controls = one('control_container')
++    qa.require(controls['path'].startswith(container['path'] + '/') and
++               controls['bounds'] == proof['viewport_bounds'] and
++               type(controls['child_count']) is int and controls['child_count'] >= 0,
++               'CURRENT_CONTROLS_MUST_BELONG_TO_EXACT_PLAYER')
++    descendants = [n for n in nodes if n['path'].startswith(controls['path'] + '/')]
++    def inside_crop(n):
++        bounds = n['bounds']; crop = proof['viewport_bounds']
++        return (len(bounds) == 4 and all(type(v) is int for v in bounds) and
++                crop[0] <= bounds[0] < bounds[2] <= crop[2] and
++                crop[1] <= bounds[1] < bounds[3] <= crop[3])
++    interactive = [n for n in descendants if eligible(n) and inside_crop(n) and n['clickable'] is True]
++    seekbars = [n for n in descendants if eligible(n) and inside_crop(n) and n['class'] == 'android.widget.SeekBar']
++    shown = controls['child_count'] > 0 and bool(interactive or seekbars)
++    return {'proof':proof, 'complete':True, 'node_count':len(nodes),
++            'control_container_path_sha256':qa.sha(controls['path'].encode()),
++            'control_container_node_sha256':controls['node_sha256'],
++            'control_container_child_count':controls['child_count'],
++            'complete_control_descendant_count':len(descendants),
++            'visible_enabled_clickable_count':len(interactive),
++            'visible_enabled_seekbar_count':len(seekbars),
++            'controls_revealed_observed':shown, 'node_text_or_description_published':False,
++            'pause_seek_or_audio_qualified':False, 'raw_tree_private_only':True}
++
++
++def run(base, prior, qa, flow, session, installed, result):
++    record = {'input_sequence_started':False, 'input_acknowledged':False,
++              'independent_read_attempted':False, 'independent_read_completed':False,
++              'controls_revealed_observed':False, 'automatic_retry':False,
++              'pause_seek_or_audio_qualified':False, 'business_success_verified':False,
++              'atomic_input_target_attribution':False}
++    result['controls_reveal_observation'] = record
++    result['controls_reveal_and_observation_completed'] = False
++    input_proof = None
++    input_observation_before = None
++    try:
++        base.require(result.get('video_click_and_observations_completed') is True and
++                     result['error'] is None and result['secondary_errors'] == [],
++                     'ORIGINAL_COURSE_OPEN_MUST_COMPLETE_BEFORE_REVEAL')
++        record['input_sequence_started'] = True
++        input_observation_before = getattr(session, 'sequence_observation', None)
++        sequence = session.sequence(json.loads(json.dumps(REVEAL_PLAN)))
++        record['input_sequence'] = sequence
++        base.require(sequence['installed_before'] == sequence['installed_after'] == installed and
++                     sequence.get('reveal_input_acknowledged') is True and
++                     sequence.get('controls_revealed') is None and sequence['restoration_qualified'] is True and
++                     sequence['after_state_completed'] is True and
++                     sequence['foreground_before'] == sequence['foreground_after'],
++                     'REVEAL_INPUT_ACK_SCOPE_IDENTITY_AND_RESTORATION_REQUIRED')
++        scope = sequence['foreground_after']
++        helper, pin = assessment(base, qa, flow, REVEAL_PLAN['nonces']['action'], 'reveal_controls', scope)
++        qa.touch_observation(helper['touch'], True)
++        input_proof = helper['player_scope']
++        base.require(helper['inspection_nonce'] == REVEAL_PLAN['nonces']['inspect'] and
++                     helper['inspection_sha256'] == sequence['inspection_wire_sha256'] and
++                     input_proof['scope'] == scope and
++                     helper['player_scope_sha256'] == qa.sha(qa.canonical(input_proof)),
++                     'REVEAL_ACK_MUST_BIND_THIS_SEQUENCE_CURRENT_INSPECTION')
++        immediate = controls_evidence(qa, helper['post_inspection'], scope)
++        base.require(qa.same_reveal_frame(input_proof, immediate['proof']) and
++                     helper['post_player_scope'] == immediate['proof'] and
++                     qa.sha(qa.canonical(helper['post_inspection'])) == sequence['post_input_inspection_sha256'] and
++                     helper['scope_unchanged_after_input'] is True,
++                     'REVEAL_COMPLETE_IMMEDIATE_POST_SCOPE_REQUIRED')
++        record.update(input_acknowledged=True, input_assessment=pin,
++                      input_lifecycle=helper['touch'], immediate_post_observation=immediate)
++    except BaseException as error:
++        current = getattr(session, 'sequence_observation', None)
++        if record['input_sequence_started'] and current is not None and current is not input_observation_before:
++            record['failed_input_sequence'] = current
++        prior.remember(result, 'controls_reveal_input', error)
++    finally:
++        # Independently observe after any attempted sequence, without repeating
++        # the input. A failed read stays a failure and cannot replace the first.
++        if record['input_sequence_started']:
++            record['independent_read_attempted'] = True
++            post_observation_before = getattr(session, 'sequence_observation', None)
++            try:
++                sequence = session.sequence(json.loads(json.dumps(POST_PLAN)))
++                record['independent_sequence'] = sequence
++                base.require(sequence['installed_before'] == sequence['installed_after'] == installed and
++                             sequence['restoration_qualified'] is True and sequence['after_state_completed'] is True and
++                             sequence['foreground_before'] == sequence['foreground_after'],
++                             'INDEPENDENT_REVEAL_READ_SCOPE_AND_RESTORATION_REQUIRED')
++                helper, pin = assessment(base, qa, flow, POST_PLAN['nonces']['inspect'], 'inspect',
++                                         sequence['foreground_after'], sequence['inspection_wire_sha256'])
++                observed = controls_evidence(qa, helper['inspection'], sequence['foreground_after'])
++                record.update(independent_read_completed=True, independent_assessment=pin,
++                              independent_observation=observed, final_scope=observed['proof']['scope'])
++                if input_proof is not None:
++                    base.require(qa.same_reveal_frame(input_proof, observed['proof']),
++                                 'ABSOLUTE_PLAYER_SCOPE_CHANGED_AFTER_REVEAL')
++                record['controls_revealed_observed'] = observed['controls_revealed_observed']
++                base.require(observed['controls_revealed_observed'] is True,
++                             'INDEPENDENT_CURRENT_PLAYER_CONTROLS_NOT_OBSERVED')
++            except BaseException as error:
++                current = getattr(session, 'sequence_observation', None)
++                if current is not None and current is not post_observation_before:
++                    record['failed_independent_sequence'] = current
++                prior.remember(result, 'independent_controls_readback', error)
++    result['controls_reveal_and_observation_completed'] = (
++        record['input_acknowledged'] and record['independent_read_completed'] and
++        record['controls_revealed_observed'] and result['error'] is None and result['secondary_errors'] == [])
++    result['business_outcome_unknown'] = True
++    result['playback_or_audio_success_inferred'] = False
+--- r5/stage_execute.py
++++ r6/stage_execute.py
+@@ -7,10 +7,10 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-bilibili-r5-player-fresh-before-01')
++ROOT = Path('/home/alex/work/pocket4-bilibili-r6-controls-reveal-01')
+ SOURCE = ROOT/'source'
+-NONCE = 'c1eaefa79cbafc86cb32f638900443bf'
+-FILES = {'owned_navigation.py','stage_execute.py','make_request.py','INPUTS.json','README.md','video_navigation.py','viewport_observation.py'}
++NONCE = '395ea60f6cff2da163672b2f660131a4'
++FILES = {'owned_navigation.py','stage_execute.py','make_request.py','INPUTS.json','README.md','video_navigation.py','controls_reveal.py'}
+ 
+ 
+ def require(value, reason):
+@@ -85,8 +85,8 @@
+                 durable.get('query_submission_controls_completed') is True and
+                 durable.get('results_container_content_observed') is True and
+                 durable.get('video_click_and_observations_completed') is True and
+-                durable.get('buffer_viewport_observation_completed') is True and
+-                durable.get('business_success_verified') is False,'OWNED_BUFFER_VIEWPORT_CLEANUP_NOT_QUALIFIED')
++                durable.get('controls_reveal_and_observation_completed') is True and
++                durable.get('business_success_verified') is False,'OWNED_REVEAL_CONTROLS_CLEANUP_NOT_QUALIFIED')
+         result['ok'] = True
+     except BaseException as error:
+         prior.remember(result,'stage_or_coordinator',error)
+--- r5/make_request.py
++++ r6/make_request.py
+@@ -8,9 +8,9 @@
+ from pathlib import Path
+ 
+ HERE = Path(__file__).resolve().parent
+-KEY = 'pocket4-bilibili-r5-player-fresh-before-01-20261105'
+-ROOT = '/home/alex/work/pocket4-bilibili-r5-player-fresh-before-01'
+-NONCE = 'c1eaefa79cbafc86cb32f638900443bf'
++KEY = 'pocket4-bilibili-r6-controls-reveal-01-20261105'
++ROOT = '/home/alex/work/pocket4-bilibili-r6-controls-reveal-01'
++NONCE = '395ea60f6cff2da163672b2f660131a4'
+ 
+ 
+ def sha(raw):
+--- r5/INPUTS.json
++++ r6/INPUTS.json
+@@ -1,171 +1,183 @@
+ {
+-  "Android_actions_by_this_agent": 0,
+-  "R5_public_cache_clear_UI_runtime_unrun": false,
+-  "R5_public_cache_clear_actual_observed_in_original_failed_flow": true,
+-  "actual_build": {
+-    "APK": {
+-      "bytes": 24720,
+-      "path": "/home/alex/work/pocket4-owned-bili-qa-r5-build-02/owned-bili-qa.apk",
+-      "sha256": "16d3d1252b84accf0b454b8d9c3dd350031cca3a228cc9a772914d74a0c66b68"
++  "Main": {
++    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
++    "held_namespace_and_root_entry": true,
++    "recorder_R4_manifest_sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1",
++    "single_original_global_action_lock": true,
++    "strict_original_before_after_guards": true
++  },
++  "actions": {
++    "audio_or_microphone_recording": 0,
++    "automatic_retry_or_fallback": false,
++    "existing_ACTION_CLICK_limit": 3,
++    "fixed_public_ACTION_SET_TEXT_limit": 1,
++    "native_owned_launches": 1,
++    "new_input_shape": "one DOWN then one UP; on failed input at most one CANCEL cleanup",
++    "pause_seek_scroll_back_purchase_login_send": 0,
++    "permission_grants_or_settings_writes": 0,
++    "reveal_input_sequences": 1
++  },
++  "actual_install": {
++    "UID": 10184,
++    "historical_state_used_as_current_baseline": false,
++    "installed_identity": {
++      "apk_sha256": "f7df7d6ce8dd0ed2ab7a8cda929d5b06e2b097c358490b32450c4a238bc1562a",
++      "base_apk": "/data/app/~~kxjfqYMnkBued9RiLnMFqg==/org.droidloom.qa.bili.r6-kuXyZGGSRfNZ4a7nV1nNkA==/base.apk",
++      "bytes": 32912,
++      "held_file": {
++        "bytes": 32912,
++        "device": 1811,
++        "gid": 1000,
++        "inode": 789229,
++        "mode": 33188,
++        "mtime_ns": 1793889162644800190,
++        "nlink": 1,
++        "uid": 1000
++      },
++      "package": "org.droidloom.qa.bili.r6",
++      "signer_bound_by_exact_signed_apk_bytes": "45e4127727aca864ee976c95c667cc8707566ece6a0f940ba8c53b158192f611",
++      "uid": 10184
+     },
+-    "build_receipt_sha256": "9482c57026a8e29956bc339dad8a0ce5f6c74ebe835ea0620a09c988d04e5077",
+-    "old_v2_provenance_inherited": false,
+-    "self_instrumentation": true,
+-    "signer_certificate_sha256": "940f32ee3ebf685806fcf4bf82c44fdfec7b13464d5b5ef8aacc1d92e57d1670",
+-    "source_manifest_sha256": "83f642432c59f8e441f32402e278e9b52467a1a848e9d8e59eedaa22ed2a9577",
+-    "stage_receipt_sha256": "6d12174970b04a2078972602eef64e93016715eeac300b27b368f8609549acb9"
+-  },
+-  "actual_helper_uid": 10170,
+-  "actual_install03_action_lock_released": true,
+-  "actual_install03_did_not_exercise_busy_wait": true,
+-  "actual_install03_lock_admission": {
+-    "Android_actions_attempted": 0,
+-    "acquired": true,
+-    "attempts": 1,
+-    "busy_attempts": 0,
+-    "elapsed_seconds": 2.573896199464798e-05,
+-    "fd_closed_on_error": false,
+-    "opened_identity": {
+-      "device": 28,
+-      "gid": 0,
+-      "inode": 8312,
+-      "mode": 33152,
+-      "nlink": 1,
+-      "uid": 0
++    "job_id": "1a1ac2038e8-fc05-5267",
++    "receipts": {
++      "coordinator": {
++        "bytes": 3025,
++        "path": "/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/result.json",
++        "sha256": "31aa367cc9d33680af8e1f95b9f4e2a14624499321481704ab14cb3737f23279"
++      },
++      "stage": {
++        "bytes": 2032,
++        "path": "/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/stage-result.json",
++        "sha256": "8cee9c51b1620965253baa4a2328a1ab358dd893b5891310dbc3810fe40a13e1"
++      },
++      "worker": {
++        "bytes": 7547,
++        "path": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-2a1065bc6af8a39e6518bd61d8581978/steps/install-state-r6-01/result.json",
++        "sha256": "abf5647d5074c6ed555691f3a4f306d0192491782c2422ec9fff44c12b642691"
++      },
++      "worker_command": {
++        "bytes": 1152,
++        "path": "/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/evidence/02-install-state.result.json",
++        "sha256": "03e7fb6fe99cd67247d5235f5910b3ff48339f81c968990aebbdab4938f144fb"
++      }
+     },
+-    "path": "/run/lock/android-digitalis-actions.lock",
+-    "phase": "acquired",
+-    "same_inode_confirmed": true,
+-    "wait_limit_seconds": 5.0
+-  },
+-  "actual_install_job": "1a1aab82bec-fc05-467d",
+-  "actual_install_reader_sha256": "de4a18f6f99bba2eb7cdd26d75f32452254bbc224c41bf577ba4083aadded8b0",
+-  "actual_install_receipts": {
+-    "coordinator.json": {
+-      "bytes": 3025,
+-      "path": "/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/result.json",
+-      "sha256": "4c20fda8fdcc74c28ed8c4054f84caede0a40f0c46a76a329ac662a562d0972d"
++    "required": true,
++    "retained_record_review": {
++      "bytes": 3376,
++      "sha256": "a69bfdb802c4deade96730f6d6f1934590df2153e10f05462f25280cfd994290"
+     },
+-    "stage.json": {
+-      "bytes": 2032,
+-      "path": "/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/stage-result.json",
+-      "sha256": "d9fad2a683aabf133541e5cb44897735a7d90a14847b4874fa5bae618eda99f9"
+-    },
+-    "worker-command-result.json": {
+-      "bytes": 1152,
+-      "path": "/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/evidence/02-install-state.result.json",
+-      "sha256": "d29d96cdf24ebfd27f8b06822f8f7ab4af7783a0a4f9125937e373db1dae8352"
+-    },
+-    "worker.json": {
+-      "bytes": 7546,
+-      "path": "/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-a25b59395264b89f9f97d5f0db74a3c5/steps/install-state-r5-03/result.json",
+-      "sha256": "5c2e6615221bfc9a50a06130525bdc3650fd1ff2bd22c255fe67a57b07940f7a"
++    "state_command_index": 6,
++    "state_command_sha256": "33f4b912348161d5c54ce3d5da2cb884565a204a680b9805d74a4ff766787514",
++    "state_wire_sha256": "7244569c8b48dd0e6e73409a780c054f08a065f86709f7866d832a264291fd17",
++    "worker_receipt": {
++      "bytes": 7547,
++      "path": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-2a1065bc6af8a39e6518bd61d8581978/steps/install-state-r6-01/result.json",
++      "sha256": "abf5647d5074c6ed555691f3a4f306d0192491782c2422ec9fff44c12b642691"
+     }
+   },
+-  "actual_install_source_manifest_sha256": "7b69a52f2ee8f7471e3ad36a5f75a83be6093bfdf0e21b951b3bb36f3a2de811",
+-  "actual_install_source_tree": "30c9e4b0cfe4656f1829a926f9b2e810cdf6bee5",
+-  "actual_retained_structure_geometry": {
+-    "area_and_container_bounds": [
+-      320,
+-      45,
+-      1520,
+-      1498
+-    ],
+-    "area_sized_and_crop_sized_surface_each_unique": true,
+-    "diagnostic01_sha256": "4853c34166b422f074b66394bbeca1da09e3f522ff721a6e288a56a1aee4d0bc",
+-    "diagnostic02_sha256": "4add570dcc3d680b469ca9b1133ffc6d76d9aa98cd4b21209943dea24dbc3143",
+-    "first_single_surface_observation_not_complete_for_new_crop_gate": true,
+-    "immediate_parents_distinct_empty_id_FrameLayouts_with_same_bounds_as_surface": true,
+-    "overlay_and_toolbar_bounds": [
+-      320,
+-      45,
+-      1520,
+-      720
+-    ],
+-    "retired_tree_is_not_new_action_authority": true,
+-    "two_surface_bounds_are_distinct": true
++  "business_success_verified": false,
++  "cleanup": {
++    "no_force_stop_clear_data_or_helper_uninstall": true,
++    "only_original_positive_owned_task_scope_authorizes_retirement": true,
++    "original_worker_and_coordinator_finally_AST_unchanged": true,
++    "preexisting_tasks_preserved_from_current_flow_baseline": true,
++    "source_APK_Main_held_binding_and_lock_final_checks": true
+   },
+-  "buffer_viewport_behavior_changed": true,
+-  "cache_cause_of_prior_failure_not_proven": true,
+-  "fixed_flow_nonce": "c1eaefa79cbafc86cb32f638900443bf",
+-  "fresh_capture_transactions": {
+-    "buffer_deadline_seconds": 25,
+-    "helper_Java_and_Session_unchanged": true,
+-    "helper_time_query_limits_unchanged": true,
+-    "individual_capture_timeout_seconds": 20,
+-    "maximum_buffer_reads": 12,
+-    "maximum_captures": 3,
+-    "new_inspect_before_each_capture": true,
+-    "overall_request_seconds_unchanged": 600,
+-    "same_scope_function_unchanged": true,
+-    "source_packet_bound_unchanged": 131072,
+-    "successful_inter_transaction_position_change_requires_new_independent_current_proof": true,
+-    "within_capture_change_still_fails_without_crop_or_retry": true
++  "device_execution_performed": false,
++  "expected_result_scope": "Input lifecycle plus separately observed controls only; pause/resume/seek/back/reopen/audio and whole-app acceptance remain open",
++  "flow": {
++    "fresh_source_root_and_once_claim_required": true,
++    "helper_nonce_count": 110,
++    "nonce": "395ea60f6cff2da163672b2f660131a4",
++    "root": "/home/alex/work/pocket4-bilibili-r6-controls-reveal-01",
++    "source_file_limit_bytes": 65536,
++    "source_packet_limit_bytes": 131072,
++    "stage": "controls-reveal-01",
++    "total_unique_nonce_count_including_flow": 111
+   },
+-  "installed_identity": {
+-    "apk_sha256": "16d3d1252b84accf0b454b8d9c3dd350031cca3a228cc9a772914d74a0c66b68",
+-    "base_apk": "/data/app/~~Oe5CLAmhtH5r5QTWzbzukA==/org.droidloom.qa.bili.r5-i09w1S2dwR4iy8S_4bRb_Q==/base.apk",
+-    "bytes": 24720,
+-    "held_file": {
+-      "bytes": 24720,
+-      "device": 1811,
+-      "gid": 1000,
+-      "inode": 789062,
+-      "mode": 33188,
+-      "mtime_ns": 1793865564713699148,
+-      "nlink": 1,
+-      "uid": 1000
++  "helper": {
++    "APK": {
++      "bytes": 32912,
++      "path": "/home/alex/work/pocket4-owned-bili-qa-r6-build-01/owned-bili-qa.apk",
++      "sha256": "f7df7d6ce8dd0ed2ab7a8cda929d5b06e2b097c358490b32450c4a238bc1562a"
+     },
+-    "package": "org.droidloom.qa.bili.r5",
+-    "signer_bound_by_exact_signed_apk_bytes": "940f32ee3ebf685806fcf4bf82c44fdfec7b13464d5b5ef8aacc1d92e57d1670",
+-    "uid": 10170
++    "build": {
++      "bytes": 18043,
++      "path": "/home/alex/work/pocket4-owned-bili-qa-r6-build-01/build-result.json",
++      "sha256": "158e0ca24d0807f12dd4f5c03dac24a04052ce8ac876d0da6df4212bbfa28f1d"
++    },
++    "package": "org.droidloom.qa.bili.r6",
++    "protocol": "pocket4-owned-bili-qa-v6",
++    "signer_certificate_sha256": "45e4127727aca864ee976c95c667cc8707566ece6a0f940ba8c53b158192f611",
++    "source_manifest_sha256": "6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419",
++    "stage": {
++      "bytes": 1939,
++      "path": "/home/alex/work/pocket4-owned-bili-qa-r6-source-01/stage-result.json",
++      "sha256": "76a315152f472f6d213ec663b1d9404b67d19621b1c2376ea9a0c757c2994c40"
++    },
++    "uid": 10184
+   },
+-  "navigation_Session_and_original_finally_behavior_changed": false,
+-  "new_unique_nonces": 158,
+-  "no_new_clicks_or_opcodes": true,
+-  "old_nonce_intersection": 0,
+-  "parent_source_manifest_sha256": "6620853a66d298cf1d85b16733f56e564654823bbe8c5e9e566bed4faa5b4ab6",
+-  "previous_R4_buffer_flow_original_failure": {
+-    "coordinator_sha256": "96c7128251ac2ebbf5dd14e0af93534d083bddec8c46cd6ab0087ea4f6c3ea74",
+-    "first_cause": "NO_FOCUSED_APPLICATION_WINDOW after acknowledged public text edit; 21 unfocused reads; no submit/course/crop",
+-    "job": "1a1aa49ae1a-fc05-4070",
+-    "navigation_sha256": "fb9ff99563575b6f7798e3f50dad457325b374afe4eefac8d78878b5e04c4f14",
+-    "state_remains": "FAIL"
++  "install_source": {
++    "entry": {
++      "bytes": 31980,
++      "sha256": "e948703fb0fc41dfaf3130f40bbb5f31fbb7a87f2822ba1657cdefdb454b9f7d"
++    },
++    "request": {
++      "bytes": 110429,
++      "path": "exact-request.json",
++      "sha256": "0ae32fbf182a991e0af49b324e7f16c8c2123b63b691fa4411e0fad28725bde4"
++    },
++    "root": "/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01",
++    "session_binding": {
++      "bytes": 804,
++      "sha256": "0af414abcab8020e7ab95e7ec15047489b70e83cddb84ba483d05e8cf330dd71"
++    },
++    "source_manifest_sha256": "8c02c3bf010998e23ed30ae13b88c5e4f5d824775702e055e772788966b93e59",
++    "stdin": {
++      "bytes": 104382,
++      "sha256": "edbe8202b9fec462be7907007b59a8960391b42e719079f86da9f4ce000f712c"
++    }
+   },
+-  "previous_R5_buffer_flow_original_failure": {
+-    "coordinator_sha256": "46b0fa7515c906a94924f1726f2c8f52d4c31d4d2fed3d36394fcbd586d31ada",
+-    "course_click_acknowledged": true,
+-    "first_cause": "UNIQUE_CURRENT_PLAYER_STRUCTURE_REQUIRED: two eligible SurfaceViews, not failed focus or missing player",
+-    "job": "1a1aadcfbb5-fc05-4837",
+-    "navigation_sha256": "36193d4574839df942bc52442c2416b1a2500d51124cb079c251e6b87747786c",
+-    "qualified_crop_or_playback": false,
+-    "state_remains": "FAIL"
++  "private_UI_policy": "Raw assessments stay only in root-owned remote flow; no commercial tree, pixels or journals in Git",
++  "readback": {
++    "actual_controls_only_inside_current_complete_player_container": true,
++    "clickable_or_seek_controls_must_be_observed_for_aggregate_success": true,
++    "failed_input_stops_mutations_but_does_not_suppress_independent_read": true,
++    "first_error_and_secondary_errors_preserved": true,
++    "immediate_complete_post_input_inspection": true,
++    "no_stale_previous_sequence_diagnostic_attribution": true,
++    "one_independent_state_inspect_state_in_finally": true,
++    "raw_text_or_description_in_safe_report": false
+   },
+-  "previous_R5_geometry_original_failure": {
+-    "actor_and_exact_motion_time_not_proven": true,
+-    "coordinator_sha256": "61f0d5c97d12e9683be3237a813f60e03c2ab882a08b34f7d303e49168d3648b",
+-    "first_cause": "VIEWPORT_SCOPE_CHANGED_DURING_CAPTURE",
+-    "first_two_crops_exact_scope_qualified": true,
+-    "job": "1a1ab222adf-fc05-4acc",
+-    "navigation_sha256": "4ceb318717f554cf2779232846df77b5fe5871cc83e3ef1fff32e50920bbe80d",
+-    "observed_bounds_translation_x": -320,
+-    "state_remains": "FAIL",
+-    "third_failed_crop_not_published": true
++  "resource_protocol": {
++    "cpu_quota_percent": 100,
++    "memory_max_bytes": 536870912,
++    "memory_swap_max_bytes": 0,
++    "navigation_worker_seconds": 240,
++    "request_timeout_seconds": 600,
++    "tasks_max": 128
+   },
+-  "previous_R5_install02_original_failure": {
+-    "external_lock_holder_not_identified": true,
+-    "install_state_and_Android_action_attempted": false,
+-    "job": "1a1aa88bddb-fc05-440e",
+-    "state_remains": "FAIL",
+-    "worker_sha256": "f145fc4f93818aaf86b4075835775c971e6276da62b356ea965626717c34fe71"
++  "reveal_admission": {
++    "absolute_crop_interior_point_from_current_proof": true,
++    "atomic_touch_target_attribution_claimed": false,
++    "complete_exact_two_SurfaceView_player_geometry": true,
++    "controls_must_initially_be_hidden": true,
++    "display": 0,
++    "focused_application_window_and_exact_target": true,
++    "fresh_complete_tree_and_current_window_scope": true,
++    "input_ack_does_not_mean_controls_observed": true,
++    "original_R6_Session_sequence_unmodified": true,
++    "original_whole_tree_hash_gate_unchanged": true,
++    "post_input_absolute_frame_unchanged": true,
++    "source_parser_and_installed_helper_identity_exact": true
+   },
+-  "qa_source_manifest_sha256": "83f642432c59f8e441f32402e278e9b52467a1a848e9d8e59eedaa22ed2a9577",
+-  "qa_source_tree": "fa3ceddcc2046d54748ca052993c3ae23a261eff",
+   "schema": 1,
+-  "state": "SOURCE_ACTUAL_R5_BOUND_FRESH_BEFORE_CAPTURE_ANDROID_UNRUN",
+-  "state_command_index": 6,
+-  "state_nonce": "2ad38fb92a0c5cfd6cde23b0c03c4ae6",
+-  "state_wire_sha256": "d6ea152c1dcd395f02b2e0fe8002d98bcdf5203251463fd40ae6a17315ca9d98",
+-  "viewport_change_scope": "fresh authoritative complete inspect before each capture; unchanged exact absolute before/after scope gate",
+-  "whole_app_ready": false
++  "scope": "Fresh original public query and course open, then one strictly scoped reveal input and one independent complete controls read; exact owned task cleanup",
++  "state": "SOURCE_FROZEN_ACTUAL_R6_INSTALL_BOUND_UI_NOT_RUN",
++  "target": {
++    "package": "tv.danmaku.bili",
++    "public_query": "微积分",
++    "uid": 10117
++  },
++  "whole_app_production_ready": false
+ }
+--- r5/README.md
++++ r6/README.md
+@@ -1,23 +1,58 @@
+-# Fresh viewport proof for each owned Bilibili capture
++# Bilibili R6: reveal and observe player controls
+ 
+-This new flow retains the actual R5 helper, UID 10170, signed APK/source/build/install/state chain, R4 held namespace transport, Main epoch 48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f, action lock, original navigation and exact owned task cleanup. It installs nothing and changes no permissions, user data, framework, helper Java or Session contract. The 158 new nonces are disjoint from the previous attempt.
++This source freeze prepares one fresh owned Bilibili flow. The actual R6
++installation is bound to UID 10184, its exact installed signed APK identity and
++the original successful install/state receipts. The historical no-UiAutomation
++state is reparsed as provenance, never reused as the current UI baseline. The
++exact request is prepared for Root review and has not been submitted. No old
++helper qualification or retained tree authorizes this attempt.
+ 
+-## Original result remains failed
++The original recorder creates and owns one new task under the unchanged held
++Main namespace/root transport and global action lock. The existing sequence
++opens the public search entry, enters the fixed public query 微积分, submits it,
++and selects the currently observed exact course card. Each mutation keeps its
++original action-bound fresh full-tree/window checks. The original three complete
++post-course reads must pass before the new reveal operation is considered.
+ 
+-The geometry attempt completed the public calculus query and course click, then saved two crops only after their independent absolute before/after proofs agreed. Its third observation changed window/crop X from 320 to 0; the exact comparator rejected that capture and no third crop was published. The original FAIL and all receipts remain unchanged. The responsible actor and the exact time of the movement are not established. Two earlier qualified visual samples do not prove continuous playback, render-producer identity or sound.
++The R6 Session then takes its own fresh complete inspection. The frozen R6
++contract and Java implementation require the exact current focused application
++window on display 0, the same target foreground, complete player structure,
++absolute two-SurfaceView geometry and hidden controls. A strict interior point
++is derived from that current crop. The owned helper may issue one DOWN and one
++UP. Failed input permits at most one CANCEL cleanup; created events are recycled
++independently and primary failures survive later cleanup errors. The 150 ms
++input limit is an admission deadline, not a guarantee against an uninterruptible
++Binder call or process termination. This does not claim atomic touch attribution.
+ 
+-## Narrow transaction change
++Input acknowledgement alone cannot qualify controls visibility. The actual R6
++reply must bind this sequence's inspection nonce/hash, installed helper and
++player proof, complete immediate post-input inspection and unchanged absolute
++frame. A separate state/inspect/state sequence runs in finally after any input
++sequence attempt, without retrying input. The independent complete tree must
++show eligible clickable or seek controls within the current player container;
++only resource/class/count/geometry/hash data enter the safe result. Raw text,
++descriptions and complete assessments remain in the private flow.
+ 
+-Previously a capture reused the preceding observation as its before proof. Each capture now first performs a separate successful, complete current inspect with its own before/inspect/after-state nonces. Only that new observation supplies the absolute window, course, role, two-SurfaceView geometry and crop proof for the next screenshot. The existing independent post-capture inspection must match it using the unchanged exact same_scope function. A completed transaction's after result is evidence only; it cannot authorize the next capture.
++The new module preserves the first error and appends secondary failures. Its
++failed-sequence diagnostic is accepted only when the current observation object
++was newly produced by that sequence. The former diagnostic behavior is retained
++as an immutable preimage and a local counterexample; no original Session method
++is changed. An input or read failure keeps aggregate success false.
+ 
+-A position change between transactions can pass only when that transaction's new complete before and after proofs agree. A change during the capture interval still fails without publishing a crop. There is no translation-invariant comparison, first-SurfaceView choice, failed-capture retry or replayed Android action. A failed fresh before read or rebuffering on a previously ready run prevents the screenshot. The original Session independently restores and reads its state on inspect failure. An attempted screenshot still reaches the independent after read; a later error cannot replace its first error. The still-buffering diagnostic branch remains one crop followed by FAIL.
++Original worker and coordinator finally blocks still independently validate Main,
++release held authority and action locks, and retire only the exact positively
++owned task while preserving the current flow's preexisting tasks. A failed
++capture, observation or evidence write does not grant an input retry. This flow
++captures no image or audio, and does not pause, seek, scroll, press Back, log in,
++send, purchase, clear data or change permissions/settings. Future playback,
++audio and whole-app acceptance require their own actual evidence.
+ 
+-The original exact two-role viewport predicate, absolute scope comparator, private writer and inspection contract are unchanged. Full screenshots remain memory-only; private crops are bounded and published only after the independent scope check. This does not establish atomic screenshot attribution. Commercial trees and pixel data are excluded from Git and ordinary summaries.
++The 11 completed local controls use explicit synthetic public-course fixtures and Session
++I/O seams. They are source-contract controls, not Android execution or proof of
++revealed controls. Root reviews and executes a separately finalized request.
+ 
+-## Bounds and evidence
+-
+-The existing buffer phase allows at most twelve successful reads within twenty-five seconds. At most three capture transactions follow, each with a new before read and an independent after read; every screenshot keeps its original twenty-second timeout. The helper's time/query/node/tree limits, one CPU, 512 MiB, no swap, 128 tasks, inner deadlines and 600-second request remain unchanged. The source packet remains bounded by 131072 bytes and each production source by 65536 bytes.
+-
+-Thirteen local controls execute the actual old and new capture/run functions with owned synthetic PNGs through the pinned original codec. They cover the stale-prior-proof counterexample, fresh proof after an inter-transaction move, unchanged rejection of a move within capture, before/rebuffer/after failure, timeout plus secondary failure, three distinct fresh transactions, stopping after the second failed capture, persistent buffering, and no screenshot after failed buffer observation. Inspection and Android screenshot I/O are explicit seams. No device, commercial tree/image, microphone or audio was accessed. These controls do not qualify the actual Android capture path or playback.
+-
+-Root must review and dispatch the new exact request once. Actual Android execution, pause/resume, seek, reopen, cold start, output audio and whole-App readiness remain unqualified by this freeze. Earlier failures are neither rewritten nor retried.
++The original local binding attempt exceeded the unchanged 65536-byte source
++limit by 110 bytes. Its failure and source pin are retained. Removing two
++obsolete comment lines made the main source 65494 bytes; the complete AST and
++all functions remained identical. The packet and per-file limits were not
++expanded. The 111 already fixed nonces are unchanged.

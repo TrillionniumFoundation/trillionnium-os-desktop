@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "scope": "standalone owned host mechanism; no Main, Android, platform role attestation or enabled service",
+  "source_authorities": {
+    "listener-source-pins.json": {
+      "bytes": 9518,
+      "sha256": "7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb"
+    },
+    "owner-lifetime-source-pins.json": {
+      "bytes": 1698,
+      "sha256": "de1ef1fb3044b9bdc935fe32b812bb53e88aaf4be54b439df7d78f963e813209"
+    }
+  },
+  "arm_order": [
+    "lease-preimage",
+    "lease-candidate",
+    "listener"
+  ],
+  "fixture_uid_gid": 61179,
+  "Main_actions": 0,
+  "arms": {
+    "lease-preimage": {
+      "cases": [
+        "foreign_CLONE_VM_CLONE_FILES",
+        "partial_lease_initialization_EMFILE_cleanup"
+      ],
+      "state": "OBSERVED_PREIMAGE_LEASE_BUG_AND_CLEANUP_CONTROL",
+      "direct_children_reaped": 3
+    },
+    "lease-candidate": {
+      "cases": [
+        "foreign_CLONE_VM_CLONE_FILES",
+        "foreign_CLONE_VM_private_fdtable",
+        "foreign_fork_COW",
+        "partial_lease_initialization_EMFILE_cleanup"
+      ],
+      "state": "PASS_LEASE_DESTRUCTION_CONTROLS",
+      "direct_children_reaped": 7
+    },
+    "listener": {
+      "cases": [
+        "authorized_snapshot_dispatched_and_released",
+        "maker_error_reply_then_same_grant_recovers",
+        "wrong_token_revokes_without_response",
+        "unsupported_active_operation_revokes",
+        "peer_hup_revokes_queued_input_rights",
+        "service_owner_hup_revokes",
+        "single_request_deadline_revokes",
+        "suspend_ack_detach_same_lease_reattach",
+        "unexpected_owner_control_data_revokes"
+      ],
+      "state": "PASS_OWNED_LISTENER_AND_SESSION",
+      "direct_children_reaped": 18
+    }
+  },
+  "all_direct_children_require_normal_reaping": true,
+  "forced_cleanup_pass": false,
+  "retry": false,
+  "actual_Begin_Approve_Attach_required": true,
+  "FinishCreate_before_snapshot_publication_required": true,
+  "ordinary_V2_unchanged": true,
+  "platform_policy_qualified": false,
+  "engine_connected": false,
+  "no_capabilities_added_to_controller_or_Main": true,
+  "owned_role_fixture_capabilities": "only already-effective SETUID/SETGID/SETPCAP inherited by own child; bounding and ambient cleared; fixed test policy, not Android platform policy"
+}

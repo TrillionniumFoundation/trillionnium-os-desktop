@@ -1,0 +1,20 @@
+--- runtime02/make_run_request.py
++++ runtime03/make_run_request.py
+@@ -7,12 +7,12 @@
+ import json
+ 
+ HERE=Path(__file__).resolve().parent
+-ROOT='/run/pocket4-role-listener-lifetime-host-run-02-20261105'
+-KEY='pocket4-role-listener-lifetime-host-runtime-02-20261105'
++ROOT='/run/pocket4-role-listener-lifetime-host-run-03-20261105'
++KEY='pocket4-role-listener-lifetime-host-runtime-03-20261105'
+ SOURCE_MANIFEST='7adaade107d05204015482abcee84431d8cd1bcc7776fea2a97dcd6488d210fb'
+-TEMPLATE_SHA='9b814e77514c0e57da467e4f15ddb3d61db3c299c30f07a24d6d4bf78875eb09'
+-PLAN_SHA='b440df29027c3b0516ef09e457346a1577d42545a4e373e69d1b22821f055a9a'
+-BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-02-20261105'
++TEMPLATE_SHA='1d06d018d493289e1dab90ba45f8dc9463011cb5d28de732b91177bf6fcd09fa'
++PLAN_SHA='f027f6c7f25f7859b4f7c432858506f7e1f844adadea5d1a6e8b00800e9d272d'
++BUILD_ROOT='/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/role-listener-lifetime-host-build-03-20261105'
+ 
+ 
+ def pin(raw):return {'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}

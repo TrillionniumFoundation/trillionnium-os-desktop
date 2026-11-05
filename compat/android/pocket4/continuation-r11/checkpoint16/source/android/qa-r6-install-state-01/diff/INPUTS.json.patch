@@ -1,0 +1,153 @@
+--- r5-install03/INPUTS.json
++++ r6-install01/INPUTS.json
+@@ -1,4 +1,9 @@
+ {
++  "R5_prior_no_action_failure_dependency_removed": {
++    "not_a_weakened_R6_build_or_package_absence_gate": true,
++    "old_failure_records_and_source_unchanged": true,
++    "reason": "R6 is a distinct helper package first attempt, not a replay or retry of R5 install02"
++  },
+   "action_lock_admission": {
+     "Main_rechecked_after_lock": true,
+     "failure_close_error_secondary": true,
+@@ -15,24 +20,31 @@
+     "wait_limit_seconds": 5.0,
+     "worker_timeout_seconds_unchanged": 190
+   },
++  "actual_build_job_reported_by_root": "1a1abe6cd24-fc05-5132",
++  "actual_build_review": {
++    "actual_original_adapter_qualified_build_passed": true,
++    "bytes": 3197,
++    "does_not_substitute_authoritative_job_terminal_review": true,
++    "path": "/workspace/scratch/94990735b266/android-qa-r6-build01-actual-review-01/report.json",
++    "sha256": "a0f9b41183e634e86960114a207531fc879155c1c72299454bb4c9bf0837a5ef"
++  },
+   "actual_install_state_not_run": true,
+-  "actual_r5_build_job_reported_by_root": "1a1aa74aa92-fc05-4355",
+   "apk": {
+-    "bytes": 24720,
+-    "path": "/home/alex/work/pocket4-owned-bili-qa-r5-build-02/owned-bili-qa.apk",
+-    "sha256": "16d3d1252b84accf0b454b8d9c3dd350031cca3a228cc9a772914d74a0c66b68",
+-    "signer_certificate_sha256": "940f32ee3ebf685806fcf4bf82c44fdfec7b13464d5b5ef8aacc1d92e57d1670"
++    "bytes": 32912,
++    "path": "/home/alex/work/pocket4-owned-bili-qa-r6-build-01/owned-bili-qa.apk",
++    "sha256": "f7df7d6ce8dd0ed2ab7a8cda929d5b06e2b097c358490b32450c4a238bc1562a",
++    "signer_certificate_sha256": "45e4127727aca864ee976c95c667cc8707566ece6a0f940ba8c53b158192f611"
+   },
+   "build": {
+-    "bytes": 17188,
+-    "path": "/home/alex/work/pocket4-owned-bili-qa-r5-build-02/build-result.json",
+-    "sha256": "9482c57026a8e29956bc339dad8a0ce5f6c74ebe835ea0620a09c988d04e5077"
++    "bytes": 18043,
++    "path": "/home/alex/work/pocket4-owned-bili-qa-r6-build-01/build-result.json",
++    "sha256": "158e0ca24d0807f12dd4f5c03dac24a04052ce8ac876d0da6df4212bbfa28f1d"
+   },
+   "helper_uid": null,
+   "main_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+   "nonces": {
+-    "flow": "a25b59395264b89f9f97d5f0db74a3c5",
+-    "state": "2ad38fb92a0c5cfd6cde23b0c03c4ae6"
++    "flow": "2a1065bc6af8a39e6518bd61d8581978",
++    "state": "38224815112bbffd278ea0f29ab48c82"
+   },
+   "official_cli_reference": {
+     "bytes": 220141,
+@@ -44,61 +56,21 @@
+     "upstream_commit_not_asserted": true,
+     "upstream_url": "https://android.googlesource.com/platform/frameworks/base/+/refs/heads/main/services/core/java/com/android/server/pm/PackageManagerShellCommand.java"
+   },
+-  "old_R1_R2_R3_R4_and_legacy_UIDs_rejected": [
++  "old_package_mutation_authorized": false,
++  "older_helper_or_target_UIDs_rejected": [
++    10117,
++    10125,
+     10164,
+     10165,
+     10166,
+-    10125,
+-    10169
++    10169,
++    10170,
++    10175
+   ],
+-  "package": "org.droidloom.qa.bili.r5",
+-  "previous_scoped_runs": {
+-    "r1_install02": "actual install/state passed; independent older package/UID10164",
+-    "r2_install01": "actual install/state passed; independent older package/UID10165",
+-    "r2_search01": "actual helper TREE_NODE_OR_DEPTH_BOUND before performAction; original FAIL and exact-owned cleanup retained",
+-    "r3_buffer_viewport01": "Actual NO_FOCUSED_APPLICATION_WINDOW before text entry, course click or crop; old FAIL/Main/cleanup retained. R4 changes bounded condition reads only.",
+-    "r4_buffer_viewport01": "FAIL after acknowledged public query edit; 21 repeated unfocused samples, original FAIL and exact Main/owned task cleanup preserved. Cache cause remains unproven."
+-  },
+-  "prior_R5_build01_failure": {
+-    "build_result_sha256": "2b867571affe011352969f589a58a7f0ea4460941e4a2c4728dc94572022282b",
+-    "exact_error": "actual self instrumentation target required",
+-    "not_install_qualified": true,
+-    "preserved": true
+-  },
+-  "prior_R5_install02_failure": {
+-    "coordinator": {
+-      "bytes": 3064,
+-      "sha256": "672d1fd70f97587eb0b49d3196ea9fcce90472079ec468b9c8cdfa604e7a6515"
+-    },
+-    "external_holder_not_inferred": true,
+-    "first_error": {
+-      "message": "[Errno 11] Resource temporarily unavailable",
+-      "phase": "install_or_state",
+-      "type": "BlockingIOError"
+-    },
+-    "job": "1a1aa88bddb-fc05-440e",
+-    "no_Android_action_observed": true,
+-    "preserved": true,
+-    "stage": {
+-      "bytes": 2151,
+-      "sha256": "f9b6c1698443b49ca1ff2470094c33c8275c7bbb056ecbe1fcc558c997b3e3af"
+-    },
+-    "worker": {
+-      "bytes": 1594,
+-      "sha256": "f145fc4f93818aaf86b4075835775c971e6276da62b356ea965626717c34fe71"
+-    }
+-  },
+-  "prior_install01_failure": {
+-    "bytes": 3055,
+-    "error": "NUMERIC_PID_ENTRY_FORBIDDEN",
+-    "install_command_spawned": false,
+-    "original_failure_unchanged": true,
+-    "state_attempted": false,
+-    "worker_sha256": "5e9277c9e97539b7b0d2bbcb518c4107160e78de2bbbf107a0d0619789b9d61b"
+-  },
+-  "qa_source_manifest_sha256": "83f642432c59f8e441f32402e278e9b52467a1a848e9d8e59eedaa22ed2a9577",
+-  "qualification_inherited_from_r1_r2_r3_or_r4": false,
+-  "r5_state_wire": "gzip-canonical-json-v1; actual r5 parser only, strict finish -1",
++  "package": "org.droidloom.qa.bili.r6",
++  "previous_actual_r5_install03_is_source_reference_only": true,
++  "qa_source_manifest_sha256": "6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419",
++  "qualification_inherited_from_old_helpers": false,
+   "recorder": {
+     "base_manifest_sha256": "4ff896b75c4c7751a28eee34ab512583c3a26eb43f5e28598a776d40ee496906",
+     "base_root": "/home/alex/work/pocket4-bilibili-readonly-r3-01/source/recorder-held-r3-freeze-01",
+@@ -106,18 +78,20 @@
+     "manifest_sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1",
+     "only_changed_inherited_production_file": "bound_android_transport.py",
+     "production_transport_sha256": "7edecc741b8a61bea30d885ab9107666aab9407d6a6928bf799bd8efd4b4a23b",
+-    "root": "/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/recorder-r4",
++    "root": "/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/source/recorder-r4",
+     "source_sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511",
+     "staged_private_copy_only": true
+   },
+   "schema": 1,
+-  "scope": "New exact R5 install03 and one no-UiAutomation state, after bounded same-inode original action-lock admission",
++  "scope": "First installation of the new exact R6 package and one no-UiAutomation state request; no reveal input or UI",
+   "source_review_only": true,
+   "stage": {
+     "bytes": 1939,
+-    "path": "/home/alex/work/pocket4-owned-bili-qa-r5-source-02/stage-result.json",
+-    "sha256": "6d12174970b04a2078972602eef64e93016715eeac300b27b368f8609549acb9"
++    "path": "/home/alex/work/pocket4-owned-bili-qa-r6-source-01/stage-result.json",
++    "sha256": "76a315152f472f6d213ec663b1d9404b67d19621b1c2376ea9a0c757c2994c40"
+   },
+-  "state": "SOURCE_CANDIDATE_ACTUAL_BUILD02_AND_NO_ACTION_FAILURE02_BOUND_INSTALL03_UNRUN",
++  "state": "ACTUAL_R6_BUILD_RECEIPTS_BOUND_INSTALL_ANDROID_UNRUN",
++  "state_request_uses_reveal_operation": false,
++  "state_wire": "gzip-canonical-json-v1, exact R6 parser, successful finish -1, no UiAutomation",
+   "whole_app_production_ready": false
+ }

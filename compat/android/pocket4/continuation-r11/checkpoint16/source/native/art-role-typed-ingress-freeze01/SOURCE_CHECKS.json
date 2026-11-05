@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "state": "SOURCE_BINDINGS_AND_PRIVATE_JNI_SHAPE_CHECKED",
+  "four_actual_AOSP_preimages_bound": true,
+  "all_four_preexisting_files_only_have_insertions": true,
+  "old_fork_and_specialization_bodies_unchanged": true,
+  "legacy_request_early_null_return": true,
+  "explicit_request_never_falls_back": true,
+  "typed_call_after_existing_policies_before_preFork": true,
+  "JNI_descriptor": "(IIZIIIIIIII)V",
+  "JNI_arguments_in_order": [
+    "uid",
+    "gid",
+    "childZygote",
+    "version",
+    "kind",
+    "initialUid",
+    "initialGid",
+    "uidMin",
+    "uidMax",
+    "gidMin",
+    "gidMax"
+  ],
+  "fixed_spec_fields": 8,
+  "native_entry_exact_extraction": {
+    "schema": 1,
+    "source": "candidate/frameworks/base/core/jni/com_android_internal_os_Zygote.cpp",
+    "source_bytes": 132241,
+    "source_sha256": "72d8cf730e8e3ec4ff4b88106e73e076eab7e761a405a5d854e62e7a5fadc095",
+    "offset": 105200,
+    "bytes": 1501,
+    "sha256": "e4c53d442751fc0a9eeda16e4eab86dfcbb4e36177f524cf1457f085f1e45989",
+    "exact_slice": true,
+    "JNI_exception_and_process_identity_are_seams": true,
+    "Java_execution": false,
+    "Android_execution": false
+  },
+  "native_control": {
+    "bytes": 4962,
+    "sha256": "97309fb8890a848044aa9ccba43266fb7be108907f2bf68c58427dff71f390c5"
+  },
+  "native_control_scope": "20 actual extracted entry cases; JNI/credential seams; no Android/JVM/fork/grant",
+  "Java_compiled": false,
+  "full_Android_TU_compiled": false,
+  "early_policy_installed": false,
+  "NNP_changed": false,
+  "root_parent_approval_implemented": false,
+  "production_producer_adds_request": false,
+  "factory_role_enabled": false,
+  "Main_actions": 0
+}

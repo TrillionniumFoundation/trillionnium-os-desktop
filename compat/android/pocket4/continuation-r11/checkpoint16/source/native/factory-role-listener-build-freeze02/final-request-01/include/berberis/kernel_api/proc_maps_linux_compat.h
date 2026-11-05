@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: Apache-2.0
+#ifndef BERBERIS_KERNEL_API_PROC_MAPS_LINUX_COMPAT_H_
+#define BERBERIS_KERNEL_API_PROC_MAPS_LINUX_COMPAT_H_
+
+// The host-test compiler uses the pinned glibc 2.17 sysroot. Its Linux UAPI
+// headers predate memfd, namespace descriptors and pidfds. Keep the kernel ABI
+// constants available without importing a different host's headers or changing
+// the runtime checks. A missing kernel implementation still returns ENOSYS.
+#include <fcntl.h>
+#include <linux/magic.h>
+#include <sys/ioctl.h>
+#include <sys/syscall.h>
+
+#if __has_include(<linux/memfd.h>)
+#include <linux/memfd.h>
+#endif
+#if __has_include(<linux/nsfs.h>)
+#include <linux/nsfs.h>
+#endif
+
+// include/uapi/linux/memfd.h, include/uapi/linux/nsfs.h,
+// include/uapi/linux/magic.h and include/uapi/linux/fcntl.h.
+#ifndef MFD_CLOEXEC
+#define MFD_CLOEXEC 0x0001U
+#endif
+#ifndef MFD_ALLOW_SEALING
+#define MFD_ALLOW_SEALING 0x0002U
+#endif
+#ifndef NS_GET_NSTYPE
+#define NS_GET_NSTYPE _IO(0xb7, 0x3)
+#endif
+#ifndef NSFS_MAGIC
+#define NSFS_MAGIC 0x6e736673
+#endif
+#ifndef F_ADD_SEALS
+#define F_ADD_SEALS 1033
+#endif
+#ifndef F_GET_SEALS
+#define F_GET_SEALS 1034
+#endif
+
+static_assert(MFD_CLOEXEC == 0x0001U && MFD_ALLOW_SEALING == 0x0002U);
+static_assert(NS_GET_NSTYPE == _IO(0xb7, 0x3) && NSFS_MAGIC == 0x6e736673);
+static_assert(F_ADD_SEALS == 1033 && F_GET_SEALS == 1034);
+
+// arch/x86/entry/syscalls/syscall_64.tbl. Do not apply LP64 x86 syscall
+// numbers to x32 or a different host ABI. The raw owner already requires this
+// same host ABI. Prefer existing declarations and assert their exact values.
+#if defined(__x86_64__) && !defined(__ILP32__)
+#ifndef SYS_memfd_create
+#define SYS_memfd_create 319
+#endif
+#ifndef SYS_pidfd_open
+#define SYS_pidfd_open 434
+#endif
+#ifndef SYS_close_range
+#define SYS_close_range 436
+#endif
+#ifndef SYS_pidfd_getfd
+#define SYS_pidfd_getfd 438
+#endif
+static_assert(SYS_memfd_create == 319 && SYS_pidfd_open == 434);
+static_assert(SYS_close_range == 436 && SYS_pidfd_getfd == 438);
+#endif
+
+#endif  // BERBERIS_KERNEL_API_PROC_MAPS_LINUX_COMPAT_H_

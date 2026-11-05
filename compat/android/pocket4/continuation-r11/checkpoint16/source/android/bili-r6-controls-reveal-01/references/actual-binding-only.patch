@@ -1,0 +1,44 @@
+--- prebinding/owned_navigation.py
++++ actual-bound/owned_navigation.py
+@@ -35,7 +35,7 @@
+ RESULTS_PLAN = {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'f698fd1df63d8beffb9bc878ac765992', 'inspect': 'c50d5a13c4f2330d078554a8218e55e6', 'after': 'df379a0bc06ae8a982d7b739c7bd2828'}}
+ QUERY_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '22a61c11e7dc3a13a3531e29a73e42b3', 'inspect': '29bb2219b00afae66fd01305e82961cf', 'after': '6603196f80dd5c4d784f25c7e1465050'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '2a06d1cdee25f934b747567fcb78684c', 'inspect': '1cfe50fe06d801b5f93d8e334d89d2b0', 'after': 'b086a6c3b12c70d53a12dacd1e5e4131'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'a9cfb7261ae022f20694eba87369e84d', 'inspect': '9b29f3e9e84de9afbd96b6af279fa1fb', 'after': 'e348562540520d04ed9baa30cb542f2a'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '85a2d636ca87e865116ce8abde674af5', 'inspect': '3c1052f7c2b420bd659249f959b4801b', 'after': '3d91a98ed44e5613913823ceb6f63923'}}]
+ SUBMIT_STABILITY_PLANS = [{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '8d0093320abe8294b4483d5896b621a7', 'inspect': 'eae7b5838c504c8ecf7f15b68c6e8595', 'after': 'c9306cfd77527b9b3a636d3ce5c7e4eb'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '82fa09bbd529854304f17a60b178c71d', 'inspect': '82601751b9e5a15fd722fd3b5bf1f605', 'after': 'cd80ca91056009a750788fed7c143e71'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '9733725cf39556c8cd86e32975fd30ad', 'inspect': 'ce0d946705128443aea6d0c76c20981d', 'after': 'd4c092f58dddae242c0764f29d67258f'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': 'ed47f77a482e45317a7f7b8a8eeb4086', 'inspect': '8f377720eb730d3185b059c8e228fba6', 'after': '8301d9f292b7df5cca89acf2ce9f8e51'}}]
+-SELF, UID = 'org.droidloom.qa.bili.r6', None  # PENDING_ACTUAL_R6_INSTALL_UID
++SELF, UID = 'org.droidloom.qa.bili.r6', 10184
+ BILI, BILI_UID = 'tv.danmaku.bili', 10117
+ INSTALL_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01')
+ INSTALL_SOURCE = INSTALL_ROOT / 'source'
+@@ -47,16 +47,16 @@
+ OLD_FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-2a1065bc6af8a39e6518bd61d8581978')
+ OLD_STEP = OLD_FLOW / 'steps/install-state-r6-01'
+ OLD_STATE_NONCE = '38224815112bbffd278ea0f29ab48c82'
+-OLD_STATE_WIRE = None  # PENDING_ACTUAL_R6_INSTALL_BINDING
++OLD_STATE_WIRE = '7244569c8b48dd0e6e73409a780c054f08a065f86709f7866d832a264291fd17'
+ OLD_PACKET = 'edbe8202b9fec462be7907007b59a8960391b42e719079f86da9f4ce000f712c'
+ MAIN_EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+ FILES = {'owned_navigation.py','stage_execute.py','make_request.py','INPUTS.json','README.md','video_navigation.py','controls_reveal.py'}
+-# R6 installation bindings remain pending; no old helper qualification is inherited.
+-INSTALL_JOB_ID = None  # PENDING_ACTUAL_R6_INSTALL_BINDING
+-STATE_COMMAND_INDEX = None  # PENDING_ACTUAL_R6_INSTALL_BINDING
+-STATE_COMMAND_SHA = None  # PENDING_ACTUAL_R6_INSTALL_BINDING
+-EXPECTED_INSTALLED_IDENTITY = None  # PENDING_ACTUAL_R6_INSTALL_BINDING
+-INSTALL_RECORDS = None  # PENDING_ACTUAL_R6_INSTALL_BINDING
++# Exact original R6 installation bindings; no old helper qualification is inherited.
++INSTALL_JOB_ID = '1a1ac2038e8-fc05-5267'
++STATE_COMMAND_INDEX = 6
++STATE_COMMAND_SHA = '33f4b912348161d5c54ce3d5da2cb884565a204a680b9805d74a4ff766787514'
++EXPECTED_INSTALLED_IDENTITY = {'package': 'org.droidloom.qa.bili.r6', 'uid': 10184, 'base_apk': '/data/app/~~kxjfqYMnkBued9RiLnMFqg==/org.droidloom.qa.bili.r6-kuXyZGGSRfNZ4a7nV1nNkA==/base.apk', 'apk_sha256': 'f7df7d6ce8dd0ed2ab7a8cda929d5b06e2b097c358490b32450c4a238bc1562a', 'bytes': 32912, 'held_file': {'device': 1811, 'inode': 789229, 'mode': 33188, 'uid': 1000, 'gid': 1000, 'bytes': 32912, 'mtime_ns': 1793889162644800190, 'nlink': 1}, 'signer_bound_by_exact_signed_apk_bytes': '45e4127727aca864ee976c95c667cc8707566ece6a0f940ba8c53b158192f611'}
++INSTALL_RECORDS = {'coordinator': (Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/result.json'), 3025, '31aa367cc9d33680af8e1f95b9f4e2a14624499321481704ab14cb3737f23279'), 'stage': (Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/stage-result.json'), 2032, '8cee9c51b1620965253baa4a2328a1ab358dd893b5891310dbc3810fe40a13e1'), 'worker': (Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-2a1065bc6af8a39e6518bd61d8581978/steps/install-state-r6-01/result.json'), 7547, 'abf5647d5074c6ed555691f3a4f306d0192491782c2422ec9fff44c12b642691'), 'worker_command': (Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01/evidence/02-install-state.result.json'), 1152, '03e7fb6fe99cd67247d5235f5910b3ff48339f81c968990aebbdab4938f144fb')}
+ 
+ 
+ def require(value, reason):
+@@ -192,8 +192,6 @@
+             installed.get('signer_bound_by_exact_signed_apk_bytes') == prior.SIGNER_SHA and
+             installed == EXPECTED_INSTALLED_IDENTITY and
+             installed['held_file']['nlink'] == 1,'ACTUAL_INSTALLED_APK_IDENTITY_REQUIRED')
+-    # The historical command number is read only from the fixed Install02
+-    # record. New UI commands are never assumed to share transport numbering.
+     previous = w['state']
+     stem = OLD_STEP/('command-%03d' % STATE_COMMAND_INDEX)
+     command_raw = read(str(stem)+'.result.json',65536,

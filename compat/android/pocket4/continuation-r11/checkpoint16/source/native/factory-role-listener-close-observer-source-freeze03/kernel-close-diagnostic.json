@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "scope": "actual local AF_UNIX SOCK_SEQPACKET close; no production authority, fork, caps or service",
+  "kernel": "6.18.57",
+  "cases": [
+    {
+      "queued_input_with_two_rights": false,
+      "poll": [
+        [
+          3,
+          16
+        ]
+      ],
+      "old_wait_accepts": true,
+      "recv_count": 0,
+      "recv_errno": 0,
+      "msg_flags": 1073741824,
+      "received_ancillary_count": 0,
+      "fd_count_before": 4,
+      "fd_count_after": 4
+    },
+    {
+      "queued_input_with_two_rights": true,
+      "poll": [
+        [
+          3,
+          24
+        ]
+      ],
+      "old_wait_accepts": false,
+      "recv_count": -1,
+      "recv_errno": 104,
+      "msg_flags": null,
+      "received_ancillary_count": 0,
+      "fd_count_before": 4,
+      "fd_count_after": 4
+    }
+  ],
+  "new_service": false,
+  "Hepta": false
+}

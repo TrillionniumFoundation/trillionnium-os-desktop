@@ -1,0 +1,132 @@
+{
+  "schema": 1,
+  "state": "LOCAL_SOURCE_PROJECTION_COMPOSED_AND_REVERSED",
+  "normal_projection_relative_cwd": "frameworks/base",
+  "patch": {
+    "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-framework-projection-work01/typed-ingress02-framework.patch",
+    "bytes": 17019,
+    "sha256": "5a6258c4e60446956cb164ef6796a302e2fb9d48e7f41263572ed51f44015493"
+  },
+  "source_inputs": [
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-freeze01/preimage/frameworks/base/core/java/com/android/internal/os/Zygote.java",
+      "bytes": 66325,
+      "sha256": "1c9d8c4bc1235b514b01c7db81406a770ac7925659d1d7c00a0a7f5dbeac6423"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-freeze01/candidate/frameworks/base/core/java/com/android/internal/os/Zygote.java",
+      "bytes": 67438,
+      "sha256": "9e7ea15e973700f1222ad285638e89833cb6c3463e80d2baf8b03121ed92cbd3"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-freeze01/preimage/frameworks/base/core/java/com/android/internal/os/ZygoteArguments.java",
+      "bytes": 22587,
+      "sha256": "52e073e4c275f8ebf53b40d654fa3904318f57aedc9f958e64c40da70db5fde5"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-explicit-ids-freeze02/candidate/ZygoteArguments.java",
+      "bytes": 30540,
+      "sha256": "882c44f70b2ef7269f42d9f6d8e4269e28a36d9eecc4bfe2ae1b0cd0fa9162e9"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-freeze01/preimage/frameworks/base/core/java/com/android/internal/os/ZygoteConnection.java",
+      "bytes": 26969,
+      "sha256": "58f376c5f64387296ef5a669bddc84a5f3d74b94bc7b31b3834233a03aacf746"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-freeze01/candidate/frameworks/base/core/java/com/android/internal/os/ZygoteConnection.java",
+      "bytes": 27831,
+      "sha256": "7a23ad09acc3017db09348bf198d74d0fb53cd6c7be66af81918306229f7e516"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-freeze01/preimage/frameworks/base/core/jni/com_android_internal_os_Zygote.cpp",
+      "bytes": 130326,
+      "sha256": "006e4c3a51fd32eef1d41b3c2553a907e9b7b33b2bf605706921852ba8854a9a"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-freeze01/candidate/frameworks/base/core/jni/com_android_internal_os_Zygote.cpp",
+      "bytes": 132241,
+      "sha256": "72d8cf730e8e3ec4ff4b88106e73e076eab7e761a405a5d854e62e7a5fadc095"
+    },
+    {
+      "path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/art-role-typed-ingress-freeze01/candidate/frameworks/base/core/jni/droidloom_app_zygote_spec.h",
+      "bytes": 1647,
+      "sha256": "a73c497e4979fcb23b996b8d8d98c63eb48fe1eebe65d7ff9ec87d7d4ab8d1ca"
+    }
+  ],
+  "source_paths": [
+    "frameworks/base/core/java/com/android/internal/os/Zygote.java",
+    "frameworks/base/core/java/com/android/internal/os/ZygoteArguments.java",
+    "frameworks/base/core/java/com/android/internal/os/ZygoteConnection.java",
+    "frameworks/base/core/jni/com_android_internal_os_Zygote.cpp",
+    "frameworks/base/core/jni/droidloom_app_zygote_spec.h"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/usr/local/bin/git",
+        "-C",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-framework-projection-work01/local-apply-control",
+        "apply",
+        "--check",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-framework-projection-work01/typed-ingress02-framework.patch"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/local/bin/git",
+        "-C",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-framework-projection-work01/local-apply-control",
+        "apply",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-framework-projection-work01/typed-ingress02-framework.patch"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/local/bin/git",
+        "-C",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-framework-projection-work01/local-apply-control",
+        "apply",
+        "--reverse",
+        "--check",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-framework-projection-work01/typed-ingress02-framework.patch"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/local/bin/git",
+        "-C",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-framework-projection-work01/local-apply-control",
+        "apply",
+        "--reverse",
+        "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-framework-projection-work01/typed-ingress02-framework.patch"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "local_git": {
+    "path": "/usr/local/bin/git",
+    "bytes": 19135768,
+    "sha256": "2dae8066ef4d6a926561b4b0eaca7b458d4f5b56bb83760656e6baa7fc3e974f"
+  },
+  "source_inputs_unchanged_after": true,
+  "candidate_bytes_exact": true,
+  "preimage_bytes_restored": true,
+  "Java_compiled": false,
+  "full_Android_TU_compiled": false,
+  "normal_builder_integration_implemented": false,
+  "actual_Java_module_definition_observed": false,
+  "early_role_authorization_enabled": false,
+  "remote_actions": 0
+}
