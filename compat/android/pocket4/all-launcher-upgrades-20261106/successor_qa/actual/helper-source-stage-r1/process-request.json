@@ -1,0 +1,23 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "/home/alex/work/pocket4-successor-qa-generator-source-r2-20261106-01/stage_helper_source.py",
+    "--stage-once",
+    "--source",
+    "/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/helper",
+    "--source-manifest-sha256",
+    "dfb9b6a483f1069847433152b9b2e8b0f1b2cdd571a1dbde3068fc9393ad62c4",
+    "--output",
+    "/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03"
+  ],
+  "cwd": "/home/alex/work",
+  "idempotency_key": "pocket4-beike-helper-source-stage-r1-20261106-b34f158f88bbebf112840fd88df25d03",
+  "cpu_quota_percent": 50,
+  "memory_max_bytes": 268435456,
+  "nice": 10,
+  "timeout_seconds": 60
+}

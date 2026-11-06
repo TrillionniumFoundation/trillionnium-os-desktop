@@ -1,0 +1,112 @@
+{
+  "schema": "pocket4-all-launcher-checkpoint05-v1",
+  "parent_commit": "eb8652932ddb4f9a1a8831fbcdff048f9bfaeca4",
+  "launcher_apps": 45,
+  "confirmed_native_app_upgrades": 11,
+  "official_current_binary_matches": 2,
+  "fully_audited_apps": 10,
+  "fully_audited_APKs": 14,
+  "production_ready_apps": 0,
+  "old_artifact_cleanup_bytes": 0,
+  "source_generation": {
+    "job": "1a1b17d8002-fc05-7918",
+    "state": "NEW_QA_SOURCE_AND_OWNED_LIFETIME_QUALIFIED_ANDROID_UNRUN",
+    "durable_exit": 0,
+    "worker_pid": 4105414,
+    "parent_pidfd_exit_observed": true,
+    "original_worker_process_FDs_before": 5,
+    "original_worker_process_FDs_after": 5,
+    "observation_fds_closed": 1480,
+    "observation_fds_opened": 1480,
+    "lease_fds_closed": 8,
+    "lease_fds_opened": 8,
+    "complete_46_app_scope_unchanged": true,
+    "helper_package": "org.droidloom.qa.successor.p8f89f253350ba2fa.r1",
+    "nonce": "b34f158f88bbebf112840fd88df25d03",
+    "old_source_generation_r1_remains_failed": true
+  },
+  "generated_source_read": {
+    "job": "1a1b18422ad-fc05-794c",
+    "durable_exit": 0,
+    "files": [
+      {
+        "bytes": 2282,
+        "encoding": "utf-8",
+        "held_file_and_path_rechecked": true,
+        "path": "/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/build-plan.json",
+        "sha256": "79628454648791cd7a8b3132c7b6deebacaf2cfd1fdce1c3f28baca9c15d1a94"
+      },
+      {
+        "bytes": 2431,
+        "encoding": "utf-8",
+        "held_file_and_path_rechecked": true,
+        "path": "/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/helper/SOURCE_PINS.json",
+        "sha256": "dfb9b6a483f1069847433152b9b2e8b0f1b2cdd571a1dbde3068fc9393ad62c4"
+      },
+      {
+        "bytes": 1759,
+        "encoding": "utf-8",
+        "held_file_and_path_rechecked": true,
+        "path": "/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/recorder/source-manifest.json",
+        "sha256": "646f6e4c7d931bf005ada01a84202a891c95e99e93bbde7a561f3307527008a4"
+      },
+      {
+        "bytes": 1303,
+        "encoding": "utf-8",
+        "held_file_and_path_rechecked": true,
+        "path": "/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/generation-result.json",
+        "sha256": "510148687c95ecab4de30b04046d5359300068e20a9751f3ba2d66af086151cf"
+      }
+    ],
+    "FDs_before": 4,
+    "FDs_after": 4
+  },
+  "helper_stage": {
+    "job": "1a1b18ecfc2-fc05-7990",
+    "durable_exit": 0,
+    "result": {
+      "Android_commands": 0,
+      "UID1000_may_modify_source": false,
+      "UI_admitted": false,
+      "build_performed": false,
+      "helper_package": "org.droidloom.qa.successor.p8f89f253350ba2fa.r1",
+      "new_source_owner_uid": 0,
+      "new_source_read_group": 1000,
+      "ok": true,
+      "output_source": "/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03",
+      "production_ready": false,
+      "schema": "pocket4-successor-helper-source-stage-v1",
+      "source_file_count": 13,
+      "source_manifest_sha256": "dfb9b6a483f1069847433152b9b2e8b0f1b2cdd571a1dbde3068fc9393ad62c4"
+    }
+  },
+  "helper_build": {
+    "job": "1a1b18fedb3-fc05-7998",
+    "state": "LAUNCHED_TERMINAL_NOT_YET_OBSERVED",
+    "result_claimed": false
+  },
+  "helper_install": false,
+  "UI_QA_pass": false,
+  "framework_normal05": "ACTUAL_FAILED_UNDEFINED_SYSTEMUI_PROVIDER",
+  "framework_normal06": "SOURCE_PROVIDER_CLOSURE_IN_PROGRESS_NOT_BUILT",
+  "audit_b05": "ACTUAL_FAILED_CALENDAR_AAPT_BADGING; FAILED_BATCH_PRESERVED",
+  "audit_b06": "UNCLAIMED",
+  "boundary": {
+    "new_ADB_dependency": false,
+    "Bili_accept_replayed": false,
+    "Meituan_location_enabled": false,
+    "integrity_or_signer_gate_bypassed": false
+  },
+  "storage_recovery": {
+    "scope": "local executor scratch only",
+    "target_Pocket4_state_changed_by_recovery": false,
+    "restored_from_existing_exact_raw_and_git": true
+  },
+  "next": [
+    "Collect actual helper build terminal and complete build result before install",
+    "Fresh R5 admission and owned helper install, native launch, public Chinese UI operations",
+    "Resolve Calendar parser through verified compatible host tool, preserve b05 failure",
+    "Complete actual SystemUI and external provider closure before another framework build",
+    "Continue each App functionality and recovery QA; remove old versions only after final working result is verified"
+  ]
+}
