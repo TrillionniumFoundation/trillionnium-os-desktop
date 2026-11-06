@@ -1,0 +1,738 @@
+{
+  "schema": "pocket4-all-launcher-regression-policy-v1",
+  "scope": "all_current_launcher_apps_and_framework",
+  "historical_roster_sha256": "ee08889a49ac84fa19d6b3d4c159e6a600eb2772d8375eb065fa1585e68543d1",
+  "historical_eight_packages": [
+    "com.Hyatt.hyt",
+    "com.enflick.android.TextNow",
+    "com.lianjia.beike",
+    "com.rytong.airchina",
+    "com.rytong.ceair",
+    "com.sankuai.meituan.takeoutnew",
+    "com.szzc",
+    "tv.danmaku.bili"
+  ],
+  "scope_rule": "The original eight are a required historical subset. Completion requires the exact current resolved MAIN/LAUNCHER package/component set from a qualified, current-epoch runtime query. Historical targets.json or a 45-app count is not current inventory.",
+  "required_runtime_identity": {
+    "target": "pocket4",
+    "runtime": "DroidLoom",
+    "cell": "Main",
+    "epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+    "qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc"
+  },
+  "current_observation": {
+    "identity_qualified": true,
+    "ui_runtime_admitted": false,
+    "install_runtime_admitted": false,
+    "framework_exit_cause_resolved": false,
+    "all_launcher_inventory_complete": "unknown",
+    "production_ready": false,
+    "cleanup_eligible": false,
+    "reference": "reference/guard-actual.json",
+    "reference_sha256": "5bb2b50d00dcab77bd4e312ad28d1797e2604fcdb06be7065e9ef54dd1cd3532",
+    "note": "Existing qualification is identity-only. Retired reDroid and older Main epochs do not authorize current actions."
+  },
+  "execution_policy": {
+    "mode": "offline_evidence_audit_only",
+    "transport": "existing_sidecar_container_ui_automator",
+    "preserve_helpers": [
+      "sidecar",
+      "container_UI_Automator",
+      "Chinese_input",
+      "location"
+    ],
+    "new_ADB_dependency_allowed": false,
+    "read_only_organ_adapter_expansion_allowed": false,
+    "performs_download_install_UI_accept_permission_grant_or_cleanup": false
+  },
+  "proposed_acceptance_thresholds": {
+    "origin": "new_proposal_this_round_not_a_historical_pass",
+    "continuous_soak_seconds": 3600,
+    "app_restart_cycles": 3,
+    "network_recovery_cycles": 3,
+    "runtime_restart_requalification_required": true,
+    "note": "60-minute continuous monitoring, three app restarts and three offline/online recoveries are newly proposed minimums. A real runtime restart needs a newly qualified epoch and repeat current-epoch app evidence. Update policy pins only after qualification; never reuse an old epoch."
+  },
+  "safety_rules": {
+    "bilibili_accept": {
+      "historical_authorized_cell": "p4-bili-m30-cell-20261010",
+      "historical_authorization_is_production": false,
+      "evaluator_executes_accept": false,
+      "production_evidence_may_reuse_historical_guest_consent": false
+    },
+    "meituan_location": {
+      "proactively_grant_forbidden": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ],
+      "manual_area_selection_expected": true
+    },
+    "integrity_and_security": "Commercial integrity failures, permission restrictions and other effective security constraints remain BLOCKED; no bypass exception. Existing system permissions are observed, not inferred from store declarations."
+  },
+  "framework_trust": {
+    "status": "unknown",
+    "accepted_provenance_sha256s": [],
+    "note": "Pin independent official/source-owner build provenance; current framework identity is not evidence of latest-version acceptance."
+  },
+  "apps": {
+    "com.Hyatt.hyt": {
+      "name": "凯悦天地 / World of Hyatt",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "hotel_search": "用已授权会员会话、明确城市和日期查询酒店；实际返回酒店列表。",
+        "hotel_detail_and_rate": "打开酒店详情并读取可售房型/价格和条件；不提交订房或付款。"
+      },
+      "allowed_session_modes": [
+        "login"
+      ],
+      "requires_authorized_test_peer": false,
+      "official_hosts": [
+        "play.google.com",
+        "www.hyatt.com",
+        "world.hyatt.com"
+      ],
+      "latest_candidate_pin": {
+        "version_name": null,
+        "source_url": "https://play.google.com/store/apps/details?id=com.Hyatt.hyt",
+        "observed_on": "2026-11-06",
+        "evidence_class": "public_page_only_not_artifact_acceptance"
+      },
+      "vendor_trust": {
+        "status": "unknown",
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor."
+      },
+      "actual_current_coverage": {
+        "startup": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "login_or_guest": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "core": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "network": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "storage": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "permissions": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "integrity": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "soak": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "restart": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "fault_recovery": {
+          "status": "unknown",
+          "evidence_refs": []
+        }
+      }
+    },
+    "com.enflick.android.TextNow": {
+      "name": "TextNow",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "controlled_text": "仅在另有明确通信授权的自有测试号码或受控测试对端验证真实文本收发及状态。",
+        "controlled_call": "仅在另有明确通信授权的受控测试对端验证真实呼叫连接、音频及正常挂断；没有授权即 unknown。"
+      },
+      "allowed_session_modes": [
+        "login"
+      ],
+      "requires_authorized_test_peer": true,
+      "official_hosts": [
+        "play.google.com",
+        "www.textnow.com",
+        "help.textnow.com"
+      ],
+      "latest_candidate_pin": {
+        "version_name": null,
+        "source_url": "https://play.google.com/store/apps/details?id=com.enflick.android.TextNow",
+        "observed_on": "2026-11-06",
+        "evidence_class": "public_page_only_not_artifact_acceptance"
+      },
+      "vendor_trust": {
+        "status": "unknown",
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor."
+      },
+      "actual_current_coverage": {
+        "startup": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "login_or_guest": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "core": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "network": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "storage": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "permissions": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "integrity": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "soak": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "restart": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "fault_recovery": {
+          "status": "unknown",
+          "evidence_refs": []
+        }
+      }
+    },
+    "com.lianjia.beike": {
+      "name": "贝壳找房",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "chinese_listing_search": "手动选城市，以中文关键词搜索房源并读取真实列表。",
+        "listing_detail_and_filter": "打开房源详情，改变查询筛选并核对结果；不联系经纪人或预约。"
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "requires_authorized_test_peer": false,
+      "official_hosts": [
+        "m.ke.com",
+        "r.app.xiaomi.com",
+        "app.mi.com",
+        "sj.qq.com"
+      ],
+      "latest_candidate_pin": {
+        "version_name": "3.06.70",
+        "source_url": "https://r.app.xiaomi.com/details?id=com.lianjia.beike",
+        "observed_on": "2026-11-06",
+        "evidence_class": "public_page_only_not_artifact_acceptance"
+      },
+      "vendor_trust": {
+        "status": "unknown",
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor."
+      },
+      "actual_current_coverage": {
+        "startup": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "login_or_guest": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "core": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "network": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "storage": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "permissions": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "integrity": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "soak": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "restart": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "fault_recovery": {
+          "status": "unknown",
+          "evidence_refs": []
+        }
+      }
+    },
+    "com.rytong.airchina": {
+      "name": "中国国航",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "flight_search_and_fare": "手动输入出发到达城市和日期，读取实际航班及票价条件；不提交订单。",
+        "flight_status": "查询明确航班的实时状态并核对返回字段。"
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "requires_authorized_test_peer": false,
+      "official_hosts": [
+        "m.airchina.com.cn",
+        "www.airchina.com.cn",
+        "sj.qq.com",
+        "app.flyme.cn",
+        "play.google.com"
+      ],
+      "latest_candidate_pin": {
+        "version_name": "7.53.0",
+        "source_url": "https://sj.qq.com/appdetail/com.rytong.airchina",
+        "observed_on": "2026-11-06",
+        "evidence_class": "public_page_only_not_artifact_acceptance"
+      },
+      "vendor_trust": {
+        "status": "unknown",
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor."
+      },
+      "actual_current_coverage": {
+        "startup": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "login_or_guest": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "core": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "network": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "storage": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "permissions": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "integrity": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "soak": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "restart": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "fault_recovery": {
+          "status": "unknown",
+          "evidence_refs": []
+        }
+      }
+    },
+    "com.rytong.ceair": {
+      "name": "东方航空",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "flight_search_and_fare": "手动输入出发到达城市和日期，读取实际航班及票价条件；不提交订单。",
+        "flight_status": "查询明确航班的实时状态并核对返回字段。"
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "requires_authorized_test_peer": false,
+      "official_hosts": [
+        "app.ceair.com",
+        "ecactivity.ceair.com",
+        "www.ceair.com",
+        "sj.qq.com",
+        "r.app.xiaomi.com"
+      ],
+      "latest_candidate_pin": {
+        "version_name": "9.5.16",
+        "source_url": "https://app.ceair.com/",
+        "observed_on": "2026-11-06",
+        "evidence_class": "public_page_only_not_artifact_acceptance"
+      },
+      "vendor_trust": {
+        "status": "unknown",
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor."
+      },
+      "actual_current_coverage": {
+        "startup": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "login_or_guest": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "core": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "network": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "storage": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "permissions": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "integrity": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "soak": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "restart": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "fault_recovery": {
+          "status": "unknown",
+          "evidence_refs": []
+        }
+      }
+    },
+    "com.sankuai.meituan.takeoutnew": {
+      "name": "美团外卖",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "manual_area_and_shop_search": "保持现有定位授权边界，使用手动城市/测试地址与中文关键词搜索并读取实际商家。",
+        "menu_and_cart_readback": "打开商家菜单，核对价格和可逆测试购物车读回；不提交订单或付款。"
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "requires_authorized_test_peer": false,
+      "official_hosts": [
+        "waimai.meituan.com",
+        "r.app.xiaomi.com",
+        "app.mi.com",
+        "sj.qq.com"
+      ],
+      "latest_candidate_pin": {
+        "version_name": "8.85.1",
+        "source_url": "https://r.app.xiaomi.com/details?id=com.sankuai.meituan.takeoutnew",
+        "observed_on": "2026-11-06",
+        "evidence_class": "public_page_only_not_artifact_acceptance"
+      },
+      "vendor_trust": {
+        "status": "unknown",
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor."
+      },
+      "actual_current_coverage": {
+        "startup": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "login_or_guest": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "core": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "network": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "storage": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "permissions": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "integrity": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "soak": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "restart": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "fault_recovery": {
+          "status": "unknown",
+          "evidence_refs": []
+        }
+      }
+    },
+    "com.szzc": {
+      "name": "神州租车",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "rental_search": "手动选择城市、网点、取还车时间并读取真实可租车辆。",
+        "vehicle_price_and_terms": "打开车型详情并读取费用与租赁条件；不提交订单、押金或付款。"
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "requires_authorized_test_peer": false,
+      "official_hosts": [
+        "www.zuche.com",
+        "m.zuche.com",
+        "r.app.xiaomi.com",
+        "app.mi.com",
+        "sj.qq.com"
+      ],
+      "latest_candidate_pin": {
+        "version_name": "9.6.1",
+        "source_url": "https://r.app.xiaomi.com/details?id=com.szzc",
+        "observed_on": "2026-11-06",
+        "evidence_class": "public_page_only_not_artifact_acceptance"
+      },
+      "vendor_trust": {
+        "status": "unknown",
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor."
+      },
+      "actual_current_coverage": {
+        "startup": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "login_or_guest": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "core": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "network": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "storage": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "permissions": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "integrity": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "soak": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "restart": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "fault_recovery": {
+          "status": "unknown",
+          "evidence_refs": []
+        }
+      }
+    },
+    "tv.danmaku.bili": {
+      "name": "哔哩哔哩",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "chinese_public_video_search": "在本次独立生产授权会话内使用中文搜索公开视频；不执行 Accept。",
+        "video_playback_controls": "真实播放公开视频，验证图像、音频、时间进度及暂停/继续/拖动恢复；只有页面或截图不能算通过。"
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "requires_authorized_test_peer": false,
+      "official_hosts": [
+        "app.bilibili.com",
+        "www.bilibili.com",
+        "dl.hdslb.com",
+        "r.app.xiaomi.com",
+        "app.mi.com",
+        "sj.qq.com"
+      ],
+      "latest_candidate_pin": {
+        "version_name": "9.18.0",
+        "source_url": "https://r.app.xiaomi.com/details?id=tv.danmaku.bili",
+        "observed_on": "2026-11-06",
+        "evidence_class": "public_page_only_not_artifact_acceptance"
+      },
+      "vendor_trust": {
+        "status": "unknown",
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor."
+      },
+      "actual_current_coverage": {
+        "startup": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "login_or_guest": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "core": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "network": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "storage": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "permissions": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "integrity": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "soak": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "restart": {
+          "status": "unknown",
+          "evidence_refs": []
+        },
+        "fault_recovery": {
+          "status": "unknown",
+          "evidence_refs": []
+        }
+      }
+    }
+  },
+  "generic_launcher_app_schema": {
+    "applies_to": [
+      "system",
+      "third_party"
+    ],
+    "core_definition_status": "unknown",
+    "core_flows": {},
+    "latest_candidate_pin": {
+      "version_name": null,
+      "source_url": null
+    },
+    "vendor_trust": {
+      "status": "unknown",
+      "allowed_signer_sets": [],
+      "provenance": null
+    },
+    "rule": "Register each newly discovered package under apps with its actual public core operations and reviewed publisher/update source. System apps use their real platform/OEM update source. A generic startup or screenshot does not settle an app-specific operation."
+  },
+  "cleanup_policy": {
+    "requires_production_ready_for_full_launcher_and_framework_scope": true,
+    "unresolved_failures_or_unknowns_allowed": false,
+    "preserve_original_failure_evidence_until_settled": true,
+    "retain_final": [
+      "working_source",
+      "working_configuration",
+      "reproduction_manifest",
+      "lightweight_resolution_receipt"
+    ],
+    "may_remove_after_acceptance": [
+      "obsolete_framework",
+      "obsolete_app",
+      "obsolete_build",
+      "experiment",
+      "intermediate"
+    ],
+    "old_binary_backups_required_forever": false,
+    "requires_exact_path_and_sha256_list": true,
+    "evaluator_deletes_nothing": true,
+    "cleanup_plan_entry_type": "regular_file only; enumerate obsolete tree files individually; this audit does not authorize recursive directory deletion",
+    "current_framework_and_APK_path_inventory_required": true,
+    "ancestor_descendant_overlap_with_current_or_retained_paths_forbidden": true
+  },
+  "evidence_contract": {
+    "schema": "pocket4-all-launcher-evidence-v1",
+    "input": "One JSON object. --template emits UNKNOWN placeholders. Null, unknown, missing, stale, or unsupported entries block acceptance. Duplicate JSON keys and non-finite numbers are invalid.",
+    "canonical_digest": "SHA-256 of UTF-8 JSON with sort_keys=True, ensure_ascii=False, separators=(comma,colon), allow_nan=False.",
+    "record": {
+      "status": "pass|blocked|unknown; only pass is accepted",
+      "scope": "production; historical/test-cell results cannot satisfy this gate",
+      "binding": {
+        "runtime_identity_sha256": "canonical digest of runtime.identity",
+        "helper_identity_sha256": "canonical digest of runtime.helpers",
+        "app_identity_sha256": "canonical digest of app.current_identity; app records only"
+      },
+      "evidence_refs": "nonempty list of unique IDs in references"
+    },
+    "reference": {
+      "kind": "exact required report kind checked by evaluator",
+      "uri": "absolute local artifact path or original source URI; do not include credentials",
+      "sha256": "64 lowercase hexadecimal characters of actual report bytes",
+      "captured_at": "ISO-8601 with timezone",
+      "binding": "same binding as the record, except independent official release/provenance sources"
+    },
+    "runtime": "identity must exactly match required_runtime_identity; helpers contains SHA-256 for sidecar, UI Automator, Chinese-input and location helpers and equals qualified_helpers. Qualification, admission, before/after guards and restart-requalification require separate bound reports. UI/install false always blocks.",
+    "launcher_inventory": "current_runtime_query; complete=true; joined processes; exit 0; Android user 0; exact MAIN/LAUNCHER resolution; rows [{package,components:[package/component],app_class:system|third_party}]. resolved_set_sha256 hashes rows sorted by package with each components array sorted. apps keys must equal this set.",
+    "current_identity": "package, android_user=0, uid, version_name, version_code, apk_sha256s, signer_sha256s; identity_before and identity_after must be byte-equivalent JSON values. Changing install UID/version/artifacts invalidates all app checks.",
+    "official_candidate": "status=artifact_verified; latest_stable_for_target, complete_apk_set_obtained, installed_apk_set_equal all true; reviewed official source_url; release_refs and bound artifact_manifest_refs; version_name/code equal installed identity and known candidate pin. apks enumerate base and every required split, each with package/version_code, hash, bytes, split_name; base includes min_sdk.",
+    "APK_signature": "Each APK has signature {tool:apksigner,verified:true,full_apk_checked:true,held_file_unchanged:true,verifier_joined:true,tool_exit_code:0,timed_out:false,signer_sha256s:[...],verified_schemes:{...},evidence_refs:[...]}. Signer set must match both installed identity and policy independent official vendor_trust.allowed_signer_sets. Mathematical signature validity alone is insufficient.",
+    "checks": "startup, login_or_guest, core, network, storage, permissions, integrity, soak, restart, fault_recovery; each needs bound non-screenshot evidence. App-specific flow IDs must exactly match policy. See --template and evaluator for typed metrics; no defaults imply successful execution.",
+    "retention": "Bound report with final source/config/repro/receipt/resolution/cleanup-plan references, actual existence attestations, no unresolved items, and exact obsolete artifact path/hash/kind entries. No deletion occurs; current or retained artifact overlap blocks cleanup. current_artifact_paths is [{path,sha256}] and must cover the entire accepted current framework/APK hash set; a bound current_artifact_path_inventory reference is required. Obsolete entries require artifact_type=regular_file and canonical absolute paths. Root, dot segments, wildcards, directory trees and ancestor/descendant overlap with current or retained final paths are rejected.",
+    "trust_limit": "The auditor checks declarations and cross-bindings. It cannot authenticate invented JSON, read remote evidence or rerun cryptography. Referenced original reports remain the source of truth."
+  }
+}

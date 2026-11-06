@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "state": "OBSERVED_BEFORE_RESOURCE_ADMISSION",
+  "observed_utc": "2026-11-06T10:36:46.140995+00:00",
+  "observed_unix_ns_decimal": "1793961406141014381",
+  "profile": {
+    "memory_max_bytes": 1073741824,
+    "memory_swap_max_bytes": 0,
+    "minimum_fresh_MemAvailable_bytes": 3221225472,
+    "admission_difference_bytes": 2147483648,
+    "global_swap_is_owned_budget": false
+  },
+  "meminfo": {
+    "path": "/proc/meminfo",
+    "bytes": 1672,
+    "sha256": "6c5eab463b6da6ec1fc1ce4ee9d1ae2f7fea29dfe14776bf9c2188d2a0eddd7a",
+    "raw_ascii": "MemTotal:       25739556 kB\nMemFree:         3707540 kB\nMemAvailable:   15504196 kB\nBuffers:          228584 kB\nCached:         10360328 kB\nSwapCached:        76900 kB\nActive:          7579336 kB\nInactive:        9465108 kB\nActive(anon):    4845904 kB\nInactive(anon):  1901328 kB\nActive(file):    2733432 kB\nInactive(file):  7563780 kB\nUnevictable:       11804 kB\nMlocked:           11804 kB\nSwapTotal:      16777208 kB\nSwapFree:         576568 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:             20252 kB\nWriteback:             0 kB\nAnonPages:       6404500 kB\nMapped:           868500 kB\nShmem:            280984 kB\nKReclaimable:    1916396 kB\nSlab:            3197960 kB\nSReclaimable:    1916396 kB\nSUnreclaim:      1281564 kB\nKernelStack:      101760 kB\nPageTables:       252212 kB\nSecPageTables:      6088 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    29646984 kB\nCommitted_AS:   309026480 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:      207928 kB\nVmallocChunk:          0 kB\nPercpu:            69600 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:        0 kB\nShmemPmdMapped:        0 kB\nFileHugePages:      6144 kB\nFilePmdMapped:         0 kB\nCmaTotal:              0 kB\nCmaFree:               0 kB\nUnaccepted:            0 kB\nBalloon:               0 kB\nGPUActive:      41343232 kB\nGPUReclaim:            0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:    21908720 kB\nDirectMap2M:     4954112 kB\nDirectMap1G:           0 kB\n"
+  },
+  "owned_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1b06e9fb8-fc05-707e.service",
+  "owned_observed": {
+    "memory.max": "1073741824",
+    "cpu.max": "100000 100000",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0"
+  },
+  "decision_performed": false,
+  "historical_sample_used_for_admission": false,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "production_ready": false
+}

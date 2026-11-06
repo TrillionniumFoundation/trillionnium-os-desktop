@@ -1,0 +1,77 @@
+{
+  "job_id": "1a1b04ec429-fc05-6fa2",
+  "result": {
+    "schema": "pocket4-r9-readonly-task-observation-v1",
+    "ok": true,
+    "automatic_retry": false,
+    "action_attempted": false,
+    "outcome_unknown": false,
+    "business_success_verified": false,
+    "whole_app_production_ready": false,
+    "source_manifest_sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+    "recorder_sha256": "7101d2ab2cd4b73bf96cab1117c8d0177c2b290255c6946af52ec834115a7f44",
+    "flow": "/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-474d7477074ea01fbc986e0d867924c1",
+    "step": "eight-apps-r9-tasks-20261106-01",
+    "package": "tv.danmaku.bili",
+    "uid": 10117,
+    "epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "original_launch_outcome": "unknown_retained",
+    "launch_reconciliation_completed": false,
+    "cleanup_authority_established": false,
+    "native_ownership_evidence_collected": false,
+    "secondary_errors": [],
+    "original_launch_evidence": {
+      "scope.json": {
+        "bytes": 1006,
+        "sha256": "ac6dea24873125a8ac322306786f9f5760fd20b0f1c8d06bc80a498e33eddc50"
+      },
+      "steps/launch-01/result.json": {
+        "bytes": 5202,
+        "sha256": "037076b15c27611f83815ad243280a1ec8eae82416616c928c9106e17f7a12ca"
+      },
+      "steps/launch-01/command-004.stdout": {
+        "bytes": 495,
+        "sha256": "2957db51935e4687990181acd1e9a395fb24326c4289725b67d2d48724024fc8"
+      },
+      "steps/launch-01/prelaunch-stacks.txt": {
+        "bytes": 665,
+        "sha256": "4828128d5f155cfcbdd15b713ae6430eef36735163ca5ed53dd59a7409670e76"
+      }
+    },
+    "fixed_main_namespace_classpath_uid_data_binding_verified": true,
+    "one_read_only_held_package_uid_command_verified": true,
+    "ui_or_audio_action_performed": false,
+    "action_runner_apk_source_qualified": false,
+    "task_observation": {
+      "raw": {
+        "path": "/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-474d7477074ea01fbc986e0d867924c1/steps/eight-apps-r9-tasks-20261106-01/task-stacks.txt",
+        "bytes": 1292,
+        "sha256": "a55391235b9bce5b34f61114e3f07b9ac37b15345903c854a5efa8eec5025e6f"
+      },
+      "parsed_path": "/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-474d7477074ea01fbc986e0d867924c1/steps/eight-apps-r9-tasks-20261106-01/parsed-task-stacks.json",
+      "root_task_ids": [
+        1,
+        873
+      ],
+      "task_ids": [
+        870,
+        873
+      ],
+      "task_873_in_task_ids": true,
+      "task_873_in_root_ids": true,
+      "bilibili_tasks": [
+        {
+          "id": 873,
+          "component": "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2",
+          "user": 0
+        }
+      ],
+      "bilibili_present_in_task_stacks": true,
+      "ownership_inferred_from_task_presence": false
+    },
+    "final_Main_guard_passed": true,
+    "original_launch_evidence_unchanged": true,
+    "held_binding_released": true,
+    "ended_utc": "2026-11-06T10:01:58.145892+00:00"
+  }
+}

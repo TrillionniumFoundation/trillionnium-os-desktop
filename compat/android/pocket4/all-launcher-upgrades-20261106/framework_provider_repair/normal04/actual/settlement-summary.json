@@ -1,0 +1,78 @@
+{
+  "state": "NORMAL04_SETTLED_RESOURCE_ADMISSION_FAILED_BEFORE_BUILDER",
+  "job_id": "1a1b07b20d4-fc05-70c6",
+  "durable_terminal": true,
+  "exit_code": 1,
+  "fence_observers_settled": true,
+  "fence_capture_count": 6,
+  "capture_rows": [
+    {
+      "phase": "control-root-timeout",
+      "qualified_success": true,
+      "child_reaped": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "all_acquired_fds_closed": true,
+      "final_children_empty": true,
+      "subreaper_restored": true
+    },
+    {
+      "phase": "control-root-escaped",
+      "qualified_success": true,
+      "child_reaped": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "all_acquired_fds_closed": true,
+      "final_children_empty": true,
+      "subreaper_restored": true
+    },
+    {
+      "phase": "control-root-pidfd",
+      "qualified_success": true,
+      "child_reaped": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "all_acquired_fds_closed": true,
+      "final_children_empty": true,
+      "subreaper_restored": true
+    },
+    {
+      "phase": "control-outer-pidfd",
+      "qualified_success": false,
+      "child_reaped": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "all_acquired_fds_closed": true,
+      "final_children_empty": true,
+      "subreaper_restored": true
+    },
+    {
+      "phase": "before",
+      "qualified_success": true,
+      "child_reaped": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "all_acquired_fds_closed": true,
+      "final_children_empty": true,
+      "subreaper_restored": true
+    },
+    {
+      "phase": "after",
+      "qualified_success": true,
+      "child_reaped": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "all_acquired_fds_closed": true,
+      "final_children_empty": true,
+      "subreaper_restored": true
+    }
+  ],
+  "Main_fence_pass": true,
+  "normal_builder_Popen_reached": false,
+  "Soong_invoked": false,
+  "automatic_retry": false,
+  "source_reconciliation_started": false,
+  "all_apps_ready": false,
+  "production_ready": false,
+  "cleanup_eligible": false
+}

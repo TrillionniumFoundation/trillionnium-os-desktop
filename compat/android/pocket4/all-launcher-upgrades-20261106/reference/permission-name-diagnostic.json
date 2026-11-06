@@ -1,0 +1,70 @@
+{
+  "purpose": "diagnose observed unsupported permission-name projection",
+  "Android_commands": 0,
+  "writes": 0,
+  "errors": [],
+  "before": {
+    "schema": "pocket4-current-main-guard-v1",
+    "Main_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+    "current_baseline_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "seven_processes_match": true,
+    "three_host_processes_match": true,
+    "resource_limits_match": true,
+    "current_executable_and_root_backing_match": true,
+    "framework_exit_cause_resolved": false,
+    "production_ready": false
+  },
+  "source": {
+    "path": "/data/misc_de/0/apexdata/com.android.permission/access.abx",
+    "bytes": 148977,
+    "sha256": "b113ee0da7aebef31fc3ee5418344e9506ac060f66eac6752373f744d5be6f67",
+    "stat": {
+      "dev": 1811,
+      "ino": 655452,
+      "mode": 33152,
+      "uid": 1000,
+      "gid": 1000,
+      "nlink": 1,
+      "size": 148977,
+      "mtime_ns": 1793952508840135400,
+      "ctime_ns": 1793952508840135400
+    },
+    "held_and_path_unchanged": true
+  },
+  "unusual_permission_names": [
+    {
+      "name": "       android.permission.VIBRATE",
+      "duplicate": false,
+      "index": 46,
+      "length": 33
+    }
+  ],
+  "permission_count": 57,
+  "after": {
+    "schema": "pocket4-current-main-guard-v1",
+    "Main_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+    "current_baseline_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "seven_processes_match": true,
+    "three_host_processes_match": true,
+    "resource_limits_match": true,
+    "current_executable_and_root_backing_match": true,
+    "framework_exit_cause_resolved": false,
+    "production_ready": false
+  },
+  "fds": {
+    "acquired": 54,
+    "closed": 54,
+    "close_attempts": 54,
+    "peak": 10,
+    "remaining": 0,
+    "errors": []
+  }
+}
