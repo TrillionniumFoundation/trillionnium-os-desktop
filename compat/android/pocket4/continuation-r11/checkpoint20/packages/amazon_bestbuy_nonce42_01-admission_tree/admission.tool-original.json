@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,os,re,secrets,sys\nraw=sys.stdin.buffer.read(131073)\nassert 0<len(raw)<=131072 and hashlib.sha256(raw).hexdigest()=='32f6f50390646e11a8c569a667ebf3799484c68efedc10a9917aa5c156b1e086'\np=json.loads(raw)\nassert p['schema']=='pocket4-current-amazon-bestbuy-fresh-flow-nonce-spec-v1'\nassert os.getuid()==os.geteuid()==1000\nassert p['count']==42 and len(p['labels'])==len(set(p['labels']))==42\nassert len(p['mapping'])==42 and [x['label'] for x in p['mapping']]==p['labels']\nassert [x['app'] for x in p['mapping']]==['amazon']*32+['bestbuy']*10\nassert len(p['exclude_values'])==len(set(p['exclude_values']))==p['exclude_count']==564\nassert all(type(x) is str and re.fullmatch('[0-9a-f]{32}',x) for x in p['exclude_values'])\nassert p['source_only'] is True and p['Android_actions']==0 and p['UI_requests_created'] is False\npool=[]\nfor _ in range(1024):\n    value=secrets.token_hex(16)\n    if value not in p['exclude_values'] and value not in pool:pool.append(value)\n    if len(pool)==42:break\nassert len(pool)==len(set(pool))==42 and not set(pool)&set(p['exclude_values'])\nprint(json.dumps({'schema':'pocket4-current-amazon-bestbuy-fresh-flow-nonce-v1',\n    'spec':{'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()},\n    'count':42,'labels':p['labels'],'nonces':dict(zip(p['labels'],pool)),\n    'exclude_count':p['exclude_count'],'all_distinct_and_old_values_excluded':True,\n    'generator':'secrets.token_hex(16)','uid':os.getuid(),\n    'source_only_nonce_generation':True,'file_writes':0,'child_processes':0,\n    'Android_commands':0,'App_launches':0,'UI_actions':0},sort_keys=True,separators=(',',':')),flush=True)\n"
+    ],
+    "created_unix_ms": 1793956022883,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b01c8a63-fc05-6e1f",
+    "idempotency_key": "pocket4-current-amazon-bestbuy-flow-fresh42-nonces01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b01c8a63-fc05-6e1f",
+    "request_digest": "7351f3560a5eeb7806b3dc3fabf4102048fdbd5699e0103860a43461fefc1eaa",
+    "request_fingerprint": 8309690338342005624,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b01c8a63-fc05-6e1f"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b01c8a63-fc05-6e1f"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

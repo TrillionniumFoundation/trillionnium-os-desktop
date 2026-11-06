@@ -1,0 +1,11 @@
+--- a/transport-boundary.py
++++ b/transport-boundary.py
+@@ -1,6 +1,6 @@
+ import hashlib,json,sys
+-EXPECTED={"bytes":886381,"sha256":"8834f2105f458bd33c5495e773f4c56ecc414b5043e74dd6f25732a4dfbbb3cb"}
++EXPECTED={"bytes":886361,"sha256":"9870cbec3436c245726dd193ffdc84d7850cdad80e083c9d03033ffb80c3598a"}
+-STAGE={"bytes":19294,"sha256":"ed08b24d94e0f40f0888ccfca203ad7a63914cc19f8b9d0d1a678fce33db5603"}
++STAGE={"bytes":19294,"sha256":"a180e9d01fc2e026b1a30c18529a6ce2141ff398526fa8cbe63e7f6dc231ed02"}
+ wire=sys.stdin.buffer.read(EXPECTED['bytes']+1)
+ if len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:
+     raise RuntimeError('fixed provider compiler transport length/hash mismatch')

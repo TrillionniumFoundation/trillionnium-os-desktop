@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "<string>", line 223, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "<string>", line 219, in main
+    return collect()
+  File "<string>", line 186, in collect
+    require(command.get('name')=='01-install-state' and command.get('argv')==expected_argv and
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            command.get('spawned') is True and command.get('joined') is True and command.get('returncode')==0 and
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+            command.get('stdout')=={'bytes':len(printed),'sha256':sha(printed)} and
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            command.get('stderr')=={'bytes':0,'sha256':sha(b'')},'EXACT_JOINED_WORKER_COMMAND_CHAIN')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 33, in require
+    raise RuntimeError(reason)
+RuntimeError: EXACT_JOINED_WORKER_COMMAND_CHAIN

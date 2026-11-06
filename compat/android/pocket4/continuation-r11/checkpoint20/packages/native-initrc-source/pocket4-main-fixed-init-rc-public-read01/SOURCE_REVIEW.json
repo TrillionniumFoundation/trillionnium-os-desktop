@@ -1,0 +1,180 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_NOT_PYTHON_COMPILED_NOT_DISPATCHED",
+  "source": {
+    "bytes": 25640,
+    "sha256": "d15efddd41f8035e1727c6c4d39451015cf3af2b3bd0992d0db0937f49692b1a",
+    "git_blob_sha1": "6c8b34d0d03f7e0fdf9d99550d12dc5e11c755b4"
+  },
+  "request": {
+    "bytes": 26957,
+    "sha256": "de5554d8fabb9eed6dd3f5ec0440503f5fbca999c5d547003aa5c9bf32f2d638",
+    "git_blob_sha1": "7eccd49bd5473c7b8e40c60a899259f0e161e56b"
+  },
+  "verified_in_V8": {
+    "source_pin": {
+      "bytes": 25640,
+      "sha256": "d15efddd41f8035e1727c6c4d39451015cf3af2b3bd0992d0db0937f49692b1a",
+      "git_blob_sha1": "6c8b34d0d03f7e0fdf9d99550d12dc5e11c755b4"
+    },
+    "upstream_pins": [
+      {
+        "id": "main_init_rc",
+        "bytes": 56559,
+        "sha256": "8b8d9d9c2c17fcb1f907b0a369aae03632976dff8f4cf603b1d5ef83cad78225",
+        "git_blob_sha1": "5e26d127ac4aec5fd7b4a7c7c4e17460c4828638",
+        "matched": true
+      },
+      {
+        "id": "main_zygote64_rc",
+        "bytes": 901,
+        "sha256": "7be8fde03ec2cc4417aecf1a79163e0e4088fdff02ee6cd2426d02f91127e479",
+        "git_blob_sha1": "342212123de59bebaf3eb4d4c3dca7147affe5c4",
+        "matched": true
+      }
+    ],
+    "identity_exact_snapshot_subset": true,
+    "catalog_literals_exact_upstream": true,
+    "known_catalog_size": 16,
+    "files_fixed": 2,
+    "only_fixed_pid": 3588093,
+    "controls_expected": 14,
+    "controls_executed": false,
+    "python_compile_performed": false,
+    "request_reproduced_exact": true,
+    "request_pin": {
+      "bytes": 26957,
+      "sha256": "de5554d8fabb9eed6dd3f5ec0440503f5fbca999c5d547003aa5c9bf32f2d638",
+      "git_blob_sha1": "7eccd49bd5473c7b8e40c60a899259f0e161e56b"
+    },
+    "generator_pin": {
+      "bytes": 4543,
+      "sha256": "4f4d6d5a0acd556388a216287e9adfe0934d0994eb32b59b2743c22e2cd9b5e4",
+      "git_blob_sha1": "f47efdc1271b79e9cb4e80cb60e11c85da1ff036"
+    },
+    "functions": [
+      "need",
+      "check",
+      "sha",
+      "safe_error",
+      "acquire",
+      "close_one",
+      "read_fd",
+      "small",
+      "metadata",
+      "directory_identity",
+      "proc_stat",
+      "init_identity",
+      "project",
+      "run_controls",
+      "capture"
+    ]
+  },
+  "fixed_boundaries": {
+    "protected_pid": 3588093,
+    "protected_birth": 80797014,
+    "root_device": 106,
+    "root_inode": 1,
+    "content_paths": [
+      {
+        "path": "/proc/3588093/root/system/etc/init/hw/init.rc",
+        "max_bytes": 131072
+      },
+      {
+        "path": "/proc/3588093/root/system/etc/init/hw/init.zygote64.rc",
+        "max_bytes": 16384
+      }
+    ],
+    "authority_reads": [
+      "/proc/sys/kernel/random/boot_id",
+      "/proc/3588093/stat",
+      "/proc/3588093/status",
+      "/proc/3588093/cgroup",
+      "/proc/3588093/ns/mnt",
+      "/proc/3588093/ns/pid",
+      "/proc/3588093/ns/user",
+      "/proc/3588093/root"
+    ],
+    "no_directory_enumeration": true,
+    "component_walk": [
+      "system",
+      "etc",
+      "init",
+      "hw"
+    ],
+    "no_path_fallback": true,
+    "directories_nofollow": true,
+    "leaves_nofollow_regular_readonly_noatime": true,
+    "observed_file_owner_mode_nlink_recorded_not_invented": true,
+    "root_proc_magiclink_explicitly_followed_only_after_fixed_live_pidfd": true,
+    "held_named_before_final_and_full_sha_size": true,
+    "nanosecond_stat_fields_decimal_strings": true,
+    "public_catalog_literal_count": 16,
+    "no_general_init_grammar": true,
+    "exact_files_and_contexts_required": true,
+    "continuations_suppressed": true,
+    "unknown_contents_never_output": true,
+    "unknown_selected_lines_only_number_bytes_sha256": true,
+    "fixed_upstream_full_hash_comparison_is_not_import_resolution": true
+  },
+  "lifecycle": {
+    "spawned_subprocesses": 0,
+    "network_calls": 0,
+    "writes_other_than_stdout": 0,
+    "wrapper": "Existing direct sudo -n /usr/bin/python3 -I -B - with exact stdin source.",
+    "observation_deadline_seconds": 12,
+    "retirement_deadline_seconds": 14,
+    "self_SIGALRM_seconds": 15,
+    "tool_timeout_seconds": 20,
+    "watchdog_installed_before_any_reader_file_or_child_acquisition": true,
+    "pre_watchdog_boundary": "Interpreter stdin decoding/compilation and initial signal/time imports precede the self timer; process_start has the separate 20s outer timeout.",
+    "self_only_mutations": [
+      "RLIMIT_CORE=0",
+      "PR_SET_DUMPABLE=0",
+      "self SIGALRM handler/timer"
+    ],
+    "Main_signals": 0,
+    "Main_limit_changes": 0,
+    "Main_children_observation_or_reaping": 0,
+    "tracked_fds_all_accounted_in_finally": true,
+    "pidfd_retained_across_root_and_two_file_reads": true,
+    "numeric_close_not_retried_after_failure": true,
+    "primary_error_preserved_with_separate_cleanup_errors": true,
+    "close_or_deadline_failure_cannot_emit_success": true,
+    "all_fds_closed_scope": "Only FDs acquired by this reader; inherited standard input/output/error are not claimed closed.",
+    "timeout_outcome": "Self watchdog terminates without successful JSON. No child was created by this source. Tool terminal must still be fully read by Root.",
+    "output_bytes_max": 65536,
+    "global_success_only_after_complete_two_leaf_guards": true
+  },
+  "controls": {
+    "production_function": "project",
+    "expected_cases": 14,
+    "Python_executed": false,
+    "categories": [
+      "exact public zygote and start blocks",
+      "foreign service context",
+      "private suffix hash-only",
+      "comments",
+      "continuations",
+      "unindented resets",
+      "duplicates kept",
+      "file scope",
+      "changed trigger",
+      "CR not normalized",
+      "invalid UTF8",
+      "public count bound",
+      "unknown selected count bound"
+    ],
+    "not_claimed": [
+      "Python syntax/runtime PASS",
+      "FD cleanup fixture execution",
+      "actual Main files or init behavior"
+    ]
+  },
+  "review_limits": [
+    "No new SIGKILL sender or OOM evidence; source directives do not prove runtime execution.",
+    "No arbitrary properties read; ro.zygote is not resolved.",
+    "No activation, service, restart, UI, install or runtime authorization.",
+    "Android peer unavailable this round (Owner actual task); NOT_PERFORMED. Root independent review pending."
+  ]
+}

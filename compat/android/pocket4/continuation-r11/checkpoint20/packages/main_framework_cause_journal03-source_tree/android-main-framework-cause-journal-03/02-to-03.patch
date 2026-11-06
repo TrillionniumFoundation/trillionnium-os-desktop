@@ -1,0 +1,205 @@
+--- actual-journal02.py
++++ read_journal03.py
+@@ -10,10 +10,10 @@
+ BOOT_COMPACT=BOOT_ID.replace("-","")
+ INVOCATION="67cdc2375f394012ad9d7f39b0d77426"
+ CG="/sys/fs/cgroup/system.slice/droidloomd.service"
+-SINCE="2026-11-06 04:35:00 UTC"
+-UNTIL="2026-11-06 04:47:30 UTC"
+-LOW_US=1793939700000000
+-HIGH_US=1793940450000000
++SINCE="2026-11-06 04:42:00 UTC"
++UNTIL="2026-11-06 04:43:00 UTC"
++LOW_US=1793940120000000
++HIGH_US=1793940180000000
+ PROPERTIES=('MainPID','ControlGroup','InvocationID','ActiveState','SubState','Result','NRestarts','ExecMainStartTimestampMonotonic','StateChangeTimestampMonotonic','MemoryCurrent','MemoryPeak','TasksCurrent')
+ STATUS_KEYS={'Uid','Gid','Groups','NSpid','CapInh','CapPrm','CapEff','CapBnd','CapAmb','Threads','State','PPid'}
+ EXPECTED=json.loads("{\"android_init\":{\"pid\":3588093,\"start_ticks\":80797014,\"ppid\":3588092,\"uids\":[0,0,0,0],\"namespace_pids\":[3588093,1],\"cgroup\":\"0::/system.slice/droidloomd.service\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026533284]\",\"pid\":\"pid:[4026533288]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":106,\"inode\":1}},\"daemon\":{\"pid\":3588022,\"start_ticks\":80796995,\"ppid\":1,\"uids\":[0,0,0,0],\"namespace_pids\":[3588022],\"cgroup\":\"0::/system.slice/droidloomd.service\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026531832]\",\"pid\":\"pid:[4026531836]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":66306,\"inode\":2}},\"launcher\":{\"pid\":3588089,\"start_ticks\":80797013,\"ppid\":3588022,\"uids\":[0,0,0,0],\"namespace_pids\":[3588089],\"cgroup\":\"0::/system.slice/droidloomd.service\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026533281]\",\"pid\":\"pid:[4026531836]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":66306,\"inode\":2}},\"presenter\":{\"pid\":3588024,\"start_ticks\":80796995,\"ppid\":2472,\"uids\":[1000,1000,1000,1000],\"namespace_pids\":[3588024],\"cgroup\":\"0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026531832]\",\"pid\":\"pid:[4026531836]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":66306,\"inode\":2}},\"surfaceflinger\":{\"pid\":3588912,\"start_ticks\":80797155,\"ppid\":3588093,\"uids\":[1000,1000,1000,1000],\"namespace_pids\":[3588912,672],\"cgroup\":\"0::/system.slice/droidloomd.service/system/uid_1000/pid_672\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026533284]\",\"pid\":\"pid:[4026533288]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":106,\"inode\":1}},\"zygote64\":{\"pid\":90360,\"start_ticks\":96586437,\"ppid\":3588093,\"uids\":[0,0,0,0],\"namespace_pids\":[90360,1160345],\"cgroup\":\"0::/system.slice/droidloomd.service/system/uid_0/pid_1160345\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026533070]\",\"pid\":\"pid:[4026533288]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":106,\"inode\":1}},\"system_server\":{\"pid\":90516,\"start_ticks\":96586493,\"ppid\":90360,\"uids\":[1000,1000,1000,1000],\"namespace_pids\":[90516,1160408],\"cgroup\":\"0::/system.slice/droidloomd.service/system/uid_1000/pid_1160408\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026533239]\",\"pid\":\"pid:[4026533288]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":106,\"inode\":1}}}")
+@@ -226,6 +226,8 @@
+         out[key]=value
+     return out
+ 
++
++SOURCE_PINS.update({"journal02_actual_stdout_sha256":"fcd227acba3e4068a1fb73ea4a6ed130959231f67567654088eac51f77694ebc","old_activation_projection_actual_sha256":"843cc97bab8ba02e382223498d08b7f689c5cd6926955d178bea971383349e20"})
+ ROLE=r"(?:zygote64|zygote32|zygote|system_server|surfaceflinger|init)"
+ DEC=r"[0-9]{1,10}"
+ PATTERNS=[
+@@ -312,9 +314,141 @@
+ def reject_constant(_value):
+     raise RuntimeError("JOURNAL_NONFINITE_JSON")
+ 
++ROLE_ID_BINDINGS=json.loads("{\"init\":{\"historical\":{\"host_pid\":3588093,\"namespace_pid\":1},\"current_observation\":{\"host_pid\":3588093,\"namespace_pid\":1}},\"zygote64\":{\"historical\":{\"host_pid\":3588887,\"namespace_pid\":649},\"current_observation\":{\"host_pid\":90360,\"namespace_pid\":1160345}},\"system_server\":{\"historical\":{\"host_pid\":3589120,\"namespace_pid\":830},\"current_observation\":{\"host_pid\":90516,\"namespace_pid\":1160408}},\"surfaceflinger\":{\"historical\":{\"host_pid\":3588912,\"namespace_pid\":672},\"current_observation\":{\"host_pid\":3588912,\"namespace_pid\":672}},\"zygote\":{\"historical\":{\"host_pid\":3588887,\"namespace_pid\":649},\"current_observation\":{\"host_pid\":90360,\"namespace_pid\":1160345}},\"zygote32\":{}}")
++FEATURE_ROW_BYTES=768
++FORMAT_PATTERNS=[
++ ("kernel_role_bracket","kernel_pid_or_tid",re.compile(r"(?P<role>"+ROLE+r")\[(?P<pid>"+DEC+r")\]: (?P<tail>[^\r\n]{1,16384})")),
++ ("kernel_traps_role","kernel_pid_or_tid",re.compile(r"traps: (?P<role>"+ROLE+r")\[(?P<pid>"+DEC+r")\] (?P<tail>[^\r\n]{1,16384})")),
++ ("init_signal_to_service","Android_service_pid",re.compile(r"init: Sending signal (?P<signal>[0-9]{1,3}) to service '(?P<role>"+ROLE+r")' \(pid (?P<pid>"+DEC+r")\)(?P<tail>[^\r\n]{0,16384})")),
++ ("init_role_service_pid","Android_service_pid",re.compile(r"init: [Ss]ervice '(?P<role>"+ROLE+r")' \(pid (?P<pid>"+DEC+r")\)(?P<tail>[^\r\n]{0,16384})")),
++ ("init_role_service","none",re.compile(r"init: [Ss]ervice '(?P<role>"+ROLE+r")'(?P<tail>[^\r\n]{0,16384})")),
++ ("zygote_child_process","Android_child_pid",re.compile(r"(?:Zygote: )?System server process (?P<pid>"+DEC+r") (?P<tail>[^\r\n]{1,16384})")),
++ ("kernel_oom_role","kernel_victim_pid",re.compile(r"(?:Out of memory|Memory cgroup out of memory): Killed process (?P<pid>"+DEC+r") \((?P<role>"+ROLE+r")\) (?P<tail>[^\r\n]{1,16384})"))
++]
++FEATURE_TERMS=("segfault","traps","signal","errno","exited","died","killed","restart","restarting","watchdog","oom","abort","fatal")
++FEATURE_PHRASES={
++ "segfault_at":("segfault","at"),
++ "invalid_opcode":("invalid","opcode"),
++ "general_protection":("general","protection"),
++ "killed_by_signal":("killed","by","signal"),
++ "received_signal":("received","signal"),
++ "exited_with_status":("exited","with","status"),
++ "out_of_memory":("out","of","memory"),
++ "watchdog_killing":("watchdog","killing")
++}
++
++def closed_features(row,source,record_sha256):
++    """Descriptors only: unknown tails, addresses and user strings never leave."""
++    realtime,mono,source_pid,message,encoded=validate_record(row,source)
++    tokens=tuple(re.findall(r"[A-Za-z_]+",message.lower()))
++    words=set(tokens)
++    roles=sorted(set(ROLE_ID_BINDINGS)&words)
++    need(bool(roles),"KNOWN_ROLE_REQUIRED_FOR_FEATURES")
++    flags=[word for word in FEATURE_TERMS if word in words]
++    for key,phrase in FEATURE_PHRASES.items():
++        size=len(phrase)
++        if any(tokens[i:i+size]==phrase for i in range(max(0,len(tokens)-size+1))):
++            flags.append(key)
++    format_name=None
++    id_context="none"
++    labelled={}
++    selected_role=None
++    for name,context,pattern in FORMAT_PATTERNS:
++        matched=pattern.fullmatch(message)
++        if matched:
++            values=matched.groupdict()
++            format_name=name
++            id_context=context
++            selected_role=values.get("role") or "system_server"
++            for key in ("pid","signal"):
++                if values.get(key) is not None:
++                    labelled[key]=int(values[key])
++            tail=values.get("tail","").strip()
++            # Numbers are accepted only from the already anchored system-role
++            # format and exact signal/errno labels, never from addresses/text.
++            if "signal" not in labelled:
++                signal_match=re.fullmatch(r"(?:killed by|received) signal ([0-9]{1,3})(?:[ ,;:][^\r\n]{0,16384})?",tail)
++                if signal_match:
++                    labelled["signal"]=int(signal_match.group(1))
++            if tokens.count("errno")==1:
++                errno_match=re.fullmatch(r"(?:[^\r\n]{1,16384} )?errno(?:=|: ?| )([0-9]{1,3})\.?",tail)
++                if errno_match:
++                    labelled["errno"]=int(errno_match.group(1))
++            break
++    need(all(type(x) is int and 0<=x<=2**31-1 for x in labelled.values()),"FEATURE_NUMERIC_BOUND")
++    need(labelled.get("signal",0)<=255 and labelled.get("errno",0)<=4095,"FEATURE_LABEL_BOUND")
++    host_matches=[]
++    namespace_matches=[]
++    if "pid" in labelled and selected_role in ROLE_ID_BINDINGS:
++        for generation,binding in ROLE_ID_BINDINGS[selected_role].items():
++            if labelled["pid"]==binding["host_pid"]:
++                host_matches.append(generation)
++            if labelled["pid"]==binding["namespace_pid"]:
++                namespace_matches.append(generation)
++    feature={"source":source,"realtime_us":realtime,"monotonic_us":mono,
++             "journal_source_pid":source_pid,"roles":roles,"flags":flags,
++             "format":format_name,"id_context":id_context,"selected_role":selected_role,
++             "labelled_numbers":labelled,"host_pid_number_matches":host_matches,
++             "namespace_pid_number_matches":namespace_matches,
++             "record_sha256":record_sha256,"message_sha256":hashlib.sha256(encoded).hexdigest(),
++             "message_bytes":len(encoded),"cause_proved":False,"raw_exported":False}
++    need(len(json.dumps(feature,sort_keys=True,separators=(",",":")).encode())<=FEATURE_ROW_BYTES,"FEATURE_ROW_BOUND")
++    return feature
++
++def feature_controls():
++    private="PRIVATE_NONEXPORT_SENTINEL"
++    def row(message,source=KERNEL_SOURCE):
++        value={"_BOOT_ID":BOOT_COMPACT,"__REALTIME_TIMESTAMP":str(LOW_US+1),
++               "__MONOTONIC_TIMESTAMP":"965864000000","MESSAGE":message}
++        if source==KERNEL_SOURCE:
++            value["_TRANSPORT"]="kernel"
++        else:
++            value.update(_SYSTEMD_UNIT="droidloomd.service",_SYSTEMD_INVOCATION_ID=INVOCATION,_PID="3588093")
++        return value
++    passed=[]
++    def ok(name,condition):
++        need(condition,"FEATURE_CONTROL_FAILED")
++        passed.append(name)
++    def project(message):
++        return closed_features(row(message),KERNEL_SOURCE,"0"*64)
++    text="system_server[3589120]: segfault at deadbeef ip 1234 sp abcd error 4 in "+private
++    feature=project(text)
++    ok("kernel_segfault_host_id_only",feature["format"]=="kernel_role_bracket" and feature["labelled_numbers"]=={"pid":3589120} and feature["host_pid_number_matches"]==["historical"] and not feature["namespace_pid_number_matches"] and "segfault_at" in feature["flags"] and private not in json.dumps(feature) and "deadbeef" not in json.dumps(feature))
++    feature=project("traps: system_server[3589120] invalid opcode ip:dead sp:beef error:0 in "+private)
++    ok("kernel_invalid_opcode_flags",feature["format"]=="kernel_traps_role" and "invalid_opcode" in feature["flags"] and feature["labelled_numbers"]=={"pid":3589120})
++    feature=project("traps: system_server[830] general protection fault ip:0 sp:0 error:0")
++    ok("namespace_number_never_host_pid",not feature["host_pid_number_matches"] and feature["namespace_pid_number_matches"]==["historical"] and "general_protection" in feature["flags"])
++    text="init: Service 'zygote' (pid 649) received signal 9, waited 123.45 seconds"
++    feature=project(text)
++    ok("init_old_namespace_signal_variant",feature["id_context"]=="Android_service_pid" and feature["labelled_numbers"]=={"pid":649,"signal":9} and feature["namespace_pid_number_matches"]==["historical"] and not feature["host_pid_number_matches"] and project_record(row(text),KERNEL_SOURCE,"0"*64)[0] is None)
++    feature=project("init: Service 'zygote' (pid 1160345) failed with errno 13")
++    ok("explicit_errno_label_only",feature["labelled_numbers"]=={"pid":1160345,"errno":13} and feature["namespace_pid_number_matches"]==["current_observation"])
++    feature=project(private+" system_server[3589120]: segfault at 123456789")
++    ok("unknown_prefix_has_no_numeric_authority",feature["format"] is None and feature["labelled_numbers"]=={} and private not in json.dumps(feature))
++    feature=project("system_server[3589120]: account 987654321 token "+private)
++    ok("arbitrary_numbers_not_harvested",feature["labelled_numbers"]=={"pid":3589120} and "987654321" not in json.dumps(feature) and private not in json.dumps(feature))
++    feature=project("init: Service 'zygote' (pid 649) exited with status 0 after "+private)
++    ok("exit_feature_not_old_event",feature["format"]=="init_role_service_pid" and "exited_with_status" in feature["flags"] and feature["labelled_numbers"]=={"pid":649} and feature["cause_proved"] is False)
++    try:
++        project("com.private.account[830]: segfault at deadbeef")
++    except RuntimeError as error:
++        ok("unknown_role_rejected",str(error)=="KNOWN_ROLE_REQUIRED_FOR_FEATURES")
++    else:
++        raise RuntimeError("FEATURE_NEGATIVE_ACCEPTED")
++    try:
++        project("init: Service 'zygote' (pid 649) received signal 999")
++    except RuntimeError as error:
++        ok("signal_label_bound",str(error)=="FEATURE_LABEL_BOUND")
++    else:
++        raise RuntimeError("FEATURE_NEGATIVE_ACCEPTED")
++    need(len(passed)==10,"FEATURE_CONTROL_COUNT")
++    return {"passed":10,"cases":passed,"filesystem_access":False,"subprocesses":0,
++            "does_not_relax_original_twenty_controls":True}
++
++
+ def project_stream(raw,source,stream_complete):
+     report={"records_parsed":0,"events":[],"unclassified_records":0,
+-            "unclassified_known_role_records":0,"unclassified_known_role_record_hashes":[],
++            "unclassified_known_role_records":0,"unclassified_known_role_record_hashes":[],"known_role_features":[],
+             "errors":[],"all_retained_bytes_parsed":False,
+             "fixed_window_query_complete":False,"retention_completeness_proved":False}
+     lines=raw.splitlines(keepends=True)
+@@ -331,6 +465,7 @@
+             report["records_parsed"]+=1
+             if event is not None:
+                 need(len(report["events"])<EVENT_LIMIT,"JOURNAL_EVENT_BOUND")
++                need(len(report["events"])+len(report["known_role_features"])<EVENT_LIMIT,"JOURNAL_SEMANTIC_ROW_BOUND")
+                 report["events"].append(event)
+             else:
+                 report["unclassified_records"]+=1
+@@ -338,6 +473,8 @@
+                     report["unclassified_known_role_records"]+=1
+                     if len(report["unclassified_known_role_record_hashes"])<8:
+                         report["unclassified_known_role_record_hashes"].append(digest)
++                    need(len(report["events"])+len(report["known_role_features"])<EVENT_LIMIT,"JOURNAL_SEMANTIC_ROW_BOUND")
++                    report["known_role_features"].append(closed_features(row,source,digest))
+         except BaseException as error:
+             report["errors"].append({**safe_error(error),"sha256":hashlib.sha256(line).hexdigest()})
+             break
+@@ -428,7 +565,7 @@
+     return {"passed":len(passed),"cases":passed,"filesystem_access":False,"subprocesses":0,"device_operations":0}
+ 
+ def main():
+-    result={"schema":1,"kind":"fixed-Main-framework-cause-host-journal02",
++    result={"schema":1,"kind":"fixed-Main-framework-cause-host-journal03",
+             "window":{"since_utc":SINCE,"until_utc":UNTIL,"low_realtime_us":LOW_US,"high_realtime_us":HIGH_US},
+             "old_epoch_sha256":"48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+             "source_pins":SOURCE_PINS,"errors":[],"secondary_errors":[],"journals":{},
+@@ -445,6 +582,9 @@
+         result["secondary_errors" if secondary else "errors"].append({"phase":phase,**safe_error(error)})
+     try:
+         result["pure_controls"]=pure_controls()
++        result["feature_controls"]=feature_controls()
++        result["feature_id_bindings"]=ROLE_ID_BINDINGS
++        result["feature_semantics"]={"term_or_format_observations_only":True,"PID_spaces_not_equated":True,"namespace_number_is_not_host_pid":True,"attribution_or_cause_proved":False}
+         result["boot_id_before"]=read("/proc/sys/kernel/random/boot_id",128).decode("ascii","strict").strip()
+         need(result["boot_id_before"]==BOOT_ID,"HOST_BOOT_CHANGED")
+         result["service_before"]=service()

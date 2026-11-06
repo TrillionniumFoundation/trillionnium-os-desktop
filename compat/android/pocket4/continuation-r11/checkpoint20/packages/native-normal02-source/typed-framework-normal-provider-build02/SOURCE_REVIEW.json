@@ -1,0 +1,223 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_NOT_PYTHON_EXECUTED",
+  "review_scope": "NORMAL02 owned capture lifecycle plus independent review of inherited NORMAL01 gates",
+  "original_normal01": {
+    "tree": "a45cd4f09ad8247ce0f621021357808a58e16a23",
+    "prefix": "typed-framework-normal-provider-build01",
+    "request": {
+      "bytes": 724917,
+      "sha256": "48669f0e461bd4b07f74e7c1f3ed1d36ee20a6afce341b09bfe9aa0500773919",
+      "git_blob_sha1": "151d4f6adcb2fffa9528b8bc259f981ba3a5f593"
+    },
+    "status": "UNRUN_NOT_ADMITTED",
+    "reason": "Direct subprocess.run timeout did not establish complete sudo/helper descendant retirement."
+  },
+  "exact_changes": {
+    "framework_build": "Only fresh owned ROOT01→ROOT02. Normal builder, two locks, targets, manifests, source qualification, cleanup and artifact completion logic remain byte-identical after that literal inverse.",
+    "main_snapshot": "All 14294 bytes unchanged. No new Main reads, role set, limits, epoch authority or acceptance.",
+    "pure_controls": "All original 9573 bytes and forty pure controls unchanged.",
+    "fenced_build": "Replace direct sudo subprocess.run capture with two-layer owned lifecycle, four real fault controls and exact source bindings. Original compare body preserved.",
+    "new_sources": [
+      "capture_lifecycle.py",
+      "root_snapshot_supervisor.py"
+    ],
+    "original_request_resources_and_env_unchanged": true
+  },
+  "startup_and_deadlines": {
+    "outer": "Each invocation installs SIGALRM before reaper.begin/Popen; absolute observation deadline=start+25s and final retirement deadline=start+30s. No existing active real-time timer may be overwritten. Handler and timer restoration are qualification gates.",
+    "root": "The fixed -I/-B bootstrap imports os, signal and time, captures entry time, then installs the absolute entry+15s watchdog before hashing, parsing, compiling or importing either supplied pinned body. The interpreter's own startup and these three minimal imports precede the root timer and are covered by the outer timer; they are not misreported as root-timed work.",
+    "root_fork": "No snapshot/control child can be started before the verified supervisor requires real/effective/saved UID0, disables dumps, starts its own subreaper and confirms an empty single-threaded child authority. The callback and mode set are closed and source-pinned.",
+    "root_observation": "The supervisor's 15s absolute observation deadline is independent of the child snapshot's original 15s alarm. The child cannot extend the parent's timer.",
+    "root_retirement": "On any observation outcome, mask further termination interruptions, retire at min(entry+20s, cleanup_start+5s), and install a retirement alarm using that same absolute deadline. Signal, wait, FD and final deadline failures prevent qualification.",
+    "outer_early_failure": "An early operator-side failure may require waiting for the already launched fixed root supervisor's own 15+5s retirement. Outer retirement therefore uses its original absolute start+30s deadline, not a renewed five-second promise after an early error.",
+    "controls": "All four cases must finish inside a cumulative 30s qualification window before the build. Each invocation retains its own finite deadlines. This is not described as a hard 30s control-execution kill.",
+    "original_request_timeout_seconds": 6400,
+    "original_builder_wait_seconds": 6100
+  },
+  "ownership_and_cleanup": {
+    "group": "Popen creates a new owned session. The root supervisor forks only its fixed child and waits nonreapingly for setsid or terminal status before returning the fork handle. The leader PID stays unreaped until group signalling has finished. No killpg after reaping.",
+    "exited_leader": "If WNOWAIT already observes leader exit and the kernel own-child list is exactly that leader, exit has reparented any surviving descendants; skip an unnecessary signal to the exited privileged leader and reap it.",
+    "adopted": "Only /proc/self/task and the fixed current task's children file are enumerated. At most 128 own children are retired, each through an independently acquired/closed pidfd. If pidfd allocation fails, the original errno remains; numeric fallback is limited to an unreaped kernel-proven child with a single waiter.",
+    "root_and_operator": "Root retires its own root-UID tree. UID1000 EPERM is never cleanup evidence or command success. The outer owner can wait for its fixed root supervisor to retire itself; any permission error remains recorded and makes ordinary capture fail.",
+    "independent_of_root_json": "Retirement uses kernel child/wait/pidfd authority, not root JSON, receipt readability, a user signal or a guessed PID. Root JSON is only a later semantic qualification gate.",
+    "before_root_exit": "The root helper requires its leader and adopted descendants wait/reaped, all acquired pidfds/memfds closed, own child list empty and kernel ECHILD, then restoration of its subreaper flag. Incomplete retirement is reported as failure; it never authorizes build or release.",
+    "acquired_FDs": "Input memfd acquisition is recorded before write/seal/return, including failures before return. Each output is read independently under a bound and closed independently. pidfd, input and both output close failures are retained and cannot produce qualified_success.",
+    "first_error": "First start/wait/timeout error is preserved, later retirement/FD errors append separately. Negative controls reject unrelated secondary failures; operator EMFILE permits only explicit cross-UID EPERM or independently reaped adopted-child diagnostics.",
+    "protected_main_pids": [
+      3588093,
+      3588022,
+      3588089,
+      3588024,
+      3588912,
+      90360,
+      90516
+    ],
+    "arbitrary_privileged_task_interface": false,
+    "global_proc_scan": false,
+    "Main_signals": false,
+    "service_changes": false,
+    "HOME_reset": false,
+    "bounds": {
+      "own_children": 128,
+      "input_bytes": 196608,
+      "root_child_each_output_bytes": 65536,
+      "outer_each_output_bytes": 131072
+    }
+  },
+  "planned_actual_controls": [
+    {
+      "name": "control-root-timeout",
+      "expected": "A real root child and grandchild become ready; observation expires; both are killed/reaped; original TimeoutError survives."
+    },
+    {
+      "name": "control-root-escaped",
+      "expected": "A real root descendant creates its own session; leader exits zero; success is refused, escaped child is separately pidfd-signalled/reaped."
+    },
+    {
+      "name": "control-root-pidfd",
+      "expected": "EMFILE seam occurs only after actual fork/session handshake; first errno is retained and that live direct child is killed/reaped."
+    },
+    {
+      "name": "control-outer-pidfd",
+      "expected": "EMFILE seam occurs after actual sudo Popen and a live unreaped leader observation; all actual sudo/root descendants are retired within the absolute limit. Root startup itself is not required for this particular operator fault case; three separate root cases do exercise UID0."
+    }
+  ],
+  "controls_are_not_qualified_by_this_review": true,
+  "static_peer": {
+    "actor": "android_acceptance",
+    "source": {
+      "bytes": 25216,
+      "sha256": "51b54820f04a4bb3024df8f4ecbcfd40a3c79f27b18a86cf32fab9f69d9a8ee4",
+      "git_blob_sha1": "6961a5e53cbc402b56add6505d2d2d78b7269695"
+    },
+    "scope": "Full 25216-byte core including retire/fork_fixed/invoke, no definite new blocker; no Python/root/operator execution and no caller/full packet review.",
+    "final_core_change_after_peer": {
+      "before": "'cleanup_seconds_per_command': 5,",
+      "after": "'cleanup_deadline_supplied_by_caller': True,"
+    },
+    "inverse_to_peer_pin_verified": true,
+    "root_supervisor_peer": "NOT_PERFORMED; app agent remained on actual App mainline.",
+    "root_primary_review_required": true
+  },
+  "normal_build_gates_reviewed": {
+    "main_rs": {
+      "bytes": 21215,
+      "sha256": "c75a0b03c2f3827a946e360ea8747665e183cf9f495460c24e29d176ae678172",
+      "git_blob_sha1": "3f8e994d92900989b16d0f4e3e2edea8d4e34b5e",
+      "lines": "345-366",
+      "finding": "package-build.lock and aosp-source-update.lock acquired before recover and entry into typed build."
+    },
+    "source_reuse": "Actual previous 214-project manifest is a pinned authority only. Normal Rust freshly verifies every project against the old exact typed lock under the two locks, then validates a monotonic 224-project extension, reconciles existing/new projects, verifies them and atomically publishes the new full manifest.",
+    "previous_failures": "The original first timeout/296 reaped children and later strict graph failure/one reaped child are retained. Source publication is not inferred from a projection journal's absence.",
+    "builder_ELF": "Held complete hash/stat checks before and after are retained. held_file closes its FD, and Popen executes the original pathname. This change does not claim an FD retained across exec or alter the original builder.",
+    "artifact_boundary": "Even a normal command PASS remains insufficient for the actual implementation JAR and Android JNI translation unit/header/link qualification. Runtime authorization and all-app readiness remain false."
+  },
+  "agent_actions": {
+    "Hepta": 0,
+    "local_exec": 0,
+    "branch_or_PR_updates": 0,
+    "Python_tests": 0
+  },
+  "production_ready": false,
+  "whole_app_ready": {
+    "passed": 0,
+    "total": 45
+  },
+  "frozen_utc": "2026-11-06 07:39:31 UTC",
+  "runtime_source_pins": {
+    "main_snapshot.py": {
+      "bytes": 14294,
+      "sha256": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+      "git_blob_sha1": "afaa057e18e32f6ffde8055779e5e2e0a2152fb0"
+    },
+    "frozen-work-inventory.py": {
+      "bytes": 48443,
+      "sha256": "203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab",
+      "git_blob_sha1": "ce53551eec1c6251e2273bc7db76565630c3638c"
+    },
+    "actual-work-preparation.json": {
+      "bytes": 11091,
+      "sha256": "ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c",
+      "git_blob_sha1": "69fa034808e62d36e4f6d3df510c8e624cfff22e"
+    },
+    "expected-builder468-manifest.json": {
+      "bytes": 97525,
+      "sha256": "e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee",
+      "git_blob_sha1": "1a881dce47da3ac9dd27c5073bc0e224d88e35a5"
+    },
+    "prior-framework-inner-terminal.json": {
+      "bytes": 2246,
+      "sha256": "80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc",
+      "git_blob_sha1": "48d47a11f90bc0159ddfd50e5d8ee88509de359b"
+    },
+    "prior-framework-outer-terminal.json": {
+      "bytes": 1150,
+      "sha256": "2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059",
+      "git_blob_sha1": "a5b9085ba6d2b68205f7dc078e470742e17fd06c"
+    },
+    "actual-published-source-manifest.json": {
+      "bytes": 97784,
+      "sha256": "73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d",
+      "git_blob_sha1": "d7a0e15340b5461e4606a064c5ad8a58f88bfbb7"
+    },
+    "actual-native-prebuilt-Android.bp": {
+      "bytes": 1017,
+      "sha256": "d1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a",
+      "git_blob_sha1": "68246c4206ea702c8a66b73c37bfcacb51524086"
+    },
+    "actual-provider-source-lock.json": {
+      "bytes": 96322,
+      "sha256": "5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7",
+      "git_blob_sha1": "b2a9a017dce3c0c261e26d42d191fe065e24bd58"
+    },
+    "framework_build.py": {
+      "bytes": 55314,
+      "sha256": "47ce174f0401a647ee1da7a78d0578a45185affd3e128d35142068a2a9c18d6b",
+      "git_blob_sha1": "1439c067f69be7e2705f5b60607b02bfd806ed81"
+    },
+    "fenced_build.py": {
+      "bytes": 25481,
+      "sha256": "76ee477835d0af67033eab794a06cc8fb2cd6c60d2bfd759035aeeb0396575c5",
+      "git_blob_sha1": "1e35eff47a5d61a57ce01ef4ac3c7d56e2037d32"
+    },
+    "actual-builder468-result.json": {
+      "bytes": 161423,
+      "sha256": "871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8",
+      "git_blob_sha1": "b53d5e16b72fe7e17b8e7c4a3db4c0e6699cfdd5"
+    },
+    "pure_controls.py": {
+      "bytes": 9573,
+      "sha256": "5c7139c4d21181d742cd43feb272cc14cc1f837b18804e633fa8c77836100c38",
+      "git_blob_sha1": "fcb72279bd4175adb707452277df4f7414b79305"
+    },
+    "capture_lifecycle.py": {
+      "bytes": 25227,
+      "sha256": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+      "git_blob_sha1": "7a769dc133f62df3ed12cd3e64da1b967309574f"
+    },
+    "root_snapshot_supervisor.py": {
+      "bytes": 12041,
+      "sha256": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7",
+      "git_blob_sha1": "9407f0960889542a2611b512c278e97bf1195514"
+    }
+  },
+  "owner20_reaper_origin": {
+    "tree": "18a3ad1bcf2aa947166a9de61daaec8bc7b25ce2",
+    "path": "android-owner20-sdk-accessor-build-freeze02/build-template.py",
+    "bytes": 38732,
+    "sha256": "d12077133b1a974f82cc088f02f0f4fe9a573c93a1679f00f003d3d103aebe58",
+    "git_blob_sha1": "ef59ee980316a2317ba86a99c47572fb9afb0c12",
+    "original_class": {
+      "bytes": 11125,
+      "sha256": "61e3fe49cb1ffc511acdf409befd86d38c0bb2ba432dd2a888e32f3d50c17b42",
+      "git_blob_sha1": "db9a3c5433f878dad12626c0fe5b10fc8114c201"
+    },
+    "new_class": {
+      "bytes": 13690,
+      "sha256": "d4eb4f0523a614b72ad5789f255b92a6ad3cfbc0a36ad989b381eb51de8eea23",
+      "git_blob_sha1": "09069438d7990718fea73599cde2b83480ea9b7f"
+    },
+    "actual_controls_from_other_job_do_not_qualify_this_changed_source": true
+  }
+}

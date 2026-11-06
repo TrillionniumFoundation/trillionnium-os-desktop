@@ -1,0 +1,20 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/python3",
+  "args": [
+    "-I",
+    "-B",
+    "-c",
+    "import json,secrets,re,os\nlabels=[app+\"_\"+kind for app in (\"bili\",\"ihg\",\"amazon\",\"bestbuy\") for kind in (\"flow\",\"state\")]\nvalues=[secrets.token_hex(32) for _ in labels]\nassert len(values)==8 and len(set(values))==8 and all(re.fullmatch(\"[0-9a-f]{64}\",x) for x in values)\nprint(json.dumps({\"schema\":\"pocket4-current-install-nonce-pool-v1\",\"generator\":\"secrets.token_hex(32)\",\"uid\":os.getuid(),\"labels\":labels,\"nonces\":dict(zip(labels,values)),\"Android_commands\":0,\"UI_actions\":0,\"source_only_nonce_generation\":True},sort_keys=True,separators=(\",\",\":\")),flush=True)\n"
+  ],
+  "cwd": "/home/alex/work",
+  "env": {
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "stdin": "",
+  "idempotency_key": "pocket4-current-baseline-four-install-nonce-pool-01-20261106",
+  "timeout_seconds": 15,
+  "cpu_quota_percent": 25,
+  "memory_max_bytes": 67108864,
+  "nice": 15
+}

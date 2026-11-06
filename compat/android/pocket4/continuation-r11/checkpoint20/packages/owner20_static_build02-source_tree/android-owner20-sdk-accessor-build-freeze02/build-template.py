@@ -1,0 +1,769 @@
+"""Create-only SDK accessor build and pure host controls; never execute Android code."""
+import base64
+import ctypes
+import errno
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import resource
+import select
+import shlex
+import signal
+import stat
+import subprocess
+import time
+import traceback
+
+CFG = None  # Filled once by the frozen-request generator.
+BUILD_STARTED = time.monotonic()
+CHILD_REAPER = None
+
+
+def require(value, message):
+    if not value:
+        raise RuntimeError(message)
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def create(path, data, mode=0o444):
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC | os.O_NOFOLLOW, mode)
+    try:
+        with os.fdopen(fd, 'wb', closefd=False) as stream:
+            stream.write(data)
+            stream.flush()
+            os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def snapshot(path, expected=None, root_tool=False):
+    path = Path(path)
+    resolved = path.resolve(strict=True)
+    fd = os.open(resolved, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+    try:
+        before = os.fstat(fd)
+        require(stat.S_ISREG(before.st_mode) and 0 <= before.st_size <= 200 * 1024 * 1024,
+                'input not a bounded regular file: ' + str(path))
+        if root_tool:
+            require(before.st_uid == 0 and before.st_gid == 0 and not (before.st_mode & 0o6022),
+                    'host compiler/inspector ownership/mode changed')
+            try:
+                capability = os.getxattr(fd, 'security.capability')
+            except OSError as error:
+                if error.errno not in (61, 95):
+                    raise
+                capability = None
+            require(not capability, 'host tool has file capabilities')
+        value = hashlib.sha256()
+        while True:
+            chunk = os.read(fd, 1024 * 1024)
+            if not chunk:
+                break
+            value.update(chunk)
+        after = os.fstat(fd)
+        stamp = lambda s: (s.st_dev, s.st_ino, s.st_size, s.st_mtime_ns, s.st_ctime_ns, s.st_mode, s.st_uid, s.st_gid)
+        require(stamp(before) == stamp(after), 'input changed while reading')
+        require(path.resolve(strict=True) == resolved and stamp(os.stat(resolved, follow_symlinks=False)) == stamp(after),
+                'input name changed while reading')
+        result = {'path': str(path), 'resolved_path': str(resolved), 'device': after.st_dev,
+                  'inode': after.st_ino, 'bytes': after.st_size, 'sha256': value.hexdigest(),
+                  'mode': after.st_mode, 'uid': after.st_uid, 'gid': after.st_gid,
+                  'mtime_ns': after.st_mtime_ns, 'ctime_ns': after.st_ctime_ns}
+        if expected is not None:
+            require(result['bytes'] == expected['bytes'] and result['sha256'] == expected['sha256'],
+                    'externally pinned input differs: ' + str(path))
+        return result
+    finally:
+        os.close(fd)
+
+
+def dependencies(path, expected_target):
+    text = path.read_text('utf-8')
+    require(len(text.encode()) < 262144 and ': ' in text, 'invalid dependency file')
+    target, payload = text.replace('\\\n', ' ').split(': ', 1)
+    require(target.strip() == expected_target, 'unexpected dependency target')
+    names = shlex.split(payload)
+    require(names and len(names) == len(set(names)), 'empty/repeated dependencies')
+    require(all(Path(name).is_absolute() for name in names), 'relative dependency')
+    return set(names)
+
+
+def limit_child_outputs():
+    # The fixed compiler/control children inherit a per-regular-file ceiling.
+    # The controller's complete result is written outside this child-only limit.
+    resource.setrlimit(resource.RLIMIT_FSIZE, (262144, 262144))
+
+
+class OwnChildReaper:
+    """Retire only children of this single-threaded isolated controller."""
+    def __init__(self):
+        self.pid = os.getpid()
+        self.original = None
+        self.changed = False
+        self.active = False
+        self.record = {'pid': self.pid, 'begin_passed': False, 'restored': False,
+                       'final_children_empty': False, 'max_adopted_per_command': 128,
+                       'cleanup_seconds_per_command': 5}
+        self.libc = ctypes.CDLL(None, use_errno=True)
+        self.prctl = self.libc.prctl
+        self.prctl.argtypes = [ctypes.c_int, ctypes.c_ulong, ctypes.c_ulong,
+                              ctypes.c_ulong, ctypes.c_ulong]
+        self.prctl.restype = ctypes.c_int
+
+    def flag(self):
+        value = ctypes.c_int(-1)
+        if self.prctl(37, ctypes.addressof(value), 0, 0, 0) != 0:
+            raise OSError(ctypes.get_errno(), 'PR_GET_CHILD_SUBREAPER')
+        require(value.value in (0, 1), 'invalid own subreaper flag')
+        return value.value
+
+    def set_flag(self, value):
+        if self.prctl(36, value, 0, 0, 0) != 0:
+            raise OSError(ctypes.get_errno(), 'PR_SET_CHILD_SUBREAPER')
+
+    def single_thread(self):
+        require(os.getpid() == self.pid and signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL,
+                'controller PID/SIGCHLD ownership changed')
+        names = []
+        with os.scandir('/proc/%d/task' % self.pid) as rows:
+            for row in rows:
+                names.append(row.name)
+                require(len(names) <= 1, 'controller is no longer single-threaded')
+        require(names == [str(self.pid)], 'controller thread identity changed')
+
+    def children(self):
+        # Fixed self task only, never an all-/proc or other-actor enumeration.
+        fd = os.open('/proc/%d/task/%d/children' % (self.pid, self.pid),
+                     os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+        try:
+            data = os.read(fd, 8193)
+            require(len(data) <= 8192 and os.read(fd, 1) == b'', 'own children list exceeds bound')
+        finally:
+            os.close(fd)
+        fields = data.split()
+        require(len(fields) <= 128 and len(fields) == len(set(fields)), 'own child count differs')
+        require(all(x.isdigit() and x == str(int(x)).encode() and 0 < int(x) < 2**31
+                    for x in fields), 'malformed own children list')
+        return [int(x) for x in fields]
+
+    def empty(self):
+        self.single_thread()
+        require(self.children() == [], 'controller retains child processes')
+        try:
+            os.waitid(os.P_ALL, 0, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+        except ChildProcessError:
+            return True
+        raise RuntimeError('kernel wait authority did not confirm ECHILD')
+
+    def begin(self):
+        require(hasattr(os, 'P_PIDFD') and hasattr(os, 'WNOWAIT'), 'held nonreaping wait unavailable')
+        self.empty()
+        self.original = self.flag()
+        self.record['original_subreaper_flag'] = self.original
+        if self.original == 0:
+            self.set_flag(1)
+            self.changed = True
+        require(self.flag() == 1, 'own subreaper did not become active')
+        self.active = True
+        self.record['begin_passed'] = True
+
+    def before_command(self):
+        require(self.active and self.flag() == 1, 'own subreaper not active')
+        self.empty()
+
+    def finish(self):
+        self.empty()
+        self.record['final_children_empty'] = True
+        if self.original is not None:
+            require(self.flag() == 1, 'own subreaper flag changed during commands')
+            if self.changed:
+                self.set_flag(self.original)
+                self.changed = False
+            require(self.flag() == self.original, 'own subreaper flag not restored')
+        self.active = False
+        self.record['restored'] = True
+
+    @staticmethod
+    def peek(pid, pidfd):
+        info = os.waitid(os.P_PIDFD if pidfd is not None else os.P_PID,
+                         pidfd if pidfd is not None else pid,
+                         os.WEXITED | os.WNOHANG | os.WNOWAIT)
+        if info is not None:
+            require(info.si_pid == pid and info.si_code in
+                    (os.CLD_EXITED, os.CLD_KILLED, os.CLD_DUMPED),
+                    'owned child wait status differs')
+        return info
+
+    @staticmethod
+    def observed(info):
+        return {'pid': info.si_pid, 'code': info.si_code, 'status': info.si_status}
+
+    def await_exit(self, pid, pidfd, deadline):
+        poller = select.poll()
+        poller.register(pidfd, select.POLLIN)
+        while True:
+            info = self.peek(pid, pidfd)
+            if info is not None:
+                return info
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError('owned child exit deadline')
+            poller.poll(max(1, min(100, int(remaining * 1000))))
+
+    def retire(self, process, pidfd, record, remember, deadline):
+        record['descendants'] = []
+        record['owned_tree_cleanup_complete'] = False
+        try:
+            # WNOWAIT / direct-child relationship reserves the leader PID until
+            # after group signalling. No killpg occurs after leader reaping.
+            info = self.peek(process.pid, pidfd)
+            record['leader_unreaped_before_group_cleanup'] = True
+            record['leader_alive_before_group_cleanup'] = info is None
+            if info is not None:
+                record['leader_observed_before_reap'] = self.observed(info)
+            require(os.getpgid(process.pid) == process.pid and
+                    os.getsid(process.pid) == process.pid, 'owned session/group identity changed')
+            record['owned_group_kill_attempted'] = True
+            record['kill_attempted'] = True
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+                record['owned_group_kill_completed'] = True
+            except ProcessLookupError:
+                require(info is not None, 'live original group disappeared')
+                record['owned_group_already_absent'] = True
+        except Exception as error:
+            remember(error, 'owned_group_cleanup')
+            # If group qualification failed, kill only the known direct child.
+            try:
+                if self.peek(process.pid, pidfd) is None:
+                    if pidfd is not None:
+                        signal.pidfd_send_signal(pidfd, signal.SIGKILL)
+                    else:
+                        # The successful P_PID wait above proves this is still
+                        # this controller's unreaped child, so its PID cannot be reused.
+                        process.kill()
+                    record['direct_child_fallback_kill_attempted'] = True
+            except Exception as error:
+                remember(error, 'direct_child_fallback_cleanup')
+        try:
+            process.wait(timeout=max(0, deadline - time.monotonic()))
+            record['returncode'] = process.returncode
+            record['child_reaped'] = True
+        except Exception as error:
+            remember(error, 'reap_direct_child')
+        if not record['child_reaped']:
+            return
+        seen = set()
+        while True:
+            try:
+                children = self.children()
+                if not children:
+                    self.empty()
+                    record['owned_tree_cleanup_complete'] = True
+                    break
+                require(time.monotonic() < deadline, 'adopted child cleanup deadline')
+                require(not (set(children) & seen), 'an earlier adopted child was not reaped')
+                require(len(seen) + len(children) <= 128, 'adopted child total bound exceeded')
+            except Exception as error:
+                remember(error, 'adopted_child_list_or_gate')
+                break
+            complete = True
+            for child in children:
+                if time.monotonic() >= deadline:
+                    remember(TimeoutError('adopted child cleanup deadline'), 'adopted_child_deadline')
+                    complete = False
+                    break
+                seen.add(child)
+                item = {'pid': child, 'kill_attempted': False, 'reaped': False, 'pidfd_closed': True}
+                record['descendants'].append(item)
+                held = None
+                try:
+                    # The kernel-listed unreaped direct/adopted child cannot be
+                    # reaped by another waiter: this controller is single-threaded.
+                    try:
+                        held = os.pidfd_open(child, 0)
+                        item['pidfd_closed'] = False
+                    except Exception as error:
+                        # Keep this failure, but still retire the kernel-proven
+                        # unreaped child if descriptor allocation itself failed.
+                        item['pidfd_open_error'] = repr(error)
+                        remember(error, 'adopted_pidfd_open')
+                    info = self.peek(child, held)
+                    if info is None:
+                        item['kill_attempted'] = True
+                        if held is not None:
+                            signal.pidfd_send_signal(held, signal.SIGKILL)
+                            info = self.await_exit(child, held, deadline)
+                        else:
+                            os.kill(child, signal.SIGKILL)
+                            while info is None and time.monotonic() < deadline:
+                                time.sleep(0.005)
+                                info = self.peek(child, None)
+                            require(info is not None, 'owned child fallback wait deadline')
+                    item['observed_before_reap'] = self.observed(info)
+                    waited, status = os.waitpid(child, os.WNOHANG)
+                    require(waited == child, 'observed terminal adopted child was not reaped')
+                    item['wait_status'] = status
+                    item['reaped'] = True
+                except Exception as error:
+                    complete = False
+                    item['error'] = repr(error)
+                    remember(error, 'adopted_child_cleanup')
+                finally:
+                    if held is not None:
+                        value, held = held, None
+                        try:
+                            os.close(value)
+                            item['pidfd_closed'] = True
+                        except Exception as error:
+                            complete = False
+                            remember(error, 'adopted_pidfd_close')
+            if not complete:
+                break
+        record['cleanup_elapsed_seconds'] = time.monotonic() - (deadline - 5)
+        if record['descendants']:
+            # Successful drivers must normally reap their own helpers. Cleanup
+            # success is not permission to count orphaned/forced helpers as a
+            # successful compilation.
+            remember(RuntimeError('driver left descendant processes after its exit'),
+                     'driver_left_descendants')
+
+
+def command(report, root, argv, timeout=25, pidfd_factory=None):
+    index = len(report['commands'])
+    output = root / ('command%02d.stdout' % index)
+    error_path = root / ('command%02d.stderr' % index)
+    record = {'argv': argv, 'cwd': str(root), 'timeout_seconds': timeout,
+              'timed_out': False, 'child_started': False, 'child_reaped': False,
+              'kill_attempted': False, 'pidfd_closed': True, 'output_fds_closed': False,
+              'first_error': None, 'secondary_errors': [],
+              'owned_tree_cleanup_complete': False}
+    report['commands'].append(record)
+    process = None
+    pidfd = None
+    streams = []
+    first = None
+
+    def remember(error, stage):
+        nonlocal first
+        item = {'stage': stage, 'error': repr(error)}
+        if first is None:
+            first = error
+            record['first_error'] = item
+        else:
+            record['secondary_errors'].append(item)
+
+    try:
+        CHILD_REAPER.before_command()
+        remaining = CFG['controller_work_seconds'] - (time.monotonic() - BUILD_STARTED)
+        require(remaining > 0, 'controller work deadline expired before child admission')
+        for path in (output, error_path):
+            streams.append(path.open('xb'))
+        environment = {'PATH': '/usr/bin:/bin', 'LC_ALL': 'C', 'LANG': 'C',
+                       'TMPDIR': str(root / 'tmp'), 'PYTHONDONTWRITEBYTECODE': '1'}
+        if 'HOME' in os.environ:
+            environment['HOME'] = os.environ['HOME']  # Inherit exactly; never repurpose/reset HOME.
+        process = subprocess.Popen(argv, cwd=root, stdin=subprocess.DEVNULL,
+            stdout=streams[0], stderr=streams[1], close_fds=True, start_new_session=True,
+            preexec_fn=limit_child_outputs, env=environment)
+        record['pid'] = process.pid
+        record['child_started'] = True
+        pidfd = (pidfd_factory or os.pidfd_open)(process.pid, 0)
+        record['pidfd_closed'] = False
+        try:
+            info = CHILD_REAPER.await_exit(process.pid, pidfd,
+                time.monotonic() + min(timeout, remaining))
+            record['leader_observed_without_reap'] = CHILD_REAPER.observed(info)
+            if info.si_code != os.CLD_EXITED or info.si_status != 0:
+                remember(RuntimeError('original command exited unsuccessfully before cleanup'),
+                         'leader_exit_status')
+        except TimeoutError:
+            record['timed_out'] = True
+            raise subprocess.TimeoutExpired(argv, timeout)
+    except Exception as error:
+        remember(error, 'start_or_wait')
+    finally:
+        if process is not None:
+            cleanup_deadline = time.monotonic() + 5
+            try:
+                CHILD_REAPER.retire(process, pidfd, record, remember, cleanup_deadline)
+            except Exception as error:
+                remember(error, 'unexpected_owned_tree_cleanup_error')
+                # Do not let an unexpected diagnostic error skip the direct
+                # child's final wait. Group/adoption qualification stays false.
+                try:
+                    if process.returncode is None and CHILD_REAPER.peek(process.pid, pidfd) is None:
+                        if pidfd is not None:
+                            signal.pidfd_send_signal(pidfd, signal.SIGKILL)
+                        else:
+                            process.kill()
+                except Exception as error:
+                    remember(error, 'final_direct_kill')
+                try:
+                    process.wait(timeout=max(0, cleanup_deadline - time.monotonic()))
+                    record['returncode'] = process.returncode
+                    record['child_reaped'] = True
+                except Exception as error:
+                    remember(error, 'final_direct_wait')
+        if pidfd is not None:
+            value, pidfd = pidfd, None
+            try:
+                os.close(value)
+                record['pidfd_closed'] = True
+            except Exception as error:
+                remember(error, 'close_pidfd')
+        closed = True
+        for stream in reversed(streams):
+            try:
+                stream.close()
+            except Exception as error:
+                closed = False
+                remember(error, 'close_output_file')
+        record['output_fds_closed'] = closed
+    # Each output is retained independently; a capture error cannot hide the
+    # earlier child failure or prevent the other stream from being checked.
+    for key, path in [('stdout', output), ('stderr', error_path)]:
+        try:
+            with path.open('rb') as stream:
+                before = os.fstat(stream.fileno())
+                require(stat.S_ISREG(before.st_mode) and before.st_size <= 262144,
+                        'command output exceeds bound')
+                data = stream.read(262145)
+                after = os.fstat(stream.fileno())
+            require(len(data) == before.st_size and
+                    (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns) ==
+                    (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns),
+                    'command output changed during complete capture')
+            record[key + '_bytes'] = len(data)
+            record[key + '_sha256'] = digest(data)
+            record[key] = data.decode('utf-8')
+            record[key + '_complete'] = True
+        except Exception as error:
+            record[key + '_complete'] = False
+            remember(error, 'capture_' + key)
+    if first is not None:
+        raise first
+    require(record.get('returncode') == 0 and record['child_reaped'] and
+            record['pidfd_closed'] and record['output_fds_closed'] and
+            record['owned_tree_cleanup_complete'] and not record['timed_out'],
+            'matching build/control command failed: ' + str(index))
+    return record
+
+
+HOST_LIFECYCLE_FIXTURE = r"""import os
+import sys
+import time
+
+mode = sys.argv[1]
+if mode == 'pidfd-failure':
+    time.sleep(30)
+    raise SystemExit(0)
+if mode not in ('timeout-descendant', 'escaped-descendant'):
+    raise SystemExit(2)
+read_end, write_end = os.pipe()
+child = os.fork()
+if child == 0:
+    os.close(read_end)
+    if mode == 'escaped-descendant':
+        os.setsid()
+    os.write(write_end, b'R')
+    os.close(write_end)
+    time.sleep(30)
+    os._exit(0)
+os.close(write_end)
+if os.read(read_end, 1) != b'R':
+    os._exit(3)
+os.close(read_end)
+print('READY %d %d' % (os.getpid(), child), flush=True)
+if mode == 'escaped-descendant':
+    os._exit(0)
+time.sleep(30)
+"""
+
+
+def run_child_lifecycle_controls(report, root):
+    control_root = root / 'host-child-lifecycle-controls'
+    control_root.mkdir(mode=0o700)
+    report['host_child_lifecycle_controls'] = []
+    modes = ('timeout-descendant', 'escaped-descendant', 'pidfd-failure')
+    for index, mode in enumerate(modes):
+        case_root = control_root / ('case%02d' % index)
+        case_root.mkdir(mode=0o700)
+        case = {'name': mode, 'passed': False, 'commands': [],
+                'Android_executed': False, 'namespace_or_UID_changes': False,
+                'pidfd_failure_seam': mode == 'pidfd-failure'}
+        report['host_child_lifecycle_controls'].append(case)
+        first = None
+
+        def denied_pidfd(pid, flags):
+            raise OSError(errno.EMFILE, 'explicit owned-child pidfd-open control seam')
+
+        try:
+            command(case, case_root,
+                    [CFG['host_python'], '-I', '-B', '-c', HOST_LIFECYCLE_FIXTURE, mode],
+                    timeout=1 if mode == 'timeout-descendant' else 5,
+                    pidfd_factory=denied_pidfd if mode == 'pidfd-failure' else None)
+        except Exception as error:
+            first = error
+        require(first is not None and len(case['commands']) == 1,
+                'lifecycle negative control unexpectedly succeeded')
+        row = case['commands'][0]
+        require(row['child_started'] and row['child_reaped'] and
+                row['owned_tree_cleanup_complete'] and row['pidfd_closed'] and
+                row['output_fds_closed'] and row.get('stdout_complete') and row.get('stderr_complete'),
+                'lifecycle negative control did not completely retire its owned tree')
+        require(row['stderr'] == '' and row['first_error'] is not None,
+                'lifecycle negative control lost its first error or had unexpected stderr')
+        if mode == 'pidfd-failure':
+            require(isinstance(first, OSError) and first.errno == errno.EMFILE and
+                    row['first_error']['stage'] == 'start_or_wait' and
+                    row['returncode'] == -signal.SIGKILL and not row['descendants'],
+                    'post-Popen pidfd failure did not preserve errno and reap the child')
+        else:
+            fields = row['stdout'].strip().split()
+            require(len(fields) == 3 and fields[0] == 'READY' and
+                    int(fields[1]) == row['pid'] and len(row['descendants']) == 1 and
+                    row['descendants'][0]['pid'] == int(fields[2]) and
+                    row['descendants'][0]['reaped'] and row['descendants'][0]['pidfd_closed'] and
+                    os.WIFSIGNALED(row['descendants'][0]['wait_status']) and
+                    os.WTERMSIG(row['descendants'][0]['wait_status']) == signal.SIGKILL,
+                    'real descendant readiness/reaping proof differs')
+            if mode == 'timeout-descendant':
+                require(isinstance(first, subprocess.TimeoutExpired) and row['timed_out'] and
+                        row['returncode'] == -signal.SIGKILL and
+                        row['first_error']['stage'] == 'start_or_wait',
+                        'timeout control did not retain the original failure')
+            else:
+                require(row['returncode'] == 0 and not row['timed_out'] and
+                        row['descendants'][0]['kill_attempted'] and
+                        row['first_error']['stage'] == 'driver_left_descendants',
+                        'escaped descendant was not rejected and independently retired')
+        CHILD_REAPER.empty()
+        case['expected_failure'] = repr(first)
+        case['passed'] = True
+    require(len(report['host_child_lifecycle_controls']) == 3 and
+            all(item['passed'] for item in report['host_child_lifecycle_controls']),
+            'owned tree cleanup controls incomplete')
+
+
+def main():
+    global CHILD_REAPER
+    require(CFG['kind'] == 'p4-owner20-sdk-visibility-android-build02', 'wrong controller kind')
+    guard = base64.b64decode(CFG['resource_guard']['base64'], validate=True)
+    require(digest(guard) == CFG['resource_guard']['sha256'], 'resource source pin differs')
+    namespace = {'__name__': 'frozen_resource_guard'}
+    exec(compile(guard, '<exact-resource-guard>', 'exec'), namespace)
+    resources = namespace['OwnJobResources'](536870912)
+    root = Path(CFG['root'])
+    report = {'schema': 1, 'kind': CFG['kind'], 'success': False, 'commands': [], 'errors': [],
+              'root': str(root), 'source_manifest_sha256': CFG['source_manifest_sha256'],
+              'source_only_freeze_manifest_sha256': CFG['source_only_freeze_manifest_sha256'],
+              'original_C16_input_closure_sha256': CFG['original_C16_input_closure_sha256'],
+              'external_input_closure_sha256': CFG['external_input_closure_sha256'],
+              'dependency_observation_sha256': CFG['dependency_observation_sha256'],
+              'prior_C16_actual_sha256': CFG['prior_C16_actual']['sha256'],
+              'resource_health': resources.record, 'Android_executable_run': False,
+              'Android_runtime_qualified': False, 'namespace_or_UID_changes': False,
+              'property_reads_or_writes': False, 'Main_or_services_changed': False,
+              'installed_files_changed': False, 'source_snapshot_reused': False,
+              'all_inputs_unchanged': False, 'all_children_reaped': False}
+    created = False
+    groups = {}
+    completed = False
+    try:
+        require(os.geteuid() == 0 and os.getegid() == 0, 'root-owned sealed build required')
+        resources.begin()
+        require(root.parent == Path('/opt') and root.name ==
+                'p4-owner20-sdk-visibility-android-20261106-build-02', 'unexpected create-only root')
+        require(len(CFG['external_inputs']) == 151 and len(CFG['host_header_inputs']) == 205 and
+                len(CFG['host_tools']) == 3 and len(CFG['payload']) == 4,
+                'frozen authority count differs')
+        for parent in (Path('/'), root.parent):
+            meta = parent.lstat()
+            require(stat.S_ISDIR(meta.st_mode) and meta.st_uid == 0 and meta.st_gid == 0 and
+                    not (meta.st_mode & 0o22), 'unsafe protected build parent')
+        root.mkdir(mode=0o755)
+        created = True
+        (root / 'source').mkdir(mode=0o755)
+        (root / 'tmp').mkdir(mode=0o700)
+        create(root / 'claim.json', (json.dumps({'kind': CFG['kind'],
+            'source_manifest_sha256': CFG['source_manifest_sha256']}, sort_keys=True) + '\n').encode())
+        for name, spec in CFG['payload'].items():
+            require('/' not in name and name not in ('.', '..'), 'unsafe source leaf')
+            data = base64.b64decode(spec['base64'], validate=True)
+            require(len(data) == spec['bytes'] and digest(data) == spec['sha256'], 'source payload differs')
+            create(root / 'source' / name, data)
+        groups = {
+            'source': [(name, root / 'source' / name, spec, False)
+                       for name, spec in CFG['payload'].items()],
+            'external_inputs': [(path, Path(path), spec, False)
+                                for path, spec in CFG['external_inputs'].items()],
+            'host_header_authority': [(path, Path(path), spec, False)
+                                     for path, spec in CFG['host_header_inputs'].items()],
+            'host_tools': [(path, Path(path), spec, True)
+                          for path, spec in CFG['host_tools'].items()],
+            'prior_C16_actual': [('actual', Path(CFG['prior_C16_actual']['path']),
+                                 CFG['prior_C16_actual'], False)],
+            'prior_control_interpreter': [('actual', Path(CFG['control_interpreter_authority']['path']),
+                                          CFG['control_interpreter_authority'], False)]}
+        for name, rows in groups.items():
+            report[name + '_before'] = {}
+            for key, path, spec, root_tool in rows:
+                report[name + '_before'][key] = snapshot(path, spec, root_tool)
+        CHILD_REAPER = OwnChildReaper()
+        report['child_tree_guard'] = CHILD_REAPER.record
+        CHILD_REAPER.begin()
+        run_child_lifecycle_controls(report, root)
+        android = CFG['android_argv']
+        require(len(android) == 4, 'fixed Android build command set differs')
+        command(report, root, android[0])
+        preflight = dependencies(root / 'preflight.d', 'sdk-visibility.o')
+        local_android = {str(root / 'source' / name) for name in
+                         ('sdk_visibility.c', 'sdk_visibility_core.h')}
+        allowed = set(CFG['android_header_paths']) | local_android
+        required = set(CFG['required_new_header_paths']) | local_android
+        report['Android_preflight_paths'] = sorted(preflight)
+        report['Android_unobserved_dependencies'] = sorted(preflight - allowed)
+        require(required <= preflight <= allowed,
+                'Android dependency discovery is outside the observed fixed header authority')
+        report['Android_inputs_before'] = {path: snapshot(path) for path in sorted(preflight)}
+        groups['Android_inputs'] = [(path, Path(path), spec, False)
+                                    for path, spec in report['Android_inputs_before'].items()]
+        command(report, root, android[1])
+        require(dependencies(root / 'sdk-visibility.d', str(root / 'sdk-visibility.o')) == preflight,
+                'actual Android MD differs from its exact qualified preflight')
+        command(report, root, android[2])
+        elf = command(report, root, android[3])['stdout']
+        needed = re.findall(r'\(NEEDED\).*\[([^\]]+)\]', elf)
+        interpreter = re.findall(r'\[Requesting program interpreter: ([^\]]+)\]', elf)
+        require(needed == ['libc.so', 'libdl.so'] and interpreter == ['/system/bin/linker64'] and
+                re.search(r'^\s*Class:\s+ELF64\b', elf, re.M) is not None and
+                re.search(r'^\s*Type:\s+DYN\b', elf, re.M) is not None and
+                re.search(r'\(FLAGS_1\).*\bPIE\b', elf) is not None and
+                'Advanced Micro Devices X86-64' in elf,
+                'Android normal PIE executable contract differs')
+        artifact_path = root / 'sdk-visibility'
+        artifact_fd = os.open(artifact_path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+        try:
+            meta = os.fstat(artifact_fd)
+            require(stat.S_ISREG(meta.st_mode) and meta.st_uid == 0 and meta.st_gid == 0 and
+                    meta.st_nlink == 1 and meta.st_size <= 262144,
+                    'new Android artifact ownership/type/size differs')
+            os.fchmod(artifact_fd, 0o555)
+            os.fsync(artifact_fd)
+        finally:
+            os.close(artifact_fd)
+        report['Android_artifact_before'] = {
+            'executable': snapshot(artifact_path)}
+        groups['Android_artifact'] = [('executable', artifact_path,
+                                     report['Android_artifact_before']['executable'], False)]
+        report['Android_artifact'] = report['Android_artifact_before']['executable']
+        report['Android_needed'] = needed
+        report['Android_interpreter'] = interpreter[0]
+        report['Android_actual_MD_equals_preflight'] = True
+        report['Android_input_count'] = len(preflight)
+
+        source_path = str(root / 'source' / 'sdk_visibility_core_controls.c')
+        flags = [CFG['host_cc'], '-std=c17', '-O2', '-Wall', '-Wextra', '-Werror',
+                 '-I', str(root / 'source')]
+        command(report, root, flags + ['-M', '-MF', str(root / 'controls.preflight.d'),
+                                     '-MT', 'sdk-controls.o', source_path])
+        headers = dependencies(root / 'controls.preflight.d', 'sdk-controls.o')
+        host_local = {source_path, str(root / 'source' / 'sdk_visibility_core.h')}
+        report['host_unobserved_dependencies'] = sorted(headers - set(CFG['host_header_inputs']) - host_local)
+        require(host_local <= headers <= (set(CFG['host_header_inputs']) | host_local),
+                'host control dependency discovery is outside the actual C16 header authority')
+        report['host_inputs_before'] = {path: snapshot(path) for path in sorted(headers)}
+        groups['host_inputs'] = [(path, Path(path), spec, False)
+                                for path, spec in report['host_inputs_before'].items()]
+        command(report, root, flags + ['-MD', '-MF', str(root / 'controls.actual.d'),
+            '-MT', 'sdk-controls.o', source_path, '-o', str(root / 'sdk-core-controls')])
+        require(dependencies(root / 'controls.actual.d', 'sdk-controls.o') == headers,
+                'host actual MD differs from its exact qualified preflight')
+        report['host_control_artifact_before'] = {'executable': snapshot(root / 'sdk-core-controls')}
+        groups['host_control_artifact'] = [('executable', root / 'sdk-core-controls',
+                                           report['host_control_artifact_before']['executable'], False)]
+        result = command(report, root, [str(root / 'sdk-core-controls')], timeout=5)
+        records = [json.loads(line) for line in result['stdout'].splitlines()]
+        names = CFG['control_case_names']
+        require(len(names) == 34 and len(set(names)) == 34 and len(records) == 35 and
+                result['stderr'] == '', 'pure controls result cardinality differs')
+        require(records[:-1] == [{'name': name, 'passed': True} for name in names],
+                'pure production-core controls differ from the fixed case list')
+        summary = records[-1]
+        require(set(summary) == {'schema', 'cases', 'assertions', 'all_passed',
+                    'property_and_credentials', 'Android_calls', 'credential_changes', 'new_processes'} and
+                type(summary['assertions']) is int and summary['assertions'] > 34 and
+                summary['schema'] == 1 and summary['cases'] == 34 and summary['all_passed'] is True and
+                summary['property_and_credentials'] == 'explicit backend seams' and
+                summary['Android_calls'] == summary['credential_changes'] == summary['new_processes'] == 0,
+                'pure controls scope/summary differs')
+        report['host_control_results'] = records
+        require(len(report['commands']) == 7, 'fixed seven-command set differs')
+        completed = True
+    except Exception as error:
+        report['errors'].append({'error': repr(error), 'traceback': traceback.format_exc()})
+    finally:
+        # Recheck each completed original independently on success and failure.
+        # A compiler error remains first; postchecks cannot rewrite that result.
+        full = bool(groups)
+        for name, rows in groups.items():
+            before = report.get(name + '_before', {})
+            after = {}
+            report[name + '_after'] = after
+            if len(before) != len(rows):
+                full = False
+            for key, path, spec, root_tool in rows:
+                if key not in before:
+                    continue
+                try:
+                    after[key] = snapshot(path, spec, root_tool)
+                    require(after[key] == before[key], name + ' changed: ' + key)
+                except Exception as error:
+                    full = False
+                    report['errors'].append({'post_input_group': name, 'path': str(path), 'error': repr(error)})
+        report['all_inputs_unchanged'] = full
+        if CHILD_REAPER is not None:
+            try:
+                CHILD_REAPER.finish()
+            except Exception as error:
+                report['errors'].append({'child_tree_final_error': repr(error)})
+        try:
+            resources.finish()
+        except Exception as error:
+            report['errors'].append({'resource_error': repr(error), 'traceback': traceback.format_exc()})
+        try:
+            resources.close()
+        except Exception as error:
+            report['errors'].append({'resource_close_error': repr(error)})
+    all_commands = list(report['commands'])
+    for case in report.get('host_child_lifecycle_controls', []):
+        all_commands.extend(case['commands'])
+    report['all_children_reaped'] = bool(CHILD_REAPER is not None and
+        CHILD_REAPER.record['final_children_empty'] and CHILD_REAPER.record['restored'] and
+        all(not item['child_started'] or
+            (item['child_reaped'] and item['owned_tree_cleanup_complete'] and
+             item['pidfd_closed'] and item['output_fds_closed']) for item in all_commands))
+    report['success'] = bool(completed and not report['errors'] and
+        report['all_inputs_unchanged'] and report['all_children_reaped'] and
+        resources.record['held_own_cgroup_gate_passed'])
+    report['elapsed_seconds'] = time.monotonic() - BUILD_STARTED
+    raw = (json.dumps(report, sort_keys=True, indent=2) + '\n').encode()
+    if created:
+        output = root / 'build-result.json'
+        create(output, raw)
+        print(json.dumps({'success': report['success'], 'path': str(output),
+                          'bytes': len(raw), 'sha256': digest(raw),
+                          'error': report['errors'][0] if report['errors'] else None}))
+    else:
+        print(raw.decode(), end='')
+    return 0 if report['success'] else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

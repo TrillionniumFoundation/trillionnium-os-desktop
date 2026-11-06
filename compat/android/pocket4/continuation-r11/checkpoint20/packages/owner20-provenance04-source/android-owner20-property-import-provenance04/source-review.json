@@ -1,0 +1,83 @@
+{
+  "actual03": {
+    "control_cases": 0,
+    "first_statement": "property_visibility.py line 9 import ctypes",
+    "job": "1a1afe9440c-fc05-6cb2",
+    "original_docstring_and_array_unchanged": true,
+    "process_children": 0,
+    "stdout": {
+      "bytes": 4666,
+      "git_blob_sha": "cfc5820083e61f0529868341b27833453d9e6cd0",
+      "sha256": "f99f5faa75deaad1f8086f4e5920e3048db01fcfa308a632f39e4569588b3449"
+    },
+    "whole_run_success": false
+  },
+  "baseline": {
+    "runner03": {
+      "bytes": 20412,
+      "git_blob_sha": "c8c2c385ae2d30bd43299c8baacedc387e9e4cf5",
+      "sha256": "36d3ed176c9408b8afc5dcb2183b759edcb3a7703e86073676b1e603380351ee"
+    },
+    "tree": "7b30c721df579031ff3e087f27d65a7609be1a87",
+    "unchanged_packet": {
+      "bytes": 164871,
+      "git_blob_sha": "c60d182048a24b0058adda7582582cb1feb63466",
+      "sha256": "5c27e38e036bb56f0b5f947992087bc7f9cbf19fb8c2207455be891210a893d9"
+    }
+  },
+  "interpretation": "The old and new global FD equality failures remain failures. This request may complete provenance metadata collection while returning failure because the imported descriptor remains open. A module boundary alone is not a collector-leak attribution. No dependency-lifetime exception or new baseline is introduced.",
+  "kind": "owner20-ctypes-import-provenance-source04",
+  "new_access": {
+    "ctypes_and__ctypes_file_metadata_only": true,
+    "expected_device": 66306,
+    "expected_gid": 0,
+    "expected_inode": 108020388,
+    "expected_mode": 33188,
+    "expected_uid": 0,
+    "only_while_exact_actual_difference_observed": true,
+    "own_fdinfo_bound": 4096,
+    "own_fdinfo_deadline_seconds": 1,
+    "own_fdinfo_independent_finally_close": true,
+    "python_sys_version_and_executable": true,
+    "source_line": 9,
+    "source_sha256": "8aa61f8a7a0e79511dc3bb49e4f4f857d7dc40b68a26e431cda0af0629bf56b2",
+    "target_fstat_before_after": true,
+    "target_get_inheritable_before_after": true,
+    "target_readlink_before_after": true
+  },
+  "not_performed": {
+    "Android_Main_or_property_action": true,
+    "FD_target_body_read": true,
+    "Python_local_execution": true,
+    "module_source_body_read": true,
+    "new_runtime_admission": true,
+    "other_process_or_namespace_read": true,
+    "unknown_FD_close": true
+  },
+  "request": {
+    "bytes": 247530,
+    "git_blob_sha": "50fe39362df4ee6de72917d08980f2f560b678ff",
+    "key": "p4-owner20-property-import-provenance04-23daaace9c182666",
+    "sha256": "1dc26788d91f89e981d7ef0130fb3bc63b8948622cb715830afcc410350d6695",
+    "stdin": {
+      "bytes": 246644,
+      "git_blob_sha": "9023efd6a94291f48b2d0413f1fe86e1ee86de99",
+      "sha256": "23daaace9c182666ccd1158883645873d2b484faf9cf2af8c245eba76e704b30"
+    }
+  },
+  "schema": 1,
+  "scope": "Exactly the one new live regular FD at the actual ctypes import boundary; fstat/readlink/kernel self-fdinfo plus loaded-Python/module name metadata",
+  "unchanged": {
+    "CPU100_memory128MiB_nice10": true,
+    "actor": true,
+    "bind_inputs": true,
+    "controls02": true,
+    "first_discrepancy_stops_module_statements": true,
+    "initial_FD_baseline": true,
+    "no_controls_or_Runtime_entry": true,
+    "outer_30s_inner_15s": true,
+    "output_bound131072": true,
+    "production_collector": true,
+    "strict_final_FD_equality": true
+  }
+}

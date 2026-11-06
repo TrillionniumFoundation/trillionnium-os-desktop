@@ -1,0 +1,17 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/python3",
+  "args": [
+    "-I",
+    "-B",
+    "-"
+  ],
+  "cwd": "/home/alex/work",
+  "env": {},
+  "stdin": "import json,os,stat,time\ndef need(value,reason):\n    if not value: raise RuntimeError(reason)\nneed(os.getuid()==os.geteuid()==1000,'operator UID required')\nfd=os.open('/proc/meminfo',os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)\ntry:\n    need(stat.S_ISREG(os.fstat(fd).st_mode),'meminfo regular proc file')\n    raw=bytearray()\n    while True:\n        part=os.read(fd,min(4096,65537-len(raw)))\n        if not part:break\n        raw.extend(part)\n        need(len(raw)<=65536,'meminfo bound')\nfinally:\n    os.close(fd)\nwanted={'MemTotal','MemAvailable','SwapTotal','SwapFree','SwapCached'}\nvalues={}\nfor line in bytes(raw).decode('ascii','strict').splitlines():\n    key,body=line.split(':',1)\n    if key in wanted:\n        fields=body.split()\n        need(key not in values and len(fields)==2 and fields[0].isdigit() and fields[1]=='kB','meminfo field')\n        values[key]=int(fields[0])*1024\nneed(set(values)==wanted,'exact five meminfo fields')\nneed(0<=values['MemAvailable']<=values['MemTotal'] and 0<=values['SwapFree']<=values['SwapTotal'],'meminfo ranges')\nout={'schema':1,'kind':'native-build-resource-observation01','uid':os.getuid(),'observed_unix_ns':time.time_ns(),'memory_bytes':values,'source':'/proc/meminfo','fd_closed':True,'children':0,'Main_actions':0,'Android_actions':0,'build_authorized_by_observation':False,'production_ready':False}\nbody=(json.dumps(out,sort_keys=True,separators=(',',':'))+'\\n').encode()\nneed(len(body)<=4096,'output bound')\nos.write(1,body)\n",
+  "idempotency_key": "pocket4-native-resource-observation01-20261106-0f4d0287aa93",
+  "timeout_seconds": 15,
+  "cpu_quota_percent": 100,
+  "memory_max_bytes": 67108864,
+  "nice": 10
+}

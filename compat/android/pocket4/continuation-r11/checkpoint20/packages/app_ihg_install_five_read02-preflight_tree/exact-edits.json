@@ -1,0 +1,87 @@
+[
+  {
+    "old": "ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r9-install-state-01')",
+    "next": "ROOT = Path(\"/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-02\")",
+    "count": 1
+  },
+  {
+    "old": "STEP = Path('/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-d327cfd21d7b59df0c45a68efdd74c98/steps/install-state-r9-01')",
+    "next": "STEP = ROOT/'worker'",
+    "count": 1
+  },
+  {
+    "old": "NONCE = 'dc55b7c139daf6db8fe94faa170916a9'",
+    "next": "NONCE = \"6c71a5c324a1c669572981cc38e4f82b\"",
+    "count": 1
+  },
+  {
+    "old": "PACKAGE = 'org.droidloom.qa.bili.r9'",
+    "next": "PACKAGE = \"org.droidloom.qa.ihg.r2\"",
+    "count": 1
+  },
+  {
+    "old": "PROTOCOL = 'pocket4-owned-bili-qa-v9'",
+    "next": "PROTOCOL = \"pocket4-owned-ihg-qa-v2\"",
+    "count": 1
+  },
+  {
+    "old": "INSTALL_NONCE = 'd327cfd21d7b59df0c45a68efdd74c98'",
+    "next": "INSTALL_NONCE = \"d7f36b0afc9a26c79639aca6f21e37f2\"",
+    "count": 1
+  },
+  {
+    "old": "SOURCE_SHA = '399cebc279ac8653b943b5c433b248c94dec32062b85b45e9cb6c22fce379a66'",
+    "next": "SOURCE_SHA = \"e8cf9d4c04025bb092663519a01624fa40e552600dc5643a50ebf9bace915103\"",
+    "count": 1
+  },
+  {
+    "old": "PINS = {'coordinator.json': (3917, '4e6d090d00eada5dc1604977491ed88054595f856dd620d12ace55222825fd71'), 'stage.json': (4141, 'b52f8f856e377c38b7a8a64f172e0970f0cd37f4ef7b87fb63a6005a67c8b6cd')}",
+    "next": "PINS = {'coordinator.json': (3961, '4f7f628b7aa600e686bffcd2eec33f908116db94c7192090b68096b6710b2c78'), 'stage.json': (6856, 'fbee6aa99439b55aa04952665c98122799e3a4135a76ffe9717a0399cf020cc2')}",
+    "count": 1
+  },
+  {
+    "old": "'worker.json':STEP/'result.json',",
+    "next": "'worker.json':STEP/'result.json',\n    'worker-command.json':ROOT/'evidence/01-install-state.result.json',\n    'state-command.json':STEP/'steps/install-state-01/command-008.result.json',",
+    "count": 1
+  },
+  {
+    "old": "EXACT_THREE_FILE_ALLOWLIST_REQUIRED",
+    "next": "EXACT_FIVE_FILE_ALLOWLIST_REQUIRED",
+    "count": 1
+  },
+  {
+    "old": "runtime_recorder_manifest_sha256",
+    "next": "runtime_shared_recorder_manifest_sha256",
+    "count": 1
+  },
+  {
+    "old": "worker.get('runtime_session_binding_sha256')=='aa6f468fa8e058882e681362aeb7fb4ba5b726d3d34c8dcfdc2b947aa6fb8b7e'",
+    "next": "worker.get('runtime_ticket_context_sha256')==\"a62cebdc4fa1249dbbdfa28f87f0547e529ef9886f8b6bb247c811f96f673768\" and\n            worker.get('runtime_ticket_transport_sha256')==\"27e07fbaaccca4e5113e1750a3b7baa9d05048a1e8588f09cdc8f9ed5cf44089\" and\n            worker.get('source_manifest_sha256')==SOURCE_SHA and worker.get('exact_command_count')==13 and worker.get('App_launches')==0",
+    "count": 1
+  },
+  {
+    "old": "4eb11cf497615272c1bef280bbd849de4f983ba4147ea9356356dff076ce9c56",
+    "next": "aac50aec5289c542268c8cff29a07d91ef1be68eb57acb4474c6196850836d38",
+    "count": 1
+  },
+  {
+    "old": "e1cad62bba0266e646e7be4ce5250917fbf5df910ac604dddfe0a8aa25ac320b",
+    "next": "db7012b9a66f4177f8b4ac57ac3d39e77b8c9871a8b2c364343c420fb9d42f41",
+    "count": 1
+  },
+  {
+    "old": "10198,10203,10204)",
+    "next": "10198,10203,10204,10152)",
+    "count": 1
+  },
+  {
+    "old": "    r.add('worker.json',BASE['worker.json'],raw)",
+    "next": "    r.add('worker.json',BASE['worker.json'],raw)\n    command=json.loads(r.add('worker-command.json',BASE['worker-command.json']));no_raw_ui(command)\n    expected_argv=['/usr/bin/python3','-I',str(ROOT/'source/install_state.py'),'--worker-once','--source-manifest-sha256',SOURCE_SHA]\n    printed=(json.dumps(worker,ensure_ascii=False)+'\\n').encode('utf-8')\n    require(command.get('name')=='01-install-state' and command.get('argv')==expected_argv and\n            command.get('spawned') is True and command.get('joined') is True and command.get('returncode')==0 and\n            command.get('timed_out') is False and command.get('secondary_errors')==[] and\n            command.get('Main_before') is True and command.get('Main_after')==coordinator.get('Main_after') and\n            command.get('stdout')=={'bytes':len(printed),'sha256':sha(printed)} and\n            command.get('stderr')=={'bytes':0,'sha256':sha(b'')},'EXACT_JOINED_WORKER_COMMAND_CHAIN')\n    state_raw=r.add('state-command.json',BASE['state-command.json']);state_command=json.loads(state_raw);no_raw_ui(state_command)\n    state=worker['state']\n    require(sha(state_raw)==state['recorder_command_result_sha256'] and\n            state_command.get('owned_command_joined') is True and state_command.get('spawned') is True and\n            state_command.get('timed_out') is False and state_command.get('returncode')==0 and state_command.get('errors')==[] and\n            state_command.get('stdout_sha256')==state['stdout_sha256'] and\n            state_command.get('stderr_sha256')==state['stderr_sha256'],'EXACT_NO_UI_STATE_COMMAND_CHAIN')",
+    "count": 1
+  },
+  {
+    "old": "'parent_bound_worker_original_exported':True",
+    "next": "'parent_bound_worker_original_exported':True,'state_command_index':8,'worker_and_state_command_metadata_exported':True",
+    "count": 1
+  }
+]

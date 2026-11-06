@@ -1,0 +1,116 @@
+{
+  "actual_current_baseline": {
+    "framework_exit_cause_resolved": false,
+    "identity_qualified": true,
+    "production_ready": false,
+    "stdout": {
+      "bytes": 7986,
+      "git_blob_sha": "813c03c26856513f4178bcd1665775bfc2a33848",
+      "sha256": "4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066"
+    },
+    "tree": "75590406335d2ae94ca5f2df485f7389a76275a0"
+  },
+  "assertions": {
+    "all_current_seven_pidfds_held_until_main_fence_close": true,
+    "current_cgroup_held_and_named_identity_required": true,
+    "exact_guard_and_qualification_texts_match_deterministic_publisher_and_actual_emitted_pins": true,
+    "full_current_guard_called_before_and_after_held_checks": true,
+    "independent_private_path_readback_not_claimed": true,
+    "no_new_Main_deployment_or_restart": true,
+    "old_dead_framework_epoch_never_reauthorized": true,
+    "only_MainFence_runtime_definition_changed": true,
+    "original_helpers_byte_identical_except_types_import": true,
+    "original_plan_main_retained_as_history": true,
+    "original_service_generation_and_Main_three_artifacts_and_five_limits_preserved": true,
+    "private_baseline_body_not_fetched_or_exported": true,
+    "result_remains_false_for_framework_exit_cause_and_production": true,
+    "root_owned_guard0400_verified_from_actual_publisher_source": true
+  },
+  "contract": {
+    "baseline": {
+      "bytes": 41844,
+      "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+      "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266"
+    },
+    "baseline_actual_stdout": {
+      "bytes": 7986,
+      "sha256": "4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066"
+    },
+    "current_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "current_identity_does_not_resolve_framework_exit_cause": true,
+    "guard": {
+      "bytes": 9408,
+      "path": "/home/alex/work/pocket4-main-current-baseline-01/current_baseline_guard.py",
+      "sha256": "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679"
+    },
+    "historical_epoch_reauthorized": false,
+    "historical_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "historical_main_canonical_sha256": "90c61236553cee087605abe5bf852e94ac489305a4989881e3cf6a4be34e35ab",
+    "independent_owned_runtime_admission_required": true,
+    "private_baseline_body_exported": false,
+    "qualification": {
+      "bytes": 1365,
+      "path": "/home/alex/work/pocket4-main-current-baseline-01/qualification.json",
+      "sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6"
+    },
+    "schema": "pocket4-owner20-current-main-authority-v1",
+    "source_manifest_sha256": "9bc710444bff9d90cb3375fd5acb155e0438e2a71a65348b23d4483cf81d00f9"
+  },
+  "kind": "owner20-current-main-bridge-source01",
+  "references": {
+    "historical_owner19_support": {
+      "bytes": 13377,
+      "git_blob_sha": "64ae215395933d6894515e4ab25c882c266c0b48",
+      "sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e"
+    },
+    "policy": {
+      "bytes": 19543,
+      "git_blob_sha": "5b523a412308b79aefc99a6caef4f67fac104c93",
+      "sha256": "addfce0f8dc53c3cc90feedee2bb1279c0e23d107ece3d237894e632ef2ad171"
+    },
+    "published_guard": {
+      "bytes": 9408,
+      "git_blob_sha": "258acc1fbb8e22ecf26ce975b775291c01760be5",
+      "sha256": "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679"
+    },
+    "qualification": {
+      "bytes": 1365,
+      "git_blob_sha": "9fbf2e9edcf0126301ee120649e3eaca6b0b2205",
+      "sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6"
+    },
+    "source_manifest": {
+      "bytes": 1230,
+      "git_blob_sha": "4a0c07af71dcac5165cfb526121b8a85a9171ef6",
+      "sha256": "9bc710444bff9d90cb3375fd5acb155e0438e2a71a65348b23d4483cf81d00f9"
+    }
+  },
+  "remaining": "Root source review plus actual pure controls; original 38 collector control run remains FAIL pending separate diagnostic02; no Owner20 prepare/runtime has run",
+  "schema": 1,
+  "source": {
+    "bytes": 20142,
+    "diff": {
+      "bytes": 12308,
+      "git_blob_sha": "b5915306b35b152221d936aaf87ac9f5daa0b279",
+      "sha256": "7c3120a37300fe8f75328d487bf31fe3c15c66dbb8ef8df0fb52357d67cad12f"
+    },
+    "git_blob_sha": "c8b4e29fec5c627ef25128f696a358b807730487",
+    "sha256": "502252d1fee3e18ba857ab22cfa934b140cf9afaa9ef4cf53bd980420d956585"
+  },
+  "status": "SOURCE_ONLY_CONTROLS_NOT_EXECUTED",
+  "validation": {
+    "Python_syntax_or_controls_executed": false,
+    "V8_full_forward_patch_byte_equality": true,
+    "proposed_pure_cases": 12,
+    "request": {
+      "bytes": 76357,
+      "git_blob_sha": "86d458f26e50415dd77561df401ac3bb134d2055",
+      "sha256": "91672e292f22f8416ca863e8e54be56d2387aff3f29e52de8f99d73d87642b9a"
+    },
+    "scope": "explicit process/guard/fstat seams; no private baseline fixture, no live Main access, no child",
+    "source_pure_controls": {
+      "bytes": 11889,
+      "git_blob_sha": "eae8e3a3d87eb7aec70c6dc6a7544f7b7891dd3d",
+      "sha256": "134cc76e6d4611f97707476a76e7ad16d4423de0a287397916130b7f3d3cf52e"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+--- a/compile_builder.py
++++ b/compile_builder.py
+@@ -197,7 +197,7 @@
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+ BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/builder-source')
+-ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-02-20261106')
++ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106')
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+@@ -856,7 +856,7 @@
+     allowed=sorted(os.sched_getaffinity(0))
+     require(len(allowed)>=3,'cannot leave two logical CPUs free')
+     os.sched_setaffinity(0,[allowed[-1]])
+-    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh builder468 provider closure compile02, 491 source files, 15 exact updater and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution',
++    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh builder468 provider closure compile03, 491 source files, 15 exact updater and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution',
+             'Main_actions':0,'Main_identity_observed':False,'install_actions':0,'network_downloads_permitted':False,
+             'commands':[],'allowed_cpus_before':allowed,'selected_cpus':[allowed[-1]],'expected_test_names':TESTS,'expected_source_resume_test_names':SOURCE_RESUME_TESTS}
+     def interrupted(number,frame):
+@@ -885,7 +885,7 @@
+         original_rows,copied_before=exact_source_copy(expected)
+         original_manifest=portable(original_rows,expected)
+         report['original_manifest']=write_new(OUT/'original-builder-source-manifest.json',(json.dumps(original_manifest,indent=2)+'\n').encode())
+-        env={'PATH':'/usr/bin:/bin','HOME':'/home/alex','CARGO_HOME':str(CARGO_HOME),
++        env={'PATH':'/usr/bin:/bin','CARGO_HOME':str(CARGO_HOME),
+              'RUSTC':str(RUST_SYSROOT/'bin/rustc'),'RUSTDOC':str(RUST_SYSROOT/'bin/rustdoc'),
+              'CARGO_NET_OFFLINE':'true','LC_ALL':'C','LANG':'C',
+              'TMPDIR':str(OUT/'tmp'),'GIT_CONFIG_NOSYSTEM':'1','GIT_CONFIG_GLOBAL':'/dev/null'}

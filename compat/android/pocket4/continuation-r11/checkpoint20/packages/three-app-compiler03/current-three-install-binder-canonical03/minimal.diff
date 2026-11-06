@@ -1,0 +1,25 @@
+--- frozen01/bind_actual.js
++++ source-only03/bind_actual.js
+@@ -131,7 +131,7 @@
+  need(h.sha(helper.files["SOURCE_PINS.json"])===helper.manifest_sha256&&build.source_manifest_sha256===helper.manifest_sha256,"ACTUAL_BUILT_HELPER_MANIFEST");
+  need(build.state==="BUILT_STATIC_VERIFIED_ANDROID_UNRUN"&&build.error===null&&build.android_installed===false&&build.source_unchanged===true&&build.tools_unchanged===true,"ACTUAL_STATIC_BUILD_REQUIRED");
+  need(build.commands.length===({ihg:11,amazon:13,bestbuy:12})[app]&&build.commands.every(x=>x.returncode===0&&x.owned_child_joined===true&&x.error===null&&x.secondary_errors.length===0),"ALL_BUILD_COMMANDS_JOINED");
+- need(JSON.stringify(build.tools_before)===JSON.stringify(build.tools_after),"ACTUAL_TOOL_PINS_UNCHANGED");
++ need(canonical(build.tools_before)===canonical(build.tools_after),"ACTUAL_TOOL_PINS_UNCHANGED");
+  need(Object.keys(source.files).length===Object.keys(build.source_sha256).length,"ACTUAL_SOURCE_CLOSURE");
+  for(const[n,p]of Object.entries(source.files))need(build.source_sha256[n]===p.sha256&&h.sha(helper.files[n])===p.sha256&&size(helper.files[n])===p.bytes,"ACTUAL_SOURCE_"+n);
+  need(stage.state==="OWNED_QA_APK_STATIC_BUILD_PASS_ANDROID_UNRUN"&&stage.build_returncode===0&&stage.error===null&&stage.secondary_errors.length===0&&stage.source_manifest_sha256===helper.manifest_sha256&&stage.build_result.bytes===materials.build.pin.bytes&&stage.build_result.sha256===materials.build.pin.sha256,"ACTUAL_BUILD_STAGE");
+@@ -191,7 +191,12 @@
+  current_host_source_root:"/home/alex/work/pocket4-current-host-r5-source-01",current_host_source_manifest_sha256:h.sha(common.host_manifest_raw),
+  current_host_stage:materials.host_stage.pin,current_baseline:host.current_baseline,
+  nonces:{flow:nonce,state:stateNonce},actual_nonce_source:{...materials.nonces.pin,fields:[app+"_flow",app+"_state"],generator:pool.generator},
+- previous_helper_uid_exclusion:materials.previous_helper,
++ previous_helper_uid_exclusion:{uid:materials.previous_helper.uid,
++ actual_worker_result:materials.previous_helper.actual_worker_result?{
++ bytes:materials.previous_helper.actual_worker_result.bytes,
++ sha256:materials.previous_helper.actual_worker_result.sha256,
++ ...(materials.previous_helper.actual_worker_result.git_blob?{git_blob:materials.previous_helper.actual_worker_result.git_blob}:{})}:undefined,
++ source:materials.previous_helper.source},
+  ordered_worker_Android_commands:13,target_APK_count:app==="bestbuy"?3:1,
+  target_APK_streaming_hashes_before_and_after:true,target_user_and_user_de_current_baseline_identity:true,
+  own_package_absence_required_all_users_including_uninstalled:true,install_replace_existing:false,UiAutomation_requested:false,

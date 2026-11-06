@@ -1,0 +1,211 @@
+{
+  "actual_lmkd": {
+    "already_proven": "Matched libmemevents BuildId b7076ba103f2a4aeb7cad5b97f45fd17 and crash PC0x5415 prove the SDK-full getter returned <=0; host and image build.prop both contain37.0. The access/initialization cause remains unproven.",
+    "candidate_contract": [
+      "Forward the real getter exactly once; preserve its result/value and errno. Only four fixed SDK keys; no extra getter, fake value, property write, privilege change or altered abort.",
+      "Bind the real service executable, loaded bionic and observer sources plus generation, held root/ns/domain and kernel-backed sender identity before qualifying any record.",
+      "Bounded nonblocking private generation output; record failure explicitly. No Main or shared kernel logging fallback.",
+      "Only lmkd_rc service-specific opt-in plus sealed bootstrap artifact entry can be considered. Keep service UID/GID/groups/caps/socket/task profile/executable unchanged.",
+      "Do not reuse or leak init-only control/log slots. Global LD_PRELOAD changes are excluded."
+    ],
+    "earliest_source_entry": "A service-only passive __system_property_get forwarding observer can see the constructor call. A main-only log or post-ACTIVE native_lmkd lookup is too late.",
+    "feedback_paths": [
+      {
+        "next": "Runtime property initialization/access path remains unresolved; do not rewrite files already containing37.0.",
+        "when": "Warm root missing"
+      },
+      {
+        "next": "Preserve actual lower credentials/view/result; do not equate cap0 failure with LMKD or chmod from this alone.",
+        "when": "Root present but warm lower missing"
+      },
+      {
+        "next": "Fresh lower initialization differs in this helper; narrow actual bionic context/area access, accounting for real LMKD privileges.",
+        "when": "Warm both present but cold lower missing"
+      },
+      {
+        "next": "The helper has not reproduced the failure; use a separately qualified actual-call observer, never relax enrollment.",
+        "when": "Cold helper present but LMKD still aborts"
+      },
+      {
+        "next": "No qualified observation, no retry; preserve original lifecycle failure and completed subrecords.",
+        "when": "Any identity/source/deadline failure"
+      }
+    ],
+    "not_ready_reasons": [
+      "Actual symbol/version and forwarding resolver/constructor/reentrancy semantics are not qualified.",
+      "Private channel transfer and short-lived actual sender identity need a separately reviewed design; no new executable/request is provided.",
+      "Actual matching LMKD/libmemevents complete source provenance is not established; current AOSP references cannot authorize a replacement binary."
+    ]
+  },
+  "cold_successor": {
+    "implementation_not_started": true,
+    "interpretation_limits": [
+      "Pinned one-way source control flow plus cold handshake and fresh proc/map evidence supports re-entry; PID/birth alone is not proof and the observation is not an atomic kernel exec attestation.",
+      "Exec removes old address-space property mappings. Shared kernel caches remain, and fresh linker/libc may itself access properties under UID1069 before main.",
+      "Cold cap0 UID1069 still differs from actual LMKD groups/capabilities/environment/constructor timing. It is diagnostic evidence, not actual-LMKD or NORMAL qualification."
+    ],
+    "phase_order": [
+      "ROOT_READY",
+      "ROOT_VALUES_RECEIVED",
+      "LOWERED_EXEC_ARMED",
+      "COLD_READY",
+      "COLD_VALUES_RECEIVED",
+      "CLOSED"
+    ],
+    "remaining_qualification": [
+      "Exact retained SDK declaration/constant bodies and actual runtime execveat/CLOSE_RANGE_CLOEXEC support. Unsupported calls must fail without fallback.",
+      "Actual helper ELF mode/PT_INTERP/hash/no file caps, post-drop execute permission, and runtime bionic full hashes/mappings.",
+      "New controller/protocol implementation and real kernel exec/FD/parent-death control. Existing 34 pure controls cover none of these new operations."
+    ],
+    "required_invariants": [
+      "Only one total newly spawned observer child and one exec transition. Original 2s and actor 65s absolute end remain; second main never resets budget.",
+      "Expected UID/proc metadata changes are recorded; held PID/birth, root/ns/domain and executable content constraints remain exact. Source declares the observed PID-namespace relationship; self-exec does not change it.",
+      "Descriptor allowlist is channel,parent-pidfd and the already defined 0..2 only. Self ELF is closed by successful ELF exec. No root-opened property FD survives.",
+      "Only normal, trusted, non-set-ID helper ELF with actual 0555/read-only binding and explicit no-file-capability qualification. Full size/SHA, interpreter, root and library source are bound; current planned mode is not actual proof.",
+      "Diagnostics poll after unchanged lifecycle checks. ACTIVE/failure keeps original immediate Stop. Final drain cannot wait for new values or delay Stop.",
+      "Each failure retains first error, completed root observation and explicit cold-not-qualified; no re-exec/reconnect/budget extension."
+    ],
+    "steps": [
+      "Parent provides a separate held read-only self ELF FD already whole-hashed and matched to initial /proc/heldPID/exe. Never reopen the host build path after dropping UID; protected parent search permission is not assumed.",
+      "Retain root-ready/source authorization and root-four packet. Apply unchanged permanent drop. No lower reads in this old address space.",
+      "Prepare fixed cold argv/env including original started_ns/deadline_ns. Fence all >=3 FDs CLOEXEC with a separately qualified close_range(CLOSE_RANGE_CLOEXEC), then clear only channel and parent-pidfd. Keep self ELF CLOEXEC. This also closes opaque root-opened libc FDs on exec.",
+      "Call one exact execveat(self_fd, empty path, fixed argv/env, AT_EMPTY_PATH), with observed constants/API only. No path search, shell, fallback or retry. Any return is failure and preserves the errno.",
+      "Cold-only entry requires lowered credentials, live parent pidfd/PDEATHSIG and original remaining deadline. It cannot invoke root mode or another exec.",
+      "Open the same three bionic paths afresh under UID1069; send their FDs and getter/dladdr evidence. Parent does not lend root-opened library/property FDs back.",
+      "Parent requires same held pidfd/birth, fresh executable/name/ns/root/domain checks and exact loaded-library correspondence before a new READ_COLD_1069 token.",
+      "Exactly four new reads -> cold values packet -> independent final source/view check -> OBSERVED token -> complete join/close."
+    ],
+    "trigger": "Separate successor only when warm-cache results cannot distinguish the proven actual LMKD getter failure."
+  },
+  "current_build": {
+    "complete_actual_report_independently_reviewed": false,
+    "frozen_source_modified": false,
+    "job": "1a1af7fccce-fc05-691e",
+    "request_blob": "9a0087cf77d3c555e05a0e7f10d0b72d4e188614",
+    "root_reported_result": {
+      "bytes": 728003,
+      "sha256": "5cc813715a261701cad3be931b9e53145229dec7c803d828a1097e4fe4ad166b"
+    },
+    "root_reported_terminal": "PASS0",
+    "tree": "18a3ad1bcf2aa947166a9de61daaec8bc7b25ce2"
+  },
+  "kind": "OWNER20_COLD_SELF_EXEC_AND_ACTUAL_LMKD_SOURCE_DESIGN",
+  "minimum_successor_controls": [
+    "Wrong/duplicate cold phase or token and deadline reset rejected before getter.",
+    "Fence/exec failure preserves root packet and errno; zero cold reads and retry.",
+    "Real same-PID exec + correct descriptor survival + self-FD closure + parent-death + complete join; seam tests alone are insufficient.",
+    "Current executable/library/root/ns/domain mismatch rejected before cold token.",
+    "Residual UID/GID/groups/caps/NNP or expired shared deadline rejected.",
+    "Original ACTIVE/failure Stop path does not wait for diagnostic completion."
+  ],
+  "qualification": {
+    "actual_lmkd_visibility_qualified": false,
+    "android_runtime_qualified": false,
+    "cold_branch_implemented": false,
+    "local_execution": false,
+    "source_entry_review": true,
+    "source_modified": false,
+    "static_controls_for_this_design": false
+  },
+  "reference_only": [
+    {
+      "blob": "808568a5e7e8c3f394189d8a68a62a4c9f723d43",
+      "note": "Current AOSP fexecve declaration, API28; not actual SDK/runtime qualification.",
+      "url": "https://android.googlesource.com/platform/bionic/+/refs/heads/main/libc/include/unistd.h"
+    },
+    {
+      "note": "General mappings/FD/credential effects of exec; not device evidence.",
+      "url": "https://man7.org/linux/man-pages/man2/execve.2.html"
+    },
+    {
+      "note": "AT_EMPTY_PATH held-FD execution; actual availability remains unqualified.",
+      "url": "https://man7.org/linux/man-pages/man2/execveat.2.html"
+    }
+  ],
+  "schema": 1,
+  "scope": {
+    "device_actions": 0,
+    "executable_runtime_request_generated": false,
+    "existing_failures_preserved": true,
+    "helper_executions": 0,
+    "main_writes": 0,
+    "namespace_entries": 0
+  },
+  "source_entries": [
+    {
+      "entry": "main -> sdk_drop_permanently -> sdk_read_four",
+      "finding": "Current lower read remains in root-warmed bionic. Minimal successor replaces only this lower-read branch with one fixed-mode self-exec, while retaining the already sent root result.",
+      "source": "c"
+    },
+    {
+      "entry": "sdk_keys / sdk_lowered / SDK_LIFETIME_MS",
+      "finding": "Exactly four SDK keys, 2s total, UID/GID1069 triple, groups/capabilities all zero, NNP1.",
+      "source": "core"
+    },
+    {
+      "entry": "Process.snapshot",
+      "finding": "Existing snapshot hashes held old exe and ns FDs. PID/birth plus held stability alone cannot prove an exec or current named exe/ns. New observer needs fresh exact proc entries and mappings.",
+      "source": "owned"
+    },
+    {
+      "entry": "run / native_lmkd",
+      "finding": "65s status loop preserves checks and immediate Stop; native_lmkd runs only after ACTIVE. It cannot observe the presently failing pre-main constructor.",
+      "source": "actor"
+    },
+    {
+      "entry": "lmkd_rc / prepare_image / configure_init",
+      "finding": "Service requests system/readproc groups and DAC_OVERRIDE,KILL,IPC_LOCK,SYS_NICE,SYS_RESOURCE. Init-only barrier/control/log FDs intentionally do not survive service exec; sealed bootstrap bindings are the existing source entry.",
+      "source": "entry"
+    },
+    {
+      "entry": "enter_development_cell",
+      "finding": "Existing global compat/init preload is shared by init and descendants. Do not change it as a shortcut to service-only LMKD observation.",
+      "source": "development"
+    }
+  ],
+  "source_references": [
+    {
+      "bytes": 19209,
+      "git_blob_sha": "bba821f84e10f11fc8581ffeb4470ea46d2c4b8d",
+      "id": "c",
+      "path": "android-owner20-sdk-accessor-source-only-freeze01/source/sdk_visibility.c",
+      "sha256": "c3b3ff186bc7e22ea571b50f48c85afb6e855528bf9b3ed91ff4aeb1265a2767"
+    },
+    {
+      "bytes": 3558,
+      "git_blob_sha": "a724be5e5d921989e0bc57706029e28e22b836b0",
+      "id": "core",
+      "path": "android-owner20-sdk-accessor-source-only-freeze01/source/sdk_visibility_core.h",
+      "sha256": "428678dc2930ca52d2251b7f31059a8ed6c3402ededd18562d59fb44a232f5e9"
+    },
+    {
+      "bytes": 37570,
+      "git_blob_sha": "7a291a24b79d4fe971ef0f65ea1522dc7dfe9707",
+      "id": "entry",
+      "path": "android-owner17-bootstrap-mode-source-freeze01/candidate/runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs",
+      "sha256": "fa8a4d2c6ddc6508f3527a4711566402b7d0ad51339e42aca3c3d9395615d080"
+    },
+    {
+      "bytes": 95905,
+      "git_blob_sha": "cb59a99233c684ce5f1c14cf79489acb1cbb48f4",
+      "id": "development",
+      "path": "namespace-child-exit-source-freeze-15/candidate/runtime/droidloom-supervisor/src/development.rs",
+      "sha256": "b4a73b76934c79d32fe2a95f6a39829b66be33209ad46c872c14d8ef97d260b1"
+    },
+    {
+      "bytes": 28108,
+      "git_blob_sha": "aec8351eed1942c0af336815efe86f714156f157",
+      "id": "actor",
+      "path": "owner18-normal01-freeze-01/source/actor.py",
+      "sha256": "59c4892b95159fc29751b847c36375febc80e72f3051d5880920490e7450bc63"
+    },
+    {
+      "bytes": 17466,
+      "git_blob_sha": "26fcaffb5d6e9e19386f1f9ecce35b81be4fa517",
+      "id": "owned",
+      "path": "owner18-normal01-freeze-01/source/owned.py",
+      "sha256": "fb2371b148bac2faf644cbf30cb2fc959260e0d9af7c3424bba027f1dc62abfd"
+    }
+  ],
+  "status": "SOURCE_ONLY_DESIGN_NOT_IMPLEMENTED"
+}

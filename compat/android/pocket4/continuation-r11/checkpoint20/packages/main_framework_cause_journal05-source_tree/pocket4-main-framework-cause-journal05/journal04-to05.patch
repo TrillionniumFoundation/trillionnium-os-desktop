@@ -1,0 +1,93 @@
+--- a/journal.py
++++ b/journal.py
+@@ -27,7 +27,7 @@
+ EVENT_LIMIT=64
+ LINE_LIMIT=65536
+ MESSAGE_LIMIT=16384
+-SOURCE_PINS={"Root_read02_source_sha256":"1fe8a4813901de264e17fd968244171f0e9458373fff936905e466ae8fe89fd7","Root_read02_stdout_sha256":"b49bbb4276c5a95de610956c878b0d23a1abdde0a8411bea310dbaca585396a6","original_development_source_sha256":"a66cc37191a5bc8d6aac7b55cdc6aba715e4ba8269ed13bc019608fe6c3f7869","original_control_source_sha256":"2edcbc5a75d48ceb7371bcaa3462c3acc43f119c2a3b81e806f4eae46be522cb"}
++SOURCE_PINS={"Root_read02_source_sha256":"1fe8a4813901de264e17fd968244171f0e9458373fff936905e466ae8fe89fd7","Root_read02_stdout_sha256":"b49bbb4276c5a95de610956c878b0d23a1abdde0a8411bea310dbaca585396a6","original_development_source_sha256":"a66cc37191a5bc8d6aac7b55cdc6aba715e4ba8269ed13bc019608fe6c3f7869","original_control_source_sha256":"2edcbc5a75d48ceb7371bcaa3462c3acc43f119c2a3b81e806f4eae46be522cb","Root_journal04_source_sha256":"3918e517ac2ce2e2ee19aa862ac60b7631e48bf383c14788a1db2c0e0f4bccb7","Root_journal04_stdout_sha256":"d9a69221de89f8275770db62aec11303c8434aa3bdea8e1dc06c78194f2449cd"}
+ 
+ def need(v,m):
+     if not v:raise RuntimeError(m)
+@@ -453,7 +453,7 @@
+ TEMPLATE_TARGETS=set(tuple(x) for x in json.loads("[[965863739042,1793940154450471,\"af04d9806e856cb494c0932fecd31feaefc67b21e9e97e573d63cb48e893c1f0\"],[965863739091,1793940154450520,\"a6089ec201113c6d2b57043cfbbd819bbd035921a4726e5a89266e78c80a3ac7\"],[965864323197,1793940155034626,\"9b034e90e57668b1b4cc8022926acf36b07f6b1a670ce20b1896cdefd845e6d6\"],[965864344057,1793940155055486,\"f32d5e572d7e685465ef34dd37c745c3b0a256f819e610a51edd849c1d3a345c\"],[965864345040,1793940155056469,\"9884d5fb246a1d30072baf0b4d8d4820497d00280b899a62c0e6752b7f57f989\"],[965864379151,1793940155090580,\"ed6cf67d3944df24d888d49a2dbd395f7a30f7fd92700125929d47e6c6af8455\"],[965864379166,1793940155090595,\"78a98d2d001c5ae74bbf6b94d9a5ba603c38a5d61a437e89eb7ae37b438370c1\"],[965864379217,1793940155090646,\"45e7b4e2ecd61bbc191021c3359ccf08eae0187238ea2297c3132a96e370dc3a\"],[965864381115,1793940155092544,\"1f2dec75d97cb2b5f50f69b4cee091f20cf5ce1e1beb31ea8c1e96693854ef58\"],[965864389135,1793940155100564,\"78a98d2d001c5ae74bbf6b94d9a5ba603c38a5d61a437e89eb7ae37b438370c1\"],[965864389141,1793940155100571,\"4d5274b442c33ea4e1b914cde674468a96be8bfea06d8b45d4652b2f70ff6309\"],[965864389149,1793940155100578,\"98700d536bff1ae3bb80bc64787b010b29ad1db291642e5f70c397a0c8af90e7\"],[965864389183,1793940155100612,\"6b5134d6b9fb34110d1bc2cca21bcacf5f1c848165b18f3e9818d5fdff2c9ab2\"],[965864389192,1793940155100621,\"056ad12945d016d9275a9a4c7eac9f14adb936a09e3291334dddb0403c6d9b23\"],[965864389198,1793940155100628,\"78a98d2d001c5ae74bbf6b94d9a5ba603c38a5d61a437e89eb7ae37b438370c1\"],[965865822188,1793940156533617,\"03ec3aa5fcc0eb85142268b7553e89cf393c2528d6f60ad9f6bc523b4ace45be\"],[965866066011,1793940156777440,\"beb77f2d7519533cf069246274951f277d1ff487233f865e38c4ba5ee7af029f\"],[965875840058,1793940166551487,\"a1d7a3c5459eaa638eff055f9ffb3441a4d6ce874f00f06ff6b4a9019007b224\"]]"))
+ TEMPLATE_WORDS=set("init zygote zygote64 zygote32 system_server surfaceflinger audit apparmor selinux denied avc binder cgroup memory oom seccomp syscall fork child process service pid exit exited status code signal received sending killed killing kill restart restarting start starting stop stopping reboot shutdown watchdog abort fatal segfault traps crash crashed control message ctl processed property failed failure error permission operation allowed unknown command executed action onrestart critical reaped reaping request requested handled reset resetprop unhandled timeout task fault invalid protection terminating terminated scheduled scheduling".split())
+ TEMPLATE_PREFIXES=("init: ","zygote64: ","zygote: ","system_server: ","surfaceflinger: ","audit: ","type=1400 ","apparmor=","traps: ","binder: ","libprocessgroup: ")
+-CONTROL_TEMPLATE=re.compile(r"init: Control message: Processed ctl\.(?P<operation>start|stop|restart) for '(?P<role>"+ROLE+r")' from pid: (?P<caller>[0-9]{1,10}) \((?P<cmdline>[^\r\n]{0,16000})\)")
++CONTROL_TEMPLATE=re.compile(r"(?:init: )?Control message: Processed ctl\.(?P<operation>start|stop|restart) for '(?P<role>"+ROLE+r")' from pid: (?P<caller>[0-9]{1,10}) \((?P<cmdline>[^\r\n]{0,16000})\)")
+ 
+ def fixed_template_descriptor(row,source,record_sha256):
+     realtime,mono,source_pid,message,encoded=validate_record(row,source)
+@@ -505,6 +505,55 @@
+     need(len(passed)==6,"TEMPLATE_CONTROL_COUNT")
+     return {"passed":6,"cases":passed,"filesystem_access":False,"subprocesses":0}
+ 
++def bare_prefix_controls():
++    """Twelve pure controls for the sole grammar expansion; no raw journal or child access."""
++    def row(message):
++        return {"_BOOT_ID":BOOT_COMPACT,"__REALTIME_TIMESTAMP":str(LOW_US+1),
++                "__MONOTONIC_TIMESTAMP":"965864000000","_TRANSPORT":"kernel","MESSAGE":message}
++    def project(message):
++        return fixed_template_descriptor(row(message),KERNEL_SOURCE,"0"*64)
++    passed=[]
++    def ok(name,condition):
++        need(condition,"BARE_PREFIX_CONTROL_FAILED")
++        passed.append(name)
++    private="PRIVATE_CMDLINE_SENTINEL account=987654321"
++    bare="Control message: Processed ctl.start for 'surfaceflinger' from pid: 830 ("+private+")"
++    item=project(bare)
++    control=item["control_template"]
++    ok("bare_complete_public_template",control is not None and control["operation"]=="start" and
++       control["target_role"]=="surfaceflinger" and control["reported_caller_pid"]==830 and
++       control["caller_cmdline_bytes"]==len(private.encode("utf-8")) and
++       control["caller_cmdline_sha256"]==hashlib.sha256(private.encode("utf-8")).hexdigest() and
++       private not in json.dumps(item) and "987654321" not in json.dumps(item))
++    ok("bare_and_original_prefix_same_labelled_fields",project("init: "+bare)["control_template"]==control)
++    ok("reported_caller_never_signal_sender_or_host_identity",
++       item["process_attribution_proved"] is False and item["cause_proved"] is False and
++       control["PID_space"]=="Android_init_reported_not_host_attribution")
++    foreign=project("PRIVATE_PREFIX "+bare)
++    ok("foreign_prefix_still_not_authority",foreign["control_template"] is None and foreign["closed_prefix"] is None)
++    ok("unlabelled_number_not_caller",project(bare.replace("from pid: 830","from 830"))["control_template"] is None)
++    unknown=project(bare.replace("'surfaceflinger'","'com.private.account'"))
++    ok("private_service_still_not_exported",unknown["control_template"] is None and
++       "com.private.account" not in json.dumps(unknown))
++    ok("trailing_bytes_reject_full_template",project(bare+" ignored")["control_template"] is None)
++    ok("embedded_newline_not_a_complete_cmdline",project(bare.replace(private,private+"\nsecond"))["control_template"] is None)
++    for value,name in [("0","zero_labelled_pid_rejected"),("2147483648","out_of_range_labelled_pid_rejected")]:
++        try:
++            project(bare.replace("from pid: 830","from pid: "+value))
++        except RuntimeError as error:
++            ok(name,str(error)=="CONTROL_CALLER_PID_BOUND")
++        else:
++            raise RuntimeError("BARE_PREFIX_NUMERIC_NEGATIVE_ACCEPTED")
++    encoded=(json.dumps(row(bare),sort_keys=True)+"\n").encode()
++    projection=project_stream(encoded,KERNEL_SOURCE,True)
++    ok("unlisted_tuple_cannot_enter_locked_templates",
++       projection["all_retained_bytes_parsed"] is True and projection["known_role_templates"]==[])
++    ok("operation_whitelist_not_expanded",
++       project(bare.replace("ctl.start","ctl.kill"))["control_template"] is None)
++    need(len(passed)==12,"BARE_PREFIX_CONTROL_COUNT")
++    return {"passed":12,"cases":passed,"filesystem_access":False,"subprocesses":0,"device_operations":0}
++
++
+ def project_stream(raw,source,stream_complete):
+     report={"records_parsed":0,"events":[],"unclassified_records":0,
+             "unclassified_known_role_records":0,"unclassified_known_role_record_hashes":[],"known_role_features":[],"known_role_templates":[],
+@@ -631,7 +680,7 @@
+     return {"passed":len(passed),"cases":passed,"filesystem_access":False,"subprocesses":0,"device_operations":0}
+ 
+ def main():
+-    result={"schema":1,"kind":"fixed-Main-framework-cause-host-journal04",
++    result={"schema":1,"kind":"fixed-Main-framework-cause-host-journal05",
+             "window":{"since_utc":SINCE,"until_utc":UNTIL,"low_realtime_us":LOW_US,"high_realtime_us":HIGH_US},
+             "old_epoch_sha256":"48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+             "source_pins":SOURCE_PINS,"errors":[],"secondary_errors":[],"journals":{},
+@@ -650,6 +699,7 @@
+         result["pure_controls"]=pure_controls()
+         result["feature_controls"]=feature_controls()
+         result["template_controls"]=template_controls()
++        result["bare_prefix_controls"]=bare_prefix_controls()
+         result["feature_id_bindings"]=ROLE_ID_BINDINGS
+         result["feature_semantics"]={"term_or_format_observations_only":True,"PID_spaces_not_equated":True,"namespace_number_is_not_host_pid":True,"attribution_or_cause_proved":False}
+         result["boot_id_before"]=read("/proc/sys/kernel/random/boot_id",128).decode("ascii","strict").strip()

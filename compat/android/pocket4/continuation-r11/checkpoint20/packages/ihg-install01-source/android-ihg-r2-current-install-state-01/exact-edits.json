@@ -1,0 +1,239 @@
+{
+  "context_final": [
+    {
+      "count": 1,
+      "next": "\n\ndef baseline_scope(ref, baseline):\n    require(baseline.get('schema') == 'pocket4-main-current-baseline-v1' and\n            baseline.get('kind') == 'current-framework-generation' and\n            'main_deployed' not in baseline and baseline.get('deployment_performed') is False and\n            baseline['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and\n            ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            type(baseline['packages'].get(PACKAGE)) is int and baseline['packages'][PACKAGE] == UID and\n            baseline.get('framework_exit_cause_resolved') is False and\n            baseline.get('whole_app_production_ready') is False,\n            'TYPED_CURRENT_BASELINE_AND_ACTUAL_TARGET_UID_REQUIRED')\n    for kind in ('user','user_de'):\n        row = baseline['app_directories'][kind+'/0/'+PACKAGE]\n        require(type(row) is dict and set(row) == {'device','inode','uid','gid'} and\n                all(type(v) is int and v >= 0 for v in row.values()) and\n                row['inode'] > 0 and row['uid'] == UID,\n                'CURRENT_TARGET_DATA_DIRECTORY_BINDING_REQUIRED')\n    return {'schema':'pocket4-current-recorder-scope-v1',\n            'current_baseline_schema':baseline['schema'],\n            'epoch_sha256':baseline['framework_epoch']['sha256'],\n            'current_baseline_sha256':ref.BASELINE_SHA,\n            'current_baseline_qualification_sha256':ref.QUALIFICATION_SHA,\n            'package':PACKAGE,'uid':baseline['packages'][PACKAGE],'user':0}\n\n\ndef verify_target_data(target, baseline, binding):\n    target.verify()\n    raw, _ = target.read_file('/data/system/packages.list',1024*1024)\n    binding.package_uids(raw,{PACKAGE:UID})\n    del raw\n    for kind in ('user','user_de'):\n        relative = kind+'/0/'+PACKAGE\n        expected = baseline['app_directories'][relative]\n        fd = target.open_root('/data/'+relative,os.O_PATH|os.O_DIRECTORY|os.O_NOFOLLOW)\n        primary = None\n        try:\n            value = os.fstat(fd)\n            require(stat.S_ISDIR(value.st_mode) and\n                    (value.st_dev,value.st_ino,value.st_uid,value.st_gid) ==\n                    (expected['device'],expected['inode'],expected['uid'],expected['gid']),\n                    'CURRENT_TARGET_DATA_DIRECTORY_IDENTITY_CHANGED')\n        except BaseException as error:\n            primary = error\n            raise\n        finally:\n            try:\n                os.close(fd)\n            except BaseException as cleanup:\n                if primary is None:\n                    raise\n                primary.add_note('current target directory close: '+type(cleanup).__name__)\n    target.verify()\n\n\nclass Context:\n",
+      "old": "\n\nclass Context:\n"
+    },
+    {
+      "count": 1,
+      "next": "                 main_guard, step, plan, expected_init, deadline, scope):\n        require(contract.sha256 == SHARED_MANIFEST and type(scope) is dict and scope == current_scope() and\n                type(scope.get('uid')) is int and type(scope.get('user')) is int,\n                'EXACT_TYPED_CURRENT_TARGET_CONTEXT_REQUIRED')\n        self.recorder = recorder",
+      "old": "                 main_guard, step, plan, expected_init, deadline):\n        self.recorder = recorder"
+    },
+    {
+      "count": 1,
+      "next": "        self.scope = dict(scope)",
+      "old": "        self.scope = current_scope()"
+    },
+    {
+      "count": 1,
+      "next": "        require(self.scope == current_scope() and type(self.scope.get('uid')) is int and\n                type(self.scope.get('user')) is int, 'TYPED_CURRENT_TARGET_SCOPE_CHANGED')",
+      "old": "        require(self.scope == current_scope(), 'TYPED_CURRENT_TARGET_SCOPE_CHANGED')"
+    },
+    {
+      "count": 1,
+      "next": "    scope = baseline_scope(ref,activation)",
+      "old": "    require(activation.get('schema') == 'pocket4-main-current-baseline-v1' and\n            activation.get('kind') == 'current-framework-generation' and\n            'main_deployed' not in activation and activation.get('deployment_performed') is False and\n            activation['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and\n            ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            activation['packages'][PACKAGE] == UID,\n            'TYPED_CURRENT_BASELINE_AND_ACTUAL_TARGET_UID_REQUIRED')"
+    },
+    {
+      "count": 1,
+      "next": "    target = None\n    def guard():\n        require(time.monotonic() < deadline,",
+      "old": "    def guard():\n        require(time.monotonic() < deadline,"
+    },
+    {
+      "count": 1,
+      "next": "        observation = ref.main_guard(activation,epoch)\n        if target is not None:\n            verify_target_data(target,activation,binding)\n        return observation\n    result['Main_before']",
+      "old": "        return ref.main_guard(activation,epoch)\n    result['Main_before']"
+    },
+    {
+      "count": 1,
+      "next": "    require(binding.same_epoch_identity(actual,expected),'FIXED_MAIN_INIT_IDENTITY_CHANGED')\n",
+      "old": "    require(binding.same_epoch_identity(actual,expected),'FIXED_MAIN_INIT_IDENTITY_CHANGED')\n    target = None\n"
+    },
+    {
+      "count": 1,
+      "next": "ctx = Context(recorder,contract,target,environment,transport,guard,step,plan,expected['host_pid'],deadline,scope)",
+      "old": "ctx = Context(recorder,contract,target,environment,transport,guard,step,plan,expected['host_pid'],deadline)"
+    },
+    {
+      "count": 1,
+      "next": "'Bili_Flow_instantiated':False,\n            'current_target_scope':scope,'current_target_data_directory_count':2})",
+      "old": "'Bili_Flow_instantiated':False})"
+    },
+    {
+      "count": 1,
+      "next": "held Main/root/classpath primitives and the target-specific BoundArun body are reused.\nThe transport's current-epoch literal is rebound; all action/cleanup bodies are unchanged.",
+      "old": "held Main/root/classpath primitives and R4 BoundArun body are reused; the new\ntransport has only its two target identity literals changed in a separate file."
+    }
+  ],
+  "context_initial": {
+    "ArtifactSet_body_byte_exact": true,
+    "context_edits": [
+      {
+        "count": 1,
+        "next": "INSTALLED_SHARED = Path('/home/alex/work/pocket4-current-host-r5-source-01')",
+        "old": "INSTALLED_SHARED = Path('/home/alex/work/pocket4-owned-bili-qa-r5-install-state-03/source/recorder-r4')"
+      },
+      {
+        "count": 1,
+        "next": "SHARED_MANIFEST = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'",
+        "old": "SHARED_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'"
+      },
+      {
+        "count": 1,
+        "next": "CONTRACT_SHA = '47389dc89f2257c4f80ae475d977fb63b04a994414772ed708f49b479fcd0783'\nCURRENT_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'\nBASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'\nQUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'",
+        "old": "CONTRACT_SHA = '51c2b3dd7df80a8fcd4881eb7216f7292db77d39c01920f10feb650824919a7d'"
+      },
+      {
+        "count": 1,
+        "next": "'org.droidloom.qa.ihg.r2'",
+        "old": "'org.droidloom.qa.ihg.r1'"
+      },
+      {
+        "count": 1,
+        "next": "def current_scope():\n    return {'schema':'pocket4-current-recorder-scope-v1',\n            'current_baseline_schema':'pocket4-main-current-baseline-v1',\n            'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,\n            'current_baseline_qualification_sha256':QUALIFICATION_SHA,\n            'package':PACKAGE,'uid':UID,'user':0}\n\n\nclass Context:\n",
+        "old": "class Context:\n"
+      },
+      {
+        "count": 1,
+        "next": "        self.contract = contract\n        self.scope = current_scope()\n",
+        "old": "        self.contract = contract\n"
+      },
+      {
+        "count": 1,
+        "next": "    def guard(self, attempted=False):\n        require(self.scope == current_scope(), 'TYPED_CURRENT_TARGET_SCOPE_CHANGED')\n",
+        "old": "    def guard(self, attempted=False):\n"
+      },
+      {
+        "count": 1,
+        "next": "    activation = ref.current_baseline()\n    require(activation.get('schema') == 'pocket4-main-current-baseline-v1' and\n            activation.get('kind') == 'current-framework-generation' and\n            'main_deployed' not in activation and activation.get('deployment_performed') is False and\n            activation['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and\n            ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            activation['packages'][PACKAGE] == UID,\n            'TYPED_CURRENT_BASELINE_AND_ACTUAL_TARGET_UID_REQUIRED')\n",
+        "old": "    activation = json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))\n    verified = json.loads(ref.read(ref.VERIFIED,expected=ref.VERIFIED_SHA))\n    require(activation['main_deployed'] is True and verified['main_deployed'] is True and\n            verified['framework_epoch_sha256'] == ref.EPOCH and activation['packages'][PACKAGE] == UID,\n            'FIXED_MAIN_AND_AMAZON_UID_ACTIVATION_REQUIRED')\n"
+      }
+    ],
+    "context_generated_sha256": "6fa15635f5ccddaa1f3e1d92dc27b6b62c2099d95c39298a422431b4f12cd9fa",
+    "context_inverse_exact": true,
+    "context_parent_sha256": "41f9743b31d49148edd688dbe5a257704a5b84fdcb5de55ccc1ed60b1fa42fa8",
+    "helper_build_or_nonce_guess": false,
+    "ordered13_commands_logic_preserved": true,
+    "transport_new": "27e07fbaaccca4e5113e1750a3b7baa9d05048a1e8588f09cdc8f9ed5cf44089",
+    "transport_old": "8a13ebd9508117e1c94c5113d9cc30972c7fb333bd6e0a84830c41eaf0dfeabf",
+    "transport_only_epoch_literal_changed": true
+  },
+  "install": [
+    {
+      "count": 1,
+      "next": "ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-01')",
+      "old": "ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01')"
+    },
+    {
+      "count": 1,
+      "next": "NONCE = '92b900dd770f1834f96b7dd1a6bfdf6c'",
+      "old": "NONCE = 'b637e01d62293f5e7c909e75d2b36d50'"
+    },
+    {
+      "count": 1,
+      "next": "STATE_NONCE = 'a2fdf5a5645ea0b2c5367defa5deb409'",
+      "old": "STATE_NONCE = 'c815375703e1143b2a8ce8d7d3c44d6e'"
+    },
+    {
+      "count": 1,
+      "next": "SELF = 'org.droidloom.qa.ihg.r2'",
+      "old": "SELF = 'org.droidloom.qa.ihg.r1'"
+    },
+    {
+      "count": 1,
+      "next": "QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-02/source')",
+      "old": "QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/source')"
+    },
+    {
+      "count": 1,
+      "next": "QA_MANIFEST = 'aac50aec5289c542268c8cff29a07d91ef1be68eb57acb4474c6196850836d38'",
+      "old": "QA_MANIFEST = 'ab971f5b361f1d97b8036c954a6b88734b7faedbeed6349b873ead85fa79d5f3'"
+    },
+    {
+      "count": 1,
+      "next": "BUILD = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02/build-result.json')",
+      "old": "BUILD = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-build-01/build-result.json')"
+    },
+    {
+      "count": 1,
+      "next": "BUILD_SHA = 'cb13d895c16840ac88835105b31523de7449b26071b535e1e623c8adc97feefd'",
+      "old": "BUILD_SHA = '26a45b337c5dad2bd98b18ce093b321b8c0805de7cb9d759d5dd4088be05a053'"
+    },
+    {
+      "count": 1,
+      "next": "BUILD_BYTES = 20396",
+      "old": "BUILD_BYTES = 17246"
+    },
+    {
+      "count": 1,
+      "next": "STAGE = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-02/stage-result.json')",
+      "old": "STAGE = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/stage-result.json')"
+    },
+    {
+      "count": 1,
+      "next": "STAGE_SHA = '3c42dfef6ac80cce7bb4a0e37ae2836e70f7bb4ac9f1d836bb56af40a09e6260'",
+      "old": "STAGE_SHA = '94bfea341c50b648a2da13752044434cff04e74b7e7549c0d0e0b10c2ce77c41'"
+    },
+    {
+      "count": 1,
+      "next": "STAGE_BYTES = 1930",
+      "old": "STAGE_BYTES = 1935"
+    },
+    {
+      "count": 1,
+      "next": "APK = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02/owned-ihg-qa.apk')",
+      "old": "APK = Path('/home/alex/work/pocket4-owned-ihg-qa-r1-build-01/owned-ihg-qa.apk')"
+    },
+    {
+      "count": 1,
+      "next": "APK_SHA = 'db7012b9a66f4177f8b4ac57ac3d39e77b8c9871a8b2c364343c420fb9d42f41'",
+      "old": "APK_SHA = '3f3164062d8b4f0ebd49d631953ef1a667ec315d2ab7ac0fab8b3b933a6b7324'"
+    },
+    {
+      "count": 1,
+      "next": "APK_BYTES = 24720",
+      "old": "APK_BYTES = 24720"
+    },
+    {
+      "count": 1,
+      "next": "SIGNER_SHA = 'a2ae584189d8faa5f3705b9278b29b38f2f32e6ca97b1224e80f9b1dfc0d1e5a'",
+      "old": "SIGNER_SHA = 'c1502f9d917628e7c64a03b197e1edb2a641a3171afba15b15311aeb23954553'"
+    },
+    {
+      "count": 1,
+      "next": "REFERENCE_SHA = 'fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'",
+      "old": "REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'"
+    },
+    {
+      "count": 1,
+      "next": "REFERENCE_SHA = 'fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'\nBASE_HOST_ROOT = Path('/home/alex/work/pocket4-current-host-r5-source-01')\nRECORDER_MANIFEST = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'\nHOST_STAGE_SHA = 'bbd21b3e83f39a355a44e32f3448f747d0e76a6cc79c8d920cac4c8399c986a0'\nHOST_STAGE_BYTES = 6851\nCURRENT_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'\nBASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'\nQUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'\nPREVIOUS_HELPER_UID = 10196",
+      "old": "REFERENCE_SHA = 'fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'"
+    },
+    {
+      "count": 1,
+      "next": "EXPECTED_SOURCE_FILES = {'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',\n    'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',\n    'check_install_binding.py','references/read_ihg.py','target-artifact-reference.json'}",
+      "old": "EXPECTED_SOURCE_FILES = {'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',\n    'make_request.py','INPUTS.json','README.md','references/readonly_r3_coordinator.py',\n    'references/read_ihg.py','target-artifact-reference.json'}"
+    },
+    {
+      "count": 1,
+      "next": "def references():\n    return module(BASE_HOST_ROOT/'current_coordinator.py',REFERENCE_SHA,'current_target_install_reference')",
+      "old": "def references():\n    return module(HERE/'references/readonly_r3_coordinator.py',REFERENCE_SHA,'amazon_main_reference')\n"
+    },
+    {
+      "count": 1,
+      "next": "    require(10000 <= uid < 100000 and uid != PREVIOUS_HELPER_UID and uid not in ",
+      "old": "    require(10000 <= uid < 100000 and uid not in "
+    },
+    {
+      "count": 1,
+      "next": "def qualify_host_stage(value, manifest):\n    require(value.get('schema') == 'pocket4-current-host-source-stage-result-v1' and\n            value.get('ok') is True and value.get('source_stage_qualified') is True and\n            value.get('error') is None and value.get('secondary_errors') == [] and\n            value.get('source_published') is True and\n            value.get('source_root') == str(BASE_HOST_ROOT) and\n            value.get('source_manifest_sha256') == RECORDER_MANIFEST and\n            value.get('source_files') == manifest['files'],\n            'ACTUAL_COMPLETE_R5_HOST_SOURCE_STAGE_REQUIRED')\n    controls = value.get('controls', {})\n    require(controls.get('all_passed') is True and controls.get('count') == 26 and\n            len(controls.get('cases', [])) == 26 and\n            len({x.get('name') for x in controls['cases']}) == 26 and\n            all(x.get('passed') is True for x in controls['cases']) and\n            len(controls.get('compiled_sources', [])) == 14,\n            'ACTUAL_26_CURRENT_HOST_CONTROLS_REQUIRED')\n    fds = value.get('owned_fds', {})\n    require(type(fds.get('acquired')) is int and fds['acquired'] > 0 and\n            fds['acquired'] == fds.get('close_attempts') == fds.get('closed') and\n            fds.get('remaining') == 0 and fds.get('errors') == [],\n            'ACTUAL_CURRENT_HOST_SOURCE_FDS_NOT_RETIRED')\n    expected_guard = {'schema':'pocket4-current-main-guard-v1',\n        'Main_epoch_sha256':CURRENT_EPOCH, 'current_baseline_sha256':BASELINE_SHA,\n        'current_baseline_qualification_sha256':QUALIFICATION_SHA,\n        'historical_activation_sha256':'7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615',\n        'historical_verified_sha256':'2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387',\n        'config_sha256':'f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc',\n        'seven_processes_match':True, 'three_host_processes_match':True, 'resource_limits_match':True,\n        'current_executable_and_root_backing_match':True, 'framework_exit_cause_resolved':False,\n        'production_ready':False}\n    require(all(value.get(k) == expected_guard for k in ('Main_before','Main_after','Main_final')),\n            'CURRENT_HOST_STAGE_MAIN_FENCES_CHANGED')\n    require(value.get('namespace_entry') is False and value.get('automatic_retry') is False and\n            value.get('framework_exit_cause_resolved') is False and value.get('whole_app_production_ready') is False and\n            value.get('current_runtime_admitted') is False and\n            all(type(value.get(k)) is int and value[k] == 0 for k in\n                ('Android_commands','UI_actions','helper_installs','App_launches','all45_app_production_ready_count')),\n            'CURRENT_HOST_STAGE_SCOPE_NOT_READONLY_SOURCE')\n    return True\n\n\ndef qualified_inputs():\n    host_manifest=json.loads(read(HERE/'host/source-manifest.json',131072,RECORDER_MANIFEST))\n    qualify_host_stage(json.loads(read(HERE/'host-stage-actual.json',65536,HOST_STAGE_SHA,HOST_STAGE_BYTES)),host_manifest)",
+      "old": "def qualified_inputs():"
+    },
+    {
+      "count": 1,
+      "next": "    build_receipt=json.loads(read(BUILD,expected=BUILD_SHA,size=BUILD_BYTES))",
+      "old": "    read(BUILD,expected=BUILD_SHA,size=BUILD_BYTES)"
+    },
+    {
+      "count": 1,
+      "next": "    proof=adapter.qualified_build(args,manifest,builder)\n    require(adapter.RECORDER_MANIFEST_SHA == RECORDER_MANIFEST and\n            qa.MAIN_EPOCH == CURRENT_EPOCH and qa.MAIN_BASELINE_SHA == BASELINE_SHA and\n            qa.MAIN_BASELINE_QUALIFICATION_SHA == QUALIFICATION_SHA and\n            qa.MAIN_BASELINE_SCHEMA == 'pocket4-main-current-baseline-v1',\n            'BUILT_HELPER_AND_CURRENT_HOST_BINDING_REQUIRED')\n    current_controls = build_receipt.get('current_baseline_scope_controls', {})\n    report = current_controls.get('report', {})\n    require(current_controls.get('source_sha256') == manifest['files']['check_current_baseline.py']['sha256'] and\n            report.get('all_passed') is True and report.get('count') == 21 and\n            len(report.get('cases', [])) == 21 and len({x.get('name') for x in report['cases']}) == 21 and\n            all(x.get('passed') is True for x in report['cases']) and\n            report.get('production_contract_sha256') == manifest['files']['qa_contract.py']['sha256'] and\n            report.get('production_adapter_sha256') == manifest['files']['qa_adapter.py']['sha256'] and\n            report.get('host_recorder_manifest_sha256') == RECORDER_MANIFEST and\n            report.get('main_epoch_sha256') == CURRENT_EPOCH and\n            report.get('main_baseline_schema') == 'pocket4-main-current-baseline-v1' and\n            report.get('main_baseline_sha256') == BASELINE_SHA and\n            report.get('main_baseline_qualification_sha256') == QUALIFICATION_SHA,\n            'ACTUAL_21_SCOPE_AND_HOST_SESSION_CONTROLS_REQUIRED')",
+      "old": "    proof=adapter.qualified_build(args,manifest,builder)"
+    },
+    {
+      "count": 2,
+      "next": "activation=ref.current_baseline()",
+      "old": "activation=json.loads(ref.read(ref.ACTIVATION,expected=ref.ACTIVATION_SHA))"
+    }
+  ]
+}

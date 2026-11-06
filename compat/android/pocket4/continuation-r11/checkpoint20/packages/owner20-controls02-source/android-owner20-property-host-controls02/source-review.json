@@ -1,0 +1,78 @@
+{
+  "bounds": {
+    "capture_count": 64,
+    "fd_content_or_readlink": false,
+    "identity_pool": 256,
+    "only_self_proc_fd_enumeration": true,
+    "outer_seconds": 30,
+    "output_bytes": 131072,
+    "self_fd_count": 64,
+    "snapshots": 96,
+    "tracked_owned_fd_journal": 256,
+    "watchdog_seconds": 15
+  },
+  "changes": [
+    "Record bounded live fstat identity for module imports and before/after every original case; identity pool references retain full per-case facts.",
+    "Exclude only listdir entries whose subsequent fstat returns EBADF; retain the disappeared numbers. Any other error fails.",
+    "Stop at first live FD identity discrepancy; preserve partial case rows and first discrepancy. The original final whole-process equality remains required.",
+    "Track original Capture._take/_close ownership in explicit fixture seams; independently close remaining registered Capture descriptors and actual sockets. A close attempt is not retried after ambiguous failure.",
+    "Do not close an ambient descriptor merely because its fd appears in the mismatch. Untracked or changed identity remains failure.",
+    "Keep source import timing after the initial baseline; explicitly bracket imports before the first case.",
+    "Fresh temporary root02/key02; original01 untouched. Plain UTF8 output bound 131072 for bounded metadata, not contents."
+  ],
+  "kind": "owner20-property-host-controls02-FD-diagnostic",
+  "prior_actual": {
+    "bytes": 6176,
+    "first_error": "HOST_OWNED_FD_SET_CHANGED",
+    "git_blob_sha": "ed2460964ab60aeb4740fdf955ec683d77852e00",
+    "individual_cases_passed": 38,
+    "job": "1a1afcc5882-fc05-6bb5",
+    "original_live_fd_numbers_not_recorded": true,
+    "overall": "FAIL",
+    "sha256": "0db3e89b04e3c19dec6adcd1868ed2f3ca61da63aadf97df5c575c2a9eada83a",
+    "tree": "5c758ad080d0f688b0f12e8c7421437e9745a1c3"
+  },
+  "qualification": {
+    "Android_or_Main_execution": false,
+    "local_Python_execution": false,
+    "original_38_case_bodies_unchanged": true,
+    "previous_failure_not_reclassified_as_sampling_error": true,
+    "previous_failure_preserved": true,
+    "production_collector_and_actor_unchanged": true,
+    "remote_execution": false,
+    "runtime_admission": false
+  },
+  "request": {
+    "bytes": 237542,
+    "git_blob_sha": "af55c222c5b4e82397a6043f4782d6c61df25090",
+    "key": "p4-owner20-property-host-controls02-450a8f29a45a3d97",
+    "packet": {
+      "bytes": 164871,
+      "git_blob_sha": "c60d182048a24b0058adda7582582cb1feb63466",
+      "sha256": "5c27e38e036bb56f0b5f947992087bc7f9cbf19fb8c2207455be891210a893d9"
+    },
+    "sha256": "873008f246792374b919f422105079e5d0f9d980a64fe1cd51781745123825d7",
+    "stdin": {
+      "bytes": 236853,
+      "git_blob_sha": "71c71fa29c820431f4efdcfd9d81f9008d8d2865",
+      "sha256": "450a8f29a45a3d9746043bb20ff944f9d304070ec3c36d2956ebbf03c31e776b"
+    }
+  },
+  "schema": 1,
+  "scope": {
+    "Android_helper_exec": 0,
+    "Main_read_or_write": 0,
+    "chroot": 0,
+    "credential_changes": 0,
+    "original_host_fixture_children": "three sequential own host cases; max one live; exact same original case bodies",
+    "property_reads": 0,
+    "setns": 0
+  },
+  "status": "SOURCE_FROZEN_NOT_EXECUTED",
+  "validation": {
+    "full_patch_forward_byte_equality": true,
+    "production_sources_sha_identical": true,
+    "reason_for_next_run": "Original01 proved case assertions but failed final FD conservation; exact first discrepancy needs actual metadata",
+    "source_ast_or_controls_executed": false
+  }
+}

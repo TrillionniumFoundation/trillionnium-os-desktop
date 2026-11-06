@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "kind": "owner20-actual-ctypes-dependency-accounting05-source-review",
+  "scope": "38 unchanged host control case bodies and 8 pure dependency-accounting controls; no Android or Main execution.",
+  "actual04": {
+    "job": "1a1b00175bd-fc05-6d62",
+    "stdout": {
+      "bytes": 6285,
+      "sha256": "f3363229acb906a9bb6ae16850afec3c4fd24a484f923774e5964b216ab0febc",
+      "git_blob_sha": "e060ebe906b767f258207203be80b642aae2679e"
+    },
+    "overall_success": false,
+    "provenance_complete": true,
+    "only_actual_import_dependency": {
+      "path": "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0",
+      "bytes": 64184,
+      "device": 66306,
+      "inode": 108020388,
+      "mode": 33188,
+      "uid": 0,
+      "gid": 0,
+      "flags": "02100000",
+      "inheritable": false
+    },
+    "extra_file_body_reads": 0
+  },
+  "prior_failures": {
+    "controls01_overall": "FAIL",
+    "controls02_overall": "FAIL",
+    "import03_overall": "FAIL",
+    "provenance04_overall": "FAIL; provenance collection complete",
+    "history_reclassified": false
+  },
+  "baseline": {
+    "runner02": {
+      "bytes": 16999,
+      "sha256": "a3a7a854d3e3821f0754c1843101d663bec3d752fbd924c73add1c158f83b132",
+      "git_blob_sha": "0e28e139be5fe1aeb2cf84cae31419b8ee6aecaa"
+    },
+    "unchanged_packet": {
+      "bytes": 164871,
+      "sha256": "5c27e38e036bb56f0b5f947992087bc7f9cbf19fb8c2207455be891210a893d9",
+      "git_blob_sha": "c60d182048a24b0058adda7582582cb1feb63466"
+    },
+    "production_and_actor_and_C_unchanged": true,
+    "all_38_case_bodies_unchanged": true,
+    "per_case_FD_equal_gate_unchanged": true,
+    "pre_import_snapshot_unchanged": true,
+    "whole_module_execution_preserved": true
+  },
+  "ledger": {
+    "registration": "Only one added FD at the exact production module import, after absence of ctypes/_ctypes is established; actual04 full metadata, Python/modules, self link and FD flags required.",
+    "dynamic_FD_number": true,
+    "full_metadata_including_exact_ns": true,
+    "read_only_CLOEXEC_required": true,
+    "scope_of_private_access": "Only the single already-identified import FD's self readlink/fdinfo and metadata; no target body.",
+    "raw_import_and_final_differences_retained": true,
+    "final_gate": "Exact initial map plus the one declared unchanged dependency; no other addition, removal or replacement.",
+    "dependency_close_attempts": 0,
+    "metadata_observation_limit": 2,
+    "fdinfo_bytes_per_observation": 4096,
+    "fdinfo_deadline_seconds": 1,
+    "owned_fdinfo_independent_close": true,
+    "ambiguous_close_not_retried": true
+  },
+  "controls": {
+    "old_host_case_count": 38,
+    "new_pure_ledger_case_count": 8,
+    "new_controls_execute_no_children": true,
+    "original_real_fixture_child_count": 3,
+    "actual_execution_of05": "NOT_PERFORMED"
+  },
+  "success_semantics": {
+    "legacy_all_owned_files_and_fds_closed": false,
+    "all_fixture_files_and_fds_closed": "Only if tracked and untracked fixture resources all retired and exact final ledger holds.",
+    "all_process_lifetime_dependencies_accounted": "Only if both complete metadata observations and exact final FD map pass.",
+    "state_on_case_success": "HOST_CONTROLS_COMPLETE_PROCESS_EXIT_PENDING",
+    "final_dependency_release": "Requires independent Root actual job terminal/complete exit evidence; not claimed inside running Python.",
+    "normal_runtime_admission_created": false
+  },
+  "bounds": {
+    "outer_seconds": 30,
+    "inner_seconds": 15,
+    "memory_max_bytes": 134217728,
+    "cpu_quota_percent": 100,
+    "nice": 10,
+    "output_bytes": 131072,
+    "self_FD_enumeration": 64,
+    "FD_identity_pool": 256,
+    "FD_snapshots": 96,
+    "owned_capture_journal": 256
+  },
+  "source": {
+    "bytes": 34120,
+    "sha256": "fe3de67b36bdc789c83437f9357037e7e2fe2fd1a406b81c5ea056bb069f7df2",
+    "git_blob_sha": "1b6fe176a2230fe893e93125799486fe0463c17b"
+  },
+  "delta": {
+    "bytes": 22815,
+    "sha256": "3dfa100bd5afb778e0ebbb3140f06de7c25025b0e35a2e255581ff15e419627d",
+    "git_blob_sha": "deeff13167da77bdd86ffd4d90a0f6014072ddab"
+  },
+  "request": {
+    "bytes": 255241,
+    "sha256": "1fcd2d442ba3efe1eccbb7b86c0161a50119a7466a0e1d5c022f4205a9ee2ad8",
+    "git_blob_sha": "ff263f727a6c854d8b449256d633fd1d7a71386f",
+    "key": "p4-owner20-property-host-controls05-6b021a5813d4f0d0",
+    "stdin": {
+      "bytes": 253974,
+      "sha256": "6b021a5813d4f0d04058dedc3a9639271b8da0e02faa86da2e97cb1200dd3221",
+      "git_blob_sha": "c9cebbb22cbdee73b7f0c1e0bb5c0ede900942ae"
+    }
+  },
+  "not_performed": {
+    "local_Python_syntax_or_execution": true,
+    "host_controls05": true,
+    "Android_helper_run": true,
+    "Main_or_namespace_or_install_action": true,
+    "normal_prepare_or_runtime": true,
+    "installed_libffi_matching_source_qualification": true
+  }
+}

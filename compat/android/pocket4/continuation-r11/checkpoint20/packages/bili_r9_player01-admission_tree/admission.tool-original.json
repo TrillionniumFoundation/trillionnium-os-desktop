@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import hashlib,json,sys\nraw=sys.stdin.buffer.read(131073)\nassert hashlib.sha256(raw).hexdigest()=='d3879408e02be7bcec7438abe09950cda809d5e2f3b52ae84ffee261dcf71ea3'\np=json.loads(raw);src=p['files']['stage_execute.py'].encode('utf-8')\nassert hashlib.sha256(src).hexdigest()=='410451d1925270f31e89c6329123bef56d3e0941811ed1df27fa169be6150920'\nscope={'__name__':'owned_bili_inspect_stage','__file__':'/home/alex/work/pocket4-bilibili-r9-pause-resume-01/source/stage_execute.py'}\nexec(compile(src,scope['__file__'],'exec'),scope)\nraise SystemExit(scope['main'](raw))\n"
+    ],
+    "created_unix_ms": 1793952853397,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1afec2d95-fc05-6cc3",
+    "idempotency_key": "pocket4-bilibili-r9-current-player-button01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1afec2d95-fc05-6cc3",
+    "request_digest": "8b652c5e6a2af22ab7beb241fa36c0034487ee1bfaeb2bbfc6569e18a4645aa8",
+    "request_fingerprint": 10044483327939506730,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1afec2d95-fc05-6cc3"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1afec2d95-fc05-6cc3"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

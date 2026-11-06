@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "state": "INDEPENDENT_SOURCE_REVIEW_ONLY",
+  "source_tree": "a45cd4f09ad8247ce0f621021357808a58e16a23",
+  "findings": [
+    {
+      "id": "CAPTURE_TREE_LIFECYCLE",
+      "severity": "dispatch_blocker_for_NORMAL01",
+      "source": "fenced_build.py",
+      "lines": "37-59",
+      "detail": "subprocess.run timeout covered its direct sudo child; no new session/subreaper or complete monitor/helper descendant retirement was established. Both before and after could leave unqualified lifecycle scope.",
+      "actual_leak_observed": false,
+      "resolution": "NORMAL02 fixed root supervision and owned lifecycle; actual controls still pending."
+    },
+    {
+      "id": "OLD_TO_NEW_SOURCE_LOCK",
+      "severity": "no_new_blocker_found",
+      "source": "framework_build.py prior_failure_contract/fresh_published_binding; native_role_ingress.rs verify_source_workspace; droidloom-source reconcile",
+      "detail": "Historical failure and 214 manifest are pinned; old lock verified before monotonic 224 reconciliation; partial/source-only states cannot satisfy completion."
+    },
+    {
+      "id": "NORMAL_SOURCE_LOCK_ORDER",
+      "severity": "verified_source_order",
+      "source": "tools/droidloom-update/src/main.rs",
+      "lines": "345-366",
+      "source_pin": {
+        "bytes": 21215,
+        "sha256": "c75a0b03c2f3827a946e360ea8747665e183cf9f495460c24e29d176ae678172",
+        "git_blob_sha1": "3f8e994d92900989b16d0f4e3e2edea8d4e34b5e"
+      },
+      "detail": "Both work and source locks live across recover and typed build call."
+    },
+    {
+      "id": "HELD_ELF_SCOPE",
+      "severity": "existing_scope_limit_preserved",
+      "source": "framework_build.py",
+      "lines": "174-199,280-283,708",
+      "detail": "Stable held-content check followed by path execution; no fd-exec binding claim. Original behavior unchanged except fresh ROOT literal."
+    },
+    {
+      "id": "SNAPSHOT_SCOPE",
+      "severity": "no_new_blocker_found",
+      "source": "main_snapshot.py",
+      "detail": "Fixed current7 identity/cgroup/limits, local pidfd and cgroup FD cleanup/deadline, old QA invalid and new authority false; no full-interval noninterference claim."
+    },
+    {
+      "id": "ORIGINAL_40_CONTROLS",
+      "severity": "valid_but_not_lifecycle_coverage",
+      "source": "pure_controls.py",
+      "detail": "Identity, exact manifest, resource and first-error/close/deadline predicates are covered synthetically. They do not execute sudo descendant cleanup. All40 unchanged; four real lifecycle cases added."
+    }
+  ],
+  "source_review_not_execution": true,
+  "NORMAL01_UNRUN": true,
+  "NORMAL02_UNRUN": true,
+  "Hepta_actions": 0
+}

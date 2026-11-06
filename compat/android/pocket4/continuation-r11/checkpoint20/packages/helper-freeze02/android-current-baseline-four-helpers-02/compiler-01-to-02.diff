@@ -1,0 +1,108 @@
+--- compiler01/compile_helpers.js
++++ compiler02/compile_helpers02.js
+@@ -2,7 +2,7 @@
+  * Only compileActual exports source bundles; it requires complete actual raw
+  * baseline and qualification receipts plus externally verified original pins.
+  */
+-function createCurrentBaselineForkCompiler(h) {
++function createCurrentBaselineForkCompiler02(h) {
+   "use strict";
+   const need=(v,c)=>{if(!v)throw Error(c);};
+   const digest=s=>{need(typeof s==="string","EXACT_UTF8_STRING_REQUIRED");return h.sha(s);};
+@@ -98,7 +98,7 @@
+       all(a,b){if(a===b)return;const n=text.split(a).length-1;if(!n)return;text=text.split(a).join(b);edits.push({old:a,next:b,count:n});},
+       inverse(){let r=text;for(const e of [...edits].reverse()){need(r.split(e.next).length-1===e.count,"PATCH_INVERSE_SITE_COLLISION:"+name);r=r.split(e.next).join(e.old);}need(r===original,"PATCH_INVERSE_NOT_EXACT:"+name);return true;}}
+   }
+-  function helperScopeControlSource() { return "\"\"\"Current-baseline scope controls using this generated production parser.\"\"\"\nimport copy,hashlib,json,types\nfrom pathlib import Path\nHERE=Path(__file__).resolve().parent\ndef run_controls():\n    raw=(HERE/'qa_contract.py').read_bytes()\n    qa=types.ModuleType('actual_current_baseline_qa')\n    qa.__file__=str(HERE/'qa_contract.py')\n    exec(compile(raw,qa.__file__,'exec'),qa.__dict__)\n    base={'package':qa.PACKAGE,'uid':qa.UID,'user':0,'display':0,\n          'activity':qa.PACKAGE+'/Fixture','window_token':'1234',\n          'main_epoch_sha256':qa.MAIN_EPOCH,'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,\n          'main_baseline_sha256':qa.MAIN_BASELINE_SHA,\n          'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA}\n    rows=[]\n    def ok(name,value):\n        qa.require(qa.scope(value)==base,'CURRENT_SCOPE_POSITIVE_FAILED')\n        rows.append({'name':name,'passed':True})\n    def no(name,change):\n        v=copy.deepcopy(base);change(v)\n        try:qa.scope(v)\n        except qa.ProtocolError:pass\n        else:raise RuntimeError('CURRENT_SCOPE_NEGATIVE_ACCEPTED')\n        rows.append({'name':name,'passed':True})\n    ok('exact_new_current_scope',copy.deepcopy(base))\n    for key in ('main_baseline_schema','main_baseline_sha256','main_baseline_qualification_sha256'):\n        no('missing_'+key,lambda v,k=key:v.pop(k))\n    no('old_epoch',lambda v:v.update(main_epoch_sha256='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'))\n    no('old_baseline_schema',lambda v:v.update(main_baseline_schema='pocket4-framework-epoch-v1'))\n    no('wrong_baseline_digest',lambda v:v.update(main_baseline_sha256='0'*64))\n    no('wrong_qualification_digest',lambda v:v.update(main_baseline_qualification_sha256='0'*64))\n    no('extra_scope_field',lambda v:v.update(unbound=True))\n    no('wrong_target_uid',lambda v:v.update(uid=qa.UID+1))\n    no('foreign_package',lambda v:v.update(package='example.unrelated'))\n    no('wrong_display',lambda v:v.update(display=1))\n    qa.require(len(rows)==12,'EXACT_CURRENT_BASELINE_SCOPE_CASES')\n    return {'schema':'pocket4-current-baseline-scope-controls-v1','all_passed':True,'count':12,\n            'cases':rows,'production_contract_sha256':hashlib.sha256(raw).hexdigest(),\n            'main_epoch_sha256':qa.MAIN_EPOCH,'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,\n            'main_baseline_sha256':qa.MAIN_BASELINE_SHA,\n            'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA,\n            'Android_commands':0,'UI_actions':0,'helper_installed_uid':None}\nif __name__=='__main__':print(json.dumps(run_controls(),sort_keys=True))\n"; }
++  function helperScopeControlSource() { return "\"\"\"Current-baseline scope controls using this generated production parser.\"\"\"\nimport ast,copy,hashlib,json,types\nfrom pathlib import Path\nHERE=Path(__file__).resolve().parent\ndef run_controls():\n    raw=(HERE/'qa_contract.py').read_bytes()\n    qa=types.ModuleType('actual_current_baseline_qa')\n    qa.__file__=str(HERE/'qa_contract.py')\n    exec(compile(raw,qa.__file__,'exec'),qa.__dict__)\n    base={'package':qa.PACKAGE,'uid':qa.UID,'user':0,'display':0,\n          'activity':qa.PACKAGE+'/Fixture','window_token':'1234',\n          'main_epoch_sha256':qa.MAIN_EPOCH,'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,\n          'main_baseline_sha256':qa.MAIN_BASELINE_SHA,\n          'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA}\n    rows=[]\n    def ok(name,value):\n        qa.require(qa.scope(value)==base,'CURRENT_SCOPE_POSITIVE_FAILED')\n        rows.append({'name':name,'passed':True})\n    def no(name,change):\n        v=copy.deepcopy(base);change(v)\n        try:qa.scope(v)\n        except qa.ProtocolError:pass\n        else:raise RuntimeError('CURRENT_SCOPE_NEGATIVE_ACCEPTED')\n        rows.append({'name':name,'passed':True})\n    ok('exact_new_current_scope',copy.deepcopy(base))\n    for key in ('main_baseline_schema','main_baseline_sha256','main_baseline_qualification_sha256'):\n        no('missing_'+key,lambda v,k=key:v.pop(k))\n    no('old_epoch',lambda v:v.update(main_epoch_sha256='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'))\n    no('old_baseline_schema',lambda v:v.update(main_baseline_schema='pocket4-framework-epoch-v1'))\n    no('wrong_baseline_digest',lambda v:v.update(main_baseline_sha256='0'*64))\n    no('wrong_qualification_digest',lambda v:v.update(main_baseline_qualification_sha256='0'*64))\n    no('extra_scope_field',lambda v:v.update(unbound=True))\n    no('wrong_target_uid',lambda v:v.update(uid=qa.UID+1))\n    no('foreign_package',lambda v:v.update(package='example.unrelated'))\n    no('wrong_display',lambda v:v.update(display=1))\n    adapter_raw=(HERE/'qa_adapter.py').read_bytes()\n    tree=ast.parse(adapter_raw)\n    original_session=next(x for x in tree.body if isinstance(x,ast.ClassDef) and x.name=='Session')\n    selected_init=[x for x in original_session.body if isinstance(x,ast.FunctionDef) and x.name=='__init__']\n    qa.require(len(selected_init)==1,'EXACT_PRODUCTION_SESSION_CONSTRUCTOR_REQUIRED')\n    session_class=copy.deepcopy(original_session);session_class.body=copy.deepcopy(selected_init)\n    selected=[x for x in tree.body if\n              (isinstance(x,ast.FunctionDef) and x.name=='require') or\n              (isinstance(x,ast.Assign) and len(x.targets)==1 and isinstance(x.targets[0],ast.Name) and\n               x.targets[0].id=='RECORDER_MANIFEST_SHA')]+[session_class]\n    qa.require(len(selected)==3,'EXACT_PRODUCTION_SESSION_GUARD_SELECTION_REQUIRED')\n    session_scope={}\n    exec(compile(ast.Module(body=selected,type_ignores=[]),'actual_session_constructor','exec'),session_scope)\n    host_sha=session_scope['RECORDER_MANIFEST_SHA']\n    def fixture():\n        return types.SimpleNamespace(contract=types.SimpleNamespace(sha256=host_sha),_private_backend_transport=False,\n            scope={'schema':'pocket4-current-recorder-scope-v1','current_baseline_schema':qa.MAIN_BASELINE_SCHEMA,\n                   'epoch_sha256':qa.MAIN_EPOCH,'current_baseline_sha256':qa.MAIN_BASELINE_SHA,\n                   'current_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA,\n                   'package':qa.PACKAGE,'uid':qa.UID})\n    session_scope['Session'](fixture(),None,qa,{},99999)\n    rows.append({'name':'actual_R5_session_scope_positive','passed':True})\n    def host_no(name,change):\n        flow=fixture();change(flow)\n        try:session_scope['Session'](flow,None,qa,{},99999)\n        except RuntimeError:pass\n        else:raise RuntimeError('CURRENT_HOST_SESSION_NEGATIVE_ACCEPTED')\n        rows.append({'name':name,'passed':True})\n    host_no('old_R4_recorder_rejected',lambda f:setattr(f.contract,'sha256','52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'))\n    host_no('missing_typed_flow_schema',lambda f:f.scope.pop('schema'))\n    host_no('wrong_current_baseline_schema',lambda f:f.scope.update(current_baseline_schema='old-activation'))\n    host_no('old_host_epoch',lambda f:f.scope.update(epoch_sha256='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'))\n    host_no('wrong_host_baseline',lambda f:f.scope.update(current_baseline_sha256='0'*64))\n    host_no('wrong_host_qualification',lambda f:f.scope.update(current_baseline_qualification_sha256='0'*64))\n    host_no('foreign_host_package',lambda f:f.scope.update(package='example.unrelated'))\n    host_no('bool_host_uid',lambda f:f.scope.update(uid=True))\n    qa.require(len(rows)==21,'EXACT_CURRENT_BASELINE_SCOPE_CASES')\n    return {'schema':'pocket4-current-baseline-scope-controls-v1','all_passed':True,'count':21,\n            'cases':rows,'production_contract_sha256':hashlib.sha256(raw).hexdigest(),\n            'production_adapter_sha256':hashlib.sha256(adapter_raw).hexdigest(),'host_recorder_manifest_sha256':host_sha,\n            'main_epoch_sha256':qa.MAIN_EPOCH,'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,\n            'main_baseline_sha256':qa.MAIN_BASELINE_SHA,\n            'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA,\n            'Android_commands':0,'UI_actions':0,'helper_installed_uid':None}\nif __name__=='__main__':print(json.dumps(run_controls(),sort_keys=True))\n"; }
+   function helperFork(app,parent,b) {
+     const spec=specs[app];need(spec,"CLOSED_HELPER_SET_REQUIRED");
+     const old=parent.files,m=checkOld(parent.manifest_raw,old,spec.manifest);
+@@ -147,6 +147,28 @@
+           "            value['main_baseline_sha256'] == MAIN_BASELINE_SHA and\n"+
+           "            value['main_baseline_qualification_sha256'] == MAIN_BASELINE_QUALIFICATION_SHA,");
+       }
++      if(["build_candidate.py","stage_build.py","make_build_request.py"].includes(name)){
++        const previous=app==="bestbuy"?"02":"01",next=app==="bestbuy"?"03":"02";
++        e.all("/home/alex/work/pocket4-owned-"+app+"-qa-r"+spec.next+"-source-"+previous,
++              "/home/alex/work/pocket4-owned-"+app+"-qa-r"+spec.next+"-source-"+next);
++        e.all("/home/alex/work/pocket4-owned-"+app+"-qa-r"+spec.next+"-build-"+previous,
++              "/home/alex/work/pocket4-owned-"+app+"-qa-r"+spec.next+"-build-"+next);
++      }
++      if(name==="qa_adapter.py"){
++        e.one("RECORDER_MANIFEST_SHA = '"+oldHostManifest+"'",
++              "RECORDER_MANIFEST_SHA = '"+b.host_manifest.sha256+"'");
++        const originalGate="        require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,\n"+
++                           "                'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')";
++        e.one(originalGate,originalGate+"\n"+
++          "        require(flow.scope.get('schema') == 'pocket4-current-recorder-scope-v1' and\n"+
++          "                flow.scope.get('current_baseline_schema') == qa.MAIN_BASELINE_SCHEMA and\n"+
++          "                flow.scope.get('epoch_sha256') == qa.MAIN_EPOCH and\n"+
++          "                flow.scope.get('current_baseline_sha256') == qa.MAIN_BASELINE_SHA and\n"+
++          "                flow.scope.get('current_baseline_qualification_sha256') == qa.MAIN_BASELINE_QUALIFICATION_SHA and\n"+
++          "                flow.scope.get('package') == qa.PACKAGE and type(flow.scope.get('uid')) is int and\n"+
++          "                flow.scope['uid'] == qa.UID,\n"+
++          "                'TYPED_CURRENT_HOST_SCOPE_AND_HELPER_BINDING_REQUIRED')");
++      }
+       if(name==="qa_adapter.py")e.one("'main_epoch_sha256':self.qa.MAIN_EPOCH})",
+         "'main_epoch_sha256':self.qa.MAIN_EPOCH, 'main_baseline_schema':self.qa.MAIN_BASELINE_SCHEMA,\n"+
+         "            'main_baseline_sha256':self.qa.MAIN_BASELINE_SHA,\n"+
+@@ -164,9 +186,11 @@
+           "        baseline_scope={'__file__':str(HERE/'check_current_baseline.py'),'__name__':'owned_current_baseline_scope_controls'}",
+           "        exec(compile((HERE/'check_current_baseline.py').read_bytes(),str(HERE/'check_current_baseline.py'),'exec'),baseline_scope)",
+           "        baseline_controls=baseline_scope['run_controls']()",
+-          "        require(baseline_controls['all_passed'] is True and baseline_controls['count']==12 and",
+-          "                len(baseline_controls['cases'])==12 and all(x['passed'] is True for x in baseline_controls['cases']) and",
++          "        require(baseline_controls['all_passed'] is True and baseline_controls['count']==21 and",
++          "                len(baseline_controls['cases'])==21 and all(x['passed'] is True for x in baseline_controls['cases']) and",
+           "                baseline_controls['production_contract_sha256']==source['qa_contract.py']['sha256'] and",
++          "                baseline_controls['production_adapter_sha256']==source['qa_adapter.py']['sha256'] and",
++          "                baseline_controls['host_recorder_manifest_sha256']=='"+b.host_manifest.sha256+"' and",
+           "                baseline_controls['main_epoch_sha256']=='"+b.epoch+"' and",
+           "                baseline_controls['main_baseline_schema']=='"+schema+"' and",
+           "                baseline_controls['main_baseline_sha256']=='"+b.baseline.sha256+"' and",
+@@ -177,7 +201,7 @@
+       }
+       if(name==="make_build_request.py") {
+         const key=/^KEY='[^'\r\n]+'$/m.exec(e.text);need(key,"EXACT_BUILD_KEY_SITE");
+-        e.one(key[0],"KEY='pocket4-owned-"+app+"-qa-r"+spec.next+"-current-"+b.baseline.sha256.slice(0,16)+"-build01'");
++        e.one(key[0],"KEY='pocket4-owned-"+app+"-qa-r"+spec.next+"-current-"+b.baseline.sha256.slice(0,16)+"-host-"+b.host_manifest.sha256.slice(0,12)+"-build"+(app==="bestbuy"?"03":"02")+"'");
+       }
+       const newName=name.split(oldPath).join(newPath);
+       e.inverse();files[newName]=e.text;
+@@ -188,7 +212,7 @@
+     const binding={schema:"pocket4-current-baseline-helper-source-binding-v1",state:"STATIC_SOURCE_ONLY_ANDROID_UNRUN",
+       app,target_package:spec.target,target_uid:uid,helper_package:newPkg,protocol:newProto,
+       current_baseline_schema:schema,current_epoch_sha256:b.epoch,current_baseline:b.baseline,
+-      current_qualification:b.qualification,actual_baseline_result:b.result,
++      current_qualification:b.qualification,actual_baseline_result:b.result,host_recorder_source_manifest:b.host_manifest,
+       parent_source_manifest_sha256:spec.manifest,owned_helper_uid:null,APK_sha256:null,signer_sha256:null,
+       helper_built:false,helper_installed:false,UI_actions:0,unresolved_framework_exit_cause:true,
+       whole_app_production_ready:false};
+@@ -223,11 +247,24 @@
+       "exec(compile(source,'stage_build.py','exec'),scope,scope)";
+     return {host:"pocket4",executable:"/usr/bin/python3",args:["-I","-c",wrapper],
+       cwd:"/home/alex/work",env:{PYTHONDONTWRITEBYTECODE:"1"},stdin:wire,
+-      idempotency_key:"pocket4-owned-"+app+"-qa-r"+specs[app].next+"-current-"+binding.baseline.sha256.slice(0,16)+"-build01",
++      idempotency_key:"pocket4-owned-"+app+"-qa-r"+specs[app].next+"-current-"+binding.baseline.sha256.slice(0,16)+"-host-"+binding.host_manifest.sha256.slice(0,12)+"-build"+(app==="bestbuy"?"03":"02"),
+       timeout_seconds:300,cpu_quota_percent:100,memory_max_bytes:536870912,nice:10};
+   }
+-  function compileHelpersActual(actual,parents) {
++  function compileHelpersActual(actual,parents,host) {
+     const binding=actualBinding(actual);
++    need(host&&Object.keys(host).sort().join(",")==="manifest_pin,manifest_raw","EXACT_CURRENT_HOST_SOURCE_INPUT");
++    const hm=exactPin(host.manifest_raw,host.manifest_pin);
++    need(host.manifest_pin.sha256==="6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e"&&
++      hm.schema===2&&hm.artifact==="pocket4-bilibili-current-recorder-held-r5"&&hm.revision===5&&
++      hm.parent_R4_manifest_sha256===oldHostManifest&&
++      hm.current_baseline.schema===schema&&hm.current_baseline.epoch_sha256===binding.epoch&&
++      hm.current_baseline.baseline_sha256===binding.baseline.sha256&&
++      hm.current_baseline.qualification_sha256===binding.qualification.sha256&&
++      hm.current_baseline.guard_sha256===binding.guard.sha256&&
++      hm.files["current_baseline_guard.py"].sha256===binding.guard.sha256&&Object.keys(hm.files).length===14&&
++      hm.source_fork_is_not_deployment===true&&hm.old_flows_reauthorized===false&&hm.whole_app_production_ready===false,
++      "EXACT_CURRENT_HOST_AND_BASELINE_CLOSURE_REQUIRED");
++    binding.host_manifest=host.manifest_pin;
+     need(parents&&Object.keys(parents).sort().join(",")==="amazon,bestbuy,bili,ihg","EXACT_FOUR_PARENT_HELPERS");
+     const helpers={};
+     for(const app of Object.keys(specs)){

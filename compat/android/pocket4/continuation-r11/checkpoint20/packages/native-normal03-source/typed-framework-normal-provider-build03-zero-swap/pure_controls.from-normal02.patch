@@ -1,0 +1,56 @@
+--- a/pure_controls.py
++++ b/pure_controls.py
+@@ -104,14 +104,36 @@
+     bad('actual_old_214_manifest_is_not_current_completion',
+         lambda: framework['qualify_completed_manifest'](json.loads(packet['actual-published-source-manifest.json']), lock),
+         'normal published manifest is not the exact complete new locked plan')
+-    memory = {'MemAvailable': 13 * 1024**3, 'SwapFree': 2 * 1024**3}
+-    good('fresh_memory_exact_minimum', lambda: framework['memory_admission'](memory))
+-    bad('insufficient_memory_no_retry',
+-        lambda: framework['memory_admission']({**memory, 'MemAvailable': memory['MemAvailable'] - 1}),
+-        'less than 13 GiB MemAvailable for fresh Go5 streaming profile; no automatic retry')
+-    bad('insufficient_swap_no_retry',
+-        lambda: framework['memory_admission']({**memory, 'SwapFree': memory['SwapFree'] - 1}),
+-        'less than the required 2 GiB free swap; no automatic retry')
++    memory = {'MemAvailable': 15 * 1024**3, 'SwapFree': 0}
++    owned = {'memory.max': str(10 * 1024**3), 'cpu.max': '200000 100000',
++             'memory.swap.max': '0', 'memory.swap.current': '0'}
++    good('zero_swap_exact_minimum_without_global_swap_budget',
++         lambda: framework['memory_admission'](memory, owned))
++    bad('insufficient_fresh_RAM_no_retry',
++        lambda: framework['memory_admission']({**memory, 'MemAvailable': memory['MemAvailable'] - 1}, owned),
++        'less than 15 GiB MemAvailable for independent zero-swap profile; no automatic retry')
++    bad('configured_owned_swap_nonzero_rejected',
++        lambda: framework['memory_admission'](memory, {**owned, 'memory.swap.max': str(1024**3)}),
++        'owned swap limit is not zero')
++    bad('existing_owned_swap_nonzero_rejected',
++        lambda: framework['memory_admission'](memory, {**owned, 'memory.swap.current': '4096'}),
++        'existing owned swap is not zero')
++    meminfo = (b'MemTotal: 16777216 kB\nMemAvailable: 15728640 kB\n'
++               b'SwapTotal: 16777216 kB\nSwapFree: 0 kB\nSwapCached: 0 kB\n')
++    good('exact_fixed_meminfo_fields_and_kB_conversion',
++         lambda: need(framework['parse_admission_meminfo'](meminfo) == {
++             'MemTotal': 16 * 1024**3, 'MemAvailable': 15 * 1024**3,
++             'SwapTotal': 16 * 1024**3, 'SwapFree': 0, 'SwapCached': 0},
++             'CONTROL_MEMINFO_BYTE_CONVERSION'))
++    bad('duplicate_required_meminfo_field_rejected',
++        lambda: framework['parse_admission_meminfo'](meminfo + b'MemAvailable: 15728640 kB\n'),
++        'duplicate required meminfo field')
++    bad('wrong_meminfo_units_rejected',
++        lambda: framework['parse_admission_meminfo'](meminfo.replace(b'kB', b'bytes', 1)),
++        'required meminfo field units differ')
++    bad('missing_required_meminfo_field_rejected',
++        lambda: framework['parse_admission_meminfo'](meminfo.replace(b'SwapCached: 0 kB\n', b'')),
++        'required meminfo fields incomplete')
+     base = {
+         'historical_activation_sha256': snapshot['ACTIVATION_SHA'],
+         'old_invalid_QA_epoch_sha256': snapshot['OLD_INVALID_EPOCH_SHA'],
+@@ -150,7 +172,7 @@
+     widened['new_QA_epoch_qualified'] = True
+     bad('host_snapshot_cannot_qualify_QA', lambda: fence['compare'](base, widened),
+         'host build snapshot cannot authorize a QA epoch')
+-    need(len(passed) == len(set(passed)) == 40, 'CONTROL_CASE_COUNT')
++    need(len(passed) == len(set(passed)) == 45, 'CONTROL_CASE_COUNT')
+     return {'schema': 1, 'state': 'PASS', 'passed': len(passed), 'cases': passed,
+             'scope': 'Actual pure Python functions with synthetic identity/resource/failure fixtures and exact staged lock metadata; no device reuse, Main observation, Rust or Soong qualification.',
+             'remote_reads': 0, 'subprocesses': 0, 'Main_actions': 0, 'Android_actions': 0,

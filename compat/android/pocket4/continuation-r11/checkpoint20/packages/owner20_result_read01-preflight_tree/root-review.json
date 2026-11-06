@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "scope": "Read only the already-produced root-owned static build result through its existing authorized sudo access; do not change permissions or any file",
+  "expected_source_job": "1a1af7fccce-fc05-691e",
+  "expected_result": {
+    "success": true,
+    "path": "/opt/p4-owner20-sdk-visibility-android-20261106-build-02/build-result.json",
+    "bytes": 728003,
+    "sha256": "5cc813715a261701cad3be931b9e53145229dec7c803d828a1097e4fe4ad166b",
+    "error": null
+  },
+  "source_bytes": 2255,
+  "source_sha256": "fbcb604642cd013b1820ff77cd91144d0eded60ff2d4f7a3ce1bc64ce0390451",
+  "fixed_path_components_no_symlink": true,
+  "root_owner_0444_one_link": true,
+  "held_and_named_full_stamp_equal": true,
+  "exact_bytes_SHA_before_any_stdout": true,
+  "close_all_before_stdout": true,
+  "subprocesses": 0,
+  "network": 0,
+  "filesystem_writes": 0,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "replay_of_build": false,
+  "original_direct_read_failure": {
+    "kind": "binary_read_attempt",
+    "path": "/opt/p4-owner20-sdk-visibility-android-20261106-build-02/build-result.json",
+    "error": "remote helper on hepta-pocket4 failed with 1: PermissionError [Errno 13] Permission denied: p4-owner20-sdk-visibility-android-20261106-build-02",
+    "original_response_captured_by_helper": false,
+    "replay": false
+  },
+  "helper_improvement": "Every binary-read original now cached and hashed before error or JSON checks; unsafe numeric literals parsed losslessly"
+}

@@ -1,0 +1,64 @@
+{
+  "schema": 1,
+  "state": "COMPLETE_SOURCE_COMPILER_CHAIN_ACTUAL_INSTALL_AND_CONTROLS_PENDING",
+  "references": {
+    "templates": {
+      "tree": "7662275989a1c8d2ad30b660280bf537eab9abcb",
+      "prefix": "android-ihg-current-stability-preparation01"
+    },
+    "old_controls": {
+      "blob": "daae00f663e5e0e154bbf0151a7b8cea69e93aa1",
+      "bytes": 39632,
+      "sha256": "b285ffc2ec1304ca7f54382a2ef2445e4b1dafbb772cd0bf601f75462b5ed5e9"
+    },
+    "install02": {
+      "tree": "bede3598ce35e6751f7b2d47d0063d5e8517fc40",
+      "prefix": "android-ihg-r2-current-install-state-02",
+      "source_manifest_sha256": "e8cf9d4c04025bb092663519a01624fa40e552600dc5643a50ebf9bace915103"
+    },
+    "helper": {
+      "tree": "eabf49d8aa8e86364f8e8107ad1bb503ea4e018a",
+      "source_manifest_sha256": "aac50aec5289c542268c8cff29a07d91ef1be68eb57acb4474c6196850836d38"
+    }
+  },
+  "planned_controls": 106,
+  "original_WIP_controls": 89,
+  "new_production_constructor_controls": 17,
+  "Python_compile_executed": false,
+  "Python_controls_executed": false,
+  "actual_install_UID_bound": false,
+  "actual_receipt_pins_bound": false,
+  "actual_UI_nonce_pool_generated": false,
+  "executable_request_created": false,
+  "actual_receipts_required": [
+    "coordinator",
+    "stage",
+    "worker"
+  ],
+  "nonces": {
+    "count": 36,
+    "exclude_count": 337
+  },
+  "next_steps": [
+    "Root supplies three exact install02 originals after actual retirement qualification",
+    "Bind losslessly with qualify_install.js",
+    "Build fixed 7-source synthetic controls and single fresh nonce generation after actual install binding",
+    "Root executes pure controls once",
+    "Use actual successful controls/nonce pins to bind fresh UI source and request"
+  ],
+  "whole_app_production_ready": false,
+  "previous_source_tree": "d30ed7346f82589d1985d2aee621b74de6669945",
+  "steps": [
+    "qualify_install(h,lossless,input): pin-check actual install02 originals and losslessly bind UID/APK/state",
+    "build_controls(h,oldHarness,sources,helperFiles,transportSource,nonceSpec): prepare fixed 106 Python controls with single 36-nonce generation",
+    "bind_flow(h,lossless,input): verify actual successful control originals, match 7 bound source pins, preserve exact installed metadata and build new UI request"
+  ],
+  "preservation": {
+    "old_install01_failed_record": true,
+    "three_install02_source_unchanged": true,
+    "old_UI_unknown_not_reclassified": true,
+    "no_HOME_environment_change": true,
+    "original_final_tree_window_refresh_guards": true,
+    "whole_app_production_ready": false
+  }
+}

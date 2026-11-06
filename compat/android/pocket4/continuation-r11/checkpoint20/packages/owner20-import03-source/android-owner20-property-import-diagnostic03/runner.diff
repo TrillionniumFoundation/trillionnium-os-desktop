@@ -1,0 +1,134 @@
+--- controls02/runner-template.py
++++ import-diagnostic03/runner-template.py
+@@ -1,4 +1,4 @@
+-"""Exactly pinned host-only tests; no Android/namespace/Main runtime entry."""
++"""Pin-bound import-only FD diagnosis; no test cases or Android/Main entry."""
+ import ast
+ import base64
+ import hashlib
+@@ -15,7 +15,7 @@
+ PACKET_BYTES = __PACKET_BYTES__
+ PACKET_SHA = '__PACKET_SHA__'
+ PACKET_B64 = '__PACKET_B64__'
+-TEMP_ROOT = '/tmp/p4-owner20-property-host-controls-02'
++TEMP_ROOT = '/tmp/p4-owner20-property-import-diagnostic-03'
+ NAMES = ('pid', 'pid_for_children', 'mnt', 'cgroup', 'user', 'net',
+          'ipc', 'uts', 'time', 'time_for_children')
+ 
+@@ -184,8 +184,75 @@
+         need(not errors, 'TRACKED_CAPTURE_FD_CLEANUP_FAILED')
+ 
+ 
++
++def execute_module_statements(source, module_name, source_name, observed, result):
++    """Execute the same pinned module statements in order, never its controls."""
++    parsed = ast.parse(source, filename=source_name, mode='exec')
++    need(0 < len(parsed.body) <= 64, 'FIXED_TOP_LEVEL_STATEMENT_BOUND')
++    need(len(result['module_statement_observations']) + len(parsed.body) <= 80,
++         'FIXED_TOTAL_STATEMENT_BOUND')
++    allowed = (ast.Expr, ast.Import, ast.ImportFrom, ast.Assign,
++               ast.FunctionDef, ast.ClassDef, ast.If)
++    need(all(isinstance(node, allowed) for node in parsed.body),
++         'FIXED_TOP_LEVEL_STATEMENT_TYPE')
++    module = types.ModuleType(module_name)
++    module.__file__ = '<exact-owned-source>/' + source_name
++    previous = observed.sample('before_module', source_name)
++    for index, node in enumerate(parsed.body):
++        row = {'source': source_name, 'source_sha256': hashlib.sha256(source.encode()).hexdigest(),
++               'statement_index': index, 'node_type': type(node).__name__,
++               'line': node.lineno, 'end_line': node.end_lineno,
++               'before_fd_snapshot': previous, 'after_fd_snapshot': None,
++               'executed': False, 'fd_identity_unchanged': False}
++        if isinstance(node, ast.Import):
++            row['import_names'] = [item.name for item in node.names]
++        elif isinstance(node, ast.ImportFrom):
++            row['import_from'] = node.module
++            row['import_names'] = [item.name for item in node.names]
++            row['import_level'] = node.level
++        elif isinstance(node, (ast.FunctionDef, ast.ClassDef)):
++            row['definition_name'] = node.name
++        result['module_statement_observations'].append(row)
++        primary = None
++        try:
++            # No rewriting or preload. Existing line numbers, globals and order
++            # are preserved. Neither module's run/Capture entry is called.
++            piece = ast.Module(body=[node], type_ignores=[])
++            exec(compile(piece, source_name, 'exec', dont_inherit=True), module.__dict__)
++            row['executed'] = True
++        except BaseException as error:
++            primary = error
++            row['statement_error'] = {'type': type(error).__name__,
++                                      'error': repr(error)[:512]}
++        finally:
++            try:
++                after = observed.sample('after_module_statement', source_name)
++                row['after_fd_snapshot'] = after
++                row['fd_identity_unchanged'] = observed.equal(
++                    previous, after, 'module_statement', source_name + ':' + str(node.lineno))
++                if not row['fd_identity_unchanged']:
++                    # Attribute only to this statement boundary. A newly
++                    # observed descriptor is not thereby owned or safe to close.
++                    result['first_statement_discrepancy'] = dict(row)
++                    result['diagnostic_collection_complete'] = True
++                    change = RuntimeError('HOST_MODULE_STATEMENT_LIVE_FD_IDENTITY_CHANGED')
++                    if primary is None:
++                        primary = change
++                    else:
++                        primary.add_note(str(change))
++                previous = after
++            except BaseException as observation_error:
++                if primary is None:
++                    primary = observation_error
++                else:
++                    primary.add_note('statement FD observation: ' + repr(observation_error)[:160])
++        if primary is not None:
++            raise primary
++    return module
++
++
+ def main():
+-    result = {'schema': 1, 'kind': 'owner20-property-host-controls02-run',
++    result = {'schema': 1, 'kind': 'owner20-property-import-diagnostic03-run',
+         'success': False, 'errors': [], 'first_error': None,
+         'Android_executed': False, 'Android_property_reads_or_writes': False,
+         'namespace_entry_or_UID_changes': False, 'Main_access': False,
+@@ -255,18 +322,18 @@
+              first.st_uid == first.st_gid == 0, 'NEW_PRIVATE_HOST_FIXTURE_DIRECTORY')
+         directory_identity = (first.st_dev, first.st_ino)
+         tempfile.tempdir = TEMP_ROOT
+-        modules_before = observed.sample('before_module_imports')
+-        subject = types.ModuleType('owner20_property_control_subject')
+-        exec(compile(source['property_visibility.py'], 'property_visibility.py', 'exec'), subject.__dict__)
+-        controls = types.ModuleType('owner20_property_controls')
+-        exec(compile(source['host_controls.py'], 'host_controls.py', 'exec'), controls.__dict__)
+-        modules_after = observed.sample('after_module_imports')
+-        need(observed.equal(modules_before, modules_after, 'module_imports'),
+-             'HOST_MODULE_IMPORT_LIVE_FD_IDENTITY_CHANGED')
+-        result['controls'] = controls.run(subject, source['actor.py'], source['baseline_actor.py'],
+-            observed.observe_case, observed.track_capture, control_diagnostics)
+-        need(result['controls']['success'] is True and result['controls']['count'] == 38,
+-             'ALL_PINNED_HOST_CONTROLS_REQUIRED')
++        result['module_statement_observations'] = []
++        result['first_statement_discrepancy'] = None
++        result['diagnostic_collection_complete'] = False
++        result['controls_invoked'] = False
++        result['control_case_count'] = 0
++        result['import_execution_order'] = ['property_visibility.py', 'host_controls.py']
++        for name, module_name in (
++                ('property_visibility.py', 'owner20_property_control_subject'),
++                ('host_controls.py', 'owner20_property_controls')):
++            execute_module_statements(source[name], module_name, name, observed, result)
++        result['all_fixed_module_statements_completed'] = True
++        result['diagnostic_collection_complete'] = True
+     except BaseException as e:
+         error('host_controls', e)
+     finally:
+@@ -322,7 +389,7 @@
+         except BaseException as e:
+             error('host_final', e)
+     result['elapsed_ns'] = time.monotonic_ns() - started
+-    result['success'] = (not result['errors'] and result.get('controls', {}).get('success') is True and
++    result['success'] = (not result['errors'] and result.get('all_fixed_module_statements_completed') is True and
+                          result['all_fixture_children_reaped'] and result['all_owned_files_and_fds_closed'])
+     body = (json.dumps(result, sort_keys=True, separators=(',', ':')) + '\n').encode()
+     need(len(body) <= 131072, 'HOST_CONTROL_RESULT_BOUND')

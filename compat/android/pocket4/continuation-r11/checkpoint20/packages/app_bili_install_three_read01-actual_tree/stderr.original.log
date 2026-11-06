@@ -1,0 +1,20 @@
+Traceback (most recent call last):
+  File "<string>", line 200, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "<string>", line 196, in main
+    return collect()
+  File "<string>", line 174, in collect
+    uid=state_only(worker,coordinator)
+  File "<string>", line 128, in state_only
+    require(worker.get('package')==PACKAGE and worker.get('state_nonce')==NONCE and
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            worker.get('nonce')==INSTALL_NONCE and worker.get('source_manifest_sha256')==SOURCE_SHA and
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            worker.get('UI_actions')==worker.get('audio_actions')==0 and
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            worker.get('UiAutomation_connection_requested') is False,'OWNED_NO_UI_WORKER_REQUIRED')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<string>", line 31, in require
+    raise RuntimeError(reason)
+RuntimeError: OWNED_NO_UI_WORKER_REQUIRED

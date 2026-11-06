@@ -1,0 +1,29 @@
+--- owner19/source/coordinator.py
++++ owner20/source/coordinator.py
+@@ -49,9 +49,9 @@
+     state = group_fd = -1; actor = None; fence = None; invocation = None; launched = False; tools = {}
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0, 'external controller requires original host root')
+-        owned.need(plan['unit'] == 'p4-owner19-normal-20261105-01.service' and
+-                   plan['package'] == '/opt/p4-owner19-normal-20261105-01' and
+-                   plan['state'] == '/opt/p4-owner19-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
++        owned.need(plan['unit'] == 'p4-owner20-normal-20261106-01.service' and
++                   plan['package'] == '/opt/p4-owner20-normal-20261106-01' and
++                   plan['state'] == '/opt/p4-owner20-normal-20261106-01-state', 'this controller accepts only its fixed fresh unit/package/state')
+         state = owned.root_directory(plan['state'])
+         owned.need(owned.file_id(state) == prepared['state_identity'], 'prepared state replaced')
+         for name in ('coordinator-claim.json', 'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json'):
+@@ -165,7 +165,12 @@
+         if fence is not None:
+             try: result['main_after'] = fence.check()
+             except BaseException as error: owned.record_error(result, 'main_after', error)
+-            finally: fence.close()
++            finally:
++                try:
++                    fence.close(); result['main_fence_fds_closed'] = True
++                except BaseException as error:
++                    owned.record_error(result, 'main_fence_close', error)
++                    result['main_fence_fds_closed'] = False
+         result['success'] = (not result['errors'] and result.get('actual_first_owner_normal_qualified') is True and
+                              result.get('exact_unit_cleanup', {}).get('original_actor_dead') is True and 'main_after' in result)
+         result['finished_monotonic_ns'] = time.monotonic_ns()

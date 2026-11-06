@@ -1,0 +1,429 @@
+--- a/framework_build.py
++++ b/framework_build.py
+@@ -120,27 +120,28 @@
+ 
+ # Input and completion bindings for the existing normal builder lifecycle.
+ OWNER = P('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01')
+-ROOT = OWNER / 'typed-ingress-framework-resume-build-01-20261106'
++ROOT = OWNER / 'typed-ingress-framework-provider-build-01-20261106'
+ HERE = ROOT / 'control-source'
+ WORK = OWNER / 'typed-ingress-framework-work-01-20261105'
+ OUT = ROOT / 'android-out'
+ ATTEMPT = ROOT / 'attempt-01'
+-BUILD_PARENT = P('/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106')
++BUILD_PARENT = P('/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106')
+ BUILD_SOURCE = BUILD_PARENT / 'builder-source'
+ BUILDER = BUILD_PARENT / 'attempt01/cargo-target/debug/droidloom-update'
+-BUILDER_SHA = 'fd4ef1903fa506512f2605fa03b39b5af0712680ff26dfbebfb4683c1b9ec288'
+-BUILDER_BYTES = 34579760
++BUILDER_SHA = "8bf78794705a62f0a60d00af64cdd25e2b798739e445575c3d3cca5e566f4cf6"
++BUILDER_BYTES = 34722200
+ BUILD_RESULT = BUILD_PARENT / 'attempt01/result.json'
+-BUILD_RESULT_SHA = 'cd9f61ca21dd83210299f24dd50b68f5aa7aeba7eab94ac9cada71271d660e28'
+-BUILD_RESULT_BYTES = 140163
+-SOURCE_MANIFEST_SHA = '71768da388021a870ef5f5516cc3efbfd956288a8fa74cb9b176b312f68d7605'
++BUILD_RESULT_SHA = "871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8"
++BUILD_RESULT_BYTES = 161423
++SOURCE_MANIFEST_SHA = "e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee"
+ PREPARE_PARENT = OWNER / 'typed-framework-work-preparation-01-20261105'
+ PREPARATION = PREPARE_PARENT / 'attempt01/result.json'
+ PREPARATION_SHA = 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'
+ INVENTORY_SOURCE_SHA = '203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab'
+ ENGINE_SOURCE = OWNER / 'full-build-combined07-go5-streaming-01/engine-working'
+ TETO_HEAD = 'a9496d886a85752ba407b76509952c06cd79ddb8'
+-EXTENDED_LOCK_SHA = 'ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54'
++EXTENDED_LOCK_SHA = '5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7'
++PREVIOUS_TYPED_LOCK_SHA = 'ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54'
+ ORIGINAL_LOCK_SHA = '4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178'
+ GO_PATCH = 'android/apex-compat/0008-soong-leaf-go-memory-budget.patch'
+ GO_PATCH_SHA = '39211a784284ed319b6abbbe4b327a88896931d39c6bdb91fe727a9a7589325f'
+@@ -149,26 +150,21 @@
+ MIN_AVAILABLE = 13 * 1024**3
+ MIN_FREE_SWAP = 2 * 1024**3
+ TARGETS = ['framework-minus-apex', 'libandroid_runtime']
+-EXPECTED_TESTS = [
+-    'android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes',
+-    'android::tests::restoration_preserves_original_and_removes_created_file',
+-    'android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch',
+-    'android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout',
+-    'android::patch_tests::interrupted_projection_recovers_before_next_build',
+-    'tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets',
+-    'tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory',
+-    'native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate',
+-    'native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions',
+-]
++EXPECTED_TESTS = ["android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes","android::tests::restoration_preserves_original_and_removes_created_file","android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch","android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout","android::patch_tests::interrupted_projection_recovers_before_next_build","tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets","tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory","native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate","native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions","android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata","android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas","android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged","native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change","native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock","native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification"]
+ 
+ 
+-PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-build-01-20261105'
+-RESUME_STAGING = WORK / '.droidloom-source-a2fqBK'
+-PRIOR_INNER_SHA = '139163acad47d9db707faa950e4b4dcecaf3e72b655bce8b6b3db089ce542bdf'
+-PRIOR_OUTER_SHA = '3626270e88e72c4e46d8beee09b5351e1f7d53bab18043241204ca314855e04d'
+-STAGING_OBSERVATION_SHA = 'c62f32b7002d043e4813eadd598f33d088a0f20cc9f562ddc19d35c2ccddf664'
++PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-resume-build-01-20261106'
++PUBLISHED_SOURCE = WORK / 'aosp-source'
++PUBLISHED_MANIFEST_SHA = '73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d'
++PUBLISHED_MANIFEST_BYTES = 97784
++NATIVE_PREBUILT_BP_SHA = 'd1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a'
++NATIVE_PREBUILT_BP_BYTES = 1017
++NATIVE_PREBUILT_BP_GIT_SHA = '68246c4206ea702c8a66b73c37bfcacb51524086'
++PRIOR_INNER_SHA = '80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc'
++PRIOR_OUTER_SHA = '2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059'
+ EXPECTED_SOURCE_TESTS = ['resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
+-EXPECTED_COMPILE_LABELS = ['cargo-version', 'rustc-version', 'linked-libraries-0', 'linked-libraries-1', 'linked-libraries-2', 'linked-libraries-3', 'linked-libraries-4', 'linked-libraries-5', 'linked-libraries-6', 'image-linked-libraries-0', 'image-linked-libraries-1', 'image-linked-libraries-2', 'image-linked-libraries-3', 'image-linked-libraries-4', 'image-linked-libraries-5', 'image-linked-libraries-6', 'image-linked-libraries-7', 'image-linked-libraries-8', 'image-linked-libraries-9', 'image-linked-libraries-10', 'image-linked-libraries-11', 'image-linked-libraries-12', 'image-linked-libraries-13', 'image-linked-libraries-14', 'workspace-no-deps', 'selected-build', 'selected-test', 'builder-compile', 'builder-help', 'builder-test-compile', 'builder-test-list', 'builder-test-help', 'projection-test-0', 'projection-test-1', 'projection-test-2', 'projection-test-3', 'projection-test-4', 'projection-test-5', 'projection-test-6', 'projection-test-7', 'projection-test-8', 'linked-libraries-7', 'source-resume-cli-help', 'source-resume-selected-test', 'source-resume-test-compile', 'source-resume-test-list', 'source-resume-test-help', 'projection-test-9', 'projection-test-10', 'projection-test-11', 'projection-test-12', 'projection-test-13', 'projection-test-14', 'projection-test-15', 'projection-test-16', 'projection-test-17']
++EXPECTED_COMPILE_LABELS = ["cargo-version","rustc-version","linked-libraries-0","linked-libraries-1","linked-libraries-2","linked-libraries-3","linked-libraries-4","linked-libraries-5","linked-libraries-6","linked-libraries-7","image-linked-libraries-0","image-linked-libraries-1","image-linked-libraries-2","image-linked-libraries-3","image-linked-libraries-4","image-linked-libraries-5","image-linked-libraries-6","image-linked-libraries-7","image-linked-libraries-8","image-linked-libraries-9","image-linked-libraries-10","image-linked-libraries-11","image-linked-libraries-12","image-linked-libraries-13","image-linked-libraries-14","workspace-no-deps","selected-build","selected-test","builder-compile","builder-help","source-resume-cli-help","builder-test-compile","builder-test-list","builder-test-help","projection-test-0","projection-test-1","projection-test-2","projection-test-3","projection-test-4","projection-test-5","projection-test-6","projection-test-7","projection-test-8","projection-test-9","projection-test-10","projection-test-11","projection-test-12","projection-test-13","projection-test-14","source-resume-selected-test","source-resume-test-compile","source-resume-test-list","source-resume-test-help","projection-test-100","projection-test-101","projection-test-102","projection-test-103","projection-test-104","projection-test-105","projection-test-106","projection-test-107","projection-test-108"]
++EXPECTED_SOURCE_DELTA = json.loads("{\"Cargo_lock_or_dependency_manifest_changed\":false,\"Go5_or_Blueprint_patch_changed\":false,\"Rust_source_files_changed\":2,\"actual_source_file_count\":491,\"added\":[\"android/manifest/m2-role-ingress-provider-source-lock.json\",\"android/native-role-ingress/provider-fixtures/SystemUI.Android.bp\",\"android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp\",\"android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp\",\"android/native-role-ingress/provider-fixtures/car-builtin.Android.bp\",\"android/native-role-ingress/provider-fixtures/car-jni.Android.bp\",\"android/native-role-ingress/provider-fixtures/car-lib.Android.bp\",\"android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp\",\"android/native-role-ingress/provider-fixtures/icu4j.Android.bp\",\"android/native-role-ingress/provider-fixtures/motion.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp\",\"android/native-role-ingress/provider-fixtures/runner.Android.bp\",\"android/native-role-ingress/provider-fixtures/screenshot.Android.bp\",\"android/native-role-ingress/provider-fixtures/test-parameter.Android.bp\"],\"builder_revision_name\":\"468-provider-closure\",\"changed_existing\":[\"tools/droidloom-update/src/android.rs\",\"tools/droidloom-update/src/native_role_ingress.rs\"],\"engine_source_files_changed\":0,\"framework_sources_executed_or_built\":false,\"new_exact_provider_source_lock_added\":true,\"previous_source_locks_changed\":false,\"real_published_source_accessed\":false,\"real_source_staging_accessed\":false,\"runtime_authorization_enabled\":false,\"source_resume_library_changed\":false,\"typed_ingress_framework_patch_changed\":false,\"unchanged_existing\":464}")
+ 
+ 
+ def identity(info):
+@@ -217,24 +213,25 @@
+             all(c in '0123456789abcdef' for c in BUILD_RESULT_SHA) and
+             isinstance(BUILDER_BYTES, int) and 0 < BUILDER_BYTES <= 64*1024*1024 and
+             isinstance(BUILD_RESULT_BYTES, int) and 0 < BUILD_RESULT_BYTES <= 4*1024*1024,
+-            'UNBOUND_TEMPLATE_REQUIRES_ACTUAL_BUILDER467_COMPILE_PASS')
++            'ACTUAL_BUILDER468_COMPILE03_REQUIRED')
+     result, pin = json_pin(BUILD_RESULT, BUILD_RESULT_SHA, BUILD_RESULT_BYTES)
+-    staged, _ = json_pin(HERE / 'actual-builder467-result.json', BUILD_RESULT_SHA, BUILD_RESULT_BYTES)
++    staged, _ = json_pin(HERE / 'actual-builder468-result.json', BUILD_RESULT_SHA, BUILD_RESULT_BYTES)
+     require(result == staged and result['state'] == 'PASS' and
+-            result['focused_tests_passed'] == 18 and result['updater_focused_tests_passed'] == 9 and
++            result['focused_tests_passed'] == 24 and result['updater_focused_tests_passed'] == 15 and
+             result['source_resume_tests_passed'] == 9 and result['expected_test_names'] == EXPECTED_TESTS and
+             result['expected_source_resume_test_names'] == EXPECTED_SOURCE_TESTS and
+-            result['actual_registered_test_count'] == 199 and result['source_actual_registered_test_count'] == 20 and
+-            result['original_projection_tests_passed'] == 7 and result['typed_ingress_lock_tests_passed'] == 2,
+-            'actual builder467 compile and recovery-control qualification differs')
++            result['actual_registered_test_count'] == 205 and result['source_actual_registered_test_count'] == 20 and
++            result['original_projection_tests_passed'] == 7 and result['typed_ingress_lock_tests_passed'] == 2 and
++            result['provider_closure_tests_passed'] == 6,
++            'actual builder468 compile03 and exact 24-control qualification differs')
+     commands = result['commands']
+     require(len(commands) == len(EXPECTED_COMPILE_LABELS) and
+             {row['label'] for row in commands} == set(EXPECTED_COMPILE_LABELS) and
+             all(row['returncode'] == 0 and row['timed_out'] is False for row in commands),
+             'actual compiler command closure is incomplete')
+     for offset, names, count, elf_key, gates_key in [
+-        (0, EXPECTED_TESTS, 199, 'test_elf', 'focused_result_gates'),
+-        (9, EXPECTED_SOURCE_TESTS, 20, 'source_test_elf', 'source_resume_result_gates')]:
++        (0, EXPECTED_TESTS, 205, 'test_elf', 'focused_result_gates'),
++        (100, EXPECTED_SOURCE_TESTS, 20, 'source_test_elf', 'source_resume_result_gates')]:
+         require(len(result[gates_key]) == len(names), 'actual focused result gate count differs')
+         for position, name in enumerate(names):
+             index = offset + position
+@@ -266,15 +263,14 @@
+             'actual builder resource or child gate differs')
+     delta = result['source_delta']
+     require(result['copied_manifest']['sha256'] == SOURCE_MANIFEST_SHA and
+-            result['copied_manifest']['bytes'] == 91945 and delta['actual_source_file_count'] == 466 and
+-            delta['changed_existing'] == ['tools/droidloom-source/src/lib.rs',
+-                'tools/droidloom-update/src/android.rs', 'tools/droidloom-update/src/main.rs'] and
+-            delta['added'] == ['tools/droidloom-source/src/resume.rs'] and delta['unchanged_existing'] == 462 and
+-            delta['builder_revision_name'] == '467-source-resume' and
+-            delta['Cargo_lock_or_dependency_manifest_changed'] is False and
+-            delta['Go5_or_Blueprint_patch_changed'] is False and delta['source_lock_changed'] is False and
+-            delta['real_source_staging_accessed'] is False and result['actual_device_staging_reuse_qualified'] is False,
+-            'builder source is not the exact reviewed three-replacement/one-module successor')
++            result['copied_manifest']['bytes'] == 97525 and delta == EXPECTED_SOURCE_DELTA and
++            delta['actual_source_file_count'] == 491 and delta['unchanged_existing'] == 464 and
++            delta['changed_existing'] == ['tools/droidloom-update/src/android.rs',
++                'tools/droidloom-update/src/native_role_ingress.rs'] and len(delta['added']) == 25 and
++            delta['builder_revision_name'] == '468-provider-closure' and
++            result['actual_device_staging_reuse_qualified'] is False and
++            'HOME' not in result['build_environment'],
++            'builder source is not the exact reviewed 491-file provider-closure successor')
+     require(result['actual_toolchain']['rustup_proxy_executed'] is False and
+             result['actual_toolchain']['rustup_proxy_changed_bytes_approved_for_execution'] is False and
+             result['runtime_authorization_enabled'] is False and
+@@ -286,11 +282,12 @@
+             builder['bytes'] == BUILDER_BYTES and builder['identity'][2] & 0o111,
+             'actual builder ELF identity/content changed')
+     source_map, source_pin = json_pin(BUILD_PARENT / 'attempt01/copied-builder-source-manifest.json',
+-                                    SOURCE_MANIFEST_SHA, 91945)
+-    staged_map, _ = json_pin(HERE / 'expected-builder467-manifest.json', SOURCE_MANIFEST_SHA, 91945)
+-    require(source_map == staged_map and len(source_map) == 466 and
++                                    SOURCE_MANIFEST_SHA, 97525)
++    staged_map, _ = json_pin(HERE / 'expected-builder468-manifest.json', SOURCE_MANIFEST_SHA, 97525)
++    require(source_map == staged_map and len(source_map) == 491 and
+             source_map[GO_PATCH]['sha256'] == GO_PATCH_SHA and
+-            source_map['android/manifest/m2-role-ingress-source-lock.json']['sha256'] == EXTENDED_LOCK_SHA,
++            source_map['android/manifest/m2-role-ingress-source-lock.json']['sha256'] == PREVIOUS_TYPED_LOCK_SHA and
++            source_map['android/manifest/m2-role-ingress-provider-source-lock.json']['sha256'] == EXTENDED_LOCK_SHA,
+             'full builder source manifest differs')
+     return result, pin, source_map, source_pin, builder
+ 
+@@ -354,8 +351,8 @@
+ 
+ def prior_failure_contract():
+     authorities = [
+-        (PREVIOUS_ROOT / 'attempt-01/terminal.json', 'prior-framework-inner-terminal.json', PRIOR_INNER_SHA, 28758),
+-        (PREVIOUS_ROOT / 'build-fences-01/terminal.json', 'prior-framework-outer-terminal.json', PRIOR_OUTER_SHA, 1177),
++        (PREVIOUS_ROOT / 'attempt-01/terminal.json', 'prior-framework-inner-terminal.json', PRIOR_INNER_SHA, 2246),
++        (PREVIOUS_ROOT / 'build-fences-01/terminal.json', 'prior-framework-outer-terminal.json', PRIOR_OUTER_SHA, 1150),
+     ]
+     documents = []
+     pins = []
+@@ -366,56 +363,61 @@
+         documents.append(document)
+         pins.extend([row, staged_row])
+     inner, outer = documents
+-    require(inner['state'] == 'FAILED' and inner['builder_returncode'] == -9 and
+-            inner['error'].startswith('TimeoutExpired(') and inner['error'].endswith(', 6100)') and
+-            inner['cleanup']['complete'] is True and inner['cleanup']['errors'] == [] and
+-            len(inner['cleanup']['children']) == 296 and
+-            len({row['pid'] for row in inner['cleanup']['children']}) == 296 and
+-            all(row['reaped'] is True for row in inner['cleanup']['children']) and
++    require(inner['state'] == 'FAILED' and inner['builder_returncode'] == 1 and
++            inner['error'] == "RuntimeError('normal builder returned 1')" and
++            inner['cleanup'] == {'complete': True,
++                'children': [{'pid': 3779001, 'wait_status': 65280, 'reaped': True}], 'errors': []} and
+             inner['normal_command_completion_gate'] is None and
+-            inner['source_projection_journal_present'] is False and inner['input_after_qualified'] is True,
+-            'prior framework timeout or complete owned-child retirement is not the actual fixed result')
++            inner['source_projection_journal_present'] is False and
++            inner['input_after_qualified'] is True and inner['input_after_error'] is None and
++            inner['owned_resource_gate']['pass'] is True and
++            inner['stdout_sha256'] == 'f001d60ee86a9c0b5fe32ca98164b0bb1127826aa1e3c9ba97a7ce834c0d0e4e' and
++            inner['stderr_sha256'] == '12c13559ad20843f350c14e16f32e149cf1c2c4f4ed339d9c862e0e1c2ad753b',
++            'prior normal strict failure or complete owned-child retirement differs')
+     require(outer['state'] == 'FAILED' and outer['inner_returncode'] == 1 and
+             outer['main_fence_assessment']['main_fence_pass'] is True and
+             outer['main_fence_assessment']['identity_or_limit_changes'] == [] and
+             outer['main_fence_assessment']['main_oom_delta_zero'] is True,
+             'prior fixed Main fence result differs')
+-    observed, row = json_pin(HERE / 'actual-staging-read03.json', STAGING_OBSERVATION_SHA, 211213)
++    published, row = json_pin(HERE / 'actual-published-source-manifest.json',
++                             PUBLISHED_MANIFEST_SHA, PUBLISHED_MANIFEST_BYTES)
+     pins.append(row)
+-    require(observed['complete'] is True and observed['error'] is None and observed['read_only'] is True and
+-            observed['source_lock_sha256'] == EXTENDED_LOCK_SHA and len(observed['projects']) == 214 and
+-            observed['HEAD_and_origin_match_candidates'] == 145 and
+-            observed['staging_before'] == observed['staging_after'] and
+-            observed['reuse_authorized'] is False and observed['production_ready'] is False and
+-            all(row['reuse_qualified'] is False for row in observed['projects']),
+-            'actual known-staging observation was changed or promoted to reuse qualification')
+-    return observed, pins
+-
++    require(published['schema_version'] == 1 and published['source_lock_sha256'] == PREVIOUS_TYPED_LOCK_SHA and
++            published['plan']['schema_version'] == 1 and published['plan']['unrestricted_repo_sync'] is False and
++            published['plan']['superproject_commit'] == '28f0bbddc24d56c8ec5a8df5342ac7a292184039' and
++            len(published['plan']['projects']) == 214 and len(published['plan']['links']) == 8,
++            'actual published source manifest differs')
++    bp_row, bp_raw = held_file(HERE / 'actual-native-prebuilt-Android.bp', 65536, True)
++    require(bp_row['bytes'] == NATIVE_PREBUILT_BP_BYTES and bp_row['sha256'] == NATIVE_PREBUILT_BP_SHA and
++            hashlib.sha1(b'blob ' + str(len(bp_raw)).encode() + b'\0' + bp_raw).hexdigest() == NATIVE_PREBUILT_BP_GIT_SHA,
++            'actual locked native prebuilt provider body differs')
++    pins.append(bp_row)
++    return published, pins
+ 
+-def fresh_staging_binding(context, scope, state, current_work):
+-    observed = context['staging_observation']
+-    keys = ['device', 'inode', 'mode', 'uid', 'gid', 'bytes', 'mtime_ns', 'ctime_ns']
+-    require(current_work == [observed['work'][key] for key in keys],
+-            'workspace metadata differs from the complete post-timeout observation')
+-    fd = scope['directory'](RESUME_STAGING, state)
++def fresh_published_binding(context, scope, state, current_work):
++    require(current_work[:5] == [66306, 41861500, 16832, 1000, 1000],
++            'published workspace no longer has the fixed owned directory identity')
++    fd = scope['directory'](PUBLISHED_SOURCE, state)
+     actual = scope['full_identity'](os.fstat(fd))
+-    require(actual == [observed['staging_after'][key] for key in keys] and
+-            actual[:5] == [66306, 41861660, 16832, 1000, 1000],
+-            'explicit staging is not the actual observed private directory object')
+-    for path in [WORK / 'aosp-source', WORK / 'source-projection.json',
+-                 RESUME_STAGING / '.droidloom-source-manifest.json']:
+-        try:
+-            info = path.lstat()
+-        except FileNotFoundError:
+-            continue
+-        raise RuntimeError('unexpected existing resume publication/journal/manifest: ' + str(path))
+-    return {'work_identity': current_work, 'staging_identity': actual,
+-        'known_staging_path': str(RESUME_STAGING), 'historical_HEAD_origin_candidates': 145,
+-        'candidate_prefix_reuse_qualified': False, 'project146_reuse_qualified': False,
++    require(actual[:5] == [66306, 41861660, 16832, 1000, 1000],
++            'published source is not the actual observed private directory object')
++    manifest, row = json_pin(PUBLISHED_SOURCE / '.droidloom-source-manifest.json',
++                             PUBLISHED_MANIFEST_SHA, PUBLISHED_MANIFEST_BYTES)
++    require(manifest == context['published_manifest'], 'published source manifest changed before normal qualification')
++    journal = WORK / 'source-projection.json'
++    try:
++        journal.lstat()
++    except FileNotFoundError:
++        pass
++    else:
++        raise RuntimeError('unexpected existing source projection journal')
++    return {'work_identity': current_work, 'source_identity': actual,
++        'published_source_path': str(PUBLISHED_SOURCE), 'manifest': row,
++        'previous_locked_projects': 214, 'new_locked_projects': 224, 'root_links': 8,
++        'all_projects_reuse_qualified_by_wrapper': False,
+         'all_project_qualification_deferred_to_normal_builder_under_existing_work_source_locks': True,
+-        'project146_unresolved_branch_absent_index_empty_private_lock_and_exact_origin_sparse_are_fresh_gates': True,
+-        'source_manifest_written_by_wrapper': False}
+-
++        'normal_full_old_lock_verification_then_monotonic_reconciliation': True,
++        'source_manifest_written_by_wrapper': False, 'explicit_resume_staging': None}
+ 
+ def observe_inputs(context, first):
+     scope = context['inventory_scope']
+@@ -430,7 +432,7 @@
+         require(current_work[:5] == context['prepared']['new_work_identity'][:5],
+                 'owned work directory identity/owner/mode changed')
+         if first:
+-            observations['resume_staging'] = fresh_staging_binding(context, scope, state, current_work)
++            observations['published_source'] = fresh_published_binding(context, scope, state, current_work)
+         fixed = {}
+         for asset in scope['ASSETS']:
+             row, _ = held_file(WORK / asset['destination'], asset['bytes'])
+@@ -452,7 +454,7 @@
+                 'metadata_sha256': observed['metadata_sha256']}
+         builder_tree = scope['tree_inventory'](BUILD_SOURCE, state)
+         portable = {name: row for name, row in builder_tree['files'].items() if row['kind'] != 'directory'}
+-        require(portable == context['builder_map'], 'actual 466-file builder source changed')
++        require(portable == context['builder_map'], 'actual 491-file builder source changed')
+         observations['builder_source'] = {'complete_file_map_matched': True, 'files': len(portable),
+                                           'held_root': builder_tree['held_root']}
+         head, head_bytes = held_file(ENGINE_SOURCE / '.git/HEAD', 128, True)
+@@ -467,6 +469,12 @@
+             after, _ = held_file(row['path'], row['bytes'])
+             require(after == row, 'held actual content manifest changed: ' + key)
+         if not first:
++            published_fd = scope['directory'](PUBLISHED_SOURCE, state)
++            published_identity = scope['full_identity'](os.fstat(published_fd))
++            require(published_identity[:5] ==
++                    context['initial_observations']['published_source']['source_identity'][:5],
++                    'published source directory object changed during the normal build')
++            observations['published_source_identity_after'] = published_identity
+             require(fixed == context['initial_observations']['fixed_assets'] and
+                     head == context['initial_observations']['Teto_HEAD'],
+                     'fixed asset or HEAD object changed during the normal build')
+@@ -497,36 +505,60 @@
+         'manifest_pins': manifest_pins, 'compiled': compiled, 'compiled_pin': compiled_pin,
+         'builder_map': builder_map, 'builder_map_pin': builder_map_pin, 'builder_pin': builder_pin,
+         'inventory_scope': scope, 'inventory_pin': inventory_pin}
+-    context['staging_observation'], context['prior_failure_authority_pins'] = prior_failure_contract()
++    context['published_manifest'], context['prior_failure_authority_pins'] = prior_failure_contract()
+     context['initial_observations'] = observe_inputs(context, True)
+     return context
+ 
+ 
+ def plan():
+-    return {'schema': 1, 'state': ('PLAN_NORMAL_STRICT_FRAMEWORK_RESUME' if BUILD_RESULT_SHA is not None else
+-                             'UNBOUND_TEMPLATE_AWAITING_ACTUAL_BUILDER467_COMPILE_PASS'), 'root': str(ROOT),
+-        'work': str(WORK), 'aosp_source': str(WORK / 'aosp-source'), 'out': str(OUT),
++    return {'schema': 1, 'state': 'PLAN_NORMAL_STRICT_FRAMEWORK_PROVIDER_BUILD',
++        'root': str(ROOT), 'work': str(WORK), 'aosp_source': str(PUBLISHED_SOURCE), 'out': str(OUT),
+         'builder_result_sha256': BUILD_RESULT_SHA, 'work_preparation_sha256': PREPARATION_SHA,
+         'builder_sha256': BUILDER_SHA, 'builder_source_manifest_sha256': SOURCE_MANIFEST_SHA,
++        'builder_source_files': 491, 'actual_host_compile_commands': 62, 'actual_exact_controls': 24,
+         'argv': [str(BUILDER), '--source', str(BUILD_SOURCE), '--jobs', '1',
+-                 'native-role-ingress-build', '--work', str(WORK), '--out', str(OUT),
+-                 '--resume-source-staging', str(RESUME_STAGING)],
+-        'targets': TARGETS, 'dependency_mode': 'Strict', 'source_materialization': 'normal 214 locked projects and 8 root links; explicit owned staging, all projects requalified',
+-        'resume_staging': str(RESUME_STAGING), 'historical_HEAD_origin_candidates': 145,
++                 'native-role-ingress-build', '--work', str(WORK), '--out', str(OUT)],
++        'targets': TARGETS, 'dependency_mode': 'Strict', 'ALLOW_MISSING_DEPENDENCIES': False,
++        'source_materialization': 'fresh verification of the published 214-project exact old lock, then normal monotonic reconciliation to 224 locked projects and 8 root links',
++        'published_source_manifest_sha256': PUBLISHED_MANIFEST_SHA,
+         'reuse_qualified_by_plan': False, 'prior_inner_failure_sha256': PRIOR_INNER_SHA,
+-        'prior_outer_failure_sha256': PRIOR_OUTER_SHA, 'prior_reaped_children': 296,
++        'prior_outer_failure_sha256': PRIOR_OUTER_SHA, 'prior_reaped_children': 1,
++        'first_attempt_timeout_and_296_reaped_history_retained': True,
+         'normal_lock_paths': [str(WORK / 'package-build.lock'), str(WORK / 'aosp-source-update.lock')],
+         'normal_package_and_source_locks': True, 'normal_projection_journal_and_recovery': True,
+         'old_shared_AOSP_source_modified': False, 'source_manifest_fabrication': False,
+         'memory_max_bytes': MEMORY_MAX, 'memory_swap_max_bytes': SWAP_MAX,
+         'fresh_MemAvailable_min_bytes': MIN_AVAILABLE, 'fresh_SwapFree_min_bytes': MIN_FREE_SWAP,
++        'prior_normal_peak_bytes': 7947964416, 'prior_normal_swap_peak_bytes': 50835456,
++        'actual_static_compile_peak_bytes': 1073741824, 'actual_static_compile_memory_max_events': 1732,
++        'static_compile_pressure_not_normal_Soong_qualification': True,
+         'cpu_quota_percent': 200, 'jobs': 1, 'builder_wait_seconds': 6100,
+-        'automatic_retry': False, 'Main_actions': 0, 'Android_actions': 0, 'runtime_authorization_enabled': False,
+-        'Mesa_tools_not_fabricated_or_prequalified': True,
++        'automatic_retry': False, 'Main_actions': 0, 'Android_actions': 0,
++        'old_QA_epoch_invalid': True, 'new_QA_epoch_qualified': False,
++        'runtime_authorization_enabled': False, 'Mesa_tools_not_fabricated_or_prequalified': True,
+         'strict_dependency_failure_not_suppressed': True,
+         'normal_build_success_not_complete_Java_JNI_qualification': True}
+ 
++def expected_published_manifest(lock):
++    projects = []
++    for project in lock['projects']:
++        row = {'path': project['path'], 'url': lock['remote_base'] + project['name'],
++               'commit': project['commit'], 'purpose': project['purpose']}
++        if project.get('sparse_paths'):
++            row['sparse_paths'] = project['sparse_paths']
++        projects.append(row)
++    return {'schema_version': 1, 'source_lock_sha256': EXTENDED_LOCK_SHA,
++            'plan': {'schema_version': 1, 'superproject_commit': lock['superproject']['commit'],
++                     'projects': projects, 'links': lock['links'], 'unrestricted_repo_sync': False}}
+ 
++
++def qualify_completed_manifest(document, lock):
++    expected = expected_published_manifest(lock)
++    require(document == expected and len(document['plan']['projects']) == 224 and
++            len(document['plan']['links']) == 8,
++            'normal published manifest is not the exact complete new locked plan')
++
++
+ def completion_gate(context):
+     records = {}
+     for name in ['droidloom-role-ingress-attempt.json', 'droidloom-role-ingress-inputs.json',
+@@ -550,10 +582,19 @@
+             'normal command completion record differs')
+     require(not (WORK / 'source-projection.json').exists() and not (WORK / 'source-projection.json').is_symlink(),
+             'normal source projection did not finish restoration')
+-    require(inputs['host_only_libandroid_runtime_is_insufficient'] is True and
++    require(inputs['previous_typed_source_lock_sha256'] == PREVIOUS_TYPED_LOCK_SHA and
++            inputs['provider_source_lock_extension_exact'] is True and
++            inputs['host_only_libandroid_runtime_is_insufficient'] is True and
+             inputs['complete_framework_Java_and_Android_TU_verified'] is False and
+             inputs['transitive_build_closure_qualified'] is False,
+             'framework input record claims an unverified artifact or host-only qualification')
++    lock, _ = json_pin(BUILD_SOURCE / 'android/manifest/m2-role-ingress-provider-source-lock.json',
++                       EXTENDED_LOCK_SHA, 96322)
++    manifest_pin, manifest_raw = held_file(PUBLISHED_SOURCE / '.droidloom-source-manifest.json', 1024*1024, True)
++    qualify_completed_manifest(json.loads(manifest_raw), lock)
++    native_bp, _ = held_file(PUBLISHED_SOURCE / 'prebuilts/misc/common/robolectric-native-prebuilt/Android.bp', 65536)
++    require(native_bp['bytes'] == NATIVE_PREBUILT_BP_BYTES and native_bp['sha256'] == NATIVE_PREBUILT_BP_SHA,
++            'locked native prebuilt provider body differs after the normal build')
+     restored = {}
+     expected_paths = {
+         'core/java/com/android/internal/os/Zygote.java',
+@@ -581,6 +622,8 @@
+     return {'state': 'NORMAL_COMMAND_COMPLETED_ARTIFACT_QUALIFICATION_PENDING',
+         'records': {name: row for name, (_, row) in records.items()},
+         'typed_originals_restored': restored,
++        'actual_published_manifest': manifest_pin, 'published_projects': 224, 'published_root_links': 8,
++        'actual_locked_native_prebuilt_provider': native_bp,
+         'targets': TARGETS, 'dependency_mode': 'Strict', 'source_projection_restored': True,
+         'Java_framework_implementation_jar_qualified': False, 'Android_JNI_TU_and_linked_library_qualified': False,
+         'host_only_ELF_or_header_jar_is_sufficient': False, 'runtime_authorization_enabled': False,
+@@ -596,7 +639,7 @@
+         require(row == wanted, 'runtime input authority changed: ' + str(path))
+     for wanted in context['prior_failure_authority_pins']:
+         row, _ = held_file(wanted['path'], wanted['bytes'])
+-        require(row == wanted, 'original failure/staging observation authority changed')
++        require(row == wanted, 'original failure or staged source authority changed')
+     return observations
+ 
+ 
+@@ -632,7 +675,7 @@
+     subreaper()
+     require(child_ids() == [], "controller has preexisting children or cannot enumerate its own children")
+     ATTEMPT.mkdir(mode=0o700)
+-    claim = {"schema": 1, "state": "STARTING_TYPED_FRAMEWORK_NORMAL_STRICT_RESUME_TWO_TARGET_BUILD",
++    claim = {"schema": 1, "state": "STARTING_TYPED_FRAMEWORK_NORMAL_STRICT_PROVIDER_TWO_TARGET_BUILD",
+              "started_utc": utc(), "preparation_sha256": expected_sha, "plan": plan(),
+              "mem_available_before": memory["MemAvailable"], "swap_free_before": memory["SwapFree"],
+              "cpu_affinity_before": affinity,
+@@ -725,8 +768,9 @@
+                     "work_preparation_sha256": PREPARATION_SHA, "builder_compile_sha256": BUILD_RESULT_SHA,
+                     "builder_sha256": BUILDER_SHA, "strict_targets": TARGETS,
+                     "prior_failed_inner_sha256": PRIOR_INNER_SHA, "prior_failed_outer_sha256": PRIOR_OUTER_SHA,
+-                    "explicit_resume_staging": str(RESUME_STAGING),
+-                    "source_progress_path": str(OUT / "droidloom-source-progress.jsonl"),
++                    "published_source_path": str(PUBLISHED_SOURCE),
++                    "source_reconciliation_uses_normal_builder": True,
++                    "old_QA_epoch_invalid": True, "new_QA_epoch_qualified": False,
+                     "complete_framework_Java_and_Android_TU_qualified": False,
+                     "runtime_authorization_enabled": False, "Main_actions": 0, "Android_actions": 0,
+                     "service_started": False, "all_apps_ready": False}

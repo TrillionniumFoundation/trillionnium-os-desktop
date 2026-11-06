@@ -1,0 +1,125 @@
+{
+  "schema": 1,
+  "files": {
+    "main_snapshot.py": {
+      "bytes": 14294,
+      "sha256": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf"
+    },
+    "frozen-work-inventory.py": {
+      "bytes": 48443,
+      "sha256": "203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab"
+    },
+    "actual-work-preparation.json": {
+      "bytes": 11091,
+      "sha256": "ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c"
+    },
+    "expected-builder468-manifest.json": {
+      "bytes": 97525,
+      "sha256": "e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee"
+    },
+    "prior-framework-inner-terminal.json": {
+      "bytes": 2246,
+      "sha256": "80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc"
+    },
+    "prior-framework-outer-terminal.json": {
+      "bytes": 1150,
+      "sha256": "2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059"
+    },
+    "actual-published-source-manifest.json": {
+      "bytes": 97784,
+      "sha256": "73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d"
+    },
+    "actual-native-prebuilt-Android.bp": {
+      "bytes": 1017,
+      "sha256": "d1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a"
+    },
+    "actual-provider-source-lock.json": {
+      "bytes": 96322,
+      "sha256": "5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7"
+    },
+    "framework_build.py": {
+      "bytes": 55314,
+      "sha256": "47ce174f0401a647ee1da7a78d0578a45185affd3e128d35142068a2a9c18d6b"
+    },
+    "fenced_build.py": {
+      "bytes": 25481,
+      "sha256": "76ee477835d0af67033eab794a06cc8fb2cd6c60d2bfd759035aeeb0396575c5"
+    },
+    "actual-builder468-result.json": {
+      "bytes": 161423,
+      "sha256": "871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8"
+    },
+    "pure_controls.py": {
+      "bytes": 9573,
+      "sha256": "5c7139c4d21181d742cd43feb272cc14cc1f837b18804e633fa8c77836100c38"
+    },
+    "capture_lifecycle.py": {
+      "bytes": 25227,
+      "sha256": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28"
+    },
+    "root_snapshot_supervisor.py": {
+      "bytes": 12041,
+      "sha256": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7"
+    }
+  },
+  "pure_controls": {
+    "schema": 1,
+    "state": "PASS",
+    "passed": 40,
+    "cases": [
+      "current_identity_android_init",
+      "current_identity_daemon",
+      "current_identity_launcher",
+      "current_identity_presenter",
+      "current_identity_surfaceflinger",
+      "current_identity_zygote64",
+      "current_identity_system_server",
+      "wrong_pid",
+      "wrong_uid",
+      "wrong_namespace_pid",
+      "wrong_cgroup",
+      "wrong_mount_namespace",
+      "wrong_user_namespace",
+      "wrong_root_inode",
+      "observed_dead_process",
+      "birth_changed_during_observation",
+      "parent_changed_during_observation",
+      "process_liveness_not_qualified",
+      "old_qa_zygote_cannot_qualify",
+      "clean_fd_completion",
+      "close_error_cannot_emit_ok",
+      "deadline_cannot_emit_ok",
+      "primary_failure_preserved_over_cleanup_and_deadline",
+      "complete_expected_224_project_plan",
+      "partial_project_list",
+      "wrong_commit",
+      "unlisted_project",
+      "changed_root_link",
+      "old_source_lock_hash",
+      "unrestricted_sync",
+      "actual_old_214_manifest_is_not_current_completion",
+      "fresh_memory_exact_minimum",
+      "insufficient_memory_no_retry",
+      "insufficient_swap_no_retry",
+      "same_current_seven_roles_pass",
+      "different_current_process_fails_fence",
+      "main_oom_delta_fails",
+      "memory_counter_regression",
+      "pressure_preserved_without_causal_or_continuous_claim",
+      "host_snapshot_cannot_qualify_QA"
+    ],
+    "scope": "Actual pure Python functions with synthetic identity/resource/failure fixtures and exact staged lock metadata; no device reuse, Main observation, Rust or Soong qualification.",
+    "remote_reads": 0,
+    "subprocesses": 0,
+    "Main_actions": 0,
+    "Android_actions": 0,
+    "normal_build_executed_by_controls": false
+  },
+  "capture_lifecycle_controls_expected": 4,
+  "capture_lifecycle_controls_executed": false,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "old_QA_epoch_invalid": true,
+  "new_QA_epoch_qualified": false,
+  "only_owned_root_written": true
+}

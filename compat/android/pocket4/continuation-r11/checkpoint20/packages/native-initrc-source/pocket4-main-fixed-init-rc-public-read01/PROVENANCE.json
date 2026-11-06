@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_NOT_DISPATCHED",
+  "frozen_utc": "2026-11-06 08:44:18 UTC",
+  "authority_source": {
+    "path": "main_snapshot.py",
+    "bytes": 14294,
+    "sha256": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+    "git_blob_sha1": "afaa057e18e32f6ffde8055779e5e2e0a2152fb0",
+    "subset": "EXPECTED.android_init and BOOT_ID",
+    "subset_exact": true
+  },
+  "protected_init": {
+    "pid": 3588093,
+    "start_ticks": 80797014,
+    "ppid": 3588092,
+    "uids": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "namespace_pids": [
+      3588093,
+      1
+    ],
+    "cgroup": "0::/system.slice/droidloomd.service\n",
+    "namespaces": {
+      "mnt": "mnt:[4026533284]",
+      "pid": "pid:[4026533288]",
+      "user": "user:[4026531837]"
+    },
+    "root_identity": {
+      "device": 106,
+      "inode": 1
+    }
+  },
+  "boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+  "upstream_project": "system/core",
+  "upstream_locked_commit": "545d2487e38192a2ce25040897ced877cf6b4f53",
+  "upstream_files": [
+    {
+      "path": "rootdir/init.rc",
+      "bytes": 56559,
+      "sha256": "8b8d9d9c2c17fcb1f907b0a369aae03632976dff8f4cf603b1d5ef83cad78225",
+      "git_blob_sha1": "5e26d127ac4aec5fd7b4a7c7c4e17460c4828638"
+    },
+    {
+      "path": "rootdir/init.zygote64.rc",
+      "bytes": 901,
+      "sha256": "7be8fde03ec2cc4417aecf1a79163e0e4088fdff02ee6cd2426d02f91127e479",
+      "git_blob_sha1": "342212123de59bebaf3eb4d4c3dca7147affe5c4"
+    }
+  ],
+  "prior_proposal": {
+    "tree": "f8a5af3c6073881871c21f536a44ffdb4e210717",
+    "path": "pocket4-main-framework-cause-journal05/upstream-init-rc-review.json",
+    "git_blob_sha1": "074c1d86922cbfbe295182a9bd8e2bb347f17f88",
+    "fixed_actual_paths_unchanged": true
+  },
+  "prior_journal05_actual": {
+    "tree": "29fddc98ccd78e7e26cf8f1a071c82497a6c3a30",
+    "stdout_bytes": 40310,
+    "stdout_sha256": "7fb74d042c8ccaf9e315cdf88a23919c05a572e636f053ab0fbeca837bc4ed95",
+    "stdout_git_blob_sha1": "92ee006955bd01aa3ad47791a20647266c95e5d4",
+    "control_template_still_null": true,
+    "SIGKILL_sender_proved": false,
+    "OOM_proved": false
+  },
+  "parent_transport": {
+    "prior_journal05_request_git_blob_sha1": "f6f8a00baab07accbf7d0e8170b270ab1256d12f",
+    "same_executable_argv_cwd_cpu_memory_nice": true,
+    "new_key": true,
+    "timeout_seconds": 20
+  },
+  "actual_main_file_contents_observed_by_this_task": false,
+  "current_Main_uses_upstream_bytes_qualified": false,
+  "Hepta_called": false,
+  "refs_updated": false
+}

@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "state": "ROOT_REVIEWED_INDEPENDENT_HOST_STATIC_COMPILE03",
+  "source_tree": "e82614d6fd3dd47528397aaab2bfa70f7bf84c5f",
+  "source_preservation_tree": "8e942dafb87949ecffafab730c8cb42622fbd726",
+  "prior_root_compile02_full_source_review_tree": "cf3d3445a93bff2af8958fd254671472481ba6a8",
+  "request": {
+    "bytes": 967630,
+    "sha256": "c90957ea91b80c3ac86c2d268fc2037700d52c97aa213452618fc2d800aad18b",
+    "git_blob_sha1": "2e79c5c8ba99d643ef5a042232b87a2b8b71b089"
+  },
+  "stdin": {
+    "bytes": 886361,
+    "sha256": "9870cbec3436c245726dd193ffdc84d7850cdad80e083c9d03033ffb80c3598a",
+    "git_blob_sha1": "4f37fada9376a53fc0d966974ba9af55ed05f235"
+  },
+  "compiler": {
+    "bytes": 83254,
+    "sha256": "f4ce813255765107e82a8e1f2f6806f09e9decbf26fb8da5b1cefc44515e0adb",
+    "git_blob_sha1": "f600c698867feb5ce8f3e25ee1b87c22e74a9ab5"
+  },
+  "stage": {
+    "bytes": 19294,
+    "sha256": "a180e9d01fc2e026b1a30c18529a6ce2141ff398526fa8cbe63e7f6dc231ed02",
+    "git_blob_sha1": "7b54251cbb1e9303c9e04ffb1d70b05bb7abc0be"
+  },
+  "wrapper": {
+    "bytes": 1013,
+    "sha256": "3ea670d6cb02deaaed767b0004a086cf5723ef5875a488b0bb68cc0adabd5655",
+    "git_blob_sha1": "0763f34215acbf8fe65ead9fc984cd3f5d55cfa0"
+  },
+  "all_four_whole_inverse_checks": {
+    "compiler": true,
+    "stage": true,
+    "wrapper": true,
+    "request": true
+  },
+  "request_independently_regenerated_exact": true,
+  "independent_unified_diff_reverse_matches_original": true,
+  "compiler_changed_lines": [
+    200,
+    859,
+    888
+  ],
+  "only_semantic_change": "Remove the hardcoded child HOME value; retain fixed CARGO_HOME and explicit offline Rust tools. Other compiler changes only fresh ROOT and attempt scope; stage/wrapper changes only new root/compiler transport pins.",
+  "unchanged_transferred_sources": 29,
+  "reused_authorities": 11,
+  "source_map_files": 491,
+  "old_compile02_unrun": true,
+  "Main_Android_Soong_actions": 0,
+  "Main_identity_not_observed_by_compile": true,
+  "expected_commands": 62,
+  "expected_controls": 24,
+  "expected_not_actual": true,
+  "CPU_percent": 100,
+  "memory_max_bytes": 1073741824,
+  "nice": 15,
+  "parent_timeout_seconds": 600,
+  "controller_budget_seconds": 550,
+  "one_cpu_affinity_leaves_at_least_two_free": true,
+  "all_original_child_cleanup_resource_source_tool_guards_byte_exact": true,
+  "only_fresh_operator_owned_root_written": "/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106",
+  "automatic_retry": false,
+  "whole_apps_ready": 0
+}

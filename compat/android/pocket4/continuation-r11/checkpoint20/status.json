@@ -1,0 +1,327 @@
+{
+  "schema": "pocket4-r11-checkpoint20-reviewable",
+  "checkpoint": 20,
+  "cut_utc": "2026-11-06 09:09:22 UTC",
+  "publication_state": "IMMUTABLE_CANDIDATE_FOR_CAS_PUBLICATION",
+  "parent_head": "be6f2e4de9df1cc8077efacc37aae7311f1d1ef0",
+  "whole_apps_ready": 0,
+  "launcher_apps": 45,
+  "all_apps_production_ready": false,
+  "task_complete": false,
+  "current_gate": "CONTINUE_OWNED_RUNTIME_AND_APP_ACCEPTANCE_BILI02_LAUNCH_UNRESOLVED_NATIVE_NORMAL03_RUNNING",
+  "inherited_ledger": {
+    "manifest": {
+      "bytes": 4241192,
+      "sha256": "1c7824641869cade879228deee73b6705bd20c49b20fd9a1ad126bcac634109c",
+      "git_blob_sha1": "24bf28269e8cb1e89e722edc75681559a280eaa7"
+    },
+    "payload_rows_preserved": 12870,
+    "payload_bytes_preserved": 226728936,
+    "old_rows_preserved_in_exact_order": true,
+    "historical_raw_values_preserved_without_numeric_reserialization": true,
+    "all_prior_FAIL_UNKNOWN_and_per_app_ledgers_retained": true,
+    "unmentioned_apps_inherit_prior_status": true
+  },
+  "evidence_scope": {
+    "unique_original_archive_roots": 210,
+    "normalized_package_tree": "9a6ed17f967c5ed3758a6ebe4227860444e1e525",
+    "package_files": 1813,
+    "package_bytes": 44793533,
+    "dependency_normalization": "Only repeated dependency subtrees are replaced by exact original recursive Git tree metadata plus canonical dependency mounts. Every original source/evidence leaf body is retained unchanged and every original tree is reconstructible.",
+    "original_bodies_rewritten": 0,
+    "after_cut_facts_included": false,
+    "private_baseline_and_raw_Owner_init_excluded": true,
+    "source_controls_are_not_business_acceptance": true
+  },
+  "Main": {
+    "old_epoch": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "old_epoch_valid": false,
+    "current_epoch": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "new_epoch_qualified": true,
+    "current_zygote": {
+      "pid": 90360,
+      "start_ticks": 96586437
+    },
+    "current_system_server": {
+      "pid": 90516,
+      "start_ticks": 96586493
+    },
+    "baseline_controls": 32,
+    "compile_controls": 7,
+    "baseline_held_processes": 7,
+    "host_R5_staged": true,
+    "framework_exit_cause_proved": false,
+    "new_Main_deployment_or_restart_performed": false,
+    "baseline": {
+      "original_tree": "75590406335d2ae94ca5f2df485f7389a76275a0",
+      "canonical_package": "packages/app_baseline01-actual_tree"
+    },
+    "host_R5": {
+      "original_tree": "5741709dcd26d5ae70834973ad454dfb3f9387e6",
+      "canonical_package": "packages/host_r5_stage01-actual_tree"
+    }
+  },
+  "Bilibili": {
+    "whole_app_production_ready": false,
+    "current_helper_build_PASS": true,
+    "current_helper_install_PASS": true,
+    "current_helper_UID": 10152,
+    "current_helper_mtime_ns": "1793949174953297011",
+    "build": {
+      "original_tree": "7c7e423a2313ac9ae920fc3d417f37fd15ea9db7",
+      "canonical_package": "packages/app_bili_current_build02-actual_tree"
+    },
+    "install": {
+      "original_tree": "75d1f78c1057a52c015c29cfc8510b39886c05dc",
+      "canonical_package": "packages/app_bili_current_install01-actual_tree"
+    },
+    "player01": {
+      "state": "FAILED_BEFORE_FLOW_AT_EXACT_R8_REVEAL_PROTOCOL_REQUIRED",
+      "original_FAILURE_preserved": true,
+      "no_launch_no_navigation_proved": true,
+      "actual": {
+        "original_tree": "ba8b98027fca56f15a88bced6bec0e1e60d5bcee",
+        "canonical_package": "packages/bili_r9_player01-actual_tree"
+      },
+      "readonly_parent_and_absence": {
+        "original_tree": "479f28cdb6e2d041cd3798c164a9aba3a23ba267",
+        "canonical_package": "packages/bili_r9_player01_preflow_read01-actual_tree"
+      }
+    },
+    "player02": {
+      "source": "7791fd02f8285b12b333f7bbadfdfccef03db60c",
+      "pure_controls_pass": 21,
+      "controls": {
+        "original_tree": "bdbdc5faa67ad328c833208722cbb45b00ab5ef2",
+        "canonical_package": "packages/bili_r9_player02_controls01-actual_tree"
+      },
+      "fresh_nonce_count": 146,
+      "nonce_pool_committed_and_not_reusable": true,
+      "job_id": "1a1b018f0f9-fc05-6e0c",
+      "state": "FAILED_AT_LAUNCH_WORKER_RECEIPT_VALIDATION",
+      "coordinator_error": "02-launch did not complete exactly once with a preserved Main fence",
+      "actual_child_cause": "UNKNOWN_PENDING_PARENT_AND_CHILD_ORIGINAL_READ",
+      "launch_outcome": "UNKNOWN",
+      "cleanup_qualified": false,
+      "UI_window_released": false,
+      "terminal_snapshot": {
+        "original_tree": "9e980ae67eccb7f0343effa278ce1bc1a2cb4da0",
+        "canonical_package": "packages/bili-player02-terminal-snapshot"
+      }
+    }
+  },
+  "IHG": {
+    "whole_app_production_ready": false,
+    "current_helper_build_PASS": true,
+    "current_helper_install_PASS": true,
+    "current_helper_UID": 10153,
+    "current_helper_mtime_ns": "1793952064858420740",
+    "build": {
+      "original_tree": "186232efcb00de14b0595f3a1d28e1109008178d",
+      "canonical_package": "packages/app_ihg_current_build02-actual_tree"
+    },
+    "install": {
+      "original_tree": "5bd6ef27abdbbfdf5fcf2b6155f767ba3312fcbc",
+      "canonical_package": "packages/app_ihg_current_install02-actual_tree"
+    },
+    "pure_controls_pass": 106,
+    "controls": {
+      "original_tree": "a47238b71d309df435e46841c10563aff6b98872",
+      "canonical_package": "packages/ihg_current_stability_controls01-actual_tree"
+    },
+    "Search_Destination_flow": {
+      "state": "ACTUAL_SPECIFIC_FLOW_PASS",
+      "full_readiness_samples": 6,
+      "consecutive_runs": [
+        1,
+        1,
+        1,
+        2,
+        3,
+        4
+      ],
+      "last_four_span_ms": 5674,
+      "public_click_ACKs": 2,
+      "Main_maps_equal": 13,
+      "launch_commands": 12,
+      "inspect_commands": 91,
+      "cleanup_commands": 11,
+      "owned_task_removed": 871,
+      "prior_task_preserved": 870,
+      "source_and_target_identity_restored": true,
+      "flow_and_action_locks_retired": true,
+      "business_outcome_unknown": true,
+      "inspect_outcome_unknown": true,
+      "hotel_results_login_booking_qualified": false,
+      "whole_process_tree_cleanup_qualified": false,
+      "actual": {
+        "original_tree": "1b4679923eb02c9d8b52b06880a13eb97a06d383",
+        "canonical_package": "packages/ihg-current-ui01-actual"
+      },
+      "five_originals": {
+        "original_tree": "c980253ccde12225f59f8695dad8c5a103c56c0b",
+        "canonical_package": "packages/ihg_current_ui_five_read01-actual_tree"
+      }
+    }
+  },
+  "Amazon": {
+    "whole_app_production_ready": false,
+    "current_helper_build_PASS": true,
+    "current_helper_install_PASS": true,
+    "current_helper_UID": 10154,
+    "current_helper_mtime_ns": "1793952227914463155",
+    "current_target_APK_count": 3,
+    "old_one_APK_metadata_not_reused_as_authority": true,
+    "build": {
+      "original_tree": "527c6b697617b2a62976cbf3783a96a0787ece36",
+      "canonical_package": "packages/app_amazon_current_build02-actual_tree"
+    },
+    "install": {
+      "original_tree": "8aad9c4fc13609900289f1a2687cb38ce10e0169",
+      "canonical_package": "packages/app_amazon_current_install02-actual_tree"
+    },
+    "current_UI_state": "UNRUN",
+    "current_typed_flow_source": {
+      "original_tree": "5f3c8203d489b2c411e97ffeeed8c7cc35375aff",
+      "canonical_package": "packages/amazon-bestbuy-flow-preparation01"
+    },
+    "fresh_nonces": 32,
+    "fresh_nonce_actual": {
+      "original_tree": "3e0849794b62387fa02db17f94f94012488b8a0e",
+      "canonical_package": "packages/amazon_bestbuy_nonce42_01-actual_tree"
+    },
+    "historical_attribution_fix_retained": true
+  },
+  "BestBuy": {
+    "whole_app_production_ready": false,
+    "current_helper_build_PASS": true,
+    "current_helper_install_PASS": true,
+    "current_helper_UID": 10155,
+    "current_helper_mtime_ns": "1793952507726794262",
+    "current_target_APK_count": 3,
+    "build_commands": 12,
+    "build": {
+      "original_tree": "9d0febe87a758e1366e40877010e0adc2370d1c8",
+      "canonical_package": "packages/app_bestbuy_current_build02-actual_tree"
+    },
+    "install": {
+      "original_tree": "61d89c53dba74ee79d330f7c8af9c512050b3c0a",
+      "canonical_package": "packages/app_bestbuy_current_install02-actual_tree"
+    },
+    "current_UI_state": "UNRUN",
+    "three_round_readiness_source_retained": true,
+    "depth33_actual_exercised": false,
+    "visual_blank_or_splash_proved": false,
+    "current_typed_flow_source": {
+      "original_tree": "5f3c8203d489b2c411e97ffeeed8c7cc35375aff",
+      "canonical_package": "packages/amazon-bestbuy-flow-preparation01"
+    },
+    "fresh_nonces": 10,
+    "fresh_nonce_actual": {
+      "original_tree": "3e0849794b62387fa02db17f94f94012488b8a0e",
+      "canonical_package": "packages/amazon_bestbuy_nonce42_01-actual_tree"
+    }
+  },
+  "Owner19": {
+    "historical_property_abort_evidence_retained": true,
+    "runtime_property_root_cause_unproved": true,
+    "no_property_value_replacement_authorized": true
+  },
+  "Owner20": {
+    "static_C_build_PASS": true,
+    "static_C_tests": 34,
+    "static_C_assertions": 256,
+    "static_C_scope": "root-warmed SDK property cache then permanent UID1069; not cold-start or actual LMKD",
+    "build": {
+      "original_tree": "816a0407060727e91c4658c2abbc97bd1e6794e2",
+      "canonical_package": "packages/owner20_static_build02-actual_tree"
+    },
+    "collector_host_controls_pass": 38,
+    "explicit_dependency_ledger_controls_pass": 8,
+    "host_fixture_children_reaped": 3,
+    "tracked_FDs_closed": 12,
+    "host_FD_snapshots": 81,
+    "host_controls": {
+      "original_tree": "057bbb169390a8e1054c26caf99a1724292dfe09",
+      "canonical_package": "packages/owner20_collector_host_controls06-actual_tree"
+    },
+    "exact_libffi_FD4_provenance_only": true,
+    "installed_matching_libffi_source_proved": false,
+    "producer_original_global_FD_equality": false,
+    "producer_all_owned_files_and_fds_closed": false,
+    "producer_process_exit_pending_preserved": true,
+    "independent_terminal_exit0_full_durable_verified": true,
+    "current_Main_bridge_pure_controls_pass": 12,
+    "current_Main_bridge_controls": {
+      "original_tree": "709e452b5a9391add22ef2684e782830cb027210",
+      "canonical_package": "packages/owner20_current_main_controls01-actual_tree"
+    },
+    "current_Main_runtime_qualified": false,
+    "normal_prepare_at_cut": "UNRUN",
+    "normal_runtime_at_cut": "UNRUN",
+    "host05_bad_base64_carrier": "SOURCE_ONLY_NEVER_DISPATCHED_PRESERVED",
+    "host06_fix": "Only packet carrier and fresh request key changed; same audited runner and production files"
+  },
+  "Native": {
+    "compiler_source_closure_compile03_PASS": true,
+    "compile03_commands": 62,
+    "actual_registered_subset_tests": 24,
+    "source_map_files": 491,
+    "source_projects": 224,
+    "Blueprint_fixtures": 24,
+    "provider_stanzas": 59,
+    "compile03": {
+      "original_tree": "48335a3cb953c26fd90266d9221312186b90de60",
+      "canonical_package": "packages/native_compile03-actual_tree"
+    },
+    "normal02": {
+      "state": "FAILED_BEFORE_BUILDER_POPEN_AT_SWAPFREE_GATE",
+      "normal_Soong_executed": false,
+      "actual": {
+        "original_tree": "2c6b2f36f291712e86a83a13b4cb57c1d97388ed",
+        "canonical_package": "packages/native_normal02-actual_tree"
+      }
+    },
+    "normal03": {
+      "state": "RUNNING_AT_CUT",
+      "job_id": "1a1b000d2ca-fc05-6d5f",
+      "source": "d46d2b8cc5294fbf94f51774b3a3b0bae1ce1e51",
+      "own_memory_max_bytes": 10737418240,
+      "own_swap_max_bytes": 0,
+      "own_cpu_count": 2,
+      "build_jobs": 1,
+      "minimum_fresh_MemAvailable_bytes": 16106127360,
+      "resource_observed_MemAvailable_bytes": 16575651840,
+      "resource_observation_state": "OBSERVED_BEFORE_RESOURCE_ADMISSION",
+      "resource_decision_performed": false,
+      "global_SwapFree_is_observation_only": true,
+      "physical_RAM_reserved": false,
+      "strict_ALLOW_MISSING_DEPENDENCIES": "false",
+      "targets": [
+        "framework-minus-apex",
+        "libandroid_runtime"
+      ],
+      "snapshot": {
+        "original_tree": "66beb9bbd9b9351ca28a7016192c6196d69f66d4",
+        "canonical_package": "packages/native-normal03-running-snapshot"
+      }
+    },
+    "Soong_implementation_Java_Android_JNI_qualified": false,
+    "Main_install_or_restart_performed": false
+  },
+  "pending": [
+    "Read and reconcile Bili02 launch failure and owned cleanup before releasing the UI window; never replay the consumed request/nonces",
+    "Owner20 actual prepare, then exact prepared-byte binding and owned normal runtime SDK visibility",
+    "Amazon and BestBuy fresh typed flow controls and safe UI acceptance after Bili UI reconciliation",
+    "IHG destination entry/search results and the remaining whole-app gates",
+    "Native03 terminal result, actual implementation JAR Code and Android JNI object/final library qualification",
+    "Framework exit sender/cause remains unknown",
+    "All 45 whole-app production acceptance gates; other app statuses remain inherited"
+  ],
+  "cut_policy": {
+    "fixed_cut_immutable": true,
+    "subsequent_results_require_later_checkpoint": true,
+    "all_unknowns_and_failures_preserved": true,
+    "helper_install_or_one_UI_flow_is_not_whole_app_acceptance": true
+  }
+}

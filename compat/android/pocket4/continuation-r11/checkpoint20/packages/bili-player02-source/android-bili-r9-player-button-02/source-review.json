@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "status": "ACTUAL_NONCE_BOUND_SOURCE_READY_PENDING_ROOT_ACTUAL_21_CONTROLS_AND_UI",
+  "nonce_job": "1a1b0046b38-fc05-6d7f",
+  "source_manifest_sha256": "296da6728d720584339eb47e47801e0c458c3427d06e3a593acdc2f0bc3c6e5d",
+  "UI_request": {
+    "bytes": 133937,
+    "sha256": "dfcf993770272fa9106770981dfa941c9452f729656ac3d6e0fa6ed6d7d33865"
+  },
+  "controls_request": {
+    "bytes": 393344,
+    "sha256": "a14ac916a377b4d2603f56041adc2e33ed60b2282bcf794cc02b365dda82bd1a"
+  },
+  "six_runtime_full_inverse_to_failed01": true,
+  "only_functional_change": "--- failed01/controls_reveal.py\n+++ candidate02/controls_reveal.py\n@@ -8,7 +8,7 @@\n REVEAL_PLAN={'schema':1,'operation':'reveal_controls','nonces':{'before':'7e65b456089bb0698392f783357a2cae','inspect':'ce14ee5d1a039688216289101d440f98','action':'d47d8fec8e2dab51ffb564fdcaa1ca9d','after':'5ff2eb780bb86e8b4b257e853129bb9b'}}\n POST_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'d200cac267a9d79c05fc842bf87ae15b','inspect':'ba1e14ad6accb2701a67d0bba7f3126a','after':'cf0d6aef014f8c8b7f6c584ba56d7a3b'}}\n def validate(adapter,qa,used):\n- qa.require(qa.PROTOCOL=='pocket4-owned-bili-qa-v8','EXACT_R8_REVEAL_PROTOCOL_REQUIRED')\n+ qa.require(qa.PROTOCOL=='pocket4-owned-bili-qa-v9','EXACT_R9_REVEAL_PROTOCOL_REQUIRED')\n  for plan in(REVEAL_PLAN,POST_PLAN):\n   adapter.validate_plan(plan,qa)\n  qa.require(REVEAL_PLAN['operation']=='reveal_controls' and POST_PLAN['operation']=='inspect','ONE_REVEAL_AND_ONE_INDEPENDENT_READ_REQUIRED')\n--- failed01/owned_navigation.py\n+++ candidate02/owned_navigation.py\n--- failed01/playback_controls.py\n+++ candidate02/playback_controls.py\n@@ -5,7 +5,7 @@\n def selector(label):\n  return{'resource_id':RESOURCE,'class':'android.widget.ImageView','content_desc':label}\n def validate(adapter,qa,used):\n- qa.require(qa.PROTOCOL=='pocket4-owned-bili-qa-v8' and len(PAIRS)==2,'EXACT_R8_TWO_LABEL_TRANSITIONS_REQUIRED')\n+ qa.require(qa.PROTOCOL=='pocket4-owned-bili-qa-v9' and len(PAIRS)==2,'EXACT_R9_TWO_LABEL_TRANSITIONS_REQUIRED')\n  values=[]\n  for row,labels in zip(PAIRS,(('pause','暂停','播放'),('resume','播放','暂停'))):\n   qa.require((row['phase'],row['before_label'],row['after_label'])==labels,'FIXED_PAUSE_THEN_CONDITIONAL_RESUME_REQUIRED')\n--- failed01/post_foreground.py\n+++ candidate02/post_foreground.py\n--- failed01/stage_execute.py\n+++ candidate02/stage_execute.py\n--- failed01/video_navigation.py\n+++ candidate02/video_navigation.py\n",
+  "actual_nonce_count": 146,
+  "exclude_count": 337,
+  "previous_failed01_nonces_reused": false,
+  "previous_failed01_job": "1a1afec2d95-fc05-6cc3",
+  "previous_failed01_failure": "EXACT_R8_REVEAL_PROTOCOL_REQUIRED",
+  "previous_failed01_history_or_unknowns_reclassified": false,
+  "installed_UID": 10152,
+  "installed_mtime_ns": "1793949174953297011",
+  "original_helper_and_host_sources_unchanged": true,
+  "actual_R9_qa_and_adapter_bound": true,
+  "planned_controls": 21,
+  "previous_controls": 9,
+  "new_production_validator_controls": 12,
+  "original_52_AST_guards_preserved": true,
+  "Android_peer_static_review_completed": true,
+  "peer_scope": "New 12 controls and production validator call shapes; no Python execution and not final fresh packet.",
+  "local_Python_controls_executed": false,
+  "Hepta_dispatched": false,
+  "UI_attempted": false,
+  "whole_app_production_ready": false
+}

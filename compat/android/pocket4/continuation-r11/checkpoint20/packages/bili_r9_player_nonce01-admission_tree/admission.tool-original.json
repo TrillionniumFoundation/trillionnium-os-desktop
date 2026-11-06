@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-c",
+      "import hashlib,json,os,secrets,sys\nraw=sys.stdin.buffer.read(65537)\nassert len(raw)==50681 and hashlib.sha256(raw).hexdigest()=='a57f1eff5efa975249980d04d7de53194206a4d5382e2ae46776494665ef3da5'\np=json.loads(raw)\nlabels=p['labels'];excluded=set(p['exclude_values'])\nassert os.getuid()==os.geteuid()==1000\nassert p['count']==146 and len(labels)==len(set(labels))==146\nassert all(type(x) is str and 0<len(x)<200 for x in labels)\nassert len(excluded)==155 and all(type(x) is str and len(x)==32 and set(x)<=set('0123456789abcdef') for x in excluded)\nvalues={};seen=set(excluded)\nfor label in labels:\n    value=secrets.token_hex(16)\n    assert value not in seen\n    seen.add(value);values[label]=value\nassert len(set(values.values()))==146\nprint(json.dumps({'schema':'pocket4-bili-r9-player-fresh-nonce-v1','generator':'secrets.token_hex(16)','uid':os.getuid(),'spec':{'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()},'count':146,'labels':labels,'nonces':values,'exclude_count':len(excluded),'all_distinct_and_excluded_old_values':True,'source_only_nonce_generation':True,'Android_commands':0,'UI_actions':0,'App_launches':0},sort_keys=True,separators=(',',':')),flush=True)\n"
+    ],
+    "created_unix_ms": 1793949647998,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1afbb447e-fc05-6b2d",
+    "idempotency_key": "pocket4-bili-r9-player-fresh-146-nonces-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1afbb447e-fc05-6b2d",
+    "request_digest": "f5c057e5b545a68899edfdc7067a08a71d7618fb1b79b96f31a4bab6d721d6b4",
+    "request_fingerprint": 17708250378921158280,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1afbb447e-fc05-6b2d"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1afbb447e-fc05-6b2d"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

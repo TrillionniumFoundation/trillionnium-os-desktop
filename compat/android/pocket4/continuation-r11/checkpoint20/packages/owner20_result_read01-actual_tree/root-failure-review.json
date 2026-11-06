@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "job_id": "1a1af832a96-fc05-6944",
+  "state": "FAILED_FIXED_METADATA_ASSUMPTION_NO_RESULT_BYTES_EMITTED",
+  "stderr": {
+    "path": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1af832a96-fc05-6944/stderr.log",
+    "bytes": 184,
+    "sha256": "1549962a14962df551e5dbd7dd4002c7a0d4d3c0f5871da4bf6fba9d997e3f2f",
+    "version": "66306:55469588:184:1793945972670083816:1793945972670083816",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 184,
+        "bytes": 184,
+        "sha256": "1549962a14962df551e5dbd7dd4002c7a0d4d3c0f5871da4bf6fba9d997e3f2f"
+      }
+    ]
+  },
+  "build_job_not_replayed": true,
+  "files_changed": false,
+  "correction": "Original build controller sets umask 0077; create(...,0444) yields effective 0400. Root reader01 assumed 0444. Read02 will require 0400 instead.",
+  "proof_source": {
+    "bytes": 38732,
+    "sha256": "d12077133b1a974f82cc088f02f0f4fe9a573c93a1679f00f003d3d103aebe58",
+    "git_blob_sha1": "ef59ee980316a2317ba86a99c47572fb9afb0c12"
+  },
+  "preflight_tree": "86e1206a6f34684da8b009cbfeb89f628684bc4b",
+  "admission_tree": "29ef36f903e31ef15eb5b70782b0c2c00f777d11"
+}

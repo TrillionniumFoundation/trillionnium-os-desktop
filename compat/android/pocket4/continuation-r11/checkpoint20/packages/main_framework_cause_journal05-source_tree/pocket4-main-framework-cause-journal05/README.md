@@ -1,0 +1,13 @@
+# Journal05 — exact bare Control-message projection, source only
+
+Root journal04 completed the fixed read-only window and retained all 18 exact historical message tuples. Its safe output has no raw journal or private command line. Three of those rows contain the closed Control/Processed/ctl vocabulary but have a null complete-template projection because the existing regex requires the literal `init: ` prefix.
+
+This successor changes that one complete grammar from mandatory `init: Control message: ...` to `(?:init: )?Control message: ...`. It does not add substring extraction, arbitrary prefixes, new operations, services, numeric guesses, output fields, or a larger journal window. Full match is still required. Only tuples already in the exact 18-item kernel allowlist can produce these descriptors through the production stream path. The command line remains private; only its UTF-8 byte count and SHA256 are exported.
+
+All 26 existing non-main function bodies are byte-identical. The original 20 parser, 10 feature and 6 template controls are preserved. Twelve added controls cover the bare positive grammar, equivalence with the original prefix, attribution limits, foreign prefixes, missing PID labels, private roles, trailing bytes, embedded newlines, zero and oversized callers, an unlisted tuple, and the operation whitelist. The actual new 48-control run has not occurred. The existing root-only request, seven-role binding, 40-second internal deadline, 55-second outer bound, CPU25%, 128MiB, nice15, child joins, pidfd cleanup, four-MiB query bound, and report bound are unchanged.
+
+A Control-message caller is an Android-init reported PID. This projection neither equates its namespace number with a host PID nor proves that caller sent the earlier SIGKILL. Original safe evidence matches the complete public messages reporting that zygote received SIGKILL and that its process group was subsequently sent SIGKILL. The sender, initial cause, OOM explanation, and complete journal retention remain unresolved.
+
+The pinned system/core sources included here identify the public `/system/etc/init/hw/init.${ro.zygote}.rc` import and the onrestart actions for zygote. These are upstream source facts, not observations of Main's mounted configuration. A useful next fixed read is the two explicit paths in `upstream-init-rc-review.json`, held relative to the bound init root with complete hash/size and only closed public onrestart/import descriptors; no fallback path scan is implied.
+
+NORMAL01 remains frozen. This source has not been submitted; Root alone may dispatch the fresh exact key once.

@@ -1,0 +1,149 @@
+{
+  "schema": 1,
+  "baseline": {
+    "bytes": 32286,
+    "sha256": "053650458faaf9d6e76f8d745ce4e9cdf5708d6d9c96ebf72180b14f5531660c",
+    "root_exact_source_confirmation": true,
+    "actual_job": "1a1af523d00-fc05-67a1",
+    "actual_stdout_sha256": "fcd227acba3e4068a1fb73ea4a6ed130959231f67567654088eac51f77694ebc"
+  },
+  "candidate": {
+    "bytes": 42538,
+    "sha256": "1854a99885eec0e9e6196491d6b55994bc4e8bc339d25d600966294c8aeaa2bf"
+  },
+  "inverse_replacement_exact": true,
+  "exact_pre_interruption_WIP_recovered": true,
+  "changed_existing_functions": [
+    "project_stream",
+    "main"
+  ],
+  "new_functions": [
+    "closed_features",
+    "feature_controls"
+  ],
+  "unchanged_existing_functions": [
+    {
+      "name": "need",
+      "bytes": 50,
+      "sha256": "b7e3f275b408ad14baf78feb959a47f8a9f745d1214875ccc017bc01ebcb00b5"
+    },
+    {
+      "name": "check",
+      "bytes": 66,
+      "sha256": "e053ba4ced55d4d9846af15faa6e15b5e7e723c2a48a699b053b7c0cf391914c"
+    },
+    {
+      "name": "read",
+      "bytes": 366,
+      "sha256": "e7bab7298a62ffb0f712d2b2390e5785d06ea831608fca88d49b507579da2c7c"
+    },
+    {
+      "name": "statrow",
+      "bytes": 307,
+      "sha256": "74f9165cdcfe05af534ec75f95a1e8605c62b2d62462f7278ce86943ae8e848b"
+    },
+    {
+      "name": "process",
+      "bytes": 1286,
+      "sha256": "2e0259dec7ecfe54897d2568d9739586e544260fba94d46e7b65e10171024795"
+    },
+    {
+      "name": "cg",
+      "bytes": 398,
+      "sha256": "e5f0511d97d553c2ce69ad6c07893e854ef38d3846b7a1f65a8aa869344c978b"
+    },
+    {
+      "name": "safe_error",
+      "bytes": 325,
+      "sha256": "fc55d373216e5da99c011de61deffccf6bbf168cf0d1e3202ee2227ca6edd30d"
+    },
+    {
+      "name": "bounded_command",
+      "bytes": 4387,
+      "sha256": "ed55b31f7cfa1b538c35d4d4b5ff8e899b594a88c24c3535ee2eb82d5596b645"
+    },
+    {
+      "name": "service",
+      "bytes": 688,
+      "sha256": "552a58ae8bbdd9a2f05c01863e48dc7e197c3b6c7d0e704f567e6b50f465f8e1"
+    },
+    {
+      "name": "verify_service",
+      "bytes": 429,
+      "sha256": "9f69a86ef133f94ff008e627a7f5bad3fc77662a5c0d7d135e6e86d6dcbc2ca7"
+    },
+    {
+      "name": "identity",
+      "bytes": 738,
+      "sha256": "8a0ccaf3151606f188dd28e8c09a083f3bad5f684d504c28062f94fb88bb1f27"
+    },
+    {
+      "name": "snapshot_processes",
+      "bytes": 263,
+      "sha256": "e1bf24ac84708c75b8d3fbc54547063fe884f082d4a1c988ab424ac29777e60d"
+    },
+    {
+      "name": "verify_limits",
+      "bytes": 114,
+      "sha256": "759ae27f7bbdf303d6d57a4328cf42b316bc29afa6bc38f5e10e0172e16c612b"
+    },
+    {
+      "name": "no_duplicates",
+      "bytes": 158,
+      "sha256": "99ddd97890a1e57c68b3491c80aaad52af7da28f8d9ee460b3c9afc04dbfc0df"
+    },
+    {
+      "name": "decimal",
+      "bytes": 294,
+      "sha256": "229fa2f5e4abad0283eade1010d2dc01d45c9743bdf53380cebb9f6db2923537"
+    },
+    {
+      "name": "validate_record",
+      "bytes": 997,
+      "sha256": "fe14fec19755ff1c9682c113b13172dd1a337c7ea64ab5a73fc261cc86544c08"
+    },
+    {
+      "name": "project_record",
+      "bytes": 1994,
+      "sha256": "aa6698b8bb6493c31a2547c185f587de56952a065a21bc80642668e07485ecf9"
+    },
+    {
+      "name": "reject_constant",
+      "bytes": 78,
+      "sha256": "3103d2ab2f97fd13a66017d4251a89d413d926e8ae492244ca8fabfa9c2a7193"
+    },
+    {
+      "name": "journal_argv",
+      "bytes": 439,
+      "sha256": "0f57d683ac28a290304ac4b1cfc1dca0668f916f8eda8c6adfafe7f4c11cb033"
+    },
+    {
+      "name": "journal",
+      "bytes": 240,
+      "sha256": "0822a5aef6f96f3171a58a349afbbde6c81a842c8f0943b6df01212de51afaad"
+    },
+    {
+      "name": "pure_controls",
+      "bytes": 5057,
+      "sha256": "4cfe42f7530e9e7afa8b7dc965161bb692a05c2b3b5467c30cf7f775d50f7d71"
+    }
+  ],
+  "old_fullmatch_patterns_region_sha256": "672e3c9e9176be074002f0fb2ba626e602ee0047d1361f9bb4ca3733156a70ac",
+  "old_twenty_controls_text_unchanged": true,
+  "old_command_and_seven_identity_guard_bodies_unchanged": true,
+  "source_changes": [
+    "window_since",
+    "window_until",
+    "window_low",
+    "window_high",
+    "kind",
+    "feature_functions",
+    "feature_rows",
+    "combined_bound_before_event",
+    "closed_feature_projection",
+    "feature_controls_and_semantics",
+    "actual_reference_pins"
+  ],
+  "local_Python_compilation_performed": false,
+  "new_controls_actually_executed": false
+}

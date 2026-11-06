@@ -1,0 +1,381 @@
+{
+  "schema": 1,
+  "state": "PASS_EXACT_JS_SOURCE_DERIVATION_ONLY",
+  "frozen_at_utc": "2026-11-06 05:47:07 UTC",
+  "compiler03_status": "SOURCE_ONLY_UNRUN",
+  "producer": "Native recovery agent, V8 only",
+  "baseline_request": {
+    "bytes": 967650,
+    "sha256": "a6cc57696e19799531e47a2424313ac784ccb66a850a9da3ef25c178c3cef3f5",
+    "git_blob_sha1": "247dd531f86374434a65c883b4129d4fed1e9a82"
+  },
+  "candidate_request": {
+    "bytes": 967630,
+    "sha256": "c90957ea91b80c3ac86c2d268fc2037700d52c97aa213452618fc2d800aad18b",
+    "git_blob_sha1": "2e79c5c8ba99d643ef5a042232b87a2b8b71b089"
+  },
+  "source_transformations": [
+    {
+      "label": "fresh owned root",
+      "old": "/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-02-20261106",
+      "new": "/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106",
+      "count": 1
+    },
+    {
+      "label": "accurate attempt scope",
+      "old": "provider closure compile02, 491 source files",
+      "new": "provider closure compile03, 491 source files",
+      "count": 1
+    },
+    {
+      "label": "remove hard-coded HOME",
+      "old": "'PATH':'/usr/bin:/bin','HOME':'/home/alex','CARGO_HOME':str(CARGO_HOME)",
+      "new": "'PATH':'/usr/bin:/bin','CARGO_HOME':str(CARGO_HOME)",
+      "count": 1
+    }
+  ],
+  "changed_lines": {
+    "compiler": {
+      "lines": [
+        200,
+        859,
+        888
+      ],
+      "old_line_count": 1207,
+      "new_line_count": 1207
+    },
+    "stage": {
+      "lines": [
+        3,
+        4,
+        6
+      ],
+      "old_line_count": 85,
+      "new_line_count": 85
+    },
+    "transport": {
+      "lines": [
+        2,
+        3
+      ],
+      "old_line_count": 15,
+      "new_line_count": 15
+    }
+  },
+  "exact_inverse_checks": {
+    "compiler": true,
+    "stage": true,
+    "wrapper": true,
+    "request": true
+  },
+  "unchanged_transferred_files": [
+    {
+      "path": "expected-builder468-manifest.json",
+      "bytes": 97525,
+      "sha256": "e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee",
+      "git_blob_sha1": "1a881dce47da3ac9dd27c5073bc0e224d88e35a5"
+    },
+    {
+      "path": "provider-closure-proof.json",
+      "bytes": 94161,
+      "sha256": "841de1878aecbf5235d4c8068b4ac5bbf7351131c17245c725782e4d66f01384",
+      "git_blob_sha1": "312a7b6eb42d4d80d63e856a48f9b0bdb1a01ec6"
+    },
+    {
+      "path": "delta/tools/droidloom-update/src/android.rs",
+      "bytes": 286971,
+      "sha256": "e493f5f877e038e283672cadaffe7e7b672d51737edc2d7863a13fd3530d7239",
+      "git_blob_sha1": "f7f81c74a74693fda56673aa2f0d98e9ebe22fa3"
+    },
+    {
+      "path": "delta/tools/droidloom-update/src/native_role_ingress.rs",
+      "bytes": 34533,
+      "sha256": "8eefc5e665a6cd9470ce1643542eadfce1445fe2f5992c64547fe40eef7d8dbb",
+      "git_blob_sha1": "d4b31ca1188f6cfb39a85e703a92f42b27158fcd"
+    },
+    {
+      "path": "delta/android/manifest/m2-role-ingress-provider-source-lock.json",
+      "bytes": 96322,
+      "sha256": "5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7",
+      "git_blob_sha1": "b2a9a017dce3c0c261e26d42d191fe065e24bd58"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/SystemUI.Android.bp",
+      "bytes": 49535,
+      "sha256": "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3",
+      "git_blob_sha1": "44bc84d4da7f238a61e4de40f4fb0e20ddd9c80a"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/motion.Android.bp",
+      "bytes": 2098,
+      "sha256": "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440",
+      "git_blob_sha1": "5d66e6b6e86bd109cc0c469af303cb98ed73f35c"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/screenshot.Android.bp",
+      "bytes": 2403,
+      "sha256": "53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032",
+      "git_blob_sha1": "98bc54c3f173f008fa0cd7e4a608b04bd8fc261a"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/runner.Android.bp",
+      "bytes": 2088,
+      "sha256": "e3b51cb5bc9ca15951a4da4b2ab711bfedd084eba95e2434060126accca8f5aa",
+      "git_blob_sha1": "c30fcf0b5a9bf3962efbc82a3351c9672d39c3a0"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp",
+      "bytes": 12618,
+      "sha256": "5491a0f3918f8c5e89276ce13437b29bbd9b64aa2334e81717566e446bb6e1a4",
+      "git_blob_sha1": "994249f475d40cf33e97d16913ae4091d889884c"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/test-parameter.Android.bp",
+      "bytes": 2832,
+      "sha256": "3c39d19867e60e6f45ae39b3ee910b986de4cc158042519facaca18720d4ecf8",
+      "git_blob_sha1": "fd89cb51c721d0c6397403707cc061c31ba78b89"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp",
+      "bytes": 1751,
+      "sha256": "cfbff8817cd8eb06cbd02bffa253ce0a2eb266e93fec6c8ab1894316e8ca6ab8",
+      "git_blob_sha1": "a829a56ec427632ba50f47ae121c7db3161b5982"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/car-lib.Android.bp",
+      "bytes": 12547,
+      "sha256": "e88e92f8113c3c05f71999adfde6c50612d9d15d6454fbb0db9b98aba26fc6a2",
+      "git_blob_sha1": "e7c821cacaf88aaf34eeff49536506b2ec390211"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/car-builtin.Android.bp",
+      "bytes": 3748,
+      "sha256": "b7e38fdc5a873a7cd2607759d4eff2b560db218ea14c6a137da5bde70b4e9ceb",
+      "git_blob_sha1": "fd9f8800385ee3b10c40ce30f1ad90f05910cf82"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/car-jni.Android.bp",
+      "bytes": 1590,
+      "sha256": "7f20480832afc1c33d54c846c2cab1a8cd6598278cd30f00b2a96b75932cbdb9",
+      "git_blob_sha1": "67fba603b26cc0935cf8dbaab529a56132da4a9e"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/icu4j.Android.bp",
+      "bytes": 5919,
+      "sha256": "e5a8137f19dbb133bdfa451c42493dbb481b1745a390817876b4636028a6014b",
+      "git_blob_sha1": "4acc1fc54f9c08b3d127b505c321e8f379d13b3b"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp",
+      "bytes": 1131,
+      "sha256": "b85704354df39ea533d97c8d6a2d51ef148889668d2c08d89fb59dd703e4aa15",
+      "git_blob_sha1": "bfe52de83ccba77c7bba09971699467eed958d7c"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp",
+      "bytes": 1395,
+      "sha256": "83e1f8f513e4c8dc9d3e9896e832cf6d5044f64a950dbb40b3d0ad8da9831bef",
+      "git_blob_sha1": "d3e231b66d9b366609252c57a64c3ba0ffc2ae73"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp",
+      "bytes": 3390,
+      "sha256": "c9ae9050c080977591fa239ef37623826a5c7ffc125c78055059e375573feba4",
+      "git_blob_sha1": "c2a691559820e97be5d2862b48a42e429ec4bbcf"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp",
+      "bytes": 1820,
+      "sha256": "0f35d9e221672dc164bd38e9c262fa5b38e892679f659e7e82b7dc5b50cd5e74",
+      "git_blob_sha1": "98d89d3c235f016e4a2ac348964c021daaffdb93"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp",
+      "bytes": 1218,
+      "sha256": "36f67c55ad95f649e8a17a0770b8141d653c96c15f5213721b027154f9a21e69",
+      "git_blob_sha1": "a9de730acd4d1af82fb8353afb26d825530c3d18"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp",
+      "bytes": 1491,
+      "sha256": "582130b938654da15b073bd6c8a616ad366358d125a0a53d14cc9d30e020b323",
+      "git_blob_sha1": "f2ac59e3314ccef0e8c55e4860349ab46ec0d00a"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp",
+      "bytes": 2446,
+      "sha256": "c1d4d324a0e0218c175e2f2e85806ccbeb398d797da57baf5221cf542f3d1268",
+      "git_blob_sha1": "7e542d8c435f1fabb04e2ef017b1e8016151fafb"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp",
+      "bytes": 1647,
+      "sha256": "71262635df4c0b9aff77b4b8d5b3f80587d3a5d3d30a2941867c4e15dd398485",
+      "git_blob_sha1": "6b8e5bac82695246051febf460a79502dec197a3"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp",
+      "bytes": 1169,
+      "sha256": "82ed73680ad4eda143f6a38bb62198565e9b3a3b8211d9d3c5da6b5703ddae25",
+      "git_blob_sha1": "ef08f4651f918223a3aa181e09a2f75b31d2ac2b"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp",
+      "bytes": 2723,
+      "sha256": "557bec83e3e684a6d9b6466827466043b0b1a1d61605aafaf35e581e974bea00",
+      "git_blob_sha1": "4629d806f10ce43a000c4d2e6aa9f9bbabb60157"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp",
+      "bytes": 1132,
+      "sha256": "703b73b507250735b532c3c5f9eb4a0662606110e9a499632804136c0047c941",
+      "git_blob_sha1": "c4ffad28f574a1b47bcf5f10d084655e9654ff3a"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp",
+      "bytes": 1960,
+      "sha256": "04118667724a0433770f8d913207c510b5103a41d44600da62c337434ed2c5ae",
+      "git_blob_sha1": "9394be4186e63b8621c9b72c8fa40da561743e43"
+    },
+    {
+      "path": "delta/android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp",
+      "bytes": 4006,
+      "sha256": "c38865f4312919d6452897db8e2e9341919ccb659c7a537ae20690a866e891e1",
+      "git_blob_sha1": "f21611860ce4920428cca438acf0725be97b5107"
+    }
+  ],
+  "reused_authorities": {
+    "go-control-result.json": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/go-control-result.json",
+      "bytes": 44083,
+      "sha256": "391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674",
+      "mode": 256
+    },
+    "image-tools-result.json": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/image-tools-result.json",
+      "bytes": 34633,
+      "sha256": "b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292",
+      "mode": 256
+    },
+    "prior-compile01-failure.json": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/prior-compile01-failure.json",
+      "bytes": 7681,
+      "sha256": "44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3",
+      "mode": 256
+    },
+    "registry-result.json": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/registry-result.json",
+      "bytes": 211021,
+      "sha256": "b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993",
+      "mode": 256
+    },
+    "rust193-tools-recheck-read03-result.json": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/rust193-tools-recheck-read03-result.json",
+      "bytes": 31452,
+      "sha256": "60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb",
+      "mode": 256
+    },
+    "selected-build.stdout": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selected-build.stdout",
+      "bytes": 2121,
+      "sha256": "82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d",
+      "mode": 256
+    },
+    "selection-result.json": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selection-result.json",
+      "bytes": 14132,
+      "sha256": "185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf",
+      "mode": 256
+    },
+    "typed-lock-derivation.json": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-lock-derivation.json",
+      "bytes": 6051,
+      "sha256": "c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0",
+      "mode": 256
+    },
+    "typed-root-trees-result.json": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-root-trees-result.json",
+      "bytes": 51842,
+      "sha256": "0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8",
+      "mode": 256
+    },
+    "compiled-parent467-manifest.json": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/attempt01/copied-builder-source-manifest.json",
+      "bytes": 91945,
+      "sha256": "71768da388021a870ef5f5516cc3efbfd956288a8fa74cb9b176b312f68d7605",
+      "mode": 384
+    },
+    "compiled-parent467-result.json": {
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/attempt01/result.json",
+      "bytes": 140163,
+      "sha256": "cd9f61ca21dd83210299f24dd50b68f5aa7aeba7eab94ac9cada71271d660e28",
+      "mode": 384
+    }
+  },
+  "source_map_files": 491,
+  "unchanged_original_files": 464,
+  "replaced_original_Rust_files": 2,
+  "added_source_text_files": 25,
+  "projected_full_BP_files": 24,
+  "projected_provider_stanzas": 59,
+  "locked_projects": 224,
+  "expected_command_records": 62,
+  "expected_focused_gates": 24,
+  "expected_updater_gates": 15,
+  "expected_source_resume_gates": 9,
+  "expected_counts_note": "Counts are retained source expectations. This derivation did not compile or run any of these controls.",
+  "request_envelope": {
+    "host": "pocket4",
+    "executable": "/usr/bin/python3",
+    "cwd": "/",
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 1073741824,
+    "nice": 15,
+    "timeout_seconds": 600
+  },
+  "deadline_seconds_in_unchanged_compiler": 550,
+  "stdin_max_bytes": 1048576,
+  "stdin_actual_bytes": 886361,
+  "stdin_under_tool_limit": true,
+  "unchanged_guards": [
+    "Offline explicit tool and Cargo inputs",
+    "Whole original and copied source map identity",
+    "41 source member pins and 11 held/named authority reads",
+    "Owned cgroup resource before/after gate",
+    "Per-command bounded output and joined child strict gate",
+    "Original wait/stdout/stderr first-error ordering",
+    "Subreaper cleanup and no remaining owned children",
+    "Tool/dependency/Cargo configuration identity after",
+    "Two-free-logical-CPU requirement and one owned CPU affinity",
+    "Create-only ROOT and staged source permissions",
+    "Original strict normal targets and ALLOW_MISSING_DEPENDENCIES=false source behavior"
+  ],
+  "qualification_boundaries": {
+    "Python_syntax_compile": "NOT_PERFORMED",
+    "Rust_compile": "NOT_PERFORMED",
+    "source_control_execution": "NOT_PERFORMED",
+    "actual_source_reuse": "NOT_PERFORMED",
+    "Soong_normal_build": "NOT_PERFORMED",
+    "framework_implementation_JAR": "NOT_QUALIFIED",
+    "Android_JNI_object_and_link": "NOT_QUALIFIED",
+    "Main_or_Android_action_count": 0,
+    "whole_apps_production_ready": 0,
+    "launcher_apps": 45
+  },
+  "retained_unknowns": [
+    "The locked robolectric-native-prebuilt directory is selected, but its full Android.bp body has not been observed in this source work.",
+    "Upstream source projection closure and pure fixture expectations do not establish an actual strict normal Soong build."
+  ],
+  "histories_retained": [
+    "Original normal framework timeout",
+    "Actual 467 compile02 child-cleanup failure",
+    "Actual 467 compile03 PASS as an immutable parent authority",
+    "Original strict normal resume missing-defaults failure",
+    "Native 468 compile01 and compile02 remain SOURCE_ONLY_UNRUN"
+  ],
+  "preservation": {
+    "local_filesystem_calls": 0,
+    "Hepta_calls": 0,
+    "Git_ref_or_commit_mutations": 0
+  }
+}

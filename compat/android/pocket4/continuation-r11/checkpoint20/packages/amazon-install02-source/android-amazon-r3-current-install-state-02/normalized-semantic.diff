@@ -1,0 +1,129 @@
+--- install01/install_state.py
++++ install02-normalized/install_state.py
+@@ -342,9 +342,16 @@
+     require(set(manifest['files']) == EXPECTED_SOURCE_FILES,'EXACT_AMAZON_RUNTIME_SOURCE_SET_REQUIRED')
+     for name,row in manifest['files'].items():
+         read(HERE/name,expected=row['sha256'],size=row['bytes'])
+-    require(manifest['files']['references/readonly_r3_coordinator.py']['sha256'] == REFERENCE_SHA and
++    host_raw=read(HERE/'host/source-manifest.json',131072,RECORDER_MANIFEST)
++    host_manifest=json.loads(host_raw)
++    row=host_manifest['files']['current_coordinator.py']
++    require(host_manifest.get('schema') == 2 and host_manifest.get('revision') == 5 and
++            host_manifest.get('artifact') == 'pocket4-bilibili-current-recorder-held-r5' and
++            row['sha256'] == REFERENCE_SHA and
+             manifest['files']['references/read_amazon.py']['sha256'] == READER_SHA,
+-            'EXACT_SHARED_REFERENCES_REQUIRED')
++            'EXACT_CURRENT_SHARED_REFERENCES_REQUIRED')
++    read(BASE_HOST_ROOT/'source-manifest.json',131072,RECORDER_MANIFEST,len(host_raw))
++    read(BASE_HOST_ROOT/'current_coordinator.py',131072,REFERENCE_SHA,row['bytes'])
+     return manifest
+ 
+ 
+
+--- install01/stage_execute.py
++++ install02-normalized/stage_execute.py
+@@ -98,9 +98,9 @@
+     context=load_text(files['amazon_context.py'],SOURCE/'amazon_context.py','current_target_context_controls')
+     transport=load_text(files['amazon_transport.py'],SOURCE/'amazon_transport.py','current_target_transport_controls')
+     controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
+-    controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref)
+-    require(controls['all_passed'] is True and controls['count']==33 and
+-            len(controls['cases'])==33 and all(x['passed'] is True for x in controls['cases']),
++    controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref,files,packet['source_manifest_sha256'])
++    require(controls['all_passed'] is True and controls['count']==38 and
++            len(controls['cases'])==38 and all(x['passed'] is True for x in controls['cases']),
+             'ACTUAL_CURRENT_APP_CONTEXT_CONTROLS_REQUIRED')
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_install_stage_epoch')
+     before=ref.main_guard(baseline,epoch)
+
+--- install01/check_install_binding.py
++++ install02-normalized/check_install_binding.py
+@@ -1,10 +1,11 @@
+-"""Pure current-host and per-App Context construction controls; no device authority."""
++"""Current-host, per-App Context and owned temporary-source controls; no Android actions."""
+ import copy
+ import types
++import json
+ 
+-CONTROL_COUNT = 33
++CONTROL_COUNT = 38
+ 
+-def run_controls(entry, actual_host, manifest, context, transport, baseline, ref):
++def run_controls(entry, actual_host, manifest, context, transport, baseline, ref, files, source_manifest_sha256):
+     rows = []
+     def yes(name):
+         rows.append({'name':name,'passed':True})
+@@ -92,6 +93,7 @@
+     ctx.scope['package']='tv.danmaku.bili'
+     rejected('guard_rejects_tampered_target_before_callbacks',lambda:ctx.guard())
+     entry.require(calls=={'Main':0,'target':0,'command':0},'PURE_CONTROL_CALLBACK_OR_COMMAND_ATTEMPTED')
++    rows.extend(run_source_controls(entry,files,source_manifest_sha256))
+     entry.require(len(rows)==CONTROL_COUNT and len({x['name'] for x in rows})==CONTROL_COUNT,
+                   'EXACT_CURRENT_CONTEXT_CONTROL_COUNT')
+     return {'schema':'pocket4-current-app-install-context-controls-v1','all_passed':True,
+@@ -100,4 +102,55 @@
+             'production_Context_and_BoundArun_constructors_used':True,
+             'actual_qualified_baseline_only_in_memory':True,
+             'Bili_Flow_or_MainBinding_instantiated':False,'private_baseline_exported':False,
+-            'Android_commands':0,'UI_actions':0,'children':0,'filesystem_operations':0}
++            'Android_commands':0,'UI_actions':0,'children':0,
++            'owned_temporary_source_directories':True,'temporary_directories_removed':True,
++            'actual_R5_reference_read_only':True,'production_verify_source_calls':5}
++
++
++def run_source_controls(entry, files, expected):
++    """Run the production source gate in private temporary source directories."""
++    import tempfile
++    from pathlib import Path
++    rows=[]
++    entry.require(set(files)==entry.EXPECTED_SOURCE_FILES|{'SOURCE_PINS.json'},
++                  'TEMP_SOURCE_FIXTURE_EXACT_SET')
++    manifest=json.loads(files['host/source-manifest.json'])
++    coordinator=manifest['files']['current_coordinator.py']
++    host_manifest=entry.read(entry.BASE_HOST_ROOT/'source-manifest.json',131072,entry.RECORDER_MANIFEST)
++    host_source=entry.read(entry.BASE_HOST_ROOT/'current_coordinator.py',131072,
++                           entry.REFERENCE_SHA,coordinator['bytes'])
++    with tempfile.TemporaryDirectory(prefix='pocket4-current-source-control-') as temporary:
++        root=Path(temporary);source=root/'source';source.mkdir(mode=0o700)
++        for name,raw in files.items():
++            path=source/name;path.parent.mkdir(parents=True,exist_ok=True,mode=0o700)
++            path.write_bytes(raw);path.chmod(0o600)
++        isolated=types.ModuleType('pure_production_source_gate');isolated.__file__=str(source/'install_state.py')
++        exec(compile(files['install_state.py'],isolated.__file__,'exec'),isolated.__dict__)
++        actual=isolated.verify_source(expected)
++        entry.require(actual['files']==json.loads(files['SOURCE_PINS.json'])['files'],
++                      'ACTUAL_COMPLETE_PRODUCTION_SOURCE_GATE')
++        rows.append({'name':'production_verify_source_actual_R5_reference_positive','passed':True})
++        host=root/'host';host.mkdir(mode=0o700)
++        (host/'source-manifest.json').write_bytes(host_manifest)
++        (host/'current_coordinator.py').write_bytes(host_source)
++        isolated.BASE_HOST_ROOT=host
++        isolated.verify_source(expected)
++        rows.append({'name':'production_verify_source_private_reference_fixture_positive','passed':True})
++        def rejected(name):
++            try:
++                isolated.verify_source(expected)
++            except (RuntimeError,FileNotFoundError):
++                pass
++            else:
++                raise RuntimeError('SOURCE_REFERENCE_NEGATIVE_ACCEPTED:'+name)
++            rows.append({'name':name,'passed':True})
++        (host/'current_coordinator.py').unlink()
++        rejected('production_verify_source_missing_R5_coordinator_rejected')
++        (host/'current_coordinator.py').write_bytes(host_source+b'\n')
++        rejected('production_verify_source_wrong_R5_coordinator_hash_rejected')
++        (host/'current_coordinator.py').write_bytes(host_source)
++        original=(source/'README.md').read_bytes()
++        (source/'README.md').write_bytes(original+b'\n')
++        rejected('production_verify_source_payload_hash_changed_rejected')
++    entry.require(len(rows)==5,'EXACT_FIVE_SOURCE_CLOSURE_CONTROLS')
++    return rows
+
+--- install01/README.md
++++ install02-normalized/README.md
+@@ -2,4 +2,4 @@
+ 
+ The exact newly built signed helper is installed once with -R/-t after all-users absence checks. The target-specific Context preserves its 13-command plan, commercial APK streaming hashes, held namespace/classpath checks and cleanup. Its new scope comes only from the actual typed current baseline, with independent target UID and both user/user_de directory identities checked through the held root. The shared R5 source contract is a byte-verified source closure; no Bili Flow or Bili MainBinding is instantiated.
+ 
+-33 pure source controls run before root staging or any Android command. The helper UID remains unknown until actual installation. State does not connect UiAutomation. No launch, inspect, click, text, permission or settings action is requested. Failure is not automatically retried or uninstalled. Historical failed and unknown outcomes remain unchanged. The unresolved framework exit cause and business acceptance remain production gates. Only direct owned process join is inherited; whole-process-tree cleanup qualification remains false.
++38 source controls run before persistent root staging or any Android command: 33 existing source/context cases and five production verify_source cases using owned temporary source directories. Those temporary directories are removed before installation begins. The helper UID remains unknown until actual installation. State does not connect UiAutomation. No launch, inspect, click, text, permission or settings action is requested. Failure is not automatically retried or uninstalled. Historical failed and unknown outcomes remain unchanged. The unresolved framework exit cause and business acceptance remain production gates. Only direct owned process join is inherited; whole-process-tree cleanup qualification remains false.

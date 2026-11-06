@@ -1,0 +1,87 @@
+{
+  "actual_original02": {
+    "cases_executed": 0,
+    "first_discrepancy": "module_imports",
+    "job": "1a1afdb7724-fc05-6c37",
+    "listed_then_EBADF_not_the_failure": true,
+    "new_live_fd": {
+      "device": 66306,
+      "fd": 4,
+      "gid": 0,
+      "inode": 108020388,
+      "mode": 33188,
+      "rdev": 0,
+      "uid": 0
+    },
+    "stdout": {
+      "bytes": 2964,
+      "git_blob_sha": "8eb0b968962d012baeca1b737277fda02e6c1a55",
+      "sha256": "d474ed833372dcf6706fd9b1c7e0ffd340941a6f68d2a468980b7bd7b7dd3088"
+    },
+    "success": false
+  },
+  "baseline": {
+    "packet": {
+      "bytes": 164871,
+      "git_blob_sha": "c60d182048a24b0058adda7582582cb1feb63466",
+      "sha256": "5c27e38e036bb56f0b5f947992087bc7f9cbf19fb8c2207455be891210a893d9"
+    },
+    "runner_template": {
+      "bytes": 16999,
+      "git_blob_sha": "0e28e139be5fe1aeb2cf84cae31419b8ee6aecaa",
+      "sha256": "a3a7a854d3e3821f0754c1843101d663bec3d752fbd924c73add1c158f83b132"
+    },
+    "tree": "71169ae32843317986f44337afc7ac283f58e3a6"
+  },
+  "changes": [
+    "Execute each original pinned top-level AST node in exact order in the same per-module namespace, with node line/type and live fstat snapshots. No imports are preloaded or moved before the original baseline.",
+    "Stop after the first failed statement or FD identity difference. No test case, Capture, fork, child exec, namespace entry or property read is invoked.",
+    "Original global FD equality remains mandatory. New FD appearance only attributes the statement boundary; it does not authorize closing that unknown descriptor.",
+    "Same source packet, resources, root-owned create-only fixture-directory lifecycle, fifteen-second watchdog, original namespaces/credentials fence, independent final directory close/remove and plain-output bound."
+  ],
+  "claims": {
+    "local_Python_syntax_or_controls_executed": false,
+    "new03_actual_executed": false,
+    "newMain_qualification": false,
+    "normal_prepare_or_runtime_admitted": false,
+    "original01_and02_remain_FAILED": true
+  },
+  "interpretation": "A complete diagnostic can retain a failed FD-equality result. The exact import boundary is evidence of timing, not by itself proof which dependency owns the descriptor. No FD guard is relaxed and no original failure is reclassified.",
+  "limits": {
+    "identity_pool": 256,
+    "live_self_FDs": 64,
+    "module_statements_per_module": 64,
+    "outer_seconds": 30,
+    "snapshots": 96,
+    "stdout_bytes": 131072,
+    "total_module_statements": 80,
+    "watchdog_seconds": 15
+  },
+  "request": {
+    "bytes": 241032,
+    "git_blob_sha": "feb29ff7dea8a15869281cce1b6b9d0097fbbe41",
+    "key": "p4-owner20-property-import-diagnostic03-8e4ddeef0c96a282",
+    "sha256": "5b41106dbec0734b7a81fac12abfbe4c754456b589a76588c0da7506a8ab9741",
+    "stdin": {
+      "bytes": 240266,
+      "git_blob_sha": "f2800da5f29347de052998dc3be42c6c0053ac93",
+      "sha256": "8e4ddeef0c96a282ff284be591b21d7374cbb9f82c66760955c9429b1a123380"
+    }
+  },
+  "schema": 1,
+  "scope": "host-only first leaking top-level statement diagnosis; no control cases or Android execution",
+  "source_boundary": {
+    "Android_executed": false,
+    "Main_access": false,
+    "actor_unchanged": true,
+    "ambient_FD_contents_or_targets_read": false,
+    "bind_inputs_unchanged": true,
+    "case_functions_never_called": true,
+    "host_controls02_unchanged": true,
+    "imports_use_normal_Python_cache": true,
+    "production_collector_unchanged": true,
+    "statement_compile_units_differ_from_whole_module": true,
+    "sys_modules_not_purged_or_overridden": true,
+    "unknown_FDs_closed": false
+  }
+}

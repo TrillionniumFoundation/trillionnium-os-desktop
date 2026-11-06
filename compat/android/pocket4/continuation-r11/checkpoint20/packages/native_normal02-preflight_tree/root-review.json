@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "state": "ROOT_SOURCE_REVIEW_PASSED_NOT_RUNTIME_ACCEPTANCE",
+  "source_tree": "4131325b8cee576281467121a0fdcbe03f22304d",
+  "tree_closure": {
+    "tree": "4131325b8cee576281467121a0fdcbe03f22304d",
+    "leaves": 31,
+    "bytes": 2246672,
+    "full_pins": true
+  },
+  "reproduction": {
+    "exact_request": {
+      "bytes": 780257,
+      "sha256": "b11c431457ece570e2548c8188f92b48480e9da57b70d61aeaf1bea0ec4bd775",
+      "git_blob_sha1": "941d5b2924c95d72d5208f49c4193838eb21dce4"
+    },
+    "exact_wire": {
+      "bytes": 707866,
+      "sha256": "b73c8211f9f23e343e2e1aded5ee951755885fa851f575a02346a30178836593",
+      "git_blob_sha1": "b8a05e1f3d85a1483fd2e869a3e6063d61ab4e80"
+    },
+    "inverse": [
+      {
+        "file": "framework_build",
+        "hunks": 1,
+        "old": {
+          "bytes": 55314,
+          "sha256": "26c69c112f3f4a255d5e8d7c6105e956d78f0ab91c791c6acbe5f3750844cff6",
+          "git_blob_sha1": "441491895b7868a46d9560c6c48f8233adfee859"
+        },
+        "next": {
+          "bytes": 55314,
+          "sha256": "47ce174f0401a647ee1da7a78d0578a45185affd3e128d35142068a2a9c18d6b",
+          "git_blob_sha1": "1439c067f69be7e2705f5b60607b02bfd806ed81"
+        }
+      },
+      {
+        "file": "fenced_build",
+        "hunks": 7,
+        "old": {
+          "bytes": 10273,
+          "sha256": "c30bb4938087b61b66995bf6c3880c192e50fdb2ed231a5c8b13eeb319c4dbd0",
+          "git_blob_sha1": "8afff9e6677a369646689f78ea7ac013a57a912b"
+        },
+        "next": {
+          "bytes": 25481,
+          "sha256": "76ee477835d0af67033eab794a06cc8fb2cd6c60d2bfd759035aeeb0396575c5",
+          "git_blob_sha1": "1e35eff47a5d61a57ce01ef4ac3c7d56e2037d32"
+        }
+      },
+      {
+        "file": "stage",
+        "hunks": 2,
+        "old": {
+          "bytes": 4733,
+          "sha256": "d9e054b910fa8f6ad7b80ef9504e978dc490198b3129389747f427e7fc6c3319",
+          "git_blob_sha1": "23b279060cbf103bf8b0c3fce4a76ea418cb5977"
+        },
+        "next": {
+          "bytes": 5185,
+          "sha256": "e109e1b34006e936cfa6f65b9e87ec8986959718ecc4b5884999d4542fbbc96f",
+          "git_blob_sha1": "f153e256aa442dddaf6a5ac746f440bd46b167b7"
+        }
+      }
+    ]
+  },
+  "reaper": {
+    "new": {
+      "bytes": 13690,
+      "sha256": "d4eb4f0523a614b72ad5789f255b92a6ad3cfbc0a36ad989b381eb51de8eea23",
+      "git_blob_sha1": "09069438d7990718fea73599cde2b83480ea9b7f"
+    },
+    "old": {
+      "bytes": 11125,
+      "sha256": "61e3fe49cb1ffc511acdf409befd86d38c0bb2ba432dd2a888e32f3d50c17b42",
+      "git_blob_sha1": "db9a3c5433f878dad12626c0fe5b10fc8114c201"
+    },
+    "hunks": 8,
+    "unchanged_authorities": [
+      "main_snapshot.py",
+      "frozen-work-inventory.py",
+      "actual-work-preparation.json",
+      "expected-builder468-manifest.json",
+      "prior-framework-inner-terminal.json",
+      "prior-framework-outer-terminal.json",
+      "actual-published-source-manifest.json",
+      "actual-native-prebuilt-Android.bp",
+      "actual-provider-source-lock.json",
+      "actual-builder468-result.json",
+      "pure_controls.py"
+    ]
+  },
+  "reviewed_full": [
+    "capture_lifecycle.py",
+    "root_snapshot_supervisor.py",
+    "fenced_build.py",
+    "stage.py",
+    "transport-boundary.py",
+    "make_request.js"
+  ],
+  "prior_reviewed_full": [
+    "framework_build.py",
+    "main_snapshot.py",
+    "pure_controls.py"
+  ],
+  "constraints": {
+    "old_normal01_unrun_no_replay": true,
+    "normal_build_targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "strict_dependencies": true,
+    "allow_missing_dependencies": false,
+    "host_build_only": true,
+    "android_install": false,
+    "main_actions": 0,
+    "protected_main_pids": 7,
+    "root_signals_kernel_owned_children_only": true,
+    "root_report_not_retirement_authority": true,
+    "root_observation_seconds": 15,
+    "root_retirement_seconds": 5,
+    "outer_absolute_deadline_seconds": 30,
+    "controls_expected_before_build": 4,
+    "controls_executed_before_dispatch": false,
+    "original_pure_controls": 40,
+    "whole_app_ready": 0,
+    "whole_app_total": 45
+  },
+  "limitations": [
+    "Python startup and initial imports precede root watchdog; outer watchdog covers launch.",
+    "Control qualification measures cumulative time; it is not a global hard deadline.",
+    "OS scheduling latency cannot be excluded.",
+    "A successful build still requires actual Java implementation and Android JNI artifact acceptance.",
+    "Builder path is freshly checked; held descriptor execution is not claimed."
+  ]
+}

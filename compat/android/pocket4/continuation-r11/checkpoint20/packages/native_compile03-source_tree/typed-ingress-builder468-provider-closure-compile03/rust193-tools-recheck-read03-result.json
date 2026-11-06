@@ -1,0 +1,1188 @@
+{
+  "Main_actions": 0,
+  "Main_identity_observed": false,
+  "actual_build_failure": {
+    "bytes": 7681,
+    "sha256": "44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3"
+  },
+  "all_observed_tool_contents_and_aliases_unchanged_after": true,
+  "builds_started": 0,
+  "bytes_read": 144713192,
+  "changed_tools": [
+    {
+      "changed_admission_fields": [
+        "sha256",
+        "bytes"
+      ],
+      "original_object_metadata_equal": false,
+      "path": "/home/alex/.cargo/bin/rustup"
+    }
+  ],
+  "commands_executed": 0,
+  "comparison_fields_used_by_compiler": [
+    "sha256",
+    "bytes",
+    "resolved_path"
+  ],
+  "complete": true,
+  "finished_utc": "2026-11-05T20:21:27.658003+00:00",
+  "first_error": null,
+  "fresh_observation_is_not_tool_execution_approval": true,
+  "install_update_actions": 0,
+  "owned_memory_events_delta": {
+    "high": 0,
+    "low": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0,
+    "sock_throttled": 0
+  },
+  "owned_memory_peak": 76001280,
+  "owned_memory_swap_peak": 0,
+  "owned_resource_gate": {
+    "after": {
+      "controller_pid": 3008115,
+      "directory_identity": [
+        30,
+        31596182
+      ],
+      "events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "fields": {
+        "cgroup.procs": "3008112\n3008115",
+        "cpu.max": "25000 100000",
+        "memory.current": "75997184",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "max",
+        "memory.max": "134217728",
+        "memory.peak": "76001280",
+        "memory.swap.current": "0",
+        "memory.swap.max": "max",
+        "memory.swap.peak": "0"
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad5f9540-fc05-5998.service",
+      "observed_utc": "2026-11-05T20:21:27.657946+00:00",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad5f9540-fc05-5998.service"
+    },
+    "before": {
+      "controller_pid": 3008115,
+      "directory_identity": [
+        30,
+        31596182
+      ],
+      "events": {
+        "high": 0,
+        "low": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_group_kill": 0,
+        "oom_kill": 0,
+        "sock_throttled": 0
+      },
+      "fields": {
+        "cgroup.procs": "3008112\n3008115",
+        "cpu.max": "25000 100000",
+        "memory.current": "17698816",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "max",
+        "memory.max": "134217728",
+        "memory.peak": "17698816",
+        "memory.swap.current": "0",
+        "memory.swap.max": "max",
+        "memory.swap.peak": "0"
+      },
+      "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad5f9540-fc05-5998.service",
+      "observed_utc": "2026-11-05T20:21:27.163757+00:00",
+      "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad5f9540-fc05-5998.service"
+    },
+    "memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "memory_peak": 76001280,
+    "memory_swap_peak": 0,
+    "pass": true,
+    "resource_settings_changed": false,
+    "swap_max_observed_only": "max"
+  },
+  "owned_resources_after": {
+    "controller_pid": 3008115,
+    "directory_identity": [
+      30,
+      31596182
+    ],
+    "events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "fields": {
+      "cgroup.procs": "3008112\n3008115",
+      "cpu.max": "25000 100000",
+      "memory.current": "75997184",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "max",
+      "memory.max": "134217728",
+      "memory.peak": "76001280",
+      "memory.swap.current": "0",
+      "memory.swap.max": "max",
+      "memory.swap.peak": "0"
+    },
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad5f9540-fc05-5998.service",
+    "observed_utc": "2026-11-05T20:21:27.657946+00:00",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad5f9540-fc05-5998.service"
+  },
+  "owned_resources_before": {
+    "controller_pid": 3008115,
+    "directory_identity": [
+      30,
+      31596182
+    ],
+    "events": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "fields": {
+      "cgroup.procs": "3008112\n3008115",
+      "cpu.max": "25000 100000",
+      "memory.current": "17698816",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.high": "max",
+      "memory.max": "134217728",
+      "memory.peak": "17698816",
+      "memory.swap.current": "0",
+      "memory.swap.max": "max",
+      "memory.swap.peak": "0"
+    },
+    "membership": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad5f9540-fc05-5998.service",
+    "observed_utc": "2026-11-05T20:21:27.163757+00:00",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad5f9540-fc05-5998.service"
+  },
+  "prior_tool_observation": {
+    "bytes": 9419,
+    "sha256": "45d3a3307cf40c57c1835f1a275be7cb2e920f0d2b703880756ce0bd89386cfd"
+  },
+  "queries": [],
+  "repository_channel": "1.93.0",
+  "repository_toolchain": {
+    "bytes": 86,
+    "changed_compilation_admission_fields": [],
+    "compilation_admission_fields_equal": true,
+    "content_read": true,
+    "error": null,
+    "expected": {
+      "bytes": 86,
+      "held_after": [
+        66306,
+        33732367,
+        33204,
+        86,
+        1793551340473884787,
+        1793804758887232592
+      ],
+      "held_before": [
+        66306,
+        33732367,
+        33204,
+        86,
+        1793551340473884787,
+        1793804758887232592
+      ],
+      "requested_path": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source/rust-toolchain.toml",
+      "resolved_path": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source/rust-toolchain.toml",
+      "sha256": "8bc51ecab82415fddd8489604f2424e137d71856e7f65cbdcfaa48850d794b46"
+    },
+    "held_after": [
+      66306,
+      33732367,
+      33204,
+      86,
+      1793551340473884787,
+      1793804758887232592
+    ],
+    "held_before": [
+      66306,
+      33732367,
+      33204,
+      86,
+      1793551340473884787,
+      1793804758887232592
+    ],
+    "original_object_metadata_equal": true,
+    "requested_link_text_after": null,
+    "requested_link_text_before": null,
+    "requested_named_after": [
+      66306,
+      33732367,
+      33204,
+      86,
+      1793551340473884787,
+      1793804758887232592
+    ],
+    "requested_named_before": [
+      66306,
+      33732367,
+      33204,
+      86,
+      1793551340473884787,
+      1793804758887232592
+    ],
+    "requested_path": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source/rust-toolchain.toml",
+    "resolution_changed": false,
+    "resolved_named_after": [
+      66306,
+      33732367,
+      33204,
+      86,
+      1793551340473884787,
+      1793804758887232592
+    ],
+    "resolved_path": "/home/alex/work/pocket4-signal-mask-r11-build-memory-01/builder-source/rust-toolchain.toml",
+    "sha256": "8bc51ecab82415fddd8489604f2424e137d71856e7f65cbdcfaa48850d794b46"
+  },
+  "schema": 1,
+  "secondary_errors": [],
+  "source_writes": 0,
+  "started_utc": "2026-11-05T20:21:27.163373+00:00",
+  "state": "PASS_FIXED_TOOL_OBSERVATION_NOT_EXECUTION_APPROVAL",
+  "tool_execution": false,
+  "tools": [
+    {
+      "bytes": 21347088,
+      "changed_compilation_admission_fields": [
+        "sha256",
+        "bytes"
+      ],
+      "compilation_admission_fields_equal": false,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 20838840,
+        "held_after": [
+          66306,
+          31732023,
+          33261,
+          20838840,
+          1773571247969072921,
+          1785828354765868529
+        ],
+        "held_before": [
+          66306,
+          31732023,
+          33261,
+          20838840,
+          1773571247969072921,
+          1785828354765868529
+        ],
+        "requested_path": "/home/alex/.cargo/bin/rustup",
+        "resolved_path": "/home/alex/.cargo/bin/rustup",
+        "sha256": "4acc9acc76d5079515b46346a485974457b5a79893cfb01112423c89aeb5aa10"
+      },
+      "held_after": [
+        66306,
+        31770871,
+        33261,
+        21347088,
+        1793906735395548253,
+        1793906735395548253
+      ],
+      "held_before": [
+        66306,
+        31770871,
+        33261,
+        21347088,
+        1793906735395548253,
+        1793906735395548253
+      ],
+      "original_object_metadata_equal": false,
+      "requested_link_text_after": null,
+      "requested_link_text_before": null,
+      "requested_named_after": [
+        66306,
+        31770871,
+        33261,
+        21347088,
+        1793906735395548253,
+        1793906735395548253
+      ],
+      "requested_named_before": [
+        66306,
+        31770871,
+        33261,
+        21347088,
+        1793906735395548253,
+        1793906735395548253
+      ],
+      "requested_path": "/home/alex/.cargo/bin/rustup",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        31770871,
+        33261,
+        21347088,
+        1793906735395548253,
+        1793906735395548253
+      ],
+      "resolved_path": "/home/alex/.cargo/bin/rustup",
+      "sha256": "b1c8cb14e30889e7e2999e6b69e62d9e9b9ffc0f4df8180564d306d9680e6c55"
+    },
+    {
+      "bytes": 40753664,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 40753664,
+        "held_after": [
+          66306,
+          37113966,
+          33261,
+          40753664,
+          1793527515454921431,
+          1793527515557925710
+        ],
+        "held_before": [
+          66306,
+          37113966,
+          33261,
+          40753664,
+          1793527515454921431,
+          1793527515557925710
+        ],
+        "requested_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "resolved_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "sha256": "9548937d530bf439ff1ba47a3b2bd26eeb9c3aff1961c20c01798613de922578"
+      },
+      "held_after": [
+        66306,
+        37113966,
+        33261,
+        40753664,
+        1793527515454921431,
+        1793527515557925710
+      ],
+      "held_before": [
+        66306,
+        37113966,
+        33261,
+        40753664,
+        1793527515454921431,
+        1793527515557925710
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": null,
+      "requested_link_text_before": null,
+      "requested_named_after": [
+        66306,
+        37113966,
+        33261,
+        40753664,
+        1793527515454921431,
+        1793527515557925710
+      ],
+      "requested_named_before": [
+        66306,
+        37113966,
+        33261,
+        40753664,
+        1793527515454921431,
+        1793527515557925710
+      ],
+      "requested_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        37113966,
+        33261,
+        40753664,
+        1793527515454921431,
+        1793527515557925710
+      ],
+      "resolved_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "sha256": "9548937d530bf439ff1ba47a3b2bd26eeb9c3aff1961c20c01798613de922578"
+    },
+    {
+      "bytes": 656704,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 656704,
+        "held_after": [
+          66306,
+          37114023,
+          33261,
+          656704,
+          1793527620057550401,
+          1793527625615953418
+        ],
+        "held_before": [
+          66306,
+          37114023,
+          33261,
+          656704,
+          1793527620057550401,
+          1793527625615953418
+        ],
+        "requested_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "resolved_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "sha256": "d32249a7c3bfcfc67b471460386e46323accae7125e344567a12d5664d99bb57"
+      },
+      "held_after": [
+        66306,
+        37114023,
+        33261,
+        656704,
+        1793527620057550401,
+        1793527625615953418
+      ],
+      "held_before": [
+        66306,
+        37114023,
+        33261,
+        656704,
+        1793527620057550401,
+        1793527625615953418
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": null,
+      "requested_link_text_before": null,
+      "requested_named_after": [
+        66306,
+        37114023,
+        33261,
+        656704,
+        1793527620057550401,
+        1793527625615953418
+      ],
+      "requested_named_before": [
+        66306,
+        37114023,
+        33261,
+        656704,
+        1793527620057550401,
+        1793527625615953418
+      ],
+      "requested_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        37114023,
+        33261,
+        656704,
+        1793527620057550401,
+        1793527625615953418
+      ],
+      "resolved_path": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "sha256": "d32249a7c3bfcfc67b471460386e46323accae7125e344567a12d5664d99bb57"
+    },
+    {
+      "bytes": 1305304,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 1305304,
+        "held_after": [
+          66306,
+          108008578,
+          33261,
+          1305304,
+          1774174097000000000,
+          1791083705251606151
+        ],
+        "held_before": [
+          66306,
+          108008578,
+          33261,
+          1305304,
+          1774174097000000000,
+          1791083705251606151
+        ],
+        "requested_path": "/usr/bin/cc",
+        "resolved_path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+        "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+      },
+      "held_after": [
+        66306,
+        108008578,
+        33261,
+        1305304,
+        1774174097000000000,
+        1791083705251606151
+      ],
+      "held_before": [
+        66306,
+        108008578,
+        33261,
+        1305304,
+        1774174097000000000,
+        1791083705251606151
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": "/etc/alternatives/cc",
+      "requested_link_text_before": "/etc/alternatives/cc",
+      "requested_named_after": [
+        66306,
+        108009010,
+        41471,
+        20,
+        1706706580000000000,
+        1785811802718747591
+      ],
+      "requested_named_before": [
+        66306,
+        108009010,
+        41471,
+        20,
+        1706706580000000000,
+        1785811802718747591
+      ],
+      "requested_path": "/usr/bin/cc",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        108008578,
+        33261,
+        1305304,
+        1774174097000000000,
+        1791083705251606151
+      ],
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-gcc-15",
+      "sha256": "b5f1b773a7c733738352000c92a077dc5852a1a2fc6d836b1e411be1e9ec5f88"
+    },
+    {
+      "bytes": 1890472,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 1890472,
+        "held_after": [
+          66306,
+          108034599,
+          33261,
+          1890472,
+          1773538381000000000,
+          1791083704198584053
+        ],
+        "held_before": [
+          66306,
+          108034599,
+          33261,
+          1890472,
+          1773538381000000000,
+          1791083704198584053
+        ],
+        "requested_path": "/usr/bin/ld",
+        "resolved_path": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+        "sha256": "97f48d93b8b076a92d2809ec29dcb17f0f37c8827358f832255e2ed22fef6075"
+      },
+      "held_after": [
+        66306,
+        108034599,
+        33261,
+        1890472,
+        1773538381000000000,
+        1791083704198584053
+      ],
+      "held_before": [
+        66306,
+        108034599,
+        33261,
+        1890472,
+        1773538381000000000,
+        1791083704198584053
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": "x86_64-linux-gnu-ld",
+      "requested_link_text_before": "x86_64-linux-gnu-ld",
+      "requested_named_after": [
+        66306,
+        108034629,
+        41471,
+        19,
+        1773538381000000000,
+        1791083704243584996
+      ],
+      "requested_named_before": [
+        66306,
+        108034629,
+        41471,
+        19,
+        1773538381000000000,
+        1791083704243584996
+      ],
+      "requested_path": "/usr/bin/ld",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        108034599,
+        33261,
+        1890472,
+        1773538381000000000,
+        1791083704198584053
+      ],
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-ld.bfd",
+      "sha256": "97f48d93b8b076a92d2809ec29dcb17f0f37c8827358f832255e2ed22fef6075"
+    },
+    {
+      "bytes": 55944,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 55944,
+        "held_after": [
+          66306,
+          108008448,
+          33261,
+          55944,
+          1773538381000000000,
+          1791083704197584032
+        ],
+        "held_before": [
+          66306,
+          108008448,
+          33261,
+          55944,
+          1773538381000000000,
+          1791083704197584032
+        ],
+        "requested_path": "/usr/bin/ar",
+        "resolved_path": "/usr/bin/x86_64-linux-gnu-ar",
+        "sha256": "531473816bf553e863df5aab14c8177c72b732cf80c51dcf0fa990a50125041c"
+      },
+      "held_after": [
+        66306,
+        108008448,
+        33261,
+        55944,
+        1773538381000000000,
+        1791083704197584032
+      ],
+      "held_before": [
+        66306,
+        108008448,
+        33261,
+        55944,
+        1773538381000000000,
+        1791083704197584032
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": "x86_64-linux-gnu-ar",
+      "requested_link_text_before": "x86_64-linux-gnu-ar",
+      "requested_named_after": [
+        66306,
+        108008468,
+        41471,
+        19,
+        1773538381000000000,
+        1791083704243584996
+      ],
+      "requested_named_before": [
+        66306,
+        108008468,
+        41471,
+        19,
+        1773538381000000000,
+        1791083704243584996
+      ],
+      "requested_path": "/usr/bin/ar",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        108008448,
+        33261,
+        55944,
+        1773538381000000000,
+        1791083704197584032
+      ],
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-ar",
+      "sha256": "531473816bf553e863df5aab14c8177c72b732cf80c51dcf0fa990a50125041c"
+    },
+    {
+      "bytes": 826608,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 826608,
+        "held_after": [
+          66306,
+          108034591,
+          33261,
+          826608,
+          1773538381000000000,
+          1791083704197584032
+        ],
+        "held_before": [
+          66306,
+          108034591,
+          33261,
+          826608,
+          1773538381000000000,
+          1791083704197584032
+        ],
+        "requested_path": "/usr/bin/as",
+        "resolved_path": "/usr/bin/x86_64-linux-gnu-as",
+        "sha256": "4e5fcaa3cdc160173cb5cfe7aa35dc39d7aa1f06ba8d75b8d923bbae5473991b"
+      },
+      "held_after": [
+        66306,
+        108034591,
+        33261,
+        826608,
+        1773538381000000000,
+        1791083704197584032
+      ],
+      "held_before": [
+        66306,
+        108034591,
+        33261,
+        826608,
+        1773538381000000000,
+        1791083704197584032
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": "x86_64-linux-gnu-as",
+      "requested_link_text_before": "x86_64-linux-gnu-as",
+      "requested_named_after": [
+        66306,
+        108008470,
+        41471,
+        19,
+        1773538381000000000,
+        1791083704243584996
+      ],
+      "requested_named_before": [
+        66306,
+        108008470,
+        41471,
+        19,
+        1773538381000000000,
+        1791083704243584996
+      ],
+      "requested_path": "/usr/bin/as",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        108034591,
+        33261,
+        826608,
+        1773538381000000000,
+        1791083704197584032
+      ],
+      "resolved_path": "/usr/bin/x86_64-linux-gnu-as",
+      "sha256": "4e5fcaa3cdc160173cb5cfe7aa35dc39d7aa1f06ba8d75b8d923bbae5473991b"
+    },
+    {
+      "bytes": 4547768,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 4547768,
+        "held_after": [
+          66306,
+          108004715,
+          33261,
+          4547768,
+          1792159905000000000,
+          1792504324680976384
+        ],
+        "held_before": [
+          66306,
+          108004715,
+          33261,
+          4547768,
+          1792159905000000000,
+          1792504324680976384
+        ],
+        "requested_path": "/usr/bin/git",
+        "resolved_path": "/usr/bin/git",
+        "sha256": "ed8b2df973b28c0fb773b9c0dc0816d3ee2b3835bb932d9153c21417bb51b362"
+      },
+      "held_after": [
+        66306,
+        108004715,
+        33261,
+        4547768,
+        1792159905000000000,
+        1792504324680976384
+      ],
+      "held_before": [
+        66306,
+        108004715,
+        33261,
+        4547768,
+        1792159905000000000,
+        1792504324680976384
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": null,
+      "requested_link_text_before": null,
+      "requested_named_after": [
+        66306,
+        108004715,
+        33261,
+        4547768,
+        1792159905000000000,
+        1792504324680976384
+      ],
+      "requested_named_before": [
+        66306,
+        108004715,
+        33261,
+        4547768,
+        1792159905000000000,
+        1792504324680976384
+      ],
+      "requested_path": "/usr/bin/git",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        108004715,
+        33261,
+        4547768,
+        1792159905000000000,
+        1792504324680976384
+      ],
+      "resolved_path": "/usr/bin/git",
+      "sha256": "ed8b2df973b28c0fb773b9c0dc0816d3ee2b3835bb932d9153c21417bb51b362"
+    },
+    {
+      "bytes": 350624,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 350624,
+        "held_after": [
+          66306,
+          108037344,
+          33261,
+          350624,
+          1763657883000000000,
+          1791083933685882212
+        ],
+        "held_before": [
+          66306,
+          108037344,
+          33261,
+          350624,
+          1763657883000000000,
+          1791083933685882212
+        ],
+        "requested_path": "/usr/bin/ninja",
+        "resolved_path": "/usr/bin/ninja",
+        "sha256": "91e9548850cda2799facfdaa7abe33f9e978832f85e98212255708a7bbe437f2"
+      },
+      "held_after": [
+        66306,
+        108037344,
+        33261,
+        350624,
+        1763657883000000000,
+        1791083933685882212
+      ],
+      "held_before": [
+        66306,
+        108037344,
+        33261,
+        350624,
+        1763657883000000000,
+        1791083933685882212
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": null,
+      "requested_link_text_before": null,
+      "requested_named_after": [
+        66306,
+        108037344,
+        33261,
+        350624,
+        1763657883000000000,
+        1791083933685882212
+      ],
+      "requested_named_before": [
+        66306,
+        108037344,
+        33261,
+        350624,
+        1763657883000000000,
+        1791083933685882212
+      ],
+      "requested_path": "/usr/bin/ninja",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        108037344,
+        33261,
+        350624,
+        1763657883000000000,
+        1791083933685882212
+      ],
+      "resolved_path": "/usr/bin/ninja",
+      "sha256": "91e9548850cda2799facfdaa7abe33f9e978832f85e98212255708a7bbe437f2"
+    },
+    {
+      "bytes": 137840,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 137840,
+        "held_after": [
+          66306,
+          108025621,
+          33261,
+          137840,
+          1787670447000000000,
+          1791083646529510452
+        ],
+        "held_before": [
+          66306,
+          108025621,
+          33261,
+          137840,
+          1787670447000000000,
+          1791083646529510452
+        ],
+        "requested_path": "/usr/bin/cp",
+        "resolved_path": "/usr/bin/gnucp",
+        "sha256": "8fcdb2485ebc68f00392d647b3d3d9130f0d4bb9f72c69ee258086dd63e1c122"
+      },
+      "held_after": [
+        66306,
+        108025621,
+        33261,
+        137840,
+        1787670447000000000,
+        1791083646529510452
+      ],
+      "held_before": [
+        66306,
+        108025621,
+        33261,
+        137840,
+        1787670447000000000,
+        1791083646529510452
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": "gnucp",
+      "requested_link_text_before": "gnucp",
+      "requested_named_after": [
+        66306,
+        108026741,
+        41471,
+        5,
+        1774889424000000000,
+        1791083648578543651
+      ],
+      "requested_named_before": [
+        66306,
+        108026741,
+        41471,
+        5,
+        1774889424000000000,
+        1791083648578543651
+      ],
+      "requested_path": "/usr/bin/cp",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        108025621,
+        33261,
+        137840,
+        1787670447000000000,
+        1791083646529510452
+      ],
+      "resolved_path": "/usr/bin/gnucp",
+      "sha256": "8fcdb2485ebc68f00392d647b3d3d9130f0d4bb9f72c69ee258086dd63e1c122"
+    },
+    {
+      "bytes": 5390,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 5390,
+        "held_after": [
+          66306,
+          108017658,
+          33261,
+          5390,
+          1788444579000000000,
+          1791083352725946198
+        ],
+        "held_before": [
+          66306,
+          108017658,
+          33261,
+          5390,
+          1788444579000000000,
+          1791083352725946198
+        ],
+        "requested_path": "/usr/bin/ldd",
+        "resolved_path": "/usr/bin/ldd",
+        "sha256": "8b85fafd8313f5e55058f543a66d3826adcd11e073c697f9d0208755378e2054"
+      },
+      "held_after": [
+        66306,
+        108017658,
+        33261,
+        5390,
+        1788444579000000000,
+        1791083352725946198
+      ],
+      "held_before": [
+        66306,
+        108017658,
+        33261,
+        5390,
+        1788444579000000000,
+        1791083352725946198
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": null,
+      "requested_link_text_before": null,
+      "requested_named_after": [
+        66306,
+        108017658,
+        33261,
+        5390,
+        1788444579000000000,
+        1791083352725946198
+      ],
+      "requested_named_before": [
+        66306,
+        108017658,
+        33261,
+        5390,
+        1788444579000000000,
+        1791083352725946198
+      ],
+      "requested_path": "/usr/bin/ldd",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        108017658,
+        33261,
+        5390,
+        1788444579000000000,
+        1791083352725946198
+      ],
+      "resolved_path": "/usr/bin/ldd",
+      "sha256": "8b85fafd8313f5e55058f543a66d3826adcd11e073c697f9d0208755378e2054"
+    },
+    {
+      "bytes": 479104,
+      "changed_compilation_admission_fields": [],
+      "compilation_admission_fields_equal": true,
+      "content_read": true,
+      "error": null,
+      "expected": {
+        "bytes": 479104,
+        "held_after": [
+          66306,
+          3032898,
+          33261,
+          479104,
+          1774174097000000000,
+          1791083705252606172
+        ],
+        "held_before": [
+          66306,
+          3032898,
+          33261,
+          479104,
+          1774174097000000000,
+          1791083705252606172
+        ],
+        "requested_path": "/usr/libexec/gcc/x86_64-linux-gnu/15/collect2",
+        "resolved_path": "/usr/libexec/gcc/x86_64-linux-gnu/15/collect2",
+        "sha256": "8ab5d946ba2c948e5ea5c91e25a104439302e0599a521785770d10690c565437"
+      },
+      "held_after": [
+        66306,
+        3032898,
+        33261,
+        479104,
+        1774174097000000000,
+        1791083705252606172
+      ],
+      "held_before": [
+        66306,
+        3032898,
+        33261,
+        479104,
+        1774174097000000000,
+        1791083705252606172
+      ],
+      "original_object_metadata_equal": true,
+      "requested_link_text_after": null,
+      "requested_link_text_before": null,
+      "requested_named_after": [
+        66306,
+        3032898,
+        33261,
+        479104,
+        1774174097000000000,
+        1791083705252606172
+      ],
+      "requested_named_before": [
+        66306,
+        3032898,
+        33261,
+        479104,
+        1774174097000000000,
+        1791083705252606172
+      ],
+      "requested_path": "/usr/libexec/gcc/x86_64-linux-gnu/15/collect2",
+      "resolution_changed": false,
+      "resolved_named_after": [
+        66306,
+        3032898,
+        33261,
+        479104,
+        1774174097000000000,
+        1791083705252606172
+      ],
+      "resolved_path": "/usr/libexec/gcc/x86_64-linux-gnu/15/collect2",
+      "sha256": "8ab5d946ba2c948e5ea5c91e25a104439302e0599a521785770d10690c565437"
+    }
+  ]
+}

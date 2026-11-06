@@ -1,0 +1,450 @@
+--- checkpoint01/property_visibility.py
++++ candidate/source/property_visibility.py
+@@ -294,6 +294,34 @@
+     return {'address': ready['getter_address'], 'library_base': ready['getter_library_base'],
+             'symbol': symbol, 'mapping': matches[0]}
+ 
++
++def arm_child_deadline(deadline):
++    """Only the just-forked observer calls this; the actor's timer is unchanged.
++
++    Linux interval timers survive execve; the frozen accessor has no timer or
++    SIGALRM changes. Signal delivery still has scheduler latency, so accepted
++    data and proof remain independently checked against the absolute host clock.
++    """
++    before = time.monotonic_ns()
++    remaining_us = (deadline - before) // 1000
++    need(0 < remaining_us <= LIFETIME_NS // 1000, 'SDK_CHILD_DEADLINE_BEFORE_EXEC')
++    signal.signal(signal.SIGALRM, signal.SIG_DFL)
++    signal.pthread_sigmask(signal.SIG_UNBLOCK, {signal.SIGALRM})
++    signal.setitimer(signal.ITIMER_REAL, remaining_us / 1_000_000, 0)
++    after = verify_child_deadline(deadline)
++    return {'before_ns': before, 'after_ns': after, 'requested_us': remaining_us}
++
++
++def verify_child_deadline(deadline):
++    need(signal.getsignal(signal.SIGALRM) == signal.SIG_DFL, 'SDK_CHILD_ALARM_NOT_DEFAULT')
++    blocked = signal.pthread_sigmask(signal.SIG_BLOCK, set())  # Empty set changes no mask.
++    need(signal.SIGALRM not in blocked, 'SDK_CHILD_ALARM_BLOCKED')
++    current, interval = signal.getitimer(signal.ITIMER_REAL)
++    after = time.monotonic_ns()
++    need(0 < current <= LIFETIME_NS / 1_000_000_000 and interval == 0 and
++         after < deadline, 'SDK_CHILD_DEADLINE_ARM_FAILED')
++    return after
++
+ class Capture:
+     def __init__(self, init, audit, plan, prepared, helper_fd, evidence, owned, outer_deadline):
+         self.init, self.plan, self.prepared, self.owned = init, plan, prepared, owned
+@@ -317,6 +345,11 @@
+             'state': 'INITIALIZING', 'first_error': None, 'secondary_errors': [],
+             'started_monotonic_ns': self.started, 'deadline_monotonic_ns': self.deadline,
+             'spawn_attempts': 0, 'child_started': False, 'child_reaped': False,
++             'observation_limit_ms': 2000, 'observation_completed': False,
++             'observation_closed_monotonic_ns': None,
++             'retirement_started_monotonic_ns': None, 'retirement_deadline_monotonic_ns': None,
++             'retirement_limit_ms': 1000, 'retirement_deadline_met': False,
++             'fd_registration_events': 0, 'fd_close_records': [], 'channel_close_records': [],
+             'namespace_changes_in_actor': False, 'PID_namespace_join_requested': False,
+             'helper_PID_namespace_equals_init': False,
+             'same_process_root_warmed_cache': True, 'actual_LMKD_capability_simulation': False,
+@@ -349,15 +382,20 @@
+                 primary.add_note('new FD close failed: ' + repr(error)[:160])
+             raise primary
+         self.fds[name] = fd
++        self.record['fd_registration_events'] += 1
+         return fd
+ 
+     def _close(self, name):
+         fd = self.fds.pop(name, None)
+         if fd is not None:
++            row = {'name': name, 'close_attempted_once': True, 'closed': False}
++            self.record['fd_close_records'].append(row)
+             try:
+                 os.close(fd)
+-            except BaseException:
++                row['closed'] = True
++            except BaseException as error:
+                 self.close_failed = True
++                row['error'] = repr(error)[:160]
+                 raise
+ 
+     def _failure(self, stage, error):
+@@ -369,7 +407,12 @@
+         elif len(self.record['secondary_errors']) < 12:
+             self.record['secondary_errors'].append(row)
+         self.record['state'] = 'FAILED'
++        if self.record['observation_closed_monotonic_ns'] is None:
++            self.record['observation_closed_monotonic_ns'] = time.monotonic_ns()
+ 
++    def _retirement_check(self):
++        need(time.monotonic_ns() < self.retirement_deadline, 'SDK_ONE_SECOND_RETIREMENT_DEADLINE')
++
+     def _hash(self, fd, maximum, during_observation=True):
+         before = metadata(fd)
+         need(stat.S_ISREG(before['mode']) and 0 < before['bytes'] <= maximum, 'SDK_FILE_BOUND')
+@@ -377,6 +420,8 @@
+         while len(raw) < before['bytes']:
+             if during_observation:
+                 self._check()
++            else:
++                self._retirement_check()
+             part = os.pread(fd, min(65536, before['bytes'] - len(raw)), len(raw))
+             need(part, 'SDK_FILE_TRUNCATED')
+             raw.extend(part)
+@@ -385,6 +430,8 @@
+                             'bytes': len(raw)}
+ 
+     def _borrowed_init_current(self):
++        checked_before = time.monotonic_ns()
++        self._check()
+         self.init.live()
+         now = self.init.snapshot()
+         for key in ('process', 'namespaces', 'executable', 'executable_sha256'):
+@@ -397,8 +444,65 @@
+         need({'device': st.st_dev, 'inode': st.st_ino} == identity(self.fds['root']),
+              'SDK_INIT_NAMED_ROOT_CHANGED')
+         need(identity(self.fds['domain']) == self.domain_identity, 'SDK_DOMAIN_CHANGED')
++        fields = dict(line.split(':', 1) for line in
++            self.owned.bounded(self.init.proc, 'status', 65536).decode('ascii').splitlines() if ':' in line)
++        need(int(fields['Pid']) == self.init_bound['process']['pid'] and
++             [int(x) for x in fields['Uid'].split()] == [0] * 4 and
++             [int(x) for x in fields['Gid'].split()] == [0] * 4, 'SDK_INIT_CURRENT_IDS')
++        current_exe = os.stat('exe', dir_fd=self.init.proc)
++        need(metadata(self.init.exe) == self.init_exe_metadata and
++             (current_exe.st_dev, current_exe.st_ino) ==
++             (self.init_exe_metadata['device'], self.init_exe_metadata['inode']),
++             'SDK_INIT_CURRENT_EXECUTABLE_CHANGED')
++        member = self.owned.bounded(self.init.proc, 'cgroup', 4096).decode('ascii').splitlines()
++        need(len(member) == 1 and member[0].startswith('0::') and
++             (member[0][3:] == self.domain_relative or
++              member[0][3:].startswith(self.domain_relative + '/')), 'SDK_INIT_CURRENT_DOMAIN')
++        named_domain = self._open_directory(self.domain_path, 'domain_recheck')
++        primary = None
++        try:
++            need(identity(named_domain) == self.domain_identity, 'SDK_DOMAIN_NAMED_CHANGED')
++        except BaseException as error:
++            primary = error; raise
++        finally:
++            try: self._close('domain_recheck')
++            except BaseException as error:
++                if primary is None: raise
++                primary.add_note('domain name close: ' + repr(error)[:160])
+         self.init.live()
++        self._check()
++        self.record['init_current_checks'].append({'before_ns': checked_before,
++            'after_ns': time.monotonic_ns(), 'held_and_named_namespaces_equal': True,
++            'held_and_named_root_equal': True, 'current_uid_gid_root': True,
++            'current_executable_matches_held': True, 'named_domain_equal': True,
++            'current_domain_membership_matches': True})
+ 
++    def _open_directory(self, path, name):
++        need(isinstance(path, str) and path.startswith('/') and
++             all(part not in ('', '.', '..') for part in path.split('/')[1:]),
++             'SDK_DIRECTORY_PATH')
++        current = self._take(name + '_walk', os.open('/',
++            os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC))
++        primary = None
++        try:
++            for part in path.split('/')[1:]:
++                self._check()
++                child = self._take(name + '_next', os.open(part,
++                    os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=current))
++                self._close(name + '_walk')
++                self.fds[name + '_walk'] = self.fds.pop(name + '_next'); current = child
++            return self._take(name, self.fds.pop(name + '_walk'))
++        except BaseException as error:
++            primary = error; raise
++        finally:
++            failures = []
++            for suffix in ('_next', '_walk'):
++                try: self._close(name + suffix)
++                except BaseException as error: failures.append(error)
++            if failures:
++                if primary is None: raise failures[0]
++                for error in failures: primary.add_note('directory walk close: ' + repr(error)[:160])
++
+     def _bind_helper(self, original_fd):
+         expected = self.plan.get('property_visibility')
+         need(type(expected) is dict and expected == {
+@@ -413,6 +517,8 @@
+              'SDK_PREPARED_ARTIFACT_BINDING')
+         fd = self._take('helper', os.dup(original_fd))
+         self.helper_meta = metadata(fd)
++        need(fcntl.fcntl(fd, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY and
++             not os.get_inheritable(fd), 'SDK_HELPER_READONLY_CLOEXEC')
+         need(identity(fd) == copied['identity'] and self.helper_meta['uid'] == 0 and
+              self.helper_meta['gid'] == 0 and self.helper_meta['nlink'] == 1 and
+              self.helper_meta['mode'] == stat.S_IFREG | 0o555 and
+@@ -449,6 +555,10 @@
+         need(snapshot['identity']['uids'] == snapshot['identity']['gids'] == [0] * 4,
+              'SDK_INIT_INITIAL_USERNS_ROOT')
+         self.init_bound = snapshot
++        init_raw, init_source = self._hash(self.init.exe, 16 * 1024 * 1024)
++        need(init_source['sha256'] == snapshot['executable_sha256'], 'SDK_INIT_HELD_FULL_HASH')
++        self.init_exe_metadata = init_source['metadata']
++        self.record['init_source'] = init_source
+         self.actor_namespaces = {}
+         for index, name in enumerate(NAMES):
+             self._check()
+@@ -474,7 +584,8 @@
+         need(domain_path.startswith('/sys/fs/cgroup/') and
+              all(x not in ('', '.', '..') for x in domain_path.split('/')[1:]),
+              'SDK_DOMAIN_PATH')
+-        domain = self._take('domain', self.owned.directory(domain_path))
++        self.domain_path = domain_path
++        domain = self._open_directory(domain_path, 'domain')
+         self.owned.require_cgroup2(domain)
+         self.domain_identity = identity(domain)
+         need(self.domain_identity == domains[0], 'SDK_AUDIT_DOMAIN_IDENTITY')
+@@ -498,7 +609,10 @@
+         self._check()
+         need(os.execve in os.supports_fd and hasattr(os, 'setns') and
+              hasattr(os, 'fork') and hasattr(os, 'pidfd_open') and
+-             hasattr(os, 'waitid') and hasattr(os, 'P_PIDFD'), 'SDK_HOST_API_UNAVAILABLE')
++             hasattr(os, 'waitid') and hasattr(os, 'P_PIDFD') and
++             hasattr(signal, 'pidfd_send_signal') and hasattr(signal, 'setitimer') and
++             hasattr(signal, 'getitimer') and hasattr(signal, 'pthread_sigmask'),
++             'SDK_HOST_API_UNAVAILABLE')
+         need(signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL and
+              len(os.listdir('/proc/self/task')) == 1, 'SDK_SINGLE_WAITER_THREAD_REQUIRED')
+         self.libc = ctypes.CDLL(None, use_errno=True)
+@@ -524,6 +638,9 @@
+                 continue  # The bounded listdir descriptor has already closed.
+             inherited.append(fd)
+         child_channel = self.child_sock.fileno()
++        need(all(3 <= fd <= 65535 for fd in (child_channel, self.fds['actor_pidfd'])) and
++             all(fd >= 3 for fd in self.fds.values()) and self.sock.fileno() >= 3,
++             'SDK_EXEC_DESCRIPTOR_RANGE')
+         argv = ['sdk-visibility', '--sdk-visibility-v1', self.nonce,
+                 str(child_channel), str(self.fds['actor_pidfd'])]
+         env = {'PATH': '/system/bin:/system/xbin', 'LANG': 'C',
+@@ -554,8 +671,12 @@
+             closes = []
+             if self.child_sock is not None:
+                 sock, self.child_sock = self.child_sock, None
+-                try: sock.close()
++                row = {'name': 'child_sock', 'close_attempted_once': True, 'closed': False}
++                self.record['channel_close_records'].append(row)
++                try:
++                    sock.close(); row['closed'] = True
+                 except BaseException as error:
++                    row['error'] = repr(error)[:160]
+                     self.close_failed = True; closes.append(error)
+             try: self._close('stderr_write')
+             except BaseException as error: closes.append(error)
+@@ -572,6 +693,8 @@
+                 code = ctypes.get_errno(); raise OSError(code, os.strerror(code))
+             need(os.getppid() == self.actor_pid, 'SDK_CHILD_PARENT_CHANGED')
+             resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
++            stage = 'deadline_arm'
++            arm_child_deadline(self.deadline)
+             stage = 'owned_domain'
+             body = str(os.getpid()).encode('ascii')
+             need(os.write(self.fds['child_domain_procs'], body) == len(body), 'SDK_CHILD_DOMAIN_WRITE')
+@@ -591,6 +714,7 @@
+             os.set_inheritable(self.fds['actor_pidfd'], True)
+             os.set_inheritable(self.fds['helper'], False)
+             stage = 'exact_android_exec'
++            verify_child_deadline(self.deadline)
+             os.execve(self.fds['helper'], argv, env)
+             raise RuntimeError('SDK_EXEC_RETURNED')
+         except BaseException as error:
+@@ -745,6 +869,8 @@
+         observations = []
+         for index, (path, name) in enumerate(zip(LIBRARIES, received_names)):
+             fd = self.fds[name]; m = metadata(fd)
++            need(fcntl.fcntl(fd, fcntl.F_GETFL) & os.O_ACCMODE == os.O_RDONLY and
++                 not os.get_inheritable(fd), 'SDK_BIONIC_READONLY_CLOEXEC')
+             need(stat.S_ISREG(m['mode']) and m['uid'] == m['gid'] == 0 and
+                  m['nlink'] == 1 and not m['mode'] & 0o7022 and
+                  0 < m['bytes'] <= LIBRARY_BYTES, 'SDK_BIONIC_FILE_METADATA')
+@@ -847,11 +973,22 @@
+     def _send_token(self, prefix, field):
+         self._check()
+         need(self.record[field] == 0, 'SDK_TOKEN_REUSE')
+-        self.record[field] = 1
+         raw = prefix + self.nonce.encode('ascii')
+-        sent = self.sock.send(raw, socket.MSG_DONTWAIT | socket.MSG_NOSIGNAL)
++        stem = field.removesuffix('_attempts')
++        before = time.monotonic_ns()
++        need(before < self.deadline, 'SDK_TOKEN_DEADLINE')
++        self.record[field] = 1
++        self.record[stem + '_send_before_ns'] = before
++        try:
++            sent = self.sock.send(raw, socket.MSG_DONTWAIT | socket.MSG_NOSIGNAL)
++            self.record[stem + '_sent_bytes'] = sent
++        finally:
++            self.record[stem + '_send_returned_ns'] = time.monotonic_ns()
+         need(sent == len(raw), 'SDK_TOKEN_SHORT_SEND')
+-        return time.monotonic_ns()
++        self._check()
++        # The child can run as soon as send queues the token, before send returns.
++        # Its first read therefore brackets against admission, not return time.
++        return before
+ 
+     def _accept(self, value, creds, names):
+         if value == 'EOF':
+@@ -864,7 +1001,7 @@
+                  set(value) == {'schema', 'phase', 'nonce', 'stage', 'errno', 'type'} and
+                  type(value['schema']) is int and value['schema'] == 1 and
+                  value['nonce'] == self.nonce and value['stage'] in {
+-                     'parent_death', 'owned_domain', 'namespace_entry', 'owned_root',
++                     'parent_death', 'deadline_arm', 'owned_domain', 'namespace_entry', 'owned_root',
+                      'descriptor_retirement', 'exact_android_exec'} and
+                  (value['errno'] is None or integer(value['errno'], 0, (1 << 31) - 1)) and
+                  isinstance(value['type'], str) and len(value['type']) <= 64,
+@@ -879,12 +1016,15 @@
+             need(creds[1:] == (0, 0) and len(names) == 3, 'SDK_READY_SENDER_OR_RIGHTS')
+             ready = ready_record(value, self.nonce, self.pid)
+             self.record['ready'] = ready
++            self.record['root_source_proof_before_ns'] = time.monotonic_ns()
+             view, maps = self._process_view(ready['credentials'])
+             self._qualify_libraries(ready, names, maps)
+             self.record['root_source_view'] = view
++            self._check()
++            self.record['root_source_proof_after_ns'] = time.monotonic_ns()
+             self.record['source_qualified_before_reads'] = True
+             self.read_started = self._send_token(b'READ_ROOT_AND_1069:', 'start_token_attempts')
+-            self.record['start_token_sent_monotonic_ns'] = self.read_started
++            self.record['start_token_sent_monotonic_ns'] = self.record['start_token_send_returned_ns']
+             self.phase = 'WAITING_ROOT'
+         elif self.phase == 'WAITING_ROOT':
+             need(not names and creds[1:] == (0, 0), 'SDK_ROOT_SENDER_OR_RIGHTS')
+@@ -897,14 +1037,20 @@
+             need(not names and creds[1:] == (1069, 1069), 'SDK_LOWER_SENDER_OR_RIGHTS')
+             self.lower_value = values_record(value, 'uid1069', self.nonce,
+                                             self.root_value['after_ns'], self.deadline)
++            self.record['uid1069_received_unqualified'] = self.lower_value
++            self.record['lower_source_proof_before_ns'] = time.monotonic_ns()
+             view, maps = self._process_view(self.lower_value['credentials'])
+             self._libraries_after(maps)
+             self._borrowed_init_current()
++            self._check()
++            self.record['lower_source_proof_after_ns'] = time.monotonic_ns()
+             self.record['uid1069_observation'] = self.lower_value
+             self.record['lower_source_view'] = view
+-            self.record['finish_token_sent_monotonic_ns'] = self._send_token(b'OBSERVED:',
+-                                                                           'finish_token_attempts')
++            self._send_token(b'OBSERVED:', 'finish_token_attempts')
++            self.record['finish_token_sent_monotonic_ns'] = self.record['finish_token_send_returned_ns']
+             self.record['finish_token_sent'] = True
++            self.record['observation_completed'] = True
++            self.record['observation_closed_monotonic_ns'] = self.record['finish_token_send_returned_ns']
+             self.phase = 'WAITING_EXIT'
+         else:
+             raise RuntimeError('SDK_EXTRA_OR_OUT_OF_ORDER_PACKET')
+@@ -913,6 +1059,7 @@
+         if self.stderr_eof or 'stderr_read' not in self.fds:
+             return
+         for unused in range(5):
++            need(len(self.stderr) <= STDERR_BYTES, 'SDK_STDERR_BOUND')
+             try:
+                 part = os.read(self.fds['stderr_read'], min(4096, STDERR_BYTES + 1 - len(self.stderr)))
+             except BlockingIOError:
+@@ -941,6 +1088,7 @@
+         self.child_reaped = True
+         self.record.update(child_reaped=True, child_wait_status=status,
+             child_returncode=os.waitstatus_to_exitcode(status),
++            child_exit_signal=os.WTERMSIG(status) if os.WIFSIGNALED(status) else None,
+             child_reap_observed_monotonic_ns=time.monotonic_ns(),
+             child_exit_kernel_time_observed=False)
+ 
+@@ -1008,6 +1156,9 @@
+         need(stat.S_ISREG(first['mode']) and first['uid'] == first['gid'] == 0 and
+              stat.S_IMODE(first['mode']) == 0o600 and first['nlink'] == 1 and first['bytes'] == 0,
+              'SDK_STDERR_NEW_FILE')
++        self.record['private_stderr'] = {'relative': 'evidence/' + name,
++            'metadata_after_create': first, 'complete': False, 'write_completed': False,
++            'raw_bytes_exported_in_public_result': False}
+         raw = bytes(self.stderr[:STDERR_BYTES])
+         offset = 0
+         while offset < len(raw):
+@@ -1024,7 +1175,10 @@
+         os.fsync(self.evidence)
+         self.record['private_stderr'] = {'relative': 'evidence/' + name, 'bytes': len(raw),
+             'sha256': hashlib.sha256(raw).hexdigest(), 'metadata': final,
+-            'eof_observed': self.stderr_eof, 'complete': self.stderr_eof and len(self.stderr) <= STDERR_BYTES}
++            'eof_observed': self.stderr_eof, 'write_completed': True,
++            'hash_basis': 'exact acknowledged write bytes; no independent file-content readback',
++            'raw_bytes_exported_in_public_result': False,
++            'complete': self.stderr_eof and len(self.stderr) <= STDERR_BYTES}
+ 
+     def finish(self, reason):
+         if self.finished:
+@@ -1034,6 +1188,9 @@
+         # The actor calls finish only after its original Stop and ordinary
+         # direct-child retirement. No new token/property read is admitted here.
+         cleanup_started = time.monotonic_ns()
++        self.retirement_deadline = cleanup_started + 1_000_000_000
++        self.record['retirement_started_monotonic_ns'] = cleanup_started
++        self.record['retirement_deadline_monotonic_ns'] = self.retirement_deadline
+         try:
+             self._reap_nonblocking()
+             if self.pid is not None and not self.child_reaped:
+@@ -1042,7 +1199,7 @@
+                 self._abort_nonblocking()
+                 # This bounded wait is retirement only, after original Stop.
+                 # It does not extend the two-second property observation.
+-                end = time.monotonic() + 1.0
++                end = self.retirement_deadline / 1_000_000_000
+                 while not self.child_reaped and time.monotonic() < end:
+                     self._reap_nonblocking()
+                     if self.child_reaped:
+@@ -1053,13 +1210,20 @@
+                     else:
+                         time.sleep(min(0.01, max(0.0, end - time.monotonic())))
+                 need(self.child_reaped, 'SDK_CHILD_NOT_REAPED_WITHIN_RETIREMENT_BOUND')
++        except BaseException as error:
++            self._failure('child_retirement', error)
++        try:
+             self._drain_stderr()
+             if self.record['child_started']:
+                 need(self.stderr_eof, 'SDK_STDERR_NOT_COMPLETE_AFTER_JOIN')
+-                self._save_stderr()
+         except BaseException as error:
+-            self._failure('child_retirement', error)
+-        self.record['retirement_elapsed_ns'] = time.monotonic_ns() - cleanup_started
++            self._failure('stderr_retirement', error)
++        if self.record['child_started']:
++            try:
++                self._retirement_check()
++                self._save_stderr()
++            except BaseException as error:
++                self._failure('private_stderr_preservation', error)
+         self.record['retirement_wait_limit_ms'] = 1000
+         if 'helper' in self.fds:
+             try:
+@@ -1087,8 +1251,12 @@
+             sock = getattr(self, attr)
+             if sock is not None:
+                 setattr(self, attr, None)
+-                try: sock.close()
++                row = {'name': attr, 'close_attempted_once': True, 'closed': False}
++                self.record['channel_close_records'].append(row)
++                try:
++                    sock.close(); row['closed'] = True
+                 except BaseException as error:
++                    row['error'] = repr(error)[:160]
+                     self.close_failed = True
+                     self._failure(attr + '_close', error)
+         for name in list(self.fds):
+@@ -1098,10 +1266,18 @@
+         self.record['held_fds_closed'] = not self.close_failed and not self.fds and self.sock is None and self.child_sock is None
+         if not self.record['held_fds_closed']:
+             self._failure('fd_retirement', RuntimeError('SDK_FD_RETIREMENT_INCOMPLETE'))
++        retirement_finished = time.monotonic_ns()
++        self.record['retirement_finished_monotonic_ns'] = retirement_finished
++        self.record['retirement_elapsed_ns'] = retirement_finished - cleanup_started
++        self.record['retirement_deadline_met'] = retirement_finished <= self.retirement_deadline
++        if not self.record['retirement_deadline_met']:
++            self._failure('retirement_deadline', RuntimeError('SDK_RETIREMENT_DEADLINE_EXCEEDED'))
+         complete = bool(self.record['first_error'] is None and self.child_reaped and
+             self.record.get('child_returncode') == 0 and self.record['source_qualified_before_reads'] and
+             self.root_value is not None and self.lower_value is not None and
+-            self.record['finish_token_sent'] and self.record['held_fds_closed'] and self.stderr_eof)
++            self.record['finish_token_sent'] and self.record['observation_completed'] and
++            self.record['observation_closed_monotonic_ns'] < self.deadline and
++            self.record['held_fds_closed'] and self.stderr_eof and self.record['retirement_deadline_met'])
+         self.record['property_visibility_qualified'] = complete
+         if complete:
+             self.record['state'] = 'WARM_ROOT_AND_UID1069_OBSERVED_AND_CLOSED'

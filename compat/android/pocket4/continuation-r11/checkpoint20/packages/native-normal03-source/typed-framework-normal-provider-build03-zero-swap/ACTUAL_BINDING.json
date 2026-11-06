@@ -1,0 +1,280 @@
+{
+  "schema": 2,
+  "state": "ACTUAL_BUILDER468_BOUND_NORMAL03_ZERO_SWAP_SOURCE_ONLY_UNRUN",
+  "frozen_utc": "2026-11-06 08:18:10 UTC",
+  "new_root": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-provider-build-03-20261106",
+  "new_key": "pocket4-native-typed-ingress-framework-strict-provider-two-target-build-03-20261106",
+  "actual_compile": {
+    "job": "1a1af6ada1d-fc05-6854",
+    "evidence_tree": "48335a3cb953c26fd90266d9221312186b90de60",
+    "result": {
+      "bytes": 161423,
+      "sha256": "871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8",
+      "git_blob_sha1": "b53d5e16b72fe7e17b8e7c4a3db4c0e6699cfdd5"
+    },
+    "builder": {
+      "bytes": 34722200,
+      "sha256": "8bf78794705a62f0a60d00af64cdd25e2b798739e445575c3d3cca5e566f4cf6",
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/cargo-target/debug/droidloom-update"
+    },
+    "source_manifest": {
+      "bytes": 97525,
+      "sha256": "e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee"
+    },
+    "commands_passed": 62,
+    "updater_exact_controls_passed": 15,
+    "source_exact_controls_passed": 9,
+    "registered_only": {
+      "updater": 205,
+      "source": 20
+    },
+    "cleanup": {
+      "errors": [],
+      "remaining": [],
+      "forced_cleanup": false
+    },
+    "source_files": 491,
+    "changed_existing": 2,
+    "added": 25,
+    "unchanged_existing": 464
+  },
+  "prior_normal_failed_originals": {
+    "inner": {
+      "bytes": 2246,
+      "sha256": "80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc",
+      "git_blob_sha1": "48d47a11f90bc0159ddfd50e5d8ee88509de359b"
+    },
+    "outer": {
+      "bytes": 1150,
+      "sha256": "2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059",
+      "git_blob_sha1": "a5b9085ba6d2b68205f7dc078e470742e17fd06c"
+    },
+    "result": "strict graph failed; source publication already completed; original failure retained",
+    "reaped_children": 1,
+    "first_timeout_history": {
+      "inner_sha256": "139163acad47d9db707faa950e4b4dcecaf3e72b655bce8b6b3db089ce542bdf",
+      "outer_sha256": "3626270e88e72c4e46d8beee09b5351e1f7d53bab18043241204ca314855e04d",
+      "children_reaped": 296,
+      "retained": true
+    }
+  },
+  "publication": {
+    "actual_old_manifest": {
+      "bytes": 97784,
+      "sha256": "73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d",
+      "git_blob_sha1": "d7a0e15340b5461e4606a064c5ad8a58f88bfbb7"
+    },
+    "old_projects": 214,
+    "new_projects": 224,
+    "root_links": 8,
+    "staging_argument_used": false,
+    "old_lock_full_fresh_verification_under_normal_locks": true,
+    "normal_monotonic_reconciliation": true,
+    "manifest_fabricated": false,
+    "source_reuse_qualified_by_this_freeze": false
+  },
+  "resources": {
+    "cpu_quota_percent": 200,
+    "memory_max_bytes": 10737418240,
+    "memory_swap_max_bytes": 0,
+    "owned_swap_current_before_builder_required_bytes": 0,
+    "zero_swap_limit_and_current_after_builder_required": true,
+    "jobs": 1,
+    "nice": 10,
+    "builder_wait_seconds": 6100,
+    "request_timeout_seconds": 6400,
+    "minimum_fresh_MemAvailable_bytes": 16106127360,
+    "extra_free_memory_over_build_budget_bytes": 5368709120,
+    "minimum_fresh_SwapFree_bytes": null,
+    "global_swap_free_observation_only": true,
+    "source_of_new_profile": "Root explicitly authorized independent10GiB RAM/zero-swap profile with15GiB fresh RAM; original02 retained.",
+    "actual_readonly_sample": {
+      "tree": "292bf78ca7a1f55f93013dbb7a12d6ebba190515",
+      "job": "1a1afde7385-fc05-6c54",
+      "pin": {
+        "bytes": 399,
+        "sha256": "feb95f82087d7c68a8c8c42b54cf267b8f9c343ce41e49bb8193e96f49f050da",
+        "git_blob_sha1": "6be8937509779611d9690e4be676bd1353162354"
+      },
+      "observed_unix_ns_decimal": "1793951956974389962",
+      "memory_bytes": {
+        "MemAvailable": 17379332096,
+        "MemTotal": 26357305344,
+        "SwapCached": 64860160,
+        "SwapFree": 996478976,
+        "SwapTotal": 17179860992
+      },
+      "not_02_failure_time": true,
+      "authorizes_build": false
+    },
+    "observed_sample_margin_above_new_RAM_gate_bytes": 1273204736,
+    "observed_sample_available_minus_owned_RAM_bytes": 6641913856,
+    "prior_normal_peak_bytes": 7947964416,
+    "prior_normal_swap_peak_bytes": 50835456,
+    "prior_normal_was_incomplete_strict_graph_failure": true,
+    "compile03_peak_bytes": 1073741824,
+    "compile03_memory_max_delta": 1732,
+    "compile03_swap_peak": 0,
+    "compile03_OOM_delta": 0,
+    "CPU_and_jobs_match_prior_normal": true,
+    "RAM_limit_matches_prior_normal": true,
+    "memory_resource_budget_hard_reservation_claim": false,
+    "no_pressure_claim": false,
+    "Main_limits_modified": false,
+    "continuous_noninterference_claim": false,
+    "own_swap_limit_applies_before_normal_builder": "Control/snapshot preamble runs first; its earlier lifetime is not retrospectively claimed zero-swap. The readback must be zero before Popen."
+  },
+  "Main_guard": {
+    "snapshot": {
+      "bytes": 14294,
+      "sha256": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+      "git_blob_sha1": "afaa057e18e32f6ffde8055779e5e2e0a2152fb0"
+    },
+    "identity_source_blob": "005962e4796b7f9d367514da73a4e8a5c5486e2e",
+    "roles": 7,
+    "current_zygote64_pid": 90360,
+    "current_system_server_pid": 90516,
+    "old_QA_epoch_invalid": true,
+    "this_host_build_grants_new_QA_epoch_qualification": false,
+    "static_peer_scope": "Android agent read full 14294-byte snapshot; no definite Python/API/false-green blocker; no execution, no complete normal packet peer review",
+    "root_subprocesses_started_by_snapshot": 0,
+    "helper_alarm_seconds": 15,
+    "outer_helper_timeout_seconds": 25,
+    "installed_engine_hash_observed": false,
+    "outer_helper_absolute_retirement_seconds": 30,
+    "new_capture_supervisor_source_only": false,
+    "current_snapshot_body_changed": false,
+    "capture_supervisor_actual_02_qualified": true
+  },
+  "normal": {
+    "targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "dependency_mode": "Strict",
+    "ALLOW_MISSING_DEPENDENCIES": false,
+    "source_projection_and_child_cleanup_original_functions_preserved": true,
+    "raw_completion_is_not_Java_JNI_artifact_acceptance": true,
+    "actual_implementation_jar_required": true,
+    "actual_Android_JNI_TU_header_dependency_and_link_required": true,
+    "host_library_or_header_jar_insufficient": true
+  },
+  "pure_controls": {
+    "planned": 45,
+    "prior_nonresource_cases_retained": 37,
+    "zero_swap_and_meminfo_cases": 8,
+    "actual_execution": "NOT_PERFORMED",
+    "execution_order": "Stage validates all17 pinned files and Python syntax, then45 pure cases before ROOT creation or Main snapshot."
+  },
+  "packet_files": 17,
+  "stdin": {
+    "bytes": 741142,
+    "sha256": "3b99a5aa031d53cb20e47cfca0fb3fb4b0a7f6da3f342792456de8f345dbc4cf",
+    "git_blob_sha1": "d3a7dad050c304c0d0417bc906b2ce29446c3812"
+  },
+  "request": {
+    "bytes": 817642,
+    "sha256": "9fff3b970aa80d24692b98ce307c30d760af5352a8db8f06ac6d4c7a3a604a9d",
+    "git_blob_sha1": "11d23cfb1cab10992b31e91211bdeb5f9aad0418"
+  },
+  "remote_submitted": false,
+  "agent_Hepta_actions": 0,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "installed": false,
+  "production_ready": false,
+  "whole_app_ready": {
+    "passed": 0,
+    "total": 45
+  },
+  "normal01": {
+    "source_tree": "a45cd4f09ad8247ce0f621021357808a58e16a23",
+    "prefix": "typed-framework-normal-provider-build01",
+    "request_pin": {
+      "bytes": 724917,
+      "sha256": "48669f0e461bd4b07f74e7c1f3ed1d36ee20a6afce341b09bfe9aa0500773919",
+      "git_blob_sha1": "151d4f6adcb2fffa9528b8bc259f981ba3a5f593"
+    },
+    "state": "UNRUN_NOT_ADMITTED",
+    "source_unchanged": true,
+    "reason": "Capture lifecycle guarantee absent; superseded for dispatch by source-only NORMAL02."
+  },
+  "capture_lifecycle": {
+    "source": {
+      "bytes": 25227,
+      "sha256": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+      "git_blob_sha1": "7a769dc133f62df3ed12cd3e64da1b967309574f"
+    },
+    "root_supervisor": {
+      "bytes": 12041,
+      "sha256": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7",
+      "git_blob_sha1": "9407f0960889542a2611b512c278e97bf1195514"
+    },
+    "outer_fence": {
+      "bytes": 25481,
+      "sha256": "ce3c0d1fc221e36055d75837a9bba337ccea33c8c7f89f8101a36defbd09c684",
+      "git_blob_sha1": "c65a178dd3988f2197a4455bc1ac6cb1efcee2cb"
+    },
+    "root_observation_seconds": 15,
+    "root_retirement_seconds": 5,
+    "outer_observation_seconds": 25,
+    "outer_absolute_retirement_seconds": 30,
+    "control_qualification_seconds": 30,
+    "control_execution_in_this_freeze": "NOT_PERFORMED; same4 controls rerun at new03 admission",
+    "root_control_cases": [
+      "timeout-with-descendant",
+      "escaped-setsid-descendant",
+      "pidfd-acquisition-EMFILE"
+    ],
+    "operator_control_cases": [
+      "post-Popen-pidfd-acquisition-EMFILE"
+    ],
+    "kernel_only_retirement_authority": true,
+    "root_report_is_semantic_gate_not_cleanup_authority": true,
+    "all_source_pins_required_before_launch": true,
+    "Main_signal_targets_denied": 7,
+    "signal_targets_are_only_owned_unreaped_children": true,
+    "arbitrary_privileged_command_supported": false,
+    "prior_NORMAL02_actual_controls_passed": 4,
+    "core_and_root_supervisor_byte_exact_to_actual02": true
+  },
+  "normal02": {
+    "source_tree": "4131325b8cee576281467121a0fdcbe03f22304d",
+    "source_prefix": "typed-framework-normal-provider-build02",
+    "request_pin": {
+      "bytes": 780257,
+      "sha256": "b11c431457ece570e2548c8188f92b48480e9da57b70d61aeaf1bea0ec4bd775",
+      "git_blob_sha1": "941d5b2924c95d72d5208f49c4193838eb21dce4"
+    },
+    "actual_tree": "2c6b2f36f291712e86a83a13b4cb57c1d97388ed",
+    "job": "1a1afd77d0e-fc05-6c1c",
+    "outer_terminal": {
+      "bytes": 24722,
+      "sha256": "42b2d7b8749047df9e1d40ddf9b70b3f3e187c39ce6a15dd0f5721610e814c00",
+      "git_blob_sha1": "b57e36dd42ea2e8e56e408cd7037d28c4dd6b1a3"
+    },
+    "stage": {
+      "bytes": 4353,
+      "sha256": "ec41dd25bc1b97324ca88295fb7177f3de5f4f7a585a43e265bbca5cf5b2ee98",
+      "git_blob_sha1": "bc1e631c052bb0a7d86cfeae90c4f9879439ddfe"
+    },
+    "state": "ACTUAL_FAILED_FRESH_SwapFree_LT_2GiB_BEFORE_BUILDER_POPEN",
+    "actual_failure": "RuntimeError('less than the required 2 GiB free swap; no automatic retry')",
+    "inner_build_called": true,
+    "inner_returncode": null,
+    "builder_Popen_reached": false,
+    "exact_failing_meminfo_values_not_preserved_by02": true,
+    "subsequent_readonly_sample_not_retroactive": true,
+    "pure_controls_passed": 40,
+    "real_lifecycle_controls_passed": 4,
+    "root_control_or_snapshot_reports_fully_readback": 5,
+    "outer_lifecycle_receipts": 6,
+    "all_owned_capture_children_reaped": true,
+    "all_capture_acquired_fds_closed": true,
+    "Main_fence_pass": true,
+    "Main_identity_or_limit_changes": [],
+    "Main_OOM_deltas": 0,
+    "original_FAIL_and_source_unchanged": true,
+    "no_retry_of02": true
+  }
+}

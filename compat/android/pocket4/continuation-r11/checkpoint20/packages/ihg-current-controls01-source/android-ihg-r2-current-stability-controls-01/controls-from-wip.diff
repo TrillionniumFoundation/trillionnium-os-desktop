@@ -1,0 +1,204 @@
+--- prior/check_stability.py
++++ current/check_stability.py
+@@ -1,17 +1,17 @@
+-"""Original IHG R1 Session/Policy and bounded full Search readiness with synthetic I/O only."""
++"""Current IHG R2 Session/typed Flow and bounded Search readiness; synthetic I/O only."""
+ import ast,copy,hashlib,json,re,secrets,sys,types
+ from pathlib import PurePosixPath
+-raw=sys.stdin.buffer.read(196609)
+-assert len(raw)<=196608 and hashlib.sha256(raw).hexdigest()=='da84720694a3ac2d8b9aced4adae34c7226c999ccf45321241b78d877087ac28'
++raw=sys.stdin.buffer.read(262145)
++assert len(raw)==181643 and hashlib.sha256(raw).hexdigest()=='0e6c3f42c4ddb15971b5c89338571215cbad0b41cf1503bdd70ae7a318500d55'
+ p=json.loads(raw)
+-assert p['schema']==1 and set(p)=={'schema','contract','adapter','public_destination','context','coordinator','stage','nonce_slots','nonce_exclusions'}
+-TEMPLATE_PINS={"contract":{"bytes":28150,"sha256":"573fdcd691ed51b76f965151b74b38cfcbd12ed5aa972d668146ae136744d7e1"},"adapter":{"bytes":20785,"sha256":"0918dca47db8451baf1cb74fc6c50934e7c87a97e25aff6cc7a568ac21a091f9"},"public_destination":{"bytes":32045,"sha256":"d4d35f9729f4a4a8d0cef0f7ac4712630a00570e6e0d988713939aacd716e932"},"context":{"bytes":16822,"sha256":"6fb62d7e115d48652111fc85eed25be717a044338315a1d9014e10197a2bfed5"},"coordinator":{"bytes":41551,"sha256":"fcb2a890ebe823107b4cce80ac67a1f60141ece3357938d1c143520fb7b17762"},"stage":{"bytes":5038,"sha256":"ab02de5ed42986af37f2191ccdb05e46a6a1da494d9dc0af89bd6708db16c4d5"}}
++assert p['schema']==2 and set(p)=={'schema','contract','adapter','public_destination','context','coordinator','stage','transport','nonce_slots','nonce_exclusions'}
++TEMPLATE_PINS={"contract":{"bytes":28714,"sha256":"e48cc66772f7340ddb2e70abbc1f6151ea3c3300e17b7468aadeae3cf4372f4a"},"adapter":{"bytes":21647,"sha256":"e7558e6aef8d1660183850d463d25b94d1e7523b04710c36b3e160dec283238e"},"public_destination":{"bytes":32045,"sha256":"d4d35f9729f4a4a8d0cef0f7ac4712630a00570e6e0d988713939aacd716e932"},"context":{"bytes":18830,"sha256":"c3770634a81d5a79999dc294579dc23fef9b95a580c23eeb5439089abc9002bd"},"coordinator":{"bytes":43208,"sha256":"387da620fe8058bb7b74fd7e8471e41f407e105c5765ee43ca24b83dddc4d057"},"stage":{"bytes":4981,"sha256":"0094cc48bc8d028268ebab37a22018fe3554f494b2d6b7fc7674da9a647943db"},"transport":{"bytes":15606,"sha256":"27e07fbaaccca4e5113e1750a3b7baa9d05048a1e8588f09cdc8f9ed5cf44089"}}
+ for name,pin in TEMPLATE_PINS.items():
+     data=p[name].encode();assert len(data)==pin['bytes'] and hashlib.sha256(data).hexdigest()==pin['sha256'],name
+     compile(p[name],'<compile-only-template-'+name+'>','exec')
+ slots=p['nonce_slots'];old=p['nonce_exclusions']
+ assert len(slots)==len(set(slots))==36 and all(isinstance(v,str) and len(v)==32 for v in slots)
+-assert len(old)==len(set(old))==30 and all(re.fullmatch('[0-9a-f]{32}',v) for v in old)
++assert len(old)==len(set(old))==337 and all(re.fullmatch('[0-9a-f]{32}',v) for v in old)
+ pool=[]
+ for _ in range(1024):
+     value=secrets.token_hex(16)
+@@ -32,12 +32,19 @@
+     m=types.ModuleType(name);m.__file__='/pure-control/'+name+'.py';m.HERE=PurePosixPath('/pure-control')
+     exec(compile(tree,'<pure-module-'+name+'>','exec'),m.__dict__)
+     return m
+-qa=module(p['contract'],'ihg_actual_r1_contract')
+-adapter=module(p['adapter'],'ihg_actual_r1_adapter')
++qa=module(p['contract'],'ihg_actual_r2_contract')
++adapter=module(p['adapter'],'ihg_actual_r2_adapter')
+ public=module(p['public_destination'],'bounded_search_readiness_and_destination_gate')
+ context=module(p['context'],'ihg_actual_task_context')
+ base=module(p['coordinator'],'search_readiness_destination_coordinator')
+-assert qa.PROTOCOL=='pocket4-owned-ihg-qa-v1' and qa.SELF=='org.droidloom.qa.ihg.r1'
++assert qa.PROTOCOL=='pocket4-owned-ihg-qa-v2' and qa.SELF=='org.droidloom.qa.ihg.r2'
++transport=module(p['transport'],'current_IHG_bound_arun_constructor')
++assert type(base.HELPER_UID) is int and base.HELPER_UID==context.HELPER_UID and isinstance(base.INSTALLED,dict)
++assert base.INSTALLED['uid']==base.HELPER_UID and base.INSTALLED['package']==qa.SELF
++assert base.CURRENT_EPOCH==context.CURRENT_EPOCH==qa.MAIN_EPOCH==transport.FRAMEWORK_EPOCH_SHA256
++assert base.CURRENT_BASELINE_SHA==context.CURRENT_BASELINE_SHA==qa.MAIN_BASELINE_SHA
++assert base.CURRENT_QUALIFICATION_SHA==context.CURRENT_QUALIFICATION_SHA==qa.MAIN_BASELINE_QUALIFICATION_SHA
++assert base.CURRENT_HOST_MANIFEST==context.CURRENT_HOST_MANIFEST==adapter.RECORDER_MANIFEST_SHA
+ cases=[]
+ def passed(name):cases.append({'case':name,'passed':True})
+ passed('exact_original_contract_adapter_pins_and_all_template_and_bound_compile')
+@@ -182,7 +189,9 @@
+     state={'accessibility_enabled':False,'touch_exploration_enabled':False,
+         'enabled_service_count':0,'enabled_services_sha256':qa.sha(b'')}
+     scope={'package':qa.PACKAGE,'uid':qa.UID,'user':0,'display':0,'activity':qa.PACKAGE+'/.activity.MainActivity',
+-        'window_token':'ab12','main_epoch_sha256':qa.MAIN_EPOCH}
++        'window_token':'ab12','main_epoch_sha256':qa.MAIN_EPOCH,
++        'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,'main_baseline_sha256':qa.MAIN_BASELINE_SHA,
++        'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA}
+     owned={'task':4321,'package':qa.PACKAGE,'prelaunch_absent':True,'cleanup_allowed':True}
+     step=PurePosixPath('/synthetic/no-files-created');memory={}
+     def read(path,maximum=1048576,*args,**kwargs):
+@@ -192,6 +201,10 @@
+     policy=context.Policy('inspect',qa,['synthetic-resolve'],
+         {'search':search,'destination':click,'post':post,'readiness':readiness},step,read,lambda:copy.deepcopy(owned))
+     flow=types.SimpleNamespace(contract=types.SimpleNamespace(sha256=adapter.RECORDER_MANIFEST_SHA),
++        scope={'schema':'pocket4-current-recorder-scope-v1','current_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
++            'epoch_sha256':qa.MAIN_EPOCH,'current_baseline_sha256':qa.MAIN_BASELINE_SHA,
++            'current_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA,
++            'package':qa.PACKAGE,'uid':qa.UID,'user':0},
+         _private_backend_transport=False,action_attempted=False,command_index=0,step=step,policy=policy)
+     def admit(argv,timeout,mutation=False,private=False):
+         policy.admit(argv,timeout,mutation,private)
+@@ -412,7 +425,9 @@
+     passed(role+'_replay_rejected_before_IO')
+ 
+ scope={'package':qa.PACKAGE,'uid':qa.UID,'user':0,'display':0,'activity':qa.PACKAGE+'/.activity.MainActivity',
+-       'window_token':'ab12','main_epoch_sha256':qa.MAIN_EPOCH}
++       'window_token':'ab12','main_epoch_sha256':qa.MAIN_EPOCH,
++        'main_baseline_schema':qa.MAIN_BASELINE_SCHEMA,'main_baseline_sha256':qa.MAIN_BASELINE_SHA,
++        'main_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA}
+ for role in ('search','destination'):
+     for field,bad in [('nonce','e'*32),('node_path','0/9'),('node_sha256','d'*64),
+                      ('inspection_nonce','c'*32),('inspection_sha256','f'*64),('scope',dict(scope,window_token='ab99'))]:
+@@ -461,12 +476,12 @@
+ try:adapter.validate_plan(bad_plan,qa)
+ except RuntimeError as error:assert str(error)=='OWNED_PLAN_REQUIRED'
+ else:raise AssertionError('text plan enabled')
+-passed('original_R1_adapter_still_rejects_text')
++passed('original_read_inspect_click_adapter_still_rejects_text')
+ request={'protocol':qa.PROTOCOL,'nonce':'e'*32,'op':'set_text'}
+ try:qa.validate_request(request)
+ except RuntimeError as error:assert str(error)=='IHG_READ_INSPECT_CLICK_ONLY'
+ else:raise AssertionError('text helper protocol enabled')
+-passed('original_R1_contract_still_rejects_text')
++passed('original_read_inspect_click_contract_still_rejects_text')
+ 
+ 
+ result,calls,counts,commands,session=exercise()
+@@ -544,20 +559,102 @@
+     passed('readiness_policy_'+label+'_rejected_without_IO')
+ 
+ 
+-assert len(cases)==89 and len({x['case'] for x in cases})==89,('control inventory changed',len(cases))
+-out={'schema':1,'ok':True,'state':'IHG_BOUNDED_SEARCH_READINESS_COMPOSITION_PURE_CONTROLS_PASS','controls':cases,
++# Exercise the production Flow and BoundArun constructors, with only in-memory
++# target/callback fixtures. No command, held entry, file operation or Main read
++# is allowed by these fixtures.
++class SyntheticPrivatePath(PurePosixPath):
++    def is_dir(self):return True
++
++def typed_scope_fixture():
++    return {'schema':'pocket4-current-recorder-scope-v1',
++        'current_baseline_schema':qa.MAIN_BASELINE_SCHEMA,
++        'package':qa.PACKAGE,'component':qa.PACKAGE+'/.activity.MainActivity',
++        'uid':qa.UID,'user':0,'nonce':base.NONCE,'epoch_sha256':qa.MAIN_EPOCH,
++        'current_baseline_sha256':qa.MAIN_BASELINE_SHA,
++        'current_baseline_qualification_sha256':qa.MAIN_BASELINE_QUALIFICATION_SHA,
++        'amazon_task_source_manifest_sha256':'a'*64,'automatic_retry':False,
++        'original_recorder_manifest_sha256':adapter.RECORDER_MANIFEST_SHA,
++        'actual_resolution_result_sha256':'b'*64}
++
++def construct_flow(scope):
++    accesses=[]
++    def forbidden(*args,**kwargs):
++        accesses.append('FORBIDDEN_IO')
++        raise AssertionError('pure constructor reached command/file/entry')
++    root=SyntheticPrivatePath('/synthetic/current-IHG-flow')
++    step=root/'steps'/'inspect-01'
++    target=types.SimpleNamespace(expected={'pid':42},
++        helper_sha256=transport.HELD_HELPER_SHA256,
++        verify=lambda:accesses.append('target'),entry=forbidden,close=forbidden)
++    recorder=types.SimpleNamespace(write_new=forbidden,
++        Flow=types.SimpleNamespace(command=forbidden))
++    flow=context.Flow(recorder=recorder,
++        contract=types.SimpleNamespace(sha256=adapter.RECORDER_MANIFEST_SHA),
++        target=target,environment={key:'/synthetic/non-authority' for key in transport.REQUIRED_ENV},
++        transport=transport,main_guard=lambda:accesses.append('Main'),
++        root=root,step=step,phase='inspect',scope=scope,
++        activation={'framework_epoch':{'binding':{'processes':{'init':{'host_pid':42}}}}},
++        tasks={},qa=qa,inspect_plan={'search':base.SEARCH_PLAN,'destination':base.PLAN,
++            'post':base.POST_PLAN,'readiness':base.SEARCH_READINESS_PLANS},
++        resolve=['synthetic-resolve'],read=forbidden,deadline=context.time.monotonic()+60)
++    return flow,accesses
++
++flow,accesses=construct_flow(typed_scope_fixture())
++assert not accesses and type(flow.transport) is transport.BoundArun
++assert flow.transport.target is flow.target and flow.transport.environment=={
++    key:'/synthetic/non-authority' for key in transport.REQUIRED_ENV}
++assert flow.current_qualified_scope==flow.scope and flow.current_qualified_scope is not flow.scope
++session=adapter.Session(flow,None,qa,{},base.HELPER_UID)
++flow.guard()
++assert accesses==['Main','target'] and session.uid==base.HELPER_UID
++passed('production_typed_Flow_BoundArun_and_R2_Session_positive_without_IO')
++
++for name,mutate,expected in [
++    ('old_scope_schema',lambda v:v.update(schema='old-recorder-scope'),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('wrong_baseline_schema',lambda v:v.update(current_baseline_schema='old-deployment'),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('foreign_package',lambda v:v.update(package='com.bilibili.app'),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('foreign_target_uid',lambda v:v.update(uid=10117),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('boolean_uid',lambda v:v.update(uid=True),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('boolean_user',lambda v:v.update(user=False),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('wrong_epoch',lambda v:v.update(epoch_sha256='e'*64),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('wrong_baseline_sha',lambda v:v.update(current_baseline_sha256='e'*64),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('wrong_qualification_sha',lambda v:v.update(current_baseline_qualification_sha256='e'*64),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('old_recorder_manifest',lambda v:v.update(original_recorder_manifest_sha256='e'*64),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('legacy_activation_extra',lambda v:v.update(activation_sha256='e'*64),'EXACT_TYPED_CURRENT_IHG_TASK_SCOPE'),
++    ('foreign_component',lambda v:v.update(component='com.synthetic.foreign/.Main'),'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT'),
++    ('invalid_nonce',lambda v:v.update(nonce='not-a-nonce'),'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT'),
++    ('invalid_task_manifest',lambda v:v.update(amazon_task_source_manifest_sha256='bad'),'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT'),
++    ('invalid_resolver_pin',lambda v:v.update(actual_resolution_result_sha256='bad'),'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT')]:
++    value=typed_scope_fixture();mutate(value)
++    try:construct_flow(value)
++    except RuntimeError as error:assert str(error)==expected,(name,str(error))
++    else:raise AssertionError(name+' accepted by production Flow')
++    passed('production_Flow_'+name+'_rejected_before_transport')
++
++flow,accesses=construct_flow(typed_scope_fixture())
++flow.scope['component']=qa.PACKAGE+'/.activity.OtherActivity'
++try:flow.guard()
++except RuntimeError as error:assert str(error)=='CURRENT_IHG_TASK_SCOPE_CHANGED'
++else:raise AssertionError('mutated constructed scope admitted')
++assert accesses==[]
++passed('constructed_current_scope_mutation_stops_before_Main_target_or_IO')
++
++assert len(cases)==106 and len({x['case'] for x in cases})==106,('control inventory changed',len(cases))
++out={'schema':1,'ok':True,'state':'IHG_CURRENT_TYPED_BOUNDED_SEARCH_READINESS_PURE_CONTROLS_PASS','controls':cases,
+  'control_count':len(cases),'template_source_pins':TEMPLATE_PINS,'bound_source_pins':BOUND_PINS,
+  'control_stdin_sha256':hashlib.sha256(raw).hexdigest(),
+  'bound_coordinator_sha256':BOUND_PINS['coordinator']['sha256'],'bound_stage_sha256':BOUND_PINS['stage']['sha256'],
+  'original_Session_sequence_and_real_contract_summary_and_policy_executed':True,
+  'all_template_and_bound_python_compile':True,'synthetic_in_memory_IO_only':True,'real_Java_helper_executed':False,
+  'file_writes':0,'Android_actions':0,'device_or_child_process_commands':0,'fresh_nonce_values':pool,
+- 'nonce_values_disjoint_prior_IHG_literals':not bool(set(pool)&set(old)),
++ 'nonce_values_disjoint_all_fixed_prior_literals':not bool(set(pool)&set(old)),
++ 'nonce_exclusion_count':len(old),'production_Flow_and_BoundArun_constructors_executed':True,
++ 'production_typed_constructor_controls':17,'actual_Main_and_target_callbacks':False,
+  'maximum_readiness_sequences':8,'readiness_qualification_seconds':20,'minimum_consecutive_samples':3,
+  'minimum_capture_span_ms':4000,'success_durable_commands_formula':'37+9*k; 3<=k<=8',
+  'maximum_success_durable_commands':109,'maximum_helper_nonces':35,'maximum_click_actions':2,
+  'old_successful_click_outcome_unknown_preserved':True,'actual_UI_readiness_verified':False,
+- 'old_Main_identity_validated':False,'runtime_flow_dispatched':False,'whole_app_production_ready':False}
++ 'live_Main_identity_validated':False,'runtime_flow_dispatched':False,'whole_app_production_ready':False}
+ encoded=json.dumps(out,sort_keys=True,separators=(',',':'))
+ assert len(encoded.encode())<=32768
+ print(encoded,flush=True)

@@ -1,0 +1,57 @@
+--- controls01/host_controls.py
++++ controls02/host_controls.py
+@@ -26,14 +26,33 @@
+ NONCE = '0123456789abcdef' * 4
+ 
+ 
+-def run(P, actor_text, baseline_actor_text):
+-    rows = []
++def run(P, actor_text, baseline_actor_text, observer, capture_observer, diagnostics):
++    rows = diagnostics['controls']
+     def require(value, message):
+         if not value:
+             raise AssertionError(message)
+     def case(name, function, scope='pure production-function fixture'):
+-        function()
+-        rows.append({'name': name, 'passed': True, 'scope': scope})
++        primary = None
++        before = observer('before', name)
++        try:
++            function()
++        except BaseException as error:
++            primary = error
++        after = None
++        try:
++            after = observer('after', name, before)
++        except BaseException as error:
++            if primary is None:
++                primary = error
++            else:
++                primary.add_note('case FD observation: ' + repr(error)[:160])
++        row = {'name': name, 'passed': primary is None, 'scope': scope,
++               'before_fd_snapshot': before, 'after_fd_snapshot': after}
++        if primary is not None:
++            row['error'] = {'type': type(primary).__name__, 'error': repr(primary)[:512]}
++        rows.append(row)
++        if primary is not None:
++            raise primary
+     def rejected(function, fragment=None):
+         try:
+             function()
+@@ -75,6 +94,7 @@
+             'protocol_packets': 0, 'wire_records': [], 'held_fds_closed': False,
+             'observation_completed': False, 'observation_closed_monotonic_ns': None,
+             'fd_registration_events': 0, 'fd_close_records': [], 'channel_close_records': []}
++        capture_observer(c)
+         return c
+     def close_capture(c):
+         for attr in ('sock', 'child_sock'):
+@@ -485,7 +505,7 @@
+                 'unchanged Stop before new child finish and scope false')
+     case('actor-only-load-run-delta-and-original-Stop-order', actor_boundaries, 'source AST and exact call-site control')
+     require(len(rows) == 38, 'fixed control count')
+-    return {'schema': 1, 'kind': 'owner20-property-host-controls01', 'success': True,
++    return {'schema': 1, 'kind': 'owner20-property-host-controls02', 'success': True,
+         'controls': rows, 'count': len(rows), 'Android_executed': False, 'property_reads_or_writes': False,
+         'namespace_entry_or_UID_changes': False, 'Main_access': False,
+         'runtime_source_or_bionic_qualified': False, 'same_process_root_warmed_cache_remains': True}

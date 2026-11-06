@@ -1,0 +1,30 @@
+--- failed01/controls_reveal.py
++++ candidate02/controls_reveal.py
+@@ -8,7 +8,7 @@
+ REVEAL_PLAN={'schema':1,'operation':'reveal_controls','nonces':{'before':'7e65b456089bb0698392f783357a2cae','inspect':'ce14ee5d1a039688216289101d440f98','action':'d47d8fec8e2dab51ffb564fdcaa1ca9d','after':'5ff2eb780bb86e8b4b257e853129bb9b'}}
+ POST_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'d200cac267a9d79c05fc842bf87ae15b','inspect':'ba1e14ad6accb2701a67d0bba7f3126a','after':'cf0d6aef014f8c8b7f6c584ba56d7a3b'}}
+ def validate(adapter,qa,used):
+- qa.require(qa.PROTOCOL=='pocket4-owned-bili-qa-v8','EXACT_R8_REVEAL_PROTOCOL_REQUIRED')
++ qa.require(qa.PROTOCOL=='pocket4-owned-bili-qa-v9','EXACT_R9_REVEAL_PROTOCOL_REQUIRED')
+  for plan in(REVEAL_PLAN,POST_PLAN):
+   adapter.validate_plan(plan,qa)
+  qa.require(REVEAL_PLAN['operation']=='reveal_controls' and POST_PLAN['operation']=='inspect','ONE_REVEAL_AND_ONE_INDEPENDENT_READ_REQUIRED')
+--- failed01/owned_navigation.py
++++ candidate02/owned_navigation.py
+--- failed01/playback_controls.py
++++ candidate02/playback_controls.py
+@@ -5,7 +5,7 @@
+ def selector(label):
+  return{'resource_id':RESOURCE,'class':'android.widget.ImageView','content_desc':label}
+ def validate(adapter,qa,used):
+- qa.require(qa.PROTOCOL=='pocket4-owned-bili-qa-v8' and len(PAIRS)==2,'EXACT_R8_TWO_LABEL_TRANSITIONS_REQUIRED')
++ qa.require(qa.PROTOCOL=='pocket4-owned-bili-qa-v9' and len(PAIRS)==2,'EXACT_R9_TWO_LABEL_TRANSITIONS_REQUIRED')
+  values=[]
+  for row,labels in zip(PAIRS,(('pause','暂停','播放'),('resume','播放','暂停'))):
+   qa.require((row['phase'],row['before_label'],row['after_label'])==labels,'FIXED_PAUSE_THEN_CONDITIONAL_RESUME_REQUIRED')
+--- failed01/post_foreground.py
++++ candidate02/post_foreground.py
+--- failed01/stage_execute.py
++++ candidate02/stage_execute.py
+--- failed01/video_navigation.py
++++ candidate02/video_navigation.py

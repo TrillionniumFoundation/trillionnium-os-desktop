@@ -1,0 +1,373 @@
+{
+  "schema": "pocket4-normal03-zero-swap-source-review-v1",
+  "state": "SOURCE_ONLY_UNRUN",
+  "frozen_utc": "2026-11-06 08:18:10 UTC",
+  "parent_source": {
+    "tree": "4131325b8cee576281467121a0fdcbe03f22304d",
+    "prefix": "typed-framework-normal-provider-build02",
+    "controller": {
+      "bytes": 55314,
+      "sha256": "47ce174f0401a647ee1da7a78d0578a45185affd3e128d35142068a2a9c18d6b",
+      "git_blob_sha1": "1439c067f69be7e2705f5b60607b02bfd806ed81"
+    },
+    "fence": {
+      "bytes": 25481,
+      "sha256": "76ee477835d0af67033eab794a06cc8fb2cd6c60d2bfd759035aeeb0396575c5",
+      "git_blob_sha1": "1e35eff47a5d61a57ce01ef4ac3c7d56e2037d32"
+    },
+    "pure_controls": {
+      "bytes": 9573,
+      "sha256": "5c7139c4d21181d742cd43feb272cc14cc1f837b18804e633fa8c77836100c38",
+      "git_blob_sha1": "fcb72279bd4175adb707452277df4f7414b79305"
+    }
+  },
+  "actual_failure": {
+    "source_tree": "4131325b8cee576281467121a0fdcbe03f22304d",
+    "source_prefix": "typed-framework-normal-provider-build02",
+    "request_pin": {
+      "bytes": 780257,
+      "sha256": "b11c431457ece570e2548c8188f92b48480e9da57b70d61aeaf1bea0ec4bd775",
+      "git_blob_sha1": "941d5b2924c95d72d5208f49c4193838eb21dce4"
+    },
+    "actual_tree": "2c6b2f36f291712e86a83a13b4cb57c1d97388ed",
+    "job": "1a1afd77d0e-fc05-6c1c",
+    "outer_terminal": {
+      "bytes": 24722,
+      "sha256": "42b2d7b8749047df9e1d40ddf9b70b3f3e187c39ce6a15dd0f5721610e814c00",
+      "git_blob_sha1": "b57e36dd42ea2e8e56e408cd7037d28c4dd6b1a3"
+    },
+    "stage": {
+      "bytes": 4353,
+      "sha256": "ec41dd25bc1b97324ca88295fb7177f3de5f4f7a585a43e265bbca5cf5b2ee98",
+      "git_blob_sha1": "bc1e631c052bb0a7d86cfeae90c4f9879439ddfe"
+    },
+    "state": "ACTUAL_FAILED_FRESH_SwapFree_LT_2GiB_BEFORE_BUILDER_POPEN",
+    "actual_failure": "RuntimeError('less than the required 2 GiB free swap; no automatic retry')",
+    "inner_build_called": true,
+    "inner_returncode": null,
+    "builder_Popen_reached": false,
+    "exact_failing_meminfo_values_not_preserved_by02": true,
+    "subsequent_readonly_sample_not_retroactive": true,
+    "pure_controls_passed": 40,
+    "real_lifecycle_controls_passed": 4,
+    "root_control_or_snapshot_reports_fully_readback": 5,
+    "outer_lifecycle_receipts": 6,
+    "all_owned_capture_children_reaped": true,
+    "all_capture_acquired_fds_closed": true,
+    "Main_fence_pass": true,
+    "Main_identity_or_limit_changes": [],
+    "Main_OOM_deltas": 0,
+    "original_FAIL_and_source_unchanged": true,
+    "no_retry_of02": true
+  },
+  "profile": {
+    "cpu_quota_percent": 200,
+    "memory_max_bytes": 10737418240,
+    "memory_swap_max_bytes": 0,
+    "owned_swap_current_before_builder_required_bytes": 0,
+    "zero_swap_limit_and_current_after_builder_required": true,
+    "jobs": 1,
+    "nice": 10,
+    "builder_wait_seconds": 6100,
+    "request_timeout_seconds": 6400,
+    "minimum_fresh_MemAvailable_bytes": 16106127360,
+    "extra_free_memory_over_build_budget_bytes": 5368709120,
+    "minimum_fresh_SwapFree_bytes": null,
+    "global_swap_free_observation_only": true,
+    "source_of_new_profile": "Root explicitly authorized independent10GiB RAM/zero-swap profile with15GiB fresh RAM; original02 retained.",
+    "actual_readonly_sample": {
+      "tree": "292bf78ca7a1f55f93013dbb7a12d6ebba190515",
+      "job": "1a1afde7385-fc05-6c54",
+      "pin": {
+        "bytes": 399,
+        "sha256": "feb95f82087d7c68a8c8c42b54cf267b8f9c343ce41e49bb8193e96f49f050da",
+        "git_blob_sha1": "6be8937509779611d9690e4be676bd1353162354"
+      },
+      "observed_unix_ns_decimal": "1793951956974389962",
+      "memory_bytes": {
+        "MemAvailable": 17379332096,
+        "MemTotal": 26357305344,
+        "SwapCached": 64860160,
+        "SwapFree": 996478976,
+        "SwapTotal": 17179860992
+      },
+      "not_02_failure_time": true,
+      "authorizes_build": false
+    },
+    "observed_sample_margin_above_new_RAM_gate_bytes": 1273204736,
+    "observed_sample_available_minus_owned_RAM_bytes": 6641913856,
+    "prior_normal_peak_bytes": 7947964416,
+    "prior_normal_swap_peak_bytes": 50835456,
+    "prior_normal_was_incomplete_strict_graph_failure": true,
+    "compile03_peak_bytes": 1073741824,
+    "compile03_memory_max_delta": 1732,
+    "compile03_swap_peak": 0,
+    "compile03_OOM_delta": 0,
+    "CPU_and_jobs_match_prior_normal": true,
+    "RAM_limit_matches_prior_normal": true,
+    "memory_resource_budget_hard_reservation_claim": false,
+    "no_pressure_claim": false,
+    "Main_limits_modified": false,
+    "continuous_noninterference_claim": false,
+    "own_swap_limit_applies_before_normal_builder": "Control/snapshot preamble runs first; its earlier lifetime is not retrospectively claimed zero-swap. The readback must be zero before Popen."
+  },
+  "implementation": {
+    "controller_full_oldnew_inverse": true,
+    "new_helpers": [
+      "parse_admission_meminfo",
+      "record_resource_admission"
+    ],
+    "existing_functions_changed": [
+      "memory_admission",
+      "plan",
+      "build"
+    ],
+    "source_builder_authority_and_manifest_functions_unchanged": true,
+    "normal_work_and_source_lock_workflow_unchanged": true,
+    "normal_builder_argv_and_env_unchanged": true,
+    "only_owned_unit_MemorySwapMax_changed": true,
+    "no_Main_service_or_system_swap_changes": true,
+    "configured_owned_memory_max_and_CPU_checked_before_set_property": true,
+    "final_owned_swap_max_and_current_gated_zero": true,
+    "inherited_captured_lifecycle_source_and_root_supervisor_byte_exact": true,
+    "fence_changes": [
+      "new03 ROOT",
+      "new controller hash"
+    ],
+    "no_automatic_retry": true
+  },
+  "resource_receipt": {
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-provider-build-03-20261106/resource-admission.json",
+    "save_and_FD_close_before_fresh_RAM_or_zero_swap_admission": true,
+    "observed_meminfo_raw_ascii_full_byte_bound": 16384,
+    "raw_SHA256_and_bytes_retained": true,
+    "actual_observation_timestamp_decimal_string": true,
+    "required_selected_fields": [
+      "MemTotal",
+      "MemAvailable",
+      "SwapTotal",
+      "SwapFree",
+      "SwapCached"
+    ],
+    "duplicate_missing_or_non_kB_fields_rejected": true,
+    "owned_fields": [
+      "memory.max",
+      "cpu.max",
+      "memory.swap.max",
+      "memory.swap.current"
+    ],
+    "each_owned_read_max_characters": 64,
+    "historical_resource399_not_reused_for_admission": true,
+    "before_decision_receipt_never_marked_pass": true,
+    "claim_records_success_only_after_admission": true,
+    "receipt_pin_printed_before_decision": true,
+    "applies_to_capacity_gate": "Initial ownership, exact10GiB/CPU2 limit identity and source guards still precede the receipt; no fresh-capacity threshold is applied until after receipt save.",
+    "no_atomic_physical_reservation_claim": true
+  },
+  "qualification": {
+    "new_Python_execution": false,
+    "new_actual45_controls": false,
+    "new_actual4_lifecycle_controls": false,
+    "prior_actual40_pure_and4_lifecycle_verified_from_originals": true,
+    "previous_expected_failures_preserved": true,
+    "owned_capture_cleanup_not_replaced_by_user_signal_or_report_trust": true,
+    "new_Soong_build": false,
+    "new_Java_implementation_jar": false,
+    "new_Android_JNI_artifact_pair": false,
+    "runtime_authorization_enabled": false,
+    "whole_app_production_ready_count": 0,
+    "total_apps": 45
+  },
+  "controls": {
+    "previous_nonresource37_byte_exact_by_inverse": true,
+    "new_resource_cases": [
+      "zero_swap_exact_minimum_without_global_swap_budget",
+      "insufficient_fresh_RAM_no_retry",
+      "configured_owned_swap_nonzero_rejected",
+      "existing_owned_swap_nonzero_rejected",
+      "exact_fixed_meminfo_fields_and_kB_conversion",
+      "duplicate_required_meminfo_field_rejected",
+      "wrong_meminfo_units_rejected",
+      "missing_required_meminfo_field_rejected"
+    ],
+    "total": 45,
+    "actual_run_pending": true,
+    "old_three_resource_cases_replaced_only_in_new_profile": true
+  },
+  "risks": [
+    "The observed MemAvailable sample is about1.186GiB above the proposed15GiB gate, but it is historical; every attempt must read fresh.",
+    "The5GiB arithmetic admission difference is not reserved RAM and does not establish absence of transient global contention.",
+    "Removing the owned1GiB swap allowance reduces total owned RAM+swap headroom; a build exceeding the10GiB RAM limit may fail or trigger its owned OOM gate.",
+    "Prior7.402GiB RAM and48.480MiB swap peaks came from a strict graph failure, not full successful Java/JNI compilation.",
+    "CPU2,jobs1,nice10 and6100/6400 deadlines are unchanged; static1GiB compile pressure is not comparable normal Soong acceptance.",
+    "No swapoff, Main cache clearing, Main limit change, allow-missing, fake defaults, source pruning, deployment or runtime authorization is introduced."
+  ],
+  "official_kernel_reference": {
+    "url": "https://docs.kernel.org/admin-guide/cgroup-v2.html",
+    "sections": [
+      "memory.swap.current",
+      "memory.swap.max"
+    ],
+    "consequence": "Changing a swap limit does not immediately remove already existing swap; current=0 is separately required.",
+    "source_is_general_interface_documentation_not_device_evidence": true
+  },
+  "request_generator": {
+    "path": "make_request.js",
+    "pin": {
+      "bytes": 6062,
+      "sha256": "17bbdf4c81d56c7ca529b4c23425f88f27874dbf7cb14e8616d3d1b8a917c9f1",
+      "git_blob_sha1": "089ff795c5f1bca6942cbd90e975d6845eaa78e0"
+    },
+    "complete_V8_reproduction": true,
+    "Python_locally_executed": false
+  },
+  "independent_actual02_readback": {
+    "stage_pin": {
+      "bytes": 4353,
+      "sha256": "ec41dd25bc1b97324ca88295fb7177f3de5f4f7a585a43e265bbca5cf5b2ee98",
+      "git_blob_sha1": "bc1e631c052bb0a7d86cfeae90c4f9879439ddfe"
+    },
+    "actual_pure_count": 40,
+    "all15_stage_source_pins_match_normal02": true,
+    "root_reports": [
+      {
+        "name": "control-root-timeout",
+        "pin": {
+          "bytes": 2561,
+          "sha256": "4cf32ef87e89705059177e9f8200ac414184e0bf05d1c6cc8d31fcbca92b2783",
+          "git_blob_sha1": "83223fa2539cc9c9688516873e15177159613df9"
+        },
+        "all_checks_passed": true,
+        "expected_child_failure": {
+          "stage": "start_or_wait",
+          "type": "TimeoutError",
+          "errno": null,
+          "message": "owned child exit deadline"
+        }
+      },
+      {
+        "name": "control-root-escaped",
+        "pin": {
+          "bytes": 2590,
+          "sha256": "0a71d86046fb4e974cdc9679e96f13011a8f937685a361bccf475b3306dbf21a",
+          "git_blob_sha1": "c1878c5f6c2143dc12a66911e79de9ae5aad6c13"
+        },
+        "all_checks_passed": true,
+        "expected_child_failure": {
+          "stage": "driver_left_descendants",
+          "type": "RuntimeError",
+          "errno": null,
+          "message": "driver left descendant processes after its exit"
+        }
+      },
+      {
+        "name": "control-root-pidfd",
+        "pin": {
+          "bytes": 2278,
+          "sha256": "8117ef9c88317324ce5ca577ede125584453f3c2dbae822e752c74c679bca3ac",
+          "git_blob_sha1": "d9391e6e308ed320b5144ff8cfed2999ffd1f074"
+        },
+        "all_checks_passed": true,
+        "expected_child_failure": {
+          "stage": "start_or_wait",
+          "type": "OSError",
+          "errno": 24,
+          "message": "[Errno 24] explicit fixed-root pidfd allocation control seam"
+        }
+      },
+      {
+        "name": "before",
+        "pin": {
+          "bytes": 6792,
+          "sha256": "ec0f62338a9290822c65bfe228a91264ba087bd20e9ff17d43e0b8c424ef4f03",
+          "git_blob_sha1": "f85ca089a572f886c819302af2931fba118474d2"
+        },
+        "all_checks_passed": true,
+        "expected_child_failure": null
+      },
+      {
+        "name": "after",
+        "pin": {
+          "bytes": 6791,
+          "sha256": "0c6ef3b01721e43f0395ad49275325c9aa7a19313d83cb584cdc524bf021a1ea",
+          "git_blob_sha1": "c4230fa4bae9a48d81a653823eab0cd0e2df8a95"
+        },
+        "all_checks_passed": true,
+        "expected_child_failure": null
+      }
+    ],
+    "outer_six_complete": [
+      {
+        "phase": "control-root-timeout",
+        "child_reaped": true,
+        "remaining": 0,
+        "tree_cleanup": true,
+        "fds_closed": true,
+        "subreaper_restored": true,
+        "children_empty": true,
+        "deadline": true,
+        "expected_failure_preserved": true
+      },
+      {
+        "phase": "control-root-escaped",
+        "child_reaped": true,
+        "remaining": 0,
+        "tree_cleanup": true,
+        "fds_closed": true,
+        "subreaper_restored": true,
+        "children_empty": true,
+        "deadline": true,
+        "expected_failure_preserved": true
+      },
+      {
+        "phase": "control-root-pidfd",
+        "child_reaped": true,
+        "remaining": 0,
+        "tree_cleanup": true,
+        "fds_closed": true,
+        "subreaper_restored": true,
+        "children_empty": true,
+        "deadline": true,
+        "expected_failure_preserved": true
+      },
+      {
+        "phase": "control-outer-pidfd",
+        "child_reaped": true,
+        "remaining": 0,
+        "tree_cleanup": true,
+        "fds_closed": true,
+        "subreaper_restored": true,
+        "children_empty": true,
+        "deadline": true,
+        "expected_failure_preserved": true
+      },
+      {
+        "phase": "before",
+        "child_reaped": true,
+        "remaining": 0,
+        "tree_cleanup": true,
+        "fds_closed": true,
+        "subreaper_restored": true,
+        "children_empty": true,
+        "deadline": true,
+        "expected_failure_preserved": true
+      },
+      {
+        "phase": "after",
+        "child_reaped": true,
+        "remaining": 0,
+        "tree_cleanup": true,
+        "fds_closed": true,
+        "subreaper_restored": true,
+        "children_empty": true,
+        "deadline": true,
+        "expected_failure_preserved": true
+      }
+    ],
+    "full_original_failure_retained": "RuntimeError('less than the required 2 GiB free swap; no automatic retry')",
+    "Main_fence_pass": true,
+    "identity_or_limit_changes": [],
+    "Main_OOM_deltas_zero": true,
+    "continuous_noninterference_claim": false
+  }
+}
