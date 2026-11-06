@@ -1,0 +1,57 @@
+{
+  "exact_inputs": [
+    {
+      "bytes": 4899108,
+      "gid": 1000,
+      "mode": "0400",
+      "path": "/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-04-20261106/build-result.json",
+      "sha256": "8a9e478a65606cb296bfc2e208ff11c0203f43902ae3245a8f931f28fc10165a",
+      "uid": 1000
+    },
+    {
+      "bytes": 540943,
+      "gid": 1000,
+      "mode": "0600",
+      "path": "/home/alex/work/p4-retirement-ack-host01-20261106/attempt01/result.json",
+      "sha256": "0d511ba553d1a34df9116c0e62cfcfbcabb00b96aafcde0d747f3419ffa4cf37",
+      "uid": 1000
+    }
+  ],
+  "invariants": [
+    "ordinary real/effective UID/GID1000; fixed source parents opened component-by-component O_DIRECTORY|NOFOLLOW|CLOEXEC; no directory enumeration",
+    "two full original-byte reads and exact whole SHA/size, single-link regular expected mode/owner, held+full-path named identity before/after",
+    "no json.loads/business parsing/source execution/Main/Android/network/child",
+    "stdlib zlib.compress(level=6); each compressed output <=1MiB and <=original+64KiB; stdout contains metadata/pins only",
+    "fresh create-only directory0700, two O_EXCL|NOFOLLOW regular0400 copies, complete writes+fsync/file and directory; held readback+independent named readback",
+    "all acquired file/directory/resource FD events registered and closed in reverse independently, first error retained",
+    "failure cleanup unlinks only an incomplete output still matching the held descriptor returned by its own O_EXCL create; complete outputs retained",
+    "held own cgroup2 from fixed self membership/mountinfo, memory.max256MiB and CPU1; recorded limits unchanged, zero bad memory events; no invented swap/pids caps",
+    "40-second work cutoff plus final closure within45-second control;60-second outer terminal needed; only owned FD ledger is claimed, no ambient/global FD equality claim"
+  ],
+  "kind": "fixed-two-report-lossless-zlib-transport01-review",
+  "limitations": [
+    "directory identity checks use device/inode/mode/owner; directory timestamp/nlink changes from the new own child are recorded rather than misclassified as immutable",
+    "before/after held/named checks are interval checks, not an atomic filesystem snapshot or CAS of operator-writable ancestors",
+    "if fresh mkdir succeeds but later held-directory acquisition fails, that exact fresh path may remain; no unqualified name is removed",
+    "final cgroup observation precedes result serialization; durable outer terminal remains required",
+    "Root must independently read compressed bytes and verify bounded inflate exact original size+SHA before qualifying reports",
+    "Python source/stdlib behavior not executed in this agent; no pure controls added"
+  ],
+  "output_files": [
+    "marriott04-build-result.json.zlib",
+    "native-host01-result.json.zlib"
+  ],
+  "output_root": "/home/alex/work/p4-report-transport01-20261106",
+  "request": {
+    "bytes": 21963,
+    "git_blob_sha": "9a20c51a43784f8e3fdb37e2565d7b0e0b9b221a",
+    "sha256": "5dfeeb82f0b1670644e3f0531b9bdd3c1f5d70b9f49665883e97d49c0b01e41b"
+  },
+  "schema": 1,
+  "source": {
+    "bytes": 21194,
+    "git_blob_sha": "af0513e6516ee662e3914e442a1679c00eb504a1",
+    "sha256": "1ac361911bf3b9a0080c80f5db006aeb0f9fe52cb9b48b88d265185eff79d23d"
+  },
+  "status": "SOURCE_ONLY_NEVER_DISPATCHED"
+}

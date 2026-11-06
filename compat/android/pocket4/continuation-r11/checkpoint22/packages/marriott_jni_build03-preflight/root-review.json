@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "status": "ROOT_REVIEWED_COMPILATION_REQUEST",
+  "source_tree": "c0225d062e8ec8b2ff9b4043759b562804e4b48e",
+  "request": {
+    "bytes": 115128,
+    "sha256": "6ed9de4678b24910d9489572bf035643054e70caceac1aa720814c3f4e2af96f",
+    "git_blob_sha1": "ec7912c9a43085e08db11f78a5366707b1a731bc"
+  },
+  "stdin": {
+    "bytes": 112690,
+    "sha256": "dd67abeea82413b010f8a6e86d96f77c95386e5a4057e16cf6df9a9fe7f798a0",
+    "git_blob_sha1": "b71703274576edd76156efcabd26f3c782b6ee5a"
+  },
+  "exact_template_inverse_hunks": 6,
+  "exact_config_inverse_hunks": 5,
+  "all_three_actual_config_tuples_lossless_equal": true,
+  "request_independently_reproduced": true,
+  "seven_inline_sources_unchanged": true,
+  "compiler_invocations": 6,
+  "decision": "Compile the same three ARM64 TUs using the locally observed NDK aarch64 __config_site before common libc++ headers. Keep all compiler/source/dependency and child-retirement/resource gates, reject any other config leaf.",
+  "scope": {
+    "ARM64_ELF_REL_only": true,
+    "JNI_entry_source_compiled": true,
+    "APK_link": false,
+    "test_execution": false,
+    "Main_access": false,
+    "default_raw_metadata_owner": 0
+  },
+  "automatic_retry": false
+}

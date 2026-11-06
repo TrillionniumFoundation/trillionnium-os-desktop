@@ -1,0 +1,24 @@
+{
+  "schema": 1,
+  "immutable_runtime_dependencies": {
+    "guard": "references/current_baseline_guard.py",
+    "policy": "references/baseline_policy.py",
+    "ancestry": "references/cell_ancestry.py",
+    "source_manifest": "references/SOURCE_PINS.json"
+  },
+  "unchanged_original_calls": [
+    "guard.load_current: complete source manifest + full B/Q schema and pins",
+    "policy.historical + validate_previous_baseline + validate_executable_content",
+    "epoch.require_unchanged before and after",
+    "epoch.capture_processes: original seven-role double sample before and after",
+    "ancestry.ManagedFDs, require_pidfd_live, hold_intermediary",
+    "ancestry.namespace_sample: original all7 user namespaces and intermediary root",
+    "ancestry.children_sample: original 64 TID / 32 union bounded complete-table parser",
+    "policy.validate_child_table: original schema / union / unique-child gate",
+    "policy.validate_snapshot: original deployment lineage and fixed role matches",
+    "held.open_in_root: original current engine metadata guard"
+  ],
+  "diagnostic_only_difference": "The exact OWNER_SINGLE_DIRECT_CHILD_REQUIRED error from an otherwise valid complete table is recorded per fixed parent and per sample. No original source or guard is patched; runtime qualification and task authority remain false. Every other validation failure is still a collection failure.",
+  "output": "Only fixed-role numeric/namespaces metadata and private-field hashes, complete bounded kernel TID/child PID tables, original closed error codes, exact-source pin and descriptor summaries.",
+  "FD_scope": "Input guard descriptor counts and ancestry-managed descriptor counts are reported separately. Original guard/raw_file and epoch internal descriptors retain their existing finally blocks and are not mislabeled as counted by this collector."
+}

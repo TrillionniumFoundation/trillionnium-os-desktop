@@ -1,0 +1,517 @@
+{
+  "first_observation_candidates": [
+    {
+      "expected_bytes": null,
+      "expected_sha256": null,
+      "format": "sdk_variables",
+      "local_presence_observed": false,
+      "maximum": 1048576,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/android-composer-leaf-out-r14/soong/soong.variables",
+      "role": "existing_soong_variables",
+      "root_basis": "same existing android-composer-leaf-out-r14/soong root used in actual C20; fixed filename from pinned Soong source",
+      "source_derivation": "android/config.go productVariablesFileName = soong.variables"
+    },
+    {
+      "expected_bytes": null,
+      "expected_sha256": null,
+      "format": "api_map",
+      "local_presence_observed": false,
+      "maximum": 65536,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/android-composer-leaf-out-r14/soong/api_levels.json",
+      "role": "existing_generated_api_map",
+      "root_basis": "same existing android-composer-leaf-out-r14/soong root used in actual C20; fixed filename from pinned Soong source",
+      "source_derivation": "android/api_levels.go GetApiLevelsJson calls PathForOutput(ctx, api_levels.json)"
+    }
+  ],
+  "inputs": [
+    {
+      "authority": {
+        "actual_stdout_sha256": "814a50e684fac8725aab86c5b6df196c97b2bc32a0ddd22ca3b852fb3178aba7",
+        "actual_tree": "b416975d08ea1c4f412c6428299059e5f3250282",
+        "job": "1a1b111e173-fc05-7580",
+        "kind": "previous_exact_source_read"
+      },
+      "expected": {
+        "bytes": 7171,
+        "git_blob_sha": "861653a4966d7210f3bf3ce28c3dbb01027b4368",
+        "sha256": "31b30a2c75457df7076aa588760cb2e64b73f1880e2b19092eb805e682daacea"
+      },
+      "expected_is_prior_actual": true,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/cc/stl.go",
+      "role": "stl_selection_anchor"
+    },
+    {
+      "authority": {
+        "actual_stdout_sha256": "814a50e684fac8725aab86c5b6df196c97b2bc32a0ddd22ca3b852fb3178aba7",
+        "actual_tree": "b416975d08ea1c4f412c6428299059e5f3250282",
+        "job": "1a1b111e173-fc05-7580",
+        "kind": "previous_exact_source_read"
+      },
+      "expected": {
+        "bytes": 29802,
+        "git_blob_sha": "4a7e3c7ad300b79f6158309f4b8c50c60e79af66",
+        "sha256": "7cc70c5060b2c1729c4406a5a27ae16774f9f80f25db1d55a37a1e170709ebef"
+      },
+      "expected_is_prior_actual": true,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/soong/clangprebuilts.go",
+      "role": "clang_layout_anchor"
+    },
+    {
+      "authority": {
+        "actual_stdout_sha256": "814a50e684fac8725aab86c5b6df196c97b2bc32a0ddd22ca3b852fb3178aba7",
+        "actual_tree": "b416975d08ea1c4f412c6428299059e5f3250282",
+        "job": "1a1b111e173-fc05-7580",
+        "kind": "previous_exact_source_read"
+      },
+      "expected": {
+        "bytes": 1805,
+        "git_blob_sha": "6c83d0e0d565ce254152b56a87118a2fe96c05ac",
+        "sha256": "155023bfbc86f9f021ea5705822e52f13d6fca5d80ff1cce12ae279287b694c6"
+      },
+      "expected_is_prior_actual": true,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/android_libc++/ndk/aarch64/include/c++/v1/__config_site",
+      "role": "arm64_ndk_config_anchor"
+    },
+    {
+      "authority": {
+        "commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "build/soong",
+        "repository": "aosp-mirror-neo/platform_build_soong",
+        "upstream_path": "cc/ndkstubgen/__init__.py",
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_build_soong/6722dd8833db7482df1a2543ca3fcf67ddf0f7b1/cc/ndkstubgen/__init__.py"
+      },
+      "expected": {
+        "bytes": 9242,
+        "git_blob_sha": "bd45216cf5fe47e5804621a77974ca686a7bbe68",
+        "sha256": "486342199742d0893480612fae142af96e5cae51d35f6d0171e29e73c7260fd8"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/cc/ndkstubgen/__init__.py",
+      "role": "ndkstubgen_source"
+    },
+    {
+      "authority": {
+        "commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "build/soong",
+        "repository": "aosp-mirror-neo/platform_build_soong",
+        "upstream_path": "cc/symbolfile/__init__.py",
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_build_soong/6722dd8833db7482df1a2543ca3fcf67ddf0f7b1/cc/symbolfile/__init__.py"
+      },
+      "expected": {
+        "bytes": 15830,
+        "git_blob_sha": "b1c6435e7c57d1c354d676c3f3d4556c8a4f101f",
+        "sha256": "f9cd1f2a3f8556bb8a063bcbc879e76bf0af1a4c2a0cb30090b6197bdda69c19"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/cc/symbolfile/__init__.py",
+      "role": "symbolfile_source"
+    },
+    {
+      "authority": {
+        "commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "build/soong",
+        "repository": "aosp-mirror-neo/platform_build_soong",
+        "upstream_path": "android/api_levels.go",
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_build_soong/6722dd8833db7482df1a2543ca3fcf67ddf0f7b1/android/api_levels.go"
+      },
+      "expected": {
+        "bytes": 18645,
+        "git_blob_sha": "936be4320c385b05029c72b6c5786ab8f96be313",
+        "sha256": "39323b9e40d7aff6f482d8116c4410167345994352dfdab51ad60af00f4cbb7f"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/android/api_levels.go",
+      "role": "api_levels_source"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libc/libc.map.txt",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libc/libc.map.txt"
+      },
+      "expected": {
+        "bytes": 38678,
+        "git_blob_sha": "b0633eb32feabe48f2e1575184a69e423626913f",
+        "sha256": "5831b40390f17a34536513c79735bc632aa3d3f4d81fc4ed5f5ea8ff6ed5107c"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/libc.map.txt",
+      "role": "libc_ndk_map"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libdl/libdl.map.txt",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libdl/libdl.map.txt"
+      },
+      "expected": {
+        "bytes": 1169,
+        "git_blob_sha": "a3bffcb2ff55d15372e5aee9299af45122808131",
+        "sha256": "066e6d3f7ea4a46134f53265fa29b1eaa78a2acdb8163c9d90f790e5544db80f"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libdl/libdl.map.txt",
+      "role": "libdl_ndk_map"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libm/libm.map.txt",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libm/libm.map.txt"
+      },
+      "expected": {
+        "bytes": 4751,
+        "git_blob_sha": "b9a0db23a6d93dd5e457602647a7f3a73241773a",
+        "sha256": "addb0e674222bb262646809f768328e27325266e122f569e80282216cf5c84c0"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libm/libm.map.txt",
+      "role": "libm_ndk_map"
+    },
+    {
+      "authority": {
+        "commit": "d35ba620451b28512f46ebb5421f783fd77968d5",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "system/logging",
+        "repository": "aosp-mirror-neo/platform_system_logging",
+        "upstream_path": "liblog/liblog.map.txt",
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_system_logging/d35ba620451b28512f46ebb5421f783fd77968d5/liblog/liblog.map.txt"
+      },
+      "expected": {
+        "bytes": 2787,
+        "git_blob_sha": "7e265c511c412576789e4c0c43f3f7d9485e2834",
+        "sha256": "0f6863b6ac213350f96292402c0834c8fb89fa02042e960a80428304c0355019"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/system/logging/liblog/liblog.map.txt",
+      "role": "liblog_ndk_map"
+    },
+    {
+      "authority": {
+        "commit": "8731e6760935ad5289fd64c37d28155a0fa289e3",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "external/zlib",
+        "repository": "aosp-mirror-neo/platform_external_zlib",
+        "upstream_path": "libz.map.txt",
+        "url": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_external_zlib/8731e6760935ad5289fd64c37d28155a0fa289e3/libz.map.txt"
+      },
+      "expected": {
+        "bytes": 2493,
+        "git_blob_sha": "dd41797b56d4562ab9a48f8dd0f79f7c70147155",
+        "sha256": "dc6b8f3a7f949eeb77b140fe394c2749126ce95850c14d118a41b870552d2005"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/external/zlib/libz.map.txt",
+      "role": "libz_ndk_map"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libc/arch-common/bionic/crtbegin_so.c",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libc/arch-common/bionic/crtbegin_so.c"
+      },
+      "expected": {
+        "bytes": 2936,
+        "git_blob_sha": "2f3b1189075191332b841e0954f1faa7b140fdfb",
+        "sha256": "7339e128550f8f90a254fef776c8a23b96a13190e93981cb20a588a2e6342bf3"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/crtbegin_so.c",
+      "role": "bionic_crtbegin_so_c"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libc/arch-common/bionic/crtbrand.S",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libc/arch-common/bionic/crtbrand.S"
+      },
+      "expected": {
+        "bytes": 1942,
+        "git_blob_sha": "26b973fecbbf1bdd0dd1353452e91e1c6a2c3bdb",
+        "sha256": "27f3d6eda81ba614020871c8cc46fa0e92d9900413f38469fdb2081715cb3bb5"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/crtbrand.S",
+      "role": "bionic_crtbrand_S"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libc/arch-common/bionic/crtend_so.S",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libc/arch-common/bionic/crtend_so.S"
+      },
+      "expected": {
+        "bytes": 1668,
+        "git_blob_sha": "1e0a3943eba46d49539ab797e1675cfb8dce72fa",
+        "sha256": "bb9e63f580f756b7cddb5a36e53c2545df7bcea681a248c647f090ee2c05ef29"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/crtend_so.S",
+      "role": "bionic_crtend_so_S"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libc/arch-common/bionic/__dso_handle_so.h",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libc/arch-common/bionic/__dso_handle_so.h"
+      },
+      "expected": {
+        "bytes": 1930,
+        "git_blob_sha": "2c0df7bc74cdf364ac7527a4a15322300083502f",
+        "sha256": "50b6bbb9aaa1692175e45839c0b90810a962449d0b9842960caf8119595bdc32"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/__dso_handle_so.h",
+      "role": "bionic___dso_handle_so_h"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libc/arch-common/bionic/atexit.h",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libc/arch-common/bionic/atexit.h"
+      },
+      "expected": {
+        "bytes": 1797,
+        "git_blob_sha": "90aa030eafcfc7c7a47585d40c6f927e5d1d3e73",
+        "sha256": "8671df24f92b375fe8ff233e88d5b55f01e91c608ee838045431444101bf70af"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/atexit.h",
+      "role": "bionic_atexit_h"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libc/arch-common/bionic/pthread_atfork.h",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libc/arch-common/bionic/pthread_atfork.h"
+      },
+      "expected": {
+        "bytes": 1327,
+        "git_blob_sha": "02e383d31f8f41c666be50082494830b95a3b555",
+        "sha256": "bdc11ac701a0847a51a7e93760bb0fe12389b8d25b36080f1e0d1fb7ba07e2b1"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/pthread_atfork.h",
+      "role": "bionic_pthread_atfork_h"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libc/private/bionic_asm.h",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libc/private/bionic_asm.h"
+      },
+      "expected": {
+        "bytes": 4344,
+        "git_blob_sha": "05af4abc03894f51f2934375c357b61a9dce9893",
+        "sha256": "6291935944e995c5111f913a34446fadb529b5dabf0c3d099eaffca6a550c819"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/private/bionic_asm.h",
+      "role": "bionic_asm_h"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libc/private/bionic_asm_arm64.h",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libc/private/bionic_asm_arm64.h"
+      },
+      "expected": {
+        "bytes": 3097,
+        "git_blob_sha": "d245967373a74cbbe48fd5541fd63bb32c0986df",
+        "sha256": "b6f66c98e064969b75e2af97481517ac5ce7fa0d89fa0052ea021fd30f1d8104"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/private/bionic_asm_arm64.h",
+      "role": "bionic_asm_arm64_h"
+    },
+    {
+      "authority": {
+        "commit": "06356e41c5ed7b12220b24c05ba4fdb873b126a7",
+        "kind": "immutable_public_source_expectation_not_local_observation",
+        "original_project_lock": {
+          "bytes": 96934,
+          "git_blob_sha": "995f9b4e16ed8649aba91a3772bff7a889cf505a",
+          "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"
+        },
+        "project": "bionic",
+        "repository": "aosp-mirror/platform_bionic",
+        "upstream_path": "libc/private/bionic_asm_note.h",
+        "url": "https://raw.githubusercontent.com/aosp-mirror/platform_bionic/06356e41c5ed7b12220b24c05ba4fdb873b126a7/libc/private/bionic_asm_note.h"
+      },
+      "expected": {
+        "bytes": 1548,
+        "git_blob_sha": "9a533c0000837777ff3beee4ab24f1f144b1ddb5",
+        "sha256": "57e505697ec2ab18ceda59187db33b7a9c829a9180a8721fea3afa24958b8cf1"
+      },
+      "expected_is_prior_actual": false,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/private/bionic_asm_note.h",
+      "role": "bionic_asm_note_h"
+    }
+  ],
+  "kind": "p4-marriott-crt-sdk-source-authority01",
+  "local_candidate_observation_pending": true,
+  "no_library_or_tool_execution": true,
+  "schema": 1,
+  "source_algorithm": {
+    "api_levels_go": {
+      "bytes": 18645,
+      "git_blob_sha": "936be4320c385b05029c72b6c5786ab8f96be313",
+      "sha256": "39323b9e40d7aff6f482d8116c4410167345994352dfdab51ad60af00f4cbb7f"
+    },
+    "config_go": {
+      "bytes": 90413,
+      "git_blob_sha": "53866e46c040025dac7585824bf781fca033e5e1",
+      "sha256": "275ec92b707f44fe9c1173b9bf434821a50782841ed80e527d256feddb7c809c"
+    },
+    "current_generator_api": 10000,
+    "preview_api_base": 9000,
+    "released_api_map": {
+      "Baklava": 36,
+      "CANARY": 10000,
+      "CinnamonBun": 37,
+      "G": 9,
+      "I": 14,
+      "J": 16,
+      "J-MR1": 17,
+      "J-MR2": 18,
+      "K": 19,
+      "L": 21,
+      "L-MR1": 22,
+      "M": 23,
+      "N": 24,
+      "N-MR1": 25,
+      "O": 26,
+      "O-MR1": 27,
+      "P": 28,
+      "Q": 29,
+      "R": 30,
+      "S": 31,
+      "S-V2": 32,
+      "Tiramisu": 33,
+      "UpsideDownCake": 34,
+      "VanillaIceCream": 35
+    },
+    "variable_go": {
+      "bytes": 45559,
+      "git_blob_sha": "46ff283cefa05df08bb2ba1b31ee8bb12ad1056d",
+      "sha256": "15e41ff3575b975700b4a050882503dca70886af854b1278ea3fc4c00a561d6a"
+    }
+  }
+}
+

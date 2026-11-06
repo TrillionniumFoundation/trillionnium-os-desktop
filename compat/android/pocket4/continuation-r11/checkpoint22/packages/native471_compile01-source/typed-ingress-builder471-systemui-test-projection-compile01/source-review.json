@@ -1,0 +1,182 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_COMPILE_REQUEST_READY_NOT_EXECUTED",
+  "scope": "One fixed SystemUI/tests Blueprint projection inside the existing strict two-target typed-ingress route.",
+  "production": {
+    "base": {
+      "bytes": 294614,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "eeea9718e16a40692dd4849fdfbc907bb65e5f7c6e205568034f408fe0803d39"
+    },
+    "candidate": {
+      "bytes": 301533,
+      "sha256": "7bbe16d118fe610ae42e9c1b906b65aee5ceeb0804cdbaee93ee61ab5b271629",
+      "git_blob": "ffcc678a07d760acf10b38ad0671543f0539d661"
+    },
+    "minimal_exact_replacements": 6,
+    "inverse_exact": true,
+    "new_fixture": {
+      "bytes": 3392,
+      "sha256": "f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da",
+      "git_blob": "6a36068e1286d9969307d47659f52e5606bb503f"
+    },
+    "projected_metadata": {
+      "bytes": 183,
+      "sha256": "42118873220b0cc4d07e21a961052ddd5d81ab67be8df5d7c9dba9bd966aaeb5",
+      "git_blob": "53cfc4c0ae972a7e30a82d5a19eba74e4b0df6c6"
+    },
+    "original_and_metadata_only_shapes_observed": true
+  },
+  "compiler": {
+    "base": {
+      "bytes": 86321,
+      "sha256": "63bad2f9323b6f3881d883a792afd49b2472e43f35740253c01534dca91913cc",
+      "git_blob": "63843b2addeb4f37970b8390d4e111bdabddb835"
+    },
+    "candidate": {
+      "bytes": 85579,
+      "sha256": "5b4e7d699b6ca82c9a60ff28cd49cf7d101fd6b92608fe70a92380182f3aac4f",
+      "git_blob": "d57dbae7cbe634481849e95598a5e190cb7b3f79"
+    },
+    "inverse_exact": true,
+    "offset_edits": 30,
+    "unchanged_top_level_function_bodies": [
+      "require",
+      "utc",
+      "sha",
+      "identity",
+      "held",
+      "write_new",
+      "real_directory",
+      "children",
+      "cleanup_children",
+      "command",
+      "resource_text",
+      "resource_events",
+      "resource_snapshot",
+      "begin_resources",
+      "finish_resources",
+      "hash_held",
+      "regular_tree",
+      "portable",
+      "pinned_packet",
+      "exact_source_copy",
+      "read_existing_config",
+      "pin_resolved",
+      "verify_resolved",
+      "toolchain",
+      "parse_selected_tree",
+      "qualify_cached_archive",
+      "dependency_sources",
+      "qualify_compiler_inputs",
+      "build_artifact",
+      "image_pin",
+      "image_toolchain",
+      "reap_normal_fakeroot_daemon",
+      "validate_focused_result",
+      "focused_test"
+    ],
+    "changed_function_bodies": [
+      "execute"
+    ],
+    "method": "Exact textual def-body comparison plus complete inverse; Python AST/compile not executed."
+  },
+  "source_map": {
+    "parent": {
+      "bytes": 99327,
+      "sha256": "d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057",
+      "git_blob": "f738ecebf679d7c91a7fde5adc8608552db3d468"
+    },
+    "candidate": {
+      "bytes": 99548,
+      "sha256": "c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0",
+      "git_blob": "59b849acb5fb6f96a642a2f8c9f27701306fc511"
+    },
+    "parent_files": 499,
+    "candidate_files": 500,
+    "unchanged_existing": 498,
+    "changed_existing": 1,
+    "added_original_fixture": 1,
+    "Cargo_and_225_source_lock_and_main_and_native_role_ingress_unchanged": true
+  },
+  "tests": {
+    "old_18_updater_and_9_source_tests_retained": true,
+    "new_names": [
+      "android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths",
+      "android::tests::typed_systemui_test_projection_rejects_wrong_source_before_journal_or_write",
+      "android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal"
+    ],
+    "new_labels": [
+      200,
+      201,
+      202
+    ],
+    "original_labels": [
+      0,
+      17
+    ],
+    "source_labels": [
+      100,
+      108
+    ],
+    "historical_fakeroot_index20_preserved": true,
+    "expected_updater_registered": 211,
+    "expected_source_registered": 20,
+    "expected_updater_focused": 21,
+    "expected_source_focused": 9,
+    "expected_total_focused": 30,
+    "expected_commands": 68,
+    "scope": "Real Projection/helper/restore/recover against complete upstream fixture; temporary synthetic sibling only verifies exact path boundary.",
+    "executed": false
+  },
+  "packet": {
+    "transferred": 5,
+    "reused_pinned_authorities": 11,
+    "total_staged": 16,
+    "stdin": {
+      "bytes": 533704,
+      "sha256": "ba151e0e4ce8f0443d5a6fcb350d68f69235fa97e18227251eebbd4e528b051b"
+    },
+    "request": {
+      "bytes": 576961,
+      "sha256": "82fad9cb3da572d593bfe49e67069bb6b7f28460c112d3ac2a5ff4398583e220"
+    },
+    "one_MiB_stdin_bound_pass": true,
+    "pure_V8_generator_exact_reproduction": true
+  },
+  "unchanged_guards": {
+    "original_two_locks": true,
+    "projection_journal_and_restore": true,
+    "parent_three_SystemUI_providers": true,
+    "framework_target_BPs": true,
+    "flags_JNI": true,
+    "strict_targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "ALLOW_MISSING_DEPENDENCIES": "false",
+    "normal_build_not_in_this_request": true
+  },
+  "resources": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 1073741824,
+    "nice": 15,
+    "work_seconds": 550,
+    "outer_seconds": 600,
+    "swap_only_observed_original_gate": true,
+    "original_resource_child_tool_config_dependency_functions_unchanged": true
+  },
+  "limits": {
+    "static_target_dependency_analysis_not_complete_Soong_variant_graph": true,
+    "SystemUI_application_and_tests_outside_route": true,
+    "normal07_failure_retained": true,
+    "source_lock_writer": "UNKNOWN",
+    "compile_not_yet_run": true,
+    "Soong_not_yet_run": true,
+    "implementation_Java_JNI_not_qualified": true,
+    "production_ready": false,
+    "Main_identity_not_observed_by_compile_request": true,
+    "Main_interference_absence_not_claimed": true
+  }
+}

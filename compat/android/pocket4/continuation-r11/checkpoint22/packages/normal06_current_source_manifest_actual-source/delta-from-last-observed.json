@@ -1,0 +1,59 @@
+{
+  "old_count": 224,
+  "new_count": 225,
+  "added": [
+    {
+      "path": "packages/modules/NeuralNetworks",
+      "url": "https://android.googlesource.com/platform/packages/modules/NeuralNetworks",
+      "commit": "a44a9032ab9a8438c0e13aca765d6ee4edebba2c",
+      "purpose": "Exact Android 17 superproject NNAPI utility defaults and complete native type providers required by the existing hardware interface consumers",
+      "sparse_paths": [
+        "common/types/include",
+        "common/types/operations/include",
+        "common/types/operations/src",
+        "common/types/src"
+      ]
+    }
+  ],
+  "removed": [],
+  "changed": [
+    {
+      "path": "packages/services/Car",
+      "old": {
+        "path": "packages/services/Car",
+        "url": "https://android.googlesource.com/platform/packages/services/Car",
+        "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+        "purpose": "Actual android.car and android.car.builtin.impl providers required by the upstream Robolectric host framework",
+        "sparse_paths": [
+          "aconfig",
+          "car-lib/src",
+          "car-lib/jni/large-parcelable/src",
+          "car-builtin-lib/src",
+          "car-builtin-lib/api",
+          "libs/car-internal-dep-lib/src",
+          "teams"
+        ]
+      },
+      "new": {
+        "path": "packages/services/Car",
+        "url": "https://android.googlesource.com/platform/packages/services/Car",
+        "commit": "9f04df65daa8b9a65ee05fd4039fe95446874d76",
+        "purpose": "Actual android.car and android.car.builtin.impl providers required by the upstream Robolectric host framework",
+        "sparse_paths": [
+          "aconfig",
+          "car-lib/src",
+          "car-lib/jni/large-parcelable/src",
+          "car-builtin-lib/src",
+          "car-builtin-lib/api",
+          "libs/car-internal-dep-lib/src",
+          "teams",
+          "cpp/vhal/client/include",
+          "cpp/vhal/client/src",
+          "cpp/car_binder_lib/largeParcelable/include"
+        ]
+      }
+    }
+  ],
+  "links_equal": true,
+  "superproject_equal": true
+}

@@ -1,0 +1,42 @@
+{
+  "bounded_source_bytes": {
+    "arm64_ndk_config": 8192,
+    "output": 262144,
+    "sdk_stl_selection": 32768,
+    "target_header_selection": 65536,
+    "total_two_pass_reads": 196608,
+    "total_unique": 98304
+  },
+  "expected_engineering_chain": "Actual APK BP uses sdk_version=current and libc++_static. Upstream reference selects ndk_libc++_static with aarch64-specific target configuration before common headers. The three local inputs remain first-observation candidates until this request completes.",
+  "file_scope": "Exactly the three fixed source paths, root and every parent opened O_DIRECTORY|O_NOFOLLOW; leaf O_RDONLY|O_NOFOLLOW|O_CLOEXEC, regular and single-link. No directory scan or fallback.",
+  "integrity": "All three leaf FDs retained across two complete reads; full bytes/hash and all full stat fields compared; independent final named path opens compare against held identity. Metadata is recorded before shape rejection. Source bodies are public code, returned UTF8 without executing them.",
+  "lifecycle": "Acquisition FD journal owns every returned FD before checking its count; intermediate failures retain first error; all still-owned FDs independently close. Any close or collection error prevents collection_complete.",
+  "local_validation": "Only V8 string/packet/pin checks. No local Python syntax check, controls or remote execution performed by this agent.",
+  "output": "Plain UTF8 JSON; full source text plus exact hashes and metadata. If encoded output exceeds bound, source texts are omitted explicitly and collection fails; no partial text is claimed as full.",
+  "problem": "Actual compile02 -M succeeded, then original canonical root gate rejected index4 generic __config_site symlink into host x86_64 configuration. Keep this failure and its exact alias evidence.",
+  "purpose": "Read only three fixed public engineering/configuration sources before preparing corrected ARM64 Android compile inputs. No alias/root bypass is performed.",
+  "request_constraints": {
+    "args": [
+      "-I",
+      "-B",
+      "-"
+    ],
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 134217728,
+    "nice": 10,
+    "self_alarm_seconds": 8,
+    "timeout_seconds": 30,
+    "uid": 1000
+  },
+  "schema": 1,
+  "source_lineage": "Fixed nofollow acquisition/metadata/FD accounting style from actual canonical metadata reader; new body scope is exactly the three named public sources.",
+  "state": "SOURCE_ONLY_NOT_EXECUTED",
+  "unchanged_scope": [
+    "No compiler or subprocess",
+    "No Python/source evaluation",
+    "No Main, Android, namespace or UI access",
+    "No files created or modified",
+    "No dependency-root or ABI qualification",
+    "No retry of prior build"
+  ]
+}

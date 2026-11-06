@@ -1,0 +1,22 @@
+--- united/read_target.template.py
++++ united/read_target.py
+@@ -20,7 +20,7 @@
+ 
+ ROOT = Path('/home/alex/work/pocket4-current-cell02-united-metadata-01')
+ SOURCE_PATH = ROOT/'source/read_target.py'
+-NONCE = '__FRESH_METADATA_NONCE__'
++NONCE = 'f16203e055dd261c64e49f02195a4da1'
+ PACKAGE = 'com.united.mobile.android'
+ USER = 0
+ HISTORICAL_VERSION = 3617
+--- united/stage.template.py
++++ united/stage_execute.py
+@@ -8,7 +8,7 @@
+ 
+ ROOT=Path('/home/alex/work/pocket4-current-cell02-united-metadata-01')
+ SOURCE=ROOT/'source/read_target.py'
+-NONCE='__FRESH_METADATA_NONCE__'
++NONCE='f16203e055dd261c64e49f02195a4da1'
+ REFERENCE=Path('/home/alex/work/pocket4-current-host-r6-source-01/current_coordinator.py')
+ REFERENCE_SHA='0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89'
+ DISCOVERY_SHA='9ed0069897faebba50cec3d93b08da54f1c791d6e2e775d26ec798c38b227886'

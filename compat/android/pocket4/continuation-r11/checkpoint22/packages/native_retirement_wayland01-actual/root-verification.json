@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "p": "native_retirement_wayland01",
+  "source_tree": "a3d52c1cf7dfb060d855e4e6ec5b46eb2906bd5a",
+  "state": "ACTUAL_FAIL_LOCKED_OFFLINE_METADATA_MISSING_FLATE2_1_1_9",
+  "counts": {
+    "ordinary_commands_attempted": 11,
+    "ordinary_commands_passed": 10,
+    "lifecycle_controls_passed": 3
+  },
+  "qualified": [
+    "original failure and stderr retained",
+    "original/copy/config unchanged and owned resource cleanup gates"
+  ],
+  "not_qualified": [
+    "Cargo metadata dependency closure",
+    "pkg-config",
+    "Wayland crate typecheck",
+    "Wayland link",
+    "GPU runtime",
+    "App production readiness"
+  ],
+  "job_id": "1a1b13e67c6-fc05-7738",
+  "report_pin": {
+    "path": "/home/alex/work/p4-retirement-wayland-check01-20261106/attempt01/result.json",
+    "bytes": 53459,
+    "sha256": "bd04c5d5d85c5f87ebeda429ad180aa5ea9634df614613a0ff7234f7d83192b9",
+    "version": "66306:35130182:53459:1793975029036555901:1793975029036555901",
+    "chunks": [
+      {
+        "offset": 0,
+        "next_offset": 53459,
+        "bytes": 53459,
+        "sha256": "bd04c5d5d85c5f87ebeda429ad180aa5ea9634df614613a0ff7234f7d83192b9"
+      }
+    ]
+  },
+  "terminal_pin": {
+    "bytes": 728,
+    "sha256": "713503d8c7e2cf829dd83244d2268a2fb41a594aa252bfbe3b55f63fcd66aa48",
+    "git_blob_sha1": "cdb2c9a1a45db410250bdade9dc68b10d3a9b4e9"
+  },
+  "transport_actual_tree": null,
+  "originals_unmodified": true,
+  "Main_noninterference_not_inferred_from_zero_action_fields": true,
+  "whole_app_production_ready": false
+}

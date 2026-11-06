@@ -1,0 +1,224 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_LOCK_ALIGNMENT_NOT_COMPILED_OR_SOONG_QUALIFIED",
+  "baseline": {
+    "builder_generation": 469,
+    "manifest": {
+      "bytes": 99327,
+      "sha256": "88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701",
+      "git_blob": "d2a3b1303336aeb7e8849ebb1bbf459a321ced8a"
+    },
+    "compile_result": {
+      "bytes": 170316,
+      "sha256": "3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5",
+      "git_blob_sha1": "c3967c039a9e450b36cf597cd3a1fc5823b0508c"
+    }
+  },
+  "candidate": {
+    "builder_generation": 470,
+    "manifest": {
+      "bytes": 99327,
+      "sha256": "d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057",
+      "git_blob_sha1": "f738ecebf679d7c91a7fde5adc8608552db3d468"
+    },
+    "source_delta": [
+      "android/manifest/m2-role-ingress-hal-provider-source-lock.json",
+      "tools/droidloom-update/src/native_role_ingress.rs"
+    ],
+    "source_files": 499,
+    "unchanged": 497,
+    "changed_existing": 2,
+    "added": 0
+  },
+  "source_locks": {
+    "historical": {
+      "bytes": 96934,
+      "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd",
+      "git_blob_sha1": "995f9b4e16ed8649aba91a3772bff7a889cf505a"
+    },
+    "project_count": 225,
+    "root_links": 8,
+    "candidate": {
+      "bytes": 96957,
+      "sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d",
+      "git_blob_sha1": "5f8c5958c1ee2564503f908bc5d4d50d3fab761a"
+    }
+  },
+  "observed_materialized_manifest": {
+    "bytes": 109252,
+    "sha256": "5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d",
+    "git_blob_sha1": "6c133f7db82ac84553624293755648a6b833f05b"
+  },
+  "exact_lock_field_changes": [
+    {
+      "path": "/projects/221/sparse_paths",
+      "before": [
+        "aconfig",
+        "car-lib/src",
+        "car-lib/jni/large-parcelable/src",
+        "car-builtin-lib/src",
+        "car-builtin-lib/api",
+        "libs/car-internal-dep-lib/src",
+        "teams",
+        "cpp/vhal/client/src",
+        "cpp/vhal/client/include",
+        "cpp/car_binder_lib/largeParcelable/include"
+      ],
+      "after": [
+        "aconfig",
+        "car-lib/src",
+        "car-lib/jni/large-parcelable/src",
+        "car-builtin-lib/src",
+        "car-builtin-lib/api",
+        "libs/car-internal-dep-lib/src",
+        "teams",
+        "cpp/vhal/client/include",
+        "cpp/vhal/client/src",
+        "cpp/car_binder_lib/largeParcelable/include"
+      ],
+      "project": "packages/services/Car"
+    },
+    {
+      "path": "/projects/224/purpose",
+      "before": "Exact Android 17 NNAPI type implementation and original defaults required by existing hardware neuralnetwork consumers",
+      "after": "Exact Android 17 superproject NNAPI utility defaults and complete native type providers required by the existing hardware interface consumers",
+      "project": "packages/modules/NeuralNetworks"
+    },
+    {
+      "path": "/projects/224/sparse_paths",
+      "before": [
+        "common/types/src",
+        "common/types/include",
+        "common/types/operations/src",
+        "common/types/operations/include"
+      ],
+      "after": [
+        "common/types/include",
+        "common/types/operations/include",
+        "common/types/operations/src",
+        "common/types/src"
+      ],
+      "project": "packages/modules/NeuralNetworks"
+    }
+  ],
+  "proof": {
+    "old499_map": {
+      "bytes": 99327,
+      "sha256": "88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701",
+      "git_blob_sha1": "d2a3b1303336aeb7e8849ebb1bbf459a321ced8a"
+    },
+    "new499_map": {
+      "bytes": 99327,
+      "sha256": "d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057",
+      "git_blob_sha1": "f738ecebf679d7c91a7fde5adc8608552db3d468"
+    },
+    "project_count": 225,
+    "links": 8,
+    "changed_source_files": 2,
+    "unchanged_source_files": 497,
+    "new_source_files": 0,
+    "all_function_bodies_unchanged_by_exact_constant_inverse": true,
+    "original_validator_prepare_reconcile_unchanged": true,
+    "selection_fields_exactly_equal_after_only_sparse_order_and_purpose_projection": true,
+    "normalization_for_proof_only_not_runtime_gate": true,
+    "current_manifest": {
+      "bytes": 109252,
+      "sha256": "5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d",
+      "git_blob_sha1": "6c133f7db82ac84553624293755648a6b833f05b"
+    },
+    "current_manifest_raw_rebuilt_exact": true,
+    "observed_lock_preexisting_git_blob": "5f8c5958c1ee2564503f908bc5d4d50d3fab761a",
+    "historical_lock": {
+      "bytes": 96934,
+      "sha256": "c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd",
+      "git_blob_sha1": "995f9b4e16ed8649aba91a3772bff7a889cf505a"
+    },
+    "historical_Normal06_failed": true,
+    "device_writer": "UNKNOWN",
+    "retained_host_focused_controls": 27,
+    "retained_expected_commands": 65,
+    "source_compile_performed": false,
+    "normal_07_request_bound": false,
+    "targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "ALLOW_MISSING_DEPENDENCIES": false,
+    "exact_changed_lock_fields": [
+      {
+        "path": "/projects/221/sparse_paths",
+        "before": [
+          "aconfig",
+          "car-lib/src",
+          "car-lib/jni/large-parcelable/src",
+          "car-builtin-lib/src",
+          "car-builtin-lib/api",
+          "libs/car-internal-dep-lib/src",
+          "teams",
+          "cpp/vhal/client/src",
+          "cpp/vhal/client/include",
+          "cpp/car_binder_lib/largeParcelable/include"
+        ],
+        "after": [
+          "aconfig",
+          "car-lib/src",
+          "car-lib/jni/large-parcelable/src",
+          "car-builtin-lib/src",
+          "car-builtin-lib/api",
+          "libs/car-internal-dep-lib/src",
+          "teams",
+          "cpp/vhal/client/include",
+          "cpp/vhal/client/src",
+          "cpp/car_binder_lib/largeParcelable/include"
+        ],
+        "project": "packages/services/Car"
+      },
+      {
+        "path": "/projects/224/purpose",
+        "before": "Exact Android 17 NNAPI type implementation and original defaults required by existing hardware neuralnetwork consumers",
+        "after": "Exact Android 17 superproject NNAPI utility defaults and complete native type providers required by the existing hardware interface consumers",
+        "project": "packages/modules/NeuralNetworks"
+      },
+      {
+        "path": "/projects/224/sparse_paths",
+        "before": [
+          "common/types/src",
+          "common/types/include",
+          "common/types/operations/src",
+          "common/types/operations/include"
+        ],
+        "after": [
+          "common/types/include",
+          "common/types/operations/include",
+          "common/types/operations/src",
+          "common/types/src"
+        ],
+        "project": "packages/modules/NeuralNetworks"
+      }
+    ],
+    "all_other_raw_lock_fields_and_order_equal": true,
+    "project_url_commit_and_sparse_set_unchanged": true,
+    "all_validator_prepare_reconcile_and_test_function_bytes_unchanged": true
+  },
+  "strictness": {
+    "targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "ALLOW_MISSING_DEPENDENCIES": "false",
+    "project_verification_preserved": true,
+    "materialized_plan_equality_preserved": true,
+    "raw_lock_sha_equality_preserved": true
+  },
+  "history": {
+    "Normal06_failed": true,
+    "source_lock_writer": "UNKNOWN",
+    "historical_469_source_and_c715_lock_preserved": true
+  },
+  "validation": {
+    "host_compile_performed": false,
+    "normal07_bound": false,
+    "device_source_qualification_claimed": false,
+    "source_tree_mutated": false
+  }
+}

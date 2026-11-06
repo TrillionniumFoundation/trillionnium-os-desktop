@@ -1,0 +1,174 @@
+--- read_sdk22.py
++++ read_product_config.py
+@@ -1,4 +1,4 @@
+-"""Read fixed ARM64 CRT and SDK link inputs. No build, child, device, or writes."""
++"""Read fixed Soong product naming and one derived SDK configuration. No build or actions."""
+ import hashlib
+ import io
+ import json
+@@ -11,9 +11,11 @@
+ import time
+ import zipfile
+ 
+-INPUTS = json.loads(r'''[{"role":"stl_selection_anchor","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/cc/stl.go","maximum":65536,"expected_bytes":7171,"expected_sha256":"31b30a2c75457df7076aa588760cb2e64b73f1880e2b19092eb805e682daacea","format":"utf8"},{"role":"clang_layout_anchor","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/soong/clangprebuilts.go","maximum":65536,"expected_bytes":29802,"expected_sha256":"7cc70c5060b2c1729c4406a5a27ae16774f9f80f25db1d55a37a1e170709ebef","format":"utf8"},{"role":"arm64_ndk_config_anchor","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/android_libc++/ndk/aarch64/include/c++/v1/__config_site","maximum":65536,"expected_bytes":1805,"expected_sha256":"155023bfbc86f9f021ea5705822e52f13d6fca5d80ff1cce12ae279287b694c6","format":"utf8"},{"role":"ndkstubgen_source","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/cc/ndkstubgen/__init__.py","maximum":65536,"expected_bytes":9242,"expected_sha256":"486342199742d0893480612fae142af96e5cae51d35f6d0171e29e73c7260fd8","format":"utf8"},{"role":"symbolfile_source","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/cc/symbolfile/__init__.py","maximum":65536,"expected_bytes":15830,"expected_sha256":"f9cd1f2a3f8556bb8a063bcbc879e76bf0af1a4c2a0cb30090b6197bdda69c19","format":"utf8"},{"role":"api_levels_source","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/android/api_levels.go","maximum":65536,"expected_bytes":18645,"expected_sha256":"39323b9e40d7aff6f482d8116c4410167345994352dfdab51ad60af00f4cbb7f","format":"utf8"},{"role":"libc_ndk_map","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/libc.map.txt","maximum":65536,"expected_bytes":38678,"expected_sha256":"5831b40390f17a34536513c79735bc632aa3d3f4d81fc4ed5f5ea8ff6ed5107c","format":"utf8"},{"role":"libdl_ndk_map","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libdl/libdl.map.txt","maximum":65536,"expected_bytes":1169,"expected_sha256":"066e6d3f7ea4a46134f53265fa29b1eaa78a2acdb8163c9d90f790e5544db80f","format":"utf8"},{"role":"libm_ndk_map","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libm/libm.map.txt","maximum":65536,"expected_bytes":4751,"expected_sha256":"addb0e674222bb262646809f768328e27325266e122f569e80282216cf5c84c0","format":"utf8"},{"role":"liblog_ndk_map","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/system/logging/liblog/liblog.map.txt","maximum":65536,"expected_bytes":2787,"expected_sha256":"0f6863b6ac213350f96292402c0834c8fb89fa02042e960a80428304c0355019","format":"utf8"},{"role":"libz_ndk_map","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/external/zlib/libz.map.txt","maximum":65536,"expected_bytes":2493,"expected_sha256":"dc6b8f3a7f949eeb77b140fe394c2749126ce95850c14d118a41b870552d2005","format":"utf8"},{"role":"bionic_crtbegin_so_c","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/crtbegin_so.c","maximum":65536,"expected_bytes":2936,"expected_sha256":"7339e128550f8f90a254fef776c8a23b96a13190e93981cb20a588a2e6342bf3","format":"utf8"},{"role":"bionic_crtbrand_S","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/crtbrand.S","maximum":65536,"expected_bytes":1942,"expected_sha256":"27f3d6eda81ba614020871c8cc46fa0e92d9900413f38469fdb2081715cb3bb5","format":"utf8"},{"role":"bionic_crtend_so_S","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/crtend_so.S","maximum":65536,"expected_bytes":1668,"expected_sha256":"bb9e63f580f756b7cddb5a36e53c2545df7bcea681a248c647f090ee2c05ef29","format":"utf8"},{"role":"bionic___dso_handle_so_h","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/__dso_handle_so.h","maximum":65536,"expected_bytes":1930,"expected_sha256":"50b6bbb9aaa1692175e45839c0b90810a962449d0b9842960caf8119595bdc32","format":"utf8"},{"role":"bionic_atexit_h","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/atexit.h","maximum":65536,"expected_bytes":1797,"expected_sha256":"8671df24f92b375fe8ff233e88d5b55f01e91c608ee838045431444101bf70af","format":"utf8"},{"role":"bionic_pthread_atfork_h","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/arch-common/bionic/pthread_atfork.h","maximum":65536,"expected_bytes":1327,"expected_sha256":"bdc11ac701a0847a51a7e93760bb0fe12389b8d25b36080f1e0d1fb7ba07e2b1","format":"utf8"},{"role":"bionic_asm_h","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/private/bionic_asm.h","maximum":65536,"expected_bytes":4344,"expected_sha256":"6291935944e995c5111f913a34446fadb529b5dabf0c3d099eaffca6a550c819","format":"utf8"},{"role":"bionic_asm_arm64_h","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/private/bionic_asm_arm64.h","maximum":65536,"expected_bytes":3097,"expected_sha256":"b6f66c98e064969b75e2af97481517ac5ce7fa0d89fa0052ea021fd30f1d8104","format":"utf8"},{"role":"bionic_asm_note_h","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/bionic/libc/private/bionic_asm_note.h","maximum":65536,"expected_bytes":1548,"expected_sha256":"57e505697ec2ab18ceda59187db33b7a9c829a9180a8721fea3afa24958b8cf1","format":"utf8"},{"role":"existing_soong_variables","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/android-composer-leaf-out-r14/soong/soong.variables","maximum":1048576,"format":"sdk_variables"},{"role":"existing_generated_api_map","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/android-composer-leaf-out-r14/soong/api_levels.json","maximum":65536,"format":"api_map"}]''')
++INPUTS = json.loads(r'''[{"role":"api_levels_source","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/android/api_levels.go","maximum":65536,"expected_bytes":18645,"expected_sha256":"39323b9e40d7aff6f482d8116c4410167345994352dfdab51ad60af00f4cbb7f","format":"utf8"},{"role":"symbolfile_source","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/cc/symbolfile/__init__.py","maximum":65536,"expected_bytes":15830,"expected_sha256":"f9cd1f2a3f8556bb8a063bcbc879e76bf0af1a4c2a0cb30090b6197bdda69c19","format":"utf8"},{"role":"existing_generated_api_map","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/android-composer-leaf-out-r14/soong/api_levels.json","maximum":65536,"format":"api_map","expected_bytes":261,"expected_sha256":"57eb77fcc1525ed675f07601cce51fe9d9524271b3c6c6b53429a9beabdda87b"},{"role":"soong_ui_config","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/ui/build/config.go","maximum":131072,"expected_bytes":68765,"expected_sha256":"b2719ca6a5335ac78af0f37e8a5f966c52932cd9673796929c230bb5c9bb99d5","format":"utf8"},{"role":"soong_ui_run","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/ui/build/soong.go","maximum":131072,"expected_bytes":31627,"expected_sha256":"ab745182f4fba6ab4fbd1cea6fc4943b78e588b4187dfc735cd28826bbaa7027","format":"utf8"},{"role":"soong_environment_boolean","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/ui/build/environment.go","maximum":131072,"expected_bytes":6244,"expected_sha256":"adee8346f56cbb9a8044444ee54224f50c3be37cdc14fe2bd13e66c439763f2d","format":"utf8"},{"role":"soong_environment_encoding","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/shared/env.go","maximum":131072,"expected_bytes":3511,"expected_sha256":"f699e7238a9558548fbdf35df3d3b680ae482156e2273a0fd3112b14f571a701","format":"utf8"},{"role":"existing_available_environment","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/android-composer-leaf-out-r14/soong/soong.environment.available","maximum":1048576,"format":"soong_available_env"}]''')
++SOONG_DIR = "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/android-composer-leaf-out-r14/soong"
++ORIGINAL_SDK22 = {'bytes':79928,'sha256':'f952b570b665438b367f78fbef0a17232d78ced69463832b9d12b1316a700a83','job_id':'1a1b19b46a3-fc05-79d7','terminal_exit_code':1,'qualified_as_whole':False}
+ RELEASED_APIS = json.loads(r'''{"G":9,"I":14,"J":16,"J-MR1":17,"J-MR2":18,"K":19,"L":21,"L-MR1":22,"M":23,"N":24,"N-MR1":25,"O":26,"O-MR1":27,"P":28,"Q":29,"R":30,"S":31,"S-V2":32,"Tiramisu":33,"UpsideDownCake":34,"VanillaIceCream":35,"Baklava":36,"CinnamonBun":37,"CANARY":10000}''')
+-KIND = 'p4-marriott-arm64-crt-sdk-input-read01'
++KIND = 'p4-marriott-soong-product-sdk-config-read01'
+ MEMORY_MAX = 268435456
+ START = time.monotonic()
+ WORK_END = START + 40.0
+@@ -234,10 +236,77 @@
+             'unselected_field_count':len(value)-len(selected),
+             'source_body_exported':False,'unselected_fields_exported':False}
+ 
++def available_environment_facts(body):
++    # shared.EnvFileContents emits a sorted array of {Key,Value} strings.
++    # Parse only in memory. No unselected key, value, or original body is emitted.
++    def unique_pairs(items):
++        value={}
++        for key,item in items:
++            need(key not in value,'duplicate environment JSON object key')
++            value[key]=item
++        return value
++    def reject_constant(_):
++        raise RuntimeError('nonfinite environment JSON value')
++    records=json.loads(body.decode('utf-8','strict'),object_pairs_hook=unique_pairs,
++                       parse_constant=reject_constant)
++    need(type(records) is list and 0<len(records)<=4096,'fixed environment entry bound')
++    names=[]
++    selected={}
++    for row in records:
++        need(type(row) is dict and set(row)=={'Key','Value'} and
++             type(row['Key']) is str and type(row['Value']) is str and
++             0<len(row['Key'])<=256 and len(row['Value'].encode())<=65536,
++             'fixed environment record shape')
++        names.append(row['Key'])
++        if row['Key'] in ('TARGET_PRODUCT','EMMA_INSTRUMENT'):
++            selected[row['Key']]=row['Value']
++    need(names==sorted(set(names)),'fixed environment sorted unique keys required')
++    product=selected.get('TARGET_PRODUCT')
++    need(type(product) is str and
++         re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}',product) is not None,
++         'one public TARGET_PRODUCT grammar required')
++    coverage=selected.get('EMMA_INSTRUMENT') in ('1','y','yes','on','true')
++    emma=selected.get('EMMA_INSTRUMENT')
++    emma_projection={'present':emma is not None,'effective_true':coverage}
++    if emma is not None:
++        emma_projection.update(bytes=len(emma.encode()),sha256=digest(emma.encode()))
++        if emma in ('','1','y','yes','on','true','0','n','no','off','false'):
++            emma_projection['public_boolean_literal']=emma
++    basename='soong.'+product+('.coverage' if coverage else '')+'.variables'
++    return {'format':'soong_available_env','TARGET_PRODUCT':product,
++            'EMMA_INSTRUMENT':emma_projection,'derived_basename':basename,
++            'total_entries':len(records),'unselected_values_exported':False,
++            'unselected_names_exported':False,'source_body_exported':False}
++
++
++def product_configuration_facts(body):
++    facts=sdk_configuration_facts(body,'sdk_variables')
++    value=strict_configuration_json(body)
++    product=value.get('DeviceProduct')
++    suffix=value.get('Make_suffix')
++    need(type(product) is str and
++         re.fullmatch(r'[A-Za-z0-9_][A-Za-z0-9_.-]{0,127}',product) is not None,
++         'actual DeviceProduct grammar required')
++    need(type(suffix) is str and len(suffix)<=139,'actual Make_suffix shape required')
++    # These two selected public fields must equal the observed filename producer.
++    facts['public_product_identity']={'DeviceProduct':product,'Make_suffix':suffix}
++    facts['unselected_field_count']-=2
++    return facts
++
++
+ def join_sdk_configuration(rows):
+     by_role = {row['role']:row for row in rows}
+-    need(len(by_role) == len(INPUTS) and all(row['complete'] for row in rows),
++    need(len(by_role) == len(INPUTS)+1 and all(row['complete'] for row in rows),
+          'all fixed SDK source and configuration inputs required')
++    environment=by_role['existing_available_environment']['format_facts']
++    product=environment['TARGET_PRODUCT']
++    suffix='.coverage' if environment['EMMA_INSTRUMENT']['effective_true'] else ''
++    variable=by_role['existing_soong_variables']
++    need(variable['path']==SOONG_DIR+'/soong.'+product+suffix+'.variables',
++         'actual single product configuration path differs')
++    need(variable['format_facts']['public_product_identity']==
++         {'DeviceProduct':product,'Make_suffix':'-'+product+suffix},
++         'actual configuration product/coverage does not match observed producer')
+     variables = by_role['existing_soong_variables']['format_facts']['public_values']
+     actual_map = by_role['existing_generated_api_map']['format_facts']['api_levels']
+     # A missing or JSON-null Go []string field is nil; the original Soong range
+@@ -249,6 +318,8 @@
+     need(actual_map == expected,
+          'fixed generated API map differs from original Soong source and variables')
+     return {'qualified_for_fixed_build_input_binding':True,
++            'product_path_derived_from_fixed_observed_environment':True,
++            'observed_product':product,'observed_coverage_suffix':suffix,
+             'Platform_sdk_version_observed':variables['Platform_sdk_version'],
+             'CRT_brand_define_must_use_this_observed_value':True,
+             'NDK_current_interface_api_from_original_generator':10000,
+@@ -273,7 +344,8 @@
+         held = open_absolute(spec['path'])
+         before = info(held)
+         row['before'] = before
+-        need(stat.S_ISREG(before['mode']) and 0 < before['bytes'] <= spec['maximum'],
++        need(stat.S_ISREG(before['mode']) and before['nlink']==1 and
++             0 < before['bytes'] <= spec['maximum'],
+              'bounded regular public input required')
+         body, count, sha = read_complete(held, spec['maximum'])
+         row.update(bytes=count,sha256=sha,full_reads=1)
+@@ -296,6 +368,10 @@
+             text = body.decode('utf-8', 'strict')
+             row['format_facts'] = {'format':'utf8','utf8_bytes':len(text.encode()),
+                                    'source_body_exported':False}
++        elif spec['format']=='soong_available_env':
++            row['format_facts']=available_environment_facts(body)
++        elif spec['format']=='product_sdk_variables':
++            row['format_facts']=product_configuration_facts(body)
+         elif spec['format'] in ('sdk_variables','api_map'):
+             row['format_facts'] = sdk_configuration_facts(body, spec['format'])
+         elif spec['format'] == 'archive':
+@@ -410,7 +486,9 @@
+               'directory_enumerations':0,'network_calls':0,'tool_or_library_executions':0,
+               'build_or_runtime_qualification_asserted':False,
+               'fixed_candidate_absence_has_no_fallback':True,
+-              'input_binary_bodies_exported':False}
++              'input_binary_bodies_exported':False,
++              'original_failed_sdk22':ORIGINAL_SDK22,
++              'derived_candidate_read_attempts':0,'candidate_fallbacks':0}
+     old_handler = signal.signal(signal.SIGALRM,alarm)
+     old_timer = signal.setitimer(signal.ITIMER_REAL,45.0)
+     try:
+@@ -422,10 +500,20 @@
+             tick()
+             row = observe(spec)
+             result['inputs'].append(row)
+-            if index < 3 and not row['complete']:
+-                raise RuntimeError('prior actual input anchor failed')
++            if not row['complete']:
++                raise RuntimeError('fixed producer/configuration prerequisite failed')
+             if time.monotonic() >= WORK_END:
+                 raise Deadline('fixed input work deadline')
++        environment=result['inputs'][-1]['format_facts']
++        basename=environment['derived_basename']
++        need('/' not in basename and basename.startswith('soong.') and
++             basename.endswith('.variables') and len(basename)<=153,
++             'single derived configuration basename grammar')
++        derived={'role':'existing_soong_variables','path':SOONG_DIR+'/'+basename,
++                 'maximum':1048576,'format':'product_sdk_variables'}
++        result['derived_specification']=derived
++        result['derived_candidate_read_attempts']=1
++        result['inputs'].append(observe(derived))
+         if all(row['complete'] for row in result['inputs']):
+             result['sdk_configuration_join'] = join_sdk_configuration(result['inputs'])
+     except BaseException as exc:
+@@ -455,7 +543,7 @@
+     result['complete_bytes_read'] = TOTAL_READ
+     result['errors'] = ERRORS
+     result['first_error'] = ERRORS[0] if ERRORS else None
+-    result['collection_complete'] = bool(not ERRORS and len(result['inputs']) == len(INPUTS) and
++    result['collection_complete'] = bool(not ERRORS and len(result['inputs']) == len(INPUTS)+1 and
+         all(x['complete'] for x in result['inputs']) and result['all_tracked_owned_FDs_closed'] and
+         result['control_deadline_met'] and result.get('own_resource_interval_qualified') and
+         result.get('sdk_configuration_join',{}).get('qualified_for_fixed_build_input_binding') is True)

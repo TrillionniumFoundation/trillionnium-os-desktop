@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "kind": "lossless-build-receipt-transport-decoder",
+  "input_limit_bytes": 1048576,
+  "output_limit_bytes": 67108864,
+  "checks": [
+    "zlib header, no dictionary",
+    "bounded DEFLATE stored/fixed/dynamic",
+    "exact output length and single-stream end",
+    "Adler32",
+    "call site requires original full SHA256 independently advertised by build terminal"
+  ],
+  "sanity": {
+    "empty_fixed": true,
+    "stored_hello": true,
+    "fixed_hello": true,
+    "scope": "decoder transport sanity only; actual receipt still requires complete independently advertised SHA256"
+  },
+  "changes_to_original_reports": false,
+  "acceptance_claim": false
+}

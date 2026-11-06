@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "kind": "fixed-two-report-transport-root-preflight",
+  "source_tree": "68f189b8c76dded8cc074e68034043dd459c7cb0",
+  "source_proof": {
+    "tree": "68f189b8c76dded8cc074e68034043dd459c7cb0",
+    "leaf_count": 5,
+    "logical_bytes": 48147,
+    "directory_count_including_root": 2,
+    "recursive_entries": 6,
+    "truncated": false,
+    "all_paths_modes_sizes_blob_sha1_match": true,
+    "all_directory_tree_sha1_recomputed": true
+  },
+  "request": {
+    "bytes": 21963,
+    "sha256": "5dfeeb82f0b1670644e3f0531b9bdd3c1f5d70b9f49665883e97d49c0b01e41b",
+    "git_blob_sha1": "9a20c51a43784f8e3fdb37e2565d7b0e0b9b221a"
+  },
+  "source": {
+    "bytes": 21194,
+    "sha256": "1ac361911bf3b9a0080c80f5db006aeb0f9fe52cb9b48b88d265185eff79d23d",
+    "git_blob_sha1": "af0513e6516ee662e3914e442a1679c00eb504a1"
+  },
+  "full_source_read": true,
+  "independent_review": "native_recovery_resume full static review: no concrete first-run blocker; exact producer modes remain runtime gates; inflation requires original full SHA",
+  "raw_input_pins": [
+    {
+      "success": true,
+      "path": "/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-04-20261106/build-result.json",
+      "bytes": 4899108,
+      "sha256": "8a9e478a65606cb296bfc2e208ff11c0203f43902ae3245a8f931f28fc10165a",
+      "first_error": null
+    },
+    {
+      "path": "/home/alex/work/p4-retirement-ack-host01-20261106/attempt01/result.json",
+      "bytes": 540943,
+      "sha256": "0d511ba553d1a34df9116c0e62cfcfbcabb00b96aafcde0d747f3419ffa4cf37"
+    }
+  ],
+  "boundaries": {
+    "raw_JSON_parsed": false,
+    "original_report_modified": false,
+    "new_paths": "one create-only directory and two fixed 0400 zlib copies",
+    "Main_actions": 0,
+    "Android_actions": 0,
+    "child_processes": 0,
+    "network": 0
+  },
+  "decoder": {
+    "source_tree": "459ae695494f530bcca376b0316dd9cc98229956",
+    "source": {
+      "bytes": 4802,
+      "sha256": "e5a9865139a329e966384822cfa39c4134399cc8fbe22e72d8795a81935f6c9d",
+      "git_blob_sha1": "03195d1cad5867bf1d85dc4c756253fcd8f9e944"
+    },
+    "input_maximum": 1048576,
+    "output_maximum": 67108864,
+    "known_vectors": {
+      "empty_fixed": true,
+      "stored_hello": true,
+      "fixed_hello": true,
+      "scope": "decoder transport sanity only; actual receipt still requires complete independently advertised SHA256"
+    },
+    "final_required": "exact independently advertised original complete bytes/SHA256; Adler32 alone never sufficient"
+  },
+  "actual_compile_or_test_qualification": false,
+  "status": "REVIEWED_FOR_ONE_LOSSLESS_TRANSPORT"
+}

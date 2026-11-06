@@ -1,0 +1,48 @@
+{
+  "boundaries": {
+    "Android_commands": 0,
+    "Main_commands": 0,
+    "SDK_changed": false,
+    "actual_minTargetSdk24_flag_observed": false,
+    "bypass_added": false,
+    "current_install_acceptance_asserted": false,
+    "installed_PackageManager_binary_binding": false,
+    "manifest_changed": false,
+    "source_execution": 0
+  },
+  "commit": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+  "findings": {
+    "install_R": "sets replaceExisting=false",
+    "install_t": "sets INSTALL_ALLOW_TEST only",
+    "low_target_bypass_not_requested": true,
+    "minimum_target_expression": "Flags.minTargetSdk24() ? Build.VERSION_CODES.N : Build.VERSION_CODES.M",
+    "original_manifest_targetSdkVersion": 23,
+    "original_manifest_testOnly": false,
+    "package_metadata_output_order": "package:<name> versionCode:<version> uid:<uid>",
+    "source_predicate_if_flag_disabled": "target23 is not below the minimum23; other installation gates still apply",
+    "source_predicate_if_min_target_24_enabled": "original target23 is rejected with INSTALL_FAILED_DEPRECATED_SDK_VERSION unless a bypass or testOnly flag applies"
+  },
+  "repository": "aosp-mirror/platform_frameworks_base",
+  "schema": 1,
+  "sources": [
+    {
+      "bytes": 235199,
+      "git_blob_sha": "0a74bbf119767ad390d69326df34842c70a0ae8c",
+      "path": "services/core/java/com/android/server/pm/PackageManagerShellCommand.java",
+      "sha256": "5b4b1376a83a7916609d09ca2d86b2715a18c751fa4ea140a5d13fb1bd408fc3"
+    },
+    {
+      "bytes": 279969,
+      "git_blob_sha": "e7bb826461bc835f0eb422e85dd571db97d2626f",
+      "path": "services/core/java/com/android/server/pm/InstallPackageHelper.java",
+      "sha256": "00a61a16e9a209f8c8be39bb997f63e3a7235c1214faab9a56157e619f1104ee"
+    },
+    {
+      "bytes": 410558,
+      "git_blob_sha": "9f2d4dbe88a76d50af8558e54aab160626ce6230",
+      "path": "services/core/java/com/android/server/pm/PackageManagerService.java",
+      "sha256": "4d03e11d9a141c7540d809a9a1e84eca9a1a0952b4cd57c7a15eadf79a0bd678"
+    }
+  ],
+  "status": "PINNED_SOURCE_OBSERVATION_ONLY"
+}

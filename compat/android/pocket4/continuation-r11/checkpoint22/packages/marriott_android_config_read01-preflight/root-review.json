@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "source_tree": "3b6ff51beef81ad5cfb80fdc0cbce69e983457ae",
+  "source": {
+    "bytes": 9731,
+    "sha256": "a04a945e985528acc765878f13cf255145221d185142aa9519430359921de63b",
+    "git_blob_sha1": "285f37ee7a2c8ed27998f3655838d6e03b78fea0"
+  },
+  "request": {
+    "bytes": 10301,
+    "sha256": "dc019f5776280e95b94643f38adb8860bdc8a4b8bf324aa3adab54152645e60a",
+    "git_blob_sha1": "2bdc19bd3dbd7125aa4b65a7b60b1705c596825e"
+  },
+  "full_source_read": true,
+  "decision": "Read exactly three fixed public build/configuration source files using an ordinary operator and compare full contents and metadata twice before final named/held recheck.",
+  "authority": "Actual canonical diagnostic found generic libc++ config resolving to host triplet; source filenames from actual APK sdk/stl choices and official upstream engineering references guide this bounded read but their contents are first observed, not preclaimed exact.",
+  "bounds": {
+    "files": 3,
+    "total_bytes": 98304,
+    "per_leaf_bytes": [
+      32768,
+      65536,
+      8192
+    ],
+    "observation_seconds": 8,
+    "tool_timeout_seconds": 30,
+    "memory": 134217728
+  },
+  "all_acquired_FDs_finally_closed": true,
+  "leaf_bodies_never_executed": true,
+  "Main_access": false,
+  "Android_commands": 0,
+  "children": 0,
+  "writes": 0,
+  "new_root_authorized": false,
+  "automatic_retry": false
+}

@@ -1,0 +1,102 @@
+{
+  "schema": "source-text-correspondence-v1",
+  "inherited_functions_exact": [
+    {
+      "name": "need",
+      "sha256": "f57f7408c16f3662fdb6c4eb77820008ef6d87bce2584af57facc8387b51f0be"
+    },
+    {
+      "name": "sha",
+      "sha256": "b982bd233c85810c521cadcca10064970241839919eb0af431ee7512034bd15c"
+    },
+    {
+      "name": "canon",
+      "sha256": "f088296c9f8334e7c9b0208c3efe4bb878581e85f0cd9343c3d4b8099d9d5553"
+    },
+    {
+      "name": "strict_json",
+      "sha256": "8de601392b6253e43310b9fa45da088262808d973e87ea463c0fb76b6cd23448"
+    },
+    {
+      "name": "opened",
+      "sha256": "73d0c7e1ae4383f3d40f2211a46d101bc4580085c2b6e813d402fd6f255590a7"
+    },
+    {
+      "name": "close",
+      "sha256": "775b21ee8b17391a5b9b03ad6c6187869be0d0491466fd6e4e8708750cf00bb8"
+    },
+    {
+      "name": "read_fixed",
+      "sha256": "4bdf28f62e3a18bf7130bda6f988d6f59365ba500cc69b85e87e5e2bf5313cad"
+    },
+    {
+      "name": "identity_shape",
+      "sha256": "51ec7b05984f66be3d1a179b30419504fcd011e8da43d2a6f84d180b3363b410"
+    },
+    {
+      "name": "project_identity",
+      "sha256": "d4ce8548f3b588be7b58db6b939b20369dd6cc48935372a8ef1790a19e4e3fd2"
+    },
+    {
+      "name": "difference_fields",
+      "sha256": "4b3952662642dc69eca8ba79d29a858bf1ac74db82d1efce62ddff188127e158"
+    },
+    {
+      "name": "same_old_init",
+      "sha256": "fbd58b54725a3a2811f7fa278a63a4b00b7d77c0488e13203643c8328acd599c"
+    },
+    {
+      "name": "safe_error",
+      "sha256": "1442227d7ef552a87f77528828cafaa92ad9eada66abd9b8df21b84553e2ad21"
+    },
+    {
+      "name": "controls",
+      "sha256": "896a00a6bec73b90c894edd075ac7701bf78ed745fc759400613081eeab5f8b0"
+    },
+    {
+      "name": "read_proc_leaf",
+      "sha256": "e0a770e2a05b8fd153ae73bc27c70296c323e622be3b0a623e8fab7a01944c80"
+    },
+    {
+      "name": "read_boot",
+      "sha256": "697993f3460ce3b26af8bfce9e7debfd91bee69b847691c831ca73a17a97fef0"
+    },
+    {
+      "name": "parse_pid_words",
+      "sha256": "cc79fccf3f8b873368fd5c4f3a1bad491febec2973925e0c815699c40327598a"
+    },
+    {
+      "name": "join_children",
+      "sha256": "04f5508a0ec438ecda42cb0bf2bbe738aaba19fd3a1f00a3c9a0b6cc5f5e4eee"
+    },
+    {
+      "name": "children_sample",
+      "sha256": "f0530e86f14b3f45f55e59940a582db6055b3a9e42ff5e290bab3b63589051f6"
+    },
+    {
+      "name": "require_pidfd_live",
+      "sha256": "c1e7d79b46752abde9b21610642667587f6896786db08e57791d9b9dfd69d016"
+    },
+    {
+      "name": "qualify_children",
+      "sha256": "5a531e6185cf340d16f1ad9a0bd94ea24eff5346b97a2f9634a8a7cdec2434a8"
+    },
+    {
+      "name": "host_owner_controls",
+      "sha256": "c17b3c35db09a2ac159605acc30edd3afa1d8080c9cf58025a20784d21abb858"
+    }
+  ],
+  "read_budget_change": {
+    "from": 8,
+    "to": 15
+  },
+  "new_control_count": 13,
+  "total_controls_expected": 33,
+  "source_static_checks": {
+    "one_sendall": true,
+    "only_status_request": true,
+    "no_subprocess": true,
+    "no_epoch_discovery": true,
+    "python_not_executed": true
+  }
+}

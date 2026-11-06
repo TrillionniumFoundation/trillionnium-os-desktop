@@ -1,0 +1,739 @@
+--- a/compile_fixture.py
++++ b/compile_fixture.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Compile exact coordinator methods with explicit host I/O fixtures; never run Android."""
++"""Compile exact retirement sources and host controls, leave the full Wayland check to its separate gate; never run Android."""
+ import ctypes
+ import datetime
+ import errno
+@@ -19,7 +19,7 @@
+ import time
+ import tomllib
+ 
+-ROOT = Path("/home/alex/work/pocket4-composer-direct-registration-transaction-host-02-20261106")
++ROOT = Path("/home/alex/work/p4-retirement-ack-host01-20261106")
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+@@ -30,13 +30,18 @@
+ TOOLCHAIN = '1.93.0'
+ OBSERVATION = '60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb'
+ PARENT_MANIFEST_SHA = '88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701'
+-CANDIDATE_MANIFEST_SHA = '3e9992c984a2eadd817b4ebde4f1643070f6c1c9aee3b236bf885c63b70f05e2'
++CANDIDATE_MANIFEST_SHA = "3f2320687f074d48b19bc5284e6ba665a6cfaeb7adab9d59f519de5f3c96d2f4"
+ CONTROL_PATH = 'graphics/droidloom-composer-service/src/control.rs'
+-CONTROL_PIN = {"bytes":42483,"sha256":"7375c45596193c3458d9dcbd3b14c41f87930fbece3bae5e7bf2800934676273"}
+-FIXTURE_PINS = {"fixture-lib.rs":{"bytes":9274,"sha256":"84659a797076f73904e7437916f3a885902f06ae87282716c8142b51464df60f"},"transaction_tests.rs":{"bytes":23472,"sha256":"c87d314841ac50f00943ae9181505755e8f262f538144e6979a9b63e15ecf298"},"fixture-Cargo.toml":{"bytes":574,"sha256":"49dad84ffccc546f8c4889b87c85ff68143376d7ebebcf92be08259a4296da97"}}
+-TESTS = ["control::transaction_regressions::complete_direct_bind_commits_exact_registry_and_endpoints","control::transaction_regressions::complete_bound_reuse_performs_no_new_backend_calls","control::transaction_regressions::bound_reuse_rejects_different_package_or_android_display","control::transaction_regressions::pending_direct_marker_is_visible_before_denial_register","control::transaction_regressions::sink_bind_after_effect_error_rolls_back_exact_owned_object","control::transaction_regressions::composer_bind_after_effect_error_rolls_back_both_endpoints","control::transaction_regressions::real_registry_duplicate_failure_preserves_foreign_registration","control::transaction_regressions::denial_cleanup_error_preserves_primary_and_pending_progress","control::transaction_regressions::composer_cleanup_retry_skips_already_destroyed_denial_channel","control::transaction_regressions::repeated_composer_cleanup_error_keeps_success_checkpoint","control::transaction_regressions::activation_error_keeps_complete_bound_and_allows_reuse","control::transaction_regressions::reserved_without_endpoint_calls_cancels_without_backend_cleanup","control::transaction_regressions::composer_stage_after_effect_error_cleans_only_invoked_endpoint","control::transaction_regressions::composer_stage_error_without_effect_does_not_infer_absence_from_error","control::transaction_regressions::denial_register_after_effect_error_cleans_both_owned_endpoints","control::transaction_regressions::denial_register_error_missing_local_channel_stays_unresolved","control::transaction_regressions::configure_timeout_preserves_cleanup_error_and_explicit_retirement","control::transaction_regressions::rollback_refuses_complete_bound_registration","control::transaction_regressions::rollback_refuses_changed_reservation_identity_before_backend_calls","control::transaction_regressions::retirement_rejects_progress_for_another_display","control::transaction_regressions::retired_object_with_residual_mapping_is_not_accepted_as_clean","control::transaction_regressions::backend_calls_hold_operation_gate_but_never_state_mutex","control::transaction_regressions::invalid_task_identity_does_not_allocate_or_call_backends","control::transaction_regressions::completed_retirement_is_idempotent_without_repeating_backend_calls","control::transaction_regressions::after_destroy_error_is_not_promoted_to_a_success_checkpoint","control::transaction_regressions::endpoint_call_record_is_required_for_bound_reuse","control::transaction_regressions::removal_checkpoint_cannot_be_reversed"]
+-PATH_PACKAGES = {"droidloom-composer":"graphics/droidloom-composer","droidloom-task-control":"graphics/droidloom-task-control","droidloom-denial-protocol":"graphics/droidloom-denial-protocol","droidloom-denial-ipc":"graphics/droidloom-denial-ipc","droidloom-transport":"graphics/droidloom-transport"}
+-FIXTURE_NAME = 'pocket4-direct-registration-transaction-controls'
++PROVIDER_PATH = 'graphics/droidloom-composer-aidl/src/denial.rs'
++ENGINE_PATH = 'graphics/droidloom-wayland/src/retirement.rs'
++SOURCE_PINS = {"candidate-protocol.rs":{"path":"graphics/droidloom-denial-protocol/src/lib.rs","bytes":105464,"sha256":"6c7f8df133f2a9e55bd375da4b39dcba5b00d0c4c3ba6531a6b8be329ebce41c"},"candidate-endpoint.rs":{"path":"graphics/droidloom-denial-endpoint/src/lib.rs","bytes":63752,"sha256":"062b65857160eb6e3aeba2a78c4ce3d8503c02572f24353f8c944d950e52308c"},"candidate-engine-retirement.rs":{"path":"graphics/droidloom-wayland/src/retirement.rs","bytes":11118,"sha256":"383f4c6f7490c8568f1853af6e9449fdb35bdb088348de4a9856d75f97306873"},"candidate-wayland-main.rs":{"path":"graphics/droidloom-wayland/src/main.rs","bytes":110131,"sha256":"0f56264e971db9f246d8db34d7fd5de157fd389a97bfb34492a6f53376d27459"},"candidate-wayland-layers.rs":{"path":"graphics/droidloom-wayland/src/layers.rs","bytes":35990,"sha256":"d0a81ce5339c5020496e9b73e007d52ee206449827269b272e4ef6ef43df5ecc"},"candidate-provider.rs":{"path":"graphics/droidloom-composer-aidl/src/denial.rs","bytes":50513,"sha256":"d6f13720da4267ff46f369617faecbb8c6446eca2c624e381c1ff51ddaebbf09"},"candidate-core-denial.rs":{"path":"graphics/droidloom-composer/src/denial.rs","bytes":25541,"sha256":"ed0080cd33a3a4fa67b3a0c2e95bc274ab38e992ec073ab01d87b910bf2db3c8"},"candidate-composer-main.rs":{"path":"graphics/droidloom-composer-service/src/main.rs","bytes":19202,"sha256":"567c60fd293f35e2e0957db6f38bc967cc0c3fa90354b98491d461a7decdb4ce"},"candidate-control.rs":{"path":"graphics/droidloom-composer-service/src/control.rs","bytes":42491,"sha256":"d3d9f4b763a6e80b6549119e42b4d6c3c6ab7368359f3cc71d2e090f05a881ca"}}
++FIXTURE_PINS = {"fixture-lib.rs":{"bytes":15599,"sha256":"1eaa3f082edf591062286e2c4ca65968cf5a9c5d107c8452187e21fcf97b1b23"},"fixture-Cargo.toml":{"bytes":937,"sha256":"f7bff80d8487493dfb69eab33998eb0dad0159d88ec49eac68676bc0c891e26b"},"transaction_tests.rs":{"bytes":23472,"sha256":"c87d314841ac50f00943ae9181505755e8f262f538144e6979a9b63e15ecf298"},"provider_tests.rs":{"bytes":22982,"sha256":"fc6b354d704683c0547a4465efbfc8a8b977a311b73e764efd80d086438d9502"},"handshake_under_test.rs":{"bytes":2764,"sha256":"6d338b84adc14ea8cef16f3d5d4ae3b776b10510fe2a57d0b4036481fbc96201"}}
++FIXTURE_STATIC_PATHS = {'Cargo.toml','src/lib.rs','src/control_under_test.rs','src/provider_under_test.rs','src/engine_retirement.rs','src/handshake_under_test.rs','src/denial_protocol_contract.rs','src/denial_endpoint_contract.rs'}
++TARGET_TESTS = {"pocket4_denial_retirement_ack_controls":["control::transaction_regressions::complete_direct_bind_commits_exact_registry_and_endpoints","control::transaction_regressions::complete_bound_reuse_performs_no_new_backend_calls","control::transaction_regressions::bound_reuse_rejects_different_package_or_android_display","control::transaction_regressions::pending_direct_marker_is_visible_before_denial_register","control::transaction_regressions::sink_bind_after_effect_error_rolls_back_exact_owned_object","control::transaction_regressions::composer_bind_after_effect_error_rolls_back_both_endpoints","control::transaction_regressions::real_registry_duplicate_failure_preserves_foreign_registration","control::transaction_regressions::denial_cleanup_error_preserves_primary_and_pending_progress","control::transaction_regressions::composer_cleanup_retry_skips_already_destroyed_denial_channel","control::transaction_regressions::repeated_composer_cleanup_error_keeps_success_checkpoint","control::transaction_regressions::activation_error_keeps_complete_bound_and_allows_reuse","control::transaction_regressions::reserved_without_endpoint_calls_cancels_without_backend_cleanup","control::transaction_regressions::composer_stage_after_effect_error_cleans_only_invoked_endpoint","control::transaction_regressions::composer_stage_error_without_effect_does_not_infer_absence_from_error","control::transaction_regressions::denial_register_after_effect_error_cleans_both_owned_endpoints","control::transaction_regressions::denial_register_error_missing_local_channel_stays_unresolved","control::transaction_regressions::configure_timeout_preserves_cleanup_error_and_explicit_retirement","control::transaction_regressions::rollback_refuses_complete_bound_registration","control::transaction_regressions::rollback_refuses_changed_reservation_identity_before_backend_calls","control::transaction_regressions::retirement_rejects_progress_for_another_display","control::transaction_regressions::retired_object_with_residual_mapping_is_not_accepted_as_clean","control::transaction_regressions::backend_calls_hold_operation_gate_but_never_state_mutex","control::transaction_regressions::invalid_task_identity_does_not_allocate_or_call_backends","control::transaction_regressions::completed_retirement_is_idempotent_without_repeating_backend_calls","control::transaction_regressions::after_destroy_error_is_not_promoted_to_a_success_checkpoint","control::transaction_regressions::endpoint_call_record_is_required_for_bound_reuse","control::transaction_regressions::removal_checkpoint_cannot_be_reversed","real_provider::tests::android_display_extent_remains_the_hotplug_size","real_provider::tests::android_display_extent_rejects_empty_configures","real_provider::retirement_provider_tests::duplicate_display_cannot_destroy_another_real_provider_owner","real_provider::retirement_provider_tests::duplicate_object_on_another_display_has_no_claim_or_remote_effect","real_provider::retirement_provider_tests::local_timeline_creation_failure_has_exact_no_send_cleanup_proof","real_provider::retirement_provider_tests::local_descriptor_export_failure_retains_primary_until_exact_cleanup","real_provider::retirement_provider_tests::create_send_failure_does_not_erase_the_potential_remote_owner","real_provider::retirement_provider_tests::bind_timelines_send_failure_retains_partial_state_without_legacy_destroy","real_provider::retirement_provider_tests::retirement_waits_for_the_same_socket_object_and_nonce_receipt","real_provider::retirement_provider_tests::old_peer_cannot_enter_registration_or_gain_a_legacy_destroy_fallback","real_provider::retirement_provider_tests::wrong_receipt_object_or_nonce_cannot_complete_the_pending_owner","real_provider::retirement_provider_tests::foreign_socket_instance_is_rejected_before_pending_state_changes","real_provider::retirement_provider_tests::unrequested_receipt_cannot_retire_a_live_channel","real_provider::retirement_provider_tests::nonce_exhaustion_does_not_wrap_or_send_a_replayed_request","real_provider::retirement_provider_tests::timeout_retains_resources_and_late_ack_finishes_without_resending","real_provider::retirement_provider_tests::disconnect_wakes_waiter_without_turning_eof_into_a_receipt","real_provider::retirement_provider_tests::failed_retire_send_preserves_attempt_and_primary_without_resending","real_provider::retirement_provider_tests::receipt_with_accepted_frames_outstanding_is_rejected_without_erasure","real_provider::retirement_provider_tests::local_reservation_survives_receipt_until_real_cancel_path_wakes_waiter","real_provider::retirement_provider_tests::duplicate_receipt_does_not_upgrade_or_erase_reserved_local_resources","real_provider::retirement_provider_tests::retirement_rejects_new_binding_activation_target_and_layer_work","real_provider::retirement_provider_tests::partial_registration_rejects_live_work_until_explicit_retirement","real_provider::retirement_provider_tests::late_target_metadata_does_not_replace_retirement_resource_accounting","real_provider::retirement_provider_tests::late_configure_cannot_send_after_retire_or_publish_new_session_state","real_provider::retirement_provider_tests::same_object_later_registration_rejects_previous_retirement_receipt","real_provider::retirement_provider_tests::real_core_release_path_drains_a_retiring_accepted_frame_before_receipt","engine_retirement::tests::engine_drain_and_exact_callback_both_precede_completion","engine_retirement::tests::engine_live_object_blocks_callback_without_consuming_it","engine_retirement::tests::engine_wrong_object_or_nonce_cannot_complete_owned_request","engine_retirement::tests::engine_wrong_callback_preserves_original_barrier","engine_retirement::tests::engine_disconnected_callback_produces_no_completion","engine_retirement::tests::engine_old_peer_callback_cannot_complete_identical_new_tuple","engine_retirement::tests::engine_duplicate_callback_cannot_retry_failed_ack_attempt","engine_retirement::tests::engine_finish_without_callback_is_rejected","engine_retirement::tests::engine_duplicate_object_cannot_replace_original_nonce","engine_retirement::tests::engine_replayed_callback_after_finish_has_no_owner","engine_retirement::tests::engine_bound_limits_reject_capacity_and_generation_wrap","engine_retirement::tests::engine_invalid_identity_and_disconnected_requests_do_not_allocate","handshake_under_test::tests::current_minor_and_capability_are_both_required","handshake_under_test::tests::activation_is_independent_and_does_not_replace_retirement","handshake_under_test::tests::incomplete_base_capabilities_are_rejected","handshake_under_test::tests::wrong_major_or_unexpected_message_cannot_enable_retirement"],"denial_protocol_contract":["tests::retirement_records_round_trip_exact_object_nonce_and_minor","tests::retirement_rejects_zero_object_and_zero_nonce_in_both_directions","tests::retirement_rejects_legacy_header_version_even_with_known_new_opcode","tests::retirement_rejects_descriptors_direction_and_payload_extensions","tests::retirement_capability_requires_selected_minor_five","tests::retirement_advertisement_keeps_legacy_hello_and_destroy_headers","tests::activation_does_not_raise_the_wire_version_of_legacy_handshakes","tests::android_control_messages_round_trip","tests::buffer_registration_names_exact_plane_descriptor_roles","tests::host_render_target_registration_names_exact_plane_descriptor_roles","tests::timeline_descriptors_are_shared_once_in_fixed_order","tests::steady_state_present_is_descriptor_free","tests::denial_task_state_round_trips","tests::format_feedback_and_all_input_variants_round_trip","tests::error_message_may_be_connection_or_task_scoped","tests::framing_rejects_mutation_and_direction_confusion","tests::malformed_identity_and_unbounded_damage_fail_closed","tests::trailing_payload_and_unknown_header_bits_are_fatal","tests::task_receiver_caches_import_and_releases_only_after_signal","tests::task_receiver_rejects_unbound_and_stale_configure_presents","tests::superseded_configure_ack_is_coalesced_without_acknowledging_latest","tests::superseded_present_is_released_without_reviving_a_retired_buffer","tests::task_receiver_rejects_point_regression_and_release_mismatch"],"denial_endpoint_contract":["tests::listener_authenticates_exact_kernel_peer_before_protocol","tests::exact_peer_policy_rejects_every_identity_mismatch","tests::development_pid_wildcard_keeps_uid_and_gid_exact","tests::hello_selects_required_v1_capabilities","tests::activation_requires_mutual_support_and_a_bound_live_task","tests::every_android_task_becomes_an_independent_native_action","tests::task_messages_before_hello_fail_closed","retirement_tests::retirement_requires_mutual_capability_before_request","retirement_tests::retirement_receipt_requires_the_real_engine_completion_call","retirement_tests::retirement_frame_release_alone_does_not_confirm_engine_removal","retirement_tests::retirement_engine_callback_with_inflight_frame_is_rejected","retirement_tests::retirement_foreign_object_and_nonce_preserve_pending_owner","retirement_tests::retirement_duplicate_and_old_nonce_requests_cannot_reopen_a_completed_retirement","retirement_tests::retirement_absent_partial_create_still_requires_engine_absence_confirmation","retirement_tests::retirement_blocks_new_work_without_consuming_its_pending_tuple","retirement_tests::retirement_disconnect_during_receipt_keeps_failed_attempt_and_prevents_resend","retirement_tests::retirement_duplicate_completion_never_acknowledges_a_later_object","retirement_tests::retirement_nonce_exhaustion_never_wraps_to_a_replayed_request","retirement_tests::retirement_capability_cannot_downgrade_to_legacy_destroy","retirement_tests::retirement_pending_absence_and_live_creation_share_one_capacity_bound"]}
++TESTS = [target+'::'+name for target,names in TARGET_TESTS.items() for name in names]
++PATH_PACKAGES = {"droidloom-composer":"graphics/droidloom-composer","droidloom-task-control":"graphics/droidloom-task-control","droidloom-denial-protocol":"graphics/droidloom-denial-protocol","droidloom-denial-ipc":"graphics/droidloom-denial-ipc","droidloom-transport":"graphics/droidloom-transport","droidloom-syncobj":"graphics/droidloom-syncobj","droidloom-cpu-placement":"runtime/droidloom-cpu-placement"}
++FIXTURE_NAME = 'pocket4-denial-retirement-ack-controls'
++SOURCE_MAP = {}
+ DEADLINE = None
+ CHILD_REAPER = None
+ OBSERVED_SIGNALS = []
+@@ -894,128 +899,233 @@
+ 
+ 
+ 
++def apply_candidate_sources(expected, candidate_expected, copied_before):
++    require(len(expected) == 499 and len(candidate_expected) == 500,
++            'original/candidate file counts differ')
++    additions = set(candidate_expected)-set(expected)
++    differences = {path for path in expected if expected[path] != candidate_expected.get(path)}
++    require(additions == {ENGINE_PATH} and len(differences) == 8 and
++            differences | additions == {row['path'] for row in SOURCE_PINS.values()} and
++            set(expected) <= set(candidate_expected),
++            'candidate differs outside eight replacements and one engine ledger')
++    for name, wanted in SOURCE_PINS.items():
++        path = wanted['path']
++        row = candidate_expected[path]
++        require(row['kind'] == 'file' and row['mode'] == 0o664 and
++                row['bytes'] == wanted['bytes'] and row['sha256'] == wanted['sha256'],
++                'candidate map pin differs: '+path)
++        data, actual = held(HERE/name, 131072)
++        require(actual['bytes'] == wanted['bytes'] and actual['sha256'] == wanted['sha256'],
++                'candidate payload changed: '+name)
++        target = COPIED/path
++        real_directory(target.parent)
++        if path in expected:
++            require(hash_held(target) == copied_before[path], 'copied baseline changed: '+path)
++            flags = os.O_WRONLY|os.O_TRUNC|os.O_CLOEXEC|os.O_NOFOLLOW
++        else:
++            flags = os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_CLOEXEC|os.O_NOFOLLOW
++        fd = os.open(target,flags,0o600)
++        with os.fdopen(fd,'wb') as stream:
++            require(stream.write(data) == len(data), 'short owned source write')
++            stream.flush()
++            os.fsync(stream.fileno())
++        os.chmod(target,0o664,follow_symlinks=False)
++    observed = regular_tree(COPIED)
++    portable(observed,candidate_expected)
++    return observed
++
+ def fixture_inputs():
+-    result = {}
++    inputs = {}
+     for name, expected in FIXTURE_PINS.items():
+-        raw, row = held(HERE/name, 131072)
++        raw, row = held(HERE/name,131072)
+         require(row['bytes'] == expected['bytes'] and row['sha256'] == expected['sha256'],
+-                'fixed fixture source differs: '+name)
+-        result[name] = raw
++                'fixed fixture source changed: '+name)
++        inputs[name] = raw
+     require(not FIXTURE.exists() and not FIXTURE.is_symlink(), 'fixture root already exists')
+     FIXTURE.mkdir(mode=0o700)
+     (FIXTURE/'src').mkdir(mode=0o700)
+-    write_new(FIXTURE/'Cargo.toml', result['fixture-Cargo.toml'])
+-    write_new(FIXTURE/'src/lib.rs', result['fixture-lib.rs'])
+-    production, pin = held(COPIED/CONTROL_PATH, 131072)
+-    require(pin['bytes'] == CONTROL_PIN['bytes'] and pin['sha256'] == CONTROL_PIN['sha256'],
+-            'copied production coordinator differs before fixture composition')
+-    combined = production + result['transaction_tests.rs']
+-    write_new(FIXTURE/'src/control_under_test.rs', combined)
+-    require(combined[:len(production)] == production and
+-            combined[len(production):] == result['transaction_tests.rs'],
+-            'fixture does not preserve the full exact production prefix')
+-    return {'production_bytes': len(production), 'production_sha256': sha(production),
+-            'tests_bytes': len(result['transaction_tests.rs']),
+-            'tests_sha256': sha(result['transaction_tests.rs']),
+-            'combined_bytes': len(combined), 'combined_sha256': sha(combined),
+-            'production_method_body_substitution': False,
+-            'provider_substitution_scope': ['DenialPresentationSink', 'ComposerLifecycle'],
+-            'Android_Binder_adapters_compiled': False}
+-
++    write_new(FIXTURE/'Cargo.toml',inputs['fixture-Cargo.toml'])
++    write_new(FIXTURE/'src/lib.rs',inputs['fixture-lib.rs'])
++    compositions = []
++    for name, source, tests, target in [
++        ('coordinator',CONTROL_PATH,'transaction_tests.rs','src/control_under_test.rs'),
++        ('provider',PROVIDER_PATH,'provider_tests.rs','src/provider_under_test.rs'),
++    ]:
++        wanted = next(row for row in SOURCE_PINS.values() if row['path'] == source)
++        production, actual = held(COPIED/source,131072)
++        require(actual['bytes'] == wanted['bytes'] and actual['sha256'] == wanted['sha256'],
++                'full production fixture prefix changed')
++        combined = production+inputs[tests]
++        write_new(FIXTURE/target,combined)
++        require(combined[:len(production)] == production and combined[len(production):] == inputs[tests],
++                'full production source prefix was substituted')
++        compositions.append({'name':name,'source':source,'production_bytes':len(production),
++            'production_sha256':sha(production),'tests_bytes':len(inputs[tests]),
++            'tests_sha256':sha(inputs[tests]),'combined_bytes':len(combined),
++            'combined_sha256':sha(combined),'method_body_substitution':False})
++    ledger, _ = held(COPIED/ENGINE_PATH,131072)
++    require(sha(ledger) == SOURCE_PINS['candidate-engine-retirement.rs']['sha256'],
++            'production engine ledger changed')
++    write_new(FIXTURE/'src/engine_retirement.rs',ledger)
++    main, _ = held(COPIED/'graphics/droidloom-composer-service/src/main.rs',131072)
++    begin = b'fn qualified_capabilities('
++    end = b'\nfn event_loop('
++    require(main.count(begin) == main.count(end) == 1, 'handshake predicate boundaries changed')
++    predicate = main.split(begin,1)[1].split(end,1)[0]
++    predicate = begin+predicate.rstrip()+b'\n'
++    require(inputs['handshake_under_test.rs'].count(predicate) == 1,
++            'handshake fixture is not exact production predicate bytes')
++    write_new(FIXTURE/'src/handshake_under_test.rs',inputs['handshake_under_test.rs'])
++    protocol_copies = []
++    for source,target in [
++        ('graphics/droidloom-denial-protocol/src/lib.rs','src/denial_protocol_contract.rs'),
++        ('graphics/droidloom-denial-endpoint/src/lib.rs','src/denial_endpoint_contract.rs'),
++    ]:
++        raw, actual = held(COPIED/source,131072)
++        wanted = next(row for row in SOURCE_PINS.values() if row['path'] == source)
++        require(actual['bytes'] == wanted['bytes'] and actual['sha256'] == wanted['sha256'],
++                'complete protocol/endpoint source changed before test composition')
++        write_new(FIXTURE/target,raw)
++        protocol_copies.append({'source':source,'test_source':target,'bytes':len(raw),'sha256':sha(raw),
++                                'body_substitution':False})
++    return {'full_production_compositions':compositions,'complete_protocol_endpoint_copies':protocol_copies,
++            'engine_ledger':{'bytes':len(ledger),'sha256':sha(ledger)},
++            'handshake_predicate':{'bytes':len(predicate),'sha256':sha(predicate)},
++            'coordinator_I_O_seams':['DenialPresentationSink','ComposerLifecycle'],
++            'provider_host_seams':['Binder descriptor wrapper','DRM timeline/descriptor API','GLES rejects','frame tracing disabled'],
++            'real_provider_methods':True,'real_Core_binding':True,'real_ProtocolSocket_socketpair':True,
++            'DRM_GPU_Binder_ABI_qualified':False}
+ 
+-def selected_dependencies(metadata, registry, original_lock, fixture_lock):
+-    require(metadata.get('workspace_root') == str(FIXTURE) and
++def selected_dependencies(metadata, registry, original_lock, selected_lock, phase, cache):
++    require(phase == 'fixture' and
+             metadata.get('target_directory') == str(OUT/'cargo-target') and
+             type(metadata.get('packages')) is list and 0 < len(metadata['packages']) <= 64,
+-            'fixture metadata root/target/package bound differs')
++            'metadata target/package bound differs')
+     entries = metadata['packages']
+     by_id = {p['id']:p for p in entries}
+     require(len(by_id) == len(entries), 'duplicate metadata package identity')
++    nodes = {node['id']:node for node in metadata.get('resolve',{}).get('nodes',[])}
++    require(len(nodes) == len(metadata.get('resolve',{}).get('nodes',[])) and set(nodes) == set(by_id),
++            'resolver package membership differs')
++    require(metadata.get('workspace_root') == str(FIXTURE), 'fixture workspace root differs')
+     expected_paths = {name:str(COPIED/relative/'Cargo.toml') for name,relative in PATH_PACKAGES.items()}
+     expected_paths[FIXTURE_NAME] = str(FIXTURE/'Cargo.toml')
+     paths = [p for p in entries if p['source'] is None]
+     require(len(paths) == len(expected_paths) and
+             {p['name']:p['manifest_path'] for p in paths} == expected_paths,
+-            'path package closure differs from real five crates and explicit fixture')
+-    fixture = [p for p in paths if p['name'] == FIXTURE_NAME]
+-    require(len(fixture) == 1 and fixture[0]['version'] == '0.0.0' and
+-            metadata.get('workspace_members') == [fixture[0]['id']] and
+-            metadata.get('resolve',{}).get('root') == fixture[0]['id'] and
+-            {node['id'] for node in metadata['resolve']['nodes']} == set(by_id),
+-            'fixture resolver or workspace membership differs')
++            'fixture path package closure differs')
++    roots = [p for p in paths if p['name'] == FIXTURE_NAME and p['version'] == '0.0.0']
++    require(len(roots) == 1 and metadata.get('workspace_members') == [roots[0]['id']] and
++            metadata['resolve'].get('root') == roots[0]['id'], 'fixture resolver root differs')
++    selected_ids = set(by_id)
+     def lock_rows(value):
+         result = {}
+         for row in value['package']:
+-            key = (row['name'], row['version'])
+-            require(key not in result, 'ambiguous original/new lock package')
++            key = (row['name'],row['version'])
++            require(key not in result, 'ambiguous package version in immutable lock')
+             result[key] = row
+         return result
+-    old = lock_rows(original_lock)
+-    new = lock_rows(fixture_lock)
+-    keys = {(p['name'],p['version']) for p in entries}
+-    require(set(new) == keys, 'new fixture lock and selected metadata package set differ')
++    old, new = lock_rows(original_lock), lock_rows(selected_lock)
++    require(set(new) == {(p['name'],p['version']) for p in entries},
++            'fixture lock and full metadata packages differ')
+     authority = {(r['name'],r['version']):r for r in registry['packages']}
+     require(len(authority) == len(registry['packages']) == 45,
+-            'duplicate or incomplete qualified registry authority')
+-    descriptions = []
+-    collected = {}
+-    for p in entries:
++            'original actual registry authority is incomplete')
++    source_roots = {str(Path(r['source_directory']).parent) for r in registry['packages']}
++    archive_roots = {str(Path(r['expected_archive_path']).parent) for r in registry['packages']}
++    require(len(source_roots) == len(archive_roots) == 1, 'multiple registry namespaces rejected')
++    source_root, archive_root = Path(next(iter(source_roots))), Path(next(iter(archive_roots)))
++    require(source_root.parent == CARGO_HOME/'registry/src' and
++            archive_root.parent == CARGO_HOME/'registry/cache' and
++            source_root.name == archive_root.name and '..' not in source_root.parts,
++            'actual registry roots are not paired fixed Cargo cache namespaces')
++    descriptions, collected = [], {}
++    for package_id in sorted(selected_ids):
++        p = by_id[package_id]
+         key = (p['name'],p['version'])
++        require(re.fullmatch(r'[A-Za-z0-9_-]+',key[0]) is not None and
++                re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9_.+-]+)?',key[1]) is not None,
++                'noncanonical locked package component')
++        require(key in new, 'selected package missing from held lock')
+         locked = new[key]
+         if p['source'] is None:
+             require(locked.get('source') is None, 'path package acquired a registry source')
+-            if p['name'] != FIXTURE_NAME:
+-                require(key in old and old[key].get('source') is None,
+-                        'copied path package is absent from the immutable original lock')
++            if p['name'] == FIXTURE_NAME:
++                require(phase == 'fixture' and p['manifest_path'] == str(FIXTURE/'Cargo.toml'),
++                        'fixture identity escaped its package')
++                kind = 'pinned-fixture'
++            else:
++                require(key in old and old[key].get('source') is None, 'path package is not in original lock')
++                manifest = Path(p['manifest_path'])
++                require(manifest.is_relative_to(COPIED) and '..' not in manifest.parts and
++                        str(manifest.relative_to(COPIED)) in SOURCE_MAP and
++                        SOURCE_MAP[str(manifest.relative_to(COPIED))]['kind'] == 'file',
++                        'path package manifest escaped exact copied source')
++                require(hash_held(manifest)['sha256'] == SOURCE_MAP[str(manifest.relative_to(COPIED))]['sha256'],
++                        'path package manifest changed before compilation')
++                kind = 'pinned-source'
+             descriptions.append({'id':p['id'],'name':p['name'],'version':p['version'],
+-                                 'kind':'pinned-fixture' if p['name']==FIXTURE_NAME else 'pinned-source',
+-                                 'manifest':p['manifest_path']})
++                                 'kind':kind,'manifest':p['manifest_path']})
+             continue
+         require(key in old and p['source'] == locked.get('source') ==
+                 old[key].get('source') == 'registry+https://github.com/rust-lang/crates.io-index' and
+                 locked.get('checksum') == old[key].get('checksum') and
+-                re.fullmatch(r'[0-9a-f]{64}', locked.get('checksum','')) is not None,
+-                'offline resolver selected a package outside the immutable original lock')
++                re.fullmatch(r'[0-9a-f]{64}',locked.get('checksum','')) is not None,
++                'resolver selected a registry package outside immutable original lock')
+         observed = authority.get(key)
+-        require(observed is not None and
+-                observed['expected_lock_checksum'] == locked['checksum'] and
+-                observed['comparison']['archive_matches_lock'] is True and
+-                observed['comparison']['every_archive_file_matches_held_extracted_source'] is True,
+-                'selected registry package lacks actual archive/source authority')
+-        directory = Path(observed['source_directory'])
+-        archive = Path(observed['expected_archive_path'])
+-        require(directory.is_relative_to(CARGO_HOME/'registry/src') and
+-                archive.is_relative_to(CARGO_HOME/'registry/cache') and
+-                p['manifest_path'] == str(directory/'Cargo.toml') and
+-                '..' not in directory.parts and '..' not in archive.parts,
+-                'selected registry source escaped its exact authority')
++        directory = source_root/(key[0]+'-'+key[1])
++        archive = archive_root/(key[0]+'-'+key[1]+'.crate')
++        require(p['manifest_path'] == str(directory/'Cargo.toml'), 'registry manifest escaped exact locked path')
++        if observed is not None:
++            require(observed['source_directory'] == str(directory) and
++                    observed['expected_archive_path'] == str(archive) and
++                    observed['expected_lock_checksum'] == locked['checksum'] and
++                    observed['comparison']['archive_matches_lock'] is True and
++                    observed['comparison']['every_archive_file_matches_held_extracted_source'] is True,
++                    'selected original-45 package lost its prior actual archive/source authority')
+         real_directory(directory)
+         real_directory(archive.parent)
+-        comparison, rows, archive_pin = qualify_cached_archive(
+-            archive, directory, key[0], key[1], locked['checksum'])
+-        require(archive_pin['sha256'] == observed['comparison']['archive']['sha256'],
+-                'selected cached archive changed from actual authority')
++        if key in cache:
++            saved = cache[key]
++            require(saved['checksum'] == locked['checksum'] and hash_held(archive) == saved['archive'],
++                    'shared dependency archive changed between phases')
++            require(all(hash_held(Path(path)) == row for path,row in saved['files'].items()),
++                    'shared dependency sources changed between phases')
++            comparison, rows, archive_pin = saved['comparison'], saved['rows'], saved['archive']
++        else:
++            comparison, rows, archive_pin = qualify_cached_archive(
++                archive,directory,key[0],key[1],locked['checksum'])
++            files = {str(archive):archive_pin,**{row['path']:row for row in rows.values()}}
++            cache[key] = {'checksum':locked['checksum'],'comparison':comparison,'rows':rows,
++                          'archive':archive_pin,'files':files}
++        if observed is not None:
++            require(archive_pin['sha256'] == observed['comparison']['archive']['sha256'],
++                    'existing actual archive bytes changed')
+         collected[str(archive)] = archive_pin
+         for row in rows.values():
+-            require(len(collected) < 16384, 'selected source closure exceeds file bound')
++            require(len(collected) < 16384, 'selected source closure exceeds explicit file bound')
+             collected[row['path']] = row
+-        manifest_raw, manifest_pin = held(directory/'Cargo.toml', 1024*1024)
++        manifest_raw, manifest_pin = held(directory/'Cargo.toml',1024*1024)
+         package = tomllib.loads(manifest_raw.decode())['package']
+         require(package['name'] == key[0] and package['version'] == key[1] and
+-                manifest_pin == rows['Cargo.toml'], 'selected cached manifest differs')
++                manifest_pin == rows['Cargo.toml'], 'cached package manifest differs')
+         descriptions.append({'id':p['id'],'name':p['name'],'version':p['version'],
+-                             'kind':'offline-registry','manifest':p['manifest_path'],
+-                             'archive':archive_pin,'package_checksum':locked['checksum'],
+-                             'archive_to_source':comparison['source_inventory']})
+-    return fixture[0]['id'], descriptions, collected
+-
++            'kind':'offline-registry','manifest':p['manifest_path'],'archive':archive_pin,
++            'package_checksum':locked['checksum'],'archive_to_source':comparison['source_inventory'],
++            'authority_kind':'prior-45-actual-rechecked' if observed is not None else 'additional-original-lock-archive-first-observed',
++            'prior_actual_archive_authority_present':observed is not None})
++    return roots[0]['id'],descriptions,collected
+ 
+-def qualify_fixture_compile(raw, fixture_id, packages, dependency_rows, source_rows, fixture_rows):
++def qualify_compile_records(raw, packages, dependency_rows, source_rows, fixture_rows, phase, root_id):
+     qualified = {p['manifest']:p for p in packages}
+     ids = {p['id'] for p in packages}
+-    observed = set()
+-    artifacts = []
+-    completed = []
++    observed, executables, completions = set(), {}, []
++    require(phase == 'fixture', 'only the explicit host fixture may be compiled by this request')
++    expected_tests = {
++        FIXTURE_NAME.replace('-','_'):('lib',FIXTURE/'src/lib.rs'),
++        'denial_protocol_contract':('test',FIXTURE/'src/denial_protocol_contract.rs'),
++        'denial_endpoint_contract':('test',FIXTURE/'src/denial_endpoint_contract.rs'),
++    }
+     for line in raw.decode().splitlines():
+         if not line.strip():
+             continue
+@@ -1025,69 +1135,70 @@
+             manifest = item.get('manifest_path')
+             require(manifest in qualified and item['package_id'] == qualified[manifest]['id'],
+                     'Cargo compiled an unqualified package')
+-            path = Path(item['target']['src_path'])
+-            row = dependency_rows.get(str(path))
+-            if row is None and path.is_relative_to(COPIED):
+-                row = source_rows.get(str(path.relative_to(COPIED)))
+-            if row is None and path.is_relative_to(FIXTURE):
+-                row = fixture_rows.get(str(path.relative_to(FIXTURE)))
+-            require(row is not None and hash_held(path) == row,
+-                    'actual compiled target was not in the prequalified source map')
+-            for filename in item['filenames']:
+-                require(Path(filename).is_relative_to(OUT/'cargo-target') and
+-                        '..' not in Path(filename).parts, 'compiled artifact escaped owned target')
++            source = Path(item['target']['src_path'])
++            row = dependency_rows.get(str(source))
++            if row is None and source.is_relative_to(COPIED):
++                row = source_rows.get(str(source.relative_to(COPIED)))
++            if row is None and source.is_relative_to(FIXTURE):
++                row = fixture_rows.get(str(source.relative_to(FIXTURE)))
++            require(row is not None and hash_held(source) == row, 'compiled target source was not prequalified')
++            require(all(Path(name).is_relative_to(OUT/'cargo-target') and '..' not in Path(name).parts
++                        for name in item['filenames']), 'compiled output escaped owned target')
+             observed.add(item['package_id'])
+-            if item['package_id'] == fixture_id and item.get('executable'):
+-                require(item['profile']['test'] is True and item['target']['kind'] == ['lib'] and
+-                        item['target']['name'] == FIXTURE_NAME.replace('-','_') and
+-                        item['target']['src_path'] == str(FIXTURE/'src/lib.rs'),
+-                        'fixture executable is not its exact library test target')
+-                artifacts.append(Path(item['executable']))
++            if item['package_id'] == root_id and item.get('executable'):
++                name = item['target']['name']
++                require(name in expected_tests and name not in executables, 'extra/duplicate fixture test executable')
++                kind, path = expected_tests[name]
++                require(item['profile']['test'] is True and item['target']['kind'] == [kind] and
++                        item['target']['src_path'] == str(path) and
++                        Path(item['executable']).is_relative_to(OUT/'cargo-target'),
++                        'test executable target does not match its exact production/source composition')
++                executables[name] = Path(item['executable'])
+         elif reason == 'build-script-executed':
+             require(item['package_id'] in ids and Path(item['out_dir']).is_relative_to(OUT/'cargo-target'),
+                     'unqualified build script or output directory')
+         elif reason == 'build-finished':
+-            completed.append(item.get('success'))
++            completions.append(item.get('success'))
+         elif reason != 'compiler-message':
+             raise RuntimeError('unexpected Cargo JSON record: '+str(reason))
+-    require(completed == [True] and observed and len(artifacts) == 1 and
+-            artifacts[0].is_relative_to(OUT/'cargo-target'), 'exact fixture compilation did not complete')
+-    return artifacts[0], sorted(observed)
+-
++    require(completions == [True] and observed, 'Cargo compilation did not finish successfully')
++    require(set(executables) == set(expected_tests), 'three exact real-source test executables were not produced')
++    return executables,sorted(observed)
+ 
+-def fixture_focused_test(binary, name, index, environment, records):
+-    path = OUT/('transaction-test-%02d.libtest' % index)
+-    fd = os.open(path, os.O_RDWR|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW|os.O_CLOEXEC, 0o600)
++def retirement_focused_test(binary, target, name, index, registered, environment, records):
++    tag = target+'-%03d' % index
++    path = OUT/(tag+'.libtest')
++    fd = os.open(path,os.O_RDWR|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW|os.O_CLOEXEC,0o600)
+     try:
+         before = os.fstat(fd)
+         require(stat.S_ISREG(before.st_mode) and before.st_nlink == 1 and
+-                before.st_uid == os.geteuid() and stat.S_IMODE(before.st_mode) == 0o600 and
+-                before.st_size == 0, 'fresh independent libtest record claim differs')
++                before.st_uid == os.geteuid() and stat.S_IMODE(before.st_mode) == 0o600 and before.st_size == 0,
++                'fresh held libtest receipt claim differs')
+         output = command([str(binary),'--exact',name,'--test-threads=1','--nocapture','--logfile',str(path)],
+-                         FIXTURE, environment, 'transaction-test-%02d' % index, records, 30).decode()
++                         FIXTURE,environment,tag,records,30).decode()
+         after = os.fstat(fd)
+         require((before.st_dev,before.st_ino,before.st_mode,before.st_uid,before.st_gid,before.st_nlink) ==
+                 (after.st_dev,after.st_ino,after.st_mode,after.st_uid,after.st_gid,after.st_nlink) and
+-                after.st_size <= 4096, 'held independent libtest record changed identity')
++                after.st_size <= 4096, 'independent libtest receipt identity differs')
+         raw = os.pread(fd,4097,0)
+         require(len(raw) == after.st_size and identity(after) == identity(os.fstat(fd)) == identity(path.lstat()),
+-                'held libtest content changed during full read')
+-        require(raw == ('ok '+name+'\n').encode(), 'independent libtest result is not exactly one success')
++                'held libtest receipt changed during complete read')
++        require(raw == ('ok '+name+'\n').encode(), 'independent libtest receipt is not one exact success')
+         summaries = [line for line in output.splitlines() if line.startswith('test result:')]
+-        pattern = r'test result: ok\. 1 passed; 0 failed; 0 ignored; 0 measured; 26 filtered out; finished in \d+(?:\.\d+)?s'
+-        require(len(TESTS) == 27 and len(summaries) == 1 and re.fullmatch(pattern,summaries[0]) is not None and
++        pattern = r'test result: ok\. 1 passed; 0 failed; 0 ignored; 0 measured; '+str(registered-1)+r' filtered out; finished in \d+(?:\.\d+)?s'
++        require(len(summaries) == 1 and re.fullmatch(pattern,summaries[0]) is not None and
+                 output.splitlines().count('running 1 test') == 1 and output.count('test '+name+' ... ') == 1,
+                 'stdout and independent libtest success disagree')
+-        gate = {'exact_name':name,'registered_tests':27,'filtered_out':26,'one_passed':True,
+-                'independent_logfile':{'path':str(path),'bytes':len(raw),'sha256':sha(raw),'identity':identity(after)}}
++        gate = {'target':target,'exact_name':name,'registered_tests':registered,'filtered_out':registered-1,
++                'one_passed':True,'independent_logfile':{'path':str(path),'bytes':len(raw),
++                    'sha256':sha(raw),'identity':identity(after)}}
+         records[-1]['focused_result_gate'] = gate
+         return gate
+     finally:
+         os.close(fd)
+ 
+-
+ def execute():
+-    global DEADLINE, CHILD_REAPER
++    global DEADLINE, CHILD_REAPER, SOURCE_MAP
+     require(os.getuid() == 1000 and os.geteuid() == 1000, 'ordinary operator UID1000 required')
+     require(Path(__file__).absolute() == HERE/'compile_fixture.py', 'exact staged controller required')
+     real_directory(HERE)
+@@ -1097,11 +1208,13 @@
+     (OUT/'tmp').mkdir(mode=0o700)
+     DEADLINE = time.monotonic()+450
+     report = {'schema':1,'state':'RUNNING','started_utc':utc(),
+-              'scope':'one exact Composer control.rs change; real coordinator/Core registry host regressions with explicit Denial/Composer I/O fixtures',
++              'scope':'nine exact retirement source changes; complete provider methods with explicit host API seams; real protocol/endpoint tests; Wayland full crate gate remains separate and unrun',
+               'Main_actions':0,'Main_identity_observed':False,'install_actions':0,
+               'Android_Binder_provider_compile':False,'Android_or_Soong_executed':False,
+               'installed_Main_source_provenance_qualified':False,'actual_Bili_failure_cause_proven':False,
+               'production_ready':False,'commands':[],'expected_test_names':TESTS,
++              'real_provider_methods_host_qualified':False,'fixture_phase_complete':False,
++              'Wayland_complete_crate_typecheck_qualified':False,'Wayland_runtime_GPU_qualified':False,
+               'network_downloads_permitted':False,'secondary_errors':[]}
+     def interrupted(number, frame):
+         OBSERVED_SIGNALS.append(number)
+@@ -1115,6 +1228,8 @@
+     fixture_rows = {}
+     fixture_static_rows = {}
+     dependency_rows = {}
++    dependency_cache = {}
++    test_pins = {}
+     tool_rows = []
+     config_rows = []
+     config_paths = []
+@@ -1170,38 +1285,19 @@
+         candidate_raw, _ = pinned_packet('candidate-source-manifest.json', CANDIDATE_MANIFEST_SHA)
+         expected = json.loads(old_raw)
+         candidate_expected = json.loads(candidate_raw)
+-        require(len(expected) == len(candidate_expected) == 499 and set(expected) == set(candidate_expected) and
+-                [name for name in expected if expected[name] != candidate_expected[name]] == [CONTROL_PATH] and
+-                expected[CONTROL_PATH]['bytes'] == 30368 and
+-                expected[CONTROL_PATH]['sha256'] == 'f2314f92862bab1d5354220ecb24954acdbbc536529daf36818b0a8974e1499c' and
+-                candidate_expected[CONTROL_PATH]['bytes'] == CONTROL_PIN['bytes'] and
+-                candidate_expected[CONTROL_PATH]['sha256'] == CONTROL_PIN['sha256'] and
+-                expected[CONTROL_PATH]['kind'] == candidate_expected[CONTROL_PATH]['kind'] == 'file' and
+-                expected[CONTROL_PATH]['mode'] == candidate_expected[CONTROL_PATH]['mode'],
+-                'candidate is not the single exact coordinator replacement')
++        SOURCE_MAP = candidate_expected
+         original_rows, copied_before = exact_source_copy(expected)
+-        report['original_manifest'] = write_new(OUT/'original-source-manifest.json', old_raw)
+-        data, delta_pin = held(HERE/'candidate-control.rs', 131072)
+-        require(delta_pin['bytes'] == CONTROL_PIN['bytes'] and delta_pin['sha256'] == CONTROL_PIN['sha256'],
+-                'candidate coordinator source changed before owned replacement')
+-        target = COPIED/CONTROL_PATH
+-        require(hash_held(target) == copied_before[CONTROL_PATH], 'copied baseline coordinator changed')
+-        fd = os.open(target, os.O_WRONLY|os.O_TRUNC|os.O_CLOEXEC|os.O_NOFOLLOW)
+-        with os.fdopen(fd,'wb') as stream:
+-            require(stream.write(data) == len(data), 'short copied coordinator write')
+-            stream.flush()
+-            os.fsync(stream.fileno())
+-        os.chmod(target, candidate_expected[CONTROL_PATH]['mode'], follow_symlinks=False)
+-        candidate_rows = regular_tree(COPIED)
+-        portable(candidate_rows, candidate_expected)
+-        report['copied_manifest'] = write_new(OUT/'copied-source-manifest.json', candidate_raw)
+-        report['source_delta'] = {'file':CONTROL_PATH,'before':expected[CONTROL_PATH],
+-                                  'after':candidate_expected[CONTROL_PATH],'unchanged_files':498,
+-                                  'source_files':499,'Android_AIDL_adapters_changed':False}
++        report['original_manifest'] = write_new(OUT/'original-source-manifest.json',old_raw)
++        candidate_rows = apply_candidate_sources(expected,candidate_expected,copied_before)
++        report['copied_manifest'] = write_new(OUT/'copied-source-manifest.json',candidate_raw)
++        report['source_delta'] = {'changed_files':8,'new_files':1,'unchanged_files':491,
++                                  'source_files':500,'Android_AIDL_adapter_source_changed':True,
++                                  'Android_AIDL_adapter_engineering_ABI_compiled':False,
++                                  'candidate_files':SOURCE_PINS}
+         report['fixture_composition'] = fixture_inputs()
+-        fixture_observed = regular_tree(FIXTURE,8,1024*1024)
+-        require(set(fixture_observed) == {'Cargo.toml','src/lib.rs','src/control_under_test.rs'},
+-                'fresh three-leaf fixture source inventory differs')
++        fixture_observed = regular_tree(FIXTURE,16,1024*1024)
++        require(set(fixture_observed) == FIXTURE_STATIC_PATHS,
++                'fresh eight-leaf fixture source inventory differs')
+         fixture_static_rows = fixture_observed
+         report['fixture_static_inputs'] = write_new(OUT/'fixture-static-inputs-before.json',fixture_static_rows)
+         selected_tools, compiler_rows = toolchain(report, env)
+@@ -1241,21 +1337,22 @@
+                 'new fixture lock seed is not the exact immutable original')
+         report['fixture_lock_seed_held'] = seed_pin
+         # Metadata may reconcile this new fixture's package graph once.
+-        # No Rust is compiled; the unchanged locked-metadata/original-lock/
+-        # actual-45-archive gates below must pass before compilation.
++        # No Rust is compiled here. Every selected old-45 package retains its
++        # prior actual gate; additional packages require exact original-lock
++        # archive/source qualification before this host compilation.
+         command([str(selected_tools['cargo']),'metadata','--offline','--format-version','1'],
+-                FIXTURE,env,'fixture-lock-reconciliation',report['commands'],30)
++                FIXTURE,env,'fixture-lock-reconciliation',report['commands'],60)
+         generated_lock_raw, generated_lock_pin = held(FIXTURE/'Cargo.lock',1024*1024)
+         report['generated_fixture_lock'] = generated_lock_pin
+-        fixture_observed = regular_tree(FIXTURE,8,1024*1024)
+-        require(set(fixture_observed) == {'Cargo.toml','Cargo.lock','src/lib.rs','src/control_under_test.rs'} and
++        fixture_observed = regular_tree(FIXTURE,16,1024*1024)
++        require(set(fixture_observed) == FIXTURE_STATIC_PATHS | {'Cargo.lock'} and
+                 fixture_observed['Cargo.lock'] == generated_lock_pin and
+                 {path:row for path,row in fixture_observed.items() if path != 'Cargo.lock'} == fixture_static_rows,
+                 'fixture resolver changed static source or its held lock inventory')
+         fixture_rows = fixture_observed
+         report['fixture_inputs'] = write_new(OUT/'fixture-inputs-before.json',fixture_rows)
+         metadata_raw = command([str(selected_tools['cargo']),'metadata','--offline','--locked',
+-                                '--format-version','1'],FIXTURE,env,'fixture-metadata',report['commands'],30)
++                                '--format-version','1'],FIXTURE,env,'fixture-metadata',report['commands'],60)
+         registry_raw, registry_pin = pinned_packet('registry-result.json',
+             'b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993')
+         registry = json.loads(registry_raw)
+@@ -1264,47 +1361,68 @@
+                 registry['authorities_unchanged_after'] is True and registry['owned_resource_gate']['pass'] is True,
+                 'actual existing registry qualification is incomplete')
+         report['actual_registry_archive_authority'] = registry_pin
+-        fixture_id, packages, dependency_rows = selected_dependencies(
+-            json.loads(metadata_raw), registry, tomllib.loads(original_lock_raw.decode()),
+-            tomllib.loads(generated_lock_raw.decode()))
+-        report['dependency_inputs'] = write_new(OUT/'dependency-inputs-before.json',
++        fixture_id, packages, current_dependencies = selected_dependencies(
++            json.loads(metadata_raw),registry,tomllib.loads(original_lock_raw.decode()),
++            tomllib.loads(generated_lock_raw.decode()),'fixture',dependency_cache)
++        dependency_rows.update(current_dependencies)
++        report['dependency_inputs'] = write_new(OUT/'fixture-dependency-inputs-before.json',
+                                                 {'packages':packages,'files':dependency_rows})
+         built = command([str(selected_tools['cargo']),'test','--offline','--locked','-j','1',
+-                         '--lib','--no-run','--message-format=json-render-diagnostics'],
+-                         FIXTURE,env,'fixture-compile',report['commands'],180)
+-        test_binary, compiled_ids = qualify_fixture_compile(
+-            built,fixture_id,packages,dependency_rows,candidate_rows,fixture_rows)
+-        report['actual_compiled_package_ids'] = compiled_ids
+-        test_pin = hash_held(test_binary)
+-        require(stat.S_IMODE(test_pin['identity'][2]) & 0o111, 'actual test artifact is not executable')
+-        fd = os.open(test_binary,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)
+-        try:
+-            require(os.read(fd,4) == b'\x7fELF', 'actual test artifact is not a host ELF')
+-        finally:
+-            os.close(fd)
+-        listing = command([str(test_binary),'--list'],FIXTURE,env,'fixture-list',report['commands'],10).decode()
+-        listed = [line[:-6] for line in listing.splitlines() if line.endswith(': test')]
+-        require(len(listed) == len(set(listed)) == len(TESTS) == 27 and set(listed) == set(TESTS) and
+-                not any(line.endswith(': benchmark') for line in listing.splitlines()),
+-                'actual libtest registrations differ from 27 fixed controls')
+-        help_text = command([str(test_binary),'--help'],FIXTURE,env,'fixture-help',report['commands'],10).decode()
+-        require(re.search(r'^\s*--logfile\s',help_text,re.MULTILINE) is not None and
+-                'Write logs to the specified file' in help_text, 'independent libtest record option missing')
+-        report['actual_registered_test_count'] = len(listed)
++                         '--no-run','--message-format=json-render-diagnostics'],
++                         FIXTURE,env,'retirement-fixture-compile',report['commands'],240)
++        binaries, compiled_ids = qualify_compile_records(
++            built,packages,dependency_rows,candidate_rows,fixture_rows,'fixture',fixture_id)
++        report['actual_compiled_fixture_package_ids'] = compiled_ids
+         report['focused_result_gates'] = []
+-        for index,name in enumerate(TESTS):
+-            report['focused_result_gates'].append(fixture_focused_test(
+-                test_binary,name,index,env,report['commands']))
+-        require(hash_held(test_binary) == test_pin, 'actual test ELF changed during focused execution')
+-        report['test_elf'] = test_pin
+-        report['focused_tests_passed'] = len(report['focused_result_gates'])
+-        require(len(report['commands']) == 42 and
++        report['actual_registered_test_counts'] = {}
++        report['focused_tests_passed'] = 0
++        for target,names in TARGET_TESTS.items():
++            binary = binaries[target]
++            test_pin = hash_held(binary)
++            require(stat.S_IMODE(test_pin['identity'][2]) & 0o111,
++                    'actual test artifact is not executable')
++            fd = os.open(binary,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)
++            try:
++                require(os.read(fd,4) == b'\x7fELF','actual test artifact is not a host ELF')
++            finally:
++                os.close(fd)
++            listing = command([str(binary),'--list'],FIXTURE,env,target+'-list',report['commands'],10).decode()
++            listed = [line[:-6] for line in listing.splitlines() if line.endswith(': test')]
++            require(len(listed) == len(set(listed)) == len(names) and set(listed) == set(names) and
++                    not any(line.endswith(': benchmark') for line in listing.splitlines()),
++                    'actual libtest registrations differ for '+target)
++            help_text = command([str(binary),'--help'],FIXTURE,env,target+'-help',report['commands'],10).decode()
++            require(re.search(r'^\s*--logfile\s',help_text,re.MULTILINE) is not None and
++                    'Write logs to the specified file' in help_text,
++                    'independent libtest record option missing')
++            report['actual_registered_test_counts'][target] = len(listed)
++            for index,name in enumerate(names):
++                report['focused_result_gates'].append(retirement_focused_test(
++                    binary,target,name,index,len(names),env,report['commands']))
++                report['focused_tests_passed'] = len(report['focused_result_gates'])
++            require(hash_held(binary) == test_pin,'test ELF changed during execution')
++            test_pins[target] = test_pin
++        report['test_elfs'] = test_pins
++        require(len(report['focused_result_gates']) == 112 and len(test_pins) == 3,
++                'complete fixed real-source test set did not pass')
++        report['fixture_phase_complete'] = True
++        report['provider_controls_observed_success_before_final_rechecks'] = True
++        report['real_provider_scope'] = {
++            'whole_production_denial_rs_compiled':True,
++            'production_register_unregister_receipt_methods_executed':True,
++            'new_real_provider_controls':24,'original_provider_unit_controls':2,
++            'original_coordinator_controls':27,'engine_ledger_controls':12,'handshake_controls':4,
++            'protocol_controls':23,'endpoint_controls':20,
++            'Binder_DRM_GLES_are_explicit_host_seams':True,'GPU_or_Android_ABI_qualified':False,
++            'legacy_endpoint_listener_test_can_skip_permission_denied':True}
++        report['Wayland_full_crate_gate'] = 'NOT_RUN_IN_THIS_REQUEST_ROOT_OWNS_SEPARATE_CONTROLLER'
++        require(len(report['commands']) == 131 and
+                 all(row.get('returncode') == 0 and row['child_reaped'] and
+                     row['owned_tree_cleanup_complete'] and row['pidfd_closed'] and row['output_fds_closed'] and
+                     not row['timed_out'] and not row['descendants'] and
+                     row.get('leader_alive_before_group_cleanup') is False and
+                     row['first_error'] is None and not row['secondary_errors'] for row in report['commands']),
+-                'fixed fixture command sequence or strict driver cleanup differs')
++                'fixed 131-command sequence or strict driver cleanup differs')
+         require(time.monotonic() < DEADLINE, 'host fixture work qualification deadline exhausted')
+         report['state'] = 'PASS'
+     except Exception as error:
+@@ -1332,21 +1450,21 @@
+             except Exception as error:
+                 secondary(label+'_after',error)
+         # A missing full baseline is not evidence of a source mutation.
+-        # Still protect the three immutable source leaves if they were created.
++        # Still protect the eight immutable source leaves if they were created.
+         report['fixture_source_unchanged_after'] = None
+         report['fixture_static_source_unchanged_after'] = None
+         report['fixture_baseline_state'] = 'NOT_ESTABLISHED'
+         try:
+             if fixture_rows:
+-                current = regular_tree(FIXTURE,8,1024*1024)
++                current = regular_tree(FIXTURE,16,1024*1024)
+                 unchanged = current == fixture_rows
+                 report['fixture_source_unchanged_after'] = unchanged
+                 report['fixture_static_source_unchanged_after'] = (
+                     {path:row for path,row in current.items() if path != 'Cargo.lock'} == fixture_static_rows)
+-                report['fixture_baseline_state'] = 'FULL_FOUR_LEAF_BASELINE'
++                report['fixture_baseline_state'] = 'FULL_NINE_LEAF_BASELINE'
+                 require(unchanged, 'qualified fixture source identity/content changed')
+             elif fixture_static_rows:
+-                current = regular_tree(FIXTURE,8,1024*1024)
++                current = regular_tree(FIXTURE,16,1024*1024)
+                 unchanged = ({path:row for path,row in current.items() if path != 'Cargo.lock'} ==
+                              fixture_static_rows and
+                              set(current) <= set(fixture_static_rows) | {'Cargo.lock'})
+@@ -1391,20 +1509,40 @@
+                 except Exception as error:
+                     report['owned_resource_fd_closed'] = False
+                     secondary('owned_resource_fd_close',error)
++        report['real_provider_methods_host_qualified'] = (
++            report['state'] == 'PASS' and report.get('fixture_phase_complete') is True)
++        report['Wayland_complete_crate_typecheck_qualified'] = (
++            report['state'] == 'PASS' and report.get('Wayland_complete_crate_typecheck_observed_success') is True)
+         report['finished_utc'] = utc()
+         result = write_new(OUT/'result.json',report)
+-        print(json.dumps({'state':report['state'],'result':result,'test_elf':report.get('test_elf'),
++        resource_gate = report.get('owned_resource_gate',{})
++        print(json.dumps({'state':report['state'],'result':result,'test_elfs':report.get('test_elfs'),
+                           'Main_actions':0,'Android_Binder_provider_compile':False,
+-                          'focused_tests_passed':report.get('focused_tests_passed',0)}),flush=True)
++                          'ordinary_commands':len(report['commands']),
++                          'focused_tests_passed':report.get('focused_tests_passed',0),
++                          'registered_test_counts':report.get('actual_registered_test_counts',{}),
++                          'fixture_phase_complete':report.get('fixture_phase_complete',False),
++                          'real_provider_methods_host_qualified':report.get('real_provider_methods_host_qualified',False),
++                          'Wayland_complete_crate_typecheck_qualified':report.get('Wayland_complete_crate_typecheck_qualified',False),
++                          'owned_child_reaper':report.get('owned_child_reaper'),
++                          'owned_resource_fd_closed':report.get('owned_resource_fd_closed',False),
++                          'owned_resources':{name:resource_gate.get(name) for name in
++                              ['pass','memory_peak','memory_swap_peak','memory_events_delta','swap_max_observed_only']},
++                          'source_unchanged':{name:report.get(name) for name in
++                              ['original_source_unchanged_after','copied_source_unchanged_after',
++                               'fixture_source_unchanged_after','cargo_configs_unchanged_after']},
++                          'error':report.get('error'),'secondary_errors':report['secondary_errors']}),flush=True)
+     return 0 if report['state'] == 'PASS' else 1
+ 
+ 
+ if __name__ == '__main__':
+     if sys.argv[1:] == []:
+         print(json.dumps({'mode':'PLAN','root':str(ROOT),'base_source':str(BASE_SOURCE),
+-                          'requires_explicit_execute_once':True,'production_files_changed':1,
+-                          'source_files':499,'focused_test_names':TESTS,
+-                          'host_fixture_only':True,'Main_actions':0,'Android_execution':False}))
++            'requires_explicit_execute_once':True,'production_files_changed':8,'production_files_added':1,
++            'source_files':500,'focused_test_names':TARGET_TESTS,'Main_actions':0,
++            'Android_execution':False,'expected_focused_tests':112,'expected_ordinary_commands':131,
++            'Wayland_full_binary_target_typecheck_required':True,'Wayland_check_in_this_request':False,
++            'GPU_runtime_or_Android_Binder_ABI_qualification':False}))
+     elif sys.argv[1:] == ['--execute-once']:
+         raise SystemExit(execute())
+     else:

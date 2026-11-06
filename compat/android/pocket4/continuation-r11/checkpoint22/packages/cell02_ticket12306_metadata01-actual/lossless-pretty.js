@@ -1,0 +1,5 @@
+function pretty2(raw){
+ let i=0;const ws=()=>{while(i<raw.length&&/\s/.test(raw[i]))i++;};const str=()=>{const st=i++;while(i<raw.length){const c=raw[i++];if(c==="\\")i++;else if(c==='"')return raw.slice(st,i);}throw Error("string");};
+ const val=d=>{ws();const c=raw[i];if(c==='"')return str();if(c==="{"||c==="["){i++;const close=c==="{"?"}":"]";ws();if(raw[i]===close){i++;return c+close;}const rows=[];while(true){ws();if(c==="{"){if(raw[i]!=='"')throw Error("key");const k=str();ws();if(raw[i++]!==":")throw Error("colon");rows.push("  ".repeat(d+1)+k+": "+val(d+1));}else rows.push("  ".repeat(d+1)+val(d+1));ws();const n=raw[i++];if(n===close)break;if(n!==",")throw Error("comma");}return c+"\n"+rows.join(",\n")+"\n"+"  ".repeat(d)+close;}const s=i;while(i<raw.length&&!/[\s,}\]]/.test(raw[i]))i++;if(s===i)throw Error("value");return raw.slice(s,i);};
+ const out=val(0);ws();if(i!==raw.length)throw Error("trailing");return out+"\n";
+}

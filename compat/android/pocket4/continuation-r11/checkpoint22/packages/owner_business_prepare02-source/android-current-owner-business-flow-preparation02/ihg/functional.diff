@@ -1,0 +1,56 @@
+--- previous/owned_inspect.py
++++ owner02/owned_inspect.py
+@@ -37,14 +37,14 @@
+ INPUT_PLAN={"schema":1,"operation":"set_text","value":"London","nonces":{"before":"__FRESH_INPUT_BEFORE__","inspect":"__FRESH_INPUT_INSPECT__","action":"__FRESH_INPUT_ACTION__","after":"__FRESH_INPUT_AFTER__"}}
+ POST_PLAN={"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_POST_BEFORE__","inspect":"__FRESH_POST_INSPECT__","after":"__FRESH_POST_AFTER__"}}
+ SEARCH_READINESS_PLANS=[{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_1_BEFORE__","inspect":"__FRESH_READINESS_1_INSPECT__","after":"__FRESH_READINESS_1_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_2_BEFORE__","inspect":"__FRESH_READINESS_2_INSPECT__","after":"__FRESH_READINESS_2_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_3_BEFORE__","inspect":"__FRESH_READINESS_3_INSPECT__","after":"__FRESH_READINESS_3_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_4_BEFORE__","inspect":"__FRESH_READINESS_4_INSPECT__","after":"__FRESH_READINESS_4_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_5_BEFORE__","inspect":"__FRESH_READINESS_5_INSPECT__","after":"__FRESH_READINESS_5_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_6_BEFORE__","inspect":"__FRESH_READINESS_6_INSPECT__","after":"__FRESH_READINESS_6_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_7_BEFORE__","inspect":"__FRESH_READINESS_7_INSPECT__","after":"__FRESH_READINESS_7_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_8_BEFORE__","inspect":"__FRESH_READINESS_8_INSPECT__","after":"__FRESH_READINESS_8_AFTER__"}}]
+-INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01")
++INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+-INSTALL_SOURCE_SHA="e3107670749e47f062eb25401dc3b5bb581971400b64eecf80ea2cb0f0add5c3"
+-UTIL_SHA="b30456375567863c03faaa6473a897f61c2ee2304da28e2df2eb83dff7bf4611"
+-UTIL_BYTES=39986
+-CONTEXT_SHA="6e7dc456c6118e48dafb8b55344b71631bbea5dc4382aa23a3b03abfc75d3ed2"
++INSTALL_SOURCE_SHA="bb9957023531b018d95f4a6e747fa71691bf566e53e158c5935db410ea7a8aa6"
++UTIL_SHA="1ffe7a48441c6c3060e50d5ea83a257e225bea34a32064d9f2dbb06d7b396f2f"
++UTIL_BYTES=40040
++CONTEXT_SHA="88c3d181a1176a447db4426df04125ce51f77ed03736eb79c1a00bb1544f4364"
+ TRANSPORT_SHA="aa4836f35ea0251fbf3942033db2a45e37a882ebf6f7b6076b45c63970d5c516"
+-STATE_NONCE="7a9043d8dcc2c5e0b34fc11d7bf8bee5"
++STATE_NONCE="3d004706f9adf4411761495fdc6ed859"
+ STATE_WIRE=None  # Actual R4 installation original required.
+ INSTALLED=None  # Actual R4 installation original required.
+ PRIOR=None  # Actual R4 installation original required.
+@@ -353,7 +353,8 @@
+             verify_source(value);u.verify_source(q.resolver.INSTALL_SOURCE_SHA)
+             read(RESOLVER_SOURCE,32768,RESOLVER_SHA,RESOLVER_BYTES)
+         flow,recorder,guard=task_module.open_task_context(ref,u,context,expected,verify_runtime,FLOW,step,
+-            transport,result,began+PHASE_SECONDS[phase],phase,q.qa,plans,q.resolver.RESOLVE,scope_record(q,expected))
++            transport,result,began+PHASE_SECONDS[phase],phase,q.qa,plans,q.resolver.RESOLVE,scope_record(q,expected),
++            install_source_manifest=q.resolver.INSTALL_SOURCE_SHA)
+         reference=json.loads(u.read(q.resolver.INSTALL_SOURCE/'target-artifact-reference.json',expected=
+             q.install_manifest['files']['target-artifact-reference.json']['sha256']))
+         reader=u.module(q.resolver.INSTALL_SOURCE/'references/read_ihg.py',u.READER_SHA,'amazon_artifact_parser')
+--- previous/ihg_task_context.py
++++ owner02/ihg_task_context.py
+@@ -256,7 +256,8 @@
+ 
+ 
+ def open_task_context(ref,util,context,source_manifest,source_verify,flow_root,step,
+-                      transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope):
++                      transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope, *,
++                      install_source_manifest):
+     """Same held Main/classpath primitives as the qualified Amazon install.
+ 
+     The only newly constructed object is the phase-restricted task Flow above.
+@@ -302,7 +303,9 @@
+     try:
+         target=held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA);guard()
+         app=util.module(Path(recorder.APP),recorder.APP_SHA,'amazon_task_discovery_only')
+-        init,discovered,status=app.discover()
++        init,discovered,status=context.current_discovery(
++            util,install_source_manifest,util.verify_source,util.HERE,
++            app,activation,epoch,guard)
+         need(init==expected['host_pid'] and status['host_pid']==activation['status']['host_pid'],
+              'FIXED_MAIN_DISCOVERY_CHANGED')
+         values,classpath=binding.main_classpaths(held,target,activation['framework_epoch'],epoch,guard)

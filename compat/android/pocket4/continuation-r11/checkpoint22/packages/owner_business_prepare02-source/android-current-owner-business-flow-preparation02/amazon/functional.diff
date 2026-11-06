@@ -1,0 +1,57 @@
+--- previous/owned_inspect.py
++++ owner02/owned_inspect.py
+@@ -31,14 +31,14 @@
+ CURRENT_QUALIFICATION_SHA="ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+ COMPONENT=PACKAGE+'/com.amazon.mShop.home.HomeActivity'
+ PLAN={"entry":{"nonces":{"action":"__FRESH_ENTRY_ACTION__","after":"__FRESH_ENTRY_AFTER__","before":"__FRESH_ENTRY_BEFORE__","inspect":"__FRESH_ENTRY_INSPECT__"},"operation":"click","schema":1,"selector":{"class":"android.widget.ImageButton","content_desc":"Search","resource_id":"com.amazon.mShop.android.shopping:id/chrome_search_box"}},"operation":"search_entry","post":{"nonces":{"after":"__FRESH_POST_AFTER__","before":"__FRESH_POST_BEFORE__","inspect":"__FRESH_POST_INSPECT__"},"operation":"inspect","schema":1},"schema":1,"stability":[{"nonces":{"after":"__FRESH_STABILITY_1_AFTER__","before":"__FRESH_STABILITY_1_BEFORE__","inspect":"__FRESH_STABILITY_1_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_2_AFTER__","before":"__FRESH_STABILITY_2_BEFORE__","inspect":"__FRESH_STABILITY_2_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_3_AFTER__","before":"__FRESH_STABILITY_3_BEFORE__","inspect":"__FRESH_STABILITY_3_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_4_AFTER__","before":"__FRESH_STABILITY_4_BEFORE__","inspect":"__FRESH_STABILITY_4_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_5_AFTER__","before":"__FRESH_STABILITY_5_BEFORE__","inspect":"__FRESH_STABILITY_5_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_6_AFTER__","before":"__FRESH_STABILITY_6_BEFORE__","inspect":"__FRESH_STABILITY_6_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_7_AFTER__","before":"__FRESH_STABILITY_7_BEFORE__","inspect":"__FRESH_STABILITY_7_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_8_AFTER__","before":"__FRESH_STABILITY_8_BEFORE__","inspect":"__FRESH_STABILITY_8_INSPECT__"},"operation":"inspect","schema":1}]}
+-INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-01")
++INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-02")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+-INSTALL_SOURCE_SHA=None  # Actual R4 installation closure required.
+-UTIL_SHA=None  # Actual R4 installation closure required.
+-UTIL_BYTES=None  # Actual R4 installation closure required.
+-CONTEXT_SHA=None  # Actual R4 installation closure required.
+-TRANSPORT_SHA=None  # Actual R4 installation closure required.
+-STATE_NONCE=None  # Actual R4 installation closure required.
++INSTALL_SOURCE_SHA="ed611217d1721dc5f0e30a4a6c5163c9f35c6f50404e0118e2e2deff6679b7bc"
++UTIL_SHA="dea588899bd93d9a658f875aedd071456a1ce2d16180f60f697a6528f13420e1"
++UTIL_BYTES=40152
++CONTEXT_SHA="d081ba9b8d6da9cdaa4a071ae40b5c74efe2428921bae947a5f93e8afa8add37"
++TRANSPORT_SHA="d9a682696cac2e28987b04f3e59f0fa783028fdc069c145816cd87c40eb6ca63"
++STATE_NONCE="7e2b1d49365866364ecaa9bf59942c87"
+ STATE_WIRE=None  # Actual R4 installation closure required.
+ INSTALLED=None  # Actual R4 installation closure required.
+ PRIOR=None  # Actual R4 installation closure required.
+@@ -332,7 +332,8 @@
+             verify_source(value);u.verify_source(q.resolver.INSTALL_SOURCE_SHA)
+             read(RESOLVER_SOURCE,32768,RESOLVER_SHA,RESOLVER_BYTES)
+         flow,recorder,guard=task_module.open_task_context(ref,u,context,expected,verify_runtime,FLOW,step,
+-            transport,result,began+PHASE_SECONDS[phase],phase,q.qa,PLAN,q.resolver.RESOLVE,scope_record(q,expected))
++            transport,result,began+PHASE_SECONDS[phase],phase,q.qa,PLAN,q.resolver.RESOLVE,scope_record(q,expected),
++            install_source_manifest=q.resolver.INSTALL_SOURCE_SHA)
+         reference=json.loads(u.read(q.resolver.INSTALL_SOURCE/'target-artifact-reference.json',expected=
+             q.install_manifest['files']['target-artifact-reference.json']['sha256']))
+         reader=u.module(q.resolver.INSTALL_SOURCE/'references/read_amazon.py',u.READER_SHA,'amazon_artifact_parser')
+--- previous/amazon_task_context.py
++++ owner02/amazon_task_context.py
+@@ -254,7 +254,8 @@
+ 
+ 
+ def open_task_context(ref,util,context,source_manifest,source_verify,flow_root,step,
+-                      transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope):
++                      transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope, *,
++                      install_source_manifest):
+     """Same held Main/classpath primitives as the qualified Amazon install.
+ 
+     The only newly constructed object is the phase-restricted task Flow above.
+@@ -300,7 +301,9 @@
+     try:
+         target=held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA);guard()
+         app=util.module(Path(recorder.APP),recorder.APP_SHA,'amazon_task_discovery_only')
+-        init,discovered,status=app.discover()
++        init,discovered,status=context.current_discovery(
++            util,install_source_manifest,util.verify_source,util.HERE,
++            app,activation,epoch,guard)
+         need(init==expected['host_pid'] and status['host_pid']==activation['status']['host_pid'],
+              'FIXED_MAIN_DISCOVERY_CHANGED')
+         values,classpath=binding.main_classpaths(held,target,activation['framework_epoch'],epoch,guard)

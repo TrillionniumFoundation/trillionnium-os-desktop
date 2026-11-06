@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys,types\nraw=sys.stdin.buffer.read(262145)\nassert len(raw)==120469 and hashlib.sha256(raw).hexdigest()==\"4f59c46988278e694f90f6bf634c1300b26c329266ecc1b192fc1771067a7546\"\np=json.loads(raw);assert p['schema']==1 and set(p)=={'schema','control_source','control_pin','payload'}\nsrc=p['control_source'].encode();assert p['control_pin']=={'bytes':len(src),'sha256':hashlib.sha256(src).hexdigest()}\nassert hashlib.sha256(src).hexdigest()==\"708b979512ef3a9570ac3b1e7588db59d7cd3347b3843f059b2514e424fa32ba\"\nm=types.ModuleType('three_fixed_target_metadata_controls');m.__file__='<pure-controls>'\nexec(compile(src,m.__file__,'exec'),m.__dict__)\nout=m.run_controls(p['payload']);assert out['ok'] is True and out['count']==49 and len(out['cases'])==49\nassert all(x['passed'] is True for x in out['cases'])\nout.update(control_source_sha256=p['control_pin']['sha256'],packet_sha256=hashlib.sha256(raw).hexdigest())\nencoded=json.dumps(out,sort_keys=True,separators=(',',':'));assert len(encoded.encode())<=32768;print(encoded,flush=True)\n"
+    ],
+    "created_unix_ms": 1793987979143,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2042787-fc05-7c09",
+    "idempotency_key": "pocket4-current-cell02-next3-metadata49-controls01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2042787-fc05-7c09",
+    "request_digest": "80fb054a5f26f871f48982a7a22b3fd76977e43d481900f2326b8d4b02e027c2",
+    "request_fingerprint": 9294028072991258737,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2042787-fc05-7c09"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2042787-fc05-7c09"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

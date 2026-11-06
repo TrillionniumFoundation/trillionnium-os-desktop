@@ -1,0 +1,502 @@
+--- actual-parent/install_state.py
++++ current-cell02/install_state.py
+@@ -21,34 +21,34 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01')
+ SOURCE = ROOT/'source'
+ WORKER_ROOT = ROOT/'worker'
+ STEP = WORKER_ROOT/'steps/install-state-01'
+-NONCE = '5c5dc9eed1b260e1004116390c716cef'
+-STATE_NONCE = 'a8c37991b3fdd2f6b40d8f6fd6354bf0'
+-SELF = 'org.droidloom.qa.ihg.r3'
+-QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-source-01/source')
+-QA_MANIFEST = '8d96686f9e6937548e0295679ae6ecdfd3c3a1bf4e48c5feff7def949e81789a'
+-BUILD = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/build-result.json')
+-BUILD_SHA = '40a7f7865a962b3bdaee3242cfa1fb7d84d860a3fc973ebb344cbc01fe088505'
+-BUILD_BYTES = 25686
+-STAGE = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-source-01/stage-result.json')
+-STAGE_SHA = '764ca6cb3d3b6ea21f1f0425c5d1028352a5db9450925935b42085bb9460df30'
++NONCE = '2b991bd0c0832109fb97af75690c73b6'
++STATE_NONCE = '7a9043d8dcc2c5e0b34fc11d7bf8bee5'
++SELF = 'org.droidloom.qa.ihg.r4'
++QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r4-source-01/source')
++QA_MANIFEST = 'fb4f9847fa94967ae59e3e7c2a50a1664a0f14f320e6e7e45e755b138589add6'
++BUILD = Path('/home/alex/work/pocket4-owned-ihg-qa-r4-build-01/build-result.json')
++BUILD_SHA = '58d1a892b829d65eba5ad76323d92fda0b508ba5b906c6c44b58b62b8c758c65'
++BUILD_BYTES = 26776
++STAGE = Path('/home/alex/work/pocket4-owned-ihg-qa-r4-source-01/stage-result.json')
++STAGE_SHA = '0abf8187873090c367260916af0be94c37cce52de8ecbf85add9864b4fd86bad'
+ STAGE_BYTES = 1935
+-APK = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/owned-ihg-qa.apk')
+-APK_SHA = '58a24079a59c998d35a7233ccadd2a1d3b90480aa9a66d2c4fc7905ca1d51342'
++APK = Path('/home/alex/work/pocket4-owned-ihg-qa-r4-build-01/owned-ihg-qa.apk')
++APK_SHA = '89d725554bab2a0939c631fbb70c21c97b4f30612f35598cd51d0c0e8e125204'
+ APK_BYTES = 24720
+-SIGNER_SHA = 'df8c2febe4feff3e65d7dc096cad9753bfb2e97b57a65044b314c2a51c7c3f01'
+-REFERENCE_SHA = 'fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'
+-BASE_HOST_ROOT = Path('/home/alex/work/pocket4-current-host-r5-source-01')
+-RECORDER_MANIFEST = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
+-HOST_STAGE_SHA = 'bbd21b3e83f39a355a44e32f3448f747d0e76a6cc79c8d920cac4c8399c986a0'
+-HOST_STAGE_BYTES = 6851
+-CURRENT_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
+-BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
+-QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+-PREVIOUS_HELPER_UID = 10153
++SIGNER_SHA = 'c94629f99db487b24c40a9aed131324104d3a197030cc9dd8183f969baa87c7e'
++REFERENCE_SHA = '0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89'
++BASE_HOST_ROOT = Path('/home/alex/work/pocket4-current-host-r6-source-01')
++RECORDER_MANIFEST = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
++HOST_STAGE_SHA = 'e1718fcb3561488c88011f00de0d6e992ff51a64a355da87f1fcb867545fcba6'
++HOST_STAGE_BYTES = 10016
++CURRENT_EPOCH = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
++BASELINE_SHA = '633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364'
++QUALIFICATION_SHA = 'ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e'
++PREVIOUS_HELPER_UID = 10156
+ READER_SHA = '51ecf1c0a12d8bfa9ed721265e14c4f06ef3eff72cbf5840de9569eb09797d40'
+ GUEST_DIR_NAME = 'pocket4-owned-ihg-qa-'+NONCE
+ GUEST_DIR = '/data/local/tmp/'+GUEST_DIR_NAME
+@@ -201,7 +201,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
+-    require(10000 <= uid < 100000 and uid != PREVIOUS_HELPER_UID and uid not in (10137,10129,10117,10125,10164,10165,10166,10169,10170,10175,10196), 'NEW_APP_UID_REQUIRED')
++    require(10000 <= uid < 100000 and uid != PREVIOUS_HELPER_UID and uid not in (10137,10129,10117,10125,10164,10165,10166,10169,10170,10175,10196,10153), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ class OwnedApk:
+@@ -345,8 +345,8 @@
+     host_raw=read(HERE/'host/source-manifest.json',131072,RECORDER_MANIFEST)
+     host_manifest=json.loads(host_raw)
+     row=host_manifest['files']['current_coordinator.py']
+-    require(host_manifest.get('schema') == 2 and host_manifest.get('revision') == 5 and
+-            host_manifest.get('artifact') == 'pocket4-bilibili-current-recorder-held-r5' and
++    require(host_manifest.get('schema') == 2 and host_manifest.get('revision') == 6 and
++            host_manifest.get('artifact') == 'pocket4-bilibili-current-recorder-held-r6' and
+             row['sha256'] == REFERENCE_SHA and
+             manifest['files']['references/read_ihg.py']['sha256'] == READER_SHA,
+             'EXACT_CURRENT_SHARED_REFERENCES_REQUIRED')
+@@ -359,43 +359,71 @@
+     return module(BASE_HOST_ROOT/'current_coordinator.py',REFERENCE_SHA,'current_target_install_reference')
+ 
+ def qualify_host_stage(value, manifest):
+-    require(value.get('schema') == 'pocket4-current-host-source-stage-result-v1' and
+-            value.get('ok') is True and value.get('source_stage_qualified') is True and
+-            value.get('error') is None and value.get('secondary_errors') == [] and
+-            value.get('source_published') is True and
++    require(type(value) is dict and
++            value.get('schema') == 'pocket4-current-host-source-stage-v2' and
++            value.get('ok') is True and value.get('error') is None and
++            value.get('secondary_errors') == [] and
++            value.get('actual_source_constructor_qualified') is True and
++            value.get('all_staged_sources_unchanged') is True and
+             value.get('source_root') == str(BASE_HOST_ROOT) and
+-            value.get('source_manifest_sha256') == RECORDER_MANIFEST and
+-            value.get('source_files') == manifest['files'],
+-            'ACTUAL_COMPLETE_R5_HOST_SOURCE_STAGE_REQUIRED')
++            value.get('source_manifest_sha256') == RECORDER_MANIFEST,
++            'ACTUAL_COMPLETE_R6_HOST_SOURCE_STAGE_REQUIRED')
++    require(manifest.get('schema') == 2 and manifest.get('revision') == 6 and
++            manifest.get('artifact') == 'pocket4-bilibili-current-recorder-held-r6' and
++            len(manifest.get('files', {})) == 14,
++            'EXACT_R6_HOST_MANIFEST_REQUIRED')
++    expected_sources = {name:{'path':str(BASE_HOST_ROOT/name),**row}
++                        for name,row in manifest['files'].items()}
++    expected_sources['source-manifest.json'] = {
++        'path':str(BASE_HOST_ROOT/'source-manifest.json'),
++        'bytes':3757,'sha256':RECORDER_MANIFEST}
++    require(value.get('source_pins') == expected_sources,
++            'ACTUAL_R6_PUBLISHED_SOURCE_PINS_REQUIRED')
+     controls = value.get('controls', {})
+-    require(controls.get('all_passed') is True and controls.get('count') == 26 and
+-            len(controls.get('cases', [])) == 26 and
+-            len({x.get('name') for x in controls['cases']}) == 26 and
++    require(controls.get('schema') == 'pocket4-current-host-source-controls-v2' and
++            controls.get('all_passed') is True and controls.get('count') == 38 and
++            len(controls.get('cases', [])) == 38 and
++            len({x.get('name') for x in controls['cases']}) == 38 and
+             all(x.get('passed') is True for x in controls['cases']) and
+-            len(controls.get('compiled_sources', [])) == 14,
+-            'ACTUAL_26_CURRENT_HOST_CONTROLS_REQUIRED')
+-    fds = value.get('owned_fds', {})
+-    require(type(fds.get('acquired')) is int and fds['acquired'] > 0 and
+-            fds['acquired'] == fds.get('close_attempts') == fds.get('closed') and
+-            fds.get('remaining') == 0 and fds.get('errors') == [],
+-            'ACTUAL_CURRENT_HOST_SOURCE_FDS_NOT_RETIRED')
+-    expected_guard = {'schema':'pocket4-current-main-guard-v1',
++            controls.get('compiled_sources') == sorted(manifest['files']) and
++            controls.get('fixture_is_not_baseline_observation') is True and
++            all(type(controls.get(k)) is int and controls[k] == 0
++                for k in ('Android_commands','UI_actions','children','filesystem_operations')),
++            'ACTUAL_38_CURRENT_HOST_CONTROLS_REQUIRED')
++    for bucket in ('source_fds','publication_fds'):
++        fds = value.get(bucket, {})
++        require(fds.get('scope') == 'collector_managed_descriptors' and
++                all(type(fds.get(k)) is int for k in ('acquired','close_attempts','closed','remaining')) and
++                fds['acquired'] > 0 and
++                fds['acquired'] == fds['close_attempts'] == fds['closed'] and
++                fds['remaining'] == 0 and fds.get('errors') == [],
++                'ACTUAL_CURRENT_HOST_SOURCE_FDS_NOT_RETIRED')
++    expected_guard = {'schema':'pocket4-current-main-guard-v2',
+         'Main_epoch_sha256':CURRENT_EPOCH, 'current_baseline_sha256':BASELINE_SHA,
+         'current_baseline_qualification_sha256':QUALIFICATION_SHA,
+         'historical_activation_sha256':'7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615',
+         'historical_verified_sha256':'2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387',
++        'previous_current_baseline_sha256':'163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266',
+         'config_sha256':'f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc',
+-        'seven_processes_match':True, 'three_host_processes_match':True, 'resource_limits_match':True,
+-        'current_executable_and_root_backing_match':True, 'framework_exit_cause_resolved':False,
+-        'production_ready':False}
++        'seven_processes_match':True, 'three_host_processes_match':True,
++        'authenticated_owner_chain_matches':True, 'current_user_namespaces_match':True,
++        'resource_limits_match':True, 'current_executable_and_root_backing_match':True,
++        'old_helpers_and_tasks_reauthorized':False,
++        'framework_exit_cause_resolved':False, 'production_ready':False}
+     require(all(value.get(k) == expected_guard for k in ('Main_before','Main_after','Main_final')),
+             'CURRENT_HOST_STAGE_MAIN_FENCES_CHANGED')
+-    require(value.get('namespace_entry') is False and value.get('automatic_retry') is False and
+-            value.get('framework_exit_cause_resolved') is False and value.get('whole_app_production_ready') is False and
+-            value.get('current_runtime_admitted') is False and
++    require(value.get('source_only') is True and value.get('runtime_admitted') is False and
++            value.get('namespace_entry') is False and
++            value.get('old_helpers_and_tasks_reauthorized') is False and
++            value.get('whole_app_production_ready') is False and
+             all(type(value.get(k)) is int and value[k] == 0 for k in
+-                ('Android_commands','UI_actions','helper_installs','App_launches','all45_app_production_ready_count')),
++                ('Android_commands','UI_actions','helper_installs','App_launches','children_spawned')),
+             'CURRENT_HOST_STAGE_SCOPE_NOT_READONLY_SOURCE')
++    durable = {k:v for k,v in value.items() if k not in ('stage_result','publication_fds')}
++    raw = (json.dumps(durable,sort_keys=True,separators=(',',':'),allow_nan=False)+'\n').encode()
++    require(value.get('stage_result') == {
++                'path':str(BASE_HOST_ROOT/'stage-result.json'),'bytes':len(raw),'sha256':digest(raw)},
++            'ACTUAL_R6_DURABLE_STAGE_PIN_REQUIRED')
+     return True
+ 
+ 
+@@ -414,22 +442,22 @@
+     require(adapter.RECORDER_MANIFEST_SHA == RECORDER_MANIFEST and
+             qa.MAIN_EPOCH == CURRENT_EPOCH and qa.MAIN_BASELINE_SHA == BASELINE_SHA and
+             qa.MAIN_BASELINE_QUALIFICATION_SHA == QUALIFICATION_SHA and
+-            qa.MAIN_BASELINE_SCHEMA == 'pocket4-main-current-baseline-v1',
++            qa.MAIN_BASELINE_SCHEMA == 'pocket4-main-current-baseline-v2',
+             'BUILT_HELPER_AND_CURRENT_HOST_BINDING_REQUIRED')
+     current_controls = build_receipt.get('current_baseline_scope_controls', {})
+     report = current_controls.get('report', {})
+     require(current_controls.get('source_sha256') == manifest['files']['check_current_baseline.py']['sha256'] and
+-            report.get('all_passed') is True and report.get('count') == 21 and
+-            len(report.get('cases', [])) == 21 and len({x.get('name') for x in report['cases']}) == 21 and
++            report.get('all_passed') is True and report.get('count') == 32 and
++            len(report.get('cases', [])) == 32 and len({x.get('name') for x in report['cases']}) == 32 and
+             all(x.get('passed') is True for x in report['cases']) and
+             report.get('production_contract_sha256') == manifest['files']['qa_contract.py']['sha256'] and
+             report.get('production_adapter_sha256') == manifest['files']['qa_adapter.py']['sha256'] and
+             report.get('host_recorder_manifest_sha256') == RECORDER_MANIFEST and
+             report.get('main_epoch_sha256') == CURRENT_EPOCH and
+-            report.get('main_baseline_schema') == 'pocket4-main-current-baseline-v1' and
++            report.get('main_baseline_schema') == 'pocket4-main-current-baseline-v2' and
+             report.get('main_baseline_sha256') == BASELINE_SHA and
+             report.get('main_baseline_qualification_sha256') == QUALIFICATION_SHA,
+-            'ACTUAL_21_SCOPE_AND_HOST_SESSION_CONTROLS_REQUIRED')
++            'ACTUAL_32_SCOPE_AND_HOST_SESSION_CONTROLS_REQUIRED')
+     require(proof['APK'] == {'path':str(APK),'bytes':APK_BYTES,'sha256':APK_SHA},'EXACT_ACTUAL_AMAZON_HELPER_APK_REQUIRED')
+     stage=json.loads(read(STAGE,expected=STAGE_SHA,size=STAGE_BYTES))
+     require(stage.get('state') == 'OWNED_QA_APK_STATIC_BUILD_PASS_ANDROID_UNRUN' and
+@@ -581,7 +609,7 @@
+         guard=lambda:ref.main_guard(activation,epoch)
+         result['Main_before']=guard()
+         result['install_state_worker_requested']=True
+-        observed=ref.run_cli('01-install-state',['/usr/bin/python3','-I',str(HERE/'install_state.py'),
++        observed=ref.run_cli('01-install-state',['/usr/bin/python3','-I','-B',str(HERE/'install_state.py'),
+             '--worker-once','--source-manifest-sha256',expected],190,evidence,guard)
+         raw=read(WORKER_ROOT/'result.json');durable=json.loads(raw)
+         require(observed==durable and durable.get('ok') is True and durable.get('package')==SELF and
+--- actual-parent/ihg_context.py
++++ current-cell02/ihg_context.py
+@@ -17,12 +17,12 @@
+ PACKAGE = 'com.ihg.apps.android'
+ UID = 10137
+ VERSION = 50023219
+-INSTALLED_SHARED = Path('/home/alex/work/pocket4-current-host-r5-source-01')
+-SHARED_MANIFEST = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
+-CONTRACT_SHA = '47389dc89f2257c4f80ae475d977fb63b04a994414772ed708f49b479fcd0783'
+-CURRENT_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
+-BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
+-QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
++INSTALLED_SHARED = Path('/home/alex/work/pocket4-current-host-r6-source-01')
++SHARED_MANIFEST = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
++CONTRACT_SHA = 'f92d2598221c5bf65e783df39864879a2056da47f794680668b34df11f97da49'
++CURRENT_EPOCH = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
++BASELINE_SHA = '633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364'
++QUALIFICATION_SHA = 'ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e'
+ LIST = ['/system/bin/cmd','package','list','packages','-U','--show-versioncode','--user','0',PACKAGE]
+ PATHS = ['/system/bin/cmd','package','path','--user','0',PACKAGE]
+ FILE_LIMIT = 256*1024*1024
+@@ -47,7 +47,7 @@
+ 
+ def ordered_commands(qa, self_package, guest_apk, state_nonce):
+     require(qa.PACKAGE == PACKAGE and qa.UID == UID and
+-            qa.SELF == self_package == 'org.droidloom.qa.ihg.r3', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
++            qa.SELF == self_package == 'org.droidloom.qa.ihg.r4', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
+     state = {'protocol':qa.PROTOCOL,'nonce':state_nonce,'op':'state'}
+     qa.validate_request(state)
+     own_uid = ['/system/bin/cmd','package','list','packages','-U','--user','0',self_package]
+@@ -65,16 +65,16 @@
+ 
+ 
+ def current_scope():
+-    return {'schema':'pocket4-current-recorder-scope-v1',
+-            'current_baseline_schema':'pocket4-main-current-baseline-v1',
++    return {'schema':'pocket4-current-recorder-scope-v2',
++            'current_baseline_schema':'pocket4-main-current-baseline-v2',
+             'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,
+             'current_baseline_qualification_sha256':QUALIFICATION_SHA,
+             'package':PACKAGE,'uid':UID,'user':0}
+ 
+ 
+ def baseline_scope(ref, baseline):
+-    require(baseline.get('schema') == 'pocket4-main-current-baseline-v1' and
+-            baseline.get('kind') == 'current-framework-generation' and
++    require(baseline.get('schema') == 'pocket4-main-current-baseline-v2' and
++            baseline.get('kind') == 'current-cell-generation' and
+             'main_deployed' not in baseline and baseline.get('deployment_performed') is False and
+             baseline['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and
+             ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and
+@@ -88,7 +88,7 @@
+                 all(type(v) is int and v >= 0 for v in row.values()) and
+                 row['inode'] > 0 and row['uid'] == UID,
+                 'CURRENT_TARGET_DATA_DIRECTORY_BINDING_REQUIRED')
+-    return {'schema':'pocket4-current-recorder-scope-v1',
++    return {'schema':'pocket4-current-recorder-scope-v2',
+             'current_baseline_schema':baseline['schema'],
+             'epoch_sha256':baseline['framework_epoch']['sha256'],
+             'current_baseline_sha256':ref.BASELINE_SHA,
+--- actual-parent/ihg_transport.py
++++ current-cell02/ihg_transport.py
+@@ -18,7 +18,7 @@
+ 
+ 
+ ANDROID_APP_SHA256 = "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+-FRAMEWORK_EPOCH_SHA256 = "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2"
++FRAMEWORK_EPOCH_SHA256 = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
+ HELD_HELPER_SHA256 = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+ EXPECTED_PACKAGE = "com.ihg.apps.android"
+ EXPECTED_UID = 10137
+--- actual-parent/stage_execute.py
++++ current-cell02/stage_execute.py
+@@ -2,15 +2,15 @@
+ """Exact ihg current-baseline install/state staging with its own target context."""
+ import hashlib,json,os,stat,sys,types
+ from pathlib import Path,PurePosixPath
+-ROOT=Path('/home/alex/work/pocket4-owned-ihg-qa-r3-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01')
+ SOURCE=ROOT/'source'
+-NONCE='5c5dc9eed1b260e1004116390c716cef'
+-REFERENCE_SHA='fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'
++NONCE = '2b991bd0c0832109fb97af75690c73b6'
++REFERENCE_SHA = '0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89'
+ FILES={'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',
+        'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',
+        'check_install_binding.py','references/read_ihg.py','target-artifact-reference.json'}
+-BASE_ROOT=Path('/home/alex/work/pocket4-current-host-r5-source-01')
+-R5_MANIFEST='6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
++BASE_ROOT = Path('/home/alex/work/pocket4-current-host-r6-source-01')
++R6_MANIFEST = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
+ def require(value,reason):
+     if not value:raise RuntimeError(reason)
+ def digest(raw):return hashlib.sha256(raw).hexdigest()
+@@ -60,23 +60,23 @@
+         require(0<len(encoded[name])<=65536,'SOURCE_SIZE_BOUND')
+     manifest_raw=encoded['SOURCE_PINS.json'];manifest=json.loads(manifest_raw)
+     require(digest(manifest_raw)==packet['source_manifest_sha256'] and manifest.get('schema')==2 and
+-            manifest.get('host_recorder_manifest_sha256')==R5_MANIFEST and
++            manifest.get('host_recorder_manifest_sha256')==R6_MANIFEST and
+             set(manifest['files'])==FILES,'EXTERNAL_CURRENT_SOURCE_MANIFEST_REQUIRED')
+     for name,row in manifest['files'].items():
+         require(row=={'bytes':len(encoded[name]),'sha256':digest(encoded[name])},'SOURCE_PAYLOAD_CHANGED:'+name)
+-    require(digest(encoded['host/source-manifest.json'])==R5_MANIFEST,'CURRENT_HOST_MANIFEST_CHANGED')
++    require(digest(encoded['host/source-manifest.json'])==R6_MANIFEST,'CURRENT_HOST_MANIFEST_CHANGED')
+     return packet,encoded
+ def load_original_host(files):
+-    raw=read(BASE_ROOT/'source-manifest.json',131072,R5_MANIFEST)
++    raw=read(BASE_ROOT/'source-manifest.json',131072,R6_MANIFEST)
+     require(raw==files['host/source-manifest.json'],'EXACT_PUBLISHED_HOST_MANIFEST_REQUIRED')
+     manifest=json.loads(raw)
+-    require(manifest.get('schema')==2 and manifest.get('revision')==5 and
+-            manifest.get('artifact')=='pocket4-bilibili-current-recorder-held-r5' and len(manifest['files'])==14,
++    require(manifest.get('schema')==2 and manifest.get('revision')==6 and
++            manifest.get('artifact')=='pocket4-bilibili-current-recorder-held-r6' and len(manifest['files'])==14,
+             'EXACT_CURRENT_HOST_SOURCE_SCHEMA_REQUIRED')
+     row=manifest['files']['source_contract.py']
+     mod=load_text(read(BASE_ROOT/'source_contract.py',131072,row['sha256'],row['bytes']),
+                   BASE_ROOT/'source_contract.py','original_current_host_contract')
+-    original=mod.SourceContract(BASE_ROOT/'source-manifest.json',R5_MANIFEST)
++    original=mod.SourceContract(BASE_ROOT/'source-manifest.json',R6_MANIFEST)
+     original.verify()
+     row=manifest['files']['current_coordinator.py']
+     require(row['sha256']==REFERENCE_SHA,'CURRENT_COORDINATOR_PIN_CHANGED')
+@@ -99,8 +99,8 @@
+     transport=load_text(files['ihg_transport.py'],SOURCE/'ihg_transport.py','current_target_transport_controls')
+     controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
+     controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref,files,packet['source_manifest_sha256'])
+-    require(controls['all_passed'] is True and controls['count']==40 and
+-            len(controls['cases'])==40 and all(x['passed'] is True for x in controls['cases']),
++    require(controls['all_passed'] is True and controls['count']==51 and
++            len(controls['cases'])==51 and all(x['passed'] is True for x in controls['cases']),
+             'ACTUAL_CURRENT_APP_CONTEXT_CONTROLS_REQUIRED')
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_install_stage_epoch')
+     before=ref.main_guard(baseline,epoch)
+@@ -108,7 +108,7 @@
+     result={'schema':2,'ok':False,'source_manifest_sha256':packet['source_manifest_sha256'],
+         'packet_sha256':digest(raw),'nonce':NONCE,'Main_before':before,'controls':controls,
+         'error':None,'secondary_errors':[],'automatic_retry':False,'UI_actions':0,'audio_actions':0,
+-        'current_host_manifest_sha256':R5_MANIFEST,'whole_app_production_ready':False}
++        'current_host_manifest_sha256':R6_MANIFEST,'whole_app_production_ready':False}
+     def remember(phase,error):
+         value={'phase':phase,'type':type(error).__name__,'message':str(error)}
+         if result['error'] is None:result['error']=value
+--- actual-parent/make_request.py
++++ current-cell02/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-ihg-qa-r3-current-r5-install-state-01-20261106'
+-ROOT='/home/alex/work/pocket4-owned-ihg-qa-r3-install-state-01'
+-NONCE='5c5dc9eed1b260e1004116390c716cef'
++KEY = 'pocket4-owned-ihg-qa-r4-current-r6-install-state-01-20261106'
++ROOT = '/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01'
++NONCE = '2b991bd0c0832109fb97af75690c73b6'
+ 
+ 
+ def sha(raw):
+@@ -45,7 +45,7 @@
+     wrapper+="scope={'__name__':'owned_qa_stage','__file__':"+repr(ROOT+'/source/stage_execute.py')+"}\n"
+     wrapper+="exec(compile(src,scope['__file__'],'exec'),scope)\nraise SystemExit(scope['main'](raw))\n"
+     request={'host':'pocket4','executable':'/usr/bin/sudo',
+-        'args':['-n','/usr/bin/python3','-I','-c',wrapper],
++        'args':['-n','/usr/bin/python3','-I','-B','-c',wrapper],
+         'cwd':'/home/alex/work','env':{'PYTHONDONTWRITEBYTECODE':'1'},
+         'stdin':payload.decode('utf-8'),'idempotency_key':KEY,
+         'timeout_seconds':300,'cpu_quota_percent':100,'memory_max_bytes':536870912,'nice':10}
+--- actual-parent/check_install_binding.py
++++ current-cell02/check_install_binding.py
+@@ -3,7 +3,7 @@
+ import types
+ import json
+ 
+-CONTROL_COUNT = 40
++CONTROL_COUNT = 51
+ 
+ def run_controls(entry, actual_host, manifest, context, transport, baseline, ref, files, source_manifest_sha256):
+     rows = []
+@@ -26,10 +26,30 @@
+     host_no('old_host_manifest',lambda v:v.update(source_manifest_sha256='52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'))
+     host_no('missing_final_Main',lambda v:v.pop('Main_final'))
+     host_no('wrong_final_epoch',lambda v:v['Main_final'].update(Main_epoch_sha256='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'))
+-    host_no('FD_close_incomplete',lambda v:v['owned_fds'].update(closed=v['owned_fds']['closed']-1))
+-    host_no('partial_source',lambda v:v.update(source_published=False))
+-    host_no('controls_count_changed',lambda v:v['controls'].update(count=25))
++    host_no('FD_close_incomplete',lambda v:v['source_fds'].update(closed=v['source_fds']['closed']-1))
++    host_no('partial_source',lambda v:v.update(all_staged_sources_unchanged=False))
++    host_no('controls_count_changed',lambda v:v['controls'].update(count=37))
+     host_no('production_claim',lambda v:v.update(whole_app_production_ready=True))
++    def host_no_exact(name,change,code):
++        value=copy.deepcopy(actual_host);change(value)
++        try:entry.qualify_host_stage(value,manifest)
++        except RuntimeError as error:entry.require(str(error)==code,'R6_HOST_CONTROL_WRONG_FIRST_ERROR')
++        else:raise RuntimeError('R6_HOST_NEGATIVE_ACCEPTED:'+name)
++        yes(name)
++    host_no_exact('previous_host_stage_schema_rejected',lambda v:v.update(schema='pocket4-current-host-source-stage-result-v1'),
++                  'ACTUAL_COMPLETE_R6_HOST_SOURCE_STAGE_REQUIRED')
++    host_no_exact('publication_FD_close_incomplete',lambda v:v['publication_fds'].update(closed=v['publication_fds']['closed']-1),
++                  'ACTUAL_CURRENT_HOST_SOURCE_FDS_NOT_RETIRED')
++    host_no_exact('published_source_leaf_drift',lambda v:v['source_pins']['recorder.py'].update(sha256='0'*64),
++                  'ACTUAL_R6_PUBLISHED_SOURCE_PINS_REQUIRED')
++    host_no_exact('unauthenticated_owner_chain',lambda v:v['Main_before'].update(authenticated_owner_chain_matches=False),
++                  'CURRENT_HOST_STAGE_MAIN_FENCES_CHANGED')
++    host_no_exact('current_user_namespace_mismatch',lambda v:v['Main_final'].update(current_user_namespaces_match=False),
++                  'CURRENT_HOST_STAGE_MAIN_FENCES_CHANGED')
++    host_no_exact('durable_host_stage_pin_drift',lambda v:v['stage_result'].update(sha256='0'*64),
++                  'ACTUAL_R6_DURABLE_STAGE_PIN_REQUIRED')
++    host_no_exact('compiled_source_name_changed',lambda v:v['controls']['compiled_sources'].__setitem__(0,'foreign.py'),
++                  'ACTUAL_38_CURRENT_HOST_CONTROLS_REQUIRED')
+     entry.require(entry.uid_from(('package:'+entry.SELF+' uid:99999\n').encode())==99999,
+                   'SYNTHETIC_UID_PARSER_POSITIVE')
+     yes('synthetic_uid_positive_not_actual_identity')
+@@ -50,6 +70,8 @@
+     base_no('missing_current_target_directory',lambda v:v['app_directories'].pop('user_de/0/'+context.PACKAGE))
+     base_no('foreign_current_target_directory_owner',lambda v:v['app_directories']['user/0/'+context.PACKAGE].update(uid=10117))
+     base_no('baseline_production_claim',lambda v:v.update(whole_app_production_ready=True))
++    base_no('previous_current_baseline_schema_rejected',lambda v:v.update(schema='pocket4-main-current-baseline-v1'))
++    base_no('previous_current_baseline_kind_rejected',lambda v:v.update(kind='current-framework-generation'))
+     for field in ('BASELINE_SHA','QUALIFICATION_SHA'):
+         wrong=types.SimpleNamespace(EPOCH=ref.EPOCH,BASELINE_SHA=ref.BASELINE_SHA,
+                                     QUALIFICATION_SHA=ref.QUALIFICATION_SHA)
+@@ -79,6 +101,7 @@
+                   ctx.action_attempted is False,'PURE_OWN_TARGET_CONTEXT_CONSTRUCTOR')
+     yes('production_context_constructor_own_target')
+     rejected('constructor_old_R4_manifest',lambda:create(scope,'52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'))
++    rejected('constructor_previous_R5_manifest',lambda:create(scope,'6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'))
+     def scope_no(name,change):
+         value=copy.deepcopy(scope);change(value)
+         rejected(name,lambda:create(value))
+@@ -95,9 +118,9 @@
+     entry.require(calls=={'Main':0,'target':0,'command':0},'PURE_CONTROL_CALLBACK_OR_COMMAND_ATTEMPTED')
+ 
+     qa_manifest=json.loads(entry.read(entry.QA_ROOT/'SOURCE_PINS.json',131072,entry.QA_MANIFEST))
+-    qa=entry.module(entry.QA_ROOT/'qa_contract.py',qa_manifest['files']['qa_contract.py']['sha256'],'ihg_r3_install_plan_contract')
+-    entry.require(qa.SELF==entry.SELF=='org.droidloom.qa.ihg.r3' and
+-                  qa.PROTOCOL=='pocket4-owned-ihg-qa-v3','EXACT_R3_PLAN_CONTRACT')
++    qa=entry.module(entry.QA_ROOT/'qa_contract.py',qa_manifest['files']['qa_contract.py']['sha256'],'ihg_r4_install_plan_contract')
++    entry.require(qa.SELF==entry.SELF=='org.droidloom.qa.ihg.r4' and
++                  qa.PROTOCOL=='pocket4-owned-ihg-qa-v4','EXACT_R4_PLAN_CONTRACT')
+     actual_plan=context.ordered_commands(qa,entry.SELF,entry.GUEST_APK,entry.STATE_NONCE)
+     state_request={'protocol':qa.PROTOCOL,'nonce':entry.STATE_NONCE,'op':'state'}
+     qa.validate_request(state_request)
+@@ -106,10 +129,12 @@
+                   actual_plan[3]==(entry.INSTALL,40,True) and
+                   actual_plan[7]==(qa.instrumentation_argv(state_request),20,False) and
+                   sum(item[2] is True for item in actual_plan)==1,
+-                  'ACTUAL_R3_ORDERED_INSTALL_STATE_PLAN')
+-    yes('production_ordered_commands_actual_R3_contract_positive')
++                  'ACTUAL_R4_ORDERED_INSTALL_STATE_PLAN')
++    yes('production_ordered_commands_actual_R4_contract_positive')
+     rejected('production_ordered_commands_old_R2_package_rejected',lambda:context.ordered_commands(
+         qa,'org.droidloom.qa.ihg.r2',entry.GUEST_APK,entry.STATE_NONCE))
++    rejected('production_ordered_commands_previous_R3_package_rejected',lambda:context.ordered_commands(
++        qa,'org.droidloom.qa.ihg.r3',entry.GUEST_APK,entry.STATE_NONCE))
+     rows.extend(run_source_controls(entry,files,source_manifest_sha256))
+     entry.require(len(rows)==CONTROL_COUNT and len({x['name'] for x in rows})==CONTROL_COUNT,
+                   'EXACT_CURRENT_CONTEXT_CONTROL_COUNT')
+@@ -121,7 +146,7 @@
+             'Bili_Flow_or_MainBinding_instantiated':False,'private_baseline_exported':False,
+             'Android_commands':0,'UI_actions':0,'children':0,
+             'owned_temporary_source_directories':True,'temporary_directories_removed':True,
+-            'actual_R5_reference_read_only':True,'production_verify_source_calls':5}
++            'actual_R6_reference_read_only':True,'production_verify_source_calls':5}
+ 
+ 
+ def run_source_controls(entry, files, expected):
+@@ -146,7 +171,7 @@
+         actual=isolated.verify_source(expected)
+         entry.require(actual['files']==json.loads(files['SOURCE_PINS.json'])['files'],
+                       'ACTUAL_COMPLETE_PRODUCTION_SOURCE_GATE')
+-        rows.append({'name':'production_verify_source_actual_R5_reference_positive','passed':True})
++        rows.append({'name':'production_verify_source_actual_R6_reference_positive','passed':True})
+         host=root/'host';host.mkdir(mode=0o700)
+         (host/'source-manifest.json').write_bytes(host_manifest)
+         (host/'current_coordinator.py').write_bytes(host_source)
+@@ -162,9 +187,9 @@
+                 raise RuntimeError('SOURCE_REFERENCE_NEGATIVE_ACCEPTED:'+name)
+             rows.append({'name':name,'passed':True})
+         (host/'current_coordinator.py').unlink()
+-        rejected('production_verify_source_missing_R5_coordinator_rejected')
++        rejected('production_verify_source_missing_R6_coordinator_rejected')
+         (host/'current_coordinator.py').write_bytes(host_source+b'\n')
+-        rejected('production_verify_source_wrong_R5_coordinator_hash_rejected')
++        rejected('production_verify_source_wrong_R6_coordinator_hash_rejected')
+         (host/'current_coordinator.py').write_bytes(host_source)
+         original=(source/'README.md').read_bytes()
+         (source/'README.md').write_bytes(original+b'\n')

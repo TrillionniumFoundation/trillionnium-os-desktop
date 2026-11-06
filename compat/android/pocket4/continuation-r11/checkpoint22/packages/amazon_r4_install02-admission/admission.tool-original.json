@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nraw=sys.stdin.buffer.read(262145)\nassert hashlib.sha256(raw).hexdigest()=='358cde6939b91d6a5c5fb66b8dc6b4003c2cc9f4c3a2695960abe125ab51b6de'\np=json.loads(raw);src=p['files']['stage_execute.py'].encode('utf-8')\nassert hashlib.sha256(src).hexdigest()=='3cca1ef18addea7448ee0450d630d522844e9005be83d8d91ef9f085c64c4c38'\nscope={'__name__':'owned_qa_stage','__file__':'/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-02/source/stage_execute.py'}\nexec(compile(src,scope['__file__'],'exec'),scope)\nraise SystemExit(scope['main'](raw))\n"
+    ],
+    "created_unix_ms": 1793982239814,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b1ac9446-fc05-7a33",
+    "idempotency_key": "pocket4-owned-amazon-qa-r4-current-r6-install-state-02-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b1ac9446-fc05-7a33",
+    "request_digest": "557a705aef177d3a9cad04540c07fb6489a7a1f7e5ee85f96cb9aceea89384b5",
+    "request_fingerprint": 6159358976243236154,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b1ac9446-fc05-7a33"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b1ac9446-fc05-7a33"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

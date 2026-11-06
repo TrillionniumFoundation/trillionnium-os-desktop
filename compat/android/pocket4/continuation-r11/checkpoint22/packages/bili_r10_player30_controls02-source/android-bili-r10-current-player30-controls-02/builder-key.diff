@@ -1,0 +1,11 @@
+--- failed01/build_controls_and_ui.js
++++ corrected02/build_controls_and_ui.js
+@@ -31,7 +31,7 @@
+   "encoded=json.dumps(out,sort_keys=True,separators=(',',':'));assert len(encoded.encode())<=32768;print(encoded,flush=True)\n";
+  return {source:control.source,packet,raw,manifest_raw:manifestRaw,manifest_sha256:manifestSHA,
+   request:{host:"pocket4",executable:"/usr/bin/python3",args:["-I","-B","-c",wrapper],cwd:"/home/alex/work",env:{},stdin:raw,
+-   idempotency_key:"pocket4-current-bili-r10-owner-player30-controls01-20261106",timeout_seconds:90,cpu_quota_percent:100,memory_max_bytes:268435456,nice:10},
++   idempotency_key:"pocket4-current-bili-r10-owner-player30-controls02-20261106",timeout_seconds:90,cpu_quota_percent:100,memory_max_bytes:268435456,nice:10},
+   Python_executed_here:false,UI_request_created:false};
+ }
+ function buildBiliR10UI(h,bound,controls,actualControl,oldRequest){

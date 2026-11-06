@@ -1,0 +1,20 @@
+--- fixture02/fixture_contract.py
++++ fixture03/fixture_contract.py
+@@ -41,7 +41,7 @@
+ 
+ def actual_build(raw, pin):
+     value = exact_bytes(raw,pin,67108864)
+-    need(value.get('kind') == 'p4-marriott-real-arm64-ndk-apk-build02' and
++    need(value.get('kind') == 'p4-marriott-real-arm64-ndk-apk-build03' and
+          value.get('success') is True and value.get('errors') == [] and
+          value.get('all_inputs_unchanged') is True and
+          value.get('post_input_errors') == [] and
+@@ -91,7 +91,7 @@
+     need(type(artifact.get('bytes')) is int and 0 < artifact['bytes'] <= 33554432 and
+          re.fullmatch('[0-9a-f]{64}',artifact.get('sha256','')) and
+          artifact.get('path') ==
+-         '/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-02-20261106/ndk-tests.apk' and
++         '/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-03-20261106/ndk-tests.apk' and
+          artifact.get('resolved_path') == artifact['path'],
+          'FIXED_ACTUAL_APK_ARTIFACT_REQUIRED')
+     return {'build_result':dict(pin),'APK':artifact,'signer_sha256':contract['signature_certificate_sha256'],

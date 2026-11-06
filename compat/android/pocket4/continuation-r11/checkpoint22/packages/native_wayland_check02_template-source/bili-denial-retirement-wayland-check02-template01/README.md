@@ -1,0 +1,9 @@
+# Wayland check02 template awaiting actual vendor preparation
+
+TEMPLATE_ONLY. No exact request exists yet. The six source placeholders are the three actual bytes/SHA pairs for preparation result, vendor manifest, and vendor config. `bindPreparedVendorActual` requires the complete raw originals and preserves them byte-for-byte; JSON-parsed timestamp numbers are never reserialized.
+
+This template addresses the preserved Wayland01 offline metadata missing-flate2 failure. It keeps the exact nine production sources,500-file map, original workspace/Cargo.lock,15 command gates,three existing child lifecycle controls,2GiB/oneCPU/nice15/900+1020s profile,pkg-config actual-input checks and source/tool/resource cleanup gates. It does not repeat112 host controls or claim a link,Android Binder ABI,GPU drain or deployment.
+
+The sole dependency-source change is an explicitly bound vendor directory created by the independent preparation phase. Every193 original locked archive and every vendor file is requalified against the complete actual preparation manifest before metadata and checked again afterward. The original45 actual archive/source authority remains a required subset of that provenance. Both metadata and check use --offline --locked and the exact generated source config. Cargo receives a fresh private CARGO_HOME; shared cache writes are not authorized.
+
+To bind after actual prep PASS, load the three complete raw originals under their exact staged names, run bindPreparedVendorActual(template,actual,H), then reproduceVendorWaylandCheckRequest(files,H,bound). Never fill future pins from a prediction. The final packet contains11 transferred source files and8 fixed reused authorities. Only the exact prepared manifest/result have the larger32MiB/4MiB read limits. The complete source package must be re-frozen and independently reviewed before Root dispatches its new key.

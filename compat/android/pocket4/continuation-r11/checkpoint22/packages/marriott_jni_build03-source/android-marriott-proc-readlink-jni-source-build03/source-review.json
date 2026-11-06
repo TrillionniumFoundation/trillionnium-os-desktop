@@ -1,0 +1,105 @@
+{
+  "actual_evidence_review": {
+    "canonical": {
+      "bytes": 8037,
+      "git_blob_sha": "6b84d9e33ac3de1a3316295e6473bd9f880597c7",
+      "sha256": "be381038a62eeb2995aac02d48ad473f37b9f92a6d2aa34ffd9ae6c7b7d2402b"
+    },
+    "canonical_checks": {
+      "bounded": true,
+      "complete": true,
+      "exactFirstAlias": true,
+      "fds": true,
+      "noQualification": true,
+      "originalD": true,
+      "originalRoots7": true,
+      "readOnly": true,
+      "rejected": true,
+      "unchanged": true
+    },
+    "configuration": {
+      "bytes": 57428,
+      "git_blob_sha": "557bf518250ac1efdbcd2b7aad68db90075ed899",
+      "sha256": "814a50e684fac8725aab86c5b6df196c97b2bc32a0ddd22ca3b852fb3178aba7"
+    },
+    "configuration_checks": {
+      "bounded": true,
+      "closed": true,
+      "complete": true,
+      "counts": true,
+      "exactThree": true,
+      "noPromotedAuthority": true,
+      "readonly": true,
+      "unchanged": true
+    },
+    "full_configuration_tuple_proof": [
+      {
+        "bytes": 7171,
+        "full_tuple_lossless_equal": true,
+        "git_blob_sha": "861653a4966d7210f3bf3ce28c3dbb01027b4368",
+        "role": "sdk_stl_selection",
+        "sha256": "31b30a2c75457df7076aa588760cb2e64b73f1880e2b19092eb805e682daacea",
+        "source_pin_equal": true
+      },
+      {
+        "bytes": 29802,
+        "full_tuple_lossless_equal": true,
+        "git_blob_sha": "4a7e3c7ad300b79f6158309f4b8c50c60e79af66",
+        "role": "target_header_selection",
+        "sha256": "7cc70c5060b2c1729c4406a5a27ae16774f9f80f25db1d55a37a1e170709ebef",
+        "source_pin_equal": true
+      },
+      {
+        "bytes": 1805,
+        "full_tuple_lossless_equal": true,
+        "git_blob_sha": "6c83d0e0d565ce254152b56a87118a2fe96c05ac",
+        "role": "arm64_ndk_config",
+        "sha256": "155023bfbc86f9f021ea5705822e52f13d6fca5d80ff1cce12ae279287b694c6",
+        "source_pin_equal": true
+      }
+    ]
+  },
+  "attempt": "build03",
+  "changes": [
+    "Fresh root/kind/key03; neither failed root is reused.",
+    "Read and watch the three actual engineering/configuration full byte pins and complete metadata tuples, before compiler child launch.",
+    "Put only the fixed ARM64 NDK target configuration directory before common C++ headers in include search.",
+    "Permit only the exact observed ARM64 NDK __config_site leaf as the additional dependency path, not its whole directory or the host root.",
+    "Require each preflight and actual dependency list to name exactly that one __config_site; generic, host or multiple configurations fail.",
+    "Include named and resolved paths when an original root gate rejects, without reading an out-of-scope body."
+  ],
+  "concrete_failure": "Compile02 correctly rejected generic libc++ __config_site resolving to the x86_64 host configuration. Actual canonical metadata and three public source readbacks establish the correct APK SDK-device configuration.",
+  "local_validation": "V8 exact-byte inverse differences, packet regeneration, source and metadata binding only. No local Python, compiler or new runtime tests have executed.",
+  "request": {
+    "args": [
+      "-I",
+      "-B",
+      "-"
+    ],
+    "command_seconds": 25,
+    "cpu_quota_percent": 100,
+    "dispatch_owner": "Root",
+    "memory_max_bytes": 1073741824,
+    "retirement_seconds": 5,
+    "timeout_seconds": 210,
+    "uid": 1000,
+    "work_seconds": 150
+  },
+  "retained_limits": {
+    "Android_ABI_runtime_qualified": false,
+    "current_Main_epoch_unavailable_no_normal03": true,
+    "executed_test_cases": 0,
+    "host_operator_owned_group_writable_compiler": true,
+    "linked_APK": false,
+    "timing_proof_not_atomic_CAS": true
+  },
+  "schema": 1,
+  "state": "SOURCE_ONLY_NOT_EXECUTED",
+  "unchanged": [
+    "All seven embedded test/bridge reference sources and twelve TestBody names, including nine new tests.",
+    "Six original compiler invocations, their flags apart from the target include directory, and three ARM64 ELF REL objects; no linking or execution.",
+    "Original complete compiler C20 tuple, input full hash/identity and actual dependency equality gates.",
+    "OwnChildReaper, command timeout/group/adopted-child cleanup, original independent post-input finally, and resource guard byte-for-byte.",
+    "Default BERBERIS_PROCMAPS_RAW_METADATA_OWNER remains zero. No engine, ART, JNI runtime or Main qualification."
+  ]
+}

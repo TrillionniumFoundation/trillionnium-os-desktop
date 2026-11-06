@@ -1,0 +1,12 @@
+def current_flow_type(runtime_manifest, recorder):
+    discovery = module(HERE/'current_discovery.py',
+        runtime_manifest['files']['current_discovery.py']['sha256'],'owned_current_discovery')
+    factory = module(HERE/'current_flow.py',
+        runtime_manifest['files']['current_flow.py']['sha256'],'owned_current_flow')
+    require(factory.R6_MANIFEST == RECORDER_MANIFEST and
+            factory.MAIN_EPOCH == CURRENT_EPOCH and factory.BASELINE_SHA == BASELINE_SHA and
+            factory.QUALIFICATION_SHA == QUALIFICATION_SHA,
+            'CURRENT_FLOW_FACTORY_SOURCE_BINDING_REQUIRED')
+    return factory.flow_type(recorder,discovery)
+
+

@@ -1,0 +1,146 @@
+{
+  "schema": "pocket4-baseline02-source-review-v1",
+  "status": "SOURCE_ONLY_UNRUN",
+  "goal": "Qualify the discovered current Android cell without rewriting historical deployment or authorizing App runtime",
+  "actual_observation": {
+    "job_id": "1a1b11bc7e8-fc05-75d8",
+    "git_tree": "644a1a101ddde89b189159f8d5681373190eed92",
+    "git_blob_sha": "0d43d38e27252d1ee4a4c42015b216c52ba7d255",
+    "stdout": {
+      "bytes": 17817,
+      "sha256": "5f029ed98fa932f060a3617764b29485f09a4b09e1052c280ffd925235f488ae"
+    },
+    "source": {
+      "bytes": 48747,
+      "sha256": "2d4808c6ae499443302dc4ecc195116a4e4a4ccb2a52d589ca995cda42173f3b"
+    },
+    "framework_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "authenticated_daemon_status_supplied_owner": true,
+    "complete_unique_kernel_chain": true,
+    "old_helpers_or_tasks_reauthorized": false,
+    "installed_Main_source_version_verified": false
+  },
+  "create_only_root": "/home/alex/work/pocket4-main-current-baseline-02",
+  "baseline_schema": "pocket4-main-current-baseline-v2",
+  "qualification_schema": "pocket4-main-current-baseline-qualification-v2",
+  "guard_schema": "pocket4-current-main-guard-v2",
+  "identity_plan": {
+    "seven_role_pids": {
+      "android_init": 3268779,
+      "daemon": 3588022,
+      "launcher": 3268774,
+      "presenter": 3588024,
+      "surfaceflinger": 3270350,
+      "zygote64": 3270325,
+      "system_server": 3270611
+    },
+    "intermediary_pid": 3268775,
+    "full_actual_identity_hashes": {
+      "role_identity_sha256": {
+        "daemon": "0c97203b9dcf0334fb796b6d5264dba1df3644f048180f709b687671a37e7aaa",
+        "launcher": "b1a6ea5384d7096772650aa7ea3f4db22b70b112d054521e339fea4df3f3c830",
+        "presenter": "346c6eef8623ebdd359432bf8609b143590db470d4e0b5778e17fc312888326c",
+        "android_init": "25b9e20a0d7fe4a67a4ed645223532be0af4df4f0923385c63bf8575d44fdf01",
+        "zygote64": "2ea56f66613caa7850652ef19476df4356ad808bae94e9e9cedba476f71a06f4",
+        "system_server": "58cd65beff51ea53cd38c3cf021d89fd2a19527759efb5c5756c06cb9ab6c2b9",
+        "surfaceflinger": "8e1106acb9eb02b802e85b331b492593092e66c9570c052ed94b92fd99f89c76"
+      },
+      "intermediary_identity_sha256": "2705458a631597a25618cf841426fd6319ab5c3f7aae051c1f037cf480416a33",
+      "framework_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+      "child_table_sha256": {
+        "daemon": "15eebd4b58f9779cfd805e3fb0468877b9111a02b3e7883ac70a36087716f2a8",
+        "launcher": "e433d7ebbbd21219f1c07c1efc44ed2db14b5b12ddc276715aebb38b3bf5a9bb",
+        "intermediary": "01bc1128edf84a16ed5d46d117083fbf91fbd482082364a787f5cd9c08e0de82"
+      }
+    },
+    "authenticated_chain": [
+      "daemon",
+      "launcher",
+      "owner_intermediary",
+      "android_init"
+    ],
+    "samples": 3,
+    "minimum_span_seconds": 10,
+    "maximum_span_seconds": 90,
+    "independent_final_sample": true,
+    "all_eight_pidfds_held": true,
+    "all_three_complete_child_tables_double_read_each_sample": true,
+    "user_namespaces": "Read twice per lineage sample and compared with the host user namespace; no old user namespace literal",
+    "intermediary_root": "Read independently twice per lineage sample; compare all samples and final; not filled from historical data",
+    "executable_lineage": "Current seven executable content hashes/bytes match exact previous baseline; daemon/launcher/presenter backing metadata also match",
+    "roots": "All seven current roots measured against explicit lineage constraints; intermediary root is a fresh measurement",
+    "public_projection": "Eight actual roles: host PID, birth, parent, UIDs, NSpid, exact closed cgroup, pid/mnt/user namespaces and measured root dev/inode only"
+  },
+  "retained_gates": [
+    "Actual old ACT+VERIFIED+config pins and original shared helper static boundary",
+    "original paired classpath full hashes from init/zygote roots with same backing and bounded reads",
+    "fixed target package UID and eight data directory identities",
+    "five Main resource limits, zero OOM/pids-max errors, service identity before/after",
+    "source closure, create-only output, tracked FD closure and joined direct service children"
+  ],
+  "private_outputs": [
+    "baseline.private.json contains full identities under root-owned 0700 root, file mode 0400",
+    "No raw private baseline, executable names, argv, environ or UI data in stdout"
+  ],
+  "output_files": [
+    "source/*",
+    "baseline.private.json",
+    "qualification.json",
+    "current_baseline_guard.py"
+  ],
+  "constraints": {
+    "namespace_entry": false,
+    "Android_commands": 0,
+    "UI_actions": 0,
+    "App_launches": 0,
+    "helper_installs": 0,
+    "baseline_process_writes_only_new_owned_artifacts": true,
+    "service_children": 2,
+    "new_Status_RPC": 0,
+    "helper_or_task_runtime_authorization": false,
+    "framework_exit_cause_resolved": false,
+    "production_ready": false
+  },
+  "resource_policy": {
+    "internal_deadline_seconds": 110,
+    "tool_timeout_seconds": 130,
+    "cpu_quota_percent": 25,
+    "memory_max_bytes": 134217728,
+    "nice": 15
+  },
+  "controls": {
+    "expected": 66,
+    "retained_boundary_cases": 32,
+    "current_cell_cases": 34,
+    "expected_compiled_sources": 8,
+    "executed_locally": false,
+    "real_execution_pending": true,
+    "synthetic_fixture_is_not_device_evidence": true,
+    "production_calls_do_not_supply_synthetic_authority": true
+  },
+  "risks": [
+    "Fixed current owner or framework changing before/during qualification fails closed; never adopts a replacement PID",
+    "Bounded continuity does not prove future stability or resolve the framework/cell exit cause",
+    "This qualification publishes no App UID/state/action result; every new helper and flow needs new actual binding",
+    "Original historical old-role absence guard remains unchanged; no private old task cleanup authority is transferred"
+  ],
+  "references": {
+    "original_request": {
+      "bytes": 140175,
+      "sha256": "1164209c7b86074834d6480940572374a280d8abc7d425313e865f0dbd88f3d1",
+      "git_blob_sha": "0b9c23c628daf9c9c66c6ef5979e8e42780f6888"
+    },
+    "new_request": {
+      "bytes": 182870,
+      "sha256": "b0b9072922671d54a16bd189836d42a519ab6ac813a080a09213ceede957a719"
+    },
+    "new_packet": {
+      "bytes": 166570,
+      "sha256": "91eaff20ab1c41ec6720c24d5510368199f992336dda03a8731dbb44edd31536"
+    },
+    "diff": {
+      "bytes": 76738,
+      "sha256": "9ab18e0d15680bfb750879933c7bdf23f7897511f04d99d4f6e74897732462da"
+    }
+  }
+}

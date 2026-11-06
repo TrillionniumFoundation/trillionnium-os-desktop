@@ -1,0 +1,57 @@
+{
+  "actual_apk_bp": {
+    "blob": "10b4ddcfcb0ed57d4c0a20c75474ce5a97265d33",
+    "bytes": 2027,
+    "sdk_version": "current",
+    "sha256": "e7b5ca968da9969df0e8fa3d60d225342e7a7adb58f44abb57ab87254a4b1295",
+    "stl": "libc++_static",
+    "tree": "82d09f4d0b0eee437385ef458d14d6f298db9dc6"
+  },
+  "actual_canonical": {
+    "blob": "6b84d9e33ac3de1a3316295e6473bd9f880597c7",
+    "bytes": 8037,
+    "job": "1a1b1019282-fc05-74d4",
+    "sha256": "be381038a62eeb2995aac02d48ad473f37b9f92a6d2aa34ffd9ae6c7b7d2402b",
+    "tree": "1c67b16317f52b5b9593e06f194c38e1adf65d88"
+  },
+  "actual_compile02": {
+    "blob": "0df216900bffca7d6fdd81853517bfa950e42049",
+    "bytes": 26034,
+    "job": "1a1b0f08513-fc05-7433",
+    "sha256": "6f0241de61c3dd47839268494eefdf38dc72f08a982bf441c683fae526a5cc10",
+    "tree": "105fccc76a0885c4fd2db02fc05fbbae3bea4cbd"
+  },
+  "host_config_allowed": false,
+  "named_source_candidates": [
+    {
+      "maximum_bytes": 32768,
+      "purpose": "Observe actual SDK STL selection code",
+      "relative": "build/soong/cc/stl.go"
+    },
+    {
+      "maximum_bytes": 65536,
+      "purpose": "Observe actual per-target header ordering and ARM64 mapping",
+      "relative": "prebuilts/clang/host/linux-x86/soong/clangprebuilts.go"
+    },
+    {
+      "maximum_bytes": 8192,
+      "purpose": "Observe actual matching-toolchain ARM64 NDK configuration",
+      "relative": "prebuilts/clang/host/linux-x86/clang-r584948b/android_libc++/ndk/aarch64/include/c++/v1/__config_site"
+    }
+  ],
+  "new_remote_pins_fabricated": false,
+  "reference_only_upstream": [
+    {
+      "observed_blob": "8c4ef0b4a291d171a968ec8f9b6c751e1f9fbed9",
+      "scope": "SDK device libc++_static selects ndk_libc++_static; not local-source qualification",
+      "url": "https://android.googlesource.com/platform/build/soong/+/master/cc/stl.go"
+    },
+    {
+      "observed_blob": "3406023ed5ce11046ebf8e664b82af4e1e5e0c47",
+      "scope": "ARM64 selects aarch64; NDK target config directory precedes common libc++ headers; not local-source qualification",
+      "url": "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+/master/soong/clangprebuilts.go"
+    }
+  ],
+  "schema": 1,
+  "source_candidates_must_be_actually_read": true
+}

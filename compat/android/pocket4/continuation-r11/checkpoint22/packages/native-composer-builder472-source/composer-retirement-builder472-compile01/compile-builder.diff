@@ -1,0 +1,267 @@
+--- a/compile_builder.py
++++ b/compile_builder.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Compile builder471 fixed SystemUI test projection with 21 updater and 9 source controls; no platform execution."""
++"""Compile independent builder472 Composer/AIDL build-only entry with 23 updater and 9 source controls; no platform execution."""
+ import ctypes
+ import datetime
+ import hashlib
+@@ -197,7 +197,7 @@
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+ BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106/builder-source')
+-ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder471-systemui-test-projection-compile-01-20261106')
++ROOT = Path('/home/alex/work/pocket4-native-builder472-composer-retirement-entry-compile-01-20261106')
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+@@ -205,7 +205,7 @@
+ CARGO_HOME = Path('/home/alex/.cargo')
+ TOOLCHAIN = '1.93.0'
+ MANIFEST_PARENT = 'd87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057'
+-MANIFEST_471 = 'c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0'
++MANIFEST_472 = 'fcbf72b891d9a9bbbcd015777e50cc3ade436f25732a603b51de261eab9cb27a'
+ GO_PATCH = '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307'
+ OBSERVATION = '60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb'
+ GO_CONTROL = '391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674'
+@@ -225,10 +225,11 @@
+ PARENT_TESTS = ORIGINAL_TESTS + PAIR_TESTS + ART_PROJECTION_TESTS + TYPED_INGRESS_TESTS
+ PROVIDER_CLOSURE_TESTS = ["android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata","android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas","android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged","native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change","native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock","native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification"]
+ HAL_PROVIDER_TESTS = ["android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers","android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections","native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes"]
+-SYSTEMUI_PROJECTION_TESTS = ["android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths","android::tests::typed_systemui_test_projection_rejects_wrong_source_before_journal_or_write","android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal"]
+-TESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS + HAL_PROVIDER_TESTS + SYSTEMUI_PROJECTION_TESTS
+-FIXED_PROVIDER_DELTA = ["android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp","tools/droidloom-update/src/android.rs"]
+-SYSTEMUI_PROJECTION_PROOF_SHA = '17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762'
++COMPOSER_ENTRY_TESTS = ["tests::composer_retirement_cli_requires_exact_workspace_and_fresh_output","android::tests::composer_retirement_route_is_strict_and_disjoint_from_framework","android::tests::composer_retirement_fixed_sources_reject_alias_drift_and_restore_projection","android::tests::composer_retirement_workspace_rejects_prior_lock_and_manifest_only","android::tests::composer_retirement_exact_systemui_projection_rejects_drift_and_recovers"]
++TESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS + HAL_PROVIDER_TESTS + COMPOSER_ENTRY_TESTS
++FIXED_PROVIDER_DELTA = ["graphics/droidloom-composer-aidl/src/denial.rs","graphics/droidloom-composer-service/src/control.rs","graphics/droidloom-composer-service/src/main.rs","graphics/droidloom-composer/src/denial.rs","graphics/droidloom-denial-endpoint/src/lib.rs","graphics/droidloom-denial-protocol/src/lib.rs","graphics/droidloom-wayland/src/layers.rs","graphics/droidloom-wayland/src/main.rs","graphics/droidloom-wayland/src/retirement.rs","tools/droidloom-update/src/android.rs","tools/droidloom-update/src/main.rs"]
++COMPOSER_ENTRY_PROOF_SHA = '3bc022c9924dc13f7e2ad8d6ed85a079af1dec61733433b88c2c76d0df0c60da'
++ACK_SOURCE_PINS = json.loads("{\"candidate-composer-main.rs\":{\"bytes\":19202,\"path\":\"graphics/droidloom-composer-service/src/main.rs\",\"sha256\":\"567c60fd293f35e2e0957db6f38bc967cc0c3fa90354b98491d461a7decdb4ce\"},\"candidate-control.rs\":{\"bytes\":42491,\"path\":\"graphics/droidloom-composer-service/src/control.rs\",\"sha256\":\"d3d9f4b763a6e80b6549119e42b4d6c3c6ab7368359f3cc71d2e090f05a881ca\"},\"candidate-core-denial.rs\":{\"bytes\":25541,\"path\":\"graphics/droidloom-composer/src/denial.rs\",\"sha256\":\"ed0080cd33a3a4fa67b3a0c2e95bc274ab38e992ec073ab01d87b910bf2db3c8\"},\"candidate-endpoint.rs\":{\"bytes\":63752,\"path\":\"graphics/droidloom-denial-endpoint/src/lib.rs\",\"sha256\":\"062b65857160eb6e3aeba2a78c4ce3d8503c02572f24353f8c944d950e52308c\"},\"candidate-engine-retirement.rs\":{\"bytes\":11118,\"path\":\"graphics/droidloom-wayland/src/retirement.rs\",\"sha256\":\"383f4c6f7490c8568f1853af6e9449fdb35bdb088348de4a9856d75f97306873\"},\"candidate-protocol.rs\":{\"bytes\":105464,\"path\":\"graphics/droidloom-denial-protocol/src/lib.rs\",\"sha256\":\"6c7f8df133f2a9e55bd375da4b39dcba5b00d0c4c3ba6531a6b8be329ebce41c\"},\"candidate-provider.rs\":{\"bytes\":50513,\"path\":\"graphics/droidloom-composer-aidl/src/denial.rs\",\"sha256\":\"d6f13720da4267ff46f369617faecbb8c6446eca2c624e381c1ff51ddaebbf09\"},\"candidate-wayland-layers.rs\":{\"bytes\":35990,\"path\":\"graphics/droidloom-wayland/src/layers.rs\",\"sha256\":\"d0a81ce5339c5020496e9b73e007d52ee206449827269b272e4ef6ef43df5ecc\"},\"candidate-wayland-main.rs\":{\"bytes\":110131,\"path\":\"graphics/droidloom-wayland/src/main.rs\",\"sha256\":\"0f56264e971db9f246d8db34d7fd5de157fd389a97bfb34492a6f53376d27459\"}}")
+ SOURCE_RESUME_TESTS = ['resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
+ SOURCE_REGISTERED_TESTS = ['tests::project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync', 'tests::source_lock_accepts_bounded_133_sparse_paths_but_rejects_257', 'tests::plan_uses_only_exact_official_projects', 'tests::platform_compat_uses_its_official_tools_namespace', 'tests::traversal_and_full_sync_policy_are_rejected_together', 'tests::duplicate_projects_and_moving_refs_are_rejected', 'tests::root_links_are_relative_to_their_parent', 'tests::exact_local_git_fetch_and_manifest_link_are_verified', 'tests::reconciliation_accepts_only_monotonic_plan_expansion', 'tests::reconciliation_accepts_bounded_sparse_path_expansion', 'tests::materialized_verification_rejects_dirty_projects', 'resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
+ DEADLINE = None
+@@ -858,7 +859,7 @@
+     allowed=sorted(os.sched_getaffinity(0))
+     require(len(allowed)>=3,'cannot leave two logical CPUs free')
+     os.sched_setaffinity(0,[allowed[-1]])
+-    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh builder471 fixed five-module SystemUI test projection compile01, 500 source files, 18 original plus 3 new updater controls and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution',
++    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh builder472 independent Composer/AIDL strict build-only entry compile01, 500 source files, 18 original plus 5 new updater controls and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution',
+             'Main_actions':0,'Main_identity_observed':False,'install_actions':0,'network_downloads_permitted':False,
+             'commands':[],'allowed_cpus_before':allowed,'selected_cpus':[allowed[-1]],'expected_test_names':TESTS,'expected_source_resume_test_names':SOURCE_RESUME_TESTS}
+     def interrupted(number,frame):
+@@ -881,7 +882,7 @@
+         report['actual_Go_comparison_gate']=go_control_pin
+         report['upstream_vet_pass_claimed']=False
+         old_bytes,_=pinned_packet('compiled-parent470-manifest.json',MANIFEST_PARENT)
+-        new_bytes,_=pinned_packet('expected-builder471-manifest.json',MANIFEST_471)
++        new_bytes,_=pinned_packet('expected-builder472-manifest.json',MANIFEST_472)
+         expected=json.loads(old_bytes);copied_expected=json.loads(new_bytes)
+         require(len(expected)==499 and len(copied_expected)==500,'source manifest count changed')
+         original_rows,copied_before=exact_source_copy(expected)
+@@ -935,56 +936,77 @@
+                 'derived lock authority does not bind the exact source delta')
+         report['actual_typed_root_tree_authority']=roots_pin
+         report['typed_lock_derivation_authority']=derivation_pin
+-        projection_raw,projection_pin=pinned_packet('systemui-test-projection-proof.json',SYSTEMUI_PROJECTION_PROOF_SHA)
+-        projection=json.loads(projection_raw)
+-        require(projection['state']=='SOURCE_ONLY_FIXED_SYSTEMUI_TEST_PROJECTION_NOT_COMPILED' and
+-                projection['baseline']['manifest']['sha256']==MANIFEST_PARENT and
+-                projection['baseline']['compile_result']['sha256']==parent_pin['sha256'] and
+-                projection['candidate']['manifest']['sha256']==MANIFEST_471 and
+-                projection['candidate']['source_delta']==FIXED_PROVIDER_DELTA and
+-                projection['candidate']['source_files']==500 and projection['candidate']['unchanged']==498 and
+-                projection['candidate']['changed_existing']==['tools/droidloom-update/src/android.rs'] and
+-                projection['candidate']['added']==['android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp'] and
+-                projection['scope']['source_path']=='frameworks/base/packages/SystemUI/tests/Android.bp' and
+-                projection['scope']['excluded_modules']==['SystemUITests_defaults','SystemUITests',
+-                    'SystemUITests_systemui_accessibility','SystemUITests_presubmit','SystemUI_test_fixtures'] and
+-                projection['scope']['targets']==['framework-minus-apex','libandroid_runtime'] and
+-                projection['scope']['dependency_mode']=='Strict' and
+-                projection['scope']['ALLOW_MISSING_DEPENDENCIES']=='false' and
+-                projection['scope']['no_find_ignore_added'] is True and
+-                projection['validation']['new_focused_tests']==SYSTEMUI_PROJECTION_TESTS and
+-                projection['validation']['host_compile_performed'] is False,
+-                'fixed five-module SystemUI projection proof does not bind this candidate')
++        proof_raw,proof_pin=pinned_packet('composer-entry-proof.json',COMPOSER_ENTRY_PROOF_SHA)
++        proof=json.loads(proof_raw)
++        require(proof['state']=='SOURCE_ONLY_COMPOSER_RETIREMENT_ENTRY_NOT_COMPILED' and
++                proof['baseline']['manifest']['sha256']==MANIFEST_PARENT and
++                proof['baseline']['compile_result']['sha256']==parent_pin['sha256'] and
++                proof['candidate']['manifest']['sha256']==MANIFEST_472 and
++                proof['candidate']['source_delta']==FIXED_PROVIDER_DELTA and
++                proof['candidate']['source_files']==500 and proof['candidate']['unchanged']==489 and
++                proof['candidate']['replaced']==[name for name in FIXED_PROVIDER_DELTA if name in expected] and
++                proof['candidate']['added']==['graphics/droidloom-wayland/src/retirement.rs'] and
++                proof['new_focused_tests']==COMPOSER_ENTRY_TESTS and proof['host_compile_performed'] is False and
++                proof['ACK_SOURCE_PINS']==ACK_SOURCE_PINS and proof['separate_from_typed_builder471'] is True,
++                'fixed Composer entry proof does not bind this candidate')
++        scope_raw,scope_pin=pinned_packet('build-scope.json','f43cd778b75e484d53899eab543680e6b32ae5e54d6eca373b34223dcfcc8af9')
++        scope=json.loads(scope_raw)
++        require(scope==proof['scope'] and scope['entry']=='composer-retirement-build' and
++                scope['targets']==['android.hardware.graphics.composer3-service.droidloom','droidloom-composer-aidl-tests'] and
++                scope['dependency_mode']=='Strict' and scope['ALLOW_MISSING_DEPENDENCIES'] is False and
++                scope['read_fresh_every_project_before_reconcile'] is True and
++                scope['work_locks']==['package-build.lock','aosp-source-update.lock'] and
++                scope['projection_journal']=='source-projection.json' and
++                scope['resume_or_prior_lock_fallback'] is False and
++                scope['source_tests_executed'] is False and scope['android_tests_built'] is False and
++                scope['Binder_ABI_qualified'] is False and scope['Main_actions']==0 and
++                scope['fixed_SystemUI_child_projection']['independent_composer_only_call'] is True and
++                scope['fixed_SystemUI_child_projection']['typed_471_candidate_not_changed'] is True,
++                'fixed Composer targets, strict source/lock or build-only scope differs')
+         lock_name='android/manifest/m2-role-ingress-hal-provider-source-lock.json'
+         lock_raw,lock_pin=held(COPIED/lock_name)
+         require(expected[lock_name]==copied_expected[lock_name] and
+                 lock_pin['bytes']==expected[lock_name]['bytes']==96957 and
+                 lock_pin['sha256']==expected[lock_name]['sha256']==
+                     '72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d' and
+-                projection['source_lock']['sha256']==lock_pin['sha256'] and
+-                projection['source_lock']['unchanged'] is True,
++                scope['source_lock']['sha256']==lock_pin['sha256'],
+                 'exact 225-project source lock changed')
+         current_lock=json.loads(lock_raw)
+         require(len(current_lock['projects'])==225 and len(current_lock['links'])==8,
+                 'fixed source-lock project or link inventory differs')
+-        fixture_name='android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp'
+-        fixture_raw,fixture_pin=pinned_packet('delta/'+fixture_name,
+-            'f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da')
+-        require(fixture_pin['bytes']==copied_expected[fixture_name]['bytes']==3392 and
+-                fixture_pin['sha256']==copied_expected[fixture_name]['sha256']==
+-                    projection['scope']['original']['sha256'],
+-                'complete locked upstream SystemUI tests fixture differs')
+-        report['systemui_test_projection_authority']=projection_pin
+-        report['systemui_test_original_fixture_authority']=fixture_pin
++        wayland_raw,wayland_pin=pinned_packet('actual-wayland03-result.json',
++            '57546b6c6c2d4e05aea6099097944cdbe6746bbcc0124768a314414ec5663abd')
++        wayland=json.loads(wayland_raw)
++        require(wayland_pin['bytes']==81805 and wayland['state']=='PASS' and
++                wayland['Wayland_complete_crate_typecheck_qualified'] is True and
++                len(wayland['commands'])==15 and all(row['returncode']==0 and not row['timed_out'] for row in wayland['commands']) and
++                wayland['source_delta']['candidate_files']==ACK_SOURCE_PINS and
++                wayland['copied_manifest']['sha256']=='3f2320687f074d48b19bc5284e6ba665a6cfaeb7adab9d59f519de5f3c96d2f4' and
++                all(wayland[key] is True for key in ['copied_source_unchanged_after','original_source_unchanged_after',
++                    'cargo_configs_unchanged_after','check_outputs_unchanged_after','native_pc_inputs_unchanged_after',
++                    'offline_vendor_input_gate_qualified','pkg_config_input_gate_qualified','owned_resource_fd_closed']) and
++                not wayland['dependency_changes'] and not wayland['tool_changes'] and not wayland['secondary_errors'] and
++                wayland['owned_child_reaper']['final_children_empty'] is True and
++                wayland['owned_child_reaper']['restored'] is True and wayland['owned_resource_gate']['pass'] is True and
++                wayland['Android_Binder_provider_compile'] is False and wayland['Wayland_runtime_GPU_qualified'] is False,
++                'actual complete Wayland check/source authority differs')
++        for source_name,row in ACK_SOURCE_PINS.items():
++            require(copied_expected[row['path']]['kind']=='file' and
++                    copied_expected[row['path']]['bytes']==row['bytes'] and
++                    copied_expected[row['path']]['sha256']==row['sha256'],
++                    'candidate ACK production source differs from actual checked source: '+source_name)
++        report['composer_entry_proof_authority']=proof_pin
++        report['composer_build_scope_authority']=scope_pin
++        report['actual_prior_wayland03_check_authority']=wayland_pin
+         report['unchanged_225_project_lock_authority']=lock_pin
+         report['source_lock_writer']='UNKNOWN'
+         changes=[name for name in copied_expected if copied_expected[name]!=expected.get(name)]
+         wanted=FIXED_PROVIDER_DELTA
+         require(sorted(changes)==wanted and set(expected)<set(copied_expected) and
+                 sum(name not in expected for name in changes)==1 and
+-                sum(name in expected for name in changes)==1 and
++                sum(name in expected for name in changes)==10 and
+                 all(copied_expected[name]==expected[name] for name in expected if name not in wanted),
+-                'SystemUI projection delta is not exactly one Rust replacement and one original fixture addition')
++                'Composer entry delta is not exactly ten Rust replacements and one retirement source addition')
+         for name in changes:
+             wanted_row=copied_expected[name]
+             data,pin=pinned_packet('delta/'+name,wanted_row['sha256'])
+@@ -1002,18 +1024,19 @@
+             os.chmod(target,wanted_row['mode'],follow_symlinks=False)
+         candidate_rows=regular_tree(COPIED)
+         actual_map=portable(candidate_rows,copied_expected)
+-        require(json.loads(new_bytes)==actual_map and sha(new_bytes)==MANIFEST_471,
+-                'actual copied 500-file builder471 manifest differs')
++        require(json.loads(new_bytes)==actual_map and sha(new_bytes)==MANIFEST_472,
++                'actual copied 500-file builder472 manifest differs')
+         report['copied_manifest']=write_new(OUT/'copied-builder-source-manifest.json',new_bytes)
+         report['source_delta']={'changed_existing':[name for name in wanted if name in expected],
+                                 'added':[name for name in wanted if name not in expected],
+-                                'unchanged_existing':498,'actual_source_file_count':500,
+-                                'builder_revision_name':'471-fixed-systemui-test-projection','Rust_source_files_changed':1,
++                                'unchanged_existing':489,'actual_source_file_count':500,
++                                'builder_revision_name':'472-composer-retirement-build-entry','Rust_source_files_changed':11,
+                                 'Cargo_lock_or_dependency_manifest_changed':False,
+-                                'Go5_or_Blueprint_patch_changed':False,'engine_source_files_changed':0,
++                                'Go5_or_Blueprint_patch_changed':False,'engine_source_files_changed':9,
+                                 'typed_ingress_framework_patch_changed':False,'previous_source_locks_changed':False,
+                                 'new_exact_provider_source_lock_added':False,'new_exact_hal_provider_source_lock_added':False,
+-                                'current_hal_source_lock_unchanged':True,'fixed_SystemUI_tests_BP_original_fixture_added':True,
++                                'current_hal_source_lock_unchanged':True,'ACK_nine_production_sources_unchanged_from_actual_Wayland03':True,
++                                'typed_builder471_not_changed_or_used_as_baseline':True,
+                                 'source_resume_library_changed':False,'real_published_source_accessed':False,
+                                 'real_source_staging_accessed':False,'framework_sources_executed_or_built':False,
+                                 'runtime_authorization_enabled':False}
+@@ -1075,11 +1098,16 @@
+         help_output=command([str(builder),'--help'],COPIED,env,'builder-help',report['commands'],10)
+         require(b'Usage:' in help_output and b'native-engine-build' in help_output and
+                 b'native-generation-pair' in help_output and b'native-generation-art-build' in help_output and
+-                b'native-role-ingress-build' in help_output,
++                b'native-role-ingress-build' in help_output and b'composer-retirement-build' in help_output,
+                 'normal builder or explicit paired-record/ART/typed-ingress build-only CLI missing')
+         resume_help=command([str(builder),'native-role-ingress-build','--help'],COPIED,env,'source-resume-cli-help',report['commands'],10)
+         require(all(option in resume_help for option in [b'--work',b'--out',b'--resume-source-staging']),
+                 'typed source-resume CLI does not expose the explicit fixed route arguments')
++        composer_help=command([str(builder),'composer-retirement-build','--help'],COPIED,env,
++                              'composer-retirement-cli-help',report['commands'],10)
++        require(all(option in composer_help for option in [b'--work',b'--out']) and
++                all(option not in composer_help for option in [b'--targets',b'--resume-source-staging']),
++                'Composer build-only CLI must expose only exact work/output arguments')
+         test_build=command([common[0],'test',*common[1:],'--no-run','--message-format=json-render-diagnostics'],COPIED,env,'builder-test-compile',report['commands'],180)
+         report['actual_test_compile_packages']=qualify_compiler_inputs(test_build,packages,dependency_rows,candidate_rows)
+         test_binary=build_artifact(test_build,package_id,True)
+@@ -1087,12 +1115,12 @@
+         test_list=command([str(test_binary),'--list'],COPIED,env,'builder-test-list',report['commands'],10).decode()
+         require(len(ORIGINAL_TESTS)==7 and len(PAIR_TESTS)==15 and len(ART_PROJECTION_TESTS)==2 and len(TYPED_INGRESS_TESTS)==2 and len(PARENT_TESTS)==len(set(PARENT_TESTS))==26 and
+                 len(PROVIDER_CLOSURE_TESTS)==6 and len(HAL_PROVIDER_TESTS)==3 and
+-                len(SYSTEMUI_PROJECTION_TESTS)==3 and len(TESTS)==len(set(TESTS))==21 and
++                len(COMPOSER_ENTRY_TESTS)==5 and len(TESTS)==len(set(TESTS))==23 and
+                 all(test_list.splitlines().count(name+': test')==1 for name in
+-                    PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS+SYSTEMUI_PROJECTION_TESTS),
+-                'original 26 registrations, nine provider controls or three SystemUI projection controls absent/duplicated')
++                    PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS+COMPOSER_ENTRY_TESTS),
++                'original 26 registrations, nine provider controls or five Composer entry controls absent/duplicated')
+         listed_names=[line[:-6] for line in test_list.splitlines() if line.endswith(': test')]
+-        require(len(listed_names)==211 and len(listed_names)==len(set(listed_names)) and
++        require(len(listed_names)==213 and len(listed_names)==len(set(listed_names)) and
+                 not any(line.endswith(': benchmark') for line in test_list.splitlines()),
+                 'actual registration list is duplicate/empty or contains unqualified benchmarks')
+         libtest_help=command([str(test_binary),'--help'],COPIED,env,'builder-test-help',report['commands'],10).decode()
+@@ -1107,11 +1135,11 @@
+                 'test environment already contains fakeroot state')
+         report['test_environment']=test_env
+         report['focused_result_gates']=[]
+-        for index,name in enumerate(TESTS[:-len(SYSTEMUI_PROJECTION_TESTS)]):
++        for index,name in enumerate(TESTS[:-len(COMPOSER_ENTRY_TESTS)]):
+             report['focused_result_gates'].append(focused_test(
+                 test_binary,name,index,len(listed_names),test_env,report['commands']))
+         # Preserve every original label and the reserved exact fakeroot index20.
+-        for index,name in enumerate(SYSTEMUI_PROJECTION_TESTS,start=200):
++        for index,name in enumerate(COMPOSER_ENTRY_TESTS,start=200):
+             report['focused_result_gates'].append(focused_test(
+                 test_binary,name,index,len(listed_names),test_env,report['commands']))
+         source_packages=[p for p in metadata['packages'] if p['name']=='droidloom-source' and
+@@ -1180,7 +1208,9 @@
+         report['typed_ingress_lock_tests_passed']=len(TYPED_INGRESS_TESTS)
+         report['provider_closure_tests_passed']=len(PROVIDER_CLOSURE_TESTS)
+         report['hal_provider_tests_passed']=len(HAL_PROVIDER_TESTS)
+-        report['systemui_test_projection_tests_passed']=len(SYSTEMUI_PROJECTION_TESTS)
++        report['composer_entry_tests_passed']=len(COMPOSER_ENTRY_TESTS)
++        report['Composer_Android_Binder_ABI_compiled']=False
++        report['Composer_service_or_AIDL_tests_executed']=False
+         report['SystemUI_application_and_test_modules_qualified']=False
+         report['framework_Java_and_Android_JNI_compiled']=False
+         report['transitive_framework_closure_qualified']=False
+@@ -1190,7 +1220,7 @@
+         report['parent_only_test_names_not_rerun']=PAIR_TESTS+ART_PROJECTION_TESTS
+         report['platform_APEX_signature_validated']=False
+         report['actual_enabled_ART_lifecycle_validated']=False
+-        require(len(report['commands'])==68 and all(row['returncode']==0 and not row['timed_out'] for row in report['commands']),
++        require(len(report['commands'])==71 and all(row['returncode']==0 and not row['timed_out'] for row in report['commands']),
+                 'fixed provider compiler command sequence differs')
+         report['state']='PASS'
+     except Exception as error:

@@ -1,0 +1,83 @@
+--- template/coordinator.py
++++ bound/coordinator.py
+@@ -18,12 +18,12 @@
+ HERE=Path(__file__).resolve().parent
+ ROOT=Path('/home/alex/work/pocket4-ihg-r4-public-london-input-01')
+ SOURCE=ROOT/'source'
+-NONCE='__FRESH_FLOW__'
++NONCE='ec4f2977574102b1e5869d2494e8416b'
+ FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r4-flow-'+NONCE)
+ PACKAGE='com.ihg.apps.android'
+ UID=10137
+ SELF='org.droidloom.qa.ihg.r4'
+-HELPER_UID=None  # Actual R4 install receipt required.
++HELPER_UID=10158
+ 
+ CURRENT_HOST_MANIFEST="002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+ CURRENT_BASELINE_SCHEMA="pocket4-main-current-baseline-v2"
+@@ -32,11 +32,11 @@
+ CURRENT_QUALIFICATION_SHA="ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+ COMPONENT=PACKAGE+'/.activity.MainActivity'
+ # The source label is inert; the exact selector is derived from the current complete inspection.
+-SEARCH_PLAN={"schema":1,"operation":"click","selector":{"text":"Search"},"nonces":{"before":"__FRESH_SEARCH_BEFORE__","inspect":"__FRESH_SEARCH_INSPECT__","action":"__FRESH_SEARCH_ACTION__","after":"__FRESH_SEARCH_AFTER__"}}
+-PLAN={"schema":1,"operation":"click","selector":{"text":"Destination"},"nonces":{"before":"__FRESH_DESTINATION_BEFORE__","inspect":"__FRESH_DESTINATION_INSPECT__","action":"__FRESH_DESTINATION_ACTION__","after":"__FRESH_DESTINATION_AFTER__"}}
+-INPUT_PLAN={"schema":1,"operation":"set_text","value":"London","nonces":{"before":"__FRESH_INPUT_BEFORE__","inspect":"__FRESH_INPUT_INSPECT__","action":"__FRESH_INPUT_ACTION__","after":"__FRESH_INPUT_AFTER__"}}
+-POST_PLAN={"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_POST_BEFORE__","inspect":"__FRESH_POST_INSPECT__","after":"__FRESH_POST_AFTER__"}}
+-SEARCH_READINESS_PLANS=[{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_1_BEFORE__","inspect":"__FRESH_READINESS_1_INSPECT__","after":"__FRESH_READINESS_1_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_2_BEFORE__","inspect":"__FRESH_READINESS_2_INSPECT__","after":"__FRESH_READINESS_2_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_3_BEFORE__","inspect":"__FRESH_READINESS_3_INSPECT__","after":"__FRESH_READINESS_3_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_4_BEFORE__","inspect":"__FRESH_READINESS_4_INSPECT__","after":"__FRESH_READINESS_4_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_5_BEFORE__","inspect":"__FRESH_READINESS_5_INSPECT__","after":"__FRESH_READINESS_5_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_6_BEFORE__","inspect":"__FRESH_READINESS_6_INSPECT__","after":"__FRESH_READINESS_6_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_7_BEFORE__","inspect":"__FRESH_READINESS_7_INSPECT__","after":"__FRESH_READINESS_7_AFTER__"}},{"schema":1,"operation":"inspect","nonces":{"before":"__FRESH_READINESS_8_BEFORE__","inspect":"__FRESH_READINESS_8_INSPECT__","after":"__FRESH_READINESS_8_AFTER__"}}]
++SEARCH_PLAN={"schema":1,"operation":"click","selector":{"text":"Search"},"nonces":{"before":"54859c54155667d7b5734e876ceabb43","inspect":"18077af09b782edc632ff9c12490aab8","action":"7d30851bd7e5f17585858afbd2981096","after":"533cda387fe7996c6fd58bbab14cc4b5"}}
++PLAN={"schema":1,"operation":"click","selector":{"text":"Destination"},"nonces":{"before":"5d67f508ec2b6914b4bdbe4f7d7b0d1f","inspect":"bba7a9b10e59f6d12599e57cc00f96be","action":"9640d17b5df530fc2a117844b3ef5be5","after":"16593b5cd6018a5f46ddc0133d76923d"}}
++INPUT_PLAN={"schema":1,"operation":"set_text","value":"London","nonces":{"before":"c4c3c0fc48dc24bc3954ceceae0290c9","inspect":"0803db2f1a0c900013d8fd05d781507c","action":"fea0029b92bb94321b79a5c2eaa43702","after":"94aa4ebcaf64cec8f92fd8eb9c936f09"}}
++POST_PLAN={"schema":1,"operation":"inspect","nonces":{"before":"f75638d0ae5762b132ed6624e3fe1010","inspect":"cf79af0e12d94180948dfd00f8c025b7","after":"e17cdd78f267e9634ecd79bb659c75e8"}}
++SEARCH_READINESS_PLANS=[{"schema":1,"operation":"inspect","nonces":{"before":"3258d42691a37c6cda69b59d73619d3f","inspect":"3dac995259ecc18488343d6ba8f074ef","after":"5456f239f07cb53065a3130d6e44b113"}},{"schema":1,"operation":"inspect","nonces":{"before":"79b95a15d307420a0035eaaf2e64a52e","inspect":"aa37eb7aef2aeecdededa918cfa63897","after":"05b9e144c511747bb9afc202565d27bc"}},{"schema":1,"operation":"inspect","nonces":{"before":"c6c97b363cd15b9661f00c0bc766d8a7","inspect":"65181078b5d9b6e5b1b58659687a4b10","after":"29cfe31d4f5cc987ccc9f5a8126b3c11"}},{"schema":1,"operation":"inspect","nonces":{"before":"b05d93e21ef30e0bc1b4a5b33f3215a7","inspect":"2d36cfb632116e77217c91d0cf5c3e33","after":"c2e85a3dcb893227a76cea57e47950f3"}},{"schema":1,"operation":"inspect","nonces":{"before":"7ed531fe3d68edc71f7a446b38e3c2cd","inspect":"088a3ad5abfd6fa4eeff7b4ab586899e","after":"a7f836bde7e58d28d5554d9808899368"}},{"schema":1,"operation":"inspect","nonces":{"before":"8247743461cedd5f61db4db00457df5c","inspect":"1a6984915296761d1efd0a3a3faccbbc","after":"827e8e405e4ec663668e9ed5ad1ca330"}},{"schema":1,"operation":"inspect","nonces":{"before":"6b285fc999cb5657110cc90fa48e30a6","inspect":"48d30263b19b9d87d34bde9498f957e8","after":"e43cb8aa3c43c406caf2adb91b4595ef"}},{"schema":1,"operation":"inspect","nonces":{"before":"6a999bee44313303be0c0204a8a29c7f","inspect":"36b40daa674f063f3be5626eaba59e70","after":"36fe1bae5d78c899c87e1546bbbb8ba6"}}]
+ INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+ INSTALL_SOURCE_SHA="bb9957023531b018d95f4a6e747fa71691bf566e53e158c5935db410ea7a8aa6"
+@@ -45,9 +45,9 @@
+ CONTEXT_SHA="88c3d181a1176a447db4426df04125ce51f77ed03736eb79c1a00bb1544f4364"
+ TRANSPORT_SHA="aa4836f35ea0251fbf3942033db2a45e37a882ebf6f7b6076b45c63970d5c516"
+ STATE_NONCE="3d004706f9adf4411761495fdc6ed859"
+-STATE_WIRE=None  # Actual R4 installation original required.
+-INSTALLED=None  # Actual R4 installation original required.
+-PRIOR=None  # Actual R4 installation original required.
++STATE_WIRE="9ff74031cf906d0908d11391a7e3765eb4dd5dafc9b769fa2dfc051d34652c97"
++INSTALLED={"apk_sha256":"89d725554bab2a0939c631fbb70c21c97b4f30612f35598cd51d0c0e8e125204","base_apk":"/data/app/~~z8yd_y4oNg4d-2lKTUgHww==/org.droidloom.qa.ihg.r4-fTYILga0EbTZQorqYSXC9g==/base.apk","bytes":24720,"held_file":{"bytes":24720,"device":1811,"gid":1000,"inode":656328,"mode":33188,"mtime_ns":1793981862426054790,"nlink":1,"uid":1000},"package":"org.droidloom.qa.ihg.r4","signer_bound_by_exact_signed_apk_bytes":"c94629f99db487b24c40a9aed131324104d3a197030cc9dd8183f969baa87c7e","uid":10158}
++PRIOR={"coordinator":("result.json",4455,"c1129d2c99210e47d12ca985b604ad0056d26c11d9c2d2f071fc3dc7e678ede4"),"stage":("stage-result.json",10553,"ac3451c8a45ff6d0543cbb97e14d5619c116e83d2f71ccba0a1484e2e69c3a5b"),"worker":("worker/result.json",13294,"e9c478188a0f71b5e2d6f8449e16858f9bf2b2f65980f91847027056539bfb03")}
+ RESOLVER_ROOT=Path('/home/alex/work/pocket4-ihg-artifact-launcher-readonly-01')
+ # The five-command metadata source is already an exact pinned install input.
+ RESOLVER_SOURCE=INSTALL_SOURCE/'references/read_ihg.py'
+
+--- template/context.py
++++ bound/context.py
+@@ -18,7 +18,7 @@
+ PACKAGE='com.ihg.apps.android'
+ UID=10137
+ SELF='org.droidloom.qa.ihg.r4'
+-HELPER_UID=None  # Await actual R4 installation receipt.
++HELPER_UID=10158
+ 
+ CURRENT_HOST_MANIFEST="002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+ CURRENT_BASELINE_SCHEMA="pocket4-main-current-baseline-v2"
+
+--- template/public_destination.py
++++ bound/public_destination.py
+
+--- template/stage.py
++++ bound/stage.py
+@@ -8,7 +8,7 @@
+ 
+ ROOT=Path('/home/alex/work/pocket4-ihg-r4-public-london-input-01')
+ SOURCE=ROOT/'source'
+-NONCE='__FRESH_FLOW__'
++NONCE='ec4f2977574102b1e5869d2494e8416b'
+ FILES={'owned_inspect.py','ihg_task_context.py','public_destination.py','INPUTS.json'}
+ REFERENCE=Path('/home/alex/work/pocket4-current-host-r6-source-01/current_coordinator.py')
+ REFERENCE_SHA="0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89"
+
+--- template/contract.py
++++ bound/contract.py
+
+--- template/adapter.py
++++ bound/adapter.py
+
+--- template/transport.py
++++ bound/transport.py

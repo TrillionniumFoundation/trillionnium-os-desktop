@@ -1,0 +1,108 @@
+{
+  "schema": "pocket4-normal07-actual470-binding-v1",
+  "state": "FROZEN_SOURCE_ACTUAL470_BOUND_NORMAL07_UNRUN",
+  "template_tree": "f37fd06b1e26fd2f2dd7838a8ede41ccffb6fbf7",
+  "actual_tree": "879f734833ff2c42f8bb32c4d2d5075cc934c0bc",
+  "binding": {
+    "four_actual_framework_literals": 4,
+    "fence_controller_hash_only": true,
+    "framework_inverse_exact": true,
+    "fence_inverse_exact": true,
+    "other_15_template_runtime_files_byte_exact": true,
+    "raw_actual_builder_report_added": true,
+    "raw_ns_reserialized": false
+  },
+  "source_changes": [
+    {
+      "name": "framework_build.py",
+      "before": {
+        "bytes": 62877,
+        "sha256": "d2b0434c833e3d5b6de7b57c95de4bd9f71d50cea59e248264b6dc006d28128b",
+        "git_blob_sha1": "549087db17edd4a035b3376301b78edc3f54468e"
+      },
+      "after": {
+        "bytes": 62891,
+        "sha256": "85ec236e9cf3ec1b0efca053ee8f71f9a2f12c75b757b5a8c35172823ed3d87e",
+        "git_blob_sha1": "ec32b21b9a494b7ebfb7716530e38e437a0e2bf7"
+      }
+    },
+    {
+      "name": "fenced_build.py",
+      "before": {
+        "bytes": 25483,
+        "sha256": "309983909034e9f17597996ab7bd202e5119a56ee2a5bc0afa6f8d1c4b725f5a",
+        "git_blob_sha1": "e97b9c4aaade5991539adb6a6459e723fc8c5b1f"
+      },
+      "after": {
+        "bytes": 25507,
+        "sha256": "e7df8f408e4b8050636d1247e44c50a763246d0329e9ddf0d8960a2a73e29912",
+        "git_blob_sha1": "8b7ed84e374bb24d18fbd87e867da94664f7cf1f"
+      }
+    }
+  ],
+  "resource_profile": {
+    "memory_max_bytes": 10737418240,
+    "memory_swap_max_bytes": 0,
+    "minimum_fresh_MemAvailable_bytes": 16106127360,
+    "cpu_quota_percent": 200,
+    "nice": 10,
+    "jobs": 1,
+    "work_timeout_seconds": 6100,
+    "outer_timeout_seconds": 6400
+  },
+  "scope": {
+    "targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "dependency_mode": "Strict",
+    "ALLOW_MISSING_DEPENDENCIES": false,
+    "normal_pure_controls": 46,
+    "current_Main_8_role_source_unchanged": true,
+    "runtime_authorization": false
+  },
+  "actual_compile_resources": {
+    "memory_peak": 987123712,
+    "memory_swap_peak": 54235136,
+    "swap_current": "25341952",
+    "swap_max_observed_only": "max",
+    "memory_events_delta": {
+      "high": 0,
+      "low": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_group_kill": 0,
+      "oom_kill": 0,
+      "sock_throttled": 0
+    },
+    "Main_identity_observed": false
+  },
+  "source_lock": {
+    "bytes": 96957,
+    "sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d",
+    "current_manifest": {
+      "bytes": 109252,
+      "sha256": "5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d"
+    },
+    "writer": "UNKNOWN",
+    "published_source_modified_by_binding": false
+  },
+  "required_runtime_gates": [
+    "fresh current Main identities/limits and owned child retirement",
+    "fresh full225 current source verification and both original work/source locks",
+    "fresh MemAvailable>=15GiB and owned memory/swap limits",
+    "strict full Java framework implementation plus Android JNI provenance"
+  ],
+  "request": {
+    "bytes": 1016082,
+    "sha256": "97dc97b1d6014c38060417a94f89ee158f5bcfa98915ed2fcb7fa6814b77b2b5",
+    "git_blob_sha1": "2bdc14a5b9b25d110d244117eb8b78eabf74f2de"
+  },
+  "stdin": {
+    "bytes": 917839,
+    "sha256": "5009a8d75c2ad961a7c5bd9021401bd1819f91b8e9ba6d2f498b911f5e71392a",
+    "git_blob_sha1": "5fe3ba19c71696e5224c2c476bc5e653fb5257c4"
+  },
+  "whole_app_production_ready": false,
+  "normal_executed": false
+}

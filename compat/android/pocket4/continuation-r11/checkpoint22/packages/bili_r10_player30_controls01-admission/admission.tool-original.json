@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys,types\nraw=sys.stdin.buffer.read(524289)\nassert 0<len(raw)<=524288 and hashlib.sha256(raw).hexdigest()==\"a11478061652776f15d7a30889b1b02f64f572825de80d01557c4e25d45482cf\"\np=json.loads(raw);assert p['schema']==1 and set(p)=={'schema','control_source','control_sha256','payload'}\nsrc=p['control_source'].encode();assert hashlib.sha256(src).hexdigest()==p['control_sha256']==\"9843b6570b78e9c1050e791f6fc736117b2f8e6d3039a0ebb02132a1fcab7d2d\"\nm=types.ModuleType('bili_r10_current_component_controls');m.__file__='<check_current_flow.py>'\nexec(compile(src,m.__file__,'exec'),m.__dict__);out=m.run_controls(p['payload'])\nassert out['all_passed'] is True and out['count']==30 and len(out['cases'])==30 and all(r['passed'] is True for r in out['cases'])\nassert out['actual_install_receipt_route_controls']==3 and out['current_factory_and_cleanup_route_controls']==6\nmanifest=(json.dumps({'schema':1,'files':p['payload']['pins']['new']},sort_keys=True,separators=(',',':'))+'\\n').encode()\nassert hashlib.sha256(manifest).hexdigest()==\"fd7f45354339261a19c36c7820b2e7656df3e48446b5cc8344883a09e21a32bb\"\nout.update(new_source_manifest_sha256=hashlib.sha256(manifest).hexdigest(),new_source_pins=p['payload']['pins']['new'],\n control_source_sha256=p['control_sha256'],packet_sha256=hashlib.sha256(raw).hexdigest(),actual_install_binding=p['payload']['binding_proof'])\nencoded=json.dumps(out,sort_keys=True,separators=(',',':'));assert len(encoded.encode())<=32768;print(encoded,flush=True)\n"
+    ],
+    "created_unix_ms": 1793987795241,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2015929-fc05-7bfd",
+    "idempotency_key": "pocket4-current-bili-r10-owner-player30-controls01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2015929-fc05-7bfd",
+    "request_digest": "707d9e14fc61ce32a4e48108cbab4c1e774735ceb854d701b45f8e3119333008",
+    "request_fingerprint": 8105808717307563570,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2015929-fc05-7bfd"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2015929-fc05-7bfd"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

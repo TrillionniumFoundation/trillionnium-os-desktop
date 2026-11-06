@@ -1,0 +1,154 @@
+{
+  "Bili_Flow_instantiated": false,
+  "Main_before": {
+    "Main_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "authenticated_owner_chain_matches": true,
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "current_baseline_qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
+    "current_baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
+    "current_executable_and_root_backing_match": true,
+    "current_user_namespaces_match": true,
+    "framework_exit_cause_resolved": false,
+    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "old_helpers_and_tasks_reauthorized": false,
+    "previous_current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+    "production_ready": false,
+    "resource_limits_match": true,
+    "schema": "pocket4-current-main-guard-v2",
+    "seven_processes_match": true,
+    "three_host_processes_match": true
+  },
+  "actual_install": {
+    "actual_state_wire_sha256": "9ff74031cf906d0908d11391a7e3765eb4dd5dafc9b769fa2dfc051d34652c97",
+    "installed": {
+      "apk_sha256": "89d725554bab2a0939c631fbb70c21c97b4f30612f35598cd51d0c0e8e125204",
+      "base_apk": "/data/app/~~z8yd_y4oNg4d-2lKTUgHww==/org.droidloom.qa.ihg.r4-fTYILga0EbTZQorqYSXC9g==/base.apk",
+      "bytes": 24720,
+      "held_file": {
+        "bytes": 24720,
+        "device": 1811,
+        "gid": 1000,
+        "inode": 656328,
+        "mode": 33188,
+        "mtime_ns": 1793981862426054790,
+        "nlink": 1,
+        "uid": 1000
+      },
+      "package": "org.droidloom.qa.ihg.r4",
+      "signer_bound_by_exact_signed_apk_bytes": "c94629f99db487b24c40a9aed131324104d3a197030cc9dd8183f969baa87c7e",
+      "uid": 10158
+    },
+    "no_prior_install_or_state_replayed": true,
+    "prior_install_source_sha256": "bb9957023531b018d95f4a6e747fa71691bf566e53e158c5935db410ea7a8aa6",
+    "prior_receipts": {
+      "coordinator": {
+        "bytes": 4455,
+        "sha256": "c1129d2c99210e47d12ca985b604ad0056d26c11d9c2d2f071fc3dc7e678ede4"
+      },
+      "stage": {
+        "bytes": 10553,
+        "sha256": "ac3451c8a45ff6d0543cbb97e14d5619c116e83d2f71ccba0a1484e2e69c3a5b"
+      },
+      "worker": {
+        "bytes": 13294,
+        "sha256": "e9c478188a0f71b5e2d6f8449e16858f9bf2b2f65980f91847027056539bfb03"
+      }
+    }
+  },
+  "actual_resolution": {
+    "actual_resolve_stdout_sha256": "8b29169c51d4d06878f12cd63a8ab6ce38d4fe9b936e35fdcd58948e3c453554",
+    "component": "com.ihg.apps.android/.activity.MainActivity",
+    "historical_resolution_not_launch_authority": true,
+    "new_prelaunch_resolution_required": true,
+    "prior_helper_identity_asserted": false,
+    "prior_receipts": {
+      "stage": {
+        "bytes": 1583,
+        "path": "/home/alex/work/pocket4-ihg-artifact-launcher-readonly-01/stage-result.json",
+        "sha256": "72224eae94c82a258b1a49d5730363f5e3c62cd8db769f083d5b5ec149dd55a8"
+      },
+      "worker": {
+        "bytes": 8878,
+        "path": "/home/alex/work/pocket4-ihg-artifact-launcher-readonly-01/result.json",
+        "sha256": "153ddbfc8393570621b64a478675c2a0180826a7a6ecada0ade8a6aa4ed79722"
+      }
+    }
+  },
+  "audio_actions": 0,
+  "automatic_retry": false,
+  "business_success_verified": false,
+  "cleanup_not_authorized_without_exact_owned_scope": true,
+  "cleanup_requested": false,
+  "component": "com.ihg.apps.android/.activity.MainActivity",
+  "error": {
+    "message": "01-launch did not complete exactly once with a preserved Main fence",
+    "phase": "coordinator",
+    "type": "RuntimeError"
+  },
+  "flow": "/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b",
+  "helper_package": "org.droidloom.qa.ihg.r4",
+  "helper_uid": 10158,
+  "inspect_worker_requested": false,
+  "launch_worker_requested": true,
+  "maximum_click_actions": 2,
+  "maximum_native_launches": 1,
+  "maximum_text_actions": 1,
+  "nonce": "ec4f2977574102b1e5869d2494e8416b",
+  "ok": false,
+  "old_v2_helper_called": false,
+  "owned_after": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 35054940,
+    "memory.current": "99000320",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "156631040",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1b1f2759d-fc05-7ba5.service",
+    "pids.max": "128"
+  },
+  "owned_before": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 35054940,
+    "memory.current": "30887936",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "31350784",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1b1f2759d-fc05-7ba5.service",
+    "pids.max": "128"
+  },
+  "package": "com.ihg.apps.android",
+  "package_mutations": 0,
+  "permission_grants": 0,
+  "possible_native_launch_outcome_requires_reconciliation": true,
+  "raw_UI_tree_private_only": true,
+  "retained_phase_results": {
+    "launch": {
+      "bytes": 12051,
+      "path": "/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b/steps/launch-01/result.json",
+      "sha256": "3ab8190051ab6c628a7e6b67c0f10567cb18e273db6ecc067b5856098e37034b"
+    }
+  },
+  "schema": 1,
+  "screenshots": 0,
+  "secondary_errors": [
+    {
+      "message": "OWNER_SINGLE_DIRECT_CHILD_REQUIRED",
+      "phase": "final_Main",
+      "type": "RuntimeError"
+    }
+  ],
+  "settings_writes": 0,
+  "source_and_artifact_unchanged": true,
+  "source_manifest_sha256": "24a8491dbb44faf1288869d278da96290597b7af1fcdcce12a72fd62bad9435f",
+  "uid": 10137,
+  "whole_app_production_ready": false
+}

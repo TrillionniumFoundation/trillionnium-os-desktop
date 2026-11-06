@@ -1,0 +1,119 @@
+{
+  "schema": "pocket4-new-cell-helper-review-v1",
+  "state": "SOURCE_FROZEN_BUILD_REQUEST_UNSUBMITTED",
+  "app": "bili",
+  "revision": 10,
+  "source_root": "/home/alex/work/pocket4-owned-bili-qa-r10-source-01",
+  "output_root": "/home/alex/work/pocket4-owned-bili-qa-r10-build-01",
+  "binding": {
+    "schema": "pocket4-current-baseline-helper-source-binding-v2",
+    "state": "STATIC_SOURCE_ONLY_ANDROID_UNRUN",
+    "app": "bili",
+    "target_package": "tv.danmaku.bili",
+    "target_uid": 10117,
+    "helper_package": "org.droidloom.qa.bili.r10",
+    "protocol": "pocket4-owned-bili-qa-v10",
+    "current_baseline_schema": "pocket4-main-current-baseline-v2",
+    "current_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "current_baseline": {
+      "bytes": 44959,
+      "path": "/home/alex/work/pocket4-main-current-baseline-02/baseline.private.json",
+      "sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364"
+    },
+    "current_qualification": {
+      "bytes": 5565,
+      "path": "/home/alex/work/pocket4-main-current-baseline-02/qualification.json",
+      "sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+    },
+    "actual_baseline_result": {
+      "job_id": "1a1b1378566-fc05-76f7",
+      "git_tree": "df158984ab6f8565c64db454acc7b9872f56a8a2",
+      "git_blob": "3cb41fac4621cf346d94be170f187251785c38ff",
+      "bytes": 13221,
+      "sha256": "107bf1487ace30a38c113057812a0a18415e3430640f11db0b5131e462d05269"
+    },
+    "host_recorder_source_manifest": {
+      "path": "/home/alex/work/pocket4-current-host-r6-source-01/source-manifest.json",
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    "parent_source_manifest_sha256": "4eb11cf497615272c1bef280bbd849de4f983ba4147ea9356356dff076ce9c56",
+    "previous_helper_uid_exclusion": {
+      "uid": 10152,
+      "actual_worker_result": {
+        "bytes": 7589,
+        "sha256": "e9310a73a567d7207e55b8fede9a68f7a305d72e5cdb9042a6b7455ef4e02ad3",
+        "git_blob": "09090ecdc28c2988ab41d2ad529d292d1db0e32f"
+      },
+      "source": "exact historical installed helper receipt; exclusion only, no new cell authority"
+    },
+    "owned_helper_uid": null,
+    "APK_sha256": null,
+    "signer_sha256": null,
+    "helper_built": false,
+    "helper_installed": false,
+    "UI_actions": 0,
+    "old_helpers_and_tasks_reauthorized": false,
+    "unresolved_framework_exit_cause": true,
+    "whole_app_production_ready": false
+  },
+  "parent_source_manifest": {
+    "bytes": 4075,
+    "sha256": "4eb11cf497615272c1bef280bbd849de4f983ba4147ea9356356dff076ce9c56",
+    "git_blob": "a9abe25c87a20e1cabae3762649a531cb4f18461"
+  },
+  "new_source_manifest": {
+    "bytes": 4763,
+    "sha256": "52ababa77e144bdb43f0f6fde4483e2f8cb43dcf8c431590b02b068d2715f9f2"
+  },
+  "unchanged_references": [
+    {
+      "name": "build-input-reference.json",
+      "bytes": 3435,
+      "sha256": "06401b8920d1c88ea8a15fbe2b6954df71dfda3e782d88d29e4eea48774ff519"
+    }
+  ],
+  "changes": [
+    "New helper package/protocol revision and create-only source/build roots/key.",
+    "Java + production Python scope bind actual baseline02/v2, exact R6 host manifest, and new recorder scope-v2.",
+    "Prior actual helper UID is excluded in both Session and parse_completed production predicates; the negative wire fixture uses matching old self_uid/helper_uid.",
+    "Original App-specific input, complete-tree/window/refresh, restoration, unknown-result, time and resource predicates are retained.",
+    "Original 21 scope cases retained plus eleven direct parser/Session/protocol/previous-generation cases; both count and case-array builder gates require32.",
+    "Build request adds explicit -B beside -I; original pinned tools/build commands and owned-unit limits stay unchanged."
+  ],
+  "controls": {
+    "current_scope_expected": 32,
+    "current_scope_source": {
+      "bytes": 8972,
+      "sha256": "0d7f64d49e89ee12a627c572f7468e6e86416c8de06609c02b49dafe01568da7"
+    },
+    "app_specific": {
+      "Java_idle": 22,
+      "Python_idle": 32
+    },
+    "Python_executed": false,
+    "Java_executed": false
+  },
+  "request": {
+    "bytes": 275177,
+    "sha256": "341db7117cc6dd0056b08b02aa2ce8f37e622f97225fa378c55676577d0ee17b",
+    "stdin_bytes": 264580,
+    "stdin_sha256": "f3e3ab74b96dc7e0e78e0c4702fec724946c1e39d8ea4198aa0f721f73863a37",
+    "key": "pocket4-owned-bili-qa-r10-cell02-633912ff4595ce89-host-002ee581a4bb-build01",
+    "timeout_seconds": 300,
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912
+  },
+  "production_diff": {
+    "bytes": 37113,
+    "sha256": "9b69ecae0cac3e69fc5c0d0107c542993ee22fc2c709fd42aaec41f77d778471"
+  },
+  "actual_APK": null,
+  "actual_signer": null,
+  "new_helper_UID": null,
+  "old_helpers_and_tasks_reauthorized": false,
+  "UI_actions": 0,
+  "install_actions": 0,
+  "framework_exit_cause_resolved": false,
+  "whole_app_production_ready": false
+}

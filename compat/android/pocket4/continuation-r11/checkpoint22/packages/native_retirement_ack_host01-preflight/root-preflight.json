@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "kind": "native-retirement-ack-host01-root-preflight",
+  "source_tree": "f8d3aa8c7bde5c81da5fed04eaea517fbfa42ba5",
+  "source_proof": {
+    "tree": "f8d3aa8c7bde5c81da5fed04eaea517fbfa42ba5",
+    "leaf_count": 36,
+    "logical_bytes": 2499327,
+    "directory_count_including_root": 3,
+    "recursive_entries": 38,
+    "truncated": false,
+    "all_paths_modes_sizes_blob_sha1_match": true,
+    "all_directory_tree_sha1_recomputed": true
+  },
+  "inverse": {
+    "controller_hunks": 12,
+    "exact_old_controller": "72e81b0d79927abe895d90cf04c60272d4c107a8",
+    "capacity_hunks": 2,
+    "capacity_inverse": {
+      "bytes": 62433,
+      "sha256": "f04575cc4f5bc16d0a4fea34878d771500ccbe7af5eec76860ad1c95c299a2a8",
+      "git_blob_sha1": "348aad70449b426d2fe35c38bb9e7415932ad3f4"
+    },
+    "capacity_cached_exact": true
+  },
+  "reproduction": {
+    "request": true,
+    "stdin": true,
+    "stage": true,
+    "boundary": true,
+    "transferred": 15,
+    "complete": 21
+  },
+  "request": {
+    "bytes": 782402,
+    "sha256": "fb77d2a5bbd5bfa796bd1f068647f1e777aea66479ec842dbe9517df771a4109",
+    "git_blob_sha1": "d80adcb443762a3643396358a623ef6baf8cd3d8"
+  },
+  "stdin": {
+    "bytes": 745153,
+    "sha256": "0c61cdd438010f18f3a0f882343e5d56583d48d02df9f772bfdffe1188a547d3",
+    "git_blob_sha1": "59d64a40029d29e33f5dcb8151d4eb939f3bc256"
+  },
+  "controller": {
+    "bytes": 101052,
+    "sha256": "0a17b25035fc9742bd840ed685124b736b0f4a9bbee52a7701682d06da12d66d",
+    "git_blob_sha1": "9423b57f4925f02249b06bf0f610a0d07e09624d"
+  },
+  "unchanged_controller_functions": [
+    "require",
+    "utc",
+    "sha",
+    "identity",
+    "held",
+    "write_new",
+    "real_directory",
+    "resource_text",
+    "resource_events",
+    "resource_snapshot",
+    "begin_resources",
+    "finish_resources",
+    "hash_held",
+    "regular_tree",
+    "portable",
+    "pinned_packet",
+    "exact_source_copy",
+    "read_existing_config",
+    "pin_resolved",
+    "verify_resolved",
+    "toolchain",
+    "qualify_cached_archive",
+    "limit_child_outputs",
+    "OwnChildReaper",
+    "owned_command",
+    "command",
+    "run_child_lifecycle_controls"
+  ],
+  "reviewed_changed_functions": [
+    "header",
+    "apply_candidate_sources",
+    "fixture_inputs",
+    "selected_dependencies",
+    "qualify_compile_records",
+    "retirement_focused_test",
+    "execute"
+  ],
+  "reviewed_stage_and_transport": true,
+  "production_source_prior_review_tree": "8716a809e4dcc8d1329a9cfcc1a22a380a33eb4c",
+  "additional_production_delta": "CreateTask includes absent pending retirements in same capacity limit; exact inverse to work01 endpoint",
+  "peer_review": {
+    "agent": "android_acceptance",
+    "scope": "six full verified fixture/provider/handshake/Cargo/Core sources; real provider register/unregister/ACK/release methods",
+    "finding": "no concrete blocking source/API defect found within scoped review",
+    "limitations": [
+      "no Rust execution",
+      "coordinator backend seams separate from 24 real-provider controls",
+      "Binder/DRM/GLES remain explicit host seams"
+    ]
+  },
+  "expected": {
+    "source_files": 500,
+    "ordinary_commands": 131,
+    "focused_tests": 112,
+    "registered": {
+      "fixture": 69,
+      "protocol": 23,
+      "endpoint": 20
+    },
+    "lifecycle_controls": 3
+  },
+  "runtime_profile": {
+    "cpu_percent": 100,
+    "memory_max_bytes": 1073741824,
+    "nice": 15,
+    "work_seconds": 450,
+    "outer_seconds": 600
+  },
+  "boundaries": {
+    "Main_actions": 0,
+    "Android_actions": 0,
+    "network_downloads": 0,
+    "Wayland_full_crate": "separate pending",
+    "GPU_runtime": false,
+    "production_ready": false
+  },
+  "status": "REVIEWED_FOR_ONE_FRESH_HOST_BUILD_AND_TEST"
+}

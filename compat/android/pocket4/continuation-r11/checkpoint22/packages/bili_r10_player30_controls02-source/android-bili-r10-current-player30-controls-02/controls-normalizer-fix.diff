@@ -1,0 +1,10 @@
+--- failed01/check_current_flow.py
++++ corrected02/check_current_flow.py
+@@ -47,7 +47,6 @@
+         def visit_Constant(self,node):
+             if isinstance(node.value,str):
+                 node.value=node.value.replace('R9','R10').replace('INSTALL02_R5','INSTALL02_R6')
+-                node.value=node.value.replace('owned_bili_r5_session','owned_bili_r6_session')
+                 if node.value=='pocket4-owned-bili-qa-v9':node.value='pocket4-owned-bili-qa-v10'
+             return node
+         def visit_List(self,node):

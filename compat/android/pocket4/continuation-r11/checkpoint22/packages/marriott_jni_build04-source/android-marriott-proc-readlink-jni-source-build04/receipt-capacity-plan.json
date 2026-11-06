@@ -1,0 +1,37 @@
+{
+  "actual02_dependency_names": {
+    "all_ascii": true,
+    "bytes": 134340,
+    "count": 793,
+    "maximum_name_bytes": 206,
+    "sha256": "32c3ccb0b85e0263d3e90626864512eb606f00fe708eaf29163687d9b5d5c4c7",
+    "source_blob": "4b6633f7a0b36484160685c52c57ea42bf802933",
+    "total_named_ascii_bytes": 130351
+  },
+  "actual03_known_only": "Final in-memory complete-receipt size exceeded 4194304 bytes before create(build-result.json). Compile and cleanup status were not emitted.",
+  "actual03_receipt_available": false,
+  "actual03_receipt_size_unknown": true,
+  "kind": "marriott-compile-complete-receipt-capacity-plan04",
+  "planning_estimate": {
+    "command_output_max_json_escape_factor": 6,
+    "command_outputs_planning_bytes": 18874368,
+    "dependency_rows_maximum": 18432,
+    "dependency_rows_planning_bytes": 28311552,
+    "per_row_planning_bytes": 1536,
+    "receipt_file_hard_bytes": 67108864,
+    "remaining_metadata_error_resource_headroom_bytes": 19922944
+  },
+  "planning_limit": "1536 bytes per repeated metadata row is a conservative planning allowance for the observed fixed ASCII source paths and row schema, not a newly admitted filesystem or an assertion that every theoretically accepted future input must fit. The final exact encoded-byte bound still fails closed on overflow; no truncation or field deletion is used.",
+  "retained_limits": {
+    "compiler_commands": 6,
+    "controller_memory_bytes": 1073741824,
+    "dependency_file_bytes": 262144,
+    "dependency_names_per_set": 2048,
+    "input_fd_events": 16384,
+    "stderr_bytes_per_command": 262144,
+    "stdout_bytes_per_command": 262144,
+    "translation_units": 3
+  },
+  "schema": 1,
+  "storage": "Existing sort_keys/indent=2 full JSON, O_CREAT|O_EXCL|O_NOFOLLOW, mode0400, full flush+fsync+close; created-root stdout remains success/path/bytes/fullSHA/first_error summary. The pre-root failure fallback is unchanged."
+}

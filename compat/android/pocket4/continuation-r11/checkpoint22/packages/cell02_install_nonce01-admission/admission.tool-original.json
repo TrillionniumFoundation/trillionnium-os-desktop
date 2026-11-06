@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,os,re,secrets,sys\nraw=sys.stdin.buffer.read(22718)\nassert len(raw)==22717 and hashlib.sha256(raw).hexdigest()==\"fe089e0fc4de4f18762aa541e9efadba79aa14615749ef7ef0f6cf0fbfe5fbe8\"\nexcluded=json.loads(raw)\nassert type(excluded) is list and len(excluded)==len(set(excluded))==649 and all(type(x) is str and re.fullmatch(r\"[0-9a-f]{32}\",x) for x in excluded)\nassert os.getuid()==os.geteuid()==1000\nlabels=[\"bili_r10_install_flow\",\"bili_r10_install_state\",\"ihg_r4_install_flow\",\"ihg_r4_install_state\",\"amazon_r4_install_flow\",\"amazon_r4_install_state\",\"bestbuy_r4_install_flow\",\"bestbuy_r4_install_state\"]\nvalues=[secrets.token_hex(16) for _ in labels]\nassert len(set(values))==8 and not set(values).intersection(excluded)\nprint(json.dumps({\"schema\":1,\"purpose\":\"fresh current-cell02 four helper installation\",\"generator\":\"secrets.token_hex(16)\",\"labels\":labels,\"values\":values,\"count\":8,\"excluded_count\":649,\"excluded_sha256\":hashlib.sha256(raw).hexdigest(),\"no_redraw\":True,\"Main_actions\":0,\"Android_actions\":0,\"children_started\":0,\"filesystem_mutations\":0},sort_keys=True,separators=(\",\",\":\")),flush=True)\n"
+    ],
+    "created_unix_ms": 1793976947027,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b15bd153-fc05-77f9",
+    "idempotency_key": "pocket4-current-cell02-install-nonces-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b15bd153-fc05-77f9",
+    "request_digest": "b059e5b4b30b4e589668b20cf7d07488920856eb254fb4a182f995cf7796d980",
+    "request_fingerprint": 12707440387863301720,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b15bd153-fc05-77f9"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b15bd153-fc05-77f9"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

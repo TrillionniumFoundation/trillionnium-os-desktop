@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.droidloom.qa.bestbuy.r4" android:versionCode="2" android:versionName="2">
+    <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+    <queries><package android:name="com.bestbuy.android" /></queries>
+    <application android:label="Owned BestBuy QA" android:debuggable="false"
+        android:testOnly="true" android:allowBackup="false" android:hasCode="true" />
+    <instrumentation android:name="org.droidloom.qa.bestbuy.r4.ActionRunner"
+        android:targetPackage="org.droidloom.qa.bestbuy.r4"
+        android:functionalTest="true" android:handleProfiling="false" />
+</manifest>

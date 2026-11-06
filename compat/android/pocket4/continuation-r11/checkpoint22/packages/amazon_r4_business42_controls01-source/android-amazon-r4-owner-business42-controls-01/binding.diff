@@ -1,0 +1,67 @@
+--- template/coordinator
++++ actual-bound/coordinator
+@@ -17,12 +17,12 @@
+ HERE=Path(__file__).resolve().parent
+ ROOT=Path("/home/alex/work/pocket4-amazon-r4-current-search-entry-01")
+ SOURCE=ROOT/'source'
+-NONCE='__FRESH_FLOW__'
++NONCE='973c8962a6356166e145c3a05368d814'
+ FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r4-flow-'+NONCE)
+ PACKAGE='com.amazon.mShop.android.shopping'
+ UID=10129
+ SELF="org.droidloom.qa.amazon.r4"
+-HELPER_UID=None  # Actual R4 installation required.
++HELPER_UID=10159
+ 
+ CURRENT_HOST_MANIFEST="002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+ CURRENT_BASELINE_SCHEMA="pocket4-main-current-baseline-v2"
+@@ -30,7 +30,7 @@
+ CURRENT_BASELINE_SHA="633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364"
+ CURRENT_QUALIFICATION_SHA="ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+ COMPONENT=PACKAGE+'/com.amazon.mShop.home.HomeActivity'
+-PLAN={"entry":{"nonces":{"action":"__FRESH_ENTRY_ACTION__","after":"__FRESH_ENTRY_AFTER__","before":"__FRESH_ENTRY_BEFORE__","inspect":"__FRESH_ENTRY_INSPECT__"},"operation":"click","schema":1,"selector":{"class":"android.widget.ImageButton","content_desc":"Search","resource_id":"com.amazon.mShop.android.shopping:id/chrome_search_box"}},"operation":"search_entry","post":{"nonces":{"after":"__FRESH_POST_AFTER__","before":"__FRESH_POST_BEFORE__","inspect":"__FRESH_POST_INSPECT__"},"operation":"inspect","schema":1},"schema":1,"stability":[{"nonces":{"after":"__FRESH_STABILITY_1_AFTER__","before":"__FRESH_STABILITY_1_BEFORE__","inspect":"__FRESH_STABILITY_1_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_2_AFTER__","before":"__FRESH_STABILITY_2_BEFORE__","inspect":"__FRESH_STABILITY_2_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_3_AFTER__","before":"__FRESH_STABILITY_3_BEFORE__","inspect":"__FRESH_STABILITY_3_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_4_AFTER__","before":"__FRESH_STABILITY_4_BEFORE__","inspect":"__FRESH_STABILITY_4_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_5_AFTER__","before":"__FRESH_STABILITY_5_BEFORE__","inspect":"__FRESH_STABILITY_5_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_6_AFTER__","before":"__FRESH_STABILITY_6_BEFORE__","inspect":"__FRESH_STABILITY_6_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_7_AFTER__","before":"__FRESH_STABILITY_7_BEFORE__","inspect":"__FRESH_STABILITY_7_INSPECT__"},"operation":"inspect","schema":1},{"nonces":{"after":"__FRESH_STABILITY_8_AFTER__","before":"__FRESH_STABILITY_8_BEFORE__","inspect":"__FRESH_STABILITY_8_INSPECT__"},"operation":"inspect","schema":1}]}
++PLAN={"entry":{"nonces":{"action":"24b521ec19758b4c18e20332cfe27157","after":"caf81af1b4ed9b021c556ce85c4ab561","before":"1541d08c796b408c34a4ec9a26709c47","inspect":"858340d3f74b1dbe2fb8762a7d015222"},"operation":"click","schema":1,"selector":{"class":"android.widget.ImageButton","content_desc":"Search","resource_id":"com.amazon.mShop.android.shopping:id/chrome_search_box"}},"operation":"search_entry","post":{"nonces":{"after":"7fa98495657031ad07e693914e7957ed","before":"13a17fdb8cb74e00634503f4ef6dc2a7","inspect":"c8767cc3811bf872128005644d0947c5"},"operation":"inspect","schema":1},"schema":1,"stability":[{"nonces":{"after":"686420cc9a63f1df328d951546325d3a","before":"4304f1a7ff94add60f198e9e6e416b5a","inspect":"d3a404935de5cd6d8aa12581a31a1721"},"operation":"inspect","schema":1},{"nonces":{"after":"65eae027cbb3c1d90b597fcaadf1d950","before":"4c69b33c2f395fcea9bb2d9d46b12e0a","inspect":"6e2fd93b0e9f33397d28ccec1aece6b5"},"operation":"inspect","schema":1},{"nonces":{"after":"e312af369605c30008e64a63cfd545da","before":"f41450b96ee4747d79b931bfe03165b2","inspect":"79df981326cbb809a165243e1dbcf3b4"},"operation":"inspect","schema":1},{"nonces":{"after":"eb218365091b7928fccd22e5abdc90ac","before":"9e2e24ce7e1308eb24e7f603896a3630","inspect":"8ec3da7ef0c773e5c6334218c11bc575"},"operation":"inspect","schema":1},{"nonces":{"after":"aa25239408c599268cbf2ab9e41d3590","before":"ffd751558d7ce6d1ac2f7dd582745a68","inspect":"88d662a142db608bbfeb4529d0093d51"},"operation":"inspect","schema":1},{"nonces":{"after":"73ff9a0eee0c06979739dd8ee60a008a","before":"3795b440eac2fe22ab72fee6899d4763","inspect":"f9bc4b5a9c662cdb5dd43697085f25a6"},"operation":"inspect","schema":1},{"nonces":{"after":"2f90fb8e13b8968d6489b0fa7ee4a28b","before":"30f6eabe4faf719b137619d5ed9fb54f","inspect":"408ea8c45dae4b4f234c05e781dae711"},"operation":"inspect","schema":1},{"nonces":{"after":"40ec5881ff1e8e1435fab1d4864bf563","before":"abcd4e1dd9c5bc651ab44d7ffb0847e8","inspect":"66b25b379464bb58197e4722b417b7f6"},"operation":"inspect","schema":1}]}
+ INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-02")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+ INSTALL_SOURCE_SHA="ed611217d1721dc5f0e30a4a6c5163c9f35c6f50404e0118e2e2deff6679b7bc"
+@@ -39,9 +39,9 @@
+ CONTEXT_SHA="d081ba9b8d6da9cdaa4a071ae40b5c74efe2428921bae947a5f93e8afa8add37"
+ TRANSPORT_SHA="d9a682696cac2e28987b04f3e59f0fa783028fdc069c145816cd87c40eb6ca63"
+ STATE_NONCE="7e2b1d49365866364ecaa9bf59942c87"
+-STATE_WIRE=None  # Actual R4 installation closure required.
+-INSTALLED=None  # Actual R4 installation closure required.
+-PRIOR=None  # Actual R4 installation closure required.
++STATE_WIRE="127c3094679c80a4eb1b13a5023c0959c47776fc56ef39dd9d14fff88f57c9ac"
++INSTALLED={"apk_sha256":"0fcd5b21fb1dfeabd5fa5dede9805217a6f915a75f52cdb1b74216dbaa66a71d","base_apk":"/data/app/~~ltijd-ew7pYbq3vrboU8EQ==/org.droidloom.qa.amazon.r4-f4ISashDuJbVeEczF4BF6Q==/base.apk","bytes":24720,"held_file":{"bytes":24720,"device":1811,"gid":1000,"inode":656335,"mode":33188,"mtime_ns":1793982243720689487,"nlink":1,"uid":1000},"package":"org.droidloom.qa.amazon.r4","signer_bound_by_exact_signed_apk_bytes":"40022ce8b76fe6262a1d3248172351c4222f68cdfa8a30eb71236ab3db2811d5","uid":10159}
++PRIOR={"coordinator":("result.json",4477,"2847a9bbe0ba6ff88a1c447e07289594ab109b0acb9e21eb16526f15578dbe7e"),"stage":("stage-result.json",10458,"bf272bce96a63693a10d598e6d88dfd743b62633cddcf61a376471476a7b52ed"),"worker":("worker/result.json",15579,"d4d421e64403afcbcd7208d5d51768e8c7a87da978696291e0c7619a9f464567")}
+ RESOLVER_ROOT=Path('/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01')
+ RESOLVER_SOURCE=RESOLVER_ROOT/'source/resolve_amazon.py'
+ RESOLVER_SHA='b963fde5ba1638702623ee707ec21b43f0a86f87f54550f1e0d2df474cb7b058'
+--- template/context
++++ actual-bound/context
+@@ -18,7 +18,7 @@
+ PACKAGE='com.amazon.mShop.android.shopping'
+ UID=10129
+ SELF="org.droidloom.qa.amazon.r4"
+-HELPER_UID=None  # Actual R4 installation required.
++HELPER_UID=10159
+ 
+ CURRENT_HOST_MANIFEST="002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+ CURRENT_BASELINE_SCHEMA="pocket4-main-current-baseline-v2"
+--- template/business
++++ actual-bound/business
+--- template/stage
++++ actual-bound/stage
+@@ -8,7 +8,7 @@
+ 
+ ROOT=Path("/home/alex/work/pocket4-amazon-r4-current-search-entry-01")
+ SOURCE=ROOT/'source'
+-NONCE='__FRESH_FLOW__'
++NONCE='973c8962a6356166e145c3a05368d814'
+ FILES={'owned_inspect.py','amazon_task_context.py','search_navigation.py','INPUTS.json'}
+ REFERENCE=Path('/home/alex/work/pocket4-current-host-r6-source-01/current_coordinator.py')
+ REFERENCE_SHA="0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89"
+--- template/contract
++++ actual-bound/contract
+--- template/adapter
++++ actual-bound/adapter

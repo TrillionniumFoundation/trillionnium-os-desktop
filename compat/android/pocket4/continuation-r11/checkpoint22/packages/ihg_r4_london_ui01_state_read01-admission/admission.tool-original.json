@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,sys;raw=sys.stdin.buffer.read(32769);assert len(raw)==25780 and hashlib.sha256(raw).hexdigest()==\"2783590c8393758048654f61bdb4f9b522e392b9b9c9024c8ff866b1dbb04536\";s={'__name__':'fixed_ihg_current_stacks','SOURCE_SHA256':\"2783590c8393758048654f61bdb4f9b522e392b9b9c9024c8ff866b1dbb04536\"};exec(compile(raw,'read_current.py','exec'),s);raise SystemExit(s['main']())"
+    ],
+    "created_unix_ms": 1793990070456,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b22410b8-fc05-7c98",
+    "idempotency_key": "pocket4-ihg-r4-london01-current-two-stack-readonly-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b22410b8-fc05-7c98",
+    "request_digest": "072b266c0e68140659e0083318d4d3dce65201a6f1312fdb1a16e8d8f41d20e1",
+    "request_fingerprint": 516548827804079110,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b22410b8-fc05-7c98"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b22410b8-fc05-7c98"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

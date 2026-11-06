@@ -1,0 +1,27 @@
+--- source-only01/build_ui.js
++++ source-only02/build_ui.js
+@@ -41,7 +41,7 @@
+  const make=x=>ll.losslessJsonNodes(JSON.stringify(x)),put=(k,x)=>{root.fields[k]=make(x);},putNode=(k,x)=>{root.fields[k]=x;};
+  function plan(name){const m=bound.sources.coordinator.match(new RegExp('^'+name+'=(.*)$','m'));need(m,'EXACT_PLAN:'+name);return JSON.parse(m[1]);}
+  const search=plan('SEARCH_PLAN'),destination=plan('PLAN'),input=plan('INPUT_PLAN'),post=plan('POST_PLAN'),readiness=plan('SEARCH_READINESS_PLANS');
+- put('schema',4);put('state','ACTUAL_CURRENT_CELL02_IHG_R4_INSTALL_AND_166_CONTROLS_BOUND_FRESH_LONDON_FLOW_UNRUN');
++ put('schema',4);put('state','ACTUAL_CURRENT_CELL02_IHG_R4_INSTALL02_AND_169_CONTROLS_BOUND_FRESH_LONDON_FLOW_UNRUN');
+  put('nonce',n.values[0]);put('helper_package',helper.binding.helper_package);put('helper_protocol',helper.binding.protocol);put('helper_uid',bound.actual_helper_uid);
+  put('current_baseline',host.binding);put('current_host_manifest_sha256',host.manifest_sha256);
+  put('current_host_source_root','/home/alex/work/pocket4-current-host-r6-source-01');
+@@ -49,12 +49,12 @@
+  putNode('installed_helper',ll.nodeField(worker,['installed_before_state']));
+  putNode('actual_target',ll.nodeField(worker,['target_before']));putNode('actual_build',ll.nodeField(worker,['build']));
+  put('actual_install_job',bound.actual_install_job);put('actual_install_source_manifest_sha256',install.manifest_sha256);
+- const installRoot='/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01';
++ const installRoot='/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02';
+  put('actual_install_receipts',Object.fromEntries(Object.entries(bound.prior).map(([k,v])=>[k,{path:installRoot+'/'+v[0],bytes:v[1],sha256:v[2]}])));
+  put('all_six_original_install_pins',bound.install_pins);
+- put('actual_source_controls',{...actualControl.pin,job_id:actualControl.job_id,git_blob:actualControl.git_blob,count:166,
++ put('actual_source_controls',{...actualControl.pin,job_id:actualControl.job_id,git_blob:actualControl.git_blob,count:169,
+   control_source:controlCandidate.source_pin,control_stdin_sha256:result.control_stdin_sha256,
+-  production_Flow_BoundArun_Session_and_current_install_validators:true,synthetic_IO_only:true,current_generation_controls:9});
++  production_Flow_BoundArun_Session_and_current_install_validators:true,synthetic_IO_only:true,current_generation_controls:9,current_owner_task_route_controls:3});
+  put('actual_fresh_nonce_source',{...bound.nonce_receipt,order:n.labels,values:n.values});
+  put('state_nonce',obj.state.helper.nonce);put('state_wire_sha256',obj.state.wire_sha256);
+  put('state_recorder_command_result_sha256',bound.install_pins.state_command.sha256);

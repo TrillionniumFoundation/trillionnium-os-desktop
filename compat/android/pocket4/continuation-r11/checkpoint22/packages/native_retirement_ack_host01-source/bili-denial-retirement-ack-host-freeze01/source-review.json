@@ -1,0 +1,75 @@
+{
+  "state": "SOURCE_ONLY_UNRUN",
+  "compiled": false,
+  "tests_executed": false,
+  "python_compilation_performed": false,
+  "implementation": {
+    "source_files": 500,
+    "changed": 8,
+    "added": 1,
+    "unchanged": 491,
+    "protocol_minor": 5,
+    "capability_bit": 9,
+    "retirement_tuple": [
+      "same peer connection",
+      "TaskObjectId",
+      "nonzero monotonic RetirementNonce"
+    ],
+    "expected_owner_before_destructive_effect": true,
+    "partial_registration_retained": true,
+    "remote_send_is_not_retirement": true,
+    "engine_completion_hook": "Real frame/layer drain and object removal; Wayland sync callback after explicit destroy requests; disconnect never ACK",
+    "receiver": "ACK branch independent of Session and coordinator operation gate; Condvar wait releases tasks",
+    "capacity_fix": "CreateTask and absent RetireTask both count live + pending-absent objects"
+  },
+  "host_coverage": {
+    "whole_provider_source_compiled_in_host_fixture": true,
+    "provider_methods_substituted": false,
+    "provider_host_seams": [
+      "Binder FD wrapper",
+      "DRM timeline creation/export/failure",
+      "GLES rejects",
+      "disabled optional trace"
+    ],
+    "real_apis": [
+      "Core binding and release accounting",
+      "SOCK_SEQPACKET records/FD transfer",
+      "std Mutex/Condvar",
+      "exact protocol and endpoint source"
+    ],
+    "expected_test_counts": {
+      "coordinator": 27,
+      "provider_original": 2,
+      "provider_new": 24,
+      "engine_ledger": 12,
+      "handshake": 4,
+      "protocol": 23,
+      "endpoint": 20,
+      "total": 112
+    },
+    "legacy_test_limitation": "Existing endpoint listener test may return early on PermissionDenied; it does not prove successful listen/peer negotiation in that case."
+  },
+  "scope_limits": {
+    "GPU_runtime": false,
+    "Android_Binder_engineering_ABI": false,
+    "Main_installed_source": false,
+    "actual_Bili_Amazon_failure_cause": false,
+    "whole_app_production_ready": false,
+    "Wayland_full_crate_check": "Not in this request; Root owns the next independent full-crate gate."
+  },
+  "dependencies": "Exact original lock seeded create-only into owned fixture; offline resolution then locked metadata; every selected old-45 archive keeps prior authority gate; additional transitive fixed cache paths are first observed only after full original-lock checksum and archive-to-source comparison; no download.",
+  "resource_scope": "Same host02 1 CPU/1 GiB/nice15; swap max is observed only, no zero-swap-budget claim; 450s work / 600s tool. No Main access.",
+  "meaningful_peer_findings": [
+    {
+      "peer": "android_acceptance",
+      "scope": "codec6/endpoint12/direct API",
+      "finding": "Shared capacity gap repaired with one real request sequence negative/positive control; new control not executed."
+    },
+    {
+      "peer": "app_recovery_resume",
+      "scope": "provider/receiver register,retire,receipt,Condvar and metadata",
+      "finding": "No definite lock/ownership blocker in reviewed work01 scope; no execution or engine proof."
+    }
+  ],
+  "request_state": "UNRUN_NO_PREFLIGHT_NO_ADMISSION"
+}

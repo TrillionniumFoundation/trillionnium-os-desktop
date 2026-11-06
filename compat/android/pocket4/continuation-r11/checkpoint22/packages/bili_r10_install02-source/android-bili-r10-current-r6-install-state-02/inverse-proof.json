@@ -1,0 +1,182 @@
+{
+  "schema": "pocket4-current-owner-correction-inverse-v1",
+  "all_original_production_functions_and_modules_restored": true,
+  "edits": [
+    {
+      "file": "install_state.py",
+      "from": "/home/alex/work/pocket4-owned-bili-qa-r10-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "/home/alex/work/pocket4-owned-bili-qa-r10-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "make_request.py",
+      "from": "/home/alex/work/pocket4-owned-bili-qa-r10-install-state-01",
+      "to": "/home/alex/work/pocket4-owned-bili-qa-r10-install-state-02",
+      "count": 1
+    },
+    {
+      "file": "make_request.py",
+      "from": "pocket4-owned-bili-qa-r10-current-r6-install-state-01-20261106",
+      "to": "pocket4-owned-bili-qa-r10-current-r6-install-state-02-20261106",
+      "count": 1
+    },
+    {
+      "file": "install_state.py",
+      "from": "EXPECTED_SOURCE_FILES = {'install_state.py', 'stage_execute.py', 'make_request.py',\n                         'INPUTS.json', 'README.md', 'host/source-manifest.json',\n                         'host-stage-actual.json', 'session_binding.py', 'check_install_binding.py'}",
+      "to": "EXPECTED_SOURCE_FILES = {'install_state.py', 'stage_execute.py', 'make_request.py',\n                         'INPUTS.json', 'README.md', 'host/source-manifest.json',\n                         'host-stage-actual.json', 'session_binding.py', 'check_install_binding.py', 'current_discovery.py', 'check_current_discovery.py', 'current_flow.py'}",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "FILES={'install_state.py','stage_execute.py','make_request.py','INPUTS.json','README.md',\n       'host/source-manifest.json','host-stage-actual.json','session_binding.py','check_install_binding.py'}",
+      "to": "FILES={'install_state.py','stage_execute.py','make_request.py','INPUTS.json','README.md',\n       'host/source-manifest.json','host-stage-actual.json','session_binding.py','check_install_binding.py', 'current_discovery.py', 'check_current_discovery.py', 'current_flow.py'}",
+      "count": 1
+    },
+    {
+      "file": "install_state.py",
+      "from": "def worker(expected):\n",
+      "to": "def current_flow_type(runtime_manifest, recorder):\n    discovery = module(HERE/'current_discovery.py',\n        runtime_manifest['files']['current_discovery.py']['sha256'],'owned_current_discovery')\n    factory = module(HERE/'current_flow.py',\n        runtime_manifest['files']['current_flow.py']['sha256'],'owned_current_flow')\n    require(factory.R6_MANIFEST == RECORDER_MANIFEST and\n            factory.MAIN_EPOCH == CURRENT_EPOCH and factory.BASELINE_SHA == BASELINE_SHA and\n            factory.QUALIFICATION_SHA == QUALIFICATION_SHA,\n            'CURRENT_FLOW_FACTORY_SOURCE_BINDING_REQUIRED')\n    return factory.flow_type(recorder,discovery)\n\n\ndef worker(expected):\n",
+      "count": 1
+    },
+    {
+      "file": "install_state.py",
+      "from": "        flow = recorder.Flow(flow_args)\n",
+      "to": "        flow = current_flow_type(runtime_manifest,recorder)(flow_args)\n",
+      "count": 1
+    },
+    {
+      "file": "install_state.py",
+      "from": "STEP = 'install-state-r10-01'",
+      "to": "STEP = 'install-state-r10-02'",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "import copy\n",
+      "to": "import copy\nimport types\n",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "def run_controls(entry,actual_host,manifest):\n",
+      "to": "def run_controls(entry,actual_host,manifest,files,baseline,recorder):\n",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "    entry.require(len(rows)==19,'EXACT_INSTALL_BINDING_CONTROL_COUNT')\n",
+      "to": "    discovery_controls = types.ModuleType('production_current_discovery_controls')\n    exec(compile(files['check_current_discovery.py'],'<current-discovery-controls>','exec'),discovery_controls.__dict__)\n    legacy_source = entry.read(entry.BASE_HOST_ROOT/'references/android_app.py',131072,\n                               discovery_controls.LEGACY_SHA)\n    rows.extend(discovery_controls.run_discovery_controls(files['current_discovery.py'],baseline,legacy_source))\n    rows.extend(discovery_controls.run_bili_route_controls(entry,files,baseline,legacy_source,recorder))\n    entry.require(len(rows)==37,'EXACT_INSTALL_BINDING_CONTROL_COUNT')\n",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "'count':19,'cases':rows",
+      "to": "'count':37,'cases':rows",
+      "count": 1
+    },
+    {
+      "file": "check_install_binding.py",
+      "from": "'Android_commands':0,'UI_actions':0,'children':0}",
+      "to": "'Android_commands':0,'UI_actions':0,'children':0,\n            'new_owner_discovery_controls':18,'production_discovery_and_Bili_bind_route_used':True,\n            'legacy_discover_failure_reproduced_in_memory':True}",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "    controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')\n",
+      "to": "    ref,original,manifest=load_original_host(files)\n    baseline=ref.current_baseline()\n    recorder=original.load('recorder.py','actual_R6_recorder_controls')\n    controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')\n",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "    controls=controls_module.run_controls(entry,actual_host,host_manifest)\n",
+      "to": "    controls=controls_module.run_controls(entry,actual_host,host_manifest,files,baseline,recorder)\n",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "            'ACTUAL_CURRENT_INSTALL_SOURCE_CONTROLS_REQUIRED')\n    ref,original,manifest=load_original_host(files)\n    baseline=ref.current_baseline()\n",
+      "to": "            'ACTUAL_CURRENT_INSTALL_SOURCE_CONTROLS_REQUIRED')\n",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "controls['count']==19",
+      "to": "controls['count']==37",
+      "count": 1
+    },
+    {
+      "file": "stage_execute.py",
+      "from": "len(controls['cases'])==19",
+      "to": "len(controls['cases'])==37",
+      "count": 1
+    }
+  ],
+  "nonce_bindings": [],
+  "original_source_pins": {
+    "install_state.py": {
+      "bytes": 38822,
+      "sha256": "e3515ebf47dd3f8fd1b7a48141f868aed7e9582f24f806687327b9d6897560c0"
+    },
+    "stage_execute.py": {
+      "bytes": 10346,
+      "sha256": "dcc94c2057e8792478e9852cf75dc463fe9c36559901c0019675bedc56922510"
+    },
+    "make_request.py": {
+      "bytes": 3063,
+      "sha256": "d8d91a44c79496869b1ed239b07da89d6a2a28563efdc874dfe8a6a17243d396"
+    },
+    "session_binding.py": {
+      "bytes": 846,
+      "sha256": "d896b750b6e35fc859c773a5f9797c22c33631a9bfc4c3c4d327706438cf0013"
+    },
+    "check_install_binding.py": {
+      "bytes": 3902,
+      "sha256": "60381cbb7c0e434af23a4ba89151c53c3aa3f269e4f63c306c1b632992aa92c7"
+    },
+    "host/source-manifest.json": {
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    "host-stage-actual.json": {
+      "bytes": 10016,
+      "sha256": "e1718fcb3561488c88011f00de0d6e992ff51a64a355da87f1fcb867545fcba6"
+    },
+    "INPUTS.json": {
+      "bytes": 3517,
+      "sha256": "48c8b2c825b78f9bdac79ce068f8965537977cf26537a78ebc64e22519ecabf0"
+    },
+    "README.md": {
+      "bytes": 1374,
+      "sha256": "7524e05a5a93e54cbee90a518fdf90c362bafa888603805c50663676f608820a"
+    }
+  },
+  "unchanged_files": [
+    {
+      "name": "session_binding.py",
+      "bytes": 846,
+      "sha256": "d896b750b6e35fc859c773a5f9797c22c33631a9bfc4c3c4d327706438cf0013"
+    },
+    {
+      "name": "host/source-manifest.json",
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    {
+      "name": "host-stage-actual.json",
+      "bytes": 10016,
+      "sha256": "e1718fcb3561488c88011f00de0d6e992ff51a64a355da87f1fcb867545fcba6"
+    }
+  ],
+  "shared_R6_manifest_unchanged": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff",
+  "new_discover_inverse_to_exact_legacy": "16f04a727bd88767a39f6bcf31c1ce1c08a8baf2b87a3d7cfab51dd947578dec",
+  "Bili_sole_bind_argument_difference": {
+    "from": "activation=self.activation, epoch=self.epoch, app=self.app, guard=lambda: self.guard())",
+    "to": "activation=self.activation, epoch=self.epoch,\n            app=discovery.discovery_view(self.app,self.activation,self.epoch,lambda:self.guard()),\n            guard=lambda: self.guard())"
+  }
+}

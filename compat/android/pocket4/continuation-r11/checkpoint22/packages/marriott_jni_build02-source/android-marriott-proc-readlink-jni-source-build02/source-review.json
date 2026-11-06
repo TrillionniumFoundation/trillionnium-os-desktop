@@ -1,0 +1,62 @@
+{
+  "actual_prior_failure": {
+    "compiler_commands": 0,
+    "compiler_tuple_recorded": false,
+    "job": "1a1b0e711f8-fc05-73d6",
+    "report": {
+      "bytes": 12940,
+      "git_blob_sha": "0923f5b6f32f57e2ee7a935ac686b1f1895ca78c",
+      "sha256": "0753755c0d1baca4563d605b7cd1f43e4ed84e5b0ac884d477ea5af4dc8d42da"
+    },
+    "success": false,
+    "tree": "a708c0b8ff8323b60146c8c586f44bdfe0957b33",
+    "whole_byte_read_completed_before_rejected_mode_gate": true
+  },
+  "baseline": {
+    "config": {
+      "bytes": 68111,
+      "git_blob_sha": "4f5cea86579966e0405af970718798525d4793f5",
+      "sha256": "811b2e508baa25f58e04fed3405457e9f6bf4612d157614bb6e080477a2ea0f9"
+    },
+    "prefix": "android-marriott-proc-readlink-jni-source-build01",
+    "request": {
+      "bytes": 107348,
+      "git_blob_sha": "73999d04609de795a3dab3d96735705b003c177c",
+      "sha256": "b8f5f11b0778392eb2ff32c81733b9136dc4003e471bfb0817bab8d55576ccbb"
+    },
+    "template": {
+      "bytes": 37059,
+      "git_blob_sha": "b3d0232f4c4c1f18661e67059194a14a529ae408",
+      "sha256": "57675940eadbfab28e848fafbc78d694ca4516c20948a09ced9c4e3b6c0e85e6"
+    },
+    "tree": "5ea1127d6971c3e0693c9cf0d177cedc0b065b59"
+  },
+  "changes": [
+    "Preserve build01 original FAIL; use fresh root02 and build02 key.",
+    "Replace newly assumed no-group-write policy with the complete historical C20 compiler tuple, never an arbitrary permission exception.",
+    "Save compiler_before and watch entry before tuple gate so a failed fresh observation remains explicit and receives final recheck.",
+    "Keep current regular-file/nlink1 bound; C20 did not report nlink, so this is an existing read gate, not a historical claim."
+  ],
+  "expected_request": {
+    "bytes": 108802,
+    "git_blob_sha": "b202b416e68ecbd8faab268ac795b11bbdee2f66",
+    "key": "p4-marriott-proc-readlink-outer-tu-build02-6924ef6031399036",
+    "sha256": "84135d904033aaa032ebd51612cccd20b1f5e2161f888f187ffc41d573bf34e4"
+  },
+  "kind": "marriott-outer-TU-build02-complete-actual-compiler-tuple",
+  "limits": {
+    "C20_is_historical_authority_current02_must_match": true,
+    "Python_syntax_or_compiler_controls_executed_locally": false,
+    "actual_Android_or_commercial_qualification": false,
+    "before_after_source_pins_are_not_atomic_exec_or_CAS_proof": true,
+    "compiler_path_still_operator_owned_and_group_writable": true
+  },
+  "preserved": [
+    "Seven inline source bytes and the four source integrations remain unchanged.",
+    "Original three ARM64 TUs, six compiler commands, exact ELF symbol gates, dependency roots and bounds remain unchanged.",
+    "Original C20 same-UID child reaper, limits and current own-cgroup resource guard remain unchanged.",
+    "No chmod, no new tool lookup or fallback, no feature macro enabling, no Main/Android/JNI/object execution."
+  ],
+  "schema": 1,
+  "state": "SOURCE_ONLY_NOT_EXECUTED"
+}

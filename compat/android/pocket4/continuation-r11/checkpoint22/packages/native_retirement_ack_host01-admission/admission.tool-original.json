@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nEXPECTED={\"bytes\":745153,\"sha256\":\"0c61cdd438010f18f3a0f882343e5d56583d48d02df9f772bfdffe1188a547d3\"}\nSTAGE={\"bytes\":10834,\"sha256\":\"88e48c88903330228eb6639b3770301c720ba56e00f7eb4457bfbe37d463b635\"}\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\n    raise RuntimeError('fixed retirement host compiler transport length/hash mismatch')\nvalue=json.loads(wire)\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\n    raise RuntimeError('fixed retirement host compiler envelope differs')\nstage=value['stage'].encode('utf-8')\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\n    raise RuntimeError('fixed retirement host compiler stage pin differs')\nscope={'__name__':'__stage__','__file__':'<fixed-retirement-host-stage>'}\nexec(compile(stage,'<fixed-retirement-host-stage>','exec'),scope,scope)\nscope['main'](value['packet'])\n"
+    ],
+    "created_unix_ms": 1793973690241,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b12a1f81-fc05-766b",
+    "idempotency_key": "pocket4-denial-retirement-ack-host-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b12a1f81-fc05-766b",
+    "request_digest": "b75ef47b7ab33104c38abfe70dc2cd030fea9398e815caf025548ffed4354d08",
+    "request_fingerprint": 13213267167928332548,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b12a1f81-fc05-766b"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b12a1f81-fc05-766b"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

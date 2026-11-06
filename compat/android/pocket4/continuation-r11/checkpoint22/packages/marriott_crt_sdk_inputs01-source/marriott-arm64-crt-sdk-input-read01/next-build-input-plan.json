@@ -1,0 +1,261 @@
+{
+  "existing_actuals": {
+    "C20": {
+      "clang_and_lld_actual": true,
+      "its_x86_64_CRT_and_libraries_not_used": true,
+      "report": {
+        "bytes": 728003,
+        "git_blob_sha": "65b73e78dbc48d7e62e2c9ca6276909b8b8efd16",
+        "sha256": "5cc813715a261701cad3be931b9e53145229dec7c803d828a1097e4fe4ad166b"
+      }
+    },
+    "M04": {
+      "report": {
+        "bytes": 4899108,
+        "git_blob_sha": "3b59327fb4f94cf9ba38ef984a6c2ca2bb6fd5dd",
+        "sha256": "8a9e478a65606cb296bfc2e208ff11c0203f43902ae3245a8f931f28fc10165a"
+      },
+      "six_compiler_commands": true,
+      "test_bodies_not_executed": true,
+      "three_arm64_rel_objects": true
+    },
+    "java_tools": {
+      "actual_blob": "a2ca4792d184ec0e18738f478dfae3fea4ea6140",
+      "existing_aapt_not_aapt2": true,
+      "source_blob": "d0733a7dd247b162ca1e1a99dce63a9ddb04c633"
+    }
+  },
+  "fixed_stages": [
+    {
+      "current_target": "aarch64-linux-android10000",
+      "generator_args": [
+        "--arch",
+        "arm64",
+        "--api",
+        "current",
+        "--api-map",
+        "<bound existing api_levels.json>",
+        "<one exact map>",
+        "<new own stub.c>",
+        "<new own version-script>",
+        "<new own symbol-list>"
+      ],
+      "implementation": "original ndkstubgen and symbolfile plus five exact NDK map files",
+      "package_in_apk": false,
+      "runtime_substitution": false,
+      "stage": "SDK interfaces"
+    },
+    {
+      "brand_define": "exact observed Platform_sdk_version from existing soong.variables",
+      "implementation": "original Bionic crtbegin_so.c + crtbrand.S and crtend_so.S",
+      "legacy_workaround": false,
+      "source_or_SDK_modification": false,
+      "stage": "real CRT"
+    },
+    {
+      "dependency_validation": "bounded -M before/after under exact fixed roots plus complete per-file hashes; no host libc++ configuration fallback",
+      "sources": [
+        "original GTest gtest-all.cc and its real source includes",
+        "actual original NDK cpu-features.c",
+        "SharedFunction shared_lib.cc with original default visibility",
+        "JNI jni_test.cc and jni_test_main.cc",
+        "Shared shared_library_test.cc",
+        "User user_apk_test.cc",
+        "candidate proc_self_maps_test.cc with nine new FD/readlink tests"
+      ],
+      "stage": "real implementation objects"
+    },
+    {
+      "requirements": [
+        "original SONAME/JNI names from original Android.bp",
+        "real ARM64 libc++/libc++abi/libunwind/builtins archives from actual13",
+        "--no-undefined",
+        "ELF64 AArch64 ET_DYN",
+        "expected 23 TestBody definitions and actual JNI export/reference join",
+        "only Android platform DT_NEEDED names; no host .so.6, no SDK interface RPATH"
+      ],
+      "stage": "two ARM64 implementation DSOs"
+    },
+    {
+      "requirements": [
+        "original Manifest and Java Activity/NdkTests",
+        "SDK31 android.jar plus original runner/base/mock compile interfaces",
+        "retain original minSdk14 and targetSdk23",
+        "existing actual javac/d8/aapt/zipalign/apksigner tool pins",
+        "two implementation ARM64 DSOs only",
+        "fresh own signing key kept private",
+        "APK/signature/ZIP/ELF closure verified"
+      ],
+      "stage": "APK"
+    },
+    {
+      "not_authorized_by_this_reader": true,
+      "requirements": [
+        "Root serial authority",
+        "current Main baseline and exact native bridge provenance",
+        "nonempty VerifyTestList equals all 23 registered names",
+        "ProcSelfMaps.* executes exactly 12 test bodies",
+        "no failure or skipped tests",
+        "complete actual cleanup"
+      ],
+      "stage": "separate actual runtime admission"
+    }
+  ],
+  "kind": "p4-marriott-real-ndk-apk-next-stage01",
+  "pending_actual_inputs": [
+    {
+      "admission": "UNKNOWN_DO_NOT_RETRY",
+      "kind": "APK13",
+      "reader_source": {
+        "bytes": 20847,
+        "git_blob_sha": "b480154ec235f538d2e0b34f41d2421b1f257260",
+        "sha256": "2eef8c4ba06d762a3f3a09796d54e81da43deae4691ab4afa7713ad5b987f390"
+      }
+    },
+    {
+      "admission": "NOT_DISPATCHED",
+      "kind": "CRT_SDK22",
+      "reader_source": {
+        "bytes": 28136,
+        "git_blob_sha": "06623d4ff266da843432f3ea7fb03ba5b26f87d7",
+        "sha256": "03bbd14e9fe5e97a61cc957a6f9c580b4272f44163dac743e9b276004c1b6176"
+      }
+    }
+  ],
+  "prohibited": [
+    "substituting test functions",
+    "using x86_64 libraries for ARM64",
+    "inventing or changing SDK values",
+    "packaging link-only platform interfaces as runtime libraries",
+    "directory scans or missing-candidate fallback",
+    "claiming compile proves ART/JNI runtime acceptance"
+  ],
+  "registry": {
+    "App_reproduction_or_cause_asserted": false,
+    "actual_linked_or_runtime_registry_observed": false,
+    "expected_selected": [
+      "ProcSelfMaps.CloseRangeOfOnlyOwnedFdDoesNotKeepMapsAttribution",
+      "ProcSelfMaps.ClosedFdAndBadDirfdKeepKernelErrors",
+      "ProcSelfMaps.Dup2ReplacementDoesNotKeepMapsAttribution",
+      "ProcSelfMaps.DuplicatedAliasesKeepOriginAfterOriginalClose",
+      "ProcSelfMaps.ExecutableFromFileBackedMmap",
+      "ProcSelfMaps.ExecutableFromMmap",
+      "ProcSelfMaps.ExecutableFromMprotect",
+      "ProcSelfMaps.ReadlinkHasCanonicalOwnerPath",
+      "ProcSelfMaps.ReadlinkLengthAndNoTerminatorSemantics",
+      "ProcSelfMaps.ReusedClosedNumberDoesNotKeepMapsAttribution",
+      "ProcSelfMaps.SealedLookalikeMemfdIsNotTrustedMaps",
+      "ProcSelfMaps.UnwritableBufferReturnsEfaultWithoutAProcessFault"
+    ],
+    "expected_selected_count": 12,
+    "instrumentation_gtest_filter_value": "ProcSelfMaps.*",
+    "instrumentation_gtest_list_value": "JNI.Ellipsis:JNI.OnLoad:JNI.RegisterNatives:JNI.WrappersABI:ProcSelfMaps.CloseRangeOfOnlyOwnedFdDoesNotKeepMapsAttribution:ProcSelfMaps.ClosedFdAndBadDirfdKeepKernelErrors:ProcSelfMaps.Dup2ReplacementDoesNotKeepMapsAttribution:ProcSelfMaps.DuplicatedAliasesKeepOriginAfterOriginalClose:ProcSelfMaps.ExecutableFromFileBackedMmap:ProcSelfMaps.ExecutableFromMmap:ProcSelfMaps.ExecutableFromMprotect:ProcSelfMaps.ReadlinkHasCanonicalOwnerPath:ProcSelfMaps.ReadlinkLengthAndNoTerminatorSemantics:ProcSelfMaps.ReusedClosedNumberDoesNotKeepMapsAttribution:ProcSelfMaps.SealedLookalikeMemfdIsNotTrustedMaps:ProcSelfMaps.UnwritableBufferReturnsEfaultWithoutAProcessFault:Shared.CallFunction:Shared.DlIteratePhdr:Shared.DlOpen:Shared.DlOpenGreylistedLibrariesAndroidM:Shared.DlOpenSystemLibraries:Shared.DlSym:User.getuid",
+    "kind": "marriott_original_JNI_expected_registry_source_binding",
+    "original_entry": {
+      "JNI": "Java_com_example_ndk_1tests_NdkTests_runTests",
+      "Java": "com.example.ndk_tests.NdkTests#testMain",
+      "empty_list_authorized": false,
+      "native_runner": "ndk_test::RunAllTests",
+      "registration_gate": "VerifyTestList"
+    },
+    "registry": [
+      "JNI.Ellipsis",
+      "JNI.OnLoad",
+      "JNI.RegisterNatives",
+      "JNI.WrappersABI",
+      "ProcSelfMaps.CloseRangeOfOnlyOwnedFdDoesNotKeepMapsAttribution",
+      "ProcSelfMaps.ClosedFdAndBadDirfdKeepKernelErrors",
+      "ProcSelfMaps.Dup2ReplacementDoesNotKeepMapsAttribution",
+      "ProcSelfMaps.DuplicatedAliasesKeepOriginAfterOriginalClose",
+      "ProcSelfMaps.ExecutableFromFileBackedMmap",
+      "ProcSelfMaps.ExecutableFromMmap",
+      "ProcSelfMaps.ExecutableFromMprotect",
+      "ProcSelfMaps.ReadlinkHasCanonicalOwnerPath",
+      "ProcSelfMaps.ReadlinkLengthAndNoTerminatorSemantics",
+      "ProcSelfMaps.ReusedClosedNumberDoesNotKeepMapsAttribution",
+      "ProcSelfMaps.SealedLookalikeMemfdIsNotTrustedMaps",
+      "ProcSelfMaps.UnwritableBufferReturnsEfaultWithoutAProcessFault",
+      "Shared.CallFunction",
+      "Shared.DlIteratePhdr",
+      "Shared.DlOpen",
+      "Shared.DlOpenGreylistedLibrariesAndroidM",
+      "Shared.DlOpenSystemLibraries",
+      "Shared.DlSym",
+      "User.getuid"
+    ],
+    "registry_count": 23,
+    "runtime_qualification_requires": [
+      "original instrumentation result succeeds",
+      "original native VerifyTestList receives this nonempty exact list",
+      "native test XML has exactly these twelve selected tests with zero failures and zero skips",
+      "actual ARM64 library and native bridge identities are independently qualified"
+    ],
+    "schema": 1,
+    "source_derived_only": true,
+    "source_pins": [
+      {
+        "bytes": 12127,
+        "file": "proc_self_maps_test.cc",
+        "git_blob_sha": "1bafdb01dee180902352672a57f9340e4b32e1cb",
+        "origin": "candidate source used by actual M04",
+        "sha256": "45365a2595c5fb3e05b5b4a5792f64bd176621df5de8da763d7905e01b4415fa",
+        "test_names": [
+          "ProcSelfMaps.ExecutableFromMmap",
+          "ProcSelfMaps.ExecutableFromMprotect",
+          "ProcSelfMaps.ExecutableFromFileBackedMmap",
+          "ProcSelfMaps.ReadlinkHasCanonicalOwnerPath",
+          "ProcSelfMaps.DuplicatedAliasesKeepOriginAfterOriginalClose",
+          "ProcSelfMaps.Dup2ReplacementDoesNotKeepMapsAttribution",
+          "ProcSelfMaps.ReusedClosedNumberDoesNotKeepMapsAttribution",
+          "ProcSelfMaps.CloseRangeOfOnlyOwnedFdDoesNotKeepMapsAttribution",
+          "ProcSelfMaps.SealedLookalikeMemfdIsNotTrustedMaps",
+          "ProcSelfMaps.ReadlinkLengthAndNoTerminatorSemantics",
+          "ProcSelfMaps.ClosedFdAndBadDirfdKeepKernelErrors",
+          "ProcSelfMaps.UnwritableBufferReturnsEfaultWithoutAProcessFault"
+        ]
+      },
+      {
+        "bytes": 4020,
+        "file": "jni_test.cc",
+        "git_blob_sha": "b152ff24cb99dcb7ec7f3f209576881b370d6c37",
+        "origin": "actual candidate07 manifest; actual M04 compiled",
+        "sha256": "49ca601e9bb1785a891d88fbc670c61eedde764e7055c994bde218cc1905094a",
+        "test_names": [
+          "JNI.OnLoad",
+          "JNI.Ellipsis",
+          "JNI.RegisterNatives",
+          "JNI.WrappersABI"
+        ]
+      },
+      {
+        "bytes": 4195,
+        "file": "shared_library_test.cc",
+        "git_blob_sha": "5b07536435d6017407fbdf4156ebdb0dba424156",
+        "origin": "public body hash matches actual candidate07 manifest",
+        "sha256": "de12b6408f6e20f94115475c9dc0184f47a8bf486499e32d4802f1c24049bcfb",
+        "test_names": [
+          "Shared.CallFunction",
+          "Shared.DlOpen",
+          "Shared.DlOpenGreylistedLibrariesAndroidM",
+          "Shared.DlOpenSystemLibraries",
+          "Shared.DlSym",
+          "Shared.DlIteratePhdr"
+        ]
+      },
+      {
+        "bytes": 900,
+        "file": "user_apk_test.cc",
+        "git_blob_sha": "41c5afddca91cd09f535662b0dacadf9f9dbb7f7",
+        "origin": "public body hash matches actual candidate07 manifest",
+        "sha256": "338351f2deff33b8589dac83c611c153e8bca8d0aa08ed69b0d34301de81459d",
+        "test_names": [
+          "User.getuid"
+        ]
+      }
+    ]
+  },
+  "schema": 1,
+  "status": "SOURCE_ONLY_NOT_A_BUILD_REQUEST",
+  "target": "original berberis ndk_tests_apk with 23 registered real GTest test bodies and 12 ProcSelfMaps focus bodies"
+}
+

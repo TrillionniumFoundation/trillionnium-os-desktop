@@ -1,0 +1,70 @@
+{
+  "configuration_product_consistency": "DeviceProduct exactly observed product and Make_suffix exactly -product plus same coverage suffix",
+  "fixed_environment": {
+    "format": "soong_available_env",
+    "maximum": 1048576,
+    "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/android-composer-leaf-out-r14/soong/soong.environment.available",
+    "role": "existing_available_environment"
+  },
+  "new_fixed_source_expected": [
+    {
+      "bytes": 68765,
+      "local_actual_status": "NOT_OBSERVED_UNTIL_NEW_REQUEST",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/ui/build/config.go",
+      "role": "soong_ui_config",
+      "sha256": "b2719ca6a5335ac78af0f37e8a5f966c52932cd9673796929c230bb5c9bb99d5"
+    },
+    {
+      "bytes": 31627,
+      "local_actual_status": "NOT_OBSERVED_UNTIL_NEW_REQUEST",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/ui/build/soong.go",
+      "role": "soong_ui_run",
+      "sha256": "ab745182f4fba6ab4fbd1cea6fc4943b78e588b4187dfc735cd28826bbaa7027"
+    },
+    {
+      "bytes": 6244,
+      "local_actual_status": "NOT_OBSERVED_UNTIL_NEW_REQUEST",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/ui/build/environment.go",
+      "role": "soong_environment_boolean",
+      "sha256": "adee8346f56cbb9a8044444ee54224f50c3be37cdc14fe2bd13e66c439763f2d"
+    },
+    {
+      "bytes": 3511,
+      "local_actual_status": "NOT_OBSERVED_UNTIL_NEW_REQUEST",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/shared/env.go",
+      "role": "soong_environment_encoding",
+      "sha256": "f699e7238a9558548fbdf35df3d3b680ae482156e2273a0fd3112b14f571a701"
+    }
+  ],
+  "new_path_has_no_qualification_until_observed": true,
+  "observed_original_inputs": [
+    {
+      "bytes": 18645,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/android/api_levels.go",
+      "role": "api_levels_source",
+      "sha256": "39323b9e40d7aff6f482d8116c4410167345994352dfdab51ad60af00f4cbb7f"
+    },
+    {
+      "bytes": 15830,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/build/soong/cc/symbolfile/__init__.py",
+      "role": "symbolfile_source",
+      "sha256": "f9cd1f2a3f8556bb8a063bcbc879e76bf0af1a4c2a0cb30090b6197bdda69c19"
+    },
+    {
+      "bytes": 261,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/android-composer-leaf-out-r14/soong/api_levels.json",
+      "role": "existing_generated_api_map",
+      "sha256": "57eb77fcc1525ed675f07601cce51fe9d9524271b3c6c6b53429a9beabdda87b"
+    }
+  ],
+  "original_sdk22_absent_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/android-composer-leaf-out-r14/soong/soong.variables",
+  "producer_commit": "6722dd8833db7482df1a2543ca3fcf67ddf0f7b1",
+  "producer_repository": "aosp-mirror-neo/platform_build_soong",
+  "producer_semantics": {
+    "shared_env_go": "sorted unique array of Key/Value strings",
+    "ui_config_go": "TARGET_PRODUCT required by this request; soong.<product>[.coverage].variables; absent product fails without default-file fallback",
+    "ui_environment_go": "EMMA_INSTRUMENT IsEnvTrue iff 1/y/yes/on/true",
+    "ui_soong_go": "runSoong writes config.Environment().Copy() via shared.EnvFileContents to fixed SoongOutDir/soong.environment.available"
+  },
+  "schema": 1
+}

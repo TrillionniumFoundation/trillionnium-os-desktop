@@ -1,0 +1,105 @@
+{
+  "schema": "pocket4-bili-r10-current-ui-actual30-binding-v1",
+  "prepared_only": true,
+  "UI_dispatched": false,
+  "UI_lane_hold_reason": "London native007 failed launch unknown; task/current Main reconciliation must complete under Root before this independent new UI admission.",
+  "actual_control_tree": "0b5f14856a4cd3cc03ddc662872e41d97b6d9d6e",
+  "actual_control_job": "1a1b217d63e-fc05-7c52",
+  "all_30_cases_actual_passed": true,
+  "prior_failed30_tree": "6d43996c8e98ec620b6b7e4aa21142fd2eda5fd4",
+  "corrected_control_source_tree": "8b31d8d6985ee187e39bfa54b2f7a3201fb5ca02",
+  "six_production_sources_exact_actual_controlled_bytes": true,
+  "source_manifest": {
+    "bytes": 702,
+    "sha256": "fd7f45354339261a19c36c7820b2e7656df3e48446b5cc8344883a09e21a32bb"
+  },
+  "nonce_count": 146,
+  "nonce_source_tree": "f40040c03dd32074edec62dc11e73ac6ec644d41",
+  "nonce_source_pin": {
+    "bytes": 12323,
+    "sha256": "101a7b960bb1fb524d4a9bd11d61d4cbc6e9fc9b75b59cc7c6817e3059f9bcdf",
+    "blob": "3ccce38f06eb2559447ad098c1530a19882a0e49",
+    "tree": "f40040c03dd32074edec62dc11e73ac6ec644d41",
+    "path": "stdout.original.json"
+  },
+  "first_nonce": "603f7bdbbd6a5dfeceff2712a5ff8931",
+  "nonce_UI_actions_so_far": 0,
+  "nonce_reserved_not_reused_for_any_other_flow": true,
+  "helper_actual_UID": 10161,
+  "actual_install_tree": "897fa68fea1d4162087bc9666d0de52a0c538a51",
+  "actual_install_step": "/home/alex/work/pocket4-bilibili-owned-qa-r10-flow-d5a77071f725e6bfb854effcd467cc99/steps/install-state-r10-02",
+  "actual_install_packet": "17e887fe4fe8c4224f9184e7b19f33d35aaa1d32ffa2d6fad00e3c147dfbcc3b",
+  "lossless_mtime_ns": "1793983377111706031",
+  "actual_install_originals": {
+    "coordinator": {
+      "bytes": 4415,
+      "sha256": "89f20a28d01c4b4798051f03ff72071714116e63a53c5ecacb11269a041959bf"
+    },
+    "stage": {
+      "bytes": 7299,
+      "sha256": "e9ada57f1bce000382c4b6fc989a9150a2ae78662cbe2916fa48b9f8609e9a1e"
+    },
+    "worker": {
+      "bytes": 7596,
+      "sha256": "675ecd33a422691b39439b6df6c7d004a3475b47d358221e60aaf5bca5cf1461"
+    },
+    "worker_command": {
+      "bytes": 1855,
+      "sha256": "585f0875b0d3a6f81f74d5a293331a79ced50bf249925c0f0cae023327109673"
+    },
+    "state_command": {
+      "bytes": 443,
+      "sha256": "478c39c1f80234d804a41a9f0953439f2847ef9b91fe22c88458c8150c66801a"
+    },
+    "worker_stdout": {
+      "bytes": 6680,
+      "sha256": "7050393f1a8ebe201a603b06945e9be704a36228dc1813cc2f82998591cee54e"
+    }
+  },
+  "resource_envelope_origin": "Derived only by replacing prior accepted R9 request args and stdin with empty placeholders; buildBiliR10UI overwrites both and its key. All remaining fields preserved. This is derived material, not asserted to be the original serialized request.",
+  "reproduction": "reproduce-ui.js verifies each exact raw argument, builds minimal materials from the already actual 30-control packet, and reproduces exact-request.json byte-for-byte without executing Python or Android.",
+  "real_time_Main_guard_still_mandatory": true,
+  "old_epoch_task_or_failure_replay": false,
+  "whole_app_production_ready": false,
+  "inputs": {
+    "build": {
+      "bytes": 8038,
+      "sha256": "0bf8358557216b048e5b25be4953d3ad899981138b4aead7136cbc8b97790118",
+      "blob": "07396aee7b7455d07f1f919ec969675c7c9b2889"
+    },
+    "controls_packet": {
+      "bytes": 432946,
+      "sha256": "b066f656beb96469b4909f989c2f7072d97be65cc2c5a104f0401877ed2ec2a3",
+      "blob": "529956d428724ae56fc5b59a69ae0d1114a60f6d",
+      "tree": "8b31d8d6985ee187e39bfa54b2f7a3201fb5ca02",
+      "path": "android-bili-r10-current-player30-controls-02/controls.stdin.json"
+    },
+    "manifest": {
+      "bytes": 702,
+      "sha256": "fd7f45354339261a19c36c7820b2e7656df3e48446b5cc8344883a09e21a32bb",
+      "blob": "d8b9a658a021e98abe60364c2813e86e40b58861"
+    },
+    "actual": {
+      "bytes": 7113,
+      "sha256": "94063a00d402dac6b4de343f0f3f758a350d142d16d48402d040a4db453f8a7c",
+      "blob": "0e3e52b936c5ea9891635518916a387c23a1404c"
+    },
+    "terminal": {
+      "bytes": 731,
+      "sha256": "fc2dbab9cf2b67c43ff3ca0f42161ec152ad6409bc1d7941d9ceba1fa05e96e8",
+      "blob": "f0b3c00ca0f23759c6374ed71030f74a0cf306ec"
+    },
+    "nonce": {
+      "bytes": 12323,
+      "sha256": "101a7b960bb1fb524d4a9bd11d61d4cbc6e9fc9b75b59cc7c6817e3059f9bcdf",
+      "blob": "3ccce38f06eb2559447ad098c1530a19882a0e49",
+      "tree": "f40040c03dd32074edec62dc11e73ac6ec644d41",
+      "path": "stdout.original.json"
+    },
+    "prior_envelope": {
+      "bytes": 343,
+      "sha256": "b98547e948cf99ddeaa10a94951135a6a131b470b9fdb6faa5146cc93c06bf24",
+      "blob": "b5ce951c69248a3710c000ba21af3d945fff8113"
+    }
+  }
+}

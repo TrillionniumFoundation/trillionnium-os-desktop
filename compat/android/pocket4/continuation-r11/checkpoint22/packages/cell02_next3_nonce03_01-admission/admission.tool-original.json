@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,os,re,secrets,sys\nraw=sys.stdin.buffer.read(65537)\nassert 0<len(raw)<=65536 and hashlib.sha256(raw).hexdigest()==\"cd6c5c935953ffac16a53f6bd45a28d444ec57d23b26b0d73bc566eb082101d7\"\np=json.loads(raw)\nassert p['schema']=='pocket4-fixed-next3-cell02-metadata-nonce-spec-v1'\nassert os.getuid()==os.geteuid()==1000\nassert p['labels']==[\"ticket12306.metadata\",\"hilton.metadata\",\"united.metadata\"]\nassert p['count']==3 and p['exclude_count']==len(p['exclude_values'])==len(set(p['exclude_values']))==887\nassert all(type(x) is str and re.fullmatch('[0-9a-f]{32}',x) for x in p['exclude_values'])\nvalues=[secrets.token_hex(16) for _ in range(3)]\nassert len(values)==len(set(values))==3 and not set(values)&set(p['exclude_values'])\nprint(json.dumps({'schema':'pocket4-fixed-next3-cell02-metadata-nonces-v1','labels':p['labels'],'values':values,'count':3,'exclude_count':887,'controls_actual':p['controls_actual'],'source_pins':p['source_pins'],'spec':{'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()},'generator':'secrets.token_hex(16)','uid':os.getuid(),'no_redraw':True,'distinct_and_all_excluded':True,'Android_commands':0,'App_launches':0,'UI_actions':0,'child_processes':0,'file_writes':0},sort_keys=True,separators=(',',':')),flush=True)\n"
+    ],
+    "created_unix_ms": 1793989619162,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b21d2dda-fc05-7c6b",
+    "idempotency_key": "pocket4-cell02-fixed-next3-metadata-nonce03-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b21d2dda-fc05-7c6b",
+    "request_digest": "6e85b68c3ee5accc09ef78cf48e48aa523701f71dbdbe9284f78f6d800e2f7fe",
+    "request_fingerprint": 7963972229541506252,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b21d2dda-fc05-7c6b"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b21d2dda-fc05-7c6b"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

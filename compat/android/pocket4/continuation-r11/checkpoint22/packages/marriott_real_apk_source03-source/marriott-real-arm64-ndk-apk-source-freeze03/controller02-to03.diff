@@ -1,0 +1,27 @@
+--- baseline/controller
++++ candidate/controller
+@@ -1176,8 +1176,8 @@
+     try:
+         require(os.getuid()==os.geteuid()==os.getgid()==os.getegid()==1000,
+                 'ordinary operator UID/GID1000 required')
+-        require(CFG['kind']=='p4-marriott-real-arm64-ndk-apk-build02' and
+-                root==Path('/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-02-20261106') and
++        require(CFG['kind']=='p4-marriott-real-arm64-ndk-apk-build03' and
++                root==Path('/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-03-20261106') and
+                 aosp==Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source'),
+                 'fixed new APK build/source root differs')
+         require(CFG['java_home']==str(aosp/'prebuilts/jdk/jdk21/linux-x86') and
+@@ -1386,8 +1386,12 @@
+             gtest_flags+['-Wno-unused-private-field'],roots,watch,cpp=True,require_gtest=True)
+         cpu_obj,_=compile_object(report,root,'cpu-features',cpu,
+             cpu_flags+['-I',str(cpu.parent)],roots,watch)
++        # The pinned original shared_lib.cc has no include directives. Here cpp
++        # selects only the dependency __config_site expectation; the compiler
++        # flags stay the same C++ flags. Require no configuration header for this
++        # one header-free TU; all header-using C++ TUs still require the ARM64 pin.
+         shared_obj,shared_elf=compile_object(report,root,'shared-lib',root/'source/shared_lib.cc',
+-                                            cpp,roots,watch,cpp=True)
++                                            cpp,roots,watch,cpp=False)
+         test_objects={}
+         object_elf={}
+         for name in ('proc_self_maps_test.cc','shared_library_test.cc','user_apk_test.cc',

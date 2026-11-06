@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_CURRENT_OWNER_TWO_APP_PIPELINE_PENDING_ACTUAL_SIX_AND_FRESH42",
+  "apps": [
+    "amazon",
+    "bestbuy"
+  ],
+  "business_source_tree": "5d0e181584aae25de79d6358a07391c3d0e0e2b3",
+  "control_source_tree": "d41640ec556fb60c8976fa1e886fef097771fd3e",
+  "actual_install_uid_or_identity_fabricated": false,
+  "expected_install_controls": 68,
+  "expected_new_owner_controls": 18,
+  "business_controls": {
+    "amazon": 42,
+    "bestbuy": 71
+  },
+  "new_task_route_controls": 3,
+  "prior_actual_control_baselines": {
+    "amazon": {
+      "request": {
+        "bytes": 396780,
+        "sha256": "2de49b3e6de438147fa4ce644dd7ed8d52e475a94eedeeb1e3d53c86aea31254",
+        "git_blob_sha1": "e9473a85e39b3404d5e3315df2f9de6a43bd54b8"
+      },
+      "count": 30
+    },
+    "bestbuy": {
+      "request": {
+        "bytes": 289688,
+        "sha256": "f88223b6afb86b6b16f93e220fa83245540cd7c8e5423f2f311212861a8f67e0",
+        "git_blob_sha1": "e1cca81d01f4d399285bb17f6d83f87307d14369"
+      },
+      "count": 59
+    }
+  },
+  "old_UI_binder": {
+    "bytes": 12773,
+    "sha256": "71e84fcd9b008001861ab75bb6d4455a828cfa15a67a4df59e863690468b28a2",
+    "git_blob_sha1": "548d8833c51171a4096b7321a4d699888569843a"
+  },
+  "UI_compiler_inverse_edits": [
+    {
+      "from": "function bindCurrentAppTaskUI(h,lossless,input){",
+      "to": "function bindCurrentOwnerAppTaskUI(h,lossless,input){",
+      "count": 1
+    },
+    {
+      "from": "const controls=input.controls,bound=input.bound,abi=bound.actual_binding,expectedCount=amazon?30:59,expectedUID=amazon?10154:10155;",
+      "to": "const controls=input.controls,t=input.bound;\n need(same(pin(input.old_nonce_spec_raw),{bytes:34670,sha256:\"32f6f50390646e11a8c569a667ebf3799484c68efedc10a9917aa5c156b1e086\"}),\"EXACT_HISTORICAL_PLAN_NONCE_MAP\");\n const originalMap=JSON.parse(input.old_nonce_spec_raw).mapping.filter(r=>r.app===app);\n const bound={...t,files:{\"owned_inspect.py\":t.sources.coordinator,[app+\"_task_context.py\"]:t.sources.context,\n  [amazon?\"search_navigation.py\":\"bestbuy_readiness.py\"]:t.sources.business,\"stage_execute.py\":t.sources.stage},\n  nonce_mapping:originalMap.map(r=>({label:r.local_label,old:r.old}))};\n const abi=bound.actual_binding,expectedCount=amazon?42:71,expectedUID=abi.UID;",
+      "count": 1
+    },
+    {
+      "from": "need(bound.app===app&&bound.proof.full_inverse_to_exact_prior===true&&bound.proof.fresh_nonces_bound===true&&\n      bound.proof.all_values_from_actual===true&&bound.proof.all_564_old_values_excluded===true&&\n      abi.install_retired===true&&abi.target_APK_count===3&&abi.UID===expectedUID&&\n      abi.helper_package===\"org.droidloom.qa.\"+app+\".r3\"&&abi.protocol===\"pocket4-owned-\"+app+\"-qa-v3\",",
+      "to": "need(bound.app===app&&bound.template.complete_inverse_exact===true&&bound.template.owner_complete_inverse_exact===true&&\n      bound.template.owner_discovery_revision===2&&bound.nonces_bound===true&&bound.complete_binding_inverse===true&&\n      bound.nonce_excluded_count>=699&&Number.isInteger(expectedUID)&&expectedUID>=10000&&\n      abi.install_retired===true&&abi.target_APK_count===3&&abi.source_controls===68&&abi.new_current_owner_discovery_controls===18&&\n      abi.helper_package===\"org.droidloom.qa.\"+app+\".r4\"&&abi.protocol===\"pocket4-owned-\"+app+\"-qa-v4\",",
+      "count": 1
+    },
+    {
+      "from": "out.actual_Main_and_target_callbacks===false&&out.real_Java_helper_executed===false&&",
+      "to": "out.current_cell02_generation_controls===9&&out.current_owner_task_route_controls===3&&\n      out.actual_Main_and_target_callbacks===false&&out.real_Java_helper_executed===false&&",
+      "count": 1
+    },
+    {
+      "from": "const fields={schema:2,state:\"ACTUAL_CURRENT_\"+app.toUpperCase()+\"_R3_INSTALL_AND_CONTROLS_BOUND_FRESH_FLOW_UNRUN\",",
+      "to": "const fields={schema:3,state:\"ACTUAL_CURRENT_\"+app.toUpperCase()+\"_R4_INSTALL02_AND_OWNER_ROUTE_CONTROLS_BOUND_FRESH_FLOW_UNRUN\",",
+      "count": 1
+    },
+    {
+      "from": "historical_install_INPUTS_target_APK_count:abi.historical_input_target_APK_count,\n      historical_install_INPUTS_count_matches_actual:abi.historical_input_count_matches_actual,\n      historical_install_metadata_not_rewritten:true,",
+      "to": "current_install_INPUTS_target_APK_count:abi.historical_input_target_APK_count,\n      current_install_INPUTS_count_matches_actual:abi.historical_input_count_matches_actual,\n      prior_generation_install_metadata_not_rewritten:true,",
+      "count": 1
+    },
+    {
+      "from": "production_constructor_and_plan_and_install_validators:true,synthetic_IO_only:true},",
+      "to": "production_constructor_and_plan_and_install_validators:true,synthetic_IO_only:true,\n        current_generation_controls:9,current_owner_task_route_controls:3},",
+      "count": 1
+    },
+    {
+      "from": "app_count:labels.length,excluded_values:564,order:labels,values:labels.map(k=>map[k])},",
+      "to": "app_count:labels.length,excluded_values:bound.nonce_excluded_count,order:labels,values:labels.map(k=>map[k])},",
+      "count": 1
+    },
+    {
+      "from": "const request={...oldQ,args:[\"-n\",\"/usr/bin/python3\",\"-I\",\"-c\",wrapper],stdin:wire,\n      idempotency_key:\"pocket4-\"+app+\"-r3-current-\"+(amazon?\"search-entry\":\"content-readiness\")+\"01-20261106\"};",
+      "to": "const request={...oldQ,args:[\"-n\",\"/usr/bin/python3\",\"-I\",\"-B\",\"-c\",wrapper],stdin:wire,\n      idempotency_key:\"pocket4-\"+app+\"-r4-current-\"+(amazon?\"search-entry\":\"content-readiness\")+\"01-20261106\"};",
+      "count": 1
+    },
+    {
+      "from": "source_functions_not_modified_by_UI_binder:true,fresh_nonce_count:labels.length,old_564_values_excluded:true,",
+      "to": "source_functions_not_modified_by_UI_binder:true,fresh_nonce_count:labels.length,all_current_reserved_values_excluded:bound.nonce_excluded_count,\n        production_current_owner_task_route_controls:3,",
+      "count": 1
+    }
+  ],
+  "all_original_runtime_source_and_policy_guards_preserved": true,
+  "scope": "Qualifier consumes six exact original raw strings; lossless installed metadata; original failed receipts never rewritten. Nonce generator only emitted after both actual installs and the global pool including new London40. Seven production sources are bound to pure controls before a UI packet can be emitted.",
+  "BestBuy_runtime_keys": "runtime_ticket_context_sha256/runtime_ticket_transport_sha256 as actual producer, not inferred package names",
+  "new_nonce_draws": 42,
+  "no_redraw": true,
+  "minimum_global_exclusion_count": 699,
+  "old_657_or_659_only_pool_not_sufficient_after_London40": true,
+  "compile_JS_syntax_checked": true,
+  "Python_controls_executed": false,
+  "actual_nonce_values_generated": false,
+  "UI_request_created": false,
+  "Hepta_dispatched": false
+}

@@ -1,0 +1,223 @@
+--- amazon-native007-actual/read_native.py
++++ ihg-london-native007/read_native.py
+@@ -1,14 +1,15 @@
+-"""Fixed historical Amazon launch007 chain and closed public error projection; no Android calls."""
++"""Fixed historical IHG London launch007 chain and closed public error projection; no Android calls."""
+ import ast,datetime,hashlib,json,math,os,re,stat,time
+ from pathlib import Path
+-ROOT=Path('/home/alex/work/pocket4-amazon-r3-current-search-entry-01')
+-FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r3-flow-42ee4dd8ab30f563567ba353deff430c')
++ROOT=Path('/home/alex/work/pocket4-ihg-r4-public-london-input-01')
++FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b')
+ STEP=FLOW/'steps/launch-01'
+-NONCE='42ee4dd8ab30f563567ba353deff430c'
+-SOURCE_SHA='452b2c85207d60d5e47efbeafc05f49ecae416fabf6988fb7362100d55d6e46c'
+-PACKAGE='com.amazon.mShop.android.shopping'
+-COMPONENT=PACKAGE+'/com.amazon.mShop.home.HomeActivity'
+-SCOPE_FIXED=json.loads("{\"schema\":\"pocket4-current-recorder-scope-v1\",\"current_baseline_schema\":\"pocket4-main-current-baseline-v1\",\"package\":\"com.amazon.mShop.android.shopping\",\"component\":\"com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity\",\"uid\":10129,\"user\":0,\"nonce\":\"42ee4dd8ab30f563567ba353deff430c\",\"epoch_sha256\":\"734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2\",\"current_baseline_sha256\":\"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\",\"current_baseline_qualification_sha256\":\"f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6\",\"amazon_task_source_manifest_sha256\":\"452b2c85207d60d5e47efbeafc05f49ecae416fabf6988fb7362100d55d6e46c\",\"automatic_retry\":false,\"original_recorder_manifest_sha256\":\"6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e\",\"actual_resolution_result_sha256\":\"ebeaecf791eba4906502cd3167c08e735d826ffd565f7fdd45d66775c016c534\"}")
++NONCE='ec4f2977574102b1e5869d2494e8416b'
++SOURCE_SHA='24a8491dbb44faf1288869d278da96290597b7af1fcdcce12a72fd62bad9435f'
++PACKAGE='com.ihg.apps.android'
++COMPONENT=PACKAGE+'/.activity.MainActivity'
++SCOPE_FIXED=json.loads("{\"schema\":\"pocket4-current-recorder-scope-v2\",\"current_baseline_schema\":\"pocket4-main-current-baseline-v2\",\"package\":\"com.ihg.apps.android\",\"component\":\"com.ihg.apps.android/.activity.MainActivity\",\"uid\":10137,\"user\":0,\"nonce\":\"ec4f2977574102b1e5869d2494e8416b\",\"epoch_sha256\":\"7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c\",\"current_baseline_sha256\":\"633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364\",\"current_baseline_qualification_sha256\":\"ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e\",\"amazon_task_source_manifest_sha256\":\"24a8491dbb44faf1288869d278da96290597b7af1fcdcce12a72fd62bad9435f\",\"automatic_retry\":false,\"original_recorder_manifest_sha256\":\"002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff\",\"actual_resolution_result_sha256\":\"153ddbfc8393570621b64a478675c2a0180826a7a6ecada0ade8a6aa4ed79722\"}")
++MAIN_BEFORE_FIXED=json.loads("{\"Main_epoch_sha256\":\"7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c\",\"authenticated_owner_chain_matches\":true,\"config_sha256\":\"f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc\",\"current_baseline_qualification_sha256\":\"ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e\",\"current_baseline_sha256\":\"633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364\",\"current_executable_and_root_backing_match\":true,\"current_user_namespaces_match\":true,\"framework_exit_cause_resolved\":false,\"historical_activation_sha256\":\"7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615\",\"historical_verified_sha256\":\"2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387\",\"old_helpers_and_tasks_reauthorized\":false,\"previous_current_baseline_sha256\":\"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\",\"production_ready\":false,\"resource_limits_match\":true,\"schema\":\"pocket4-current-main-guard-v2\",\"seven_processes_match\":true,\"three_host_processes_match\":true}")
+ FILES={
+  'coordinator':ROOT/'result.json','stage':ROOT/'stage-result.json','worker':STEP/'result.json',
+  'native_intent':STEP/'command-007.intent.json','native_result':STEP/'command-007.result.json',
+@@ -16,17 +17,14 @@
+  'scope':FLOW/'scope.json','attempted':FLOW/'launch-attempted.json',
+  'prelaunch_stacks':STEP/'prelaunch-stacks.txt','prelaunch_result':STEP/'command-006.result.json',
+  'prelaunch_stdout':STEP/'command-006.stdout','prelaunch_transport':STEP/'transport-006.verified-result.json',
+- 'task_parser':Path('/home/alex/work/pocket4-current-host-r5-source-01/references/task_scope_baseline.py'),
++ 'task_parser':Path('/home/alex/work/pocket4-current-host-r6-source-01/references/task_scope_baseline.py'),
++ 'recorder_source':Path('/home/alex/work/pocket4-current-host-r6-source-01/recorder.py'),
+  'launch_scope':FLOW/'launch-scope.json'}
+ LIMITS={key:65536 for key in FILES}
+ LIMITS['prelaunch_stacks']=LIMITS['prelaunch_stdout']=131072
+-PINS={
+- 'coordinator':{'bytes':6731,'sha256':'6ad6d5b5ee5007dccad21ef6a2847fb84a1afbf48d3de5c13ac9152bd3432541'},
+- 'stage':{'bytes':2724,'sha256':'ae0ce8201b2cb5ef8f263b746600029109a14d3e32bb790cd16d16ce745bde99'},
+- 'worker':{'bytes':14255,'sha256':'471fd0060d935a14af74a30206607d58267c96982769cb24e442fa5c92ecf95c'},
+- 'task_parser':{'bytes':17281,'sha256':'a16e347abb0de2ccbff24f6d7990f6dab1be600675054b45203e907fa8eef528'}}
+-NATIVE_STREAMS={'stdout':'ca774384a094e8df77b574594fc64bc5f4a8a240952d56c5bdd086bf2e6bf604',
+- 'stderr':'1e388de5abbf8b2daa52b214888e805f53bce93f34ea207f97ccf526596f9ab3'}
++PINS=json.loads("{\"coordinator\":{\"bytes\":6175,\"sha256\":\"09e528df22c01ffbb293264309c028ce549666602e4a97669c3eac80d62488b1\"},\"stage\":{\"bytes\":2187,\"sha256\":\"a4b5d60e30dd33ad06a4e127b6bb41c22bf7639a0c7842dd5ea6b74de5465d59\"},\"worker\":{\"bytes\":12051,\"sha256\":\"3ab8190051ab6c628a7e6b67c0f10567cb18e273db6ecc067b5856098e37034b\"},\"task_parser\":{\"bytes\":17281,\"sha256\":\"a16e347abb0de2ccbff24f6d7990f6dab1be600675054b45203e907fa8eef528\"},\"recorder_source\":{\"bytes\":41689,\"sha256\":\"c63cbdca615a609ebb41bcb25db6b770f43c4488c46a8f7b1dbee4bc462b4e64\"}}")
++NATIVE_STREAMS={'stdout':'527b57dfcdb2d4a5ac88b9e3fdff8c3dda343f1d73436573131ca6886068ef8e',
++ 'stderr':'8c88d864bc639295535a7e1ad3b80524162066f5179109f0bc6dfd4d25c5b6b4'}
+ NATIVE_ARGV=['/usr/bin/sudo','-n','-u','#1000','--','/usr/bin/env',
+  'XDG_RUNTIME_DIR=/run/user/1000','DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus',
+  '/usr/bin/droidloomctl','launch',PACKAGE,'--component',COMPONENT,'--json']
+@@ -162,16 +160,28 @@
+   c.get('source_manifest_sha256')==s.get('source_manifest_sha256')==w.get('source_manifest_sha256')==SOURCE_SHA,
+   'EXACT_PARENT_SOURCE_NONCE')
+  need(s.get('coordinator_result')=={'path':str(FILES['coordinator']),**PINS['coordinator']} and
+-  c.get('retained_phase_results',{}).get('launch')=={'path':str(FILES['worker']),**PINS['worker']},
++  c.get('retained_phase_results')=={'launch':{'path':str(FILES['worker']),**PINS['worker']}},
+   'EXACT_PARENT_CHAIN')
+- for key,val in {'ok':False,'phase':'launch','package':PACKAGE,'uid':10129,
+-  'helper_package':'org.droidloom.qa.amazon.r3','helper_uid':10154,'action_attempted':True,
+-  'outcome_unknown':True,'automatic_retry':False,'final_Main_guard_passed':True,
+-  'held_binding_released':True,'action_lock_released':True,'flow_lock_released':True,
+-  'source_and_artifact_unchanged':True,'durable_command_count':7}.items():
++ for key,val in {'ok':False,'phase':'launch','package':PACKAGE,'uid':10137,
++  'helper_package':'org.droidloom.qa.ihg.r4','helper_uid':10158,'action_attempted':True,
++  'outcome_unknown':True,'automatic_retry':False,'held_binding_released':True,
++  'action_lock_released':True,'flow_lock_released':True,'source_and_artifact_unchanged':True,
++  'durable_command_count':7,'click_requests_admitted':0,'text_requests_admitted':0}.items():
+   need(type(w.get(key)) is type(val) and w[key]==val,'EXACT_FAILED_WORKER_SCOPE')
+- need(w.get('secondary_errors')==[] and w.get('target_FD_cleanup',{}).get('held_APK_FDs_closed')==3 and
+-  w['target_before']==w['failed_scope_files_revalidated'],'THREE_ORIGINAL_ARTIFACTS_REVALIDATED')
++ need(w.get('secondary_errors')==[
++  {'phase':'final_Main_guard','type':'RuntimeError','message':'OWNER_SINGLE_DIRECT_CHILD_REQUIRED'},
++  {'phase':'independent_final_Main','type':'RuntimeError','message':'OWNER_SINGLE_DIRECT_CHILD_REQUIRED'}] and
++  'Main_after' not in w and 'final_Main_guard_passed' not in w,
++  'ORIGINAL_FAILED_FINAL_MAIN_MUST_REMAIN_UNKNOWN')
++ need(w.get('target_FD_cleanup')=={'commercial_files_changed':False,'held_APK_FDs_closed':1} and
++  w['target_before']==w['failed_scope_files_revalidated'],'ONE_ORIGINAL_ARTIFACT_REVALIDATED')
++ need(c.get('ok') is False and s.get('ok') is False and
++  c.get('launch_worker_requested') is True and c.get('inspect_worker_requested') is False and
++  c.get('cleanup_requested') is False and c.get('possible_native_launch_outcome_requires_reconciliation') is True and
++  c.get('cleanup_not_authorized_without_exact_owned_scope') is True and
++  c.get('secondary_errors')==[{'phase':'final_Main','type':'RuntimeError','message':'OWNER_SINGLE_DIRECT_CHILD_REQUIRED'}] and
++  s.get('secondary_errors')==[{'phase':'stage_final_Main','type':'RuntimeError','message':'OWNER_SINGLE_DIRECT_CHILD_REQUIRED'}] and
++  'Main_after' not in c and 'Main_after' not in s,'ORIGINAL_PARENT_FAILURE_NOT_REQUALIFIED')
+  error=w.get('error')
+  need(type(error) is dict and set(error)=={'phase','type','message','command_observation'} and
+   error['phase']=='one_native_launch' and error['type']=='RuntimeError' and error['message']=='COMMAND_FAILED',
+@@ -179,24 +189,35 @@
+  original=error['command_observation']
+  need(original.get('spawned') is True and original.get('owned_command_joined') is True and
+   original.get('returncode')==1 and original.get('timed_out') is False and original.get('error') is None and
+-  original.get('errors')==[] and original.get('action_attempted') is True and original.get('automatic_retry') is False,
++  original.get('errors')==[{'errno':None,'exception_type':'RuntimeError','phase':'post_command_guard'}] and
++  original.get('action_attempted') is True and original.get('automatic_retry') is False,
+   'EXACT_ORIGINAL_NATIVE_FAILURE_METADATA')
+  for name,digest in NATIVE_STREAMS.items():need(original.get(name+'_sha256')==digest,'ORIGINAL_NATIVE_STREAM_SHA')
+- maps=[c['Main_before'],c['Main_after'],s['Main_before'],s['Main_after'],w['Main_before_lock'],w['Main_before'],w['Main_after']]
+- need(all(v==maps[0] for v in maps) and maps[0].get('Main_epoch_sha256')==SCOPE_FIXED['epoch_sha256'],
+-  'ORIGINAL_MAIN_MAPS_DIFFER')
++ maps=[c['Main_before'],s['Main_before'],w['Main_before_lock'],w['Main_before']]
++ need(all(v==MAIN_BEFORE_FIXED and canon(v)==canon(MAIN_BEFORE_FIXED) for v in maps),
++  'EXACT_ORIGINAL_BEFORE_MAIN_MAPS')
+  return original
++def durable_native_result(original):
++ # The pinned R6 Flow.command writes receipt before the independent post guard.
++ # It then raises a copied command_observation with the later errors list.
++ need(original.get('error') is None and
++  original.get('errors')==[{'errno':None,'exception_type':'RuntimeError','phase':'post_command_guard'}],
++  'EXACT_POST_WRITE_GUARD_FAILURE_REQUIRED')
++ return {**original,'errors':[]}
++
+ def qualify_intent(intent,result,original):
+  need(type(intent) is dict and set(intent)=={'argv','execution_argv','timeout_seconds','authority_fds_passed',
+   'mutation','label','started_utc','automatic_retry'},'EXACT_NATIVE_INTENT_FIELDS')
+  need(intent['argv']==intent['execution_argv']==NATIVE_ARGV and intent['timeout_seconds']==70 and
+   intent['authority_fds_passed']==[] and intent['mutation'] is True and intent['label']=='One native launch' and
+   intent['automatic_retry'] is False,'EXACT_SINGLE_NATIVE_INTENT')
+- need(result==original and canon(result)==canon(original),'NATIVE_RESULT_EQUALS_PINNED_WORKER')
++ expected=durable_native_result(original)
++ need(result==expected and canon(result)==canon(expected),'NATIVE_RESULT_EQUALS_PRE_POST_GUARD_RECEIPT')
+  need(utc(intent['started_utc'])<=utc(result['ended_utc']),'NATIVE_TIME_ORDER')
+  return True
++
+ def qualify_scope(scope,attempted):
+- need(type(scope) is dict and scope==SCOPE_FIXED and canon(scope)==canon(SCOPE_FIXED),'EXACT_TYPED_AMAZON_SCOPE')
++ need(type(scope) is dict and scope==SCOPE_FIXED and canon(scope)==canon(SCOPE_FIXED),'EXACT_TYPED_IHG_SCOPE')
+  need(type(attempted) is dict and set(attempted)=={'step','time_utc','scope'} and
+   attempted['step']=='launch-01' and attempted['scope']==scope,'EXACT_NATIVE_ATTEMPT_SCOPE')
+  utc(attempted['time_utc']);return True
+@@ -232,7 +253,7 @@
+  message=value['message'];encoded=message.encode()
+  need(len(encoded)<=65536,'MESSAGE_BOUND')
+  out.update(format='known_four_field_JSON',ok=value['ok'],host_pid=value['host_pid'],
+-  expected_launcher_host_pid_match=value['host_pid']==3588089,
++  expected_launcher_host_pid_match=value['host_pid']==3268774,
+   state=value['state'] if value['state'] in ('running','stopped','failed') else None,
+   state_sha256=sha(value['state'].encode()),message=pin(encoded),
+   stderr_exactly_repeats_complete_message=stderr==('droidloomctl: '+message+'\n').encode(),
+@@ -275,13 +296,42 @@
+  need(classify_closed_child(child)=={'shape':'backend_different_registration_ownership','labelled_fields':{'task':123}},'CLOSED_CHILD')
+  passed('exact-public-child-shape')
+  need(classify_closed_child(child+' UNKNOWN') is None,'CLOSED_FULLMATCH');passed('child-suffix-not-accepted')
+- raw=canon({'ok':False,'host_pid':3588089,'state':'running','message':'SYNTHETIC_PRIVATE message'})
++ raw=canon({'ok':False,'host_pid':3268774,'state':'running','message':'SYNTHETIC_PRIVATE message'})
+  p=classify_native(raw,b'private mismatch')
+  need('SYNTHETIC_PRIVATE' not in json.dumps(p) and not p['stderr_exactly_repeats_complete_message'] and
+   p['whole_error_attribution_qualified'] is False,'MESSAGE_PRIVACY')
+  passed('unknown-message-hash-only-no-attribution')
+  reject('duplicate-JSON-key',lambda:strict_json(b'{"x":1,"x":2}'))
+  need(len(cases)==12,'EXACT_TWELVE_CONTROLS');return cases
++def receipt_controls(c,s,w):
++ cases=[]
++ def passed(name):cases.append({'name':name,'passed':True})
++ def reject(name,fn):
++  try:fn()
++  except (RuntimeError,ValueError,KeyError,TypeError):passed(name);return
++  raise RuntimeError('RECEIPT_CONTROL_ACCEPTED')
++ original=qualify_worker(c,s,w)
++ need(original['errors']==[{'errno':None,'exception_type':'RuntimeError','phase':'post_command_guard'}] and
++  w['outcome_unknown'] is True,'ACTUAL_FAILURE_PRESERVED')
++ passed('actual-pinned-failed-worker-retains-post-guard-and-unknown')
++ intent={'argv':list(NATIVE_ARGV),'execution_argv':list(NATIVE_ARGV),'timeout_seconds':70,
++  'authority_fds_passed':[],'mutation':True,'label':'One native launch',
++  'started_utc':'2026-11-06T17:40:00.000000+00:00','automatic_retry':False}
++ recorded=durable_native_result(original)
++ need(qualify_intent(intent,recorded,original),'DURABLE_WRITE_ORDER_POSITIVE')
++ passed('durable-result-before-post-guard-exact-positive')
++ reject('worker-previous-source-rejected',lambda:qualify_worker(c,s,{**w,'source_manifest_sha256':'0'*64}))
++ rejected=strict_json(canon(w));rejected['error']['command_observation']['errors']=[]
++ reject('worker-missing-post-guard-error-rejected',lambda:qualify_worker(c,s,rejected))
++ reject('durable-stream-hash-change-rejected',
++  lambda:qualify_intent(intent,{**recorded,'stdout_sha256':'0'*64},original))
++ reject('later-post-guard-error-cannot-be-in-original-durable-receipt',
++  lambda:qualify_intent(intent,original,original))
++ reject('later-diagnostic-main-cannot-fill-original-after',
++  lambda:qualify_worker(c,s,{**w,'Main_after':dict(MAIN_BEFORE_FIXED),'final_Main_guard_passed':True}))
++ need(len(cases)==7,'EXACT_SEVEN_RECEIPT_CONTROLS')
++ return cases
++
+ def collect():
+  need(os.getuid()==os.geteuid()==0,'ROOT_FIXED_READ_ONLY')
+  r=Reader();observations={};bindings={};errors=[];native=None;prelaunch=None;safe_attempt=None;tests=[]
+@@ -293,10 +343,12 @@
+   fixed={name:get(name,p) for name,p in PINS.items()}
+   c,s,w=(strict_json(fixed[k]) for k in ('coordinator','stage','worker'))
+   original=qualify_worker(c,s,w)
+-  parse,exact_leaf=task_parser(fixed['task_parser']);tests=controls(parse,exact_leaf)
++  parse,exact_leaf=task_parser(fixed['task_parser']);tests=controls(parse,exact_leaf)+receipt_controls(c,s,w)
++  need(len(tests)==19,'EXACT_NINETEEN_CONTROLS')
+   intent_raw=get('native_intent');result_raw=get('native_result')
+   intent,result=strict_json(intent_raw),strict_json(result_raw)
+-  qualify_intent(intent,result,original);bindings['native_intent_and_result_equal_actual_worker']=True
++  qualify_intent(intent,result,original);bindings['native_intent_and_durable_pre_post_guard_result_exact']=True
++  bindings['original_post_command_guard_failure_retained']=True
+   streams={name:get('native_'+name) for name in ('stdout','stderr')}
+   for name,raw in streams.items():need(sha(raw)==NATIVE_STREAMS[name],'NATIVE_STREAM_BOUND_TO_WORKER')
+   native=classify_native(streams['stdout'],streams['stderr']);bindings['native_streams_exact']=True
+@@ -312,7 +364,7 @@
+    pr.get('action_attempted') is False and pr.get('automatic_retry') is False,'PRELAUNCH_JOINED_READ_ONLY')
+   command_sha=sha(json.dumps(STACKS,separators=(',',':')).encode())
+   need(transport.get('sequence')==6 and transport.get('epoch_sha256')==SCOPE_FIXED['epoch_sha256'] and
+-   transport.get('package')==PACKAGE and transport.get('uid')==10129 and transport.get('command_sha256')==command_sha and
++   transport.get('package')==PACKAGE and transport.get('uid')==10137 and transport.get('command_sha256')==command_sha and
+    transport.get('returncode')==0 and transport.get('stdout_sha256')==sha(raw) and
+    transport.get('stdout_bytes')==len(raw) and transport.get('stderr_bytes')==0 and
+    transport.get('stderr_sha256')==sha(b'') and transport.get('outcome_unknown') is False and
+@@ -331,14 +383,15 @@
+  except BaseException as error:errors.append(safe_error(error))
+  finally:
+   if r.opened!=r.closed:errors.append({'fixed_code':'READER_FD_CLOSE_NOT_COMPLETE'})
+- out={'schema':'pocket4-fixed-amazon-native-launch007-chain-v1','ok':not errors,'source_sha256':SOURCE_SHA256,
++ out={'schema':'pocket4-fixed-ihg-london-native-launch007-chain-v1','ok':not errors,'source_sha256':SOURCE_SHA256,
+   'observations':observations,'bindings':bindings,'native_projection':native,
+   'scope_and_attempt':safe_attempt,'prelaunch':prelaunch,'controls':tests,'control_count':len(tests),
+   'errors':errors,'file_descriptors_opened':r.opened,'file_descriptors_closed':r.closed,
+   'bytes_read':r.bytes,'historical_launch_outcome_unknown_retained':True,'private_UI_read':False,
+   'raw_native_message_or_unknown_task_text_exported':False,'original_files_modified':0,
+   'Android_commands':0,'UI_actions':0,'processes_spawned':0,'task_cleanup_authorized':False,
+-  'current_task_state_observed':False,'current_installed_source_version_verified':False,
++  'current_task_state_observed':False,'current_Main_requalified':False,
++  'original_post_command_Main_failure_retained':True,'current_installed_source_version_verified':False,
+   'whole_app_production_ready':False}
+  data=(json.dumps(out,ensure_ascii=False,sort_keys=True,separators=(',',':'))+'\n').encode()
+  need(len(data)<=65536,'SAFE_SUMMARY_BOUND')

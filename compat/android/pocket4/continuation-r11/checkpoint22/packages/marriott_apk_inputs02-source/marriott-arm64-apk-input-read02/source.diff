@@ -1,0 +1,51 @@
+--- a/read_inputs.py
++++ b/read_inputs.py
+@@ -11,7 +11,7 @@
+ import zipfile
+ 
+ INPUTS = json.loads(r'''[{"role":"gtest_android_bp_anchor","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/external/googletest/googletest/Android.bp","maximum":65536,"expected_bytes":3388,"expected_sha256":"477d0c399a4a2a0a04f70ec00a5c67a686b0ed8f159762e4333d84105e2cf498","format":"utf8"},{"role":"arm64_ndk_config_anchor","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/android_libc++/ndk/aarch64/include/c++/v1/__config_site","maximum":65536,"expected_bytes":1805,"expected_sha256":"155023bfbc86f9f021ea5705822e52f13d6fca5d80ff1cce12ae279287b694c6","format":"utf8"},{"role":"android_jar31_anchor","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar","maximum":33554432,"expected_bytes":21998949,"expected_sha256":"2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5","format":"zip","required_classes":["android/os/Bundle.class","android/app/Activity.class"]},{"role":"ndk_libcxx_static","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/android_libc++/ndk/aarch64/lib/libc++_static.a","maximum":67108864,"format":"archive"},{"role":"ndk_libcxxabi","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/android_libc++/ndk/aarch64/lib/libc++abi.a","maximum":33554432,"format":"archive"},{"role":"arm64_unwind","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/lib/clang/22/lib/linux/aarch64/libunwind.a","maximum":16777216,"format":"archive"},{"role":"arm64_builtins","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/lib/clang/22/lib/linux/libclang_rt.builtins-aarch64-android.a","maximum":16777216,"format":"archive"},{"role":"ndk_cpufeatures_provider","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/ndk/Android.bp","maximum":65536,"expected_bytes":2354,"expected_sha256":"736b4710cdcc7ce96816966a109c97b3553de44e082f73f76229f3af483518f0","format":"utf8"},{"role":"ndk_cpufeatures_source","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/ndk/current/sources/android/cpufeatures/cpu-features.c","maximum":1048576,"expected_bytes":39503,"expected_sha256":"e8992a9c2b044cab53df1e49c6910e92b21b084f7a834f63b46f4610b50ef044","format":"utf8"},{"role":"ndk_cpufeatures_header","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/ndk/current/sources/android/cpufeatures/cpu-features.h","maximum":65536,"expected_bytes":11689,"expected_sha256":"122f6c71a49c553cd0a7e943f7db414eef4487e2e9f346117a141d5df3a7da74","format":"utf8"},{"role":"android_test_runner31","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.test.runner.jar","maximum":16777216,"format":"zip","required_classes":["android/test/InstrumentationTestCase.class","android/test/InstrumentationTestRunner.class"]},{"role":"android_test_base31","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.test.base.jar","maximum":16777216,"format":"zip","required_classes":["junit/framework/TestCase.class","junit/framework/Assert.class"]},{"role":"android_test_mock31","path":"/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.test.mock.jar","maximum":16777216,"format":"zip","required_classes":["android/test/mock/MockContext.class"]}]''')
+-KIND = 'p4-marriott-arm64-apk-input-read01'
++KIND = 'p4-marriott-arm64-apk-input-read02'
+ MEMORY_MAX = 268435456
+ START = time.monotonic()
+ WORK_END = START + 40.0
+@@ -241,9 +241,16 @@
+     tick()
+     event = take(os.open(path, os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC), 'self-metadata')
+     try:
+-        data = os.read(event['fd'], maximum+1)
+-        need(len(data) <= maximum and os.read(event['fd'],1) == b'', 'self metadata bound')
+-        return data.decode('ascii')
++        parts, count = [], 0
++        while True:
++            tick()
++            part = os.read(event['fd'], min(8192, maximum+1-count))
++            if not part:
++                break
++            count += len(part)
++            need(count <= maximum, 'self metadata bound')
++            parts.append(part)
++        return b''.join(parts).decode('ascii')
+     finally:
+         close(event)
+ 
+@@ -252,9 +259,16 @@
+     event = take(os.open(name, os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC,
+                         dir_fd=directory['fd']), 'own-resource:'+name)
+     try:
+-        data = os.read(event['fd'],32769)
+-        need(len(data) <= 32768 and os.read(event['fd'],1) == b'', 'resource leaf bound')
+-        return data.decode('ascii').strip()
++        parts, count = [], 0
++        while True:
++            tick()
++            part = os.read(event['fd'], min(8192, 32769-count))
++            if not part:
++                break
++            count += len(part)
++            need(count <= 32768, 'resource leaf bound')
++            parts.append(part)
++        return b''.join(parts).decode('ascii').strip()
+     finally:
+         close(event)
+ 

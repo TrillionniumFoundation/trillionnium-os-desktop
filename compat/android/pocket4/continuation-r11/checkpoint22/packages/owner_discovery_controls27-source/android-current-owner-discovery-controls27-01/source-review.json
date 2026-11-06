@@ -1,0 +1,145 @@
+{
+  "schema": "pocket4-current-owner-discovery-controls27-source-review-v1",
+  "state": "SOURCE_REVIEWED_PYTHON_UNRUN",
+  "actual_failure": {
+    "schema": "pocket4-ihg-r4-install01-independent-failure-review-v1",
+    "actual_tree": "4b92aeacd6dad5f6e8fd04e862535a6e08b2ebed",
+    "originals": [
+      {
+        "name": "coordinator.json",
+        "bytes": 4492,
+        "sha256": "68eb201b47b803e324a2a9dc22759cb3275a2614192bdf3d9fdf7faa96fc4021",
+        "git_blob": "385f78021d19b2424b4d0808f883112f469f243c"
+      },
+      {
+        "name": "stage.json",
+        "bytes": 8730,
+        "sha256": "9cb3a2e79e25513d5cc9c41fa52dbf38f922609b53267a60d05994bd9eaca3b0",
+        "git_blob": "793b5e0b7fe7bb4c6aa544a49928420dd01463da"
+      },
+      {
+        "name": "worker.json",
+        "bytes": 6062,
+        "sha256": "b4938b5c0133cd1fa8a25106936a14be4f15c72f841b6286009e66264b7b6785",
+        "git_blob": "2a923c614acd96295fb3b6db0103c3b28ba67173"
+      },
+      {
+        "name": "worker-command.json",
+        "bytes": 1854,
+        "sha256": "26884bd5aa0afbf4d707fc79739d42f8389cde70bbd79c5de9a252755e0c5aac",
+        "git_blob": "403f70db00820b061cfeabc59aa14aaa061e67a8"
+      },
+      {
+        "name": "worker-stdout.json",
+        "bytes": 5594,
+        "sha256": "1ea1496c41ed5b7906f344d48a9a2c3a1499df59a4550f0d28e07a5af21247b0",
+        "git_blob": "7543e7a2c67d8156763ebae06bcedd35a631c1a8"
+      }
+    ],
+    "worker_error": {
+      "message": "UNEXPECTED_CELL_OWNER",
+      "phase": "held_Main_binding",
+      "type": "RuntimeError"
+    },
+    "all_eight_Main_receipts_exact_actual_R6": true,
+    "worker_command_returncode": 2,
+    "worker_command_joined": true,
+    "worker_stdout_exact_lossless_semantic_worker": true,
+    "all_51_preexisting_controls_passed": true,
+    "install_attempted": false,
+    "state_attempted": false,
+    "action_attempted": false,
+    "outcome_unknown": false,
+    "action_lock_released": true,
+    "shared_helper_whole_process_tree_cleanup_qualified": false,
+    "whole_app_production_ready": false,
+    "no_new_install_authorized_by_review": true
+  },
+  "scope": "15 shared discovery controls + 3 real source-loader/route controls for each of IHG/Amazon/BestBuy/Bili",
+  "new_controls": 27,
+  "legacy_failure_reproduced_by_production_discover": true,
+  "current_discovery_function_production_source_exact": true,
+  "source_pins": {
+    "current_discovery.py": {
+      "bytes": 8332,
+      "sha256": "9ed0069897faebba50cec3d93b08da54f1c791d6e2e775d26ec798c38b227886"
+    },
+    "current_flow.py": {
+      "bytes": 3244,
+      "sha256": "78a39156dc4457916fd869d096ca2027b2f23935d0fe2ddc97327d83b5ff1d13"
+    },
+    "check_current_discovery.py": {
+      "bytes": 19114,
+      "sha256": "8ccff7b0b23f88431f9b275cb332ac8f941e94de7722902471bf25b2e70d9599"
+    },
+    "ihg_context.py": {
+      "bytes": 17998,
+      "sha256": "88c3d181a1176a447db4426df04125ce51f77ed03736eb79c1a00bb1544f4364"
+    },
+    "amazon_context.py": {
+      "bytes": 18035,
+      "sha256": "d081ba9b8d6da9cdaa4a071ae40b5c74efe2428921bae947a5f93e8afa8add37"
+    },
+    "bestbuy_context.py": {
+      "bytes": 18045,
+      "sha256": "fed91b109d375984eac188546759b6fe203ea2321e45c43e2989dacd929b2343"
+    },
+    "bili_install_state.py": {
+      "bytes": 39575,
+      "sha256": "55458ecb899956dd3475c454a4f8993df036a2439992c32527a66cc852cb71c3"
+    },
+    "host/source-manifest.json": {
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    }
+  },
+  "pinned_current_baseline": {
+    "schema": "pocket4-main-current-baseline-v2",
+    "epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
+    "qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
+    "guard_sha256": "96dbdaf7673d5298e6fe17cb1b7ebae29b37110ee59f31b0c927e2cb0ef4b150",
+    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+  },
+  "original_discover_inverse_sha256": "16f04a727bd88767a39f6bcf31c1ce1c08a8baf2b87a3d7cfab51dd947578dec",
+  "Bili_bind_inverse_exact": true,
+  "legacy_frozen_files_and_R6_manifest_unchanged": true,
+  "production_call_closure": {
+    "ihg": "install_state.worker -> context.open_context -> context.current_discovery (runtime manifest pin loader) -> current_discovery.discover_current",
+    "amazon": "install_state.worker -> context.open_context -> context.current_discovery (runtime manifest pin loader) -> current_discovery.discover_current",
+    "bestbuy": "install_state.worker -> context.open_context -> context.current_discovery (runtime manifest pin loader) -> current_discovery.discover_current",
+    "bili": "install_state.worker -> current_flow_type (two runtime manifest pin loaders) -> own CurrentFlow.bind -> original R6 MainBinding(app=explicit facade) -> facade.discover -> discover_current"
+  },
+  "I_O_seams": "private memory /proc/Status/epoch fixtures; actual legacy discover AST and production current discover; private cloned function-global module loader for source pin checks; frozen MainBinding constructor is an explicit I/O boundary in Bili bind-route fixture",
+  "source_qualification": "Actual Context current_discovery loader and actual current_flow_type+CurrentFlow.bind run. AST additionally requires each exact open_context/worker reaches these loaders once and contains no old discover()/Flow() path.",
+  "unchanged_runtime_bodies": [
+    "R6 Flow.command",
+    "R6 Flow.guard",
+    "R6 Flow.begin",
+    "R6 Flow.launch",
+    "R6 Flow.cleanup",
+    "R6 MainBinding",
+    "QA Session",
+    "BoundArun"
+  ],
+  "actual_qualification_required_before_installs": true,
+  "source_only_host_stage_is_not_runtime_permission": true,
+  "request": {
+    "bytes": 147604,
+    "sha256": "dc79e84a7bc00106496d09e888de180ae8ddd91e7758abf4e6c794c293912014"
+  },
+  "packet": {
+    "bytes": 134729,
+    "sha256": "202e59b6656618e435d1c6fb988be21c18a864f580d826911db44e332f58e62a"
+  },
+  "helper_nonces_not_consumed_by_controls": true,
+  "private_baseline_not_exported": true,
+  "Android_actions": 0,
+  "children": 0,
+  "source_writes": 0,
+  "Main_writes": 0,
+  "Python_executed_here": false,
+  "Hepta_dispatched": false,
+  "whole_app_production_ready": false
+}

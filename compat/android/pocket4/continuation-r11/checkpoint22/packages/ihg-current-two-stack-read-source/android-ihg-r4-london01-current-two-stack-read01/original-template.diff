@@ -1,0 +1,141 @@
+--- amazon-two-stack-template.py
++++ ihg-two-stack-template.py
+@@ -1,16 +1,17 @@
+-"""Exactly two current Amazon task tables through its qualified Context; no UI/native replay/removal."""
++"""Exactly two current IHG task tables through its qualified Context; no UI/native replay/removal."""
+ import datetime,hashlib,json,os,stat,time,types
+ from pathlib import Path
+-ROOT=Path('/home/alex/work/pocket4-amazon-r3-current-search-entry-01')
++ROOT=Path('/home/alex/work/pocket4-ihg-r4-public-london-input-01')
+ SOURCE=ROOT/'source'
+-FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r3-flow-42ee4dd8ab30f563567ba353deff430c')
++FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b')
+ STEP=FLOW/'steps/native-launch-state-read-01'
+-PACKAGE='com.amazon.mShop.android.shopping'
+-COMPONENT=PACKAGE+'/com.amazon.mShop.home.HomeActivity'
+-SOURCE_MANIFEST='452b2c85207d60d5e47efbeafc05f49ecae416fabf6988fb7362100d55d6e46c'
+-ENTRY_PIN={'bytes':40297,'sha256':'7f64037f79317f2e370e0504f75032b945756521984009f0cdc5f068c721bab5'}
+-WORKER_PIN={'bytes':14255,'sha256':'471fd0060d935a14af74a30206607d58267c96982769cb24e442fa5c92ecf95c'}
+-SCOPE_FIXED=json.loads("{\"schema\":\"pocket4-current-recorder-scope-v1\",\"current_baseline_schema\":\"pocket4-main-current-baseline-v1\",\"package\":\"com.amazon.mShop.android.shopping\",\"component\":\"com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity\",\"uid\":10129,\"user\":0,\"nonce\":\"42ee4dd8ab30f563567ba353deff430c\",\"epoch_sha256\":\"734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2\",\"current_baseline_sha256\":\"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\",\"current_baseline_qualification_sha256\":\"f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6\",\"amazon_task_source_manifest_sha256\":\"452b2c85207d60d5e47efbeafc05f49ecae416fabf6988fb7362100d55d6e46c\",\"automatic_retry\":false,\"original_recorder_manifest_sha256\":\"6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e\",\"actual_resolution_result_sha256\":\"ebeaecf791eba4906502cd3167c08e735d826ffd565f7fdd45d66775c016c534\"}")
++PACKAGE='com.ihg.apps.android'
++COMPONENT=PACKAGE+'/.activity.MainActivity'
++SOURCE_MANIFEST='24a8491dbb44faf1288869d278da96290597b7af1fcdcce12a72fd62bad9435f'
++ENTRY_PIN={"bytes":46630,"sha256":"562629c6c00d40a41cdf6fe2edf3df01292fb6f78409f8fd08b7776f02bf7bb0"}
++WORKER_PIN={"bytes":12051,"sha256":"3ab8190051ab6c628a7e6b67c0f10567cb18e273db6ecc067b5856098e37034b"}
++SCOPE_FIXED=json.loads("{\"schema\":\"pocket4-current-recorder-scope-v2\",\"current_baseline_schema\":\"pocket4-main-current-baseline-v2\",\"package\":\"com.ihg.apps.android\",\"component\":\"com.ihg.apps.android/.activity.MainActivity\",\"uid\":10137,\"user\":0,\"nonce\":\"ec4f2977574102b1e5869d2494e8416b\",\"epoch_sha256\":\"7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c\",\"current_baseline_sha256\":\"633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364\",\"current_baseline_qualification_sha256\":\"ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e\",\"amazon_task_source_manifest_sha256\":\"24a8491dbb44faf1288869d278da96290597b7af1fcdcce12a72fd62bad9435f\",\"automatic_retry\":false,\"original_recorder_manifest_sha256\":\"002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff\",\"actual_resolution_result_sha256\":\"153ddbfc8393570621b64a478675c2a0180826a7a6ecada0ade8a6aa4ed79722\"}")
++MAIN_BEFORE_FIXED=json.loads("{\"Main_epoch_sha256\":\"7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c\",\"authenticated_owner_chain_matches\":true,\"config_sha256\":\"f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc\",\"current_baseline_qualification_sha256\":\"ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e\",\"current_baseline_sha256\":\"633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364\",\"current_executable_and_root_backing_match\":true,\"current_user_namespaces_match\":true,\"framework_exit_cause_resolved\":false,\"historical_activation_sha256\":\"7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615\",\"historical_verified_sha256\":\"2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387\",\"old_helpers_and_tasks_reauthorized\":false,\"previous_current_baseline_sha256\":\"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\",\"production_ready\":false,\"resource_limits_match\":true,\"schema\":\"pocket4-current-main-guard-v2\",\"seven_processes_match\":true,\"three_host_processes_match\":true}")
+ INPUTS=__ACTUAL_HISTORICAL_INPUTS__
+ STACKS=['/system/bin/cmd','activity','stack','list']
+ def need(value,code):
+@@ -131,6 +132,34 @@
+  need(f.calls==[] and view.counts=={},'REJECTED_COMMANDS_NEVER_FORWARDED')
+  need(len(cases)==11,'EXACT_ELEVEN_READ_GATE_CONTROLS')
+  return cases
++def historical_worker_qualified(worker):
++ need(worker.get('nonce')==SCOPE_FIXED['nonce'] and worker.get('source_manifest_sha256')==SOURCE_MANIFEST and
++  worker.get('phase')=='launch' and worker.get('package')==PACKAGE and worker.get('uid')==10137 and
++  worker.get('helper_package')=='org.droidloom.qa.ihg.r4' and worker.get('helper_uid')==10158 and
++  worker.get('action_attempted') is True and worker.get('outcome_unknown') is True and
++  worker.get('automatic_retry') is False and worker.get('durable_command_count')==7 and
++  worker.get('held_binding_released') is True and worker.get('action_lock_released') is True and
++  worker.get('flow_lock_released') is True and worker.get('Main_before')==MAIN_BEFORE_FIXED and
++  worker.get('Main_before_lock')==MAIN_BEFORE_FIXED and 'Main_after' not in worker and
++  'final_Main_guard_passed' not in worker and
++  worker.get('secondary_errors')==[
++   {'phase':'final_Main_guard','type':'RuntimeError','message':'OWNER_SINGLE_DIRECT_CHILD_REQUIRED'},
++   {'phase':'independent_final_Main','type':'RuntimeError','message':'OWNER_SINGLE_DIRECT_CHILD_REQUIRED'}],
++  'EXACT_ORIGINAL_FAILED_MAIN_WINDOW_RETAINED')
++ return True
++def historical_worker_controls(worker):
++ cases=[]
++ need(historical_worker_qualified(worker),'ACTUAL_HISTORICAL_WORKER_POSITIVE')
++ cases.append({'name':'actual-historical-unknown-and-missing-final-Main-retained','passed':True})
++ for name,value in (
++  ('later-current-Main-cannot-fill-historical-after',{**worker,'Main_after':dict(MAIN_BEFORE_FIXED),'final_Main_guard_passed':True}),
++  ('historical-final-Main-error-cannot-be-erased',{**worker,'secondary_errors':[]})):
++  try:historical_worker_qualified(value)
++  except RuntimeError:cases.append({'name':name,'passed':True});continue
++  raise RuntimeError('HISTORICAL_WORKER_CONTROL_ACCEPTED')
++ need(len(cases)==3,'EXACT_THREE_HISTORICAL_CONTROLS')
++ return cases
++
+ def main():
+  need(os.getuid()==os.geteuid()==0,'ROOT_OWNED_OBSERVATION_REQUIRED')
+  need(type(INPUTS) is dict and INPUTS.get('actual_historical_chain_qualified') is True,'ACTUAL_HISTORICAL_CHAIN_REQUIRED')
+@@ -144,25 +173,23 @@
+  scope=json.loads(private['scope']);attempt=json.loads(private['attempted'])
+  need(scope==SCOPE_FIXED and attempt==INPUTS['scope_and_attempt'] and attempt['scope']==scope,'HISTORICAL_SOURCE_SCOPE_AND_ATTEMPT')
+  worker=json.loads(read_exact(FLOW/'steps/launch-01/result.json',WORKER_PIN))
+- need(worker['action_attempted'] is True and worker['outcome_unknown'] is True and worker['final_Main_guard_passed'] is True and
+-  worker['held_binding_released'] is True and worker['action_lock_released'] is True and worker['flow_lock_released'] is True,
+-  'ORIGINAL_UNKNOWN_AND_JOINED_SCOPE_REQUIRED')
++ historical_worker_qualified(worker)
+  need(not os.path.lexists(FLOW/'launch-scope.json'),'NO_OLD_SUCCESS_SCOPE_CREATED')
+  raw=read_exact(SOURCE/'owned_inspect.py',ENTRY_PIN)
+- entry=types.ModuleType('fixed_amazon_readonly_entry');entry.__file__=str(SOURCE/'owned_inspect.py')
++ entry=types.ModuleType('fixed_ihg_readonly_entry');entry.__file__=str(SOURCE/'owned_inspect.py')
+  exec(compile(raw,entry.__file__,'exec'),entry.__dict__)
+- need(entry.HERE==SOURCE and entry.FLOW==FLOW and entry.PACKAGE==PACKAGE and entry.HELPER_UID==10154,'ACTUAL_CURRENT_AMAZON_ENTRY')
++ need(entry.HERE==SOURCE and entry.FLOW==FLOW and entry.PACKAGE==PACKAGE and entry.HELPER_UID==10158,'ACTUAL_CURRENT_IHG_ENTRY')
+  q=entry.qualified(SOURCE_MANIFEST);u,ref=q.util,q.ref
+- task=entry.load(SOURCE/'amazon_task_context.py',q.manifest['files']['amazon_task_context.py']['sha256'],'fixed_amazon_task_context')
+- context=u.module(q.resolver.INSTALL_SOURCE/'amazon_context.py',q.resolver.CONTEXT_SHA,'current_amazon_artifact_context')
+- transport=u.module(q.resolver.INSTALL_SOURCE/'amazon_transport.py',q.resolver.TRANSPORT_SHA,'current_amazon_read_transport')
+- shared=u.module(context.INSTALLED_SHARED/'source_contract.py',context.CONTRACT_SHA,'current_shared_contract_for_amazon')
++ task=entry.load(SOURCE/'ihg_task_context.py',q.manifest['files']['ihg_task_context.py']['sha256'],'fixed_ihg_task_context')
++ context=u.module(q.resolver.INSTALL_SOURCE/'ihg_context.py',q.resolver.CONTEXT_SHA,'current_ihg_artifact_context')
++ transport=u.module(q.resolver.INSTALL_SOURCE/'ihg_transport.py',q.resolver.TRANSPORT_SHA,'current_ihg_read_transport')
++ shared=u.module(context.INSTALLED_SHARED/'source_contract.py',context.CONTRACT_SHA,'current_shared_contract_for_ihg')
+  contract=shared.SourceContract(context.INSTALLED_SHARED/'source-manifest.json',context.SHARED_MANIFEST)
+- recorder=contract.load('recorder.py','current_amazon_command_primitives')
++ recorder=contract.load('recorder.py','current_ihg_command_primitives')
+  activation=ref.current_baseline()
+- epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_amazon_read_epoch')
++ epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_ihg_read_epoch')
+  guard=lambda:ref.main_guard(activation,epoch)
+- result={'schema':'pocket4-amazon-native-launch-current-two-stack-observation-v1','ok':False,'error':None,'secondary_errors':[],
++ result={'schema':'pocket4-ihg-london-native-launch-current-two-stack-observation-v1','ok':False,'error':None,'secondary_errors':[],
+   'source_sha256':SOURCE_SHA256,'historical_chain':INPUTS['native_reader_actual'],
+   'historical_launch_outcome_unknown_retained':True,'new_native_launches':0,'UI_actions':0,
+   'package_mutations':0,'task_removals':0,'helper_instrumentation_calls':0,'cleanup_authority_created':False,
+@@ -186,8 +213,11 @@
+  try:
+   resources=u.prepare_owned_limits();result['owned_before']=resources
+   result['Main_before_lock']=guard()
+-  need(result['Main_before_lock']==worker['Main_after'],'CURRENT_MAIN_DIFFERS_FROM_HISTORICAL_FAILED_LAUNCH')
+-  result['controls']=gate_controls(task,q.qa,entry.PLAN)
++  need(result['Main_before_lock']==MAIN_BEFORE_FIXED,'FRESH_CURRENT_MAIN_BASELINE_DIFFERS')
++  # A new guarded observation never fills the missing historical Main_after.
++  result['historical_final_Main_qualified']=False
++  result['controls']=gate_controls(task,q.qa,entry.PLAN)+historical_worker_controls(worker)
++  need(len(result['controls'])==14,'EXACT_FOURTEEN_READ_CONTROLS')
+   result['flow_lock_admission']={};flow_lock=u.acquire_action_lock(FLOW/'flow.lock',result['flow_lock_admission'])
+   result['global_lock_admission']={};action_lock=u.acquire_action_lock(recorder.ACTION_LOCK,result['global_lock_admission'])
+   result['Main_after_locks']=guard()
+@@ -202,7 +232,7 @@
+    for key,path in expected_paths.items():
+     original=INPUTS['historical_file_pins'][key]
+     read_exact(path,{k:original[k] for k in ('bytes','sha256')},131072 if key=='prelaunch_stacks' else 65536)
+-  stage='held_current_amazon_context'
++  stage='held_current_ihg_context'
+   flow,recorder,phase_guard=task.open_task_context(ref,u,context,SOURCE_MANIFEST,verify_runtime,FLOW,STEP,
+    transport,result,began+175,'launch',q.qa,entry.PLAN,q.resolver.RESOLVE,scope)
+   view=ReadOnlyView(flow,task)
+@@ -212,7 +242,7 @@
+   result['historical_prelaunch']=historical
+   reference=json.loads(u.read(q.resolver.INSTALL_SOURCE/'target-artifact-reference.json',expected=
+    q.install_manifest['files']['target-artifact-reference.json']['sha256']))
+-  reader=u.module(q.resolver.INSTALL_SOURCE/'references/read_amazon.py',u.READER_SHA,'current_amazon_artifact_parser')
++  reader=u.module(q.resolver.INSTALL_SOURCE/'references/read_ihg.py',u.READER_SHA,'current_ihg_artifact_parser')
+   artifacts=context.ArtifactSet(view,reference,reader)
+   stage='current_target_before';result['target_before']=artifacts.before()
+   session=q.adapter.Session(view,recorder,q.qa,q.proof,entry.HELPER_UID)
+@@ -249,7 +279,7 @@
+  finally:
+   if artifacts is not None:
+    try:
+-    if len(artifacts.records)==3 and 'target_after' not in result:result['failed_scope_files_revalidated']=artifacts.revalidate_files()
++    if len(artifacts.records)==1 and 'target_after' not in result:result['failed_scope_files_revalidated']=artifacts.revalidate_files()
+    except BaseException as error:remember('failed_scope_revalidation',error)
+    try:result['target_FD_cleanup']=artifacts.close()
+    except BaseException as error:remember('target_FD_cleanup',error)

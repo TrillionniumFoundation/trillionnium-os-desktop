@@ -1,0 +1,240 @@
+{
+  "schema": 1,
+  "compiler_baseline": {
+    "bytes": 85579,
+    "sha256": "5b4e7d699b6ca82c9a60ff28cd49cf7d101fd6b92608fe70a92380182f3aac4f",
+    "git_blob_sha1": "d57dbae7cbe634481849e95598a5e190cb7b3f79"
+  },
+  "stage_baseline": {
+    "bytes": 10719,
+    "sha256": "a3bc0bfb910c35c8adf1ab9f2661fd648ad71aea479dd8a8c0c474453e7c962a",
+    "git_blob_sha1": "bdf10ca3fc38cb9043bbb31665910c78affc7c0e"
+  },
+  "generator_baseline": {
+    "bytes": 4077,
+    "sha256": "e10929ab239e8ba87a69db08dab5f2643166cb65107bd81799d143be208c995e",
+    "git_blob_sha1": "e35fb1bbb2fb4289c8ec709f68ebbc2ecc25b6dd"
+  },
+  "compiler_edits": [
+    {
+      "at": 23,
+      "before": "\"\"\"Compile builder471 fixed SystemUI test projection with 21 updater and 9 source controls; no platform execution.\"\"\"",
+      "after": "\"\"\"Compile independent builder472 Composer/AIDL build-only entry with 23 updater and 9 source controls; no platform execution.\"\"\""
+    },
+    {
+      "at": 9761,
+      "before": "/home/alex/work/pocket4-native-typed-ingress-builder471-systemui-test-projection-compile-01-20261106",
+      "after": "/home/alex/work/pocket4-native-builder472-composer-retirement-entry-compile-01-20261106"
+    },
+    {
+      "at": 10164,
+      "before": "MANIFEST_471 = 'c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0'",
+      "after": "MANIFEST_472 = 'fcbf72b891d9a9bbbcd015777e50cc3ade436f25732a603b51de261eab9cb27a'"
+    },
+    {
+      "at": 13721,
+      "before": "SYSTEMUI_PROJECTION_TESTS = [\"android::tests::typed_systemui_test_projection_keeps_metadata_parent_providers_and_other_paths\",\"android::tests::typed_systemui_test_projection_rejects_wrong_source_before_journal_or_write\",\"android::tests::typed_systemui_test_projection_recovers_complete_original_from_durable_journal\"]",
+      "after": "COMPOSER_ENTRY_TESTS = [\"tests::composer_retirement_cli_requires_exact_workspace_and_fresh_output\",\"android::tests::composer_retirement_route_is_strict_and_disjoint_from_framework\",\"android::tests::composer_retirement_fixed_sources_reject_alias_drift_and_restore_projection\",\"android::tests::composer_retirement_workspace_rejects_prior_lock_and_manifest_only\",\"android::tests::composer_retirement_exact_systemui_projection_rejects_drift_and_recovers\"]"
+    },
+    {
+      "at": 14263,
+      "before": " + SYSTEMUI_PROJECTION_TESTS",
+      "after": " + COMPOSER_ENTRY_TESTS"
+    },
+    {
+      "at": 14287,
+      "before": "FIXED_PROVIDER_DELTA = [\"android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\",\"tools/droidloom-update/src/android.rs\"]",
+      "after": "FIXED_PROVIDER_DELTA = [\"graphics/droidloom-composer-aidl/src/denial.rs\",\"graphics/droidloom-composer-service/src/control.rs\",\"graphics/droidloom-composer-service/src/main.rs\",\"graphics/droidloom-composer/src/denial.rs\",\"graphics/droidloom-denial-endpoint/src/lib.rs\",\"graphics/droidloom-denial-protocol/src/lib.rs\",\"graphics/droidloom-wayland/src/layers.rs\",\"graphics/droidloom-wayland/src/main.rs\",\"graphics/droidloom-wayland/src/retirement.rs\",\"tools/droidloom-update/src/android.rs\",\"tools/droidloom-update/src/main.rs\"]"
+    },
+    {
+      "at": 14812,
+      "before": "SYSTEMUI_PROJECTION_PROOF_SHA = '17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762'",
+      "after": "COMPOSER_ENTRY_PROOF_SHA = '3bc022c9924dc13f7e2ad8d6ed85a079af1dec61733433b88c2c76d0df0c60da'\nACK_SOURCE_PINS = json.loads(\"{\\\"candidate-composer-main.rs\\\":{\\\"bytes\\\":19202,\\\"path\\\":\\\"graphics/droidloom-composer-service/src/main.rs\\\",\\\"sha256\\\":\\\"567c60fd293f35e2e0957db6f38bc967cc0c3fa90354b98491d461a7decdb4ce\\\"},\\\"candidate-control.rs\\\":{\\\"bytes\\\":42491,\\\"path\\\":\\\"graphics/droidloom-composer-service/src/control.rs\\\",\\\"sha256\\\":\\\"d3d9f4b763a6e80b6549119e42b4d6c3c6ab7368359f3cc71d2e090f05a881ca\\\"},\\\"candidate-core-denial.rs\\\":{\\\"bytes\\\":25541,\\\"path\\\":\\\"graphics/droidloom-composer/src/denial.rs\\\",\\\"sha256\\\":\\\"ed0080cd33a3a4fa67b3a0c2e95bc274ab38e992ec073ab01d87b910bf2db3c8\\\"},\\\"candidate-endpoint.rs\\\":{\\\"bytes\\\":63752,\\\"path\\\":\\\"graphics/droidloom-denial-endpoint/src/lib.rs\\\",\\\"sha256\\\":\\\"062b65857160eb6e3aeba2a78c4ce3d8503c02572f24353f8c944d950e52308c\\\"},\\\"candidate-engine-retirement.rs\\\":{\\\"bytes\\\":11118,\\\"path\\\":\\\"graphics/droidloom-wayland/src/retirement.rs\\\",\\\"sha256\\\":\\\"383f4c6f7490c8568f1853af6e9449fdb35bdb088348de4a9856d75f97306873\\\"},\\\"candidate-protocol.rs\\\":{\\\"bytes\\\":105464,\\\"path\\\":\\\"graphics/droidloom-denial-protocol/src/lib.rs\\\",\\\"sha256\\\":\\\"6c7f8df133f2a9e55bd375da4b39dcba5b00d0c4c3ba6531a6b8be329ebce41c\\\"},\\\"candidate-provider.rs\\\":{\\\"bytes\\\":50513,\\\"path\\\":\\\"graphics/droidloom-composer-aidl/src/denial.rs\\\",\\\"sha256\\\":\\\"d6f13720da4267ff46f369617faecbb8c6446eca2c624e381c1ff51ddaebbf09\\\"},\\\"candidate-wayland-layers.rs\\\":{\\\"bytes\\\":35990,\\\"path\\\":\\\"graphics/droidloom-wayland/src/layers.rs\\\",\\\"sha256\\\":\\\"d0a81ce5339c5020496e9b73e007d52ee206449827269b272e4ef6ef43df5ecc\\\"},\\\"candidate-wayland-main.rs\\\":{\\\"bytes\\\":110131,\\\"path\\\":\\\"graphics/droidloom-wayland/src/main.rs\\\",\\\"sha256\\\":\\\"0f56264e971db9f246d8db34d7fd5de157fd389a97bfb34492a6f53376d27459\\\"}}\")"
+    },
+    {
+      "at": 56571,
+      "before": "fresh builder471 fixed five-module SystemUI test projection compile01, 500 source files, 18 original plus 3 new updater controls and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution",
+      "after": "fresh builder472 independent Composer/AIDL strict build-only entry compile01, 500 source files, 18 original plus 5 new updater controls and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution"
+    },
+    {
+      "at": 58468,
+      "before": "expected-builder471-manifest.json",
+      "after": "expected-builder472-manifest.json"
+    },
+    {
+      "at": 58503,
+      "before": "MANIFEST_471",
+      "after": "MANIFEST_472"
+    },
+    {
+      "at": 63636,
+      "before": "MANIFEST_471",
+      "after": "MANIFEST_472"
+    },
+    {
+      "at": 68239,
+      "before": "MANIFEST_471",
+      "after": "MANIFEST_472"
+    },
+    {
+      "at": 63132,
+      "before": "        projection_raw,projection_pin=pinned_packet('systemui-test-projection-proof.json',SYSTEMUI_PROJECTION_PROOF_SHA)\n        projection=json.loads(projection_raw)\n        require(projection['state']=='SOURCE_ONLY_FIXED_SYSTEMUI_TEST_PROJECTION_NOT_COMPILED' and\n                projection['baseline']['manifest']['sha256']==MANIFEST_PARENT and\n                projection['baseline']['compile_result']['sha256']==parent_pin['sha256'] and\n                projection['candidate']['manifest']['sha256']==MANIFEST_472 and\n                projection['candidate']['source_delta']==FIXED_PROVIDER_DELTA and\n                projection['candidate']['source_files']==500 and projection['candidate']['unchanged']==498 and\n                projection['candidate']['changed_existing']==['tools/droidloom-update/src/android.rs'] and\n                projection['candidate']['added']==['android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp'] and\n                projection['scope']['source_path']=='frameworks/base/packages/SystemUI/tests/Android.bp' and\n                projection['scope']['excluded_modules']==['SystemUITests_defaults','SystemUITests',\n                    'SystemUITests_systemui_accessibility','SystemUITests_presubmit','SystemUI_test_fixtures'] and\n                projection['scope']['targets']==['framework-minus-apex','libandroid_runtime'] and\n                projection['scope']['dependency_mode']=='Strict' and\n                projection['scope']['ALLOW_MISSING_DEPENDENCIES']=='false' and\n                projection['scope']['no_find_ignore_added'] is True and\n                projection['validation']['new_focused_tests']==SYSTEMUI_PROJECTION_TESTS and\n                projection['validation']['host_compile_performed'] is False,\n                'fixed five-module SystemUI projection proof does not bind this candidate')\n        lock_name='android/manifest/m2-role-ingress-hal-provider-source-lock.json'\n        lock_raw,lock_pin=held(COPIED/lock_name)\n        require(expected[lock_name]==copied_expected[lock_name] and\n                lock_pin['bytes']==expected[lock_name]['bytes']==96957 and\n                lock_pin['sha256']==expected[lock_name]['sha256']==\n                    '72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d' and\n                projection['source_lock']['sha256']==lock_pin['sha256'] and\n                projection['source_lock']['unchanged'] is True,\n                'exact 225-project source lock changed')\n        current_lock=json.loads(lock_raw)\n        require(len(current_lock['projects'])==225 and len(current_lock['links'])==8,\n                'fixed source-lock project or link inventory differs')\n        fixture_name='android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp'\n        fixture_raw,fixture_pin=pinned_packet('delta/'+fixture_name,\n            'f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da')\n        require(fixture_pin['bytes']==copied_expected[fixture_name]['bytes']==3392 and\n                fixture_pin['sha256']==copied_expected[fixture_name]['sha256']==\n                    projection['scope']['original']['sha256'],\n                'complete locked upstream SystemUI tests fixture differs')\n        report['systemui_test_projection_authority']=projection_pin\n        report['systemui_test_original_fixture_authority']=fixture_pin\n        report['unchanged_225_project_lock_authority']=lock_pin\n        report['source_lock_writer']='UNKNOWN'\n",
+      "after": "        proof_raw,proof_pin=pinned_packet('composer-entry-proof.json',COMPOSER_ENTRY_PROOF_SHA)\n        proof=json.loads(proof_raw)\n        require(proof['state']=='SOURCE_ONLY_COMPOSER_RETIREMENT_ENTRY_NOT_COMPILED' and\n                proof['baseline']['manifest']['sha256']==MANIFEST_PARENT and\n                proof['baseline']['compile_result']['sha256']==parent_pin['sha256'] and\n                proof['candidate']['manifest']['sha256']==MANIFEST_472 and\n                proof['candidate']['source_delta']==FIXED_PROVIDER_DELTA and\n                proof['candidate']['source_files']==500 and proof['candidate']['unchanged']==489 and\n                proof['candidate']['replaced']==[name for name in FIXED_PROVIDER_DELTA if name in expected] and\n                proof['candidate']['added']==['graphics/droidloom-wayland/src/retirement.rs'] and\n                proof['new_focused_tests']==COMPOSER_ENTRY_TESTS and proof['host_compile_performed'] is False and\n                proof['ACK_SOURCE_PINS']==ACK_SOURCE_PINS and proof['separate_from_typed_builder471'] is True,\n                'fixed Composer entry proof does not bind this candidate')\n        scope_raw,scope_pin=pinned_packet('build-scope.json','f43cd778b75e484d53899eab543680e6b32ae5e54d6eca373b34223dcfcc8af9')\n        scope=json.loads(scope_raw)\n        require(scope==proof['scope'] and scope['entry']=='composer-retirement-build' and\n                scope['targets']==['android.hardware.graphics.composer3-service.droidloom','droidloom-composer-aidl-tests'] and\n                scope['dependency_mode']=='Strict' and scope['ALLOW_MISSING_DEPENDENCIES'] is False and\n                scope['read_fresh_every_project_before_reconcile'] is True and\n                scope['work_locks']==['package-build.lock','aosp-source-update.lock'] and\n                scope['projection_journal']=='source-projection.json' and\n                scope['resume_or_prior_lock_fallback'] is False and\n                scope['source_tests_executed'] is False and scope['android_tests_built'] is False and\n                scope['Binder_ABI_qualified'] is False and scope['Main_actions']==0 and\n                scope['fixed_SystemUI_child_projection']['independent_composer_only_call'] is True and\n                scope['fixed_SystemUI_child_projection']['typed_471_candidate_not_changed'] is True,\n                'fixed Composer targets, strict source/lock or build-only scope differs')\n        lock_name='android/manifest/m2-role-ingress-hal-provider-source-lock.json'\n        lock_raw,lock_pin=held(COPIED/lock_name)\n        require(expected[lock_name]==copied_expected[lock_name] and\n                lock_pin['bytes']==expected[lock_name]['bytes']==96957 and\n                lock_pin['sha256']==expected[lock_name]['sha256']==\n                    '72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d' and\n                scope['source_lock']['sha256']==lock_pin['sha256'],\n                'exact 225-project source lock changed')\n        current_lock=json.loads(lock_raw)\n        require(len(current_lock['projects'])==225 and len(current_lock['links'])==8,\n                'fixed source-lock project or link inventory differs')\n        wayland_raw,wayland_pin=pinned_packet('actual-wayland03-result.json',\n            '57546b6c6c2d4e05aea6099097944cdbe6746bbcc0124768a314414ec5663abd')\n        wayland=json.loads(wayland_raw)\n        require(wayland_pin['bytes']==81805 and wayland['state']=='PASS' and\n                wayland['Wayland_complete_crate_typecheck_qualified'] is True and\n                len(wayland['commands'])==15 and all(row['returncode']==0 and not row['timed_out'] for row in wayland['commands']) and\n                wayland['source_delta']['candidate_files']==ACK_SOURCE_PINS and\n                wayland['copied_manifest']['sha256']=='3f2320687f074d48b19bc5284e6ba665a6cfaeb7adab9d59f519de5f3c96d2f4' and\n                all(wayland[key] is True for key in ['copied_source_unchanged_after','original_source_unchanged_after',\n                    'cargo_configs_unchanged_after','check_outputs_unchanged_after','native_pc_inputs_unchanged_after',\n                    'offline_vendor_input_gate_qualified','pkg_config_input_gate_qualified','owned_resource_fd_closed']) and\n                not wayland['dependency_changes'] and not wayland['tool_changes'] and not wayland['secondary_errors'] and\n                wayland['owned_child_reaper']['final_children_empty'] is True and\n                wayland['owned_child_reaper']['restored'] is True and wayland['owned_resource_gate']['pass'] is True and\n                wayland['Android_Binder_provider_compile'] is False and wayland['Wayland_runtime_GPU_qualified'] is False,\n                'actual complete Wayland check/source authority differs')\n        for source_name,row in ACK_SOURCE_PINS.items():\n            require(copied_expected[row['path']]['kind']=='file' and\n                    copied_expected[row['path']]['bytes']==row['bytes'] and\n                    copied_expected[row['path']]['sha256']==row['sha256'],\n                    'candidate ACK production source differs from actual checked source: '+source_name)\n        report['composer_entry_proof_authority']=proof_pin\n        report['composer_build_scope_authority']=scope_pin\n        report['actual_prior_wayland03_check_authority']=wayland_pin\n        report['unchanged_225_project_lock_authority']=lock_pin\n        report['source_lock_writer']='UNKNOWN'\n"
+    },
+    {
+      "at": 68883,
+      "before": "sum(name in expected for name in changes)==1",
+      "after": "sum(name in expected for name in changes)==10"
+    },
+    {
+      "at": 69052,
+      "before": "'SystemUI projection delta is not exactly one Rust replacement and one original fixture addition'",
+      "after": "'Composer entry delta is not exactly ten Rust replacements and one retirement source addition'"
+    },
+    {
+      "at": 70233,
+      "before": "'actual copied 500-file builder471 manifest differs'",
+      "after": "'actual copied 500-file builder472 manifest differs'"
+    },
+    {
+      "at": 70605,
+      "before": "'unchanged_existing':498",
+      "after": "'unchanged_existing':489"
+    },
+    {
+      "at": 70694,
+      "before": "'builder_revision_name':'471-fixed-systemui-test-projection','Rust_source_files_changed':1",
+      "after": "'builder_revision_name':'472-composer-retirement-build-entry','Rust_source_files_changed':11"
+    },
+    {
+      "at": 70903,
+      "before": "'Go5_or_Blueprint_patch_changed':False,'engine_source_files_changed':0",
+      "after": "'Go5_or_Blueprint_patch_changed':False,'engine_source_files_changed':9"
+    },
+    {
+      "at": 71251,
+      "before": "'current_hal_source_lock_unchanged':True,'fixed_SystemUI_tests_BP_original_fixture_added':True,",
+      "after": "'current_hal_source_lock_unchanged':True,'ACK_nine_production_sources_unchanged_from_actual_Wayland03':True,\n                                'typed_builder471_not_changed_or_used_as_baseline':True,"
+    },
+    {
+      "at": 77148,
+      "before": "b'native-role-ingress-build' in help_output,",
+      "after": "b'native-role-ingress-build' in help_output and b'composer-retirement-build' in help_output,"
+    },
+    {
+      "at": 77681,
+      "before": "        test_build=command([common[0],'test',*common[1:],'--no-run','--message-format=json-render-diagnostics'],COPIED,env,'builder-test-compile',report['commands'],180)",
+      "after": "        composer_help=command([str(builder),'composer-retirement-build','--help'],COPIED,env,\n                              'composer-retirement-cli-help',report['commands'],10)\n        require(all(option in composer_help for option in [b'--work',b'--out']) and\n                all(option not in composer_help for option in [b'--targets',b'--resume-source-staging']),\n                'Composer build-only CLI must expose only exact work/output arguments')\n        test_build=command([common[0],'test',*common[1:],'--no-run','--message-format=json-render-diagnostics'],COPIED,env,'builder-test-compile',report['commands'],180)"
+    },
+    {
+      "at": 78930,
+      "before": "len(SYSTEMUI_PROJECTION_TESTS)==3 and len(TESTS)==len(set(TESTS))==21",
+      "after": "len(COMPOSER_ENTRY_TESTS)==5 and len(TESTS)==len(set(TESTS))==23"
+    },
+    {
+      "at": 79098,
+      "before": "PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS+SYSTEMUI_PROJECTION_TESTS",
+      "after": "PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS+COMPOSER_ENTRY_TESTS"
+    },
+    {
+      "at": 79192,
+      "before": "'original 26 registrations, nine provider controls or three SystemUI projection controls absent/duplicated'",
+      "after": "'original 26 registrations, nine provider controls or five Composer entry controls absent/duplicated'"
+    },
+    {
+      "at": 79406,
+      "before": "len(listed_names)==211",
+      "after": "len(listed_names)==213"
+    },
+    {
+      "at": 80524,
+      "before": "TESTS[:-len(SYSTEMUI_PROJECTION_TESTS)]",
+      "after": "TESTS[:-len(COMPOSER_ENTRY_TESTS)]"
+    },
+    {
+      "at": 80819,
+      "before": "enumerate(SYSTEMUI_PROJECTION_TESTS,start=200)",
+      "after": "enumerate(COMPOSER_ENTRY_TESTS,start=200)"
+    },
+    {
+      "at": 86291,
+      "before": "report['systemui_test_projection_tests_passed']=len(SYSTEMUI_PROJECTION_TESTS)",
+      "after": "report['composer_entry_tests_passed']=len(COMPOSER_ENTRY_TESTS)\n        report['Composer_Android_Binder_ABI_compiled']=False\n        report['Composer_service_or_AIDL_tests_executed']=False"
+    },
+    {
+      "at": 87058,
+      "before": "len(report['commands'])==68",
+      "after": "len(report['commands'])==71"
+    }
+  ],
+  "stage_edits": [
+    {
+      "at": 78,
+      "before": "/home/alex/work/pocket4-native-typed-ingress-builder471-systemui-test-projection-compile-01-20261106",
+      "after": "/home/alex/work/pocket4-native-builder472-composer-retirement-entry-compile-01-20261106"
+    },
+    {
+      "at": 168,
+      "before": "TRANSFERRED={\"compile_builder.py\":{\"bytes\":85579,\"sha256\":\"5b4e7d699b6ca82c9a60ff28cd49cf7d101fd6b92608fe70a92380182f3aac4f\"},\"expected-builder471-manifest.json\":{\"bytes\":99548,\"sha256\":\"c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0\"},\"systemui-test-projection-proof.json\":{\"bytes\":6531,\"sha256\":\"17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":301533,\"sha256\":\"7bbe16d118fe610ae42e9c1b906b65aee5ceeb0804cdbaee93ee61ab5b271629\"},\"delta/android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\":{\"bytes\":3392,\"sha256\":\"f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da\"}}",
+      "after": "TRANSFERRED={\"compile_builder.py\":{\"bytes\":90451,\"sha256\":\"a1e24b06b89c96c4d818d62b0394653c56e10fed6e3793c88ce11af19d6bd907\"},\"expected-builder472-manifest.json\":{\"bytes\":99523,\"sha256\":\"fcbf72b891d9a9bbbcd015777e50cc3ade436f25732a603b51de261eab9cb27a\"},\"composer-entry-proof.json\":{\"bytes\":11586,\"sha256\":\"3bc022c9924dc13f7e2ad8d6ed85a079af1dec61733433b88c2c76d0df0c60da\"},\"build-scope.json\":{\"bytes\":6535,\"sha256\":\"f43cd778b75e484d53899eab543680e6b32ae5e54d6eca373b34223dcfcc8af9\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":321919,\"sha256\":\"0be2c4d9607c719a8e2bec337d0f23caced603381b0823659559844f77eea996\"},\"delta/tools/droidloom-update/src/main.rs\":{\"bytes\":24381,\"sha256\":\"f6be56d7f64144c0be40b3c6c519a966b9d733ef3e5f857d8140bef1be3a8ace\"}}"
+    },
+    {
+      "at": 927,
+      "before": "REUSED_AUTHORITY={\"go-control-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/go-control-result.json\",\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\",\"mode\":256},\"image-tools-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/image-tools-result.json\",\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\",\"mode\":256},\"prior-compile01-failure.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/prior-compile01-failure.json\",\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\",\"mode\":256},\"registry-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/registry-result.json\",\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\",\"mode\":256},\"rust193-tools-recheck-read03-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/rust193-tools-recheck-read03-result.json\",\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\",\"mode\":256},\"selected-build.stdout\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selected-build.stdout\",\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\",\"mode\":256},\"selection-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selection-result.json\",\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\",\"mode\":256},\"typed-lock-derivation.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-lock-derivation.json\",\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\",\"mode\":256},\"typed-root-trees-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-root-trees-result.json\",\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\",\"mode\":256},\"compiled-parent470-manifest.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106/attempt01/copied-builder-source-manifest.json\",\"bytes\":99327,\"sha256\":\"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\",\"mode\":384},\"compiled-parent470-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106/attempt01/result.json\",\"bytes\":172040,\"sha256\":\"f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c\",\"mode\":384}}",
+      "after": "REUSED_AUTHORITY={\"go-control-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/go-control-result.json\",\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\",\"mode\":256},\"image-tools-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/image-tools-result.json\",\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\",\"mode\":256},\"prior-compile01-failure.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/prior-compile01-failure.json\",\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\",\"mode\":256},\"registry-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/registry-result.json\",\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\",\"mode\":256},\"rust193-tools-recheck-read03-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/rust193-tools-recheck-read03-result.json\",\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\",\"mode\":256},\"selected-build.stdout\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selected-build.stdout\",\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\",\"mode\":256},\"selection-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selection-result.json\",\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\",\"mode\":256},\"typed-lock-derivation.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-lock-derivation.json\",\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\",\"mode\":256},\"typed-root-trees-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-root-trees-result.json\",\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\",\"mode\":256},\"compiled-parent470-manifest.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106/attempt01/copied-builder-source-manifest.json\",\"bytes\":99327,\"sha256\":\"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\",\"mode\":384},\"compiled-parent470-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106/attempt01/result.json\",\"bytes\":172040,\"sha256\":\"f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c\",\"mode\":384},\"delta/graphics/droidloom-composer-service/src/main.rs\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/control-source/candidate-composer-main.rs\",\"bytes\":19202,\"sha256\":\"567c60fd293f35e2e0957db6f38bc967cc0c3fa90354b98491d461a7decdb4ce\",\"mode\":256},\"delta/graphics/droidloom-composer-service/src/control.rs\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/control-source/candidate-control.rs\",\"bytes\":42491,\"sha256\":\"d3d9f4b763a6e80b6549119e42b4d6c3c6ab7368359f3cc71d2e090f05a881ca\",\"mode\":256},\"delta/graphics/droidloom-composer/src/denial.rs\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/control-source/candidate-core-denial.rs\",\"bytes\":25541,\"sha256\":\"ed0080cd33a3a4fa67b3a0c2e95bc274ab38e992ec073ab01d87b910bf2db3c8\",\"mode\":256},\"delta/graphics/droidloom-denial-endpoint/src/lib.rs\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/control-source/candidate-endpoint.rs\",\"bytes\":63752,\"sha256\":\"062b65857160eb6e3aeba2a78c4ce3d8503c02572f24353f8c944d950e52308c\",\"mode\":256},\"delta/graphics/droidloom-wayland/src/retirement.rs\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/control-source/candidate-engine-retirement.rs\",\"bytes\":11118,\"sha256\":\"383f4c6f7490c8568f1853af6e9449fdb35bdb088348de4a9856d75f97306873\",\"mode\":256},\"delta/graphics/droidloom-denial-protocol/src/lib.rs\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/control-source/candidate-protocol.rs\",\"bytes\":105464,\"sha256\":\"6c7f8df133f2a9e55bd375da4b39dcba5b00d0c4c3ba6531a6b8be329ebce41c\",\"mode\":256},\"delta/graphics/droidloom-composer-aidl/src/denial.rs\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/control-source/candidate-provider.rs\",\"bytes\":50513,\"sha256\":\"d6f13720da4267ff46f369617faecbb8c6446eca2c624e381c1ff51ddaebbf09\",\"mode\":256},\"delta/graphics/droidloom-wayland/src/layers.rs\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/control-source/candidate-wayland-layers.rs\",\"bytes\":35990,\"sha256\":\"d0a81ce5339c5020496e9b73e007d52ee206449827269b272e4ef6ef43df5ecc\",\"mode\":256},\"delta/graphics/droidloom-wayland/src/main.rs\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/control-source/candidate-wayland-main.rs\",\"bytes\":110131,\"sha256\":\"0f56264e971db9f246d8db34d7fd5de157fd389a97bfb34492a6f53376d27459\",\"mode\":256},\"actual-wayland03-result.json\":{\"path\":\"/home/alex/work/p4-retirement-wayland-check03-20261106/attempt01/result.json\",\"bytes\":81805,\"sha256\":\"57546b6c6c2d4e05aea6099097944cdbe6746bbcc0124768a314414ec5663abd\",\"mode\":384}}"
+    },
+    {
+      "at": 6515,
+      "before": "EXPECTED={\"compile_builder.py\":{\"bytes\":85579,\"sha256\":\"5b4e7d699b6ca82c9a60ff28cd49cf7d101fd6b92608fe70a92380182f3aac4f\"},\"expected-builder471-manifest.json\":{\"bytes\":99548,\"sha256\":\"c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0\"},\"systemui-test-projection-proof.json\":{\"bytes\":6531,\"sha256\":\"17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":301533,\"sha256\":\"7bbe16d118fe610ae42e9c1b906b65aee5ceeb0804cdbaee93ee61ab5b271629\"},\"delta/android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\":{\"bytes\":3392,\"sha256\":\"f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da\"},\"go-control-result.json\":{\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\"},\"image-tools-result.json\":{\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\"},\"prior-compile01-failure.json\":{\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\"},\"registry-result.json\":{\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\"},\"rust193-tools-recheck-read03-result.json\":{\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\"},\"selected-build.stdout\":{\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\"},\"selection-result.json\":{\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\"},\"typed-lock-derivation.json\":{\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\"},\"typed-root-trees-result.json\":{\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\"},\"compiled-parent470-manifest.json\":{\"bytes\":99327,\"sha256\":\"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\"},\"compiled-parent470-result.json\":{\"bytes\":172040,\"sha256\":\"f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c\"}}",
+      "after": "EXPECTED={\"compile_builder.py\":{\"bytes\":90451,\"sha256\":\"a1e24b06b89c96c4d818d62b0394653c56e10fed6e3793c88ce11af19d6bd907\"},\"expected-builder472-manifest.json\":{\"bytes\":99523,\"sha256\":\"fcbf72b891d9a9bbbcd015777e50cc3ade436f25732a603b51de261eab9cb27a\"},\"composer-entry-proof.json\":{\"bytes\":11586,\"sha256\":\"3bc022c9924dc13f7e2ad8d6ed85a079af1dec61733433b88c2c76d0df0c60da\"},\"build-scope.json\":{\"bytes\":6535,\"sha256\":\"f43cd778b75e484d53899eab543680e6b32ae5e54d6eca373b34223dcfcc8af9\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":321919,\"sha256\":\"0be2c4d9607c719a8e2bec337d0f23caced603381b0823659559844f77eea996\"},\"delta/tools/droidloom-update/src/main.rs\":{\"bytes\":24381,\"sha256\":\"f6be56d7f64144c0be40b3c6c519a966b9d733ef3e5f857d8140bef1be3a8ace\"},\"go-control-result.json\":{\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\"},\"image-tools-result.json\":{\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\"},\"prior-compile01-failure.json\":{\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\"},\"registry-result.json\":{\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\"},\"rust193-tools-recheck-read03-result.json\":{\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\"},\"selected-build.stdout\":{\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\"},\"selection-result.json\":{\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\"},\"typed-lock-derivation.json\":{\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\"},\"typed-root-trees-result.json\":{\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\"},\"compiled-parent470-manifest.json\":{\"bytes\":99327,\"sha256\":\"d87ab919c015a8739011a83add768db28c7f7296a7be9683a0516b28808c1057\"},\"compiled-parent470-result.json\":{\"bytes\":172040,\"sha256\":\"f4e78f21dec485f59ff2149cb12298c070142dbad4e29b00a776729a376eea4c\"},\"delta/graphics/droidloom-composer-service/src/main.rs\":{\"bytes\":19202,\"sha256\":\"567c60fd293f35e2e0957db6f38bc967cc0c3fa90354b98491d461a7decdb4ce\"},\"delta/graphics/droidloom-composer-service/src/control.rs\":{\"bytes\":42491,\"sha256\":\"d3d9f4b763a6e80b6549119e42b4d6c3c6ab7368359f3cc71d2e090f05a881ca\"},\"delta/graphics/droidloom-composer/src/denial.rs\":{\"bytes\":25541,\"sha256\":\"ed0080cd33a3a4fa67b3a0c2e95bc274ab38e992ec073ab01d87b910bf2db3c8\"},\"delta/graphics/droidloom-denial-endpoint/src/lib.rs\":{\"bytes\":63752,\"sha256\":\"062b65857160eb6e3aeba2a78c4ce3d8503c02572f24353f8c944d950e52308c\"},\"delta/graphics/droidloom-wayland/src/retirement.rs\":{\"bytes\":11118,\"sha256\":\"383f4c6f7490c8568f1853af6e9449fdb35bdb088348de4a9856d75f97306873\"},\"delta/graphics/droidloom-denial-protocol/src/lib.rs\":{\"bytes\":105464,\"sha256\":\"6c7f8df133f2a9e55bd375da4b39dcba5b00d0c4c3ba6531a6b8be329ebce41c\"},\"delta/graphics/droidloom-composer-aidl/src/denial.rs\":{\"bytes\":50513,\"sha256\":\"d6f13720da4267ff46f369617faecbb8c6446eca2c624e381c1ff51ddaebbf09\"},\"delta/graphics/droidloom-wayland/src/layers.rs\":{\"bytes\":35990,\"sha256\":\"d0a81ce5339c5020496e9b73e007d52ee206449827269b272e4ef6ef43df5ecc\"},\"delta/graphics/droidloom-wayland/src/main.rs\":{\"bytes\":110131,\"sha256\":\"0f56264e971db9f246d8db34d7fd5de157fd389a97bfb34492a6f53376d27459\"},\"actual-wayland03-result.json\":{\"bytes\":81805,\"sha256\":\"57546b6c6c2d4e05aea6099097944cdbe6746bbcc0124768a314414ec5663abd\"}}"
+    },
+    {
+      "at": 11981,
+      "before": "len(TRANSFERRED)==5 and len(REUSED_AUTHORITY)==11 and len(EXPECTED)==16",
+      "after": "len(TRANSFERRED)==6 and len(REUSED_AUTHORITY)==21 and len(EXPECTED)==27"
+    },
+    {
+      "at": 12658,
+      "before": "# All eleven immutable actual inputs are re-read before creating ROOT.",
+      "after": "# All twenty-one fixed actual/source inputs are re-read before creating ROOT."
+    }
+  ],
+  "generator_edits": [
+    {
+      "at": 187,
+      "before": "const FILE_ORDER = [\"compile_builder.py\",\"expected-builder471-manifest.json\",\"systemui-test-projection-proof.json\",\"delta/tools/droidloom-update/src/android.rs\",\"delta/android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\"];",
+      "after": "const FILE_ORDER = [\"compile_builder.py\",\"expected-builder472-manifest.json\",\"composer-entry-proof.json\",\"build-scope.json\",\"delta/tools/droidloom-update/src/android.rs\",\"delta/tools/droidloom-update/src/main.rs\"];"
+    },
+    {
+      "at": 402,
+      "before": "const EXPECTED = {\"compile_builder.py\":{\"bytes\":85579,\"sha256\":\"5b4e7d699b6ca82c9a60ff28cd49cf7d101fd6b92608fe70a92380182f3aac4f\"},\"expected-builder471-manifest.json\":{\"bytes\":99548,\"sha256\":\"c29c7b05fcfdf3def918d2bc963c6fe0c25a0430c87249f3de781d5d8bf68ae0\"},\"systemui-test-projection-proof.json\":{\"bytes\":6531,\"sha256\":\"17fe54cebd452ef14258461f0817b9cbc753ccb0619f28e7274e61879a89d762\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":301533,\"sha256\":\"7bbe16d118fe610ae42e9c1b906b65aee5ceeb0804cdbaee93ee61ab5b271629\"},\"delta/android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp\":{\"bytes\":3392,\"sha256\":\"f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da\"}};",
+      "after": "const EXPECTED = {\"compile_builder.py\":{\"bytes\":90451,\"sha256\":\"a1e24b06b89c96c4d818d62b0394653c56e10fed6e3793c88ce11af19d6bd907\"},\"expected-builder472-manifest.json\":{\"bytes\":99523,\"sha256\":\"fcbf72b891d9a9bbbcd015777e50cc3ade436f25732a603b51de261eab9cb27a\"},\"composer-entry-proof.json\":{\"bytes\":11586,\"sha256\":\"3bc022c9924dc13f7e2ad8d6ed85a079af1dec61733433b88c2c76d0df0c60da\"},\"build-scope.json\":{\"bytes\":6535,\"sha256\":\"f43cd778b75e484d53899eab543680e6b32ae5e54d6eca373b34223dcfcc8af9\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":321919,\"sha256\":\"0be2c4d9607c719a8e2bec337d0f23caced603381b0823659559844f77eea996\"},\"delta/tools/droidloom-update/src/main.rs\":{\"bytes\":24381,\"sha256\":\"f6be56d7f64144c0be40b3c6c519a966b9d733ef3e5f857d8140bef1be3a8ace\"}};"
+    },
+    {
+      "at": 1167,
+      "before": "const STAGE = {\"bytes\":10719,\"sha256\":\"a3bc0bfb910c35c8adf1ab9f2661fd648ad71aea479dd8a8c0c474453e7c962a\"};",
+      "after": "const STAGE = {\"bytes\":14834,\"sha256\":\"51559fe3bc57d75e0668d9bdec451cf9bf551ccdb6ac9a4eef9839bd38033643\"};"
+    },
+    {
+      "at": 1274,
+      "before": "const WIRE = {\"bytes\":533704,\"sha256\":\"ba151e0e4ce8f0443d5a6fcb350d68f69235fa97e18227251eebbd4e528b051b\"};",
+      "after": "const WIRE = {\"bytes\":598552,\"sha256\":\"2ff3b81084eff5835d0948091c226f557fc01e0a77e6acd2137a866843dd894a\"};"
+    },
+    {
+      "at": 1381,
+      "before": "const REQUEST = {\"bytes\":576961,\"sha256\":\"82fad9cb3da572d593bfe49e67069bb6b7f28460c112d3ac2a5ff4398583e220\"};",
+      "after": "const REQUEST = {\"bytes\":646415,\"sha256\":\"ddb7f892a6c5b5278260d459989a10900d04fdea64a1d762e3333caac6244bf8\"};"
+    },
+    {
+      "at": 1491,
+      "before": "const BOUNDARY = \"import hashlib,json,sys\\nEXPECTED={\\\"bytes\\\":533704,\\\"sha256\\\":\\\"ba151e0e4ce8f0443d5a6fcb350d68f69235fa97e18227251eebbd4e528b051b\\\"}\\nSTAGE={\\\"bytes\\\":10719,\\\"sha256\\\":\\\"a3bc0bfb910c35c8adf1ab9f2661fd648ad71aea479dd8a8c0c474453e7c962a\\\"}\\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\\n    raise RuntimeError('fixed provider compiler transport length/hash mismatch')\\nvalue=json.loads(wire)\\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\\n    raise RuntimeError('fixed provider compiler envelope differs')\\nstage=value['stage'].encode('utf-8')\\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\\n    raise RuntimeError('fixed provider compiler stage pin differs')\\nscope={'__name__':'__stage__','__file__':'<fixed-provider-stage>'}\\nexec(compile(stage,'<fixed-provider-stage>','exec'),scope,scope)\\nscope['main'](value['packet'])\\n\";",
+      "after": "const BOUNDARY = \"import hashlib,json,sys\\nEXPECTED={\\\"bytes\\\":598552,\\\"sha256\\\":\\\"2ff3b81084eff5835d0948091c226f557fc01e0a77e6acd2137a866843dd894a\\\"}\\nSTAGE={\\\"bytes\\\":14834,\\\"sha256\\\":\\\"51559fe3bc57d75e0668d9bdec451cf9bf551ccdb6ac9a4eef9839bd38033643\\\"}\\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\\n    raise RuntimeError('fixed provider compiler transport length/hash mismatch')\\nvalue=json.loads(wire)\\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\\n    raise RuntimeError('fixed provider compiler envelope differs')\\nstage=value['stage'].encode('utf-8')\\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\\n    raise RuntimeError('fixed provider compiler stage pin differs')\\nscope={'__name__':'__stage__','__file__':'<fixed-provider-stage>'}\\nexec(compile(stage,'<fixed-provider-stage>','exec'),scope,scope)\\nscope['main'](value['packet'])\\n\";"
+    },
+    {
+      "at": 2552,
+      "before": "const BASE = {\"host\":\"pocket4\",\"executable\":\"/usr/bin/python3\",\"cwd\":\"/\",\"cpu_quota_percent\":100,\"memory_max_bytes\":1073741824,\"nice\":15,\"timeout_seconds\":600,\"idempotency_key\":\"pocket4-native-typed-ingress-builder471-systemui-test-projection-compile-01-20261106\"};",
+      "after": "const BASE = {\"host\":\"pocket4\",\"executable\":\"/usr/bin/python3\",\"cwd\":\"/\",\"cpu_quota_percent\":100,\"memory_max_bytes\":1073741824,\"nice\":15,\"timeout_seconds\":600,\"idempotency_key\":\"pocket4-native-builder472-composer-retirement-entry-compile-01-20261106\"};"
+    }
+  ],
+  "operation": "Reverse sequential exact-offset edits in reverse order; reject any after text mismatch."
+}

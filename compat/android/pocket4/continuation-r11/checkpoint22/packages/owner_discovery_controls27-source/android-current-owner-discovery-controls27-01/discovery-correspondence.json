@@ -1,0 +1,69 @@
+[
+  {
+    "from": "def discover():\n",
+    "to": "def discover_current(app, baseline, epoch, guard):\n    require(callable(guard), 'CURRENT_DISCOVERY_GUARD_REQUIRED')\n    expected_owner_chain(baseline)\n    guard()\n"
+  },
+  {
+    "from": "    expected='/usr/bin/unshare --mount --pid --mount-proc --ipc --uts --fork --kill-child=TERM --propagation=private /usr/bin/droidloom-supervisor development-enter --spec /etc/droidloom/cell.json'\n",
+    "to": "    # This exact observed intermediary is qualified by baseline02; its argv is\n    # private identity data, not a new command or executable authority.\n    current_owner=verify_current_owner(app,baseline,epoch,status,init)\n    expected=' '.join(current_owner['cmdline'])\n"
+  },
+  {
+    "from": "    return init,env,status\n",
+    "to": "    verify_current_owner(app,baseline,epoch,status,init)\n    guard()\n    return init,env,status\n"
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "subprocess",
+    "count": 3
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "CTL",
+    "count": 1
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "HOST_ENV",
+    "count": 1
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "require_root_process",
+    "count": 4
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "glob",
+    "count": 1
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "proc_cmd",
+    "count": 4
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "cell_ancestors",
+    "count": 1
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "ppid",
+    "count": 2
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "os",
+    "count": 5
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "re",
+    "count": 1
+  },
+  {
+    "kind": "qualified-original-global",
+    "name": "ENV_KEYS",
+    "count": 1
+  }
+]

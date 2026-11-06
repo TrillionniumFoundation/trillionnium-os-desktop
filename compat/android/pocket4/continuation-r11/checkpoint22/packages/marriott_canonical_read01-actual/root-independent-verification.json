@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "kind": "marriott-canonical-read01-independent-verification",
+  "stdout": {
+    "bytes": 8037,
+    "sha256": "be381038a62eeb2995aac02d48ad473f37b9f92a6d2aa34ffd9ae6c7b7d2402b",
+    "git_blob_sha1": "6b84d9e33ac3de1a3316295e6473bd9f880597c7"
+  },
+  "terminal": {
+    "bytes": 731,
+    "sha256": "d32f00e5bcdd778660389da31f5c53f255dc5ce36c65e2efc57f9051db043841",
+    "git_blob_sha1": "1a10077fc2e58efb59350fc1e8a167953aaa9c05"
+  },
+  "verified": {
+    "complete_terminal": true,
+    "exact_dependency_file_rechecked": true,
+    "tracked_FDs_closed": 12,
+    "named_dependency_count": 793,
+    "first_canonical_rejection_index": 4,
+    "first_rejection": {
+      "allowed_by_original_textual_roots": false,
+      "index": 4,
+      "named": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/include/c++/v1/__config_site",
+      "named_metadata": {
+        "bytes": 51,
+        "ctime_ns": {
+          "exact_number": "1793531512825749634"
+        },
+        "device": 66306,
+        "gid": 1000,
+        "inode": 40777481,
+        "mode": 41471,
+        "mtime_ns": {
+          "exact_number": "1793531512825749634"
+        },
+        "nlink": 1,
+        "uid": 1000
+      },
+      "named_type": "symlink",
+      "reason": "fixed source/dependency root escaped",
+      "resolved": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/include/x86_64-unknown-linux-gnu/c++/v1/__config_site",
+      "resolved_metadata": {
+        "bytes": 1802,
+        "ctime_ns": {
+          "exact_number": "1793531513126912569"
+        },
+        "device": 66306,
+        "gid": 1000,
+        "inode": 43029894,
+        "mode": 33204,
+        "mtime_ns": {
+          "exact_number": "1793531513126912569"
+        },
+        "nlink": 1,
+        "uid": 1000
+      },
+      "resolved_type": "regular",
+      "within_canonical_roots_diagnostic_only": false
+    },
+    "metadata_rechecked": true,
+    "errors": [],
+    "child_processes": 0,
+    "Android_actions": 0,
+    "files_written": 0,
+    "leaf_body_reads": 0,
+    "Main_access": false
+  },
+  "scope": "Actual metadata resolves the generic libc++ __config_site symlink into the host x86_64 triplet. This does not authorize another include root or establish Android C++ ABI qualification."
+}

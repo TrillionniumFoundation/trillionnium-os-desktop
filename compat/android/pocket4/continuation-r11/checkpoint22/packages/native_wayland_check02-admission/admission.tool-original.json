@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nEXPECTED={\"bytes\":704577,\"sha256\":\"f9455c98f7a93ecb32e8b661f0c8685415d8369e86fce4f3a6bd97c583832035\"}\nSTAGE={\"bytes\":10737,\"sha256\":\"a55197df7401d0622593880e76e55e11cd45a4ed4ea3a3543ee0ae3b2b764d1d\"}\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\n    raise RuntimeError('fixed complete Wayland checker transport length/hash mismatch')\nvalue=json.loads(wire)\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\n    raise RuntimeError('fixed complete Wayland checker envelope differs')\nstage=value['stage'].encode('utf-8')\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\n    raise RuntimeError('fixed complete Wayland checker stage pin differs')\nscope={'__name__':'__stage__','__file__':'<fixed-wayland-check-stage>'}\nexec(compile(stage,'<fixed-wayland-check-stage>','exec'),scope,scope)\nscope['main'](value['packet'])\n"
+    ],
+    "created_unix_ms": 1793985319427,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b1db9203-fc05-7b29",
+    "idempotency_key": "pocket4-denial-retirement-wayland-check-02-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b1db9203-fc05-7b29",
+    "request_digest": "ae5dd83cb47621ed79c7ad1f8cbb855b8e21c9e80c93328e0b6ac1b8b742ea23",
+    "request_fingerprint": 12564436290670830061,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b1db9203-fc05-7b29"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b1db9203-fc05-7b29"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

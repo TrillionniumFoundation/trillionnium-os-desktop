@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nEXPECTED={\"bytes\":481879,\"sha256\":\"b6856cb45e7738441b6d83ab80496b18de7f3b36074857da0e2242296e0606e7\"}\nSTAGE={\"bytes\":10959,\"sha256\":\"8510804bba86aa6b6b4730ef2fedb2037af6ab596fa5e0e3f6e9303e1299a522\"}\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\n    raise RuntimeError('fixed provider compiler transport length/hash mismatch')\nvalue=json.loads(wire)\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\n    raise RuntimeError('fixed provider compiler envelope differs')\nstage=value['stage'].encode('utf-8')\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\n    raise RuntimeError('fixed provider compiler stage pin differs')\nscope={'__name__':'__stage__','__file__':'<fixed-provider-stage>'}\nexec(compile(stage,'<fixed-provider-stage>','exec'),scope,scope)\nscope['main'](value['packet'])\n"
+    ],
+    "created_unix_ms": 1793980926543,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b1988a4f-fc05-79c3",
+    "idempotency_key": "pocket4-native-typed-ingress-builder470-published-lock-alignment-compile-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b1988a4f-fc05-79c3",
+    "request_digest": "f11a1221fecad7bc3b09c7efc1f7c0f2f1d5a98ac5f3258882834ac626b056ac",
+    "request_fingerprint": 17373218449753036732,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b1988a4f-fc05-79c3"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b1988a4f-fc05-79c3"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

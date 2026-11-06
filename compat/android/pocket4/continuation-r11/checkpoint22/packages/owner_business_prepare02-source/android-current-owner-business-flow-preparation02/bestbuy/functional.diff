@@ -1,0 +1,57 @@
+--- previous/owned_inspect.py
++++ owner02/owned_inspect.py
+@@ -31,14 +31,14 @@
+ CURRENT_QUALIFICATION_SHA="ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+ COMPONENT=PACKAGE+'/.activity.SplashActivity'
+ PLANS=[{'schema': 1, 'operation': 'inspect', 'nonces': {'before': '__FRESH_ROUND_1_BEFORE__', 'inspect': '__FRESH_ROUND_1_INSPECT__', 'after': '__FRESH_ROUND_1_AFTER__'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '__FRESH_ROUND_2_BEFORE__', 'inspect': '__FRESH_ROUND_2_INSPECT__', 'after': '__FRESH_ROUND_2_AFTER__'}}, {'schema': 1, 'operation': 'inspect', 'nonces': {'before': '__FRESH_ROUND_3_BEFORE__', 'inspect': '__FRESH_ROUND_3_INSPECT__', 'after': '__FRESH_ROUND_3_AFTER__'}}]
+-INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-01")
++INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-bestbuy-qa-r4-install-state-02")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+-INSTALL_SOURCE_SHA=None  # Actual R4 installation closure required.
+-UTIL_SHA=None  # Actual R4 installation closure required.
+-UTIL_BYTES=None  # Actual R4 installation closure required.
+-CONTEXT_SHA=None  # Actual R4 installation closure required.
+-TRANSPORT_SHA=None  # Actual R4 installation closure required.
+-STATE_NONCE=None  # Actual R4 installation closure required.
++INSTALL_SOURCE_SHA="330c599ce962f5d86a8ef10e7a4daf8c6d9b41c89b2d242d3c3ee67f57cdb1b6"
++UTIL_SHA="fb8ebc169dcc8b8e65893028c57dcdbd750d2f5d6253368eae1b6f6e3918fc3c"
++UTIL_BYTES=40187
++CONTEXT_SHA="fed91b109d375984eac188546759b6fe203ea2321e45c43e2989dacd929b2343"
++TRANSPORT_SHA="5666d94ba5d9c90a8ea8edd7b063ff4764b83b1bfafe4dd238018d720ab7d4a9"
++STATE_NONCE="a499f5a6a566ed0cebed5c98e234eede"
+ STATE_WIRE=None  # Actual R4 installation closure required.
+ INSTALLED=None  # Actual R4 installation closure required.
+ PRIOR=None  # Actual R4 installation closure required.
+@@ -315,7 +315,8 @@
+             verify_source(value);u.verify_source(q.resolver.INSTALL_SOURCE_SHA)
+             read(RESOLVER_SOURCE,32768,RESOLVER_SHA,RESOLVER_BYTES)
+         flow,recorder,guard=task_module.open_task_context(ref,u,context,expected,verify_runtime,FLOW,step,
+-            transport,result,began+PHASE_SECONDS[phase],phase,q.qa,PLANS,q.resolver.RESOLVE,scope_record(q,expected))
++            transport,result,began+PHASE_SECONDS[phase],phase,q.qa,PLANS,q.resolver.RESOLVE,scope_record(q,expected),
++            install_source_manifest=q.resolver.INSTALL_SOURCE_SHA)
+         reference=json.loads(u.read(q.resolver.INSTALL_SOURCE/'target-artifact-reference.json',expected=
+             q.install_manifest['files']['target-artifact-reference.json']['sha256']))
+         reader=u.module(q.resolver.INSTALL_SOURCE/'references/read_bestbuy.py',u.READER_SHA,'bestbuy_artifact_parser')
+--- previous/bestbuy_task_context.py
++++ owner02/bestbuy_task_context.py
+@@ -248,7 +248,8 @@
+ 
+ 
+ def open_task_context(ref,util,context,source_manifest,source_verify,flow_root,step,
+-                      transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope):
++                      transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope, *,
++                      install_source_manifest):
+     """Same held Main/classpath primitives as the qualified BestBuy install.
+ 
+     The only newly constructed object is the phase-restricted task Flow above.
+@@ -294,7 +295,9 @@
+     try:
+         target=held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA);guard()
+         app=util.module(Path(recorder.APP),recorder.APP_SHA,'bestbuy_task_discovery_only')
+-        init,discovered,status=app.discover()
++        init,discovered,status=context.current_discovery(
++            util,install_source_manifest,util.verify_source,util.HERE,
++            app,activation,epoch,guard)
+         need(init==expected['host_pid'] and status['host_pid']==activation['status']['host_pid'],
+              'FIXED_MAIN_DISCOVERY_CHANGED')
+         values,classpath=binding.main_classpaths(held,target,activation['framework_epoch'],epoch,guard)

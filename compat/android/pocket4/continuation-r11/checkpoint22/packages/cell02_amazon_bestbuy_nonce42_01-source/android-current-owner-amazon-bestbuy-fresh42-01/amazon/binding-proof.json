@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "complete_inverse_exact": true,
+  "actual_install": {
+    "coordinator": {
+      "bytes": 4477,
+      "sha256": "2847a9bbe0ba6ff88a1c447e07289594ab109b0acb9e21eb16526f15578dbe7e",
+      "git_blob": "1f1009f5f17d8911e4f19c2f1e7f8ea25bdff0e7"
+    },
+    "stage": {
+      "bytes": 10458,
+      "sha256": "bf272bce96a63693a10d598e6d88dfd743b62633cddcf61a376471476a7b52ed",
+      "git_blob": "179f055f4b3bed72c68ce96fdd7c605760f99f39"
+    },
+    "worker": {
+      "bytes": 15579,
+      "sha256": "d4d421e64403afcbcd7208d5d51768e8c7a87da978696291e0c7619a9f464567",
+      "git_blob": "3372bd77618413e823438a64c5674a5b4bc1dc2d"
+    },
+    "state_command": {
+      "bytes": 443,
+      "sha256": "6ce5ce647f444dd8fcffc29d7d895b7f9da7baf33762d52c060223fda024c8cf",
+      "git_blob": "99a8a9adb853101c83d3def61603079539875b52"
+    },
+    "worker_command": {
+      "bytes": 1857,
+      "sha256": "77cde37b81d06702c01609a8084a262f4cef9bd9e8c34835d734678cf51f592e",
+      "git_blob": "4ea33e3bc80171ba9caa4274ea0d12f3a6f3c670"
+    },
+    "worker_stdout": {
+      "bytes": 13449,
+      "sha256": "a0b63dc180d760aa71b8e1fa656c337fb803def80327951d965329011b9b90db",
+      "git_blob": "9e5afaa2f4cdf361dae68f2cc33a18afbbadcefa"
+    }
+  },
+  "source_pins": {
+    "coordinator": {
+      "bytes": 41015,
+      "sha256": "269ec9d649c403d16515e852d13e244b1d122a54f899d03fc1be721810ae535d"
+    },
+    "context": {
+      "bytes": 19478,
+      "sha256": "ac5e24e0ad38b59eb9288d42acac5e7175ff23242d103188a6c9d35d31e8dc91"
+    },
+    "business": {
+      "bytes": 8699,
+      "sha256": "b6b6f64e62e1c1107839fbb01609d486ea2200d028b54bb610bd817bbbbf44dc"
+    },
+    "stage": {
+      "bytes": 4967,
+      "sha256": "b1b262a212bd2b4c33648b3573d4cd5ca84facb4d8827dbdcb467105b5263ed2"
+    },
+    "contract": {
+      "bytes": 33461,
+      "sha256": "fdac6b691424459a4d4ce9cc3905016a45c5c2971d86d0b79d285e55a24465a6"
+    },
+    "adapter": {
+      "bytes": 23246,
+      "sha256": "49e0f313a74c2478ce60b794597020000181a306a2b78d2dbb5d2b1b489dde16"
+    }
+  },
+  "edits": [
+    {
+      "file": "coordinator",
+      "from": "HELPER_UID=None  # Actual R4 installation required.",
+      "to": "HELPER_UID=10159",
+      "why": "actual-helper-UID",
+      "count": 1
+    },
+    {
+      "file": "context",
+      "from": "HELPER_UID=None  # Actual R4 installation required.",
+      "to": "HELPER_UID=10159",
+      "why": "actual-helper-UID",
+      "count": 1
+    },
+    {
+      "file": "coordinator",
+      "from": "STATE_WIRE=None  # Actual R4 installation closure required.",
+      "to": "STATE_WIRE=\"127c3094679c80a4eb1b13a5023c0959c47776fc56ef39dd9d14fff88f57c9ac\"",
+      "why": "actual-state-wire",
+      "count": 1
+    },
+    {
+      "file": "coordinator",
+      "from": "INSTALLED=None  # Actual R4 installation closure required.",
+      "to": "INSTALLED={\"apk_sha256\":\"0fcd5b21fb1dfeabd5fa5dede9805217a6f915a75f52cdb1b74216dbaa66a71d\",\"base_apk\":\"/data/app/~~ltijd-ew7pYbq3vrboU8EQ==/org.droidloom.qa.amazon.r4-f4ISashDuJbVeEczF4BF6Q==/base.apk\",\"bytes\":24720,\"held_file\":{\"bytes\":24720,\"device\":1811,\"gid\":1000,\"inode\":656335,\"mode\":33188,\"mtime_ns\":1793982243720689487,\"nlink\":1,\"uid\":1000},\"package\":\"org.droidloom.qa.amazon.r4\",\"signer_bound_by_exact_signed_apk_bytes\":\"40022ce8b76fe6262a1d3248172351c4222f68cdfa8a30eb71236ab3db2811d5\",\"uid\":10159}",
+      "why": "lossless-installed-identity",
+      "count": 1
+    },
+    {
+      "file": "coordinator",
+      "from": "PRIOR=None  # Actual R4 installation closure required.",
+      "to": "PRIOR={\"coordinator\":(\"result.json\",4477,\"2847a9bbe0ba6ff88a1c447e07289594ab109b0acb9e21eb16526f15578dbe7e\"),\"stage\":(\"stage-result.json\",10458,\"bf272bce96a63693a10d598e6d88dfd743b62633cddcf61a376471476a7b52ed\"),\"worker\":(\"worker/result.json\",15579,\"d4d421e64403afcbcd7208d5d51768e8c7a87da978696291e0c7619a9f464567\")}",
+      "why": "exact-parent-Python-tuples",
+      "count": 1
+    }
+  ]
+}

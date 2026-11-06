@@ -1,0 +1,124 @@
+{
+  "schema": "pocket4-new-cell-helper-review-v1",
+  "state": "SOURCE_FROZEN_BUILD_REQUEST_UNSUBMITTED",
+  "app": "amazon",
+  "revision": 4,
+  "source_root": "/home/alex/work/pocket4-owned-amazon-qa-r4-source-01",
+  "output_root": "/home/alex/work/pocket4-owned-amazon-qa-r4-build-01",
+  "binding": {
+    "schema": "pocket4-current-baseline-helper-source-binding-v2",
+    "state": "STATIC_SOURCE_ONLY_ANDROID_UNRUN",
+    "app": "amazon",
+    "target_package": "com.amazon.mShop.android.shopping",
+    "target_uid": 10129,
+    "helper_package": "org.droidloom.qa.amazon.r4",
+    "protocol": "pocket4-owned-amazon-qa-v4",
+    "current_baseline_schema": "pocket4-main-current-baseline-v2",
+    "current_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "current_baseline": {
+      "bytes": 44959,
+      "path": "/home/alex/work/pocket4-main-current-baseline-02/baseline.private.json",
+      "sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364"
+    },
+    "current_qualification": {
+      "bytes": 5565,
+      "path": "/home/alex/work/pocket4-main-current-baseline-02/qualification.json",
+      "sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e"
+    },
+    "actual_baseline_result": {
+      "job_id": "1a1b1378566-fc05-76f7",
+      "git_tree": "df158984ab6f8565c64db454acc7b9872f56a8a2",
+      "git_blob": "3cb41fac4621cf346d94be170f187251785c38ff",
+      "bytes": 13221,
+      "sha256": "107bf1487ace30a38c113057812a0a18415e3430640f11db0b5131e462d05269"
+    },
+    "host_recorder_source_manifest": {
+      "path": "/home/alex/work/pocket4-current-host-r6-source-01/source-manifest.json",
+      "bytes": 3757,
+      "sha256": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff"
+    },
+    "parent_source_manifest_sha256": "b6827ffda85db49b90492455bc7bea24105b6490268475521ffa01a44224fe15",
+    "previous_helper_uid_exclusion": {
+      "uid": 10154,
+      "actual_worker_result": {
+        "bytes": 14840,
+        "sha256": "ee4b59514a2c0a94fb2d8bb1b8eadddf4da6bb58a25c775ee1fb640dbf35eced",
+        "git_blob": "0562625f61c6776a55299488838ee56cb1329c3f"
+      },
+      "source": "exact historical installed helper receipt; exclusion only, no new cell authority"
+    },
+    "owned_helper_uid": null,
+    "APK_sha256": null,
+    "signer_sha256": null,
+    "helper_built": false,
+    "helper_installed": false,
+    "UI_actions": 0,
+    "old_helpers_and_tasks_reauthorized": false,
+    "unresolved_framework_exit_cause": true,
+    "whole_app_production_ready": false
+  },
+  "parent_source_manifest": {
+    "bytes": 3905,
+    "sha256": "b6827ffda85db49b90492455bc7bea24105b6490268475521ffa01a44224fe15",
+    "git_blob": "4045868797dd262e18d537998a5f12061fed5746"
+  },
+  "new_source_manifest": {
+    "bytes": 4588,
+    "sha256": "089eb219f9ecf3ca25333828027e804442fb9d3d6b158f1eb55fc03a122fe03b"
+  },
+  "unchanged_references": [
+    {
+      "name": "build-input-reference.json",
+      "bytes": 2652,
+      "sha256": "dff9e8b30ec72928f0f0bba8207c1dbb7d23c487e2d0294f7f32a5dbcd8798c7"
+    },
+    {
+      "name": "target-artifact-reference.json",
+      "bytes": 3086,
+      "sha256": "f29fdd340a095b4686b27b5424b7651b0eb5a237b9fb123adb8b9f0d8ad46e35"
+    }
+  ],
+  "changes": [
+    "New helper package/protocol revision and create-only source/build roots/key.",
+    "Java + production Python scope bind actual baseline02/v2, exact R6 host manifest, and new recorder scope-v2.",
+    "Prior actual helper UID is excluded in both Session and parse_completed production predicates; the negative wire fixture uses matching old self_uid/helper_uid.",
+    "Original App-specific input, complete-tree/window/refresh, restoration, unknown-result, time and resource predicates are retained.",
+    "Original 21 scope cases retained plus eleven direct parser/Session/protocol/previous-generation cases; both count and case-array builder gates require32.",
+    "Build request adds explicit -B beside -I; original pinned tools/build commands and owned-unit limits stay unchanged."
+  ],
+  "controls": {
+    "current_scope_expected": 32,
+    "current_scope_source": {
+      "bytes": 8976,
+      "sha256": "10f28b3279aac73b26f489d92eac40d21c5f4e5602094c70ace3efc220a2ba51"
+    },
+    "app_specific": {
+      "Java_idle": 22,
+      "Python_idle": 32
+    },
+    "Python_executed": false,
+    "Java_executed": false
+  },
+  "request": {
+    "bytes": 211148,
+    "sha256": "0571a58c25c6a466e50aaca1619608b021e7eb45ae1925f84f8a84d31531f280",
+    "stdin_bytes": 202666,
+    "stdin_sha256": "708d28fc14efa166e0746ecb77980075b1c9c3547f6300aab034b268053de73d",
+    "key": "pocket4-owned-amazon-qa-r4-cell02-633912ff4595ce89-host-002ee581a4bb-build01",
+    "timeout_seconds": 300,
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912
+  },
+  "production_diff": {
+    "bytes": 35349,
+    "sha256": "10f2dfc745415dc7e3530a120f3ff445b1f6fb15707dbbee64d43f9bcd99d181"
+  },
+  "actual_APK": null,
+  "actual_signer": null,
+  "new_helper_UID": null,
+  "old_helpers_and_tasks_reauthorized": false,
+  "UI_actions": 0,
+  "install_actions": 0,
+  "framework_exit_cause_resolved": false,
+  "whole_app_production_ready": false
+}

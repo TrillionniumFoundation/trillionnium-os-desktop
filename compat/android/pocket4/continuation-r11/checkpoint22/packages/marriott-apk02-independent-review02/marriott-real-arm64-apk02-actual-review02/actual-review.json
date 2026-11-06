@@ -1,0 +1,223 @@
+{
+  "apk13": {
+    "actual02_InstrumentationTestCase_in_base_jar": {
+      "bytes": 2643,
+      "sha256": "15ff522625bbca59a35cf2c5e08f25a8ce1c55a1dcdc19b9957f3703785ad8b7"
+    },
+    "all_before_named_before_held_after_named_after_equal": true,
+    "all_observer_FDs_closed": true,
+    "all_whole_hashes_match_frozen_inputs": true,
+    "audit_correction": "An initial reviewer assertion incorrectly expected that metadata to be true for all thirteen rows. It was corrected against the exact original source; no production predicate or original result was changed.",
+    "children_started": 0,
+    "complete_double_read_bytes": 104555928,
+    "complete_rows": 13,
+    "global_ambient_FD_equality_asserted": false,
+    "mandatory_class_count": 7,
+    "metadata_limit": "expected_is_prior_actual is exactly the existing role.endswith('_anchor') expression: true for only three anchors, false for all ten other rows. This old metadata does not describe the seven newly bound actual01 whole-input pins. Original values are retained; their provenance is independently established from the complete actual01 report and frozen configuration.",
+    "observer_FD_events": 428,
+    "original01_runner_class_format_failure_retained": true,
+    "prior_reader02_admission_borrowed": false,
+    "regular_archive_AArch64_REL_counts": {
+      "builtins": 288,
+      "libcxx": 54,
+      "libcxxabi": 18,
+      "unwind": 9
+    },
+    "seven_whole_input_pins_independently_match_actual01": true
+  },
+  "artifacts": {
+    "GTest_and_cpufeatures_target": 21,
+    "all_ELF_machine": 183,
+    "all_SDK_interface_needed_arrays_empty": true,
+    "all_SDK_interfaces_link_only_not_packaged_or_executed": true,
+    "all_object_type": "REL",
+    "combined_CRT_real_brand_sdk": 37,
+    "generated_SDK_source_map_symbol_files": 15,
+    "linked_SDK_interface_libraries": 5,
+    "manifest_min_sdk": 14,
+    "manifest_target_sdk": 23,
+    "no_APK_or_actual_JNI_DSO_produced": true,
+    "object_names": [
+      "crtbegin-so",
+      "crtbrand",
+      "crtend-so",
+      "sdk-libc",
+      "sdk-libdl",
+      "sdk-libm",
+      "sdk-liblog",
+      "sdk-libz",
+      "gtest-all",
+      "cpu-features"
+    ],
+    "objects": 10,
+    "original_APK_library_target": 10000,
+    "original_generator_and_parser_hashes_bound": true
+  },
+  "candidate03": {
+    "bound_tree": "1745c208b5a3c0e56b22e90bbd69f9dd09048acc",
+    "change": "Fresh root/kind/key and fixed header-free shared_lib.cc invocation cpp=True to cpp=False. The flag selects only the dependency __config_site expectation; it does not select the compiler language.",
+    "compiler_CXX_flags_unchanged": true,
+    "controller_diff": {
+      "bytes": 1781,
+      "git_blob_sha": "227ece253dba3f7e5fb773897e93f460ac3e5786",
+      "sha256": "d92c62044da13aa889de6b8ee3482e906981d916135cae88ed1c6d04eed60d23"
+    },
+    "dependency_rows_function_byte_identical": true,
+    "dispatched_by_reviewer": false,
+    "eligible_for_root_reviewed_static_dispatch": true,
+    "full_eight_actual_source_inputs_and_three_deterministic_outputs_replayed_equal": true,
+    "full_four_diff_replay_equal": true,
+    "other_header_using_CXX_TU_config_gate_unchanged": true,
+    "previous_frozen_reviews_marked_actual02_review_pending_remain_unchanged": true,
+    "request": {
+      "bytes": 470162,
+      "git_blob_sha": "6aa0018407844ea93200cd470607f983074d6067",
+      "sha256": "84bbf18c42cf89f87c308a8bfd4eae47a2091093e84426c3061e124432fb10ff"
+    },
+    "request_envelope_unchanged_except_stdin_and_fresh_key": true,
+    "source_tree": "6dd5810fab0c76876641e4927778614d1d0a29b7"
+  },
+  "commands": {
+    "all_children_started_and_reaped": true,
+    "all_descendant_arrays_empty": true,
+    "all_first_error_null": true,
+    "all_output_pipes_and_pidfds_closed": true,
+    "all_output_streams_complete_and_fullhash_matched": true,
+    "all_return_codes": 0,
+    "all_secondary_errors_empty": true,
+    "all_stdout_and_stderr_bytes": 0,
+    "all_timeout_false": true,
+    "count": 27,
+    "final_children_empty": true,
+    "owned_group_cleanup": {
+      "all_leaders_observed_exited_before_group_signal": true,
+      "all_leaders_unreaped_before_group_signal": true,
+      "all_owned_group_cleanup_complete": true,
+      "kill_attempted": true,
+      "leader_exit_status": 0,
+      "leader_wait_code": 1
+    },
+    "subreaper_original": 0,
+    "subreaper_restored": true
+  },
+  "failure": {
+    "after_command_index": 26,
+    "cause_proven": "The pinned original shared_lib.cc has no headers. compile_object passed cpp=True only to dependency_rows, which required a __config_site include despite the complete preflight dependency set containing none. The compiler itself succeeded.",
+    "command_exit_code": 0,
+    "command_name": "shared-lib.preflight",
+    "message": "RuntimeError('wrong target C++ configuration in dependency set: []')",
+    "only_error": true,
+    "producer_or_runtime_cause_inferred": false,
+    "shared_translation_unit": {
+      "bytes": 696,
+      "include_directives": 0,
+      "sha256": "b050ca1d07c8df5d33af6a41c31cdf9710b04246fba3ed93224fc157d08ae47b"
+    },
+    "stage": "build"
+  },
+  "inputs": {
+    "Java_tool_rows": 7,
+    "all_dependency_before_after_equal": true,
+    "all_inputs_unchanged": true,
+    "all_observed_input_and_artifact_before_after_rows_equal": true,
+    "all_represented_by_original_observed_rows": true,
+    "all_tracked_input_FDs_closed": true,
+    "bound_inputs": 40,
+    "compiler_full_actual_C20_tuple_plus_nlink1_equal": true,
+    "conflicting_repeated_rows": 0,
+    "dependency_rows": 1000,
+    "dependency_sets": 10,
+    "inline_sources": 16,
+    "input_close_errors": 0,
+    "linker_full_frozen_tuple_plus_nlink1_equal": true,
+    "post_input_errors": 0,
+    "tracked_input_FD_events": 3090,
+    "watched_final_rows": 953
+  },
+  "kind": "marriott_real_arm64_apk02_complete_actual_independent_review",
+  "limitations": {
+    "APK_ready": false,
+    "ARM64_objects_executed": false,
+    "ART_runtime_qualified": false,
+    "Main_changes": false,
+    "actual_build02_success": false,
+    "commercial_App_reproduction_asserted": false,
+    "feature_default_enabled": false,
+    "installed": false,
+    "original_default_zero_retained": true
+  },
+  "metadata_correction": {
+    "actual_tree_verified": "result.original.json",
+    "field": "originals.report.path",
+    "old": "build-result.original.json",
+    "previous_review_blob": "954967f2bc4741695347decfef78b7d9a1a443d5",
+    "report_bytes_SHA256_and_all_audit_results_unchanged": true
+  },
+  "method": {
+    "Hepta_called_by_reviewer": false,
+    "Main_or_Android_actions": 0,
+    "Python_executed_by_reviewer": false,
+    "all_remaining_checks_passed": true,
+    "all_unsafe_JSON_integer_tokens_preserved": true,
+    "full_original_bytes_SHA256_and_Git_blob_verified": true,
+    "raw_text_reparsed_in_each_audit_call": true,
+    "source_level_and_V8_checks": 1399,
+    "unsafe_integer_objects_not_reused_after_store_roundtrip": true
+  },
+  "originals": {
+    "actual02_source_request": {
+      "bytes": 469833,
+      "git_blob_sha": "c46236db9f0e3bf3507b607bd951270d467e3f6c",
+      "sha256": "49cb16c12810edb76da3e9e5636056d061924198cbc4564cb503a9a7039b14e9"
+    },
+    "report": {
+      "bytes": 2778880,
+      "git_blob_sha": "98bcbadd0b64c3f11226ea686354d28586f58fb3",
+      "path": "result.original.json",
+      "sha256": "4ac6808bb258b7595f1eafa1e1f76716288d47e7c0796d60d4ec748bc2f16cae",
+      "tree": "5df87e90c302c2815e968a39abea4616965c90c6"
+    },
+    "stdout": {
+      "bytes": 629,
+      "git_blob_sha": "9e9869b445071250b2b5d28a040dffffdffd9771",
+      "sha256": "3fe30096c87316a02c27492baa493b469fb6936312d3b058c03d19349ee98a36"
+    },
+    "terminal": {
+      "bytes": 726,
+      "git_blob_sha": "a303136c36d3034e3ca88c48288b4f4bac886773",
+      "sha256": "707289139553dae23a009a7df9105d9aa9ffd6f53763265958e2ebe1bd792649"
+    }
+  },
+  "resources": {
+    "cgroup_files_written": false,
+    "cpu_max": [
+      100000,
+      100000
+    ],
+    "held_own_cgroup_gate_passed": true,
+    "identity_namespaces_and_limits_before_after_equal": true,
+    "memory_event_deltas_all_zero": true,
+    "memory_high": "max",
+    "memory_max": 1073741824,
+    "memory_peak": 400666624,
+    "memory_swap_max": "max",
+    "observed_swap_current": 0,
+    "observed_swap_peak": 0,
+    "pids_max": 30053,
+    "scope": "Held own cgroup through final pre-receipt sample; independent terminal closes the process lifetime. Original resource claim limits retained.",
+    "swap_zero_claimed": false,
+    "whole_invocation_resource_qualified": false
+  },
+  "schema": 1,
+  "terminal": {
+    "exit_code": 1,
+    "job_id": "1a1b1f0f831-fc05-7b9b",
+    "output_complete": true,
+    "output_durable": true,
+    "state": "failed",
+    "stderr_bytes": 0,
+    "stdout_bytes": 629,
+    "terminal_publication_confirmed": true,
+    "timed_out": false
+  }
+}

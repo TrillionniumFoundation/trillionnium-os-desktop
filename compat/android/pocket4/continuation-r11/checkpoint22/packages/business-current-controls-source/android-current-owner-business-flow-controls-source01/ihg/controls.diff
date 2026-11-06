@@ -1,0 +1,173 @@
+--- prior/check.py
++++ owner/check.py
+@@ -7,6 +7,152 @@
+ CONTROL_EXCLUSION_COUNT=None  # Bound only after actual R4 install and fresh nonce receipts.
+ CONTROL_NONCE_RECEIPT=None  # Bound only after actual R4 install and fresh nonce receipts.
+ CONTROL_ACTUAL_INSTALL_PINS=None  # Bound only after actual R4 install and fresh nonce receipts.
++def run_task_discovery_route_controls(task_module, coordinator, qa):
++    """Execute production open_task_context with explicit in-memory I/O seams.
++
++    The already actual-tested installed discovery API is an observed boundary.
++    These cases test forwarding, no legacy bypass, and original close-on-error;
++    they do not claim real /proc, held-FD, baseline, or Android qualification.
++    """
++    import ast
++    import copy
++    import json
++    import stat
++    import types
++    from pathlib import PurePosixPath
++    rows=[]
++    def need(value,reason):
++        if not value:raise RuntimeError(reason)
++    def case(mode):
++        calls=[];state={'closed':False,'flow':False,'discover':0,'legacy':0}
++        class MemoryPath(type(PurePosixPath('/'))):
++            def lstat(self):
++                return types.SimpleNamespace(st_mode=stat.S_IFDIR|0o700,st_uid=0)
++        root=MemoryPath('/memory-flow');step=root/'steps/inspect'
++        source_root=MemoryPath('/memory-install/source')
++        host_root=MemoryPath('/memory-host')
++        expected='d'*64
++        install_pin=coordinator.INSTALL_SOURCE_SHA
++        need(isinstance(install_pin,str) and len(install_pin)==64,'FIXED_INSTALL02_SOURCE_REQUIRED')
++        baseline={'schema':qa.MAIN_BASELINE_SCHEMA,'kind':'current-cell-generation',
++            'deployment_performed':False,'framework_exit_cause_resolved':False,
++            'whole_app_production_ready':False,'packages':{qa.PACKAGE:qa.UID},
++            'framework_epoch':{'sha256':qa.MAIN_EPOCH,
++                'binding':{'processes':{'init':{'host_pid':12001}}}},
++            'status':{'host_pid':12000}}
++        ref=types.SimpleNamespace(current_baseline=lambda:copy.deepcopy(baseline),
++            BASELINE=MemoryPath('/memory-baseline'),BASELINE_SHA=qa.MAIN_BASELINE_SHA,
++            QUALIFICATION=MemoryPath('/memory-qualification'),
++            QUALIFICATION_SHA=qa.MAIN_BASELINE_QUALIFICATION_SHA,
++            EPOCH=qa.MAIN_EPOCH,EPOCH_SOURCE=MemoryPath('/memory-epoch.py'),EPOCH_SOURCE_SHA='e'*64)
++        scope=coordinator.scope_record(types.SimpleNamespace(ref=ref,
++            adapter=types.SimpleNamespace(RECORDER_MANIFEST_SHA=task_module.CURRENT_HOST_MANIFEST)),expected)
++        scope_raw=json.dumps(scope).encode()
++        epoch=object()
++        def source_verify(value):
++            need(value==expected,'TASK_SOURCE_MANIFEST_CHANGED');calls.append('task_source_verify')
++        def read(path,maximum=1048576,expected=None,size=None):
++            if path==root/'scope.json':return scope_raw
++            return b'memory'
++        ref.read=read
++        ref.module=lambda raw,path,name:epoch
++        def main_guard(value,module):
++            need(value==baseline and module is epoch,'ORIGINAL_MAIN_CALLBACK_ARGUMENTS')
++            calls.append('Main_guard');return {'in_memory':True}
++        ref.main_guard=main_guard
++        writes=[]
++        ref.write_new=lambda path,value:writes.append((path,value))
++        class Target:
++            def __init__(self,identity,path,digest):
++                need(identity==baseline['framework_epoch']['binding']['processes']['init'],
++                     'ORIGINAL_HELD_TARGET_IDENTITY')
++                self.record={'in_memory_target':True}
++            def close(self):state['closed']=True
++        held=types.SimpleNamespace(HeldTarget=Target,
++            proc_identity_at=lambda fd,pid,deadline:copy.deepcopy(baseline['framework_epoch']['binding']['processes']['init']))
++        def classpaths(held_arg,target,observed,module,guard):
++            need(held_arg is held and observed==baseline['framework_epoch'] and module is epoch,
++                 'ORIGINAL_CLASSPATH_ARGUMENTS')
++            guard();return {'BOOTCLASSPATH':'/memory.jar'},{'fixture':True}
++        binding=types.SimpleNamespace(same_epoch_identity=lambda a,b:a==b,main_classpaths=classpaths)
++        recorder=types.SimpleNamespace(APP='/memory-android-app.py',APP_SHA='a'*64,
++            task_functions=lambda path:types.SimpleNamespace())
++        loads={'recorder.py':recorder,'references/held_runtime_r5.py':held,'main_binding.py':binding}
++        contract=types.SimpleNamespace(sha256=task_module.CURRENT_HOST_MANIFEST,
++            verify=lambda:calls.append('contract_verify'),load=lambda name,label:loads[name])
++        shared=types.SimpleNamespace(SourceContract=lambda path,digest:contract,
++            HELPER_PATH=MemoryPath('/memory-helper'),HELPER_BYTES=6,HELPER_SHA='f'*64,
++            verify_shared_helper=lambda:{'whole_process_tree_cleanup_qualified':False})
++        def legacy():
++            state['legacy']+=1;raise RuntimeError('LEGACY_DISCOVERY_BYPASS')
++        app=types.SimpleNamespace(discover=legacy)
++        def module(path,digest,label):
++            if str(path)==str(host_root/'source_contract.py'):
++                need(digest=='b'*64,'EXACT_SHARED_CONTRACT_PIN');return shared
++            need(str(path)==recorder.APP and digest==recorder.APP_SHA,
++                 'EXACT_LEGACY_REFERENCE_PIN');return app
++        def verify_install(value):
++            need(value==install_pin,'INSTALL_SOURCE_MANIFEST_CHANGED')
++            if mode=='source_changed':raise RuntimeError('EXACT_INSTALL_SOURCE_STOP')
++            calls.append('install_source_verify');return {'in_memory_manifest':True}
++        util=types.SimpleNamespace(HERE=source_root,module=module,read=read,verify_source=verify_install)
++        def current_discovery(util_arg,manifest,verify,where,app_arg,base,epoch_arg,guard):
++            need(util_arg is util and manifest==install_pin and verify is verify_install and
++                 where==source_root and app_arg is app and base==baseline and epoch_arg is epoch,
++                 'EXPLICIT_PINNED_DISCOVERY_ARGUMENTS_REQUIRED')
++            verify(manifest)
++            state['discover']+=1
++            guard()
++            status={'host_pid':12000}
++            return (12002 if mode=='wrong_init' else 12001),{'BOOTCLASSPATH':'/memory.jar'},status
++        context=types.SimpleNamespace(INSTALLED_SHARED=host_root,CONTRACT_SHA='b'*64,
++            SHARED_MANIFEST=task_module.CURRENT_HOST_MANIFEST,
++            baseline_scope=lambda ref_arg,base:{'package':qa.PACKAGE,'uid':qa.UID},
++            current_discovery=current_discovery,
++            verify_target_data=lambda target,base,binding_arg:need(
++                base==baseline and binding_arg is binding,'ORIGINAL_TARGET_DATA_GUARD'))
++        transport=types.SimpleNamespace(environment_values=lambda value:copy.deepcopy(value))
++        def flow_factory(**values):
++            need(values['recorder'] is recorder and values['contract'] is contract and
++                 values['transport'] is transport and values['qa'] is qa and
++                 values['scope']==scope and values['activation']==baseline,
++                 'UNCHANGED_FLOW_CONSTRUCTOR_ARGUMENTS')
++            state['flow']=True
++            return types.SimpleNamespace(**values)
++        namespace=dict(task_module.open_task_context.__globals__)
++        namespace['Path']=MemoryPath
++        namespace['time']=types.SimpleNamespace(monotonic=lambda:1.0)
++        namespace['os']=types.SimpleNamespace(O_RDONLY=0,O_DIRECTORY=1,O_NOFOLLOW=2,O_CLOEXEC=4,
++            open=lambda path,flags:(need(path=='/proc/12001','EXACT_PROTECTED_INIT_PROC') or 10),
++            close=lambda fd:need(fd==10,'ONLY_MEMORY_PROC_FD'))
++        namespace['Flow']=flow_factory
++        gate=types.FunctionType(task_module.open_task_context.__code__,namespace)
++        result={}
++        def run():
++            return gate(ref,util,context,expected,source_verify,root,step,transport,result,
++                20.0,'inspect',qa,{},[],scope,install_source_manifest=install_pin)
++        return run,state,calls,writes,result
++    run,state,calls,writes,result=case('positive')
++    flow,recorder,guard=run()
++    need(state['discover']==1 and state['legacy']==0 and state['flow'] and not state['closed'] and
++         len(writes)==1 and calls.count('install_source_verify')==1 and
++         calls.count('Main_guard')==4 and result['Main_before']=={'in_memory':True},
++         'PRODUCTION_TASK_OPEN_MUST_REACH_CURRENT_DISCOVERY')
++    rows.append({'name':'production_open_task_context_routes_pinned_current_discovery','passed':True})
++    for mode,error,name in [
++        ('source_changed','EXACT_INSTALL_SOURCE_STOP','changed_install_source_stops_before_discovery'),
++        ('wrong_init','FIXED_MAIN_DISCOVERY_CHANGED','wrong_discovered_init_retains_original_guard')]:
++        run,state,calls,writes,result=case(mode)
++        try:run()
++        except RuntimeError as caught:need(str(caught)==error,'WRONG_TASK_ROUTE_FIRST_ERROR:'+name)
++        else:raise RuntimeError('TASK_ROUTE_NEGATIVE_ACCEPTED:'+name)
++        need(state['closed'] and not state['flow'] and state['legacy']==0 and not writes,
++             'FAILED_TASK_ROUTE_MUST_CLOSE_HELD_TARGET')
++        if mode=='source_changed':need(state['discover']==0,'SOURCE_FAILURE_REACHED_DISCOVERY')
++        rows.append({'name':'production_open_task_context_'+name,'passed':True})
++    return rows
++
++
+ raw=sys.stdin.buffer.read(262145)
+ assert len(raw)==CONTROL_INPUT_BYTES and hashlib.sha256(raw).hexdigest()==CONTROL_INPUT_SHA256
+ p=json.loads(raw)
+@@ -914,6 +1060,8 @@
+     else:raise AssertionError(name+' accepted by scope_record')
+     passed('current_cell02_scope_record_'+name+'_rejected')
+ assert len(cases)==166 and len({x['case'] for x in cases})==166,('R4 current cell02 control inventory changed',len(cases))
++for row in run_task_discovery_route_controls(context,base,qa):passed(row['name'])
++assert len(cases)==169 and len({x['case'] for x in cases})==169,('current discovery route inventory changed',len(cases))
+ 
+ out={'schema':1,'ok':True,'state':'IHG_R4_CURRENT_SEARCH_DESTINATION_LONDON_PURE_CONTROLS_PASS','controls':cases,
+  'control_count':len(cases),'template_source_pins':TEMPLATE_PINS,'bound_source_pins':BOUND_PINS,
+@@ -924,7 +1072,7 @@
+  'file_writes':0,'Android_actions':0,'device_or_child_process_commands':0,'fresh_nonce_values':pool,
+  'nonce_material_is_prior_actual_not_regenerated':True,'nonce_values_disjoint_all_fixed_prior_literals':not bool(set(pool)&set(old)),
+  'nonce_exclusion_count':len(old),'production_Flow_and_BoundArun_constructors_executed':True,
+- 'production_typed_constructor_controls':17,'current_cell02_install_and_scope_controls':9,'actual_prior_install_validator_executed':True,'production_qualified_initial_admission_executed':True,'actual_install_validation_performs_no_IO':True,'actual_Main_and_target_callbacks':False,
++ 'production_typed_constructor_controls':17,'current_cell02_install_and_scope_controls':9,'current_owner_task_route_controls':3,'actual_prior_install_validator_executed':True,'production_qualified_initial_admission_executed':True,'actual_install_validation_performs_no_IO':True,'actual_Main_and_target_callbacks':False,
+  'maximum_readiness_sequences':8,'readiness_qualification_seconds':20,'minimum_consecutive_samples':3,
+  'minimum_capture_span_ms':4000,'success_durable_commands_formula':'47+9*k; 3<=k<=8',
+  'maximum_success_durable_commands':119,'maximum_helper_nonces':39,'maximum_click_actions':2,'maximum_set_text_actions':1,'fixed_public_input':'London',

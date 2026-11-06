@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "baseline_blob": "757ddf5422aee624fb375e6c0780b7ce772ef07b",
+  "edits": [
+    {
+      "label": "fresh independent checker root",
+      "before": "ROOT = Path(\"/home/alex/work/p4-retirement-wayland-check02-20261106\")",
+      "after": "ROOT = Path(\"/home/alex/work/p4-retirement-wayland-check03-20261106\")"
+    },
+    {
+      "label": "held stable missing-directory observation",
+      "before": "def native_pc_snapshot(paths):",
+      "after": "def absent_pc_directory(requested):\n    # A default search entry is not a promise that the directory exists.\n    # Bind the nearest existing protected ancestor and prove its first missing\n    # child absent through that held directory. No provider or fallback is made.\n    path = Path(requested)\n    anchor = None\n    for candidate in path.parents:\n        try:\n            candidate.lstat()\n        except FileNotFoundError:\n            continue\n        anchor = candidate\n        break\n    require(anchor is not None, 'missing pkg-config path has no existing ancestor')\n    resolved = anchor.resolve(strict=True)\n    require(resolved == Path('/usr') or resolved.is_relative_to(Path('/usr')) or\n            resolved == Path('/lib') or resolved.is_relative_to(Path('/lib')),\n            'missing pkg-config path ancestor escaped fixed public host roots')\n    real_directory(resolved)\n    named_ancestors, real_ancestors = [], []\n    for parent in (anchor,*anchor.parents):\n        st = parent.lstat()\n        require(st.st_uid == 0 and\n                (stat.S_ISDIR(st.st_mode) or stat.S_ISLNK(st.st_mode)),\n                'missing pkg-config path ancestor has wrong type/owner')\n        named_ancestors.append({'path':str(parent),'identity':identity(st),\n                                'resolved_path':str(parent.resolve(strict=True))})\n    for parent in (resolved,*resolved.parents):\n        st = parent.lstat()\n        require(stat.S_ISDIR(st.st_mode) and st.st_uid == 0 and\n                not stat.S_IMODE(st.st_mode)&0o022,\n                'missing pkg-config path real ancestor is not protected')\n        real_ancestors.append({'path':str(parent),'identity':identity(st)})\n    missing_name = path.relative_to(anchor).parts[0]\n    fd = -1\n    first_error = None\n    close_error = None\n    result = None\n    try:\n        fd = os.open(resolved,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW)\n        held_identity = identity(os.fstat(fd))\n        require(held_identity == real_ancestors[0]['identity'],\n                'missing pkg-config path ancestor changed before open')\n        for observation in range(2):\n            try:\n                os.stat(missing_name,dir_fd=fd,follow_symlinks=False)\n            except FileNotFoundError:\n                pass\n            else:\n                raise RuntimeError('pkg-config default entry appeared while proving absence: '+requested)\n            for row in named_ancestors:\n                current = Path(row['path'])\n                require(identity(current.lstat()) == row['identity'] and\n                        str(current.resolve(strict=True)) == row['resolved_path'],\n                        'missing pkg-config path named ancestor changed')\n            for row in real_ancestors:\n                require(identity(Path(row['path']).lstat()) == row['identity'],\n                        'missing pkg-config path real ancestor changed')\n            require(identity(os.fstat(fd)) == held_identity and\n                    anchor.resolve(strict=True) == resolved,\n                    'missing pkg-config path held ancestor changed')\n        result = {'requested_path':requested,'state':'ABSENT',\n                  'first_absent_path':str(anchor/missing_name),\n                  'resolved_anchor':str(resolved),'held_anchor_identity':held_identity,\n                  'named_ancestors':named_ancestors,'real_ancestors':real_ancestors,\n                  'absence_observations':2,'provider_qualified':False}\n    except BaseException as error:\n        first_error = error\n    finally:\n        if fd >= 0:\n            value, fd = fd, -1\n            try:\n                os.close(value)\n            except BaseException as error:\n                close_error = error\n    if first_error is not None:\n        if close_error is not None:\n            raise RuntimeError('pkg-config absence primary='+repr(first_error)+\n                               '; held ancestor close='+repr(close_error)) from first_error\n        raise first_error\n    if close_error is not None:\n        raise RuntimeError('pkg-config absent ancestor close failed: '+repr(close_error)) from close_error\n    require(result is not None, 'pkg-config absence observation did not complete')\n    result['held_anchor_fd_closed'] = True\n    return result\n\n\ndef native_pc_snapshot(paths):"
+    },
+    {
+      "label": "preserve absence in complete snapshot",
+      "before": "    directories, namespace, files = [], [], {}\n",
+      "after": "    directories, namespace, files, absent = [], [], {}, []\n"
+    },
+    {
+      "label": "only literal ENOENT of a default path is classified",
+      "before": "        path = Path(requested)\n        named = path.lstat()\n        require(named.st_uid == 0, 'pkg-config default directory alias owner differs: '+requested)",
+      "after": "        path = Path(requested)\n        try:\n            named = path.lstat()\n        except FileNotFoundError:\n            absent.append(absent_pc_directory(requested))\n            continue\n        require(named.st_uid == 0, 'pkg-config default directory alias owner differs: '+requested)"
+    },
+    {
+      "label": "recheck absence after present directory scan",
+      "before": "    require(files, 'actual pkg-config default directories contain no qualified metadata')\n    return {'default_directories':directories,'pc_files':files,",
+      "after": "    for row in absent:\n        require(absent_pc_directory(row['requested_path']) == row,\n                'pkg-config missing default entry changed during full namespace snapshot')\n    require(files, 'actual pkg-config default directories contain no qualified metadata')\n    return {'default_search_paths':paths,'default_directories':directories,\n            'absent_default_directories':absent,'pc_files':files,"
+    },
+    {
+      "label": "report absence is not library qualification",
+      "before": "        'layout_missing_is_failure_without_fallback':True}",
+      "after": "        'stable_absent_default_directories_are_not_providers':True,\n        'required_native_dependencies_still_checked_by_original_build_scripts':True,\n        'fallback_paths_or_system_metadata_created':False}"
+    }
+  ]
+}

@@ -1,0 +1,2776 @@
+--- a/graphics/droidloom-denial-protocol/src/lib.rs
++++ b/graphics/droidloom-denial-protocol/src/lib.rs
+@@ -20,7 +20,9 @@
+ /// Protocol major implemented by this crate.
+ pub const PROTOCOL_MAJOR: u16 = 1;
+ /// Protocol minor implemented by this crate.
+-pub const PROTOCOL_MINOR: u16 = 4;
++pub const PROTOCOL_MINOR: u16 = 5;
++/// First wire minor carrying object-scoped retirement receipts.
++pub const RETIREMENT_PROTOCOL_MINOR: u16 = 5;
+ /// Wire version retained by existing records, including initial negotiation.
+ pub const BASE_PROTOCOL_MINOR: u16 = 3;
+ /// Fixed wire-header size.
+@@ -62,6 +64,8 @@
+     pub const DROIDLOOM_COMPOSITION: u64 = 1 << 7;
+     /// The host accepts task activation requests under its own focus policy.
+     pub const TASK_ACTIVATION: u64 = 1 << 8;
++    /// The host acknowledges an exact retirement after engine removal and releases.
++    pub const TASK_RETIREMENT_ACK: u64 = 1 << 9;
+ 
+     /// Capabilities required for every protocol-v1 session.
+     pub const REQUIRED_V1: u64 = TASK_WINDOWS
+@@ -77,6 +81,11 @@
+ #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+ pub struct TaskObjectId(pub u64);
+ 
++/// Nonzero, never-reused retirement request identity on one authenticated peer.
++/// A receipt is meaningful only for its originating connection and task object.
++#[derive(Clone, Copy, Debug, Eq, PartialEq, Ord, PartialOrd)]
++pub struct RetirementNonce(pub u64);
++
+ /// Android framework task identity; treated as an untrusted claim by Denial.
+ #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd)]
+ pub struct AndroidTaskId(pub u64);
+@@ -150,6 +159,14 @@
+         /// Task to destroy.
+         object: TaskObjectId,
+     },
++    /// Retire one object and request a receipt after engine and buffer retirement.
++    /// Requires negotiated TASK_RETIREMENT_ACK; never a fallback for an old peer.
++    RetireTask {
++        /// Object owned by this authenticated connection.
++        object: TaskObjectId,
++        /// Nonzero request nonce, never reused on this connection.
++        nonce: RetirementNonce,
++    },
+     /// Share acquire and release DRM syncobj timelines for one task.
+     BindTimelines {
+         /// Task receiving the two timeline descriptors.
+@@ -326,6 +343,14 @@
+         /// Task Android should finish.
+         object: TaskObjectId,
+     },
++    /// Confirm retirement of the exact object/request on this connection.
++    /// Sent only after the engine window is removed and all buffers are released.
++    TaskRetired {
++        /// Object whose engine and in-flight state have both retired.
++        object: TaskObjectId,
++        /// Exact nonce from the accepted RetireTask request.
++        nonce: RetirementNonce,
++    },
+     /// Confirm that Denial has signalled the frame's release timeline point.
+     BufferReleased {
+         /// Owning task.
+@@ -1137,6 +1162,7 @@
+ const OP_BIND_TASK: u16 = 0x000c;
+ const OP_BIND_LAYER_STREAM: u16 = 0x000d;
+ const OP_REQUEST_ACTIVATION: u16 = 0x000e;
++const OP_RETIRE_TASK: u16 = 0x000f;
+ 
+ const OP_SERVER_HELLO: u16 = 0x8001;
+ const OP_FORMAT_FEEDBACK: u16 = 0x8002;
+@@ -1151,6 +1177,7 @@
+ const OP_PING: u16 = 0x800b;
+ const OP_REGISTER_RENDER_TARGET: u16 = 0x800c;
+ const OP_UNREGISTER_RENDER_TARGET: u16 = 0x800d;
++const OP_TASK_RETIRED: u16 = 0x800e;
+ 
+ /// Encode one Android-to-Denial message.
+ ///
+@@ -1203,6 +1230,11 @@
+         AndroidMessage::DestroyTask { object } => {
+             (OP_DESTROY_TASK, valid_object(*object)?, Vec::new())
+         }
++        AndroidMessage::RetireTask { object, nonce } => {
++            nonzero("retirement nonce", nonce.0)?;
++            payload.u64(nonce.0);
++            (OP_RETIRE_TASK, valid_object(*object)?, Vec::new())
++        }
+         AndroidMessage::BindTimelines { object } => (
+             OP_BIND_TIMELINES,
+             valid_object(*object)?,
+@@ -1372,6 +1404,12 @@
+             valid_object(object)?;
+             (AndroidMessage::DestroyTask { object }, Vec::new())
+         }
++        OP_RETIRE_TASK => {
++            valid_object(object)?;
++            let nonce = RetirementNonce(payload.u64()?);
++            nonzero("retirement nonce", nonce.0)?;
++            (AndroidMessage::RetireTask { object, nonce }, Vec::new())
++        }
+         OP_BIND_TIMELINES => {
+             valid_object(object)?;
+             (
+@@ -1631,6 +1669,11 @@
+             (OP_VISIBILITY, valid_object(*object)?)
+         }
+         DenialMessage::Close { object } => (OP_CLOSE, valid_object(*object)?),
++        DenialMessage::TaskRetired { object, nonce } => {
++            nonzero("retirement nonce", nonce.0)?;
++            payload.u64(nonce.0);
++            (OP_TASK_RETIRED, valid_object(*object)?)
++        }
+         DenialMessage::BufferReleased {
+             object,
+             frame,
+@@ -1852,6 +1895,12 @@
+             valid_object(object)?;
+             DenialMessage::Close { object }
+         }
++        OP_TASK_RETIRED => {
++            valid_object(object)?;
++            let nonce = RetirementNonce(payload.u64()?);
++            nonzero("retirement nonce", nonce.0)?;
++            DenialMessage::TaskRetired { object, nonce }
++        }
+         OP_BUFFER_RELEASED => {
+             valid_object(object)?;
+             let frame = FrameId(payload.u64()?);
+@@ -2052,9 +2101,13 @@
+     let mut bytes = Vec::with_capacity(complete_length);
+     bytes.extend_from_slice(&MAGIC);
+     bytes.extend_from_slice(&PROTOCOL_MAJOR.to_le_bytes());
+-    // Existing peers reject a header newer than their implementation before
+-    // reading capabilities. Only the negotiated new opcode needs minor 4.
+-    let minor = if opcode == OP_REQUEST_ACTIVATION { PROTOCOL_MINOR } else { BASE_PROTOCOL_MINOR };
++    // Keep every legacy wire header unchanged. New retirement records require
++    // minor 5; advertising support does not raise the initial hello header.
++    let minor = match opcode {
++        OP_REQUEST_ACTIVATION => 4,
++        OP_RETIRE_TASK | OP_TASK_RETIRED => RETIREMENT_PROTOCOL_MINOR,
++        _ => BASE_PROTOCOL_MINOR,
++    };
+     bytes.extend_from_slice(&minor.to_le_bytes());
+     bytes.extend_from_slice(&opcode.to_le_bytes());
+     bytes.extend_from_slice(&fd_count.to_le_bytes());
+@@ -2083,6 +2136,11 @@
+         return Err(WireError::UnsupportedVersion { major, minor });
+     }
+     let opcode = reader.u16()?;
++    if matches!(opcode, OP_RETIRE_TASK | OP_TASK_RETIRED)
++        && minor < RETIREMENT_PROTOCOL_MINOR
++    {
++        return Err(WireError::UnsupportedVersion { major, minor });
++    }
+     let fd_count = usize::from(reader.u16()?);
+     let flags = reader.u32()?;
+     let object = reader.u64()?;
+@@ -2292,6 +2350,11 @@
+     if major != PROTOCOL_MAJOR || minor > PROTOCOL_MINOR {
+         return Err(WireError::UnsupportedVersion { major, minor });
+     }
++    if capabilities & capability::TASK_RETIREMENT_ACK != 0
++        && minor < RETIREMENT_PROTOCOL_MINOR
++    {
++        return Err(WireError::UnsupportedVersion { major, minor });
++    }
+     if capabilities & capability::REQUIRED_V1 != capability::REQUIRED_V1 {
+         return Err(WireError::InvalidEnum {
+             field: "required capabilities",
+@@ -2456,7 +2519,107 @@
+         assert_eq!(decoded.descriptors, encoded.descriptors);
+     }
+ 
++
+     #[test]
++    fn retirement_records_round_trip_exact_object_nonce_and_minor() {
++        let nonce = RetirementNonce(19);
++        let request = AndroidMessage::RetireTask { object: OBJECT, nonce };
++        let receipt = DenialMessage::TaskRetired { object: OBJECT, nonce };
++        round_trip_android(&request);
++        round_trip_denial(&receipt);
++        for packet in [encode_android(&request).unwrap(), encode_denial(&receipt).unwrap()] {
++            assert_eq!(&packet.bytes[6..8], &5_u16.to_le_bytes());
++            assert_eq!(packet.bytes.len(), HEADER_BYTES + 8);
++            assert!(packet.descriptors.is_empty());
++        }
++    }
++
++    #[test]
++    fn retirement_rejects_zero_object_and_zero_nonce_in_both_directions() {
++        for (object, nonce) in [(TaskObjectId(0), RetirementNonce(1)), (OBJECT, RetirementNonce(0))] {
++            assert!(encode_android(&AndroidMessage::RetireTask { object, nonce }).is_err());
++            assert!(encode_denial(&DenialMessage::TaskRetired { object, nonce }).is_err());
++        }
++        let nonce = RetirementNonce(23);
++        let request = encode_android(&AndroidMessage::RetireTask { object: OBJECT, nonce }).unwrap();
++        let receipt = encode_denial(&DenialMessage::TaskRetired { object: OBJECT, nonce }).unwrap();
++        for range in [16..24, HEADER_BYTES..HEADER_BYTES + 8] {
++            let mut request = request.bytes.clone();
++            let mut receipt = receipt.bytes.clone();
++            request[range.clone()].fill(0);
++            receipt[range].fill(0);
++            assert!(decode_android(&request, 0).is_err());
++            assert!(decode_denial(&receipt, 0).is_err());
++        }
++    }
++
++    #[test]
++    fn retirement_rejects_legacy_header_version_even_with_known_new_opcode() {
++        let nonce = RetirementNonce(29);
++        for minor in [0_u16, 3, 4] {
++            let mut request = encode_android(&AndroidMessage::RetireTask { object: OBJECT, nonce }).unwrap().bytes;
++            let mut receipt = encode_denial(&DenialMessage::TaskRetired { object: OBJECT, nonce }).unwrap().bytes;
++            request[6..8].copy_from_slice(&minor.to_le_bytes());
++            receipt[6..8].copy_from_slice(&minor.to_le_bytes());
++            assert_eq!(decode_android(&request, 0), Err(WireError::UnsupportedVersion { major: 1, minor }));
++            assert_eq!(decode_denial(&receipt, 0), Err(WireError::UnsupportedVersion { major: 1, minor }));
++        }
++    }
++
++    #[test]
++    fn retirement_rejects_descriptors_direction_and_payload_extensions() {
++        let nonce = RetirementNonce(31);
++        let request = encode_android(&AndroidMessage::RetireTask { object: OBJECT, nonce }).unwrap().bytes;
++        let receipt = encode_denial(&DenialMessage::TaskRetired { object: OBJECT, nonce }).unwrap().bytes;
++        assert!(decode_android(&receipt, 0).is_err());
++        assert!(decode_denial(&request, 0).is_err());
++        let mut request_fd = request.clone();
++        let mut receipt_fd = receipt.clone();
++        request_fd[10..12].copy_from_slice(&1_u16.to_le_bytes());
++        receipt_fd[10..12].copy_from_slice(&1_u16.to_le_bytes());
++        assert!(decode_android(&request_fd, 1).is_err());
++        assert!(decode_denial(&receipt_fd, 1).is_err());
++        let mut request_extra = request.clone();
++        let mut receipt_extra = receipt.clone();
++        request_extra.push(0);
++        receipt_extra.push(0);
++        request_extra[24..28].copy_from_slice(&9_u32.to_le_bytes());
++        receipt_extra[24..28].copy_from_slice(&9_u32.to_le_bytes());
++        assert_eq!(decode_android(&request_extra, 0), Err(WireError::TrailingBytes));
++        assert_eq!(decode_denial(&receipt_extra, 0), Err(WireError::TrailingBytes));
++        assert!(decode_android(&request[..request.len() - 1], 0).is_err());
++        assert!(decode_denial(&receipt[..receipt.len() - 1], 0).is_err());
++    }
++
++    #[test]
++    fn retirement_capability_requires_selected_minor_five() {
++        let hello = |minor, capabilities| DenialMessage::ServerHello {
++            major: 1, minor, capabilities,
++            max_task_objects: MAX_TASK_OBJECTS,
++            max_buffers_per_task: MAX_BUFFERS_PER_TASK,
++            max_damage_rects: u32::try_from(MAX_DAMAGE_RECTS).unwrap(),
++        };
++        let capability = capability::REQUIRED_V1 | capability::TASK_RETIREMENT_ACK;
++        assert!(encode_denial(&hello(4, capability)).is_err());
++        round_trip_denial(&hello(5, capability));
++        round_trip_denial(&hello(3, capability::REQUIRED_V1));
++        let mut forged = encode_denial(&hello(5, capability)).unwrap().bytes;
++        forged[HEADER_BYTES + 2..HEADER_BYTES + 4].copy_from_slice(&4_u16.to_le_bytes());
++        assert_eq!(decode_denial(&forged, 0), Err(WireError::UnsupportedVersion { major: 1, minor: 4 }));
++    }
++
++    #[test]
++    fn retirement_advertisement_keeps_legacy_hello_and_destroy_headers() {
++        let hello = encode_android(&AndroidMessage::ClientHello {
++            min_major: 1, max_major: 1,
++            capabilities: capability::REQUIRED_V1 | capability::TASK_RETIREMENT_ACK,
++        }).unwrap();
++        let destroy = encode_android(&AndroidMessage::DestroyTask { object: OBJECT }).unwrap();
++        assert_eq!(&hello.bytes[6..8], &3_u16.to_le_bytes());
++        assert_eq!(&destroy.bytes[6..8], &3_u16.to_le_bytes());
++    }
++
++    #[test]
+     fn activation_does_not_raise_the_wire_version_of_legacy_handshakes() {
+         let hello = encode_android(&AndroidMessage::ClientHello {
+             min_major: 1, max_major: 1,
+--- a/graphics/droidloom-denial-endpoint/src/lib.rs
++++ b/graphics/droidloom-denial-endpoint/src/lib.rs
+@@ -18,7 +18,7 @@
+     AcceptedWireFrame, AndroidDisplayId, AndroidMessage, AndroidTaskId, BufferId, BufferMetadata,
+     DenialMessage, DescriptorKind, FormatModifier, FrameId, InputEvent, MAX_BUFFERS_PER_TASK,
+     MAX_DAMAGE_RECTS, MAX_TASK_OBJECTS, PROTOCOL_MAJOR, PROTOCOL_MINOR, ProtocolErrorCode,
+-    TaskObjectId, TaskPresentationState, TaskStateError, Visibility, capability,
++    RetirementNonce, TaskObjectId, TaskPresentationState, TaskStateError, Visibility, capability,
+ };
+ use droidloom_syncobj::{DenialTaskTimelines, SyncobjDevice, SyncobjError};
+ use thiserror::Error;
+@@ -50,6 +50,13 @@
+         /// Object whose task was removed.
+         object: TaskObjectId,
+     },
++    /// Begin exact engine retirement; this action is not a completion receipt.
++    RetireTask {
++        /// Object scoped to the authenticated endpoint.
++        object: TaskObjectId,
++        /// Request identity to return only after the engine's real completion.
++        nonce: RetirementNonce,
++    },
+     /// The task's shared acquire and release timelines are ready.
+     TimelinesBound {
+         /// Bound task object.
+@@ -151,6 +158,20 @@
+     /// Destroy was requested while Denial still owns frames.
+     #[error("Droidloom task {0:?} still has frames in flight")]
+     TaskBusy(TaskObjectId),
++    /// The peer has not negotiated retirement receipts.
++    #[error("Droidloom retirement receipts were not negotiated")]
++    RetirementUnsupported,
++    /// A duplicate, stale, or mismatched retirement cannot advance state.
++    #[error("Droidloom retirement identity changed for {object:?}, nonce {nonce:?}")]
++    RetirementMismatch {
++        /// Object named by the request or completion.
++        object: TaskObjectId,
++        /// Nonce that failed the exact pending match.
++        nonce: RetirementNonce,
++    },
++    /// No new task operation is accepted after a retirement request.
++    #[error("Droidloom task {0:?} is retiring")]
++    TaskRetiring(TaskObjectId),
+     /// Expected descriptor role was absent after typed packet decoding.
+     #[error("Droidloom packet omitted descriptor role {0:?}")]
+     MissingDescriptor(DescriptorKind),
+@@ -298,6 +319,9 @@
+     device: SyncobjDevice,
+     ready: bool,
+     activation_requests: bool,
++    retirement_receipts: bool,
++    last_retirement_nonce: u64,
++    retirements: BTreeMap<TaskObjectId, PendingRetirement>,
+     tasks: BTreeMap<TaskObjectId, TaskEndpoint>,
+ }
+ 
+@@ -311,6 +335,9 @@
+             device,
+             ready: false,
+             activation_requests: false,
++            retirement_receipts: false,
++            last_retirement_nonce: 0,
++            retirements: BTreeMap::new(),
+             tasks: BTreeMap::new(),
+         }
+     }
+@@ -323,6 +350,15 @@
+         self
+     }
+ 
++    /// Opt in only when the engine calls complete_retirement after actual
++    /// window removal, in-flight drain, and its compositor completion barrier.
++    #[must_use]
++    pub fn with_retirement_receipts(mut self) -> Self {
++        assert!(!self.ready, "retirement must be configured before handshake");
++        self.retirement_receipts = true;
++        self
++    }
++
+     /// Borrow the socket for calloop registration and peer diagnostics.
+     pub fn socket(&self) -> &ProtocolSocket {
+         &self.socket
+@@ -341,6 +377,28 @@
+         if !self.ready && !matches!(received.message, AndroidMessage::ClientHello { .. }) {
+             return Err(EndpointError::HandshakeRequired);
+         }
++        let active_object = match &received.message {
++            AndroidMessage::CreateTask { object, .. }
++            | AndroidMessage::BindTask { object, .. }
++            | AndroidMessage::DestroyTask { object }
++            | AndroidMessage::BindTimelines { object }
++            | AndroidMessage::AckConfigure { object, .. }
++            | AndroidMessage::RegisterBuffer { object, .. }
++            | AndroidMessage::UnregisterBuffer { object, .. }
++            | AndroidMessage::Present { object, .. }
++            | AndroidMessage::BindLayerStream { object }
++            | AndroidMessage::SetContentState { object, .. }
++            | AndroidMessage::SetFrameRate { object, .. }
++            | AndroidMessage::RequestActivation { object } => Some(*object),
++            AndroidMessage::ClientHello { .. }
++            | AndroidMessage::RetireTask { .. }
++            | AndroidMessage::Pong { .. } => None,
++        };
++        if let Some(object) = active_object {
++            if self.retirements.contains_key(&object) {
++                return Err(EndpointError::TaskRetiring(object));
++            }
++        }
+         match received.message {
+             AndroidMessage::ClientHello {
+                 min_major,
+@@ -354,6 +412,7 @@
+             } => self.create_task(object, display, package),
+             AndroidMessage::BindTask { object, task } => self.bind_task(object, task),
+             AndroidMessage::DestroyTask { object } => self.destroy_task(object),
++            AndroidMessage::RetireTask { object, nonce } => self.retire_task(object, nonce),
+             AndroidMessage::BindTimelines { object } => {
+                 self.bind_timelines(object, received.descriptors)
+             }
+@@ -633,6 +692,7 @@
+         object: TaskObjectId,
+         frame: FrameId,
+     ) -> Result<(), EndpointError> {
++        let confirmed_retirement = self.retirements.contains_key(&object);
+         let (message, retiring, finished_retirement) = {
+             let task = self.task_mut(object)?;
+             let pending = task
+@@ -647,17 +707,15 @@
+             (
+                 message,
+                 task.retiring,
+-                task.retiring && task.state.in_flight_count() == 0,
++                task.retiring && task.state.in_flight_count() == 0 && !confirmed_retirement,
+             )
+         };
+         if finished_retirement {
+             self.tasks.remove(&object);
+         }
+-        // Composer intentionally forgets a retired task as soon as it asks
+-        // Denial to destroy the window. Terminal releases generated while the
+-        // host drops that window are consumed locally instead of addressing an
+-        // Android-side object which no longer exists.
+-        if !retiring {
++        // Legacy clients forget on Destroy. Negotiated retirement keeps the
++        // client channel alive: release events precede its final receipt.
++        if !retiring || confirmed_retirement {
+             self.socket.send_denial(&message)?;
+         }
+         Ok(())
+@@ -761,11 +819,15 @@
+             return Err(EndpointError::IncompatibleClient);
+         }
+         self.activation_requests &= capabilities & capability::TASK_ACTIVATION != 0;
++        self.retirement_receipts &= capabilities & capability::TASK_RETIREMENT_ACK != 0;
+         self.socket.send_denial(&DenialMessage::ServerHello {
+             major: PROTOCOL_MAJOR,
+-            minor: if self.activation_requests { PROTOCOL_MINOR } else { droidloom_denial_protocol::BASE_PROTOCOL_MINOR },
++            minor: if self.retirement_receipts { PROTOCOL_MINOR }
++                else if self.activation_requests { 4 }
++                else { droidloom_denial_protocol::BASE_PROTOCOL_MINOR },
+             capabilities: capability::REQUIRED_V1
+-                | if self.activation_requests { capability::TASK_ACTIVATION } else { 0 },
++                | if self.activation_requests { capability::TASK_ACTIVATION } else { 0 }
++                | if self.retirement_receipts { capability::TASK_RETIREMENT_ACK } else { 0 },
+             max_task_objects: MAX_TASK_OBJECTS,
+             max_buffers_per_task: MAX_BUFFERS_PER_TASK,
+             max_damage_rects: u32::try_from(MAX_DAMAGE_RECTS).unwrap_or(u32::MAX),
+@@ -825,6 +887,11 @@
+     }
+ 
+     fn destroy_task(&mut self, object: TaskObjectId) -> Result<EndpointAction, EndpointError> {
++        if self.retirement_receipts {
++            return Err(EndpointError::RetirementMismatch {
++                object, nonce: RetirementNonce(0),
++            });
++        }
+         let task = self.task_mut(object)?;
+         task.retiring = true;
+         if task.state.in_flight_count() == 0 {
+@@ -833,6 +900,83 @@
+         Ok(EndpointAction::DestroyTask { object })
+     }
+ 
++    fn retire_task(
++        &mut self,
++        object: TaskObjectId,
++        nonce: RetirementNonce,
++    ) -> Result<EndpointAction, EndpointError> {
++        if !self.retirement_receipts {
++            return Err(EndpointError::RetirementUnsupported);
++        }
++        if object.0 == 0 || nonce.0 == 0 || nonce.0 <= self.last_retirement_nonce
++            || self.retirements.contains_key(&object)
++        {
++            return Err(EndpointError::RetirementMismatch { object, nonce });
++        }
++        let pending_absent = self.retirements.keys()
++            .filter(|owned| !self.tasks.contains_key(*owned)).count();
++        if !self.tasks.contains_key(&object)
++            && self.tasks.len() + pending_absent
++                >= usize::try_from(MAX_TASK_OBJECTS).unwrap_or(usize::MAX)
++        {
++            return Err(EndpointError::TaskLimit);
++        }
++        if let Some(task) = self.tasks.get_mut(&object) {
++            if task.retiring {
++                return Err(EndpointError::TaskRetiring(object));
++            }
++            task.retiring = true;
++        }
++        // Absence here is not a receipt: the engine must independently retire
++        // or establish absence in its own object table and finish its barrier.
++        self.retirements.insert(object, PendingRetirement {
++            nonce, engine_completed: false, acknowledgement_attempted: false,
++        });
++        self.last_retirement_nonce = nonce.0;
++        Ok(EndpointAction::RetireTask { object, nonce })
++    }
++
++    /// Complete an exact retirement after the engine has removed its resources.
++    ///
++    /// The engine must bind this call to the same endpoint generation and its
++    /// exact object/nonce callback. Receiving RetireTask alone never calls this.
++    /// The endpoint independently requires every accepted frame to be released.
++    ///
++    /// # Errors
++    /// Rejects a foreign/replayed tuple, outstanding frames, or any send error.
++    /// A failed send remains pending and is never automatically retried.
++    pub fn complete_retirement(
++        &mut self,
++        object: TaskObjectId,
++        nonce: RetirementNonce,
++    ) -> Result<(), EndpointError> {
++        if !self.retirement_receipts {
++            return Err(EndpointError::RetirementUnsupported);
++        }
++        let pending = self.retirements.get(&object)
++            .ok_or(EndpointError::RetirementMismatch { object, nonce })?;
++        if pending.nonce != nonce || pending.engine_completed
++            || pending.acknowledgement_attempted
++        {
++            return Err(EndpointError::RetirementMismatch { object, nonce });
++        }
++        if let Some(task) = self.tasks.get(&object) {
++            if !task.retiring || !task.pending.is_empty()
++                || task.state.in_flight_count() != 0
++            {
++                return Err(EndpointError::TaskBusy(object));
++            }
++        }
++        let pending = self.retirements.get_mut(&object)
++            .ok_or(EndpointError::RetirementMismatch { object, nonce })?;
++        pending.engine_completed = true;
++        pending.acknowledgement_attempted = true;
++        self.socket.send_denial(&DenialMessage::TaskRetired { object, nonce })?;
++        self.tasks.remove(&object);
++        self.retirements.remove(&object);
++        Ok(())
++    }
++
+     fn bind_timelines(
+         &mut self,
+         object: TaskObjectId,
+@@ -966,6 +1110,13 @@
+ }
+ 
+ #[derive(Debug)]
++struct PendingRetirement {
++    nonce: RetirementNonce,
++    engine_completed: bool,
++    acknowledgement_attempted: bool,
++}
++
++#[derive(Debug)]
+ struct TaskEndpoint {
+     task: Option<AndroidTaskId>,
+     display: AndroidDisplayId,
+@@ -1248,3 +1399,243 @@
+         ));
+     }
+ }
++
++#[cfg(test)]
++mod retirement_tests {
++    use super::*;
++    use droidloom_denial_ipc::SeqPacket;
++    use std::fs::File;
++
++    const OBJECT: TaskObjectId = TaskObjectId(77);
++    const NONCE: RetirementNonce = RetirementNonce(11);
++
++    fn pair(host_support: bool, client_support: bool) -> (ProtocolSocket, DenialEndpoint) {
++        let (client, server) = SeqPacket::pair().unwrap();
++        let client = ProtocolSocket::new(client);
++        let server = DenialEndpoint::new(
++            ProtocolSocket::new(server),
++            SyncobjDevice::from_file(File::open("/dev/null").unwrap()),
++        );
++        let mut server = if host_support { server.with_retirement_receipts() } else { server };
++        client.send_android(&AndroidMessage::ClientHello {
++            min_major: 1, max_major: 1,
++            capabilities: capability::REQUIRED_V1
++                | if client_support { capability::TASK_RETIREMENT_ACK } else { 0 },
++        }, &[]).unwrap();
++        assert!(matches!(server.receive_action().unwrap(), EndpointAction::ClientReady));
++        let DenialMessage::ServerHello { minor, capabilities, .. } =
++            client.receive_denial().unwrap().message else { panic!("missing ServerHello") };
++        assert_eq!(capabilities & capability::TASK_RETIREMENT_ACK != 0, host_support && client_support);
++        assert_eq!(minor, if host_support && client_support { 5 } else { 3 });
++        client.socket().set_nonblocking(true).unwrap();
++        (client, server)
++    }
++
++    fn no_receipt(client: &ProtocolSocket) {
++        assert!(matches!(client.receive_denial(),
++            Err(IpcError::Io(error)) if error.kind() == std::io::ErrorKind::WouldBlock));
++    }
++
++    fn create(client: &ProtocolSocket, server: &mut DenialEndpoint, object: TaskObjectId) {
++        client.send_android(&AndroidMessage::CreateTask {
++            object, display: AndroidDisplayId(object.0), package: "org.example.retirement".into(),
++        }, &[]).unwrap();
++        assert!(matches!(server.receive_action().unwrap(),
++            EndpointAction::CreateTask { object: actual, .. } if actual == object));
++    }
++
++    fn retire(client: &ProtocolSocket, server: &mut DenialEndpoint, object: TaskObjectId, nonce: RetirementNonce) {
++        client.send_android(&AndroidMessage::RetireTask { object, nonce }, &[]).unwrap();
++        assert!(matches!(server.receive_action().unwrap(),
++            EndpointAction::RetireTask { object: actual, nonce: actual_nonce }
++                if actual == object && actual_nonce == nonce));
++    }
++
++    // No DRM ioctl or renderer runs in this fixture. It supplies prior accepted
++    // protocol state and calls the real finish_release path; GPU completion is not proved.
++    fn seed_frame(server: &mut DenialEndpoint) {
++        let buffer = BufferMetadata {
++            id: BufferId(3), width: 8, height: 8,
++            format: FormatModifier { fourcc: u32::from_le_bytes(*b"XR24"), modifier: 0 },
++            planes: vec![droidloom_transport::PlaneMetadata { index: 0, offset: 0, stride: 32 }],
++        };
++        let task = server.tasks.get_mut(&OBJECT).unwrap();
++        task.state.bind_timelines().unwrap();
++        task.state.replace_feedback(1, [buffer.format]).unwrap();
++        task.state.configure(1, 8, 8, 60_000).unwrap();
++        task.state.acknowledge_configure(1).unwrap();
++        task.state.register_buffer(buffer).unwrap();
++        let accepted = task.state.present(OBJECT, FrameId(1), BufferId(3), 1, 1, 2, vec![]).unwrap();
++        task.pending.insert(FrameId(1), accepted);
++    }
++
++    fn receipt(client: &ProtocolSocket, object: TaskObjectId, nonce: RetirementNonce) {
++        assert_eq!(client.receive_denial().unwrap().message, DenialMessage::TaskRetired { object, nonce });
++        no_receipt(client);
++    }
++
++    #[test]
++    fn retirement_requires_mutual_capability_before_request() {
++        for (host, client) in [(false, false), (false, true), (true, false)] {
++            let (client, mut server) = pair(host, client);
++            client.send_android(&AndroidMessage::RetireTask { object: OBJECT, nonce: NONCE }, &[]).unwrap();
++            assert!(matches!(server.receive_action(), Err(EndpointError::RetirementUnsupported)));
++            assert!(server.retirements.is_empty());
++            no_receipt(&client);
++        }
++    }
++
++    #[test]
++    fn retirement_receipt_requires_the_real_engine_completion_call() {
++        let (client, mut server) = pair(true, true);
++        create(&client, &mut server, OBJECT);
++        retire(&client, &mut server, OBJECT, NONCE);
++        assert!(server.tasks.contains_key(&OBJECT));
++        no_receipt(&client);
++        server.complete_retirement(OBJECT, NONCE).unwrap();
++        receipt(&client, OBJECT, NONCE);
++        assert!(!server.tasks.contains_key(&OBJECT));
++        assert!(server.retirements.is_empty());
++    }
++
++    #[test]
++    fn retirement_frame_release_alone_does_not_confirm_engine_removal() {
++        let (client, mut server) = pair(true, true);
++        create(&client, &mut server, OBJECT);
++        seed_frame(&mut server);
++        retire(&client, &mut server, OBJECT, NONCE);
++        server.finish_release(OBJECT, FrameId(1)).unwrap();
++        assert!(matches!(client.receive_denial().unwrap().message, DenialMessage::BufferReleased { .. }));
++        no_receipt(&client);
++        assert!(server.tasks.contains_key(&OBJECT));
++        server.complete_retirement(OBJECT, NONCE).unwrap();
++        receipt(&client, OBJECT, NONCE);
++    }
++
++    #[test]
++    fn retirement_engine_callback_with_inflight_frame_is_rejected() {
++        let (client, mut server) = pair(true, true);
++        create(&client, &mut server, OBJECT);
++        seed_frame(&mut server);
++        retire(&client, &mut server, OBJECT, NONCE);
++        assert!(matches!(server.complete_retirement(OBJECT, NONCE), Err(EndpointError::TaskBusy(OBJECT))));
++        assert!(!server.retirements[&OBJECT].engine_completed);
++        no_receipt(&client);
++        server.finish_release(OBJECT, FrameId(1)).unwrap();
++        client.receive_denial().unwrap();
++        server.complete_retirement(OBJECT, NONCE).unwrap();
++        receipt(&client, OBJECT, NONCE);
++    }
++
++    #[test]
++    fn retirement_foreign_object_and_nonce_preserve_pending_owner() {
++        let (client, mut server) = pair(true, true);
++        create(&client, &mut server, OBJECT);
++        retire(&client, &mut server, OBJECT, NONCE);
++        for (object, nonce) in [(TaskObjectId(78), NONCE), (OBJECT, RetirementNonce(12))] {
++            assert!(matches!(server.complete_retirement(object, nonce),
++                Err(EndpointError::RetirementMismatch { .. })));
++        }
++        assert_eq!(server.retirements[&OBJECT].nonce, NONCE);
++        assert!(!server.retirements[&OBJECT].engine_completed);
++        no_receipt(&client);
++        server.complete_retirement(OBJECT, NONCE).unwrap();
++        receipt(&client, OBJECT, NONCE);
++    }
++
++    #[test]
++    fn retirement_duplicate_and_old_nonce_requests_cannot_reopen_a_completed_retirement() {
++        let (client, mut server) = pair(true, true);
++        create(&client, &mut server, OBJECT);
++        retire(&client, &mut server, OBJECT, NONCE);
++        for nonce in [NONCE, RetirementNonce(NONCE.0 + 1)] {
++            client.send_android(&AndroidMessage::RetireTask { object: OBJECT, nonce }, &[]).unwrap();
++            assert!(matches!(server.receive_action(), Err(EndpointError::RetirementMismatch { .. })));
++        }
++        server.complete_retirement(OBJECT, NONCE).unwrap();
++        receipt(&client, OBJECT, NONCE);
++        client.send_android(&AndroidMessage::RetireTask { object: TaskObjectId(78), nonce: NONCE }, &[]).unwrap();
++        assert!(matches!(server.receive_action(), Err(EndpointError::RetirementMismatch { .. })));
++        assert!(server.retirements.is_empty());
++        no_receipt(&client);
++    }
++
++    #[test]
++    fn retirement_absent_partial_create_still_requires_engine_absence_confirmation() {
++        let (client, mut server) = pair(true, true);
++        retire(&client, &mut server, OBJECT, NONCE);
++        assert!(!server.tasks.contains_key(&OBJECT));
++        assert!(server.retirements.contains_key(&OBJECT));
++        no_receipt(&client);
++        server.complete_retirement(OBJECT, NONCE).unwrap();
++        receipt(&client, OBJECT, NONCE);
++    }
++
++    #[test]
++    fn retirement_blocks_new_work_without_consuming_its_pending_tuple() {
++        let (client, mut server) = pair(true, true);
++        create(&client, &mut server, OBJECT);
++        retire(&client, &mut server, OBJECT, NONCE);
++        for message in [
++            AndroidMessage::BindTask { object: OBJECT, task: AndroidTaskId(9) },
++            AndroidMessage::SetContentState { object: OBJECT, flags: 0 },
++            AndroidMessage::RequestActivation { object: OBJECT },
++            AndroidMessage::CreateTask { object: OBJECT, display: AndroidDisplayId(77), package: "org.example.other".into() },
++        ] {
++            client.send_android(&message, &[]).unwrap();
++            assert!(matches!(server.receive_action(), Err(EndpointError::TaskRetiring(OBJECT))));
++        }
++        assert_eq!(server.retirements[&OBJECT].nonce, NONCE);
++        no_receipt(&client);
++    }
++
++    #[test]
++    fn retirement_disconnect_during_receipt_keeps_failed_attempt_and_prevents_resend() {
++        let (client, mut server) = pair(true, true);
++        create(&client, &mut server, OBJECT);
++        retire(&client, &mut server, OBJECT, NONCE);
++        drop(client);
++        assert!(matches!(server.complete_retirement(OBJECT, NONCE), Err(EndpointError::Ipc(_))));
++        let pending = &server.retirements[&OBJECT];
++        assert!(pending.engine_completed && pending.acknowledgement_attempted);
++        assert!(server.tasks.contains_key(&OBJECT));
++        assert!(matches!(server.complete_retirement(OBJECT, NONCE), Err(EndpointError::RetirementMismatch { .. })));
++    }
++
++    #[test]
++    fn retirement_duplicate_completion_never_acknowledges_a_later_object() {
++        let (client, mut server) = pair(true, true);
++        create(&client, &mut server, OBJECT);
++        retire(&client, &mut server, OBJECT, NONCE);
++        server.complete_retirement(OBJECT, NONCE).unwrap();
++        receipt(&client, OBJECT, NONCE);
++        create(&client, &mut server, OBJECT);
++        retire(&client, &mut server, OBJECT, RetirementNonce(12));
++        assert!(matches!(server.complete_retirement(OBJECT, NONCE), Err(EndpointError::RetirementMismatch { .. })));
++        assert!(!server.retirements[&OBJECT].engine_completed);
++        no_receipt(&client);
++        server.complete_retirement(OBJECT, RetirementNonce(12)).unwrap();
++        receipt(&client, OBJECT, RetirementNonce(12));
++    }
++
++    #[test]
++    fn retirement_nonce_exhaustion_never_wraps_to_a_replayed_request() {
++        let (client, mut server) = pair(true, true);
++        retire(&client, &mut server, OBJECT, RetirementNonce(u64::MAX));
++        server.complete_retirement(OBJECT, RetirementNonce(u64::MAX)).unwrap();
++        receipt(&client, OBJECT, RetirementNonce(u64::MAX));
++        client.send_android(&AndroidMessage::RetireTask { object: OBJECT, nonce: RetirementNonce(1) }, &[]).unwrap();
++        assert!(matches!(server.receive_action(), Err(EndpointError::RetirementMismatch { .. })));
++        no_receipt(&client);
++    }
++
++    #[test]
++    fn retirement_capability_cannot_downgrade_to_legacy_destroy() {
++        let (client, mut server) = pair(true, true);
++        create(&client, &mut server, OBJECT);
++        client.send_android(&AndroidMessage::DestroyTask { object: OBJECT }, &[]).unwrap();
++        assert!(matches!(server.receive_action(), Err(EndpointError::RetirementMismatch { .. })));
++        assert!(!server.tasks[&OBJECT].retiring);
++        no_receipt(&client);
++    }
++}
+--- /dev/null
++++ b/graphics/droidloom-wayland/src/retirement.rs
+@@ -0,0 +1,288 @@
++//! Object- and connection-bound engine retirement completion bookkeeping.
++//! Used by the real presenter around its drain, Wayland sync, and endpoint ACK.
++//! This module does not decide whether buffers or engine windows are retired.
++
++use std::collections::BTreeMap;
++use droidloom_denial_protocol::{MAX_TASK_OBJECTS, RetirementNonce, TaskObjectId};
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub(super) struct RetirementToken {
++    pub(super) generation: u64,
++    pub(super) object: TaskObjectId,
++    pub(super) nonce: RetirementNonce,
++}
++
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++pub(super) enum RetirementError {
++    Disconnected,
++    GenerationExhausted,
++    InvalidIdentity,
++    AlreadyPending,
++    Capacity,
++    StaleOrMissing,
++    WrongPhase,
++    WrongCallback,
++    ObjectStillLive,
++}
++impl std::fmt::Display for RetirementError {
++    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
++        write!(f, "{self:?}")
++    }
++}
++impl std::error::Error for RetirementError {}
++
++#[derive(Debug)]
++enum Phase<C> {
++    AwaitingDrain,
++    Barrier(C),
++    CompletionAttempted,
++}
++
++#[derive(Debug)]
++struct Pending<C> {
++    token: RetirementToken,
++    phase: Phase<C>,
++}
++
++#[derive(Debug)]
++pub(super) struct EngineRetirements<C> {
++    generation: u64,
++    connected: bool,
++    pending: BTreeMap<TaskObjectId, Pending<C>>,
++}
++
++impl<C: Eq> EngineRetirements<C> {
++    pub(super) fn new() -> Self {
++        Self { generation: 0, connected: false, pending: BTreeMap::new() }
++    }
++
++    pub(super) fn connect(&mut self) -> Result<(), RetirementError> {
++        if self.connected || !self.pending.is_empty() {
++            return Err(RetirementError::AlreadyPending);
++        }
++        self.generation = self.generation.checked_add(1)
++            .ok_or(RetirementError::GenerationExhausted)?;
++        self.connected = true;
++        Ok(())
++    }
++
++    pub(super) fn disconnect(&mut self) {
++        // Dropping callback handles does not assert that any old peer retired.
++        self.connected = false;
++        self.pending.clear();
++    }
++
++    pub(super) fn begin(
++        &mut self, object: TaskObjectId, nonce: RetirementNonce,
++    ) -> Result<RetirementToken, RetirementError> {
++        if !self.connected { return Err(RetirementError::Disconnected); }
++        if object.0 == 0 || nonce.0 == 0 { return Err(RetirementError::InvalidIdentity); }
++        if self.pending.contains_key(&object) { return Err(RetirementError::AlreadyPending); }
++        if self.pending.len() >= usize::try_from(MAX_TASK_OBJECTS).unwrap_or(usize::MAX) {
++            return Err(RetirementError::Capacity);
++        }
++        let token = RetirementToken { generation: self.generation, object, nonce };
++        self.pending.insert(object, Pending { token, phase: Phase::AwaitingDrain });
++        Ok(token)
++    }
++
++    pub(super) fn drained(
++        &self, mut object_exists: impl FnMut(TaskObjectId) -> bool,
++    ) -> Vec<RetirementToken> {
++        if !self.connected { return Vec::new(); }
++        self.pending.values().filter_map(|entry| {
++            (matches!(&entry.phase, Phase::AwaitingDrain) && !object_exists(entry.token.object))
++                .then_some(entry.token)
++        }).collect()
++    }
++
++    pub(super) fn bind_barrier(
++        &mut self, token: RetirementToken, callback: C,
++    ) -> Result<(), RetirementError> {
++        let entry = self.current_mut(token)?;
++        if !matches!(&entry.phase, Phase::AwaitingDrain) {
++            return Err(RetirementError::WrongPhase);
++        }
++        entry.phase = Phase::Barrier(callback);
++        Ok(())
++    }
++
++    pub(super) fn begin_completion(
++        &mut self, token: RetirementToken, callback: &C, object_still_live: bool,
++    ) -> Result<bool, RetirementError> {
++        // Wayland callbacks from a disconnected endpoint are benign late
++        // observations. They can never complete a new peer's identical object.
++        if !self.connected || token.generation != self.generation { return Ok(false); }
++        let entry = self.current_mut(token)?;
++        match &entry.phase {
++            Phase::Barrier(expected) if expected == callback => {}
++            Phase::Barrier(_) => return Err(RetirementError::WrongCallback),
++            _ => return Err(RetirementError::WrongPhase),
++        }
++        if object_still_live { return Err(RetirementError::ObjectStillLive); }
++        // Record before crossing into endpoint.send_denial. A send error
++        // cannot cause another ACK attempt or be converted into completion.
++        entry.phase = Phase::CompletionAttempted;
++        Ok(true)
++    }
++
++    pub(super) fn finish(
++        &mut self, token: RetirementToken,
++    ) -> Result<(), RetirementError> {
++        let entry = self.current_mut(token)?;
++        if !matches!(&entry.phase, Phase::CompletionAttempted) {
++            return Err(RetirementError::WrongPhase);
++        }
++        self.pending.remove(&token.object);
++        Ok(())
++    }
++
++    fn current_mut(
++        &mut self, token: RetirementToken,
++    ) -> Result<&mut Pending<C>, RetirementError> {
++        if !self.connected || token.generation != self.generation {
++            return Err(RetirementError::StaleOrMissing);
++        }
++        self.pending.get_mut(&token.object)
++            .filter(|entry| entry.token == token)
++            .ok_or(RetirementError::StaleOrMissing)
++    }
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    const OBJECT: TaskObjectId = TaskObjectId(7);
++    const NONCE: RetirementNonce = RetirementNonce(9);
++
++    fn pending() -> (EngineRetirements<u64>, RetirementToken) {
++        let mut ledger = EngineRetirements::new();
++        ledger.connect().unwrap();
++        let token = ledger.begin(OBJECT, NONCE).unwrap();
++        (ledger, token)
++    }
++
++    #[test]
++    fn engine_drain_and_exact_callback_both_precede_completion() {
++        let (mut ledger, token) = pending();
++        assert!(ledger.drained(|_| true).is_empty());
++        assert_eq!(ledger.drained(|_| false), vec![token]);
++        assert_eq!(ledger.begin_completion(token, &11, false), Err(RetirementError::WrongPhase));
++        ledger.bind_barrier(token, 11).unwrap();
++        assert!(ledger.drained(|_| false).is_empty());
++        assert!(ledger.begin_completion(token, &11, false).unwrap());
++        ledger.finish(token).unwrap();
++        assert!(ledger.pending.is_empty());
++    }
++
++    #[test]
++    fn engine_live_object_blocks_callback_without_consuming_it() {
++        let (mut ledger, token) = pending();
++        ledger.bind_barrier(token, 11).unwrap();
++        assert_eq!(ledger.begin_completion(token, &11, true), Err(RetirementError::ObjectStillLive));
++        assert!(ledger.begin_completion(token, &11, false).unwrap());
++    }
++
++    #[test]
++    fn engine_wrong_object_or_nonce_cannot_complete_owned_request() {
++        let (mut ledger, token) = pending();
++        ledger.bind_barrier(token, 11).unwrap();
++        for wrong in [
++            RetirementToken { object: TaskObjectId(8), ..token },
++            RetirementToken { nonce: RetirementNonce(10), ..token },
++        ] {
++            assert_eq!(ledger.begin_completion(wrong, &11, false), Err(RetirementError::StaleOrMissing));
++        }
++        assert!(ledger.begin_completion(token, &11, false).unwrap());
++    }
++
++    #[test]
++    fn engine_wrong_callback_preserves_original_barrier() {
++        let (mut ledger, token) = pending();
++        ledger.bind_barrier(token, 11).unwrap();
++        assert_eq!(ledger.begin_completion(token, &12, false), Err(RetirementError::WrongCallback));
++        assert!(ledger.begin_completion(token, &11, false).unwrap());
++    }
++
++    #[test]
++    fn engine_disconnected_callback_produces_no_completion() {
++        let (mut ledger, token) = pending();
++        ledger.bind_barrier(token, 11).unwrap();
++        ledger.disconnect();
++        assert!(!ledger.begin_completion(token, &11, false).unwrap());
++        assert!(ledger.pending.is_empty());
++    }
++
++    #[test]
++    fn engine_old_peer_callback_cannot_complete_identical_new_tuple() {
++        let (mut ledger, old) = pending();
++        ledger.bind_barrier(old, 11).unwrap();
++        ledger.disconnect();
++        ledger.connect().unwrap();
++        let new = ledger.begin(OBJECT, NONCE).unwrap();
++        ledger.bind_barrier(new, 11).unwrap();
++        assert_ne!(old.generation, new.generation);
++        assert!(!ledger.begin_completion(old, &11, false).unwrap());
++        assert!(ledger.begin_completion(new, &11, false).unwrap());
++    }
++
++    #[test]
++    fn engine_duplicate_callback_cannot_retry_failed_ack_attempt() {
++        let (mut ledger, token) = pending();
++        ledger.bind_barrier(token, 11).unwrap();
++        assert!(ledger.begin_completion(token, &11, false).unwrap());
++        // Deliberately omit finish: endpoint ACK failed after the boundary.
++        assert_eq!(ledger.begin_completion(token, &11, false), Err(RetirementError::WrongPhase));
++        assert!(matches!(ledger.pending[&OBJECT].phase, Phase::CompletionAttempted));
++    }
++
++    #[test]
++    fn engine_finish_without_callback_is_rejected() {
++        let (mut ledger, token) = pending();
++        assert_eq!(ledger.finish(token), Err(RetirementError::WrongPhase));
++        ledger.bind_barrier(token, 11).unwrap();
++        assert_eq!(ledger.finish(token), Err(RetirementError::WrongPhase));
++    }
++
++    #[test]
++    fn engine_duplicate_object_cannot_replace_original_nonce() {
++        let (mut ledger, token) = pending();
++        assert_eq!(ledger.begin(OBJECT, RetirementNonce(10)), Err(RetirementError::AlreadyPending));
++        assert_eq!(ledger.pending[&OBJECT].token, token);
++    }
++
++    #[test]
++    fn engine_replayed_callback_after_finish_has_no_owner() {
++        let (mut ledger, token) = pending();
++        ledger.bind_barrier(token, 11).unwrap();
++        assert!(ledger.begin_completion(token, &11, false).unwrap());
++        ledger.finish(token).unwrap();
++        assert_eq!(ledger.begin_completion(token, &11, false), Err(RetirementError::StaleOrMissing));
++        assert_eq!(ledger.finish(token), Err(RetirementError::StaleOrMissing));
++    }
++
++    #[test]
++    fn engine_bound_limits_reject_capacity_and_generation_wrap() {
++        let mut ledger = EngineRetirements::<u64>::new();
++        ledger.connect().unwrap();
++        for n in 1..=u64::from(MAX_TASK_OBJECTS) {
++            ledger.begin(TaskObjectId(n), RetirementNonce(n)).unwrap();
++        }
++        assert_eq!(ledger.begin(TaskObjectId(u64::from(MAX_TASK_OBJECTS) + 1), RetirementNonce(99)),
++            Err(RetirementError::Capacity));
++        ledger.disconnect();
++        ledger.generation = u64::MAX;
++        assert_eq!(ledger.connect(), Err(RetirementError::GenerationExhausted));
++        assert!(!ledger.connected);
++    }
++
++    #[test]
++    fn engine_invalid_identity_and_disconnected_requests_do_not_allocate() {
++        let mut ledger = EngineRetirements::<u64>::new();
++        assert_eq!(ledger.begin(OBJECT, NONCE), Err(RetirementError::Disconnected));
++        ledger.connect().unwrap();
++        assert_eq!(ledger.begin(TaskObjectId(0), NONCE), Err(RetirementError::InvalidIdentity));
++        assert_eq!(ledger.begin(OBJECT, RetirementNonce(0)), Err(RetirementError::InvalidIdentity));
++        assert!(ledger.pending.is_empty());
++    }
++}
+--- a/graphics/droidloom-wayland/src/main.rs
++++ b/graphics/droidloom-wayland/src/main.rs
+@@ -9,6 +9,7 @@
+ mod notifications;
+ mod insets;
+ mod presentation_audit;
++mod retirement;
+ mod text_input;
+ 
+ use std::collections::{BTreeMap, VecDeque};
+@@ -32,7 +33,7 @@
+ use droidloom_denial_ipc::IpcError;
+ use droidloom_denial_protocol::{
+     AcceptedWireFrame, BufferId, BufferMetadata, FormatModifier, FrameId, InputEvent, KeyAction,
+-    PlaneMetadata, TaskObjectId, TouchAction, Transform, Visibility, presentation_flag,
++    PlaneMetadata, RetirementNonce, TaskObjectId, TouchAction, Transform, Visibility, presentation_flag,
+ };
+ use droidloom_syncobj::{SyncobjDevice, WaylandTimeline};
+ use droidloom_window_policy::{LogicalSize, SessionMode, WindowPolicyPaths, WindowPolicyStore};
+@@ -57,9 +58,10 @@
+     Window, WindowConfigure, WindowDecorations, WindowHandler,
+ };
+ use thiserror::Error;
++use retirement::{EngineRetirements, RetirementToken};
+ use wayland_client::globals::{BindError, registry_queue_init};
+ use wayland_client::protocol::{
+-    wl_buffer, wl_keyboard, wl_output, wl_pointer, wl_seat, wl_surface, wl_touch,
++    wl_buffer, wl_callback, wl_keyboard, wl_output, wl_pointer, wl_seat, wl_surface, wl_touch,
+ };
+ use wayland_client::{Connection, Dispatch, EventQueue, Proxy, QueueHandle, WEnum, backend::WaylandError};
+ use wayland_protocols::wp::fractional_scale::v1::client::{
+@@ -108,6 +110,8 @@
+     Listener(#[from] EndpointListenerError),
+     #[error("Droidloom endpoint failure: {0}")]
+     Endpoint(#[from] EndpointError),
++    #[error("Droidloom engine retirement failure: {0}")]
++    Retirement(#[from] retirement::RetirementError),
+     #[error("Droidloom IPC failure: {0}")]
+     Ipc(#[from] IpcError),
+     #[error("DRM syncobj failure: {0}")]
+@@ -275,6 +279,7 @@
+     listener: DenialEndpointListener,
+     window_policy: WindowPolicyStore,
+     endpoint: Option<DenialEndpoint>,
++    retirements: EngineRetirements<wl_callback::WlCallback>,
+     tasks: BTreeMap<TaskObjectId, TaskWindow>,
+     keyboard: Option<wl_keyboard::WlKeyboard>,
+     pointer: Option<wl_pointer::WlPointer>,
+@@ -1196,6 +1201,59 @@
+         Ok(())
+     }
+ 
++    fn request_retirement(
++        &mut self,
++        object: TaskObjectId,
++        nonce: RetirementNonce,
++    ) -> Result<(), PresenterError> {
++        self.retirements.begin(object, nonce)?;
++        if self.tasks.contains_key(&object) {
++            self.destroy_task(object)?;
++        }
++        // If absent, no ACK is sent here. The same queue barrier below must
++        // still complete, and the endpoint independently checks its frame map.
++        Ok(())
++    }
++
++    fn begin_retirement_barriers(
++        &mut self,
++        conn: &Connection,
++        qh: &QueueHandle<Self>,
++    ) -> Result<(), PresenterError> {
++        if self.fatal.is_some() {
++            return Err(PresenterError::Configuration("retirement cannot pass after engine failure"));
++        }
++        let tasks = &self.tasks;
++        for token in self.retirements.drained(|object| tasks.contains_key(&object)) {
++            // remove_task has already dropped the task, cached imports, layer
++            // stream and their Wayland destroy requests. Requests and events
++            // on this connection are ordered; done is the server-side barrier.
++            let callback = conn.display().sync(qh, token);
++            self.retirements.bind_barrier(token, callback)?;
++        }
++        Ok(())
++    }
++
++    fn finish_retirement_barrier(
++        &mut self,
++        token: RetirementToken,
++        callback: &wl_callback::WlCallback,
++    ) -> Result<(), PresenterError> {
++        if !self.retirements.begin_completion(
++            token, callback, self.tasks.contains_key(&token.object),
++        )? {
++            return Ok(()); // A late callback belonging only to a disconnected peer.
++        }
++        if self.fatal.is_some() {
++            return Err(PresenterError::Configuration("retirement callback followed engine failure"));
++        }
++        self.endpoint.as_mut()
++            .ok_or(PresenterError::Configuration("retirement endpoint disappeared"))?
++            .complete_retirement(token.object, token.nonce)?;
++        self.retirements.finish(token)?;
++        Ok(())
++    }
++
+     fn process_action(
+         &mut self,
+         qh: &QueueHandle<Self>,
+@@ -1230,6 +1288,7 @@
+                 package,
+             } => self.create_task(qh, object, &package)?,
+             EndpointAction::DestroyTask { object } => self.destroy_task(object)?,
++            EndpointAction::RetireTask { object, nonce } => self.request_retirement(object, nonce)?,
+             EndpointAction::RegisterBuffer {
+                 object,
+                 buffer,
+@@ -1264,7 +1323,9 @@
+                 let endpoint = if self.activation.supported() {
+                     endpoint.with_activation_requests()
+                 } else { endpoint };
++                let endpoint = endpoint.with_retirement_receipts();
+                 endpoint.socket().socket().set_nonblocking(true)?;
++                self.retirements.connect()?;
+                 self.endpoint = Some(endpoint);
+             }
+             Err(error) if listener_would_block(&error) => {}
+@@ -1293,6 +1354,9 @@
+     }
+ 
+     fn disconnect_endpoint(&mut self) {
++        // Invalidate all old callback identities before any forced local drop.
++        // This path can never be used as a retirement receipt.
++        self.retirements.disconnect();
+         self.activation.clear();
+         self.text_input.disconnect();
+         self.endpoint = None;
+@@ -1404,6 +1468,23 @@
+     }
+ }
+ 
++impl Dispatch<wl_callback::WlCallback, RetirementToken> for App {
++    fn event(
++        state: &mut Self,
++        callback: &wl_callback::WlCallback,
++        event: wl_callback::Event,
++        token: &RetirementToken,
++        _conn: &Connection,
++        _qh: &QueueHandle<Self>,
++    ) {
++        if let wl_callback::Event::Done { .. } = event {
++            if let Err(error) = state.finish_retirement_barrier(*token, callback) {
++                state.fail(&error);
++            }
++        }
++    }
++}
++
+ impl CompositorHandler for App {
+     fn scale_factor_changed(
+         &mut self,
+@@ -2313,6 +2394,7 @@
+         listener,
+         window_policy,
+         endpoint: None,
++        retirements: EngineRetirements::new(),
+         tasks: BTreeMap::new(),
+         keyboard: None,
+         pointer: None,
+@@ -2361,6 +2443,7 @@
+         }
+         app.unmap_requested_tasks()?;
+         app.release_ready_frames()?;
++        app.begin_retirement_barriers(conn, &qh)?;
+         poll_sources(conn, &mut event_queue, &mut app, &mut poll_descriptors)?;
+     }
+ }
+--- a/graphics/droidloom-wayland/src/layers.rs
++++ b/graphics/droidloom-wayland/src/layers.rs
+@@ -341,6 +341,9 @@
+             if let Some(stream) = self.tasks.get_mut(&object).and_then(|t| t.layers.as_mut()) {
+                 stream.release()?;
+             }
++            if self.tasks.get(&object).is_some_and(|task| task.closing) {
++                continue; // Drain existing reads, but never accept new layer work after RetireTask.
++            }
+             for _ in 0..128 {
+                 let Some(stream) = self.tasks.get_mut(&object).and_then(|t| t.layers.as_mut())
+                 else {
+@@ -376,6 +379,11 @@
+                     // across the two file descriptors.
+                     self.drain_endpoint(qh)?;
+                 }
++                // The barrier above can receive retirement after this record
++                // was read. Its descriptors drop here; do not create new reads.
++                if self.tasks.get(&object).is_some_and(|task| task.closing) {
++                    break;
++                }
+                 let Some(mut stream) = self.tasks.get_mut(&object).and_then(|t| t.layers.take())
+                 else {
+                     break;
+@@ -389,6 +397,9 @@
+         // A barrier above may drain endpoint changes for any task. Publish
+         // after all barriers so no configuration waits for a future wakeup.
+         for object in objects.iter().copied() {
++            if self.tasks.get(&object).is_some_and(|task| task.closing) {
++                continue;
++            }
+             let Some(config) = self.layer_config(object) else {
+                 continue;
+             };
+--- a/graphics/droidloom-composer-aidl/src/denial.rs
++++ b/graphics/droidloom-composer-aidl/src/denial.rs
+@@ -7,7 +7,8 @@
+ 
+ use std::collections::BTreeMap;
+ use std::os::fd::AsFd;
+-use std::sync::{Arc, Mutex, MutexGuard};
++use std::sync::{Arc, Condvar, Mutex, MutexGuard};
++use std::time::{Duration, Instant};
+ 
+ use binder::ParcelFileDescriptor;
+ use droidloom_composer::denial::{
+@@ -18,7 +19,7 @@
+     hwc3::Session,
+ };
+ use droidloom_denial_ipc::{AttachedDescriptor, IpcError, ProtocolSocket};
+-use droidloom_denial_protocol::{AndroidMessage, DenialMessage, DescriptorKind, TaskObjectId};
++use droidloom_denial_protocol::{AndroidMessage, DenialMessage, DescriptorKind, RetirementNonce, TaskObjectId};
+ use droidloom_syncobj::{AndroidTaskTimelines, SyncobjDevice, SyncobjError};
+ use droidloom_syncobj::frame_trace;
+ use droidloom_transport::{AcceptedFrame, BufferId, BufferMetadata};
+@@ -39,6 +40,53 @@
+     /// No live task owns the requested display.
+     #[error("Denial task display {0:?} is not registered")]
+     UnknownDisplay(DisplayId),
++    /// Cleanup named a display currently owned by a different protocol object.
++    #[error("Denial display {display:?} is owned by {actual:?}, not {expected:?}")]
++    OwnershipMismatch {
++        /// Display whose ownership was checked while holding the task map.
++        display: DisplayId,
++        /// Object that the caller is authorized to retire.
++        expected: TaskObjectId,
++        /// Live object that must remain untouched.
++        actual: TaskObjectId,
++    },
++    /// A task cannot be registered without a qualified retirement protocol.
++    #[error("Denial retirement receipts were not negotiated")]
++    RetirementUnsupported,
++    /// A partially registered channel may only be retired.
++    #[error("Denial display {0:?} registration did not complete")]
++    RegistrationIncomplete(DisplayId),
++    /// No new submission or binding is allowed after retirement begins.
++    #[error("Denial display {0:?} is retiring")]
++    TaskRetiring(DisplayId),
++    /// The exact remote receipt or local reservations are still outstanding.
++    #[error("Denial retirement pending for {object:?}, nonce {nonce:?}")]
++    RetirementPending {
++        /// Object still owned locally.
++        object: TaskObjectId,
++        /// Original nonce; a later caller must not send a new request.
++        nonce: RetirementNonce,
++    },
++    /// A receipt did not match the single pending object/request.
++    #[error("Denial retirement receipt mismatch for {object:?}, nonce {nonce:?}")]
++    RetirementMismatch {
++        /// Object named by the receipt.
++        object: TaskObjectId,
++        /// Nonce named by the receipt.
++        nonce: RetirementNonce,
++    },
++    /// A receipt came through another socket instance.
++    #[error("Denial retirement receipt belongs to another peer connection")]
++    RetirementForeignPeer,
++    /// No receipt can qualify once this peer has disconnected.
++    #[error("Denial peer disconnected before local retirement completed")]
++    PeerDisconnected,
++    /// Request identities cannot wrap or be reused.
++    #[error("Denial retirement nonce space exhausted")]
++    RetirementNonceExhausted,
++    /// A remote receipt contradicted locally outstanding accepted frames.
++    #[error("Denial retirement receipt arrived before accepted frames released for {0:?}")]
++    RetirementFramesOutstanding(TaskObjectId),
+     /// A task-scoped host event named no live task object.
+     #[error("Denial task object {0:?} is not registered")]
+     UnknownObject(TaskObjectId),
+@@ -89,7 +137,17 @@
+             | Self::DuplicateRenderTarget(_)
+             | Self::UnknownRenderTarget(_)
+             | Self::Bridge(_) => ErrorCode::BadParameter,
+-            Self::DuplicateDisplay(_)
++            Self::RetirementUnsupported
++            | Self::RegistrationIncomplete(_)
++            | Self::TaskRetiring(_)
++            | Self::RetirementPending { .. }
++            | Self::RetirementMismatch { .. }
++            | Self::RetirementForeignPeer
++            | Self::PeerDisconnected
++            | Self::RetirementNonceExhausted
++            | Self::RetirementFramesOutstanding(_)
++            | Self::OwnershipMismatch { .. }
++            | Self::DuplicateDisplay(_)
+             | Self::DuplicateObject(_)
+             | Self::UnknownObject(_)
+             | Self::ConnectionMessage
+@@ -109,7 +167,9 @@
+ pub struct DenialPresentationSink {
+     socket: Arc<ProtocolSocket>,
+     device: SyncobjDevice,
+-    tasks: Arc<Mutex<BTreeMap<DisplayId, TaskChannel>>>,
++    tasks: Arc<Mutex<TaskTable>>,
++    retirement_changed: Arc<Condvar>,
++    retirement_receipts: bool,
+     compositor: Arc<Mutex<Option<LayerCompositor>>>,
+     activation_requests: bool,
+ }
+@@ -120,7 +180,9 @@
+         Self {
+             socket: Arc::new(socket),
+             device,
+-            tasks: Arc::new(Mutex::new(BTreeMap::new())),
++            tasks: Arc::new(Mutex::new(TaskTable::default())),
++            retirement_changed: Arc::new(Condvar::new()),
++            retirement_receipts: false,
+             compositor: Arc::new(Mutex::new(None)),
+             activation_requests: false,
+         }
+@@ -133,6 +195,13 @@
+         self
+     }
+ 
++    /// Record the capability only after a minor-5 ServerHello was qualified.
++    #[must_use]
++    pub fn with_retirement_receipts(mut self, enabled: bool) -> Self {
++        self.retirement_receipts = enabled;
++        self
++    }
++
+     /// Request host activation of an already bound task when supported.
+     ///
+     /// # Errors
+@@ -141,6 +210,7 @@
+         if self.activation_requests {
+             let tasks = self.lock_tasks()?;
+             let channel = tasks.get(&display).ok_or(DenialSinkError::UnknownDisplay(display))?;
++            require_live(channel, display)?;
+             self.socket.send_android(&AndroidMessage::RequestActivation {
+                 object: channel.binding.object(),
+             }, &[])?;
+@@ -162,48 +232,79 @@
+     /// # Errors
+     ///
+     /// Rejects duplicate display/object ownership and propagates timeline or
+-    /// transport failures. A failed timeline bind attempts remote task cleanup.
++    /// transport failures. Partial registration retains its exact local owner
++    /// and primary failure until the separate confirmed retirement completes.
+     pub fn register_task(
+         &self,
+         object: TaskObjectId,
+         reservation: &ReservedTaskWindowSpec,
+     ) -> Result<(), DenialSinkError> {
++        if !self.retirement_receipts {
++            return Err(DenialSinkError::RetirementUnsupported);
++        }
+         let mut tasks = self.lock_tasks()?;
+-        if tasks.contains_key(&reservation.display) {
++        if tasks.peer_disconnected {
++            return Err(DenialSinkError::PeerDisconnected);
++        }
++        if tasks.contains_key(&reservation.display)
++            || tasks.preparations.contains_key(&reservation.display)
++        {
+             return Err(DenialSinkError::DuplicateDisplay(reservation.display));
+         }
+-        if tasks.values().any(|task| task.binding.object() == object) {
++        if tasks.values().any(|task| task.binding.object() == object)
++            || tasks.preparations.values().any(|entry| entry.object == object)
++        {
+             return Err(DenialSinkError::DuplicateObject(object));
+         }
+-
+-        let binding = DenialTaskBinding::new(object, reservation)?;
+-        let timelines = AndroidTaskTimelines::create(&self.device)?;
+-        let descriptors = timelines.export_descriptors()?;
+-        self.socket
+-            .send_android(&binding.create_task_message(), &[])?;
++        // Claim before fallible local preparation. No remote call can precede
++        // this record; preparation-only cleanup therefore has explicit proof.
++        tasks.preparations.insert(reservation.display, PreparingTask {
++            object, primary_error: None,
++        });
++        let prepared = (|| -> Result<_, DenialSinkError> {
++            let binding = DenialTaskBinding::new(object, reservation)?;
++            let timelines = AndroidTaskTimelines::create(&self.device)?;
++            let descriptors = timelines.export_descriptors()?;
++            Ok((binding, timelines, descriptors))
++        })();
++        let (binding, timelines, descriptors) = match prepared {
++            Ok(value) => value,
++            Err(error) => {
++                tasks.preparations.get_mut(&reservation.display)
++                    .expect("preparation was inserted").primary_error = Some(error.to_string());
++                return Err(error);
++            }
++        };
++        tasks.insert(reservation.display, TaskChannel {
++            binding, timelines,
++            render_targets: BTreeMap::new(),
++            frame_targets: BTreeMap::new(),
++            trace_fences: BTreeMap::new(),
++            content_opaque: None,
++            surfaceflinger_present_fence: None,
++            android_display_extent: None,
++            registration_complete: false,
++            create_attempted: false,
++            create_sent: false,
++            timelines_attempted: false,
++            primary_registration_error: None,
++            retirement: None,
++        });
++        tasks.preparations.remove(&reservation.display);
++        let channel = tasks.get_mut(&reservation.display).expect("channel was inserted");
++        channel.create_attempted = true;
++        if let Err(error) = self.socket.send_android(&channel.binding.create_task_message(), &[]) {
++            channel.primary_registration_error = Some(error.to_string());
++            return Err(error.into());
++        }
++        channel.create_sent = true;
++        channel.timelines_attempted = true;
+         let timeline_fds = [descriptors.acquire.as_fd(), descriptors.release.as_fd()];
+-        if let Err(error) = self
+-            .socket
+-            .send_android(&binding.bind_timelines_message(), &timeline_fds)
+-        {
+-            let _ = self
+-                .socket
+-                .send_android(&AndroidMessage::DestroyTask { object }, &[]);
++        if let Err(error) = self.socket.send_android(&channel.binding.bind_timelines_message(), &timeline_fds) {
++            channel.primary_registration_error = Some(error.to_string());
+             return Err(error.into());
+         }
+-        tasks.insert(
+-            reservation.display,
+-            TaskChannel {
+-                binding,
+-                timelines,
+-                render_targets: BTreeMap::new(),
+-                frame_targets: BTreeMap::new(),
+-                trace_fences: BTreeMap::new(),
+-                content_opaque: None,
+-                surfaceflinger_present_fence: None,
+-                android_display_extent: None,
+-            },
+-        );
++        channel.registration_complete = true;
+         Ok(())
+     }
+ 
+@@ -225,6 +326,7 @@
+         let channel = tasks
+             .get_mut(&display)
+             .ok_or(DenialSinkError::UnknownDisplay(display))?;
++        require_live(channel, display)?;
+         if channel.binding.task() == Some(task) {
+             return Ok(());
+         }
+@@ -234,26 +336,149 @@
+         Ok(())
+     }
+ 
+-    /// Destroy one task after the safe Composer core confirms it has no
+-    /// in-flight buffers.
++    /// Retire only the exact owned object and wait for its confirmed receipt.
+     ///
+-    /// # Errors
++    /// No tasks/session mutex is held while waiting. A timeout retains the
++    /// original request and resources; a later call observes that same request
++    /// without sending it again. Preparation before any send is locally proven.
+     ///
+-    /// Rejects an unknown display. Local state remains available for retry if
+-    /// the destroy record cannot be sent.
+-    pub fn unregister_task(&self, display: DisplayId) -> Result<(), DenialSinkError> {
++    /// # Errors
++    /// Rejects foreign ownership, unsupported/disconnected peers, an unconfirmed
++    /// receipt, or outstanding local target reservations. Errors preserve state.
++    pub fn unregister_task(
++        &self,
++        display: DisplayId,
++        expected_object: TaskObjectId,
++    ) -> Result<(), DenialSinkError> {
++        let deadline = Instant::now().checked_add(Duration::from_secs(2))
++            .ok_or(DenialSinkError::RetirementNonceExhausted)?;
+         let mut tasks = self.lock_tasks()?;
+-        let object = tasks
+-            .get(&display)
+-            .ok_or(DenialSinkError::UnknownDisplay(display))?
+-            .binding
+-            .object();
+-        self.socket
+-            .send_android(&AndroidMessage::DestroyTask { object }, &[])?;
+-        tasks.remove(&display);
++        if tasks.peer_disconnected { return Err(DenialSinkError::PeerDisconnected); }
++        if let Some(preparing) = tasks.preparations.get(&display) {
++            if preparing.object != expected_object {
++                return Err(DenialSinkError::OwnershipMismatch {
++                    display, expected: expected_object, actual: preparing.object,
++                });
++            }
++            // This exact record can exist only before the first remote send.
++            tasks.preparations.remove(&display);
++            return Ok(());
++        }
++        let channel = tasks.get(&display).ok_or(DenialSinkError::UnknownDisplay(display))?;
++        let actual = channel.binding.object();
++        if actual != expected_object {
++            return Err(DenialSinkError::OwnershipMismatch {
++                display, expected: expected_object, actual,
++            });
++        }
++        if !channel.create_attempted {
++            let local = tasks.remove(&display);
++            drop(tasks);
++            drop(local);
++            return Ok(());
++        }
++        if !self.retirement_receipts { return Err(DenialSinkError::RetirementUnsupported); }
++        let existing = channel.retirement.as_ref().map(|entry| entry.nonce);
++        let nonce = match existing {
++            Some(nonce) => nonce,
++            None => {
++                let next = tasks.next_nonce.checked_add(1)
++                    .ok_or(DenialSinkError::RetirementNonceExhausted)?;
++                tasks.next_nonce = next;
++                let nonce = RetirementNonce(next);
++                let channel = tasks.get_mut(&display).expect("exact owner checked");
++                channel.retirement = Some(PendingRetirement {
++                    nonce, send_attempted: true, send_error: None, receipt_received: false,
++                });
++                // The record precedes the send. A send error may still be
++                // followed by a matching receipt, but never triggers a resend.
++                if let Err(error) = self.socket.send_android(
++                    &AndroidMessage::RetireTask { object: expected_object, nonce }, &[],
++                ) {
++                    channel.retirement.as_mut().expect("request was recorded")
++                        .send_error = Some(error.to_string());
++                    return Err(error.into());
++                }
++                nonce
++            }
++        };
++        loop {
++            if tasks.peer_disconnected { return Err(DenialSinkError::PeerDisconnected); }
++            let channel = tasks.get(&display).ok_or(DenialSinkError::UnknownDisplay(display))?;
++            if channel.binding.object() != expected_object {
++                return Err(DenialSinkError::OwnershipMismatch {
++                    display, expected: expected_object, actual: channel.binding.object(),
++                });
++            }
++            let request = channel.retirement.as_ref()
++                .ok_or(DenialSinkError::RetirementMismatch { object: expected_object, nonce })?;
++            if request.nonce != nonce {
++                return Err(DenialSinkError::RetirementMismatch { object: expected_object, nonce });
++            }
++            if request.receipt_received
++                && channel.frame_targets.is_empty()
++                && channel.render_targets.values().all(|target| !target.busy && !target.reserved)
++            {
++                let retired = tasks.remove(&display);
++                drop(tasks);
++                drop(retired);
++                return Ok(());
++            }
++            let remaining = deadline.saturating_duration_since(Instant::now());
++            if remaining.is_zero() {
++                return Err(DenialSinkError::RetirementPending { object: expected_object, nonce });
++            }
++            let (next, _) = self.retirement_changed.wait_timeout(tasks, remaining)
++                .map_err(|_| DenialSinkError::Poisoned)?;
++            tasks = next;
++        }
++    }
++
++    /// Apply a receipt read from this exact socket by its single event receiver.
++    /// This path never takes the Composer Session or coordinator operation lock.
++    pub fn accept_retirement_receipt(
++        &self,
++        receiver: &ProtocolSocket,
++        object: TaskObjectId,
++        nonce: RetirementNonce,
++    ) -> Result<(), DenialSinkError> {
++        if !std::ptr::eq(receiver, self.socket.as_ref()) {
++            return Err(DenialSinkError::RetirementForeignPeer);
++        }
++        let mut tasks = self.lock_tasks()?;
++        if tasks.peer_disconnected { return Err(DenialSinkError::PeerDisconnected); }
++        let channel = tasks.values_mut().find(|channel| channel.binding.object() == object)
++            .ok_or(DenialSinkError::UnknownObject(object))?;
++        let request = channel.retirement.as_mut()
++            .ok_or(DenialSinkError::RetirementMismatch { object, nonce })?;
++        if request.nonce != nonce || !request.send_attempted || request.receipt_received {
++            return Err(DenialSinkError::RetirementMismatch { object, nonce });
++        }
++        if !channel.frame_targets.is_empty() || channel.render_targets.values().any(|target| target.busy) {
++            return Err(DenialSinkError::RetirementFramesOutstanding(object));
++        }
++        request.receipt_received = true;
++        self.retirement_changed.notify_all();
+         Ok(())
+     }
+ 
++    /// Wake waiters when the single receiver ends. EOF is never a receipt.
++    pub fn peer_disconnected(&self) -> Result<(), DenialSinkError> {
++        let mut tasks = self.lock_tasks()?;
++        tasks.peer_disconnected = true;
++        self.retirement_changed.notify_all();
++        Ok(())
++    }
++
++    /// Metadata for a partial or retiring task cannot publish new app state.
++    /// BufferReleased is handled separately so already accepted frames drain.
++    pub fn suppress_task_metadata(&self, object: TaskObjectId) -> Result<bool, DenialSinkError> {
++        let tasks = self.lock_tasks()?;
++        let channel = tasks.values().find(|channel| channel.binding.object() == object)
++            .ok_or(DenialSinkError::UnknownObject(object))?;
++        Ok(!channel.registration_complete || channel.retirement.is_some())
++    }
++
+     /// Acknowledge a host configure in both Composer and the protocol stream.
+     ///
+     /// # Errors
+@@ -269,6 +494,9 @@
+         let task = tasks
+             .get_mut(&display)
+             .ok_or(DenialSinkError::UnknownDisplay(display))?;
++        // Retirement has already ordered its request on this socket. A late
++        // configure must not create work after that request.
++        if !task.registration_complete || task.retirement.is_some() { return Ok(()); }
+         let message = task.binding.acknowledge_configure(session, serial)?;
+         self.socket.send_android(&message, &[])?;
+         Ok(())
+@@ -293,6 +521,9 @@
+             .values_mut()
+             .find(|task| task.binding.object() == object)
+             .ok_or(DenialSinkError::UnknownObject(object))?;
++        if !matches!(message, DenialMessage::BufferReleased { .. }) {
++            require_live(task, task.binding.display())?;
++        }
+         let event = task.binding.apply_event(session, message)?;
+         if let AppliedDenialEvent::Configure { width, height, .. } = &event {
+             pin_android_display_extent(&mut task.android_display_extent, *width, *height)?;
+@@ -316,6 +547,7 @@
+             if remove {
+                 task.render_targets.remove(buffer);
+             }
++            self.retirement_changed.notify_all();
+             if frame_trace::sampled(frame.0) {
+                 frame_trace::event("android_reusable", object.0, frame.0, buffer.0,
+                     &[("receive_ns", received), ("reusable_ns", frame_trace::now_ns())]);
+@@ -358,6 +590,9 @@
+             .values_mut()
+             .find(|task| task.binding.object() == object)
+             .ok_or(DenialSinkError::UnknownObject(object))?;
++        // The descriptors above remain local and are dropped on this return.
++        // Late metadata cannot add imports to a partial/retiring owner.
++        if !task.registration_complete || task.retirement.is_some() { return Ok(()); }
+         if task.render_targets.contains_key(&buffer.id) {
+             return Err(DenialSinkError::DuplicateRenderTarget(buffer.id));
+         }
+@@ -386,6 +621,8 @@
+             .values_mut()
+             .find(|task| task.binding.object() == object)
+             .ok_or(DenialSinkError::UnknownObject(object))?;
++        // Keep accepted-frame/reservation bookkeeping until its own release.
++        if !task.registration_complete || task.retirement.is_some() { return Ok(()); }
+         let target = task
+             .render_targets
+             .get_mut(&buffer)
+@@ -415,6 +652,7 @@
+         let task = tasks
+             .get_mut(&display)
+             .ok_or(DenialSinkError::UnknownDisplay(display))?;
++        require_live(task, display)?;
+         let newest_serial = task
+             .render_targets
+             .values()
+@@ -519,6 +757,7 @@
+     pub fn bind_layer_stream(&self, display: DisplayId, sockets: &[std::os::fd::BorrowedFd<'_>]) -> Result<(), DenialSinkError> {
+         let tasks = self.lock_tasks()?;
+         let task = tasks.get(&display).ok_or(DenialSinkError::UnknownDisplay(display))?;
++        require_live(task, display)?;
+         self.socket.send_android(&AndroidMessage::BindLayerStream { object: task.binding.object() }, sockets)?;
+         Ok(())
+     }
+@@ -577,6 +816,13 @@
+         let task = tasks
+             .get_mut(&display)
+             .ok_or_else(|| PresentationFailure::unsubmitted(ErrorCode::BadDisplay))?;
++        if let Err(error) = require_live(task, display) {
++            if let Some(target) = task.render_targets.get_mut(&frame.buffer.id) {
++                if !target.busy { target.reserved = false; }
++            }
++            self.retirement_changed.notify_all();
++            return Err(PresentationFailure::unsubmitted(error.error_code()));
++        }
+         let Some(host_target) = task.render_targets.get(&frame.buffer.id) else {
+             return Err(PresentationFailure::unsubmitted(ErrorCode::BadParameter));
+         };
+@@ -644,6 +890,7 @@
+         let task = tasks
+             .get_mut(&display)
+             .ok_or(DenialSinkError::UnknownDisplay(display))?;
++        require_live(task, display)?;
+         let host_target = task
+             .render_targets
+             .get(&frame.buffer.id)
+@@ -740,6 +987,7 @@
+         let task = tasks
+             .get(&display)
+             .ok_or(DenialSinkError::UnknownDisplay(display))?;
++        require_live(task, display)?;
+         task.android_display_extent.ok_or_else(|| {
+             DenialSinkError::Graphics("Android display extent is not configured".to_owned())
+         })
+@@ -759,13 +1007,14 @@
+                 if remove {
+                     task.render_targets.remove(&buffer);
+                 }
++                self.retirement_changed.notify_all();
+             }
+         }
+     }
+ 
+     fn lock_tasks(
+         &self,
+-    ) -> Result<MutexGuard<'_, BTreeMap<DisplayId, TaskChannel>>, DenialSinkError> {
++    ) -> Result<MutexGuard<'_, TaskTable>, DenialSinkError> {
+         self.tasks.lock().map_err(|_| DenialSinkError::Poisoned)
+     }
+ }
+@@ -774,6 +1023,7 @@
+     fn acquire_target(&mut self, display: DisplayId) -> Result<ImportedRenderTarget, ErrorCode> {
+         let mut tasks = self.lock_tasks().map_err(|error| error.error_code())?;
+         let task = tasks.get_mut(&display).ok_or(ErrorCode::BadDisplay)?;
++        require_live(task, display).map_err(|error| error.error_code())?;
+         let newest_serial = task
+             .render_targets
+             .values()
+@@ -831,10 +1081,55 @@
+     }
+ }
+ 
++#[derive(Debug, Default)]
++struct TaskTable {
++    channels: BTreeMap<DisplayId, TaskChannel>,
++    preparations: BTreeMap<DisplayId, PreparingTask>,
++    next_nonce: u64,
++    peer_disconnected: bool,
++}
++impl std::ops::Deref for TaskTable {
++    type Target = BTreeMap<DisplayId, TaskChannel>;
++    fn deref(&self) -> &Self::Target { &self.channels }
++}
++impl std::ops::DerefMut for TaskTable {
++    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.channels }
++}
++
+ #[derive(Debug)]
++struct PreparingTask {
++    object: TaskObjectId,
++    primary_error: Option<String>,
++}
++
++#[derive(Debug)]
++struct PendingRetirement {
++    nonce: RetirementNonce,
++    send_attempted: bool,
++    send_error: Option<String>,
++    receipt_received: bool,
++}
++
++fn require_live(task: &TaskChannel, display: DisplayId) -> Result<(), DenialSinkError> {
++    if !task.registration_complete {
++        Err(DenialSinkError::RegistrationIncomplete(display))
++    } else if task.retirement.is_some() {
++        Err(DenialSinkError::TaskRetiring(display))
++    } else {
++        Ok(())
++    }
++}
++
++#[derive(Debug)]
+ struct TaskChannel {
+     binding: DenialTaskBinding,
+     timelines: AndroidTaskTimelines,
++    registration_complete: bool,
++    create_attempted: bool,
++    create_sent: bool,
++    timelines_attempted: bool,
++    primary_registration_error: Option<String>,
++    retirement: Option<PendingRetirement>,
+     render_targets: BTreeMap<BufferId, HostRenderTarget>,
+     frame_targets: BTreeMap<droidloom_transport::FrameId, BufferId>,
+     /// Sampled original render fences, bounded by the existing in-flight pool.
+@@ -881,6 +1176,7 @@
+         | DenialMessage::BufferReleased { object, .. }
+         | DenialMessage::Presented { object, .. }
+         | DenialMessage::Input { object, .. } => Some(*object),
++        DenialMessage::TaskRetired { .. } => None,
+         DenialMessage::Error { object, .. } => *object,
+         DenialMessage::ServerHello { .. } | DenialMessage::Ping { .. } => None,
+     }
+--- a/graphics/droidloom-composer/src/denial.rs
++++ b/graphics/droidloom-composer/src/denial.rs
+@@ -430,6 +430,7 @@
+                 event: *event,
+             }),
+             DenialMessage::ServerHello { .. }
++            | DenialMessage::TaskRetired { .. }
+             | DenialMessage::Error { .. }
+             | DenialMessage::Ping { .. }
+             | DenialMessage::RegisterRenderTarget { .. }
+@@ -452,6 +453,7 @@
+         | DenialMessage::BufferReleased { object, .. }
+         | DenialMessage::Presented { object, .. }
+         | DenialMessage::Input { object, .. } => Some(*object),
++        DenialMessage::TaskRetired { .. } => None,
+         DenialMessage::Error { object, .. } => *object,
+         DenialMessage::ServerHello { .. } | DenialMessage::Ping { .. } => None,
+     }
+--- a/graphics/droidloom-composer-service/src/main.rs
++++ b/graphics/droidloom-composer-service/src/main.rs
+@@ -13,12 +13,13 @@
+ use binder::ProcessState;
+ use droidloom_composer::denial::AppliedDenialEvent;
+ use droidloom_composer::hwc3::Session;
+-use droidloom_composer_aidl::denial::DenialPresentationSink;
++use droidloom_composer_aidl::denial::{DenialPresentationSink, DenialSinkError};
+ use droidloom_composer_aidl::minigbm::MinigbmBufferAdapter;
+ use droidloom_composer_aidl::service::{ComposerLifecycle, ComposerService, SharedSession};
+ use droidloom_denial_ipc::{ProtocolSocket, SeqPacket, SeqPacketListener};
+ use droidloom_denial_protocol::{
+     capability, AndroidMessage, DenialMessage, InputEvent, TaskObjectId, PROTOCOL_MAJOR,
++    RETIREMENT_PROTOCOL_MINOR,
+ };
+ use droidloom_syncobj::SyncobjDevice;
+ 
+@@ -64,10 +65,11 @@
+         SeqPacket::connect(&socket_path)
+             .map_err(|error| format!("connect {}: {error}", socket_path.display()))?,
+     );
+-    let activation_requests = handshake(&socket)?;
++    let (activation_requests, retirement_receipts) = handshake(&socket)?;
+ 
+     let sink = DenialPresentationSink::new(socket, SyncobjDevice::from_file(render_file))
+-        .with_activation_requests(activation_requests);
++        .with_activation_requests(activation_requests)
++        .with_retirement_receipts(retirement_receipts);
+     let session: SharedSession = Arc::new(Mutex::new(Session::default()));
+     let factory_sink = sink.clone();
+     let service = ComposerService::new(Arc::clone(&session), move || {
+@@ -89,16 +91,24 @@
+     let _event_thread = std::thread::Builder::new()
+         .name("droidloom-denial-events".to_owned())
+         .spawn(move || {
+-            if let Err(error) = event_loop(
++            let result = event_loop(
+                 &sink,
+                 &event_session,
+                 &lifecycle,
+                 &event_coordinator,
+                 &input,
+-            ) {
+-                eprintln!("Droidloom Denial event loop fatal: {error}");
+-                std::process::exit(1);
++            );
++            // EOF or a receiver error cannot become a retirement receipt.
++            // Wake all waiters before the service follows its original fatal exit.
++            let disconnected = sink.peer_disconnected();
++            match result {
++                Err(error) => eprintln!("Droidloom Denial event loop fatal: {error}"),
++                Ok(()) => eprintln!("Droidloom Denial event loop exited unexpectedly"),
+             }
++            if let Err(error) = disconnected {
++                eprintln!("Droidloom Denial disconnect accounting also failed: {error}");
++            }
++            std::process::exit(1);
+         })
+         .map_err(|error| format!("start Denial event loop: {error}"))?;
+ 
+@@ -168,35 +178,39 @@
+     Ok((socket, render_node))
+ }
+ 
+-fn handshake(socket: &ProtocolSocket) -> Result<bool, String> {
++fn handshake(socket: &ProtocolSocket) -> Result<(bool, bool), String> {
+     socket
+         .send_android(
+             &AndroidMessage::ClientHello {
+                 min_major: PROTOCOL_MAJOR,
+                 max_major: PROTOCOL_MAJOR,
+-                capabilities: capability::REQUIRED_V1 | capability::TASK_ACTIVATION,
++                capabilities: capability::REQUIRED_V1
++                    | capability::TASK_ACTIVATION | capability::TASK_RETIREMENT_ACK,
+             },
+             &[],
+         )
+         .map_err(|error| format!("send ClientHello: {error}"))?;
+-    match socket
++    let message = socket
+         .receive_denial()
+         .map_err(|error| format!("receive ServerHello: {error}"))?
+-        .message
+-    {
+-        DenialMessage::ServerHello {
+-            major,
+-            capabilities,
+-            ..
+-        } if major == PROTOCOL_MAJOR
+-            && capabilities & capability::REQUIRED_V1 == capability::REQUIRED_V1 =>
++        .message;
++    qualified_capabilities(&message)
++}
++
++fn qualified_capabilities(message: &DenialMessage) -> Result<(bool, bool), String> {
++    match message {
++        DenialMessage::ServerHello { major, minor, capabilities, .. }
++            if *major == PROTOCOL_MAJOR
++                && *minor >= RETIREMENT_PROTOCOL_MINOR
++                && capabilities & capability::REQUIRED_V1 == capability::REQUIRED_V1
++                && capabilities & capability::TASK_RETIREMENT_ACK != 0 =>
+         {
+-            Ok(capabilities & capability::TASK_ACTIVATION != 0)
++            Ok((capabilities & capability::TASK_ACTIVATION != 0, true))
+         }
+         DenialMessage::Error { message, .. } => {
+             Err(format!("Denial rejected handshake: {message}"))
+         }
+-        _ => Err("Denial returned an incompatible handshake response".to_owned()),
++        _ => Err("Denial handshake lacks qualified retirement receipts".to_owned()),
+     }
+ }
+ 
+@@ -225,25 +239,24 @@
+             DenialMessage::ServerHello { .. } => {
+                 return Err("repeated Denial ServerHello".to_owned());
+             }
++            DenialMessage::TaskRetired { object, nonce } => sink
++                .accept_retirement_receipt(sink.socket(), object, nonce)
++                .map_err(|error| error.to_string())?,
+             DenialMessage::RegisterRenderTarget {
+                 object,
+                 configure_serial,
+                 buffer,
+-            } => sink
+-                .register_render_target(object, configure_serial, buffer, received.descriptors)
+-                .map_err(|error| error.to_string())?,
+-            DenialMessage::UnregisterRenderTarget { object, buffer } => sink
+-                .unregister_render_target(object, buffer)
+-                .map_err(|error| error.to_string())?,
++            } => {
++                if coordinator.is_retired(object) { continue; }
++                sink.register_render_target(object, configure_serial, buffer, received.descriptors)
++                    .map_err(|error| error.to_string())?;
++            }
++            DenialMessage::UnregisterRenderTarget { object, buffer } => {
++                if coordinator.is_retired(object) { continue; }
++                sink.unregister_render_target(object, buffer)
++                    .map_err(|error| error.to_string())?;
++            }
+             task_message => {
+-                if let DenialMessage::Presented {
+-                    timestamp_nanos,
+-                    refresh_period_nanos,
+-                    ..
+-                } = &task_message
+-                {
+-                    lifecycle.observe_presentation(*timestamp_nanos, *refresh_period_nanos);
+-                }
+                 let object = task_object(&task_message)
+                     .ok_or_else(|| "task event omitted object identity".to_owned())?;
+                 let display = match sink.display_for_object(object) {
+@@ -255,15 +268,28 @@
+                     let mut session = session
+                         .lock()
+                         .map_err(|_| "Composer session lock is poisoned".to_owned())?;
+-                    let event = sink
+-                        .apply_task_event(&mut session, &task_message)
+-                        .map_err(|error| error.to_string())?;
++                    let event = match sink.apply_task_event(&mut session, &task_message) {
++                        Ok(event) => event,
++                        Err(DenialSinkError::TaskRetiring(_)
++                            | DenialSinkError::RegistrationIncomplete(_)) => continue,
++                        Err(error) => return Err(error.to_string()),
++                    };
+                     if let AppliedDenialEvent::Configure { serial, .. } = event {
+                         sink.acknowledge_configure(&mut session, display, serial)
+                             .map_err(|error| error.to_string())?;
+                     }
+                     event
+                 };
++                if !matches!(&event, AppliedDenialEvent::BufferReleased(_)) {
++                    if sink.suppress_task_metadata(object).map_err(|error| error.to_string())? {
++                        continue;
++                    }
++                    if let DenialMessage::Presented {
++                        timestamp_nanos, refresh_period_nanos, ..
++                    } = &task_message {
++                        lifecycle.observe_presentation(*timestamp_nanos, *refresh_period_nanos);
++                    }
++                }
+                 // A configure has completed once its state has been applied and
+                 // acknowledged to Denial. Wake the reservation before invoking
+                 // Android's hotplug callback: during SurfaceFlinger bootstrap
+@@ -426,6 +452,7 @@
+         | DenialMessage::BufferReleased { object, .. }
+         | DenialMessage::Presented { object, .. }
+         | DenialMessage::Input { object, .. } => Some(*object),
++        DenialMessage::TaskRetired { .. } => None,
+         DenialMessage::Error { object, .. } => *object,
+         DenialMessage::ServerHello { .. } | DenialMessage::Ping { .. } => None,
+     }
+--- a/graphics/droidloom-composer-service/src/control.rs
++++ b/graphics/droidloom-composer-service/src/control.rs
+@@ -1,10 +1,10 @@
+ //! Privileged two-phase Android task lifecycle service.
+ 
+ use std::collections::{BTreeMap, BTreeSet};
+-use std::sync::{Arc, Condvar, Mutex};
++use std::sync::{Arc, Condvar, Mutex, MutexGuard};
+ use std::time::{Duration, SystemTime, UNIX_EPOCH};
+ 
+-use droidloom_composer::task_control::{TaskControlRegistry, TaskRegistrationPhase};
++use droidloom_composer::task_control::{TaskControlRegistry, TaskRegistration, TaskRegistrationPhase};
+ use droidloom_composer::{DisplayId, TaskId};
+ use droidloom_composer_aidl::denial::DenialPresentationSink;
+ use droidloom_composer_aidl::service::ComposerLifecycle;
+@@ -28,8 +28,47 @@
+     input_scales: BTreeMap<TaskObjectId, (u32, u32)>,
+     direct_tasks: BTreeMap<TaskId, TaskObjectId>,
+     direct_android_displays: BTreeMap<TaskObjectId, u32>,
++    removals: BTreeMap<TaskObjectId, RemovalProgress>,
++    endpoint_calls: BTreeMap<TaskObjectId, EndpointCalls>,
+ }
+ 
++/// Calls made for one never-reused object/display. Record each invocation
++/// before crossing the backend boundary: Err cannot prove it had no effects.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++struct EndpointCalls {
++    display: DisplayId,
++    composer: bool,
++    denial: bool,
++}
++
++/// Retirement completion for this exact object/display. An endpoint is
++/// complete only if it was never invoked or its cleanup returned Ok.
++/// An error never upgrades either fact.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++struct RemovalProgress {
++    display: DisplayId,
++    denial_complete: bool,
++    composer_complete: bool,
++}
++
++struct DirectReservation {
++    object: TaskObjectId,
++    display: DisplayId,
++    task: TaskId,
++    android_display: u32,
++    package: String,
++}
++
++impl DirectReservation {
++    fn matches(&self, state: &State, registration: &TaskRegistration) -> bool {
++        registration.object == self.object
++            && registration.reservation.display == self.display
++            && registration.reservation.package == self.package
++            && state.direct_tasks.get(&self.task) == Some(&self.object)
++            && state.direct_android_displays.get(&self.object) == Some(&self.android_display)
++    }
++}
++
+ /// Cloneable coordinator shared by the control listener and Denial event pump.
+ #[derive(Clone)]
+ pub struct TaskCoordinator {
+@@ -60,6 +99,8 @@
+                     input_scales: BTreeMap::new(),
+                     direct_tasks: BTreeMap::new(),
+                     direct_android_displays: BTreeMap::new(),
++                    removals: BTreeMap::new(),
++                    endpoint_calls: BTreeMap::new(),
+                 }),
+                 Condvar::new(),
+             )),
+@@ -165,70 +206,164 @@
+         package: String,
+         android_display: u32,
+     ) -> Result<(TaskObjectId, DisplayId), String> {
+-        // Explicit host launches and the Android task observer can discover
+-        // the same task together. Wait for its complete binding before reuse.
++        // Lock order is registration -> operation -> state. Do not hold the
++        // operation/state guards while reserve waits for the configure event.
+         let _registration = self.direct_registration_gate.lock()
+             .map_err(|_| "direct registration lock is poisoned".to_owned())?;
+         if task.0 == 0 || task.0 > i32::MAX as u64 {
+             return Err(format!("invalid Android task identity {}", task.0));
+         }
+         {
+-            // Keep one guard for both lookups. An if-let scrutinee guard
+-            // lives through its body; locking again there deadlocks on reopen.
+-            let state = self
+-                .state
+-                .0
+-                .lock()
++            let _operation = self.operation_gate.lock()
++                .map_err(|_| "task-control operation lock is poisoned".to_owned())?;
++            let state = self.state.0.lock()
+                 .map_err(|_| "task-control state lock is poisoned".to_owned())?;
+             if let Some(existing) = state.direct_tasks.get(&task).copied() {
+-                let registration = state
+-                    .registry
+-                    .get(existing)
++                let registration = state.registry.get(existing)
+                     .map_err(|error| error.to_string())?;
+                 if registration.reservation.package != package
+-                    || registration.android_display != Some(android_display)
++                    || state.direct_android_displays.get(&existing) != Some(&android_display)
+                 {
+                     return Err(format!(
+                         "Android task {} is already registered with different ownership",
+                         task.0
+                     ));
+                 }
++                // A Removing entry still carries its old task/display fields.
++                // Those fields alone must never qualify it for reuse.
++                if registration.phase != TaskRegistrationPhase::Bound
++                    || registration.task != Some(task)
++                    || registration.android_display != Some(android_display)
++                    || state.removals.contains_key(&existing)
++                    || state.endpoint_calls.get(&existing) != Some(&EndpointCalls {
++                        display: registration.reservation.display,
++                        composer: true,
++                        denial: true,
++                    })
++                {
++                    return Err(format!(
++                        "Android task {} direct registration is not fully Bound ({:?})",
++                        task.0, registration.phase
++                    ));
++                }
+                 return Ok((existing, registration.reservation.display));
+             }
+         }
+ 
+         let response = self
+-            .reserve_with_kind(0, package, Some((task, android_display)))
++            .reserve_with_kind(0, package.clone(), Some((task, android_display)))
+             .map_err(|(code, message)| {
+                 format!("direct task reserve failed ({code:?}): {message}")
+             })?;
+-        let ControlResponse::Reserved {
+-            object, display, ..
+-        } = response
+-        else {
++        let ControlResponse::Reserved { object, display, .. } = response else {
+             return Err("direct task reservation returned an unexpected response".to_owned());
+         };
+-        let object = TaskObjectId(object);
+-        let display = DisplayId(display);
++        let reservation = DirectReservation {
++            object: TaskObjectId(object),
++            display: DisplayId(display),
++            task,
++            android_display,
++            package,
++        };
++        let operation = self.operation_gate.lock().map_err(|_| {
++            format!("task-control operation lock is poisoned after reserving direct object {}; cleanup is unqualified",
++                    reservation.object.0)
++        })?;
++        let binding: Result<(), String> = (|| {
++            // A retire request may have run during the configure wait. Recheck
++            // this exact reservation under the same gate as binding/teardown.
++            let already_bound = {
++                let state = self.state.0.lock()
++                    .map_err(|_| "task-control state lock is poisoned".to_owned())?;
++                let registration = state.registry.get(reservation.object)
++                    .map_err(|error| error.to_string())?;
++                if !reservation.matches(&state, registration)
++                    || state.endpoint_calls.get(&reservation.object) != Some(&EndpointCalls {
++                        display: reservation.display,
++                        composer: true,
++                        denial: true,
++                    })
++                {
++                    return Err("direct reservation ownership or endpoint calls changed before binding".to_owned());
++                }
++                if registration.phase == TaskRegistrationPhase::Bound
++                    && registration.task == Some(task)
++                    && registration.android_display == Some(android_display)
++                    && !state.removals.contains_key(&reservation.object)
++                {
++                    true
++                } else if registration.phase == TaskRegistrationPhase::Connected
++                    && registration.task.is_none()
++                    && registration.android_display.is_none()
++                    && !state.removals.contains_key(&reservation.object)
++                {
++                    false
++                } else {
++                    return Err(format!(
++                        "direct object {} is not awaiting complete binding ({:?})",
++                        reservation.object.0, registration.phase
++                    ));
++                }
++            };
++            if already_bound {
++                return Ok(());
++            }
++            self.sink.bind_task(reservation.display, task)
++                .map_err(|error| format!("bind direct Denial task identity: {error}"))?;
++            self.lifecycle.bind_direct_task(reservation.display, task)
++                .map_err(|error| format!("bind direct Composer task identity: {error:?}"))?;
++            // Return an owned Result from this scope. Its state guard is gone
++            // before a failure reaches rollback, which locks state itself.
++            let result = {
++                let mut state = self.state.0.lock()
++                    .map_err(|_| "task-control state lock is poisoned".to_owned())?;
++                let registration = state.registry.get(reservation.object)
++                    .map_err(|error| error.to_string())?;
++                if !reservation.matches(&state, registration) {
++                    return Err("direct reservation ownership changed before registry commit".to_owned());
++                }
++                state.registry.bind_task(reservation.object, task, android_display)
++                    .map(|_| ())
++                    .map_err(|error| error.to_string())
++            };
++            result
++        })();
++        if let Err(primary) = binding {
++            return match self.rollback_direct_locked(&reservation, &operation) {
++                Ok(()) => Err(primary),
++                Err((code, cleanup)) => Err(format!(
++                    "{primary}; cleanup of direct object {} failed ({code:?}): {cleanup}",
++                    reservation.object.0
++                )),
++            };
++        }
++        Ok((reservation.object, reservation.display))
++    }
+ 
+-        let _operation = self
+-            .operation_gate
+-            .lock()
+-            .map_err(|_| "task-control operation lock is poisoned".to_owned())?;
+-        self.sink
+-            .bind_task(display, task)
+-            .map_err(|error| format!("bind direct Denial task identity: {error}"))?;
+-        self.lifecycle
+-            .bind_direct_task(display, task)
+-            .map_err(|error| format!("bind direct Composer task identity: {error:?}"))?;
+-        self.state
+-            .0
+-            .lock()
+-            .map_err(|_| "task-control state lock is poisoned".to_owned())?
+-            .registry
+-            .bind_task(object, task, android_display)
+-            .map_err(|error| error.to_string())?;
+-        Ok((object, display))
++    fn rollback_direct_locked(
++        &self,
++        reservation: &DirectReservation,
++        operation: &MutexGuard<'_, ()>,
++    ) -> Result<(), ControlFailure> {
++        {
++            let state = self.state.0.lock()
++                .map_err(|_| backend("task-control state lock is poisoned"))?;
++            if !state.retired.contains(&reservation.object) {
++                let registration = state.registry.get(reservation.object)
++                    .map_err(control_error)?;
++                if !reservation.matches(&state, registration) {
++                    return Err((ControlErrorCode::Conflict,
++                        "refusing cleanup of a changed direct reservation".to_owned()));
++                }
++                if registration.phase == TaskRegistrationPhase::Bound {
++                    return Err((ControlErrorCode::Conflict,
++                        "refusing rollback of a complete Bound direct registration".to_owned()));
++                }
++            }
++        }
++        // This gate is already held. Calling remove()/retire_direct_task()
++        // here would recursively lock it; remove_internal_locked never does.
++        self.remove_internal_locked(reservation.object, operation)
+     }
+ 
+     /// Resolve a previously authorized direct task without creating anything.
+@@ -271,7 +406,7 @@
+             .get(&task)
+             .copied()
+             .ok_or_else(|| format!("Android task {} is not authorized for export", task.0))?;
+-        self.remove_internal(object)
++        self.remove_internal_locked(object, &_operation)
+             .map_err(|(code, message)| format!("retire direct task failed ({code:?}): {message}"))
+     }
+ 
+@@ -422,77 +557,58 @@
+         direct_task: Option<(TaskId, u32)>,
+     ) -> Result<ControlResponse, ControlFailure> {
+         let registration = {
+-            let _operation = self
+-                .operation_gate
+-                .lock()
++            let operation = self.operation_gate.lock()
+                 .map_err(|_| backend("task-control operation lock is poisoned"))?;
+             let registration = {
+-                let mut state = self
+-                    .state
+-                    .0
+-                    .lock()
++                let mut state = self.state.0.lock()
+                     .map_err(|_| backend("task-control state lock is poisoned"))?;
+-                let registration = state.registry.reserve(package).map_err(control_error)?;
+-                if let Some((task, android_display)) = direct_task {
++                if let Some((task, _)) = direct_task {
+                     if state.direct_tasks.contains_key(&task) {
+-                        let _ = state.registry.cancel_reservation(registration.object);
+-                        return Err((
+-                            ControlErrorCode::Conflict,
+-                            format!("Android task {} already has a direct channel", task.0),
+-                        ));
++                        return Err((ControlErrorCode::Conflict,
++                            format!("Android task {} already has a direct channel", task.0)));
+                     }
++                }
++                let registration = state.registry.reserve(package).map_err(control_error)?;
++                state.endpoint_calls.insert(registration.object, EndpointCalls {
++                    display: registration.reservation.display,
++                    composer: false,
++                    denial: false,
++                });
++                if let Some((task, android_display)) = direct_task {
+                     state.direct_tasks.insert(task, registration.object);
+-                    state
+-                        .direct_android_displays
+-                        .insert(registration.object, android_display);
++                    state.direct_android_displays.insert(registration.object, android_display);
+                 }
+                 registration
+             };
+ 
+-            if let Err(error) = self.lifecycle.stage_task(registration.reservation.clone()) {
+-                let mut state = self
+-                    .state
+-                    .0
+-                    .lock()
+-                    .map_err(|_| backend("task-control state lock is poisoned"))?;
+-                let _ = state.registry.cancel_reservation(registration.object);
+-                if let Some((task, _)) = direct_task {
+-                    state.direct_tasks.remove(&task);
+-                    state.direct_android_displays.remove(&registration.object);
+-                }
+-                return Err(backend(format!("stage Composer display: {error:?}")));
+-            }
+-            {
+-                let mut state = self
+-                    .state
+-                    .0
+-                    .lock()
+-                    .map_err(|_| backend("task-control state lock is poisoned"))?;
+-                state
+-                    .registry
+-                    .mark_staged(registration.object)
+-                    .map_err(control_error)?;
+-            }
+-            if let Err(error) = self
+-                .sink
+-                .register_task(registration.object, &registration.reservation)
+-            {
+-                let _ = self
+-                    .lifecycle
+-                    .remove_display(registration.reservation.display);
+-                let mut state = self
+-                    .state
+-                    .0
+-                    .lock()
+-                    .map_err(|_| backend("task-control state lock is poisoned"))?;
+-                let _ = state.registry.begin_removal(registration.object);
+-                let _ = state.registry.finish_removal(registration.object);
+-                state.retired.insert(registration.object);
+-                if let Some((task, _)) = direct_task {
+-                    state.direct_tasks.remove(&task);
+-                    state.direct_android_displays.remove(&registration.object);
++            // Every failure after reserve leaves this closure before cleanup.
++            // No state guard crosses a backend call or recursive state lock.
++            let staging: Result<(), ControlFailure> = (|| {
++                self.record_endpoint_call_locked(
++                    registration.object, registration.reservation.display, false, &operation,
++                )?;
++                self.lifecycle.stage_task(registration.reservation.clone())
++                    .map_err(|error| backend(format!("stage Composer display: {error:?}")))?;
++                {
++                    let mut state = self.state.0.lock()
++                        .map_err(|_| backend("task-control state lock is poisoned"))?;
++                    state.registry.mark_staged(registration.object).map_err(control_error)?;
+                 }
+-                return Err(backend(format!("stage Denial task: {error}")));
++                self.record_endpoint_call_locked(
++                    registration.object, registration.reservation.display, true, &operation,
++                )?;
++                self.sink.register_task(registration.object, &registration.reservation)
++                    .map_err(|error| backend(format!("stage Denial task: {error}")))?;
++                Ok(())
++            })();
++            if let Err((code, primary)) = staging {
++                let message = match self.remove_internal_locked(registration.object, &operation) {
++                    Ok(()) => primary,
++                    Err((cleanup_code, cleanup)) => format!(
++                        "{primary}; reservation cleanup failed ({cleanup_code:?}): {cleanup}"
++                    ),
++                };
++                return Err((code, message));
+             }
+             registration
+         };
+@@ -520,15 +636,18 @@
+             });
+         drop(state);
+         if !connected {
+-            let _ = self.remove_internal(registration.object);
+-            return Err((
+-                ControlErrorCode::ConfigureTimeout,
+-                format!(
+-                    "request {request_id}: Denial did not configure object {} within {} ms",
+-                    registration.object.0,
+-                    CONFIGURE_TIMEOUT.as_millis()
++            let primary = format!(
++                "request {request_id}: Denial did not configure object {} within {} ms",
++                registration.object.0,
++                CONFIGURE_TIMEOUT.as_millis()
++            );
++            let message = match self.remove_internal(registration.object) {
++                Ok(()) => primary,
++                Err((code, cleanup)) => format!(
++                    "{primary}; reservation cleanup failed ({code:?}): {cleanup}"
+                 ),
+-            ));
++            };
++            return Err((ControlErrorCode::ConfigureTimeout, message));
+         }
+         Ok(ControlResponse::Reserved {
+             request_id,
+@@ -668,24 +787,9 @@
+         request_id: u64,
+         object: TaskObjectId,
+     ) -> Result<ControlResponse, ControlFailure> {
+-        let _operation = self
+-            .operation_gate
+-            .lock()
++        let operation = self.operation_gate.lock()
+             .map_err(|_| backend("task-control operation lock is poisoned"))?;
+-        if self
+-            .state
+-            .0
+-            .lock()
+-            .map_err(|_| backend("task-control state lock is poisoned"))?
+-            .retired
+-            .contains(&object)
+-        {
+-            return Ok(ControlResponse::Removed {
+-                request_id,
+-                object: object.0,
+-            });
+-        }
+-        self.remove_internal(object)?;
++        self.remove_internal_locked(object, &operation)?;
+         Ok(ControlResponse::Removed {
+             request_id,
+             object: object.0,
+@@ -693,52 +797,170 @@
+     }
+ 
+     fn remove_internal(&self, object: TaskObjectId) -> Result<(), ControlFailure> {
+-        let registration = {
+-            let mut state = self
+-                .state
+-                .0
+-                .lock()
++        let operation = self.operation_gate.lock()
++            .map_err(|_| backend("task-control operation lock is poisoned"))?;
++        self.remove_internal_locked(object, &operation)
++    }
++
++    fn forget_direct_object(state: &mut State, object: TaskObjectId) {
++        state.direct_android_displays.remove(&object);
++        state.direct_tasks.retain(|_, owned_object| *owned_object != object);
++    }
++
++    fn record_endpoint_call_locked(
++        &self,
++        object: TaskObjectId,
++        display: DisplayId,
++        denial: bool,
++        _operation: &MutexGuard<'_, ()>,
++    ) -> Result<(), ControlFailure> {
++        let mut state = self.state.0.lock()
++            .map_err(|_| backend("task-control state lock is poisoned"))?;
++        let registration = state.registry.get(object).map_err(control_error)?;
++        let expected_phase = if denial {
++            TaskRegistrationPhase::Staged
++        } else {
++            TaskRegistrationPhase::Reserved
++        };
++        if registration.phase != expected_phase
++            || registration.reservation.display != display
++            || state.removals.contains_key(&object)
++        {
++            return Err((ControlErrorCode::Conflict,
++                "endpoint invocation is not for this pending reservation".to_owned()));
++        }
++        let calls = state.endpoint_calls.get_mut(&object).ok_or_else(|| {
++            backend("reservation endpoint-call record is missing")
++        })?;
++        if calls.display != display || calls.denial || (calls.composer != denial) {
++            return Err((ControlErrorCode::Conflict,
++                "reservation endpoint invocation order changed".to_owned()));
++        }
++        if denial {
++            calls.denial = true;
++        } else {
++            calls.composer = true;
++        }
++        Ok(())
++    }
++
++    fn record_removal_locked(
++        &self,
++        object: TaskObjectId,
++        progress: RemovalProgress,
++        _operation: &MutexGuard<'_, ()>,
++    ) -> Result<(), ControlFailure> {
++        let mut state = self.state.0.lock()
++            .map_err(|_| backend("task-control state lock is poisoned"))?;
++        let registration = state.registry.get(object).map_err(control_error)?;
++        let previous = state.removals.get(&object).copied().ok_or_else(|| {
++            backend("task retirement progress is missing")
++        })?;
++        if !matches!(registration.phase,
++                TaskRegistrationPhase::Reserved | TaskRegistrationPhase::Removing)
++            || registration.reservation.display != progress.display
++            || previous.display != progress.display
++            || (previous.denial_complete && !progress.denial_complete)
++            || (previous.composer_complete && !progress.composer_complete)
++            || (progress.composer_complete && !progress.denial_complete)
++        {
++            return Err((ControlErrorCode::Conflict,
++                "task retirement identity or progress changed".to_owned()));
++        }
++        state.removals.insert(object, progress);
++        Ok(())
++    }
++
++    fn remove_internal_locked(
++        &self,
++        object: TaskObjectId,
++        operation: &MutexGuard<'_, ()>,
++    ) -> Result<(), ControlFailure> {
++        let (registration, mut progress) = {
++            let mut state = self.state.0.lock()
+                 .map_err(|_| backend("task-control state lock is poisoned"))?;
+-            let registration = state.registry.get(object).map_err(control_error)?.clone();
+-            if registration.phase == TaskRegistrationPhase::Reserved {
+-                state
+-                    .registry
+-                    .cancel_reservation(object)
+-                    .map_err(control_error)?;
+-                state.input_scales.remove(&object);
+-                state.retired.insert(object);
++            if state.retired.contains(&object) {
++                if state.registry.get(object).is_ok()
++                    || state.direct_android_displays.contains_key(&object)
++                    || state.direct_tasks.values().any(|owned| *owned == object)
++                    || state.input_scales.contains_key(&object)
++                    || state.removals.contains_key(&object)
++                    || state.endpoint_calls.contains_key(&object)
++                {
++                    return Err((ControlErrorCode::Conflict,
++                        "retired object still has live coordinator state".to_owned()));
++                }
+                 return Ok(());
+             }
+-            if registration.phase != TaskRegistrationPhase::Removing {
+-                state
+-                    .registry
+-                    .begin_removal(object)
+-                    .map_err(control_error)?;
++            let registration = state.registry.get(object).map_err(control_error)?.clone();
++            let calls = state.endpoint_calls.get(&object).copied().ok_or_else(|| {
++                backend("reservation endpoint-call record is missing")
++            })?;
++            if calls.display != registration.reservation.display
++                || (calls.denial && !calls.composer)
++            {
++                return Err((ControlErrorCode::Conflict,
++                    "reservation endpoint calls are not for this display".to_owned()));
+             }
+-            registration
++            if registration.phase != TaskRegistrationPhase::Reserved
++                && registration.phase != TaskRegistrationPhase::Removing
++            {
++                state.registry.begin_removal(object).map_err(control_error)?;
++            }
++            let progress = *state.removals.entry(object).or_insert(RemovalProgress {
++                display: registration.reservation.display,
++                denial_complete: !calls.denial,
++                composer_complete: !calls.composer,
++            });
++            if progress.display != registration.reservation.display
++                || (!calls.denial && !progress.denial_complete)
++                || (!calls.composer && !progress.composer_complete)
++                || (progress.composer_complete && !progress.denial_complete)
++            {
++                return Err((ControlErrorCode::Conflict,
++                    "task retirement progress is not for this display".to_owned()));
++            }
++            (registration, progress)
+         };
+ 
+-        self.sink
+-            .unregister_task(registration.reservation.display)
+-            .map_err(|error| backend(format!("destroy Denial task: {error}")))?;
+-        self.lifecycle
+-            .remove_display(registration.reservation.display)
+-            .map_err(|error| backend(format!("remove Composer display: {error:?}")))?;
+-        let mut state = self
+-            .state
+-            .0
+-            .lock()
++        // A Reserved entry can already have an attempted Composer call. It
++        // must not be cancelled until every invoked endpoint is qualified.
++        // Denial register Err may leave no local channel: UnknownDisplay then
++        // remains an unresolved cleanup error, never evidence of remote absence.
++        // Preserve ordering and each completed step. If Composer fails after
++        // Denial succeeds, a later explicit retirement skips Denial; it must
++        // not get stuck on the now-absent Denial channel. UnknownDisplay and
++        // BadDisplay are never treated as successful cleanup.
++        if !progress.denial_complete {
++            self.sink.unregister_task(registration.reservation.display, object)
++                .map_err(|error| backend(format!("destroy Denial task: {error}")))?;
++            progress.denial_complete = true;
++            self.record_removal_locked(object, progress, operation)?;
++        }
++        if !progress.composer_complete {
++            self.lifecycle.remove_display(registration.reservation.display)
++                .map_err(|error| backend(format!("remove Composer display: {error:?}")))?;
++            progress.composer_complete = true;
++            self.record_removal_locked(object, progress, operation)?;
++        }
++        let mut state = self.state.0.lock()
+             .map_err(|_| backend("task-control state lock is poisoned"))?;
+-        state
+-            .registry
+-            .finish_removal(object)
+-            .map_err(control_error)?;
+-        state.input_scales.remove(&object);
+-        if state.direct_android_displays.remove(&object).is_some() {
+-            state
+-                .direct_tasks
+-                .retain(|_, owned_object| *owned_object != object);
++        if state.removals.get(&object) != Some(&progress)
++            || !progress.denial_complete || !progress.composer_complete
++        {
++            return Err((ControlErrorCode::Conflict,
++                "both backend retirement successes were not retained".to_owned()));
+         }
++        let phase = state.registry.get(object).map_err(control_error)?.phase;
++        if phase == TaskRegistrationPhase::Reserved {
++            state.registry.cancel_reservation(object).map_err(control_error)?;
++        } else {
++            state.registry.finish_removal(object).map_err(control_error)?;
++        }
++        state.input_scales.remove(&object);
++        Self::forget_direct_object(&mut state, object);
++        state.removals.remove(&object);
++        state.endpoint_calls.remove(&object);
+         state.retired.insert(object);
+         self.state.1.notify_all();
+         Ok(())

@@ -1,0 +1,87 @@
+--- a/read_summary.py
++++ b/read_parents.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed summary-only reader for three parent-bound IHG launch/inspect/cleanup phases and two exact terminal parents."""
++"""Fixed two-parent IHG London failure reader; no Main or Android operation."""
+ import argparse
+ import hashlib
+ import json
+@@ -9,17 +9,14 @@
+ import stat
+ import time
+ 
+-ROOT=Path("/home/alex/work/pocket4-ihg-r2-public-search-destination-entry-01")
+-FLOW=Path("/home/alex/work/pocket4-ihg-owned-qa-r2-flow-b2cd08fcaad1f2faaed5de2ff5df01af")
+-NONCE="b2cd08fcaad1f2faaed5de2ff5df01af"
+-SOURCE_SHA="996ad8e7072afdf3a4288eebb8488d5dcfcdd073f533b0c535d127b3e6c0424d"
+-HELPER_UID=10153
++ROOT=Path("/home/alex/work/pocket4-ihg-r4-public-london-input-01")
++FLOW=Path("/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b")
++NONCE="ec4f2977574102b1e5869d2494e8416b"
++SOURCE_SHA="24a8491dbb44faf1288869d278da96290597b7af1fcdcce12a72fd62bad9435f"
++HELPER_UID=10158
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+-    'launch.json':FLOW/'steps/launch-01/result.json',
+-    'inspect.json':FLOW/'steps/inspect-01/result.json',
+-    'cleanup.json':FLOW/'steps/cleanup-01/result.json',
+ }
+ 
+ 
+@@ -49,7 +46,7 @@
+ 
+     def read(self,path,optional=False):
+         need(path in FILES.values(),'EXACT_FILE_ALLOWLIST_REQUIRED')
+-        maximum=66601 if path==FILES['coordinator.json'] else 262144
++        maximum=6175 if path==FILES['coordinator.json'] else 2187
+         current=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);fd=None
+         try:
+             try:
+@@ -87,7 +84,7 @@
+     need(all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x) for x in (coordinator_sha,stage_sha)),
+          'EXTERNAL_EXACT_TERMINAL_PINS_REQUIRED')
+     expected={'coordinator.json':coordinator_sha,'stage.json':stage_sha}
+-    sizes={'coordinator.json':66601,'stage.json':2624}
++    sizes={'coordinator.json':6175,'stage.json':2187}
+     reader=Reader();files={};values={}
+     for name in ('coordinator.json','stage.json'):
+         path=FILES[name];raw=reader.read(path)
+@@ -102,32 +99,12 @@
+     observed=files['coordinator.json']
+     need(stage.get('coordinator_result')=={k:observed[k] for k in ('path','bytes','sha256')},
+          'STAGE_COORDINATOR_LINK_REQUIRED')
+-    need(coordinator.get('helper_package')=='org.droidloom.qa.ihg.r2' and
++    need(coordinator.get('helper_package')=='org.droidloom.qa.ihg.r4' and
+          coordinator.get('helper_uid')==HELPER_UID and coordinator.get('uid')==10137 and
+          coordinator.get('flow')==str(FLOW),'EXACT_IHG_COORDINATOR_SCOPE_REQUIRED')
+-    retained=coordinator.get('retained_phase_results')
+-    fields={'launch':'launch_result','inspect':'inspection_result','cleanup':'cleanup_result'}
+-    need(type(retained) is dict and set(retained)==set(fields),'EXACT_THREE_RETAINED_PHASE_PINS_REQUIRED')
+-    for phase,field in fields.items():
+-        name=phase+'.json';pin=retained[phase];path=FILES[name]
+-        need(type(pin) is dict and set(pin)=={'path','bytes','sha256'} and pin['path']==str(path) and
+-             type(pin['bytes']) is int and 0<pin['bytes']<=262144 and
+-             isinstance(pin['sha256'],str) and re.fullmatch('[0-9a-f]{64}',pin['sha256']),
+-             'ONLY_EXACT_PARENT_BOUND_PHASE_PATH_AND_BOUNDED_PIN:'+phase)
+-        if field in coordinator:
+-            need(coordinator[field]==pin,'TWO_PARENT_PHASE_PINS_DIFFER:'+phase)
+-        else:
+-            need(coordinator.get('ok') is False and isinstance(coordinator.get('error'),dict),
+-                 'MISSING_DUPLICATE_PIN_ONLY_IN_FAILED_PARENT:'+phase)
+-        raw=reader.read(path)
+-        need(len(raw)==pin['bytes'] and sha(raw)==pin['sha256'],'PARENT_BOUND_PHASE_BYTES_CHANGED:'+phase)
+-        value=json.loads(raw);no_raw_ui(value)
+-        need(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==NONCE and
+-             value.get('phase')==phase and value.get('helper_package')=='org.droidloom.qa.ihg.r2' and
+-             value.get('helper_uid')==HELPER_UID and value.get('package')=='com.ihg.apps.android' and
+-             value.get('uid')==10137,'EXACT_IHG_PHASE_SCOPE_REQUIRED:'+phase)
+-        files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    bundle={'schema':1,'scope':'fixed-current-IHG-R2-search-destination01-terminal-parents-and-three-parent-bound-phase-results','files':files,
++    # Export only the exact two original parents. Retained phase pins, if any,
++    # remain original metadata; no child or successful Main guard is assumed.
++    bundle={'schema':1,'scope':'fixed-current-IHG-R4-London01-early-failure-two-terminal-parents-only','files':files,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}

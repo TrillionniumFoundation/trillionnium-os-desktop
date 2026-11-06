@@ -1,0 +1,350 @@
+--- previous/owner_direct_children.py
++++ candidate/read_status.py
+@@ -1,4 +1,4 @@
+-"""Fixed host-owner diagnosis; kernel direct children only, no cell adoption or action."""
++"""One pinned-daemon Status request; no lifecycle write or App action."""
+ import hashlib,json,os,re,stat,time,types
+ from pathlib import Path
+ BASELINE=Path('/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json')
+@@ -22,6 +22,10 @@
+  'DISCOVERY_EPOCH_DOCUMENT','DISCOVERY_INIT_DIFFERS_FROM_OLD_CELL','DISCOVERY_BOOT_DIFFERS_FROM_BASELINE',
+  'DISCOVERY_ROLES','READ_BUDGET_EXHAUSTED','TRACKED_INPUT_FD_CLOSE_FAILED','CONTROL_COUNT','OUTPUT_BOUND'}
+ FIXED_CODES.update(["CURRENT_BOOT_UNVERIFIED","CURRENT_BOOT_CHANGED","EXACT_HOST_ROLE_BINDINGS","HOST_BASELINE_BINDINGS","DAEMON_PIDFD_NOT_LIVE","DAEMON_CHANGED","THREAD_LIST_BOUND","THREAD_LIST_SCHEMA","DIRECT_CHILDREN_BOUND","DIRECT_CHILDREN_SCHEMA","DIRECT_CHILDREN_DUPLICATE","DIRECT_CHILDREN_SAMPLE_CHANGED","DIRECT_CHILD_PARENT_DIFFERS","DIRECT_CHILD_IDENTITY_CHANGED","PROC_LEAF_BOUND","CONTROL_COUNT"])
++FIXED_CODES.update(['EXACT_OWNER_CANDIDATE','OWNER_GENERATION_CHANGED','OWNER_PARENT_CHANGED',
++ 'OWNER_PROGRAM_CHANGED','DAEMON_CHILD_SET_CHANGED','EXECUTABLE_PIN_SCHEMA','EXECUTABLE_BACKING_CHANGED',
++ 'EXECUTABLE_BYTES_CHANGED','STATUS_SOCKET_SHAPE','STATUS_PEER_MISMATCH','STATUS_RESPONSE_BOUND',
++ 'STATUS_RESPONSE_SCHEMA','STATUS_ANCILLARY_OR_TRUNCATION','STATUS_UNKNOWN_FIELD','FIXED_CELL_CONFIG'])
+ START=time.monotonic()
+ FD_OPENED=0
+ FD_CLOSED=0
+@@ -29,7 +33,7 @@
+ def need(value,code):
+  if not value:raise RuntimeError(code)
+ def check_time():
+- if time.monotonic()-START>=8:raise BudgetExpired()
++ if time.monotonic()-START>=15:raise BudgetExpired()
+ def sha(raw):return hashlib.sha256(raw).hexdigest()
+ def canon(value):return json.dumps(value,ensure_ascii=False,sort_keys=True,separators=(',',':')).encode()
+ def strict_json(raw):
+@@ -253,100 +257,236 @@
+  passed('unknown_child_private_fields_hash_only','PRIVATE_SENTINEL' not in json.dumps(child))
+  need(len(rows)==20,'CONTROL_COUNT');return rows
+ 
++
++OWNER_ACTUAL=json.loads("{\"job_id\":\"1a1b0f64a74-fc05-7461\",\"git_tree\":\"c85e4a7cbf9a8e6a31a79e78f3fae305c97adb8b\",\"git_blob_sha\":\"7435fcf77357f9a7d7d6d5c6e45d85b53ad35692\",\"stdout\":{\"bytes\":9143,\"sha256\":\"73b17e4e3755cb681922463c784cab7ebacc76e14c23b7410b6d4c8d736f947c\"},\"source_sha256\":\"246e3c07125ce8227ec482310ab4fae3fcba68c390a210640bcd75ac15a61cbd\",\"host_pid\":2747275,\"start_ticks\":99050420,\"parent_host_pid\":3588022,\"identity_sha256\":\"3cfe9d4d411ecba738f07488604cd9a3a9a2585d10d9a1dbe9b6ac328cb59692\"}")
++SOCKET_PATH='/run/droidloom/control.sock'
++STATUS_REQUEST=b'{"command":"status"}'
++
++def proc_metadata(fd):
++ value=os.fstat(fd)
++ return {key:getattr(value,key) for key in ('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')}
++def hold_binary(proc,expected,held):
++ need(type(expected) is dict and set(expected)=={'bytes','sha256','file'} and
++  type(expected['bytes']) is int and 0<expected['bytes']<=128*1024*1024 and
++  re.fullmatch('[0-9a-f]{64}',expected['sha256']) is not None,'EXECUTABLE_PIN_SCHEMA')
++ fd=opened(os.open('exe',os.O_RDONLY|os.O_CLOEXEC,dir_fd=proc));held.append(fd)
++ before=proc_metadata(fd)
++ need(stat.S_ISREG(before['st_mode']) and before==expected['file'] and before['st_size']==expected['bytes'],
++  'EXECUTABLE_BACKING_CHANGED')
++ digest=hashlib.sha256();count=0
++ while True:
++  check_time();chunk=os.read(fd,min(131072,expected['bytes']+1-count))
++  if not chunk:break
++  count+=len(chunk);need(count<=expected['bytes'],'EXECUTABLE_BYTES_CHANGED');digest.update(chunk)
++ need(count==expected['bytes'] and digest.hexdigest()==expected['sha256'] and proc_metadata(fd)==before,
++  'EXECUTABLE_BYTES_CHANGED')
++ return {'held_fd':fd,'proc_fd':proc,'expected':expected,
++  'public':{'bytes':count,'sha256':digest.hexdigest(),'historical_backing_metadata_equal':True}}
++def verify_binary(record):
++ need(proc_metadata(record['held_fd'])==record['expected']['file'],'EXECUTABLE_BACKING_CHANGED')
++ again=opened(os.open('exe',os.O_RDONLY|os.O_CLOEXEC,dir_fd=record['proc_fd']))
++ try:need(proc_metadata(again)==record['expected']['file'],'EXECUTABLE_BACKING_CHANGED')
++ finally:close(again)
++def require_owner(value,expected_old_launcher):
++ identity_shape(value)
++ need(value['host_pid']==OWNER_ACTUAL['host_pid'] and value['start_ticks']==OWNER_ACTUAL['start_ticks'] and
++  sha(canon(value))==OWNER_ACTUAL['identity_sha256'],'OWNER_GENERATION_CHANGED')
++ need(value['parent_host_pid']==PIDS['daemon'],'OWNER_PARENT_CHANGED')
++ need(value['executable']==expected_old_launcher['executable'] and value['cmdline']==expected_old_launcher['cmdline'],
++  'OWNER_PROGRAM_CHANGED')
++ return True
++def require_peer(peer):
++ need(type(peer) is dict and set(peer)=={'pid','uid','gid'} and
++  peer['pid']==PIDS['daemon'] and peer['uid']==0 and type(peer['gid']) is int and 0<=peer['gid']<2**32,
++  'STATUS_PEER_MISMATCH')
++ return True
++def parse_status(raw):
++ need(type(raw) is bytes and 0<len(raw)<=65536,'STATUS_RESPONSE_BOUND')
++ value=strict_json(raw)
++ need(type(value) is dict and {'ok','state','message'}<=set(value),'STATUS_RESPONSE_SCHEMA')
++ optional={'host_pid','launch','applications','application_icon','diagnostics'}
++ need(set(value)<={'ok','state','message'}|optional,'STATUS_UNKNOWN_FIELD')
++ need(type(value['ok']) is bool and value['state'] in ('running','stopped') and
++  type(value['message']) is str and len(value['message'].encode())<=32768,'STATUS_RESPONSE_SCHEMA')
++ need(all(value.get(key) is None for key in optional-{'host_pid'}),'STATUS_RESPONSE_SCHEMA')
++ pid=value.get('host_pid')
++ need(pid is None or (type(pid) is int and 0<pid<=2147483647),'STATUS_RESPONSE_SCHEMA')
++ need((value['state']=='running' and pid is not None) or (value['state']=='stopped' and pid is None),
++  'STATUS_RESPONSE_SCHEMA')
++ return value
++def project_status(value,raw):
++ text=value['message']
++ known=text if text in ('cell is stopped','Droidloom is stopped') else None
++ return {'ok':value['ok'],'state':value['state'],'host_pid':value.get('host_pid'),
++  'message':{'utf8_bytes':len(text.encode()),'sha256':sha(text.encode()),'known_constant':known,'raw_exported':False},
++  'response_bytes':len(raw),'response_sha256':sha(raw),'raw_response_exported':False,
++  'reported_running_owner_equals_fixed_kernel_candidate':value['ok'] is True and
++   value['state']=='running' and value.get('host_pid')==OWNER_ACTUAL['host_pid']}
++def close_received_fds(ids,admit=opened,retire=close):
++ tracked=[admit(fd) for fd in ids];first=None
++ for fd in tracked:
++  try:retire(fd)
++  except BaseException as error:
++   if first is None:first=error
++ if first is not None:raise first
++def status_controls():
++ rows=host_owner_controls()
++ def passed(name,condition):
++  need(condition,'CONTROL_COUNT');rows.append({'name':name,'passed':True})
++ def rejected(name,call,code=None):
++  try:call()
++  except RuntimeError as error:
++   need(code is None or str(error)==code,'CONTROL_COUNT');passed(name,True);return
++  raise RuntimeError('CONTROL_COUNT')
++ valid={'ok':True,'state':'running','message':'PRIVATE_SENTINEL_STATUS','host_pid':OWNER_ACTUAL['host_pid']}
++ raw=canon(valid);value=parse_status(raw);public=project_status(value,raw)
++ passed('running_reply_matches_only_fixed_owner',public['reported_running_owner_equals_fixed_kernel_candidate'] is True)
++ passed('status_message_and_raw_response_hidden','PRIVATE_SENTINEL' not in json.dumps(public))
++ stopped=parse_status(canon({'ok':True,'state':'stopped','message':'cell is stopped'}))
++ passed('stopped_reply_reports_no_owner',project_status(stopped,canon(stopped))['host_pid'] is None)
++ foreign=parse_status(canon(dict(valid,host_pid=43)))
++ passed('foreign_reply_pid_does_not_bind_current_owner',project_status(foreign,canon(foreign))['reported_running_owner_equals_fixed_kernel_candidate'] is False)
++ rejected('boolean_reply_pid_rejected',lambda:parse_status(canon(dict(valid,host_pid=True))),'STATUS_RESPONSE_SCHEMA')
++ rejected('unknown_reply_state_rejected',lambda:parse_status(canon(dict(valid,state='unknown'))),'STATUS_RESPONSE_SCHEMA')
++ rejected('unexpected_response_key_rejected',lambda:parse_status(canon(dict(valid,extra=1))),'STATUS_UNKNOWN_FIELD')
++ rejected('diagnostic_payload_not_exported',lambda:parse_status(canon(dict(valid,diagnostics='PRIVATE_SENTINEL'))),'STATUS_RESPONSE_SCHEMA')
++ passed('exact_root_daemon_peer_qualified',require_peer({'pid':PIDS['daemon'],'uid':0,'gid':0}))
++ rejected('foreign_socket_peer_rejected',lambda:require_peer({'pid':43,'uid':0,'gid':0}),'STATUS_PEER_MISMATCH')
++ rejected('duplicate_response_key_rejected',lambda:parse_status(b'{"ok":true,"ok":false,"state":"stopped","message":"cell is stopped"}'))
++ events=[]
++ close_received_fds([10,11],lambda fd:(events.append(('admit',fd)) or fd),lambda fd:events.append(('close',fd)))
++ passed('all_received_fds_registered_before_closing',events==[('admit',10),('admit',11),('close',10),('close',11)])
++ events=[];original=RuntimeError('first-close-error');caught=None
++ def failing_close(fd):
++  events.append(('close',fd))
++  if fd in (10,11):raise original if fd==10 else RuntimeError('secondary-close-error')
++ try:close_received_fds([10,11,12],lambda fd:(events.append(('admit',fd)) or fd),failing_close)
++ except RuntimeError as error:caught=error
++ passed('received_fd_close_failure_preserves_first_and_attempts_remaining',caught is original and
++  events==[('admit',10),('admit',11),('admit',12),('close',10),('close',11),('close',12)])
++ need(len(rows)==33,'CONTROL_COUNT');return rows
++def close_received_rights(ancillary):
++ import array,socket
++ received=[]
++ for level,kind,data in ancillary:
++  if level==socket.SOL_SOCKET and kind==socket.SCM_RIGHTS:
++   ids=array.array('i')
++   ids.frombytes(data[:len(data)-(len(data)%ids.itemsize)]);received.extend(ids)
++ close_received_fds(received)
++ return bool(ancillary)
++def receive_status(sock):
++ import socket
++ chunks=[];length=0
++ while True:
++  check_time();sock.settimeout(max(.001,min(12,15-(time.monotonic()-START))))
++  chunk,ancillary,flags,_=sock.recvmsg(min(8192,65537-length),socket.CMSG_SPACE(256),socket.MSG_CMSG_CLOEXEC)
++  unexpected=close_received_rights(ancillary)
++  need(not unexpected and not(flags&(socket.MSG_TRUNC|socket.MSG_CTRUNC)),'STATUS_ANCILLARY_OR_TRUNCATION')
++  if not chunk:break
++  chunks.append(chunk);length+=len(chunk);need(length<=65536,'STATUS_RESPONSE_BOUND')
++ return b''.join(chunks)
++
+ def main():
+- out={'schema':'pocket4-fixed-daemon-direct-children-diagnosis-v1','ok':False,'source_sha256':SOURCE_SHA256,
++ import socket,struct
++ out={'schema':'pocket4-fixed-daemon-status-owner-diagnosis-v1','ok':False,'source_sha256':SOURCE_SHA256,
+   'old_baseline':{'path':str(BASELINE),**BASELINE_PIN},'original_epoch_source':{'path':str(EPOCH_SOURCE),**EPOCH_PIN},
+-  'old_framework_epoch_sha256':OLD_EPOCH,'old_fixed_roles':{},'daemon_children':{'attempted':False,'complete':False},
+-  'controls':[],'errors':[],'read_budget_seconds':8,'self_watchdog_seconds':8,'original_module_modified':False,
+-  'bounds':{'daemon_threads':MAX_THREADS,'direct_children':MAX_CHILDREN,'child_list_bytes':16384},
+-  'private_baseline_exported':False,'raw_cmdline_or_cgroup_exported':False,
+-  'Android_commands':0,'UI_actions':0,'child_processes':0,'files_written':0,'signals_to_other_processes':0,
+-  'global_proc_scan':False,'descendant_recursion':False,'status_RPC_called':False,
+-  'daemon_cell_state_authoritatively_reported':False,'new_child_adopted_as_cell':False,'new_init_discovered':False,
+-  'new_baseline_created':False,'rebind_authorized':False,'old_flows_reauthorized':False,
+-  'current_task_state_observed':False,'cleanup_authority':False,'framework_exit_cause_resolved':False,'production_ready':False}
+- protocol_complete=False;pidfd=proc=None
++  'owner_actual':OWNER_ACTUAL,'controls':[],'errors':[],'phase':'source_and_inputs','read_budget_seconds':15,
++  'self_watchdog_seconds':15,'client_child_processes':0,'client_Android_commands':0,'requested_mutations':0,
++  'client_filesystem_writes':0,'UI_actions':0,'signals_to_other_processes':0,'original_epoch_module_modified':False,
++  'status_request':{'command':'status','bytes':len(STATUS_REQUEST),'sha256':sha(STATUS_REQUEST),
++   'send_attempted':False,'sent_complete':False,'response_complete':False,'automatic_retry':False},
++  'server_read_behavior':{'reference_status_may_spawn_ip_netns_pids':True,
++   'reference_status_may_spawn_nsenter_getprop':True,'server_child_count_independently_observed':False,
++   'server_Android_read_count_independently_observed':False,'server_side_mutating_command_requested':False,
++    'reference_poll_may_reap_exited_owner_and_teardown_existing_resources':True,
++    'server_internal_side_effects_independently_counted':False},
++  'raw_baseline_or_cmdline_or_cgroup_exported':False,'raw_status_message_exported':False,
++  'current_framework_qualified':False,'new_init_discovered':False,'new_baseline_created':False,
++  'rebind_authorized':False,'old_task_cleanup_authorized':False,'old_flows_reauthorized':False,
++  'installed_Main_source_version_verified':False,'framework_exit_cause_resolved':False,'production_ready':False}
++ held=[];sock=None;protocol_complete=False
+  try:
+   need(os.getuid()==os.geteuid()==0,'ROOT_READ_ONLY_REQUIRED')
+-  out['controls']=host_owner_controls();check_time()
+-  baseline_raw=read_fixed(BASELINE,BASELINE_PIN);epoch_raw=read_fixed(EPOCH_SOURCE,EPOCH_PIN)
+-  module=types.ModuleType('fixed_original_framework_epoch_host_owner');module.__file__=str(EPOCH_SOURCE)
++  out['controls']=status_controls();check_time()
++  b=strict_json(read_fixed(BASELINE,BASELINE_PIN));epoch_raw=read_fixed(EPOCH_SOURCE,EPOCH_PIN)
++  module=types.ModuleType('fixed_original_epoch_status_owner');module.__file__=str(EPOCH_SOURCE)
+   exec(compile(epoch_raw,module.__file__,'exec'),module.__dict__)
+-  b=strict_json(baseline_raw)
+-  need(type(b) is dict and b.get('schema')=='pocket4-main-current-baseline-v1' and
+-       type(b.get('framework_epoch')) is dict and b['framework_epoch'].get('sha256')==OLD_EPOCH and
+-       b['framework_epoch'].get('schema')==module.SCHEMA and
+-       module._digest(b['framework_epoch']['binding'])==OLD_EPOCH,'PRIVATE_BASELINE_SCHEMA')
+-  seven=b['all_seven_processes']
+-  need(seven.get('schema')==module.SCHEMA and seven.get('sha256')==module._digest(seven['binding']) and
+-       seven['binding']['boot_id']==b['framework_epoch']['binding']['boot_id'],'HOST_BASELINE_BINDINGS')
+-  expected={role:b[role+'_process'] for role in PIDS}
+-  need(all(identity_shape(expected[role])['host_pid']==pid and
+-           seven['binding']['processes'][role]==expected[role] for role,pid in PIDS.items()) and
+-       b['status']=={'host_pid':PIDS['launcher']},'EXACT_HOST_ROLE_BINDINGS')
+-  out['old_boot_id']=seven['binding']['boot_id'];out['old_baseline_inputs_fully_pinned']=True
+-  boot_before=read_boot();out['current_boot_id']=boot_before
+-  boot_matches=boot_before==seven['binding']['boot_id'];out['baseline_boot_matches']=boot_matches
+-  observed={}
+-  for role,pid in PIDS.items():
+-   check_time();row={'fixed_host_pid':pid,'expected':project_identity(role,expected[role],expected[role]),'available':False}
+-   try:
+-    value=module.process_identity(pid);check_time();identity_shape(value);observed[role]=value
+-    row.update({'available':True,'observed':project_identity(role,value,expected[role]),
+-     'complete_identity_equal':value==expected[role],'difference_fields':difference_fields(expected[role],value)})
+-   except Exception as error:row['error']=safe_error(error)
+-   out['old_fixed_roles'][role]=row
+-  daemon_equal=observed.get('daemon')==expected['daemon']
+-  out['original_daemon_complete_identity_unchanged']=daemon_equal
+-  if not daemon_equal or not boot_matches:
+-   out['daemon_children']['skip_reason']='OLD_DAEMON_COMPLETE_IDENTITY_NOT_PROVEN' if not daemon_equal else 'BOOT_CHANGED_NO_PARENT_ADOPTION'
+-  else:
+-   check_time();pidfd=opened(os.pidfd_open(PIDS['daemon'],0))
+-   proc=opened(os.open('/proc/'+str(PIDS['daemon']),os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC))
+-   require_pidfd_live(pidfd)
+-   need(module.process_identity(PIDS['daemon'])==expected['daemon'],'DAEMON_CHANGED')
+-   out['daemon_children']['attempted']=True
+-   first=children_sample(proc)
+-   out['daemon_children']['first_sample']={'thread_count':len(first['thread_ids']),
+-    'thread_ids':first['thread_ids'],'child_count':len(first['child_host_pids']),
+-    'child_host_pids':first['child_host_pids'],'kernel_table_sha256':sha(canon(first))}
+-   before={}
+-   for pid in first['child_host_pids']:
+-    check_time();before[pid]=module.process_identity(pid);identity_shape(before[pid])
+-    need(before[pid]['parent_host_pid']==PIDS['daemon'],'DIRECT_CHILD_PARENT_DIFFERS')
+-   last=children_sample(proc);after={}
+-   for pid in last['child_host_pids']:
+-    check_time();after[pid]=module.process_identity(pid);identity_shape(after[pid])
+-   qualify_children(first,last,before,after,expected['daemon'])
+-   require_pidfd_live(pidfd)
+-   final_daemon=module.process_identity(PIDS['daemon'])
+-   need(final_daemon==expected['daemon'],'DAEMON_CHANGED')
+-   need(read_boot()==boot_before,'CURRENT_BOOT_CHANGED')
+-   out['daemon_children'].update({'complete':True,'two_kernel_tables_equal':True,
+-    'all_child_full_identities_equal':True,'daemon_full_identity_before_after_equal':True,'daemon_pidfd_live':True,
+-    'second_sample':{'thread_count':len(last['thread_ids']),'thread_ids':last['thread_ids'],
+-     'child_count':len(last['child_host_pids']),'child_host_pids':last['child_host_pids'],'kernel_table_sha256':sha(canon(last))},
+-    'children':[{'host_pid':pid,'observed':project_identity('unknown_child',after[pid]),
+-     'exact_historical_launcher_identity':after[pid]==expected['launcher'],
+-     'historical_launcher_executable_and_argv_match':after[pid]['executable']==expected['launcher']['executable'] and
+-      after[pid]['cmdline']==expected['launcher']['cmdline'],
+-     'cell_owner_qualification':False,'adopted_as_launcher_or_init':False} for pid in last['child_host_pids']],
+-    'exact_historical_launcher_still_direct_child':any(value==expected['launcher'] for value in after.values()),
+-    'absence_of_matching_child_is_not_daemon_state_RPC':True})
+-  check_time();protocol_complete=True
+- except BaseException as error:out['errors'].append(safe_error(error))
++  need(b.get('schema')=='pocket4-main-current-baseline-v1' and
++   b['framework_epoch']['schema']==module.SCHEMA and b['framework_epoch']['sha256']==OLD_EPOCH and
++   module._digest(b['framework_epoch']['binding'])==OLD_EPOCH,'PRIVATE_BASELINE_SCHEMA')
++  expected_daemon=identity_shape(b['daemon_process']);old_launcher=identity_shape(b['launcher_process'])
++  need(expected_daemon['host_pid']==PIDS['daemon'] and old_launcher['host_pid']==PIDS['launcher'] and
++   b['all_seven_processes']['binding']['processes']['daemon']==expected_daemon and
++   b['all_seven_processes']['binding']['processes']['launcher']==old_launcher and
++   b['status']=={'host_pid':PIDS['launcher']},'HOST_BASELINE_BINDINGS')
++  boot=read_boot();need(boot==b['framework_epoch']['binding']['boot_id'],'CURRENT_BOOT_CHANGED')
++  out['boot_id']=boot
++  cell=b['cell_config']
++  need(cell['path']=='/etc/droidloom/cell.json' and cell['sha256']=='f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc' and
++   type(cell['bytes']) is int and 0<cell['bytes']<=131072,'FIXED_CELL_CONFIG')
++  read_fixed(Path(cell['path']),{'bytes':cell['bytes'],'sha256':cell['sha256']})
++  out['historical_cell_config_exact']=True
++  out['phase']='fixed_daemon_and_owner_before'
++  pidfds={};procs={}
++  for role,pid in (('daemon',PIDS['daemon']),('owner',OWNER_ACTUAL['host_pid'])):
++   check_time();fd=opened(os.pidfd_open(pid,0));held.append(fd);pidfds[role]=fd;require_pidfd_live(fd)
++   proc=opened(os.open('/proc/'+str(pid),os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC));held.append(proc);procs[role]=proc
++  daemon=module.process_identity(PIDS['daemon']);need(daemon==expected_daemon,'DAEMON_CHANGED')
++  owner=module.process_identity(OWNER_ACTUAL['host_pid']);require_owner(owner,old_launcher)
++  first=children_sample(procs['daemon']);need(first['child_host_pids']==[OWNER_ACTUAL['host_pid']],'DAEMON_CHILD_SET_CHANGED')
++  binaries={role:hold_binary(procs[role],b['current_process_executables'][old_role],held)
++   for role,old_role in (('daemon','daemon'),('owner','launcher'))}
++  out['before']={'daemon':project_identity('daemon',daemon,expected_daemon),
++   'owner':project_identity('unknown_child',owner),'daemon_child_host_pids':first['child_host_pids'],
++   'kernel_table_sha256':sha(canon(first)),'executables':{k:v['public'] for k,v in binaries.items()}}
++  out['phase']='fixed_status_socket'
++  socket_path_fd=opened(os.open(SOCKET_PATH,os.O_PATH|os.O_NOFOLLOW|os.O_CLOEXEC));held.append(socket_path_fd)
++  path_before=proc_metadata(socket_path_fd)
++  need(stat.S_ISSOCK(path_before['st_mode']) and path_before['st_uid']==0 and path_before['st_nlink']==1,'STATUS_SOCKET_SHAPE')
++  sock=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM|socket.SOCK_CLOEXEC)
++  opened(sock.fileno());sock.settimeout(max(.001,min(12,15-(time.monotonic()-START))))
++  sock.connect(SOCKET_PATH)
++  peer_values=struct.unpack('3i',sock.getsockopt(socket.SOL_SOCKET,socket.SO_PEERCRED,12))
++  peer=dict(zip(('pid','uid','gid'),peer_values));require_peer(peer);out['socket_peer']=peer
++  require_pidfd_live(pidfds['daemon']);require_pidfd_live(pidfds['owner'])
++  need(module.process_identity(PIDS['daemon'])==expected_daemon,'DAEMON_CHANGED')
++  require_owner(module.process_identity(OWNER_ACTUAL['host_pid']),old_launcher)
++  out['phase']='one_status_request'
++  out['status_request']['send_attempted']=True;sock.sendall(STATUS_REQUEST)
++  out['status_request']['sent_complete']=True;sock.shutdown(socket.SHUT_WR)
++  raw=receive_status(sock);out['status_request']['response_complete']=True
++  value=parse_status(raw);out['status']=project_status(value,raw)
++  out['phase']='independent_owner_after'
++  after_daemon=module.process_identity(PIDS['daemon']);after_owner=module.process_identity(OWNER_ACTUAL['host_pid'])
++  need(after_daemon==expected_daemon,'DAEMON_CHANGED');require_owner(after_owner,old_launcher)
++  last=children_sample(procs['daemon']);need(first==last,'DAEMON_CHILD_SET_CHANGED')
++  for fd in pidfds.values():require_pidfd_live(fd)
++  for record in binaries.values():verify_binary(record)
++  named=os.stat(SOCKET_PATH,follow_symlinks=False)
++  need(proc_metadata(socket_path_fd)==path_before and
++   {key:getattr(named,key) for key in path_before}==path_before,'STATUS_SOCKET_SHAPE')
++  need(read_boot()==boot,'CURRENT_BOOT_CHANGED')
++  read_fixed(Path(cell['path']),{'bytes':cell['bytes'],'sha256':cell['sha256']})
++  out['after']={'daemon_complete_identity_equal':True,'owner_complete_identity_equal':True,
++   'both_pidfds_live':True,'two_daemon_kernel_tables_equal':True,'executables_held_and_named_unchanged':True,
++   'socket_path_held_and_named_unchanged':True,'boot_and_cell_config_equal':True}
++  out['daemon_reported_owner_binds_current_kernel_candidate']=out['status']['reported_running_owner_equals_fixed_kernel_candidate']
++  out['phase']='complete';check_time();protocol_complete=True
++ except BaseException as error:out['errors'].append({'phase':out['phase'],**safe_error(error)})
+  finally:
+   out['self_watchdog_disarmed']=STOP_WATCHDOG()
+-  for fd in (proc,pidfd):
+-   if fd is not None:
+-    try:close(fd)
+-    except BaseException as error:out['errors'].append({'phase':'held_daemon_FD_close',**safe_error(error)})
+-  out['tracked_input_and_daemon_FDs']={'acquired':FD_OPENED,'closed':FD_CLOSED,'close_error_count':len(FD_CLOSE_ERRORS)}
++  if sock is not None:
++   try:close(sock.detach())
++   except BaseException as error:out['errors'].append({'phase':'client_socket_close',**safe_error(error)})
++  for fd in reversed(held):
++   try:close(fd)
++   except BaseException as error:out['errors'].append({'phase':'held_FD_close',**safe_error(error)})
++  out['tracked_FDs']={'acquired':FD_OPENED,'closed':FD_CLOSED,'close_error_count':len(FD_CLOSE_ERRORS)}
+   out['original_epoch_internal_FDs_independently_counted']=False
+-  if FD_OPENED!=FD_CLOSED or FD_CLOSE_ERRORS:out['errors'].append({'code':'TRACKED_INPUT_FD_CLOSE_FAILED','raw_message_exported':False})
++  if FD_OPENED!=FD_CLOSED or FD_CLOSE_ERRORS:out['errors'].append({'code':'TRACKED_INPUT_FD_CLOSE_FAILED'})
+  out['diagnostic_protocol_complete']=protocol_complete;out['ok']=bool(protocol_complete and not out['errors'])
++ out['status_request']['read_completion_unknown']=out['status_request']['send_attempted'] and not out['status_request']['response_complete']
+  out['elapsed_seconds']=time.monotonic()-START
+  raw=(json.dumps(out,ensure_ascii=False,sort_keys=True,separators=(',',':'))+'\n').encode()
+- need(len(raw)<=65536,'OUTPUT_BOUND')
+- print(raw.decode(),end='',flush=True)
++ need(len(raw)<=65536,'OUTPUT_BOUND');print(raw.decode(),end='',flush=True)
+  return 0 if out['ok'] else 1

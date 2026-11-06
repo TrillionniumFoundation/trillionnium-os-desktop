@@ -1,0 +1,47 @@
+--- before/bind_sources.js
++++ owner02/bind_sources.js
+@@ -5,6 +5,7 @@
+  const eq=(a,b)=>stable(a)===stable(b);
+  const kinds=['coordinator','stage','worker','state_command','worker_command','worker_stdout'];
+  need(template.schema==='pocket4-ihg-r4-cell02-London-template-v1'&&template.complete_inverse_exact===true&&
++  template.owner_discovery_revision===2&&template.owner_complete_inverse_exact===true&&
+   template.actual_install_source_manifest===install.manifest_sha256&&template.helper_manifest_sha256===helper.manifestSha&&
+   template.host_manifest_sha256===host.manifest_sha256,'EXACT_CURRENT_TEMPLATE_CLOSURE');
+  for(const [name,raw]of Object.entries(template.sources))need(eq(pin(raw),template.source_pins[name]),'EXACT_CURRENT_TEMPLATE:'+name);
+@@ -17,7 +18,7 @@
+  const canon=(key,path)=>ll.losslessCanonical(ll.nodeField(roots[key],path));
+  const c=obj.coordinator,s=obj.stage,w=obj.worker,cmd=obj.worker_command,scmd=obj.state_command;
+  const ipins=Object.fromEntries(kinds.map(k=>[k,{bytes:expected.install_pins[k].bytes,sha256:expected.install_pins[k].sha256}]));
+- const installRoot='/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01';
++ const installRoot='/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02';
+  const row=(key,path)=>({path:installRoot+'/'+path,...ipins[key]});
+  for(const [name,v]of Object.entries({coordinator:c,stage:s,worker:w})){
+   need(v.ok===true&&v.error===null&&Array.isArray(v.secondary_errors)&&v.secondary_errors.length===0,'ACTUAL_INSTALL_PASS:'+name);
+@@ -28,9 +29,11 @@
+  need(c.install_state_worker_requested===true&&c.source_and_artifact_unchanged===true&&s.source_unchanged===true&&
+   s.shared_current_host_source_verified===true&&s.current_host_manifest_sha256===host.manifest_sha256&&s.coordinator_returncode===0,'COMPLETED_CURRENT_SOURCE_INSTALL');
+  const ctrl=s.controls;
+- need(ctrl.schema==='pocket4-current-app-install-context-controls-v1'&&ctrl.count===51&&ctrl.all_passed===true&&
+-  Array.isArray(ctrl.cases)&&ctrl.cases.length===51&&new Set(ctrl.cases.map(x=>x.name)).size===51&&ctrl.cases.every(x=>x.passed===true)&&
+-  ctrl.actual_R6_reference_read_only===true&&ctrl.Android_commands===0&&ctrl.UI_actions===0&&ctrl.children===0&&ctrl.temporary_directories_removed===true,'ALL_CURRENT_51_INSTALL_CONTROLS');
++ need(ctrl.schema==='pocket4-current-app-install-context-controls-v1'&&ctrl.count===69&&ctrl.all_passed===true&&
++  Array.isArray(ctrl.cases)&&ctrl.cases.length===69&&new Set(ctrl.cases.map(x=>x.name)).size===69&&ctrl.cases.every(x=>x.passed===true)&&
++  ctrl.new_owner_discovery_controls===18&&ctrl.production_discovery_and_Context_route_used===true&&
++  ctrl.legacy_discover_failure_reproduced_in_memory===true&&
++  ctrl.actual_R6_reference_read_only===true&&ctrl.Android_commands===0&&ctrl.UI_actions===0&&ctrl.children===0&&ctrl.temporary_directories_removed===true,'ALL_CURRENT_69_INSTALL_CONTROLS');
+  const uid=w.owned_package_uid;
+  need(Number.isInteger(uid)&&uid>=10000&&uid<100000&&![10137,10196,10153,10156].includes(uid)&&
+   c.owned_package_uid===uid&&w.state.helper.self_uid===uid&&w.installed_before_state.uid===uid&&
+@@ -80,10 +83,10 @@
+  }
+  const literal=material.generator.match(/^EXCLUDED = (\[.*\])$/m),labelLiteral=material.generator.match(/^LABELS = (\[.*\])$/m);
+  need(literal&&labelLiteral&&eq(JSON.parse(literal[1]),excluded)&&eq(JSON.parse(labelLiteral[1]),spec.labels),'EXACT_GENERATOR_LITERALS');
+- need(Array.isArray(excluded)&&excluded.length>=657&&new Set(excluded).size===excluded.length&&
++ need(Array.isArray(excluded)&&excluded.length>=659&&new Set(excluded).size===excluded.length&&
+   excluded.every(v=>typeof v==='string'&&/^[0-9a-f]{32}$/.test(v))&&eq(excluded,[...excluded].sort())&&
+   n.excluded_count===excluded.length&&h.sha(JSON.stringify(excluded)+'\n')===n.excluded_sha256&&
+-  spec.minimum_exclusions.length===657&&spec.minimum_exclusions.every(v=>excluded.includes(v)),'COMPLETE_GLOBAL_NONCE_EXCLUSIONS');
++  spec.minimum_exclusions.length===659&&spec.minimum_exclusions.every(v=>excluded.includes(v)),'COMPLETE_GLOBAL_NONCE_EXCLUSIONS');
+  need(n.generator==='secrets.token_hex(16)'&&n.no_redraw===true&&n.actual_helper_uid_bound===uid&&
+   n.count===40&&eq(n.labels,spec.labels)&&n.labels.length===40&&new Set(n.labels).size===40&&
+   n.values.length===40&&new Set(n.values).size===40&&n.values.every(v=>typeof v==='string'&&/^[0-9a-f]{32}$/.test(v)&&!excluded.includes(v)),'ACTUAL_FORTY_DISTINCT_CURRENT_NONCES');

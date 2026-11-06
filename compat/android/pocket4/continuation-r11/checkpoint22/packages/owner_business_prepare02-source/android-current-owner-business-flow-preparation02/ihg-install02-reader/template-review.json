@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "original": {
+    "bytes": 13795,
+    "sha256": "48381a2bd200221102e8b74fa5d620549144a4b09d463f494b5b2cf3426fe9a0",
+    "git_blob": "ad0192fca75221cd02b0d58c151e652712dbd98a"
+  },
+  "source": {
+    "bytes": 13738,
+    "sha256": "9b665fa8fc27ccbc36c9c677f6b8518454b6e2d0f515503f4e469bff7a8b1fe1",
+    "git_blob": "438495476ec03ae14896b26452f23e0db1511180"
+  },
+  "edits": [
+    {
+      "from": "\"\"\"Fixed read-only collection of failed IHG R4 installation originals; no retry.\"\"\"",
+      "to": "\"\"\"Fixed read-only collection of IHG R4 install02 originals; no action or retry.\"\"\"",
+      "why": "doc"
+    },
+    {
+      "from": "\"/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-01\"",
+      "to": "\"/home/alex/work/pocket4-owned-ihg-qa-r4-install-state-02\"",
+      "why": "root02"
+    },
+    {
+      "from": "NONCE = \"7a9043d8dcc2c5e0b34fc11d7bf8bee5\"",
+      "to": "NONCE = \"3d004706f9adf4411761495fdc6ed859\"",
+      "why": "newstate"
+    },
+    {
+      "from": "PINS = {'coordinator.json': (4492, '68eb201b47b803e324a2a9dc22759cb3275a2614192bdf3d9fdf7faa96fc4021'), 'stage.json': (8730, '9cb3a2e79e25513d5cc9c41fa52dbf38f922609b53267a60d05994bd9eaca3b0')}",
+      "to": "PINS = None  # Bind the two actual terminal pins before creating a request.",
+      "why": "unobservedparents"
+    },
+    {
+      "from": "INSTALL_NONCE = \"2b991bd0c0832109fb97af75690c73b6\"",
+      "to": "INSTALL_NONCE = \"bc503e63d113d5ddd32aba526e7d0075\"",
+      "why": "newflow"
+    },
+    {
+      "from": "SOURCE_SHA = \"e3107670749e47f062eb25401dc3b5bb581971400b64eecf80ea2cb0f0add5c3\"",
+      "to": "SOURCE_SHA = \"bb9957023531b018d95f4a6e747fa71691bf566e53e158c5935db410ea7a8aa6\"",
+      "why": "source02"
+    },
+    {
+      "from": "'runtime_ticket_context_sha256':'6e7dc456c6118e48dafb8b55344b71631bbea5dc4382aa23a3b03abfc75d3ed2'",
+      "to": "'runtime_ticket_context_sha256':\"88c3d181a1176a447db4426df04125ce51f77ed03736eb79c1a00bb1544f4364\"",
+      "why": "newcontext"
+    },
+    {
+      "from": "    # Failure collection preserves the original first/secondary errors. The two\n    # parents are externally pinned; no successful installation is inferred.",
+      "to": "    # Both externally pinned parents retain their original status and errors.\n    # Collection never qualifies installation or changes a failure/unknown.",
+      "why": "receiptstatuscomment"
+    },
+    {
+      "from": "    require(coordinator.get('package')==PACKAGE and stage.get('coordinator_result')==coordinator_pin and\n            coordinator.get('ok') is False and stage.get('ok') is False and\n            isinstance(coordinator.get('error'),dict) and isinstance(stage.get('error'),dict),\n            'EXACT_ACTUAL_FAILED_IHG_R4_PARENT_CHAIN_REQUIRED')",
+      "to": "    require(coordinator.get('package')==PACKAGE and stage.get('coordinator_result')==coordinator_pin,\n            'EXACT_ACTUAL_IHG_R4_PARENT_CHAIN_REQUIRED')\n    for value in (coordinator,stage):\n        require((value['ok'] is True and value.get('error') is None) or\n                (value['ok'] is False and isinstance(value.get('error'),dict)),\n                'EXACT_ORIGINAL_PARENT_STATUS_SHAPE_REQUIRED')",
+      "why": "accept-preserve-both-actual-statuses-without-green-qualification"
+    },
+    {
+      "from": "'scope':'exact-owned-ihg-r4-install01-failure-originals'",
+      "to": "'scope':'exact-owned-ihg-r4-install02-originals'",
+      "why": "scope"
+    }
+  ],
+  "full_inverse": true,
+  "actual_terminal_pins": null,
+  "request_created": false,
+  "no_instrumentation_streams": true,
+  "success_not_qualified_by_reader": true
+}

@@ -1,0 +1,289 @@
+{
+  "expected": {
+    "android_init": {
+      "pid": 3268779,
+      "start_ticks": 99615082,
+      "ppid": 3268775,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3268779,
+        1
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533280]",
+        "pid": "pid:[4026533285]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "daemon": {
+      "pid": 3588022,
+      "start_ticks": 80796995,
+      "ppid": 1,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3588022
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026531832]",
+        "pid": "pid:[4026531836]"
+      },
+      "root_identity": {
+        "device": 66306,
+        "inode": 2
+      }
+    },
+    "launcher": {
+      "pid": 3268774,
+      "start_ticks": 99615080,
+      "ppid": 3588022,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3268774
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533279]",
+        "pid": "pid:[4026531836]"
+      },
+      "root_identity": {
+        "device": 66306,
+        "inode": 2
+      }
+    },
+    "presenter": {
+      "pid": 3588024,
+      "start_ticks": 80796995,
+      "ppid": 2472,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "namespace_pids": [
+        3588024
+      ],
+      "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026531832]",
+        "pid": "pid:[4026531836]"
+      },
+      "root_identity": {
+        "device": 66306,
+        "inode": 2
+      }
+    },
+    "surfaceflinger": {
+      "pid": 3270350,
+      "start_ticks": 99615245,
+      "ppid": 3268779,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "namespace_pids": [
+        3270350,
+        661
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service/system/uid_1000/pid_661\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533280]",
+        "pid": "pid:[4026533285]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "zygote64": {
+      "pid": 3270325,
+      "start_ticks": 99615242,
+      "ppid": 3268779,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3270325,
+        638
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service/system/uid_0/pid_638\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533718]",
+        "pid": "pid:[4026533285]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "system_server": {
+      "pid": 3270611,
+      "start_ticks": 99615342,
+      "ppid": 3270325,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "namespace_pids": [
+        3270611,
+        808
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service/system/uid_1000/pid_808\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533719]",
+        "pid": "pid:[4026533285]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    }
+  },
+  "intermediary": {
+    "pid": 3268775,
+    "start_ticks": 99615082,
+    "ppid": 3268774,
+    "uids": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "namespace_pids": [
+      3268775
+    ],
+    "cgroup": "0::/system.slice/droidloomd.service\n",
+    "namespaces": {
+      "mnt": "mnt:[4026533280]",
+      "pid": "pid:[4026531836]"
+    }
+  },
+  "chainParents": [
+    {
+      "role": "daemon",
+      "pid": 3588022,
+      "child": 3268774,
+      "pin": "15eebd4b58f9779cfd805e3fb0468877b9111a02b3e7883ac70a36087716f2a8",
+      "exact_observed_table": {
+        "thread_ids": [
+          3588022
+        ],
+        "per_thread": {
+          "3588022": [
+            3268774
+          ]
+        },
+        "child_host_pids": [
+          3268774
+        ]
+      }
+    },
+    {
+      "role": "launcher",
+      "pid": 3268774,
+      "child": 3268775,
+      "pin": "e433d7ebbbd21219f1c07c1efc44ed2db14b5b12ddc276715aebb38b3bf5a9bb",
+      "exact_observed_table": {
+        "thread_ids": [
+          3268774
+        ],
+        "per_thread": {
+          "3268774": [
+            3268775
+          ]
+        },
+        "child_host_pids": [
+          3268775
+        ]
+      }
+    },
+    {
+      "role": "intermediary",
+      "pid": 3268775,
+      "child": 3268779,
+      "pin": "01bc1128edf84a16ed5d46d117083fbf91fbd482082364a787f5cd9c08e0de82",
+      "exact_observed_table": {
+        "thread_ids": [
+          3268775
+        ],
+        "per_thread": {
+          "3268775": [
+            3268779
+          ]
+        },
+        "child_host_pids": [
+          3268779
+        ]
+      }
+    }
+  ],
+  "authority": {
+    "role_identity_sha256": {
+      "daemon": "0c97203b9dcf0334fb796b6d5264dba1df3644f048180f709b687671a37e7aaa",
+      "launcher": "b1a6ea5384d7096772650aa7ea3f4db22b70b112d054521e339fea4df3f3c830",
+      "presenter": "346c6eef8623ebdd359432bf8609b143590db470d4e0b5778e17fc312888326c",
+      "android_init": "25b9e20a0d7fe4a67a4ed645223532be0af4df4f0923385c63bf8575d44fdf01",
+      "zygote64": "2ea56f66613caa7850652ef19476df4356ad808bae94e9e9cedba476f71a06f4",
+      "system_server": "58cd65beff51ea53cd38c3cf021d89fd2a19527759efb5c5756c06cb9ab6c2b9",
+      "surfaceflinger": "8e1106acb9eb02b802e85b331b492593092e66c9570c052ed94b92fd99f89c76"
+    },
+    "intermediary_identity_sha256": "2705458a631597a25618cf841426fd6319ab5c3f7aae051c1f037cf480416a33",
+    "framework_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "child_table_sha256": {
+      "daemon": "15eebd4b58f9779cfd805e3fb0468877b9111a02b3e7883ac70a36087716f2a8",
+      "launcher": "e433d7ebbbd21219f1c07c1efc44ed2db14b5b12ddc276715aebb38b3bf5a9bb",
+      "intermediary": "01bc1128edf84a16ed5d46d117083fbf91fbd482082364a787f5cd9c08e0de82"
+    }
+  },
+  "discovery": {
+    "job_id": "1a1b11bc7e8-fc05-75d8",
+    "git_tree": "644a1a101ddde89b189159f8d5681373190eed92",
+    "git_blob_sha": "0d43d38e27252d1ee4a4c42015b216c52ba7d255",
+    "stdout": {
+      "bytes": 17817,
+      "sha256": "5f029ed98fa932f060a3617764b29485f09a4b09e1052c280ffd925235f488ae"
+    },
+    "source": {
+      "bytes": 48747,
+      "sha256": "2d4808c6ae499443302dc4ecc195116a4e4a4ccb2a52d589ca995cda42173f3b"
+    },
+    "framework_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "authenticated_daemon_status_supplied_owner": true,
+    "complete_unique_kernel_chain": true,
+    "old_helpers_or_tasks_reauthorized": false,
+    "installed_Main_source_version_verified": false
+  },
+  "previous": {
+    "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+    "bytes": 41844,
+    "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+    "epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2"
+  }
+}

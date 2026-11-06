@@ -1,0 +1,124 @@
+{
+  "baseline": {
+    "actual_pin": {
+      "bytes": 79928,
+      "git_blob_sha": "3f4945ce31c1593552719edf530ce7654f33cf7e",
+      "sha256": "f952b570b665438b367f78fbef0a17232d78ced69463832b9d12b1316a700a83"
+    },
+    "actual_status": "FAILED_ONE_FIXED_PATH_ENOENT_PRESERVED",
+    "actual_tree": "08bfc40e5d17aa47850692269f5674dbaae203ff",
+    "source": {
+      "bytes": 28136,
+      "git_blob_sha": "06623d4ff266da843432f3ea7fb03ba5b26f87d7",
+      "sha256": "03bbd14e9fe5e97a61cc957a6f9c580b4272f44163dac743e9b276004c1b6176"
+    },
+    "tree": "11e381e4e0dc4cd4d17f800a871eb98eae69333c"
+  },
+  "bounds": {
+    "children": 0,
+    "close_seconds_total": 45,
+    "configuration_bytes": 1048576,
+    "cpu_quota_percent": 100,
+    "environment_bytes": 1048576,
+    "global_read_bytes": 8388608,
+    "memory_bytes": 268435456,
+    "metadata_output_bytes": 1048576,
+    "network_calls": 0,
+    "nice": 15,
+    "outer_seconds": 60,
+    "source_bytes": 131072,
+    "work_seconds": 40,
+    "writes": 0
+  },
+  "kind": "p4-marriott-fixed-product-config-review01",
+  "not_performed": [
+    "Python syntax or execution",
+    "local controls",
+    "remote collection",
+    "CRT/DSO/APK build",
+    "Android/ART/instrumentation"
+  ],
+  "privacy": {
+    "Main_or_Android_data_read": false,
+    "configuration_projection": [
+      "four original SDK fields",
+      "DeviceProduct",
+      "Make_suffix"
+    ],
+    "full_environment_body_exported": false,
+    "other_configuration_body_exported": false,
+    "selected_environment": [
+      "TARGET_PRODUCT",
+      "EMMA_INSTRUMENT presence/effective boolean; fixed public boolean literals or length/SHA only"
+    ],
+    "unselected_environment_names_or_values_exported": false
+  },
+  "qualification": {
+    "SDK_constants_invented": false,
+    "new_result_if_success": "only naming/configuration chain and fixed source observations",
+    "old_reader13_02_admission": "UNKNOWN_NOT_RETRIED_OR_BORROWED",
+    "old_sdk22_whole_failed": true,
+    "whole_build": false
+  },
+  "read_scope": {
+    "all_components_NOFOLLOW": true,
+    "complete_reads_per_input": 2,
+    "derived_path_only_from_observed_fixed_metadata": true,
+    "derived_path_source": "original Soong config.SoongVarsFile + CoverageSuffix + Environment.IsEnvTrue",
+    "directory_enumerations": 0,
+    "exact_source_prerequisites": 4,
+    "fallbacks": 0,
+    "fixed_available_environment": 1,
+    "fixed_inputs": 8,
+    "maximum_derived_configuration_paths": 1,
+    "original_actual_anchors": 3,
+    "regular_nlink1": true
+  },
+  "request": {
+    "bytes": 30144,
+    "git_blob_sha": "a1e9392e7acdabf7ea9728bbfe91f91fffdd10b2",
+    "sha256": "f02224d5bfe9ac962d125ad81a118ee0bb0e459fac786511d5f18db4c23aaf4d"
+  },
+  "request_delta": [
+    "stdin",
+    "idempotency_key"
+  ],
+  "schema": 1,
+  "source": {
+    "bytes": 29027,
+    "git_blob_sha": "7fdf3a3e895c0e26652fd346b3be976714f4ceb9",
+    "sha256": "c4579bfabe4ee1d7241f3ab7e8e07ccef30ad7821b6d8cfe3e47def8bfb2d878"
+  },
+  "source_delta": {
+    "added": [
+      "available_environment_facts",
+      "product_configuration_facts"
+    ],
+    "changed": [
+      "join_sdk_configuration",
+      "observe",
+      "main"
+    ],
+    "full_diff_inverse": true,
+    "unchanged": [
+      "alarm",
+      "need",
+      "tick",
+      "error",
+      "take",
+      "close",
+      "info",
+      "open_absolute",
+      "digest",
+      "read_complete",
+      "archive_facts",
+      "zip_facts",
+      "strict_configuration_json",
+      "sdk_configuration_facts",
+      "small_self",
+      "at_text",
+      "resource_snapshot"
+    ]
+  },
+  "status": "SOURCE_ONLY_NOT_EXECUTED"
+}

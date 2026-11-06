@@ -1,0 +1,132 @@
+[
+  {
+    "label": "main_snapshot.py:actual eight identity projection",
+    "from": "EXPECTED=json.loads(\"{\\\"android_init\\\":{\\\"pid\\\":3588093,\\\"start_ticks\\\":80797014,\\\"ppid\\\":3588092,\\\"uids\\\":[0,0,0,0],\\\"namespace_pids\\\":[3588093,1],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533284]\\\",\\\"pid\\\":\\\"pid:[4026533288]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":106,\\\"inode\\\":1}},\\\"daemon\\\":{\\\"pid\\\":3588022,\\\"start_ticks\\\":80796995,\\\"ppid\\\":1,\\\"uids\\\":[0,0,0,0],\\\"namespace_pids\\\":[3588022],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026531832]\\\",\\\"pid\\\":\\\"pid:[4026531836]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":66306,\\\"inode\\\":2}},\\\"launcher\\\":{\\\"pid\\\":3588089,\\\"start_ticks\\\":80797013,\\\"ppid\\\":3588022,\\\"uids\\\":[0,0,0,0],\\\"namespace_pids\\\":[3588089],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533281]\\\",\\\"pid\\\":\\\"pid:[4026531836]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":66306,\\\"inode\\\":2}},\\\"presenter\\\":{\\\"pid\\\":3588024,\\\"start_ticks\\\":80796995,\\\"ppid\\\":2472,\\\"uids\\\":[1000,1000,1000,1000],\\\"namespace_pids\\\":[3588024],\\\"cgroup\\\":\\\"0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026531832]\\\",\\\"pid\\\":\\\"pid:[4026531836]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":66306,\\\"inode\\\":2}},\\\"surfaceflinger\\\":{\\\"pid\\\":3588912,\\\"start_ticks\\\":80797155,\\\"ppid\\\":3588093,\\\"uids\\\":[1000,1000,1000,1000],\\\"namespace_pids\\\":[3588912,672],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service/system/uid_1000/pid_672\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533284]\\\",\\\"pid\\\":\\\"pid:[4026533288]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":106,\\\"inode\\\":1}},\\\"zygote64\\\":{\\\"pid\\\":90360,\\\"start_ticks\\\":96586437,\\\"ppid\\\":3588093,\\\"uids\\\":[0,0,0,0],\\\"namespace_pids\\\":[90360,1160345],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service/system/uid_0/pid_1160345\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533070]\\\",\\\"pid\\\":\\\"pid:[4026533288]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":106,\\\"inode\\\":1}},\\\"system_server\\\":{\\\"pid\\\":90516,\\\"start_ticks\\\":96586493,\\\"ppid\\\":90360,\\\"uids\\\":[1000,1000,1000,1000],\\\"namespace_pids\\\":[90516,1160408],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service/system/uid_1000/pid_1160408\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533239]\\\",\\\"pid\\\":\\\"pid:[4026533288]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":106,\\\"inode\\\":1}}}\")",
+    "to": "EXPECTED=json.loads(\"{\\\"android_init\\\":{\\\"pid\\\":3268779,\\\"start_ticks\\\":99615082,\\\"ppid\\\":3268775,\\\"uids\\\":[0,0,0,0],\\\"namespace_pids\\\":[3268779,1],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533280]\\\",\\\"pid\\\":\\\"pid:[4026533285]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":106,\\\"inode\\\":1}},\\\"daemon\\\":{\\\"pid\\\":3588022,\\\"start_ticks\\\":80796995,\\\"ppid\\\":1,\\\"uids\\\":[0,0,0,0],\\\"namespace_pids\\\":[3588022],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026531832]\\\",\\\"pid\\\":\\\"pid:[4026531836]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":66306,\\\"inode\\\":2}},\\\"launcher\\\":{\\\"pid\\\":3268774,\\\"start_ticks\\\":99615080,\\\"ppid\\\":3588022,\\\"uids\\\":[0,0,0,0],\\\"namespace_pids\\\":[3268774],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533279]\\\",\\\"pid\\\":\\\"pid:[4026531836]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":66306,\\\"inode\\\":2}},\\\"owner_intermediary\\\":{\\\"pid\\\":3268775,\\\"start_ticks\\\":99615082,\\\"ppid\\\":3268774,\\\"uids\\\":[0,0,0,0],\\\"namespace_pids\\\":[3268775],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533280]\\\",\\\"pid\\\":\\\"pid:[4026531836]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":106,\\\"inode\\\":1}},\\\"presenter\\\":{\\\"pid\\\":3588024,\\\"start_ticks\\\":80796995,\\\"ppid\\\":2472,\\\"uids\\\":[1000,1000,1000,1000],\\\"namespace_pids\\\":[3588024],\\\"cgroup\\\":\\\"0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026531832]\\\",\\\"pid\\\":\\\"pid:[4026531836]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":66306,\\\"inode\\\":2}},\\\"surfaceflinger\\\":{\\\"pid\\\":3270350,\\\"start_ticks\\\":99615245,\\\"ppid\\\":3268779,\\\"uids\\\":[1000,1000,1000,1000],\\\"namespace_pids\\\":[3270350,661],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service/system/uid_1000/pid_661\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533280]\\\",\\\"pid\\\":\\\"pid:[4026533285]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":106,\\\"inode\\\":1}},\\\"system_server\\\":{\\\"pid\\\":3270611,\\\"start_ticks\\\":99615342,\\\"ppid\\\":3270325,\\\"uids\\\":[1000,1000,1000,1000],\\\"namespace_pids\\\":[3270611,808],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service/system/uid_1000/pid_808\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533719]\\\",\\\"pid\\\":\\\"pid:[4026533285]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":106,\\\"inode\\\":1}},\\\"zygote64\\\":{\\\"pid\\\":3270325,\\\"start_ticks\\\":99615242,\\\"ppid\\\":3268779,\\\"uids\\\":[0,0,0,0],\\\"namespace_pids\\\":[3270325,638],\\\"cgroup\\\":\\\"0::/system.slice/droidloomd.service/system/uid_0/pid_638\\\\n\\\",\\\"namespaces\\\":{\\\"mnt\\\":\\\"mnt:[4026533718]\\\",\\\"pid\\\":\\\"pid:[4026533285]\\\",\\\"user\\\":\\\"user:[4026531837]\\\"},\\\"root_identity\\\":{\\\"device\\\":106,\\\"inode\\\":1}}}\")"
+  },
+  {
+    "label": "main_snapshot.py:identity source",
+    "from": "3918e517ac2ce2e2ee19aa862ac60b7631e48bf383c14788a1db2c0e0f4bccb7",
+    "to": "a949d51bad870db6e95941849faac1c91e95c6fe574bf270702c6c039fa4313e"
+  },
+  {
+    "label": "main_snapshot.py:actual identity receipt",
+    "from": "b49bbb4276c5a95de610956c878b0d23a1abdde0a8411bea310dbaca585396a6",
+    "to": "107bf1487ace30a38c113057812a0a18415e3430640f11db0b5131e462d05269"
+  },
+  {
+    "label": "main_snapshot.py: provenance labels and eight-role wording",
+    "before_sha256": "dcac802d3a404926ba85178b2538e55a6b8cf03046934c5957f5268126ce0817",
+    "after_sha256": "6f5549ad8e41a8c6727c9ef0b959c57c0393b613236e48da1722c64afa8e74c7"
+  },
+  {
+    "label": "pure_controls.py: provenance labels and eight-role wording",
+    "before_sha256": "f9f29b3b31c06967657b02efb291f3c31ab80e3ba77e197733be63bd81c60647",
+    "after_sha256": "bcb74b62513e554c372c6efb587ee487c6eec1b6f96c2cb2fdec209f79aa48f8"
+  },
+  {
+    "label": "fenced_build.py: provenance labels and eight-role wording",
+    "before_sha256": "64fb72333051ded37fd08b3cce6d5bb4bbca602175bb21920e3d16d8286c4268",
+    "after_sha256": "d38093d70bc3cb868c68ddb6d942e6fd5d49f9beaebe3919faeba0706d36821d"
+  },
+  {
+    "label": "main_snapshot.py:eight-role count",
+    "from": "len(rows) == 7, 'FIXED_SEVEN_ROLES_INCOMPLETE'",
+    "to": "len(rows) == 8, 'FIXED_EIGHT_ROLES_INCOMPLETE'"
+  },
+  {
+    "label": "capture_lifecycle.py:actual protected PIDs",
+    "from": "PROTECTED_PIDS = frozenset((3588093, 3588022, 3588089, 3588024, 3588912, 90360, 90516))",
+    "to": "PROTECTED_PIDS = frozenset((3268779, 3588022, 3268774, 3268775, 3588024, 3270350, 3270611, 3270325))"
+  },
+  {
+    "label": "pure_controls.py:one additional actual protected role",
+    "from": "len(passed) == len(set(passed)) == 45",
+    "to": "len(passed) == len(set(passed)) == 46"
+  },
+  {
+    "label": "fenced_build.py:closed eight-role result gate",
+    "from": "{'android_init', 'daemon', 'launcher', 'presenter', 'surfaceflinger', 'zygote64', 'system_server'}",
+    "to": "{'android_init', 'daemon', 'launcher', 'owner_intermediary', 'presenter', 'surfaceflinger', 'zygote64', 'system_server'}"
+  },
+  {
+    "label": "framework_build.py:fresh isolated output root",
+    "from": "typed-ingress-framework-provider-build-05-20261106",
+    "to": "typed-ingress-framework-provider-build-06-20261106"
+  },
+  {
+    "label": "fenced_build.py:fresh isolated output root",
+    "from": "typed-ingress-framework-provider-build-05-20261106",
+    "to": "typed-ingress-framework-provider-build-06-20261106"
+  },
+  {
+    "label": "root_snapshot_supervisor.py:actual exclusion wording",
+    "from": "the seven protected Main PIDs",
+    "to": "the eight protected Main PIDs"
+  },
+  {
+    "label": "root_snapshot_supervisor.py:rebind capture_lifecycle.py",
+    "from": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+    "to": "2dcf44609e6ef53e91b2d8e3a07c192fe65a7d44601f218dc8990272285d4dfe"
+  },
+  {
+    "label": "root_snapshot_supervisor.py:rebind main_snapshot.py",
+    "from": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+    "to": "264100ef85e1792c437a4f450050041141288a0f25a4387af5774c52d0dcea06"
+  },
+  {
+    "label": "fenced_build.py:rebind framework_build.py",
+    "from": "f0a655ef593e367c71ff43d14badb0edec6c7f416dc482669a1c6bb1a6ee5976",
+    "to": "07b36baeaea9f6e1586f4adc8e13a5dd21ef1a642123391af0cbc8ed9d546596"
+  },
+  {
+    "label": "fenced_build.py:rebind capture_lifecycle.py",
+    "from": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+    "to": "2dcf44609e6ef53e91b2d8e3a07c192fe65a7d44601f218dc8990272285d4dfe"
+  },
+  {
+    "label": "fenced_build.py:rebind root_snapshot_supervisor.py",
+    "from": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7",
+    "to": "903ae227d9231a361c61fad6fd584c97a548bb5a41b09a4e5fa8824e13e02350"
+  },
+  {
+    "label": "fenced_build.py:rebind main_snapshot.py",
+    "from": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+    "to": "264100ef85e1792c437a4f450050041141288a0f25a4387af5774c52d0dcea06"
+  },
+  {
+    "label": "stage fresh root",
+    "from": "typed-ingress-framework-provider-build-05-20261106",
+    "to": "typed-ingress-framework-provider-build-06-20261106"
+  },
+  {
+    "label": "stage exact propagated source pins",
+    "from": "EXPECTED = {\"main_snapshot.py\":{\"bytes\":14294,\"sha256\":\"1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf\"},\"frozen-work-inventory.py\":{\"bytes\":48443,\"sha256\":\"203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab\"},\"actual-work-preparation.json\":{\"bytes\":11091,\"sha256\":\"ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c\"},\"expected-builder469-manifest.json\":{\"bytes\":99327,\"sha256\":\"88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701\"},\"prior-framework-inner-terminal.json\":{\"bytes\":5239,\"sha256\":\"6a525b9838f43579bc41b1106891f2f734a0c2d92b0c5cc355f7ab02b39eb2a8\"},\"prior-framework-outer-terminal.json\":{\"bytes\":24689,\"sha256\":\"273ba8a236253ee3873074a26f568144397044ebcfdd6f153ab8712b29ff70cf\"},\"actual-published-source-manifest.json\":{\"bytes\":108555,\"sha256\":\"afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f\"},\"actual-native-prebuilt-Android.bp\":{\"bytes\":1017,\"sha256\":\"d1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a\"},\"actual-hal-provider-source-lock.json\":{\"bytes\":96934,\"sha256\":\"c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd\"},\"framework_build.py\":{\"bytes\":62492,\"sha256\":\"f0a655ef593e367c71ff43d14badb0edec6c7f416dc482669a1c6bb1a6ee5976\"},\"fenced_build.py\":{\"bytes\":25481,\"sha256\":\"64fb72333051ded37fd08b3cce6d5bb4bbca602175bb21920e3d16d8286c4268\"},\"actual-builder469-result.json\":{\"bytes\":170316,\"sha256\":\"3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5\"},\"pure_controls.py\":{\"bytes\":10970,\"sha256\":\"f9f29b3b31c06967657b02efb291f3c31ab80e3ba77e197733be63bd81c60647\"},\"capture_lifecycle.py\":{\"bytes\":25227,\"sha256\":\"4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28\"},\"root_snapshot_supervisor.py\":{\"bytes\":12041,\"sha256\":\"f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7\"},\"prior-normal02-outer-terminal.json\":{\"bytes\":24722,\"sha256\":\"42b2d7b8749047df9e1d40ddf9b70b3f3e187c39ce6a15dd0f5721610e814c00\"},\"actual-resource-observation01.json\":{\"bytes\":399,\"sha256\":\"feb95f82087d7c68a8c8c42b54cf267b8f9c343ce41e49bb8193e96f49f050da\"}}",
+    "to": "EXPECTED = {\"main_snapshot.py\":{\"bytes\":14642,\"sha256\":\"264100ef85e1792c437a4f450050041141288a0f25a4387af5774c52d0dcea06\"},\"frozen-work-inventory.py\":{\"bytes\":48443,\"sha256\":\"203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab\"},\"actual-work-preparation.json\":{\"bytes\":11091,\"sha256\":\"ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c\"},\"expected-builder469-manifest.json\":{\"bytes\":99327,\"sha256\":\"88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701\"},\"prior-framework-inner-terminal.json\":{\"bytes\":5239,\"sha256\":\"6a525b9838f43579bc41b1106891f2f734a0c2d92b0c5cc355f7ab02b39eb2a8\"},\"prior-framework-outer-terminal.json\":{\"bytes\":24689,\"sha256\":\"273ba8a236253ee3873074a26f568144397044ebcfdd6f153ab8712b29ff70cf\"},\"actual-published-source-manifest.json\":{\"bytes\":108555,\"sha256\":\"afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f\"},\"actual-native-prebuilt-Android.bp\":{\"bytes\":1017,\"sha256\":\"d1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a\"},\"actual-hal-provider-source-lock.json\":{\"bytes\":96934,\"sha256\":\"c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd\"},\"framework_build.py\":{\"bytes\":62492,\"sha256\":\"07b36baeaea9f6e1586f4adc8e13a5dd21ef1a642123391af0cbc8ed9d546596\"},\"fenced_build.py\":{\"bytes\":25507,\"sha256\":\"8c166d652af5828739f8c83cd2cf989b7e2d15de90e09b35b678d5d48b79b02b\"},\"actual-builder469-result.json\":{\"bytes\":170316,\"sha256\":\"3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5\"},\"pure_controls.py\":{\"bytes\":10982,\"sha256\":\"19d30bb230d148967d106cd43196baf402465a3c34b906ab25f08827951b7b3f\"},\"capture_lifecycle.py\":{\"bytes\":25240,\"sha256\":\"2dcf44609e6ef53e91b2d8e3a07c192fe65a7d44601f218dc8990272285d4dfe\"},\"root_snapshot_supervisor.py\":{\"bytes\":12041,\"sha256\":\"903ae227d9231a361c61fad6fd584c97a548bb5a41b09a4e5fa8824e13e02350\"},\"prior-normal02-outer-terminal.json\":{\"bytes\":24722,\"sha256\":\"42b2d7b8749047df9e1d40ddf9b70b3f3e187c39ce6a15dd0f5721610e814c00\"},\"actual-resource-observation01.json\":{\"bytes\":399,\"sha256\":\"feb95f82087d7c68a8c8c42b54cf267b8f9c343ce41e49bb8193e96f49f050da\"}}"
+  },
+  {
+    "label": "stage actual 46 controls",
+    "from": "controls['passed']!=45",
+    "to": "controls['passed']!=46"
+  },
+  {
+    "label": "wire length",
+    "from": "WIRE_BYTES = 797035",
+    "to": "WIRE_BYTES = 797508"
+  },
+  {
+    "label": "wire sha",
+    "from": "7f27c692b0e27282fd88ad1ba0ba8463049828550340e24eab065d50428c7b6c",
+    "to": "bcbb002e4da5e67c71480f88fcd4461eaed04f486bb3f358a8ddd46f6f25da26"
+  },
+  {
+    "label": "stage length",
+    "from": "STAGE_BYTES = 5448",
+    "to": "STAGE_BYTES = 5448"
+  },
+  {
+    "label": "stage sha",
+    "from": "c87881163e40295dce79902a17d933e1f14182ce1a646d6a0b1c19d513f7ef91",
+    "to": "e96bd48cac5a1c222dc6f755de9914e3c73279d596868a47344675721d342017"
+  }
+]

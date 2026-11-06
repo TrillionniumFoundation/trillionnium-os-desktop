@@ -1,0 +1,84 @@
+{
+  "state": "SOURCE_ONLY_UNRUN",
+  "python_compiled": false,
+  "Rust_executed": false,
+  "Hepta_calls": 0,
+  "production_implementation_changes_relative_to_frozen_host01": 0,
+  "current_Main_observed_or_mutated": false,
+  "compilation": {
+    "entire_original_workspace_retained": true,
+    "original_Cargo_lock_retained": true,
+    "argv": [
+      "<exact 1.93 cargo>",
+      "check",
+      "--offline",
+      "--locked",
+      "-j1",
+      "-p",
+      "droidloom-wayland",
+      "--bin",
+      "droidloom-wayland",
+      "--message-format=json-render-diagnostics"
+    ],
+    "package_selection": "Cargo metadata --offline --locked --filter-platform x86_64-unknown-linux-gnu; normal/build dependency DFS from exact Wayland workspace member, not dev-test variants; actual artifacts must belong to qualified closure",
+    "expected_normal_commands": 15,
+    "existing_lifecycle_controls": 3,
+    "host112_controls_repeated": false,
+    "actual_complete_bin_target_required": true,
+    "actual_binary_or_GPU_execution": false
+  },
+  "source_and_dependency_guards": {
+    "candidate_map_files": 500,
+    "original_files": 499,
+    "replacements": 8,
+    "additions": 1,
+    "unchanged": 491,
+    "original_45_authority_retained": true,
+    "additional_original_lock_archives_first_observed": true,
+    "config_absence_and_after_recheck": true
+  },
+  "native_PC": {
+    "fixed_tool": "/usr/bin/pkg-config",
+    "hash_prequalified_in_older_authority": false,
+    "default_query_count": 1,
+    "output_bytes_max": 8192,
+    "path_count_max": 16,
+    "entry_count_max_per_directory": 4096,
+    "pc_file_max": 2048,
+    "pc_bytes_max": 16777216,
+    "directories": "Every actual reported entry must resolve to a protected real directory under fixed /usr or /lib roots; absence fails without a fallback",
+    "metadata": "Only immediate .pc entries; regular protected targets must stay within the actual default namespaces; all aliases, complete filenames, file hashes and directory identities rechecked after",
+    "native_headers_libraries_exhaustively_hashed": false
+  },
+  "resources": {
+    "memory_max_bytes": 2147483648,
+    "cpu_percent": 100,
+    "nice": 15,
+    "work_qualification_seconds": 900,
+    "tool_timeout_seconds": 1020,
+    "fresh_MemAvailable_bytes_minimum": 4294967296,
+    "additional_margin": 2147483648,
+    "global_swap_is_admission_budget": false,
+    "own_swap_limit": "observed only; same inherited host gate",
+    "no_interval_Main_noninterference_claim": true
+  },
+  "cleanup": {
+    "inherited_reaper_command_lifecycle_functions_exact_except_resource_budget_literal": true,
+    "original_first_command_error_preserved": true,
+    "raw_logs_preserved_on_failure": true,
+    "after_checks_cover_qualified_partial_registry_cache": true,
+    "deadline_failure_blocks_PASS": true
+  },
+  "remaining_gates": [
+    "Actual full Wayland cargo check",
+    "Wayland compositor/GPU runtime retirement",
+    "Android Binder/Soong integration",
+    "Current Main installed-source provenance",
+    "App runtime production acceptance"
+  ],
+  "metadata_reference": {
+    "url": "https://doc.rust-lang.org/cargo/commands/cargo-metadata.html",
+    "claim": "--filter-platform filters resolve; packages still contains all dependencies; selected normal/build DFS and artifact subset qualification remain required",
+    "ref": "turn287view0"
+  }
+}

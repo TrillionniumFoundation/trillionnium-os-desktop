@@ -1,0 +1,11 @@
+--- actual169/public_destination.py
++++ candidate170/public_destination.py
+@@ -318,7 +318,7 @@
+     """This source specification grants no node authority before fresh inspection."""
+     need(isinstance(plan,dict) and set(plan)=={'schema','operation','value','nonces'} and
+          plan['schema']==1 and plan['operation']=='set_text' and plan['value']=='London' and
+-         qa.PROTOCOL=='pocket4-owned-ihg-qa-v3' and qa.PUBLIC_SEARCH_QUERY=='London' and
++         qa.PROTOCOL=='pocket4-owned-ihg-qa-v4' and qa.PUBLIC_SEARCH_QUERY=='London' and
+          isinstance(plan['nonces'],dict) and set(plan['nonces'])=={'before','inspect','action','after'},
+          'EXACT_NODE_UNBOUND_PUBLIC_LONDON_INPUT_SPECIFICATION')
+     values=[qa.nonce(v) for v in plan['nonces'].values()]

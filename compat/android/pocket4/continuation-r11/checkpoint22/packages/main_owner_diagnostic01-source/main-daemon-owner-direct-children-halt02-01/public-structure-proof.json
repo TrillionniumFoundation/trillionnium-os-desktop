@@ -1,0 +1,73 @@
+{
+  "schema": "pocket4-daemon-owner-diagnostic-source-proof-v1",
+  "public_sources": {
+    "qualifier": {
+      "bytes": 36910,
+      "sha256": "a535b390d19b419cbda0e12a821e617e42167660d253b4dc945508f4140905e4",
+      "git_blob_sha": "af877a5081a331a5b1ebc65a7a0da037def444df"
+    },
+    "policy": {
+      "bytes": 19543,
+      "sha256": "addfce0f8dc53c3cc90feedee2bb1279c0e23d107ece3d237894e632ef2ad171",
+      "git_blob_sha": "5b523a412308b79aefc99a6caef4f67fac104c93"
+    },
+    "epoch": {
+      "bytes": 8658,
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "git_blob_sha": "ee85b38842efa8d935bbdc5b422c7804f059da92"
+    },
+    "control_reference": {
+      "bytes": 70656,
+      "sha256": "8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200",
+      "git_blob_sha": "2bed3026cc4f00c819de2ba7fd253165d29bebbb",
+      "installed_binary_source_match_verified": false
+    }
+  },
+  "private_baseline_schema_fields": {
+    "source": "qualify_baseline.py/main and baseline_policy.py/validate_new_baseline",
+    "fields": [
+      "framework_epoch",
+      "daemon_process",
+      "launcher_process",
+      "presenter_process",
+      "status",
+      "all_seven_processes"
+    ],
+    "role_record_keys": [
+      "daemon",
+      "launcher",
+      "presenter"
+    ],
+    "host_pid_constants": {
+      "daemon": 3588022,
+      "launcher": 3588089,
+      "presenter": 3588024
+    }
+  },
+  "field_relationships": [
+    "daemon_process == all_seven_processes.binding.processes.daemon",
+    "launcher_process == all_seven_processes.binding.processes.launcher",
+    "presenter_process == all_seven_processes.binding.processes.presenter",
+    "status == {host_pid:3588089}"
+  ],
+  "source_semantics": {
+    "status_RPC_is_not_zero_Android": true,
+    "reference_status_calls_android_boot_snapshot_and_getprop": true,
+    "reference_response_host_pid_is_namespace_owner_not_init": true,
+    "status_not_called_by_this_request": true,
+    "direct_child_report_does_not_assert_daemon_active_cell_state": true
+  },
+  "derivation": {
+    "previous_reader": {
+      "bytes": 15853,
+      "sha256": "671ff139b74a1fa6c18c09df7ba708aa333763fe188c815f586c458148fa6b44",
+      "git_blob_sha": "8298f1eff823d9d28c86cf5688b2ebf46db1f22f"
+    },
+    "original_ten_controls_exact_copy": true,
+    "original_epoch_source_not_modified": true,
+    "no_capture_android_call": true
+  },
+  "new_controls": 10,
+  "total_controls": 20,
+  "Python_executed": false
+}

@@ -1,0 +1,13 @@
+--- a/compile/build-template.py
++++ b/compile/build-template.py
+@@ -544,8 +544,8 @@
+     report['resource_health'] = resources.record
+     try:
+         require(os.getuid() == os.geteuid() == 1000, 'ordinary operator only')
+-        require(CFG['kind'] == 'p4-marriott-proc-readlink-outer-tu-build01' and
+-                root == Path('/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-01-20261106') and
++        require(CFG['kind'] == 'p4-marriott-proc-readlink-outer-tu-build02' and
++                root == Path('/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-02-20261106') and
+                 aosp == Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source'),
+                 'fixed work/source root differs')
+         resources.begin()

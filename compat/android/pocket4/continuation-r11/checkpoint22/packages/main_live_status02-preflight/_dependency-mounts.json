@@ -1,0 +1,26 @@
+{
+  "schema": 3,
+  "original_tree": "405d2fa6df186ea47a5da1db617ac45610636ecd",
+  "canonical_root_key": "original_tree_sha",
+  "cuts": [
+    {
+      "path": "current_service_observation",
+      "tree_sha": "b7c273463af04b453509a8fb8a52bb1eeb6008ea",
+      "checkpoint": 22,
+      "canonical_package": "main_service_recovery02-actual"
+    },
+    {
+      "path": "prior_failed_status",
+      "tree_sha": "5b0623b496dd210ed256842cc648dc1f40281601",
+      "checkpoint": 22,
+      "canonical_package": "main_fixed_status01-actual"
+    },
+    {
+      "path": "source",
+      "tree_sha": "2eeeee27371c1f8a37c6bb3ccf60c448d17bb608",
+      "checkpoint": 22,
+      "canonical_package": "main_live_status02-source"
+    }
+  ],
+  "scope": "Reconstruct each omitted directory from its exact canonical checkpoint package and recursively apply that package metadata; all original file body bytes are unchanged."
+}

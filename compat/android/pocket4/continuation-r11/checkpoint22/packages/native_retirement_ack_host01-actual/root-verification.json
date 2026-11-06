@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "p": "native_retirement_ack_host01",
+  "source_tree": "f8d3aa8c7bde5c81da5fed04eaea517fbfa42ba5",
+  "state": "ACTUAL_112_HOST_TESTS_PASS_ONLY",
+  "counts": {
+    "tests": 112,
+    "fixture": 69,
+    "protocol": 23,
+    "endpoint": 20,
+    "ordinary_commands": 131,
+    "lifecycle_controls": 3
+  },
+  "qualified": [
+    "112 exact registered test names and host ELF/log checks",
+    "real provider methods exercised with explicit Binder/DRM/GLES seams",
+    "full original/copy/config/dependency and resource cleanup gates"
+  ],
+  "not_qualified": [
+    "Android Binder ABI",
+    "complete Wayland crate",
+    "Wayland link",
+    "GPU drain",
+    "installed Main source provenance",
+    "App production readiness"
+  ],
+  "peer": "native_recovery_resume full original independent verification",
+  "limitation": "Existing endpoint listener test may return early on PermissionDenied; not promoted to real endpoint qualification",
+  "job_id": "1a1b12a1f81-fc05-766b",
+  "report_pin": {
+    "path": "/home/alex/work/p4-retirement-ack-host01-20261106/attempt01/result.json",
+    "bytes": 540943,
+    "sha256": "0d511ba553d1a34df9116c0e62cfcfbcabb00b96aafcde0d747f3419ffa4cf37",
+    "git_blob_sha1": "b112b884c21e5258a07ba5cf7c93013766283860",
+    "read_method": "lossless-zlib-transport",
+    "compressed": {
+      "path": "/home/alex/work/p4-report-transport01-20261106/native-host01-result.json.zlib",
+      "bytes": 51727,
+      "sha256": "efff1fdd4d1c59be847805a18cb71f4227941578f70c17f8d53d22dec2e5ffed",
+      "version": "66306:35127313:51727:1793974671165422494:1793974671165422494",
+      "chunks": 1
+    },
+    "transport_job_id": "1a1b138f0dd-fc05-7708",
+    "decoder_sha256": "e5a9865139a329e966384822cfa39c4134399cc8fbe22e72d8795a81935f6c9d"
+  },
+  "terminal_pin": {
+    "bytes": 731,
+    "sha256": "cc902c220d7149a392144b00b21e272e5335d673ce16a5a8ea3548f81dbafcdd",
+    "git_blob_sha1": "8098f6ad8dc5089eb5753e6ed0527fd5e1e5e9d0"
+  },
+  "transport_actual_tree": "074604d9f86d3f223a0f54e479f8f2a95f4aaac4",
+  "originals_unmodified": true,
+  "Main_noninterference_not_inferred_from_zero_action_fields": true,
+  "whole_app_production_ready": false
+}

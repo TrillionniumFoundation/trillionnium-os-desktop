@@ -1,0 +1,139 @@
+--- original01/install_state.py
++++ current-owner02/install_state.py
+@@ -21,7 +21,7 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-02')
+ SOURCE = ROOT/'source'
+ WORKER_ROOT = ROOT/'worker'
+ STEP = WORKER_ROOT/'steps/install-state-01'
+@@ -61,7 +61,7 @@
+ WORK_SECONDS = 175
+ EXPECTED_SOURCE_FILES = {'install_state.py','amazon_context.py','amazon_transport.py','stage_execute.py',
+     'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',
+-    'check_install_binding.py','references/read_amazon.py','target-artifact-reference.json'}
++    'check_install_binding.py','references/read_amazon.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py'}
+ 
+ def require(value, message):
+     if not value:
+
+--- original01/amazon_context.py
++++ current-owner02/amazon_context.py
+@@ -197,6 +197,19 @@
+         self.target.close()
+ 
+ 
++def current_discovery(util, source_manifest, source_verify, source_root,
++                      app, baseline, epoch, guard):
++    manifest = source_verify(source_manifest)
++    row = manifest['files']['current_discovery.py']
++    discovery = util.module(source_root/'current_discovery.py',row['sha256'],
++                            'owned_current_discovery')
++    require(discovery.BASELINE_SHA == BASELINE_SHA and
++            discovery.QUALIFICATION_SHA == QUALIFICATION_SHA and
++            discovery.MAIN_EPOCH == CURRENT_EPOCH,
++            'CURRENT_DISCOVERY_SOURCE_BINDING_REQUIRED')
++    return discovery.discover_current(app,baseline,epoch,guard)
++
++
+ def open_context(ref, util, source_manifest, source_verify, source_root, step,
+                  transport, plan, result, deadline):
+     source = util.module(INSTALLED_SHARED/'source_contract.py',CONTRACT_SHA,'amazon_shared_contract')
+@@ -231,7 +244,8 @@
+         target = held.HeldTarget(actual,source.HELPER_PATH,source.HELPER_SHA)
+         guard()
+         app = util.module(Path(recorder.APP),recorder.APP_SHA,'amazon_discovery_only')
+-        init,discovered,status = app.discover()
++        init,discovered,status = current_discovery(util,source_manifest,source_verify,source_root,
++                                                    app,activation,epoch,guard)
+         require(init == expected['host_pid'] and status['host_pid'] == activation['status']['host_pid'],
+                 'FIXED_MAIN_DISCOVERY_CHANGED')
+         values,classpath = binding.main_classpaths(held,target,activation['framework_epoch'],epoch,guard)
+
+--- original01/amazon_transport.py
++++ current-owner02/amazon_transport.py
+
+--- original01/stage_execute.py
++++ current-owner02/stage_execute.py
+@@ -2,13 +2,13 @@
+ """Exact amazon current-baseline install/state staging with its own target context."""
+ import hashlib,json,os,stat,sys,types
+ from pathlib import Path,PurePosixPath
+-ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-01')
++ROOT = Path('/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-02')
+ SOURCE=ROOT/'source'
+ NONCE = '14f2f0bfd4ad820ef171d0ee2927b31b'
+ REFERENCE_SHA = '0a4a9f0d02b2a62f2b902983e43360c751a8f1952fb9ae7399850b112cb50a89'
+ FILES={'install_state.py','amazon_context.py','amazon_transport.py','stage_execute.py',
+        'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',
+-       'check_install_binding.py','references/read_amazon.py','target-artifact-reference.json'}
++       'check_install_binding.py','references/read_amazon.py','target-artifact-reference.json', 'current_discovery.py', 'check_current_discovery.py'}
+ BASE_ROOT = Path('/home/alex/work/pocket4-current-host-r6-source-01')
+ R6_MANIFEST = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
+ def require(value,reason):
+@@ -99,8 +99,8 @@
+     transport=load_text(files['amazon_transport.py'],SOURCE/'amazon_transport.py','current_target_transport_controls')
+     controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
+     controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref,files,packet['source_manifest_sha256'])
+-    require(controls['all_passed'] is True and controls['count']==50 and
+-            len(controls['cases'])==50 and all(x['passed'] is True for x in controls['cases']),
++    require(controls['all_passed'] is True and controls['count']==68 and
++            len(controls['cases'])==68 and all(x['passed'] is True for x in controls['cases']),
+             'ACTUAL_CURRENT_APP_CONTEXT_CONTROLS_REQUIRED')
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_install_stage_epoch')
+     before=ref.main_guard(baseline,epoch)
+
+--- original01/make_request.py
++++ current-owner02/make_request.py
+@@ -7,8 +7,8 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY = 'pocket4-owned-amazon-qa-r4-current-r6-install-state-01-20261106'
+-ROOT = '/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-01'
++KEY = 'pocket4-owned-amazon-qa-r4-current-r6-install-state-02-20261106'
++ROOT = '/home/alex/work/pocket4-owned-amazon-qa-r4-install-state-02'
+ NONCE = '14f2f0bfd4ad820ef171d0ee2927b31b'
+ 
+ 
+
+--- original01/check_install_binding.py
++++ current-owner02/check_install_binding.py
+@@ -3,7 +3,7 @@
+ import types
+ import json
+ 
+-CONTROL_COUNT = 50
++CONTROL_COUNT = 68
+ 
+ def run_controls(entry, actual_host, manifest, context, transport, baseline, ref, files, source_manifest_sha256):
+     rows = []
+@@ -131,6 +131,12 @@
+     rejected('production_ordered_commands_previous_R3_package_rejected',lambda:context.ordered_commands(
+         qa,'org.droidloom.qa.amazon.r3',entry.GUEST_APK,entry.STATE_NONCE))
+     rows.extend(run_source_controls(entry,files,source_manifest_sha256))
++    discovery_controls = types.ModuleType('production_current_discovery_controls')
++    exec(compile(files['check_current_discovery.py'],'<current-discovery-controls>','exec'),discovery_controls.__dict__)
++    legacy_source = entry.read(entry.BASE_HOST_ROOT/'references/android_app.py',131072,
++                               discovery_controls.LEGACY_SHA)
++    rows.extend(discovery_controls.run_discovery_controls(files['current_discovery.py'],baseline,legacy_source))
++    rows.extend(discovery_controls.run_context_route_controls(context,files,baseline,legacy_source,source_manifest_sha256))
+     entry.require(len(rows)==CONTROL_COUNT and len({x['name'] for x in rows})==CONTROL_COUNT,
+                   'EXACT_CURRENT_CONTEXT_CONTROL_COUNT')
+     return {'schema':'pocket4-current-app-install-context-controls-v1','all_passed':True,
+@@ -141,7 +147,9 @@
+             'Bili_Flow_or_MainBinding_instantiated':False,'private_baseline_exported':False,
+             'Android_commands':0,'UI_actions':0,'children':0,
+             'owned_temporary_source_directories':True,'temporary_directories_removed':True,
+-            'actual_R6_reference_read_only':True,'production_verify_source_calls':5}
++            'actual_R6_reference_read_only':True,'production_verify_source_calls':5,
++            'new_owner_discovery_controls':18,'production_discovery_and_Context_route_used':True,
++            'legacy_discover_failure_reproduced_in_memory':True}
+ 
+ 
+ def run_source_controls(entry, files, expected):
+
+--- original01/references/read_amazon.py
++++ current-owner02/references/read_amazon.py
