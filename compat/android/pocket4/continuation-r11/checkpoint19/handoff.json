@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "cut_utc": "2026-11-06 05:14:25 UTC",
+  "state": "READY_FOR_ROOT_REVIEW_NOT_A_DEPLOYMENT_AUTHORIZATION",
+  "old_epoch_invalid": true,
+  "new_framework_identities_observed": {
+    "zygote_pid": 90360,
+    "zygote_start_ticks": 96586437,
+    "system_server_pid": 90516,
+    "system_server_start_ticks": 96586493
+  },
+  "new_epoch_qualified": false,
+  "new_UI_and_install_admissions_blocked": true,
+  "original_R8_flow_not_replayed": true,
+  "post_cut_results_not_inferred": true,
+  "next_authority": "Root independently reviews this exact candidate and controls any publication CAS or future resource/runtime admission",
+  "current_source_candidates": {
+    "Native": "compile02 SOURCE_ONLY UNRUN",
+    "IHG": "stability SOURCE_ONLY WIP,89 controls UNRUN",
+    "Amazon": "R2 static build PASS, no install or UI",
+    "BestBuy": "R2 historical read-only inspection PASS; no meaningful action roles/deep-path qualification",
+    "Bilibili": "R8 static/install PASS; actual UI attempt failed at Main guard before owned stage"
+  },
+  "inherited_statuses": "All other applications retain the prior per-app ledger; none is promoted to production ready"
+}

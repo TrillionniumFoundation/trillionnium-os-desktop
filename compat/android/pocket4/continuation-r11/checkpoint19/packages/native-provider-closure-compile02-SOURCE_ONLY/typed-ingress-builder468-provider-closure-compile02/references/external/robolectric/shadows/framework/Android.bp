@@ -1,0 +1,71 @@
+//#############################################
+// Compile Robolectric shadows framework
+//#############################################
+
+package {
+    // See: http://go/android-license-faq
+    // A large-scale-change added 'default_applicable_licenses' to import
+    // all of the 'license_kinds' from "external_robolectric_license"
+    // to get the below license kinds:
+    //   SPDX-license-identifier-Apache-2.0
+    default_applicable_licenses: ["external_robolectric_license"],
+}
+
+java_library {
+    name: "Robolectric_shadows_framework",
+    host_supported: true,
+    device_supported: false,
+    srcs: [
+        "src/main/java/**/*.java",
+        "src/main/java/**/*.kt",
+    ],
+    java_resource_dirs: ["src/main/resources"],
+    javacflags: [
+        "-Aorg.robolectric.annotation.processing.shadowPackage=org.robolectric",
+        "-Aorg.robolectric.annotation.processing.sdkCheckMode=WARN",
+        "-Aorg.robolectric.annotation.processing.validateCompileSdk=true",
+        // Uncomment the below to debug annotation processors not firing.
+        //"-verbose",
+        //"-XprintRounds",
+        //"-XprintProcessorInfo",
+        //"-Xlint",
+        //"-J-verbose",
+    ],
+    libs: [
+        "Robolectric_annotations",
+        "Robolectric_nativeruntime",
+        "Robolectric_resources",
+        "Robolectric_pluginapi",
+        "Robolectric_sandbox",
+        "Robolectric_shadowapi",
+        "Robolectric_shadows_versioning",
+        "Robolectric_utils",
+        "Robolectric_utils_reflector",
+        "auto_value_annotations",
+        "jsr305",
+        "icu4j",
+        "robolectric-accessibility-test-framework-2.1",
+        "robolectric-javax.annotation-api-1.2",
+        "robolectric-sqlite4java-0.282",
+        "guava",
+        "ow2-asm",
+        "ow2-asm-commons",
+        "ow2-asm-tree",
+        //standard tools
+        "error_prone_annotations",
+        // aar files that make up android and jetpack
+        "robolectric-host-android_all",
+        "robolectric-host-androidx-test-core",
+        "robolectric-host-androidx-test-monitor",
+    ],
+    plugins: [
+        "auto_value_plugin",
+        "auto_value_builder_plugin",
+        "Robolectric_processor",
+    ],
+    errorprone: {
+        javacflags: [
+            "-Xep:ImpossibleNullComparison:WARN",
+        ],
+    },
+}

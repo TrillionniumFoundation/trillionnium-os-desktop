@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "scope": "fixed host-only absence confirmation",
+  "reported_terminal": {
+    "job": "1a1af2e2032-fc05-667e",
+    "stdout_bytes": 0,
+    "stderr_bytes": 2415,
+    "error": "FRAMEWORK_EPOCH_CHANGED_OR_UNAVAILABLE",
+    "missing_identity_path": "/proc/3589120/stat",
+    "full_stderr_read_by_this_agent": false
+  },
+  "source_audit": {
+    "stage": {
+      "bytes": 5188,
+      "sha256": "ceabf424cd88a5812c6c36e7032a426ff5b87d3229c738694d39383e72fc8451"
+    },
+    "guard_line": 51,
+    "first_stage_mutation_line": 52,
+    "ROOT_mkdir_line": 53,
+    "try_finally_start_line": 55,
+    "claim_write_line": 56,
+    "source_write_lines": [
+      57,
+      58,
+      59
+    ],
+    "entry_execute_line": 60,
+    "stage_result_write_line": 81,
+    "guard_exception_before_try_has_no_result_write": true,
+    "pre_guard_ROOT_FLOW_absence_checks": [
+      40,
+      46
+    ],
+    "pre_guard_entry_module_install_module_reference_module_inert_named_imports": true,
+    "prior_load_only_fixed_pinned_source_reads": true,
+    "reference_main_guard_reads_activation_config_process_identity_and_limits_only": true,
+    "epoch_source_pin": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+    "epoch_source_full_body_not_reread_here": true,
+    "conditional_on_actual_trace_line51_this_job_ROOT_FLOW_write_or_Android_action": false
+  },
+  "reader_scope": {
+    "fixed_names": [
+      "/home/alex/work/pocket4-bilibili-r8-pause-resume-01",
+      "/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-d53dc79edc9083c8ebcbadf65b289823"
+    ],
+    "only_four_readonly_directory_opens": true,
+    "two_no_follow_stat_observations": true,
+    "directory_parent_name_identity_rechecked": true,
+    "no_file_contents_read": true,
+    "no_proc_or_current_Main_access": true,
+    "no_Android_action": true,
+    "existence_is_failure_not_permission_to_read_contents": true,
+    "all_acquired_directory_close_attempted_even_if_prior_close_fails": true,
+    "does_not_guarantee_OS_close_success_on_exception": true,
+    "old_job_nonce_not_replayed": true,
+    "no_epoch_rebinding": true,
+    "Python_local_compile": false,
+    "Pure_controls_run": false
+  },
+  "whole_app_production_ready": false
+}

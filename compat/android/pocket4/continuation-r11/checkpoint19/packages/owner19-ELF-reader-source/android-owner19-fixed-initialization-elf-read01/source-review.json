@@ -1,0 +1,124 @@
+{
+  "baseline_source": {
+    "bytes": 29416,
+    "git_blob_sha": "8527e71150c01b26fa4f104d5c4c3882cad23e4d",
+    "sha256": "699013f9c061140c78de7568dfc0efb3005a7ef3c788b1e3ad0934a15a0945d4"
+  },
+  "basis": {
+    "actual_private_reader_safe": {
+      "bytes": 4258,
+      "git_blob_sha": "360372d3945b0b292c259a1046c08a4c32a95e77",
+      "sha256": "3130dd55f796afe771d2893e73dd3d8525e004e43c1cfce60970899c4536c5e9"
+    },
+    "actual_stack_buildids_derived": {
+      "bytes": 31433,
+      "git_blob_sha": "b2fd86949514f513377be320ea71120032d73b87",
+      "sha256": "d437126e634b5a124ad5efb5d6d8a88a83b67077ebc586f058dd576380f7aa2c"
+    },
+    "actual_stack_fields": "Safe parsed log statements with BuildIds, not independently observed running-process ELF bytes.",
+    "prepared": {
+      "bytes": 55273,
+      "git_blob_sha": "5c570109474399d897338d6baecb93bbe4ba02fe",
+      "sha256": "e6b02798bb03598310905852664eec5cbe2329b990571b0d02e71f43d15aa163"
+    },
+    "reference_memevents": {
+      "actual_binary_source_mapping_proved": false,
+      "bytes": 13131,
+      "commit": "d59c960b1fb93377bf68664918031ea5fe709f89",
+      "file": "libmemevents/memevents.cpp",
+      "git_blob_sha": "db3c1b8de07f5dd09a29aa623d09abee0ef69f14",
+      "sha256": "910268250821285b7fae121188c85dea0216578d1cbeb6de57a8955f5e5b8e02"
+    },
+    "runtime": {
+      "bytes": 708698,
+      "sha256": "6e489440223b2515301d56125a19c9357a4ae211ea960b4a41bf96d0ffe9fce5"
+    }
+  },
+  "bounds": {
+    "ELF_bytes": 2097152,
+    "PLT_total_bytes_max": 8192,
+    "code_function_bytes_max": 8192,
+    "command_seconds": 8,
+    "dynamic_output_symbols": 512,
+    "expected_held_fds": 18,
+    "held_fd_max": 20,
+    "internal_seconds": 35,
+    "job_seconds": 60,
+    "program_headers": 128,
+    "reap_seconds": 3,
+    "relocations_per_table": 16384,
+    "report_bytes": 262144,
+    "section_headers": 512,
+    "selected_relocations": 512,
+    "selected_rodata_bytes": 16384,
+    "selected_rodata_strings": 128,
+    "symbols_per_table": 8192,
+    "wire_bytes": 131072
+  },
+  "candidate_source": {
+    "bytes": 45900,
+    "git_blob_sha": "bfa13b4e1b943cd11da9514020698d7656214ea4",
+    "sha256": "93a2ee1207c4386f57a131f4afa6ec60989b089e5aee11bd85eb4dc620a58bd1"
+  },
+  "full_diff": {
+    "bytes": 29283,
+    "git_blob_sha": "d15cfb0a66b771d5564132bbd66d0a2b449b913b",
+    "sha256": "632c1e5223754552eee0c85973acf0d3490b127ea34cfa2acd594836a3a56767"
+  },
+  "image_target": "/system/lib64/libmemevents.so",
+  "inputs": [
+    "/opt/p4-owner19-normal-20261105-01-state/prepared.json",
+    "/opt/p4-owner19-normal-20261105-01-state/runtime-result.json",
+    "/opt/p4-media-composer-diagnostic-20261102-chat2-r5/images/system.img",
+    "/opt/p4-media-composer-diagnostic-20261102-chat2-r5/runtime-trees/1/lib64/libnetd_updatable.so",
+    "/opt/p4-media-composer-diagnostic-20261102-chat2-r5/payload/9/netd-mainline-bpf.rc",
+    "/usr/bin/dump.erofs"
+  ],
+  "kind": "owner19-fixed-initialization-elf-source-review01",
+  "limitations": [
+    "Local executor unavailable; no Python syntax/AST or execution claim.",
+    "No pre-observed objdump/llvm-objdump exists in current tool authority; none added or executed.",
+    "Image library full SHA/metadata are first observed in this bounded request and accepted only with exact retained image binding plus actual crash BuildId.",
+    "Dump metadata access0777 does not reveal full special permission bits; metadata is reported as such.",
+    "Full stream and actual error condition are unknown; neither a code window nor absent abort text proves a BPF syscall failure.",
+    "Compatibility library may differ from actual APEX library. That does not authorize an alternate path or APEX extraction.",
+    "No runtime or application qualification is asserted."
+  ],
+  "minimal_extension": [
+    "Owner19 exact retained prepared/runtime, original failed lifecycle and exact retirement, three actual base entries bound.",
+    "Original held/named, no-follow, image header/full prior base SHA authority and three dump operations retained. No full image rehash claimed.",
+    "Binary stdout remains capped by observed metadata length, now <=2MiB; retained only in caller memory for ELF parsing, then cleared. Complete child stream SHA must match memory.",
+    "One fixed host compatibility library and one exact 1339B public rc read twice, full SHA/mode/identity checked. A mismatching compatibility BuildId is an observed mismatch with no actual-PC diagnosis.",
+    "ELF parser is only little-endian x86_64 ET_DYN. Finite PHDR/SHDR/notes/symbol/relocation/string bounds; unique GNU BuildId. Actual PC windows are only emitted if BuildId matches.",
+    "Memevents expected BuildId b7076ba103f2a4aeb7cad5b97f45fd17, PC0x5415, fixed code0x40b0..0x5435. Netd expected4e2a624161074800876d1a1ebae95d0f, PC0x15804, fixed code0x155b0..0x15844.",
+    "Source revision is not inferred from BuildId. Emitted hex is bounded system-library code, not disassembly, crash packet payload, or init captured_hex.",
+    "Independent metadata-after still runs once after any dump attempt only if prior child joined; no before/cat replay. Every own child uses original bounded reap path.",
+    "Final repeated protected input/tool/base bytes, image header and held/named checks plus all18 FD closes precede success output. Original first errors and failed runtime remain.",
+    "Plain output keeps original262144 report and131072 wire bounds; any violation fails, never truncates as complete."
+  ],
+  "purpose": "Bind actual repeated Owner19 SIGABRT stack PCs to fixed ELF BuildIds and bounded code metadata without executing either target library.",
+  "schema": 1,
+  "scope": {
+    "Main_calls": false,
+    "Main_logging": false,
+    "device_UI": false,
+    "existing_qualified_tool": "/usr/bin/dump.erofs 88912 / 5269be9ba1d20e0f016c4934cb2ab6a7d41e543168527b81b0be15dac044e6a2",
+    "extraction": false,
+    "image_mount": false,
+    "live_process_scan": false,
+    "new_files": false,
+    "new_tool_execution": false,
+    "remote_execution_by_author": false,
+    "target_ELF_execution": false
+  },
+  "status": "SOURCE_ONLY_NO_LOCAL_PYTHON_EXECUTION",
+  "validation": {
+    "Python_parse_or_AST": false,
+    "V8_exact_patch_inverse_to_original": true,
+    "actual_read": false,
+    "local_controls_run": false,
+    "patch_operations": 36,
+    "remote_controls_run": false,
+    "source_hashes_verified": true
+  }
+}

@@ -1,0 +1,693 @@
+{
+  "APK": {
+    "bytes": 24720,
+    "path": "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/owned-amazon-qa.apk",
+    "sha256": "d4a01261b17125cf463145a9527255f7552bdb696c2dc48b64af74f8f1cdaa18"
+  },
+  "Android_UI_actions": 0,
+  "Main_mutations": 0,
+  "android_installed": false,
+  "commands": [
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+        "-J-XX:ActiveProcessorCount=1",
+        "-J-XX:+UseSerialGC",
+        "-J-Xmx256m",
+        "-proc:none",
+        "-Xmaxerrs",
+        "20",
+        "-Xmaxwarns",
+        "20",
+        "--release",
+        "8",
+        "-d",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/idle-control-classes",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-source-01/source/src/org/droidloom/qa/amazon/r2/InspectionIdleGate.java",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-source-01/source/tests/InspectionIdleGateChecks.java"
+      ],
+      "error": null,
+      "name": "idle-gate-javac",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "312e9bd919c699a2f8409f70240177012720c94095f0f4374d44152defc50f7e",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-cp",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/idle-control-classes",
+        "org.droidloom.qa.amazon.r2.InspectionIdleGateChecks"
+      ],
+      "error": null,
+      "name": "idle-gate-java",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "da8a4e35a86a37dae64b7496d5477d523fda6cd6c34a8d33eed177218665b93c"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+        "-J-XX:ActiveProcessorCount=1",
+        "-J-XX:+UseSerialGC",
+        "-J-Xmx256m",
+        "-proc:none",
+        "-Xmaxerrs",
+        "20",
+        "-Xmaxwarns",
+        "20",
+        "-source",
+        "8",
+        "-target",
+        "8",
+        "-bootclasspath",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "-d",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-source-01/source/src/org/droidloom/qa/amazon/r2/ActionRunner.java",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-source-01/source/src/org/droidloom/qa/amazon/r2/InspectionIdleGate.java"
+      ],
+      "error": null,
+      "name": "javac",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "312e9bd919c699a2f8409f70240177012720c94095f0f4374d44152defc50f7e",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-cp",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+        "com.android.tools.r8.D8",
+        "--lib",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "--min-api",
+        "31",
+        "--output",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/dex",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/ActionRunner$1.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/ActionRunner$2.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/ActionRunner$3.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/ActionRunner$4.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/ActionRunner$Capture.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/ActionRunner$Rejected.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/ActionRunner$SelectedWindows.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/ActionRunner.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/InspectionIdleGate$Clock.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/InspectionIdleGate$Fault.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/InspectionIdleGate$Observation.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/InspectionIdleGate$Waiter.class",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/classes/org/droidloom/qa/amazon/r2/InspectionIdleGate.class"
+      ],
+      "error": null,
+      "name": "d8",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "package",
+        "-f",
+        "-M",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-source-01/source/AndroidManifest.xml",
+        "-S",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/res",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "-F",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/unsigned.apk"
+      ],
+      "error": null,
+      "name": "aapt-package",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-f",
+        "4",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/unsigned.apk",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/aligned.apk"
+      ],
+      "error": null,
+      "name": "align",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-m",
+        "java.base/sun.security.tools.keytool.Main",
+        "-genkeypair",
+        "-noprompt",
+        "-storetype",
+        "PKCS12",
+        "-keystore",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/private-signing/owned.p12",
+        "-storepass:file",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/private-signing/password.txt",
+        "-alias",
+        "owned-amazon-qa-r2",
+        "-keyalg",
+        "RSA",
+        "-keysize",
+        "3072",
+        "-validity",
+        "3650",
+        "-dname",
+        "CN=Pocket4 Owned Amazon QA R2,O=Owned Test,C=US"
+      ],
+      "error": null,
+      "name": "create-owned-signing-key",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "ddf425515ac4951c17b99e234d844c8e78341cedd82333c4ab82f430c9a72522",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/apksigner",
+        "sign",
+        "--ks",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/private-signing/owned.p12",
+        "--ks-pass",
+        "file:/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/private-signing/password.txt",
+        "--ks-key-alias",
+        "owned-amazon-qa-r2",
+        "--min-sdk-version",
+        "31",
+        "--v1-signing-enabled",
+        "false",
+        "--v2-signing-enabled",
+        "true",
+        "--v3-signing-enabled",
+        "true",
+        "--out",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/owned-amazon-qa.apk",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/aligned.apk"
+      ],
+      "error": null,
+      "name": "sign",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/apksigner",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "--min-sdk-version",
+        "31",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/owned-amazon-qa.apk"
+      ],
+      "error": null,
+      "name": "signature",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "7ed0f8feb9003c4e9ca503c1e62cca9dc458bc70998fc198bd0bde0e709e56df"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-c",
+        "4",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/owned-amazon-qa.apk"
+      ],
+      "error": null,
+      "name": "alignment",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "badging",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/owned-amazon-qa.apk"
+      ],
+      "error": null,
+      "name": "badging",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f7dc27f03e29927a1c9032d68425d39b7b219eb72c402b6a736712575382cc06"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "permissions",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/owned-amazon-qa.apk"
+      ],
+      "error": null,
+      "name": "permissions",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "b8cc543a9cf187dabe20e3c1758311c61641b0fb56fd7d035fe1a4b32163bee9"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "xmltree",
+        "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/owned-amazon-qa.apk",
+        "AndroidManifest.xml"
+      ],
+      "error": null,
+      "name": "manifest",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "4331661cd8d2422236635818a4211fed2411775dd5c1fedaac60298ee2f99fc1"
+    }
+  ],
+  "compiled_python_sources": {
+    "build_candidate.py": "b80dcea14a4fb7e567666d84b61afe0e5b955c74cacfdd31035dcc2b9f6069e0",
+    "check_idle_contract.py": "f6d72f4ef1d46c27c9702cc910c2f4ca70ddc4db888ce1e58f7b43a2b761d685",
+    "make_build_request.py": "21665ce0eebbc3303179ba579b79331802cb010c2ac33b6faadedc0bb6560ccc",
+    "qa_adapter.py": "934da2e9ebdd92a0d5dd6f17689c6e273e884ff2f88dbf23a7699e6d01d113b7",
+    "qa_contract.py": "bbeaf0188be46b76788d00e11a6922b4f1df7241c4960d2c8b595b5be01d19dd",
+    "stage_build.py": "b2fcb01b119e138552244dfde3d7a59009584f79f415520b107c666ce2a12be0"
+  },
+  "error": null,
+  "finished_utc": "2026-11-06T04:49:12.154955+00:00",
+  "inspection_idle_gate_controls": {
+    "control_source_sha256": "0b097554e349d9a50627a7dd7762978da8378795f71079ce27b00c2849b22a0b",
+    "gate_source_sha256": "a8c4b4e376d8c84a7ac17b51e424c60dce489ef6d7a02b9fa855afece850ca24",
+    "report": {
+      "all_passed": true,
+      "android_calls": 0,
+      "cases": [
+        {
+          "name": "fixed_original_budgets",
+          "passed": true
+        },
+        {
+          "name": "one_successful_event_quiet_call",
+          "passed": true
+        },
+        {
+          "name": "already_quiet_immediate_return_allowed",
+          "passed": true
+        },
+        {
+          "name": "global_cap_exact_edge_allowed",
+          "passed": true
+        },
+        {
+          "name": "remaining_original_budget_clamps_global",
+          "passed": true
+        },
+        {
+          "name": "exact_quiet_budget_one_call",
+          "passed": true
+        },
+        {
+          "name": "insufficient_quiet_budget_no_call",
+          "passed": true
+        },
+        {
+          "name": "expired_original_deadline_no_call",
+          "passed": true
+        },
+        {
+          "name": "clock_before_operation_start_no_call",
+          "passed": true
+        },
+        {
+          "name": "negative_operation_start_no_call",
+          "passed": true
+        },
+        {
+          "name": "operation_deadline_overflow_no_call",
+          "passed": true
+        },
+        {
+          "name": "first_clock_failure_no_call",
+          "passed": true
+        },
+        {
+          "name": "timeout_preserves_original_cause_no_retry",
+          "passed": true
+        },
+        {
+          "name": "disconnected_api_preserves_original_cause",
+          "passed": true
+        },
+        {
+          "name": "timeout_and_clock_failure_keep_first_error",
+          "passed": true
+        },
+        {
+          "name": "successful_api_then_clock_failure_unqualified",
+          "passed": true
+        },
+        {
+          "name": "final_clock_regression_unqualified",
+          "passed": true
+        },
+        {
+          "name": "global_cap_overrun_unqualified",
+          "passed": true
+        },
+        {
+          "name": "owner_deadline_overrun_unqualified",
+          "passed": true
+        },
+        {
+          "name": "duplicate_after_success_cannot_call_again",
+          "passed": true
+        },
+        {
+          "name": "duplicate_after_timeout_cannot_call_again",
+          "passed": true
+        },
+        {
+          "name": "duplicate_after_budget_failure_cannot_call",
+          "passed": true
+        }
+      ],
+      "count": 22,
+      "input_actions": 0,
+      "schema": 1,
+      "tree_captures": 0
+    },
+    "stdout_sha256": "da8a4e35a86a37dae64b7496d5477d523fda6cd6c34a8d33eed177218665b93c"
+  },
+  "inspection_idle_protocol_controls": {
+    "control_source_sha256": "f6d72f4ef1d46c27c9702cc910c2f4ca70ddc4db888ce1e58f7b43a2b761d685",
+    "report": {
+      "all_passed": true,
+      "android_calls": 0,
+      "cases": [
+        {
+          "name": "actual_parser_accepts_complete_inspection_after_idle",
+          "passed": true
+        },
+        {
+          "name": "actual_parser_accepts_already_quiet_immediate_return",
+          "passed": true
+        },
+        {
+          "name": "state_success_keeps_no_automation_idle_or_capture",
+          "passed": true
+        },
+        {
+          "name": "missing_idle_record_rejected",
+          "passed": true
+        },
+        {
+          "name": "empty_idle_cannot_qualify_inspect",
+          "passed": true
+        },
+        {
+          "name": "extra_idle_key_rejected",
+          "passed": true
+        },
+        {
+          "name": "non_boolean_qualified_rejected",
+          "passed": true
+        },
+        {
+          "name": "call_count_cannot_exceed_one",
+          "passed": true
+        },
+        {
+          "name": "quiet_budget_constant_cannot_change",
+          "passed": true
+        },
+        {
+          "name": "global_cap_cannot_change",
+          "passed": true
+        },
+        {
+          "name": "original_operation_budget_cannot_change",
+          "passed": true
+        },
+        {
+          "name": "effective_global_must_equal_remaining_budget",
+          "passed": true
+        },
+        {
+          "name": "operation_start_must_bind_same_helper",
+          "passed": true
+        },
+        {
+          "name": "boolean_time_rejected",
+          "passed": true
+        },
+        {
+          "name": "content_readiness_claim_rejected",
+          "passed": true
+        },
+        {
+          "name": "future_stability_claim_rejected",
+          "passed": true
+        },
+        {
+          "name": "event_quiet_scope_must_be_explicit",
+          "passed": true
+        },
+        {
+          "name": "api_ack_without_qualification_rejected",
+          "passed": true
+        },
+        {
+          "name": "no_api_return_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "gate_error_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "cause_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "secondary_clock_error_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "actual_wait_duration_must_match_clocks",
+          "passed": true
+        },
+        {
+          "name": "returned_api_after_global_budget_rejected",
+          "passed": true
+        },
+        {
+          "name": "idle_observation_cannot_outlive_helper_result",
+          "passed": true
+        },
+        {
+          "name": "tree_capture_cannot_precede_idle_end",
+          "passed": true
+        },
+        {
+          "name": "event_idle_cannot_qualify_partial_tree",
+          "passed": true
+        },
+        {
+          "name": "later_null_child_retains_original_failure_and_idle_only_metadata",
+          "passed": true
+        },
+        {
+          "name": "timeout_remains_failed_without_capture_or_successful_finish",
+          "passed": true
+        },
+        {
+          "name": "failure_before_gate_can_only_have_empty_idle_metadata",
+          "passed": true
+        },
+        {
+          "name": "all_noninspect_operations_require_empty_idle_metadata",
+          "passed": true
+        },
+        {
+          "name": "old_amazon_r1_uid_rejected_even_when_wire_uid_matches_argument",
+          "passed": true
+        }
+      ],
+      "count": 32,
+      "input_actions": 0,
+      "production_contract_sha256": "bbeaf0188be46b76788d00e11a6922b4f1df7241c4960d2c8b595b5be01d19dd",
+      "schema": 1,
+      "tree_captures": 0
+    }
+  },
+  "manifest_contract": {
+    "activities": [],
+    "compile_sdk_api": 31,
+    "debuggable": false,
+    "instrumentation": "org.droidloom.qa.amazon.r2.ActionRunner",
+    "min_sdk": 31,
+    "native_libraries": [],
+    "package": "org.droidloom.qa.amazon.r2",
+    "permissions": [],
+    "providers": [],
+    "receivers": [],
+    "services": [],
+    "target_package": "org.droidloom.qa.amazon.r2",
+    "target_sdk": 33,
+    "test_only": true
+  },
+  "package": "org.droidloom.qa.amazon.r2",
+  "private_signing_material_not_public": [
+    "private-signing/password.txt",
+    "private-signing/owned.p12"
+  ],
+  "schema": 1,
+  "signer_certificate_sha256": "dbc39b5bc42c297f733d782c73244b819f72a29030ab502a5f4d1d0206df84f6",
+  "source_manifest_sha256": "32be752c72fc4cfe7f50a73bba54cd6444e9ed3990b4f0cd809cb7023b540b98",
+  "source_or_permissions_gate_relaxed": false,
+  "source_sha256": {
+    "AndroidManifest.xml": "97e8353fdcecc0d5a00c7530c6f8d375ed967931115822c655c5e3826587e68d",
+    "README.md": "6837007cf6327cc591f617e605a418d132346ffe75f1abe9a7e35da35785bd77",
+    "build-input-reference.json": "dff9e8b30ec72928f0f0bba8207c1dbb7d23c487e2d0294f7f32a5dbcd8798c7",
+    "build_candidate.py": "b80dcea14a4fb7e567666d84b61afe0e5b955c74cacfdd31035dcc2b9f6069e0",
+    "check_idle_contract.py": "f6d72f4ef1d46c27c9702cc910c2f4ca70ddc4db888ce1e58f7b43a2b761d685",
+    "make_build_request.py": "21665ce0eebbc3303179ba579b79331802cb010c2ac33b6faadedc0bb6560ccc",
+    "qa_adapter.py": "934da2e9ebdd92a0d5dd6f17689c6e273e884ff2f88dbf23a7699e6d01d113b7",
+    "qa_contract.py": "bbeaf0188be46b76788d00e11a6922b4f1df7241c4960d2c8b595b5be01d19dd",
+    "src/org/droidloom/qa/amazon/r2/ActionRunner.java": "28ea61dfbf0b487e0dd8da9ff012c45abb441d776c5c6b78316c7c1edb8f3677",
+    "src/org/droidloom/qa/amazon/r2/InspectionIdleGate.java": "a8c4b4e376d8c84a7ac17b51e424c60dce489ef6d7a02b9fa855afece850ca24",
+    "stage_build.py": "b2fcb01b119e138552244dfde3d7a59009584f79f415520b107c666ce2a12be0",
+    "target-artifact-reference.json": "f29fdd340a095b4686b27b5424b7651b0eb5a237b9fb123adb8b9f0d8ad46e35",
+    "tests/InspectionIdleGateChecks.java": "0b097554e349d9a50627a7dd7762978da8378795f71079ce27b00c2849b22a0b"
+  },
+  "source_unchanged": true,
+  "state": "BUILT_STATIC_VERIFIED_ANDROID_UNRUN",
+  "tools_after": {
+    "aapt": {
+      "bytes": 30680,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
+    },
+    "android_jar": {
+      "bytes": 21998949,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+    },
+    "apksigner": {
+      "bytes": 2964,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+    },
+    "java": {
+      "bytes": 8528,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    },
+    "javac": {
+      "bytes": 8824,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "sha256": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa"
+    },
+    "r8": {
+      "bytes": 18294711,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "sha256": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7"
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+    }
+  },
+  "tools_baseline_receipt_sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+  "tools_before": {
+    "aapt": {
+      "bytes": 30680,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
+    },
+    "android_jar": {
+      "bytes": 21998949,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+    },
+    "apksigner": {
+      "bytes": 2964,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+    },
+    "java": {
+      "bytes": 8528,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    },
+    "javac": {
+      "bytes": 8824,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "sha256": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa"
+    },
+    "r8": {
+      "bytes": 18294711,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "sha256": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7"
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+    }
+  },
+  "tools_unchanged": true,
+  "whole_app_production_ready": false
+}

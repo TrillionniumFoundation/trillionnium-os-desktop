@@ -1,0 +1,21 @@
+--- a/a/read01/read_sources.py
++++ b/b/read02/read_sources.py
+@@ -75,6 +75,7 @@
+ PAYLOADS = (
+     ('aosp-source/prebuilts/sdk/current/Android.bp', 4194304),
+     ('aosp-source/prebuilts/tools/common/m2/Android.bp', 4194304),
++    ('aosp-source/prebuilts/tools/common/m2/robolectric.bp', 4194304),
+ )
+ 
+ 
+@@ -158,8 +159,8 @@
+                 os.close(fd)
+     if time.monotonic() >= deadline:
+         errors.append({'type': 'RuntimeError', 'message': 'fixed five-second qualification deadline'})
+-    complete = authority and not errors and len(rows) == 5 and all(row['complete'] for row in rows)
+-    result = {'schema': 1, 'scope': 'fixed published source manifest, two HEADs and two provider Blueprint files',
++    complete = authority and not errors and len(rows) == 6 and all(row['complete'] for row in rows)
++    result = {'schema': 1, 'scope': 'fixed published source manifest, two HEADs and three provider Blueprint files',
+               'source_sha256': SOURCE_SHA256, 'started_utc': started, 'finished_utc': utc(),
+               'collection_complete': complete, 'authority_qualified': authority,
+               'files': rows, 'roots': roots, 'errors': errors,

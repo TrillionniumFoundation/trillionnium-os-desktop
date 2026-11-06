@@ -1,0 +1,68 @@
+{
+  "APK": {
+    "bytes": 24720,
+    "path": "/home/alex/work/pocket4-owned-amazon-qa-r2-build-01/owned-amazon-qa.apk",
+    "sha256": "d4a01261b17125cf463145a9527255f7552bdb696c2dc48b64af74f8f1cdaa18"
+  },
+  "actual_job": "1a1af3042d3-fc05-6692",
+  "build_pin": {
+    "bytes": 27742,
+    "git_blob_sha": "67d6ce9de3d43ee83c4650799466c8bc7ae48424",
+    "sha256": "8cf26d19ab471ec8d25adc7b0db659ee7f12437f6c8290818b6f4c6b2e1fdae7"
+  },
+  "checked": {
+    "Java_production_gate_controls": 22,
+    "Python_production_protocol_controls": 32,
+    "all_13_children_returned_zero_and_joined": true,
+    "all_child_error_fields_empty": true,
+    "compiled_python_sources": 6,
+    "control_source_and_stdout_pins_match": true,
+    "exact_case_names_unique": true,
+    "manifest_contract": {
+      "activities": [],
+      "compile_sdk_api": 31,
+      "debuggable": false,
+      "instrumentation": "org.droidloom.qa.amazon.r2.ActionRunner",
+      "min_sdk": 31,
+      "native_libraries": [],
+      "package": "org.droidloom.qa.amazon.r2",
+      "permissions": [],
+      "providers": [],
+      "receivers": [],
+      "services": [],
+      "target_package": "org.droidloom.qa.amazon.r2",
+      "target_sdk": 33,
+      "test_only": true
+    },
+    "owned_cgroup_identity_unchanged": true,
+    "owned_memory_event_increments": 0,
+    "owned_memory_peak_bytes": 272637952,
+    "owned_resource_limits_unchanged": true,
+    "owned_swap_peak_bytes": 0,
+    "source_manifest": "32be752c72fc4cfe7f50a73bba54cd6444e9ed3990b4f0cd809cb7023b540b98",
+    "source_members": 13,
+    "tools_before_after": 7
+  },
+  "kind": "Amazon R2 actual static build independent review",
+  "limitations": [
+    "The actual Java and Python controls are host executions against the frozen production gate/parser, not Android UiAutomation behavior.",
+    "Two javac commands and keytool retain nonempty stderr hashes; all return codes are zero and their recorded error/secondary fields are empty. Parent stderr=0 is not a claim that every child emitted no stderr.",
+    "The old Main epoch is currently unavailable; no installation/runtime request is derived or allowed from this static result. Original source/epoch guards remain unchanged."
+  ],
+  "qualifications": {
+    "Android_idle_API_executed": false,
+    "helper_uid": null,
+    "installed": false,
+    "new_runtime_or_UI_authorized": false,
+    "static_build": true,
+    "whole_app": false
+  },
+  "review_execution": "V8 exact retained-byte/pin/schema comparisons; no new device, build, or local executor action",
+  "schema": 1,
+  "signer_certificate_sha256": "dbc39b5bc42c297f733d782c73244b819f72a29030ab502a5f4d1d0206df84f6",
+  "stage_pin": {
+    "bytes": 1943,
+    "git_blob_sha": "27b0668c61a1a8d59f704e64ccac72e4879e3ab9",
+    "sha256": "85d0bba4f59dc2a071baa4e3cfba71dc2ef454ddcefb9174ded6941b9dbc8abe"
+  }
+}

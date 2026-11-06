@@ -1,0 +1,87 @@
+{
+  "artifact": "owned-amazon-qa-r2-source-freeze",
+  "files": {
+    "AndroidManifest.xml": {
+      "bytes": 738,
+      "sha256": "97e8353fdcecc0d5a00c7530c6f8d375ed967931115822c655c5e3826587e68d"
+    },
+    "README.md": {
+      "bytes": 4889,
+      "sha256": "6837007cf6327cc591f617e605a418d132346ffe75f1abe9a7e35da35785bd77"
+    },
+    "build-input-reference.json": {
+      "bytes": 2652,
+      "sha256": "dff9e8b30ec72928f0f0bba8207c1dbb7d23c487e2d0294f7f32a5dbcd8798c7"
+    },
+    "build_candidate.py": {
+      "bytes": 23890,
+      "sha256": "b80dcea14a4fb7e567666d84b61afe0e5b955c74cacfdd31035dcc2b9f6069e0"
+    },
+    "check_idle_contract.py": {
+      "bytes": 13272,
+      "sha256": "f6d72f4ef1d46c27c9702cc910c2f4ca70ddc4db888ce1e58f7b43a2b761d685"
+    },
+    "make_build_request.py": {
+      "bytes": 2940,
+      "sha256": "21665ce0eebbc3303179ba579b79331802cb010c2ac33b6faadedc0bb6560ccc"
+    },
+    "qa_adapter.py": {
+      "bytes": 22378,
+      "sha256": "934da2e9ebdd92a0d5dd6f17689c6e273e884ff2f88dbf23a7699e6d01d113b7"
+    },
+    "qa_contract.py": {
+      "bytes": 32890,
+      "sha256": "bbeaf0188be46b76788d00e11a6922b4f1df7241c4960d2c8b595b5be01d19dd"
+    },
+    "src/org/droidloom/qa/amazon/r2/ActionRunner.java": {
+      "bytes": 43410,
+      "sha256": "28ea61dfbf0b487e0dd8da9ff012c45abb441d776c5c6b78316c7c1edb8f3677"
+    },
+    "src/org/droidloom/qa/amazon/r2/InspectionIdleGate.java": {
+      "bytes": 3923,
+      "sha256": "a8c4b4e376d8c84a7ac17b51e424c60dce489ef6d7a02b9fa855afece850ca24"
+    },
+    "stage_build.py": {
+      "bytes": 7560,
+      "sha256": "b2fcb01b119e138552244dfde3d7a59009584f79f415520b107c666ce2a12be0"
+    },
+    "target-artifact-reference.json": {
+      "bytes": 3086,
+      "sha256": "f29fdd340a095b4686b27b5424b7651b0eb5a237b9fb123adb8b9f0d8ad46e35"
+    },
+    "tests/InspectionIdleGateChecks.java": {
+      "bytes": 11434,
+      "sha256": "0b097554e349d9a50627a7dd7762978da8378795f71079ce27b00c2849b22a0b"
+    }
+  },
+  "inspection_idle": {
+    "API_calls_max": 1,
+    "global_cap_ms": 2000,
+    "original_operation_budget_ms": 8000,
+    "quiet_is_content_readiness": false,
+    "quiet_is_future_action_stability": false,
+    "quiet_ms": 500,
+    "scope": "standalone_inspect_before_first_complete_tree"
+  },
+  "package": "org.droidloom.qa.amazon.r2",
+  "protocol": "pocket4-owned-amazon-qa-v2",
+  "qualification": {
+    "actual_Amazon_R2_compile_install_UI_actions": 0,
+    "required_actual_idle_Java_controls": 22,
+    "required_actual_idle_protocol_controls": 32,
+    "required_actual_joined_build_commands": 13,
+    "whole_app_production_ready": false
+  },
+  "schema": 1,
+  "source_history": {
+    "Amazon05_failure_retained": true,
+    "Amazon_R1_ActionRunner_sha256": "77ed79a7ac048f8ef927ac8505843961a2c3bdd0022332ac4fc742d3a676cac3",
+    "Amazon_R1_manifest_sha256": "08e2a223acae096d6ce4beb5d611395892fe1b2b26d593832510c11af36a4cf3",
+    "Bili_R8_shared_gate_sha256": "280b24ba10f5c3dce2ffd889f851af4e2e11c3ad8bd88d88d32c9bafcfe682c8",
+    "old_helper_sources_unchanged": true,
+    "shared_gate_port_package_only": true
+  },
+  "state": "SOURCE_FROZEN_ACTUAL_BUILD_NOT_RUN",
+  "target_package": "com.amazon.mShop.android.shopping",
+  "target_uid": 10129
+}

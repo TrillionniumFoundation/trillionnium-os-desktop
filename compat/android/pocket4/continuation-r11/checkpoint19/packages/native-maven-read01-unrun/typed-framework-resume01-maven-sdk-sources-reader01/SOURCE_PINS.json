@@ -1,0 +1,48 @@
+{
+  "schema": 1,
+  "state": "FROZEN_SOURCE_UNRUN",
+  "purpose": "Resolve real provider names in two already selected pinned Blueprint files, no Git child or source mutation",
+  "parent": {
+    "tree": "5083ef77dc26044e913600451347a8bcbcd41ff6",
+    "source": {
+      "bytes": 9548,
+      "sha256": "ac60bf641eb961a8a5763abb118e20088dc3b644300f2aba10ffb849241801ab",
+      "git_blob_sha1": "8ab9b6affedd36e77f0ca5dda700916567e43495"
+    },
+    "prior_actual_result": "4/5 complete, missing old misc worktree leaf retained as historical FAIL"
+  },
+  "actual_manifest_pin": {
+    "bytes": 97784,
+    "sha256": "73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d"
+  },
+  "delta": "Only replace misc fixed project/leaf with tools fixed project/Maven BP, replace AndroidX root BP with SDK current BP, and bind actual complete manifest bytes/SHA. Original roots, held/named/parent checks, 5 rows, deadline, resources, and plain UTF8 output retained.",
+  "fixed_payloads": [
+    "aosp-source/prebuilts/sdk/current/Android.bp",
+    "aosp-source/prebuilts/tools/common/m2/Android.bp"
+  ],
+  "per_file_bound": 4194304,
+  "maximum_raw_plain_json_output": 33554432,
+  "no_subprocesses": true,
+  "no_network": true,
+  "no_writes": true,
+  "no_Main_actions": true,
+  "no_scan": true,
+  "source_pin": {
+    "bytes": 9737,
+    "sha256": "3171dfdbcd4bf672931cf3ae6400efc39f8c82977d4ffc4971b9b5c6d0327af6",
+    "git_blob_sha1": "be6ef2ace6669be331e5e90f8a8baa1b506e5296"
+  },
+  "stdin_pin": {
+    "bytes": 10332,
+    "sha256": "79f9e1f1b8809796b550d8b990cc0fa7279b6e10f69637fedc8f1ef19376caa0",
+    "git_blob_sha1": "5f36d5decb42ec06a81727a8d8a36f6f621b2b37"
+  },
+  "request_pin": {
+    "bytes": 10907,
+    "sha256": "be3fea5b97722aed7037e65c931dfe708703f7e836ff18f2dba8b8703eea2554",
+    "git_blob_sha1": "91f60a231fdf21f53234c495f9b20cf687b3f49a"
+  },
+  "Python_compile_or_execution": false,
+  "device_execution": false,
+  "full_build_or_artifact_qualification": false
+}

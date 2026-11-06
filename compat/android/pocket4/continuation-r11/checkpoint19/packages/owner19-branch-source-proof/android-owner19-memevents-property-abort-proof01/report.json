@@ -1,0 +1,247 @@
+{
+  "bootstrap_source_observation": {
+    "boundary": "The exact property file contents and original image /system/build.prop have not yet been read. The inherited plan binding is not evidence of the missing key's actual text or of a correct replacement value.",
+    "development_source": {
+      "bytes": 95905,
+      "git_blob_sha": "cb59a99233c684ce5f1c14cf79489acb1cbb48f4",
+      "sha256": "b4a73b76934c79d32fe2a95f6a39829b66be33209ad46c872c14d8ef97d260b1"
+    },
+    "entry_source": {
+      "bytes": 37570,
+      "git_blob_sha": "7a291a24b79d4fe971ef0f65ea1522dc7dfe9707",
+      "sha256": "fa8a4d2c6ddc6508f3527a4711566402b7d0ad51339e42aca3c3d9395615d080"
+    },
+    "inherited_frozen_plan_override": {
+      "source": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5/payload/41/system-build.prop",
+      "target": "/system/build.prop"
+    },
+    "inherited_plan_base_record": {
+      "bytes": 6130,
+      "frozen": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5/payload/41/system-build.prop",
+      "gid": 0,
+      "mode": 292,
+      "relative": "payload/41/system-build.prop",
+      "sha256": "5efb9d762bdae59c7c8d48e436dbf49a41640045121ea8ccaadde222f08814ba",
+      "source": "/opt/p4-media-term-canary-20261101-chat2-r2/payload/41/system-build.prop",
+      "uid": 0
+    },
+    "owner19_actual_same_base_record": {
+      "bytes": 6130,
+      "identity": {
+        "device": 66306,
+        "inode": 39736830
+      },
+      "relative": "payload/41/system-build.prop",
+      "sha256": "5efb9d762bdae59c7c8d48e436dbf49a41640045121ea8ccaadde222f08814ba"
+    },
+    "production_behavior": "development.rs validates every configured android_file_overrides target as an existing regular partition file, then bind_mount_read_only_executable(source,target), before relay entry prepare_image. No property rewrite occurs in the reviewed entry."
+  },
+  "code_window_SHA_verified": true,
+  "conclusion": "All five captured LMKD failures reach the exact abort call selected when __system_property_get(\"ro.build.version.sdk_full\", buffer) returns <= 0 during libmemevents global construction.",
+  "evidence": {
+    "ELF": {
+      "actual_running_peer_bound": false,
+      "binary_exported": false,
+      "bytes": 68968,
+      "first_four_bytes_hex": "7f454c46",
+      "path": "/system/lib64/libmemevents.so",
+      "sha256": "26b20973292206cb73715872d48a4b27db670604a2175e9864f8929c84b25d18",
+      "validated_by_final_checks": true
+    },
+    "actual_prepared": {
+      "bytes": 55273,
+      "git_blob_sha": "5c570109474399d897338d6baecb93bbe4ba02fe",
+      "sha256": "e6b02798bb03598310905852664eec5cbe2329b990571b0d02e71f43d15aa163"
+    },
+    "fixed_ELF_collection": {
+      "job": "1a1af06a7e7-fc05-6526",
+      "stdout": {
+        "bytes": 54661,
+        "git_blob_sha": "9fecf5fb7e13cddc905a7b8fce30209ba90e022a",
+        "sha256": "30823c5c893fac79260df1745cfaee1132469441a76c0f952e5fb25e989a2ea7"
+      },
+      "tree": "acac064f59e91bda936213cfb8fe6d98153e868b"
+    },
+    "safe_stack_derivation": {
+      "body": {
+        "bytes": 31433,
+        "git_blob_sha": "b2fd86949514f513377be320ea71120032d73b87",
+        "sha256": "d437126e634b5a124ad5efb5d6d8a88a83b67077ebc586f058dd576380f7aa2c"
+      },
+      "tree": "544c81ce60d9afe2611c87705d3da2f2178a339b"
+    }
+  },
+  "kind": "OWNER19_MEMEVENTS_MATCHED_ELF_PROPERTY_ABORT_PROOF",
+  "limitations": [
+    "No ro.build.version.sdk_full value is invented.",
+    "No abort branch or original process/identity/retirement gate is bypassed.",
+    "No BPF map, BPF syscall, LMKD loop behavior, or HWS health cause is inferred from this conditional.",
+    "The image ELF is matched by complete file SHA and logged BuildId; bytes were not read from a live crashed mapping.",
+    "The raw private crash packet and raw init log are not included.",
+    "No source revision is claimed for the matched ELF."
+  ],
+  "next_fixed_read": "Read only the already pinned 6130-byte host system-build.prop override and the trusted image's fixed /system/build.prop using the already qualified dump.erofs metadata/cat/metadata mechanism. Derive any repair from actual property bytes, keeping base immutable and selecting a new owned override.",
+  "proof": {
+    "abort_call": {
+      "call_hex": "e82a420000",
+      "call_vaddr": 21521,
+      "got_vaddr": 50120,
+      "plt_jump_hex": "ff25822d0000",
+      "plt_vaddr": 38464,
+      "relocation": {
+        "addend": 0,
+        "index": 9,
+        "offset": 50120,
+        "symbol": "abort",
+        "symbol_index": 8,
+        "table": ".rela.plt",
+        "type": 7
+      },
+      "return_vaddr": 21526
+    },
+    "actual_lmkd_reports": [
+      {
+        "frame": {
+          "build_id": "b7076ba103f2a4aeb7cad5b97f45fd17",
+          "index": 1,
+          "original_line_sha256": "dcc63e7817f3a604810790e4c759189e7a4fad53f309c3e2ce3c9bf479a8bb9d",
+          "pc_hex": "0000000000005415",
+          "symbol": "_GLOBAL__sub_I_memevents.cpp+4965",
+          "system_elf": "/system/lib64/libmemevents.so"
+        },
+        "pid": 556,
+        "reported_fingerprint": "unknown",
+        "reporter_pid": 569,
+        "uid": 1069
+      },
+      {
+        "frame": {
+          "build_id": "b7076ba103f2a4aeb7cad5b97f45fd17",
+          "index": 1,
+          "original_line_sha256": "dcc63e7817f3a604810790e4c759189e7a4fad53f309c3e2ce3c9bf479a8bb9d",
+          "pc_hex": "0000000000005415",
+          "symbol": "_GLOBAL__sub_I_memevents.cpp+4965",
+          "system_elf": "/system/lib64/libmemevents.so"
+        },
+        "pid": 649,
+        "reported_fingerprint": "unknown",
+        "reporter_pid": 660,
+        "uid": 1069
+      },
+      {
+        "frame": {
+          "build_id": "b7076ba103f2a4aeb7cad5b97f45fd17",
+          "index": 1,
+          "original_line_sha256": "dcc63e7817f3a604810790e4c759189e7a4fad53f309c3e2ce3c9bf479a8bb9d",
+          "pc_hex": "0000000000005415",
+          "symbol": "_GLOBAL__sub_I_memevents.cpp+4965",
+          "system_elf": "/system/lib64/libmemevents.so"
+        },
+        "pid": 688,
+        "reported_fingerprint": "unknown",
+        "reporter_pid": 701,
+        "uid": 1069
+      },
+      {
+        "frame": {
+          "build_id": "b7076ba103f2a4aeb7cad5b97f45fd17",
+          "index": 1,
+          "original_line_sha256": "dcc63e7817f3a604810790e4c759189e7a4fad53f309c3e2ce3c9bf479a8bb9d",
+          "pc_hex": "0000000000005415",
+          "symbol": "_GLOBAL__sub_I_memevents.cpp+4965",
+          "system_elf": "/system/lib64/libmemevents.so"
+        },
+        "pid": 765,
+        "reported_fingerprint": "unknown",
+        "reporter_pid": 779,
+        "uid": 1069
+      },
+      {
+        "frame": {
+          "build_id": "b7076ba103f2a4aeb7cad5b97f45fd17",
+          "index": 1,
+          "original_line_sha256": "dcc63e7817f3a604810790e4c759189e7a4fad53f309c3e2ce3c9bf479a8bb9d",
+          "pc_hex": "0000000000005415",
+          "symbol": "_GLOBAL__sub_I_memevents.cpp+4965",
+          "system_elf": "/system/lib64/libmemevents.so"
+        },
+        "pid": 844,
+        "reported_fingerprint": "unknown",
+        "reporter_pid": 863,
+        "uid": 1069
+      }
+    ],
+    "conditional": {
+      "hex": "0f8eca100000",
+      "interpretation": "signed jle after test: property getter return value is <= 0",
+      "target_vaddr": 21521,
+      "vaddr": 17217
+    },
+    "device_api_gate": {
+      "branch_hex": "7f08",
+      "call": {
+        "call_hex": "e8de530000",
+        "call_vaddr": 17133,
+        "got_vaddr": 50192,
+        "plt_jump_hex": "ff253a2d0000",
+        "plt_vaddr": 38608,
+        "relocation": {
+          "addend": 0,
+          "index": 18,
+          "offset": 50192,
+          "symbol": "android_get_device_api_level",
+          "symbol_index": 17,
+          "table": ".rela.plt",
+          "type": 7
+        },
+        "return_vaddr": 17138
+      },
+      "cmp_hex": "83f823",
+      "interpretation": "The full-SDK property branch executes when android_get_device_api_level returns greater than 35."
+    },
+    "method": "Direct decoding of these exact fixed x86-64 instructions and ELF PLT/GOT relocation; no pattern-only scan or external disassembler.",
+    "property_argument": {
+      "lea_hex": "488d3d61e0ffff",
+      "lea_vaddr": 17154,
+      "record": {
+        "bytes": 25,
+        "section": ".rodata",
+        "sha256": "dab88a3fa24a6514d1fd85fd467de851f1c291901888928eb59e51ca299a3151",
+        "text": "ro.build.version.sdk_full",
+        "vaddr": 9066
+      },
+      "target_vaddr": 9066
+    },
+    "property_call": {
+      "call_hex": "e861530000",
+      "call_vaddr": 17210,
+      "got_vaddr": 50168,
+      "plt_jump_hex": "ff25522d0000",
+      "plt_vaddr": 38560,
+      "relocation": {
+        "addend": 0,
+        "index": 15,
+        "offset": 50168,
+        "symbol": "__system_property_get",
+        "symbol_index": 14,
+        "table": ".rela.plt",
+        "type": 7
+      },
+      "return_vaddr": 17215
+    },
+    "reported_pc": 21525,
+    "return_test": {
+      "hex": "85c0",
+      "interpretation": "test eax,eax",
+      "vaddr": 17215
+    },
+    "scope": "This proves the conditional failure selected by the observed matching-build frame; it does not by itself prove which configuration file omitted the property or whether property access failed."
+  },
+  "schema": 1,
+  "separate_netd": {
+    "actual_stack_build_id": "4e2a624161074800876d1a1ebae95d0f",
+    "host_compat_ELF_build_id": "b725d8772f73c1cc95ceabc98b9ab36a",
+    "matches": false,
+    "not_used_as_APEX_ELF": true
+  }
+}

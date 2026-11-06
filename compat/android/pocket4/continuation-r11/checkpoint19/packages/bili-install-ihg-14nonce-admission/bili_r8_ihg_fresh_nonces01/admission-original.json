@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-c",
+      "import json,os,secrets\nassert os.getuid()==os.geteuid()==1000\nvalues=[secrets.token_hex(16) for _ in range(14)]\nassert len(set(values))==14 and all(len(v)==32 for v in values)\nprint(json.dumps({'schema':1,'purpose':'bili-r8-install-and-ihg-explicit-search-destination','bili_r8_install':values[:2],'ihg_search_destination':values[2:],'count':14,'Main_actions':0,'Android_actions':0,'automatic_retry':False},sort_keys=True),flush=True)\n"
+    ],
+    "created_unix_ms": 1793937504193,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1af01f7c1-fc05-64f8",
+    "idempotency_key": "pocket4-bili-r8-ihg-search-destination-fresh-nonces-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1af01f7c1-fc05-64f8",
+    "request_digest": "3d99464a7fa383ec676cfa23597e675ae47d763dbe0598611df38a29ca0a547e",
+    "request_fingerprint": 4438656193533281260,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1af01f7c1-fc05-64f8"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1af01f7c1-fc05-64f8"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

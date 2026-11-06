@@ -1,0 +1,38 @@
+Traceback (most recent call last):
+  File "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py", line 54, in process_identity
+    before = _stat(pid)
+  File "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py", line 42, in _stat
+    raw = Path(f"/proc/{pid}/stat").read_text()
+  File "/usr/lib/python3.14/pathlib/__init__.py", line 788, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/pathlib/__init__.py", line 772, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/proc/3589120/stat'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py", line 155, in require_unchanged
+    current = capture_processes(roles)
+  File "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py", line 88, in capture_processes
+    first = {role: process_identity(pid) for role, pid in sorted(roles.items())}
+                   ~~~~~~~~~~~~~~~~^^^^^
+  File "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py", line 74, in process_identity
+    raise EpochError("PROCESS_IDENTITY_UNAVAILABLE") from exc
+bili_inspect_stage_epoch.EpochError: PROCESS_IDENTITY_UNAVAILABLE
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "<string>", line 8, in <module>
+    raise SystemExit(scope['main'](raw))
+                     ~~~~~~~~~~~~~^^^^^
+  File "/home/alex/work/pocket4-bilibili-r8-pause-resume-01/source/stage_execute.py", line 51, in main
+  File "/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/source/references/readonly_r3_coordinator.py", line 106, in main_guard
+    epoch.require_unchanged(activation['framework_epoch'])
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/work/pocket4-framework-epoch-20261104-r10/framework_epoch.py", line 161, in require_unchanged
+    raise EpochError(code, action_attempted=action_attempted) from exc
+bili_inspect_stage_epoch.EpochError: FRAMEWORK_EPOCH_CHANGED_OR_UNAVAILABLE

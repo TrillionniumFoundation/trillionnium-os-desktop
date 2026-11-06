@@ -1,0 +1,551 @@
+syntax = "proto3";
+
+import "atest/proto/common.proto";
+// DecisionGraphInput is the input to the RunDecisionGraph RPC.
+message DecisionGraphInput {
+  // A client-defined DecisionGraph or pre-defined graph.
+  optional DecisionGraph graph = 1;
+
+  // Optional request-specific context for each stage.
+  // For example, the .context or .change_set fields may be set. If one of these
+  // the StageInput.id field is not set, the non-null fields from that
+  // StageInput is passed to all stages.
+  repeated StageInput input = 2;
+}
+
+// DecisionGraphOutput is the result of running a DecisionGraph.
+// It contains the DecisionGraph which was run, the outputs of the stages,
+// and any other metadata which is useful for observability or debugging.
+message DecisionGraphOutput {
+  optional string id = 1;  // For re-querying stored selections later. Required.
+
+  // The DecisionGraph which ran the run is stored. Required.
+  optional DecisionGraph graph = 2;
+
+  // Children; for querying nested graphs. Optional.
+  repeated DecisionGraphOutput children = 3;
+
+  // Output of the stages. Optional.
+  repeated StageOutput outputs = 5;
+}
+
+// A DecisionGraph is a DAG of StageNodes.
+// A given system such as presubmit or postsubmit may require multiple
+// DecisionGraphs, possibly for different contexts, customer configurations, or
+// parts of the CI workflow.
+//
+// Each major client of the DecisionGraph API would have its own isolation shard
+// to ensure that no badly behaved client can blow up all of Engprod's services.
+message DecisionGraph {
+  optional string name = 1;
+  repeated StageNode stages = 2;
+}
+
+message StageNode {
+  // The identifier and name of the stage. If running more than one stage
+  // of a given type, the identifier does not need to match the name of
+  // the stage.
+  optional Stage stage = 1;
+
+  // Graph structure is expressed here. List of ids of the parent stages.
+  repeated string input_stages = 2;
+
+  // How to call the Stage.
+  optional ExecutionOptions execution_options = 4;
+
+  // Execution options define how to call a Stage.
+  message ExecutionOptions {
+    // How to call the stage.
+    // Test selection can be extended to support additional calling methods
+    // (grpc, in-process classes) by adding additional config fields here.
+    enum Location {
+      LOCATION_UNKNOWN = 0;
+      GSLB = 1;
+      LOCAL = 2;
+    }
+
+    // Implemented in the canonical DecisionGraph stage service.
+    optional Location location = 5;
+
+    // GSLB or other address for the Stage RPC service.
+    optional string address = 6;
+
+    // Whether to call Prepare() on the stage instead of Run().
+    // Useful for slow stages with some precomputation needed before they are
+    // ready, like test relevance.
+    optional bool prepare = 7;
+
+    // Deadline in seconds. Some stages may need more time than others.
+    optional Duration max_duration = 8;
+    optional int32 max_attempts = 9;  // Maximum retries for RPC errors.
+
+    // Whether the plan can continue without this stage. If a blocking stage
+    // fails, execution of downstream stages will not occur. If a nonblocking
+    // satge fails, downstream stages will still execute.
+    // For example, smart test selection is not strictly necessary, and
+    // execution can continue without it.
+    enum Blocking {
+      BLOCKING_UNKNOWN = 0;
+      BLOCKING = 1;
+      NON_BLOCKING = 2;
+    }
+
+    optional Blocking blocking = 10;
+
+    // Experiment options
+    optional Experiment experiment = 11;
+
+    // A/B Experiment options. The stage will be enabled if the md5 hash
+    // of the key mod 100 is less than or equal to the .percentage.
+    message Experiment {
+      optional int32 percentage = 1;
+
+      // The key of StageInput to split on (ex.
+      // changes.leader_changes.0.change_number)
+      repeated string key = 2;
+    }
+  }
+}
+
+// StageInput is passed into the stage:
+//  - The StageOutput of all previous stages
+//  - The config from the DecisionGraph's StageNode.
+//  - The context from the DecisionGraph.RunGraph request
+message StageInput {
+  // The ID and Name of this stage (in the DecisionGraph StageNode).
+  optional Stage stage = 1;
+
+  // The output of the stages which are inputs to this stage.
+  // If this stage depends on the root stage, this will contain a root
+  // StageOutput with the DecisionGraphService.RunDecisionGraph input context.
+  repeated StageOutput input = 3;
+}
+
+message StageOutput {
+  repeated Check checks = 1;
+  optional Stage stage = 2;
+
+  // 'context' contains any DecisionGraph or stage-specific input which is
+  // required to make a decision. For example, Postsubmit selection graphs may
+  // need to process a sequence of changes at various builds. Other graphs or
+  // stages may have other unique contexts.
+  optional Stage.Context context = 3;
+
+  // Private output context, which is not stored in spanner.
+  optional Stage.PrivateContext private_context = 4;
+
+  // Whether this Stage found a critical result which gives a final result
+  // and invalidates the rest of the decision graph. If .terminate is set, then
+  // the DecisionGraph service will stop execution of the garph.
+  optional bool terminate = 5;
+  repeated Error errors = 6;  // Any errors encountered when calling this stage.
+}
+
+message Error {
+  enum Code {
+    // Not an error; returned on success.
+    OK = 0;
+
+    // The operation was cancelled, typically by the caller.
+    CANCELLED = 1;
+
+    // Unknown error.  For example, this error may be returned when
+    // a Status value received from another address space belongs to
+    // an error-space that is not known in this address space.  Also
+    // errors raised by APIs that do not return enough error information
+    // may be converted to this error.
+    UNKNOWN = 2;
+
+    // The client specified an invalid argument.  Note that this differs
+    // from FAILED_PRECONDITION.  INVALID_ARGUMENT indicates arguments
+    // that are problematic regardless of the state of the system
+    // (e.g., a malformed file name).
+    INVALID_ARGUMENT = 3;
+
+    // The deadline expired before the operation could complete. For operations
+    // that change the state of the system, this error may be returned
+    // even if the operation has completed successfully.  For example, a
+    // successful response from a server could have been delayed long
+    // enough for the deadline to expire.
+    DEADLINE_EXCEEDED = 4;
+
+    // Some requested entity (e.g., file or directory) was not found.
+    //
+    // Note to server developers: if a request is denied for an entire class
+    // of users, such as gradual feature rollout or undocumented allowlist,
+    // `NOT_FOUND` may be used. If a request is denied for some users within
+    // a class of users, such as user-based access control, `PERMISSION_DENIED`
+    // must be used.
+    NOT_FOUND = 5;
+
+    // The entity that a client attempted to create (e.g., file or directory)
+    // already exists.
+    ALREADY_EXISTS = 6;
+
+    // The caller does not have permission to execute the specified
+    // operation. `PERMISSION_DENIED` must not be used for rejections
+    // caused by exhausting some resource (use `RESOURCE_EXHAUSTED`
+    // instead for those errors). `PERMISSION_DENIED` must not be
+    // used if the caller can not be identified (use `UNAUTHENTICATED`
+    // instead for those errors). This error code does not imply the
+    // request is valid or the requested entity exists or satisfies
+    // other pre-conditions.
+    PERMISSION_DENIED = 7;
+
+    // The request does not have valid authentication credentials for the
+    // operation.
+    UNAUTHENTICATED = 16;
+
+    // Some resource has been exhausted, perhaps a per-user quota, or
+    // perhaps the entire file system is out of space.
+    RESOURCE_EXHAUSTED = 8;
+
+    // The operation was rejected because the system is not in a state
+    // required for the operation's execution.  For example, the directory
+    // to be deleted is non-empty, an rmdir operation is applied to
+    // a non-directory, etc.
+    //
+    // A litmus test that may help a service implementer in deciding
+    // between FAILED_PRECONDITION, ABORTED, and UNAVAILABLE:
+    //  (a) Use UNAVAILABLE if the client can retry just the failing call.
+    //  (b) Use ABORTED if the client should retry at a higher-level. For
+    //      example, when a client-specified test-and-set fails, indicating the
+    //      client should restart a read-modify-write sequence.
+    //  (c) Use FAILED_PRECONDITION if the client should not retry until
+    //      the system state has been explicitly fixed. For example, if an
+    //      "rmdir" fails because the directory is non-empty,
+    //      FAILED_PRECONDITION should be returned since the client should not
+    //      retry unless the files are deleted from the directory.
+    FAILED_PRECONDITION = 9;
+
+    // The operation was aborted, typically due to a concurrency issue such as
+    // a sequencer check failure or transaction abort.
+    //
+    // See litmus test above for deciding between FAILED_PRECONDITION,
+    // ABORTED, and UNAVAILABLE.
+    ABORTED = 10;
+
+    // The operation was attempted past the valid range.  E.g., seeking or
+    // reading past end-of-file.
+    //
+    // Unlike INVALID_ARGUMENT, this error indicates a problem that may
+    // be fixed if the system state changes. For example, a 32-bit file
+    // system will generate INVALID_ARGUMENT if asked to read at an
+    // offset that is not in the range [0,2^32-1], but it will generate
+    // OUT_OF_RANGE if asked to read from an offset past the current
+    // file size.
+    //
+    // There is a fair bit of overlap between FAILED_PRECONDITION and
+    // OUT_OF_RANGE.  We recommend using OUT_OF_RANGE (the more specific
+    // error) when it applies so that callers who are iterating through
+    // a space can easily look for an OUT_OF_RANGE error to detect when
+    // they are done.
+    OUT_OF_RANGE = 11;
+
+    // The operation is not implemented or is not supported/enabled in this
+    // service.
+    UNIMPLEMENTED = 12;
+
+    // Internal errors.  This means that some invariants expected by the
+    // underlying system have been broken.  This error code is reserved
+    // for serious errors.
+    INTERNAL = 13;
+
+    // The service is currently unavailable.  This is most likely a
+    // transient condition, which can be corrected by retrying with
+    // a backoff. Note that it is not always safe to retry
+    // non-idempotent operations.
+    //
+    // See litmus test above for deciding between FAILED_PRECONDITION,
+    // ABORTED, and UNAVAILABLE.
+    UNAVAILABLE = 14;
+
+    // Unrecoverable data loss or corruption.
+    DATA_LOSS = 15;
+
+    // An extra enum entry to prevent people from writing code that
+    // fails to compile when a new code is added.
+    //
+    // Nobody should ever reference this enumeration entry. In particular,
+    // if you write C++ code that switches on this enumeration, add a default:
+    // case instead of a case that mentions this enumeration entry.
+    //
+    // Nobody should rely on the value (currently 20) listed here.  It
+    // may change in the future.
+    DO_NOT_USE_RESERVED_FOR_FUTURE_EXPANSION_USE_DEFAULT_IN_SWITCH_INSTEAD_ =
+        20;
+  }
+
+  oneof error {
+    Code rpc_error = 1;
+  }
+
+  // A string error message.
+  optional string message = 2;
+}
+
+// -------- RPC message types --------------------------------------------------
+message Stage {
+  optional string id = 1;  // Unique (opaque) ID for this stage.
+
+  // Names are mainly for observability purposes — these are stored
+  // along with the selections (ADD / REMOVE / MODIFY) to enable visibility
+  // into why decisions happened in the test plan.
+  optional string name = 2;
+  // Input stages adjacent to this node in the Stage graph.
+  repeated Stage input_stages = 3;
+
+  // A Stage.Reason is a structured explanation of why the stage made its
+  // decisions.
+  message Reason {}
+
+  optional Reason reason = 4;
+
+  // 'context' contains any DecisionGraph or stage-specific input which is
+  // required to make a decision. For example, Postsubmit selection graphs may
+  // need to process a sequence of changes at various builds. Other graphs or
+  // stages may have other unique contexts.
+  message Context {
+    // The messages to be displayed in the UI.
+    repeated string display_messages = 1;
+  }
+  // Context of the stage, as described above.
+  optional Context context = 5;
+
+  // PrivateContext contains context which is not stored in spanner due to
+  // containing sensitive data which should not be accessible to all googlers.
+  // For example, ChangeInfo for restricted hosts cannot be shared to all
+  // googlers, and should be populated in the PrivateContext instead of Context.
+  message PrivateContext {
+    // The changes which are part of the run.
+    repeated Change changes = 1;
+  }
+}
+
+// The files info that is modified/added/deleted/renamed in the change.
+// For merged changes, it should be the file diffs from the first parent.
+// This is only accessible in the change.list endpoint.
+message FileInfo {
+  // The path of the file.
+  optional string path = 1;
+  // Original path name if the file was renamed or copied.
+  optional string old_path = 2;
+  // Type of change made to the file.
+  enum Status {
+    UNSPECIFIED_STATUS = 0;
+    ADDED = 1;
+    DELETED = 2;
+    MODIFIED = 3;
+    RENAMED = 4;    // old_path is set
+    COPIED = 5;     // old_path is set
+    REWRITTEN = 6;  // similar to MODIFIED
+  }
+  // The status of the file.
+  optional Status status = 3;
+
+  // Number of inserted lines.
+  optional int32 lines_inserted = 4;
+
+  // Number of deleted lines.
+  optional int32 lines_deleted = 5;
+}
+
+// A Gerrit Revision
+message Revision {
+  optional string git_revision = 1;
+  optional int32 patch_set = 2;
+
+  optional User uploader = 7;
+
+  repeated FileInfo file_info = 8;
+}
+
+// A Gerrit Change
+message Change {
+  // Which gerrit instance this change came from
+  optional string host = 1;
+  // Which project
+  optional string project = 2;
+  // Which branch
+  optional string branch = 3;
+
+  repeated Revision revisions = 10;
+
+  optional User owner = 11;
+}
+
+message User {
+  optional string name = 1;
+  optional string email = 2;
+  optional string username = 3;
+  optional int64 account_id = 4;
+}
+
+enum AggregationLevel {
+  AGGREGATION_LEVEL_UNSPECIFIED = 0;
+
+  // All test results for an Invocation.
+  INVOCATION = 1;
+
+  // Test results for a module. This considers the module name and parameters in
+  // the `TestIdentifier` message.
+  MODULE = 2;
+
+  // Test results for a test package. This considers the module and all results
+  // sharing the same package from `test_class` field in the `TestIdentifier`
+  // message. This is the string before the last "." in that field.
+  PACKAGE = 3;
+
+  // Test results for a test class. This considers the module and all results
+  // sharing the same `test_class` in the `TestIdentifier` message.
+  CLASS = 4;
+
+  // Test results for a method. This is currently not being generated.
+  METHOD = 5;
+}
+
+// Describes an Android Build that is being tested.
+//
+// Next ID: 5
+message BuildDescriptor {
+  // The build provider. For example, `androidbuild`.
+  string build_provider = 1;
+
+  // The branch. For example, `git_master`.
+  string branch = 2;
+
+  // The build target. For example, `cf_x86_phone-userdebug`.
+  string build_target = 3;
+
+  // The build ID.
+  string build_id = 4;
+}
+
+message Property {
+  string name = 1;
+  string value = 2;
+}
+
+// A TestDefinition describes how to identify an Invocation.
+//
+// Next ID: 3
+message TestDefinition {
+  // The name used to identify the set of tests being executed.
+  string name = 1;
+
+  // A list of properties the scheduler uses to differentiate between
+  // configurations with the same name. For example 'cluster_id'
+  // and 'run_target' for ATP (http://go/consistent-test-identifiers).
+  repeated Property properties = 2;
+}
+
+// A TestIdentifier describes how to identify a TestResult within an Invocaiton.
+// This includes a hiearchy for where a TestResult is located. Modules are
+// identified by the module name and parameters. Different modules can have the
+// same name but the paramereters must be different.
+//
+// Next ID: 6
+message TestIdentifier {
+  // Name of the module this test belongs to.
+  string module = 1;
+
+  // Parameters for the test module.
+  repeated Property module_parameters = 2;
+
+  // The name for a group of tests that are logically grouped together.
+  // Typically in the format of <package name>.<class name>.
+  string test_class = 3;
+
+  // The name of the test that is the smallest test execution unit.
+  string method = 4;
+}
+
+message AnTSTest {
+  // required, to ensure the nesting levels of selection stages align
+  // together.
+  AggregationLevel aggregation_level = 1;
+  optional BuildDescriptor build_descriptor = 2;
+  optional TestDefinition test_definition = 3;
+  optional TestIdentifier test_identifier = 4;
+  optional string test_identifier_id = 5;
+}
+
+// A Check is a continuous integration entity (ex. build / test) which is
+// acted upon (ADD | REMOVE | MODIFY) by a graph of stages.
+message Check {
+  // A Check.Identifier says what the check is, for example, a build, test or
+  // preflight check.
+  //
+  // For high cardinality identifiers which change rarely, and efficiency is
+  // important, it is more efficient to inline the messages here compared to
+  // using proto Extensions, because those require reflection.
+  //
+  // For low cardinality identifiers such as a Preflight check, we use
+  // proto extensions to enable flexibility on the client side.
+  message Identifier {
+    optional string id = 1;
+    oneof identifier {
+      // An AnTS test identifier, fully spelled out.
+      AnTSTest ants_test = 2;
+    }
+  }
+
+  optional Identifier identifier = 1;
+
+  // Stages can operate on nested structures, like invocation -> module ->
+  // method. That enables composition of granular, method-level stages with
+  // coarse-grain stages.
+  repeated Check children = 2;  // to support hierarchical stages.
+
+  // to support a graph structure (tests -> build) or (build -> build)
+  repeated Check input_checks = 3;
+
+  // Structured selection reason for this test.
+  message Reason {
+    // The reason for the decision to include or exclude this check.
+    oneof reason {
+      // The test is selected or not because of its relevance score.
+      float relevance_score = 1;
+    }
+  }
+
+  optional Reason reason = 7;
+
+  // Additional contextual information, such as the last time the test ran in
+  // postsubmit or the ID of the latest trident build for the target, reference
+  // build IDs, or target dependency info.
+  message Context {
+    // Any stage-specific context.
+    optional Any value = 1;
+
+    // Used by relevance service to identify the worknode and invocation.
+    optional string worknode_id = 2;
+    // Used by relevance service to identify the invocation.
+    optional string invocation_id = 3;
+  }
+
+  repeated Context context = 8;
+
+  // Some checks may evaluate early, such as Preflight checks. These can
+  // populate their results here.
+  message Result {
+    // The status of the check.
+    // TBD definition of a Status proto enum; perhaps reuse AnTS status for
+    // http://go/not-pass-fail reasons?
+    // optional google.internal.android.treehugger.decisiongraph.check.Status
+    //     status = 1;
+
+    // A panic result will stop execution of downstream nodes. This is often
+    // used for Preflight checks.
+    optional bool panic = 2;
+  }
+
+  optional Result result = 9;
+}
+
+message Any {
+  string type_url = 1;
+
+  // Must be a valid serialized protocol buffer of the above specified type.
+  bytes value = 2;
+}

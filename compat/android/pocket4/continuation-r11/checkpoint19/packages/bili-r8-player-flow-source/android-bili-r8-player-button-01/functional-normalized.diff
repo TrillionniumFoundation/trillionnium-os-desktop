@@ -1,0 +1,70 @@
+--- r7-identifiers-normalized/controls_reveal.py
++++ r8-actual-bindings/controls_reveal.py
+--- r7-identifiers-normalized/owned_navigation.py
++++ r8-actual-bindings/owned_navigation.py
+@@ -31,27 +31,27 @@
+ RESULTS_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'77a34dd1aadb5605465623c54896da18','inspect':'e0bcf11c0ef101c42b3faed0d48e95bc','after':'7e2e41006c056f703cba20301d2509e1'}}
+ QUERY_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'e7206af95eb5cd04f0dcb64c5d271f89','inspect':'8b0f25e03992deb9d1620cae27819bf6','after':'65ea36c083f527f526fa102c3902871d'}},{'schema':1,'operation':'inspect','nonces':{'before':'93f04d23763960417ac707999b0b77b2','inspect':'d2bd5ddf4f59a0019528a2024348d475','after':'cf61f88cce5708964b6fd9bdaeb12c7e'}},{'schema':1,'operation':'inspect','nonces':{'before':'847818b44eb83b710cf5290bd97f657e','inspect':'4c1c7dc1eca0beb1cea30bb92873032d','after':'7f9ac95f001b3182bb3546c8592a22ce'}},{'schema':1,'operation':'inspect','nonces':{'before':'07a313ee5b06333fd9ecbe929d739bda','inspect':'064b6923b11dfa31529aee53c2dd8f6a','after':'83d658bf7b8d4bc639a971f84411facf'}}]
+ SUBMIT_STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'67f841a41f1c4070f2afc539395c45a5','inspect':'676f66826cacd51b5aac27766e5529e5','after':'201b4fb8c13a3fb4898c97aa45d405b5'}},{'schema':1,'operation':'inspect','nonces':{'before':'21d206535263ad4a04c1d94fe27b2341','inspect':'2809110e3e6ee4ce681cc63ceae3449f','after':'084e4ee525e2a7584487b4907d00fd16'}},{'schema':1,'operation':'inspect','nonces':{'before':'755bc65caf071d3a8e1cb71806ddc299','inspect':'eb280c65bc73acf9817b3054fff48ae8','after':'668ed28c97cba022e9d57042a56b7072'}},{'schema':1,'operation':'inspect','nonces':{'before':'2a540ba0e54f629021e6276999a38335','inspect':'46cb0ba9a4909bd392bede246436cdb1','after':'0e3c99d1fdb9fbfe1f7f1a9602a6106c'}}]
++SELF,UID=('org.droidloom.qa.bili.r8',10204)
+-SELF,UID=('org.droidloom.qa.bili.r8',10202)
+ BILI,BILI_UID=('tv.danmaku.bili',10117)
+ INSTALL_ROOT=Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01')
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
++INSTALL_ENTRY_SHA='02e046ac198309aea5fc227e73015f2e857a48c3a3c0f2bcdb508f493ae98a1d'
++INSTALL_ENTRY_BYTES=32030
++INSTALL_MANIFEST_SHA='24262630242b244327a285e171c6936b00315705c541cb3d7506dfdeef49afbe'
+-INSTALL_ENTRY_SHA='ca345bd6dd544a60c90f7f9aa2473dcf09e76845d7444071cdbbb14ed5327d51'
+-INSTALL_ENTRY_BYTES=31986
+-INSTALL_MANIFEST_SHA='628512b7171e43303136956ba3cc2df10cf877808dd64672a662855c172f917a'
+ R4_MANIFEST='52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
++SESSION_SHA='2c09ebd36105fdc79386ce929946c28fc5a60cc21ed902e083c3ee13f9d7655e'
++OLD_FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-fd9784f9e464119899726c3b583243a8')
+-SESSION_SHA='67a1853844e2f51fa18d06ab194c558cb42175ff149963d4a0e9fde9ecfd42f0'
+-OLD_FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-587084d5b51af906d6b05a12a3c30087')
+ OLD_STEP=OLD_FLOW/'steps/install-state-r8-01'
++OLD_STATE_NONCE='c296619272cb68fddb8923891ff0dff9'
++OLD_STATE_WIRE='09a1ce3a7485afaca31e4d5ce91e6f739f812a30da6d8ab9a2f9d641f84b69b7'
++OLD_PACKET='693f7d62ac1c7518bd772be74c9ed1a608c9b5e847a49647c743d0807c2f4d9e'
+-OLD_STATE_NONCE='8e2223862f778b1cef69639be3a90ec8'
+-OLD_STATE_WIRE='5056a0b2fd938e9f71746490abc82e6d958598e423f1b7def30c919e65dc5033'
+-OLD_PACKET='c3792c5ee75c69de689614d433a1f8dc0b33dc4150aa54a5feaf32c2a3564433'
+ MAIN_EPOCH='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+ FILES={'owned_navigation.py','stage_execute.py','video_navigation.py','controls_reveal.py','playback_controls.py','post_foreground.py'}
++INSTALL_JOB_ID='1a1af10c143-fc05-6578'
+-INSTALL_JOB_ID='1a1ae75c02c-fc05-5fb1'
+ STATE_COMMAND_INDEX=6
++STATE_COMMAND_SHA='1abfc299ea09d1cd1f153f6c183835144abd83e59fd0445ced785658071e2b06'
++EXPECTED_INSTALLED_IDENTITY={'package':'org.droidloom.qa.bili.r8','uid':10204,'base_apk':'/data/app/~~MOz6kZUeUfYfK9xYAqmqdw==/org.droidloom.qa.bili.r8-nDz2ip1H2qXA5l1_V6b8hg==/base.apk','apk_sha256':'b576afe56b97160dc341fe15973f5afe23db03dc2961aedaa500f1527ec13122','bytes':37008,'held_file':{'device':1811,'inode':789374,'mode':33188,'uid':1000,'gid':1000,'bytes':37008,'mtime_ns':1793938474777519836,'nlink':1},'signer_bound_by_exact_signed_apk_bytes':'b1ec4d840f5dd85513d3b3c08fbf97d829b580d4c718d6bf30cce5a8270a457d'}
++INSTALL_RECORDS={'coordinator':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/result.json'),3025,'e734a7f5dea6de9f1b3e96727cc925fe422c74980d0e6692dc5f9412abf79676'),'stage':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/stage-result.json'),2032,'91ffb967b00952273ac8168c3cd29def9c2488d55d8c642537dce54d7fb9cdf0'),'worker':(Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-fd9784f9e464119899726c3b583243a8/steps/install-state-r8-01/result.json'),7589,'635f3ac450961ad5f05ee0e2204a79fdc0b95ada87307eee1a3bba277e1c29bd'),'worker_command':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/evidence/02-install-state.result.json'),1149,'60b8ca34712ac8d8257bec632f96d72cdcb7b149defcc0b9dec480b285300fec')}
+-STATE_COMMAND_SHA='4a4641f7ee71b375964eeea67cade479a9e6491c8c111acb44e01fcafdf507b9'
+-EXPECTED_INSTALLED_IDENTITY={'package':'org.droidloom.qa.bili.r8','uid':10202,'base_apk':'/data/app/~~a0m8Uc0EwHoFGqjnM42fBw==/org.droidloom.qa.bili.r8-Aw07vTf1ZgJyBoGdhZi9lA==/base.apk','apk_sha256':'f55b972a5ec968070ea0ea407f4a459913927c4693d0d9e949e6c472bcbcc641','bytes':37008,'held_file':{'device':1811,'inode':789313,'mode':33188,'uid':1000,'gid':1000,'bytes':37008,'mtime_ns':1793928316640489758,'nlink':1},'signer_bound_by_exact_signed_apk_bytes':'096152ac7ae183be9c713b61d8dac64eb789593b332fa8636536c2af80021391'}
+-INSTALL_RECORDS={'coordinator':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/result.json'),3025,'163e123528634e09afd8912a888d50dea8bb67329b714a1f84950a2c249c275c'),'stage':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/stage-result.json'),2032,'b7c7243d36ed983895c362aae81755d3b96459c10e0ec2a6227d4b060e85ad9d'),'worker':(Path('/home/alex/work/pocket4-bilibili-owned-qa-r8-flow-587084d5b51af906d6b05a12a3c30087/steps/install-state-r8-01/result.json'),7546,'c75d83c021ecb53e2b9b41a94efab5fd5d16bdcde17075a5802e6e63760cd68e'),'worker_command':(Path('/home/alex/work/pocket4-owned-bili-qa-r8-install-state-01/evidence/02-install-state.result.json'),1152,'f75eede68c9c9e17f19bb1fb4aa82f7893b6fd4198e06532109a56066bcbf19d')}
+ def require(value,reason):
+  if not value:
+   raise RuntimeError(reason)
+@@ -81,7 +81,7 @@
+  finally:
+   os.close(fd)
+ def require_actual_install_binding():
++ require(type(UID)is int and 10000<=UID<100000 and(UID not in(10117,10125,10164,10165,10166,10169,10170,10175,10184,10202)),'ACTUAL_R8_INSTALL_UID_PENDING')
+- require(type(UID)is int and 10000<=UID<100000 and(UID not in(10117,10125,10164,10165,10166,10169,10170,10175,10184)),'ACTUAL_R8_INSTALL_UID_PENDING')
+  require(type(STATE_COMMAND_INDEX)is int and 1<=STATE_COMMAND_INDEX<=16 and isinstance(STATE_COMMAND_SHA,str)and re.fullmatch('[0-9a-f]{64}',STATE_COMMAND_SHA)and isinstance(OLD_STATE_WIRE,str)and re.fullmatch('[0-9a-f]{64}',OLD_STATE_WIRE),'ACTUAL_R8_STATE_COMMAND_BINDING_PENDING')
+  require(isinstance(EXPECTED_INSTALLED_IDENTITY,dict)and EXPECTED_INSTALLED_IDENTITY.get('package')==SELF and(EXPECTED_INSTALLED_IDENTITY.get('uid')==UID),'ACTUAL_R8_INSTALLED_FILE_IDENTITY_PENDING')
+  for name,(path,size,pin)in INSTALL_RECORDS.items():
+@@ -155,6 +155,7 @@
+    inspection=qa.inspect_record(value['helper']['inspection'])
+    require(value['wire_sha256']==sequence['inspection_wire_sha256'],'CURRENT_INSPECTION_WIRE_CHANGED')
+    window=inspection['window']
++   values[phase]['inspection_idle_observation']=qa.inspection_idle_observation(value['helper']['inspection_idle_observation'],'inspect',value['helper']['started_elapsed_ms'],True)
+    values[phase].update(tree_sha256=inspection['tree_sha256'],window_sha256=inspection['window_sha256'],node_count=len(inspection['nodes']),window={key:window[key]for key in('package','display','type','focused')},window_observation=qa.window_observation(value['helper']['window_observation']),connection_scoped_window_id=inspection['connection_scoped_window_id'],tree_observations=qa.tree_observations(value['helper']['tree_observations'],'inspect',True),complete=True,raw_tree_private_only=True)
+   elif phase=='action':
+    helper=value['helper']
+--- r7-identifiers-normalized/playback_controls.py
++++ r8-actual-bindings/playback_controls.py
+--- r7-identifiers-normalized/post_foreground.py
++++ r8-actual-bindings/post_foreground.py
+--- r7-identifiers-normalized/stage_execute.py
++++ r8-actual-bindings/stage_execute.py
+--- r7-identifiers-normalized/video_navigation.py
++++ r8-actual-bindings/video_navigation.py

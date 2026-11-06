@@ -1,0 +1,56 @@
+{
+  "authorization": "Source/read-only request only; Root alone decides dispatch. Main epoch unavailable: no new runtime/UI/installation authority.",
+  "baseline": {
+    "actual_build": {
+      "bytes": 661519,
+      "git_blob_sha": "543bc1a1af3678c227207fe9ace257cf8557cbcf",
+      "sha256": "2c53bba3ab02b396d2698dfd6e04d870ce69cc55724c6077003dca81ae9a2e0b"
+    },
+    "template": {
+      "bytes": 14096,
+      "git_blob_sha": "fa011e01aee967fc62e645df6f5678acd06eae6c",
+      "sha256": "edc85cf5e2e78997baf3fda14318036514f15a5b516042c513fb6ef0150c0d89"
+    }
+  },
+  "constraints": {
+    "Main_read_or_change": false,
+    "arbitrary_scan": false,
+    "child_processes": 0,
+    "compilation": false,
+    "exact_new_candidate_count": 7,
+    "fallback": false,
+    "files_written": false,
+    "internal_seconds": 10,
+    "max_held": 128,
+    "max_output_bytes": 131072,
+    "max_read_bytes": 2097152,
+    "namespace_changes": false,
+    "outer_seconds": 30,
+    "whole_content_reads": 2
+  },
+  "failure_lifecycle": "Every opened descriptor is registered before fstat/qualification. All held/named objects and completed full contents are rechecked. All owned descriptors get one close attempt in reverse order; close errors preserve the first error and prevent complete=true. No binary CRT bytes are exported.",
+  "fixed_candidate_path_provenance": "The two CRT paths are explicit unobserved siblings under the already observed Soong bionic/libc artifact root; their existence, startup content, and pins are not assumed. The five headers are explicit standard names under the exact held C16 bionic source root. Missing candidates fail qualification without a fallback.",
+  "kind": "Owner20 fixed Android accessor input qualification source review",
+  "known_limits": [
+    "The accessor source/build/runtime are not yet qualified.",
+    "This request only collects candidate input facts; ET_REL/header presence does not prove executable startup ABI.",
+    "The same-process root-to-1069 diagnostic will report its root-warmed bionic/property cache boundary and will not claim equivalence to a fresh LMKD process or its capabilities.",
+    "No cause is inferred from the missing Main epoch; original Main guards remain unchanged."
+  ],
+  "purpose": "Normal bionic executable startup and public property/credential declarations for a new owned-generation read-only SDK accessor",
+  "schema": 1,
+  "scope": "read exact C16 actual receipt and 3 original anchors, then exactly 2 executable CRT candidates and 5 fixed headers",
+  "source": {
+    "bytes": 13039,
+    "git_blob_sha": "0c7e60504d98522acb3ecf881e24e0dfa59d2b1e",
+    "sha256": "49507446601dff8b02e67adddbf13d80204d0f30a77b25e56ca34205833b4aeb"
+  },
+  "source_authority": "C16 source/Soong anchors are whole-hash checked against the immutable actual build receipt before candidate reads. Operator-owned/group-writable input metadata is reported, not mislabeled root-owned immutable content. Future compile must independently recheck the complete observed closure before and after.",
+  "verification": {
+    "Python_syntax_execution": false,
+    "V8_exact_source_and_request_digest": true,
+    "controls_execution": false,
+    "independent_peer_review": "NOT_PERFORMED",
+    "remote_execution": false
+  }
+}

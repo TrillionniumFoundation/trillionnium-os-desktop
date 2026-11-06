@@ -1,0 +1,120 @@
+--- candidate01/owned_inspect.py
++++ nonce02/owned_inspect.py
+@@ -17,14 +17,14 @@
+ HERE=Path(__file__).resolve().parent
+ ROOT=Path("/home/alex/work/pocket4-bestbuy-owned-r2-launch-inspect-01")
+ SOURCE=ROOT/'source'
+-NONCE="5f9247a80464d710df41c0901dea930e"
++NONCE="4e923582e649c6d00e5a46c5e673dbe7"
+ FLOW=Path('/home/alex/work/pocket4-bestbuy-owned-qa-r2-flow-'+NONCE)
+ PACKAGE='com.bestbuy.android'
+ UID=10130
+ SELF="org.droidloom.qa.bestbuy.r2"
+ HELPER_UID=10203
+ COMPONENT=PACKAGE+'/.activity.SplashActivity'
+-PLAN={"schema": 1, "operation": "inspect", "nonces": {"before": "8911ab912819199966ad0f249301f6d6", "inspect": "574098eea1c4ea5fcb28925024db0c6d", "after": "25e81955d02e65105470f6e2539f0871"}}
++PLAN={"schema": 1, "operation": "inspect", "nonces": {"before": "a253a635ee82eae9e670f1b0a180e10b", "inspect": "139ae993b55bac3d4fec87cb88ec0fdb", "after": "256572f95d903ca89c2be79e943e13bf"}}
+ INSTALL_ROOT=Path("/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01")
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+ INSTALL_SOURCE_SHA="39ec2549b1db692666e4f047ec35b3e118b37c50159fe7fc70388e2c7a579ea1"
+--- candidate01/bestbuy_task_context.py
++++ nonce02/bestbuy_task_context.py
+--- candidate01/stage_execute.py
++++ nonce02/stage_execute.py
+@@ -8,7 +8,7 @@
+ 
+ ROOT=Path("/home/alex/work/pocket4-bestbuy-owned-r2-launch-inspect-01")
+ SOURCE=ROOT/'source'
+-NONCE="5f9247a80464d710df41c0901dea930e"
++NONCE="4e923582e649c6d00e5a46c5e673dbe7"
+ FILES={'owned_inspect.py','bestbuy_task_context.py','INPUTS.json'}
+ REFERENCE=Path("/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01/source/references/readonly_r3_coordinator.py")
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+--- candidate01/INPUTS.json
++++ nonce02/INPUTS.json
+@@ -33,12 +33,44 @@
+   },
+   "actual_install_review": {
+     "bytes": 4713,
+-    "git_blob_sha": "393a61663f1576c6b5c059327b90b403e3975cbc",
++    "git_blob_sha": "606c6fec55d2e73ceacd971fa5ff068700a10d7e",
+     "relative_source_evidence": "references/actual-install-review.json",
+-    "sha256": "fa65a9179ec86c60c5c42675c7c24db94bfcfc26c06e5f49c798a87f678dc96e"
++    "sha256": "20b6e01ebbc0fd94f603c13eb16cc888222d30b09afd076f9d1d87574510d8d1"
+   },
++  "actual_install_review_precision_correction": {
++    "bytes": 3108,
++    "git_blob_sha": "2ebd98ce8d6fde484e4e47caa7a63795888fdf9e",
++    "relative_source_evidence": "references/review-precision-correction.json",
++    "sha256": "e7fe0d3c9742f3317e8890db2bfb80b3c2c20cba669e7fd30ed9f42aed794e2f"
++  },
+   "actual_install_source_manifest_sha256": "39ec2549b1db692666e4f047ec35b3e118b37c50159fe7fc70388e2c7a579ea1",
+   "actual_metadata_acquisition": "lossless original stdout writer reconstruction matched exact original size/SHA; not an independent remote held read",
++  "actual_nonce_source": {
++    "assignment_order": [
++      "flow",
++      "before",
++      "inspect",
++      "after"
++    ],
++    "generation_reported_by_root": "dedicated four secrets nonces request, succeeded/full/durable",
++    "job": "1a1af067f6c-fc05-6522",
++    "original_stdout": {
++      "bytes": 295,
++      "git_blob_sha": "91effe80fab36f9f672e2702d394b68ae577eee1",
++      "sha256": "9cfedd52b712035d0a77e72adfa4602abdb157d44f6dde038fb61f7a162ce879"
++    },
++    "original_stdout_checked": {
++      "Android_actions": 0,
++      "Main_actions": 0,
++      "count": 4,
++      "purpose": "bestbuy-r2-fresh-launch-inspect",
++      "unique": true,
++      "valid_32_lowercase_hex": true
++    },
++    "original_unexecuted_candidate_values_replaced": true,
++    "relative_source_evidence": "references/actual-nonce-stdout.json",
++    "tree": "acac064f59e91bda936213cfb8fe6d98153e868b"
++  },
+   "actual_target": {
+     "artifacts": [
+       {
+@@ -131,12 +163,12 @@
+     "signer_bound_by_exact_signed_apk_bytes": "a9e3b67e42cab6f94aa3679ea71bdcc74be04f8aa93d3534b0923d4367c6e7ea",
+     "uid": 10203
+   },
+-  "nonce": "5f9247a80464d710df41c0901dea930e",
++  "nonce": "4e923582e649c6d00e5a46c5e673dbe7",
+   "read_only_inspection_plan": {
+     "nonces": {
+-      "after": "25e81955d02e65105470f6e2539f0871",
+-      "before": "8911ab912819199966ad0f249301f6d6",
+-      "inspect": "574098eea1c4ea5fcb28925024db0c6d"
++      "after": "256572f95d903ca89c2be79e943e13bf",
++      "before": "a253a635ee82eae9e670f1b0a180e10b",
++      "inspect": "139ae993b55bac3d4fec87cb88ec0fdb"
+     },
+     "operation": "inspect",
+     "schema": 1
+--- candidate01/SOURCE_PINS.json
++++ nonce02/SOURCE_PINS.json
+@@ -1,8 +1,8 @@
+ {
+   "files": {
+     "INPUTS.json": {
+-      "bytes": 6581,
+-      "sha256": "d1b4d7ec3faa6ef748c8873433a44f5626761c2625d125fece5d227525ac6823"
++      "bytes": 7749,
++      "sha256": "c077764941b03d1c4f2ef2c9d576e0a71f86e4752246276ea66ef42e751c981c"
+     },
+     "bestbuy_task_context.py": {
+       "bytes": 15627,
+@@ -10,7 +10,7 @@
+     },
+     "owned_inspect.py": {
+       "bytes": 35590,
+-      "sha256": "016957d74f03da8fc5f848f803655b4ceb05681575ef45f10e8a340a15abc302"
++      "sha256": "0033bd8627ae6f3825735610c46d3f392fa8762e154a05cd56f0b4cb26b01e24"
+     }
+   },
+   "schema": 1

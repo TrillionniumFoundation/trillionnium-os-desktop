@@ -1,0 +1,129 @@
+{
+  "schema": 1,
+  "state": "ROOT_REVIEWED_SINGLE_UI_ADMISSION",
+  "candidate_tree": "12032a5247873d037ac19a382fc6003ff265b677",
+  "request": {
+    "bytes": 103133,
+    "sha256": "ab51c1ae3dc4652c424c6b3a222dc44c84f79371fede77559e305a06ba8e834c",
+    "git_blob": "807331fa3fd0c7d5f34c41e914e89bc18ec8cefe"
+  },
+  "controls_actual": {
+    "schema": 1,
+    "job_id": "1a1af21bfe5-fc05-660e",
+    "stdout": {
+      "path": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1af21bfe5-fc05-660e/stdout.log",
+      "bytes": 7773,
+      "sha256": "9ce06dd98729958105cd85db86a4190ddd3cc4dc123a046e4f0db2aa05afd871",
+      "version": "66306:53640530:7773:1793939588616538651:1793939588616538651",
+      "chunks": [
+        {
+          "offset": 0,
+          "next_offset": 7773,
+          "bytes": 7773,
+          "sha256": "9ce06dd98729958105cd85db86a4190ddd3cc4dc123a046e4f0db2aa05afd871"
+        }
+      ]
+    },
+    "actual_control_count": 70,
+    "all_cases_passed": true,
+    "all_six_actual_source_pins_bound": true,
+    "all_sources_compile": true,
+    "synthetic_only": true,
+    "no_file_child_Android_Main_actions": true,
+    "whole_app_readiness_qualified": false
+  },
+  "source_manifest_sha256": "dce1c995d0233cf4bb00fa89f0e93a973513232d4f05cbaeab58a86d1625059c",
+  "stage_equals_actual_controlled_source": true,
+  "full_production_diff_inverse_to_actual_destination01_verified": true,
+  "wrapper_full_normalized_inverse_exact": true,
+  "wrapper_root_normalization_corrected_to_include_source_manifest_hash": true,
+  "unchanged_actual_input_fields": [
+    "actual_build",
+    "actual_install_job",
+    "actual_install_receipts",
+    "actual_install_review",
+    "actual_install_source_manifest_sha256",
+    "actual_metadata_acquisition",
+    "actual_target",
+    "component",
+    "frozen_install_request",
+    "helper_uid",
+    "installed_helper",
+    "resolver_records",
+    "state_wire_sha256",
+    "worker_receipt"
+  ],
+  "lossless_installed_helper_ns_verified": true,
+  "actual_nonce_source": {
+    "bytes": 713,
+    "field": "ihg_search_destination",
+    "git_blob": "393a8ad0797ad9e5dcf9a9170737c73cf2da5de9",
+    "job": "1a1af01f7c1-fc05-64f8",
+    "order": [
+      "flow",
+      "search.before",
+      "search.inspect",
+      "search.action",
+      "search.after",
+      "destination.before",
+      "destination.inspect",
+      "destination.action",
+      "destination.after",
+      "post.before",
+      "post.inspect",
+      "post.after"
+    ],
+    "sha256": "aa935cfe262ba2660831c86beb52ee87bcc2fcdad01304fbc5022cd9e0aaad3b",
+    "values": [
+      "bf0e9277ebb329fa87ee5fd088d6843e",
+      "5b379be5913d28794994e03542718f42",
+      "c94c1f14b24c07a049bc6a80179c1009",
+      "092df7fc5498fc0b7c0e430e38f485aa",
+      "ed8ea68909d486e34cb22d71bcbdb9a6",
+      "6f68b46b897647675cffc3b6a9f19ae5",
+      "310587329a4872d139c7be5ea6739fb0",
+      "cb68f6762ced9c070b5b179606b1eaa3",
+      "9b2af235425021bc3648c9e41a46f6e2",
+      "01c51942af8a6667d91d7371a3c296c8",
+      "dc172b3374f4047947d8b8f165ea1de4",
+      "2209896412ad18e4babad6c94acd73a1"
+    ]
+  },
+  "safety_and_limits": {
+    "cleanup_durable_commands": 11,
+    "counts": {
+      "click": 2,
+      "foreground": 9,
+      "helper_path": 8,
+      "helper_uid": 8,
+      "instrument": 11,
+      "stacks": 6,
+      "target_path": 2,
+      "target_uid": 2
+    },
+    "helper_nonces": 11,
+    "inspect_worker_seconds": 190,
+    "inspection_durable_commands": 37,
+    "launch_durable_commands": 12,
+    "phase_seconds": {
+      "cleanup": 115,
+      "inspect": 175,
+      "launch": 175
+    },
+    "private_foreground_observations": 9,
+    "request_seconds": 600,
+    "total_nonces": 12
+  },
+  "first_failed_or_unknown_sequence_blocks_destination": true,
+  "fresh_same_task_Search_selected_observation_before_destination": true,
+  "independent_post_read_and_exact_cleanup_required": true,
+  "UI_lane_previous_release": {
+    "schema": 1,
+    "state": "released",
+    "prefix": "bili_r8_install_state01",
+    "actual_review_tree": "4f5dab3c8ac11a6d4b8717241b6b867e90505f5e",
+    "release_basis": "full original coordinator/stage/worker and joined worker process; current-state-only helper 10204; exact staging cleanup and Main equality"
+  },
+  "whole_app_production_ready": false,
+  "automatic_retry": false
+}

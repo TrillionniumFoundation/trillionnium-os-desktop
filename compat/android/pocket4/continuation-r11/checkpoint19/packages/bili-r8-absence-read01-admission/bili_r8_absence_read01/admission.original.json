@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import hashlib,sys\nraw=sys.stdin.buffer.read(8193)\nassert len(raw)==4313 and hashlib.sha256(raw).hexdigest()=='d031bad9d8f389aaf252c9a2d2692d4b39bbf6b41e8550194b45c26b50104040'\nscope={'__name__':'fixed_failed_stage_absence'}\nexec(compile(raw,'<bili-r8-fixed-pre-main-absence>','exec'),scope)\nraise SystemExit(scope['main']())\n"
+    ],
+    "created_unix_ms": 1793941704703,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1af420fff-fc05-671d",
+    "idempotency_key": "pocket4-bili-r8-stage-pre-main-absence-read01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1af420fff-fc05-671d",
+    "request_digest": "884d1a2365b23da92b55573b65e5e0bc5c2cb71bf715364674ac7dc6c8155c03",
+    "request_fingerprint": 9821535101697277353,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1af420fff-fc05-671d"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1af420fff-fc05-671d"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

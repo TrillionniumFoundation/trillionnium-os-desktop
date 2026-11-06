@@ -1,0 +1,72 @@
+{
+  "checks": {
+    "device_actions": false,
+    "executable_inputs_original_ns_tokens_already_exact": true,
+    "installed_before_after_lossless_equal": true,
+    "new_runtime_functions_or_gates": false,
+    "only_seven_ns_fields_changed": true,
+    "original_receipts_unchanged": true,
+    "target_before_after_lossless_equal": true
+  },
+  "corrected_fields": [
+    {
+      "actual_exact_decimal": "1793935308884732956",
+      "field": "review.installed.held_file.mtime_ns",
+      "original_rounded_decimal": "1793935308884733000"
+    },
+    {
+      "actual_exact_decimal": "1791397157052206558",
+      "field": "review.target.artifacts.0.held_file.ctime_ns",
+      "original_rounded_decimal": "1791397157052206600"
+    },
+    {
+      "actual_exact_decimal": "1791397156944203643",
+      "field": "review.target.artifacts.0.held_file.mtime_ns",
+      "original_rounded_decimal": "1791397156944203500"
+    },
+    {
+      "actual_exact_decimal": "1791397157057277053",
+      "field": "review.target.artifacts.1.held_file.ctime_ns",
+      "original_rounded_decimal": "1791397157057277000"
+    },
+    {
+      "actual_exact_decimal": "1791397157057277053",
+      "field": "review.target.artifacts.1.held_file.mtime_ns",
+      "original_rounded_decimal": "1791397157057277000"
+    },
+    {
+      "actual_exact_decimal": "1791397157052206558",
+      "field": "review.target.artifacts.2.held_file.ctime_ns",
+      "original_rounded_decimal": "1791397157052206600"
+    },
+    {
+      "actual_exact_decimal": "1791397156926874805",
+      "field": "review.target.artifacts.2.held_file.mtime_ns",
+      "original_rounded_decimal": "1791397156926875000"
+    }
+  ],
+  "corrected_review": {
+    "bytes": 4713,
+    "git_blob_sha": "606c6fec55d2e73ceacd971fa5ff068700a10d7e",
+    "sha256": "20b6e01ebbc0fd94f603c13eb16cc888222d30b09afd076f9d1d87574510d8d1"
+  },
+  "exact_original_worker": {
+    "bytes": 13344,
+    "git_blob_sha": "9f28c2a81ac93264fff3dc164677fb870a858152",
+    "sha256": "e233dff0b7738527d860bb952c6f2f7a41e6363d98ca238ef535d5811bbc41b6"
+  },
+  "nonce_provenance_handling": "Separate provenance gap in the never-dispatched original candidate is corrected by the successor's dedicated actual four-nonce receipt; this document addresses only the seven review integer fields.",
+  "original_review": {
+    "bytes": 4713,
+    "git_blob_sha": "393a61663f1576c6b5c059327b90b403e3975cbc",
+    "sha256": "fa65a9179ec86c60c5c42675c7c24db94bfcfc26c06e5f49c798a87f678dc96e"
+  },
+  "original_unexecuted_candidate": {
+    "dispatch": "NOT_DISPATCHED per Root",
+    "path": "android-bestbuy-r2-launch-inspect-01",
+    "tree": "15fcc49dc860a0b9aa1b97fd518e9a1295aef571"
+  },
+  "reason": "The first derived human review used ordinary JavaScript number parsing for seven nanosecond integer fields. Those derived decimal values were rounded. The actual original receipts and executable INPUTS retained the original integer tokens; the new reference is rebuilt with lossless parsing.",
+  "schema": 1,
+  "scope": "Non-executable review precision correction only; original candidate and original receipts retained unchanged"
+}

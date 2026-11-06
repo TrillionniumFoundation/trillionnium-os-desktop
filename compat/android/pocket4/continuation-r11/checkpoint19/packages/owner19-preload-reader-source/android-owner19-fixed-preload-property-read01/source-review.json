@@ -1,0 +1,177 @@
+{
+  "actual_problem": {
+    "actual_pc": "0x5415",
+    "branch": "__system_property_get(ro.build.version.sdk_full) <= 0 reaches abort at0x5411",
+    "file_omission_rejected_by": {
+      "both_file_values": "37.0",
+      "bytes": 22299,
+      "host_only_difference": "dalvik.vm.dex2oat64.enabled=true\\n",
+      "sha256": "6bbbd9d1953d8fde49e5e1174703ede9c9fb1829aa23f3920d040eec326f9c9c",
+      "stdout_blob": "ad617090014cce15750a9b4cbd932512a9486ace"
+    },
+    "matched_memevents_build_id": "b7076ba103f2a4aeb7cad5b97f45fd17",
+    "preload_interposition": "UNKNOWN, this fixed static observation is proposed to resolve it"
+  },
+  "binding": {
+    "Host17_development_source_blob": "cb59a99233c684ce5f1c14cf79489acb1cbb48f4",
+    "actual_prepared_blob": "5c570109474399d897338d6baecb93bbe4ba02fe",
+    "fixed_object": {
+      "bytes": 35336,
+      "device": 66306,
+      "gid": 0,
+      "inode": 39736818,
+      "mode_octal": "0555",
+      "path": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5/payload/29/libdroidloom_selinux_compat.so",
+      "sha256": "b4da6c85703e5f0dac88c039438d8836a4123c97655d14130e68828295d3fb50",
+      "uid": 0
+    },
+    "predecessor_source": {
+      "bytes": 45900,
+      "git_blob_sha": "bfa13b4e1b943cd11da9514020698d7656214ea4",
+      "sha256": "93a2ee1207c4386f57a131f4afa6ec60989b089e5aee11bd85eb4dc620a58bd1"
+    },
+    "predecessor_source_blob": "bfa13b4e1b943cd11da9514020698d7656214ea4",
+    "request": {
+      "bytes": 28202,
+      "git_blob_sha": "8b478d713071d634fe6038e5407e90109e3c1f0d",
+      "sha256": "ad1d54b3b39bf6edf047a499d723ac3cb973ac85a8332cf347257cef57f39d8e"
+    },
+    "source": {
+      "bytes": 27338,
+      "git_blob_sha": "0a9bad5678de9b388d974515482571fc5024ca6d",
+      "sha256": "6a35617a48e2d7146480122c6ad35aa71312e360d21ff5d6c8b52c546925b820"
+    }
+  },
+  "changes": {
+    "BuildId": "observed 0 or1 unique BuildId permitted; full SHA already authoritative; no actual runtime symbol-resolution claim",
+    "limits": "35s internal/60s process,1CPU/128MiB. Plain UTF8 report must satisfy262144 and131072 limits.",
+    "opened": "fixed leaf allowlist reduced to two records plus preload; held cap20->9",
+    "parser": "Reuse ELF64 header/segment/section/note validation, then complete <=512 dynsym and one DT_DYNAMIC. Eleven fixed property/API symbols. Defined FUNC with nonzero size <=4096 gets static code, total <=8192; only if such a defined function exists, its image's PLT code <=8192 is also returned. R_X86_64_GLOB_DAT/JUMP_SLOT relocations linked to exact dynamic symbol table <=512 provide imported reference resolution. Fixed property-related rodata <=64 strings/8192 bytes. No disassembler or binary execution.",
+    "private": "full failed runtime only parsed locally by reviewed validator; result exports fixed pins/authority facts, no captured_hex",
+    "removed": "all image/tool opens, subprocess collector, EROFS metadata/cat and old unrelated base files; no fallback"
+  },
+  "kind": "owner19-fixed-preload-property-read01-source-review",
+  "limits_and_next_step": {
+    "absence_from_dynamic_table_does_not_prove_global_cause": true,
+    "remaining_if_no_interposition": "fresh owned-only property-area/read-path observation must be separately designed and reviewed; no new runtime authorized by this reader",
+    "static_symbols_do_not_prove_runtime_resolution": true
+  },
+  "preserved": {
+    "all_twelve_function_texts_byte_identical": true,
+    "descriptor_registered_before_fallible_metadata": true,
+    "first_error_and_close_errors_retained": true,
+    "full_pinned_preload_hash_and_reread": true,
+    "functions": [
+      {
+        "bytes": 81,
+        "git_blob_sha": "333575ff2f10078a3b0b4f0a9ec892747d8a944c",
+        "name": "need",
+        "sha256": "5eb02baf7f0702214dd661ae3979e54664d2d3b823faad70eeccb325f7bbdea1"
+      },
+      {
+        "bytes": 256,
+        "git_blob_sha": "2e0fae48424943af33968c03abb652404ea79898",
+        "name": "remember",
+        "sha256": "0ff852c0a51803d49eafc91e7067ed1f37e1dc14b313c86d6bb34143f89d8940"
+      },
+      {
+        "bytes": 107,
+        "git_blob_sha": "93cf428151da29e765f2ea900396bc9f64a69557",
+        "name": "check_time",
+        "sha256": "9b600b57bd2fba02426b2b2debcded8e144b574da4487693b1a3d1e73e234cd8"
+      },
+      {
+        "bytes": 81,
+        "git_blob_sha": "e7fb17368ecb4dca1471a8b562881e76c5ee0f00",
+        "name": "identity",
+        "sha256": "998029a0d695a5c5cfa9b33e760cfd1aa8491beda774e74167df3a56ad721e0c"
+      },
+      {
+        "bytes": 352,
+        "git_blob_sha": "c62a586fcabe1586d7d8c347cdaca2324fe4d0ba",
+        "name": "stamp",
+        "sha256": "62468cd83edf6ef6772944e7b1fb0effe4038f8575cfe9bedf6fe45b4b20abf1"
+      },
+      {
+        "bytes": 126,
+        "git_blob_sha": "a89b6f1b1f3a21e3b268229c76ef3aa62e3376e8",
+        "name": "directory_stamp",
+        "sha256": "8bc54dc044f0200dfb0928f33a4b4fa07ef961208e1ffa362d594210e4feb113"
+      },
+      {
+        "bytes": 490,
+        "git_blob_sha": "539459c8f24ae9af919011a562ecdea2ac64a536",
+        "name": "recheck",
+        "sha256": "d07bf7482d1c3cef9647f8bd5d81f204fa0864066679ed55bb2856ccfde3818c"
+      },
+      {
+        "bytes": 362,
+        "git_blob_sha": "6757b96c85d4d79d31be6c5ed8402c3ded545769",
+        "name": "read_exact",
+        "sha256": "f92680ecc592ac84487e5999db8ff6d7f9523247718df2bfab186c09992ae138"
+      },
+      {
+        "bytes": 335,
+        "git_blob_sha": "59a1b094e5fea2e19d5bc0f0e5a223e19dc4cebc",
+        "name": "read_record",
+        "sha256": "c021dcd1b8c1d64ad741c458a451947e021bbf074a0f873981f32d2e9e5ea884"
+      },
+      {
+        "bytes": 3836,
+        "git_blob_sha": "cefec23cad2905bec376b3044c5735ae9dbd09f0",
+        "name": "validate_records",
+        "sha256": "27f8f39bd4aa28d4d407da10189a8196170755d649bc6feb3d6dadeb3eb4bba6"
+      },
+      {
+        "bytes": 323,
+        "git_blob_sha": "2683367edbebf83c07ed22f3c71dda6873c07acf",
+        "name": "no_capabilities",
+        "sha256": "7d812487ad744c242e3649ef5a7666cac507387901ef244fc7ff5b49a653f4a6"
+      },
+      {
+        "bytes": 303,
+        "git_blob_sha": "5ff90924cc4f6cc0385a97fb738a6c3cd81b585b",
+        "name": "emit",
+        "sha256": "61d63332e8238321e86537eeea54de70fe6959b29751aecbd8a7308d05d5c751"
+      }
+    ],
+    "held_and_named_before_after": true,
+    "read_and_reread_pinned_records": true,
+    "readonly_failed_owner_retirement_binding_unchanged": true,
+    "root_only_regular_single_link_nofollow": true
+  },
+  "schema": 1,
+  "scope": {
+    "DSO_execution_or_loading": 0,
+    "Main_actions": 0,
+    "commands": 0,
+    "device_writes": 0,
+    "files": [
+      "exact prior prepared.json",
+      "exact prior failed runtime-result.json",
+      "exact pinned payload/29 preload"
+    ],
+    "history_only_authority": true,
+    "live_Main_claimed": false,
+    "max_held_descriptors": 9,
+    "mounts": 0,
+    "namespace_changes": 0,
+    "private_runtime_or_packet_exported": false
+  },
+  "status": "FROZEN_SOURCE_ONLY_NOT_EXECUTED",
+  "validation": {
+    "Python_compile_or_AST_or_execution": false,
+    "V8_byte_inverse_of_preserved_functions": true,
+    "V8_fixed_actual_inventory_match": true,
+    "V8_full_unified_diff_reconstructs_exact_source": true,
+    "controls_not_run": true,
+    "local_executor_unavailable": true,
+    "notes": [
+      "Static review caught missing errno/sys/traceback imports from inherited helper references; fixed before this freeze.",
+      "Selected code-window hex is public library code, not whole ELF bytes or private crash payload.",
+      "Root explicitly requested bounded defined getter windows and symbol references from the same pinned bytes. Added dynsym-linked relocations and conditional PLT windows before Git freeze."
+    ],
+    "remote_collection": false,
+    "request_stdin_byte_equal": true
+  }
+}

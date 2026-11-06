@@ -1,0 +1,397 @@
+{
+  "schema": "pocket4-r11-checkpoint19-reviewable",
+  "checkpoint": 19,
+  "cut_utc": "2026-11-06 05:14:25 UTC",
+  "publication_state": "FROZEN_CANDIDATE_ROOT_REVIEW_PENDING_NO_REF_UPDATED",
+  "parent_head": "80e030d93be61d89550d8d3493d9eb60ddff45a2",
+  "whole_apps_ready": 0,
+  "launcher_apps": 45,
+  "all_apps_production_ready": false,
+  "task_complete": false,
+  "current_gate": "OLD_MAIN_EPOCH_INVALID_NEW_EPOCH_NOT_QUALIFIED_UI_AND_INSTALLS_BLOCKED",
+  "inherited_ledger": {
+    "manifest": {
+      "bytes": 3940395,
+      "sha256": "7e6bf53d4b299bbf2a7bd05efc742a2a1439ed7ebca1a2b4de291225ab33a628",
+      "git_blob_sha1": "c7035a2e7dd8091d38f21986770a22f743a2cd38"
+    },
+    "payload_rows_preserved": 12370,
+    "payload_bytes_preserved": 217054264,
+    "old_rows_preserved_in_exact_order": true,
+    "historical_raw_values_preserved_without_numeric_reserialization": true,
+    "all_prior_FAIL_UNKNOWN_and_per_app_ledgers_retained": true,
+    "unmentioned_apps_inherit_prior_status": true
+  },
+  "evidence_scope": {
+    "authorized_unique_tree_mounts": 78,
+    "alias_names_do_not_create_duplicate_mounts": true,
+    "original_package_leaves": 491,
+    "original_package_bytes": 9286463,
+    "unique_original_blob_bodies": 457,
+    "source_or_evidence_bytes_rewritten": 0,
+    "safe_owner_derivatives_only": true,
+    "after_cut_facts_included": false,
+    "source_controls_are_not_business_acceptance": true
+  },
+  "Main": {
+    "old_epoch": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "old_epoch_valid": false,
+    "old_zygote_and_system_server_missing": true,
+    "daemon_init_presenter_launcher_surfaceflinger_original_identity_survive": true,
+    "new_framework_observed": {
+      "zygote_pid": 90360,
+      "zygote_start_ticks": 96586437,
+      "system_server_pid": 90516,
+      "system_server_start_ticks": 96586493
+    },
+    "new_epoch_qualified": false,
+    "exit_cause_proved": false,
+    "new_UI_and_installs_admissible": false,
+    "daemon_restart_observed": false,
+    "read_only_diagnostics_only": true,
+    "observation_scope": "Two fixed read-only identity diagnostics; observed PID/start-tick identities are not a newly qualified QA epoch",
+    "new_deployment_or_restart_performed_by_checkpoint": false,
+    "evidence": [
+      {
+        "path": "checkpoint19/packages/main-framework-identity-read01-evidence/main_framework_identity_read01/root-actual-review.json",
+        "bytes": 1417,
+        "sha256": "0df1a5c65355b340d8a626bbbe15badb62ac074c44cc404bacecca5cdc90f01f",
+        "git_blob_sha1": "e68ef3083c07acd7453996943a0c481c36e99666"
+      },
+      {
+        "path": "checkpoint19/packages/main-framework-identity-read02-evidence/main_framework_identity_read02/root-actual-review.json",
+        "bytes": 2101,
+        "sha256": "f60e24c65738d02456e47657f1e3d26897dbcff6b0b40742e00b0bb5c4a3b64c",
+        "git_blob_sha1": "6ddaf272e6c94dbfb32dd80aa7f9188d89e1d05a"
+      }
+    ]
+  },
+  "Bilibili": {
+    "R8_build_actual": "13 children,22 Java and32 Python controls PASS",
+    "R8_install_actual_UID": 10204,
+    "R8_flow": "failed before ROOT/FLOW/claim/source/worker/actions at old Main guard; preserve failure; current two fixed paths independently absent",
+    "R8_runtime_idle_fix_observed": false,
+    "R8_build_kind": "ACTUAL_STATIC_AND_PURE_CONTROLS_PASS",
+    "R8_install_scope": "Historical actual installed identity; no authorization on a new epoch",
+    "R8_flow_state": "ACTUAL_PRESTAGE_MAIN_GUARD_FAILURE",
+    "actual_helper_action_attempted": false,
+    "source_order_before_owned_ROOT_creation": true,
+    "fixed_current_paths_independently_observed_absent": true,
+    "whole_app_production_ready": false,
+    "evidence": [
+      {
+        "path": "checkpoint19/packages/bili-r8-build-actual-and-ihg-failure-review/bili-r8-static-build01/root-actual-review.json",
+        "bytes": 2019,
+        "sha256": "c063045762f0d99e8b1a3bdcd304a286a2006c239c68b5766191f1d5238cf1b3",
+        "git_blob_sha1": "0115396a69b4628b2f9694d86a804778ba5a37de"
+      },
+      {
+        "path": "checkpoint19/packages/bili-r8-four-install-originals-and-nonce-actual/bili_r8_install_four_read01/root-install-review.json",
+        "bytes": 3027,
+        "sha256": "bd60a51a3a4f2ef190c4c8a085ca594871e54058c9bd073d39bf00eafdfc44fc",
+        "git_blob_sha1": "5c13b23100591dca8e3af7110e5074ab4427e701"
+      },
+      {
+        "path": "checkpoint19/packages/amazon-bestbuy-actual-and-bili-Main-failure/bili_r8_player_flow01/root-actual-review.json",
+        "bytes": 1214,
+        "sha256": "10e760b17440059e63e86b87f54e929ce03abc0949ff103dacc6a64904475279",
+        "git_blob_sha1": "bc115c35c995b0c0db8ee14b490dd81190d5f58c"
+      },
+      {
+        "path": "checkpoint19/packages/bili-r8-absence-read01-evidence/bili_r8_absence_read01/root-actual-review.json",
+        "bytes": 1289,
+        "sha256": "e7f13709caac371d8dfba2556bf633259bfb8f59688fb954463e2164b487ff71",
+        "git_blob_sha1": "67c15fa2a1156175fa39b7f068aefd49f6f1e026"
+      }
+    ]
+  },
+  "IHG": {
+    "search_destination_controls_actual": 70,
+    "Search_click_flow_admitted": 1,
+    "Search_helper_action_attempted": false,
+    "Search_helper_first_error": "FOCUS_CHANGED_BEFORE_ACTION",
+    "actual_complete_tree_nodes": [
+      64,
+      63
+    ],
+    "focus_move_not_independently_proved": true,
+    "flow_outcome_unknown_preserved": true,
+    "Destination_started": false,
+    "independent_post_complete": true,
+    "fresh_stability_source": "SOURCE_ONLY WIP;89 controls UNRUN;no executable UI request",
+    "failed_Search_restoration_qualified": false,
+    "failed_Search_after_state_completed_and_matched": true,
+    "independent_post_complete_nodes": 66,
+    "independent_post_restoration_qualified": true,
+    "owned_task1031_retired": true,
+    "baseline851_preserved": true,
+    "all13_Main_maps_equal_during_that_attempt": true,
+    "whole_app_production_ready": false,
+    "evidence": [
+      {
+        "path": "checkpoint19/packages/ihg-controls70-actual-and-ui-preflight/ihg_search_destination_controls70_01/root-actual-review.json",
+        "bytes": 798,
+        "sha256": "6ac73c32bd7fb5cfcdf6e6b4fb17520ec4bdc25edc3367f70b0f63245eda3482",
+        "git_blob_sha1": "835383c915c710afc5d1b24cd8ec3528da90fa76"
+      },
+      {
+        "path": "checkpoint19/packages/ihg-search-destination-failure-root-review/ihg_search_destination_ui01/root-actual-review.json",
+        "bytes": 1813,
+        "sha256": "c05393e7f0fbe13badd57db0a409cd092b7d4093543881d201eb642271e2de95",
+        "git_blob_sha1": "8f78fc42006e39acd675e780658b000a0ae2e222"
+      },
+      {
+        "path": "checkpoint19/packages/ihg-stability-SOURCE_ONLY-wip/android-ihg-search-stability-wip01/WIP_STATUS.json",
+        "bytes": 1832,
+        "sha256": "40d2b73f159fbc9c1da72e12569e81fa8fd061dd6b2326b3e206242b20c05a57",
+        "git_blob_sha1": "85d0b3d129d688cf8189e2afffca23956d2152c8"
+      }
+    ]
+  },
+  "Amazon": {
+    "R2_static_build_actual": "13 children,22 Java and32 Python controls PASS",
+    "R2_installed": false,
+    "R2_UI_run": false,
+    "whole_app_production_ready": false,
+    "temporal_order_not_used_as_causal_evidence": true,
+    "evidence": [
+      {
+        "path": "checkpoint19/packages/amazon-bestbuy-actual-and-bili-Main-failure/amazon_r2_static_build01/root-actual-review.json",
+        "bytes": 1722,
+        "sha256": "5615fcec7c5c15a9689366ef972a91c5c5f88034b3ecaaf9e5ee91d0c7fb6107",
+        "git_blob_sha1": "a871579fef2a4f9378ef885b97c67108ac695eb7"
+      }
+    ]
+  },
+  "BestBuy": {
+    "R2_launch_inspect_actual_success": true,
+    "whole_app_ready": false,
+    "depth33_path_exercised": false,
+    "public_roles": {
+      "total_nodes": 12,
+      "visible_nodes": 9,
+      "visible_clickable": 0,
+      "all_visible_text_and_description_bytes_zero": true
+    },
+    "visual_blank_or_splash_not_proved": true,
+    "max_observed_depth": 8,
+    "configured_depth_limit": 128,
+    "public_action_roles_observed": 0,
+    "inspection_input_actions": 0,
+    "owned_task1030_retired": true,
+    "baseline851_preserved": true,
+    "whole_app_production_ready": false,
+    "evidence": [
+      {
+        "path": "checkpoint19/packages/bestbuy-review-and-bili-install-preflight/bestbuy-r2-ui02/root-actual-review.json",
+        "bytes": 1284,
+        "sha256": "6c89474296ef0c226e7ce6cddd087b0b0b575fcdc4254adb9a980c026162a369",
+        "git_blob_sha1": "553c60ba3cbf31bbe807d317787e559fc1183738"
+      },
+      {
+        "path": "checkpoint19/packages/amazon-bestbuy-actual-and-bili-Main-failure/bestbuy_r2_public_roles_read01/root-actual-review.json",
+        "bytes": 903,
+        "sha256": "2f61db2411f02942badfc319c943e4339363e70c8c667f8eced8d4bb3f822b9e",
+        "git_blob_sha1": "3e5c667d33ec52355fb52ad8e0dede73b3ae4c61"
+      }
+    ]
+  },
+  "Owner19": {
+    "LMKD_BuildId_exact_abort_branch_proved": "libmemevents __system_property_get ro.build.version.sdk_full returned <=0",
+    "host_and_image_sdk_full": "both uniquely37.0",
+    "preload_property_APIs": "none among fixed11 APIs and all28 named dynamic symbols",
+    "runtime_property_root_cause_unproved": true,
+    "original_runtime_failure_preserved": true,
+    "no_property_value_replacement_authorized": true,
+    "netd_full_abort_cause_not_established_by_this_checkpoint": true,
+    "evidence": [
+      {
+        "path": "checkpoint19/packages/owner19-branch-source-proof/android-owner19-memevents-property-abort-proof01/report.json",
+        "bytes": 9472,
+        "sha256": "8f30639d1f9a573e39917edf5c99825a0dea74be5685005499cf6170e57c2f55",
+        "git_blob_sha1": "690f71f417f1aff0a690a6d59b4ff64b9e92af64"
+      },
+      {
+        "path": "checkpoint19/packages/owner19-root-branch-proof-native-git02-preflight/owner19-memevents-root-proof/root-verification.json",
+        "bytes": 1258,
+        "sha256": "b5eefc9c7c8a0aa1e1e1da936637de1e3f5bf4864733eb8c13515f39dcea0def",
+        "git_blob_sha1": "85fbe84d3c303977fa83f9f8d57f3d16a0c10ba1"
+      },
+      {
+        "path": "checkpoint19/packages/owner19-buildprop-actual/owner19_fixed_buildprop_read01/root-review.json",
+        "bytes": 3473,
+        "sha256": "828f2dfad1cf3da0060e91104cd9ea1a909950cd9045a10e35c20aee45ee3027",
+        "git_blob_sha1": "1422db68d230c4bb4d15d61765fc3b5185bae56e"
+      },
+      {
+        "path": "checkpoint19/packages/owner19-preload-and-ihg-five-actual/owner19_fixed_preload_read01/root-actual-review.json",
+        "bytes": 1685,
+        "sha256": "1c737219fff88673647604c90d7bb2aefa3d23daaac773da6bfc125154269c8e",
+        "git_blob_sha1": "8ce3cfa50847a71836b4229d38559bcd7f772dae"
+      }
+    ]
+  },
+  "Owner20": {
+    "dependency_reader_actual": "four anchors and seven explicit CRT/header inputs PASS;43FDclosed;two full reads unchanged;0children",
+    "accessor_or_runtime_compiled_or_run": false,
+    "authority_count_precision": {
+      "actual_build_receipt": 1,
+      "fixed_anchor_files": 3,
+      "total_authority_inputs": 4,
+      "explicit_CRT_and_header_candidates": 7,
+      "original_source": "Original collection separates actual_receipt from its three anchors; Root allowlist's four anchors denotes these four authority inputs"
+    },
+    "held_descriptors": 43,
+    "all_held_descriptors_closed": true,
+    "child_processes": 0,
+    "executable_startup_or_runtime_qualified": false,
+    "evidence": [
+      {
+        "path": "checkpoint19/packages/owner20-accessor-dependencies-read01-evidence/owner20_accessor_dependencies_read01/root-actual-review.json",
+        "bytes": 3065,
+        "sha256": "62f2d6a52ef5fc7c02d8f44f22c7a90b0c270ed97cf85723a4fe35b4b2472c80",
+        "git_blob_sha1": "2412a9aadc732830f7590f87e5384d0101a39ddb"
+      },
+      {
+        "path": "checkpoint19/packages/owner20-accessor-dependencies-read01-evidence/owner20_accessor_dependencies_read01/stdout.original.json",
+        "bytes": 31657,
+        "sha256": "6e43cb2a113a19178ca4a6d533016f01c059b2b80a50a9587498a89bc4ba17fa",
+        "git_blob_sha1": "e1eb50834e0ffea7ff66169aa721118bcf80faf4"
+      }
+    ]
+  },
+  "Native": {
+    "Git02_missing_two_local_blobs_failure_preserved": true,
+    "MavenSDK_six_actual_read": true,
+    "provider_closure_compile02": "SOURCE_ONLY UNRUN;224 projects;24 BP fixture;59 exact provider stanzas;491-file compiler source map",
+    "Rust_Soong_Java_JNI_qualified": false,
+    "all_previous_actual_failures_preserved": true,
+    "source_lock_projects": 224,
+    "full_pinned_Blueprint_fixtures": 24,
+    "original_provider_stanzas": 59,
+    "builder_source_map_files": 491,
+    "unchanged_parent_files": 464,
+    "Rust_replacements": 2,
+    "new_text_files": 25,
+    "compile01_and_compile02_UNRUN_at_cut": true,
+    "misc_robolectric_native_prebuilt_Blueprint_body_unobserved": true,
+    "strict_ALLOW_MISSING_DEPENDENCIES": "false",
+    "two_normal_targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "original_failed_consumers_removed": false,
+    "normal_build_or_install_authorized": false,
+    "evidence": [
+      {
+        "path": "checkpoint19/packages/native-maven-read02-actual/native_maven_sources_read02/root-review.json",
+        "bytes": 2327,
+        "sha256": "5f044e2d6200e61ce9c52a3502f9901a1359d39f64939f0e3f42da790d2a3bb1",
+        "git_blob_sha1": "b0b11f63ff6ad9dc8b57585c3c08983579703a8e"
+      },
+      {
+        "path": "checkpoint19/packages/native-provider-closure-compile02-SOURCE_ONLY/typed-ingress-builder468-provider-closure-compile02/provider-closure-proof.json",
+        "bytes": 94161,
+        "sha256": "841de1878aecbf5235d4c8068b4ac5bbf7351131c17245c725782e4d66f01384",
+        "git_blob_sha1": "312a7b6eb42d4d80d63e856a48f9b0bdb1a01ec6"
+      },
+      {
+        "path": "checkpoint19/packages/native-provider-closure-compile02-save-verification/typed-ingress-builder468-provider-closure-compile02-preservation/verification.json",
+        "bytes": 3641,
+        "sha256": "ef8d7a422fbca97aa9281ff84afcc6e2d447acb44a1daea253f05627c2e3b9a8",
+        "git_blob_sha1": "f5af1d05c3eb9ac093a883c9df11a77a9e236cda"
+      }
+    ]
+  },
+  "root_status_at_cut_original": {
+    "Main": {
+      "old_epoch": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "old_epoch_valid": false,
+      "old_zygote_and_system_server_missing": true,
+      "daemon_init_presenter_launcher_surfaceflinger_original_identity_survive": true,
+      "new_framework_observed": {
+        "zygote_pid": 90360,
+        "zygote_start_ticks": 96586437,
+        "system_server_pid": 90516,
+        "system_server_start_ticks": 96586493
+      },
+      "new_epoch_qualified": false,
+      "exit_cause_proved": false,
+      "new_UI_and_installs_admissible": false,
+      "daemon_restart_observed": false,
+      "read_only_diagnostics_only": true
+    },
+    "Bilibili": {
+      "R8_build_actual": "13 children,22 Java and32 Python controls PASS",
+      "R8_install_actual_UID": 10204,
+      "R8_flow": "failed before ROOT/FLOW/claim/source/worker/actions at old Main guard; preserve failure; current two fixed paths independently absent",
+      "R8_runtime_idle_fix_observed": false
+    },
+    "IHG": {
+      "search_destination_controls_actual": 70,
+      "Search_click_flow_admitted": 1,
+      "Search_helper_action_attempted": false,
+      "Search_helper_first_error": "FOCUS_CHANGED_BEFORE_ACTION",
+      "actual_complete_tree_nodes": [
+        64,
+        63
+      ],
+      "focus_move_not_independently_proved": true,
+      "flow_outcome_unknown_preserved": true,
+      "Destination_started": false,
+      "independent_post_complete": true,
+      "fresh_stability_source": "SOURCE_ONLY WIP;89 controls UNRUN;no executable UI request"
+    },
+    "Amazon": {
+      "R2_static_build_actual": "13 children,22 Java and32 Python controls PASS",
+      "R2_installed": false,
+      "R2_UI_run": false
+    },
+    "BestBuy": {
+      "R2_launch_inspect_actual_success": true,
+      "whole_app_ready": false,
+      "depth33_path_exercised": false,
+      "public_roles": {
+        "total_nodes": 12,
+        "visible_nodes": 9,
+        "visible_clickable": 0,
+        "all_visible_text_and_description_bytes_zero": true
+      },
+      "visual_blank_or_splash_not_proved": true
+    },
+    "Owner19": {
+      "LMKD_BuildId_exact_abort_branch_proved": "libmemevents __system_property_get ro.build.version.sdk_full returned <=0",
+      "host_and_image_sdk_full": "both uniquely37.0",
+      "preload_property_APIs": "none among fixed11 APIs and all28 named dynamic symbols",
+      "runtime_property_root_cause_unproved": true
+    },
+    "Owner20": {
+      "dependency_reader_actual": "four anchors and seven explicit CRT/header inputs PASS;43FDclosed;two full reads unchanged;0children",
+      "accessor_or_runtime_compiled_or_run": false
+    },
+    "Native": {
+      "Git02_missing_two_local_blobs_failure_preserved": true,
+      "MavenSDK_six_actual_read": true,
+      "provider_closure_compile02": "SOURCE_ONLY UNRUN;224 projects;24 BP fixture;59 exact provider stanzas;491-file compiler source map",
+      "Rust_Soong_Java_JNI_qualified": false,
+      "all_previous_actual_failures_preserved": true
+    }
+  },
+  "pending": [
+    "Qualify a fresh Main framework epoch and the complete QA binding before new UI or installs; no replay of old-epoch jobs",
+    "Owner20 accessor still needs its real executable startup/compile and owned runtime observations",
+    "IHG stability WIP controls and runtime remain unrun; original focus rejection and unknown flow outcome remain",
+    "Bili R8 idle behavior has not run on Android; Amazon R2 has no install/UI result; BestBuy deep path and meaningful public content remain unqualified",
+    "Native builder468 compile and strict normal Soong/Java/Android JNI qualification remain pending",
+    "All 45 whole-app production acceptance gates"
+  ],
+  "cut_policy": {
+    "fixed_cut_immutable": true,
+    "only_explicit78_trees_mounted": true,
+    "aliases_not_duplicated": true,
+    "prior_R8_source_referenced_at_exact_CP18_mount": true,
+    "original_allowlist_kept_verbatim": true,
+    "corrected_allowlist_supersedes_unadmitted_d1ce": true,
+    "old_epoch_not_reauthorized": true
+  }
+}
