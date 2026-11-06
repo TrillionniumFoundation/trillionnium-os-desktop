@@ -1,0 +1,43 @@
+--- preserved-unexecuted-r1/worker_body.py
++++ independent-partial-evidence-r2/worker_body.py
+@@ -83,18 +83,18 @@
+                 "other_members_extracted": False, "mode": "0500", "execution_performed_by_extraction": False}
+ 
+ 
+-def static_graph(bind, candidate, elf, end):
+-    rows, queue, seen = [], [candidate], {}
++def static_graph(bind, candidate, elf, end, rows):
++    queue, seen = [candidate], {}
+     while queue:
+         current = queue.pop(0)
+         if current.resolved in seen:
+             continue
+         required(len(seen) < 48 and time.monotonic() < end, "STATIC_ELF_GRAPH_BOUND")
+         data = elf.inspect_elf_fd(current.held.fd, current.observed["bytes"])
++        row = {"file": current.pin(), "static_elf": data, "resolved_needed": []}
++        rows.append(row)
+         required(data["additional_loader_directives"] == [], "ADDITIONAL_LOADER_DIRECTIVES_OUTSIDE_BOUND_SCOPE")
+         seen[current.resolved] = data
+-        row = {"file": current.pin(), "static_elf": data, "resolved_needed": []}
+-        rows.append(row)
+         origin = str(Path(current.resolved).parent)
+         dirs = search_paths(data.get("rpath"), origin) + search_paths(data.get("runpath"), origin) + list(SEARCH_DIRS)
+         for name in data["needed"]:
+@@ -157,7 +157,8 @@
+         candidate = bind(derived["path"], 8 * 1024 * 1024, {key: derived[key] for key in ("path", "bytes", "sha256")})
+         required(stat.S_IMODE(candidate.observed["stat"]["st_mode"]) == 0o500, "EXACT_NEW_TOOL_EXECUTABLE_MODE")
+         result["candidate"] = candidate.pin()
+-        result["static_dependency_graph"] = static_graph(bind, candidate, elf, end)
++        result["static_dependency_graph"] = []
++        static_graph(bind, candidate, elf, end, result["static_dependency_graph"])
+         result["static_dependency_file_count"] = len(result["static_dependency_graph"])
+         runner_source = bind(COLLECTOR["path"], 65536, COLLECTOR)
+         runner = frozen_module(runner_source.content(65536).decode("utf-8"), COLLECTOR["sha256"], "original_bounded_owned_host_tool_runner")
+@@ -189,6 +190,7 @@
+     except BaseException as error:
+         result["errors"].append({"type": type(error).__name__, "reason": str(error)[:256]})
+     finally:
++        result["static_dependency_file_count"] = len(result.get("static_dependency_graph", []))
+         for item in reversed(files):
+             try:
+                 item.close()

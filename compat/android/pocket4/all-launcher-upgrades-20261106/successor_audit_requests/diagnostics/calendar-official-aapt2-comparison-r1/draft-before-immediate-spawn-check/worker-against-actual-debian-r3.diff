@@ -1,0 +1,375 @@
+--- preserved-actual-debian-r3
++++ independent-official-comparison-r1
+@@ -1,8 +1,9 @@
+ #!/usr/bin/env python3
+ """Independent Calendar/Fcitx parser diagnostic using one observed aapt2.
+ 
+-Independent comparison of two exact APKs, using the actual observed Debian
+-AAPT2 version/help/dependency evidence. The prior host help job remains failed
++Independent comparison using the actually qualified official AAPT2 9.5.1.
++The original Debian tool and its full nineteen-file dependency graph remain
++bound for the legacy AAPT/JDK comparison. The prior host help job remains failed
+ (exit 1); it is not reclassified. Original aapt badging is retained as a
+ comparison alongside new aapt2 badging, the original signature verifier and
+ XML reader. Typed runtime/held APK/data, lock and retirement requirements
+@@ -31,7 +32,7 @@
+         "sha256": "dfe1182d8e0da4d3d6e842736378539df33e03a87cf0ed9ab4bbe9ae1f26c041"}
+ ENV = {"PATH": "/usr/bin:/bin", "LANG": "C", "LC_ALL": "C", "TZ": "UTC"}
+ STAT = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")
+-OUTPUT_PREFIX = "/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-aapt2-comparison-r3-"
++OUTPUT_PREFIX = '/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-'
+ MAX_APK = 512 * 1024 * 1024
+ MAX_BATCH_BYTES = 4 * 1024 * 1024 * 1024
+ MAX_TOOL_OUTPUT = 4 * 1024 * 1024
+@@ -54,11 +55,10 @@
+ DIAGNOSTIC_PACKAGES = ["com.android.calendar", "org.fcitx.fcitx5.android"]
+ ACTUAL_GUARD = {"path": "/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/current_baseline_guard.py",
+                 "bytes": 3213, "sha256": "d84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3"}
+-ACTUAL_SCOPE = {"path": "/home/alex/work/pocket4-successor-native-install-20261106-douyin-01/app-scope-after.private.json",
+-                "bytes": 57340, "sha256": "489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4"}
++ACTUAL_SCOPE = {'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json', 'bytes': 58854, 'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f'}
+ ACTUAL_CANDIDATE = {'bytes': 54512, 'file': {'st_ctime_ns': 1791415705179294996, 'st_dev': 66306, 'st_gid': 0, 'st_ino': 108138273, 'st_mode': 33261, 'st_mtime_ns': 1757926427000000000, 'st_nlink': 1, 'st_size': 54512, 'st_uid': 0}, 'path': '/usr/lib/android-sdk/build-tools/debian/aapt2', 'sha256': '0e9ff92342040acdfd03e8708512f4e02353e3ca0a2b85ea2950da659110b009'}
+-ACTUAL_PROOF = {'path': '/home/alex/work/pocket4-calendar-aapt2-diagnostic-source-20261106-r3/inputs/aapt2-proof.outer.original.json', 'bytes': 54192, 'sha256': 'f9c289f7d28f836c51d845b4c851c1dbac0e8f326d658c7b98106b6ee327f192'}
+-ACTUAL_PROOF_TERMINAL = {'path': '/home/alex/work/pocket4-calendar-aapt2-diagnostic-source-20261106-r3/inputs/aapt2-proof.terminal.original.json', 'bytes': 730, 'sha256': 'f797f008a250a386ca905e9b7e9065ac2f85cad2168be702c3ad01209d341802'}
++ACTUAL_PROOF = {'path': '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1/inputs/aapt2-proof.outer.original.json', 'bytes': 54192, 'sha256': 'f9c289f7d28f836c51d845b4c851c1dbac0e8f326d658c7b98106b6ee327f192'}
++ACTUAL_PROOF_TERMINAL = {'path': '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1/inputs/aapt2-proof.terminal.original.json', 'bytes': 730, 'sha256': 'f797f008a250a386ca905e9b7e9065ac2f85cad2168be702c3ad01209d341802'}
+ PROOF_JOB = "1a1b1cdd0e7-fc05-7ae1"
+ ORIGINAL_FAILED_RESULT = {
+     "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-final-upgrades-r1-b05/result.json",
+@@ -419,15 +419,175 @@
+             "API_minimum_override_used": False, "integrity_check_bypassed": False}
+ 
+ 
++OFFICIAL_HOST_JOB = '1a1b257ba27-fc05-7da0'
++OFFICIAL_HOST_SOURCE = {'bytes': 61830, 'path': '/home/alex/work/pocket4-official-aapt2-host-tool-source-20261106-r3/prepare_official_aapt2.py', 'sha256': 'bdae0316cd5423f60a6d1884e2131ba446c3554ee696c3c543ebf3634e743a63'}
++OFFICIAL_HOST_STDOUT = {'path': '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1/inputs/official-host.stdout.original.jsonl', 'bytes': 7092, 'sha256': 'd7785fb80d8075267b99f1ccc5537cdd12dc014f38fd72c87eb575bd899dd343'}
++OFFICIAL_HOST_TERMINAL = {'path': '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1/inputs/official-host.terminal.original.json', 'bytes': 731, 'sha256': 'f456a3ee2db689339d5d60db5106904b0d2bde640663eccc222311db39f62435'}
++OFFICIAL_CANDIDATE = {'path': '/var/lib/pocket4-official-aapt2-host-tool-proof-20261106-r3/toolchain/platform/bin/aapt2', 'bytes': 6489808, 'sha256': 'd0c30c343c61bfdc837abd02e195741dba7407bcb61ca34e037bcc1dc26ea06c', 'file': {'st_ctime_ns': 1793993457351638049, 'st_dev': 66306, 'st_gid': 0, 'st_ino': 110244195, 'st_mode': 33088, 'st_mtime_ns': 1793993457351638049, 'st_nlink': 1, 'st_size': 6489808, 'st_uid': 0}}
++OFFICIAL_TOOL_ROOT = '/var/lib/pocket4-official-aapt2-host-tool-proof-20261106-r3'
++
++def verify_official_host_proof(raw_stdout, terminal_raw):
++    """Require final original stdout and its actual durable successful job."""
++    terminal = json.loads(terminal_raw)
++    need(terminal.get("job_id") == OFFICIAL_HOST_JOB and terminal.get("state") == "succeeded" and
++         terminal.get("exit_code") == 0 and
++         all(terminal.get(key) is True for key in ("output_complete", "output_durable", "terminal_publication_confirmed")) and
++         all(terminal.get(key) is False for key in ("automatic_retry", "timed_out", "cancelled")) and
++         terminal.get("log_truncated") == {"stdout": False, "stderr": False} and
++         terminal.get("log_errors") == {"stdout": None, "stderr": None} and
++         terminal.get("log_synced") == {"stdout": True, "stderr": True}, "ACTUAL_OFFICIAL_HOST_DURABLE_SUCCESS_REQUIRED")
++    lines = raw_stdout.splitlines()
++    need(len(lines) == 2, "EXACT_ORIGINAL_OFFICIAL_HOST_STDOUT")
++    stage, envelope = (json.loads(line) for line in lines)
++    need(stage.get("schema") == "pocket4-official-aapt2-host-source-stage-result-v1" and
++         stage.get("source_stage_ok") is True and stage.get("worker_about_to_exec_once") is True and
++         stage.get("source_root") == str(Path(OFFICIAL_HOST_SOURCE["path"]).parent) and
++         stage.get("files") == [{"name": "prepare_official_aapt2.py", "bytes": OFFICIAL_HOST_SOURCE["bytes"],
++                                 "sha256": OFFICIAL_HOST_SOURCE["sha256"]}], "ACTUAL_OFFICIAL_SOURCE_STAGE_CHANGED")
++    need(set(envelope) == {"encoding", "artifact_bytes", "artifact_sha256", "data"} and
++         envelope["encoding"] == "zlib-base64" and envelope["artifact_bytes"] == 34091 and
++         envelope["artifact_sha256"] == "b827c080d7af767cab60fbd9a682eafd8dfe06d6f4375b23f62988212a4b908e",
++         "EXACT_OFFICIAL_FINAL_WORKER_ENVELOPE_REQUIRED")
++    compressed = base64.b64decode(envelope["data"], validate=True)
++    need(len(compressed) <= 131072, "OFFICIAL_HOST_COMPRESSED_BOUND")
++    inflater = zlib.decompressobj()
++    raw = inflater.decompress(compressed, 131073)
++    need(inflater.eof and not inflater.unused_data and not inflater.unconsumed_tail and
++         len(raw) == envelope["artifact_bytes"] and sha(raw) == envelope["artifact_sha256"],
++         "OFFICIAL_FINAL_WORKER_BYTES_CHANGED")
++    proof = json.loads(raw)
++    need(proof.get("schema") == "pocket4-official-aapt2-extraction-elf-version-v1" and proof.get("ok") is True and
++         proof.get("errors") == [] and proof.get("status") == "OFFICIAL_HOST_TOOL_EXTRACTED_BOUND_AND_VERSION_OBSERVED" and
++         proof.get("source") == OFFICIAL_HOST_SOURCE and proof.get("official_version") == "9.5.1-16666295" and
++         all(proof.get(key) is True for key in ("official_jar_and_extracted_tool_unchanged", "all_bound_host_files_unchanged",
++             "all_owned_tool_children_joined", "original_descriptor_identities_restored")) and
++         proof.get("process_FDs_before") == proof.get("process_FDs_after") == 3, "OFFICIAL_HOST_FINAL_RETIREMENT_OR_IDENTITY_REQUIRED")
++    candidate = proof.get("candidate", {})
++    need(candidate.get("declared_path") == candidate.get("resolved_path") == OFFICIAL_CANDIDATE["path"] and
++         all(candidate.get(key) == OFFICIAL_CANDIDATE[key] for key in ("bytes", "sha256", "file")),
++         "EXACT_OFFICIAL_CANDIDATE_FILE_AND_STAT_REQUIRED")
++    need(all(type(proof.get(key)) is int and proof[key] == 0 for key in
++         ("APK_reads", "APK_tool_inputs", "Android_commands", "App_launches", "Main_reads", "UI_actions", "installs",
++          "namespace_entries", "native_commands", "permission_changes", "new_network_requests")) and
++         proof.get("action_lock_acquired") is False and proof.get("existing_files_modified") is False and
++         proof.get("original_failed_audits_reclassified") is False, "OFFICIAL_HOST_ACTION_BOUNDARY_CHANGED")
++    need(proof["extraction"]["source_jar_sha256"] == "fa1014cb1431622d292ef55ba870e75882ea19987bec541698b912f446a2d08f" and
++         proof["extraction"]["member_crc_checked_by_complete_ZipExtFile_read"] is True and
++         proof["extraction"]["other_members_extracted"] is False, "OFFICIAL_JAR_EXTRACTION_EVIDENCE_REQUIRED")
++    commands = proof.get("commands")
++    need(type(commands) is list and len(commands) == proof.get("candidate_executions") == 1, "EXACT_ORIGINAL_VERSION_ONCE")
++    command = commands[0]
++    need(command.get("argv") == [OFFICIAL_CANDIDATE["path"], "version"] and command.get("returncode") == 0 and
++         all(command.get(key) is True for key in ("joined", "pipes_closed", "output_capture_complete")) and
++         all(command.get(key) is False for key in ("timed_out", "own_group_kill_requested")) and
++         not command.get("error") and not command.get("retirement_error"), "OFFICIAL_VERSION_CHILD_DID_NOT_SETTLE_NORMALLY")
++    for stream in ("stdout", "stderr"):
++        original = bytes.fromhex(command[stream + "_original_hex"])
++        need(len(original) == command[stream]["bytes"] and sha(original) == command[stream]["sha256"], "OFFICIAL_VERSION_RAW_STREAM_PIN")
++    need(proof.get("version_original") == "Android Asset Packaging Tool (aapt) 2.20-16666295\n", "ACTUAL_OFFICIAL_VERSION_OUTPUT")
++    graph = proof.get("static_dependency_graph")
++    need(type(graph) is list and len(graph) == proof.get("static_dependency_file_count") == 7 and
++         len({row["file"]["resolved_path"] for row in graph}) == 7 and
++         all(row["static_elf"]["additional_loader_directives"] == [] for row in graph), "EXACT_OFFICIAL_SEVEN_FILE_STATIC_GRAPH")
++    layout = proof["controlled_runpath_layout"]
++    need(layout["output_root"] == OFFICIAL_TOOL_ROOT and
++         layout["owned_directory_descriptors"] == {"acquired": 11, "closed": 11, "errors": [],
++             "evidence_store_descriptor_borrowed_not_closed_here": True} and
++         [row["stage"] for row in layout["observations"]] == ["before_system_dependency_resolution", "immediately_before_version",
++             "after_version_and_final_file_recheck"] and
++         all(row["complete"] is True and row["all_five_search_directories_and_thirty_candidates_proved"] is True
++             for row in layout["observations"]), "OFFICIAL_CONTROLLED_LAYOUT_PROOF_INCOMPLETE")
++    need(all(row["directories"] == layout["observations"][0]["directories"] for row in layout["observations"]),
++         "OFFICIAL_PRIVATE_DIRECTORY_PROOF_CHANGED")
++    return proof
++
++
++def bind_existing_official_layout(core, pool, end, result, proof):
++    """Read-only adapter for the already proved exact host layout verifier."""
++    raw = core.pinned_record(OFFICIAL_HOST_SOURCE, 131072)
++    host = types.ModuleType("pinned_official_aapt2_host_layout_definitions")
++    host.__file__ = OFFICIAL_HOST_SOURCE["path"]
++    exec(compile(raw, host.__file__, "exec"), host.__dict__)
++    reader = host.frozen_module(host.READER_SOURCE, host.READER_SHA, "original_readonly_layout_reader")
++    record = {"host_source": OFFICIAL_HOST_SOURCE, "prior_host_job": OFFICIAL_HOST_JOB,
++              "existing_directories_only": True, "new_directories_created": False,
++              "root_identity_source": "fresh read-only binding; seven child directory full stats equal prior actual host proof"}
++    result["official_private_layout"] = record
++    layout = host.ControlledRunpathLayout(reader, record)
++    try:
++        need(host.OUTPUT == OFFICIAL_TOOL_ROOT, "EXACT_OFFICIAL_LAYOUT_SOURCE_ROOT")
++        # The original class borrows this descriptor. Its own anchor/children
++        # close through the original class; this one closes through core.pool.
++        root_fd = core.open_host(pool, OFFICIAL_TOOL_ROOT, os.O_RDONLY | os.O_DIRECTORY)
++        layout.store = types.SimpleNamespace(fd=root_fd, written=proof["new_evidence_files"] + [proof["inner_receipt"]])
++        layout.anchor = reader.HeldPath(OFFICIAL_TOOL_ROOT)
++        layout.anchor.open()
++        need(layout.anchor.fd is not None and reader.metadata(layout.anchor.fd) == reader.metadata(root_fd),
++             "EXISTING_OFFICIAL_ROOT_FULL_PATH_REQUIRED")
++        previous_parents = proof["controlled_runpath_layout"]["ancestors_after_new_output"]
++        need([row["path"] for row in layout.anchor.parents] == [row["path"] for row in previous_parents], "OFFICIAL_ANCESTOR_PATHS_CHANGED")
++        for current, previous in zip(layout.anchor.parents, previous_parents):
++            value = host.require_secure_directory(reader, current["fd"])
++            need(all(value[key] == previous["stat"][key] for key in ("st_dev", "st_ino", "st_uid", "st_gid", "st_mode")),
++                 "OFFICIAL_ANCESTOR_IDENTITY_OR_OWNER_CHANGED")
++        layout.root_stat = host.require_secure_directory(reader, root_fd, True)
++        record["fresh_held_root_stat"] = layout.root_stat
++        previous = proof["controlled_runpath_layout"]["observations"][-1]["directories"]
++        need([row["path"] for row in previous] == [OFFICIAL_TOOL_ROOT + "/" + name for name in host.ControlledRunpathLayout.CONTENTS],
++             "EXACT_SEVEN_PREVIOUS_DIRECTORY_PATHS")
++        for row in previous:
++            need(time.monotonic() < end, "OFFICIAL_DIRECTORY_REBIND_DEADLINE")
++            relative = row["path"][len(OFFICIAL_TOOL_ROOT) + 1:]
++            prefix, unused, leaf = relative.rpartition("/")
++            parent = root_fd if not prefix else layout.directories[prefix]
++            descriptor = os.open(leaf, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent)
++            layout.directories[relative] = descriptor
++            need(host.require_secure_directory(reader, descriptor, True) == row["stat"], "OFFICIAL_PRIVATE_DIRECTORY_FULL_STAT_CHANGED")
++            layout.directory_stats[relative] = row["stat"]
++        layout.verify("fresh_readonly_rebind_before_APK_tools", end)
++        return layout
++    except BaseException:
++        layout.close()
++        raise
++
++
++def add_official_tool_binding(core, pool, tools, end, proof):
++    need("aapt2" in tools and "legacy-aapt2" not in tools, "LEGACY_BINDING_MUST_REMAIN")
++    tools["legacy-aapt2"] = tools.pop("aapt2")
++    candidate = OFFICIAL_CANDIDATE
++    fd = core.open_host(pool, candidate["path"])
++    value = core.hash_fd(fd, 64 * 1024 * 1024, min(end, time.monotonic() + 45))
++    need(value == {key: candidate[key] for key in ("bytes", "sha256", "file")}, "OFFICIAL_TOOL_FULL_BYTES_OR_IDENTITY_CHANGED")
++    tools["aapt2"] = {"pin": {"declared_path": candidate["path"], "resolved_path": candidate["path"],
++                               "bytes": candidate["bytes"], "sha256": candidate["sha256"]}, "fd": fd, "observed": value}
++    additional = {}
++    aliases = bind_static_dependencies(core, pool, additional, end, proof)
++    for name, row in additional.items():
++        key = "official-" + name
++        need(key not in tools, "OFFICIAL_STATIC_BINDINGS_MUST_NOT_REPLACE_LEGACY")
++        tools[key] = row
++    return aliases
++
++
++def clean_official_badging_observations(commands):
++    badging = [row for row in commands if row.get("name") == "badging"]
++    return bool([row.get("package") for row in badging] == DIAGNOSTIC_PACKAGES and
++                all(row.get("returncode") == 0 and row.get("output_capture_complete") is True and
++                    row.get("stderr", {}).get("bytes") == 0 and row.get("stderr", {}).get("sha256") ==
++                    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" for row in badging))
++
++
+ def validate_request(request):
+-    need(set(request) == {"schema", "guard", "app_scope", "packages", "output_root", "official_release_assets", "candidate_aapt2", "candidate_inventory", "candidate_proof", "candidate_terminal"}, "CLOSED_DIAGNOSTIC_REQUEST_SCHEMA")
+-    need(request["schema"] == "pocket4-independent-calendar-aapt2-comparison-request-v2", "DIAGNOSTIC_REQUEST_SCHEMA")
++    need(set(request) == {"schema", "guard", "app_scope", "packages", "output_root", "official_release_assets", "legacy_candidate_aapt2", "legacy_candidate_inventory", "legacy_candidate_proof", "legacy_candidate_terminal", "official_candidate_aapt2", "official_host_stdout", "official_host_terminal"}, "CLOSED_DIAGNOSTIC_REQUEST_SCHEMA")
++    need(request["schema"] == "pocket4-independent-calendar-official-aapt2-comparison-request-v1", "DIAGNOSTIC_REQUEST_SCHEMA")
+     need(request["packages"] == DIAGNOSTIC_PACKAGES, "EXACT_CALENDAR_AND_PASSED_FCITX_CONTROL_REQUIRED")
+     need(request["guard"] == ACTUAL_GUARD and request["app_scope"] == ACTUAL_SCOPE, "EXACT_ACTUAL_SUCCESSOR_AND_FINAL_SCOPE_REQUIRED")
+     need(request["official_release_assets"] is None, "NO_UNSTAGED_RELEASE_ASSERTION")
+-    validate_candidate(request["candidate_aapt2"])
+-    need(request["candidate_proof"] == ACTUAL_PROOF and request["candidate_terminal"] == ACTUAL_PROOF_TERMINAL, "EXACT_ACTUAL_PROOF_PINS_REQUIRED")
+-    need(type(request["candidate_inventory"]) is dict and set(request["candidate_inventory"]) == {"path", "bytes", "sha256"}, "ACTUAL_INVENTORY_RECEIPT_PIN_REQUIRED")
++    validate_candidate(request["legacy_candidate_aapt2"])
++    need(request["official_candidate_aapt2"] == OFFICIAL_CANDIDATE and request["official_host_stdout"] == OFFICIAL_HOST_STDOUT and
++         request["official_host_terminal"] == OFFICIAL_HOST_TERMINAL, "EXACT_ACTUAL_OFFICIAL_TOOL_PROOF_REQUEST")
++    need(request["legacy_candidate_proof"] == ACTUAL_PROOF and request["legacy_candidate_terminal"] == ACTUAL_PROOF_TERMINAL, "EXACT_ACTUAL_PROOF_PINS_REQUIRED")
++    need(type(request["legacy_candidate_inventory"]) is dict and set(request["legacy_candidate_inventory"]) == {"path", "bytes", "sha256"}, "ACTUAL_INVENTORY_RECEIPT_PIN_REQUIRED")
+ 
+ 
+ def all_apk_evidence_verified(result, packages):
+@@ -444,7 +604,7 @@
+     validate_request(request)
+     need(os.getuid() == os.geteuid() == 0, "EXISTING_ROOT_AUTHORITY_REQUIRED")
+     end = time.monotonic() + 840
+-    result = {"schema": "pocket4-independent-calendar-aapt2-resource-comparison-v2", "started_utc": now(),
++    result = {"schema": "pocket4-independent-calendar-official-aapt2-resource-comparison-v1", "started_utc": now(),
+         "original_failed_audit_reclassified": False, "original_batch_05_gate_advanced": False,
+         "resource_diagnostic_covers_all_45_Launcher_apps": False, "prior_failure_inference_only": True,
+         "packages": request["packages"], "request": request, "roster_reference_sha256": ROSTER_REFERENCE_SHA,
+@@ -456,7 +616,7 @@
+     guard = types.ModuleType("pinned_successor_apk_audit_guard"); guard.__file__ = request["guard"]["path"]
+     exec(compile(raw, guard.__file__, "exec"), guard.__dict__)
+     core = guard._core()
+-    pool, store, lock = core.FDs(), None, None
++    pool, store, lock, official_layout = core.FDs(), None, None, None
+     try:
+         lock, result["action_lock_identity"] = core.acquire_lock(pool, core.ACTION_LOCK)
+         result["guard_before"] = guard.current_guard()
+@@ -468,12 +628,18 @@
+         for package, original in DIAGNOSTIC_APKS.items():
+             apks = expected[package]["apks"]
+             need(len(apks) == 1 and all(apks[0][key] == original[key] for key in ("bytes", "sha256")), "DIAGNOSTIC_APKS_DIFFER_FROM_ACTUAL_B01_B05_BYTES")
+-        proof_raw = core.pinned_record(request["candidate_proof"], 131072)
+-        terminal_raw = core.pinned_record(request["candidate_terminal"], 65536)
++        proof_raw = core.pinned_record(request["legacy_candidate_proof"], 131072)
++        terminal_raw = core.pinned_record(request["legacy_candidate_terminal"], 65536)
+         proof = core.parse(proof_raw)
+-        result["actual_prior_host_proof"] = verify_actual_proof(proof, core.parse(terminal_raw), request["candidate_aapt2"])
+-        inventory_raw = core.pinned_record(request["candidate_inventory"], 65536)
+-        result["actual_candidate_observation"] = verify_candidate_inventory(request["candidate_aapt2"], core.parse(inventory_raw))
++        result["actual_prior_host_proof"] = verify_actual_proof(proof, core.parse(terminal_raw), request["legacy_candidate_aapt2"])
++        official_stdout_raw = core.pinned_record(request["official_host_stdout"], 131072)
++        official_terminal_raw = core.pinned_record(request["official_host_terminal"], 65536)
++        official_proof = verify_official_host_proof(official_stdout_raw, official_terminal_raw)
++        result["official_host_qualification"] = {"job_id": OFFICIAL_HOST_JOB, "source": OFFICIAL_HOST_SOURCE,
++            "candidate": OFFICIAL_CANDIDATE, "version": official_proof["version_original"],
++            "static_graph_is_actual_loader_mapping_proof": False}
++        inventory_raw = core.pinned_record(request["legacy_candidate_inventory"], 65536)
++        result["actual_candidate_observation"] = verify_candidate_inventory(request["legacy_candidate_aapt2"], core.parse(inventory_raw))
+         prior_failed_raw = core.pinned_record(ORIGINAL_FAILED_RESULT, MAX_RESULT)
+         prior_control_raw = core.pinned_record(ORIGINAL_CONTROL_RESULT, MAX_RESULT)
+         prior_failed, prior_control = core.parse(prior_failed_raw), core.parse(prior_control_raw)
+@@ -499,8 +665,14 @@
+         result["original_passed_control_artifact"] = store.write("original-b01-passed-result.json", prior_control_raw)
+         result["candidate_proof_artifact"] = store.write("prior-host-proof.outer.original.json", proof_raw)
+         result["candidate_terminal_artifact"] = store.write("prior-host-proof.terminal.original.json", terminal_raw)
+-        tools = bind_tools(core, pool, end, request["candidate_aapt2"])
++        result["official_host_stdout_artifact"] = store.write("official-host.stdout.original.jsonl", official_stdout_raw)
++        result["official_host_terminal_artifact"] = store.write("official-host.terminal.original.json", official_terminal_raw)
++        tools = bind_tools(core, pool, end, request["legacy_candidate_aapt2"])
+         aliases = bind_static_dependencies(core, pool, tools, end, proof)
++        aliases += add_official_tool_binding(core, pool, tools, end, official_proof)
++        official_layout = bind_existing_official_layout(core, pool, end, result, official_proof)
++        result["legacy_static_dependency_file_count"] = len(proof["static_dependency_graph"])
++        result["official_static_dependency_file_count"] = len(official_proof["static_dependency_graph"])
+         result["tool_dependencies"] = DEPS
+         result["tool_binding"] = {name: {"pin": row["pin"], "observed": row["observed"]} for name, row in tools.items()}
+         releases = None
+@@ -534,12 +706,14 @@
+                         result["commands"].append(command); item["commands"].append(command)
+                         recheck_static_aliases(aliases, end)
+                         need(time.monotonic() + 5 < end, "DIAGNOSTIC_DEADLINE_BEFORE_CHILD_SPAWN")
++                        official_layout.verify(f"before-p{pi:02d}-a{ai:02d}-{name}", end)
+                         streams = run_tool(argv, (fd, tools["apksigner_jar"]["fd"]), command, end)
+                         for kind, content in streams.items():
+                             command[kind] = store.write(f"p{pi:02d}-a{ai:02d}-{name}.{kind}", content)
+                         need(command.get("joined") is True and command.get("pipes_closed") is True, "TOOL_CHILD_RETIREMENT_NOT_PROVED")
+                         need(command.get("output_capture_complete") is True and not command.get("timed_out") and not command.get("error") and not command.get("retirement_error"), "TOOL_OBSERVATION_INCOMPLETE")
+                         recheck_static_aliases(aliases, end)
++                        official_layout.verify(f"after-p{pi:02d}-a{ai:02d}-{name}", end)
+                         outputs[name] = streams["stdout"]
+                         recheck_tools(core, pool, tools, end, False)
+                     for name, fn in (("signature", lambda: parse_signature(outputs["apksigner"], item["commands"][0])),
+@@ -580,15 +754,27 @@
+         need(result["guard_after"] == result["guard_before"], "TYPED_SUCCESSOR_GUARD_CHANGED")
+         core.pinned_record(request["app_scope"])
+         read_bootstrap(request["guard"], 65536)
+-        core.pinned_record(request["candidate_inventory"], 65536)
+-        core.pinned_record(request["candidate_proof"], 131072)
+-        core.pinned_record(request["candidate_terminal"], 65536)
++        core.pinned_record(request["legacy_candidate_inventory"], 65536)
++        core.pinned_record(request["legacy_candidate_proof"], 131072)
++        core.pinned_record(request["legacy_candidate_terminal"], 65536)
+         core.pinned_record(ORIGINAL_FAILED_RESULT, MAX_RESULT)
+         core.pinned_record(ORIGINAL_CONTROL_RESULT, MAX_RESULT)
++        core.pinned_record(request["official_host_stdout"], 131072)
++        core.pinned_record(request["official_host_terminal"], 65536)
++        core.pinned_record(OFFICIAL_HOST_SOURCE, 131072)
++        official_layout.verify("after_all_APK_tools_and_file_checks", end)
+         result["snapshot_consistent"] = True
+     except BaseException as error:
+         result["errors"].append({"type": type(error).__name__, "reason": str(error)[:256]})
+     finally:
++        if official_layout is not None:
++            try:
++                official_layout.close()
++                closure = result["official_private_layout"]["owned_directory_descriptors"]
++                result["official_layout_descriptors_closed"] = closure["acquired"] == closure["closed"] == 11 and closure["errors"] == []
++                need(result["official_layout_descriptors_closed"], "OFFICIAL_LAYOUT_FDS_NOT_CLOSED")
++            except BaseException as error:
++                result["errors"].append({"stage": "official_layout_close", "type": type(error).__name__, "reason": str(error)[:160]})
+         if lock is not None:
+             try:
+                 fcntl.flock(lock, fcntl.LOCK_UN); result["action_lock_released"] = True
+@@ -610,12 +796,19 @@
+         result["legacy_badging_observations_complete"] = len(legacy) == 2 and all(x.get("joined") is True and x.get("pipes_closed") is True and x.get("output_capture_complete") is True and not x.get("timed_out") and not x.get("error") for x in legacy)
+         result["legacy_badging_returncodes"] = {x["package"]: x.get("returncode") for x in legacy}
+         result["all_manifests_and_signatures_verified"] = all_apk_evidence_verified(result, request["packages"]) and result["legacy_badging_observations_complete"]
+-        result["same_APK_bytes_new_parser_succeeded"] = result["all_manifests_and_signatures_verified"]
+-        result["old_aapt_resource_compatibility_limitation_supported_by_comparison"] = (result["same_APK_bytes_new_parser_succeeded"] and result["legacy_badging_returncodes"] == {"com.android.calendar": 1, "org.fcitx.fcitx5.android": 0})
+-        result["inference_limit"] = "Only these two exact APKs and observed tool identities; the old b05 and host-proof failures remain unchanged. No all-App compatibility, business readiness or gate advancement."
++        result["official_badging_stderr_empty"] = clean_official_badging_observations(result["commands"])
++        observations = result.get("official_private_layout", {}).get("observations", [])
++        result["official_layout_before_and_after_all_commands"] = len(observations) == 18 and all(
++            row.get("complete") is True and row.get("all_five_search_directories_and_thirty_candidates_proved") is True for row in observations)
++        result["comparison_complete"] = (result["all_manifests_and_signatures_verified"] and result["official_badging_stderr_empty"] and
++            result.get("official_layout_descriptors_closed") is True and result["official_layout_before_and_after_all_commands"])
++        result["resource_table_integrity_fully_proved"] = False
++        result["same_APK_bytes_new_parser_succeeded"] = result["comparison_complete"]
++        result["observed_legacy_badging_failure_is_parser_dependent"] = (result["same_APK_bytes_new_parser_succeeded"] and result["legacy_badging_returncodes"] == {"com.android.calendar": 1, "org.fcitx.fcitx5.android": 0})
++        result["inference_limit"] = "Only exact held Calendar/Fcitx badging, manifest and signature observations. Empty latest-tool badging stderr is required, but badging alone does not prove all resource-table integrity or business readiness. All old failures and old b05 gate remain unchanged."
+         result["ended_utc"] = now()
+         result["owned_descriptors_before_final_receipt"] = pool.summary()
+-        result["status"] = "INDEPENDENT_TWO_APK_RESOURCE_COMPARISON_COMPLETE" if result["all_manifests_and_signatures_verified"] else "INDEPENDENT_RESOURCE_DIAGNOSTIC_INCOMPLETE"
++        result["status"] = "OFFICIAL_TOOL_TWO_APK_COMPARISON_COMPLETE" if result["comparison_complete"] else "OFFICIAL_TOOL_RESOURCE_DIAGNOSTIC_INCOMPLETE"
+         try:
+             if store is not None:
+                 raw = canonical(result) + b"\n"; need(len(raw) <= MAX_RESULT, "RESULT_BYTE_BOUND")
+@@ -633,8 +826,9 @@
+                 result["status"] = "FD_RETIREMENT_FAILED"
+         result["owned_descriptors_final"] = pool.summary()
+         if not result["all_manifests_and_signatures_verified"]:
++            result["comparison_complete"] = False
+             result["same_APK_bytes_new_parser_succeeded"] = False
+-            result["old_aapt_resource_compatibility_limitation_supported_by_comparison"] = False
++            result["observed_legacy_badging_failure_is_parser_dependent"] = False
+     return result
+ 
+ 
+@@ -657,13 +851,14 @@
+         result.setdefault("errors", []).append({"reason": "FINAL_PROCESS_FD_DIFFERENCE"})
+         result["all_manifests_and_signatures_verified"] = False
+         result["same_APK_bytes_new_parser_succeeded"] = False
+-        result["old_aapt_resource_compatibility_limitation_supported_by_comparison"] = False
++        result["observed_legacy_badging_failure_is_parser_dependent"] = False
++        result["comparison_complete"] = False
+         result["status"] = "FINAL_PROCESS_FD_DIFFERENCE"
+     result["success_gate_requires_outer_final_stdout_and_authoritative_terminal"] = True
+     raw = canonical(result)
+     need(len(raw) <= MAX_RESULT, "STDOUT_ARTIFACT_BOUND")
+     print(json.dumps({"encoding": "zlib-base64", "artifact_bytes": len(raw), "artifact_sha256": sha(raw), "data": base64.b64encode(zlib.compress(raw, 9)).decode("ascii")}, separators=(",", ":")), flush=True)
+-    return 0 if result.get("all_manifests_and_signatures_verified") is True else 1
++    return 0 if result.get("comparison_complete") is True else 1
+ 
+ 
+ if __name__ == "__main__":

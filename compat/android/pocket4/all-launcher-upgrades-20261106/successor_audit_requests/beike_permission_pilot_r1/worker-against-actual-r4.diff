@@ -1,0 +1,166 @@
+--- preserved-actual-current_services_r4/worker
++++ independent-beike-permission-pilot-r1/worker
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""New explicit47-bound user0 PM/resolver with PackageManager help only.
++"""New explicit47-bound Beike-only raw permission-service observation.
+ 
+ This standalone source does not import or extend an existing per-App Flow or
+ its source contract. Frozen R5 entry/classpath primitives remain unchanged.
+@@ -43,10 +43,13 @@
+     "org.fcitx.fcitx5.android", "tv.danmaku.bili")
+ STAT = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")
+ PACKAGES = sorted((*LAUNCHERS, ACTIONS, HELPER))
+-STAGE = '/home/alex/work/pocket4-current-readonly-services-source-20261106-r4'
+-OUTPUT = '/home/alex/work/pocket4-current-readonly-services-observation-20261106-r4'
++TARGET_PACKAGE = 'com.lianjia.beike'
++TARGET_USER = 0
++APP_OPS_HELP = {'path': '/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1/inputs/cmd-appops-help.original.txt', 'bytes': 1309, 'sha256': '95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc'}
++STAGE = '/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1'
++OUTPUT = '/home/alex/work/pocket4-beike-permission-pilot-observation-20261106-r1'
+ APP_SCOPE = {'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json', 'bytes': 58854, 'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f'}
+-TRANSPORT = {'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r4/readonly_services_transport.py', 'bytes': 16536, 'sha256': '4f8a4317332a1c80796378abfd0134a3329dd6acde9f06e96d8e52b70b3029b3'}
++TRANSPORT = {'path': '/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1/readonly_services_transport.py', 'bytes': 16102, 'sha256': '5207d626008df00b7594310fb2d33933b6b9a9a6ccd982e4b5b7ed070cbebd76'}
+ NATIVE_HELPERS = {'path': '/home/alex/work/pocket4-successor-install-audit-source-20261106-r1/install_successor_native.py', 'bytes': 31327, 'sha256': 'ad4227b4c63033018bd1147c3c589b2632168766306791696aabc53583229c96'}
+ 
+ def need(value, code):
+@@ -395,11 +398,14 @@
+ 
+ 
+ def validate_request(request):
+-    need(type(request) is dict and set(request) == {"schema", "guard", "app_scope", "packages", "worker", "transport", "output_root"},
++    need(type(request) is dict and set(request) == {"schema", "guard", "app_scope", "packages", "worker", "transport", "output_root",
++                                                       "target_package", "target_user", "appops_help"},
+          "CLOSED_SERVICE_OBSERVATION_REQUEST")
+-    need(request["schema"] == "pocket4-current-readonly-services-request-v1" and request["guard"] == GUARD and
++    need(request["schema"] == "pocket4-beike-permission-raw-observation-request-v1" and request["guard"] == GUARD and
+          request["app_scope"] == APP_SCOPE and request["packages"] == PACKAGES and request["transport"] == TRANSPORT and
+-         request["output_root"] == OUTPUT, "EXACT_SCOPE_AND_CLOSED_OPERATION_REQUEST")
++         request["output_root"] == OUTPUT and request["target_package"] == TARGET_PACKAGE and
++         type(request["target_user"]) is int and request["target_user"] == TARGET_USER and
++         request["appops_help"] == APP_OPS_HELP, "EXACT_SCOPE_AND_CLOSED_OPERATION_REQUEST")
+     need(request["worker"]["path"] == STAGE + "/observe_current_services.py" and str(Path(__file__).resolve()) == request["worker"]["path"],
+          "EXACT_REAL_SERVICE_SOURCE_REQUIRED")
+     read_root_pin(request["worker"])
+@@ -442,10 +448,21 @@
+ 
+ def require_help_for_closed_queries(raw):
+     text = raw.decode("utf-8", "strict")
+-    required = ("list packages", "-U", "--show-versioncode", "--match-libraries", "--user USER_ID", "[FILTER]",
+-                "query-activities", "--components", "INTENT", "-a <ACTION>", "-c <CATEGORY>")
++    required = ("Package manager (package) commands:", "  dump-package PACKAGE\n",
++                "    Print package manager state associated with the given PACKAGE.")
+     need(all(value in text for value in required), "ACTUAL_PACKAGE_HELP_DOES_NOT_SUPPORT_EXACT_READONLY_QUERIES")
+     return {"actual_help_sha256": sha(raw), "required_literals": list(required), "no_guessed_service_transaction": True}
++
++
++def require_appops_help(raw):
++    text = raw.decode("utf-8", "strict")
++    required = ("AppOps service (appops) commands:",
++                "  get [--user <USER_ID>] [--attribution <ATTRIBUTION_TAG>] <PACKAGE | UID> [<OP>]\n",
++                "    Return the mode for a particular application and optional operation.")
++    need(all(value in text for value in required), "ACTUAL_APPOPS_HELP_DOES_NOT_SUPPORT_FIXED_GET")
++    return {"historical_help_pin": APP_OPS_HELP, "required_literals": list(required),
++            "original_help_returncode": 255, "original_failed_job": "1a1b21fcc13-fc05-7c7a",
++            "original_help_failure_reclassified": False, "get_success_inferred_from_help": False}
+ 
+ 
+ def compare_catalogs(installed, resolver, native, apps):
+@@ -484,13 +501,19 @@
+     native_helpers = load_source(NATIVE_HELPERS, "unchanged_native_identity_helpers_only")
+     pool, leases = core.FDs(), core.FDs()
+     held, target, directory, lock = None, None, None, None
+-    result = {"schema": "pocket4-current-readonly-services-observation-v1", "ok": False, "errors": [],
++    result = {"schema": "pocket4-beike-permission-raw-observation-v1", "ok": False, "errors": [],
+               "automatic_retry": False, "production_ready": False, "UI_actions": 0, "App_launches": 0,
+               "installs": 0, "permission_changes": 0, "lifecycle_commands": 0, "ADB_commands": 0,
+               "business_data_content_reads": 0, "Android_namespace_commands": 0, "native_command_count": 0,
+-              "android_commands": [], "native_commands": [], "effective_permission_grants": "UNKNOWN",
++              "android_commands": [], "native_commands": [],
++              "effective_permission_grants": "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION",
++              "effective_AppOps_modes": "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION",
++              "role_status": "UNKNOWN_NOT_QUERIED", "service_output_semantics_verified": False,
++              "service_output_capture_complete": False, "permission_name_normalization": "NONE_RAW_BYTES_PRESERVED",
++              "target_package": TARGET_PACKAGE, "target_user": TARGET_USER,
++              "service_target_packages": [TARGET_PACKAGE], "package_dump_user_filter_applied": False,
+               "packages": PACKAGES, "app_scope_reference": APP_SCOPE,
+-              "effective_AppOps_and_roles": "UNKNOWN_NOT_QUERIED", "old_Bili_unknown_reclassified": False,
++              "old_Bili_unknown_reclassified": False,
+               "compiled_Beike_scope_modified": False, "UI_or_install_admitted": False}
+     deadline = time.monotonic() + 900
+     root_identity, native_files, native_pins, location, scope = None, None, None, None, None
+@@ -594,6 +617,9 @@
+         need(scope.get("schema") == "pocket4-versioned-app-scope-v1" and scope.get("runtime_epoch_sha256") == EPOCH and
+              set(scope["apps"]) == set(PACKAGES), "ACTUAL_47_REFERENCE_REQUIRED")
+         result["scope_guard_before"] = guard.check_app_scope(APP_SCOPE, PACKAGES)
++        result["target_identity_from_pinned_scope"] = {key: scope["apps"][TARGET_PACKAGE][key]
++                    for key in ("package", "uid", "version_code")}
++        result["historical_appops_get_syntax_admission"] = require_appops_help(read_root_pin(APP_OPS_HELP))
+         native_helpers.original_unknown(core)
+         location = native_helpers.protected_location(core, pool, held, scope["apps"])
+         native_files, native_pins = native_helpers.native_bind(core, pool, held)
+@@ -622,14 +648,8 @@
+             raw = transport(list(argv), timeout=30)
+             need(result["android_commands"][-1]["complete"] is True, "READONLY_COMMAND_NOT_COMPLETE_CLEANLY")
+             raw_outputs.append(raw)
+-        installed_a, installed_b = parse_packages(raw_outputs[1]), parse_packages(raw_outputs[3])
+-        resolver_a, resolver_b = parse_resolver(raw_outputs[2]), parse_resolver(raw_outputs[4])
+-        need(installed_a == installed_b and resolver_a == resolver_b, "PM_OR_RESOLVER_CHANGED_BETWEEN_TWO_SAMPLES")
+-        result["installed_packages"] = installed_a
+-        result["MAIN_LAUNCHER_components"] = resolver_a
+-        result["catalog_comparison"] = compare_catalogs(installed_a, resolver_a, native_catalog, scope["apps"])
+-        result["help_results"] = {service: {"stdout": result["android_commands"][index]["stdout"], "returncode": 0}
+-                                  for index, service in enumerate(("package",))}
++        result["help_results"] = {"package": {"stdout": result["android_commands"][0]["stdout"],
++                                                "stderr": result["android_commands"][0]["stderr"], "returncode": 0}}
+         result["native_after"] = native_read("status")
+         runtime_guard()
+         native_helpers.original_unknown(core)
+@@ -638,13 +658,14 @@
+         result["scope_guard_after"] = guard.check_app_scope(APP_SCOPE, PACKAGES)
+         result["guard_after"] = guard.current_guard()
+         need(result["guard_after"] == result["guard_before"], "FINAL_TYPED_RUNTIME_CHANGED")
+-        for pin in (GUARD, APP_SCOPE, TRANSPORT, NATIVE_HELPERS, request["worker"]):
++        for pin in (GUARD, APP_SCOPE, TRANSPORT, NATIVE_HELPERS, APP_OPS_HELP, request["worker"]):
+             read_root_pin(pin)
+-        result.update(ok=True, current_scope_47_unchanged=True, PM_user0_installed_APK_packages_enumerated=True,
+-                      PM_query_includes_static_shared_and_SDK_libraries=True, PM_query_includes_uninstalled=False,
+-                      PM_query_includes_APEX=False, MAIN_LAUNCHER_resolver_queried=True,
+-                      all_installed_APK_bytes_bound=False, disabled_components_force_included=False,
+-                      enumeration_samples_equal=True, permission_queries_executed=False)
++        need(len(result["android_commands"]) == 3 and
++             all(row.get("stream_artifacts_complete") is True for row in result["android_commands"]),
++             "THREE_COMPLETE_ORIGINAL_SERVICE_STREAMS_REQUIRED")
++        result.update(ok=True, current_scope_47_unchanged=True, service_output_capture_complete=True,
++                      PM_user0_installed_APK_packages_enumerated=False, MAIN_LAUNCHER_resolver_queried=False,
++                      all_installed_APK_bytes_bound=False)
+     except BaseException as error:
+         result["errors"].append({"type": type(error).__name__, "reason": str(error)[:512]})
+         details = getattr(error, "details", None)
+@@ -672,7 +693,16 @@
+         result["owned_descriptors_final"] = result["observation_FDs_final"]
+         if result["errors"]:
+             result["ok"] = False
+-    result["status"] = "CURRENT_PM_AND_MAIN_LAUNCHER_OBSERVED" if result["ok"] else "READONLY_SERVICES_INCOMPLETE_NO_RETRY"
++    result["service_reports"] = [
++        {"service": service, "argv": list(transport_module.READ_ONLY_COMMANDS[index]),
++         "stdout": row.get("stdout"), "stderr": row.get("stderr"), "returncode": row.get("returncode"),
++         "complete": row.get("complete"), "joined": row.get("joined"),
++         "stream_artifacts_complete": row.get("stream_artifacts_complete", False),
++         "interpretation_status": "RAW_CAPTURE_ONLY_NOT_INTERPRETED"}
++        for index, service in ((1, "package-dump-package"), (2, "appops-get-user0"))
++        if len(result["android_commands"]) > index for row in (result["android_commands"][index],)]
++    result["permission_queries_executed"] = any("host_pid" in row for row in result["android_commands"][1:])
++    result["status"] = "BEIKE_PERMISSION_SERVICE_RAW_CAPTURE_COMPLETE" if result["ok"] else "BEIKE_PERMISSION_OBSERVATION_INCOMPLETE_NO_RETRY"
+     return result
+ 
+ 
+@@ -688,7 +718,7 @@
+         request = parse(read_root_pin({"path": args.request, "bytes": size, "sha256": args.request_sha256}))
+         result = run(request)
+     except BaseException as error:
+-        result = {"schema": "pocket4-readonly-service-entry-rejection-v1", "ok": False, "type": type(error).__name__,
++        result = {"schema": "pocket4-beike-permission-entry-rejection-v1", "ok": False, "type": type(error).__name__,
+                   "reason": str(error)[:512], "automatic_retry": False, "production_ready": False}
+     after = len(os.listdir("/proc/self/fd"))
+     result.update(process_FDs_before=before, process_FDs_after=after)

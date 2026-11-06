@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-B",
+      "-I",
+      "-c",
+      "import hashlib,json,sys\nif sys.argv[1:] != ['--stage-only-once']:raise SystemExit('PLAN_ONLY: stage not executed')\nraw=sys.stdin.buffer.read(77478)\nif len(raw)!=77477 or hashlib.sha256(raw).hexdigest()!='262006a394a102e4be372a6ba31960168f47f49d682ca9e3a297cbf05467066e':raise RuntimeError('closed qualification packet differs')\npacket=json.loads(raw.decode('utf-8','strict'))\nif set(packet)!={'schema','stage','files'} or type(packet['schema']) is not int or packet['schema']!=1:raise RuntimeError('closed qualification packet shape differs')\nstage=packet['stage'].encode('utf-8','strict')\nif len(stage)!=3831 or hashlib.sha256(stage).hexdigest()!='b00c9cc75c33b57eadf7c392ccdc423d0e37e47cfc323667ff1e2ff6ea25630c':raise RuntimeError('closed qualifier stager differs')\nscope={'__name__':'fixed_current470_qualification_stager','__file__':'<fixed-current470-qualification-stager>'}\nexec(compile(stage,'stage_current470_qualification.py','exec'),scope,scope)\nscope['main'](packet['files'])\n",
+      "--stage-only-once"
+    ],
+    "created_unix_ms": 1793993984832,
+    "cwd": null,
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b25fcb40-fc05-7dc4",
+    "idempotency_key": "pocket4-builder470-explicit-current-qualification-source-stage-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b25fcb40-fc05-7dc4",
+    "request_digest": "574d6582ef67ca3b7d2b59e7e6e1d7a9117d6513d0202b37747bda561d4303b2",
+    "request_fingerprint": 6290795867543161403,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b25fcb40-fc05-7dc4"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b25fcb40-fc05-7dc4"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

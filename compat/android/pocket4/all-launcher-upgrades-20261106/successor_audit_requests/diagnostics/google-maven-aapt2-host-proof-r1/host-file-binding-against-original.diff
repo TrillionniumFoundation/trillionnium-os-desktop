@@ -1,0 +1,29 @@
+--- original-reviewed-root-owned-BoundFile
++++ root-files-plus-two-exact-official-download-inputs
+@@ -1,11 +1,15 @@
+ class BoundFile:
+-    """Hold one root-owned host file and retain the original reader's guards."""
++    """Root-owned tools/dependencies; only two exact pinned UID1000 download inputs."""
+     def __init__(self, reader, path, limit, expected=None, resolve=False):
+         self.reader, self.declared, self.limit = reader, path, limit
+         self.resolved = str(Path(path).resolve(strict=True)) if resolve else path
+         self.held = None
+-        observed, unused = reader.read_regular(self.resolved, limit, True, expected)
++        self.user_input = path in USER_INPUTS
++        required(not self.user_input or (not resolve and expected == USER_INPUTS[path]), "ONLY_TWO_PINNED_OPERATOR_INPUTS")
++        observed, unused = reader.read_regular(self.resolved, limit, not self.user_input, expected)
+         required(observed["status"] == "OBSERVED_REGULAR_FILE", "REQUIRED_HOST_FILE_ABSENT")
++        required(observed["stat"]["st_uid"] == (1000 if self.user_input else 0), "EXACT_HOST_FILE_OWNER_REQUIRED")
++        required(not self.user_input or stat.S_IMODE(observed["stat"]["st_mode"]) == USER_INPUT_MODES[path], "EXACT_DOWNLOAD_INPUT_MODE")
+         self.observed = observed
+         try:
+             self.held = reader.HeldPath(self.resolved)
+@@ -31,7 +35,7 @@
+     def recheck(self):
+         required(self.reader.metadata(self.held.fd) == self.observed["stat"], "HELD_HOST_FILE_CHANGED")
+         required(str(Path(self.declared).resolve(strict=True)) == self.resolved, "HOST_PATH_RESOLUTION_CHANGED")
+-        fresh, unused = self.reader.read_regular(self.resolved, self.limit, True)
++        fresh, unused = self.reader.read_regular(self.resolved, self.limit, not self.user_input)
+         required(all(fresh[key] == self.observed[key] for key in ("bytes", "sha256", "stat")), "HOST_BYTES_OR_PATH_CHANGED")
+         self.held.verify_parent_paths()
+ 

@@ -1,0 +1,211 @@
+{
+  "ADB_commands": 0,
+  "UI_actions": 0,
+  "cleanup_eligible": false,
+  "closed_Android_commands": [
+    [
+      "/system/bin/cmd",
+      "package",
+      "help"
+    ],
+    [
+      "/system/bin/cmd",
+      "package",
+      "dump-package",
+      "com.lianjia.beike"
+    ],
+    [
+      "/system/bin/cmd",
+      "appops",
+      "get",
+      "--user",
+      "0",
+      "com.lianjia.beike"
+    ]
+  ],
+  "effective_AppOps_modes": "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION",
+  "effective_grants": "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION",
+  "files": [
+    {
+      "bytes": 4235,
+      "path": "LOCAL_CLOSURE_REVIEW.actual.json",
+      "sha256": "7ec38e0ba9087e471aae979ecccfab255bf37f386900697a6c439e90b9460332"
+    },
+    {
+      "bytes": 5144,
+      "path": "SOURCE_REVIEW.md",
+      "sha256": "fd51ae37193c9bd319cea5b5a4a9740a3253d36d3aa1b5feb6c90107cb9a4896"
+    },
+    {
+      "bytes": 17838,
+      "path": "assemble_candidate.py",
+      "sha256": "c6ec2ce827e3f235564ead468ee49831281e5bff1210623354ee87552329a798"
+    },
+    {
+      "bytes": 9587,
+      "path": "check_local_closure.py",
+      "sha256": "2e610d19f3654e27b474173647bddf1006ec6f58dfb0ef12d1fe06f08f0c0803"
+    },
+    {
+      "bytes": 1309,
+      "path": "inputs/cmd-appops-help.original.txt",
+      "sha256": "95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc"
+    },
+    {
+      "bytes": 41792,
+      "path": "observe_current_services.py",
+      "sha256": "d403da0ef75940731df19032f3b1c495edd6a21fb11990df2b5d6744e14f08c4"
+    },
+    {
+      "bytes": 6240,
+      "path": "owned-adapter-against-actual-r4.diff",
+      "sha256": "b35304b0a1e3df782b03da0704e43e40552bfeaaa79dbbfa8c8f53326dc6845a"
+    },
+    {
+      "bytes": 19789,
+      "path": "owned_readonly_lifetime.py",
+      "sha256": "4aece066777ca3940e83b046b38082cf2a68f7f9b036549dce6564246edbb2a5"
+    },
+    {
+      "bytes": 99981,
+      "path": "process-request.review-only.json",
+      "sha256": "5cc7014ebf31219c9751d9bd10a624e745588eaa6bcaeb0b4e4d33476b736ba7"
+    },
+    {
+      "bytes": 16102,
+      "path": "readonly_services_transport.py",
+      "sha256": "5207d626008df00b7594310fb2d33933b6b9a9a6ccd982e4b5b7ed070cbebd76"
+    },
+    {
+      "bytes": 2426,
+      "path": "request.review-only.json",
+      "sha256": "5ee066bd403535a5ef634e66a27daede1d97cae713dd03d72362e639529e6fa5"
+    },
+    {
+      "bytes": 85833,
+      "path": "stage.stdin.original.json",
+      "sha256": "957b52580fd41e7a889d992725e84d7a2831ddd6e927224c99d69bb3c40fd021"
+    },
+    {
+      "bytes": 6892,
+      "path": "stage_and_run_services.py",
+      "sha256": "5d110fbc65cb749c3230a9362983588389f0cf18470c386bf28e1c4fd1f45def"
+    },
+    {
+      "bytes": 3350,
+      "path": "stager-against-actual-r4.diff",
+      "sha256": "a47928424cbed91ceae10491bb32c964687818224e7e1e5721069562ffb365e9"
+    },
+    {
+      "bytes": 1473,
+      "path": "transport-against-actual-r4.diff",
+      "sha256": "0550f18c437c7de78aa6729106e6ac7ddad0a7c3342db341cfd5e5daecb0282f"
+    },
+    {
+      "bytes": 12649,
+      "path": "worker-against-actual-r4.diff",
+      "sha256": "315545da35b481ca50df147b89ed4198042f75c7b8d5cf8b770979c96207b6b0"
+    },
+    {
+      "bytes": 22914,
+      "path": "worker_body.py",
+      "sha256": "ad7e96754480a894f51b6bb8a4ab8b0d14ac3154a712d43494996d538891e3b0"
+    }
+  ],
+  "foundation_actual_job": "1a1b22e95d0-fc05-7cd4",
+  "framework_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+  "installs": 0,
+  "local_result": {
+    "bytes": 4235,
+    "path": "LOCAL_CLOSURE_REVIEW.actual.json",
+    "sha256": "7ec38e0ba9087e471aae979ecccfab255bf37f386900697a6c439e90b9460332"
+  },
+  "old_AppOps_help_exit255_reclassified": false,
+  "permission_changes": 0,
+  "permission_name_normalization": "NONE_RAW_BYTES_PRESERVED",
+  "process_request": {
+    "bytes": 99981,
+    "path": "process-request.review-only.json",
+    "sha256": "5cc7014ebf31219c9751d9bd10a624e745588eaa6bcaeb0b4e4d33476b736ba7"
+  },
+  "production_ready": false,
+  "protected_package_count": 47,
+  "protected_scope_sha256": "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f",
+  "raw_output_only": true,
+  "remote_executed": false,
+  "request": {
+    "bytes": 2426,
+    "path": "request.review-only.json",
+    "sha256": "5ee066bd403535a5ef634e66a27daede1d97cae713dd03d72362e639529e6fa5"
+  },
+  "roles": "UNKNOWN_NOT_QUERIED",
+  "runtime_epoch_sha256": "a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9",
+  "schema": "pocket4-beike-permission-pilot-source-review-v1",
+  "service_query_package": "com.lianjia.beike",
+  "service_query_user": 0,
+  "source": {
+    "bytes": 41792,
+    "path": "observe_current_services.py",
+    "sha256": "d403da0ef75940731df19032f3b1c495edd6a21fb11990df2b5d6744e14f08c4"
+  },
+  "state": "SOURCE_FROZEN_NOT_EXECUTED",
+  "target_from_actual_scope": {
+    "package": "com.lianjia.beike",
+    "uid": 10143,
+    "version_code": 3067100
+  },
+  "unchanged_exact_definitions": {
+    "nested_runtime_native_stream_and_runner_definitions": [
+      "budget",
+      "native_read",
+      "record",
+      "runner",
+      "runtime_guard",
+      "write"
+    ],
+    "owned_lifetime_definitions": [
+      "canonical",
+      "child",
+      "combined",
+      "decode_worker",
+      "enter",
+      "load",
+      "main",
+      "need",
+      "pin_bytes",
+      "publish",
+      "retired"
+    ],
+    "transport_definitions": [
+      "BoundArun",
+      "TransportError",
+      "TransportTimeout",
+      "environment_values",
+      "load_existing_helper",
+      "patched_transport",
+      "require",
+      "source_bytes"
+    ],
+    "worker_top_level_definitions": [
+      "bounded_file",
+      "canonical",
+      "compare_catalogs",
+      "component",
+      "held_bounded_child",
+      "load_source",
+      "main_classpaths",
+      "need",
+      "parse",
+      "parse_packages",
+      "parse_resolver",
+      "read_root_pin",
+      "remember_child_streams",
+      "safe_error",
+      "same_epoch_identity",
+      "selected_environment",
+      "sha",
+      "verify_shared_helper",
+      "write_empty_raw_stream"
+    ]
+  }
+}

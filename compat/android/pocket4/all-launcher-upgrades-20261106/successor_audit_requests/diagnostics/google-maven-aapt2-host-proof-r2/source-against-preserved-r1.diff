@@ -1,0 +1,54 @@
+--- preserved-unexecuted-r1/prepare_official_aapt2.py
++++ independent-partial-evidence-r2/prepare_official_aapt2.py
+@@ -30,8 +30,8 @@
+ EXPECTED_MEMBERS = [{'bytes': 0, 'compressed_bytes': 2, 'name': 'META-INF/'}, {'bytes': 25, 'compressed_bytes': 27, 'name': 'META-INF/MANIFEST.MF'}, {'bytes': 6489808, 'compressed_bytes': 2440131, 'name': 'aapt2'}, {'bytes': 118691, 'compressed_bytes': 10712, 'name': 'NOTICE'}]
+ DOWNLOAD_TERMINAL_RAW = '{\n  "at_unix_ms": 1793989873555,\n  "audit_recorded": true,\n  "automatic_retry": false,\n  "cancelled": false,\n  "exit_code": 0,\n  "job_id": "1a1b220b4d3-fc05-7c7f",\n  "launch_nonce": "4921b3419ffbb2eaf94de7476615f896",\n  "log_bytes": {\n    "stderr": {\n      "seen": 0,\n      "stored": 0\n    },\n    "stdout": {\n      "seen": 1429,\n      "stored": 1429\n    }\n  },\n  "log_errors": {\n    "stderr": null,\n    "stdout": null\n  },\n  "log_synced": {\n    "stderr": true,\n    "stdout": true\n  },\n  "log_truncated": {\n    "stderr": false,\n    "stdout": false\n  },\n  "output_complete": true,\n  "output_durable": true,\n  "state": "succeeded",\n  "terminal_publication_confirmed": true,\n  "terminal_publication_protocol": 1,\n  "timed_out": false\n}'
+ OFFICIAL_URL = 'https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2/9.5.1-16666295/aapt2-9.5.1-16666295-linux.jar'
+-SOURCE_ROOT = '/home/alex/work/pocket4-official-aapt2-host-tool-source-20261106-r1'
+-OUTPUT = '/home/alex/work/pocket4-official-aapt2-host-tool-proof-20261106-r1'
++SOURCE_ROOT = '/home/alex/work/pocket4-official-aapt2-host-tool-source-20261106-r2'
++OUTPUT = '/home/alex/work/pocket4-official-aapt2-host-tool-proof-20261106-r2'
+ COLLECTOR = {'path': '/home/alex/work/pocket4-successor-install-audit-source-20261106-r1/audit_successor_apks.py', 'bytes': 29242, 'sha256': 'faff199c1f6218b3c01d87e44be610d6fa211de396b5e8c862c188dec59d284a'}
+ SYSTEM_LIBRARY_ROOTS = ('/usr/lib', '/lib', '/lib64')
+ SEARCH_DIRS = ('/usr/lib/x86_64-linux-gnu/android', '/usr/lib/x86_64-linux-gnu', '/lib/x86_64-linux-gnu', '/usr/lib64', '/lib64')
+@@ -292,18 +292,18 @@
+                 "other_members_extracted": False, "mode": "0500", "execution_performed_by_extraction": False}
+ 
+ 
+-def static_graph(bind, candidate, elf, end):
+-    rows, queue, seen = [], [candidate], {}
++def static_graph(bind, candidate, elf, end, rows):
++    queue, seen = [candidate], {}
+     while queue:
+         current = queue.pop(0)
+         if current.resolved in seen:
+             continue
+         required(len(seen) < 48 and time.monotonic() < end, "STATIC_ELF_GRAPH_BOUND")
+         data = elf.inspect_elf_fd(current.held.fd, current.observed["bytes"])
++        row = {"file": current.pin(), "static_elf": data, "resolved_needed": []}
++        rows.append(row)
+         required(data["additional_loader_directives"] == [], "ADDITIONAL_LOADER_DIRECTIVES_OUTSIDE_BOUND_SCOPE")
+         seen[current.resolved] = data
+-        row = {"file": current.pin(), "static_elf": data, "resolved_needed": []}
+-        rows.append(row)
+         origin = str(Path(current.resolved).parent)
+         dirs = search_paths(data.get("rpath"), origin) + search_paths(data.get("runpath"), origin) + list(SEARCH_DIRS)
+         for name in data["needed"]:
+@@ -366,7 +366,8 @@
+         candidate = bind(derived["path"], 8 * 1024 * 1024, {key: derived[key] for key in ("path", "bytes", "sha256")})
+         required(stat.S_IMODE(candidate.observed["stat"]["st_mode"]) == 0o500, "EXACT_NEW_TOOL_EXECUTABLE_MODE")
+         result["candidate"] = candidate.pin()
+-        result["static_dependency_graph"] = static_graph(bind, candidate, elf, end)
++        result["static_dependency_graph"] = []
++        static_graph(bind, candidate, elf, end, result["static_dependency_graph"])
+         result["static_dependency_file_count"] = len(result["static_dependency_graph"])
+         runner_source = bind(COLLECTOR["path"], 65536, COLLECTOR)
+         runner = frozen_module(runner_source.content(65536).decode("utf-8"), COLLECTOR["sha256"], "original_bounded_owned_host_tool_runner")
+@@ -398,6 +399,7 @@
+     except BaseException as error:
+         result["errors"].append({"type": type(error).__name__, "reason": str(error)[:256]})
+     finally:
++        result["static_dependency_file_count"] = len(result.get("static_dependency_graph", []))
+         for item in reversed(files):
+             try:
+                 item.close()

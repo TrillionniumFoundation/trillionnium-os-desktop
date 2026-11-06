@@ -1,0 +1,168 @@
+{
+  "APK_reads": 0,
+  "Main_operations": 0,
+  "actual_local_control": {
+    "actual_uid": 1000,
+    "bytes": 1414,
+    "path": "local-boundary.stdout.original.json",
+    "process_FDs_after": 3,
+    "process_FDs_before": 3,
+    "production_root_admission_not_simulated": true,
+    "scope": "actual prior ELF projection plus one owned local directory exercised through missing / present / dangling symlink cases, and real UID1000 fixture rejected by root guard",
+    "sha256": "5c15225e65e998b576ba160775d44a396bb724210891cca82b950614873a8e0e"
+  },
+  "all_sources_compile": true,
+  "candidate_only_admission": {
+    "bytes": 6489808,
+    "interpreter": "/lib64/ld-linux-x86-64.so.2",
+    "needed": [
+      "libdl.so.2",
+      "libpthread.so.0",
+      "libm.so.6",
+      "librt.so.1",
+      "libc.so.6",
+      "ld-linux-x86-64.so.2"
+    ],
+    "rpath": null,
+    "runpath": "$ORIGIN/:$ORIGIN/lib64:$ORIGIN/../lib64:$ORIGIN/../../lib64:$ORIGIN/../../../lib64",
+    "sha256": "d0c30c343c61bfdc837abd02e195741dba7407bcb61ca34e037bcc1dc26ea06c"
+  },
+  "controlled_layout_policy": {
+    "absence": "Only actual ENOENT; existing files, directories and even dangling symlinks reject",
+    "ancestors": [
+      "/",
+      "/var",
+      "/var/lib"
+    ],
+    "ancestors_root_owned_not_group_or_world_writable": true,
+    "binary_bytes_modified": false,
+    "loader_environment_modified": false,
+    "new_directories_full_stat_checked": true,
+    "new_directories_mode": "0700",
+    "new_executable_mode": "0500",
+    "new_root_metadata": "fixed dev/inode/uid/gid/mode/nlink; own recorded evidence files may change root size/mtime/ctime",
+    "patchelf": false,
+    "private_libraries_allowed": false,
+    "private_search_before_and_after_version": true,
+    "symlinks_followed_for_private_layout": false
+  },
+  "controlled_root": "/var/lib/pocket4-official-aapt2-host-tool-proof-20261106-r3",
+  "embedded_reader_and_ELF_equal_to_r2": true,
+  "exact_packet_source_and_stager_verified": true,
+  "execution_request": "process-request.review-only.json",
+  "files": [
+    {
+      "bytes": 1797,
+      "path": "assemble_candidate-against-preserved-r2.diff",
+      "sha256": "469497b0fd31792ec654ca93b2d6df4ab0122b843237aae42935f56539bf2717"
+    },
+    {
+      "bytes": 7797,
+      "path": "assemble_candidate.py",
+      "sha256": "b4b325e1f74da91c0b06b6c068edcc8d2b6d0b7247712791beb0cb655737f60b"
+    },
+    {
+      "bytes": 1983,
+      "path": "host-file-binding-against-original.diff",
+      "sha256": "d78d2916c28954ad1f39ef4620bfef4aac0ecd6e19e7b893103111d46a253cb2"
+    },
+    {
+      "bytes": 0,
+      "path": "local-boundary.stderr.original.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1414,
+      "path": "local-boundary.stdout.original.json",
+      "sha256": "5c15225e65e998b576ba160775d44a396bb724210891cca82b950614873a8e0e"
+    },
+    {
+      "bytes": 21276,
+      "path": "prepare_official_aapt2-against-preserved-r2.diff",
+      "sha256": "b0b0122aa2785999d49fad34468b966b99197112865baca7d5ddb58906ea2565"
+    },
+    {
+      "bytes": 61830,
+      "path": "prepare_official_aapt2.py",
+      "sha256": "bdae0316cd5423f60a6d1884e2131ba446c3554ee696c3c543ebf3634e743a63"
+    },
+    {
+      "bytes": 76943,
+      "path": "process-request.review-only.json",
+      "sha256": "e2cdfb9030cf81faed658108cd29952370524158d10952ef269b65b8762f990e"
+    },
+    {
+      "bytes": 64902,
+      "path": "stage.stdin.original.json",
+      "sha256": "d66e029d485d989cce8ce8a25f05888b8ca041144ae3a0d441c34ae97e6d7a6a"
+    },
+    {
+      "bytes": 728,
+      "path": "stage_and_run_host_proof-against-preserved-r2.diff",
+      "sha256": "9f7b6c29e3d2592319936375dc5a2ee216ad5a1dff1639aff3d015b43a1e21f3"
+    },
+    {
+      "bytes": 6345,
+      "path": "stage_and_run_host_proof.py",
+      "sha256": "f5e35a026cadf4f5051e99606c44eebd20587da89c6ef8527cd9cc6cbaeaab13"
+    },
+    {
+      "bytes": 5608,
+      "path": "test_controlled_runpath_boundary.py",
+      "sha256": "97ad5efc4b3d0bbeb445f56410ee097dedb7f548f9843e36c0e99bbc60d48310"
+    },
+    {
+      "bytes": 18662,
+      "path": "worker_body-against-preserved-r2.diff",
+      "sha256": "e39cdaeb3deb5a101bf9c739855f8d1fd0350ef2a62d9652a0ee98f315010110"
+    },
+    {
+      "bytes": 27309,
+      "path": "worker_body.py",
+      "sha256": "a844036d51d3d6b6785e9ba7e9dbede606f577d68b37a449ed3c90ae7fc1e661"
+    }
+  ],
+  "idempotency_key": "sidecar-evidence-20261106-official-aapt2-host-extract-elf-version-r3",
+  "inner_deadline_seconds": 210,
+  "limits": [
+    "The new root and directories still require actual host proof; local UID1000 controls do not establish their owner/identity.",
+    "Static dependency closure is not actual dynamic-loader mapping proof.",
+    "Execution is by the pinned absolute path with held descriptor and full before/after file/path checks, not claimed as fd-exec.",
+    "Version is not Calendar resource compatibility or App production readiness.",
+    "No old failure, failed b05 audit or unknown App action is reclassified."
+  ],
+  "new_remote_jobs": 0,
+  "outer_timeout_seconds": 240,
+  "prior_failed_job": "1a1b24226fc-fc05-7d33",
+  "prior_failed_worker": {
+    "bytes": 5874,
+    "path": "../google-maven-aapt2-host-proof-r2/actual/worker.stdout.original.json",
+    "sha256": "05648e1384125fcfd88044f1cea9937e03537be3decd0b10701c876e5bb30215"
+  },
+  "prior_failure_preserved": true,
+  "prior_rejection": "SEARCH_PATH_OUTSIDE_REVIEWED_SYSTEM_LIBRARY_ROOTS",
+  "schema": "pocket4-official-aapt2-host-proof-revision3-source-review-v1",
+  "specific_repair": "Re-extract the unchanged official binary into a new fixed /var/lib private tree deep enough that its exact five observed RUNPATH projections are contained. Bind every ancestor and new directory, prove all thirty SONAME candidates absent and directory entries unchanged, then resolve only system libraries through the original resolver.",
+  "stager_changes_only": [
+    "new source root",
+    "new exact source length and SHA"
+  ],
+  "stager_functions_byte_identical_to_r2": true,
+  "state": "FROZEN_SOURCE_NOT_EXECUTED",
+  "success_boundary": "Complete final stdout after all exact descriptor identities restore, joined original owned version child/pipes, and authoritative durable exit0. Earlier result.json alone does not qualify the tool.",
+  "system_search_path_policy_unchanged": true,
+  "tool_executions": 0,
+  "unchanged_definition_names": [
+    "required",
+    "sha",
+    "canonical",
+    "frozen_module",
+    "BoundFile",
+    "EvidenceStore",
+    "in_system_library_root",
+    "search_paths",
+    "resolve_dependency",
+    "census",
+    "verify_original_download"
+  ]
+}

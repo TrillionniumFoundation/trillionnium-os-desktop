@@ -1,0 +1,26 @@
+--- preserved-actual-debian-r3
++++ independent-official-comparison-r1
+@@ -14,7 +14,7 @@
+ import zlib
+ 
+ sys.dont_write_bytecode = True
+-CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'calendar', 'stage_root': '/home/alex/work/pocket4-calendar-aapt2-diagnostic-source-20261106-r3', 'worker': {'path': '/home/alex/work/pocket4-calendar-aapt2-diagnostic-source-20261106-r3/diagnose_calendar_and_fcitx.py', 'bytes': 46019, 'sha256': 'e9935fd73b49a72b1bf79c098ee21486c7a35c1fddf7fa188b7a4091d1dc0c89'}, 'request': {'path': '/home/alex/work/pocket4-calendar-aapt2-diagnostic-source-20261106-r3/request.review-only.json', 'bytes': 1703, 'sha256': '114ae69bf7c1dfc10632a4bb542920c20bc227dc79a563c8a7c64796f51ce6a6'}, 'prior_unexecuted_source': {'bytes': 46019, 'sha256': '4cf6bda1b90cf7454a1c13da0ce7d378d756ef28623e54b0c09f661cbd26f072', 'preserved': True}}
++CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'calendar', 'stage_root': '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1', 'worker': {'path': '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1/diagnose_calendar_and_fcitx.py', 'bytes': 62223, 'sha256': '0fc991b04de604a1e8dcd5fc2455e96047df5fceda663378eab0f7c0ccc1f3dd'}, 'request': {'path': '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1/request.review-only.json', 'bytes': 2597, 'sha256': 'c4b5d05ff49bdc54fb6c7a1fa694dabdd1068cf69040206068ae67ccc4e87d92'}, 'prior_unexecuted_source': {'bytes': 46019, 'sha256': 'e9935fd73b49a72b1bf79c098ee21486c7a35c1fddf7fa188b7a4091d1dc0c89', 'preserved': True, 'meaning': 'prior Debian comparison source and its actual outcome retained; field name is inherited'}}
+ SELF_PIN = None
+ SUPPORT = {
+     "path": "/home/alex/work/pocket4-beike-owned-generation-20261106-b34f158f88bbebf112840fd88df25d03/prepare_beike_owned_lifetime.py",
+@@ -127,10 +127,11 @@
+         need(value.get("framework_MAIN_LAUNCHER_resolver_queried") is False and value.get("all_Android_installed_packages_enumerated") is False,
+              "EXPLICIT_SCOPE_MUST_NOT_CLAIM_GLOBAL_RESOLVER")
+     else:
+-        need(value.get("schema") == "pocket4-independent-calendar-aapt2-resource-comparison-v2" and
+-             value.get("status") == "INDEPENDENT_TWO_APK_RESOURCE_COMPARISON_COMPLETE" and
++        need(value.get("schema") == "pocket4-independent-calendar-official-aapt2-resource-comparison-v1" and
++             value.get("status") == "OFFICIAL_TOOL_TWO_APK_COMPARISON_COMPLETE" and
+              all(value.get(key) is True for key in ("snapshot_consistent", "all_primary_commands_succeeded",
+-                 "legacy_badging_observations_complete", "all_manifests_and_signatures_verified", "all_tool_children_joined", "action_lock_released")) and
++                 "legacy_badging_observations_complete", "all_manifests_and_signatures_verified", "all_tool_children_joined", "action_lock_released",
++                 "comparison_complete", "official_badging_stderr_empty", "official_layout_descriptors_closed", "official_layout_before_and_after_all_commands")) and
+              value.get("unjoined_tool_pids") == [] and len(value.get("commands", [])) == 8 and
+              value.get("packages") == ["com.android.calendar", "org.fcitx.fcitx5.android"], "CALENDAR_COMPARISON_GATE_FAILED")
+         need(value.get("original_failed_audit_reclassified") is False and value.get("original_batch_05_gate_advanced") is False,

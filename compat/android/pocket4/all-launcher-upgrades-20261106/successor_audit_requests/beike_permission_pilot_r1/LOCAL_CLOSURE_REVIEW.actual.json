@@ -1,0 +1,143 @@
+{
+  "Main_reads": 0,
+  "actual_appops_help": {
+    "bytes": 1309,
+    "path": "successor_audit_requests/beike_permission_pilot_r1/inputs/cmd-appops-help.original.txt",
+    "sha256": "95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc"
+  },
+  "actual_package_help": {
+    "bytes": 40229,
+    "path": "successor_audit_requests/current_services_r3/help-readback-r1/cmd-package-help.original.txt",
+    "sha256": "a58bc73742b985565a5d72b668db8d8a575d38efa49851069364a120b8735ef4"
+  },
+  "all_five_staged_files_match_packet_and_source_pins": true,
+  "closed_Android_commands": [
+    [
+      "/system/bin/cmd",
+      "package",
+      "help"
+    ],
+    [
+      "/system/bin/cmd",
+      "package",
+      "dump-package",
+      "com.lianjia.beike"
+    ],
+    [
+      "/system/bin/cmd",
+      "appops",
+      "get",
+      "--user",
+      "0",
+      "com.lianjia.beike"
+    ]
+  ],
+  "evidence_basis": "Actual local service-help bytes and pinned actual47 App scope; no synthetic runtime PASS.",
+  "grant_mode_interpretation_tested": false,
+  "historical_appops_syntax_admission": {
+    "get_success_inferred_from_help": false,
+    "historical_help_pin": {
+      "bytes": 1309,
+      "path": "/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1/inputs/cmd-appops-help.original.txt",
+      "sha256": "95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc"
+    },
+    "original_failed_job": "1a1b21fcc13-fc05-7c7a",
+    "original_help_failure_reclassified": false,
+    "original_help_returncode": 255,
+    "required_literals": [
+      "AppOps service (appops) commands:",
+      "  get [--user <USER_ID>] [--attribution <ATTRIBUTION_TAG>] <PACKAGE | UID> [<OP>]\n",
+      "    Return the mode for a particular application and optional operation."
+    ]
+  },
+  "local_process_FDs_after": 4,
+  "local_process_FDs_before": 4,
+  "missing_syntax_negative_controls": [
+    {
+      "missing_exact_help_line": "  dump-package PACKAGE",
+      "reason": "ACTUAL_PACKAGE_HELP_DOES_NOT_SUPPORT_EXACT_READONLY_QUERIES",
+      "rejected": true
+    },
+    {
+      "missing_exact_help_line": "  get [--user <USER_ID>] [--attribution <ATTRIBUTION_TAG>] <PACKAGE | UID> [<OP>]",
+      "reason": "ACTUAL_APPOPS_HELP_DOES_NOT_SUPPORT_FIXED_GET",
+      "rejected": true
+    }
+  ],
+  "namespace_entries": 0,
+  "ok": true,
+  "old_r2_timeout_and_r3_empty_stream_controls_rerun": false,
+  "package_help_admission": {
+    "actual_help_sha256": "a58bc73742b985565a5d72b668db8d8a575d38efa49851069364a120b8735ef4",
+    "no_guessed_service_transaction": true,
+    "required_literals": [
+      "Package manager (package) commands:",
+      "  dump-package PACKAGE\n",
+      "    Print package manager state associated with the given PACKAGE."
+    ]
+  },
+  "permission_changes": 0,
+  "production_ready": false,
+  "runtime_or_Android_commands": 0,
+  "runtime_qualified_by_this_local_check": false,
+  "schema": "pocket4-beike-permission-pilot-local-closure-review-v1",
+  "target_from_actual_scope": {
+    "package": "com.lianjia.beike",
+    "uid": 10143,
+    "version_code": 3067100
+  },
+  "unchanged_exact_definitions": {
+    "nested_runtime_native_stream_and_runner_definitions": [
+      "budget",
+      "native_read",
+      "record",
+      "runner",
+      "runtime_guard",
+      "write"
+    ],
+    "owned_lifetime_definitions": [
+      "canonical",
+      "child",
+      "combined",
+      "decode_worker",
+      "enter",
+      "load",
+      "main",
+      "need",
+      "pin_bytes",
+      "publish",
+      "retired"
+    ],
+    "transport_definitions": [
+      "BoundArun",
+      "TransportError",
+      "TransportTimeout",
+      "environment_values",
+      "load_existing_helper",
+      "patched_transport",
+      "require",
+      "source_bytes"
+    ],
+    "worker_top_level_definitions": [
+      "bounded_file",
+      "canonical",
+      "compare_catalogs",
+      "component",
+      "held_bounded_child",
+      "load_source",
+      "main_classpaths",
+      "need",
+      "parse",
+      "parse_packages",
+      "parse_resolver",
+      "read_root_pin",
+      "remember_child_streams",
+      "safe_error",
+      "same_epoch_identity",
+      "selected_environment",
+      "sha",
+      "verify_shared_helper",
+      "write_empty_raw_stream"
+    ]
+  }
+}

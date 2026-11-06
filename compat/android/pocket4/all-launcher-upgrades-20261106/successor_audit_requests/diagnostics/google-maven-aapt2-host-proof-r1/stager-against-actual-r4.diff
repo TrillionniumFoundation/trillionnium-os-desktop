@@ -1,0 +1,44 @@
+--- actual-PM-r4-reviewed-stager
++++ new-official-host-tool-only-stager
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""New exact source/input stage, then five fixed read-only PackageManager queries."""
++"""Stage one exact host-only tool qualification source, then invoke it once."""
+ import hashlib
+ import json
+ import os
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT='/home/alex/work/pocket4-current-readonly-services-source-20261106-r4'
+-FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 18837, 'sha256': 'ad2db51aa4445e6e5b5dc07439182556d51ec629cd8487ac9d3b1e5cf947a55c'}, {'name': 'observe_current_services.py', 'bytes': 39573, 'sha256': '4fda5cdf8fda65155c4187a1e8e5381aba59011329c824b98ad2e0c0b8aa8f0e'}, {'name': 'readonly_services_transport.py', 'bytes': 16536, 'sha256': '4f8a4317332a1c80796378abfd0134a3329dd6acde9f06e96d8e52b70b3029b3'}, {'name': 'request.review-only.json', 'bytes': 2159, 'sha256': '9373ac552cb178431b989768318b013287e5dfe687338dd82f9ef8c7ced82f6c'}]
++ROOT = '/home/alex/work/pocket4-official-aapt2-host-tool-source-20261106-r1'
++FILES = [{'name': 'prepare_official_aapt2.py', 'bytes': 49119, 'sha256': '4ec8abf806934ba6c8bfde2b96487572d855a1f6e922bd333f413254f0b32530'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):
+@@ -66,7 +66,7 @@
+     os.umask(0o077);before_fds=len(os.listdir('/proc/self/fd'))
+     raw=sys.stdin.buffer.read(262145);need(0<len(raw)<=262144,'BOUNDED_EXACT_INPUT')
+     payload=json.loads(raw)
+-    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-current-readonly-services-source-stage-v4','CLOSED_STAGE_PAYLOAD')
++    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-official-aapt2-host-source-stage-v1','CLOSED_STAGE_PAYLOAD')
+     need(type(payload['files']) is list and len(payload['files'])==len(FILES),'EXACT_FILE_COUNT')
+     inputs=[]
+     for expected,item in zip(FILES,payload['files']):
+@@ -104,11 +104,11 @@
+             except OSError:errors.append(fd)
+         need(not errors,'STAGE_FDS_NOT_CLOSED')
+     after_fds=len(os.listdir('/proc/self/fd'));need(after_fds==before_fds,'STAGE_DESCRIPTOR_DIFFERENCE')
+-    print(canonical({'schema':'pocket4-current-readonly-services-source-stage-result-v4','source_stage_ok':True,'source_root':ROOT,'files':FILES,
++    print(canonical({'schema':'pocket4-official-aapt2-host-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
+          'bootstrap_FDs_before':before_fds,'bootstrap_FDs_after':after_fds,'worker_about_to_exec_once':True,
+          'stage_Main_reads':0,'stage_namespace_entries':0,'stage_installs':0,'stage_UI_actions':0,'automatic_retry':False}).decode(),flush=True)
+     wrapper=FILES[0]
+-    os.execv('/usr/bin/python3',['/usr/bin/python3','-I','-B',ROOT+'/owned_readonly_lifetime.py',
+-                              '--execute-observation','--source-sha256',wrapper['sha256'],'--source-bytes',str(wrapper['bytes'])])
++    os.execv('/usr/bin/python3',['/usr/bin/python3','-I','-B',ROOT+'/prepare_official_aapt2.py',
++                              '--prepare-and-version-once','--source-sha256',wrapper['sha256'],'--source-bytes',str(wrapper['bytes'])])
+ 
+ if __name__=='__main__':main()

@@ -1,67 +1,72 @@
-# Pocket4 全 Launcher App 修复：检查点 08
+# Pocket4 全 Launcher App 修复：检查点 09
 
-工作尚未完成。范围是当前目标用户的全部 Launcher App，原定八个应用只是历史子集；最终还要验证业务、长时间运行、重启和故障恢复。此文件区分实际完成、实际失败和未执行的候选。
+工作尚未完成。用户将原定八个应用扩大为全部 Launcher App，并要求最终清理所有旧 Android/framework、旧 App 版本和相关产物。清理仍以前述真实可用验收为前提；当前 production ready 为 0，删除旧产物为 0 字节。本检查点区分真实成功、失败、UNKNOWN 与未执行候选。
 
-## 当前范围已经逐组件核实
+## 当前范围和安装进度
 
-目标仍是 Pocket4 内置 DroidLoom Android 17 / SDK 37 / user 0。旧 reDroid 14/16 已在先前退役，不能将内置 Android 的结果写成 reDroid 测试结果。
+目标为 Pocket4 内置 DroidLoom Android 17 / SDK 37 / user 0。旧 reDroid 14/16 已先前退役；内置 Android 的结果不代表 reDroid 通过。
 
-2026-11-06 的只读任务 `1a1b22e95d0-fc05-7cd4` 实际 exit 0，终态已持久化，完整 stdout 25,256 字节，SHA-256 `854e3e184b52e6f580ccf991b7bf6526786d89e64570e197b52559a9892df19d`。五条固定 PackageManager 命令包括实际 help，以及两轮包清单和 MAIN/LAUNCHER resolver 查询；三次原生查询完成前后核对。
-
-| 当前实测项目 | 结果 | 证据边界 |
+| 实际项目 | 结果 | 限度 |
 |---|---:|---|
-| user 0 已安装 APK 包元数据 | 205 | 包含静态共享/SDK 库；不含 APEX 或已卸载包 |
-| 可解析 MAIN/LAUNCHER 组件及其包 | 45 / 45 | 两次查询相同，逐组件与原生目录完全一致 |
-| 明确绑定 APK/UID/数据身份的范围 | 47 包 / 87 APK | 45 个 Launcher 包，加 actions 与新 QA helper；其余 PM 行不继承字节或 UI 资格 |
-| 实际升级安装 | 11 App | 同签名、保留原 UID/数据；不等于业务通过 |
-| 与当前官方完整资产逐字节相同 | Fcitx、microG | 仍需业务回归 |
-| 原审计批次通过 | 10 App / 14 APK | b05 保持失败，b06–b13 尚未完成 |
-| production ready | 0 | 启动、登录/访客、核心操作、权限、网络/存储、长运行、重启/恢复未全通过 |
-| 删除旧 framework/App/产物 | 0 字节 | 清理的最终验收条件尚未满足 |
+| PackageManager 已安装非 APEX APK 包 | 205 | 不是 205 包完整字节、权限或业务验收 |
+| MAIN/LAUNCHER 组件 / 包 | 45 / 45 | 两次 resolver 查询相同，与原生目录逐组件一致 |
+| 明确保护范围 | 47 包 / 87 APK | 45 个 Launcher 包及 actions、QA helper |
+| 已同签名升级安装 | 11 App | 保留原 UID/数据；安装不等于业务可用 |
+| 已与当前官方完整资产逐字节相同 | Fcitx、microG | 仍需业务回归 |
+| 原串行审计通过 | b01–b04，10 App / 14 APK | b05 原 FAILED 保留，b06–b13 未完成 |
+| 新官方工具独立对照 | Calendar、Fcitx，2 APK | 不冒充原 b05 已解锁 |
+| 完整业务验收 / 旧产物删除 | 0 App / 0 字节 | 长运行、重启、恢复等仍未完成 |
 
-PM 查询的 12,930 个观察 FD、20 个租约 FD 均完整关闭；持有的 namespace 目标与 action lock 已释放。自有子进程 1225420 正常退出，原 pidfd 观察退出并关闭，父进程 FD 身份恢复；无超时或 kill。原始数据见 [current_services_r4/actual](successor_audit_requests/current_services_r4/actual)。这是枚举证据，不是权限实态或业务验收。
+范围枚举实际任务 1a1b22e95d0-fc05-7cd4 durable exit 0；原件在 successor_audit_requests/current_services_r4/actual/，逐包索引在 current_pm_resolver_index-r1/。205 行元数据与 47 包完整保护范围不是同一资格。
 
-11 个实际升级为贝壳、东方航空、国航、微信、拼多多、淘宝、滴滴、携程、哔哩哔哩、京东、抖音。官方版本元数据不能代替签名一致、ABI/SDK 适用且实际运行的完整交付包。美团已装包与官方候选签名不同，不能强行覆盖或重签；12306 与猪八戒的部分下载仍不是可安装交付。国际应用的剩余交付、全部应用的可用最新版判定及回归均未完成。
+11 个实际升级：贝壳 3.06.71、东方航空 9.5.16、国航 7.53.0、微信 8.0.80、拼多多 8.30.0、淘宝 10.69.0、滴滴 8.0.18、携程 8.97.4、哔哩哔哩 9.18.0、京东 16.1.50、抖音 41.0.0。美团官方候选与已装包签名不同，不强行覆盖、重签或卸载数据；12306、猪八戒仍只有部分下载，不能安装。剩余最新版适用判定、交付和各 App 回归未完成。
 
-## 权限与历史授权
+## 历史授权与有效约束
 
-继续使用已有 sidecar、容器内 UI Automator、中文输入和节点定位，不引入 ADB。哔哩哔哩 Accept 仅属于历史独立测试 cell `p4-bili-m30-cell-20261010`，不能转移到 Main。美团外卖的位置权限不主动开启。完整性、签名、运行时所有权与进程退出约束保持有效。
+沿用 sidecar、容器内 UI Automator、中文输入与真实节点定位，不新增 ADB。哔哩哔哩 Accept 仅属于 p4-bili-m30-cell-20261010，不转移到 Main；美团外卖位置权限不主动开启。完整性、签名、运行时所有权和有效安全约束不被绕过。
 
-当前 manifest 声明、保存的权限元数据和 205 包清单均不能证明有效授权。有效 grants、AppOps 与 roles 仍为 UNKNOWN；r4 没有查询或修改它们。r3 的 AppOps help 实际返回 255，该失败原样保留；r4 是独立的 PackageManager 五命令观察，并未将 255 改为成功。
+manifest 声明和 PM 保存元数据不等于运行时有效授权。effective grants、AppOps 与 roles 尚未完成逐 App 查询。r3 AppOps help 的真实返回 255 保留。新 Beike 单包权限只读 pilot 仍是未提交候选，不包含 grant/set。
 
-## 贝壳 QA：原自有任务已经合法退出
+## 贝壳新 QA 进程与真实失败
 
-新 helper `org.droidloom.qa.successor.p8f89f253350ba2fa.r1` 已实际构建与安装，UID 10157；原始 helper 构建、安装、准入和真实 UI 证据保留在先前检查点。关闭入口 popup 的旧操作仍为 UNKNOWN；没有重放点击或将旧结果改成成功。后续只读观察显示过首页，独立当前观察显示 IHG 位于前台，因此旧的当前上下文发布器正确拒绝发布。
+新 helper 已实际构建、安装，UID 10157、固定 APK 和签名已绑定。旧自有 task 876 经原 cleanup 路径实际移除，177 份旧原件、UNKNOWN 和 task 875/877 保留；未删除 App 数据或构建。
 
-本轮使用原 recorder 已有的 cleanup 例外和原任务所有权机制处理测试创建的 task 876，未改 `Flow.begin`、guard、运输层或清理代码。
+新 flow b6de2bd4f04bcd572a074ef984ba7dbe 已 init；native launch 1a1b240f7fd-fc05-7d2d durable exit 0，获得 task 878。inspect 1a1b2537fa5-fc05-7d8c durable exit 0，核对同一 task/helper/前台和状态恢复。只读历史 reader 1a1b262379a-fc05-7dd2 exit 0，核对 21 原件，观察到活动弹窗的 7 个可见非密码节点，无可编辑节点。private UI 不入 Git。
 
-| 实际任务 | 结果 |
-|---|---|
-| 固定当前前台观察 `1a1b206d887-fc05-7c16` | exit 0；当时 IHG 在前台，贝壳 task 876 身份仍一致 |
-| 原自有 task 清理 `1a1b2307f12-fc05-7cdd` | exit 0；一次 remove 876，一次后置读取证实缺席，其余 task 875/877 保留 |
-| 原证据保全 | 177 个文件、888,207 原始字节及文件身份保持不变；旧 UNKNOWN 保留 |
-| 清理进程生命周期 | 子进程 1229651 正常退出，原 pidfd 退出/关闭、父 FD 身份恢复；namespace、原 flow lock 随正常退出收口 |
+两步 case 1a1b272ec9d-fc05-7e0d **failed 1**。完整 stdout 5920 字节，SHA-256 78ab558a72b5cb14ad00d6d74c978a935272d9252cd13e6a66215dbac1a3abe2。第一步关闭后，独立新 inspect 成功匹配首页搜索节点，产生 step 0 postcondition。第二步报 ProtocolError: EXACT_SUCCESSFUL_FINISH_REQUIRED；原 case 返回 2，action_attempted=true、outcome_unknown=true 保留。子进程正常以 1 退出，pidfd 观察退出并关闭，父 FD 恢复，无超时/kill；生命周期收口不等于 case 成功。
 
-清理实际结束于 2026-11-06T18:48:11.546832Z。完整 stdout 8,920 字节，SHA-256 `14a32088291f748d2d894783d4a27566dbe2f5b4a41dba0ffe54dc42ecd22224`；见 [owned_cleanup_r1/actual](successor_qa/owned_cleanup_r1/actual)。它只结束自有测试任务，没有删除 App 数据、旧构建或文件产物。新的独立 flow/launch 仍待执行，不能把清理通过当作贝壳业务通过。
+下一步读取该 case 的实际 nonce/commands/transport/失败输出，不能重放点击或用新 flow 逃过 UNKNOWN。run_case、qa_adapter、Flow consumer 未改。成功 case 的后置证明只有设计，不能套到这个失败 case。实际资料在 successor_qa/explore_home_search_case_r1/actual/。
 
-完整 private UI bundle、截图、节点树和签名私钥不进入 Git；公开资料仅保留来源、结构性身份、摘要和回执。
+## Calendar 官方工具对照已通过
 
-## Calendar 资源解析与官方工具
+Google Maven 官方稳定 AAPT2 9.5.1-16666295 的完整 JAR 与官方 SHA 一致。宿主 r3 资格 1a1b257ba27-fc05-7da0 durable exit 0；原 ELF/RUNPATH 未改，工具位于受保护独立目录，7 个 ELF 静态依赖与受控搜索目录已绑定。version 成功不等于 App 兼容。
 
-Calendar/Fcitx 的实际 manifest/签名对照任务已执行，但 Calendar 的系统 aapt2 stderr 存在 **23,800 条 E 级资源诊断**。虽然部分命令退出 0，资源健康仍未通过；原 b05 失败保留。错误包括 offset 对齐/范围与 entry 边界问题，不能仅凭错误文本推断旧工具不支持新格式。
+Calendar/Fcitx 独立对照 1a1b26bfb80-fc05-7dfa **durable exit 0**。外层 stdout 28018 字节 / 8288017c0c0e4e1f349951a81a468fcbbdcb6fa4d1065c4889f96327ba290a76；解码 worker 原件 132387 字节 / 8e577c9e4a6eb77e6ad94e9993ca91aa97af958a4c02491237b32600dd6f4dfe。
 
-通过 Google 官方 Maven 元数据实际查询，当前最高稳定版 AAPT2 为 `9.5.1-16666295`；metadata 的 latest/release 为 alpha 版，不以它替代稳定版。官方 Linux JAR 已在任务 `1a1b220b4d3-fc05-7c7f` 完整下载，2,451,278 字节，SHA-256 `fa1014cb1431622d292ef55ba870e75882ea19987bec541698b912f446a2d08f` 与单独获取的官方 checksum 一致，HTTPS 正常验证、无重定向，ZIP CRC 与成员约束通过。此检查点仅证明下载及文件验证，尚未解包或运行新版工具，也没有修改 APK。后续须在宿主完成工具资格验证，再对同一已绑定 Calendar APK 做对照。
+同一两份已装 APK，官方 badging 均 rc 0/stderr 0，签名通过且与 PM 证书相同，声明权限名解码完整。对照用旧 Calendar badging 仍 rc 1，因此 all_commands_succeeded=false 如实保留，而所有正式对照命令成功。18 次工具目录观察完整、所测 2 包实际身份和 Main runtime guard 前后一致、6399 观察 FD 全关闭，owned child 正常退出。47 包是固定范围引用，本次没有逐包重验其余 45 包。
 
-## Framework 构建仍未成功
+这支持旧 Calendar badging 失败与解析器相关，不证明全部资源表、45 App 或业务健康，也不自动推进原 b05 门禁。新版 badging 的派生 min_sdk 当前为 null，仍须核对原始字段格式，不将旧字段冒充新版结果。旧 FAILED 保留；接下来正规修复原审计工具和接续门禁。
 
-真实 SystemUI/WindowManager provider 和源码锁的修复、builder470 源代码和实际 Rust 资格结果已保存在检查点 07。builder470 实编/控制通过不等于 Soong/framework 产物通过，更不等于 Main 部署或业务可用。
+## 神州完整同版本官方候选
 
-build07 `1a1b20bbc0a-fc05-7c2e` 实际 failed 1，前后 Main 范围与资源约束检查通过，但内层准备在编译器启动前遇到缺失输入。独立只读诊断 `1a1b2240691-fc05-7c96` 定位到旧 builder468 的固定 ELF 路径缺失：
+S35 下载部分失败；S36 一次有限范围续传验证 HTTP 206、精确范围和同一 Last-Modified 后获得 220579134 字节完整 APK，SHA-256 6c796f5073658d6f541ebbae5723d80645e6fbf6060ca816def6c3ec173e31d6。S37 在错误 JDK owner 假设处失败且未运行签名工具；原失败保留。
 
-`/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/cargo-target/debug/droidloom-update`
+S38 1a1b25b668d-fc05-7dae durable exit 0，按实际 UID 1000 工具身份验证，v1/v2 通过，唯一证书 d85bed4d2a7c08e1b6b5f0097d6c66a79a5b12b58d97e794d3b5c5bff2aeaf44 与已装包一致。META-INF 警告保留，未改 APK。
 
-该诊断也因 ctypes 引入的 libffi FD 与最初 census 不同而整体 failed 1；只有缺失文件和调用链是实际观察，不能将诊断整体标记 PASS。旧身份契约包含 inode 与时间等字段，新复制相同 SHA 的文件不能冒充原身份。后续恢复/重新资格验证必须保留原收据和有效约束；此检查点未启动新的 framework 编译或部署。
+S39 1a1b26844a3-fc05-7ded **failed 1**。两条 aapt 均 rc 0/stderr 0，严格 stdout shape parser 拒绝 20 行缩进 feature 与 bare main。原件完整保留；后续独立本地解释只接受已观测的精确语法，没有改原失败或新增远端执行。解析字段为 com.szzc 9.6.1/code 327、min 23/target 33、ARM64/armeabi-v7a、45 声明权限行，与历史已装版本相同但 APK SHA 不同，未当作更高版本安装。
 
-## 后续验收与最终清理
+## Framework 现存 builder470 已实测重新资格
 
-继续完成官方适用交付、真实新进程 QA、各 App 核心操作和权限实态，随后执行长运行、重启与故障恢复。达到用户要求的真实可用状态后，才按实际运行依赖清理过期 Android/framework、旧 App 包、实验残留和中间版本，保留最终工作源码、配置与复现清单，并记录实际删除路径与释放空间。当前不删除仍用于复现、恢复或未完成验收的原始证据和构建。
+旧 build07 1a1b20bbc0a-fc05-7c2e 和诊断 1a1b2240691-fc05-7c96 均 FAILED；旧 builder468 固定 ELF 缺失，不能用新复制文件冒充旧 inode/时间身份。
+
+新显式 current470 使用现存 builder470 和完整真实来源链。stage 1a1b25fcb40-fc05-7dc4、qualification 1a1b26092d9-fc05-7dc7 均 durable exit 0。result 原件 121931 字节 / 3673f75b77a2133b5fbeecd26b13441d6c4625312c304f7dab8604e2efbfbd69 已版本锁分块取回验证。
+
+34 条命令全部 0，19 项 updater 与 9 项实际编译的 source-resume 测试共 28 项通过，15 项门禁通过，498 份来源及绑定依赖前后稳定。峰值内存 904175616 字节、swap 0、memory events 全 0，无残留子进程或 cleanup 错误。资格没有运行 Soong、操作 Main 或部署 framework。
+
+显式接入两目标 framework 构建的新合同仍在源码审查。原来源与收据、Main/47 包保护、fresh 15 GiB 准入、10 GiB cap、0 swap、保留两核/j1 等约束继续有效。builder 资格不能代替 framework 构建或整机可用。
+
+## 后续验收和最终清理
+
+继续完成全部 Launcher App 的版本/完整交付/签名、有效权限、登录或访客、核心操作、网络/存储、长运行、重启和故障恢复。修复 framework 及各个真实失败，形成可复现回归。
+
+最新版通过对应真实验收后，才按最终运行依赖删除过期 Android/framework、旧 APK、实验残留和中间版本，记录实际路径及释放空间。保留最终工作源码、配置、复现清单和必要结果证据。当前未达到整机清空旧版本条件。

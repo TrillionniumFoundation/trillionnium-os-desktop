@@ -1,0 +1,25 @@
+--- preserved-r2/assemble_candidate.py
++++ independent-controlled-layout-r3/assemble_candidate.py
+@@ -48,6 +48,7 @@
+ the implementation references. No Main, UI, namespace, permission or ADB work.
+ """
+ import base64
++import errno
+ import hashlib
+ import io
+ import json
+@@ -69,8 +70,12 @@
+         "USER_INPUT_MODES": {jar["path"]: 0o400, receipt["path"]: 0o600},
+         "EXPECTED_MEMBERS": expected_members, "DOWNLOAD_TERMINAL_RAW": terminal,
+         "OFFICIAL_URL": "https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2/9.5.1-16666295/aapt2-9.5.1-16666295-linux.jar",
+-        "SOURCE_ROOT": "/home/alex/work/pocket4-official-aapt2-host-tool-source-20261106-r2",
+-        "OUTPUT": "/home/alex/work/pocket4-official-aapt2-host-tool-proof-20261106-r2",
++        "SOURCE_ROOT": "/home/alex/work/pocket4-official-aapt2-host-tool-source-20261106-r3",
++        "OUTPUT": "/var/lib/pocket4-official-aapt2-host-tool-proof-20261106-r3",
++        "EXACT_EXTRACTED_TOOL": {"bytes": 6489808, "sha256": "d0c30c343c61bfdc837abd02e195741dba7407bcb61ca34e037bcc1dc26ea06c"},
++        "EXACT_TOOL_RUNPATH": "$ORIGIN/:$ORIGIN/lib64:$ORIGIN/../lib64:$ORIGIN/../../lib64:$ORIGIN/../../../lib64",
++        "EXACT_TOOL_NEEDED": ["libdl.so.2", "libpthread.so.0", "libm.so.6", "librt.so.1", "libc.so.6", "ld-linux-x86-64.so.2"],
++        "CONTROLLED_SEARCH_RELATIVE_PATHS": ("toolchain/platform/bin", "toolchain/platform/bin/lib64", "toolchain/platform/lib64", "toolchain/lib64", "lib64"),
+         "COLLECTOR": {"path": "/home/alex/work/pocket4-successor-install-audit-source-20261106-r1/audit_successor_apks.py",
+                       "bytes": 29242, "sha256": "faff199c1f6218b3c01d87e44be610d6fa211de396b5e8c862c188dec59d284a"},
+         "SYSTEM_LIBRARY_ROOTS": ("/usr/lib", "/lib", "/lib64"),

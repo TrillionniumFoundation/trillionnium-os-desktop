@@ -1,0 +1,31 @@
+--- preserved-actual-debian-r3
++++ independent-official-comparison-r1
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT='/home/alex/work/pocket4-calendar-aapt2-diagnostic-source-20261106-r3'
+-FILES=[{'name': 'owned_readonly_lifetime.py', 'bytes': 16667, 'sha256': '6a818a4fd0a28cc2dd565acf37b709b349011aa87d587fe5cf95c10be9d1916e'}, {'name': 'diagnose_calendar_and_fcitx.py', 'bytes': 46019, 'sha256': 'e9935fd73b49a72b1bf79c098ee21486c7a35c1fddf7fa188b7a4091d1dc0c89'}, {'name': 'request.review-only.json', 'bytes': 1703, 'sha256': '114ae69bf7c1dfc10632a4bb542920c20bc227dc79a563c8a7c64796f51ce6a6'}, {'name': 'inputs/inventory.original.json', 'bytes': 9876, 'sha256': '60ee9c47cb1719343a1667d306e26086d66f2376d62b8c5251f4e64446887341'}, {'name': 'inputs/aapt2-proof.outer.original.json', 'bytes': 54192, 'sha256': 'f9c289f7d28f836c51d845b4c851c1dbac0e8f326d658c7b98106b6ee327f192'}, {'name': 'inputs/aapt2-proof.terminal.original.json', 'bytes': 730, 'sha256': 'f797f008a250a386ca905e9b7e9065ac2f85cad2168be702c3ad01209d341802'}]
++ROOT = '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1'
++FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 16925, 'sha256': '6c9a443f2f1f2857d2812f52e240b9f4aafc665e335c5e7590163f61db745b48'}, {'name': 'diagnose_calendar_and_fcitx.py', 'bytes': 62223, 'sha256': '0fc991b04de604a1e8dcd5fc2455e96047df5fceda663378eab0f7c0ccc1f3dd'}, {'name': 'request.review-only.json', 'bytes': 2597, 'sha256': 'c4b5d05ff49bdc54fb6c7a1fa694dabdd1068cf69040206068ae67ccc4e87d92'}, {'name': 'inputs/inventory.original.json', 'bytes': 9876, 'sha256': '60ee9c47cb1719343a1667d306e26086d66f2376d62b8c5251f4e64446887341'}, {'name': 'inputs/aapt2-proof.outer.original.json', 'bytes': 54192, 'sha256': 'f9c289f7d28f836c51d845b4c851c1dbac0e8f326d658c7b98106b6ee327f192'}, {'name': 'inputs/aapt2-proof.terminal.original.json', 'bytes': 730, 'sha256': 'f797f008a250a386ca905e9b7e9065ac2f85cad2168be702c3ad01209d341802'}, {'name': 'inputs/official-host.stdout.original.jsonl', 'bytes': 7092, 'sha256': 'd7785fb80d8075267b99f1ccc5537cdd12dc014f38fd72c87eb575bd899dd343'}, {'name': 'inputs/official-host.terminal.original.json', 'bytes': 731, 'sha256': 'f456a3ee2db689339d5d60db5106904b0d2bde640663eccc222311db39f62435'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):
+@@ -66,7 +66,7 @@
+     os.umask(0o077);before_fds=len(os.listdir('/proc/self/fd'))
+     raw=sys.stdin.buffer.read(262145);need(0<len(raw)<=262144,'BOUNDED_EXACT_INPUT')
+     payload=json.loads(raw)
+-    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-calendar-owned-comparison-source-stage-v3','CLOSED_STAGE_PAYLOAD')
++    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-calendar-official-comparison-source-stage-v1','CLOSED_STAGE_PAYLOAD')
+     need(type(payload['files']) is list and len(payload['files'])==len(FILES),'EXACT_FILE_COUNT')
+     inputs=[]
+     for expected,item in zip(FILES,payload['files']):
+@@ -104,7 +104,7 @@
+             except OSError:errors.append(fd)
+         need(not errors,'STAGE_FDS_NOT_CLOSED')
+     after_fds=len(os.listdir('/proc/self/fd'));need(after_fds==before_fds,'STAGE_DESCRIPTOR_DIFFERENCE')
+-    print(canonical({'schema':'pocket4-calendar-owned-comparison-source-stage-result-v3','source_stage_ok':True,'source_root':ROOT,'files':FILES,
++    print(canonical({'schema':'pocket4-calendar-official-comparison-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
+          'bootstrap_FDs_before':before_fds,'bootstrap_FDs_after':after_fds,'worker_about_to_exec_once':True,
+          'stage_Main_reads':0,'stage_namespace_entries':0,'stage_installs':0,'stage_UI_actions':0,'automatic_retry':False}).decode(),flush=True)
+     wrapper=FILES[0]

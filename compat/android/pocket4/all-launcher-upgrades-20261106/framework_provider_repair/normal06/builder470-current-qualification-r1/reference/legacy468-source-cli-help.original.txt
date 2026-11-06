@@ -1,0 +1,15 @@
+Build the complete framework Java library and Android JNI runtime only. Uses its independent exact source lock; does not install or enable roles
+
+Usage: droidloom-update native-role-ingress-build [OPTIONS] --work <WORK> --out <OUT>
+
+Options:
+      --source <SOURCE>
+          Droidloom checkout (remembered automatically after installation)
+      --work <WORK>
+          Dedicated package workspace; its aosp-source must be absent or match this route's lock
+      --out <OUT>
+          Required fresh absolute output directory, separate from aosp-source
+      --resume-source-staging <RESUME_SOURCE_STAGING>
+          Explicit private staging from a retired attempt; never discovered by scanning
+  -h, --help
+          Print help

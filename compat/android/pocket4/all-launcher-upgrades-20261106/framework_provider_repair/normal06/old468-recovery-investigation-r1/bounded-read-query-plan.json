@@ -1,0 +1,81 @@
+{
+  "schema": "pocket4-old468-bounded-read-query-plan-v1",
+  "executed": false,
+  "host": "pocket4",
+  "authority": [
+    {
+      "relative_path": "source-r4/parent-normal03-framework_build.py",
+      "bytes": 59292,
+      "sha256": "03f0b4aecba20149ad7f1301ea823eb5e7e5ba1efa00d08c92c4fa7ecf482132"
+    },
+    {
+      "relative_path": "source-r4/actual-builder469-qualification.json",
+      "bytes": 65386,
+      "sha256": "f31bb31d29967bacdb0842eea99dae65f8b67425f26f10063c3d84099367fd64"
+    },
+    {
+      "relative_path": "preparation-diagnostic-r1/actual/stdout.original.jsonl",
+      "bytes": 4320,
+      "sha256": "2a8c2c6c141a76bbc604c039d4dfcc22ab2daac80b6d51286b06718f19e6207b"
+    }
+  ],
+  "observed_missing_file": {
+    "path": "/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/cargo-target/debug/droidloom-update",
+    "expected_bytes": 34722200,
+    "expected_sha256": "8bf78794705a62f0a60d00af64cdd25e2b798739e445575c3d3cca5e566f4cf6",
+    "errno": 2,
+    "observation_job": "1a1b2240691-fc05-7c96",
+    "observation_is_partial_diagnostic_not_pass": true
+  },
+  "first_exact_read": {
+    "tool": "file_info",
+    "arguments": {
+      "host": "pocket4",
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/result.json"
+    },
+    "must_match": {
+      "bytes": 161423,
+      "sha256": "871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8"
+    },
+    "source": "actual-builder469-qualification.json/original_compiler03_authority and parent-normal03-framework_build.py:188-190"
+  },
+  "dependent_reads": {
+    "tool": "binary_read",
+    "fixed_path": "/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/result.json",
+    "expected_version": "EXACT_VERSION_FROM_PRECEDING_FILE_INFO_NOT_A_GUESSED_VALUE",
+    "chunks": [
+      {
+        "offset": 0,
+        "limit": 65536
+      },
+      {
+        "offset": 65536,
+        "limit": 65536
+      },
+      {
+        "offset": 131072,
+        "limit": 30351
+      }
+    ],
+    "acceptance": "Store every raw MCP payload before Python parsing; require offset continuity, actual final eof, total161423, per-chunk SHA, and full exact871e78… SHA. Preserve original JSON bytes without JS integer round-trip."
+  },
+  "adaptive_next_step_after_receipt_read": [
+    "Extract the actual builder_elf identity, recorded Cargo build argv/environment, and build stdout/stderr exact path/size/SHA from the verified original receipt.",
+    "If exact recorded output supplies a surviving artifact path, form one bounded exact query from that evidence; do not invent a deps hash or search other users/Android/process memory.",
+    "A bounded listing of a directory would require that directory to be established by the actual receipt/Cargo output first and its separate reviewed read scope."
+  ],
+  "repair_constraints": {
+    "new_processes": 0,
+    "Main_operations": 0,
+    "source_or_artifact_mutations": 0,
+    "recompilation": 0,
+    "claiming_same_identity_after_copy": false,
+    "altering_historical_receipt": false,
+    "changing_existing_guard": false
+  },
+  "important_limitations": [
+    "The strict inherited held_file identity includes device/inode/mode/size/mtime_ns/ctime_ns. A new copy of matching bytes cannot satisfy the old identity.",
+    "Even a surviving Cargo hardlink would need current stat/hash evidence; adding/removing a hardlink changes ctime, so same inode alone does not establish the original full identity.",
+    "No repair can be marked ready until actual preservation/recovery evidence and a legitimate current qualification path are reviewed. No timestamp fabrication or silent guard weakening is proposed."
+  ]
+}

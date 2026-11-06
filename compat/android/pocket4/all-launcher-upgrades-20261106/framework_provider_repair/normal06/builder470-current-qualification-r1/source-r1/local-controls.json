@@ -1,0 +1,79 @@
+{
+  "Main_actions": 0,
+  "Rust_commands_executed": 0,
+  "SSH_calls": 0,
+  "Soong_invoked": false,
+  "actual_current_receipt_used_only_as_parser_input": {
+    "bytes": 76136,
+    "path": "builder470-hostprep-r2/root-readback-01/result.original.json",
+    "sha256": "6599026ebe5071ecdd5f0e2d962eb96cc791041be0dee9fd59a402735a6387d8"
+  },
+  "check_count": 10,
+  "checks": [
+    "actual_original_current470_receipt_passes_unchanged_pure_validator",
+    "exact_original491_493_498_manifests_match_finite_ancestry",
+    "missing_original_independent_test_gate_is_rejected",
+    "unknown_empty_current_qualification_cannot_pass",
+    "complete_cleanup_with_killed_or_reaped_residual_child_cannot_pass",
+    "nine_resume_tests_alone_cannot_qualify_current_builder",
+    "missing_fresh_command_cannot_pass",
+    "equal_bytes_at_changed_inode_cannot_replace_current_artifact",
+    "all26_previously_qualified_helper_bodies_are_byte_identical",
+    "closed_stage_and_qualification_transport_pins_and_bounds_match"
+  ],
+  "cleanup_eligible": false,
+  "current_qualification_candidate": {
+    "bytes": 72093,
+    "path": "builder470-current-qualification-r1/source-r1/qualify_current470.py",
+    "sha256": "f8a4fed5618f05be2db375ddc63d3b2bff2e884d6ed0d9468e46bb138e86f03e"
+  },
+  "host_qualification_executed": false,
+  "new_authorization_contract_connected": false,
+  "production_ready": false,
+  "schema": "pocket4-current470-candidate-local-controls-v1",
+  "source_ancestry": {
+    "legacy_source_directories_claimed_current": false,
+    "transitions": [
+      {
+        "added": [
+          "android/manifest/m2-role-ingress-provider2-source-lock.json",
+          "android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp"
+        ],
+        "changed": [
+          "tools/droidloom-update/src/android.rs",
+          "tools/droidloom-update/src/native_role_ingress.rs"
+        ],
+        "removed": [],
+        "stage": "491-to-493",
+        "unchanged_count": 489
+      },
+      {
+        "added": [
+          "android/manifest/m2-role-ingress-provider3-source-lock.json",
+          "android/native-role-ingress/provider-fixtures/SystemUI-pods-build.Android.bp",
+          "android/native-role-ingress/provider-fixtures/SystemUI-pods-policy.Android.bp",
+          "android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp",
+          "android/native-role-ingress/provider-fixtures/WindowManager-Shell.Android.bp"
+        ],
+        "changed": [
+          "tools/droidloom-update/src/android.rs",
+          "tools/droidloom-update/src/native_role_ingress.rs"
+        ],
+        "removed": [],
+        "stage": "493-to-498",
+        "unchanged_count": 491
+      }
+    ],
+    "unchanged_resume_and_cargo_inputs": [
+      "Cargo.lock",
+      "Cargo.toml",
+      "rust-toolchain.toml",
+      "tools/droidloom-source/Cargo.toml",
+      "tools/droidloom-source/src/lib.rs",
+      "tools/droidloom-source/src/main.rs",
+      "tools/droidloom-source/src/resume.rs"
+    ]
+  },
+  "state": "LOCAL_PARSER_AND_SOURCE_CONTROLS_PASS",
+  "synthetic_fixtures_used_only_for_local_gate_rejection": true
+}
