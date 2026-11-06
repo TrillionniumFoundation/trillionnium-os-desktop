@@ -1,0 +1,22 @@
+--- original-fixed-permission-gate
++++ explicit-microG-correction-only
+@@ -1,4 +1,4 @@
+-def service_gate(result, request, commands, identities, expected_guard, baseline=False):
++def corrective_service_gate(result, request, commands, identities, expected_guard, baseline=False):
+     root = request["output_root"]
+     request_raw = json.dumps(request, ensure_ascii=True, sort_keys=True, separators=(",", ":"), allow_nan=False).encode("ascii") + b"\n"
+     need(result.get("request") == {"path": root + "/request.json", "bytes": len(request_raw), "sha256": sha(request_raw)} and
+@@ -27,11 +27,11 @@
+         clean_command(command)
+         need(row.get("caller_uid") == 1000 and row.get("operation") == operation and command.get("argv") == native_argv + [operation],
+              "EXACT_NATIVE_READONLY_CALLER_AND_ARGV_REQUIRED")
+-        stream_pair(command, row, root, "native-%02d" % index)
++        corrective_stream_pair(command, row, root, "native-%02d" % index)
+     need(len(result["android_commands"]) == len(commands), "ALL_CLOSED_ANDROID_COMMANDS_REQUIRED")
+     for index, (row, command) in enumerate(zip(result["android_commands"], commands), 1):
+         clean_command(row)
+-        stream_pair(row, row, root, "android-%02d" % index)
++        corrective_stream_pair(row, row, root, "android-%02d" % index)
+         suffix = ["/system/xbin/su", "2000", "/system/bin/timeout", "-k", "2", "25"] + command
+         need(row.get("argv", [])[-len(suffix):] == suffix, "EXACT_BOUND_READONLY_ANDROID_SUFFIX_REQUIRED")
+     help_row = result["android_commands"][0]

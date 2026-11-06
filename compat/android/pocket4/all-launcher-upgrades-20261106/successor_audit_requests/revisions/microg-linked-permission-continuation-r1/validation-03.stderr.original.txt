@@ -1,0 +1,17 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 378, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 371, in main
+    context = load_linkage()
+              ^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 272, in load_linkage
+    plan, request, worker, wrapper, packet = validate_correction_source(original, g, loaded, records)
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 177, in validate_correction_source
+    worker.validate_request(request)
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/permissions-microg-b02-correction-r1/observe_current_services.py", line 493, in validate_request
+    need(request["worker"]["path"] == STAGE + "/observe_current_services.py" and str(Path(__file__).resolve()) == request["worker"]["path"],
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/permissions-microg-b02-correction-r1/observe_current_services.py", line 64, in need
+    raise RuntimeError(code)
+RuntimeError: EXACT_REAL_SERVICE_SOURCE_REQUIRED

@@ -1,0 +1,11 @@
+--- original-read-private
++++ exact-microG-pin-budget-only
+@@ -5,7 +5,7 @@
+     fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK)
+     try:
+         before = os.fstat(fd)
+-        need(stat.S_ISREG(before.st_mode) and before.st_size == pin["bytes"] and 0 <= before.st_size <= 262144,
++        need(stat.S_ISREG(before.st_mode) and before.st_size == pin["bytes"] and 0 <= before.st_size <= private_input_limit(path, pin),
+              "BOUNDED_PINNED_PRIVATE_INPUT_REQUIRED")
+         raw = bytearray()
+         while len(raw) <= before.st_size:

@@ -1,0 +1,84 @@
+--- original-local-coordinator
++++ explicit-corrective-link-local-coordinator
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Root's local claim/receipt collector. No remote, Android or UI calls."""
++"""Explicit corrective-link local claim/receipt collector. No remote, Android or UI calls."""
+ from pathlib import Path
+ import hashlib
+ import json
+@@ -8,8 +8,9 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-PROJECT = HERE.parents[1]
+-GATE_SHA = 'dc4fffb3f11e8428db732b96cd1925f0bdce239cdce81ff64ab369dc14c751f4'
++PROJECT = HERE.parents[2]
++CAPTURE = PROJECT / "successor_audit_requests/effective_permissions_45_capture_r1"
++GATE_SHA = 'bf7ee540d5e64276f1a9490b50da1381a725f52081848ec0d960353acf86c7a8'
+ PLAN_SHA = '802c9616b99c0c753c7a31188ab7b594e5baba39d6940d963c2c1b9bd2cdb749'
+ LEDGER = PROJECT / 'successor_audit_requests/actual/permissions-fixed45-r1'
+ 
+@@ -27,32 +28,32 @@
+ 
+ 
+ def gate_source():
+-    raw = (HERE / 'permission_capture_gate.py').read_bytes()
++    raw = (HERE / 'linked_permission_gate.py').read_bytes()
+     assert sha(raw) == GATE_SHA
+-    assert sha((HERE / 'CAPTURE_PLAN.json').read_bytes()) == PLAN_SHA
++    assert sha((CAPTURE / 'CAPTURE_PLAN.json').read_bytes()) == PLAN_SHA
+     module = types.ModuleType('exact_reviewed_permission_gate')
+-    module.__file__ = str(HERE / 'permission_capture_gate.py')
++    module.__file__ = str(HERE / 'linked_permission_gate.py')
+     exec(compile(raw, module.__file__, 'exec'), module.__dict__)
+     return module
+ 
+ 
+ def claim(number):
+     gate_source()
+-    plan = json.loads((HERE / 'CAPTURE_PLAN.json').read_bytes())
++    plan = json.loads((CAPTURE / 'CAPTURE_PLAN.json').read_bytes())
+     row = plan['batches'][number - 1]
+     assert row['batch'] == number
+     folder = LEDGER / f'batch-{number:02}'
+     assert not folder.exists(), 'Reconcile existing submission; never replace it.'
+-    raw = (HERE / row['process_request']['file']).read_bytes()
++    raw = (CAPTURE / row['process_request']['file']).read_bytes()
+     assert len(raw) == row['process_request']['bytes'] and sha(raw) == row['process_request']['sha256']
+-    result = subprocess.run([sys.executable, '-B', str(HERE / 'permission_capture_gate.py'), 'claim-next'],
++    result = subprocess.run([sys.executable, '-B', str(HERE / 'linked_permission_gate.py'), 'claim-next'],
+                             capture_output=True, check=False)
+     save_exact(HERE / f'root-claim-b{number:02}.stdout.original.json', result.stdout)
+     save_exact(HERE / f'root-claim-b{number:02}.stderr.original.txt', result.stderr)
+     decision = json.loads(result.stdout)
+     assert result.returncode == 0 and not result.stderr
+-    assert decision['state'] == 'CLAIMED_NOT_SUBMITTED' and decision['batch'] == number
+-    assert Path(decision['folder']) == folder and Path(decision['process_request_file']) == HERE / row['process_request']['file']
++    assert decision['state'] == 'CLAIMED_WITH_VERIFIED_MICROG_CORRECTION_NOT_SUBMITTED' and decision['batch'] == number
++    assert Path(decision['folder']) == folder and Path(decision['process_request_file']) == CAPTURE / row['process_request']['file']
+     sys.stdout.buffer.write(raw)
+ 
+ 
+@@ -82,10 +83,10 @@
+     child = rows[1]['child_result']; worker = child['worker_stdout_original'].encode('utf-8')
+     assert len(worker) == child['worker_stdout_bytes'] and sha(worker) == child['worker_stdout_sha256']
+     save_exact(folder / 'worker.stdout.envelope.original.json', worker)
+-    gate = gate_source(); primitives = gate.primitives()
++    gate = gate_source(); primitives = gate.load_linkage()["g"]
+     artifact, artifact_raw = primitives.decode_artifact(worker)
+     save_exact(folder / 'artifact.original.json', artifact_raw)
+-    checked = subprocess.run([sys.executable, '-B', str(HERE / 'permission_capture_gate.py'), 'status'],
++    checked = subprocess.run([sys.executable, '-B', str(HERE / 'linked_permission_gate.py'), 'status'],
+                              capture_output=True, check=False)
+     save_exact(folder / 'gate-status.stdout.original.json', checked.stdout)
+     save_exact(folder / 'gate-status.stderr.original.txt', checked.stderr)
+@@ -102,7 +103,7 @@
+ 
+ if __name__ == '__main__':
+     assert len(sys.argv) in (3, 4)
+-    operation, number = sys.argv[1], int(sys.argv[2]); assert 1 <= number <= 13
++    operation, number = sys.argv[1], int(sys.argv[2]); assert 3 <= number <= 13
+     if operation == 'claim':
+         assert len(sys.argv) == 3
+         claim(number)

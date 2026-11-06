@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 306, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 299, in main
+    context = load_linkage()
+              ^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 199, in load_linkage
+    closure, records = validate_input_closure(original, g)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 76, in validate_input_closure
+    raw = g.read(HERE / "INPUT_CLOSURE.json", 262144)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/gate-r2-terminal-protocol/audit_serial_gate.py", line 51, in read
+    need(path.is_file() and not path.is_symlink(), "LOCAL_REGULAR_RECEIPT_REQUIRED")
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/gate-r2-terminal-protocol/audit_serial_gate.py", line 27, in need
+    raise RuntimeError(code)
+RuntimeError: LOCAL_REGULAR_RECEIPT_REQUIRED

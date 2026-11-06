@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "\"\"\"Read only ownership metadata for the nine observed host Python/Java PIDs.\n\nNo argv, environment, file contents outside procfs, signals or runtime changes.\nThe private output is evidence for review, never a stop/kill authorization.\n\"\"\"\nimport json\nimport os\nfrom pathlib import Path\n\nPIDS = (3190677, 3213141, 1698757, 1713125, 1613458, 1640298, 1640311, 2332057, 993255)\n\n\ndef identity(pid):\n    raw = (Path('/proc') / str(pid) / 'stat').read_bytes()\n    right = raw.rindex(b')')\n    fields = raw[right + 2:].split()\n    return {'pid': pid, 'comm': raw[raw.index(b'(') + 1:right].decode('utf-8', 'replace'),\n            'ppid': int(fields[1]), 'start_time_ticks': fields[19].decode('ascii')}\n\n\ndef main():\n    assert os.getuid() == os.geteuid() == 1000\n    before_fds = len(os.listdir('/proc/self/fd'))\n    rows = []\n    for pid in PIDS:\n        row = {'pid': pid, 'signals': 0}\n        try:\n            before = identity(pid)\n            path = Path('/proc') / str(pid)\n            row['proc_uid'] = path.stat().st_uid\n            assert row['proc_uid'] == 1000\n            row['identity_before'] = before\n            for field in ('exe', 'cwd'):\n                try:\n                    row[field] = os.readlink(path / field)\n                except OSError as error:\n                    row[field] = {'unavailable': type(error).__name__}\n            with (path / 'cgroup').open('rb') as handle:\n                raw = handle.read(8193)\n            assert len(raw) <= 8192\n            row['cgroup'] = raw.decode('utf-8', 'strict')\n            row['identity_after'] = identity(pid)\n            row['same_process_identity'] = row['identity_after'] == before\n        except (OSError, ValueError, AssertionError) as error:\n            row['observation_incomplete'] = type(error).__name__\n        rows.append(row)\n    assert len(os.listdir('/proc/self/fd')) == before_fds\n    print(json.dumps({'schema': 'pocket4-fixed-host-process-ownership-observation-v1',\n                      'actual_uid': os.getuid(), 'rows': rows, 'arguments_read': False,\n                      'environment_read': False, 'signals': 0, 'stop_authority': False,\n                      'Main_actions': 0, 'automatic_retry': False,\n                      'FDs_before': before_fds, 'FDs_after': before_fds}, sort_keys=True))\n\n\nif __name__ == '__main__':\n    main()\n"
+    ],
+    "created_unix_ms": 1794002425642,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2e0972a-fc05-8016",
+    "idempotency_key": "pocket4-fixed-high-rss-ownership-observation-20261106-r1",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2e0972a-fc05-8016",
+    "request_digest": "2e66f49691d5cc8ba49fb507590ee8f3f4e769f329991318fb22ce3d9626e975",
+    "request_fingerprint": 3343628700898151563,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2e0972a-fc05-8016"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2e0972a-fc05-8016"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

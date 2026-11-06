@@ -1,0 +1,819 @@
+{
+  "actions": {
+    "ADB_added": false,
+    "Android_commands": 0,
+    "Main_actions": 0,
+    "SMS_sent": 0,
+    "account_region_integrity_access_bypasses": 0,
+    "installs": 0,
+    "new_APK_downloads": 0,
+    "permission_changes": 0,
+    "remote_process_submissions": 0,
+    "retries_of_HTTP_403_or_429": 0,
+    "web_primary_source_reads": true
+  },
+  "apps": [
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.amazon.mShop.android.shopping&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "32.19.0.100"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "Amazon Shopping",
+      "minimum_next_action": "Use the normal Amazon Shopping Play entry in an eligible authorized store/device context; any supplied publisher package must first be complete and match package, current vendor signer and applicable version code.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.amazon.mShop.android.shopping",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The web tool returned DisabledError, not an observed HTTP 403 and not a download URL.",
+          "url": "https://www.amazon.com/androidapp",
+          "web_reference_ids": [
+            "turn138view1"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Amazon states ordinary Android Appstore support ended August 20, 2025; Fire tablet/TV distribution is separate.",
+          "url": "https://developer.amazon.com/apps-and-games/blogs/2025/02/upcoming-changes-to-amazon-appstore-for-android-devices-and-coins-program",
+          "web_reference_ids": [
+            "turn137search1"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Not accessible through this web tool; no complete same-package delivery was observed.",
+          "url": "https://sj.qq.com/appdetail/com.amazon.mShop.android.shopping",
+          "web_reference_ids": [
+            "turn146view0"
+          ]
+        }
+      ],
+      "specific_gap": "No published complete Shopping APK URL has been verified. Amazon Appstore com.amazon.venezia is a different package and its ordinary Android service ended; substituting its old APK cannot update Shopping.",
+      "status": "NO_VERIFIED_PUBLIC_SAME_PACKAGE_APK_CHAIN"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.enflick.android.TextNow&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "26.44.2.0"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "TextNow",
+      "minimum_next_action": "Use the normal Play update path only if the authorized account, device and region qualify; obtain and verify the complete delivered APK/split set without bypassing the observed publisher refusal.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.enflick.android.TextNow",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The normal page request returned HTTP 403 Forbidden; no retry or client alteration was attempted.",
+          "url": "https://www.textnow.com/downloads",
+          "web_reference_ids": [
+            "turn138view0"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The publisher instructs Android updates through Google Play; Google account sign-in may be required.",
+          "url": "https://help.textnow.com/hc/en-us/articles/360042573174-How-to-update-the-TextNow-app",
+          "web_reference_ids": [
+            "turn136search3",
+            "turn137search5",
+            "turn149view3"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The publisher says download/use is currently in North America and new registration is not available outside North America. This is not a measurement of the Pocket4 account or location.",
+          "url": "https://help.textnow.com/hc/en-us/articles/360042529194-Is-TextNow-available-in-my-country/",
+          "web_reference_ids": [
+            "turn137search6"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The publisher states Android 9 or later; an acquired APK manifest is still required for candidate qualification.",
+          "url": "https://help.textnow.com/hc/en-us/articles/360042572274-TextNow-Supported-Platforms",
+          "web_reference_ids": [
+            "turn136search4",
+            "turn137search4"
+          ]
+        }
+      ],
+      "specific_gap": "No complete same-package public APK endpoint was obtained. Account/region/store eligibility on the target is unknown, not an observed failure.",
+      "status": "OFFICIAL_PLAY_PATH_WITH_PUBLISHER_DOWNLOAD_PAGE_403"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.united.mobile.android&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "4.2.102"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "United Airlines",
+      "minimum_next_action": "Use normal United Play delivery in an eligible authorized store context, or a publisher-supplied current URL. The legacy path or a recommendations page is insufficient for a download candidate.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.united.mobile.android",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Only a JavaScript-required shell was available to this text retrieval; no Android APK URL was exposed.",
+          "url": "https://www.united.com/en/us/fly/travel-experience/united-app.html",
+          "web_reference_ids": [
+            "turn145view3"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The official legacy path was not accessible through this web tool; its present download service is unverified.",
+          "url": "https://www.united.com/web/en-US/content/travel/wireless/download-apk/default.aspx",
+          "web_reference_ids": [
+            "turn138view2"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The actual rendered page is recommendations, including 中国联合航空 and other apps, rather than a United same-package APK listing.",
+          "url": "https://sj.qq.com/appdetail/com.united.mobile.android",
+          "web_reference_ids": [
+            "turn146view2"
+          ]
+        }
+      ],
+      "specific_gap": "No complete official United APK delivery chain was verified; the apparent Tencent route is demonstrably not the requested artifact.",
+      "status": "OFFICIAL_PAGE_JS_ONLY_AND_FALSE_STORE_CANDIDATE_REJECTED"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.ubercab&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": null
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "Uber",
+      "minimum_next_action": "Use the normal rider Play listing under valid account/device/region conditions and retain the actual delivered package set for full signature and compatibility verification.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.ubercab",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The publisher provides Google Play and App Store buttons routed through rides.sng.link.",
+          "url": "https://www.uber.com/global/en/ride/app/",
+          "web_reference_ids": [
+            "turn138view3"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The web tool reported a non-retryable 500/access failure after the ordinary publisher redirect; no APK was returned.",
+          "url": "https://rides.sng.link/Aw5zn/o4sf?_dl=uber%3A%2F%2Fhome&_forward_params=1&_smtype=3&pcn=ubercom-ride-app-page&pscn=wb_uber_chameleon_UBRdc2zsnpx54r68hu6kt50",
+          "web_reference_ids": [
+            "turn139view0"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The rider help page specifies Android 8 or later and Google Play installation. Driver-app requirements are a different product.",
+          "url": "https://help.uber.com/riders/article/downloading-the-rider-app-?nodeId=bd546eae-73e0-49e3-a2da-0dbfa2a1d526",
+          "web_reference_ids": [
+            "turn140search0"
+          ]
+        }
+      ],
+      "specific_gap": "No complete public APK URL or verified applicable version code. The baseline public version label is itself unknown.",
+      "status": "OFFICIAL_ANDROID_STORE_LINK_WITHOUT_PUBLIC_APK"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.marriott.mrt&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "10.81.0"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "Marriott",
+      "minimum_next_action": "Run only the separately reviewed S44 two-HTML-page metadata probe once. Review a literal public delivery field if present; any later APK download needs a fixed bounded new request and complete same-package/current-vendor signature/version-code validation.",
+      "new_public_version_metadata": {
+        "artifact_obtained": false,
+        "channel": "publisher-linked Tencent China market",
+        "value": "11.15.0"
+      },
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.marriott.mrt",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The actual official Chinese page Android button links to a.app.qq.com/o/simple.jsp?pkgname=com.marriott.mrt.",
+          "url": "https://www.marriott.com.cn/mobileapp.mi",
+          "web_reference_ids": [
+            "turn145view0"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The same-package public market page displays version 11.15.0 and 231.37 MB. It also advertises the separate Tencent Appstore bootstrap; the latter is not a Marriott artifact.",
+          "url": "https://a.app.qq.com/o/simple.jsp?pkgname=com.marriott.mrt",
+          "web_reference_ids": [
+            "turn146view4"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The official market page displays 11.15.0, updated 2026-10-30, Marriott developer and 上海姜根酒店管理有限公司 operator, but the rendered download control exposes no complete APK URL.",
+          "url": "https://sj.qq.com/appdetail/com.marriott.mrt",
+          "web_reference_ids": [
+            "turn149view0"
+          ]
+        }
+      ],
+      "specific_gap": "11.15.0 on the China channel and 10.81.0 on the prior Play page are labels from different channels. Neither establishes a newer applicable candidate without the complete APK manifest, version code and signer.",
+      "status": "NEW_PUBLISHER_LINKED_SAME_PACKAGE_STORE_METADATA_PROBE_PROPOSED"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.hilton.android.hhonors&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "2026.10.20"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "Hilton Honors",
+      "minimum_next_action": "Use that normal Play path in the authorized eligible environment, then verify the complete delivered APK/split set.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.hilton.android.hhonors",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The official Android button follows hilton.app.link.",
+          "url": "https://www.hilton.com/en/hilton-honors/mobile-app/",
+          "web_reference_ids": [
+            "turn139search0",
+            "turn145view1"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The normal publisher link presents Google Play; following that link reaches the exact com.hilton.android.hhonors Play listing.",
+          "url": "https://hilton.app.link/cZEMfpKruJb?cid=OH,WW,AppDownloadGoogle,MULTIPR,imageHeadliner1,",
+          "web_reference_ids": [
+            "turn146view5"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Normal publisher-link traversal reaches the correct official Play package. This is not an APK delivery.",
+          "url": "https://play.google.com/store/apps/details?id=com.hilton.android.hhonors",
+          "web_reference_ids": [
+            "turn149view5"
+          ]
+        }
+      ],
+      "specific_gap": "No public complete publisher APK URL was found; store delivery/eligibility has not been observed.",
+      "status": "PUBLISHER_TO_OFFICIAL_PLAY_CHAIN_CONFIRMED_METADATA_ONLY"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.ihg.apps.android&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "5.110.0"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "IHG",
+      "minimum_next_action": "Use the normal Google Play entry under valid account/device/region conditions; retain any complete delivery for candidate verification.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.ihg.apps.android",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The current official Chinese support page is readable and expressly offers Android Google Play; no APK URL appears in retrieved content. This does not erase the earlier US-page access failure.",
+          "url": "https://www.ihg.com/content/cn/zh/support/mobile?scmisc=applestore",
+          "web_reference_ids": [
+            "turn144search3",
+            "turn145view2"
+          ]
+        }
+      ],
+      "specific_gap": "No complete normal APK/split delivery was obtained.",
+      "status": "PUBLISHER_PLAY_LINK_WITHOUT_PUBLIC_APK"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.Hyatt.hyt&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "26.9.0"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "Hyatt",
+      "minimum_next_action": "Use the normal Hyatt Play listing in an eligible authorized store context. Complete artifact and current-version equivalence remain to be established.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.Hyatt.hyt",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "This round retrieved the public benefits/member information page but no complete Android binary link; the previous HTTP 403 in baseline evidence is kept separately.",
+          "url": "https://world.hyatt.com/content/gp/en/rewards/mobile.html?language=en",
+          "web_reference_ids": [
+            "turn149view1"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Publisher instructions identify App Store or Google Play for the World of Hyatt app.",
+          "url": "https://www.hyatt.com/zh-CN/info/chromecast",
+          "web_reference_ids": [
+            "turn140search5"
+          ]
+        }
+      ],
+      "specific_gap": "The same 26.9.0 public/historical version label does not show current installed bytes equal a complete applicable official release.",
+      "status": "PUBLISHER_INFORMATION_AVAILABLE_NO_COMPLETE_ANDROID_DELIVERY"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.ehi.national.mobile&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "6.16.0.9403"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "National",
+      "minimum_next_action": "Follow the normal publisher app-store button in an authorized eligible environment, or request an actual publisher-supplied complete delivery URL; do not guess asset paths.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.ehi.national.mobile",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The normal official page is readable this round, with Download the App imagery; text retrieval exposes no complete APK URL. Earlier baseline access failures are not rewritten.",
+          "url": "https://www.nationalcar.com/en/emerald-club/national-mobile-app.html",
+          "web_reference_ids": [
+            "turn148view0"
+          ]
+        }
+      ],
+      "specific_gap": "Dynamic/image download control not resolved into an Android delivery URL; no complete APK.",
+      "status": "PUBLISHER_DOWNLOAD_PAGE_CTA_UNRESOLVED"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.hertz.android.digital&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "5.7.1"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "Hertz",
+      "minimum_next_action": "Use the normal publisher/Play channel under valid eligibility, or an actual publisher-provided complete URL; do not synthesize asset URLs.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.hertz.android.digital",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The official page is readable and describes download, but retrieved content exposes no complete Android binary URL.",
+          "url": "https://www.hertz.com/us/en/products-and-services/hertz-mobile-app",
+          "web_reference_ids": [
+            "turn148view1"
+          ]
+        }
+      ],
+      "specific_gap": "No resolved complete APK or verified applicable store delivery.",
+      "status": "PUBLISHER_DOWNLOAD_PAGE_CTA_UNRESOLVED"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=jp.co.ana.android.tabidachi&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "7.6.2"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "ANA",
+      "minimum_next_action": "Use the exact ANA app Play entry in the authorized eligible environment; independently verify all delivered splits and the manifest.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "jp.co.ana.android.tabidachi",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The current official ANA app page links to the normal Google Play entry.",
+          "url": "https://www.ana.co.jp/en/jp/serviceinfo/mobile/ana_app/",
+          "web_reference_ids": [
+            "turn148view2"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "Following the actual publisher link reaches the exact target package; no full APK is exposed.",
+          "url": "https://play.google.com/store/apps/details?hl=en&id=jp.co.ana.android.tabidachi",
+          "web_reference_ids": [
+            "turn149view4"
+          ]
+        }
+      ],
+      "specific_gap": "No complete APK/split delivery. Statements about the separate ANA Mileage Club app do not establish restrictions for this package.",
+      "status": "PUBLISHER_TO_EXACT_PLAY_PACKAGE_CONFIRMED_METADATA_ONLY"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.bestbuy.android&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "26.10.10"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "Best Buy",
+      "minimum_next_action": "Use ordinary Play delivery in the authorized eligible environment; no need to send a message to request a link.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.bestbuy.android",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The official page identifies Google Play for Android; an optional SMS route exists but no SMS was sent.",
+          "url": "https://www.bestbuy.com/discover-learn/benefits-of-the-best-buy-app/pcmcat1674162066016/",
+          "web_reference_ids": [
+            "turn147search1"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The current official page points to App Store or Google Play.",
+          "url": "https://www.bestbuy.com/site/misc/best-buy-drops/pcmcat1714764109320.c?id=pcmcat1714764109320%2F",
+          "web_reference_ids": [
+            "turn147search3"
+          ]
+        }
+      ],
+      "specific_gap": "No complete normal public APK URL found; actual store delivery unknown.",
+      "status": "OFFICIAL_PLAY_INSTALL_INSTRUCTIONS_NO_PUBLIC_APK"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.pinger.textfree&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "13.28.1"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "TextFree",
+      "minimum_next_action": "Use the normal TextFree com.pinger.textfree Play channel with eligible authorized conditions; verify actual delivered artifacts.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.pinger.textfree",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "textfree.us normally redirects here. The vendor page describes Android/Play availability and QR download controls, but no complete APK URL appears in retrieved content.",
+          "url": "https://textfree.com/",
+          "web_reference_ids": [
+            "turn148view3"
+          ]
+        }
+      ],
+      "specific_gap": "No full APK. TextMe and other similarly named calling apps are not replacements for this package.",
+      "status": "PUBLISHER_ANDROID_PAGE_NO_PUBLIC_APK"
+    },
+    {
+      "applicable_latest_version_qualified": false,
+      "baseline_public_Play_metadata": {
+        "artifact_qualification": false,
+        "copied_from_matrix_not_original_s22_reread": true,
+        "observed_utc": "2026-11-06T12:20:28.314543+00:00",
+        "original_s22_locally_present_during_this_research": false,
+        "original_s22_reference": {
+          "bytes": 40087,
+          "path": "reference/official-s22/international_official_channels.json",
+          "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+        },
+        "url": "https://play.google.com/store/apps/details?id=com.zillow.android.streeteasy&hl=en_US&gl=US",
+        "version_code": null,
+        "version_name": "3.131.0"
+      },
+      "cleanup_eligible": false,
+      "complete_APK_or_split_set_obtained": false,
+      "label": "StreetEasy",
+      "minimum_next_action": "Use the existing exact consumer StreetEasy Play package entry in the eligible authorized environment; do not substitute Agent Tools or the iOS artifact.",
+      "normal_complete_signature_verified": false,
+      "normal_store_account_device_region_eligibility_on_target": "UNKNOWN_NOT_OBSERVED",
+      "package": "com.zillow.android.streeteasy",
+      "production_ready": false,
+      "same_package_current_vendor_signer_verified": false,
+      "sources": [
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "The normal observed client request redirects to the iOS StreetEasy store page, which is not an Android artifact.",
+          "url": "https://streeteasy.com/mobile",
+          "web_reference_ids": [
+            "turn149view2"
+          ]
+        },
+        {
+          "APK_obtained": false,
+          "authority": "publisher_or_official_store",
+          "observed": "An older official page identifies Android Google Play; this is a normal channel reference, not current APK bytes.",
+          "url": "https://streeteasy.com/blog/streeteasy-mobile-app-updates/",
+          "web_reference_ids": [
+            "turn147search11"
+          ]
+        }
+      ],
+      "specific_gap": "No complete current Android public delivery URL; observed mobile-page routing resolves only to iOS.",
+      "status": "OBSERVED_PUBLISHER_ROUTE_TO_IOS_NOT_ANDROID_DELIVERY"
+    }
+  ],
+  "baseline_matrix_pin": {
+    "bytes": 259476,
+    "path": "reference/remaining34-source-actions.json",
+    "sha256": "7523031c7a1ef2e17d32d786512f8e06cfc39777f350a35b7987eededdfde6b4"
+  },
+  "date_utc": "2026-11-06",
+  "limits": [
+    "A Play/public-store version label is not a complete APK or split set.",
+    "No finding claims that every lawful store path is impossible.",
+    "Account, region, hardware and certification prerequisites are not bypassed.",
+    "No official-current version assertion follows from matching version-name strings alone.",
+    "No new scope, production readiness or cleanup eligibility is asserted."
+  ],
+  "new_actionable_delivery_lead": "Publisher-linked Marriott same-package Tencent public metadata; two-page read-only probe is prepared but not executed.",
+  "raw_web_snapshot_semantics": "JSON snapshots of returned web-tool objects, not byte-identical HTTP bodies. Search noise from third-party mirrors may appear in raw responses but was excluded from evidence and actions.",
+  "reference_ids_without_original_tool_payload_saved": [
+    "turn136search3",
+    "turn136search4",
+    "turn138view0",
+    "turn138view1",
+    "turn138view2",
+    "turn138view3"
+  ],
+  "schema": "pocket4-international14-normal-public-delivery-research-s44-v1",
+  "scope": {
+    "all_current_launcher_inventory_proved_by_this_research": false,
+    "international_packages": 14,
+    "no_new_current_scope_or_installed_version_claim": true,
+    "older_remaining34_matrix_retained_unchanged": true
+  },
+  "state": "PRIMARY_SOURCE_RESEARCH_NO_NEW_APK_NO_RUNTIME_OBSERVATION",
+  "web_tool_result_object_snapshots": [
+    {
+      "bytes": 20174,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_alternatives_0.tool-result.json",
+      "sha256": "51ed446877ce5339bd326399d038045042723cbafdac673a414fdd13a9ad032b"
+    },
+    {
+      "bytes": 20419,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_alternatives_1.tool-result.json",
+      "sha256": "f02d764be63ea04c81ed5c688cea39555d14bfcd8be201c9d4928f43dd359853"
+    },
+    {
+      "bytes": 14696,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_alternatives_2.tool-result.json",
+      "sha256": "d7c4bb0fec6600c0ef61c4fdeb190a8664d4c1635a8cf73c008370b219e06552"
+    },
+    {
+      "bytes": 14973,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_authoritative_stores.tool-result.json",
+      "sha256": "6e486b8fb18a776b0f5cd901191b9fee2849ac3277f289b8ad1903b80e5d633b"
+    },
+    {
+      "bytes": 32139,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_cn_sources.tool-result.json",
+      "sha256": "8b7d1f7772a21cc0974eda7615b640a5a53fda4355a584f29bb6d2b01e43bde2"
+    },
+    {
+      "bytes": 23439,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_initial_1.tool-result.json",
+      "sha256": "436d902f39f39405fb184c5c738f9327974eaf796724687003241e04ca0fe385"
+    },
+    {
+      "bytes": 35449,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_remaining_search1.tool-result.json",
+      "sha256": "d8d3cff922a64a21b7175b59b20deab6d1f2c439170e338831abe816108d1278"
+    },
+    {
+      "bytes": 12440,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_search_priority2.tool-result.json",
+      "sha256": "6dd041e65ba62de452b8dcd078f11b0bc17c15bd07c81994911ceebedb003cf4"
+    },
+    {
+      "bytes": 32140,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_search_priority3.tool-result.json",
+      "sha256": "3fcf07ea17e26941180458006d40721f98073173bd87363bb78e2ed7228a2826"
+    },
+    {
+      "bytes": 26329,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_vendor_open1.tool-result.json",
+      "sha256": "872bddbe618e9db5d709c7c90a4bce9be21564c7eaa42c01f0a966ad24307f9e"
+    },
+    {
+      "bytes": 28301,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_vendor_open2.tool-result.json",
+      "sha256": "590a4a37dba100526c0efd94022d49cbf7edd7395b496c7955cc5f88aad0f935"
+    },
+    {
+      "bytes": 27601,
+      "path": "official_source_scripts/s44_international_delivery_metadata/research-web/international_s44_vendor_open3.tool-result.json",
+      "sha256": "791529969e4cc010b556af517d6a11ed81ddb81194d51b25e5badf26b7e7ca79"
+    }
+  ]
+}

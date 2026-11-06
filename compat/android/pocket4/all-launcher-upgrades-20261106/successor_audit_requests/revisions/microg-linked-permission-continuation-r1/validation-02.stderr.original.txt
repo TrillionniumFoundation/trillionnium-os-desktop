@@ -1,0 +1,21 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 358, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 351, in main
+    context = load_linkage()
+              ^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 251, in load_linkage
+    closure, records = validate_input_closure(original, g)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/microg-linked-permission-continuation-r1/linked_permission_gate.py", line 135, in validate_input_closure
+    records = {row["file"]: original.local_pin(g, row, PROJECT) for row in closure["files"]}
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/effective_permissions_45_capture_r1/permission_capture_gate.py", line 60, in local_pin
+    raw = g.read(root / row["file"], limit)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/gate-r2-terminal-protocol/audit_serial_gate.py", line 53, in read
+    need(0 < len(raw) <= limit, "LOCAL_RECEIPT_BYTE_BOUND")
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/revisions/gate-r2-terminal-protocol/audit_serial_gate.py", line 27, in need
+    raise RuntimeError(code)
+RuntimeError: LOCAL_RECEIPT_BYTE_BOUND

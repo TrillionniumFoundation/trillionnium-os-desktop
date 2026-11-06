@@ -1,0 +1,16 @@
+--- original-fixed-permission-gate
++++ explicit-microG-correction-only
+@@ -1,9 +1,11 @@
+-def stream_pair(command, record, root, prefix):
++def corrective_stream_pair(command, record, root, prefix):
++    need(root == ROOT, "ONLY_FIXED_CORRECTIVE_OUTPUT_ROOT")
+     need(record.get("stream_artifacts_complete") is True, "EVERY_RAW_STREAM_MUST_BE_PUBLISHED")
+     for name in ("stdout", "stderr"):
++        cap = 2097152 if prefix == "android-02" and name == "stdout" else 262144
+         pin = record[name]
+         need(set(pin) == {"path", "bytes", "sha256"} and pin["path"] == root + "/" + prefix + "." + name and
+-             type(pin["bytes"]) is int and 0 <= pin["bytes"] <= 262144 and
++             type(pin["bytes"]) is int and 0 <= pin["bytes"] <= cap and
+              re.fullmatch(r"[0-9a-f]{64}", pin["sha256"]) is not None and
+              command.get(name + "_bytes") == pin["bytes"] and command.get(name + "_sha256") == pin["sha256"],
+              "RAW_STREAM_PIN_MUST_MATCH_ACTUAL_COMMAND_CAPTURE")

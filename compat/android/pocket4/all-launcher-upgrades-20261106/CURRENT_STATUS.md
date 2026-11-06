@@ -1,6 +1,14 @@
-# Pocket4 全 Launcher App 修复：检查点 11（进行中）
+# Pocket4 全 Launcher App 修复：检查点 12（进行中）
 
-工作尚未完成。范围为实机全部 45 个 Launcher App，原定八个只是其中子集。用户要求完成后清掉旧 Android/framework、旧 App 版本和相关产物，仅保留最新可工作版本、源码、配置与复现清单。真实可用验收仍是清理前提：目前 production ready 为 0 App，删除旧产物为 0 字节。
+工作尚未完成。范围为实机全部 Launcher App，原定八个只是其中子集。此前完整解析确认 45 个；最新原生目录已观察到 46 个，新增 `com.example.ndk_tests/com.example.ndk_tests.NdkTestsActivity`，正在核对新增包身份与当前 framework resolver。原 45 包清单保留为历史快照，不冒充当前全集。用户要求完成后清掉旧 Android/framework、旧 App 版本和相关产物，仅保留最新可工作版本、源码、配置与复现清单。真实可用验收仍是清理前提：目前 production ready 为 0 App，删除旧产物为 0 字节。
+
+## 最新变化与当前执行位置
+
+原权限 b03 `1a1b2eccc8a-fc05-8033` 已 durable failed 1：原生目录从 45 变为 46，新增上述 NDK 测试组件、缺少组件为零。旧全 47 包身份及 runtime 前置检查仍匹配；两条 native 读取正常 0，但尚未执行 Android 权限查询即停止。4,557 个观察 FD 全闭、进程 FD 5→5、owned child 正常以 1 退出、pidfd 关闭。原失败和串行 STOP 保留，未 claim b04；新的完整范围需实测后显式接续。
+
+贝壳阶段 B `1a1b2e8d3ff-fc05-802d` 已完整成功并经根进程联合核验，旧 FAILED/UNKNOWN 未改写。新的只读 inspect `1a1b2f182c1-fc05-803d` 也已 durable exit 0：同一 task 878、目标 UID 10143、helper UID 10157、完整前台前后相同，独立状态恢复成功，未点击输入；当前节点原文待固定回读。万豪 S44 `1a1b2f15943-fc05-803c` 第一公开页面返回 HTTP 403，durable failed 1；一次请求、零重定向，第二页未请求、未重试，没有下载 APK 或访问 Main。
+
+该 inspect 的固定 reader `1a1b2f97545-fc05-8050` 随后 durable exit 0：21 原文件共 600,424 B 完整核验，进程 FD 身份恢复；完整私有 stdout 243,205 B / `6a1c770b862a47a5a64021392e58e9b36a9bc583a261a7412333bf9355513790` 未入 Git。原树 245 节点、228 个可见非密码节点；唯一搜索 TextView 入口仍可见可点击，没有可编辑节点。下一点击仍需原内部 fresh inspect 和 tree/window 检查，尚未发送新的点击。
 
 ## 实际范围与升级
 
@@ -8,9 +16,10 @@
 
 | 项目 | 实际结果 | 限度 |
 |---|---:|---|
-| PackageManager 非 APEX APK 包 | 205 | 元数据枚举，不是全包业务验收 |
-| MAIN/LAUNCHER 包 / 组件 | 45 / 45 | 两次解析相同，与原生目录逐组件一致 |
-| 明确保护范围 | 47 包 / 87 APK | Launcher 45 包加 actions、当前 QA helper |
+| 历史 PackageManager 非 APEX APK 包 | 205 | 当时的元数据枚举；新增组件后的总数待复核 |
+| 历史 MAIN/LAUNCHER 包 / 组件 | 45 / 45 | 两次解析相同，与当时原生目录逐组件一致 |
+| 最新 native Launcher 组件 | 46 | 新增 NDK 测试组件；当前 PM resolver 与新增身份待核实 |
+| 已明确保护范围 | 47 包 / 87 APK | 原 Launcher 45 包加 actions、当前 QA helper；不冒充新增组件后的完整范围 |
 | 已同签名升级安装 | 11 App | 保留 UID/数据；安装不等于业务可用 |
 | 与当前官方完整资产逐字节相同 | Fcitx、microG | 仍需功能和恢复回归 |
 | 完整 APK 审计通过 | 45 App / 85 APK | 原 b01–04、新 b05 修复、原 b06–12 与新 b13 修复已独立完整关联 |
@@ -74,7 +83,13 @@ b13 完整 stdout 26,729 B / `d278f4418e86306b34961a20600c8320af22dafc520f7c9b40
 
 它重新核实原历史证明，使用原 adapter/Session 做两轮 helper/task/full-foreground 检查；6条记录命令、2条私有前台传输，共8 transport及50份原文件按原解析器完整重验。全部正常0，child2349898正常退出、held pidfd闭合、父FD身份恢复，Main authority已关闭。新 candidate 16,972 B / `c9624a3f6d896a07cdfad5958a35df5c5abe6e810b3eabc3a2c25e7ee94d6873`；joint 13,954 B / `cee87a9dc0fb21851aa21a38dffa1030774f4b3e181f896b0487f3db159ad3ac`。
 
-此阶段没有 UI动作、instrumentation、安装、权限修改或 reconciliation发布；原case FAILED/UNKNOWN保持。根进程全文审阅新源、stager与8份冻结依赖的39个方法，并核对19份冻结文件。阶段B需以上述实际终态为输入独立审阅和执行；阶段A candidate本身不开放后续动作。
+此阶段没有 UI动作、instrumentation、安装、权限修改或 reconciliation发布；原case FAILED/UNKNOWN保持。根进程全文审阅新源、stager与8份冻结依赖的39个方法，并核对19份冻结文件。阶段A candidate本身不开放后续动作；阶段B已基于上述实际终态独立审阅和执行。
+
+## 贝壳阶段 B 恢复记录已实际发布
+
+阶段 B `1a1b2e8d3ff-fc05-802d` durable exit 0；完整 stdout 19,859 B / `2085de33d6716f20578dba5c8f06bc93b93565f98defd76d0837e8df631f422c`。根进程核对 21 份冻结文件、15 个原样继承函数、8 份原源及 39 个方法，全文审阅新实现及 stager 差异，之后只提交一次。新进程完成两轮原 helper/task/full-foreground 检查，6 条只读命令、8 个传输及 50 份运行时原件完整通过。
+
+新兼容记录 62,432 B / `bd2b8b9e82fcdcb1f5a2af9a8a9ae222a951367458b3602acae6614e72b2710c` 绑定 460 份证据；typed proof 21,321 B / `dae3a4d6e8101f427b13279b914cb267f52e864af7811ec7eaa32517b98a2deb`。原 no-replace 发布函数、Flow consumer、helper 和安全检查未改；child 2397744 正常 0 退出、held pidfd 已退出并关闭、父 FD 身份恢复。root 已验证完整 stdout 与 durable terminal，后续仍必须 fresh inspect。旧 case FAILED/UNKNOWN 保持；该步骤没有 UI、安装、权限修改或业务成功结论。实际证据在 `successor_qa/partial_case_runtime_commit_r1/stage-b-candidate-r1/actual/`。
 
 ## 贝壳有效权限 pilot 已实际完成
 
@@ -90,7 +105,15 @@ b13 完整 stdout 26,729 B / `d278f4418e86306b34961a20600c8320af22dafc520f7c9b40
 
 独立 microG 更正 `1a1b2d790f2-fc05-7ffb` durable exit 0；完整stdout21,301 B / `e9cebfcf091c930cb063f7a7ae50af51e795e34c42b42dfbbaa8f2d3cfad96b1`，artifact40,751 B / `60006128ea7afdfd2fe81b3f408147d948cbedf2a0a4c5a4011b03f34989a5e3`。实际PM dump为1,478,016 B、AppOps为1,478 B；三条命令正常0、双流EOF完整、没有终止动作。full47前后检查通过，10,350个观察FD及20个lease全部关闭，进程FD5→5，owned child2367620正常0与pidfd闭合、父FD身份恢复联合成立。仅第二条microG stdout采用2 MiB固定上限，help/AppOps及全部stderr仍256 KiB；原30s/25s/900s和1GiB资源边界保持。完整服务原文仍在私有目录，尚不推导其有效授权。
 
+## microG 完整回读与有效权限
+
+microG 完整私有回读 `1a1b2ea0995-fc05-8030` durable exit 0，压缩 stdout 57,363 B / `c1f9673a46de3b5272a38d84470ad8db6c53cf3e09a177fa9e5d7af3c300a9da`；完整解压后逐文件 SHA 匹配、FD 4→4。独立窄范围 parser 只对该实际 PM pin 允许 2 MiB，原 8 个解析函数保持。实际解释结果 62,052 B / `ee8347af686deb9ce08bd2f1e3ce5aebe7e10302268c7069e6c4bd536713645d`：requested 73、install grants 33、user0 runtime 22，其中仅 POST_NOTIFICATIONS 和 ACCESS_LOCAL_NETWORK 为 true，20 项 false；requested 汇总 35 已授予、20 未授予、18 UNKNOWN。AppOps 53 项保留字面 mode，只有一项有显式 UID prefix，其余 scope 不推断；roles UNKNOWN。没有权限修改、拒绝原因或业务成功推断。公开结果在 `successor_audit_requests/effective_permissions_microg_parser_r1/actual/`。
+
 ## 官方交付的实际进度与缺口
+
+猪八戒安装 revision3 candidate2 的 host 源准备 `1a1b2defc61-fc05-8011` 已 durable exit 0：六份源码/输入精确匹配，host 控制正常 0、FD 4→4，零 Main/Android 调用，尚未安装。旧 47 包候选不会被当作新增组件后的当前全集；完成新增包身份和显式范围核对之后再审安装保护范围。
+
+国际 14 App 的正常官方交付路径已另存 S44 调查。万豪官网链接到同包名应用宝，公开页面显示 11.15.0，但目标机普通入口实际 403，未取得完整包，不能据公开 versionName 断言适用新版本。S44 原失败保留，不改 UA、DNS、IP、TLS 或地区条件重试。
 
 神州完整官方候选 220,579,134 B / `6c796f5073658d6f541ebbae5723d80645e6fbf6060ca816def6c3ec173e31d6` 已下载，正常 v1/v2 验证通过、原厂证书与已装包一致。实际 metadata 为 9.6.1/code 327，与当前版本相同、文件 SHA 不同，未当更新安装。S35/S37/S39 原失败保留，S39 工具成功但解析器拒绝与后续本地解释分别记录。
 
@@ -114,6 +137,8 @@ b13 完整 stdout 26,729 B / `d278f4418e86306b34961a20600c8320af22dafc520f7c9b40
 
 只读进程内存清单 `1a1b2c7e4d8-fc05-7fb9` 已 durable exit 0，完整stdout 37,727 B / `2d0df61ea80f0adb948f7d25ff0b15145f884ddcf3bd31ecc7e3bf83606b5335`，仅PID/父PID/UID/进程名/RSS，没有执行参数或环境变量。该清单不能单独证明某进程属于本任务或可以结束，没有停止任何进程。控制器历史任务首页仅128/5653条且不含PID，未当作完整活动进程清单。
 
+固定九 PID 的只读归属观察 `1a1b2e0972a-fc05-8016` 已 durable exit 0：八个完整身份属于其他既有服务，一个进程在读取时已不在。未找到本升级任务所有、可回收的运行进程；未读命令行或环境、未发信号、未改变服务。原 cwd/exe/cgroup 正文保留私有，仅公开摘要与完整 SHA。没有 build09，也没有以删除旧产物代替内存准入。
+
 实际资料在 `framework_provider_repair/normal06/current470-authorization-r1/actual-build08/` 与 `memory-observation-after-build08-r1/`。两目标构建、部署和整机验收仍待完成。
 
 ## 回归与最终清理
@@ -133,3 +158,4 @@ b13 完整 stdout 26,729 B / `d278f4418e86306b34961a20600c8320af22dafc520f7c9b40
 - 猪八戒 S42 `1a1b2bf6182-fc05-7f90` durable failed 1，完整 stdout 51,004 B / `996845dad5c91bd67f16706561d42417ed370ab000f26ac9b16a7d1832576e0c`。三条工具命令均正常 0，整包 v2 正常验证、厂商证书与已装一致，实测 9.5.20/code 370/min26/target30/ARM64+v7a。失败来自严格 badging 形状识别尚不支持 install-location、feature-group 中 uses-gl-es 与 requires-smallest-width；声明权限解析通过，原失败保留，未安装。
 - 原实际 installer r2 的 38,684 B 源码从不可变 Git09 恢复，SHA `7fe3d12fd280539939c930970755e9f33ab7cda51f08a03cc54eb5f9c52508eb`；没有猜造缺失实现或读取设备私有数据。
 - 检查点 10 已提交并推送：`c178b683e62158585788b871bd50a12b548d93a2`，tree `03e9848b474f579866e260c0c6156e661c2a15bd`。这份提交保留当时42/82联合通过及b13正在执行的真实快照；后续结果由新的检查点接续。
+- 检查点 11 已提交并推送：`366f94b69b65aa122b10e80ad5e2e8097a75f294`，tree `4cedec3ccd1f57fa23a3de9e26827f9b51489540`。它冻结 45/85/255 完整关联、microG 独立采集更正、贝壳阶段 A 和猪八戒 S43 的实际结果；本检查点继续保留所有原失败与历史快照。

@@ -1,0 +1,39 @@
+--- actual-stage-a/entry
++++ stage-b/entry
+@@ -6,7 +6,7 @@
+          0 < int(sys.argv[5]) <= 131072 and sys.argv[6] == '--request-sha256' and
+          re.fullmatch('[0-9a-f]{64}', sys.argv[7]) and sys.argv[8] == '--request-bytes' and
+          sys.argv[9].isdigit() and 0 < int(sys.argv[9]) <= 16384, 'EXACT_NEW_RUNTIME_ONCE_ENTRY')
+-    need(str(Path(__file__).resolve()) == ROOT + '/runtime_stage_a_once.py', 'REAL_NEW_STAGE_A_SOURCE_LOCATION')
++    need(str(Path(__file__).resolve()) == ROOT + '/commit_stage_b_once.py', 'REAL_NEW_STAGE_B_SOURCE_LOCATION')
+     SELF = {'path': str(Path(__file__).resolve()), 'bytes': int(sys.argv[5]), 'sha256': sys.argv[3]}
+     REQUEST = {'path': ROOT + '/request.json', 'bytes': int(sys.argv[9]), 'sha256': sys.argv[7]}
+     os.umask(0o077)
+--- actual-stage-a/request_value
++++ stage-b/request_value
+@@ -1,5 +1,5 @@
+ def request_value(raw, partial):
+     value = partial.document(raw)
+     need(value == FIXED_REQUEST and raw == canonical(value) + b'\n',
+-         'CLOSED_STAGE_A_ONLY_REQUEST_NO_ARBITRARY_COMMAND_OR_COMMIT')
++         'CLOSED_STAGE_B_ONLY_REQUEST_NO_ARBITRARY_COMMAND_OR_PATH')
+     return value
+--- actual-stage-a/verify_six_commands
++++ stage-b/verify_six_commands
+@@ -12,7 +12,7 @@
+          intent.get('scope') == context['scope'] and intent.get('unknown_step') == CASE_STEP and
+          intent.get('observation_step') == OBSERVATION_STEP and intent.get('postcondition') == partial.POSTCONDITION and
+          intent.get('automatic_retry') is False and
+-         intent.get('request') == {'stage_a_only': FIXED_REQUEST, 'producer_source': SELF, 'request_pin': REQUEST},
++         intent.get('request') == {'stage_b_only': FIXED_REQUEST, 'producer_source': SELF, 'request_pin': REQUEST},
+          'EXPLICIT_NEW_READONLY_PRODUCER_NOT_OLD_UI_RECONCILE')
+     need(partial.document(files['held-main-binding.json']) == binding.record,
+          'REAL_CURRENT_HELD_BINDING_RECORD_PERSISTED')
+--- actual-stage-a/safe_failure
++++ stage-b/safe_failure
+@@ -1,4 +1,4 @@
+ def safe_failure(error, phase):
+     text = str(error)
+     return {'phase': phase, 'type': type(error).__name__,
+-            'code': text if re.fullmatch('[A-Z0-9_]{1,160}', text) else 'STAGE_A_STRICT_REJECTION'}
++            'code': text if re.fullmatch('[A-Z0-9_]{1,160}', text) else 'STAGE_B_STRICT_REJECTION'}
