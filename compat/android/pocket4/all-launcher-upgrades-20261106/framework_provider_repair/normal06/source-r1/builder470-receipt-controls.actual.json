@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "state": "PASS",
+  "scope": "Pure local actual-receipt schema plus three explicit negative mutations.",
+  "actual_result_pin": {
+    "bytes": 76136,
+    "sha256": "6599026ebe5071ecdd5f0e2d962eb96cc791041be0dee9fd59a402735a6387d8"
+  },
+  "actual_result_metadata_accepted": true,
+  "negative_fixtures": [
+    {
+      "name": "residual_reaped_child_not_pass",
+      "rejected": true,
+      "error": "actual builder470 source/resource/child/scope qualification differs"
+    },
+    {
+      "name": "missing_independent_result_gate_not_pass",
+      "rejected": true,
+      "error": "actual builder470 command or independent gate closure differs"
+    },
+    {
+      "name": "changed_source_continuity_not_pass",
+      "rejected": true,
+      "error": "actual builder470 source/resource/child/scope qualification differs"
+    }
+  ],
+  "host_observations": 0,
+  "compilers_or_processes_run": 0,
+  "production_ready": false
+}

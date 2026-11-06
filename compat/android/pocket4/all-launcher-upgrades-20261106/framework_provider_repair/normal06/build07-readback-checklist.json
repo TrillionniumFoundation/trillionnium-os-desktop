@@ -1,0 +1,140 @@
+{
+  "schema": "pocket4-build07-bounded-readback-checklist-v1",
+  "kind": "SOURCE_DERIVED_FUTURE_READ_PLAN_NOT_OBSERVATION",
+  "source_pins": [
+    {
+      "relative_path": "source-r4/framework_build.py",
+      "bytes": 68088,
+      "sha256": "c446be88a61f7d07c05aff1e3f3bb967bcf969b7fa3de568eb3de4915e59e7da"
+    },
+    {
+      "relative_path": "source-r4/fenced_build.py",
+      "bytes": 25854,
+      "sha256": "ad761406016436ba19e3095f11178417760aa0a99ca184525f11c2b021dc711c"
+    },
+    {
+      "relative_path": "source-r4/root_snapshot_supervisor.py",
+      "bytes": 12041,
+      "sha256": "ced37d036b93ab8f85803c42ca6a2d0fb18939c78a5d62ef9a2fd0a215176f7b"
+    },
+    {
+      "relative_path": "source-r4/stage.py",
+      "bytes": 8389,
+      "sha256": "5a108bcc09b17074d273d30ebc5a95c379e2bd2846e17ed276a5e283fe42e994"
+    },
+    {
+      "relative_path": "source-r4/exact-request.json",
+      "bytes": 320416,
+      "sha256": "bd60060c5a1bd329b3c05bfa5309f192c42168d48397f4bcdcfc674fc889054b"
+    }
+  ],
+  "remote_commands_executed_by_this_checklist": 0,
+  "expected_root_from_source": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106",
+  "expected_work_from_source": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-work-01-20261105",
+  "read_protocol": {
+    "metadata_first": "Use file_info on the exact known path; bind each subsequent binary read to its returned version. A missing file remains absent evidence.",
+    "full_small_files": "Read complete bounded originals using actual returned size; preserve raw bytes, length, SHA256 and metadata/version.",
+    "large_logs": "Read bounded relevant stderr/stdout tail or actual failure span first. Do not claim a full log hash without complete bytes or an authoritative pinned capture.",
+    "chunk_maximum_bytes": 65536,
+    "no_polling_or_build_replay": true,
+    "not_run_by_this_plan": true
+  },
+  "ordered_decisions": [
+    {
+      "order": 1,
+      "authoritative_process_record": "The actual unique build07 job durable status, final stdout/stderr, exit code, timeout/cancel/retry and log completeness must be settled first. A transport deadline or tool error is not a build result."
+    },
+    {
+      "order": 2,
+      "paths": [
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/build-fences-01/terminal.json",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/build-fences-01/claim.json"
+      ],
+      "source": "source-r4/fenced_build.py:332-417",
+      "purpose": "Determine inner_build_called, pre/post snapshot state, child/root supervisor captures and FD/pidfd/descendant/subreaper/watchdog cleanup. Read failed root capture paths only as named by actual terminal/source; no guessed PID namespace access."
+    },
+    {
+      "order": 3,
+      "condition": "Only where actual outer terminal records the relevant phase as entered",
+      "paths": [
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/build-fences-01/before.json",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/build-fences-01/after.json",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/build-fences-01/capture-lifecycle-controls.json",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/stage-receipt.json"
+      ],
+      "purpose": "Bind pre/post explicit47/runtime/role facts and actual lifecycle controls to the exact request. Explicit47 remains an explicit set, not a fresh complete launcher resolver."
+    },
+    {
+      "order": 4,
+      "condition": "Only if inner was actually invoked; absence at a precondition failure is expected",
+      "paths": [
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/resource-admission.json",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/attempt-01/claim.json",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/attempt-01/input-bindings-before.json",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/attempt-01/terminal.json",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/attempt-01/input-bindings-after.json"
+      ],
+      "source": "source-r4/framework_build.py:855-1016",
+      "purpose": "Resolve fresh resource admission, prepared builder/source inputs, actual child command start, return code and immutable-input verification. inner_build_called alone does not prove the Soong command ran."
+    },
+    {
+      "order": 5,
+      "condition": "Read only logs that actually exist; use actual sizes and original paths",
+      "paths": [
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/attempt-01/build.stdout",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/attempt-01/build.stderr"
+      ],
+      "purpose": "Identify actual failure stage, first substantive Soong/compiler error and relevant context. Do not expand dependency closure speculatively."
+    },
+    {
+      "order": 6,
+      "condition": "After actual builder entry, regardless of success, before proposing a successor",
+      "paths": [
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-work-01-20261105/aosp-source/.droidloom-source-manifest.json"
+      ],
+      "purpose": "Determine actual published source-lock state. build06 never entered the builder; build07 may publish the new 242-project source before a later error. Never assume the old225 or new242 state without the actual record."
+    },
+    {
+      "order": 7,
+      "condition": "After actual normal command success and existing completion gate",
+      "paths": [
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/android-out/droidloom-role-ingress-attempt.json",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/android-out/droidloom-role-ingress-inputs.json",
+        "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/android-out/droidloom-role-ingress-command.json"
+      ],
+      "source": "source-r4/framework_build.py:766-838",
+      "purpose": "Verify the exact Strict framework-minus-apex/libandroid_runtime invocation, projected Java/JNI input paths and successful restoration. Inputs/attempt receipts alone do not prove compilation; command success remains distinct from artifact qualification/deployment."
+    }
+  ],
+  "two_target_artifact_followup": {
+    "artifact_paths": "Obtain from the actual successful Ninja build/link graph and variant/output records; no framework JAR or libandroid_runtime.so output path is guessed here.",
+    "framework-minus-apex": [
+      "Identify the actual implementation JAR variant, not a turbine/header/stub JAR.",
+      "Verify actual compiled Zygote, ZygoteArguments and ZygoteConnection class entries/implementation code against the expected source changes. Bind to source-lock/build-command/input receipts."
+    ],
+    "libandroid_runtime": [
+      "Identify the Android-target variant and actual com_android_internal_os_Zygote.cpp compilation command/depfile, then its contribution to the final link.",
+      "Verify complete output bytes, SHA, target ABI and Android build provenance. ELF64 or a successful host library build alone is insufficient."
+    ],
+    "not_established_by_command_success": [
+      "artifact-level Java and JNI pair qualification",
+      "installation/deployment",
+      "runtime behavior",
+      "app production readiness",
+      "cleanup eligibility"
+    ]
+  },
+  "fixed_limits_unchanged": {
+    "fresh_MemAvailable_min_bytes": 16106127360,
+    "MemoryMax_bytes": 10737418240,
+    "MemorySwapMax_bytes": 0,
+    "cpu_quota_percent": 200,
+    "jobs": 1,
+    "strict_allow_missing_dependencies": false,
+    "targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ]
+  },
+  "local_plan_does_not_require_new_tests": true
+}

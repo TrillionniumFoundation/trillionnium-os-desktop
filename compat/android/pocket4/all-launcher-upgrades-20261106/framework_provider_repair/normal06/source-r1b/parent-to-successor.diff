@@ -1,0 +1,1792 @@
+--- normal05-source-r2/actual-provider-source-lock.json
++++ normal06-source-r1b/actual-provider-source-lock.json
+@@ -95,7 +95,8 @@
+         "common/device-side/nativetesthelper/Android.bp",
+         "common/device-side/nativetesthelper/jni",
+         "common/device-side/nativetesthelper/src",
+-        "libs/json"
++        "libs/json",
++        "common/device-side/util-axt"
+       ]
+     },
+     {
+@@ -156,7 +157,8 @@
+         "service/annotations/src/main",
+         "service/processor",
+         "service/processor/src/main/java",
+-        "value/src/main"
++        "value/src/main",
++        "factory"
+       ]
+     },
+     {
+@@ -1575,7 +1577,8 @@
+       "commit": "c612e6ece389f21c40f8cb9cd9a4b44239f00009",
+       "purpose": "Launcher flags referenced by WindowManager services; launcher application is not built",
+       "sparse_paths": [
+-        "Android.bp"
++        "Android.bp",
++        "aconfig"
+       ]
+     },
+     {
+@@ -1584,7 +1587,8 @@
+       "commit": "213829fb67f5e070029e0513a088f31bc8f5c1ed",
+       "purpose": "Settings flag declarations referenced by services.core",
+       "sparse_paths": [
+-        "Android.bp"
++        "Android.bp",
++        "aconfig"
+       ]
+     },
+     {
+@@ -1784,7 +1788,14 @@
+         "libraries/collectors-helper/simpleperf/src",
+         "libraries/collectors-helper/system/src",
+         "libraries/collectors-helper/utilities/src",
+-        "libraries/junitxml/src"
++        "libraries/junitxml/src",
++        "libraries/flag-helpers/junit",
++        "libraries/health/rules",
++        "libraries/health/utils",
++        "libraries/metrics-helper",
++        "libraries/notes-role-test-helper",
++        "libraries/screenshot/utils/compose",
++        "libraries/uinput-device-test-helper"
+       ]
+     },
+     {
+@@ -1895,7 +1906,9 @@
+         "common/kxml2",
+         "common/ub-uiautomator",
+         "common/robolectric-native-prebuilt",
+-        "common/robolectric/android-all"
++        "common/robolectric/android-all",
++        "common/androidx-media3",
++        "common/androidx-test"
+       ]
+     },
+     {
+@@ -1974,7 +1987,9 @@
+         "current/multidex",
+         "current/test",
+         "current/support/v7/appcompat/res",
+-        "current/support/manifests/android-support-v7-appcompat"
++        "current/support/manifests/android-support-v7-appcompat",
++        "current/androidx-legacy",
++        "current/extras/material-design-x"
+       ]
+     },
+     {
+@@ -2082,7 +2097,8 @@
+         "common/m2/repository/org/mockito/mockito-inline/4.8.1",
+         "common/m2/repository/org/reactivestreams/reactive-streams/1.0.2",
+         "common/m2/repository/org/xerial/sqlite-jdbc/3.28.0",
+-        "common/m2/repository/ru/yole/jkid"
++        "common/m2/repository/ru/yole/jkid",
++        "linux-x86_64/perfetto"
+       ]
+     },
+     {
+@@ -2582,7 +2598,24 @@
+       "sparse_paths": [
+         "tracinglib/core/src",
+         "compilelib/src-release",
+-        "compilelib/src-debug"
++        "compilelib/src-debug",
++        "ace/src/com/android/personalcontext/ace/client",
++        "ace/src/com/android/personalcontext/ace/common",
++        "ace/src/com/android/personalcontext/ace/visualizer",
++        "aconfig",
++        "animationlib",
++        "contextualeducationlib",
++        "displaylib",
++        "dynamiccolors",
++        "iconloaderlib",
++        "mechanics",
++        "monet",
++        "msdllib",
++        "surfaceeffects/compose",
++        "surfaceeffects/core",
++        "surfaceeffects/view",
++        "usertypelib",
++        "viewcapturelib"
+       ]
+     },
+     {
+@@ -2686,6 +2719,108 @@
+         "common/types/operations/src",
+         "common/types/src"
+       ]
++    },
++    {
++      "path": "development",
++      "name": "platform/development",
++      "commit": "4dafd114fab3c3d9543a5aff0ad097f479915176",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/dagger2",
++      "name": "platform/external/dagger2",
++      "commit": "57aa7c004b11466c0154144865e937b9a46a4688",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/dexmaker",
++      "name": "platform/external/dexmaker",
++      "commit": "e476b06efb29b9a8e70a63ec23a3bb7f6208cfaa",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/jakarta.inject",
++      "name": "platform/external/jakarta.inject",
++      "commit": "75b5356ec832b8306d8706eb7fae46fef9cbb1d3",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/kotlinpoet",
++      "name": "platform/external/kotlinpoet",
++      "commit": "1f60e73215577a48f66542ec09456cdc7f12f3d1",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/ksp",
++      "name": "platform/external/ksp",
++      "commit": "aa08926470a7d3afc856a08b0f40057293b8f437",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/libmonet",
++      "name": "platform/external/libmonet",
++      "commit": "f56ffa0d810eb127200cded0895c412a907dfa6d",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/lottie",
++      "name": "platform/external/lottie",
++      "commit": "f21c8dba91039320eeb9d964d8272d9a22f38d72",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/mockito-kotlin",
++      "name": "platform/external/mockito-kotlin",
++      "commit": "709411a57d6b6d8aa7495d281e3f48b4f5f67796",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/perfetto",
++      "name": "platform/external/perfetto",
++      "commit": "ece66975738007dd0978b911d8a2077e49b8f31e",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/setupcompat",
++      "name": "platform/external/setupcompat",
++      "commit": "d4476639e7c7f9bda7bff68e810da2367b8626d2",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/setupdesign",
++      "name": "platform/external/setupdesign",
++      "commit": "79dbf5860322236cd02e74e2ca0855591d95195c",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/zxing",
++      "name": "platform/external/zxing",
++      "commit": "d89286b7d32c7860f796e95380b22e99618d00c1",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "frameworks/opt/net/wifi",
++      "name": "platform/frameworks/opt/net/wifi",
++      "commit": "12e5aa5f7224b05b6046613967c6d1de75aeaf26",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "frameworks/opt/telephony",
++      "name": "platform/frameworks/opt/telephony",
++      "commit": "aef289516bea6118d88cd45c63742cd4abe2c596",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "packages/apps/Traceur",
++      "name": "platform/packages/apps/Traceur",
++      "commit": "958957ee3011541f2622b93223abd38071147d3f",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "prebuilts/r8",
++      "name": "platform/prebuilts/r8",
++      "commit": "65fe8f9f5c6769d35f91fe67b786b767a2db5249",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
+     }
+   ]
+ }
+--- normal05-source-r2/actual-published-source-manifest.json
++++ normal06-source-r1b/actual-published-source-manifest.json
+@@ -1,6 +1,6 @@
+ {
+   "schema_version": 1,
+-  "source_lock_sha256": "5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7",
++  "source_lock_sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d",
+   "plan": {
+     "schema_version": 1,
+     "superproject_commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+@@ -2607,7 +2607,10 @@
+           "car-builtin-lib/src",
+           "car-builtin-lib/api",
+           "libs/car-internal-dep-lib/src",
+-          "teams"
++          "teams",
++          "cpp/vhal/client/include",
++          "cpp/vhal/client/src",
++          "cpp/car_binder_lib/largeParcelable/include"
+         ]
+       },
+       {
+@@ -2626,6 +2629,18 @@
+         "purpose": "Exact Android 17 proto implementation used by the mandatory Robolectric Clearcut JUnit listener",
+         "sparse_paths": [
+           "atest/proto"
++        ]
++      },
++      {
++        "path": "packages/modules/NeuralNetworks",
++        "url": "https://android.googlesource.com/platform/packages/modules/NeuralNetworks",
++        "commit": "a44a9032ab9a8438c0e13aca765d6ee4edebba2c",
++        "purpose": "Exact Android 17 superproject NNAPI utility defaults and complete native type providers required by the existing hardware interface consumers",
++        "sparse_paths": [
++          "common/types/include",
++          "common/types/operations/include",
++          "common/types/operations/src",
++          "common/types/src"
+         ]
+       }
+     ],
+--- normal05-source-r2/fenced_build.py
++++ normal06-source-r1b/fenced_build.py
+@@ -9,12 +9,12 @@
+ import subprocess
+ import time
+ 
+-CONTROLLER_SHA = 'f4ab5e09fc22b759811bfa9480c2de555dbc5096bc1258a984dbd33809db734b'
++CONTROLLER_SHA = '0bef6799e2f5b07e277a2fc055503488d1b057c2554711097a44a3bdd28eae31'
+ LIFECYCLE_SHA = '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126'
+ ROOT_SUPERVISOR_SHA = 'a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147'
+-SNAPSHOT_SHA = '3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3'
++SNAPSHOT_SHA = '8872df36e07844fe490487db0c2eefe7db095c3b25bdf1e261ec602fa1f4c36e'
+ PREPARATION_SHA = 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'
+-ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-native-provider-build-05-20261106')
++ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-06-20261106')
+ FENCE_ROOT = ROOT / 'build-fences-01'
+ 
+ 
+--- normal05-source-r2/framework_build.py
++++ normal06-source-r1b/framework_build.py
+@@ -175,30 +175,31 @@
+ 
+ # Input and completion bindings for the existing normal builder lifecycle.
+ OWNER = P('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01')
+-ROOT = OWNER / 'typed-ingress-framework-native-provider-build-05-20261106'
++ROOT = OWNER / 'typed-ingress-framework-systemui-provider-build-06-20261106'
+ HERE = ROOT / 'control-source'
+ WORK = OWNER / 'typed-ingress-framework-work-01-20261105'
+ OUT = ROOT / 'android-out'
+ ATTEMPT = ROOT / 'attempt-01'
+-BUILD_PARENT = P('/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106')
++BUILD_PARENT = P('/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106')
+ BUILD_SOURCE = BUILD_PARENT / 'builder-source'
+-BUILDER = BUILD_PARENT / 'compile02/cargo-target/debug/droidloom-update'
+-BUILDER_SHA = "6bb421afded7d77fa61d27548d12011b83e831a55e56c5bdc114f87fb2ba9bf3"
+-BUILDER_BYTES = 34766128
+-BUILD_RESULT = BUILD_PARENT / 'compile02/result.json'
++BUILDER = BUILD_PARENT / 'compile01/cargo-target/debug/droidloom-update'
++BUILDER_SHA = 'e1d3dd7caf023e4709c2617318de97cc17906aae595b33c4c3290358e7d0dee5'
++BUILDER_BYTES = 34817256
++BUILD_RESULT = BUILD_PARENT / 'compile01/result.json'
+ BUILDER_MANIFEST = BUILD_PARENT / 'candidate-source-manifest.json'
+-QUALIFICATION_RESULT = BUILD_PARENT / 'qualify02/result.json'
+-QUALIFICATION_SHA = 'f31bb31d29967bacdb0842eea99dae65f8b67425f26f10063c3d84099367fd64'
+-BUILD_RESULT_SHA = "a14dde5d3a2e85fe44d90c651527c8c8402d341403ef84a7bc92b93252de72b9"
+-BUILD_RESULT_BYTES = 37384
+-SOURCE_MANIFEST_SHA = "d9340351c9653b10dfd0882afbff5ff4fc11dafaa6083191ed2a8fdb5c8dd934"
++QUALIFICATION_RESULT = BUILD_RESULT
++QUALIFICATION_SHA = '6599026ebe5071ecdd5f0e2d962eb96cc791041be0dee9fd59a402735a6387d8'
++BUILD_RESULT_SHA = '6599026ebe5071ecdd5f0e2d962eb96cc791041be0dee9fd59a402735a6387d8'
++BUILD_RESULT_BYTES = 76136
++SOURCE_MANIFEST_SHA = 'f4a0e6ff82f1ecf9bd786872d99cc0b1608e1d94d0adc37761e87aed449c81bd'
+ PREPARE_PARENT = OWNER / 'typed-framework-work-preparation-01-20261105'
+ PREPARATION = PREPARE_PARENT / 'attempt01/result.json'
+ PREPARATION_SHA = 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'
+ INVENTORY_SOURCE_SHA = '203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab'
+ ENGINE_SOURCE = OWNER / 'full-build-combined07-go5-streaming-01/engine-working'
+ TETO_HEAD = 'a9496d886a85752ba407b76509952c06cd79ddb8'
+-EXTENDED_LOCK_SHA = '72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d'
++EXTENDED_LOCK_SHA = 'f5717d49fe0d4656b952bd397beab5d2fa70aa0992dd936ac31f81246c9e4772'
++PREVIOUS_NATIVE_PROVIDER_LOCK_SHA = '72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d'
+ PREVIOUS_PROVIDER_LOCK_SHA = '5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7'
+ PREVIOUS_TYPED_LOCK_SHA = 'ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54'
+ ORIGINAL_LOCK_SHA = '4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178'
+@@ -208,21 +209,21 @@
+ SWAP_MAX = 0
+ MIN_AVAILABLE = 15 * 1024**3
+ TARGETS = ['framework-minus-apex', 'libandroid_runtime']
+-EXPECTED_TESTS = ['android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes', 'android::tests::restoration_preserves_original_and_removes_created_file', 'android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch', 'android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout', 'android::patch_tests::interrupted_projection_recovers_before_next_build', 'tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets', 'tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory', 'native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate', 'native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions', 'android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata', 'android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas', 'android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged', 'native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change', 'native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock', 'native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification', 'native_role_ingress::tests::native_provider_extension_rejects_missing_or_unpinned_providers']
+-
+-
+-PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-provider-build-03-20261106'
++EXPECTED_TESTS = ['android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes', 'android::tests::restoration_preserves_original_and_removes_created_file', 'android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch', 'android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout', 'android::patch_tests::interrupted_projection_recovers_before_next_build', 'tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets', 'tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory', 'native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate', 'native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions', 'android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata', 'android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas', 'android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged', 'native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change', 'native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock', 'native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification', 'native_role_ingress::tests::native_provider_extension_rejects_missing_or_unpinned_providers', 'android::tests::typed_systemui_defaults_preserve_real_consumers_and_dependency_edges', 'android::tests::typed_systemui_projection_preserves_loaded_ordinary_dependencies', 'native_role_ingress::tests::systemui_extension_rejects_missing_provider_wrong_revision_or_scope']
++
++
++PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-native-provider-build-05-20261106'
+ PUBLISHED_SOURCE = WORK / 'aosp-source'
+-PUBLISHED_MANIFEST_SHA = 'afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f'
+-PUBLISHED_MANIFEST_BYTES = 108555
++PUBLISHED_MANIFEST_SHA = '5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d'
++PUBLISHED_MANIFEST_BYTES = 109252
+ NATIVE_PREBUILT_BP_SHA = 'd1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a'
+ NATIVE_PREBUILT_BP_BYTES = 1017
+ NATIVE_PREBUILT_BP_GIT_SHA = '68246c4206ea702c8a66b73c37bfcacb51524086'
+-PRIOR_INNER_SHA = '6a525b9838f43579bc41b1106891f2f734a0c2d92b0c5cc355f7ab02b39eb2a8'
+-PRIOR_OUTER_SHA = '273ba8a236253ee3873074a26f568144397044ebcfdd6f153ab8712b29ff70cf'
++PRIOR_INNER_SHA = '232a63a6a48c4248346921ee7f9cb86f13d17dcd3abcb32e6a52856cda0dbbde'
++PRIOR_OUTER_SHA = '1353fe85e19ae79f4b615e7f38efcbb2f45f8a34529a3be6c59a6ed585e1a1f2'
+ EXPECTED_SOURCE_TESTS = ['resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
+-EXPECTED_COMPILE_LABELS = ['rust-version', 'build', 'test-compile', 'test-list', 'focused-00', 'focused-01', 'focused-02', 'focused-03', 'focused-04', 'focused-05', 'focused-06', 'focused-07', 'focused-08', 'focused-09', 'focused-10', 'focused-11', 'focused-12', 'focused-13', 'focused-14', 'focused-15']
+-EXPECTED_SOURCE_DELTA = {'unchanged_existing': 489, 'changed_existing': ['tools/droidloom-update/src/android.rs', 'tools/droidloom-update/src/native_role_ingress.rs'], 'added': ['android/manifest/m2-role-ingress-provider2-source-lock.json', 'android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp'], 'actual_source_file_count': 493}
++EXPECTED_COMPILE_LABELS = ['rust-version', 'build', 'test-compile', 'test-list', 'projection-test-0', 'projection-test-1', 'projection-test-2', 'projection-test-3', 'projection-test-4', 'projection-test-5', 'projection-test-6', 'projection-test-7', 'projection-test-8', 'projection-test-9', 'projection-test-10', 'projection-test-11', 'projection-test-12', 'projection-test-13', 'projection-test-14', 'projection-test-15', 'projection-test-16', 'projection-test-17', 'projection-test-18']
++EXPECTED_SOURCE_DELTA = {'unchanged_existing': 491, 'changed_existing': ['tools/droidloom-update/src/android.rs', 'tools/droidloom-update/src/native_role_ingress.rs'], 'added': ['android/manifest/m2-role-ingress-provider3-source-lock.json', 'android/native-role-ingress/provider-fixtures/SystemUI-pods-build.Android.bp', 'android/native-role-ingress/provider-fixtures/SystemUI-pods-policy.Android.bp', 'android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp', 'android/native-role-ingress/provider-fixtures/WindowManager-Shell.Android.bp'], 'actual_source_file_count': 498}
+ 
+ 
+ def identity(info):
+@@ -277,132 +278,136 @@
+             'actual compile02 held file identity/content differs')
+ 
+ 
++def qualify_builder470_receipt(result):
++    # This checks the pinned actual receipt. It does not compile or run tests.
++    require(result['state'] == 'RUST_BUILD_AND_19_INDEPENDENT_FOCUSED_TESTS_PASS' and
++            result['test_names'] == EXPECTED_TESTS and result['tests_passed'] == 19 and
++            result['registered_tests'] == 209 and result['source_files'] == 498 and
++            result['new_project_count'] == 242 and
++            result['source_manifest_sha256'] == SOURCE_MANIFEST_SHA,
++            'actual builder470 result/source/test closure differs')
++    require([row['label'] for row in result['commands']] == EXPECTED_COMPILE_LABELS and
++            all(row['returncode'] == 0 and row['timed_out'] is False for row in result['commands']) and
++            len(result['independent_result_gates']) == 19,
++            'actual builder470 command or independent gate closure differs')
++    require(all(result[key] is True for key in ['candidate_source_unchanged_after',
++                'baseline_source_unchanged_after', 'registry_input_bytes_and_full_identities_unchanged_after',
++                'tool_inputs_unchanged_after']) and
++            result['cleanup'] == {'complete': True, 'children': [], 'errors': []} and
++            result['owned_resource_gate']['pass'] is True and
++            all(result['owned_resource_gate']['events'][key] == 0 for key in ['oom', 'oom_kill', 'oom_group_kill']) and
++            result['memory_peak'] == '1073741824' and result['owned_resource_gate']['events']['max'] == 657 and
++            result['swap_peak'] == '0' and result['Soong_invoked'] is False and
++            result['full_Android_Java_JNI_compiled'] is False and
++            result['runtime_authorization_enabled'] is False and result['production_ready'] is False and
++            result['Main_actions'] == result['Android_actions'] == result['install_actions'] == 0 and
++            'HOME' not in result['build_environment'] and
++            result['build_environment']['CARGO_NET_OFFLINE'] == 'true' and
++            result['build_environment']['CARGO_BUILD_JOBS'] == '1',
++            'actual builder470 source/resource/child/scope qualification differs')
++    for index, name in enumerate(EXPECTED_TESTS):
++        row = result['commands'][index + 4]
++        log_path = BUILD_RESULT.parent / ('projection-test-' + str(index) + '.libtest')
++        expected_log = ('ok ' + name + '\n').encode()
++        gate = {'exact_name': name, 'expected_stdout_runs': 1, 'filtered_out_per_run': 208,
++                'outer_results': 1, 'registered_tests': 209, 'summary_and_independent_result_agree': True}
++        require(row['argv'] == [result['test_executable']['path'], '--exact', name,
++                '--test-threads=1', '--nocapture', '--logfile', str(log_path)] and
++                row['focused_result_gate'] == result['independent_result_gates'][index] == gate and
++                row['independent_libtest_result']['path'] == str(log_path) and
++                row['independent_libtest_result']['bytes'] == len(expected_log) and
++                row['independent_libtest_result']['sha256'] == hashlib.sha256(expected_log).hexdigest(),
++                'actual builder470 independent exact test differs: ' + name)
++    continuity = result['dependency_continuity']
++    require(continuity['all_source_bytes_and_full_identities_equal_before'] is True and
++            continuity['recorded_files_and_archives'] == 2706 and continuity['selected_packages'] == 49 and
++            continuity['registry_packages'] == 45 and continuity['new_dependency_fetches'] == 0 and
++            len(continuity['actual_build_packages']) == len(set(continuity['actual_build_packages'])) == 49 and
++            continuity['actual_build_packages'] == continuity['actual_test_compile_packages'] and
++            result['source_delta'] == EXPECTED_SOURCE_DELTA,
++            'actual builder470 dependency or seven-file successor differs')
++
++
+ def builder_contract():
+-    # The original normal03 contract still qualifies the complete parent compiler03.
+-    # Its old source/receipts are never rewritten to resemble the successor.
+-    parent_path = HERE / 'parent-normal03-framework_build.py'
++    # Preserve the genuine normal05 predecessor contract and all its old
++    # authorities. Neither its source nor receipts are rewritten as builder470.
++    parent_path = HERE / 'parent-normal05-framework_build.py'
+     parent_pin, parent_raw = held_file(parent_path, 65536, True)
+-    require(parent_pin['bytes'] == 59292 and
+-            parent_pin['sha256'] == '03f0b4aecba20149ad7f1301ea823eb5e7e5ba1efa00d08c92c4fa7ecf482132',
+-            'original normal03 builder contract changed')
+-    parent_scope = {'__name__': 'original_normal03_builder_contract', '__file__': str(parent_path)}
++    require(parent_pin['bytes'] == 60970 and
++            parent_pin['sha256'] == 'f4ab5e09fc22b759811bfa9480c2de555dbc5096bc1258a984dbd33809db734b',
++            'original normal05 builder contract changed')
++    parent_scope = {'__name__': 'original_normal05_builder_contract', '__file__': str(parent_path)}
+     exec(compile(parent_raw, str(parent_path), 'exec'), parent_scope, parent_scope)
+     parent_compiled, parent_compiled_pin, parent_map, parent_map_pin, parent_builder = parent_scope['builder_contract']()
++    parent_qualification, parent_qualification_pin = json_pin(
++        parent_scope['QUALIFICATION_RESULT'], parent_scope['QUALIFICATION_SHA'], 65386)
+ 
+     result, pin = json_pin(BUILD_RESULT, BUILD_RESULT_SHA, BUILD_RESULT_BYTES)
+-    staged, _ = json_pin(HERE / 'actual-builder469-result.json', BUILD_RESULT_SHA, BUILD_RESULT_BYTES)
+-    qualification, qualification_pin = json_pin(QUALIFICATION_RESULT, QUALIFICATION_SHA, 65386)
+-    staged_qualification, _ = json_pin(HERE / 'actual-builder469-qualification.json', QUALIFICATION_SHA, 65386)
+-    require(result == staged and qualification == staged_qualification and
+-            result['state'] == 'RUST_BUILD_AND_FOCUSED_TESTS_PASS' and
+-            qualification['state'] == 'ACTUAL_COMPILE02_INPUT_CONTINUITY_AND_16_INDEPENDENT_TESTS_PASS' and
+-            result['test_names'] == qualification['expected_test_names'] == EXPECTED_TESTS and
+-            result['tests_passed'] == qualification['tests_passed'] == 16 and
+-            result['registered_tests'] == qualification['registered_tests'] == 206 and
+-            qualification['actual_compile02'] == pin and
+-            qualification['actual_compile02_job_id'] == '1a1b063d4cc-fc05-702e' and
+-            qualification['original_compiler03_authority'] == parent_compiled_pin,
+-            'actual builder469 compile02 and qualification02 binding differs')
+-    require([row['label'] for row in result['commands']] ==
+-            ['rust-version', 'build', 'test-compile', 'test-list'] +
+-            ['focused-%02d' % index for index in range(16)] and
+-            all(row['returncode'] == 0 for row in result['commands']) and
+-            result['source_files'] == 493 and result['new_project_count'] == 225 and
+-            result['source_manifest_sha256'] == SOURCE_MANIFEST_SHA,
+-            'actual compiler command/source closure differs')
++    staged, _ = json_pin(HERE / 'actual-builder470-result.json', BUILD_RESULT_SHA, BUILD_RESULT_BYTES)
++    require(result == staged and result['baseline_compile'] == parent_compiled_pin and
++            result['baseline_independent_qualification'] == parent_qualification_pin and
++            result['baseline_manifest'] == parent_map_pin,
++            'actual builder470 predecessor authority differs')
++    qualify_builder470_receipt(result)
++    # The inherited normal preflight keeps command and independent-result files
++    # identity-bound on the host; no log replay or test execution is performed.
+     for row in result['commands']:
+         for stream in ('stdout', 'stderr'):
+             observed, _ = held_file(row[stream]['path'], 32*1024*1024)
+-            match_compile_pin(observed, row[stream])
+-    require(all(result[key] is True for key in ['candidate_source_unchanged_after',
+-                'baseline_source_unchanged_after', 'tool_inputs_unchanged_after']) and
+-            result['cleanup'] == {'complete': True, 'children': [], 'errors': []} and
+-            result['owned_resource_gate']['pass'] is True and
+-            all(result['owned_resource_gate']['events'][key] == 0 for key in ['oom', 'oom_kill', 'oom_group_kill']) and
+-            result['swap_peak'] == '0' and
+-            result['Soong_invoked'] is False and result['full_Android_Java_JNI_compiled'] is False and
+-            result['runtime_authorization_enabled'] is False and
+-            result['Main_actions'] == result['Android_actions'] == result['install_actions'] == 0 and
+-            'HOME' not in result['build_environment'] and
+-            result['build_environment']['CARGO_NET_OFFLINE'] == 'true',
+-            'actual compiler source/resource/scope qualification differs')
+-    commands = qualification['commands']
+-    require([row['label'] for row in commands] == ['test-list'] +
+-                ['projection-test-' + str(index) for index in range(16)] and
+-            all(row['returncode'] == 0 and row['timed_out'] is False for row in commands) and
+-            len(qualification['independent_result_gates']) == 16,
+-            'independent qualification command closure differs')
++            require(observed == row[stream], 'actual builder470 command output identity changed')
+     for index, name in enumerate(EXPECTED_TESTS):
+-        row = commands[index + 1]
+-        expected_log = ('ok ' + name + '\n').encode()
+-        log_path = QUALIFICATION_RESULT.parent / ('projection-test-' + str(index) + '.libtest')
+-        gate = {'exact_name': name, 'expected_stdout_runs': 1, 'filtered_out_per_run': 205,
+-                'outer_results': 1, 'registered_tests': 206, 'summary_and_independent_result_agree': True}
+-        require(row['argv'] == [result['test_executable']['path'], '--exact', name,
+-                '--test-threads=1', '--nocapture', '--logfile', str(log_path)] and
+-                row['focused_result_gate'] == qualification['independent_result_gates'][index] == gate,
+-                'actual exact independent test differs: ' + name)
+-        actual_log, raw_log = held_file(log_path, 4096, True)
+-        require(actual_log == row['independent_libtest_result'] and raw_log == expected_log,
+-                'actual held independent libtest log changed: ' + name)
+-    for row in commands:
+-        for stream in ('stdout', 'stderr'):
+-            actual, _ = held_file(row[stream]['path'], 32*1024*1024)
+-            require(actual == row[stream], 'held qualification command output changed')
+-
+-    continuity = qualification['dependency_continuity']
++        row = result['commands'][index + 4]
++        actual_log, raw_log = held_file(row['independent_libtest_result']['path'], 4096, True)
++        require(actual_log == row['independent_libtest_result'] and raw_log == ('ok ' + name + '\n').encode(),
++                'actual held builder470 independent libtest log changed: ' + name)
++
++    continuity = result['dependency_continuity']
+     dependency_authority, _ = held_file(continuity['authority']['path'], 2*1024*1024)
++    parent_continuity = parent_qualification['dependency_continuity']
+     expected_packages = sorted(value.replace(str(parent_scope['BUILD_SOURCE']), str(BUILD_SOURCE))
+-                               for value in parent_compiled['actual_build_packages'])
++                               for value in parent_continuity['actual_build_packages'])
+     require(dependency_authority == continuity['authority'] and
+-            {key: continuity['authority'][key] for key in ('path', 'bytes', 'sha256')} ==
+-                parent_compiled['dependency_inputs'] and
+-            continuity['all_bytes_and_full_stat_identities_equal'] is True and
+-            continuity['recorded_files_and_archives'] == 2706 and
+-            continuity['selected_packages'] == 49 and continuity['registry_packages'] == 45 and
+-            continuity['actual_build_packages'] == continuity['actual_test_compile_packages'] == expected_packages and
+-            continuity['new_dependency_fetches'] == 0 and
+-            qualification['tool_continuity']['all_current_equal_compile02_before'] is True and
+-            qualification['tool_continuity']['tool_count'] == 70 and
+-            qualification['tool_continuity']['rustup_proxy_executed'] is False and
+-            not qualification['dependency_changes'] and not qualification['tool_changes'] and
+-            all(qualification[key] is True for key in ['candidate_source_unchanged_after',
+-                                                       'original_source_unchanged_after']) and
+-            qualification['cleanup'] == {'complete': True, 'children': [], 'errors': []} and
+-            qualification['owned_resource_gate']['pass'] is True and
+-            all(qualification['owned_resource_gate']['events'][key] == 0 for key in ['oom', 'oom_kill', 'oom_group_kill']) and
+-            qualification['swap_peak'] == '0' and qualification['cargo_commands'] == 0 and
+-            qualification['Soong_invoked'] is False and qualification['production_ready'] is False,
+-            'actual source/tool/dependency/child continuity differs')
+-    inherited = qualification['unchanged_source_resume_controls']
+-    require(inherited['inherited_authority'] == parent_compiled_pin and
+-            inherited['source_files_unchanged'] is True and inherited['historically_passed'] == 9 and
+-            inherited['rerun_in_this_supplement'] is False and inherited['historical_registered_count'] == 20 and
+-            inherited['names'] == parent_compiled['expected_source_resume_test_names'],
+-            'unchanged historical source-resume controls were widened or relabeled')
+-
+-    source_map, source_pin = json_pin(BUILDER_MANIFEST, SOURCE_MANIFEST_SHA, 97964)
+-    staged_map, _ = json_pin(HERE / 'expected-builder469-manifest.json', SOURCE_MANIFEST_SHA, 97964)
++            continuity['authority'] == parent_continuity['authority'] and
++            continuity['actual_build_packages'] == expected_packages and
++            result['profile_authority'] == parent_qualification['original_compiler03_authority'],
++            'actual builder470 original dependency/profile authority differs')
++    admission, admission_pin = json_pin(BUILD_PARENT / 'compile01/resource-admission.json',
++        '5b4b728f90ee088141d2cd9aaa7e242ef33e58b355c790422ed858930c926031', 2746)
++    staged_admission, _ = json_pin(HERE / 'actual-builder470-resource-admission.json',
++        '5b4b728f90ee088141d2cd9aaa7e242ef33e58b355c790422ed858930c926031', 2746)
++    recorded_admission = result['resource_admission']
++    require(admission == staged_admission and
++            {key: admission_pin[key] for key in ('path', 'bytes', 'sha256')} ==
++                {key: recorded_admission[key] for key in ('path', 'bytes', 'sha256')} and
++            admission_pin['identity'] == recorded_admission['identity'][:3] +
++                [recorded_admission['bytes']] + [int(value) for value in recorded_admission['identity'][3:]] and
++            admission['profile'] == {'memory_max_bytes': 1073741824, 'memory_swap_max_bytes': 0,
++                'minimum_fresh_MemAvailable_bytes': 3221225472, 'admission_difference_bytes': 2147483648,
++                'global_swap_is_owned_budget': False} and
++            admission['owned_observed'] == {'memory.max': '1073741824', 'cpu.max': '100000 100000',
++                'memory.swap.max': '0', 'memory.swap.current': '0'} and
++            parse_admission_meminfo(admission['meminfo']['raw_ascii'].encode('ascii'))['MemAvailable'] >= 3*1024**3 and
++            len(result['cpu_affinity']) == 1,
++            'actual builder470 one-GiB Rust resource authority differs')
++
++    source_map, source_pin = json_pin(BUILDER_MANIFEST, SOURCE_MANIFEST_SHA, 99075)
++    staged_map, _ = json_pin(HERE / 'expected-builder470-manifest.json', SOURCE_MANIFEST_SHA, 99075)
+     changed = sorted(name for name in parent_map if source_map.get(name) != parent_map[name])
+     added = sorted(set(source_map) - set(parent_map))
+-    require(source_map == staged_map and len(source_map) == 493 and set(parent_map) <= set(source_map) and
+-            changed == ['tools/droidloom-update/src/android.rs', 'tools/droidloom-update/src/native_role_ingress.rs'] and
+-            added == ['android/manifest/m2-role-ingress-provider2-source-lock.json',
+-                      'android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp'] and
+-            qualification['source_delta'] == {'unchanged_existing': 489, 'changed_existing': changed,
+-                                             'added': added, 'actual_source_file_count': 493} and
++    require(source_map == staged_map and result['candidate_manifest'] == source_pin and
++            len(source_map) == 498 and set(parent_map) <= set(source_map) and
++            changed == EXPECTED_SOURCE_DELTA['changed_existing'] and added == EXPECTED_SOURCE_DELTA['added'] and
+             source_map[GO_PATCH]['sha256'] == GO_PATCH_SHA and
+             source_map['android/manifest/m2-role-ingress-source-lock.json']['sha256'] == PREVIOUS_TYPED_LOCK_SHA and
+             source_map['android/manifest/m2-role-ingress-provider-source-lock.json']['sha256'] == PREVIOUS_PROVIDER_LOCK_SHA and
+-            source_map['android/manifest/m2-role-ingress-provider2-source-lock.json']['sha256'] == EXTENDED_LOCK_SHA,
+-            'full builder source manifest is not the exact four-file successor')
++            source_map['android/manifest/m2-role-ingress-provider2-source-lock.json']['sha256'] == PREVIOUS_NATIVE_PROVIDER_LOCK_SHA and
++            source_map['android/manifest/m2-role-ingress-provider3-source-lock.json']['sha256'] == EXTENDED_LOCK_SHA,
++            'full builder470 source manifest is not the exact seven-file successor')
+     builder, _ = held_file(BUILDER, 64*1024*1024)
+     match_compile_pin(builder, result['builder'])
+-    require(result['builder'] == qualification['builder'] and
+-            result['test_executable'] == qualification['test_executable'] and
+-            builder['sha256'] == BUILDER_SHA and builder['bytes'] == BUILDER_BYTES and
++    require(builder['sha256'] == BUILDER_SHA and builder['bytes'] == BUILDER_BYTES and
+             builder['identity'][2] & 0o111,
+-            'actual builder469 ELF changed')
++            'actual builder470 ELF changed')
+     return result, pin, source_map, source_pin, builder
+ 
+ 
+@@ -465,8 +470,8 @@
+ 
+ def prior_failure_contract():
+     authorities = [
+-        (PREVIOUS_ROOT / 'attempt-01/terminal.json', 'prior-framework-inner-terminal.json', PRIOR_INNER_SHA, 5239),
+-        (PREVIOUS_ROOT / 'build-fences-01/terminal.json', 'prior-framework-outer-terminal.json', PRIOR_OUTER_SHA, 24689),
++        (PREVIOUS_ROOT / 'attempt-01/terminal.json', 'prior-framework-inner-terminal.json', PRIOR_INNER_SHA, 3176),
++        (PREVIOUS_ROOT / 'build-fences-01/terminal.json', 'prior-framework-outer-terminal.json', PRIOR_OUTER_SHA, 24715),
+     ]
+     documents = []
+     pins = []
+@@ -480,16 +485,16 @@
+     require(inner['state'] == 'FAILED' and inner['builder_returncode'] == 1 and
+             inner['error'] == "RuntimeError('normal builder returned 1')" and
+             inner['cleanup']['complete'] is True and not inner['cleanup']['errors'] and
+-            len(inner['cleanup']['children']) == 27 and
++            len(inner['cleanup']['children']) == 4 and
+             all(row['reaped'] is True for row in inner['cleanup']['children']) and
+             inner['normal_command_completion_gate'] is None and
+             inner['source_projection_journal_present'] is False and
+             inner['input_after_qualified'] is True and inner['input_after_error'] is None and
+             inner['owned_resource_gate']['pass'] is True and
+             inner['memory_swap_peak'] == inner['memory_swap_current'] == inner['memory_swap_max'] == '0' and
+-            inner['stdout_sha256'] == 'f1458d03292c14c05b14fdfe76091cfd7b2ffe05df2bbb3480be8d2cd20a329b' and
+-            inner['stderr_sha256'] == 'a517eefb94ef2116400ac329e0fb74cf74eb34379a726fb2b6403f74d8659ad8',
+-            'prior normal03 strict failure or complete owned-child retirement differs')
++            inner['stdout_sha256'] == '5453e358a70d1531218699641b289e58dfbe13202d7ad369f46b5fbf016eb151' and
++            inner['stderr_sha256'] == '615d8e9d5fdd2e2fb31c605e4eed204e92a5f0ab21621765bb6c27115d0c339e',
++            'prior normal05 strict failure or complete owned-child retirement differs')
+     require(outer['state'] == 'FAILED' and outer['inner_returncode'] == 1 and
+             outer['main_fence_assessment']['main_fence_pass'] is True and
+             outer['main_fence_assessment']['identity_or_limit_changes'] == [] and
+@@ -501,11 +506,11 @@
+     published, row = json_pin(HERE / 'actual-published-source-manifest.json',
+                              PUBLISHED_MANIFEST_SHA, PUBLISHED_MANIFEST_BYTES)
+     pins.append(row)
+-    require(published['schema_version'] == 1 and published['source_lock_sha256'] == PREVIOUS_PROVIDER_LOCK_SHA and
++    require(published['schema_version'] == 1 and published['source_lock_sha256'] == PREVIOUS_NATIVE_PROVIDER_LOCK_SHA and
+             published['plan']['schema_version'] == 1 and published['plan']['unrestricted_repo_sync'] is False and
+             published['plan']['superproject_commit'] == '28f0bbddc24d56c8ec5a8df5342ac7a292184039' and
+-            len(published['plan']['projects']) == 224 and len(published['plan']['links']) == 8,
+-            'actual current provider1 published source manifest differs')
++            len(published['plan']['projects']) == 225 and len(published['plan']['links']) == 8,
++            'actual current provider2 published source manifest differs')
+     bp_row, bp_raw = held_file(HERE / 'actual-native-prebuilt-Android.bp', 65536, True)
+     require(bp_row['bytes'] == NATIVE_PREBUILT_BP_BYTES and bp_row['sha256'] == NATIVE_PREBUILT_BP_SHA and
+             hashlib.sha1(b'blob ' + str(len(bp_raw)).encode() + b'\0' + bp_raw).hexdigest() == NATIVE_PREBUILT_BP_GIT_SHA,
+@@ -532,7 +537,7 @@
+         raise RuntimeError('unexpected existing source projection journal')
+     return {'work_identity': current_work, 'source_identity': actual,
+         'published_source_path': str(PUBLISHED_SOURCE), 'manifest': row,
+-        'previous_locked_projects': 224, 'new_locked_projects': 225, 'root_links': 8,
++        'previous_locked_projects': 225, 'new_locked_projects': 242, 'root_links': 8,
+         'all_projects_reuse_qualified_by_wrapper': False,
+         'all_project_qualification_deferred_to_normal_builder_under_existing_work_source_locks': True,
+         'normal_full_old_lock_verification_then_monotonic_reconciliation': True,
+@@ -573,7 +578,7 @@
+                 'metadata_sha256': observed['metadata_sha256']}
+         builder_tree = scope['tree_inventory'](BUILD_SOURCE, state)
+         portable = {name: row for name, row in builder_tree['files'].items() if row['kind'] != 'directory'}
+-        require(portable == context['builder_map'], 'actual 493-file builder source changed')
++        require(portable == context['builder_map'], 'actual 498-file builder source changed')
+         observations['builder_source'] = {'complete_file_map_matched': True, 'files': len(portable),
+                                           'held_root': builder_tree['held_root']}
+         head, head_bytes = held_file(ENGINE_SOURCE / '.git/HEAD', 128, True)
+@@ -624,7 +629,7 @@
+         'manifest_pins': manifest_pins, 'compiled': compiled, 'compiled_pin': compiled_pin,
+         'builder_map': builder_map, 'builder_map_pin': builder_map_pin, 'builder_pin': builder_pin,
+         'inventory_scope': scope, 'inventory_pin': inventory_pin}
+-    context['qualification_pin'] = json_pin(QUALIFICATION_RESULT, QUALIFICATION_SHA, 65386)[1]
++    context['qualification_pin'] = json_pin(QUALIFICATION_RESULT, QUALIFICATION_SHA, BUILD_RESULT_BYTES)[1]
+     context['published_manifest'], context['prior_failure_authority_pins'] = prior_failure_contract()
+     context['initial_observations'] = observe_inputs(context, True)
+     return context
+@@ -635,16 +640,19 @@
+         'root': str(ROOT), 'work': str(WORK), 'aosp_source': str(PUBLISHED_SOURCE), 'out': str(OUT),
+         'builder_result_sha256': BUILD_RESULT_SHA, 'work_preparation_sha256': PREPARATION_SHA,
+         'builder_sha256': BUILDER_SHA, 'builder_source_manifest_sha256': SOURCE_MANIFEST_SHA,
+-        'builder_source_files': 493, 'actual_host_compile_commands': 20, 'actual_current_exact_controls': 16,
+-        'qualification_commands': 17, 'unchanged_source_resume_controls_inherited': 9,
++        'builder_source_files': 498, 'actual_host_compile_commands': 23, 'actual_current_exact_controls': 19,
++        'qualification_commands': 19, 'qualification_commands_included_in_host_compile': True,
++        'separate_qualification_commands': 0, 'unchanged_source_resume_controls_inherited': 9,
+         'source_resume_controls_rerun_in_successor': False, 'qualification_result_sha256': QUALIFICATION_SHA,
+         'argv': [str(BUILDER), '--source', str(BUILD_SOURCE), '--jobs', '1',
+                  'native-role-ingress-build', '--work', str(WORK), '--out', str(OUT)],
+         'targets': TARGETS, 'dependency_mode': 'Strict', 'ALLOW_MISSING_DEPENDENCIES': False,
+-        'source_materialization': 'fresh verification of the published 224-project provider1 lock, then normal monotonic reconciliation to 225 locked projects and 8 root links',
++        'source_materialization': 'fresh verification of the published 225-project provider2 lock, then normal monotonic reconciliation to 242 locked projects and 8 root links',
+         'published_source_manifest_sha256': PUBLISHED_MANIFEST_SHA,
+         'reuse_qualified_by_plan': False, 'prior_inner_failure_sha256': PRIOR_INNER_SHA,
+-        'prior_outer_failure_sha256': PRIOR_OUTER_SHA, 'prior_reaped_children': 27,
++        'prior_outer_failure_sha256': PRIOR_OUTER_SHA, 'prior_reaped_children': 4,
++        'actual_builder470_job_id': '1a1b1d86cb7-fc05-7b1f',
++        'prior_compile_status_timeout_preserved_then_authoritatively_settled': True,
+         'first_attempt_timeout_and_296_reaped_history_retained': True,
+         'normal_lock_paths': [str(WORK / 'package-build.lock'), str(WORK / 'aosp-source-update.lock')],
+         'normal_package_and_source_locks': True, 'normal_projection_journal_and_recovery': True,
+@@ -654,8 +662,8 @@
+         'global_swap_free_recorded_only': True, 'owned_swap_current_required_bytes': 0,
+         'resource_admission_receipt': str(ROOT / 'resource-admission.json'),
+         'admission_difference_bytes': MIN_AVAILABLE - MEMORY_MAX,
+-        'prior_normal_peak_bytes': 8141615104, 'prior_normal_swap_peak_bytes': 0,
+-        'actual_static_compile_peak_bytes': 1073741824, 'actual_static_compile_memory_max_events': 314,
++        'prior_normal_peak_bytes': 3168141312, 'prior_normal_swap_peak_bytes': 0,
++        'actual_static_compile_peak_bytes': 1073741824, 'actual_static_compile_memory_max_events': 657,
+         'static_compile_pressure_not_normal_Soong_qualification': True,
+         'cpu_quota_percent': 200, 'jobs': 1, 'builder_wait_seconds': 6100,
+         'automatic_retry': False, 'Main_actions': 0, 'Android_actions': 0,
+@@ -679,7 +687,7 @@
+ 
+ def qualify_completed_manifest(document, lock):
+     expected = expected_published_manifest(lock)
+-    require(document == expected and len(document['plan']['projects']) == 225 and
++    require(document == expected and len(document['plan']['projects']) == 242 and
+             len(document['plan']['links']) == 8,
+             'normal published manifest is not the exact complete new locked plan')
+ 
+@@ -711,12 +719,14 @@
+             inputs['provider_source_lock_extension_exact'] is True and
+             inputs['previous_provider_source_lock_sha256'] == PREVIOUS_PROVIDER_LOCK_SHA and
+             inputs['native_provider_extension_exact'] is True and
++            inputs['previous_native_provider_source_lock_sha256'] == PREVIOUS_NATIVE_PROVIDER_LOCK_SHA and
++            inputs['systemui_provider_extension_exact'] is True and
+             inputs['host_only_libandroid_runtime_is_insufficient'] is True and
+             inputs['complete_framework_Java_and_Android_TU_verified'] is False and
+             inputs['transitive_build_closure_qualified'] is False,
+             'framework input record claims an unverified artifact or host-only qualification')
+-    lock, _ = json_pin(BUILD_SOURCE / 'android/manifest/m2-role-ingress-provider2-source-lock.json',
+-                       EXTENDED_LOCK_SHA, 96957)
++    lock, _ = json_pin(BUILD_SOURCE / 'android/manifest/m2-role-ingress-provider3-source-lock.json',
++                       EXTENDED_LOCK_SHA, 103409)
+     manifest_pin, manifest_raw = held_file(PUBLISHED_SOURCE / '.droidloom-source-manifest.json', 1024*1024, True)
+     qualify_completed_manifest(json.loads(manifest_raw), lock)
+     native_bp, _ = held_file(PUBLISHED_SOURCE / 'prebuilts/misc/common/robolectric-native-prebuilt/Android.bp', 65536)
+@@ -749,7 +759,7 @@
+     return {'state': 'NORMAL_COMMAND_COMPLETED_ARTIFACT_QUALIFICATION_PENDING',
+         'records': {name: row for name, (_, row) in records.items()},
+         'typed_originals_restored': restored,
+-        'actual_published_manifest': manifest_pin, 'published_projects': 225, 'published_root_links': 8,
++        'actual_published_manifest': manifest_pin, 'published_projects': 242, 'published_root_links': 8,
+         'actual_locked_native_prebuilt_provider': native_bp,
+         'targets': TARGETS, 'dependency_mode': 'Strict', 'source_projection_restored': True,
+         'Java_framework_implementation_jar_qualified': False, 'Android_JNI_TU_and_linked_library_qualified': False,
+--- normal05-source-r2/main_snapshot.py
++++ normal06-source-r1b/main_snapshot.py
+@@ -215,55 +215,8 @@
+                    'path': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/qualification.private.json',
+                    'sha256': '4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6'},
+  'root': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01'}
+-APP_SCOPE_PIN = {'bytes': 57340,
+- 'path': '/home/alex/work/pocket4-successor-native-install-20261106-douyin-01/app-scope-after.private.json',
+- 'sha256': '489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4'}
+-APP_SCOPE_PACKAGES = ['com.Hyatt.hyt',
+- 'com.MobileTicket',
+- 'com.amazon.mShop.android.shopping',
+- 'com.android.calendar',
+- 'com.android.camera2',
+- 'com.android.contacts',
+- 'com.android.deskclock',
+- 'com.android.dialer',
+- 'com.android.documentsui',
+- 'com.android.gallery3d',
+- 'com.android.messaging',
+- 'com.android.quicksearchbox',
+- 'com.android.settings',
+- 'com.android.threadnetwork.demoapp',
+- 'com.bestbuy.android',
+- 'com.ehi.national.mobile',
+- 'com.enflick.android.TextNow',
+- 'com.google.android.gms',
+- 'com.hertz.android.digital',
+- 'com.hilton.android.hhonors',
+- 'com.ihg.apps.android',
+- 'com.jingdong.app.mall',
+- 'com.lianjia.beike',
+- 'com.marriott.mrt',
+- 'com.pinger.textfree',
+- 'com.rytong.airchina',
+- 'com.rytong.ceair',
+- 'com.sankuai.meituan.takeoutnew',
+- 'com.sdu.didi.psnger',
+- 'com.ss.android.ugc.aweme',
+- 'com.szzc',
+- 'com.taobao.taobao',
+- 'com.tencent.mm',
+- 'com.ubercab',
+- 'com.united.mobile.android',
+- 'com.xunmeng.pinduoduo',
+- 'com.zhubajie.client',
+- 'com.zillow.android.streeteasy',
+- 'ctrip.android.view',
+- 'jp.co.ana.android.tabidachi',
+- 'local.pocket4.actions.v2',
+- 'local.pocket4.fixture',
+- 'org.chromium.webview_shell',
+- 'org.droidloom.qa.editorcontract',
+- 'org.fcitx.fcitx5.android',
+- 'tv.danmaku.bili']
++APP_SCOPE_PIN = None  # Required external current 47-package original, not the old 46.
++APP_SCOPE_PACKAGES = None  # Set only by the exact final-scope sealer.
+ 
+ """Inserted into the existing fixed snapshot; not a standalone entry point."""
+ 
+--- normal05-source-r2/prior-framework-inner-terminal.json
++++ normal06-source-r1b/prior-framework-inner-terminal.json
+@@ -3,167 +3,52 @@
+   "state": "FAILED",
+   "builder_returncode": 1,
+   "error": "RuntimeError('normal builder returned 1')",
+-  "seconds": 1428.3638683109311,
+-  "finished_utc": "2026-11-06T09:00:38.640489+00:00",
++  "seconds": 273.42054392106365,
++  "finished_utc": "2026-11-06T14:22:03.960147+00:00",
+   "cleanup": {
+     "complete": true,
+     "children": [
+       {
+-        "pid": 1658120,
++        "pid": 3919830,
+         "wait_status": 0,
+         "reaped": true
+       },
+       {
+-        "pid": 1660273,
++        "pid": 3920126,
+         "wait_status": 0,
+         "reaped": true
+       },
+       {
+-        "pid": 1661664,
++        "pid": 3920400,
+         "wait_status": 0,
+         "reaped": true
+       },
+       {
+-        "pid": 1701325,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1705739,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1706758,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1707343,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1708163,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1708260,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1708418,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1708528,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1708635,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1708930,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1709675,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1709798,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1709941,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1710155,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1710260,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1710386,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1710502,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1710625,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1711033,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1711242,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1711346,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1711503,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1711663,
+-        "wait_status": 0,
+-        "reaped": true
+-      },
+-      {
+-        "pid": 1716303,
++        "pid": 3924413,
+         "wait_status": 65280,
+         "reaped": true
+       }
+     ],
+     "errors": []
+   },
+-  "stdout_sha256": "f1458d03292c14c05b14fdfe76091cfd7b2ffe05df2bbb3480be8d2cd20a329b",
+-  "stderr_sha256": "a517eefb94ef2116400ac329e0fb74cf74eb34379a726fb2b6403f74d8659ad8",
++  "stdout_sha256": "5453e358a70d1531218699641b289e58dfbe13202d7ad369f46b5fbf016eb151",
++  "stderr_sha256": "615d8e9d5fdd2e2fb31c605e4eed204e92a5f0ab21621765bb6c27115d0c339e",
+   "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+-  "memory_peak": "8141615104",
++  "memory_peak": "3168141312",
+   "memory_swap_peak": "0",
+   "memory_swap_current": "0",
+   "memory_swap_max": "0",
+   "resource_admission_receipt": {
+-    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-provider-build-03-20261106/resource-admission.json",
++    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-native-provider-build-05-20261106/resource-admission.json",
+     "bytes": 2749,
+-    "sha256": "8bb6cb3db612f2b60ce077ffd5e16a5cfbf66a4e9ce829c72b10340813eb808d",
++    "sha256": "5a928421b72965b25627abcada001e10df0fb505bc827c0c3a183066cb867774",
+     "identity": [
+       66306,
+-      55987707,
++      57802800,
+       33152,
+       2749,
+-      1793954210273707301,
+-      1793954210273707301
++      1793974650536264325,
++      1793974650536264325
+     ]
+   },
+   "owned_budget_before_builder": {
+@@ -178,14 +63,14 @@
+   "input_after_qualified": true,
+   "input_after_error": null,
+   "work_preparation_sha256": "ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c",
+-  "builder_compile_sha256": "871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8",
+-  "builder_sha256": "8bf78794705a62f0a60d00af64cdd25e2b798739e445575c3d3cca5e566f4cf6",
++  "builder_compile_sha256": "a14dde5d3a2e85fe44d90c651527c8c8402d341403ef84a7bc92b93252de72b9",
++  "builder_sha256": "6bb421afded7d77fa61d27548d12011b83e831a55e56c5bdc114f87fb2ba9bf3",
+   "strict_targets": [
+     "framework-minus-apex",
+     "libandroid_runtime"
+   ],
+-  "prior_failed_inner_sha256": "80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc",
+-  "prior_failed_outer_sha256": "2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059",
++  "prior_failed_inner_sha256": "6a525b9838f43579bc41b1106891f2f734a0c2d92b0c5cc355f7ab02b39eb2a8",
++  "prior_failed_outer_sha256": "273ba8a236253ee3873074a26f568144397044ebcfdd6f153ab8712b29ff70cf",
+   "published_source_path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-work-01-20261105/aosp-source",
+   "source_reconciliation_uses_normal_builder": true,
+   "old_QA_epoch_invalid": true,
+--- normal05-source-r2/prior-framework-outer-terminal.json
++++ normal06-source-r1b/prior-framework-outer-terminal.json
+@@ -4,7 +4,7 @@
+   "error": "RuntimeError('inner full build failed')",
+   "inner_build_called": true,
+   "inner_returncode": 1,
+-  "seconds": 1431.4663620969513,
++  "seconds": 277.1453573240433,
+   "main_fence_assessment": {
+     "main_fence_pass": true,
+     "identity_or_limit_changes": [],
+@@ -19,9 +19,9 @@
+     },
+     "main_oom_delta_zero": true,
+     "main_current_resource_deltas": {
+-      "memory.current": 581890048,
+-      "memory.swap.current": -19652608,
+-      "pids.current": 12
++      "memory.current": -187727872,
++      "memory.swap.current": 6848512,
++      "pids.current": 1
+     },
+     "pressure_counter_increases_observed": {},
+     "unobserved_transient_effects_excluded": false,
+@@ -37,7 +37,7 @@
+     "kind": "real-fixed-capture-lifecycle-controls02",
+     "state": "PASS",
+     "qualification_seconds_limit": 30,
+-    "elapsed_seconds": 1.1525553199462593,
++    "elapsed_seconds": 1.1517380829900503,
+     "hard_execution_deadline_claimed": false,
+     "passed": 4,
+     "rows": [
+@@ -57,8 +57,8 @@
+           "errno": null,
+           "message": "owned child exit deadline"
+         },
+-        "outer_lifecycle_sha256": "9bd4afc1eb83dd2f1f4c6ed615d3aeb8144e5ae5f4fd11bfc8dfa7a64c238bd3",
+-        "root_stdout_sha256": "333f33812fc99a8dfbecd945656cc987db6412ceedfe302d0bed4029f3cf52cf"
++        "outer_lifecycle_sha256": "52d796af2125928e51edabf3c14e98c69c09846d743c9aea772641a350ee2d53",
++        "root_stdout_sha256": "d06338dfa738984e3778530dc15c4b78cc56cff059ab54223619ae40e8f20181"
+       },
+       {
+         "name": "control-root-escaped",
+@@ -76,8 +76,8 @@
+           "errno": null,
+           "message": "driver left descendant processes after its exit"
+         },
+-        "outer_lifecycle_sha256": "8235de84ce2f714b0536333fd5ffd25e9743b4bc28fd7173d06f3cfc1a2ac7e6",
+-        "root_stdout_sha256": "d064ecafb363b7a37a297d557fc63b178fc9335a7ad83b236994940736487c62"
++        "outer_lifecycle_sha256": "87b5125b48001fb192fbf23f2e77bdbe1eb9b77524a99cf126c6687d5489d890",
++        "root_stdout_sha256": "322a917c27420b75c26955abcb519f822add1724cc83e057da0d5823d9cca718"
+       },
+       {
+         "name": "control-root-pidfd",
+@@ -95,8 +95,8 @@
+           "errno": 24,
+           "message": "[Errno 24] explicit fixed-root pidfd allocation control seam"
+         },
+-        "outer_lifecycle_sha256": "b64feb294bb432766559255ad5105dc3b2948507c095c67fe2ad497b9bb7b00e",
+-        "root_stdout_sha256": "77dae70293550e837d7fb70dfcef451c009618dfd89ecd0270c9510a03b2163c"
++        "outer_lifecycle_sha256": "da5866ce539e3777e9de5cfa4687c7199c1ec9adad80b3a5ea610715ce52cfb8",
++        "root_stdout_sha256": "12c44d189a347270e8b570baa43348d6aeac0b56fc3e85b6dc6bdd599ca38d32"
+       },
+       {
+         "name": "control-outer-pidfd",
+@@ -116,7 +116,7 @@
+           "message": "[Errno 24] explicit outer owned-child pidfd allocation control seam"
+         },
+         "secondary_failures_retained": [],
+-        "outer_lifecycle_sha256": "7ecac5066f4762cc22a37d4e260a5bc0f220fe165e79ae90d6bce1890b421822"
++        "outer_lifecycle_sha256": "99c68d960b58d472209f7534d35a28015b0190529ce0624c61213f1ada211269"
+       }
+     ],
+     "Python_processes_actually_run": true,
+@@ -132,19 +132,19 @@
+       "phase": "control-root-timeout",
+       "mode": "control-timeout",
+       "operator_uid": 1000,
+-      "root_source_sha256": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7",
+-      "lifecycle_sha256": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+-      "snapshot_sha256": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+-      "root_packet_bytes": 53340,
+-      "root_packet_sha256": "29a87f40e9af26b3af03f9f5410cc73012a4f93d1fe2316119e0a885dad236fa",
++      "root_source_sha256": "a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147",
++      "lifecycle_sha256": "7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126",
++      "snapshot_sha256": "3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3",
++      "root_packet_bytes": 63320,
++      "root_packet_sha256": "57a2e0d509e199beeaccc5110db0ff1b78a7077b35fb189c6518b984c7fb82fe",
+       "outer_subreaper": {
+-        "pid": 1650016,
++        "pid": 3915501,
+         "begin_passed": true,
+         "restored": true,
+         "final_children_empty": true,
+         "max_adopted_per_command": 128,
+         "cleanup_deadline_supplied_by_caller": true,
+-        "protected_pid_count": 7,
++        "protected_pid_count": 8,
+         "signals_only_to_kernel_proven_owned_children": true,
+         "original_subreaper_flag": 0
+       },
+@@ -152,7 +152,7 @@
+         "schema": 1,
+         "child_started": true,
+         "child_reaped": true,
+-        "pid": 1650023,
++        "pid": 3915509,
+         "returncode": 0,
+         "timed_out": false,
+         "kill_attempted": false,
+@@ -162,23 +162,23 @@
+         "remaining_owned_children": [],
+         "first_error": null,
+         "secondary_errors": [],
+-        "observation_deadline": 979941.527578848,
+-        "retirement_deadline": 979946.527578848,
++        "observation_deadline": 1000381.503770149,
++        "retirement_deadline": 1000386.503770149,
+         "all_acquired_fds_closed": true,
+         "input": {
+           "acquired": true,
+           "closed": true,
+           "fd": 4,
+-          "bytes": 53340,
+-          "sha256": "29a87f40e9af26b3af03f9f5410cc73012a4f93d1fe2316119e0a885dad236fa",
++          "bytes": 63320,
++          "sha256": "57a2e0d509e199beeaccc5110db0ff1b78a7077b35fb189c6518b984c7fb82fe",
+           "sealed": true
+         },
+         "stdout": {
+           "acquired": true,
+           "closed": true,
+           "fd": 5,
+-          "bytes": 2560,
+-          "sha256": "333f33812fc99a8dfbecd945656cc987db6412ceedfe302d0bed4029f3cf52cf",
++          "bytes": 2567,
++          "sha256": "d06338dfa738984e3778530dc15c4b78cc56cff059ab54223619ae40e8f20181",
+           "complete": true
+         },
+         "stderr": {
+@@ -191,20 +191,20 @@
+         },
+         "pidfd": 7,
+         "observed_before_reap": {
+-          "pid": 1650023,
++          "pid": 3915509,
+           "code": 1,
+           "status": 0
+         },
+         "leader_unreaped_before_group_cleanup": true,
+         "leader_alive_before_group_cleanup": false,
+         "leader_observed_before_reap": {
+-          "pid": 1650023,
++          "pid": 3915509,
+           "code": 1,
+           "status": 0
+         },
+         "group_signal_unneeded_exited_only_child": true,
+-        "cleanup_elapsed_seconds": 0.0001569989835843444,
+-        "finished_monotonic": 979917.580039685,
++        "cleanup_elapsed_seconds": 0.00024202000349760056,
++        "finished_monotonic": 1000357.553040992,
+         "retirement_within_deadline": true,
+         "qualified_success": true
+       },
+@@ -218,7 +218,7 @@
+       "runtime_authorization_enabled": false,
+       "outer_watchdog_installed_before_launch": true,
+       "outer_watchdog_disarmed_and_restored": true,
+-      "finished_monotonic": 979917.580097766,
++      "finished_monotonic": 1000357.553141613,
+       "within_absolute_outer_deadline": true,
+       "qualified_success": true
+     },
+@@ -227,19 +227,19 @@
+       "phase": "control-root-escaped",
+       "mode": "control-escaped",
+       "operator_uid": 1000,
+-      "root_source_sha256": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7",
+-      "lifecycle_sha256": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+-      "snapshot_sha256": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+-      "root_packet_bytes": 53340,
+-      "root_packet_sha256": "60fbfe980cb3dbac3c14a25f5c62a55a927a2bd7d8a4000177b11817ff6a7ba9",
++      "root_source_sha256": "a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147",
++      "lifecycle_sha256": "7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126",
++      "snapshot_sha256": "3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3",
++      "root_packet_bytes": 63320,
++      "root_packet_sha256": "5d8587e12f183efc0b22f4555a89b40b3353ea7e71f33e192dd47eba9e91efed",
+       "outer_subreaper": {
+-        "pid": 1650016,
++        "pid": 3915501,
+         "begin_passed": true,
+         "restored": true,
+         "final_children_empty": true,
+         "max_adopted_per_command": 128,
+         "cleanup_deadline_supplied_by_caller": true,
+-        "protected_pid_count": 7,
++        "protected_pid_count": 8,
+         "signals_only_to_kernel_proven_owned_children": true,
+         "original_subreaper_flag": 0
+       },
+@@ -247,7 +247,7 @@
+         "schema": 1,
+         "child_started": true,
+         "child_reaped": true,
+-        "pid": 1650082,
++        "pid": 3915529,
+         "returncode": 0,
+         "timed_out": false,
+         "kill_attempted": false,
+@@ -257,23 +257,23 @@
+         "remaining_owned_children": [],
+         "first_error": null,
+         "secondary_errors": [],
+-        "observation_deadline": 979942.582593864,
+-        "retirement_deadline": 979947.582593864,
++        "observation_deadline": 1000382.557702203,
++        "retirement_deadline": 1000387.557702203,
+         "all_acquired_fds_closed": true,
+         "input": {
+           "acquired": true,
+           "closed": true,
+           "fd": 4,
+-          "bytes": 53340,
+-          "sha256": "60fbfe980cb3dbac3c14a25f5c62a55a927a2bd7d8a4000177b11817ff6a7ba9",
++          "bytes": 63320,
++          "sha256": "5d8587e12f183efc0b22f4555a89b40b3353ea7e71f33e192dd47eba9e91efed",
+           "sealed": true
+         },
+         "stdout": {
+           "acquired": true,
+           "closed": true,
+           "fd": 5,
+-          "bytes": 2590,
+-          "sha256": "d064ecafb363b7a37a297d557fc63b178fc9335a7ad83b236994940736487c62",
++          "bytes": 2594,
++          "sha256": "322a917c27420b75c26955abcb519f822add1724cc83e057da0d5823d9cca718",
+           "complete": true
+         },
+         "stderr": {
+@@ -286,20 +286,20 @@
+         },
+         "pidfd": 7,
+         "observed_before_reap": {
+-          "pid": 1650082,
++          "pid": 3915529,
+           "code": 1,
+           "status": 0
+         },
+         "leader_unreaped_before_group_cleanup": true,
+         "leader_alive_before_group_cleanup": false,
+         "leader_observed_before_reap": {
+-          "pid": 1650082,
++          "pid": 3915529,
+           "code": 1,
+           "status": 0
+         },
+         "group_signal_unneeded_exited_only_child": true,
+-        "cleanup_elapsed_seconds": 0.00013397494331002235,
+-        "finished_monotonic": 979917.620152405,
++        "cleanup_elapsed_seconds": 0.0002268720418214798,
++        "finished_monotonic": 1000357.608285131,
+         "retirement_within_deadline": true,
+         "qualified_success": true
+       },
+@@ -313,7 +313,7 @@
+       "runtime_authorization_enabled": false,
+       "outer_watchdog_installed_before_launch": true,
+       "outer_watchdog_disarmed_and_restored": true,
+-      "finished_monotonic": 979917.620204073,
++      "finished_monotonic": 1000357.608386724,
+       "within_absolute_outer_deadline": true,
+       "qualified_success": true
+     },
+@@ -322,19 +322,19 @@
+       "phase": "control-root-pidfd",
+       "mode": "control-pidfd",
+       "operator_uid": 1000,
+-      "root_source_sha256": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7",
+-      "lifecycle_sha256": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+-      "snapshot_sha256": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+-      "root_packet_bytes": 53338,
+-      "root_packet_sha256": "4b2f989013cc62818d480e7b38c128b8b1a076d80409b3d9994ce7db1c92a279",
++      "root_source_sha256": "a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147",
++      "lifecycle_sha256": "7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126",
++      "snapshot_sha256": "3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3",
++      "root_packet_bytes": 63318,
++      "root_packet_sha256": "39c6839756a8584ddeaac408d4c45038413b14571d87dc3f5bea098f41a58e3f",
+       "outer_subreaper": {
+-        "pid": 1650016,
++        "pid": 3915501,
+         "begin_passed": true,
+         "restored": true,
+         "final_children_empty": true,
+         "max_adopted_per_command": 128,
+         "cleanup_deadline_supplied_by_caller": true,
+-        "protected_pid_count": 7,
++        "protected_pid_count": 8,
+         "signals_only_to_kernel_proven_owned_children": true,
+         "original_subreaper_flag": 0
+       },
+@@ -342,7 +342,7 @@
+         "schema": 1,
+         "child_started": true,
+         "child_reaped": true,
+-        "pid": 1650087,
++        "pid": 3915536,
+         "returncode": 0,
+         "timed_out": false,
+         "kill_attempted": false,
+@@ -352,23 +352,23 @@
+         "remaining_owned_children": [],
+         "first_error": null,
+         "secondary_errors": [],
+-        "observation_deadline": 979942.622132311,
+-        "retirement_deadline": 979947.622132311,
++        "observation_deadline": 1000382.610310712,
++        "retirement_deadline": 1000387.610310712,
+         "all_acquired_fds_closed": true,
+         "input": {
+           "acquired": true,
+           "closed": true,
+           "fd": 4,
+-          "bytes": 53338,
+-          "sha256": "4b2f989013cc62818d480e7b38c128b8b1a076d80409b3d9994ce7db1c92a279",
++          "bytes": 63318,
++          "sha256": "39c6839756a8584ddeaac408d4c45038413b14571d87dc3f5bea098f41a58e3f",
+           "sealed": true
+         },
+         "stdout": {
+           "acquired": true,
+           "closed": true,
+           "fd": 5,
+-          "bytes": 2278,
+-          "sha256": "77dae70293550e837d7fb70dfcef451c009618dfd89ecd0270c9510a03b2163c",
++          "bytes": 2282,
++          "sha256": "12c44d189a347270e8b570baa43348d6aeac0b56fc3e85b6dc6bdd599ca38d32",
+           "complete": true
+         },
+         "stderr": {
+@@ -381,20 +381,20 @@
+         },
+         "pidfd": 7,
+         "observed_before_reap": {
+-          "pid": 1650087,
++          "pid": 3915536,
+           "code": 1,
+           "status": 0
+         },
+         "leader_unreaped_before_group_cleanup": true,
+         "leader_alive_before_group_cleanup": false,
+         "leader_observed_before_reap": {
+-          "pid": 1650087,
++          "pid": 3915536,
+           "code": 1,
+           "status": 0
+         },
+         "group_signal_unneeded_exited_only_child": true,
+-        "cleanup_elapsed_seconds": 8.771603461354971e-05,
+-        "finished_monotonic": 979917.674604399,
++        "cleanup_elapsed_seconds": 9.284599218517542e-05,
++        "finished_monotonic": 1000357.650462511,
+         "retirement_within_deadline": true,
+         "qualified_success": true
+       },
+@@ -408,7 +408,7 @@
+       "runtime_authorization_enabled": false,
+       "outer_watchdog_installed_before_launch": true,
+       "outer_watchdog_disarmed_and_restored": true,
+-      "finished_monotonic": 979917.674643193,
++      "finished_monotonic": 1000357.650503629,
+       "within_absolute_outer_deadline": true,
+       "qualified_success": true
+     },
+@@ -417,19 +417,19 @@
+       "phase": "control-outer-pidfd",
+       "mode": "control-timeout",
+       "operator_uid": 1000,
+-      "root_source_sha256": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7",
+-      "lifecycle_sha256": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+-      "snapshot_sha256": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+-      "root_packet_bytes": 53340,
+-      "root_packet_sha256": "29a87f40e9af26b3af03f9f5410cc73012a4f93d1fe2316119e0a885dad236fa",
++      "root_source_sha256": "a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147",
++      "lifecycle_sha256": "7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126",
++      "snapshot_sha256": "3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3",
++      "root_packet_bytes": 63320,
++      "root_packet_sha256": "57a2e0d509e199beeaccc5110db0ff1b78a7077b35fb189c6518b984c7fb82fe",
+       "outer_subreaper": {
+-        "pid": 1650016,
++        "pid": 3915501,
+         "begin_passed": true,
+         "restored": true,
+         "final_children_empty": true,
+         "max_adopted_per_command": 128,
+         "cleanup_deadline_supplied_by_caller": true,
+-        "protected_pid_count": 7,
++        "protected_pid_count": 8,
+         "signals_only_to_kernel_proven_owned_children": true,
+         "original_subreaper_flag": 0
+       },
+@@ -437,7 +437,7 @@
+         "schema": 1,
+         "child_started": true,
+         "child_reaped": true,
+-        "pid": 1650091,
++        "pid": 3915540,
+         "returncode": -9,
+         "timed_out": false,
+         "kill_attempted": true,
+@@ -452,15 +452,15 @@
+           "message": "[Errno 24] explicit outer owned-child pidfd allocation control seam"
+         },
+         "secondary_errors": [],
+-        "observation_deadline": 979942.67682334,
+-        "retirement_deadline": 979947.67682334,
++        "observation_deadline": 1000382.652339379,
++        "retirement_deadline": 1000387.652339379,
+         "all_acquired_fds_closed": true,
+         "input": {
+           "acquired": true,
+           "closed": true,
+           "fd": 4,
+-          "bytes": 53340,
+-          "sha256": "29a87f40e9af26b3af03f9f5410cc73012a4f93d1fe2316119e0a885dad236fa",
++          "bytes": 63320,
++          "sha256": "57a2e0d509e199beeaccc5110db0ff1b78a7077b35fb189c6518b984c7fb82fe",
+           "sealed": true
+         },
+         "stdout": {
+@@ -483,8 +483,8 @@
+         "leader_alive_before_group_cleanup": true,
+         "owned_group_kill_attempted": true,
+         "owned_group_kill_completed": true,
+-        "cleanup_elapsed_seconds": 0.0010907649993896484,
+-        "finished_monotonic": 979917.678460334,
++        "cleanup_elapsed_seconds": 0.0010874170111492276,
++        "finished_monotonic": 1000357.653835653,
+         "retirement_within_deadline": true,
+         "qualified_success": false
+       },
+@@ -503,7 +503,7 @@
+       "runtime_authorization_enabled": false,
+       "outer_watchdog_installed_before_launch": true,
+       "outer_watchdog_disarmed_and_restored": true,
+-      "finished_monotonic": 979917.678480923,
++      "finished_monotonic": 1000357.653855811,
+       "within_absolute_outer_deadline": true,
+       "qualified_success": false
+     },
+@@ -512,19 +512,19 @@
+       "phase": "before",
+       "mode": "before",
+       "operator_uid": 1000,
+-      "root_source_sha256": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7",
+-      "lifecycle_sha256": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+-      "snapshot_sha256": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+-      "root_packet_bytes": 53331,
+-      "root_packet_sha256": "92fce32e8c611412fac64b94b774d02e1e158e858022e56479255baf451f352a",
++      "root_source_sha256": "a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147",
++      "lifecycle_sha256": "7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126",
++      "snapshot_sha256": "3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3",
++      "root_packet_bytes": 63311,
++      "root_packet_sha256": "ec7ee71e1a410fb8b2cdd7e64f0742ea591196135cfcb9cde80b2bbdc36e693d",
+       "outer_subreaper": {
+-        "pid": 1650016,
++        "pid": 3915501,
+         "begin_passed": true,
+         "restored": true,
+         "final_children_empty": true,
+         "max_adopted_per_command": 128,
+         "cleanup_deadline_supplied_by_caller": true,
+-        "protected_pid_count": 7,
++        "protected_pid_count": 8,
+         "signals_only_to_kernel_proven_owned_children": true,
+         "original_subreaper_flag": 0
+       },
+@@ -532,7 +532,7 @@
+         "schema": 1,
+         "child_started": true,
+         "child_reaped": true,
+-        "pid": 1650093,
++        "pid": 3915541,
+         "returncode": 0,
+         "timed_out": false,
+         "kill_attempted": false,
+@@ -542,23 +542,23 @@
+         "remaining_owned_children": [],
+         "first_error": null,
+         "secondary_errors": [],
+-        "observation_deadline": 979942.680531854,
+-        "retirement_deadline": 979947.680531854,
++        "observation_deadline": 1000382.655936537,
++        "retirement_deadline": 1000387.655936537,
+         "all_acquired_fds_closed": true,
+         "input": {
+           "acquired": true,
+           "closed": true,
+           "fd": 4,
+-          "bytes": 53331,
+-          "sha256": "92fce32e8c611412fac64b94b774d02e1e158e858022e56479255baf451f352a",
++          "bytes": 63311,
++          "sha256": "ec7ee71e1a410fb8b2cdd7e64f0742ea591196135cfcb9cde80b2bbdc36e693d",
+           "sealed": true
+         },
+         "stdout": {
+           "acquired": true,
+           "closed": true,
+           "fd": 5,
+-          "bytes": 6791,
+-          "sha256": "a670035c550dd684ac035eb25522a1d48bb54eb95b4ef97e551c47b613a9690d",
++          "bytes": 11064,
++          "sha256": "430acc90e521f7f8027f683da47dffacaf799c1ec496f3660eced420314c14d2",
+           "complete": true
+         },
+         "stderr": {
+@@ -571,20 +571,20 @@
+         },
+         "pidfd": 7,
+         "observed_before_reap": {
+-          "pid": 1650093,
++          "pid": 3915541,
+           "code": 1,
+           "status": 0
+         },
+         "leader_unreaped_before_group_cleanup": true,
+         "leader_alive_before_group_cleanup": false,
+         "leader_observed_before_reap": {
+-          "pid": 1650093,
++          "pid": 3915541,
+           "code": 1,
+           "status": 0
+         },
+         "group_signal_unneeded_exited_only_child": true,
+-        "cleanup_elapsed_seconds": 9.803602006286383e-05,
+-        "finished_monotonic": 979917.732112366,
++        "cleanup_elapsed_seconds": 0.00020589097402989864,
++        "finished_monotonic": 1000357.954234702,
+         "retirement_within_deadline": true,
+         "qualified_success": true
+       },
+@@ -598,7 +598,7 @@
+       "runtime_authorization_enabled": false,
+       "outer_watchdog_installed_before_launch": true,
+       "outer_watchdog_disarmed_and_restored": true,
+-      "finished_monotonic": 979917.732153905,
++      "finished_monotonic": 1000357.954329653,
+       "within_absolute_outer_deadline": true,
+       "qualified_success": true
+     },
+@@ -607,19 +607,19 @@
+       "phase": "after",
+       "mode": "after",
+       "operator_uid": 1000,
+-      "root_source_sha256": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7",
+-      "lifecycle_sha256": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+-      "snapshot_sha256": "1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf",
+-      "root_packet_bytes": 53330,
+-      "root_packet_sha256": "edc760ef7f9959b7704a772f4be2167d60b6e512d77d95cc6dee0b601598622f",
++      "root_source_sha256": "a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147",
++      "lifecycle_sha256": "7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126",
++      "snapshot_sha256": "3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3",
++      "root_packet_bytes": 63310,
++      "root_packet_sha256": "567ef3f4af6283173d50d13d50a817d826eaa690b3c066de9e120f407aac6da9",
+       "outer_subreaper": {
+-        "pid": 1650016,
++        "pid": 3915501,
+         "begin_passed": true,
+         "restored": true,
+         "final_children_empty": true,
+         "max_adopted_per_command": 128,
+         "cleanup_deadline_supplied_by_caller": true,
+-        "protected_pid_count": 7,
++        "protected_pid_count": 8,
+         "signals_only_to_kernel_proven_owned_children": true,
+         "original_subreaper_flag": 1
+       },
+@@ -627,7 +627,7 @@
+         "schema": 1,
+         "child_started": true,
+         "child_reaped": true,
+-        "pid": 1724054,
++        "pid": 3945072,
+         "returncode": 0,
+         "timed_out": false,
+         "kill_attempted": false,
+@@ -637,23 +637,23 @@
+         "remaining_owned_children": [],
+         "first_error": null,
+         "secondary_errors": [],
+-        "observation_deadline": 981372.933599657,
+-        "retirement_deadline": 981377.933599657,
++        "observation_deadline": 1000658.253630478,
++        "retirement_deadline": 1000663.253630478,
+         "all_acquired_fds_closed": true,
+         "input": {
+           "acquired": true,
+           "closed": true,
+           "fd": 4,
+-          "bytes": 53330,
+-          "sha256": "edc760ef7f9959b7704a772f4be2167d60b6e512d77d95cc6dee0b601598622f",
++          "bytes": 63310,
++          "sha256": "567ef3f4af6283173d50d13d50a817d826eaa690b3c066de9e120f407aac6da9",
+           "sealed": true
+         },
+         "stdout": {
+           "acquired": true,
+           "closed": true,
+           "fd": 5,
+-          "bytes": 6791,
+-          "sha256": "fad34b32baf47b0cc530ca942a82014a29fb6bef3752e7140c86d5e752af593e",
++          "bytes": 11060,
++          "sha256": "aa67f57a6666d6e555ded171e2667a1d362f1d61b1733940c0f1a0fbf7c0804c",
+           "complete": true
+         },
+         "stderr": {
+@@ -666,20 +666,20 @@
+         },
+         "pidfd": 7,
+         "observed_before_reap": {
+-          "pid": 1724054,
++          "pid": 3945072,
+           "code": 1,
+           "status": 0
+         },
+         "leader_unreaped_before_group_cleanup": true,
+         "leader_alive_before_group_cleanup": false,
+         "leader_observed_before_reap": {
+-          "pid": 1724054,
++          "pid": 3945072,
+           "code": 1,
+           "status": 0
+         },
+         "group_signal_unneeded_exited_only_child": true,
+-        "cleanup_elapsed_seconds": 0.00013248203322291374,
+-        "finished_monotonic": 981347.989819448,
++        "cleanup_elapsed_seconds": 0.00013358390424400568,
++        "finished_monotonic": 1000633.637626841,
+         "retirement_within_deadline": true,
+         "qualified_success": true
+       },
+@@ -693,13 +693,13 @@
+       "runtime_authorization_enabled": false,
+       "outer_watchdog_installed_before_launch": true,
+       "outer_watchdog_disarmed_and_restored": true,
+-      "finished_monotonic": 981347.989875625,
++      "finished_monotonic": 1000633.637684761,
+       "within_absolute_outer_deadline": true,
+       "qualified_success": true
+     }
+   ],
+-  "root_capture_lifecycle_source_sha256": "4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28",
+-  "root_capture_supervisor_source_sha256": "f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7",
++  "root_capture_lifecycle_source_sha256": "7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126",
++  "root_capture_supervisor_source_sha256": "a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147",
+   "Main_actions": 0,
+   "Android_actions": 0,
+   "main_unchanged_not_inferred_from_actions": true,
+--- normal05-source-r2/pure_controls.py
++++ normal06-source-r1b/pure_controls.py
+@@ -87,8 +87,8 @@
+         raise RuntimeError('CONTROL_PRIMARY_FAILURE_LOST')
+     lock = json.loads(packet['actual-provider-source-lock.json'])
+     expected = framework['expected_published_manifest'](lock)
+-    need(len(lock['projects']) == 225 and len(lock['links']) == 8, 'CONTROL_LOCK_BINDING')
+-    good('complete_expected_225_project_plan', lambda: framework['qualify_completed_manifest'](expected, lock))
++    need(len(lock['projects']) == 242 and len(lock['links']) == 8, 'CONTROL_LOCK_BINDING')
++    good('complete_expected_242_project_plan', lambda: framework['qualify_completed_manifest'](expected, lock))
+     for name, mutate in [
+         ('partial_project_list', lambda d: d['plan']['projects'].pop()),
+         ('wrong_commit', lambda d: d['plan']['projects'][0].__setitem__('commit', '0' * 40)),
+@@ -101,7 +101,7 @@
+         mutate(document)
+         bad(name, lambda document=document: framework['qualify_completed_manifest'](document, lock),
+             'normal published manifest is not the exact complete new locked plan')
+-    bad('actual_provider1_224_manifest_is_not_current_completion',
++    bad('actual_provider2_225_manifest_is_not_current_completion',
+         lambda: framework['qualify_completed_manifest'](json.loads(packet['actual-published-source-manifest.json']), lock),
+         'normal published manifest is not the exact complete new locked plan')
+     memory = {'MemAvailable': 15 * 1024**3, 'SwapFree': 0}
+--- normal05-source-r2/stage.py
++++ normal06-source-r1b/stage.py
+@@ -1,10 +1,14 @@
+ import hashlib,json,os,stat
+ from pathlib import Path,PurePosixPath
+-ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-native-provider-build-05-20261106')
++ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-06-20261106')
+ EXPECTED = {'actual-builder469-qualification.json': {'bytes': 65386,
+                                           'sha256': 'f31bb31d29967bacdb0842eea99dae65f8b67425f26f10063c3d84099367fd64'},
+  'actual-builder469-result.json': {'bytes': 37384,
+                                    'sha256': 'a14dde5d3a2e85fe44d90c651527c8c8402d341403ef84a7bc92b93252de72b9'},
++ 'actual-builder470-resource-admission.json': {'bytes': 2746,
++                                               'sha256': '5b4b728f90ee088141d2cd9aaa7e242ef33e58b355c790422ed858930c926031'},
++ 'actual-builder470-result.json': {'bytes': 76136,
++                                   'sha256': '6599026ebe5071ecdd5f0e2d962eb96cc791041be0dee9fd59a402735a6387d8'},
+  'actual-current-baseline-guard.py': {'bytes': 3213,
+                                       'sha256': 'd84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3'},
+  'actual-current-guard-source-manifest.json': {'bytes': 749,
+@@ -15,32 +19,36 @@
+                                           'sha256': '7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8'},
+  'actual-native-prebuilt-Android.bp': {'bytes': 1017,
+                                        'sha256': 'd1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a'},
+- 'actual-provider-source-lock.json': {'bytes': 96957,
+-                                      'sha256': '72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d'},
+- 'actual-published-source-manifest.json': {'bytes': 108555,
+-                                           'sha256': 'afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f'},
++ 'actual-provider-source-lock.json': {'bytes': 103409,
++                                      'sha256': 'f5717d49fe0d4656b952bd397beab5d2fa70aa0992dd936ac31f81246c9e4772'},
++ 'actual-published-source-manifest.json': {'bytes': 109252,
++                                           'sha256': '5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d'},
+  'actual-work-preparation.json': {'bytes': 11091,
+                                   'sha256': 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'},
+  'capture_lifecycle.py': {'bytes': 25240,
+                           'sha256': '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126'},
+  'expected-builder469-manifest.json': {'bytes': 97964,
+                                        'sha256': 'd9340351c9653b10dfd0882afbff5ff4fc11dafaa6083191ed2a8fdb5c8dd934'},
+- 'fenced_build.py': {'bytes': 25681,
+-                     'sha256': '16d60c8a43e7f42de0ee8264da72713b213bad2b39e3b8b94b34b9bdd1954d6c'},
+- 'framework_build.py': {'bytes': 60970,
+-                        'sha256': 'f4ab5e09fc22b759811bfa9480c2de555dbc5096bc1258a984dbd33809db734b'},
++ 'expected-builder470-manifest.json': {'bytes': 99075,
++                                       'sha256': 'f4a0e6ff82f1ecf9bd786872d99cc0b1608e1d94d0adc37761e87aed449c81bd'},
++ 'fenced_build.py': {'bytes': 25683,
++                     'sha256': '1a9483192e698e7c807811039bfa62ef803418641557d8a18674678f5a22623d'},
++ 'framework_build.py': {'bytes': 62412,
++                        'sha256': '0bef6799e2f5b07e277a2fc055503488d1b057c2554711097a44a3bdd28eae31'},
+  'frozen-work-inventory.py': {'bytes': 48443,
+                               'sha256': '203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab'},
+- 'main_snapshot.py': {'bytes': 24529,
+-                      'sha256': '3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3'},
++ 'main_snapshot.py': {'bytes': 23238,
++                      'sha256': '8872df36e07844fe490487db0c2eefe7db095c3b25bdf1e261ec602fa1f4c36e'},
+  'parent-normal03-framework_build.py': {'bytes': 59292,
+                                         'sha256': '03f0b4aecba20149ad7f1301ea823eb5e7e5ba1efa00d08c92c4fa7ecf482132'},
+- 'prior-framework-inner-terminal.json': {'bytes': 5239,
+-                                         'sha256': '6a525b9838f43579bc41b1106891f2f734a0c2d92b0c5cc355f7ab02b39eb2a8'},
+- 'prior-framework-outer-terminal.json': {'bytes': 24689,
+-                                         'sha256': '273ba8a236253ee3873074a26f568144397044ebcfdd6f153ab8712b29ff70cf'},
++ 'parent-normal05-framework_build.py': {'bytes': 60970,
++                                        'sha256': 'f4ab5e09fc22b759811bfa9480c2de555dbc5096bc1258a984dbd33809db734b'},
++ 'prior-framework-inner-terminal.json': {'bytes': 3176,
++                                         'sha256': '232a63a6a48c4248346921ee7f9cb86f13d17dcd3abcb32e6a52856cda0dbbde'},
++ 'prior-framework-outer-terminal.json': {'bytes': 24715,
++                                         'sha256': '1353fe85e19ae79f4b615e7f38efcbb2f45f8a34529a3be6c59a6ed585e1a1f2'},
+  'pure_controls.py': {'bytes': 14631,
+-                      'sha256': '89f11c85f2dd016c15030c17c926b85ffa142ebb14cefbdb0fa25666ce2e4d40'},
++                      'sha256': '30f48e0bbee38daf1db209fc0dcdee2c8036061d857070eeebb25bc524e4b79b'},
+  'root_snapshot_supervisor.py': {'bytes': 12041,
+                                  'sha256': 'a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147'}}
+ def main(packet):
+@@ -55,7 +63,7 @@
+     for name,text in packet.items():
+         if name.endswith('.py'):
+             compile(text,'<staged-'+name+'>','exec')
+-    binding_scope={'__name__':'normal05_binding_only','__file__':'<normal05-binding-only>'}
++    binding_scope={'__name__':'normal06_binding_only','__file__':'<normal06-binding-only>'}
+     exec(compile(packet['main_snapshot.py'],'main_snapshot.py','exec'),binding_scope,binding_scope)
+     binding_scope['qualify_scope_reference'](binding_scope['APP_SCOPE_PIN'],binding_scope['APP_SCOPE_PACKAGES'])
+     controls_scope={'__name__':'frozen_host_build_pure_controls','__file__':'<frozen-pure-controls>'}
+--- normal05-source-r2/transport.py
++++ normal06-source-r1b/transport.py
+@@ -1,13 +1,13 @@
+ import hashlib,json,sys
+-WIRE_BYTES = 824918
+-WIRE_SHA256 = '20e061e7a28c9aca81ef5ae33fa8578caf9ee35b7eef6660e8d7675c2db2762d'
+-STAGE_BYTES = 7137
+-STAGE_SHA256 = '5723e4064379832141e068fb87b7a4460e594545ffc3d9a94f779df847b9ad83'
++WIRE_BYTES = None
++WIRE_SHA256 = None
++STAGE_BYTES = 7841
++STAGE_SHA256 = 'da1627de74f7c5daddb61708ea2cbe2bbefcf4ea204a855bff346ded5b38d9a0'
+ if sys.argv[1:] != ['--execute-once']:
+     print(json.dumps({'state':'PLAN_ONLY','source_only':True,'submitted':False,'Main_actions':0,'Android_actions':0,'old_QA_epoch_invalid':True,'new_QA_epoch_qualified':False}))
+     raise SystemExit(0)
+ if WIRE_BYTES is None or WIRE_SHA256 is None:
+-    raise RuntimeError('NORMAL05_EXACT_REQUEST_NOT_SEALED')
++    raise RuntimeError('NORMAL06_EXACT_REQUEST_NOT_SEALED')
+ raw=sys.stdin.buffer.read(WIRE_BYTES+1)
+ if len(raw)!=WIRE_BYTES or hashlib.sha256(raw).hexdigest()!=WIRE_SHA256:
+     raise RuntimeError('normal framework exact source packet changed')

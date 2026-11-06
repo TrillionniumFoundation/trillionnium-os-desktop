@@ -1,0 +1,102 @@
+{
+  "schema": "pocket4-builder470-actual-rust-qualification-v1",
+  "state": "ACTUAL_RUST_QUALIFICATION_PASS",
+  "job_id": "1a1b1d86cb7-fc05-7b1f",
+  "durable_exit_code": 0,
+  "authoritative_terminal": {
+    "path": "builder470-hostprep-r2/root-readback-01/terminal.original.json",
+    "bytes": 731,
+    "sha256": "0d5cc027e3940295b0e414e83f9331ba26e49523afb09dc2b60c576a535def89"
+  },
+  "result": {
+    "path": "builder470-hostprep-r2/root-readback-01/result.original.json",
+    "bytes": 76136,
+    "sha256": "6599026ebe5071ecdd5f0e2d962eb96cc791041be0dee9fd59a402735a6387d8"
+  },
+  "resource_admission": {
+    "path": "builder470-hostprep-r2/root-readback-01/resource-admission.original.json",
+    "bytes": 2746,
+    "sha256": "5b4b728f90ee088141d2cd9aaa7e242ef33e58b355c790422ed858930c926031"
+  },
+  "builder": {
+    "path": "/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/compile01/cargo-target/debug/droidloom-update",
+    "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/compile01/cargo-target/debug/droidloom-update",
+    "bytes": 34817256,
+    "sha256": "e1d3dd7caf023e4709c2617318de97cc17906aae595b33c4c3290358e7d0dee5",
+    "identity": [
+      66306,
+      38437894,
+      33216,
+      "1793985145173859625",
+      "1793985145208860789"
+    ]
+  },
+  "test_executable": {
+    "path": "/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/compile01/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+    "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/compile01/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+    "bytes": 36602168,
+    "sha256": "5923a6e05a80b6d1669c33c065c4c6b1d8295227a8fabf81f5fa7fa17c931b5e",
+    "identity": [
+      66306,
+      38438214,
+      33216,
+      "1793985151185059565",
+      "1793985151193059831"
+    ]
+  },
+  "candidate_manifest": {
+    "path": "/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/candidate-source-manifest.json",
+    "bytes": 99075,
+    "sha256": "f4a0e6ff82f1ecf9bd786872d99cc0b1608e1d94d0adc37761e87aed449c81bd",
+    "identity": [
+      66306,
+      35528589,
+      33152,
+      99075,
+      1793984895324685563,
+      1793984895324712300
+    ]
+  },
+  "source_lock": {
+    "path": "/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/builder-source/android/manifest/m2-role-ingress-provider3-source-lock.json",
+    "bytes": 103409,
+    "sha256": "f5717d49fe0d4656b952bd397beab5d2fa70aa0992dd936ac31f81246c9e4772",
+    "projects": 242
+  },
+  "commands_all_zero": 23,
+  "registered_tests": 209,
+  "independent_gates_passed": 19,
+  "gate_names_and_expected_libtest_bytes_sha_match": true,
+  "cleanup": {
+    "complete": true,
+    "children": [],
+    "errors": []
+  },
+  "source_registry_tools_continuity": true,
+  "compiled_package_count": 49,
+  "registry_packages": 45,
+  "registry_source_and_archive_records": 2706,
+  "new_dependency_fetches": 0,
+  "resource_observation": {
+    "fresh_MemAvailable_bytes_at_Rust_admission": 17408892928,
+    "Rust_memory_max_bytes": 1073741824,
+    "Rust_memory_peak_bytes": 1073741824,
+    "memory_max_events": 657,
+    "oom_events": 0,
+    "swap_peak_bytes": 0,
+    "cpu_affinity": [
+      23
+    ],
+    "headroom_claim": "Peak reached the one-GiB limit and max events were recorded; no claim of unlimited memory headroom.",
+    "not_reusable_for_future_Soong_admission": true
+  },
+  "previous_pending_and_status_timeout_preserved": true,
+  "individual_command_logs_reread_this_step": false,
+  "evidence_basis": "Pinned frozen harness checked command completion, source identities and independent libtest files. Root retrieved original full result and resource bytes under version pins; this local gate independently checked those originals and expected libtest hashes. No unresolved hard gate calls for rereading all 23 command logs.",
+  "new_remote_actions": 0,
+  "Soong_invoked": false,
+  "full_framework_Java_Android_JNI_qualified": false,
+  "runtime_qualification_inherited": false,
+  "production_ready": false,
+  "cleanup_eligible": false
+}

@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-B",
+      "-I",
+      "-c",
+      "import base64,binascii,hashlib,json,sys,zlib\nWIRE_BYTES = 1088084\nWIRE_SHA256 = '10ceb1923c73dd7d72c04bc24dc2798fbd2b49f53f7ca1e819c67d761726f269'\nSTAGE_BYTES = 7841\nSTAGE_SHA256 = 'c8553b6491de3deed6794dec12721a3d7435903cec9414b6f217ce87a12f02a0'\nINPUT_MAX_BYTES = 1048576\nDECODED_MAX_BYTES = 2097152\nENCODED_BYTES = 313092\nENCODED_SHA256 = 'eb0b897c571a166c4510bf1eaace4f76d395251a064ee173fe5e5fd9080574ab'\nCOMPRESSED_BYTES = 234817\nCOMPRESSED_SHA256 = '341822c6bbf030f3b5b5e2c24b977fa4ba5f2a0647422a9feef9be3b546ea67c'\n\ndef decode_exact_wire(encoded):\n    if not (0 < ENCODED_BYTES <= INPUT_MAX_BYTES == 1048576 and\n            0 < COMPRESSED_BYTES <= INPUT_MAX_BYTES and\n            0 < WIRE_BYTES <= DECODED_MAX_BYTES == 2097152):\n        raise RuntimeError('normal06 transport bounds invalid')\n    if len(encoded) != ENCODED_BYTES or hashlib.sha256(encoded).hexdigest() != ENCODED_SHA256:\n        raise RuntimeError('normal06 encoded input length or SHA changed')\n    try:\n        packed = base64.b64decode(encoded, validate=True)\n    except (ValueError, binascii.Error) as error:\n        raise RuntimeError('normal06 input is not strict base64') from error\n    if base64.b64encode(packed) != encoded:\n        raise RuntimeError('normal06 base64 is not canonical')\n    if len(packed) != COMPRESSED_BYTES or hashlib.sha256(packed).hexdigest() != COMPRESSED_SHA256:\n        raise RuntimeError('normal06 compressed stream length or SHA changed')\n    decoder = zlib.decompressobj(wbits=zlib.MAX_WBITS)\n    try:\n        # Exactly one extra byte detects an expansion beyond the original size.\n        # No unbounded flush is used; EOF and both tails must agree afterwards.\n        raw = decoder.decompress(packed, WIRE_BYTES + 1)\n    except zlib.error as error:\n        raise RuntimeError('normal06 zlib stream invalid') from error\n    if len(raw) != WIRE_BYTES or not decoder.eof or decoder.unused_data or decoder.unconsumed_tail:\n        raise RuntimeError('normal06 decoded length EOF or tail differs')\n    if hashlib.sha256(raw).hexdigest() != WIRE_SHA256:\n        raise RuntimeError('normal06 decoded original SHA changed')\n    return raw\n\nif sys.argv[1:] != ['--execute-once']:\n    print(json.dumps({'state':'PLAN_ONLY','source_only':True,'submitted':False,'Main_actions':0,'Android_actions':0,'old_QA_epoch_invalid':True,'new_QA_epoch_qualified':False}))\n    raise SystemExit(0)\nif WIRE_BYTES is None or WIRE_SHA256 is None:\n    raise RuntimeError('NORMAL06_EXACT_REQUEST_NOT_SEALED')\nencoded=sys.stdin.buffer.read(ENCODED_BYTES+1)\nraw=decode_exact_wire(encoded)\npacket=json.loads(raw.decode('utf-8','strict'))\nif set(packet)!={'schema','stage','files'} or type(packet['schema']) is not int or packet['schema']!=1:\n    raise RuntimeError('normal framework source packet shape changed')\nstage=packet['stage'].encode('utf-8')\nif len(stage)!=STAGE_BYTES or hashlib.sha256(stage).hexdigest()!=STAGE_SHA256:\n    raise RuntimeError('normal framework stage source changed')\nscope={'__name__':'frozen_normal_framework_stage','__file__':'<frozen-normal-framework-stage>'}\nexec(compile(stage,'stage.py','exec'),scope,scope)\nscope['main'](packet['files'])\n",
+      "--execute-once"
+    ],
+    "created_unix_ms": 1793987106600,
+    "cwd": null,
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b1f6d728-fc05-7bc6",
+    "idempotency_key": "pocket4-native-typed-ingress-framework-strict-systemui-provider-two-target-build-06-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b1f6d728-fc05-7bc6",
+    "request_digest": "fe2b56d9344b7760e8a55d681017f78658694cfabda577cccc8460542b7c7f82",
+    "request_fingerprint": 18314827800517506912,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b1f6d728-fc05-7bc6"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b1f6d728-fc05-7bc6"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

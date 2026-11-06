@@ -1,0 +1,105 @@
+--- source-r1b/main_snapshot.py
++++ source-r2/main_snapshot.py
+@@ -215,8 +215,56 @@
+                    'path': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/qualification.private.json',
+                    'sha256': '4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6'},
+  'root': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01'}
+-APP_SCOPE_PIN = None  # Required external current 47-package original, not the old 46.
+-APP_SCOPE_PACKAGES = None  # Set only by the exact final-scope sealer.
++APP_SCOPE_PIN = {'bytes': 58854,
++ 'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json',
++ 'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f'}
++APP_SCOPE_PACKAGES = ['com.Hyatt.hyt',
++ 'com.MobileTicket',
++ 'com.amazon.mShop.android.shopping',
++ 'com.android.calendar',
++ 'com.android.camera2',
++ 'com.android.contacts',
++ 'com.android.deskclock',
++ 'com.android.dialer',
++ 'com.android.documentsui',
++ 'com.android.gallery3d',
++ 'com.android.messaging',
++ 'com.android.quicksearchbox',
++ 'com.android.settings',
++ 'com.android.threadnetwork.demoapp',
++ 'com.bestbuy.android',
++ 'com.ehi.national.mobile',
++ 'com.enflick.android.TextNow',
++ 'com.google.android.gms',
++ 'com.hertz.android.digital',
++ 'com.hilton.android.hhonors',
++ 'com.ihg.apps.android',
++ 'com.jingdong.app.mall',
++ 'com.lianjia.beike',
++ 'com.marriott.mrt',
++ 'com.pinger.textfree',
++ 'com.rytong.airchina',
++ 'com.rytong.ceair',
++ 'com.sankuai.meituan.takeoutnew',
++ 'com.sdu.didi.psnger',
++ 'com.ss.android.ugc.aweme',
++ 'com.szzc',
++ 'com.taobao.taobao',
++ 'com.tencent.mm',
++ 'com.ubercab',
++ 'com.united.mobile.android',
++ 'com.xunmeng.pinduoduo',
++ 'com.zhubajie.client',
++ 'com.zillow.android.streeteasy',
++ 'ctrip.android.view',
++ 'jp.co.ana.android.tabidachi',
++ 'local.pocket4.actions.v2',
++ 'local.pocket4.fixture',
++ 'org.chromium.webview_shell',
++ 'org.droidloom.qa.editorcontract',
++ 'org.droidloom.qa.successor.p8f89f253350ba2fa.r1',
++ 'org.fcitx.fcitx5.android',
++ 'tv.danmaku.bili']
+ 
+ """Inserted into the existing fixed snapshot; not a standalone entry point."""
+ 
+--- source-r1b/fenced_build.py
++++ source-r2/fenced_build.py
+@@ -12,7 +12,7 @@
+ CONTROLLER_SHA = '0bef6799e2f5b07e277a2fc055503488d1b057c2554711097a44a3bdd28eae31'
+ LIFECYCLE_SHA = '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126'
+ ROOT_SUPERVISOR_SHA = 'a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147'
+-SNAPSHOT_SHA = '8872df36e07844fe490487db0c2eefe7db095c3b25bdf1e261ec602fa1f4c36e'
++SNAPSHOT_SHA = '7908f4730c658e0d2f43ca66a810eb6d7033634560fcba2d7d928b380795136e'
+ PREPARATION_SHA = 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'
+ ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-06-20261106')
+ FENCE_ROOT = ROOT / 'build-fences-01'
+--- source-r1b/stage.py
++++ source-r2/stage.py
+@@ -32,13 +32,13 @@
+  'expected-builder470-manifest.json': {'bytes': 99075,
+                                        'sha256': 'f4a0e6ff82f1ecf9bd786872d99cc0b1608e1d94d0adc37761e87aed449c81bd'},
+  'fenced_build.py': {'bytes': 25683,
+-                     'sha256': '1a9483192e698e7c807811039bfa62ef803418641557d8a18674678f5a22623d'},
++                     'sha256': 'e319044f60b412e3f309639828a3b4ff8ad416db1212c0ff07705ed33ed491ef'},
+  'framework_build.py': {'bytes': 62412,
+                         'sha256': '0bef6799e2f5b07e277a2fc055503488d1b057c2554711097a44a3bdd28eae31'},
+  'frozen-work-inventory.py': {'bytes': 48443,
+                               'sha256': '203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab'},
+- 'main_snapshot.py': {'bytes': 23238,
+-                      'sha256': '8872df36e07844fe490487db0c2eefe7db095c3b25bdf1e261ec602fa1f4c36e'},
++ 'main_snapshot.py': {'bytes': 24579,
++                      'sha256': '7908f4730c658e0d2f43ca66a810eb6d7033634560fcba2d7d928b380795136e'},
+  'parent-normal03-framework_build.py': {'bytes': 59292,
+                                         'sha256': '03f0b4aecba20149ad7f1301ea823eb5e7e5ba1efa00d08c92c4fa7ecf482132'},
+  'parent-normal05-framework_build.py': {'bytes': 60970,
+--- source-r1b/transport.py
++++ source-r2/transport.py
+@@ -1,8 +1,8 @@
+ import hashlib,json,sys
+-WIRE_BYTES = None
+-WIRE_SHA256 = None
++WIRE_BYTES = 1088084
++WIRE_SHA256 = '10ceb1923c73dd7d72c04bc24dc2798fbd2b49f53f7ca1e819c67d761726f269'
+ STAGE_BYTES = 7841
+-STAGE_SHA256 = 'da1627de74f7c5daddb61708ea2cbe2bbefcf4ea204a855bff346ded5b38d9a0'
++STAGE_SHA256 = 'c8553b6491de3deed6794dec12721a3d7435903cec9414b6f217ce87a12f02a0'
+ if sys.argv[1:] != ['--execute-once']:
+     print(json.dumps({'state':'PLAN_ONLY','source_only':True,'submitted':False,'Main_actions':0,'Android_actions':0,'old_QA_epoch_invalid':True,'new_QA_epoch_qualified':False}))
+     raise SystemExit(0)

@@ -1,0 +1,423 @@
+{
+  "actual_readback_crosscheck": {
+    "business_success_verified": false,
+    "final_fd_set_exactly_explicit_library_plus_original_streams_and_two_owned_locks": true,
+    "foreground": {
+      "activity": "com.ihg.apps.android.activity.MainActivity",
+      "package": "com.ihg.apps.android",
+      "window_token": "35f3443"
+    },
+    "foreground_package_matches_target": false,
+    "held_namespace_authority_released": true,
+    "job_id": "1a1b206d887-fc05-7c16",
+    "pins": [
+      {
+        "bytes": 7094,
+        "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/actual/process-start.original.json",
+        "sha256": "7dd3108bab3e93331337cdd8a65b8eae6b38c801fb9700d4591c3d73ac4e7f95"
+      },
+      {
+        "bytes": 12181,
+        "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/actual/process-read.original.json",
+        "sha256": "bd847ffd1c3206c54f0aee4d88217a09e2b4e9ac33dd926325cbb62b9a2e1919"
+      },
+      {
+        "bytes": 731,
+        "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/actual/terminal.original.json",
+        "sha256": "4ede330968fa8d1ca55a15757b1c021ce58f07913535d71b72a26393e3e96e3f"
+      },
+      {
+        "bytes": 3868,
+        "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/actual/stdout.original.jsonl",
+        "sha256": "30ef11b643ec063a0e23bc9a62da7368a3108a316810791951977ea089523516"
+      },
+      {
+        "bytes": 0,
+        "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/actual/stderr.original.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "production_ready": false,
+    "provenance": "Root-saved original process records; independent local read and digest, no independent rerun.",
+    "result_ok": true,
+    "stdout_bytes": 3868,
+    "target_task": {
+      "exact_leaf": true,
+      "id": 876,
+      "present": true,
+      "root": {
+        "children": [
+          {
+            "component": "com.lianjia.beike/com.lianjia.activity.MainActivity",
+            "id": 876,
+            "user": 0
+          }
+        ],
+        "display": 0,
+        "freeform": true,
+        "user": 0
+      }
+    },
+    "terminal": {
+      "automatic_retry": false,
+      "cancelled": false,
+      "exit_code": 0,
+      "log_errors": {
+        "stderr": null,
+        "stdout": null
+      },
+      "log_truncated": {
+        "stderr": false,
+        "stdout": false
+      },
+      "output_complete": true,
+      "output_durable": true,
+      "state": "succeeded",
+      "timed_out": false
+    },
+    "unknown_descriptors": []
+  },
+  "findings": [
+    {
+      "conclusion": "Process argv embeds the exact complete stager; stdin equals stage-input raw bytes; both base64 members equal local worker/request bytes and all SOURCE_PINS entries match.",
+      "evidence": [
+        {
+          "lines": [
+            12,
+            16
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/stage_current_foreground_once.py"
+        },
+        {
+          "lines": [
+            42,
+            62
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/stage_current_foreground_once.py"
+        }
+      ],
+      "id": "EXACT_PACKET"
+    },
+    {
+      "conclusion": "Existing fixed Flow, source contract, current runtime/app guard, selected launch task and Session.installed are reused. Publisher/core are loaded under non-main names; publisher entrypoint is not called.",
+      "evidence": [
+        {
+          "lines": [
+            100,
+            147
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        },
+        {
+          "lines": [
+            325,
+            339
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/candidate-r2/publish_owned_reconciliation.py"
+        },
+        {
+          "lines": [
+            114,
+            173
+          ],
+          "path": "successor_qa/reconstructed/source-generation-r2/recorder/recorder.py"
+        },
+        {
+          "lines": [
+            176,
+            205
+          ],
+          "path": "successor_qa/reconstructed/source-generation-r2/helper/qa_adapter.py"
+        },
+        {
+          "lines": [
+            182,
+            214
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/candidate-r2/owned_postcondition_core.py"
+        }
+      ],
+      "id": "FIXED_R5_SESSION"
+    },
+    {
+      "commands": [
+        [
+          "/system/bin/cmd",
+          "package",
+          "list",
+          "packages",
+          "-U",
+          "--user",
+          "0",
+          "org.droidloom.qa.successor.p8f89f253350ba2fa.r1"
+        ],
+        [
+          "/system/bin/cmd",
+          "package",
+          "path",
+          "--user",
+          "0",
+          "org.droidloom.qa.successor.p8f89f253350ba2fa.r1"
+        ],
+        [
+          "/system/bin/cmd",
+          "activity",
+          "stack",
+          "list"
+        ],
+        [
+          "/system/bin/dumpsys",
+          "window",
+          "displays"
+        ]
+      ],
+      "conclusion": "Exactly four Android command transports in the reviewed path: helper UID query, helper package-path query, activity stack list, and dumpsys window displays. Session.installed additionally performs an exact signed APK byte read through the held target. Source/runtime/proc guard reads remain inherited.",
+      "evidence": [
+        {
+          "lines": [
+            186,
+            205
+          ],
+          "path": "successor_qa/reconstructed/source-generation-r2/helper/qa_adapter.py"
+        },
+        {
+          "lines": [
+            447,
+            458
+          ],
+          "path": "successor_qa/reconstructed/source-generation-r2/recorder/recorder.py"
+        },
+        {
+          "lines": [
+            183,
+            192
+          ],
+          "path": "successor_qa/reconstructed/source-generation-r2/recorder/references/android_backend.py"
+        },
+        {
+          "lines": [
+            149,
+            168
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        }
+      ],
+      "id": "EXACT_READ_OPERATIONS"
+    },
+    {
+      "conclusion": "No instrument, launch, resume, click, text, install, permission grant, Session.foreground rewrite, replay or publisher entrypoint call exists in the executed fixed path. New host-only diagnostic source and new flow-step evidence are written; no reconciliation envelope is written and original unknown remains unchanged.",
+      "evidence": [
+        {
+          "lines": [
+            117,
+            127
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        },
+        {
+          "lines": [
+            133,
+            163
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        },
+        {
+          "lines": [
+            198,
+            205
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        },
+        {
+          "lines": [
+            216,
+            234
+          ],
+          "path": "successor_qa/reconstructed/source-generation-r2/recorder/recorder.py"
+        }
+      ],
+      "id": "NO_UI_OR_RECONCILIATION"
+    },
+    {
+      "conclusion": "The original parser immediately reduces window output to package/activity/token; the private read bypasses unscoped raw command logging. Three recorded commands and four transport operations are required. This result intentionally permits another package as diagnostic data and grants no action authority.",
+      "evidence": [
+        {
+          "lines": [
+            183,
+            192
+          ],
+          "path": "successor_qa/reconstructed/source-generation-r2/recorder/references/android_backend.py"
+        },
+        {
+          "lines": [
+            198,
+            213
+          ],
+          "path": "successor_qa/reconstructed/source-generation-r2/recorder/recorder.py"
+        },
+        {
+          "lines": [
+            156,
+            168
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        }
+      ],
+      "id": "COMPACT_FOREGROUND"
+    },
+    {
+      "conclusion": "flow.close releases held namespace authority; before and after source/runtime/epoch checks remain present. Final FD set must equal original streams plus explicitly initialized libffi and the two known locks. The original recorder holds flow/action locks and library until normal process exit, so durable terminal remains mandatory.",
+      "evidence": [
+        {
+          "lines": [
+            109,
+            114
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        },
+        {
+          "lines": [
+            170,
+            197
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        },
+        {
+          "lines": [
+            202,
+            220
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        },
+        {
+          "lines": [
+            175,
+            181
+          ],
+          "path": "successor_qa/reconstructed/source-generation-r2/recorder/recorder.py"
+        }
+      ],
+      "id": "HELD_AND_FD_CLOSURE"
+    },
+    {
+      "conclusion": "Root-only stage accepts a fixed bounded SHA-pinned payload and exact two-member set, creates a new private directory and exclusive read-only source files, verifies byte/stat/path identity, closes all stage descriptors, and enters worker once.",
+      "evidence": [
+        {
+          "lines": [
+            42,
+            111
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/stage_current_foreground_once.py"
+        }
+      ],
+      "id": "STAGE_BOUNDS"
+    },
+    {
+      "conclusion": "Step result.json is written before the final guard/FD checks. It is not sufficient alone; final original stdout and authoritative durable terminal must both succeed. The source explicitly declares this acceptance requirement.",
+      "evidence": [
+        {
+          "lines": [
+            127,
+            127
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        },
+        {
+          "lines": [
+            198,
+            220
+          ],
+          "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py"
+        }
+      ],
+      "id": "INTERMEDIATE_RESULT_LIMIT"
+    }
+  ],
+  "inherited_source_pins": [
+    {
+      "bytes": 29378,
+      "path": "successor_qa/reconstructed/source-generation-r2/helper/qa_adapter.py",
+      "sha256": "ad54e8583ffb8b4ff186accde10199aee1ab063bd5dbbb5b9586c908ebebb10c"
+    },
+    {
+      "bytes": 39563,
+      "path": "successor_qa/reconstructed/source-generation-r2/recorder/recorder.py",
+      "sha256": "0e50c67b1d5d251766fb58a69d9e62e119f0663ff2c4115ae326874cf95d6c09"
+    },
+    {
+      "bytes": 36401,
+      "path": "successor_qa/reconstructed/source-generation-r2/recorder/references/android_backend.py",
+      "sha256": "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae"
+    },
+    {
+      "bytes": 41838,
+      "path": "successor_qa/owned_postcondition_reconciler_r1/candidate-r2/publish_owned_reconciliation.py",
+      "sha256": "1c20f6ffb7c8fc260e161a1ac5a95df0852d0daa23bc833c71533ef6964b55a2"
+    },
+    {
+      "bytes": 28714,
+      "path": "successor_qa/owned_postcondition_reconciler_r1/candidate-r2/owned_postcondition_core.py",
+      "sha256": "6f780bdd021942617a6817dbc449eeacc60eeda9972d619fdb192ec4ae313e41"
+    },
+    {
+      "bytes": 2431,
+      "path": "successor_qa/reconstructed/source-generation-r2/helper/SOURCE_PINS.json",
+      "sha256": "dfb9b6a483f1069847433152b9b2e8b0f1b2cdd571a1dbde3068fc9393ad62c4"
+    },
+    {
+      "bytes": 1759,
+      "path": "successor_qa/reconstructed/source-generation-r2/recorder/source-manifest.json",
+      "sha256": "646f6e4c7d931bf005ada01a84202a891c95e99e93bbde7a561f3307527008a4"
+    }
+  ],
+  "limitations": [
+    "Task and foreground are sequential observations, not an atomic snapshot.",
+    "No foreground window type, visual correctness or business operation is established.",
+    "This current diagnostic does not reconstruct historical failure foreground or turn the prior unknown into a successful action.",
+    "No claim of all launcher readiness, UI admission, framework build completion or cleanup eligibility is made."
+  ],
+  "review_date": "2026-11-06",
+  "review_execution": {
+    "Android_commands": 0,
+    "candidate_files_modified": false,
+    "local_reads_only": true,
+    "remote_calls": 0,
+    "runtime_repeated": false,
+    "tests_repeated": false
+  },
+  "reviewer": "/root/official_versions",
+  "schema": "pocket4-independent-local-foreground-diagnostic-review-v1",
+  "source_pins": [
+    {
+      "bytes": 13787,
+      "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/observe_current_foreground_r1.py",
+      "sha256": "89aab3853d29a1400b45eb8495cc1b35aa8527088ccf0443975971191a98ce37"
+    },
+    {
+      "bytes": 5789,
+      "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/stage_current_foreground_once.py",
+      "sha256": "e9e295730d56aaadd3ec3b6b916f4a624b0cade8072c4550463facb27df4c842"
+    },
+    {
+      "bytes": 827,
+      "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/request.json",
+      "sha256": "a767827fb2f58ae2334699642bf22d470d4064b1663a3b2e76e60d54ac99810e"
+    },
+    {
+      "bytes": 19920,
+      "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/stage-input.json",
+      "sha256": "d794e4f651c67168964f76e0830bb440153b1b6dcf168ff22c379e32e5e2a898"
+    },
+    {
+      "bytes": 26361,
+      "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/process-request.json",
+      "sha256": "bf2d11c61e605c35200d10b6b30d5e1df62d90ee6823580a74e32d0628ca20cb"
+    },
+    {
+      "bytes": 1277,
+      "path": "successor_qa/owned_postcondition_reconciler_r1/foreground-diagnostic-candidate-r1/SOURCE_PINS.json",
+      "sha256": "2a2893f788abda20c2e319ddd0a6c63f1903ddf013729c77d168083143940080"
+    }
+  ],
+  "static_conclusion": "NO_BLOCKER_IN_REVIEWED_FIXED_READONLY_PATH"
+}

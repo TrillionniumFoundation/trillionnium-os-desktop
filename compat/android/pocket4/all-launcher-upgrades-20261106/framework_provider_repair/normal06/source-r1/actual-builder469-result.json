@@ -1,0 +1,891 @@
+{
+  "schema": 1,
+  "state": "RUST_BUILD_AND_FOCUSED_TESTS_PASS",
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "Soong_invoked": false,
+  "runtime_authorization_enabled": false,
+  "install_actions": 0,
+  "started_utc": "2026-11-06T10:24:55.884152+00:00",
+  "prior_failed_attempt": {
+    "job_id": "1a1b0607f86-fc05-700f",
+    "sha256": "25db6e954c8f4e15cadcb7122f024349a3d97e10be121646ff051ce9cbef99b4",
+    "cargo_commands": 0,
+    "tests_run": 0
+  },
+  "profile_authority": {
+    "source": "/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/result.json",
+    "sha256": "871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8",
+    "memory_max_bytes": 1073741824,
+    "cpu_quota_percent": 100,
+    "jobs": 1,
+    "zero_swap_newly_enforced": true,
+    "fresh_MemAvailable_3GiB_new_for_this_Rust_attempt": true,
+    "full_Soong_profile_changed": false
+  },
+  "resource_admission": {
+    "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/resource-admission.json",
+    "bytes": 2746,
+    "sha256": "84b0587ab12c8886bb2e2f519ad96abdd8802c3342a6a5f41b8a4c805ba72dec",
+    "identity": [
+      66306,
+      57322286,
+      33152,
+      "1793960695897201745",
+      "1793960695897201745"
+    ]
+  },
+  "cpu_affinity": [
+    23
+  ],
+  "tests_passed": 16,
+  "test_names": [
+    "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes",
+    "android::tests::restoration_preserves_original_and_removes_created_file",
+    "android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch",
+    "android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout",
+    "android::patch_tests::interrupted_projection_recovers_before_next_build",
+    "tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets",
+    "tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory",
+    "native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate",
+    "native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions",
+    "android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata",
+    "android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas",
+    "android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged",
+    "native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change",
+    "native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock",
+    "native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification",
+    "native_role_ingress::tests::native_provider_extension_rejects_missing_or_unpinned_providers"
+  ],
+  "registered_tests": 206,
+  "builder": {
+    "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/droidloom-update",
+    "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/droidloom-update",
+    "bytes": 34766128,
+    "sha256": "6bb421afded7d77fa61d27548d12011b83e831a55e56c5bdc114f87fb2ba9bf3",
+    "identity": [
+      66306,
+      57323543,
+      33216,
+      "1793960723520882140",
+      "1793960723549882746"
+    ]
+  },
+  "test_executable": {
+    "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+    "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+    "bytes": 36491768,
+    "sha256": "a3df0f4465a15d33a6e61cc8ba28f5a680f5f3b510ada8839c1289195ea3a16a",
+    "identity": [
+      66306,
+      57323813,
+      33216,
+      "1793960728259981206",
+      "1793960728267981374"
+    ]
+  },
+  "build_environment": {
+    "PATH": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin:/usr/bin:/bin",
+    "LANG": "C",
+    "LC_ALL": "C",
+    "CARGO_HOME": "/home/alex/.cargo",
+    "CARGO_TARGET_DIR": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_BUILD_JOBS": "1",
+    "RUSTC": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "RUSTDOC": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustdoc",
+    "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER": "/usr/bin/cc",
+    "RUSTC_WRAPPER": "",
+    "RUSTC_WORKSPACE_WRAPPER": "",
+    "RUSTFLAGS": "",
+    "RUSTDOCFLAGS": "",
+    "CARGO_ENCODED_RUSTFLAGS": "",
+    "CARGO_ENCODED_RUSTDOCFLAGS": "",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_OPTIONAL_LOCKS": "0",
+    "TMPDIR": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/tmp"
+  },
+  "source_manifest_sha256": "d9340351c9653b10dfd0882afbff5ff4fc11dafaa6083191ed2a8fdb5c8dd934",
+  "source_files": 493,
+  "new_project_count": 225,
+  "full_Android_Java_JNI_compiled": false,
+  "cleanup": {
+    "complete": true,
+    "children": [],
+    "errors": []
+  },
+  "candidate_source_unchanged_after": true,
+  "baseline_source_unchanged_after": true,
+  "tool_inputs_unchanged_after": true,
+  "memory_events": "low 0\nhigh 0\nmax 314\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "owned_resource_gate": {
+    "pass": true,
+    "events": {
+      "low": 0,
+      "high": 0,
+      "max": 314,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "owned_oom_kills_zero": true
+  },
+  "memory_peak": "1073741824",
+  "swap_peak": "0",
+  "commands": [
+    {
+      "label": "rust-version",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc",
+        "-Vv"
+      ],
+      "returncode": 0,
+      "seconds": 0.00971731694880873,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/rust-version.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/rust-version.stdout",
+        "bytes": 196,
+        "sha256": "83e4eefd5e010a92d9f63328bf8219e23fe5e4cf5e5d17ce53d0263cfa4218a6",
+        "identity": [
+          66306,
+          57322292,
+          33152,
+          "1793960696985330516",
+          "1793960696985330516"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/rust-version.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/rust-version.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57322293,
+          33152,
+          "1793960696979330392",
+          "1793960696979330392"
+        ]
+      }
+    },
+    {
+      "label": "build",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "build",
+        "--offline",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-update",
+        "--bin",
+        "droidloom-update",
+        "--message-format=json-render-diagnostics"
+      ],
+      "returncode": 0,
+      "seconds": 26.606539665022865,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/build.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/build.stdout",
+        "bytes": 60221,
+        "sha256": "e2f73b8e1683078460271f4bc49f136179ca0525a49e4e601bda0ef498f0b5d9",
+        "identity": [
+          66306,
+          57322294,
+          33152,
+          "1793960723550882767",
+          "1793960723550882767"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/build.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/build.stderr",
+        "bytes": 2109,
+        "sha256": "1d3f6060781b7021c8f88eefae654a56a53e96e6ba16c541d2afad4c36705650",
+        "identity": [
+          66306,
+          57322295,
+          33152,
+          "1793960723550882767",
+          "1793960723550882767"
+        ]
+      }
+    },
+    {
+      "label": "test-compile",
+      "argv": [
+        "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-j",
+        "1",
+        "-p",
+        "droidloom-update",
+        "--bin",
+        "droidloom-update",
+        "--no-run",
+        "--message-format=json-render-diagnostics"
+      ],
+      "returncode": 0,
+      "seconds": 4.733962222002447,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/test-compile.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/test-compile.stdout",
+        "bytes": 60205,
+        "sha256": "11f33f93c6a4a88327a312811f32ec8d51109cd2522fb7053b813207f589b9c9",
+        "identity": [
+          66306,
+          57323540,
+          33152,
+          "1793960728294981938",
+          "1793960728294981938"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/test-compile.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/test-compile.stderr",
+        "bytes": 844,
+        "sha256": "543fe1495a86daefd45f489d6b81d868e74552e34124ed56cd23264d468b5b34",
+        "identity": [
+          66306,
+          57323541,
+          33152,
+          "1793960728294981938",
+          "1793960728294981938"
+        ]
+      }
+    },
+    {
+      "label": "test-list",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--list"
+      ],
+      "returncode": 0,
+      "seconds": 0.002603103988803923,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/test-list.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/test-list.stdout",
+        "bytes": 17819,
+        "sha256": "8c294c1f37beb0ab4987064d3d85eb4bdb87a53c9107cadd2097520ea36adf2a",
+        "identity": [
+          66306,
+          57323809,
+          33152,
+          "1793960728332982733",
+          "1793960728332982733"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/test-list.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/test-list.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323810,
+          33152,
+          "1793960728331982713",
+          "1793960728331982713"
+        ]
+      }
+    },
+    {
+      "label": "focused-00",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "android::tests::repeated_projection_keeps_ninja_outputs_until_content_changes",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.016869958024471998,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-00.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-00.stdout",
+        "bytes": 204,
+        "sha256": "c17714184c3e076538cab4b187390aac8691c161c2c75537b24dd2e69d9591da",
+        "identity": [
+          66306,
+          57323811,
+          33152,
+          "1793960728348158637",
+          "1793960728348158637"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-00.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-00.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323812,
+          33152,
+          "1793960728334982775",
+          "1793960728334982775"
+        ]
+      }
+    },
+    {
+      "label": "focused-01",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "android::tests::restoration_preserves_original_and_removes_created_file",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.004320751992054284,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-01.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-01.stdout",
+        "bytes": 198,
+        "sha256": "f35168c94a0ddf903d04d96f9248fe9aec59830d5c2830b09ed26f75dee9cf1d",
+        "identity": [
+          66306,
+          57323814,
+          33152,
+          "1793960728356107983",
+          "1793960728356107983"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-01.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-01.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323815,
+          33152,
+          "1793960728351983131",
+          "1793960728351983131"
+        ]
+      }
+    },
+    {
+      "label": "focused-02",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "android::patch_tests::native_engine_effective_projection_records_final_bytes_and_applied_patch",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.009229837101884186,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-02.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-02.stdout",
+        "bytes": 221,
+        "sha256": "39e43813ac64658a9215554d9c75f0fbe61cde4afafa3abb6e88e895329f70b1",
+        "identity": [
+          66306,
+          57323816,
+          33152,
+          "1793960728363100438",
+          "1793960728363100438"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-02.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-02.stderr",
+        "bytes": 856,
+        "sha256": "9db998186cb270ae452784a7c389ba96de591b9af8cfdad83f41dac7d525f963",
+        "identity": [
+          66306,
+          57323817,
+          33152,
+          "1793960728361223548",
+          "1793960728361223548"
+        ]
+      }
+    },
+    {
+      "label": "focused-03",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "android::patch_tests::patch_in_source_without_git_root_is_restored_inside_enclosing_checkout",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.009579277946613729,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-03.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-03.stdout",
+        "bytes": 219,
+        "sha256": "bf025111db8d2685f76da042ab78aebe4916d70c13ddf546bf57af2426b5e941",
+        "identity": [
+          66306,
+          57323818,
+          33152,
+          "1793960728373036060",
+          "1793960728373036060"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-03.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-03.stderr",
+        "bytes": 1020,
+        "sha256": "7668592d9c89440ce890d774d07c592eeb52e0fb9b9bd8e21e33219a68127fb5",
+        "identity": [
+          66306,
+          57323819,
+          33152,
+          "1793960728370983529",
+          "1793960728370983529"
+        ]
+      }
+    },
+    {
+      "label": "focused-04",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "android::patch_tests::interrupted_projection_recovers_before_next_build",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.004286457085981965,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-04.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-04.stdout",
+        "bytes": 198,
+        "sha256": "563a77d73ad0f9d2783eb1c76ef2ad98e2df11c6b249dd754942e70ffb0ecea2",
+        "identity": [
+          66306,
+          57323820,
+          33152,
+          "1793960728379298956",
+          "1793960728379298956"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-04.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-04.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323821,
+          33152,
+          "1793960728375983633",
+          "1793960728375983633"
+        ]
+      }
+    },
+    {
+      "label": "focused-05",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "tests::native_engine_cli_requires_prepared_workspace_and_has_no_arbitrary_targets",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.0028096840251237154,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-05.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-05.stdout",
+        "bytes": 208,
+        "sha256": "61fa1f2b41777f95e98f510bc5c17daef5557644b5b1e1930fcb6cdd0e76119e",
+        "identity": [
+          66306,
+          57323822,
+          33152,
+          "1793960728382983780",
+          "1793960728382983780"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-05.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-05.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323823,
+          33152,
+          "1793960728380983738",
+          "1793960728380983738"
+        ]
+      }
+    },
+    {
+      "label": "focused-06",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "tests::native_engine_output_selector_keeps_default_or_exact_explicit_directory",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.0035326320212334394,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-06.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-06.stdout",
+        "bytes": 205,
+        "sha256": "8250af1618a8074cf577c25624da16d1fcbe1865aeb223d5fcb571a011d35d9f",
+        "identity": [
+          66306,
+          57323824,
+          33152,
+          "1793960728387183528",
+          "1793960728387183528"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-06.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-06.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323825,
+          33152,
+          "1793960728383983801",
+          "1793960728383983801"
+        ]
+      }
+    },
+    {
+      "label": "focused-07",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.03232072002720088,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-07.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-07.stdout",
+        "bytes": 214,
+        "sha256": "6652a2cd0f6415e1f637b9eda3a669753b24e6407bb06f2a729f9f5925fb38f7",
+        "identity": [
+          66306,
+          57323826,
+          33152,
+          "1793960728413984428",
+          "1793960728413984428"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-07.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-07.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323827,
+          33152,
+          "1793960728387983884",
+          "1793960728387983884"
+        ]
+      }
+    },
+    {
+      "label": "focused-08",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.01842809491790831,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-08.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-08.stdout",
+        "bytes": 223,
+        "sha256": "a4f83ab527c8ee6ecfbcaa0f78f3ba5bb91215ac907282bb53c68b1e008df8bc",
+        "identity": [
+          66306,
+          57323828,
+          33152,
+          "1793960728437984930",
+          "1793960728437984930"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-08.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-08.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323829,
+          33152,
+          "1793960728419984554",
+          "1793960728419984554"
+        ]
+      }
+    },
+    {
+      "label": "focused-09",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.009624243015423417,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-09.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-09.stdout",
+        "bytes": 216,
+        "sha256": "e04ee0dac9e961474990db3105765331cd5cb034e2150faf0cc4528b54ae490c",
+        "identity": [
+          66306,
+          57323830,
+          33152,
+          "1793960728446985119",
+          "1793960728446985119"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-09.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-09.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323831,
+          33152,
+          "1793960728438984951",
+          "1793960728438984951"
+        ]
+      }
+    },
+    {
+      "label": "focused-10",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.0021339160157367587,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-10.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-10.stdout",
+        "bytes": 220,
+        "sha256": "035325cba4f0f961c6db72d4609ca65813b7ed7c56addc4148dd66500c0e095e",
+        "identity": [
+          66306,
+          57323832,
+          33152,
+          "1793960728449985182",
+          "1793960728449985182"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-10.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-10.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323833,
+          33152,
+          "1793960728448985160",
+          "1793960728448985160"
+        ]
+      }
+    },
+    {
+      "label": "focused-11",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.0019424640340730548,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-11.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-11.stdout",
+        "bytes": 213,
+        "sha256": "8dc41579ff6b8b1c5e882524487471f38d1f2bcbc7b44c0e077c9b64bf95f982",
+        "identity": [
+          66306,
+          57323834,
+          33152,
+          "1793960728451985223",
+          "1793960728451985223"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-11.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-11.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323835,
+          33152,
+          "1793960728450985202",
+          "1793960728450985202"
+        ]
+      }
+    },
+    {
+      "label": "focused-12",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.018203270039521158,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-12.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-12.stdout",
+        "bytes": 229,
+        "sha256": "5db54df48b43f8f137122dfe61d29923d41e24f69c7a2ee7df1b566e7b4fcde5",
+        "identity": [
+          66306,
+          57323836,
+          33152,
+          "1793960728464985495",
+          "1793960728464985495"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-12.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-12.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323837,
+          33152,
+          "1793960728453985265",
+          "1793960728453985265"
+        ]
+      }
+    },
+    {
+      "label": "focused-13",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.002182016964070499,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-13.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-13.stdout",
+        "bytes": 224,
+        "sha256": "b7024fc36d37eb54eb8a42d72470a2756ba2ed16c5a4b1e8cf7eed35077c3981",
+        "identity": [
+          66306,
+          57323838,
+          33152,
+          "1793960728472985663",
+          "1793960728472985663"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-13.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-13.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323839,
+          33152,
+          "1793960728471985642",
+          "1793960728471985642"
+        ]
+      }
+    },
+    {
+      "label": "focused-14",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.06642883201129735,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-14.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-14.stdout",
+        "bytes": 221,
+        "sha256": "603c9b66dcde54a3f07469fa6912d3878ac5722bc439d01f4911761979f39898",
+        "identity": [
+          66306,
+          57323840,
+          33152,
+          "1793960728531986897",
+          "1793960728531986897"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-14.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-14.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323841,
+          33152,
+          "1793960728474985704",
+          "1793960728474985704"
+        ]
+      }
+    },
+    {
+      "label": "focused-15",
+      "argv": [
+        "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/cargo-target/debug/deps/droidloom_update-77fdace49114cd0d",
+        "--exact",
+        "native_role_ingress::tests::native_provider_extension_rejects_missing_or_unpinned_providers",
+        "--nocapture"
+      ],
+      "returncode": 0,
+      "seconds": 0.01037125603761524,
+      "stdout": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-15.stdout",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-15.stdout",
+        "bytes": 218,
+        "sha256": "be6239fdadd4b055a83486cf630b0c6406fe68445705f424239295a2c0d0b6b6",
+        "identity": [
+          66306,
+          57323842,
+          33152,
+          "1793960728550987295",
+          "1793960728550987295"
+        ]
+      },
+      "stderr": {
+        "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-15.stderr",
+        "resolved_path": "/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106/compile02/focused-15.stderr",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "identity": [
+          66306,
+          57323843,
+          33152,
+          "1793960728540987086",
+          "1793960728540987086"
+        ]
+      }
+    }
+  ],
+  "finished_utc": "2026-11-06T10:25:29.472341+00:00"
+}

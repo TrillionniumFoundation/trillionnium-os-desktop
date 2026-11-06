@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "state": "FAILED",
+  "builder_returncode": 1,
+  "error": "RuntimeError('normal builder returned 1')",
+  "seconds": 273.42054392106365,
+  "finished_utc": "2026-11-06T14:22:03.960147+00:00",
+  "cleanup": {
+    "complete": true,
+    "children": [
+      {
+        "pid": 3919830,
+        "wait_status": 0,
+        "reaped": true
+      },
+      {
+        "pid": 3920126,
+        "wait_status": 0,
+        "reaped": true
+      },
+      {
+        "pid": 3920400,
+        "wait_status": 0,
+        "reaped": true
+      },
+      {
+        "pid": 3924413,
+        "wait_status": 65280,
+        "reaped": true
+      }
+    ],
+    "errors": []
+  },
+  "stdout_sha256": "5453e358a70d1531218699641b289e58dfbe13202d7ad369f46b5fbf016eb151",
+  "stderr_sha256": "615d8e9d5fdd2e2fb31c605e4eed204e92a5f0ab21621765bb6c27115d0c339e",
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+  "memory_peak": "3168141312",
+  "memory_swap_peak": "0",
+  "memory_swap_current": "0",
+  "memory_swap_max": "0",
+  "resource_admission_receipt": {
+    "path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-native-provider-build-05-20261106/resource-admission.json",
+    "bytes": 2749,
+    "sha256": "5a928421b72965b25627abcada001e10df0fb505bc827c0c3a183066cb867774",
+    "identity": [
+      66306,
+      57802800,
+      33152,
+      2749,
+      1793974650536264325,
+      1793974650536264325
+    ]
+  },
+  "owned_budget_before_builder": {
+    "memory.max": "10737418240",
+    "cpu.max": "200000 100000",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0"
+  },
+  "global_swap_is_owned_budget": false,
+  "source_projection_journal_present": false,
+  "normal_command_completion_gate": null,
+  "input_after_qualified": true,
+  "input_after_error": null,
+  "work_preparation_sha256": "ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c",
+  "builder_compile_sha256": "a14dde5d3a2e85fe44d90c651527c8c8402d341403ef84a7bc92b93252de72b9",
+  "builder_sha256": "6bb421afded7d77fa61d27548d12011b83e831a55e56c5bdc114f87fb2ba9bf3",
+  "strict_targets": [
+    "framework-minus-apex",
+    "libandroid_runtime"
+  ],
+  "prior_failed_inner_sha256": "6a525b9838f43579bc41b1106891f2f734a0c2d92b0c5cc355f7ab02b39eb2a8",
+  "prior_failed_outer_sha256": "273ba8a236253ee3873074a26f568144397044ebcfdd6f153ab8712b29ff70cf",
+  "published_source_path": "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-work-01-20261105/aosp-source",
+  "source_reconciliation_uses_normal_builder": true,
+  "old_QA_epoch_invalid": true,
+  "new_QA_epoch_qualified": false,
+  "complete_framework_Java_and_Android_TU_qualified": false,
+  "runtime_authorization_enabled": false,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "service_started": false,
+  "all_apps_ready": false,
+  "owned_resource_gate": {
+    "pass": true,
+    "events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "owned_oom_kills_zero": true,
+    "zero_swap_limit_and_current_observed_after": true
+  }
+}

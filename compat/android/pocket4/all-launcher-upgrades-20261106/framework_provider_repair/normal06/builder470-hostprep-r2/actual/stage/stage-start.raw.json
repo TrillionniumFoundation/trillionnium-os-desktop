@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-B",
+      "-I",
+      "-c",
+      "import hashlib,json,sys\nif sys.argv[1:] != ['--stage-only-once']:\n print(json.dumps({'state':'PLAN_ONLY','Main_actions':0,'Android_actions':0,'compiler_invoked':False,'submitted':False}));raise SystemExit(0)\nraw=sys.stdin.buffer.read(645324)\nif len(raw)!=645323 or hashlib.sha256(raw).hexdigest()!='fc85a08d4db8c039c6e859967d8293c907ddd9e4bb61ab6e1191290ed4db61bc':raise RuntimeError('exact builder470 source request differs')\npacket=json.loads(raw.decode('utf-8','strict'))\nif set(packet)!={'schema','stage','files'} or type(packet['schema']) is not int or packet['schema']!=1:raise RuntimeError('builder470 source packet shape differs')\nstage=packet['stage'].encode()\nif len(stage)!=7188 or hashlib.sha256(stage).hexdigest()!='1276672085e2cff8821014348c5373e787b56bb9822909cd3512c5bad9541b86':raise RuntimeError('builder470 stage differs')\nscope={'__name__':'frozen_builder470_stage','__file__':'<frozen-builder470-stage>'}\nexec(compile(stage,'stage_builder470.py','exec'),scope,scope);scope['main'](packet['files'])\n",
+      "--stage-only-once"
+    ],
+    "created_unix_ms": 1793984892709,
+    "cwd": null,
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b1d50f25-fc05-7b0c",
+    "idempotency_key": "pocket4-builder470-systemui-provider-source-stage-02-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b1d50f25-fc05-7b0c",
+    "request_digest": "3140adfbccbcfc9f6a7e1bafff9bc92a520d5e6293da4619b8dbfc0950ca31ad",
+    "request_fingerprint": 3549027803351284895,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b1d50f25-fc05-7b0c"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b1d50f25-fc05-7b0c"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

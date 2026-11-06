@@ -1,0 +1,56 @@
+import base64,binascii,hashlib,json,sys,zlib
+WIRE_BYTES = 1088084
+WIRE_SHA256 = '10ceb1923c73dd7d72c04bc24dc2798fbd2b49f53f7ca1e819c67d761726f269'
+STAGE_BYTES = 7841
+STAGE_SHA256 = 'c8553b6491de3deed6794dec12721a3d7435903cec9414b6f217ce87a12f02a0'
+INPUT_MAX_BYTES = 1048576
+DECODED_MAX_BYTES = 2097152
+ENCODED_BYTES = 313092
+ENCODED_SHA256 = 'eb0b897c571a166c4510bf1eaace4f76d395251a064ee173fe5e5fd9080574ab'
+COMPRESSED_BYTES = 234817
+COMPRESSED_SHA256 = '341822c6bbf030f3b5b5e2c24b977fa4ba5f2a0647422a9feef9be3b546ea67c'
+
+def decode_exact_wire(encoded):
+    if not (0 < ENCODED_BYTES <= INPUT_MAX_BYTES == 1048576 and
+            0 < COMPRESSED_BYTES <= INPUT_MAX_BYTES and
+            0 < WIRE_BYTES <= DECODED_MAX_BYTES == 2097152):
+        raise RuntimeError('normal06 transport bounds invalid')
+    if len(encoded) != ENCODED_BYTES or hashlib.sha256(encoded).hexdigest() != ENCODED_SHA256:
+        raise RuntimeError('normal06 encoded input length or SHA changed')
+    try:
+        packed = base64.b64decode(encoded, validate=True)
+    except (ValueError, binascii.Error) as error:
+        raise RuntimeError('normal06 input is not strict base64') from error
+    if base64.b64encode(packed) != encoded:
+        raise RuntimeError('normal06 base64 is not canonical')
+    if len(packed) != COMPRESSED_BYTES or hashlib.sha256(packed).hexdigest() != COMPRESSED_SHA256:
+        raise RuntimeError('normal06 compressed stream length or SHA changed')
+    decoder = zlib.decompressobj(wbits=zlib.MAX_WBITS)
+    try:
+        # Exactly one extra byte detects an expansion beyond the original size.
+        # No unbounded flush is used; EOF and both tails must agree afterwards.
+        raw = decoder.decompress(packed, WIRE_BYTES + 1)
+    except zlib.error as error:
+        raise RuntimeError('normal06 zlib stream invalid') from error
+    if len(raw) != WIRE_BYTES or not decoder.eof or decoder.unused_data or decoder.unconsumed_tail:
+        raise RuntimeError('normal06 decoded length EOF or tail differs')
+    if hashlib.sha256(raw).hexdigest() != WIRE_SHA256:
+        raise RuntimeError('normal06 decoded original SHA changed')
+    return raw
+
+if sys.argv[1:] != ['--execute-once']:
+    print(json.dumps({'state':'PLAN_ONLY','source_only':True,'submitted':False,'Main_actions':0,'Android_actions':0,'old_QA_epoch_invalid':True,'new_QA_epoch_qualified':False}))
+    raise SystemExit(0)
+if WIRE_BYTES is None or WIRE_SHA256 is None:
+    raise RuntimeError('NORMAL06_EXACT_REQUEST_NOT_SEALED')
+encoded=sys.stdin.buffer.read(ENCODED_BYTES+1)
+raw=decode_exact_wire(encoded)
+packet=json.loads(raw.decode('utf-8','strict'))
+if set(packet)!={'schema','stage','files'} or type(packet['schema']) is not int or packet['schema']!=1:
+    raise RuntimeError('normal framework source packet shape changed')
+stage=packet['stage'].encode('utf-8')
+if len(stage)!=STAGE_BYTES or hashlib.sha256(stage).hexdigest()!=STAGE_SHA256:
+    raise RuntimeError('normal framework stage source changed')
+scope={'__name__':'frozen_normal_framework_stage','__file__':'<frozen-normal-framework-stage>'}
+exec(compile(stage,'stage.py','exec'),scope,scope)
+scope['main'](packet['files'])

@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "state": "NESTED_SOURCE_CHAIN_POSITIVE_AND_STALE_INNER_NEGATIVE_PASS",
+  "positive": {
+    "complete_inner_to_outer_pin_chain": {
+      "snapshot_sha256": "7908f4730c658e0d2f43ca66a810eb6d7033634560fcba2d7d928b380795136e",
+      "lifecycle_sha256": "7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126",
+      "root_supervisor_sha256": "ced37d036b93ab8f85803c42ca6a2d0fb18939c78a5d62ef9a2fd0a215176f7b",
+      "controller_sha256": "c446be88a61f7d07c05aff1e3f3bb967bcf969b7fa3de568eb3de4915e59e7da",
+      "stage_sha256": "5a108bcc09b17074d273d30ebc5a95c379e2bd2846e17ed276a5e283fe42e994",
+      "decoded_packet_sha256": "bd702a652d6eb0e7754e27049ea18a9f1d5ba8216f1ec49468cd747641e5fc09",
+      "encoded_sha256": "5f7ff5109fe74c2e5d34bb1715b29bb7047f84ec4e814b0c544717f99633f374"
+    },
+    "actual_failed_receipt_schema_checked_in_memory": true,
+    "no_host_stat_identity_synthesized": true
+  },
+  "negative": {
+    "mutation": "Restore original build06 root supervisor SNAPSHOT_SHA",
+    "stale_sha256": "3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3",
+    "rejected": true,
+    "error": "INNER_ROOT_SNAPSHOT_PIN_DIFFERS"
+  },
+  "controls_run": 2,
+  "prior_59_pure_controls_rerun": false,
+  "prior_19_Rust_controls_rerun": false,
+  "unchanged_function_bodies": {
+    "framework_build.py": [
+      "build",
+      "builder_contract",
+      "child_ids",
+      "cleanup_children",
+      "completion_gate",
+      "digest",
+      "expected_published_manifest",
+      "fresh_published_binding",
+      "held_file",
+      "identity",
+      "inventory_module",
+      "json_pin",
+      "main",
+      "match_compile_pin",
+      "memory_admission",
+      "no_alias",
+      "observe_inputs",
+      "owned_resource_gate",
+      "parse_admission_meminfo",
+      "plan",
+      "preparation_contract",
+      "qualify_builder470_receipt",
+      "qualify_completed_manifest",
+      "record_resource_admission",
+      "require",
+      "save",
+      "subreaper",
+      "utc",
+      "verify_inputs_after",
+      "verify_prepared"
+    ],
+    "fenced_build.py": [
+      "capture",
+      "capture_support",
+      "compare",
+      "invoke_supervisor",
+      "qualified_root_envelope",
+      "require",
+      "root_bootstrap",
+      "run_capture_lifecycle_controls",
+      "save",
+      "sha"
+    ],
+    "root_snapshot_supervisor.py": [
+      "control_worker",
+      "mask_for_retirement",
+      "qualify_control",
+      "require",
+      "run"
+    ],
+    "capture_lifecycle.py": [
+      "fd_identity",
+      "fork_fixed",
+      "invoke_owned",
+      "read_output",
+      "require",
+      "safe_error",
+      "sealed_input"
+    ],
+    "main_snapshot.py": [
+      "capture",
+      "check",
+      "expected_from_baseline",
+      "identity",
+      "load_current_guard",
+      "need",
+      "parse_counters",
+      "process",
+      "qualify_baseline",
+      "qualify_finish",
+      "qualify_process",
+      "qualify_scope_receipt",
+      "qualify_scope_reference",
+      "qualify_typed_guard",
+      "read",
+      "read_regular",
+      "require",
+      "sha",
+      "snapshot_processes",
+      "statrow"
+    ],
+    "pure_controls.py": [
+      "need",
+      "run"
+    ],
+    "transport.py": [
+      "decode_exact_wire"
+    ]
+  },
+  "current_guard_and_snapshot_source_bytes_unchanged": true,
+  "stage_invoked": false,
+  "remote_actions": 0,
+  "Main_actions": 0,
+  "production_ready": false
+}

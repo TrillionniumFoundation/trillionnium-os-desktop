@@ -1,0 +1,65 @@
+{
+  "schema": 1,
+  "state": "TRANSPORT_ONLY_ROUNDTRIP_AND_BOUNDS_PASS",
+  "r2_was_not_submitted": true,
+  "previous_stdin_exceeded_one_MiB": true,
+  "encoded": {
+    "bytes": 313092,
+    "sha256": "eb0b897c571a166c4510bf1eaace4f76d395251a064ee173fe5e5fd9080574ab",
+    "format": "canonical strict base64"
+  },
+  "compressed": {
+    "bytes": 234817,
+    "sha256": "341822c6bbf030f3b5b5e2c24b977fa4ba5f2a0647422a9feef9be3b546ea67c",
+    "format": "single zlib stream"
+  },
+  "decoded_original": {
+    "bytes": 1088084,
+    "sha256": "10ceb1923c73dd7d72c04bc24dc2798fbd2b49f53f7ca1e819c67d761726f269"
+  },
+  "input_tool_max_bytes": 1048576,
+  "decode_call_max_output_bytes": 1088085,
+  "unbounded_flush_used": false,
+  "EOF_required": true,
+  "unused_data_and_unconsumed_tail_must_be_empty": true,
+  "all_25_decoded_members_and_original_stage_byte_equal_r2": true,
+  "runtime_and_build_source_bytes_changed": false,
+  "roundtrip_exact": true,
+  "negative_fixtures": [
+    {
+      "name": "extra_encoded_byte",
+      "rejected": true,
+      "error": "normal06 encoded input length or SHA changed",
+      "new_test_only_input_pins": false
+    },
+    {
+      "name": "wrong_encoded_sha",
+      "rejected": true,
+      "error": "normal06 encoded input length or SHA changed",
+      "new_test_only_input_pins": false
+    },
+    {
+      "name": "truncated_zlib_rejected_without_EOF",
+      "rejected": true,
+      "error": "normal06 decoded length EOF or tail differs",
+      "new_test_only_input_pins": true
+    },
+    {
+      "name": "trailing_compressed_data_rejected",
+      "rejected": true,
+      "error": "normal06 decoded length EOF or tail differs",
+      "new_test_only_input_pins": true
+    },
+    {
+      "name": "decoded_output_exceeds_exact_bound",
+      "rejected": true,
+      "error": "normal06 decoded length EOF or tail differs",
+      "new_test_only_input_pins": true
+    }
+  ],
+  "runtime_controls_rerun_for_transport_change": false,
+  "actual_stage_invoked": false,
+  "remote_or_Main_operations": 0,
+  "framework_build_submitted": false,
+  "production_ready": false
+}

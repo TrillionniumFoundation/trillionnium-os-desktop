@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "state": "REVIEW_DOCUMENT_ONLY_CORRECTION",
+  "cause": "Review plan copied source-r3 argv while root/out were already updated; executable framework_build.py derives argv from actual ROOT/OUT build07.",
+  "changed_document_field": "execution-plan.json argv",
+  "before": {
+    "bytes": 7196,
+    "sha256": "aaa0ca64935390321de20ddee0a5d1604a4da8ffb4f82aeb46c2f4c9c6c8bd6f"
+  },
+  "after": {
+    "bytes": 7196,
+    "sha256": "08f8c1fc597ed0c493d75877c000d40aa88b88670895b58056d8b8028fcf3535"
+  },
+  "old_argv": [
+    "/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/compile01/cargo-target/debug/droidloom-update",
+    "--source",
+    "/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/builder-source",
+    "--jobs",
+    "1",
+    "native-role-ingress-build",
+    "--work",
+    "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-work-01-20261105",
+    "--out",
+    "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-06-20261106/android-out"
+  ],
+  "corrected_argv": [
+    "/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/compile01/cargo-target/debug/droidloom-update",
+    "--source",
+    "/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/builder-source",
+    "--jobs",
+    "1",
+    "native-role-ingress-build",
+    "--work",
+    "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-work-01-20261105",
+    "--out",
+    "/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106/android-out"
+  ],
+  "source_plan_executed_only_as_pure_data_function": true,
+  "all_30_source_members_byte_unchanged": true,
+  "exact_request_unchanged": {
+    "bytes": 320416,
+    "sha256": "bd60060c5a1bd329b3c05bfa5309f192c42168d48397f4bcdcfc674fc889054b"
+  },
+  "runtime_or_remote_operations": 0,
+  "runtime_controls_rerun": false,
+  "reproduction": [
+    "analysis_sources/prepare_build07_source_r4.py",
+    "analysis_sources/fix_build07_review_plan_argv.py"
+  ]
+}

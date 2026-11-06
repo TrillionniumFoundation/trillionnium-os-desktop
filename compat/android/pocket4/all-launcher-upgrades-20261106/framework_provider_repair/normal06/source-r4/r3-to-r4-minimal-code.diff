@@ -1,0 +1,215 @@
+--- executed-build06-source-r3/framework_build.py
++++ proposed-build07-source-r4/framework_build.py
+@@ -175,7 +175,7 @@
+ 
+ # Input and completion bindings for the existing normal builder lifecycle.
+ OWNER = P('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01')
+-ROOT = OWNER / 'typed-ingress-framework-systemui-provider-build-06-20261106'
++ROOT = OWNER / 'typed-ingress-framework-systemui-provider-build-07-20261106'
+ HERE = ROOT / 'control-source'
+ WORK = OWNER / 'typed-ingress-framework-work-01-20261105'
+ OUT = ROOT / 'android-out'
+@@ -213,6 +213,7 @@
+ 
+ 
+ PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-native-provider-build-05-20261106'
++SETTLED_FENCE_ROOT = P('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-06-20261106/build-fences-01')
+ PUBLISHED_SOURCE = WORK / 'aosp-source'
+ PUBLISHED_MANIFEST_SHA = '5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d'
+ PUBLISHED_MANIFEST_BYTES = 109252
+@@ -468,6 +469,75 @@
+     return result, row, manifests, pins
+ 
+ 
++def settled_normal06_fence_contract():
++    # Build06 stopped before any snapshot/control fork or inner build. Its
++    # failed authority remains a failure, with both outer root children reaped.
++    authorities = [
++        ('terminal.json', 'settled-normal06-fence-terminal.json', 8115,
++         '867855adf975072432aada65f4decded4b88c725a6a5d2e9a17909ae1f94b841'),
++        ('control-root-timeout.root-supervisor.stdout.json', 'settled-normal06-control-root-stdout.json', 904,
++         'e78dc93dcb57b4bcd5390d5ff41f82dce63e25be88c311a564969a5396273b5a'),
++        ('after.root-supervisor.stdout.json', 'settled-normal06-after-root-stdout.json', 896,
++         '0df37043724399fd0b3b6597c4e77c6a72e14346271236b65d98a94d1554a58d'),
++    ]
++    documents, pins = [], []
++    for remote_name, staged_name, size, digest_value in authorities:
++        document, pin = json_pin(SETTLED_FENCE_ROOT / remote_name, digest_value, size)
++        staged, staged_pin = json_pin(HERE / staged_name, digest_value, size)
++        require(document == staged, 'settled normal06 original authority differs')
++        documents.append(document)
++        pins.extend([pin, staged_pin])
++    terminal, control, after = documents
++    require(terminal['state'] == 'FAILED' and terminal['inner_build_called'] is False and
++            terminal['inner_returncode'] is None and terminal['main_fence_assessment'] is None and
++            terminal['before_observed'] is False and terminal['after_observed'] is False and
++            terminal['capture_lifecycle_controls'] is None and
++            terminal['error'] == "RuntimeError('fixed child did not exit zero'); post-fence: RuntimeError('fixed child did not exit zero')" and
++            terminal['Main_actions'] == terminal['Android_actions'] == 0 and
++            terminal['installed'] is False and terminal['production_ready'] is False,
++            'normal06 pre-builder failure was relabeled or not settled')
++    receipts = terminal['capture_lifecycle_receipts']
++    require(len(receipts) == 2 and [r['phase'] for r in receipts] == ['control-root-timeout', 'after'],
++            'normal06 exact two failed outer captures differ')
++    for index, (receipt, supervisor) in enumerate(zip(receipts, [control, after])):
++        command = receipt['command']
++        reaper = receipt['outer_subreaper']
++        require(receipt['snapshot_sha256'] == '7908f4730c658e0d2f43ca66a810eb6d7033634560fcba2d7d928b380795136e' and
++                receipt['root_source_sha256'] == 'a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147' and
++                receipt['lifecycle_sha256'] == '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126' and
++                receipt['qualified_success'] is False and receipt['secondary_errors'] == [] and
++                receipt['outer_watchdog_installed_before_launch'] is True and
++                receipt['outer_watchdog_disarmed_and_restored'] is True and
++                receipt['within_absolute_outer_deadline'] is True and
++                reaper['begin_passed'] is True and reaper['restored'] is True and reaper['final_children_empty'] is True and
++                command['child_started'] is True and command['child_reaped'] is True and
++                command['returncode'] == 1 and command['timed_out'] is False and command['kill_attempted'] is False and
++                command['pidfd_closed'] is True and command['all_acquired_fds_closed'] is True and
++                command['owned_tree_cleanup_complete'] is True and command['remaining_owned_children'] == [] and
++                command['descendants'] == [] and command['secondary_errors'] == [] and
++                command['retirement_within_deadline'] is True and command['qualified_success'] is False and
++                all(command[k]['closed'] is True for k in ['input', 'stdout', 'stderr']) and
++                command['stdout']['complete'] is True and command['stderr']['complete'] is True and
++                command['stdout']['bytes'] == authorities[index + 1][2] and
++                command['stdout']['sha256'] == authorities[index + 1][3] and command['stderr']['bytes'] == 0,
++                'normal06 original root child/FD/watchdog retirement differs')
++        require(supervisor['kind'] == 'fixed-root-main-snapshot-supervisor02' and
++                supervisor['mode'] == ('control-timeout' if index == 0 else 'after') and
++                supervisor['ok'] is False and supervisor['snapshot_qualified'] is False and
++                supervisor['control_passed'] is False and supervisor['root_subreaper'] is None and
++                supervisor['command'] is None and supervisor['child_stdout_utf8'] is None and
++                supervisor['child_stderr_utf8'] is None and supervisor['secondary_errors'] == [] and
++                supervisor['first_error'] == {'stage': 'root_supervisor', 'type': 'RuntimeError',
++                    'errno': None, 'message': 'root child/lifecycle source pin differs'} and
++                supervisor['root_uids'] == [0, 0, 0] and supervisor['dumpable'] == 0 and
++                supervisor['Main_actions'] == supervisor['Android_actions'] == supervisor['service_actions'] == 0 and
++                supervisor['watchdog_disarmed_after_retirement'] is True and
++                supervisor['within_absolute_supervisor_deadline'] is True and
++                supervisor['within_final_retirement_deadline'] is True,
++                'normal06 failed before snapshot fork authority differs')
++    return pins
++
++
+ def prior_failure_contract():
+     authorities = [
+         (PREVIOUS_ROOT / 'attempt-01/terminal.json', 'prior-framework-inner-terminal.json', PRIOR_INNER_SHA, 3176),
+@@ -516,6 +586,7 @@
+             hashlib.sha1(b'blob ' + str(len(bp_raw)).encode() + b'\0' + bp_raw).hexdigest() == NATIVE_PREBUILT_BP_GIT_SHA,
+             'actual locked native prebuilt provider body differs')
+     pins.append(bp_row)
++    pins.extend(settled_normal06_fence_contract())
+     return published, pins
+ 
+ def fresh_published_binding(context, scope, state, current_work):
+--- executed-build06-source-r3/root_snapshot_supervisor.py
++++ proposed-build07-source-r4/root_snapshot_supervisor.py
+@@ -17,7 +17,7 @@
+ import time
+ 
+ LIFECYCLE_SHA = '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126'
+-SNAPSHOT_SHA = '3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3'
++SNAPSHOT_SHA = '7908f4730c658e0d2f43ca66a810eb6d7033634560fcba2d7d928b380795136e'
+ MODES = frozenset(('before', 'after', 'control-timeout', 'control-escaped', 'control-pidfd'))
+ OBSERVATION_SECONDS = 15
+ RETIREMENT_SECONDS = 5
+--- executed-build06-source-r3/fenced_build.py
++++ proposed-build07-source-r4/fenced_build.py
+@@ -9,12 +9,12 @@
+ import subprocess
+ import time
+ 
+-CONTROLLER_SHA = '0bef6799e2f5b07e277a2fc055503488d1b057c2554711097a44a3bdd28eae31'
++CONTROLLER_SHA = 'c446be88a61f7d07c05aff1e3f3bb967bcf969b7fa3de568eb3de4915e59e7da'
+ LIFECYCLE_SHA = '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126'
+-ROOT_SUPERVISOR_SHA = 'a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147'
++ROOT_SUPERVISOR_SHA = 'ced37d036b93ab8f85803c42ca6a2d0fb18939c78a5d62ef9a2fd0a215176f7b'
+ SNAPSHOT_SHA = '7908f4730c658e0d2f43ca66a810eb6d7033634560fcba2d7d928b380795136e'
+ PREPARATION_SHA = 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'
+-ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-06-20261106')
++ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106')
+ FENCE_ROOT = ROOT / 'build-fences-01'
+ 
+ 
+@@ -341,6 +341,7 @@
+     scope = {'__name__': 'frozen_combined_build', '__file__': '<frozen-combined-build>',
+              'VERIFIED_CONTROLLER_SHA256': CONTROLLER_SHA}
+     exec(compile(source, 'frozen_combined_build.py', 'exec'), scope, scope)
++    settled_previous_fence = scope['settled_normal06_fence_contract']()
+     scope['no_alias'](ROOT)
+     require(sha((ROOT / 'control-source/actual-work-preparation.json').read_bytes()) == PREPARATION_SHA,
+             'staged actual work preparation changed')
+@@ -349,7 +350,8 @@
+     save('claim.json', {'schema': 1, 'state': 'READONLY_MAIN_FENCE_BEFORE_FULL_BUILD',
+                        'controller_sha256': CONTROLLER_SHA, 'preparation_sha256': PREPARATION_SHA,
+                        'snapshot_sha256': packet['snapshot_sha256'], 'uid': os.getuid(),
+-                       'automatic_retry': False, 'Main_actions': 0})
++                       'automatic_retry': False, 'Main_actions': 0,
++                       'settled_previous_pre_builder_failure_authorities': settled_previous_fence})
+     before = after = assessment = None
+     lifecycle_controls = None
+     inner_code = None
+--- executed-build06-source-r3/stage.py
++++ proposed-build07-source-r4/stage.py
+@@ -1,6 +1,6 @@
+ import hashlib,json,os,stat
+ from pathlib import Path,PurePosixPath
+-ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-06-20261106')
++ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106')
+ EXPECTED = {'actual-builder469-qualification.json': {'bytes': 65386,
+                                           'sha256': 'f31bb31d29967bacdb0842eea99dae65f8b67425f26f10063c3d84099367fd64'},
+  'actual-builder469-result.json': {'bytes': 37384,
+@@ -31,10 +31,10 @@
+                                        'sha256': 'd9340351c9653b10dfd0882afbff5ff4fc11dafaa6083191ed2a8fdb5c8dd934'},
+  'expected-builder470-manifest.json': {'bytes': 99075,
+                                        'sha256': 'f4a0e6ff82f1ecf9bd786872d99cc0b1608e1d94d0adc37761e87aed449c81bd'},
+- 'fenced_build.py': {'bytes': 25683,
+-                     'sha256': 'e319044f60b412e3f309639828a3b4ff8ad416db1212c0ff07705ed33ed491ef'},
+- 'framework_build.py': {'bytes': 62412,
+-                        'sha256': '0bef6799e2f5b07e277a2fc055503488d1b057c2554711097a44a3bdd28eae31'},
++ 'fenced_build.py': {'bytes': 25854,
++                     'sha256': 'ad761406016436ba19e3095f11178417760aa0a99ca184525f11c2b021dc711c'},
++ 'framework_build.py': {'bytes': 68088,
++                        'sha256': 'c446be88a61f7d07c05aff1e3f3bb967bcf969b7fa3de568eb3de4915e59e7da'},
+  'frozen-work-inventory.py': {'bytes': 48443,
+                               'sha256': '203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab'},
+  'main_snapshot.py': {'bytes': 24579,
+@@ -50,7 +50,13 @@
+  'pure_controls.py': {'bytes': 14631,
+                       'sha256': '30f48e0bbee38daf1db209fc0dcdee2c8036061d857070eeebb25bc524e4b79b'},
+  'root_snapshot_supervisor.py': {'bytes': 12041,
+-                                 'sha256': 'a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147'}}
++                                 'sha256': 'ced37d036b93ab8f85803c42ca6a2d0fb18939c78a5d62ef9a2fd0a215176f7b'},
++ 'settled-normal06-after-root-stdout.json': {'bytes': 896,
++                                             'sha256': '0df37043724399fd0b3b6597c4e77c6a72e14346271236b65d98a94d1554a58d'},
++ 'settled-normal06-control-root-stdout.json': {'bytes': 904,
++                                               'sha256': 'e78dc93dcb57b4bcd5390d5ff41f82dce63e25be88c311a564969a5396273b5a'},
++ 'settled-normal06-fence-terminal.json': {'bytes': 8115,
++                                          'sha256': '867855adf975072432aada65f4decded4b88c725a6a5d2e9a17909ae1f94b841'}}
+ def main(packet):
+     if os.getuid()!=1000 or os.geteuid()!=1000:raise RuntimeError('operator UID1000 required')
+     if set(packet)!=set(EXPECTED):raise RuntimeError('staged source member set differs')
+--- executed-build06-source-r3/transport.py
++++ proposed-build07-source-r4/transport.py
+@@ -1,14 +1,14 @@
+ import base64,binascii,hashlib,json,sys,zlib
+-WIRE_BYTES = 1088084
+-WIRE_SHA256 = '10ceb1923c73dd7d72c04bc24dc2798fbd2b49f53f7ca1e819c67d761726f269'
+-STAGE_BYTES = 7841
+-STAGE_SHA256 = 'c8553b6491de3deed6794dec12721a3d7435903cec9414b6f217ce87a12f02a0'
++WIRE_BYTES = 1105501
++WIRE_SHA256 = 'bd702a652d6eb0e7754e27049ea18a9f1d5ba8216f1ec49468cd747641e5fc09'
++STAGE_BYTES = 8389
++STAGE_SHA256 = '5a108bcc09b17074d273d30ebc5a95c379e2bd2846e17ed276a5e283fe42e994'
+ INPUT_MAX_BYTES = 1048576
+ DECODED_MAX_BYTES = 2097152
+-ENCODED_BYTES = 313092
+-ENCODED_SHA256 = 'eb0b897c571a166c4510bf1eaace4f76d395251a064ee173fe5e5fd9080574ab'
+-COMPRESSED_BYTES = 234817
+-COMPRESSED_SHA256 = '341822c6bbf030f3b5b5e2c24b977fa4ba5f2a0647422a9feef9be3b546ea67c'
++ENCODED_BYTES = 316836
++ENCODED_SHA256 = '5f7ff5109fe74c2e5d34bb1715b29bb7047f84ec4e814b0c544717f99633f374'
++COMPRESSED_BYTES = 237625
++COMPRESSED_SHA256 = '8a47101049b926dd1b130326e2ca52ba453a9f346974c061f74c984e179beb63'
+ 
+ def decode_exact_wire(encoded):
+     if not (0 < ENCODED_BYTES <= INPUT_MAX_BYTES == 1048576 and

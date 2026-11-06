@@ -1,0 +1,16 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/python3",
+  "args": [
+    "-B",
+    "-I",
+    "-c",
+    "import hashlib,json,sys\nWIRE_BYTES = 824918\nWIRE_SHA256 = '20e061e7a28c9aca81ef5ae33fa8578caf9ee35b7eef6660e8d7675c2db2762d'\nSTAGE_BYTES = 7137\nSTAGE_SHA256 = '5723e4064379832141e068fb87b7a4460e594545ffc3d9a94f779df847b9ad83'\nif sys.argv[1:] != ['--execute-once']:\n    print(json.dumps({'state':'PLAN_ONLY','source_only':True,'submitted':False,'Main_actions':0,'Android_actions':0,'old_QA_epoch_invalid':True,'new_QA_epoch_qualified':False}))\n    raise SystemExit(0)\nif WIRE_BYTES is None or WIRE_SHA256 is None:\n    raise RuntimeError('NORMAL05_EXACT_REQUEST_NOT_SEALED')\nraw=sys.stdin.buffer.read(WIRE_BYTES+1)\nif len(raw)!=WIRE_BYTES or hashlib.sha256(raw).hexdigest()!=WIRE_SHA256:\n    raise RuntimeError('normal framework exact source packet changed')\npacket=json.loads(raw.decode('utf-8','strict'))\nif set(packet)!={'schema','stage','files'} or type(packet['schema']) is not int or packet['schema']!=1:\n    raise RuntimeError('normal framework source packet shape changed')\nstage=packet['stage'].encode('utf-8')\nif len(stage)!=STAGE_BYTES or hashlib.sha256(stage).hexdigest()!=STAGE_SHA256:\n    raise RuntimeError('normal framework stage source changed')\nscope={'__name__':'frozen_normal_framework_stage','__file__':'<frozen-normal-framework-stage>'}\nexec(compile(stage,'stage.py','exec'),scope,scope)\nscope['main'](packet['files'])\n",
+    "--execute-once"
+  ],
+  "idempotency_key": "pocket4-native-typed-ingress-framework-strict-native-provider-two-target-build-05-20261106",
+  "timeout_seconds": 6400,
+  "cpu_quota_percent": 200,
+  "memory_max_bytes": 10737418240,
+  "nice": 10
+}
