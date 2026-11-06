@@ -1,0 +1,9 @@
+# Owner19 observed logd image pin: fresh NORMAL01 preparation
+
+This package prepares one new root, state, unit and nonce. It does not run the Owner. The actual Host17 artifacts and ordinary 39/139/7 receipt, exact C16 DSO, LMKD, original Main identities and 12288 TasksMax remain unchanged. The original NORMAL first-ACTIVE Stop and failure retirement rules remain unchanged.
+
+The only functional change from Owner18 is the separately frozen crash observer: it records complete live fstat fields before testing the ELF, requires the actually observed regular UID/GID 1036, access 0550, size 801680 and exact full SHA-256, and newly requires zero special bits in the live view. The EROFS tool's 0550 access output did not observe full mode. The old compound failure does not prove which live term failed. The external image read and 15 synthetic source controls do not qualify a live logd peer or Owner startup.
+
+Four source files, including the actor, are byte-identical. The prepare and coordinator differences are only their fixed profile and attempt paths. The source controls have an actual complete PASS receipt with explicit synthetic I/O and connection seams. Actual guest peers, packet data, HWS cause and NORMAL runtime remain unqualified. Root alone reviews and dispatches the create-only preparation, obtains the complete prepared result, and binds its SHA to the still-unfilled runtime template. No runtime request is executable in this package.
+
+All sources and evidence here are UTF-8 static code or safe metadata. No raw captured init log, crash packets, commercial UI, signing material or pixels are included. Local Python validation was not run because the local executor is unavailable; the changed collector was compiled and exercised by the actual restricted source controls. The prepare wrapper is byte-identical to the old template outside its two packet literals. Runtime/current file validation remains required.

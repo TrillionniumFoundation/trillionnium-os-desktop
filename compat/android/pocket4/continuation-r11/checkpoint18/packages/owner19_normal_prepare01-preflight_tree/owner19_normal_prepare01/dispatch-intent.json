@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "prefix": "owner19_normal_prepare01",
+  "idempotency_key": "p4-owner19-normal01-prepare01-e67a21d3adeb8be6",
+  "request_sha256": "3677793959db32df4f6766a5a44e981903af543394591b4e8e6915e0dd6bf640",
+  "operation": "one create-only prepare; no runtime",
+  "automatic_retry": false,
+  "heavy_predecessor": {
+    "schema": 1,
+    "state": "released",
+    "prefix": "bestbuy_r2_build02",
+    "original_job": "1a1aec5bd99-fc05-623a",
+    "terminal_complete": true,
+    "all_12_build_commands_joined": true,
+    "resources_verified": true,
+    "static_build_only": true,
+    "new_heavy_operation_requires_separate_source_bound_admission": true,
+    "git_tree": "f2900e6cad3b930a3f6799b3fdaf603c3f6391fa"
+  }
+}

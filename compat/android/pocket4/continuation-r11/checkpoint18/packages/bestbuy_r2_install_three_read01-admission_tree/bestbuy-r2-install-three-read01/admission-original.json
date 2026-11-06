@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import hashlib,sys\nsrc=sys.stdin.buffer.read(65537)\nassert hashlib.sha256(src).hexdigest()=='ee47ce6a16cac4231524d0d7ae2159fe7c15b51919a7b1d1f07ef153e0b45c05'\nns={'__name__':'ticket_state_fixed_reader'}\nexec(compile(src,'<pinned-ticket-state-reader>','exec'),ns)\nraise SystemExit(ns['main'](['--collect-once']))\n"
+    ],
+    "created_unix_ms": 1793935648514,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1aee5a702-fc05-63e5",
+    "idempotency_key": "pocket4-owned-bestbuy-qa-r2-install-state-three-receipts-read01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1aee5a702-fc05-63e5",
+    "request_digest": "dd8f1dad88f9028a93c8495a3dc050d3fc8b0618553e240084b8c1737d5b61a1",
+    "request_fingerprint": 15965011835216265866,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1aee5a702-fc05-63e5"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1aee5a702-fc05-63e5"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

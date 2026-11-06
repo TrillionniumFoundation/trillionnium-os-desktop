@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys;raw=sys.stdin.buffer.read(131073);assert len(raw)==128566 and hashlib.sha256(raw).hexdigest()==\"cab7e474808481be476a391c10e835feeae4d0b80d336cb87dc2517d0a80a8c7\";p=json.loads(raw);pins={\"candidate.py\":{\"bytes\":34036,\"sha256\":\"0e861800ce12cbb63f9ca5cfa80abbf9ecf9bfde00392c2d03cae9827af31ec1\"},\"baseline.py\":{\"bytes\":32971,\"sha256\":\"c9a430a8260db4d9189bd56fe42b425538f47b76b410ff6a0fc0ed9786e175c6\"},\"actual-inspection.json\":{\"bytes\":49731,\"sha256\":\"682e902089a959915d4f3b3f75616cdccd60f9ef76c68ddf78d96fe7c72018a2\"},\"source_controls.py\":{\"bytes\":6187,\"sha256\":\"8ad5d7eeed948de12a98e170fcd1de6db1bd9af80a004ab86705731e2209b7e4\"}};assert p['schema']==1 and set(p)=={'schema','files'} and set(p['files'])==set(pins);assert all(type(v) is str and len(v.encode())==pins[n]['bytes'] and hashlib.sha256(v.encode()).hexdigest()==pins[n]['sha256'] for n,v in p['files'].items());scope={'__name__':'amazon_attribution_fixed_controls'};exec(compile(p['files']['source_controls.py'],'<fixed-attribution-controls>','exec'),scope);raise SystemExit(scope['main'](p['files']['candidate.py'],p['files']['baseline.py'],p['files']['actual-inspection.json']))"
+    ],
+    "created_unix_ms": 1793935668121,
+    "cwd": "/",
+    "env_keys": [
+      "LC_ALL",
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1aee5f399-fc05-63e9",
+    "idempotency_key": "p4-amazon-first-failure-attribution-controls01-cab7e474808481be",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1aee5f399-fc05-63e9",
+    "request_digest": "d5c2a95c012023d01b8065e22378c88586b17d3b78a2fe3954c4733c7d6a1bfe",
+    "request_fingerprint": 15403059888181486544,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1aee5f399-fc05-63e9"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1aee5f399-fc05-63e9"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

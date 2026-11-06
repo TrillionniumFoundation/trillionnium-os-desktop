@@ -1,0 +1,59 @@
+--- freeze01/source/build_candidate.py
++++ freeze02/source/build_candidate.py
+@@ -17,7 +17,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ PACKAGE = 'org.droidloom.qa.bestbuy.r2'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-02')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+--- freeze01/source/controls/check_deep_tree.py
++++ freeze02/source/controls/check_deep_tree.py
+@@ -168,6 +168,12 @@
+         raise AssertionError('129-level action path was accepted')
+ 
+ 
++def old_helper_uid():
++    value = result(33)
++    value['self_uid'] = 10198
++    return qa.parse_completed(wire(value), b'', 0, REQUEST, 10198)
++
++
+ def mismatched_count():
+     value = result(33)
+     value['tree_observations'][0]['emitted_nodes'] += 1
+@@ -207,7 +213,7 @@
+      'COMPLETE_TREE_COUNTERS_INCONSISTENT')
+ case('deepest_action_path_parser_bound_without_dispatch', deepest_action_path)
+ case('old_helper_UID_10198_cannot_qualify_r2',
+-     lambda: qa.parse_completed(wire(result(33)), b'', 0, REQUEST, 10198),
++     old_helper_uid,
+      'INSTALLED_HELPER_IDENTITY_REQUIRED')
+ assert len(CASES) == 16 and len(set(CASES)) == 16
+ print(json.dumps({'state': 'PASS_PROTOCOL_CONTROLS_ONLY', 'cases': len(CASES),
+--- freeze01/source/make_build_request.py
++++ freeze02/source/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bestbuy-qa-r2-static-build-01-20261106'
++KEY='pocket4-owned-bestbuy-qa-r2-static-build-02-20261106'
+ 
+ 
+ def encode(value):
+--- freeze01/source/stage_build.py
++++ freeze02/source/stage_build.py
+@@ -8,8 +8,8 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-source-01')
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-source-02')
++OUTPUT = Path('/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-02')
+ MEMORY = 536870912
+ 
+ 

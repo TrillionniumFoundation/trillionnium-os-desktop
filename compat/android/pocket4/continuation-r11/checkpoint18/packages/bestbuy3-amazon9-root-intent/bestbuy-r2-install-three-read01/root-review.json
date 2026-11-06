@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "scope": "Fixed BestBuy R2 three-original install/state reader",
+  "source": {
+    "bytes": 9751,
+    "sha256": "ee47ce6a16cac4231524d0d7ae2159fe7c15b51919a7b1d1f07ef153e0b45c05"
+  },
+  "request": {
+    "bytes": 10698,
+    "sha256": "eaa04691af5fba7bde4dd392d64e71a5632be461c4ca230c5d18378a9f182db0"
+  },
+  "baseline_reader": {
+    "bytes": 9698,
+    "sha256": "0048b43a04dd9da6def48e82bee667d7ce09365f05f258e31686c71af8213600"
+  },
+  "baseline_git_blob": "2793a3b48346aafa7478e6563411021c8ab430d4",
+  "literal_replacements": [
+    {
+      "from": "com.ihg.apps.android",
+      "to": "com.bestbuy.android",
+      "positions": [
+        6974
+      ]
+    },
+    {
+      "from": "ihg",
+      "to": "bestbuy",
+      "positions": [
+        288,
+        436,
+        474,
+        8534
+      ]
+    },
+    {
+      "from": "IHG",
+      "to": "BESTBUY",
+      "positions": [
+        63,
+        4860,
+        5023,
+        6774,
+        7044
+      ]
+    },
+    {
+      "from": "bestbuy-qa-r1",
+      "to": "bestbuy-qa-r2",
+      "positions": [
+        292
+      ]
+    },
+    {
+      "from": "org.droidloom.qa.bestbuy.r1",
+      "to": "org.droidloom.qa.bestbuy.r2",
+      "positions": [
+        423
+      ]
+    },
+    {
+      "from": "pocket4-owned-bestbuy-qa-v1",
+      "to": "pocket4-owned-bestbuy-qa-v2",
+      "positions": [
+        464
+      ]
+    },
+    {
+      "from": "exact-owned-bestbuy-r1",
+      "to": "exact-owned-bestbuy-r2",
+      "positions": [
+        8542
+      ]
+    },
+    {
+      "from": "BESTBUY R1",
+      "to": "BESTBUY R2",
+      "positions": [
+        63
+      ]
+    },
+    {
+      "from": "c815375703e1143b2a8ce8d7d3c44d6e",
+      "to": "233184c3820388b9fb3567c7ec726cbb",
+      "positions": [
+        378
+      ]
+    },
+    {
+      "from": "b637e01d62293f5e7c909e75d2b36d50",
+      "to": "2501969dfcbe4bb492e5401c0bfcf420",
+      "positions": [
+        704
+      ]
+    },
+    {
+      "from": "eec0bb01cbc2440918800026c2d1260bdc62fbab1f377776b9fccf7467596902",
+      "to": "39ec2549b1db692666e4f047ec35b3e118b37c50159fe7fc70388e2c7a579ea1",
+      "positions": [
+        752
+      ]
+    },
+    {
+      "from": "PINS = {'coordinator.json': (3068, '7487081977233962e2b3c029474313e6f2c306e908ee7d3178e07bd3830bddf0'), 'stage.json': (1614, '396fc6e9642767017331abee562c222a1fd15af2cc68421aabbf3b0d02a9fed1')}",
+      "to": "PINS = {'coordinator.json': (3080, '7d132b19270f19665bc4bc5b1a1ce1d270c88367c6c10673b61877ca5f266069'), 'stage.json': (1618, 'ef54244b4f4908ee4c2677c0904807413a420d37f07943c4aa5f521dc71de942')}",
+      "positions": [
+        493
+      ]
+    },
+    {
+      "from": "uid not in (10137,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190)",
+      "to": "uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196,10198)",
+      "positions": [
+        6593
+      ]
+    }
+  ],
+  "exact_inverse_all_other_source_bytes_unchanged": true,
+  "external_terminal_parent_pins_bound": true,
+  "parent_bound_worker_only": true,
+  "original_count": 3,
+  "state_assessment_embedded_in_worker": true,
+  "actual_helper_uid_not_guessed": true,
+  "raw_commercial_UI_forbidden": true,
+  "read_only": true,
+  "Android_or_process_actions": 0,
+  "file_writes": 0,
+  "bounds": {
+    "seconds": 8,
+    "per_file": 65536,
+    "total": 524288,
+    "outer_seconds": 30
+  },
+  "automatic_retry": false,
+  "whole_app_production_ready": false
+}

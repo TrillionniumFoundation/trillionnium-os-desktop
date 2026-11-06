@@ -1,0 +1,76 @@
+--- template/owned_inspect.py
++++ bound/owned_inspect.py
+@@ -18,7 +18,7 @@
+ HERE=Path(__file__).resolve().parent
+ ROOT=Path('/home/alex/work/pocket4-ihg-public-destination-entry-01')
+ SOURCE=ROOT/'source'
++NONCE='13096774da42081a4029b0015113be8c'
+-NONCE='IHG_DEST_NEW_NONCE_0000000000000'
+ FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r1-flow-'+NONCE)
+ PACKAGE='com.ihg.apps.android'
+ UID=10137
+@@ -26,8 +26,8 @@
+ HELPER_UID=10196
+ COMPONENT=PACKAGE+'/.activity.MainActivity'
+ # The source label is inert; the exact selector is derived from the current complete inspection.
++PLAN={'schema': 1, 'operation': 'click', 'selector': {'text': 'Destination'}, 'nonces': {'action': '36c0e10ec1799409742ea72be78ec76b', 'after': 'a874081edb540e2e81caa754d4072ed7', 'before': '0da50dc97ef70dcbd3aa477b39fbbe9a', 'inspect': '3d0465fe8043017891364304ec739b05'}}
++POST_PLAN={'schema': 1, 'operation': 'inspect', 'nonces': {'after': 'c6a5535f17a1d21ff2cb1804086bf2e1', 'before': 'bfd74c6cf4b9461d172943abf8f4f1ee', 'inspect': 'ef8e86e7a0cdbf217d740e1a27f47307'}}
+-PLAN={'schema': 1, 'operation': 'click', 'selector': {'text': 'Destination'}, 'nonces': {'action': 'IHG_DEST_NEW_NONCE_0000000000001', 'after': 'IHG_DEST_NEW_NONCE_0000000000002', 'before': 'IHG_DEST_NEW_NONCE_0000000000003', 'inspect': 'IHG_DEST_NEW_NONCE_0000000000004'}}
+-POST_PLAN={'schema': 1, 'operation': 'inspect', 'nonces': {'after': 'IHG_DEST_NEW_NONCE_0000000000005', 'before': 'IHG_DEST_NEW_NONCE_0000000000006', 'inspect': 'IHG_DEST_NEW_NONCE_0000000000007'}}
+ INSTALL_ROOT=Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01')
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+ INSTALL_SOURCE_SHA='eec0bb01cbc2440918800026c2d1260bdc62fbab1f377776b9fccf7467596902'
+--- template/ihg_task_context.py
++++ bound/ihg_task_context.py
+--- template/public_destination.py
++++ bound/public_destination.py
+--- template/INPUTS.json
++++ bound/INPUTS.json
+@@ -94,9 +94,9 @@
+   "hotel_search_results_verified": false,
+   "independent_post_plan": {
+     "nonces": {
++      "after": "c6a5535f17a1d21ff2cb1804086bf2e1",
++      "before": "bfd74c6cf4b9461d172943abf8f4f1ee",
++      "inspect": "ef8e86e7a0cdbf217d740e1a27f47307"
+-      "after": "IHG_DEST_NEW_NONCE_0000000000005",
+-      "before": "IHG_DEST_NEW_NONCE_0000000000006",
+-      "inspect": "IHG_DEST_NEW_NONCE_0000000000007"
+     },
+     "operation": "inspect",
+     "schema": 1
+@@ -121,7 +121,7 @@
+   },
+   "login_or_booking_verified": false,
+   "maximum_public_clicks": 1,
++  "nonce": "13096774da42081a4029b0015113be8c",
+-  "nonce": "IHG_DEST_NEW_NONCE_0000000000000",
+   "original_full_tree_window_node_freshness_required": true,
+   "prior_search_public_role_observation": {
+     "bytes": 12714,
+@@ -137,10 +137,10 @@
+   },
+   "public_destination_click_plan": {
+     "nonces": {
++      "action": "36c0e10ec1799409742ea72be78ec76b",
++      "after": "a874081edb540e2e81caa754d4072ed7",
++      "before": "0da50dc97ef70dcbd3aa477b39fbbe9a",
++      "inspect": "3d0465fe8043017891364304ec739b05"
+-      "action": "IHG_DEST_NEW_NONCE_0000000000001",
+-      "after": "IHG_DEST_NEW_NONCE_0000000000002",
+-      "before": "IHG_DEST_NEW_NONCE_0000000000003",
+-      "inspect": "IHG_DEST_NEW_NONCE_0000000000004"
+     },
+     "operation": "click",
+     "schema": 1,
+--- template/stage_execute.py
++++ bound/stage_execute.py
+@@ -8,7 +8,7 @@
+ 
+ ROOT=Path('/home/alex/work/pocket4-ihg-public-destination-entry-01')
+ SOURCE=ROOT/'source'
++NONCE='13096774da42081a4029b0015113be8c'
+-NONCE='IHG_DEST_NEW_NONCE_0000000000000'
+ FILES={'owned_inspect.py','ihg_task_context.py','public_destination.py','INPUTS.json'}
+ REFERENCE=Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'

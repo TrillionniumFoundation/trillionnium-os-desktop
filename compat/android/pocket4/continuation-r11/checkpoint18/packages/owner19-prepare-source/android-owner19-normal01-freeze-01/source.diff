@@ -1,0 +1,122 @@
+--- owner18/source/coordinator.py
++++ owner19/source/coordinator.py
+@@ -49,9 +49,9 @@
+     state = group_fd = -1; actor = None; fence = None; invocation = None; launched = False; tools = {}
+     try:
+         owned.need(os.getuid() == os.geteuid() == os.getgid() == 0, 'external controller requires original host root')
+-        owned.need(plan['unit'] == 'p4-owner18-normal-20261105-01.service' and
+-                   plan['package'] == '/opt/p4-owner18-normal-20261105-01' and
+-                   plan['state'] == '/opt/p4-owner18-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
++        owned.need(plan['unit'] == 'p4-owner19-normal-20261105-01.service' and
++                   plan['package'] == '/opt/p4-owner19-normal-20261105-01' and
++                   plan['state'] == '/opt/p4-owner19-normal-20261105-01-state', 'this controller accepts only its fixed fresh unit/package/state')
+         state = owned.root_directory(plan['state'])
+         owned.need(owned.file_id(state) == prepared['state_identity'], 'prepared state replaced')
+         for name in ('coordinator-claim.json', 'gate.json', 'runtime-claim.json', 'actor-result.json', 'runtime-result.json'):
+--- owner18/source/prepare.py
++++ owner19/source/prepare.py
+@@ -117,7 +117,7 @@
+ 
+ 
+ def main(plan, sources):
+-    result = {'schema': 1, 'kind': 'owner18-normal-preparation01', 'success': False,
++    result = {'schema': 1, 'kind': 'owner19-normal-preparation01', 'success': False,
+               'attempt_nonce': plan['attempt_nonce'], 'runtime_executed': False,
+               'namespace_or_network_changed': False, 'production_ready': False, 'errors': []}
+     package_fd = state_fd = data_fd = -1; tools = {}; fence = None
+@@ -125,7 +125,7 @@
+         owned.need(os.geteuid() == os.getuid() == os.getegid() == 0, 'preparation requires original host root')
+         owned.need(len(plan['attempt_nonce']) == 64 and
+                    plan['scope'] == 'REAL_OWNER_ABI3_PINNED_CAUSE_TERMINAL_DRAIN_FIRST_ACTIVE_ORIGINAL_RETIREMENT' and
+-                   plan['kind'] == 'owned-real-producer18-normal01-private-crash-buffer01', 'wrong fixed profile')
++                   plan['kind'] == 'owned-real-producer19-normal01-observed-logd-image01', 'wrong fixed profile')
+         owned.need(not Path(plan['package']).exists() and not Path(plan['state']).exists(), 'preparation root already exists')
+         owned.need(support.props(plan['unit']).get('LoadState') == 'not-found', 'owned unit already exists')
+         fence = support.MainFence(plan, vars(support)); result['main_before'] = fence.check()
+--- owner18/source/crash_log.py
++++ owner19/source/crash_log.py
+@@ -26,6 +26,10 @@
+ HEADER = struct.Struct('<HHiIIIII')
+ ROOT_TMPFS = 0x01021994
+ LOGD_UID = 1036
++LOGD_ELF_BYTES = 801680
++LOGD_ELF_ACCESS = 0o550
++LOGD_ELF_SHA256 = '00b71cfeea17a2fa6b2fa4047fb320bdd9d7b64ce16366bbbd2abdbda09d0905'
++LOGD_IMAGE_OBSERVATION_SHA256 = '68fece28d8264afba6e123a2e02f4a2a75c05ffa969f975de5ff6dd46df6f5ae'
+ # The existing native role transport uses the same Linux UAPI value. Unsupported
+ # kernels fail before the read request; numeric SO_PEERCRED alone is insufficient.
+ SO_PEERPIDFD = 77
+@@ -49,6 +53,41 @@
+             'nlink': value.st_nlink, 'bytes': value.st_size}
+ 
+ 
++
++def require_logd_stat(value, record):
++    """Record the live fstat before checking the independently observed image tuple."""
++    observed = {'device': value.st_dev, 'inode': value.st_ino, 'bytes': value.st_size,
++                'full_st_mode': value.st_mode, 'type': stat.S_IFMT(value.st_mode),
++                'mode': stat.S_IMODE(value.st_mode), 'access_0777': value.st_mode & 0o777,
++                'special_permission_bits': value.st_mode & 0o7000,
++                'uid': value.st_uid, 'gid': value.st_gid, 'nlink': value.st_nlink,
++                'mtime_ns': value.st_mtime_ns, 'ctime_ns': value.st_ctime_ns,
++                'image_observation_sha256': LOGD_IMAGE_OBSERVATION_SHA256,
++                'prior_image_complete_mode_observed': False,
++                'live_special_bits_required': 0}
++    record['fixed_logd_elf_observed'] = observed
++    need(stat.S_ISREG(value.st_mode), 'fixed generation logd ELF is not regular')
++    need(value.st_uid == value.st_gid == LOGD_UID,
++         'fixed generation logd ELF owner differs from observed image')
++    need(not value.st_mode & 0o222 and value.st_mode & 0o111,
++         'fixed generation logd ELF writable or non-executable')
++    need(value.st_mode & 0o777 == LOGD_ELF_ACCESS,
++         'fixed generation logd ELF access differs from observed image')
++    # dump.erofs did not expose special bits. This is a fresh live requirement,
++    # not a claim that the earlier image observation measured those bits.
++    need(not value.st_mode & 0o7000, 'fixed generation logd ELF has special permission bits')
++    need(value.st_nlink == 1, 'fixed generation logd ELF link count differs from observed image')
++    need(value.st_size == LOGD_ELF_BYTES,
++         'fixed generation logd ELF length differs from observed image')
++    return observed
++
++
++def require_logd_digest(digest, record):
++    record['fixed_logd_elf_observed']['sha256'] = digest
++    need(digest == LOGD_ELF_SHA256,
++         'fixed generation logd ELF full SHA differs from observed image')
++
++
+ def filesystem_type(fd):
+     library = ctypes.CDLL(None, use_errno=True)
+     library.fstatfs.argtypes = (ctypes.c_int, ctypes.c_void_p)
+@@ -397,16 +436,24 @@
+              'held logdr socket differs from its name')
+         executable = self._descendant(self.fds['root'], ('system', 'bin', 'logd'), 'logd_elf', True)
+         value = os.fstat(executable)
+-        need(stat.S_ISREG(value.st_mode) and value.st_uid == 0 and
+-             not value.st_mode & 0o022 and value.st_mode & 0o111 and
+-             0 < value.st_size <= 16 * 1024 * 1024 and os.pread(executable, 4, 0) == b'\x7fELF',
+-             'fixed generation logd ELF metadata differs')
+-        need(os.fstatvfs(executable).f_flag & os.ST_RDONLY, 'generation logd ELF is not on readonly view')
+-        digest, before = self.owned.digest_fd(executable, value.st_size)
++        observed = require_logd_stat(value, self.record)
++        observed['first_four_bytes_hex'] = os.pread(executable, 4, 0).hex()
++        need(observed['first_four_bytes_hex'] == '7f454c46',
++             'fixed generation logd ELF magic differs')
++        observed['read_only_view'] = bool(os.fstatvfs(executable).f_flag & os.ST_RDONLY)
++        need(observed['read_only_view'], 'generation logd ELF is not on readonly view')
++        digest, before = self.owned.digest_fd(executable, LOGD_ELF_BYTES)
++        require_logd_digest(digest, self.record)
+         self.logd_elf_stamp = self.owned.stamp(before)
++        need(self.logd_elf_stamp == self.owned.stamp(value) ==
++             self.owned.stamp(os.fstat(executable)),
++             'fixed generation logd ELF changed during qualification')
+         self.record.update(socket_identity=socket_id,
+             fixed_logd_elf={'guest_path': '/system/bin/logd', **metadata(executable),
+-                           'sha256': digest, 'external_individual_ELF_pin_previously_observed': False})
++                           'sha256': digest, 'external_individual_ELF_pin_previously_observed': True,
++                           'image_observation_sha256': LOGD_IMAGE_OBSERVATION_SHA256,
++                           'prior_image_complete_mode_observed': False,
++                           'live_special_permission_bits': observed['special_permission_bits']})
+         need(self._named_socket() == socket_id, 'logdr changed before connection')
+         self.init.live()
+         return True

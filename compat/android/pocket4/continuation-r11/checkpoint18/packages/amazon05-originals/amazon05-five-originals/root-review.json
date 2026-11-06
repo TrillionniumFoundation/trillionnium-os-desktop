@@ -1,0 +1,84 @@
+{
+  "schema": 1,
+  "scope": "Amazon05 actual failure and retirement; no success qualification",
+  "job": "1a1aeb2cb64-fc05-614a",
+  "reader_job": "1a1aec1c2f7-fc05-620c",
+  "original_parent_failed": true,
+  "original_five_files": {
+    "cleanup.json": {
+      "bytes": 12288,
+      "sha256": "df4824d3f0006cdc5bae7526ee9aecbcda3b9a15df0f365e3e91c72354750e68"
+    },
+    "coordinator.json": {
+      "bytes": 7456,
+      "sha256": "172f4c4ca7a63b1680ef44774fbabdbb892426bea43748acc9ebff8c177ad281"
+    },
+    "inspection.json": {
+      "bytes": 49731,
+      "sha256": "682e902089a959915d4f3b3f75616cdccd60f9ef76c68ddf78d96fe7c72018a2"
+    },
+    "launch.json": {
+      "bytes": 13454,
+      "sha256": "900cb99206dcfd938c1a0dd52e16834be3d5b22c88bcd6473d1f746345e4576c"
+    },
+    "stage.json": {
+      "bytes": 1827,
+      "sha256": "1f6a62974cdeef554ebc80e2ddcff9eae14e7c9097103e65f08b4d4b6c710cf6"
+    }
+  },
+  "failure": {
+    "code": "TREE_CHANGED_NULL_CHILD",
+    "operation": "inspect",
+    "nonce": "b97868028aca1597a7ba631e3a1567cb",
+    "complete": false,
+    "attempted_nodes": 231,
+    "max_attempted_depth": 29,
+    "helper_action_attempted": false,
+    "helper_outcome_unknown": false,
+    "worker_action_attempted": false,
+    "worker_outcome_unknown": false,
+    "click_command_invocations": 0,
+    "successful_sampling_reads": 1,
+    "first_complete_nodes": 73,
+    "failed_sequence_restoration_qualified": false
+  },
+  "independent_post": {
+    "node_count": 250,
+    "complete": true,
+    "restoration_qualified": true,
+    "post_state_matches_before": true,
+    "automation_disconnected": true,
+    "same_scope": true,
+    "no_future_action_authority": true
+  },
+  "retirement": {
+    "task": 1022,
+    "baseline_tasks": [
+      851
+    ],
+    "after_tasks": [
+      851
+    ],
+    "owned_task_absent": true,
+    "all_original_flow_bindings_and_locks_released": true,
+    "all_target_APK_FDs_closed": 9,
+    "all_six_streaming_APK_sets_identical": true,
+    "parent_terminal_complete": true,
+    "synchronous_child_join_basis": "Original reviewed run_cli completion plus actual parent terminal; individual command receipt bodies not independently reread"
+  },
+  "Main": {
+    "maps_checked": 13,
+    "all_exact_equal": true,
+    "pids_max_preserved": 12288,
+    "full_interval_noninterference_proved": false
+  },
+  "resources": {
+    "owned_peak_bytes": 276152320,
+    "owned_swap_peak_bytes": 0,
+    "owned_memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "business_success_verified": false,
+  "whole_app_production_ready": false,
+  "automatic_retry": false,
+  "raw_UI_exported": false
+}

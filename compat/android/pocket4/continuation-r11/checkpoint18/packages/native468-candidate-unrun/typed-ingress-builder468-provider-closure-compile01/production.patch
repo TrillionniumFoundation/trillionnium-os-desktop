@@ -1,0 +1,364 @@
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -394,7 +394,49 @@
+     )
+ }
+ 
+-fn project_blueprints(p: &mut Projection, source: &Path) -> Result<()> {
++// Keep the original providers needed by the existing complete-framework
++// consumers. Newly selected Motion/screenshot source directories contribute
++// their real library bodies and defaults, not standalone test/demo APKs.
++// The observed SceneTest/StructuredPerf consumer files are never projected here.
++fn typed_ingress_shared_blueprint(relative: &str, original: &str) -> Result<String> {
++    use sha2::{Digest, Sha256};
++    let (bytes, sha, modules): (usize, &str, &[(&str, &str)]) = match relative {
++        "frameworks/base/packages/SystemUI/Android.bp" => (49535,
++            "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3",
++            &[("soong_config_module_type", "systemui_optimized_java_defaults"),
++              ("systemui_optimized_java_defaults", "SystemUI_optimized_defaults"),
++              ("filegroup", "sysui_proguard_common_and_kotlin")]),
++        "platform_testing/libraries/motion/Android.bp" => (2098,
++            "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440",
++            &[("filegroup", "motion_test_template"),
++              ("java_defaults", "MotionTestDefaults"),
++              ("filegroup", "PlatformMotionTesting-srcs"),
++              ("android_library", "PlatformMotionTesting")]),
++        "platform_testing/libraries/screenshot/Android.bp" => (2403,
++            "53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032",
++            &[("android_library", "platform-screenshot-diff-core"),
++              ("java_library", "platform-screenshot-diff-proto")]),
++        _ => return metadata_only(original),
++    };
++    if original.len() != bytes || format!("{:x}", Sha256::digest(original.as_bytes())) != sha {
++        return fail(format!("typed ingress shared provider source changed: {relative}"));
++    }
++    let mut projected = metadata_only(original)?;
++    for (kind, name) in modules {
++        let marker = format!("{kind} {{\n    name: \"{name}\",");
++        if original.matches(&marker).count() != 1 {
++            return fail(format!("typed ingress shared provider declaration changed: {relative}: {name}"));
++        }
++        let start = original.find(&marker).ok_or("shared provider marker missing")?;
++        let end = start + original[start..].find("\n}\n")
++            .ok_or("shared provider stanza unterminated")? + 3;
++        projected.push('\n');
++        projected.push_str(&original[start..end]);
++    }
++    Ok(projected)
++}
++
++fn project_blueprints(p: &mut Projection, source: &Path, typed_ingress: bool) -> Result<()> {
+     // In this exact Android17 sparse product, the original Connectivity Module
+     // SDK is the source for framework-connectivity-b; no source implementation
+     // of framework-connectivity-b is present in the fixed project tree.
+@@ -426,8 +468,22 @@
+         // system-server bootclasspath; only trim unrelated test fixtures.
+     ] {
+         let path = source.join(rel);
+-        p.put(&path, metadata_only(&fs::read_to_string(&path)?)?)?;
++        let original = fs::read_to_string(&path)?;
++        let projected = if typed_ingress {
++            typed_ingress_shared_blueprint(rel, &original)?
++        } else {
++            metadata_only(&original)?
++        };
++        p.put(&path, projected)?;
+     }
++    if typed_ingress {
++        for relative in ["platform_testing/libraries/motion/Android.bp",
++                         "platform_testing/libraries/screenshot/Android.bp"] {
++            let path = source.join(relative);
++            let original = fs::read_to_string(&path)?;
++            p.put(&path, typed_ingress_shared_blueprint(relative, &original)?)?;
++        }
++    }
+     let permission = source.join("packages/modules/Permission/framework-s/Android.bp");
+     let mut text = fs::read_to_string(&permission)?;
+     let mut names = Vec::new();
+@@ -2370,7 +2426,7 @@
+         p.put(&apex, private_without_named_java_module(
+             &original, "apex", "com.android.tethering")?)?;
+     }
+-    project_blueprints(&mut p, source)?;
++    project_blueprints(&mut p, source, typed_ingress)?;
+     if audio_apex_only_build(targets) || minigbm_only_build(targets) {
+         // Select AOSP's original pinned host test-harness jars. Their actual
+         // provider names, classes and platform-proto dependency are unchanged.
+@@ -2764,7 +2820,50 @@
+ #[cfg(test)]
+ mod tests {
+     use super::*;
++
++    const SHARED_PROVIDER_FIXTURES: &[(&str, &str, &str)] = &[
++        ("frameworks/base/packages/SystemUI/Android.bp",
++         include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI.Android.bp"),
++         "f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1"),
++        ("platform_testing/libraries/motion/Android.bp",
++         include_str!("../../../android/native-role-ingress/provider-fixtures/motion.Android.bp"),
++         "23e1392f716fbf78efb7b0ea5281c3cf70b4547b6aa41af8cf79df495eace098"),
++        ("platform_testing/libraries/screenshot/Android.bp",
++         include_str!("../../../android/native-role-ingress/provider-fixtures/screenshot.Android.bp"),
++         "6249d22918a5c2d02a5efc6e20013e75f0eabb0c8e492f40d1e83d4009409007"),
++    ];
++
+     #[test]
++    fn typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata() {
++        use sha2::{Digest, Sha256};
++        for (relative, original, expected_sha) in SHARED_PROVIDER_FIXTURES {
++            let projected = typed_ingress_shared_blueprint(relative, original).unwrap();
++            assert!(projected.starts_with(metadata_only(original).unwrap().as_str()));
++            assert_eq!(&format!("{:x}", Sha256::digest(projected.as_bytes())), expected_sha);
++            assert!(!projected.contains("name: \"SystemUI-core\""));
++            assert!(!projected.contains("name: \"PlatformMotionTestingRoboApplication\""));
++            assert!(!projected.contains("name: \"platform-screenshot-diff-test\""));
++        }
++    }
++
++    #[test]
++    fn typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas() {
++        for (relative, original, _) in SHARED_PROVIDER_FIXTURES {
++            for changed in [original.replacen("name:", "renamed:", 1),
++                            format!("{original}\n"),
++                            format!("{original}{original}")] {
++                assert!(typed_ingress_shared_blueprint(relative, &changed).is_err());
++            }
++        }
++    }
++
++    #[test]
++    fn typed_shared_provider_projection_keeps_other_root_projection_unchanged() {
++        let source = "package {\n    default_applicable_licenses: [\"license\"],\n}\njava_defaults {\n    name: \"other\",\n}\n";
++        assert_eq!(typed_ingress_shared_blueprint("packages/apps/Settings/Android.bp", source).unwrap(),
++                   metadata_only(source).unwrap());
++    }
++    #[test]
+     fn native_engine_mode_rejects_widening_before_command_mutation() {
+         for targets in [
+             &[][..], &["berberis_arm64_host_tests"][..], &["droidloom-native-bridge"][..],
+--- a/tools/droidloom-update/src/native_role_ingress.rs
++++ b/tools/droidloom-update/src/native_role_ingress.rs
+@@ -15,15 +15,24 @@
+ 
+ pub const TARGETS: &[&str] = &["framework-minus-apex", "libandroid_runtime"];
+ const ORIGINAL_LOCK: &str = "android/manifest/m2-sparse-source-lock.json";
+-const SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-source-lock.json";
++const PREVIOUS_SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-source-lock.json";
++const SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-provider-source-lock.json";
+ const ORIGINAL_LOCK_BYTES: usize = 84522;
+ const ORIGINAL_LOCK_SHA: &str =
+     "4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178";
+ // Derived from the three observed fixed-commit root trees. Structural extension
+ // checks alone cannot prove that an appended directory was actually observed.
+-const SOURCE_LOCK_BYTES: usize = 86293;
+-const SOURCE_LOCK_SHA: &str =
++const PREVIOUS_SOURCE_LOCK_BYTES: usize = 86293;
++const PREVIOUS_SOURCE_LOCK_SHA: &str =
+     "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54";
++// Exact upstream provider closure, independently checked against the previous typed lock.
++const SOURCE_LOCK_BYTES: usize = 87139;
++const SOURCE_LOCK_SHA: &str = "3150cba593f2fb9117244d4ebc92d046abaa3f2c5a4f4ae7e45ba2455b2f1e91";
++const PROVIDER_EXTENSIONS: &[(&str, &[&str])] = &[
++    ("platform_testing", &["libraries/motion/src", "libraries/motion/compose/src", "libraries/motion/compose/values/src", "libraries/screenshot/src/main", "libraries/screenshot/proto", "libraries/uiautomator-helpers/src"]),
++    ("prebuilts/sdk", &["current/androidx"]),
++];
++const PROVIDER_ADDITIONS_JSON: &str = r#"[{"path":"external/kotlinx.coroutines","name":"platform/external/kotlinx.coroutines","commit":"16161f019a518241332c1cad686a3e9404c0d5cf","purpose":"Exact Android 17 superproject coroutine providers for real AndroidX and StructuredConcurrencyPerf dependencies"},{"path":"external/kotlinx.atomicfu","name":"platform/external/kotlinx.atomicfu","commit":"867bc63054d694773bd0aef56eeb51296f2f6b03","purpose":"Exact Android 17 superproject atomicfu source required by the real coroutine provider"}]"#;
+ const PATCH: &str = "android/native-role-ingress/typed-ingress02-framework.patch";
+ const PATCH_BYTES: usize = 17019;
+ const PATCH_SHA: &str =
+@@ -192,6 +201,54 @@
+     Ok(())
+ }
+ 
++
++fn validate_provider_lock_extension(previous: &Value, expanded: &Value) -> Result<()> {
++    let mut expected = previous.clone();
++    let projects = expected.get_mut("projects").and_then(Value::as_array_mut)
++        .ok_or("previous typed lock lacks projects")?;
++    for (path, additions) in PROVIDER_EXTENSIONS {
++        let indices: Vec<_> = projects.iter().enumerate()
++            .filter(|(_, project)| project.get("path").and_then(Value::as_str) == Some(*path))
++            .map(|(index, _)| index).collect();
++        if indices.len() != 1 || additions.is_empty() {
++            return fail("provider closure requires exactly one existing locked project");
++        }
++        let paths = projects[indices[0]].get_mut("sparse_paths").and_then(Value::as_array_mut)
++            .ok_or("provider closure project has no existing sparse selection")?;
++        for addition in *additions {
++            let value = Value::String((*addition).to_owned());
++            if paths.contains(&value) {
++                return fail("provider closure repeats an existing sparse path");
++            }
++            paths.push(value);
++        }
++        if paths.len() > 256 {
++            return fail("provider closure exceeds the existing bounded sparse selection");
++        }
++    }
++    let additions: Vec<Value> = serde_json::from_str(PROVIDER_ADDITIONS_JSON)?;
++    for addition in additions {
++        let path = addition.get("path").and_then(Value::as_str)
++            .ok_or("provider addition lacks an exact path")?;
++        if projects.iter().any(|project| project.get("path").and_then(Value::as_str) == Some(path)) {
++            return fail("provider closure replaces an existing project");
++        }
++        projects.push(addition);
++    }
++    if &expected != expanded {
++        return fail("provider closure changed the exact previous lock or its fixed upstream additions");
++    }
++    Ok(())
++}
++
++fn materialized_lock_is_previous(value: &Value) -> Result<bool> {
++    match value.get("source_lock_sha256").and_then(Value::as_str) {
++        Some(SOURCE_LOCK_SHA) => Ok(false),
++        Some(PREVIOUS_SOURCE_LOCK_SHA) => Ok(true),
++        _ => fail("typed provider source workspace belongs to neither exact permitted typed lock"),
++    }
++}
++
+ pub fn source_lock_path(repo: &Path) -> Result<PathBuf> {
+     let original = fixed_file(&repo.join(ORIGINAL_LOCK), Pin {
+         bytes: ORIGINAL_LOCK_BYTES, sha256: ORIGINAL_LOCK_SHA,
+@@ -200,7 +257,12 @@
+     let expanded = fixed_file(&path, Pin {
+         bytes: SOURCE_LOCK_BYTES, sha256: SOURCE_LOCK_SHA,
+     })?;
+-    validate_lock_extension(&serde_json::from_slice(&original)?, &serde_json::from_slice(&expanded)?)?;
++    let previous = fixed_file(&repo.join(PREVIOUS_SOURCE_LOCK), Pin {
++        bytes: PREVIOUS_SOURCE_LOCK_BYTES, sha256: PREVIOUS_SOURCE_LOCK_SHA,
++    })?;
++    let previous_value: Value = serde_json::from_slice(&previous)?;
++    validate_lock_extension(&serde_json::from_slice(&original)?, &previous_value)?;
++    validate_provider_lock_extension(&previous_value, &serde_json::from_slice(&expanded)?)?;
+     // The normal source library validates the full lock schema, exact revisions,
+     // URL policy, path bounds and every materialized Git project separately.
+     droidloom_source::load_lock(&path)?;
+@@ -217,8 +279,21 @@
+         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+         Err(error) => Err(error.into()),
+         Ok(metadata) if metadata.is_dir() && !metadata.file_type().is_symlink() => {
+-            // Do not mutate a materialization still belonging to the old lock.
+-            droidloom_source::verify_materialized(lock_path, lock, source)?;
++            // Select the exact current or previous independent typed lock before
++            // running its complete verifier. A dirty/mismatched previous tree never
++            // falls back to the new lock; the original shared sparse lock stays blocked.
++            let manifest: Value = serde_json::from_slice(&bounded_file(
++                &source.join(".droidloom-source-manifest.json"), 1024 * 1024)?)?;
++            if materialized_lock_is_previous(&manifest)? {
++                let previous_path = lock_path.with_file_name("m2-role-ingress-source-lock.json");
++                fixed_file(&previous_path, Pin {
++                    bytes: PREVIOUS_SOURCE_LOCK_BYTES, sha256: PREVIOUS_SOURCE_LOCK_SHA,
++                })?;
++                let previous = droidloom_source::load_lock(&previous_path)?;
++                droidloom_source::verify_materialized(&previous_path, &previous, source)?;
++            } else {
++                droidloom_source::verify_materialized(lock_path, lock, source)?;
++            }
+             Ok(())
+         }
+         Ok(_) => fail("typed ingress source workspace is not a real directory"),
+@@ -310,6 +385,8 @@
+         "schema": 1, "targets": selected_targets, "dependency_mode": "Strict",
+         "source_lock": lock, "source_lock_sha256": hash(&lock)?,
+         "original_source_lock_sha256": ORIGINAL_LOCK_SHA,
++        "previous_typed_source_lock_sha256": PREVIOUS_SOURCE_LOCK_SHA,
++        "provider_source_lock_extension_exact": true,
+         "typed_ingress_sources": INPUTS, "unchanged_framework_module_definitions": BLUEPRINTS,
+         "source_projection": projection_inventory,
+         "required_compiled_Java_sources": ["frameworks/base/core/java/com/android/internal/os/Zygote.java",
+@@ -361,7 +438,10 @@
+         let original = fixed_file(&repo.join(ORIGINAL_LOCK), Pin {
+             bytes: ORIGINAL_LOCK_BYTES, sha256: ORIGINAL_LOCK_SHA,
+         }).unwrap();
+-        let expanded = fixed_file(&repo.join(SOURCE_LOCK), Pin {
++        let expanded = fixed_file(&repo.join(PREVIOUS_SOURCE_LOCK), Pin {
++            bytes: PREVIOUS_SOURCE_LOCK_BYTES, sha256: PREVIOUS_SOURCE_LOCK_SHA,
++        }).unwrap();
++        let current = fixed_file(&repo.join(SOURCE_LOCK), Pin {
+             bytes: SOURCE_LOCK_BYTES, sha256: SOURCE_LOCK_SHA,
+         }).unwrap();
+         let original_value: Value = serde_json::from_slice(&original).unwrap();
+@@ -377,14 +457,80 @@
+         let manifest = scratch.path().join("android/manifest");
+         fs::create_dir_all(&manifest).unwrap();
+         fs::write(scratch.path().join(ORIGINAL_LOCK), &original).unwrap();
+-        fs::write(scratch.path().join(SOURCE_LOCK), serde_json::to_vec_pretty(&changed).unwrap())
++        fs::write(scratch.path().join(SOURCE_LOCK), current).unwrap();
++        fs::write(scratch.path().join(PREVIOUS_SOURCE_LOCK), serde_json::to_vec_pretty(&changed).unwrap())
+             .unwrap();
+         let error = source_lock_path(scratch.path()).unwrap_err().to_string();
+-        assert!(error.contains(SOURCE_LOCK));
++        assert!(error.contains(PREVIOUS_SOURCE_LOCK));
+         assert!(error.contains("typed ingress fixed input bytes differ")
+             || error.contains("typed ingress input type or bound differs"));
+         assert!(!scratch.path().join("aosp-source").exists());
+         assert!(!scratch.path().join("source-projection.json").exists());
+         assert_eq!(fs::read(scratch.path().join(ORIGINAL_LOCK)).unwrap(), original);
+     }
++
++    #[test]
++    fn provider_extension_rejects_unlisted_path_commit_metadata_or_project_change() {
++        let repo = repository();
++        let previous: Value = serde_json::from_slice(&fs::read(repo.join(PREVIOUS_SOURCE_LOCK)).unwrap()).unwrap();
++        let expanded: Value = serde_json::from_slice(&fs::read(repo.join(SOURCE_LOCK)).unwrap()).unwrap();
++        validate_provider_lock_extension(&previous, &expanded).unwrap();
++        let mut changed = expanded.clone();
++        changed["projects"][0]["commit"] = Value::String("0000000000000000000000000000000000000000".to_owned());
++        assert!(validate_provider_lock_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        changed["status"] = Value::String("unqualified-metadata-change".to_owned());
++        assert!(validate_provider_lock_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        changed["projects"].as_array_mut().unwrap().pop();
++        assert!(validate_provider_lock_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        let project = changed["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|project| project["path"] == PROVIDER_EXTENSIONS[0].0).unwrap();
++        project["sparse_paths"].as_array_mut().unwrap()
++            .push(Value::String("unobserved-provider-path".to_owned()));
++        assert!(validate_provider_lock_extension(&previous, &changed).is_err());
++    }
++
++    #[test]
++    fn published_workspace_selects_only_exact_current_or_previous_typed_lock() {
++        assert!(!materialized_lock_is_previous(&serde_json::json!({"source_lock_sha256": SOURCE_LOCK_SHA})).unwrap());
++        assert!(materialized_lock_is_previous(&serde_json::json!({"source_lock_sha256": PREVIOUS_SOURCE_LOCK_SHA})).unwrap());
++        for value in [serde_json::json!({"source_lock_sha256": ORIGINAL_LOCK_SHA}),
++                      serde_json::json!({"source_lock_sha256": "unknown"}),
++                      serde_json::json!({}), serde_json::json!(null)] {
++            assert!(materialized_lock_is_previous(&value).is_err());
++        }
++    }
++
++
++    #[test]
++    fn previous_typed_manifest_does_not_bypass_fresh_project_verification() {
++        let repo = repository();
++        let current_path = source_lock_path(&repo).unwrap();
++        let current = droidloom_source::load_lock(&current_path).unwrap();
++        let previous = droidloom_source::load_lock(&repo.join(PREVIOUS_SOURCE_LOCK)).unwrap();
++        let scratch = tempfile::tempdir().unwrap();
++        let source = scratch.path().join("aosp-source");
++        fs::create_dir(&source).unwrap();
++        let manifest = serde_json::to_vec_pretty(&serde_json::json!({
++            "schema_version": 1,
++            "source_lock_sha256": PREVIOUS_SOURCE_LOCK_SHA,
++            "plan": droidloom_source::build_plan(&previous).unwrap(),
++        })).unwrap();
++        let manifest_path = source.join(".droidloom-source-manifest.json");
++        fs::write(&manifest_path, &manifest).unwrap();
++        // The manifest exactly selects the previous lock. The first missing
++        // project still reaches and fails the real Git verifier, with no
++        // reconcile, mutation, or fallback to current-lock qualification.
++        let error = verify_source_workspace(&current_path, &current, &source).unwrap_err();
++        match error.downcast_ref::<droidloom_source::SourceError>() {
++            Some(droidloom_source::SourceError::Command { program, .. }) => assert_eq!(program, "git"),
++            other => panic!("expected fresh missing-checkout verification, got {other:?}"),
++        }
++        assert_eq!(fs::read(&manifest_path).unwrap(), manifest);
++        assert_eq!(fs::read_dir(&source).unwrap().count(), 1);
++        assert!(!scratch.path().join("source-projection.json").exists());
++    }
++
+ }

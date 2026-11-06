@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "actual_job": "1a1aecb3d1b-fc05-6279",
+  "status": "FAILED",
+  "exit_status": 1,
+  "stdout_complete": true,
+  "no_timeout": true,
+  "five_original_tree": "b4cbe28e9353b5eb66af77d97ccb4684e264663b",
+  "navigation": {
+    "bytes": 26691,
+    "sha256": "124bc3aa809ee820ef9905b43ecb2bf155d94661dca0b1313a4a7e6eba82b5a1",
+    "git_blob": "7427d86a867c8ef58d2e2a6a81813bd5cdffcc72"
+  },
+  "first_error": {
+    "phase": "first pre-action stability inspection",
+    "helper_error": "TREE_CHANGED_NULL_CHILD",
+    "inspection_nonce": "73763cf7099658b144fa1299d03754af",
+    "complete": false,
+    "attempted_nodes": 125,
+    "emitted_nodes": 125,
+    "max_depth": 17,
+    "max_children": 6,
+    "capture_ms": 971,
+    "helper_action_attempted": false,
+    "helper_outcome_unknown": false,
+    "worker_action_attempted": false,
+    "worker_outcome_unknown": false,
+    "worker_business_outcome_unknown": true
+  },
+  "failed_sequence": {
+    "after_state_completed": true,
+    "post_state_matches_before": true,
+    "restoration_qualified": false
+  },
+  "independent_final_post": {
+    "completed": true,
+    "restoration_qualified": true
+  },
+  "cleanup": {
+    "owned_task": 1023,
+    "retired": true,
+    "preserved_tasks": [
+      851
+    ],
+    "actual_cleanup": {
+      "bytes": 448,
+      "sha256": "48a1eb931a39731575f6e7c54502121a703d347425bd4efce68f753e9dd9736e",
+      "git_blob": "f92218a3988324f58f5e2339d5d48a12fcc74b39"
+    },
+    "parent_UI_release_review_tree": "359d80496b5d67e788d1760180a0a37134d79a75"
+  },
+  "inference": {
+    "no_complete_sample_reached_the_8_read_gate": true,
+    "more_sampling_reads_do_not_repair_this_first_capture_failure": true,
+    "event_quiet_gate_is_a_candidate_not_a_cause_proof": true,
+    "no_popup_auto_hide_network_or_focus_cause_assumed": true,
+    "old_failure_not_reclassified_or_replayed": true
+  }
+}

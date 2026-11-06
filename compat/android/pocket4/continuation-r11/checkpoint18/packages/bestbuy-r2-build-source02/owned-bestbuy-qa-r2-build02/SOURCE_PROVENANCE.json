@@ -1,0 +1,284 @@
+{
+  "schema": 1,
+  "change": "Isolated BestBuy R2 fixed depth128 and corresponding exact path consumers; complete original walker retained",
+  "root_request_scope": "BestBuy R2 complete-tree depth repair; source/build candidate only. Root sole Hepta.",
+  "baseline_manifest": {
+    "path": "owned-bestbuy-qa-r1-build01/source/SOURCE_PINS.json",
+    "bytes": 1461,
+    "sha256": "1dc5ae021d8b4d3165ac81dd09aef7035651118a9a81380139bdd1caaef668f8",
+    "git_blob_sha1": "27229c7f142fb484ec213fcaaa204c2f114b575a"
+  },
+  "baseline_files": {
+    "AndroidManifest.xml": {
+      "bytes": 728,
+      "sha256": "5ff75faf1cf3f71af671cf96dfa676099c3703a5f2aa37f8d964b981ecc72de1",
+      "git_blob_sha1": "aa095a937c565376167f9f7a1fce0f66a5606e8c"
+    },
+    "README.md": {
+      "bytes": 2208,
+      "sha256": "58262e2f78752fd6f29938d3fc0abffdfd65af3401215c58d934f239e36d1a44",
+      "git_blob_sha1": "d189f4b287c9724122605a97973347ebecb2f84a"
+    },
+    "build-input-reference.json": {
+      "bytes": 3562,
+      "sha256": "402227f537a76a61c0a67c59b896db268dbd5bf59afbed182b1240f649042255",
+      "git_blob_sha1": "31a83ff13971444bd2a5c8c4f7452ead9bd4d29d"
+    },
+    "build_candidate.py": {
+      "bytes": 18037,
+      "sha256": "e7a8b39b70fa5d62f2cee9a21e73d44d35b5eba1aa0fdbe22464934b2ca553bb",
+      "git_blob_sha1": "840f6fa8e9dfee17810c18c7fc4f4038251dade5"
+    },
+    "make_build_request.py": {
+      "bytes": 2942,
+      "sha256": "fb6aa91aa7b8874fea6d0682f45223674386d5516744fa9fc4211c7d478b4151",
+      "git_blob_sha1": "0281172d11ba839bf404bef96b51c3edbe6527df"
+    },
+    "qa_adapter.py": {
+      "bytes": 20819,
+      "sha256": "ba7b2a87301c9753a5d23b7aa384f918488e4943002ed682552ce8e9ddd2283f",
+      "git_blob_sha1": "ba62a4c0ed06be1d40c10cb5733370fafc113d69"
+    },
+    "qa_contract.py": {
+      "bytes": 28173,
+      "sha256": "e751f26cba0e02258427216fdc69fb8cbfdd673623148c3700ea2dbe35364195",
+      "git_blob_sha1": "1228d572bd50760f774b4360efaab590fc322f0c"
+    },
+    "src/org/droidloom/qa/bestbuy/r1/ActionRunner.java": {
+      "bytes": 41458,
+      "sha256": "0bcb7cfdbf1b90af84c21503b17f4b593c4d877db1df484301e68dbce50d2864",
+      "git_blob_sha1": "018fdf262397f50fd88ec750163113c23b28daa1"
+    },
+    "stage_build.py": {
+      "bytes": 7563,
+      "sha256": "75c51dc864f0c74df182380c37b156ac29d66f023cefeeb9fd2434fac24150c2",
+      "git_blob_sha1": "bbbf94cdfc5b8bdd8a66aa14733bed4a4591e61f"
+    },
+    "target-artifact-reference.json": {
+      "bytes": 3087,
+      "sha256": "b6d66a9f78fc7e9b5a9e6792d62531b835e25a4d8a4b1b4607463e40bae7f43a",
+      "git_blob_sha1": "747a4998469b2d3f715c2cbfd75327c67b8f019f"
+    }
+  },
+  "actual_failure_safe_review": {
+    "path": "evidence/bestbuy-content-readiness01-five-read01/root-actual-review.json",
+    "bytes": 3164,
+    "sha256": "b1aa3358b5b9efe4b4562d970554ba2fffd3d719b539ab6407cf90ec525545e2",
+    "git_blob_sha1": "b7255f30b445a7fc0cea78e46cffb0fdeb865091",
+    "mode": "100644",
+    "encoding": "utf-8",
+    "existing_git_object": false,
+    "origin_kind": "explicitly authorized pinned Root addendum after primary cut",
+    "explicit_postcut_addendum": 1
+  },
+  "transformations": [
+    {
+      "file": "AndroidManifest.xml",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "org.droidloom.qa.bestbuy.r1",
+      "to": "org.droidloom.qa.bestbuy.r2",
+      "occurrences": 3
+    },
+    {
+      "file": "build_candidate.py",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "org.droidloom.qa.bestbuy.r1",
+      "to": "org.droidloom.qa.bestbuy.r2",
+      "occurrences": 2
+    },
+    {
+      "file": "build_candidate.py",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "org/droidloom/qa/bestbuy/r1",
+      "to": "org/droidloom/qa/bestbuy/r2",
+      "occurrences": 2
+    },
+    {
+      "file": "build_candidate.py",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "owned-bestbuy-qa-r1",
+      "to": "owned-bestbuy-qa-r2",
+      "occurrences": 3
+    },
+    {
+      "file": "build_candidate.py",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "BestBuy QA R1",
+      "to": "BestBuy QA R2",
+      "occurrences": 1
+    },
+    {
+      "file": "make_build_request.py",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "owned-bestbuy-qa-r1",
+      "to": "owned-bestbuy-qa-r2",
+      "occurrences": 1
+    },
+    {
+      "file": "qa_adapter.py",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "org.droidloom.qa.bestbuy.r1",
+      "to": "org.droidloom.qa.bestbuy.r2",
+      "occurrences": 1
+    },
+    {
+      "file": "qa_adapter.py",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "org/droidloom/qa/bestbuy/r1",
+      "to": "org/droidloom/qa/bestbuy/r2",
+      "occurrences": 1
+    },
+    {
+      "file": "qa_contract.py",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "org.droidloom.qa.bestbuy.r1",
+      "to": "org.droidloom.qa.bestbuy.r2",
+      "occurrences": 1
+    },
+    {
+      "file": "qa_contract.py",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "pocket4-owned-bestbuy-qa-v1",
+      "to": "pocket4-owned-bestbuy-qa-v2",
+      "occurrences": 1
+    },
+    {
+      "file": "src/org/droidloom/qa/bestbuy/r1/ActionRunner.java",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "org.droidloom.qa.bestbuy.r1",
+      "to": "org.droidloom.qa.bestbuy.r2",
+      "occurrences": 2
+    },
+    {
+      "file": "src/org/droidloom/qa/bestbuy/r1/ActionRunner.java",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "pocket4-owned-bestbuy-qa-v1",
+      "to": "pocket4-owned-bestbuy-qa-v2",
+      "occurrences": 1
+    },
+    {
+      "file": "stage_build.py",
+      "label": "isolated namespace/path/protocol/signing",
+      "from": "owned-bestbuy-qa-r1",
+      "to": "owned-bestbuy-qa-r2",
+      "occurrences": 2
+    },
+    {
+      "label": "Java fixed depth and matching path bound",
+      "from": "static final int MAX_NODES = 512, MAX_DEPTH = 32, MAX_CHILDREN = 64;",
+      "to": "static final int MAX_NODES = 512, MAX_DEPTH = 128, MAX_CHILDREN = 64;\n    static final String NODE_PATH_PATTERN = \"0(?:/[0-9]{1,2}){0,\" + MAX_DEPTH + \"}\";\n    static final int MAX_NODE_PATH = 1 + 3 * MAX_DEPTH;",
+      "occurrences": 1
+    },
+    {
+      "label": "Java bound exact deepest possible path",
+      "from": "String path = string(request, \"node_path\", 160);",
+      "to": "String path = string(request, \"node_path\", MAX_NODE_PATH);",
+      "occurrences": 1
+    },
+    {
+      "label": "Java action path uses same depth",
+      "from": "path.matches(\"0(?:/[0-9]{1,2}){0,32}\")",
+      "to": "path.matches(NODE_PATH_PATTERN)",
+      "occurrences": 1
+    },
+    {
+      "label": "Python fixed depth and same path pattern",
+      "from": "MAX_DEPTH = 32",
+      "to": "MAX_DEPTH = 128\nNODE_PATH_PATTERN = r'0(?:/[0-9]{1,2}){0,%d}' % MAX_DEPTH",
+      "occurrences": 1
+    },
+    {
+      "label": "Both Python path consumers use same depth",
+      "from": "re.fullmatch(r'0(?:/[0-9]{1,2}){0,32}',",
+      "to": "re.fullmatch(NODE_PATH_PATTERN,",
+      "occurrences": 2
+    },
+    {
+      "label": "R2 helper must differ from actual R1 UID",
+      "from": "10184, 10190, 10137, 10196)",
+      "to": "10184, 10190, 10137, 10196, 10198)",
+      "occurrences": 1
+    },
+    {
+      "label": "Adapter requires real new control gate",
+      "from": "BUILD_COMMANDS = ['javac','d8'",
+      "to": "BUILD_COMMANDS = ['javac','deep-tree-contract','d8'",
+      "occurrences": 1
+    },
+    {
+      "label": "R2 Session excludes actual R1 UID",
+      "from": "10184,10190,10137,10196)",
+      "to": "10184,10190,10137,10196,10198)",
+      "occurrences": 1
+    },
+    {
+      "label": "New helper version2",
+      "from": "android:versionCode=\"1\" android:versionName=\"1\"",
+      "to": "android:versionCode=\"2\" android:versionName=\"2\"",
+      "occurrences": 1
+    },
+    {
+      "label": "Builder validates version2",
+      "from": "ATTR+'versionCode':'1', ATTR+'versionName':'1'",
+      "to": "ATTR+'versionCode':'2', ATTR+'versionName':'2'",
+      "occurrences": 1
+    },
+    {
+      "label": "Actual APK version2 badging gate",
+      "from": "b\"package: name='org.droidloom.qa.bestbuy.r2' versionCode='1'\"",
+      "to": "b\"package: name='org.droidloom.qa.bestbuy.r2' versionCode='2'\"",
+      "occurrences": 1
+    },
+    {
+      "label": "New pure protocol gate under original build deadline",
+      "from": "        classes = sorted((OUTPUT/'classes').rglob('*.class'))",
+      "to": "        controls = json.loads(command('deep-tree-contract',\n            [sys.executable, '-I', '-B', str(HERE/'controls/check_deep_tree.py')], 20))\n        require(controls.get('state') == 'PASS_PROTOCOL_CONTROLS_ONLY' and\n                controls.get('cases') == 16 and controls.get('max_depth') == 128 and\n                controls.get('Java_scanner_executed') is False and controls.get('Android_actions') == 0,\n                'actual complete-tree protocol controls did not finish')\n        result['deep_tree_protocol_controls'] = controls\n        classes = sorted((OUTPUT/'classes').rglob('*.class'))",
+      "occurrences": 1
+    },
+    {
+      "label": "Fresh exact build key",
+      "from": "pocket4-owned-bestbuy-qa-r2-static-build-01-20261105",
+      "to": "pocket4-owned-bestbuy-qa-r2-static-build-01-20261106",
+      "occurrences": 1
+    }
+  ],
+  "source_manifest": {
+    "bytes": 1610,
+    "sha256": "f7f13e75bf38518581581a2851714a3bb67a169dddeec1d444de2150398f01f9",
+    "git_blob_sha1": "1dd7f56947f82f623b48be7a1263a0d810550cbd"
+  },
+  "request": {
+    "bytes": 161189,
+    "sha256": "59600a4bc5ee961612d00a42b36647e02c200914d264f3927f9d31ae70fe4976",
+    "git_blob_sha1": "46d8c98b5e6d04d9de1fbb017fef75dc15642611"
+  },
+  "actual_build_result": null,
+  "actual_APK": null,
+  "actual_signer": null,
+  "actual_installed_UID": null,
+  "original_failure_preserved": true,
+  "parent_freeze": {
+    "tree": "bc2dc490c9e2d801237a58044f607ece7bb25e4b",
+    "prefix": "owned-bestbuy-qa-r2-build01",
+    "source_manifest": {
+      "bytes": 1610,
+      "sha256": "5a221c4bb0180dca6024b9e8787d6455976e59c29ccb84b7273bde19a196edb5",
+      "git_blob_sha1": "9d4f71a9e0e1d5b426f46d00961ca384837cfb09"
+    },
+    "request": {
+      "bytes": 161087,
+      "sha256": "0095b9267da91b73632dccbfcae3076b39dd9113b141c4888416eccd18168846",
+      "git_blob_sha1": "bff37c309a3f64ff195897c1d6e5feec73a7da9b"
+    },
+    "not_submitted_confirmed_by_Root": true
+  },
+  "new_revision_reason": "Isolate the actual-old-R1 UID negative control; no production gate relaxation",
+  "source_changes": [
+    "build_candidate.py",
+    "controls/check_deep_tree.py",
+    "make_build_request.py",
+    "stage_build.py"
+  ],
+  "source_root": "/home/alex/work/pocket4-owned-bestbuy-qa-r2-source-02",
+  "build_root": "/home/alex/work/pocket4-owned-bestbuy-qa-r2-build-02"
+}

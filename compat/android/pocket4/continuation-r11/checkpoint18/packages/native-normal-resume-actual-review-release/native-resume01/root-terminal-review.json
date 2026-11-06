@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_FAILED_BUILD_WITH_OWNED_CLEANUP_AND_PINNED_PRE_POST_MAIN_FENCES_VERIFIED",
+  "original_job": "1a1ae6b5a97-fc05-5f81",
+  "reader_job": "1a1aea90696-fc05-60ec",
+  "terminal_evidence_tree": "dfcbbb314e3eda721166c347837b509419a86385",
+  "original_pair_tree": "0ba8dd91447b525a3a206e92d57bb02bf15508d9",
+  "inner": {
+    "bytes": 2246,
+    "sha256": "80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc",
+    "blob": "48d47a11f90bc0159ddfd50e5d8ee88509de359b"
+  },
+  "outer": {
+    "bytes": 1150,
+    "sha256": "2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059",
+    "blob": "a5b9085ba6d2b68205f7dc078e470742e17fd06c"
+  },
+  "builder_exit": 1,
+  "original_failure_preserved": true,
+  "cleanup": {
+    "complete": true,
+    "children": [
+      {
+        "pid": 3779001,
+        "wait_status": 65280,
+        "reaped": true
+      }
+    ],
+    "errors": []
+  },
+  "cleanup_success_basis": "original controller returns complete only after re-enumerating owned children empty; successful branch does not add a remaining field",
+  "independent_agent_source_and_original_review": true,
+  "owned_resource_gate": {
+    "pass": true,
+    "events": {
+      "low": 0,
+      "high": 0,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "owned_oom_kills_zero": true
+  },
+  "owned_memory_peak_bytes": "7947964416",
+  "owned_swap_peak_bytes": "50835456",
+  "input_after_qualified": true,
+  "input_after_error": null,
+  "main_fence_assessment": {
+    "main_fence_pass": true,
+    "identity_or_limit_changes": [],
+    "main_memory_event_deltas": {
+      "low": 0,
+      "high": 602,
+      "max": 0,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0,
+      "sock_throttled": 0
+    },
+    "main_oom_delta_zero": true,
+    "main_current_resource_deltas": {
+      "memory.current": -1395978240,
+      "memory.swap.current": 691728384,
+      "pids.current": -90
+    },
+    "pressure_counter_increases_observed": {
+      "high": 602
+    },
+    "unobserved_transient_effects_excluded": false,
+    "causal_attribution_of_counter_changes": false,
+    "scope": "Only the pinned pre/post invariants and OOM deltas are gated; full interval absence of interference is not claimed."
+  },
+  "complete_framework_Java_and_Android_TU_qualified": false,
+  "normal_command_completion_gate": null,
+  "source_projection_journal_present": false,
+  "root_cause": "PENDING_BOUND_BUILD_LOG_READBACK",
+  "runtime_authorization_enabled": false,
+  "all_apps_production_ready": false
+}

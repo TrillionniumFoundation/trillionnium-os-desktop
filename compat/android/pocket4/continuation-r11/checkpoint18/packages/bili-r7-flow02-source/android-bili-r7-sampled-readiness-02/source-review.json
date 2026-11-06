@@ -1,0 +1,426 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_43_CONTROLS_BOUND_FRESH_R7_SOURCE_UI_UNRUN",
+  "root": "/home/alex/work/pocket4-bilibili-r7-pause-resume-02",
+  "nonce": "0161aa1feec983e21497a3cd019876b6",
+  "stable_key": "pocket4-bilibili-r7-player-button02-20261106",
+  "actual_controls_job": "1a1aec342c5-fc05-621c",
+  "actual_controls_stdout": {
+    "bytes": 9670,
+    "sha256": "03bc288ca4f2395375007fd6d05301be2fde080f41d7f4de072c1504d5f76f87",
+    "git_blob": "9acdd80b1a8c59964f14af73db8b09c8e208787d",
+    "direct_bytes_sha_verified": true
+  },
+  "actual_python_control_cases": [
+    "unbound_template_cannot_pass_plan_admission",
+    "valid_bound_plan_and_unchanged_later_budgets",
+    "seven_first_reads_rejected",
+    "nine_first_reads_rejected",
+    "query_budget_change_rejected",
+    "submit_budget_change_rejected",
+    "input_in_sampling_rejected",
+    "duplicate_sampling_nonce_rejected",
+    "old_state_nonce_rejected",
+    "result_read_budget_unchanged",
+    "public_query_constraint_unchanged",
+    "unchanged_function_source_and_remaining_module_ast",
+    "three_samples_exact_span",
+    "three_fast_samples_do_not_qualify",
+    "two_samples_even_long_span_do_not_qualify",
+    "span_3999_is_insufficient",
+    "fourth_read_change_can_qualify_seventh",
+    "fifth_read_change_can_qualify_eighth",
+    "old_key_return_starts_new_run",
+    "full_key_tree_change_resets_run",
+    "full_key_window_change_resets_run",
+    "full_key_count_change_resets_run",
+    "full_key_foreground_change_resets_run",
+    "full_key_state_change_resets_run",
+    "installed_before_failure_stops_without_retry",
+    "installed_after_failure_stops_without_retry",
+    "restoration_failure_stops_without_retry",
+    "after_state_failure_stops_without_retry",
+    "read_failure_stops_without_retry",
+    "assessment_failure_stops_without_retry",
+    "capture_order_reversal_rejected",
+    "deadline_after_read_prevents_qualification",
+    "deadline_before_read_stops_next_read",
+    "exact_deadline_is_inclusive",
+    "eight_nonmatching_samples_exhaust_budget",
+    "durable_new_sampling_gate_accepts_exact_valid_summary",
+    "durable_old_maximum_rejected",
+    "durable_old_deadline_rejected",
+    "durable_only_two_matches_rejected",
+    "durable_short_span_rejected",
+    "durable_future_guard_must_remain",
+    "unknown_outcome_must_not_be_relabelled",
+    "whole_business_success_must_stay_false"
+  ],
+  "actual_control_count": 43,
+  "original_and_template_full_source_compile": true,
+  "final_actual_nonce_bound_navigation_compile_before_root_literal_change": true,
+  "final_compile_after_only_root_literal_change_performed": false,
+  "runtime_other_five_inverse_literal_exact": true,
+  "exact_production_function_controls_with_synthetic_sessions": true,
+  "raw_private_UI_or_real_qa_parser_executed_by_controls": false,
+  "all146_fresh_nonces_from_actual_secrets_pool": true,
+  "nonce_closure_exact": true,
+  "nonce_generation_not_used_as_readiness_fix": true,
+  "functional_changes": [
+    "first-search observation plans 4 to 8",
+    "first-search sampling deadline 12 to 20 seconds",
+    "at least 3 consecutive equal original complete keys",
+    "sampled span first matching capture end to latest capture start at least 4000 ms",
+    "monotonic nonoverlapping capture order",
+    "durable success verifies new sampling qualifiers"
+  ],
+  "query_and_submit_budgets_unchanged": {
+    "maximum_sequences": 4,
+    "deadline_seconds": 12
+  },
+  "key_fields": [
+    "tree_sha256",
+    "window_sha256",
+    "node_count",
+    "foreground",
+    "accessibility_state"
+  ],
+  "source_and_runtime_guard_proof": {
+    "schema": 1,
+    "state": "ACTUAL_43_PYTHON_CONTROLS_PASS_FINAL_NONCES_BOUND",
+    "original_request": {
+      "git_blob": "e7387f3a655cb957e47dcfea25b55efd9e0bdd08",
+      "bytes": 131286,
+      "sha256": "6a3d4cd3f9382351506dc7f86a43658a3d309b8e8efc34bfc00a5382360a07a0"
+    },
+    "original_navigation": {
+      "bytes": 58144,
+      "sha256": "14c72e48693aba988d78258851f534302f3898c519cf94bf20ae2f8997c5de6b"
+    },
+    "template_navigation": {
+      "bytes": 59902,
+      "sha256": "98c90a686bfac4b3369e31d568e6742017a638d6f6a9674b5e9cec0dd6bc856c"
+    },
+    "original_stdin": {
+      "bytes": 128335,
+      "sha256": "177b55e3d0a9468d1d755ada8b90201822642f59b28e88710a14ca7841f8eada"
+    },
+    "changed_functions": [
+      "fixed_plan",
+      "stable_before_click",
+      "durable_phase"
+    ],
+    "unchanged_function_exact_bytes": [
+      {
+        "name": "require",
+        "bytes": 71,
+        "sha256": "56fec8fba75e2e5027a669b5412d31f8bb291469abf5dc7909ebcbdb88ccc43c"
+      },
+      {
+        "name": "sha",
+        "bytes": 54,
+        "sha256": "68c4e8934a2faac3bfc256a840af123fb2783fd1b7fadc085eeb3fd4bc4b15f0"
+      },
+      {
+        "name": "read",
+        "bytes": 950,
+        "sha256": "402ff5e012f624442dc1b1f70803081b3815b5254be9e47c4a7220ff103f9edd"
+      },
+      {
+        "name": "require_actual_install_binding",
+        "bytes": 874,
+        "sha256": "154815fb8a0721618634f7d7e73f07f9a095e11916d6a6073aa6a7f4232f2795"
+      },
+      {
+        "name": "load_prior",
+        "bytes": 504,
+        "sha256": "0c043f4b592c93317991f185e0315300c9cd885737121e96737cf2167dd57714"
+      },
+      {
+        "name": "verify_source",
+        "bytes": 396,
+        "sha256": "62e4def314ab4c944b1b9f933c65f077063fc274f7d6f402e542dee166887563"
+      },
+      {
+        "name": "actual_install",
+        "bytes": 4358,
+        "sha256": "a1f422aa2481ce512bfd9d5c3fd726c930caf204b86693507dd56a32db873f54"
+      },
+      {
+        "name": "new_session",
+        "bytes": 214,
+        "sha256": "6f52ec948cbda3fc1f579309bf8d018505013b2f5973d0e7157045447902f684"
+      },
+      {
+        "name": "assessment_summary",
+        "bytes": 3326,
+        "sha256": "a4f47b2df073e0bbd93115f292a7168a1592bb10a1c39ddfce7718a63f8a6ed8"
+      },
+      {
+        "name": "navigation_sequences",
+        "bytes": 2468,
+        "sha256": "625fb366862b14e3be5139800a47b7e5e956d3e9bc435beb48f14afb7664df47"
+      },
+      {
+        "name": "search_page_evidence",
+        "bytes": 2141,
+        "sha256": "12c4ede34ae3594024bebc0234bb431b089393d8adcf8b67c874f7f89edd719a"
+      },
+      {
+        "name": "stable_search_page",
+        "bytes": 1668,
+        "sha256": "6e122390c12724564e40fb4348995157701a4bc07f2c7aa5372c374970c87cb4"
+      },
+      {
+        "name": "submit_current_public_query",
+        "bytes": 1436,
+        "sha256": "b14d30fcf91fb9236de901bcf14a50fa591e9d73a25c8162f795b98cbdc99139"
+      },
+      {
+        "name": "public_query_sequences",
+        "bytes": 3953,
+        "sha256": "5f77b5b59f4ca611ae59ddaf62332a996c54cea0ebcb6bf69af1d9d1bc2a6cbc"
+      },
+      {
+        "name": "results_content_evidence",
+        "bytes": 1876,
+        "sha256": "c49c9e3c40091db9a3411f8e5d6bd6217bd00e5bebe7a35da180e1b85ea544c2"
+      },
+      {
+        "name": "observe_result_content",
+        "bytes": 2717,
+        "sha256": "ee0cd4025f2e6c1c6474744bf5e725563aeb911fe1d0cadd25168fa4f9357a47"
+      },
+      {
+        "name": "video_extension",
+        "bytes": 1791,
+        "sha256": "474c5f1014b54fb07c68b74827428ba78ff954aca84fc7ab9d0aeeff7a7523c1"
+      },
+      {
+        "name": "worker",
+        "bytes": 5219,
+        "sha256": "1746e9b0c3ddc5645a100f812e97ab601f315307ed14c27450c856b11717729e"
+      },
+      {
+        "name": "owned_scope",
+        "bytes": 883,
+        "sha256": "0ec01d1c659eb526c6870cd83c99a054c8f2af8554efd23ba63ac414714f8904"
+      },
+      {
+        "name": "execute",
+        "bytes": 8310,
+        "sha256": "74b2e3f80b50a831387e5582e6f586a1bc3c308a86fc6367299b626ccf599902"
+      },
+      {
+        "name": "main",
+        "bytes": 1249,
+        "sha256": "f170ccdb5456232f346832386ec50d8fd48df75cc2dd42011ed0690105867da8"
+      }
+    ],
+    "new_constant_values": {
+      "FIRST_STABILITY_SECONDS": 20,
+      "FIRST_STABILITY_MATCHES": 3,
+      "FIRST_STABILITY_SPAN_MS": 4000
+    },
+    "old_later_budget_preserved": {
+      "STABILITY_SECONDS": 12,
+      "QUERY_STABILITY_PLANS": 4,
+      "SUBMIT_STABILITY_PLANS": 4
+    },
+    "sampling_plan_counts": {
+      "before": 4,
+      "after": 8,
+      "extra_readonly_sequences": 4,
+      "extra_fresh_nonces": 12,
+      "whole_flow_fresh_nonce_count": 146
+    },
+    "key_fields_unchanged": [
+      "tree_sha256",
+      "window_sha256",
+      "node_count",
+      "foreground",
+      "accessibility_state"
+    ],
+    "sampling_span_definition": "Last capture began_elapsed_ms minus the current consecutive equal run's first capture last_elapsed_ms; at least 4000 ms. This is a sampled qualification, not continuous stability.",
+    "each_read_same_original_sequence": true,
+    "each_read_install_and_after_state_and_restoration_guard_exact": true,
+    "original_assessment_summary_exact": true,
+    "original_navigation_sequences_finally_exact": true,
+    "original_action_gates_and_helper_java_unchanged": true,
+    "failed_read_or_restore_or_assessment_immediately_propagates": true,
+    "failed_unknown_action_not_replayed": true,
+    "current_fulltree_and_window_and_node_refresh_required": true,
+    "source_closure_runtime_files": 6,
+    "source_leaf_maximum": 65536,
+    "projected_full_packet_bytes": 130107,
+    "packet_maximum_unchanged": 131072,
+    "original_navigation_worker_timeout_seconds": 240,
+    "outer_timeout_seconds": 600,
+    "timeout_changed": false,
+    "nonce_template_nonhex_slots_fail_fixed_plan": true,
+    "frozen_source_binding_compilation_not_executed_locally": true,
+    "python_controls_prepared_count": 43,
+    "python_controls_have_not_executed": false,
+    "pure_control_only_injected_dependencies": [
+      "synthetic Session",
+      "synthetic monotonic clock",
+      "synthetic summary seam",
+      "in-memory read for durable_phase"
+    ],
+    "real_qa_parser_control_execution": false,
+    "source_proof_of_unchanged_qa_summary_binding": true,
+    "production_module_never_executes_in_pure_controls": true,
+    "shared_backend_never_patched": true,
+    "original_install_identity_literals_preserved_exact": true,
+    "bounded_result_collection_note": "Source/worker read remains 1 MiB. Additional retained safe observations may exceed a future collector's old 262144-byte limit. No observation is removed; any collector change requires an explicit actual byte pin and bounded review.",
+    "whole_app_production_ready": false,
+    "UI_actions": 0,
+    "Hepta_dispatched": false
+  },
+  "actual_history_basis": {
+    "schema": 1,
+    "state": "ACTUAL_HISTORY_BOUND_SOURCE_DESIGN_ONLY",
+    "actual_readonly_job": "1a1ae9e2021-fc05-6093",
+    "actual_stdout": {
+      "git_blob": "78c612832cdc95bd7f57e1c4a888d541b644374d",
+      "bytes": 10787,
+      "sha256": "dff3a8276e21da3b92577dfd7fdc2d4fab603c13910dea805bc9d994b9b4a6b6",
+      "direct_Git_read_verified": true
+    },
+    "stable_two_to_three": {
+      "complete_nodes": [
+        73,
+        73
+      ],
+      "equal_records": 73,
+      "semantic_window_equal": true,
+      "tree_equal": true
+    },
+    "stable_three_to_post": {
+      "complete_nodes": [
+        73,
+        156
+      ],
+      "common": 72,
+      "equal_common": 70,
+      "child_count_only_changes": 2,
+      "left_only": 1,
+      "right_only": 84,
+      "expand_search_record_equal": true,
+      "semantic_window_equal": true,
+      "tree_equal": false
+    },
+    "capture_times_ms": {
+      "stable2": [
+        954966122,
+        954966256
+      ],
+      "stable3": [
+        954967541,
+        954967742
+      ],
+      "action_target": [
+        954969641,
+        954969928
+      ],
+      "action_final": [
+        954969940,
+        954971144
+      ]
+    },
+    "observed_equal_span_stable2_end_to_stable3_begin_ms": 1285,
+    "hypothetical_stable2_end_to_later_target_begin_ms": 3385,
+    "historical_node_count_used_as_readiness_constant": false,
+    "cause_or_window_focus_change_inferred": false,
+    "old_error_is_compound": "FOCUS_CHANGED_BEFORE_ACTION compares both window ID and complete tree SHA; actual tree changed. Does not identify whether window ID changed.",
+    "old_helper_action_attempted": false,
+    "old_helper_outcome_unknown": false,
+    "old_navigation_outcome_unknown": true,
+    "old_failed_sequence_restoration_qualified": false,
+    "old_later_independent_restoration_qualified": true,
+    "old_retired_task": 1019,
+    "old_preserved_tasks": [
+      851
+    ],
+    "historical_nodes_have_future_action_authority": false,
+    "new_flow_requires_all_new_nonces_new_root_and_Root_admission": true,
+    "time_span_does_not_guarantee_future_stability": true,
+    "original_final_action_freshness_still_decides": true,
+    "whole_app_production_ready": false
+  },
+  "literal_binding": {
+    "source_files": [
+      {
+        "name": "controls_reveal.py",
+        "original_bytes": 10056,
+        "bytes": 10056,
+        "sha256": "c47691958d04fc2179583617414b7e5f1f5819a6358cee376780270c9d29e9e0",
+        "inverse_literal_exact": true,
+        "functional_change": false
+      },
+      {
+        "name": "owned_navigation.py",
+        "original_bytes": 58144,
+        "bytes": 59902,
+        "sha256": "f030b4a4c84ed8240f8deabb892e3528ca9d3fb26f38faa0047dd40f165ad197",
+        "inverse_literal_exact": true,
+        "functional_change": true
+      },
+      {
+        "name": "playback_controls.py",
+        "original_bytes": 13317,
+        "bytes": 13317,
+        "sha256": "955cb60484bdc2f8dc27efb1953288ab40f88bd6536d4d5500036be9412f3342",
+        "inverse_literal_exact": true,
+        "functional_change": false
+      },
+      {
+        "name": "post_foreground.py",
+        "original_bytes": 12607,
+        "bytes": 12607,
+        "sha256": "00127ad7bd5aaf03e9ca65596759051f62cd247bb747f33d9537875e91fed976",
+        "inverse_literal_exact": true,
+        "functional_change": false
+      },
+      {
+        "name": "stage_execute.py",
+        "original_bytes": 5188,
+        "bytes": 5188,
+        "sha256": "7fffa0702cf1b7b613b8654674fc27dccdd9064c671c8d374972e9578a0c56f2",
+        "inverse_literal_exact": true,
+        "functional_change": false
+      },
+      {
+        "name": "video_navigation.py",
+        "original_bytes": 26257,
+        "bytes": 26257,
+        "sha256": "f66352948bc9cae0c351634a5e79978fca67ab1ec8652a6c0cfe59cda661aa27",
+        "inverse_literal_exact": true,
+        "functional_change": false
+      }
+    ],
+    "source_manifest": {
+      "bytes": 702,
+      "sha256": "c7bf20fe4ca47ea5da405d3d150f523d09c74cc94f72280ab38928361a68abc4"
+    },
+    "packet": {
+      "bytes": 130107,
+      "sha256": "6da2e1c2cadf6a9de4c0dd75c09c989cdcc7d08e3a0b56c0171024602d5e6c1f"
+    },
+    "root_literal_only_changed": true,
+    "no_helper_or_install_identity_change": true,
+    "all_future_action_guards_retained": true,
+    "old_failure_preserved": true,
+    "pure_controls_not_runtime_UI_qualification": true,
+    "Hepta_dispatched": false
+  },
+  "wrapper_inverse_exact": true,
+  "resource_envelope_exact": true,
+  "shared_backend_recorder_adapter_contract_or_helper_changed": false,
+  "no_arbitrary_sleep_or_historical_node_count_gate": true,
+  "at_most_one_attempt_per_original_planned_action": true,
+  "failed_or_unknown_actions_not_replayed": true,
+  "all_failed_reads_stop_and_original_independent_after_state_preserved": true,
+  "runtime_requested": false,
+  "whole_app_production_ready": false
+}

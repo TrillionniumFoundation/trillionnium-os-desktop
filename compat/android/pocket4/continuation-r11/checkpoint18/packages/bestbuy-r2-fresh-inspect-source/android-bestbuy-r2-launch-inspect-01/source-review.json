@@ -1,0 +1,232 @@
+{
+  "actual_install": {
+    "coordinator": {
+      "bytes": 3080,
+      "git_blob_sha": "91b59c6e66b65216f110a4d78112918e9d245a35",
+      "sha256": "7d132b19270f19665bc4bc5b1a1ce1d270c88367c6c10673b61877ca5f266069"
+    },
+    "embedded_state_wire_sha256": "85d2248d75ad15923e96fa5cdc83ac91ffc509ac59fcfdc9dd0968fd0824b2a3",
+    "helper_uid": 10203,
+    "install_source_manifest_sha256": "39ec2549b1db692666e4f047ec35b3e118b37c50159fe7fc70388e2c7a579ea1",
+    "job": "1a1aee05835-fc05-639e",
+    "mtime_ns_literal": "1793935308884732956",
+    "stage": {
+      "bytes": 1618,
+      "git_blob_sha": "ea75f4a540e06821f82b9cfcab7a9c82cdd68c46",
+      "sha256": "ef54244b4f4908ee4c2677c0904807413a420d37f07943c4aa5f521dc71de942"
+    },
+    "worker": {
+      "bytes": 13344,
+      "git_blob_sha": "9f28c2a81ac93264fff3dc164677fb870a858152",
+      "sha256": "e233dff0b7738527d860bb952c6f2f7a41e6363d98ca238ef535d5811bbc41b6"
+    }
+  },
+  "baseline": {
+    "context": {
+      "bytes": 15627,
+      "git_blob_sha": "b0648f5c8bfd90f8741a5148ee524b7ff11414b0",
+      "sha256": "787515d4168bce1d9d190275c97d9397ebe7cacad3c9f2e16744cd0a6c1c61ec"
+    },
+    "request": {
+      "bytes": 67371,
+      "git_blob_sha": "25936cdb3c6b4fa2f53246b6023ecfc160e2bab3",
+      "sha256": "c095a034bd1447bbbbc5ef59d99d5c608c6aaee10dab92d4eebc8d93240f9ffa"
+    },
+    "source_manifest": {
+      "bytes": 450,
+      "git_blob_sha": "9b619e70d828d472bfdf73d799727bd8cf9f3fef",
+      "sha256": "4ac1247dfd9bba4cfb69c33331d7d4d4cd29b8c22651db7e7994ce40d47f0925"
+    },
+    "stage": {
+      "bytes": 4923,
+      "git_blob_sha": "965683b899b4103fbb766efdc558babaee8f964b",
+      "sha256": "fb453b59be8a700223929c32c75419731044d2f5b1678a3ccfa91dcb3f5daa82"
+    },
+    "worker": {
+      "bytes": 35587,
+      "git_blob_sha": "75641a5abf874202b5be5d9b5f29d12385c98ef6",
+      "sha256": "fc338099cf2bd2b42cd75dde7c84806906f60ad119b009b7fc260c6e0c703f19"
+    }
+  },
+  "changes": [
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "ROOT=Path(\"/home/alex/work/pocket4-bestbuy-owned-r2-launch-inspect-01\")",
+      "old": "ROOT=Path('/home/alex/work/pocket4-bestbuy-owned-launch-inspect-01')"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "NONCE=\"5f9247a80464d710df41c0901dea930e\"",
+      "old": "NONCE='e5c3f2c938e436b52539d52cdbfab8c5'"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "FLOW=Path('/home/alex/work/pocket4-bestbuy-owned-qa-r2-flow-'+NONCE)",
+      "old": "FLOW=Path('/home/alex/work/pocket4-bestbuy-owned-qa-r1-flow-'+NONCE)"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "SELF=\"org.droidloom.qa.bestbuy.r2\"",
+      "old": "SELF='org.droidloom.qa.bestbuy.r1'"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "HELPER_UID=10203",
+      "old": "HELPER_UID=10198"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "PLAN={\"schema\": 1, \"operation\": \"inspect\", \"nonces\": {\"before\": \"8911ab912819199966ad0f249301f6d6\", \"inspect\": \"574098eea1c4ea5fcb28925024db0c6d\", \"after\": \"25e81955d02e65105470f6e2539f0871\"}}",
+      "old": "PLAN={'schema': 1, 'operation': 'inspect', 'nonces': {'before': '3f8854a28316a3fca6d02a2718e8cb76', 'inspect': '304e502d5e668874fe3879215395eecd', 'after': '068ed720610afce9d5172ee1498c1fb6'}}"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "INSTALL_ROOT=Path(\"/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01\")",
+      "old": "INSTALL_ROOT=Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01')"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "INSTALL_SOURCE_SHA=\"39ec2549b1db692666e4f047ec35b3e118b37c50159fe7fc70388e2c7a579ea1\"",
+      "old": "INSTALL_SOURCE_SHA='15d6495c30af3b765c9b4df99d8d170001e66ea54ab23327bfc7d785e192d2a4'"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "UTIL_SHA=\"563ce3479ea5513b76cf30046095cb1404c5e8889da21c57c84220bc140348da\"",
+      "old": "UTIL_SHA='21eeb9f26f467ce4287d1edce0cdedc6be983fc0b2226cdceb19fdd65b92b9ed'"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "UTIL_BYTES=32682",
+      "old": "UTIL_BYTES=32676"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "CONTEXT_SHA=\"37b873c14c40ef34eaebb279ee22691aea7b72eb3655dd6bfc6574bae77e2c84\"",
+      "old": "CONTEXT_SHA='98af604df47d1d1920e369a95cdad5026d2343b557a6498a2bf76e1b2bcb8c95'"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "STATE_NONCE=\"233184c3820388b9fb3567c7ec726cbb\"",
+      "old": "STATE_NONCE='d729c482ea77502f37ebd7a5ec57d115'"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "STATE_WIRE=\"85d2248d75ad15923e96fa5cdc83ac91ffc509ac59fcfdc9dd0968fd0824b2a3\"",
+      "old": "STATE_WIRE='6c58c2ffbb08d1abad53a81fb2bc5d797c721c00f0b3d9513cad707a4cd941c3'"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "INSTALLED={\"apk_sha256\": \"2959c657a8c0c970da80f45b5986aa34d63b0faa8df6cd0c0010a0d730a1bc54\", \"base_apk\": \"/data/app/~~5y5rbkI-o5CoEUD12crXDw==/org.droidloom.qa.bestbuy.r2-eZgG1mHSxExWjwnm8v5REw==/base.apk\", \"bytes\": 24720, \"held_file\": {\"bytes\": 24720, \"device\": 1811, \"gid\": 1000, \"inode\": 789360, \"mode\": 33188, \"mtime_ns\": 1793935308884732956, \"nlink\": 1, \"uid\": 1000}, \"package\": \"org.droidloom.qa.bestbuy.r2\", \"signer_bound_by_exact_signed_apk_bytes\": \"a9e3b67e42cab6f94aa3679ea71bdcc74be04f8aa93d3534b0923d4367c6e7ea\", \"uid\": 10203}",
+      "old": "INSTALLED={'apk_sha256': '33bc63541bc4bc4a42503bd1205f96c8e09f203e5ee512fed3a5e0c426720646', 'base_apk': '/data/app/~~lrE4O-jG56JT0Tr-ecT-Pw==/org.droidloom.qa.bestbuy.r1-R1eplDli-ch4z1zZ6TQmXQ==/base.apk', 'bytes': 24720, 'held_file': {'bytes': 24720, 'device': 1811, 'gid': 1000, 'inode': 789301, 'mode': 33188, 'mtime_ns': 1793922580168836679, 'nlink': 1, 'uid': 1000}, 'package': 'org.droidloom.qa.bestbuy.r1', 'signer_bound_by_exact_signed_apk_bytes': '0c8d51e314e4f8bdff2febd869845752562db7cd7c4182781ff748e479176918', 'uid': 10198}"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "PRIOR={\"coordinator\": (\"result.json\", 3080, \"7d132b19270f19665bc4bc5b1a1ce1d270c88367c6c10673b61877ca5f266069\"), \"stage\": (\"stage-result.json\", 1618, \"ef54244b4f4908ee4c2677c0904807413a420d37f07943c4aa5f521dc71de942\"), \"worker\": (\"worker/result.json\", 13344, \"e233dff0b7738527d860bb952c6f2f7a41e6363d98ca238ef535d5811bbc41b6\")}",
+      "old": "PRIOR={'coordinator': ('result.json', 3080, 'd0c777b87d5921d4e921ba9c2c207bb1acb907f32a128b8be28634e7fd1a8137'), 'stage': ('stage-result.json', 1618, '73ff0bda622585506a96385c7d71ea4381e323839413fe6d53602a991aec84c6'), 'worker': ('worker/result.json', 13345, '7aaff595b0774873aea64b82d0b6742ed80159093c9c790543b052c916a6c04c')}"
+    },
+    {
+      "count": 1,
+      "file": "owned_inspect.py",
+      "new": "helper['protocol']=='pocket4-owned-bestbuy-qa-v2'",
+      "old": "helper['protocol']=='pocket4-owned-bestbuy-qa-v1'"
+    },
+    {
+      "count": 1,
+      "file": "bestbuy_task_context.py",
+      "new": "SELF=\"org.droidloom.qa.bestbuy.r2\"",
+      "old": "SELF='org.droidloom.qa.bestbuy.r1'"
+    },
+    {
+      "count": 1,
+      "file": "bestbuy_task_context.py",
+      "new": "HELPER_UID=10203",
+      "old": "HELPER_UID=10198"
+    },
+    {
+      "count": 1,
+      "file": "stage_execute.py",
+      "new": "ROOT=Path(\"/home/alex/work/pocket4-bestbuy-owned-r2-launch-inspect-01\")",
+      "old": "ROOT=Path('/home/alex/work/pocket4-bestbuy-owned-launch-inspect-01')"
+    },
+    {
+      "count": 1,
+      "file": "stage_execute.py",
+      "new": "NONCE=\"5f9247a80464d710df41c0901dea930e\"",
+      "old": "NONCE='e5c3f2c938e436b52539d52cdbfab8c5'"
+    },
+    {
+      "count": 1,
+      "file": "stage_execute.py",
+      "new": "REFERENCE=Path(\"/home/alex/work/pocket4-owned-bestbuy-qa-r2-install-state-01/source/references/readonly_r3_coordinator.py\")",
+      "old": "REFERENCE=Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')"
+    },
+    {
+      "count": 1,
+      "file": "stage_execute.py",
+      "new": "observed['helper_uid']==10203",
+      "old": "observed['helper_uid']==10198"
+    }
+  ],
+  "checks": {
+    "all_original_functions_and_finally_bytes_preserved_except_installed_protocol_and_stage_UID_literals": true,
+    "four_fresh_nonce_values_unique_and_disjoint_from_old_flow_and_install_literals": true,
+    "full_runtime_source_packet_exact": true,
+    "inverse_every_declared_literal_restores_all_three_original_sources": true,
+    "new_helper_actual_maxdepth128_source_binding": true,
+    "no_click_text_audio_screenshot_permission_settings_operations": true,
+    "old_request_and_packet_serialization_reproduced_exact": true,
+    "old_resolver_is_historical_only_current_resolve_still_required_before_launch": true,
+    "original_65536_member_and_131072_packet_caps_respected": true,
+    "original_Main_held_package_UID_window_source_task_action_lock_cleanup_gates_unchanged": true,
+    "original_target_three_APK_ns_literals_preserved": true,
+    "request_resource_limits_and_non_code_fields_unchanged_except_new_key": true
+  },
+  "nonce": {
+    "after": "25e81955d02e65105470f6e2539f0871",
+    "before": "8911ab912819199966ad0f249301f6d6",
+    "flow": "5f9247a80464d710df41c0901dea930e",
+    "inspect": "574098eea1c4ea5fcb28925024db0c6d"
+  },
+  "old_failures_preserved": true,
+  "request": {
+    "bytes": 68394,
+    "git_blob_sha": "96dc89b03b90cc1207d62cb1fb65996527ee808c",
+    "sha256": "3952d9596b40c522f44e1cc77d27182aa0071c67037e4f69e93e751fd9a63767"
+  },
+  "schema": 1,
+  "scope": "Actual BestBuy R2 helper-bound fresh native launch, one read-only state/inspect/state sequence and exact owned task cleanup; not a replay of R1",
+  "source_diff": {
+    "bytes": 14888,
+    "git_blob_sha": "a0c09c9218f8b9055ec2c4c4f1a227aa160e9881",
+    "sha256": "00f4b370ea21dd890b7c9e4656e6a43457ea054835d2834fb85d434425ec0186"
+  },
+  "stdin": {
+    "bytes": 59895,
+    "git_blob_sha": "3dad101d1650b437d26d9d2f723b29f5ab395b8f",
+    "sha256": "3a3baba5bab7de741a39ddd225db804913e15a375c9ca4cdf7be79ef07452e02"
+  },
+  "ui_lane": "Root serial only",
+  "validation": {
+    "local_python_AST_compile_or_execution": false,
+    "new_App_UI_execution": false,
+    "new_controls_executed": false,
+    "reason": "Executor unavailable. Limited delta uses existing reviewed R1 bodies with exact actual R2/source/nonce values; Root must independently review before one dispatch.",
+    "v8_lossless_hash_chain_and_inverse_source_check": true
+  },
+  "whole_app_production_ready": false
+}

@@ -1,0 +1,93 @@
+--- original/owned_navigation.py
++++ template/owned_navigation.py
+@@ -15,8 +15,11 @@
+ FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r7-flow-'+NONCE)
+ PLAN={'schema':1,'operation':'click','selector':{'resource_id':'tv.danmaku.bili:id/expand_search','class':'android.widget.LinearLayout','content_desc':'Search bar, button'},'nonces':{'before':'39cd3572367f9142c7f8530e1efe26bf','inspect':'eee1b18d68321c79b678722c3ce59f49','action':'423e3b8dab51c86437cb7fdc42654c88','after':'33861a65d3053c84dd82fc5347cc3c1f'}}
+ POST_PLAN={'schema':1,'operation':'inspect','nonces':{'before':'9a02be029446e614c141d84799d310f9','inspect':'1cfc01ce9b8370f3a4e2aea08f9ab1e4','after':'dac440b69d4017a3cf58bf3791e3b423'}}
++STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'6d2cf7c1c58d5c3f8b62e61d0244235e','inspect':'efa363a15d7c59aaf535db7599568a39','after':'7a16cf68e9f69593db975cfe00159168'}},{'schema':1,'operation':'inspect','nonces':{'before':'edd5dab56fbf44336bfa85cbb82d5e76','inspect':'d0be398005e401c90af8c6d36876a259','after':'f717f8a573098b28d4012161fc527593'}},{'schema':1,'operation':'inspect','nonces':{'before':'2b053e562c680c6be226f031ac3e53fc','inspect':'69cde27c85a051f53399a61c6e11b359','after':'c804cb25060b7421737b18e18601a797'}},{'schema':1,'operation':'inspect','nonces':{'before':'9c629d8997f7a260e9415906993a2808','inspect':'31f3357b3cbd5bafe5320c117de48744','after':'4084330efbce60ef427e51f2a0315640'}},{'schema':1,'operation':'inspect','nonces':{'before':'BILI_NEW_STABILITY_SLOT_00000000','inspect':'BILI_NEW_STABILITY_SLOT_00000001','after':'BILI_NEW_STABILITY_SLOT_00000002'}},{'schema':1,'operation':'inspect','nonces':{'before':'BILI_NEW_STABILITY_SLOT_00000003','inspect':'BILI_NEW_STABILITY_SLOT_00000004','after':'BILI_NEW_STABILITY_SLOT_00000005'}},{'schema':1,'operation':'inspect','nonces':{'before':'BILI_NEW_STABILITY_SLOT_00000006','inspect':'BILI_NEW_STABILITY_SLOT_00000007','after':'BILI_NEW_STABILITY_SLOT_00000008'}},{'schema':1,'operation':'inspect','nonces':{'before':'BILI_NEW_STABILITY_SLOT_00000009','inspect':'BILI_NEW_STABILITY_SLOT_00000010','after':'BILI_NEW_STABILITY_SLOT_00000011'}}]
+-STABILITY_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'6d2cf7c1c58d5c3f8b62e61d0244235e','inspect':'efa363a15d7c59aaf535db7599568a39','after':'7a16cf68e9f69593db975cfe00159168'}},{'schema':1,'operation':'inspect','nonces':{'before':'edd5dab56fbf44336bfa85cbb82d5e76','inspect':'d0be398005e401c90af8c6d36876a259','after':'f717f8a573098b28d4012161fc527593'}},{'schema':1,'operation':'inspect','nonces':{'before':'2b053e562c680c6be226f031ac3e53fc','inspect':'69cde27c85a051f53399a61c6e11b359','after':'c804cb25060b7421737b18e18601a797'}},{'schema':1,'operation':'inspect','nonces':{'before':'9c629d8997f7a260e9415906993a2808','inspect':'31f3357b3cbd5bafe5320c117de48744','after':'4084330efbce60ef427e51f2a0315640'}}]
+ STABILITY_SECONDS=12
++FIRST_STABILITY_SECONDS=20
++FIRST_STABILITY_MATCHES=3
++FIRST_STABILITY_SPAN_MS=4000
+ RESULT_OBSERVATION_SECONDS=20
+ RESULT_OBSERVATION_PLANS=[{'schema':1,'operation':'inspect','nonces':{'before':'8e1d6796c5bcebace056ca00a39aa324','inspect':'75147e181e0ec6055d34fd832f37c29a','after':'612bbf155ba4ff2cb46fc2f193348d0e'}},{'schema':1,'operation':'inspect','nonces':{'before':'b19cdd79c7ce5dbbfa2cc667a2c785ad','inspect':'9bd4d4b4021b71326975bb58815d2d51','after':'65302537b604412f4d2b4a12f3fc8076'}},{'schema':1,'operation':'inspect','nonces':{'before':'373ac2e6d5b2deca1847e9ed159db2c3','inspect':'eb0d54787428f1b6fe5addb26b4de3cd','after':'eb5dd4e8e7c7be81e110be6c0d816ed2'}},{'schema':1,'operation':'inspect','nonces':{'before':'d33b2a6704cae697cddc100df57319d9','inspect':'0675a0ee44afe43a1a6d188b44eb8f4c','after':'94d60dff2e0b4f78142758fe46fb3285'}},{'schema':1,'operation':'inspect','nonces':{'before':'b274c246f65b181d7b58f91ab4c0de9a','inspect':'a177c0f69b3a2ea2f8865e732ce81707','after':'20596af7f6698855624e20c9744c8127'}},{'schema':1,'operation':'inspect','nonces':{'before':'e78626a819626ea973661ae6104ab07f','inspect':'f72b9655fad760583e92f7f8d40ea816','after':'afb0bf0c1af5b00a6bf436aca1eafd5b'}},{'schema':1,'operation':'inspect','nonces':{'before':'681daf02ebb3cb21c2995f3d2018fb37','inspect':'409398d68fa99d83015b53e472e10b8e','after':'83505796388f6dcebc37c5479961e1f5'}},{'schema':1,'operation':'inspect','nonces':{'before':'411777bc8abf584188a793d7d0dba570','inspect':'aae139428982812d5bcd3a1194a6a9ef','after':'b78a61084964a2e8be07fa10146c60e8'}}]
+ SEARCH_ACTIVITY='tv.danmaku.bili/com.bilibili.search2.main.BiliMainSearchActivity'
+@@ -102,12 +105,12 @@
+  return manifest
+ def fixed_plan():
+  groups=(STABILITY_PLANS,QUERY_STABILITY_PLANS,SUBMIT_STABILITY_PLANS)
++ require(len(STABILITY_PLANS)==8 and all((len(group)==4 for group in groups[1:]))and all((p.get('operation')=='inspect' for group in groups for p in group)),'EXACT_READ_ONLY_STABILITY_PLANS_REQUIRED')
+- require(all((len(group)==4 and all((p.get('operation')=='inspect' for p in group))for group in groups)),'EXACT_READ_ONLY_STABILITY_PLANS_REQUIRED')
+  require(len(RESULT_OBSERVATION_PLANS)==8 and all((p.get('operation')=='inspect' for p in RESULT_OBSERVATION_PLANS)),'ONLY_EIGHT_ADDITIONAL_READ_ONLY_RESULT_PLANS')
+  require(SET_TEXT_PLAN['operation']=='set_text' and SET_TEXT_PLAN['value']==PUBLIC_QUERY=='微积分' and(SET_TEXT_PLAN['selector']==EDIT_SELECTOR)and(SUBMIT_PLAN['operation']=='click')and(SUBMIT_PLAN['selector']==SUBMIT_SELECTOR)and(RESULTS_PLAN['operation']=='inspect'),'ONLY_THE_FIXED_OBSERVED_PUBLIC_QUERY_PLAN')
+  plans=[PLAN,POST_PLAN,SET_TEXT_PLAN,SUBMIT_PLAN,RESULTS_PLAN,*STABILITY_PLANS,*QUERY_STABILITY_PLANS,*SUBMIT_STABILITY_PLANS,*RESULT_OBSERVATION_PLANS]
+  values=[NONCE,*(nonce for plan in plans for nonce in plan['nonces'].values())]
++ require(all((re.fullmatch('[0-9a-f]{32}',value)for value in values))and len(set(values))==91 and(OLD_STATE_NONCE not in values),'FRESH_DISTINCT_NONCES_REQUIRED')
+- require(all((re.fullmatch('[0-9a-f]{32}',value)for value in values))and len(set(values))==79 and(OLD_STATE_NONCE not in values),'FRESH_DISTINCT_NONCES_REQUIRED')
+  return json.loads(json.dumps(PLAN))
+ def actual_install(prior,qa,proof):
+  """Consume original pinned success; never relabel install01 or infer UID."""
+@@ -165,31 +168,43 @@
+  require([values[k]['operation']for k in names]==expected,'EXACT_NEW_HELPER_COMMAND_SEQUENCE_REQUIRED')
+  return values
+ def stable_before_click(prior,qa,flow,session,installed,result):
++ """Sample complete equal trees over a bounded span; never replay failed reads.
+- """Observe two consecutive complete equal trees; never replay a failed read.
+ 
++    The sampled span is not continuous stability or future action authority.
++    The action retains its own fresh full-tree/window/target checks.
+-    This gate is additional. The actual action still takes its own fresh
+-    inspection and the original Java whole-tree/window/target checks.
+     """
+  began=time.monotonic()
+  previous=None
++ previous_end=None
++ first_end=None
++ matching=[]
++ result['pre_action_stability']={'maximum_sequences':8,'deadline_seconds':FIRST_STABILITY_SECONDS,'minimum_matching_sequences':FIRST_STABILITY_MATCHES,'minimum_capture_span_ms':FIRST_STABILITY_SPAN_MS,'observations':[],'qualified':False,'failed_reads_retried':False,'action_retried':False}
+- result['pre_action_stability']={'maximum_sequences':4,'deadline_seconds':STABILITY_SECONDS,'observations':[],'qualified':False,'failed_reads_retried':False,'action_retried':False}
+  state=result['pre_action_stability']
+  for index,plan in enumerate(STABILITY_PLANS,1):
++  require(time.monotonic()-began<=FIRST_STABILITY_SECONDS,'STABILITY_OBSERVATION_DEADLINE')
+-  require(time.monotonic()-began<=STABILITY_SECONDS,'STABILITY_OBSERVATION_DEADLINE')
+   sequence=session.sequence(json.loads(json.dumps(plan)))
+   require(sequence['installed_before']==sequence['installed_after']==installed and sequence['restoration_qualified']is True and(sequence['after_state_completed']is True),'STABILITY_READ_INSTALL_AND_RESTORATION_REQUIRED')
+   summaries=assessment_summary(prior,qa,flow.step,sequence,plan)
+   observed=summaries['inspect']
+   key={'tree_sha256':observed['tree_sha256'],'window_sha256':observed['window_sha256'],'node_count':observed['node_count'],'foreground':sequence['foreground_after'],'accessibility_state':sequence['accessibility_restoration']['state_after']}
++  capture=observed['tree_observations'][0]
++  start,end=capture['began_elapsed_ms'],capture['last_elapsed_ms']
++  require(previous_end is None or start>=previous_end,'STABILITY_CAPTURE_ORDER_REQUIRED')
++  if key!=previous:
++   matching=[]
++   first_end=end
++  matching.append(index)
++  previous,previous_end=key,end
++  span=max(0,start-first_end)
+   elapsed=int((time.monotonic()-began)*1000)
++  state['observations'].append({'sequence':index,'elapsed_ms':elapsed,'complete_key':key,'assessments':summaries,'restoration_qualified':True,'matching_capture_span_ms':span})
++  require(time.monotonic()-began<=FIRST_STABILITY_SECONDS,'STABILITY_OBSERVATION_DEADLINE')
++  if len(matching)>=FIRST_STABILITY_MATCHES and span>=FIRST_STABILITY_SPAN_MS:
+-  state['observations'].append({'sequence':index,'elapsed_ms':elapsed,'complete_key':key,'assessments':summaries,'restoration_qualified':True})
+-  require(time.monotonic()-began<=STABILITY_SECONDS,'STABILITY_OBSERVATION_DEADLINE')
+-  if previous==key:
+    state['qualified']=True
++   state['matching_sequences']=list(matching)
++   state['sampled_capture_span_ms']=span
+-   state['matching_sequences']=[index-1,index]
+    state['future_action_still_requires_original_strict_freshness']=True
+    return
+-  previous=key
+  raise RuntimeError('COMPLETE_TREE_NOT_STABLE_IN_BOUNDED_READS')
+ def navigation_sequences(prior,qa,flow,session,installed,result,first_click):
+  """One action, then one independent read-only observation, including failures.
+@@ -494,7 +509,7 @@
+  require(observed==value and value.get('ok')is True and(value.get('phase')==phase)and(value.get('nonce')==NONCE)and(value.get('helper_uid')==UID)and(value.get('runtime_recorder_manifest_sha256')==R4_MANIFEST)and(value.get('outcome_unknown')is(phase=='navigate'))and(value.get('final_Main_guard_passed')is True)and(value.get('held_binding_released')is True)and(value.get('action_lock_released')is True),'ACTUAL_DURABLE_PHASE_REQUIRED:'+phase)
+  if phase=='navigate':
+   stable=value.get('pre_action_stability',{})
++  require(stable.get('qualified')is True and stable.get('maximum_sequences')==8 and(stable.get('deadline_seconds')==FIRST_STABILITY_SECONDS)and(stable.get('minimum_matching_sequences')==FIRST_STABILITY_MATCHES)and(stable.get('minimum_capture_span_ms')==FIRST_STABILITY_SPAN_MS)and(len(stable.get('matching_sequences',[]))>=FIRST_STABILITY_MATCHES)and(stable.get('sampled_capture_span_ms',-1)>=FIRST_STABILITY_SPAN_MS)and(stable.get('future_action_still_requires_original_strict_freshness')is True),'ACTUAL_PRE_ACTION_COMPLETE_TREE_STABILITY_REQUIRED')
+-  require(stable.get('qualified')is True and stable.get('maximum_sequences')==4 and(stable.get('deadline_seconds')==STABILITY_SECONDS)and(stable.get('future_action_still_requires_original_strict_freshness')is True),'ACTUAL_PRE_ACTION_COMPLETE_TREE_STABILITY_REQUIRED')
+   require(value.get('search_page_stability',{}).get('before_set_text',{}).get('qualified')is True and value.get('search_page_stability',{}).get('before_submit',{}).get('qualified')is True and(value.get('submit_admission',{}).get('public_value_observed')is True)and(value.get('submit_action_bound_value',{}).get('public_value_observed')is True),'ACTUAL_EDIT_AND_SUBMIT_POSTCONDITION_REQUIRED')
+   require(value.get('action_attempted')is True and value.get('video_click_and_observations_completed')is True and(value.get('player_content_readiness_completed')is True)and(value.get('player_content_readiness',{}).get('qualified')is True)and(value.get('controls_reveal_and_observation_completed')is True)and(value.get('playback_button_transitions_completed')is True)and(value.get('results_container_content_observed')is True)and(value.get('result_content_observation',{}).get('qualified')is True)and(value.get('scoped_click_and_post_observation_completed')is True)and(value.get('query_submission_controls_completed')is True)and(value.get('final_results_inspection_completed')is True)and(value.get('business_outcome_unknown')is True)and(value.get('business_success_verified')is False),'CLICK_OBSERVATION_SCOPE_MUST_RETAIN_UNKNOWN_BUSINESS_OUTCOME')
+  return(value,{'path':str(path),'bytes':len(raw),'sha256':sha(raw)})

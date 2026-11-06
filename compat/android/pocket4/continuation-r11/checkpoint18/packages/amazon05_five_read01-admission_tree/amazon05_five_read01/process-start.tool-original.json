@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import sys,hashlib;raw=sys.stdin.buffer.read(16385);assert len(raw)==10822 and hashlib.sha256(raw).hexdigest()=='70fa871dda7a79837168db1b852e2f86a651d383da491f21f0e5beb70a6efb19';scope={'__name__':'fixed_amazon05_summary_reader','__file__':'<verified-fixed-amazon05-reader>'};exec(compile(raw,'read_summary.py','exec'),scope);raise SystemExit(scope['main'](['--collect-once','--coordinator-sha256','172f4c4ca7a63b1680ef44774fbabdbb892426bea43748acc9ebff8c177ad281','--stage-sha256','1f6a62974cdeef554ebc80e2ddcff9eae14e7c9097103e65f08b4d4b6c710cf6']))"
+    ],
+    "created_unix_ms": 1793933296375,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1aec1c2f7-fc05-620c",
+    "idempotency_key": "pocket4-amazon-search-entry05-five-safe-readonly01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1aec1c2f7-fc05-620c",
+    "request_digest": "15b4dbc643f7ae8260140e783327e9a58d24d5be0bfb0c2b5ac4271a8f408d45",
+    "request_fingerprint": 1564116615194717826,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1aec1c2f7-fc05-620c"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1aec1c2f7-fc05-620c"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

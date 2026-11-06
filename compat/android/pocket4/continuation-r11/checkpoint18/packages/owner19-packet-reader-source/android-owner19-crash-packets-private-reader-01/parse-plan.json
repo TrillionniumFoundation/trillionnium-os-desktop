@@ -1,0 +1,21 @@
+{
+  "binary_to_git": false,
+  "hws_attribution_prejudged": false,
+  "original": {
+    "bytes": 28314,
+    "path": "/opt/p4-owner19-normal-20261105-01-state/evidence/generation-crash-buffer4.bin",
+    "sha256": "34fe9d3ec735cf18e8852b453cdf2616f32498bedf966346ac66a34ef4ba9deb"
+  },
+  "raw_init_log_requested": false,
+  "schema": 1,
+  "scope": "Root-only private V8 packet parsing after exact reader completion",
+  "steps": [
+    "Verify complete reader status, plain envelope byte/hash, collection_complete, held_fds_closed, errors empty, all three input pins and packet inode tuple.",
+    "Decode only private_file.data into private V8 bytes; require exact28314 and full original SHA. Keep bytes and decoded message text out of Git/chat/general reports.",
+    "Require 96-byte MAGIC + exact64-hex generation + newline. Iterate257 little-endian uint32 length-prefixed complete records; no trailing bytes.",
+    "Use the exact copied source packet_header v4 conditions:28-byte '<HHiIIIII' header, size equality, buffer4, valid pid/tid/time, priority1..8, NUL tag/message terminators.",
+    "Privately group crash records by pid/tid/time and explicit Android crash headers, identify executable/signal/abort-message/backtrace if present. Tag DEBUG/libc alone is not an executable identity.",
+    "Correlate only supported process/namespace/generation metadata. Report a concise relevant cause and supporting packet offsets/hashes, without dumping messages or inferring a sender/root cause from SIGHUP alone.",
+    "Retain original Owner19 failure; propose the smallest production fix supported by the actual crash cause. No new runtime, input, or lifecycle action follows automatically."
+  ]
+}

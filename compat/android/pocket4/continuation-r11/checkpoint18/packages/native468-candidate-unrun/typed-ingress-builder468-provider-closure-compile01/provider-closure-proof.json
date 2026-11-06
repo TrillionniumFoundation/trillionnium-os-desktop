@@ -1,0 +1,354 @@
+{
+  "schema": 1,
+  "state": "SOURCE_CANDIDATE_NOT_COMPILED_OR_SOONG_QUALIFIED",
+  "baseline": {
+    "builder_revision": "467-source-resume-compile03",
+    "source_files": 466,
+    "manifest": {
+      "bytes": 91945,
+      "sha256": "71768da388021a870ef5f5516cc3efbfd956288a8fa74cb9b176b312f68d7605"
+    },
+    "compile_result": {
+      "bytes": 140163,
+      "sha256": "cd9f61ca21dd83210299f24dd50b68f5aa7aeba7eab94ac9cada71271d660e28"
+    }
+  },
+  "failure": {
+    "job_id": "1a1ae6b5a97-fc05-5f81",
+    "inner_sha256": "80f3508bab1884421af6db2f6d87537fd950100be009265b7e2efabc9b97fcdc",
+    "outer_sha256": "2c36ab1cc9ff6f181855f195f9c5b7bc0f58e7fb99d9c76e4871e64b143bf059",
+    "stdout_sha256": "f001d60ee86a9c0b5fe32ca98164b0bb1127826aa1e3c9ba97a7ce834c0d0e4e",
+    "stderr_sha256": "12c13559ad20843f350c14e16f32e149cf1c2c4f4ed339d9c862e0e1c2ad753b",
+    "undefined_modules": [
+      "MotionTestDefaults",
+      "SystemUI_optimized_defaults"
+    ],
+    "original_failure_retained": true,
+    "original_consumers_not_modified": true
+  },
+  "source_locks": {
+    "original_sparse_unchanged": "4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178",
+    "previous_typed_unchanged": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54",
+    "candidate": {
+      "bytes": 87139,
+      "sha256": "3150cba593f2fb9117244d4ebc92d046abaa3f2c5a4f4ae7e45ba2455b2f1e91",
+      "git_blob_sha1": "8a677f6279b57387df4536b290c244822d4e2afa"
+    },
+    "old_projects": 214,
+    "new_projects": 216,
+    "old_root_links": 8,
+    "new_root_links": 8,
+    "all_other_fields_and_old_order_preserved": true,
+    "extensions": [
+      {
+        "path": "platform_testing",
+        "paths": [
+          "libraries/motion/src",
+          "libraries/motion/compose/src",
+          "libraries/motion/compose/values/src",
+          "libraries/screenshot/src/main",
+          "libraries/screenshot/proto",
+          "libraries/uiautomator-helpers/src"
+        ]
+      },
+      {
+        "path": "prebuilts/sdk",
+        "paths": [
+          "current/androidx"
+        ]
+      }
+    ],
+    "added": [
+      {
+        "path": "external/kotlinx.coroutines",
+        "name": "platform/external/kotlinx.coroutines",
+        "commit": "16161f019a518241332c1cad686a3e9404c0d5cf",
+        "purpose": "Exact Android 17 superproject coroutine providers for real AndroidX and StructuredConcurrencyPerf dependencies"
+      },
+      {
+        "path": "external/kotlinx.atomicfu",
+        "name": "platform/external/kotlinx.atomicfu",
+        "commit": "867bc63054d694773bd0aef56eeb51296f2f6b03",
+        "purpose": "Exact Android 17 superproject atomicfu source required by the real coroutine provider"
+      }
+    ]
+  },
+  "provenance": {
+    "superproject": {
+      "name": "platform/superproject",
+      "ref": "refs/heads/android-17.0.0_r1",
+      "commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039"
+    },
+    "added_gitlinks": [
+      {
+        "name": "kotlinx.coroutines",
+        "path": "external/kotlinx.coroutines",
+        "sha": "16161f019a518241332c1cad686a3e9404c0d5cf",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/kotlinx.coroutines?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../external/kotlinx.coroutines",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/kotlinx.coroutines?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      },
+      {
+        "name": "kotlinx.atomicfu",
+        "path": "external/kotlinx.atomicfu",
+        "sha": "867bc63054d694773bd0aef56eeb51296f2f6b03",
+        "size": 0,
+        "url": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/kotlinx.atomicfu?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+        "html_url": null,
+        "git_url": null,
+        "download_url": null,
+        "type": "submodule",
+        "submodule_git_url": "../external/kotlinx.atomicfu",
+        "_links": {
+          "self": "https://api.github.com/repos/aosp-mirror-neo/platform_superproject/contents/external/kotlinx.atomicfu?ref=28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+          "git": null,
+          "html": null
+        }
+      }
+    ],
+    "source_kind": "Exact commit upstream files, with actual published SDK/manifest reader where public mirror did not contain the locked commit",
+    "actual_provider_reader": {
+      "bytes": 118182,
+      "sha256": "0e2c4ef53dac258d9fc7929f06f334e358db323a7a8acc3bde94914e2b6eb901",
+      "git_blob_sha1": "d90dca04b75a7fdbe87314998a95508bf7ee0693",
+      "state": "FAILED",
+      "authority_qualified": true,
+      "complete_files": 4,
+      "total_files": 5,
+      "sole_missing_path": "prebuilts/misc/common/ub-uiautomator/Android.bp",
+      "missing_path_not_a_Git_object_absence_claim": true
+    },
+    "actual_materialized_manifest": {
+      "bytes": 97784,
+      "sha256": "73a4cc1da8371482164aab2bc149498d03f481f212bb85cb4fda22b6b10c958d",
+      "git_blob_sha1": "d7a0e15340b5461e4606a064c5ad8a58f88bfbb7",
+      "plan_exactly_matches_previous_lock": true
+    },
+    "actual_sdk_root_blueprint": {
+      "bytes": 3315,
+      "sha256": "4b94f0f2501482861312b9d1d92c2d240076ceb7246c5c37e46f9f6571ef566d",
+      "git_blob_sha1": "618a50b838594ce30b4480f3ef1aa44de7b2f8e9",
+      "real_root_only_nine_nodeps_modules": true,
+      "includes_JavaPlugins_bp": true,
+      "Maven_version_paths_not_guessed": true
+    }
+  },
+  "provider_projection": [
+    {
+      "path": "frameworks/base/packages/SystemUI/Android.bp",
+      "source": {
+        "bytes": 49535,
+        "sha256": "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3",
+        "git_blob_sha1": "44bc84d4da7f238a61e4de40f4fb0e20ddd9c80a"
+      },
+      "modules": [
+        [
+          "soong_config_module_type",
+          "systemui_optimized_java_defaults"
+        ],
+        [
+          "systemui_optimized_java_defaults",
+          "SystemUI_optimized_defaults"
+        ],
+        [
+          "filegroup",
+          "sysui_proguard_common_and_kotlin"
+        ]
+      ],
+      "projected": {
+        "bytes": 1558,
+        "sha256": "f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1",
+        "git_blob_sha1": "5953e0c0ff072e4d7eadcff109c522e563d1d2f6"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "platform_testing/libraries/motion/Android.bp",
+      "source": {
+        "bytes": 2098,
+        "sha256": "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440",
+        "git_blob_sha1": "5d66e6b6e86bd109cc0c469af303cb98ed73f35c"
+      },
+      "modules": [
+        [
+          "filegroup",
+          "motion_test_template"
+        ],
+        [
+          "java_defaults",
+          "MotionTestDefaults"
+        ],
+        [
+          "filegroup",
+          "PlatformMotionTesting-srcs"
+        ],
+        [
+          "android_library",
+          "PlatformMotionTesting"
+        ]
+      ],
+      "projected": {
+        "bytes": 1175,
+        "sha256": "23e1392f716fbf78efb7b0ea5281c3cf70b4547b6aa41af8cf79df495eace098",
+        "git_blob_sha1": "19e3a391852ceff73b9d3ead2c508a0ca402c21f"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    },
+    {
+      "path": "platform_testing/libraries/screenshot/Android.bp",
+      "source": {
+        "bytes": 2403,
+        "sha256": "53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032",
+        "git_blob_sha1": "98bc54c3f173f008fa0cd7e4a608b04bd8fc261a"
+      },
+      "modules": [
+        [
+          "android_library",
+          "platform-screenshot-diff-core"
+        ],
+        [
+          "java_library",
+          "platform-screenshot-diff-proto"
+        ]
+      ],
+      "projected": {
+        "bytes": 1029,
+        "sha256": "6249d22918a5c2d02a5efc6e20013e75f0eabb0c8e492f40d1e83d4009409007",
+        "git_blob_sha1": "c9a0419281b90f4168e7d1cb546e0ddade83224f"
+      },
+      "body_source": "Byte-for-byte original stanzas after exact whole-file SHA verification",
+      "metadata_kept": true
+    }
+  ],
+  "direct_dependencies": {
+    "new_motion_provider_subgraph": [
+      "MotionTestDefaults",
+      "motion_test_template",
+      "PlatformMotionTesting",
+      "PlatformMotionTestingCompose",
+      "PlatformMotionTestingComposeValues",
+      "platform-screenshot-diff-core",
+      "platform-screenshot-diff-proto",
+      "uiautomator-helpers"
+    ],
+    "already_selected_projects": [
+      "external/guava",
+      "external/truth",
+      "external/junit"
+    ],
+    "same_sdk_commit_new_parent": "prebuilts/sdk/current/androidx",
+    "new_coroutine_providers": [
+      "kotlinx_coroutines",
+      "kotlinx_coroutines_android",
+      "kotlinx_atomicfu"
+    ],
+    "not_added_new_test_demo_modules": [
+      "PlatformMotionTestingRoboApplication",
+      "platform-screenshot-diff-test"
+    ],
+    "not_claimed_closed_existing_consumer_subgraphs": [
+      "platform-parametric-runner-lib -> Robolectric_all-target and its host test closure",
+      "collector-device-lib -> collector helpers",
+      "tracinglib-platform -> compilelib",
+      "all transitive AndroidX prebuilt/module type and visibility dependencies"
+    ],
+    "misc_ub_uiautomator_not_needed_by_selected_screenshot_core": true,
+    "source_selection_not_artifact_qualification": true
+  },
+  "published_source_reuse": {
+    "allowed_previous_manifest_sha256": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54",
+    "fresh_complete_previous_verify_required_before_reconcile": true,
+    "all_old_HEAD_origin_clean_and_links_required": true,
+    "original_shared_sparse_lock_rejected": true,
+    "unknown_dirty_or_mismatched_previous_tree_rejected": true,
+    "normal_existing_reconcile_only": true,
+    "existing_resume_staging_argument_must_not_be_passed": true,
+    "normal_work_and_source_locks_unchanged": true,
+    "manifest_write_after_normal_reconcile_verification": true
+  },
+  "strictness": {
+    "dependency_mode": "Strict",
+    "ALLOW_MISSING_DEPENDENCIES": "false",
+    "targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "fake_defaults_or_framework_stubs": false,
+    "original_failed_consumer_removed": false,
+    "source_resume_library_unchanged": true,
+    "Java_implementation_JAR_qualified": false,
+    "Android_JNI_object_or_link_qualified": false,
+    "install_or_runtime_authorization": false
+  },
+  "source_delta": {
+    "source_files_before": 466,
+    "source_files_after": 470,
+    "unchanged_existing": 464,
+    "replaced": [
+      "tools/droidloom-update/src/android.rs",
+      "tools/droidloom-update/src/native_role_ingress.rs"
+    ],
+    "added": [
+      "android/manifest/m2-role-ingress-provider-source-lock.json",
+      "android/native-role-ingress/provider-fixtures/SystemUI.Android.bp",
+      "android/native-role-ingress/provider-fixtures/motion.Android.bp",
+      "android/native-role-ingress/provider-fixtures/screenshot.Android.bp"
+    ],
+    "pins": {
+      "tools/droidloom-update/src/android.rs": {
+        "bytes": 274422,
+        "sha256": "7d555524e080284948980731540d40e0ea63070a80a63b2ea320cf935740dafe",
+        "git_blob_sha1": "6b9a4d0a3bebc83994da78c8a54fb96b594dc6af"
+      },
+      "tools/droidloom-update/src/native_role_ingress.rs": {
+        "bytes": 26755,
+        "sha256": "04088760f0f08eda0aad5c2c067ed4cff1d5d3b615c58d93f7dd895d73b4b214",
+        "git_blob_sha1": "dc38011d297cebf286e38ea705a25080dbb42698"
+      },
+      "android/manifest/m2-role-ingress-provider-source-lock.json": {
+        "bytes": 87139,
+        "sha256": "3150cba593f2fb9117244d4ebc92d046abaa3f2c5a4f4ae7e45ba2455b2f1e91",
+        "git_blob_sha1": "8a677f6279b57387df4536b290c244822d4e2afa"
+      },
+      "android/native-role-ingress/provider-fixtures/SystemUI.Android.bp": {
+        "bytes": 49535,
+        "sha256": "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3",
+        "git_blob_sha1": "44bc84d4da7f238a61e4de40f4fb0e20ddd9c80a"
+      },
+      "android/native-role-ingress/provider-fixtures/motion.Android.bp": {
+        "bytes": 2098,
+        "sha256": "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440",
+        "git_blob_sha1": "5d66e6b6e86bd109cc0c469af303cb98ed73f35c"
+      },
+      "android/native-role-ingress/provider-fixtures/screenshot.Android.bp": {
+        "bytes": 2403,
+        "sha256": "53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032",
+        "git_blob_sha1": "98bc54c3f173f008fa0cd7e4a608b04bd8fc261a"
+      }
+    },
+    "expected_manifest": {
+      "bytes": 92800,
+      "sha256": "256532b032ea0732b7833774e4417f78ba469ce485b110c24dcde8c4358b6026",
+      "git_blob_sha1": "b203cc081b354dcce0e0c16f0459994c8ecf73c8"
+    }
+  },
+  "validation": {
+    "V8_exact_old_plan_comparison": true,
+    "V8_monotonic_extension_and_whole_source_map": true,
+    "V8_diff_reconstructs_both_sources": true,
+    "Python_or_Rust_executed_locally": false,
+    "remote_compile_pending": true,
+    "actual_Soong_build_pending": true
+  }
+}

@@ -1,0 +1,25 @@
+--- search01/stage_execute.py
++++ destination01-template/stage_execute.py
+@@ -6,10 +6,10 @@
+ from pathlib import Path
+ import types
+ 
++ROOT=Path('/home/alex/work/pocket4-ihg-public-destination-entry-01')
+-ROOT=Path('/home/alex/work/pocket4-ihg-public-search-entry-01')
+ SOURCE=ROOT/'source'
++NONCE='IHG_DEST_NEW_NONCE_0000000000000'
++FILES={'owned_inspect.py','ihg_task_context.py','public_destination.py','INPUTS.json'}
+-NONCE='c66c450fdd017a27e7c352a7b011cb21'
+-FILES={'owned_inspect.py','ihg_task_context.py','public_search.py','INPUTS.json'}
+ REFERENCE=Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ 
+@@ -55,7 +55,7 @@
+         assert observed['nonce']==NONCE and observed['source_manifest_sha256']==manifest_sha256
+         assert observed['package']==entry.PACKAGE and observed['helper_uid']==10196
+         assert rc==0 and observed['ok'] is True and observed['error'] is None and observed['secondary_errors']==[]
++        assert observed['destination_click_and_observation_completed'] is True and observed['owned_task_absent_after_cleanup'] is True
+-        assert observed['public_search_entry_completed'] is True and observed['owned_task_absent_after_cleanup'] is True
+         assert observed['business_success_verified'] is False and observed['whole_app_production_ready'] is False
+         result['ok']=True
+     except BaseException as error:remember('stage_or_owned_launch_inspect',error)
