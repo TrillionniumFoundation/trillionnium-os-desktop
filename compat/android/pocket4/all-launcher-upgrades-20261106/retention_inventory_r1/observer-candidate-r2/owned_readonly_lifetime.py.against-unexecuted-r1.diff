@@ -1,0 +1,20 @@
+--- preserved-47-protected-reference-r1/owned_readonly_lifetime.py
++++ actual-48-protected-reference-r2/owned_readonly_lifetime.py
+@@ -14,7 +14,7 @@
+ import zlib
+ 
+ sys.dont_write_bytecode = True
+-CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'retention', 'stage_root': '/home/alex/work/pocket4-retention-metadata-source-20261106-r1', 'worker': {'path': '/home/alex/work/pocket4-retention-metadata-source-20261106-r1/observe_retention.py', 'bytes': 37600, 'sha256': '1673b0d312de29889a931c9120e8c46e77f5010d76ba46510089f9dd397bf6bc'}, 'request': {'path': '/home/alex/work/pocket4-retention-metadata-source-20261106-r1/request.review-only.json', 'bytes': 738, 'sha256': '9fef67d494ac6e89f64b2c1c42b8f1d6f39a0194534ecc8dff00cab3aa253dce'}, 'prior_source': {'bytes': 18837, 'sha256': 'ad2db51aa4445e6e5b5dc07439182556d51ec629cd8487ac9d3b1e5cf947a55c', 'preserved': True, 'actual_prior_execution_job': '1a1b22e95d0-fc05-7cd4', 'scope_authority_not_inherited': True}}
++CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'retention', 'stage_root': '/home/alex/work/pocket4-retention-metadata-source-20261106-r2', 'worker': {'path': '/home/alex/work/pocket4-retention-metadata-source-20261106-r2/observe_retention.py', 'bytes': 37625, 'sha256': '7974525bda72cd2b20d1e364aa765df4f3ebcdde0f9931180b0e344f37b64670'}, 'request': {'path': '/home/alex/work/pocket4-retention-metadata-source-20261106-r2/request.review-only.json', 'bytes': 738, 'sha256': 'b9bf6a7e0e03374b818e406959a305049dadc56f4bc3520f9759dc3b220cde04'}, 'prior_source': {'bytes': 18837, 'sha256': 'ad2db51aa4445e6e5b5dc07439182556d51ec629cd8487ac9d3b1e5cf947a55c', 'preserved': True, 'actual_prior_execution_job': '1a1b22e95d0-fc05-7cd4', 'scope_authority_not_inherited': True}}
+ SELF_PIN = None
+ SUPPORT = {
+     "path": "/home/alex/work/pocket4-beike-owned-generation-20261106-b34f158f88bbebf112840fd88df25d03/prepare_beike_owned_lifetime.py",
+@@ -122,7 +122,7 @@
+     need(value.get("status") == "BOUNDED_DEPENDENCY_METADATA_OBSERVED_WITH_EXPLICIT_GAPS" and
+          value.get("bounded_observation_finished") is True and value.get("scope_references_unchanged") is True and
+          value.get("protected_scope_before") == value.get("protected_scope_after") and
+-         value.get("current_scope_reference", {}).get("sha256") == "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f" and
++         value.get("current_scope_reference", {}).get("sha256") == "b184299ce0a39a998752ed980a43192b396099f780bcf60bcfe53d0edf92ffe4" and
+          value.get("exact_reference_summary", {}).get("count") == 797 and len(value.get("tree_observations", [])) == 16 and
+          value.get("reclaimable_bytes") is None and value.get("cleanup_eligible") == 0 and
+          value.get("inventory_exhaustive_or_cleanup_qualified") is False and value.get("complete_installed_package_set_claimed") is False and

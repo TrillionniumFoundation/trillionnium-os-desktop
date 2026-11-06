@@ -1,0 +1,20 @@
+--- actual-partial-failure-wire
++++ this-exact-no-action-failure-wire
+@@ -37,7 +37,7 @@
+          value['op'] == request['op'] == 'click' and
+          value['request_sha256'] == sha(qa.validate_request(request)) and
+          value['wire_codec'] == 'gzip-canonical-json-v1' and
+-         value['self_uid'] == HELPER_UID and value['self_pid'] == 60531,
++         value['self_uid'] == HELPER_UID and value['self_pid'] == 80169,
+          'EXACT_ACTUAL_FAILURE_REQUEST_HELPER_IDENTITY')
+     need(value['ok'] is False and value['error'] == 'INSPECTED_TREE_OR_WINDOW_CHANGED' and
+          value['claim_persistence_completed'] is True and value['helper_work_completed'] is True and
+@@ -48,7 +48,7 @@
+          'EXPLICIT_REJECTED_NO_DISPATCH_WITHOUT_SECONDARY_FAILURE')
+     start, finish = value['started_elapsed_ms'], value['finished_elapsed_ms']
+     need(type(start) is int and type(finish) is int and 0 <= start <= finish and
+-         finish - start <= 12000 and start == 1020981386 and finish == 1020981900,
++         finish - start <= 12000 and start == 1030402143 and finish == 1030402433,
+          'ACTUAL_FAILED_HELPER_TIME_BOUND')
+     need(value['host_scope_attestation'] == request['scope'] and
+          value['activity_verified_inside_helper'] is False and value['target_uid_verified'] == qa.UID and

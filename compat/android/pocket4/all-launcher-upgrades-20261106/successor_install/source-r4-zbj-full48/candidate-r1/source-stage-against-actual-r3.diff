@@ -1,0 +1,34 @@
+--- actual-staged-r3-explicit47
++++ review-only-r4-full48
+@@ -1,8 +1,8 @@
+ import sys
+ sys.dont_write_bytecode=True
+ import os,stat,json,hashlib,subprocess,time,datetime
+-ROOT='/home/alex/work/pocket4-successor-install-source-20261106-r3-zbj-r2'
+-NAMES={'install_successor_native.py','s42-failed-result.original.json','s43-result.original.json','s43-terminal.original.json','scope47.original.json','test_install_successor_r3_zbj.py'}
++ROOT='/home/alex/work/pocket4-successor-install-source-20261106-r4-zbj-full48-r1'
++NAMES={'install_successor_native.py','s42-failed-result.original.json','s43-result.original.json','s43-terminal.original.json','scope47.original.json','scope48.original.json','test_install_successor_r4_zbj_full48.py'}
+ STAT=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ def require(value,reason):
+     if not value:raise RuntimeError(reason)
+@@ -55,7 +55,7 @@
+     os.mkdir(ROOT.rsplit('/',1)[1],0o700,dir_fd=parent);os.fsync(parent)
+ finally:os.close(parent)
+ d=open_directory(ROOT)
+-result={'schema':'pocket4-installer-revision3-zbj-source-host-controls-v1','started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
++result={'schema':'pocket4-installer-revision4-zbj-full48-source-host-controls-v1','started_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+     'runtime_or_Main_reads':0,'native_commands':0,'Android_commands':0,'UI_actions':0,'installs':0,
+     'permission_changes':0,'existing_files_modified':0,'production_ready':False,'files':{},'tests':[],'ok':False}
+ try:
+@@ -64,9 +64,9 @@
+     for name,content in sorted(payload['files'].items()):
+         raw=content.encode();result['files'][name]=write(d,name,raw)
+         if name.endswith('.py'):compile(raw,ROOT+'/'+name,'exec')
+-    pins={'schema':'pocket4-installer-revision3-zbj-source-prep-v1','files':{n:{k:r[k]for k in ('bytes','sha256')}for n,r in result['files'].items()}}
++    pins={'schema':'pocket4-installer-revision4-zbj-full48-source-prep-v1','files':{n:{k:r[k]for k in ('bytes','sha256')}for n,r in result['files'].items()}}
+     result['manifest']=write(d,'SOURCE_PINS.json',canonical(pins)+b'\n')
+-    for name in ('test_install_successor_r3_zbj.py',):
++    for name in ('test_install_successor_r4_zbj_full48.py',):
+         cp=subprocess.run(['/usr/bin/python3','-B','-I',ROOT+'/'+name],stdin=subprocess.DEVNULL,
+             stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=30,check=False,cwd=ROOT,
+             env={'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C','TZ':'UTC'},close_fds=True,start_new_session=True)

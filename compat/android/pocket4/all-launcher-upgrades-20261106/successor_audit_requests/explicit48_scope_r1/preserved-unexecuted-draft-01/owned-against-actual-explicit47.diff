@@ -1,0 +1,44 @@
+--- actual-explicit47-r2
++++ candidate-explicit48-r1
+@@ -14,7 +14,7 @@
+ import zlib
+ 
+ sys.dont_write_bytecode = True
+-CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'explicit47', 'stage_root': '/home/alex/work/pocket4-explicit-47-scope-source-20261106-r2', 'worker': {'path': '/home/alex/work/pocket4-explicit-47-scope-source-20261106-r2/observe_explicit_47.py', 'bytes': 18139, 'sha256': '56922fbe372cf8cd2d0e39f75ddb69b16843f098d8090d65834b5737db04a656'}, 'request': {'path': '/home/alex/work/pocket4-explicit-47-scope-source-20261106-r2/request.review-only.json', 'bytes': 2804, 'sha256': '06ca66a6fee69d8ff874167e89be3634973eae9ca0dde56a6435526f0330bd57'}, 'prior_unexecuted_source': {'bytes': 18139, 'sha256': '6ca6c99c773e8646b50d568c95620b4731b337c3ec21f1d3efa00cbb617c93da', 'preserved': True}}
++CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'explicit48', 'stage_root': '/home/alex/work/pocket4-explicit-48-scope-source-20261106-r1', 'worker': {'path': '/home/alex/work/pocket4-explicit-48-scope-source-20261106-r1/observe_explicit_48.py', 'bytes': 25655, 'sha256': '01b306a9a0c9df9bfb6273f12b97806f10fa0a66823a8e23c1587d5e706e81bf'}, 'request': {'path': '/home/alex/work/pocket4-explicit-48-scope-source-20261106-r1/request.review-only.json', 'bytes': 3263, 'sha256': '65f3106c75345e0309d7bef167327d3295545b4fcb917a5aeb4c3fcff43dff93'}, 'prior_unexecuted_source': {'bytes': 18139, 'sha256': '6ca6c99c773e8646b50d568c95620b4731b337c3ec21f1d3efa00cbb617c93da', 'preserved': True}}
+ SELF_PIN = None
+ SUPPORT = {
+     "path": "/home/alex/work/pocket4-beike-owned-generation-20261106-b34f158f88bbebf112840fd88df25d03/prepare_beike_owned_lifetime.py",
+@@ -78,7 +78,7 @@
+ def enter(mode):
+     global SELF_PIN
+     need(type(CONFIG) is dict and set(CONFIG) == {"schema", "kind", "stage_root", "worker", "request", "prior_unexecuted_source"} and
+-         CONFIG["schema"] == "pocket4-owned-readonly-observation-config-v1" and CONFIG["kind"] in ("explicit47", "calendar"),
++         CONFIG["schema"] == "pocket4-owned-readonly-observation-config-v1" and CONFIG["kind"] in ("explicit48", "calendar"),
+          "UNSEALED_NO_RUNTIME")
+     need(str(Path(__file__).resolve()) == CONFIG["stage_root"] + "/owned_readonly_lifetime.py", "EXACT_REAL_NEW_SOURCE_FILE")
+     need(len(sys.argv) == 6 and sys.argv[1] == mode and sys.argv[2] == "--source-sha256" and
+@@ -116,12 +116,18 @@
+     need(guard.get("schema") == "pocket4-successor-main-guard-v1" and
+          guard.get("runtime_epoch_sha256") == "a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9" and
+          value.get("guard_after") == guard and retired(value.get("owned_descriptors_final")), "ORIGINAL_RUNTIME_OR_FD_GATE_FAILED")
+-    if CONFIG["kind"] == "explicit47":
+-        need(value.get("schema") == "pocket4-explicit-47-app-scope-observation-v1" and value.get("ok") is True and
+-             value.get("status") == "EXPLICIT_47_PACKAGE_SCOPE_OBSERVED" and value.get("package_count") == 47 and
+-             value.get("original_46_unchanged") is True and value.get("new_helper_matches_actual_install") is True and
++    if CONFIG["kind"] == "explicit48":
++        need(value.get("schema") == "pocket4-explicit-48-app-scope-observation-v1" and value.get("ok") is True and
++             value.get("status") == "EXPLICIT_48_PACKAGE_IDENTITY_SCOPE_OBSERVED" and value.get("package_count") == 48 and
++             value.get("original_47_unchanged") is True and value.get("new_package_matches_actual_discovery") is True and
+              value.get("locks_released") is True and retired(value.get("observation", {}).get("observation_fds")),
+-             "EXPLICIT47_OBSERVATION_GATE_FAILED")
++             "EXPLICIT48_OBSERVATION_GATE_FAILED")
++        need(value.get("discovery_joint_validated") is True and value.get("new_signature_verification_performed") is False and
++             value.get("vendor_artifact_source_trust") == "UNKNOWN" and value.get("original_47_scope_modified") is False and
++             value.get("original_permission_gate_modified") is False and value.get("original_b03_failure_reclassified") is False and
++             value.get("scope_requires_outer_owned_lifetime_and_durable_terminal") is True and
++             value.get("parent_scope_guard_before") == value.get("parent_scope_guard_after"),
++             "IDENTITY_ONLY_SCOPE_WITH_ORIGINAL_FAILURE_PRESERVED")
+         actions = ("Main_UI_actions", "native_commands", "Android_namespace_commands", "ADB_commands", "installs", "permission_changes",
+                    "business_data_content_reads")
+         need(value.get("framework_MAIN_LAUNCHER_resolver_queried") is False and value.get("all_Android_installed_packages_enumerated") is False,

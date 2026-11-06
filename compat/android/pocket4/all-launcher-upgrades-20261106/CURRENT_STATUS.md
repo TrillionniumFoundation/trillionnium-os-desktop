@@ -1,8 +1,32 @@
-# Pocket4 全 Launcher App 修复：检查点 12（进行中）
+# Pocket4 全 Launcher App 修复：检查点 13（进行中）
 
-工作尚未完成。范围为实机全部 Launcher App，原定八个只是其中子集。此前完整解析确认 45 个；最新原生目录已观察到 46 个，新增 `com.example.ndk_tests/com.example.ndk_tests.NdkTestsActivity`，正在核对新增包身份与当前 framework resolver。原 45 包清单保留为历史快照，不冒充当前全集。用户要求完成后清掉旧 Android/framework、旧 App 版本和相关产物，仅保留最新可工作版本、源码、配置与复现清单。真实可用验收仍是清理前提：目前 production ready 为 0 App，删除旧产物为 0 字节。
+工作尚未完成。范围为实机全部 Launcher App，原定八个只是其中子集。新的完整实测确认 46 个 Launcher App、206 个非 APEX APK 包；新增 `com.example.ndk_tests/com.example.ndk_tests.NdkTestsActivity`。原 45 包清单保留为历史快照，不冒充当前全集。用户要求完成后清掉旧 Android/framework、旧 App 版本和相关产物，仅保留最新可工作版本、源码、配置与复现清单。真实可用验收仍是清理前提：目前 production ready 为 0 App，删除旧产物为 0 字节。
 
 ## 最新变化与当前执行位置
+
+当前整合清单位于 `current_launcher_inventory_r3/`。根进程已阅读新证据关联实现，并以只读方式实际重跑：29 项原文输入、46 行 / 86 个 Launcher APK、48 包 / 88 APK 保护范围、12 次升级、3 份有效权限快照、0 个生产验收和 0 字节清理联合断言通过，生成内容与冻结文件逐字节一致。`INVENTORY.json` 为 1,703,185 B / `8932d7b7f18218717de09a2b05860f29d0f3d80f646127d89b6959bd60cc1ea9`。46 项成员关系来自最近完整 native46/PM206 观察；猪八戒升级后没有重新全局枚举。
+
+最新单次搜索失败的独立 no-action 阶段 A 已在新进程实际完成：`1a1b33331ac-fc05-8102` durable exit0，完整 stdout15,528 B / `099a24caac0527f24a97417419cea432b57663cde227d7c844204b2896b08561`。它核实101份历史原件及原拒绝在点击分发前发生，再以原 Session 完成两轮 helper/task/full-foreground 检查，6条记录命令、8个传输、50份当前运行时原件通过；child2531797正常0退出、pidfd关闭、父FD身份恢复。新 candidate15,151 B / `80e722995f0c4304fa6b2d75d03cdb0c32a3fc382d31c4bb0c4781081553bde6` 仅是非授权候选，阶段B尚未实际发布。旧失败继续为FAILED/UNKNOWN；没有伪造后置条件，没有重放点击。新同进程搜索 helper 源已准备，但尚未进行宿主构建、安装或UI操作。
+
+独立发现任务 `1a1b307f521-fc05-807a` 已 durable exit 0，完整 stdout 31,226 B / `474893612abaf6192653b31d16adb808a2d46e92cf6e1683760e532684d5fe5d`，原始 artifact 112,546 B / `69482778466e03dceff2defc85fb8f68880c360a3f112e129561a8fd5e6e5400`。两轮完整 PM/resolver 与 native 目录一致，仅新增上述 NDK 包，旧 47 包保护身份全部不变。新增包实测 UID 10162、code 0、单 APK 1,397,258 B / `b3bf438dedbcdd5f3ac871733a273b3cece446db6be308df73f95b08cb46d164`。PM 的 versionName 字面值为 null，来源仍未知，未据此声称 APK manifest 或正常验签已通过。六条 Android、四条 native 查询正常 0；16,571 个观察 FD 和 20 个 lease 全闭、进程 FD 5→5、owned child 正常 0、pidfd 收口。独立 scope48 任务随后实际通过，旧 scope 和 STOP 保留；新增 APK 的正常验签也已完成，见下文。
+
+贝壳单次搜索点击 case `1a1b30305de-fc05-8072` 实际 failed 1，原 case `EXACT_SUCCESSFUL_FINISH_REQUIRED` / UNKNOWN 保留。一次固定只读诊断 `1a1b30c6205-fc05-8083` durable exit 0：101 份原件共 782,840 B 完整验证，10 条 command / 13 条 transport 正常 0，原 helper 拒绝仍为 `INSPECTED_TREE_OR_WINDOW_CHANGED`，发生在 performAction 之前，helper action_attempted=false / outcome_unknown=false。before、inspect、after 均成功，但没有 postcondition，未重复点击，未发布新 reconciliation。完整私有 bundle 1,102,634 B / `85b3b9801685a427a484cc81b80de64e66df49ceb477efa99901ac2dfb01cee4` 保持 root-private；公开诊断 15,496 B / `c6b1396ac512fe5730497a2de75642cce3d6c0c24bccbc5a9a83a41b37002e9b`。
+
+22:45:19 UTC 的新单次 RAM 观察 `1a1b309af4f-fc05-807d` durable exit 0，MemAvailable 15,556,583,424 B，仍距原 15 GiB 门槛差 549,543,936 B（约 524.09 MiB）。未启动 build09。清理依赖目录正在只读核对，历史 12 件旧 APK 合计 2,136,945,962 B 只是逻辑字节记录，尚非实测可释放空间。
+
+最新 48 包范围已实际完成，并通过固定原文回读。NDK 正常审计 `1a1b3224c52-fc05-80b6` durable exit 0，三条普通工具命令全部正常，完整 stdout 27,424 B / `2ce6ac7f77fe71955ccad5c3a6a85eb9d5ff1b1827ef306cee86968353cba3a3`，artifact 62,533 B / `c6fec2589cf3df6dfdd65c88d14d39c041c1a2449d707618fe4c7f5d6a9639c3`。真实 XML 的三个版本属性均未声明，declared version 保留 null，Android effective code 为 0；min 14 / target 24 / ARM64。v1/v2/v3 正常签名通过并与 PM 证书一致，来源和最新版仍 UNKNOWN。声明 WRITE_EXTERNAL_STORAGE、INTERNET，尚未取得有效授权或功能证据。3,087 个观察 FD 全闭、进程 5→5、owned child 正常 0、pidfd 与父 FD 收口。
+
+猪八戒 r4/full48 正常安装 `1a1b32567fe-fc05-80c6` 已 durable exit 0，并完整联合核验；stdout 15,948 B / `23998b1f6ccd501379f207e0e6534ecaf2a88ede7cdb21702a4bbdbb357fc3d2`。实际从 9.5.11/code369 升至 9.5.20/code370，UID10144、CE/DE inode152967/152970 保留，现装 166,873,622 B / `1822af13f666fea9814a7e571d50cc7def3aad72426d2e3eaa9101dcd6eaefa0` 与 S43 正常同签名候选逐字节一致。四条命令正常0，1,293 个观察 FD 与 51 个 lease 全闭。其他47包完整行相同、美团保存的位置投影与旧 Bili UNKNOWN 保留。升级总数现在为12；没有业务成功或清理结论。
+
+新安装后 scope 固定 reader `1a1b328a3ae-fc05-80d9` durable exit0，完整原文59,259 B / `9aeb555bbc287e168d1bb8f1df09e33f8fd37777ee01a58fe2c563e2725cf01a`；48包/88APK/4,978,910,205逻辑字节。其他47行与升级前原文逐字段一致，ZBJ行等于真实安装后读取，7/7 FD与全进程身份恢复。该范围是安装事务的实际身份范围；本次安装后没有再做全局 resolver 枚举，最近完整 Launcher 枚举仍是46项。
+
+清理依赖元数据观察 `1a1b31db305-fc05-80a6` 已 durable exit0，stdout22,176 B / `8666712057ba0e42bf0ab3e61f4907f92e5cd3afc440f8b391ef2f4e4c3b7e07`。797固定引用中776观测到、20缺失、1未解析；14/16树完整，shared framework work 在38,712条目触达原产物预算，build08树未遍历，均明确INCOMPLETE。观测124,867 FD与20lease全闭，owned生命周期正常。去重元数据的10,889,973,760分配字节包含现行依赖，不是可释放空间。该采样早于新ZBJ升级，原12旧APK之后又新增保留1个旧ZBJ APK；0删除。
+
+贝壳最新失败 bundle 已完整固定回读，101原件核验通过。新预检与两次历史成功预检比较：228个可见路径及搜索按钮字段一致，只有同一非交互TextView的文字/边界/节点hash变化；窗口hash一致。pre-inspect至action捕获约1.6秒，但拒绝瞬间新树未导出，触发字段仍不能确定。正在准备保持完整安全校验的同进程新操作和单独no-action对账，旧FAILED/UNKNOWN未改。
+
+23:23:14 UTC 新只读 RAM 任务 `1a1b32c62a1-fc05-80ee` durable exit0，MemAvailable15,376,605,184 B，仍距原15GiB门槛差729,522,176 B（约695.73MiB）；没有build09，没有降低门槛或停止其他服务。已产生的固定空间原件摘要 `1a1b32ae582-fc05-80e4` 也已durable exit0，完整stdout31,019 B / `b567e93c585d31102fe54db71b37de967f0b99c68b012d1b8fc95cb9aa901230`。原12个旧APK在pre-ZBJ采样中的完整stat均与历史保留回执一致、12个不同inode、nlink各1，实际分配合计2,137,006,080 B；新ZBJ另保留166,858,796逻辑字节的旧APK，其当前分配量未在前次样本中测量。两个固定读取均未修改目标或删除文件；磁盘分配量不等于可回收空间。
+
+以下保留此前步骤及其当时限制，不改写历史结果。
 
 原权限 b03 `1a1b2eccc8a-fc05-8033` 已 durable failed 1：原生目录从 45 变为 46，新增上述 NDK 测试组件、缺少组件为零。旧全 47 包身份及 runtime 前置检查仍匹配；两条 native 读取正常 0，但尚未执行 Android 权限查询即停止。4,557 个观察 FD 全闭、进程 FD 5→5、owned child 正常以 1 退出、pidfd 关闭。原失败和串行 STOP 保留，未 claim b04；新的完整范围需实测后显式接续。
 
@@ -16,19 +40,19 @@
 
 | 项目 | 实际结果 | 限度 |
 |---|---:|---|
-| 历史 PackageManager 非 APEX APK 包 | 205 | 当时的元数据枚举；新增组件后的总数待复核 |
-| 历史 MAIN/LAUNCHER 包 / 组件 | 45 / 45 | 两次解析相同，与当时原生目录逐组件一致 |
-| 最新 native Launcher 组件 | 46 | 新增 NDK 测试组件；当前 PM resolver 与新增身份待核实 |
-| 已明确保护范围 | 47 包 / 87 APK | 原 Launcher 45 包加 actions、当前 QA helper；不冒充新增组件后的完整范围 |
-| 已同签名升级安装 | 11 App | 保留 UID/数据；安装不等于业务可用 |
+| 当前 PackageManager 非 APEX APK 包 | 206 | 新独立发现任务两轮一致；历史为 205 |
+| 当前 MAIN/LAUNCHER 包 / 组件 | 46 / 46 | 新任务两次解析相同，与原生目录逐组件一致 |
+| 新增 NDK 测试组件 | 1 | UID 10162、effective code 0；正常签名和实际 manifest 已验证，来源/最新版未知 |
+| 当前实际身份保护范围 | 48 包 / 88 APK | 最近46个Launcher包加 actions、当前QA helper；ZBJ升级后原文已回读 |
+| 已同签名升级安装 | 12 App | 保留 UID/数据；安装不等于业务可用 |
 | 与当前官方完整资产逐字节相同 | Fcitx、microG | 仍需功能和恢复回归 |
-| 完整 APK 审计通过 | 45 App / 85 APK | 原 b01–04、新 b05 修复、原 b06–12 与新 b13 修复已独立完整关联 |
+| 正常 APK 审计 | 原45 App /85 APK，加NDK 1 APK | ZBJ新版本另由S43正常验签与实际安装后相同字节关联；原证据保留 |
 | 原 b13 | 已执行 3 App / 3 APK，整批 FAILED | fixture 版本字段解析拒绝，其他两个包的个体证据不冒充整批通过 |
 | 完整业务验收 / 删除旧产物 | 0 App / 0 字节 | 长时、重启、故障恢复等未完成 |
 
 范围枚举实际任务 `1a1b22e95d0-fc05-7cd4` durable exit 0；原件和逐包索引分别在 `successor_audit_requests/current_services_r4/actual/` 与 `current_pm_resolver_index-r1/`。
 
-11 个实际升级的历史安装记录：贝壳 3.06.71、东方航空 9.5.16、国航 7.53.0、微信 8.0.80、拼多多 8.30.0、淘宝 10.69.0、滴滴 8.0.18、携程 8.97.4、哔哩哔哩 9.18.0、京东 16.1.50、抖音 41.0.0。美团官方候选与已装包签名不同，没有强制覆盖、重签或卸载数据。12306 仍缺完整合格新包；猪八戒 S41 完整新候选已经 S43 正常整包签名及 metadata 联合核验，实际 9.5.20/code 370，同厂商签名，尚未安装。
+此前11个实际升级的历史安装记录：贝壳 3.06.71、东方航空 9.5.16、国航 7.53.0、微信 8.0.80、拼多多 8.30.0、淘宝 10.69.0、滴滴 8.0.18、携程 8.97.4、哔哩哔哩 9.18.0、京东 16.1.50、抖音 41.0.0。美团官方候选与已装包签名不同，没有强制覆盖、重签或卸载数据。12306 仍缺完整合格新包；猪八戒 S41 完整新候选已经 S43 正常整包签名及 metadata 联合核验，实际9.5.20/code370，同厂商签名；新的r4/full48已实际安装，见顶部最新记录。
 
 ## 历史授权与有效约束
 
@@ -159,3 +183,4 @@ microG 完整私有回读 `1a1b2ea0995-fc05-8030` durable exit 0，压缩 stdout
 - 原实际 installer r2 的 38,684 B 源码从不可变 Git09 恢复，SHA `7fe3d12fd280539939c930970755e9f33ab7cda51f08a03cc54eb5f9c52508eb`；没有猜造缺失实现或读取设备私有数据。
 - 检查点 10 已提交并推送：`c178b683e62158585788b871bd50a12b548d93a2`，tree `03e9848b474f579866e260c0c6156e661c2a15bd`。这份提交保留当时42/82联合通过及b13正在执行的真实快照；后续结果由新的检查点接续。
 - 检查点 11 已提交并推送：`366f94b69b65aa122b10e80ad5e2e8097a75f294`，tree `4cedec3ccd1f57fa23a3de9e26827f9b51489540`。它冻结 45/85/255 完整关联、microG 独立采集更正、贝壳阶段 A 和猪八戒 S43 的实际结果；本检查点继续保留所有原失败与历史快照。
+- 检查点 12 已提交并推送：`c79a17933966b5c61c76adfb0b4995f2ce5b7c25`，tree `1bd49d4168c0232ffad9f48d4c17e6c227a81b10`。它冻结 microG 有效权限解释、原 b03 因 native46 停止、贝壳阶段 B 与 fresh inspect/reader、猪八戒 source-stage 和万豪 S44 HTTP 403；之后的新发现与搜索失败由检查点 13 接续。

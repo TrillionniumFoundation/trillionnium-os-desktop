@@ -1,0 +1,24 @@
+--- actual48-fixed-reader
++++ fixed-ZBJ-post-install48-reader
+@@ -5,11 +5,7 @@
+ import os
+ import stat
+ 
+-PIN = {
+-    'path': '/home/alex/work/pocket4-current-explicit-48-app-observation-20261106-r1/app-scope.private.json',
+-    'bytes': 59957,
+-    'sha256': 'b184299ce0a39a998752ed980a43192b396099f780bcf60bcfe53d0edf92ffe4',
+-}
++PIN = {'bytes': 59259, 'path': '/home/alex/work/pocket4-successor-native-install-20261106-zbj-s43-full48-r4-01/app-scope-after.private.json', 'sha256': '9aeb555bbc287e168d1bb8f1df09e33f8fd37777ee01a58fe2c563e2725cf01a'}
+ FIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_size',
+           'st_nlink', 'st_mtime_ns', 'st_ctime_ns')
+ 
+@@ -76,7 +72,7 @@
+         need(not errors, 'OWNED_FDS_NOT_RETIRED')
+     need(census() == before, 'WHOLE_PROCESS_FD_IDENTITIES_CHANGED')
+     result = {
+-        'schema': 'pocket4-actual-explicit48-scope-readback-v1', 'ok': True,
++        'schema': 'pocket4-zbj-post-install48-scope-readback-v1', 'ok': True,
+         'file': PIN, 'metadata': metadata, 'raw_utf8': bytes(body).decode('utf-8', 'strict'),
+         'whole_process_FD_identities_restored': True,
+         'owned_FDs_acquired': len(owned), 'owned_FDs_closed': len(owned),

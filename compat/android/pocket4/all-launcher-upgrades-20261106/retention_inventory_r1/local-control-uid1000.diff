@@ -1,0 +1,28 @@
+--- initial-assumed-root-control
++++ actual-uid1000-control
+@@ -79,11 +79,20 @@
+             assert limited["gaps"] == [{"type": "RuntimeError", "code": "TREE_WALK_ENTRY_BOUND"}]
+             assert limited["directory_iterators_opened"] == limited["directory_iterators_closed"] == 1
+             result["controls"].append({"name": "real_entry_cap_preserves_incomplete_state_and_closes_iterator", "passed": True})
+-            receipt = output.finish_entries()
+-            raw = Path(receipt["path"]).read_bytes()
+-            assert len(raw) == receipt["bytes"] and hashlib.sha256(raw).hexdigest() == receipt["sha256"]
+-            assert len(raw.splitlines()) == 5 and stat.S_IMODE(Path(receipt["path"]).stat().st_mode) == 0o400
+-            result["controls"].append({"name": "new_private_stream_full_readback_and_no_cleanup_claim", "passed": True})
++            assert os.getuid() == os.geteuid() == 1000
++            try:
++                output.finish_entries()
++            except RuntimeError as error:
++                assert str(error) == "NEW_PRIVATE_METADATA_SHAPE"
++            else:
++                raise AssertionError("UID1000 must not pass the production root-only writer gate")
++            assert output.stream_fd is None
++            raw = (output_dir / "entries.private.jsonl").read_bytes()
++            assert len(raw) == output.stream_bytes and hashlib.sha256(raw).hexdigest() == output.stream_digest.hexdigest()
++            assert len(raw.splitlines()) == 5 and stat.S_IMODE((output_dir / "entries.private.jsonl").stat().st_mode) == 0o400
++            result["controls"].append({"name": "real_UID1000_private_writer_rejected_and_stream_closed", "passed": True})
++            result["root_private_writer_positive_test_performed"] = False
++            result["initial_UID1000_failure_preserved"] = True
+             result["entry_fixture_bytes"] = len(raw)
+             result["entry_fixture_sha256"] = hashlib.sha256(raw).hexdigest()
+         result["ok"] = True

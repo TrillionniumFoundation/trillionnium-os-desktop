@@ -1,0 +1,406 @@
+{
+  "UI_or_install_admitted": false,
+  "app": {
+    "PM_certificate_sha256": [
+      "a899ddfa8c4b57a962c2bb1ae885a44bd904d7b63f6fd301abf514edf70ad72c"
+    ],
+    "PM_version_code": 0,
+    "all_APKs_signature_verified": true,
+    "all_current_signers_equal_PM_records": true,
+    "all_manifests_match_PM_identity": true,
+    "all_permission_names_decoded": true,
+    "apks": [
+      {
+        "bytes": 1397258,
+        "commands": [
+          {
+            "apk_path": "/data/app/~~8JR2GX_46psP21ozXayFmw==/com.example.ndk_tests-HmeuCBFzplykpELLMAOdPA==/base.apk",
+            "argv": [
+              "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+              "-Xmx256m",
+              "-jar",
+              "/usr/share/java/apksigner-35.0.2.jar",
+              "verify",
+              "--verbose",
+              "--print-certs",
+              "/proc/self/fd/90"
+            ],
+            "automatic_retry": false,
+            "ended_utc": "2026-11-06T23:12:14.636131+00:00",
+            "joined": true,
+            "name": "apksigner",
+            "output_capture_complete": true,
+            "own_group_kill_requested": false,
+            "package": "com.example.ndk_tests",
+            "pid": 2494284,
+            "pipes_closed": true,
+            "returncode": 0,
+            "spawned": true,
+            "started_utc": "2026-11-06T23:12:14.325873+00:00",
+            "stderr": {
+              "bytes": 0,
+              "path": "/home/alex/work/pocket4-ndk-current-apk-audit-20261106-r1/p00-a00-apksigner.stderr",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "stdout": {
+              "bytes": 966,
+              "path": "/home/alex/work/pocket4-ndk-current-apk-audit-20261106-r1/p00-a00-apksigner.stdout",
+              "sha256": "f192bdb915607800d7ed5630b579a4c41218f468afec084a6043fc73d08f6217"
+            },
+            "timed_out": false
+          },
+          {
+            "apk_path": "/data/app/~~8JR2GX_46psP21ozXayFmw==/com.example.ndk_tests-HmeuCBFzplykpELLMAOdPA==/base.apk",
+            "argv": [
+              "/var/lib/pocket4-official-aapt2-host-tool-proof-20261106-r3/toolchain/platform/bin/aapt2",
+              "dump",
+              "badging",
+              "/proc/self/fd/90"
+            ],
+            "automatic_retry": false,
+            "ended_utc": "2026-11-06T23:12:14.644292+00:00",
+            "joined": true,
+            "name": "badging",
+            "output_capture_complete": true,
+            "own_group_kill_requested": false,
+            "package": "com.example.ndk_tests",
+            "pid": 2494308,
+            "pipes_closed": true,
+            "returncode": 0,
+            "spawned": true,
+            "started_utc": "2026-11-06T23:12:14.642377+00:00",
+            "stderr": {
+              "bytes": 0,
+              "path": "/home/alex/work/pocket4-ndk-current-apk-audit-20261106-r1/p00-a00-badging.stderr",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "stdout": {
+              "bytes": 1004,
+              "path": "/home/alex/work/pocket4-ndk-current-apk-audit-20261106-r1/p00-a00-badging.stdout",
+              "sha256": "78348b8b173692892fbd7252e455e2d4aeac37360af0f54ff862f3dfb4695ee6"
+            },
+            "timed_out": false
+          },
+          {
+            "apk_path": "/data/app/~~8JR2GX_46psP21ozXayFmw==/com.example.ndk_tests-HmeuCBFzplykpELLMAOdPA==/base.apk",
+            "argv": [
+              "/usr/lib/android-sdk/build-tools/debian/aapt",
+              "dump",
+              "xmltree",
+              "/proc/self/fd/90",
+              "AndroidManifest.xml"
+            ],
+            "automatic_retry": false,
+            "ended_utc": "2026-11-06T23:12:14.656126+00:00",
+            "joined": true,
+            "name": "manifest",
+            "output_capture_complete": true,
+            "own_group_kill_requested": false,
+            "package": "com.example.ndk_tests",
+            "pid": 2494309,
+            "pipes_closed": true,
+            "returncode": 0,
+            "spawned": true,
+            "started_utc": "2026-11-06T23:12:14.651630+00:00",
+            "stderr": {
+              "bytes": 0,
+              "path": "/home/alex/work/pocket4-ndk-current-apk-audit-20261106-r1/p00-a00-manifest.stderr",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "stdout": {
+              "bytes": 1907,
+              "path": "/home/alex/work/pocket4-ndk-current-apk-audit-20261106-r1/p00-a00-manifest.stdout",
+              "sha256": "2c9a43384ad07ff11cf4c4e8be3b8ccc0bd6b69ba71fbe4fecaa9ff1d93472da"
+            },
+            "timed_out": false
+          }
+        ],
+        "declared_permissions": {
+          "all_names_decoded": true,
+          "declared_manifest_only": true,
+          "effective_permission_grants": "UNKNOWN_NOT_QUERIED",
+          "entries": [
+            {
+              "attributes": {
+                "android:name": "\"android.permission.WRITE_EXTERNAL_STORAGE\" (Raw: \"android.permission.WRITE_EXTERNAL_STORAGE\")"
+              },
+              "name": "android.permission.WRITE_EXTERNAL_STORAGE",
+              "raw_name_preserved": true,
+              "tag": "uses-permission"
+            },
+            {
+              "attributes": {
+                "android:name": "\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")"
+              },
+              "name": "android.permission.INTERNET",
+              "raw_name_preserved": true,
+              "tag": "uses-permission"
+            }
+          ]
+        },
+        "file": {
+          "st_ctime_ns": 1794002633656020265,
+          "st_dev": 1811,
+          "st_gid": 1000,
+          "st_ino": 656356,
+          "st_mode": 33188,
+          "st_mtime_ns": 1794002633656020265,
+          "st_nlink": 1,
+          "st_size": 1397258,
+          "st_uid": 1000
+        },
+        "held_bytes_and_full_stat_and_path_unchanged": true,
+        "manifest": {
+          "effective_version_code_source": "ANDROID_ABSENT_ATTRIBUTE_DEFAULT_CONFIRMED_BY_CURRENT_XML_AND_PM_ZERO",
+          "long_version_code": 0,
+          "max_sdk": null,
+          "min_sdk": "14",
+          "native_abi_source": "aapt2_dump_badging_current_APK",
+          "native_abis": [
+            "arm64-v8a"
+          ],
+          "package": "com.example.ndk_tests",
+          "package_line_raw": "package: name='com.example.ndk_tests' versionCode='' versionName='' platformBuildVersionName='12' platformBuildVersionCode='31' compileSdkVersion='31' compileSdkVersionCodename='12'",
+          "split_name": null,
+          "target_sdk": "24",
+          "version_code": null,
+          "version_code_major": null,
+          "version_code_raw": "",
+          "version_default_applied_by_this_adapter": true,
+          "version_default_evidence": {
+            "Android_parser_reference": {
+              "blob": "73df5e8e7b1bbf943a03c852bb5fa1ff8b10fa89",
+              "commit": "13f9d65c456ee75c488b5d5eccdaa277437528ef",
+              "method": "TypedArray.getInteger(attribute, defaultValue)",
+              "origin": "AOSP primary source, not an assertion of exact live ELF provenance",
+              "symbol": "PackageImpl constructor",
+              "typed_version_name": "nullable; no invented display name",
+              "url": "https://android.googlesource.com/platform/frameworks/base.git/+/13f9d65c456ee75c488b5d5eccdaa277437528ef/core/java/com/android/internal/pm/parsing/pkg/PackageImpl.java",
+              "versionCodeMajor_default": 0,
+              "versionCode_default": 0,
+              "versionName_omission_is_null_reference": "https://android.googlesource.com/platform/frameworks/base.git/+/main/core/java/android/content/pm/PackageInfo.java"
+            },
+            "badging_stream": {
+              "bytes": 1004,
+              "sha256": "78348b8b173692892fbd7252e455e2d4aeac37360af0f54ff862f3dfb4695ee6"
+            },
+            "declared_version_name_invented": false,
+            "fixed_APK_sha256": "b3bf438dedbcdd5f3ac871733a273b3cece446db6be308df73f95b08cb46d164",
+            "fixed_PM_version_code": 0,
+            "fresh_normal_signature_matches_fixed_PM": true,
+            "historical_fixture_exception_inherited": false,
+            "schema": "pocket4-current-signed-ndk-absent-version-evidence-v1",
+            "xml_root": {
+              "all_three_version_attributes_absent": true,
+              "missing_or_partial_XML_accepted": false,
+              "root_attributes_original": {
+                "android:compileSdkVersion": "(type 0x10)0x1f",
+                "android:compileSdkVersionCodename": "\"12\" (Raw: \"12\")",
+                "package": "\"com.example.ndk_tests\" (Raw: \"com.example.ndk_tests\")",
+                "platformBuildVersionCode": "(type 0x10)0x1f (Raw: \"31\")",
+                "platformBuildVersionName": "(type 0x10)0xc (Raw: \"12\")"
+              },
+              "root_package": "com.example.ndk_tests",
+              "stream": {
+                "bytes": 1907,
+                "sha256": "2c9a43384ad07ff11cf4c4e8be3b8ccc0bd6b69ba71fbe4fecaa9ff1d93472da"
+              },
+              "version_attribute_declarations": {
+                "android:versionCode": null,
+                "android:versionCodeMajor": null,
+                "android:versionName": null
+              }
+            }
+          },
+          "version_name": null,
+          "version_name_raw": "",
+          "xml_root_observation": {
+            "all_three_version_attributes_absent": true,
+            "missing_or_partial_XML_accepted": false,
+            "root_attributes_original": {
+              "android:compileSdkVersion": "(type 0x10)0x1f",
+              "android:compileSdkVersionCodename": "\"12\" (Raw: \"12\")",
+              "package": "\"com.example.ndk_tests\" (Raw: \"com.example.ndk_tests\")",
+              "platformBuildVersionCode": "(type 0x10)0x1f (Raw: \"31\")",
+              "platformBuildVersionName": "(type 0x10)0xc (Raw: \"12\")"
+            },
+            "root_package": "com.example.ndk_tests",
+            "stream": {
+              "bytes": 1907,
+              "sha256": "2c9a43384ad07ff11cf4c4e8be3b8ccc0bd6b69ba71fbe4fecaa9ff1d93472da"
+            },
+            "version_attribute_declarations": {
+              "android:versionCode": null,
+              "android:versionCodeMajor": null,
+              "android:versionName": null
+            }
+          }
+        },
+        "manifest_matches_PM_package_and_version": true,
+        "parse_errors": [],
+        "path": "/data/app/~~8JR2GX_46psP21ozXayFmw==/com.example.ndk_tests-HmeuCBFzplykpELLMAOdPA==/base.apk",
+        "sha256": "b3bf438dedbcdd5f3ac871733a273b3cece446db6be308df73f95b08cb46d164",
+        "signature": {
+          "API_minimum_override_used": false,
+          "cryptographic_verification_performed": true,
+          "current_signers_equal_PM_certificate_record": true,
+          "integrity_check_bypassed": false,
+          "schemes": {
+            "v1 scheme (JAR signing)": true,
+            "v2 scheme (APK Signature Scheme v2)": true,
+            "v3 scheme (APK Signature Scheme v3)": true,
+            "v3.1 scheme (APK Signature Scheme v3.1)": false,
+            "v4 scheme (APK Signature Scheme v4)": false
+          },
+          "signer_certificate_sha256": [
+            "a899ddfa8c4b57a962c2bb1ae885a44bd904d7b63f6fd301abf514edf70ad72c"
+          ],
+          "verified": true
+        }
+      }
+    ],
+    "base_manifest": {
+      "effective_version_code_source": "ANDROID_ABSENT_ATTRIBUTE_DEFAULT_CONFIRMED_BY_CURRENT_XML_AND_PM_ZERO",
+      "long_version_code": 0,
+      "max_sdk": null,
+      "min_sdk": "14",
+      "native_abi_source": "aapt2_dump_badging_current_APK",
+      "native_abis": [
+        "arm64-v8a"
+      ],
+      "package": "com.example.ndk_tests",
+      "package_line_raw": "package: name='com.example.ndk_tests' versionCode='' versionName='' platformBuildVersionName='12' platformBuildVersionCode='31' compileSdkVersion='31' compileSdkVersionCodename='12'",
+      "split_name": null,
+      "target_sdk": "24",
+      "version_code": null,
+      "version_code_major": null,
+      "version_code_raw": "",
+      "version_default_applied_by_this_adapter": true,
+      "version_default_evidence": {
+        "Android_parser_reference": {
+          "blob": "73df5e8e7b1bbf943a03c852bb5fa1ff8b10fa89",
+          "commit": "13f9d65c456ee75c488b5d5eccdaa277437528ef",
+          "method": "TypedArray.getInteger(attribute, defaultValue)",
+          "origin": "AOSP primary source, not an assertion of exact live ELF provenance",
+          "symbol": "PackageImpl constructor",
+          "typed_version_name": "nullable; no invented display name",
+          "url": "https://android.googlesource.com/platform/frameworks/base.git/+/13f9d65c456ee75c488b5d5eccdaa277437528ef/core/java/com/android/internal/pm/parsing/pkg/PackageImpl.java",
+          "versionCodeMajor_default": 0,
+          "versionCode_default": 0,
+          "versionName_omission_is_null_reference": "https://android.googlesource.com/platform/frameworks/base.git/+/main/core/java/android/content/pm/PackageInfo.java"
+        },
+        "badging_stream": {
+          "bytes": 1004,
+          "sha256": "78348b8b173692892fbd7252e455e2d4aeac37360af0f54ff862f3dfb4695ee6"
+        },
+        "declared_version_name_invented": false,
+        "fixed_APK_sha256": "b3bf438dedbcdd5f3ac871733a273b3cece446db6be308df73f95b08cb46d164",
+        "fixed_PM_version_code": 0,
+        "fresh_normal_signature_matches_fixed_PM": true,
+        "historical_fixture_exception_inherited": false,
+        "schema": "pocket4-current-signed-ndk-absent-version-evidence-v1",
+        "xml_root": {
+          "all_three_version_attributes_absent": true,
+          "missing_or_partial_XML_accepted": false,
+          "root_attributes_original": {
+            "android:compileSdkVersion": "(type 0x10)0x1f",
+            "android:compileSdkVersionCodename": "\"12\" (Raw: \"12\")",
+            "package": "\"com.example.ndk_tests\" (Raw: \"com.example.ndk_tests\")",
+            "platformBuildVersionCode": "(type 0x10)0x1f (Raw: \"31\")",
+            "platformBuildVersionName": "(type 0x10)0xc (Raw: \"12\")"
+          },
+          "root_package": "com.example.ndk_tests",
+          "stream": {
+            "bytes": 1907,
+            "sha256": "2c9a43384ad07ff11cf4c4e8be3b8ccc0bd6b69ba71fbe4fecaa9ff1d93472da"
+          },
+          "version_attribute_declarations": {
+            "android:versionCode": null,
+            "android:versionCodeMajor": null,
+            "android:versionName": null
+          }
+        }
+      },
+      "version_name": null,
+      "version_name_raw": "",
+      "xml_root_observation": {
+        "all_three_version_attributes_absent": true,
+        "missing_or_partial_XML_accepted": false,
+        "root_attributes_original": {
+          "android:compileSdkVersion": "(type 0x10)0x1f",
+          "android:compileSdkVersionCodename": "\"12\" (Raw: \"12\")",
+          "package": "\"com.example.ndk_tests\" (Raw: \"com.example.ndk_tests\")",
+          "platformBuildVersionCode": "(type 0x10)0x1f (Raw: \"31\")",
+          "platformBuildVersionName": "(type 0x10)0xc (Raw: \"12\")"
+        },
+        "root_package": "com.example.ndk_tests",
+        "stream": {
+          "bytes": 1907,
+          "sha256": "2c9a43384ad07ff11cf4c4e8be3b8ccc0bd6b69ba71fbe4fecaa9ff1d93472da"
+        },
+        "version_attribute_declarations": {
+          "android:versionCode": null,
+          "android:versionCodeMajor": null,
+          "android:versionName": null
+        }
+      }
+    },
+    "code_path": "/data/app/~~8JR2GX_46psP21ozXayFmw==/com.example.ndk_tests-HmeuCBFzplykpELLMAOdPA==",
+    "complete_APK_set_observed": true,
+    "data_directories": {
+      "user": {
+        "device": 1811,
+        "gid": 10162,
+        "inode": 161234,
+        "status": "PRESENT",
+        "uid": 10162
+      },
+      "user_de": {
+        "device": 1811,
+        "gid": 10162,
+        "inode": 163339,
+        "status": "PRESENT",
+        "uid": 10162
+      }
+    },
+    "one_base_manifest_observed": true,
+    "package": "com.example.ndk_tests",
+    "uid": 10162
+  },
+  "artifact": {
+    "bytes": 62533,
+    "sha256": "c6fec2589cf3df6dfdd65c88d14d39c041c1a2449d707618fe4c7f5d6a9639c3"
+  },
+  "command_normal_exits": 3,
+  "full48_scope_preserved": true,
+  "job_id": "1a1b3224c52-fc05-80b6",
+  "layout_observations": 8,
+  "owned_child_lifecycle": {
+    "child_pid": 2494210,
+    "errors": [],
+    "owned_child_sigkill_count": 0,
+    "parent_descriptors_restored": true,
+    "pidfd_acquired": true,
+    "pidfd_closed": true,
+    "pidfd_exit_observed": true,
+    "returncode": 0,
+    "timeout": false
+  },
+  "owned_descriptors_final": {
+    "acquired": 3087,
+    "closed": 3087,
+    "errors": [],
+    "remaining": 0
+  },
+  "process_FDs_after": 5,
+  "process_FDs_before": 5,
+  "production_ready": false,
+  "schema": "pocket4-root-ndk-apk-audit-validation-v1",
+  "source_origin_still_unknown": true,
+  "status": "PASS_NORMAL_SIGNATURE_AND_METADATA_ONLY",
+  "stdout": {
+    "bytes": 27424,
+    "sha256": "2ce6ac7f77fe71955ccad5c3a6a85eb9d5ff1b1827ef306cee86968353cba3a3"
+  },
+  "terminal_sha256": "cdd8d6f7b0937f1b80baac1f1005bb8f199fe1aa7eec16bf5807141eeccd46c1"
+}

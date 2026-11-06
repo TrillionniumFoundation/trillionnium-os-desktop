@@ -1,0 +1,111 @@
+--- actual-current-services-r4
++++ independent-retention-observer-r1
+@@ -14,7 +14,7 @@
+ import zlib
+ 
+ sys.dont_write_bytecode = True
+-CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r4', 'worker': {'bytes': 39573, 'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r4/observe_current_services.py', 'sha256': '4fda5cdf8fda65155c4187a1e8e5381aba59011329c824b98ad2e0c0b8aa8f0e'}, 'request': {'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r4/request.review-only.json', 'bytes': 2159, 'sha256': '9373ac552cb178431b989768318b013287e5dfe687338dd82f9ef8c7ced82f6c'}, 'prior_source': {'bytes': 16637, 'sha256': '1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc', 'preserved': True, 'actual_prior_execution_job': '1a1b1e97bb7-fc05-7b79', 'scope_authority_not_inherited': True}}
++CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'retention', 'stage_root': '/home/alex/work/pocket4-retention-metadata-source-20261106-r2', 'worker': {'path': '/home/alex/work/pocket4-retention-metadata-source-20261106-r2/observe_retention.py', 'bytes': 37625, 'sha256': '7974525bda72cd2b20d1e364aa765df4f3ebcdde0f9931180b0e344f37b64670'}, 'request': {'path': '/home/alex/work/pocket4-retention-metadata-source-20261106-r2/request.review-only.json', 'bytes': 738, 'sha256': 'b9bf6a7e0e03374b818e406959a305049dadc56f4bc3520f9759dc3b220cde04'}, 'prior_source': {'bytes': 18837, 'sha256': 'ad2db51aa4445e6e5b5dc07439182556d51ec629cd8487ac9d3b1e5cf947a55c', 'preserved': True, 'actual_prior_execution_job': '1a1b22e95d0-fc05-7cd4', 'scope_authority_not_inherited': True}}
+ SELF_PIN = None
+ SUPPORT = {
+     "path": "/home/alex/work/pocket4-beike-owned-generation-20261106-b34f158f88bbebf112840fd88df25d03/prepare_beike_owned_lifetime.py",
+@@ -78,7 +78,7 @@
+ def enter(mode):
+     global SELF_PIN
+     need(type(CONFIG) is dict and set(CONFIG) == {"schema", "kind", "stage_root", "worker", "request", "prior_source"} and
+-         CONFIG["schema"] == "pocket4-owned-readonly-observation-config-v1" and CONFIG["kind"] in ("explicit47", "calendar", "services"),
++         CONFIG["schema"] == "pocket4-owned-readonly-observation-config-v1" and CONFIG["kind"] == "retention",
+          "UNSEALED_NO_RUNTIME")
+     need(str(Path(__file__).resolve()) == CONFIG["stage_root"] + "/owned_readonly_lifetime.py", "EXACT_REAL_NEW_SOURCE_FILE")
+     need(len(sys.argv) == 6 and sys.argv[1] == mode and sys.argv[2] == "--source-sha256" and
+@@ -92,7 +92,7 @@
+ def decode_worker(raw):
+     need(type(raw) is bytes and 0 < len(raw) <= 98304 and len(raw.splitlines()) == 1, "ONE_BOUNDED_ORIGINAL_WORKER_RESULT")
+     value = json.loads(raw)
+-    if CONFIG["kind"] in ("calendar", "services"):
++    if CONFIG["kind"] == "retention":
+         need(set(value) == {"encoding", "artifact_bytes", "artifact_sha256", "data"} and value["encoding"] == "zlib-base64" and
+              type(value["artifact_bytes"]) is int and 0 < value["artifact_bytes"] <= 524288, "CALENDAR_ARTIFACT_PROTOCOL")
+         decoder = zlib.decompressobj()
+@@ -109,53 +109,29 @@
+ 
+ 
+ def worker_gate(value, returned):
+-    need(returned == 0 and value.get("errors") == [] and value.get("automatic_retry") is False and
++    need(returned == 0 and value.get("schema") == "pocket4-bounded-retention-observation-v1" and
++         value.get("ok") is True and value.get("errors") == [] and value.get("automatic_retry") is False and
+          value.get("production_ready") is False and value.get("process_FDs_before") == value.get("process_FDs_after"),
+-         "ORIGINAL_WORKER_DID_NOT_PASS")
++         "RETENTION_WORKER_DID_NOT_PASS")
+     guard = value.get("guard_before", {})
+     need(guard.get("schema") == "pocket4-successor-main-guard-v1" and
+          guard.get("runtime_epoch_sha256") == "a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9" and
+-         value.get("guard_after") == guard and retired(value.get("owned_descriptors_final")), "ORIGINAL_RUNTIME_OR_FD_GATE_FAILED")
+-    if CONFIG["kind"] == "explicit47":
+-        need(value.get("schema") == "pocket4-explicit-47-app-scope-observation-v1" and value.get("ok") is True and
+-             value.get("status") == "EXPLICIT_47_PACKAGE_SCOPE_OBSERVED" and value.get("package_count") == 47 and
+-             value.get("original_46_unchanged") is True and value.get("new_helper_matches_actual_install") is True and
+-             value.get("locks_released") is True and retired(value.get("observation", {}).get("observation_fds")),
+-             "EXPLICIT47_OBSERVATION_GATE_FAILED")
+-        actions = ("Main_UI_actions", "native_commands", "Android_namespace_commands", "ADB_commands", "installs", "permission_changes",
+-                   "business_data_content_reads")
+-        need(value.get("framework_MAIN_LAUNCHER_resolver_queried") is False and value.get("all_Android_installed_packages_enumerated") is False,
+-             "EXPLICIT_SCOPE_MUST_NOT_CLAIM_GLOBAL_RESOLVER")
+-    elif CONFIG["kind"] == "calendar":
+-        need(value.get("schema") == "pocket4-independent-calendar-aapt2-resource-comparison-v2" and
+-             value.get("status") == "INDEPENDENT_TWO_APK_RESOURCE_COMPARISON_COMPLETE" and
+-             all(value.get(key) is True for key in ("snapshot_consistent", "all_primary_commands_succeeded",
+-                 "legacy_badging_observations_complete", "all_manifests_and_signatures_verified", "all_tool_children_joined", "action_lock_released")) and
+-             value.get("unjoined_tool_pids") == [] and len(value.get("commands", [])) == 8 and
+-             value.get("packages") == ["com.android.calendar", "org.fcitx.fcitx5.android"], "CALENDAR_COMPARISON_GATE_FAILED")
+-        need(value.get("original_failed_audit_reclassified") is False and value.get("original_batch_05_gate_advanced") is False,
+-             "ORIGINAL_FAILURE_MUST_REMAIN")
+-        actions = ("UI_actions", "App_launches", "permission_changes", "installs", "Android_namespace_commands", "ADB_commands", "business_data_content_reads")
+-    else:
+-        need(value.get("schema") == "pocket4-current-readonly-services-observation-v1" and value.get("ok") is True and
+-             value.get("status") == "CURRENT_PM_AND_MAIN_LAUNCHER_OBSERVED" and
+-             value.get("current_scope_47_unchanged") is True and len(value.get("packages", [])) == 47 and
+-             value.get("app_scope_reference", {}).get("sha256") == "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f" and
+-             value.get("PM_user0_installed_APK_packages_enumerated") is True and
+-             value.get("MAIN_LAUNCHER_resolver_queried") is True and value.get("enumeration_samples_equal") is True and
+-             value.get("Android_namespace_commands") == 5 and value.get("native_command_count") == 3 and
+-             len(value.get("android_commands", [])) == 5 and len(value.get("native_commands", [])) == 3 and
+-             all(row.get("complete") is True and row.get("joined") is True and row.get("returncode") == 0 and
+-                 row.get("termination_attempted") is False and row.get("errors") == [] for row in value["android_commands"]) and
+-             value.get("held_namespace_target_closed") is True and value.get("action_lock_released") is True and
+-             retired(value.get("lease_FDs_final")), "READONLY_SERVICE_ENUMERATION_AND_RETIREMENT_GATE_FAILED")
+-        need(value.get("permission_queries_executed") is False and value.get("effective_permission_grants") == "UNKNOWN" and
+-             value.get("effective_AppOps_and_roles") == "UNKNOWN_NOT_QUERIED" and set(value.get("help_results", {})) == {"package"} and
+-             value.get("compiled_Beike_scope_modified") is False and value.get("old_Bili_unknown_reclassified") is False and
+-             value.get("meituan_saved_location_unchanged") is True and value.get("all_installed_APK_bytes_bound") is False,
+-             "READONLY_QUERY_MUST_NOT_CLAIM_GRANTS_OR_EXPAND_UI_AUTHORITY")
+-        actions = ("UI_actions", "App_launches", "installs", "permission_changes", "lifecycle_commands", "ADB_commands", "business_data_content_reads")
+-    need(all(type(value.get(key)) is int and value[key] == 0 for key in actions), "READ_ONLY_ACTION_BOUNDARY_CHANGED")
++         value.get("guard_after") == guard and retired(value.get("owned_descriptors_final")) and
++         retired(value.get("lease_FDs_final")) and value.get("action_lock_released") is True,
++         "RETENTION_RUNTIME_OR_FD_GATE_FAILED")
++    need(value.get("status") == "BOUNDED_DEPENDENCY_METADATA_OBSERVED_WITH_EXPLICIT_GAPS" and
++         value.get("bounded_observation_finished") is True and value.get("scope_references_unchanged") is True and
++         value.get("protected_scope_before") == value.get("protected_scope_after") and
++         value.get("current_scope_reference", {}).get("sha256") == "b184299ce0a39a998752ed980a43192b396099f780bcf60bcfe53d0edf92ffe4" and
++         value.get("exact_reference_summary", {}).get("count") == 797 and len(value.get("tree_observations", [])) == 16 and
++         value.get("reclaimable_bytes") is None and value.get("cleanup_eligible") == 0 and
++         value.get("inventory_exhaustive_or_cleanup_qualified") is False and value.get("complete_installed_package_set_claimed") is False and
++         value.get("old_failed_or_unknown_receipts_reclassified") is False,
++         "RETENTION_METADATA_MUST_NOT_PROMOTE_CLEANUP")
++    actions = ("deletions", "moves", "existing_permission_changes", "existing_process_signals", "UI_actions", "App_launches",
++               "installs", "permission_changes", "native_command_count", "Android_namespace_commands", "ADB_commands",
++               "business_data_content_reads", "worker_direct_commands")
++    need(all(type(value.get(key)) is int and value[key] == 0 for key in actions), "RETENTION_READ_ONLY_BOUNDARY")
+ 
+ 
+ def child():
+@@ -259,7 +235,7 @@
+         support.pin_runtime_files(probe, observed)
+         before = probe.census()
+         life, raw, stderr = probe.run_owned_child([sys.executable, "-I", "-B", str(Path(__file__).resolve()), "--child",
+-            "--source-sha256", SELF_PIN["sha256"], "--source-bytes", str(SELF_PIN["bytes"])], seconds=1000)
++            "--source-sha256", SELF_PIN["sha256"], "--source-bytes", str(SELF_PIN["bytes"])], seconds=220)
+         result["child_lifecycle"] = life
+         result["child_stdout"] = publish("child.stdout.original.json", raw)
+         result["child_stderr"] = publish("child.stderr.original", stderr)

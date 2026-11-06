@@ -1,0 +1,41 @@
+--- actual-current-services-r4
++++ independent-retention-observer-r1
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""New exact source/input stage, then five fixed read-only PackageManager queries."""
++"""New exact metadata-only source/input stage; no native or Android commands."""
+ import hashlib
+ import json
+ import os
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT='/home/alex/work/pocket4-current-readonly-services-source-20261106-r4'
+-FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 18837, 'sha256': 'ad2db51aa4445e6e5b5dc07439182556d51ec629cd8487ac9d3b1e5cf947a55c'}, {'name': 'observe_current_services.py', 'bytes': 39573, 'sha256': '4fda5cdf8fda65155c4187a1e8e5381aba59011329c824b98ad2e0c0b8aa8f0e'}, {'name': 'readonly_services_transport.py', 'bytes': 16536, 'sha256': '4f8a4317332a1c80796378abfd0134a3329dd6acde9f06e96d8e52b70b3029b3'}, {'name': 'request.review-only.json', 'bytes': 2159, 'sha256': '9373ac552cb178431b989768318b013287e5dfe687338dd82f9ef8c7ced82f6c'}]
++ROOT = '/home/alex/work/pocket4-retention-metadata-source-20261106-r1'
++FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 16153, 'sha256': '64c15bcb4a7fe6f1d761c05f63c67a4d52d9dcedcb34a39e48865eccdad3bdfe'}, {'name': 'observe_retention.py', 'bytes': 37600, 'sha256': '1673b0d312de29889a931c9120e8c46e77f5010d76ba46510089f9dd397bf6bc'}, {'name': 'request.review-only.json', 'bytes': 738, 'sha256': '9fef67d494ac6e89f64b2c1c42b8f1d6f39a0194534ecc8dff00cab3aa253dce'}, {'name': 'scope.review-only.json', 'bytes': 125632, 'sha256': '779a0319e956c940c720cdeefa0b0c0456bdbc3fada32de9c9441032f9fec70d'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):
+@@ -64,9 +64,9 @@
+ def main():
+     need(os.getuid()==os.geteuid()==0,'ACTUAL_EXISTING_HOST_ROOT_REQUIRED')
+     os.umask(0o077);before_fds=len(os.listdir('/proc/self/fd'))
+-    raw=sys.stdin.buffer.read(262145);need(0<len(raw)<=262144,'BOUNDED_EXACT_INPUT')
++    raw=sys.stdin.buffer.read(193301);need(len(raw)==193300,'BOUNDED_EXACT_INPUT')
+     payload=json.loads(raw)
+-    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-current-readonly-services-source-stage-v4','CLOSED_STAGE_PAYLOAD')
++    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-retention-metadata-source-stage-v1','CLOSED_STAGE_PAYLOAD')
+     need(type(payload['files']) is list and len(payload['files'])==len(FILES),'EXACT_FILE_COUNT')
+     inputs=[]
+     for expected,item in zip(FILES,payload['files']):
+@@ -104,7 +104,7 @@
+             except OSError:errors.append(fd)
+         need(not errors,'STAGE_FDS_NOT_CLOSED')
+     after_fds=len(os.listdir('/proc/self/fd'));need(after_fds==before_fds,'STAGE_DESCRIPTOR_DIFFERENCE')
+-    print(canonical({'schema':'pocket4-current-readonly-services-source-stage-result-v4','source_stage_ok':True,'source_root':ROOT,'files':FILES,
++    print(canonical({'schema':'pocket4-retention-metadata-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
+          'bootstrap_FDs_before':before_fds,'bootstrap_FDs_after':after_fds,'worker_about_to_exec_once':True,
+          'stage_Main_reads':0,'stage_namespace_entries':0,'stage_installs':0,'stage_UI_actions':0,'automatic_retry':False}).decode(),flush=True)
+     wrapper=FILES[0]

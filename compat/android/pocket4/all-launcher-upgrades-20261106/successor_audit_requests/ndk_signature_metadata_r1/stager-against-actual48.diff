@@ -1,0 +1,38 @@
+--- actual-frozen-source
++++ independent-ndk-r1
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""New exact source/input stage, then one explicit 48-package identity observation."""
++"""New exact source/input stage, then one independent NDK signature and metadata audit."""
+ import hashlib
+ import json
+ import os
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT='/home/alex/work/pocket4-explicit-48-scope-source-20261106-r1'
+-FILES=[{'name': 'owned_readonly_lifetime.py', 'bytes': 17291, 'sha256': 'f42eaeab2bea2f9a697b705e5903aac6257d7c94698ee85cbc97bbf78b25064e'}, {'name': 'observe_explicit_48.py', 'bytes': 25701, 'sha256': '1a31ce69146c8e76fea904c981872b2c57a305dd2b74ba4410468cac2b47b4e4'}, {'name': 'request.review-only.json', 'bytes': 3263, 'sha256': 'df95dab44c6d5112e6163209ad0d35d4a87f887bea780710028c1f45af18037e'}, {'name': 'inputs/discovery-artifact.original.json', 'bytes': 112546, 'sha256': '69482778466e03dceff2defc85fb8f68880c360a3f112e129561a8fd5e6e5400'}, {'name': 'inputs/discovery-stdout.original.jsonl', 'bytes': 31226, 'sha256': '474893612abaf6192653b31d16adb808a2d46e92cf6e1683760e532684d5fe5d'}, {'name': 'inputs/discovery-terminal.original.json', 'bytes': 733, 'sha256': 'f16d1da55f8afa0da6f91f37186fff39dc50ba12a22e54b048290e723dc797bd'}]
++ROOT='/home/alex/work/pocket4-ndk-current-apk-audit-source-20261106-r1'
++FILES=[{'name': 'owned_readonly_lifetime.py', 'bytes': 19302, 'sha256': '4bddbdf554468faa4df4f837995c97db2b46234509c2aaf8332fde393c5b4f70'}, {'name': 'audit_ndk_current.py', 'bytes': 75213, 'sha256': '745a85c39be224d9f62fc6700ac71d9f3f4110f60ecca2e217b970bb643ea1fc'}, {'name': 'request.review-only.json', 'bytes': 4396, 'sha256': 'c9d690b68771e84f99575c326b25c98b863d171516bf62f6d6043b9c3e5df4d0'}, {'name': 'inputs/scope48.stdout.original.jsonl', 'bytes': 22547, 'sha256': 'ae494d741522c8ff5efcfe7c36b256790c1387e6ee62824b9538a7ec785494ae'}, {'name': 'inputs/scope48.terminal.original.json', 'bytes': 733, 'sha256': '76d9c72989ac5af982c25692bb06acb0c4e815742a24b19efbc7a3e836328ea1'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):
+@@ -66,7 +66,7 @@
+     os.umask(0o077);before_fds=len(os.listdir('/proc/self/fd'))
+     raw=sys.stdin.buffer.read(262145);need(0<len(raw)<=262144,'BOUNDED_EXACT_INPUT')
+     payload=json.loads(raw)
+-    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-explicit48-owned-scope-source-stage-v1','CLOSED_STAGE_PAYLOAD')
++    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-ndk-apk-audit-source-stage-v1','CLOSED_STAGE_PAYLOAD')
+     need(type(payload['files']) is list and len(payload['files'])==len(FILES),'EXACT_FILE_COUNT')
+     inputs=[]
+     for expected,item in zip(FILES,payload['files']):
+@@ -104,7 +104,7 @@
+             except OSError:errors.append(fd)
+         need(not errors,'STAGE_FDS_NOT_CLOSED')
+     after_fds=len(os.listdir('/proc/self/fd'));need(after_fds==before_fds,'STAGE_DESCRIPTOR_DIFFERENCE')
+-    print(canonical({'schema':'pocket4-explicit48-owned-scope-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
++    print(canonical({'schema':'pocket4-ndk-apk-audit-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
+          'bootstrap_FDs_before':before_fds,'bootstrap_FDs_after':after_fds,'worker_about_to_exec_once':True,
+          'stage_Main_reads':0,'stage_namespace_entries':0,'stage_installs':0,'stage_UI_actions':0,'automatic_retry':False}).decode(),flush=True)
+     wrapper=FILES[0]

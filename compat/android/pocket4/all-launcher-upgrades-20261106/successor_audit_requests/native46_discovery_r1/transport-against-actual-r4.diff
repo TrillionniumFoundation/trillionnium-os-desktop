@@ -1,0 +1,17 @@
+--- actual-current-services-r4
++++ independent-native46-discovery-r1
+@@ -21,13 +21,7 @@
+ FRAMEWORK_EPOCH_SHA256 = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
+ HELD_HELPER_SHA256 = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+ EXPLICIT_SCOPE_SHA256 = "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f"
+-READ_ONLY_COMMANDS = (
+-    ("/system/bin/cmd", "package", "help"),
+-    ("/system/bin/cmd", "package", "list", "packages", "-U", "--show-versioncode", "--match-libraries", "--user", "0"),
+-    ("/system/bin/cmd", "package", "query-activities", "--components", "--user", "0", "-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER"),
+-    ("/system/bin/cmd", "package", "list", "packages", "-U", "--show-versioncode", "--match-libraries", "--user", "0"),
+-    ("/system/bin/cmd", "package", "query-activities", "--components", "--user", "0", "-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER"),
+-)
++READ_ONLY_COMMANDS = (('/system/bin/cmd', 'package', 'help'), ('/system/bin/cmd', 'package', 'list', 'packages', '-U', '--show-versioncode', '--match-libraries', '--user', '0'), ('/system/bin/cmd', 'package', 'query-activities', '--components', '--user', '0', '-a', 'android.intent.action.MAIN', '-c', 'android.intent.category.LAUNCHER'), ('/system/bin/cmd', 'package', 'list', 'packages', '-U', '--show-versioncode', '--match-libraries', '--user', '0'), ('/system/bin/cmd', 'package', 'query-activities', '--components', '--user', '0', '-a', 'android.intent.action.MAIN', '-c', 'android.intent.category.LAUNCHER'), ('/system/bin/cmd', 'package', 'dump-package', 'com.example.ndk_tests'))
+ HOST_ENV = {"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "HOME": "/root", "LANG": "C.UTF-8"}
+ REQUIRED_ENV = {"PATH", "BOOTCLASSPATH", "DEX2OATBOOTCLASSPATH",
+                 "ANDROID_ROOT", "ANDROID_DATA", "ANDROID_ART_ROOT"}

@@ -1,0 +1,16 @@
+{
+  "args": [
+    "-I",
+    "-B",
+    "-c",
+    "\"\"\"One read of host meminfo after settled build08; no retry or build authority.\"\"\"\nimport os\nimport sys\nimport time\nimport json\nimport hashlib\nfrom datetime import datetime, timezone\n\ndef require(value, reason):\n    if not value:\n        raise RuntimeError(reason)\n\ndef parse_admission_meminfo(raw):\n    require(isinstance(raw, bytes) and 0 < len(raw) <= 16384,\n            \"fixed meminfo byte bound differs\")\n    names = {\"MemTotal\", \"MemAvailable\", \"SwapTotal\", \"SwapFree\", \"SwapCached\"}\n    memory = {}\n    for line in raw.decode(\"ascii\", \"strict\").splitlines():\n        name, separator, value = line.partition(\":\")\n        if name not in names:\n            continue\n        require(name not in memory, \"duplicate required meminfo field\")\n        words = value.split()\n        require(separator == \":\" and len(words) == 2 and words[0].isdigit() and words[1] == \"kB\",\n                \"required meminfo field units differ\")\n        memory[name] = int(words[0]) * 1024\n    require(set(memory) == names, \"required meminfo fields incomplete\")\n    require(0 < memory[\"MemTotal\"] and 0 <= memory[\"MemAvailable\"] <= memory[\"MemTotal\"] and\n            0 <= memory[\"SwapFree\"] <= memory[\"SwapTotal\"] and memory[\"SwapCached\"] >= 0,\n            \"required meminfo values inconsistent\")\n    return memory\n\nrequire(sys.argv == ['-c', '--sample-once'], 'one fixed read-only invocation')\nrequire(os.getuid() == os.geteuid() == 1000, 'existing operator identity required')\nstarted = time.monotonic()\nfd = os.open('/proc/meminfo', os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)\ntry:\n    raw = os.read(fd, 16385)\nfinally:\n    os.close(fd)\nvalues = parse_admission_meminfo(raw)\nrequire(time.monotonic() - started <= 5, 'bounded single meminfo observation')\nprint(json.dumps({'schema': 'pocket4-single-host-memory-observation-v1',\n    'observed_utc': datetime.now(timezone.utc).isoformat(), 'raw_ascii': raw.decode('ascii'),\n    'raw_bytes': len(raw), 'raw_sha256': hashlib.sha256(raw).hexdigest(), 'values_bytes': values,\n    'original_minimum_bytes': 15 * 1024 ** 3,\n    'difference_from_original_minimum_bytes': values['MemAvailable'] - 15 * 1024 ** 3,\n    'fresh_build_resource_admission_replaced': False, 'build_or_retry_admitted': False,\n    'Main_commands': 0, 'Android_commands': 0, 'signals': 0, 'writes': 0,\n    'swap_or_resource_settings_changed': False, 'automatic_retry': False,\n    'production_ready': False}, sort_keys=True))\n",
+    "--sample-once"
+  ],
+  "cpu_quota_percent": 25,
+  "executable": "/usr/bin/python3",
+  "host": "pocket4",
+  "idempotency_key": "pocket4-after-zbj-full48-r4-host-memory-snapshot-r1-20261106",
+  "memory_max_bytes": 268435456,
+  "nice": 10,
+  "timeout_seconds": 30
+}

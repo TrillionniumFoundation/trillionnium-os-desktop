@@ -1,0 +1,129 @@
+{
+  "Android_command_count_expected": 6,
+  "Main_commands_executed": 0,
+  "cleanup_actions": 0,
+  "controls": {
+    "bytes": 1163,
+    "path": "local-controls.stdout.original.jsonl",
+    "sha256": "245d02d8e27391e3a363c4aba0bd91b059119054e7cc72dca9d75482fc1c6f43"
+  },
+  "controls_actual_uid": 1000,
+  "controls_count": 5,
+  "controls_euid": 1000,
+  "controls_stderr": {
+    "bytes": 0,
+    "path": "local-controls.stderr.original.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "framework_resolver_requeried_after_dump": false,
+  "framework_resolver_samples_before_dump": 2,
+  "last_native_sample_not_a_new_framework_query": true,
+  "native_commands_expected": [
+    "status",
+    "applications",
+    "applications",
+    "status"
+  ],
+  "new_package_actual_UID_or_version_known": false,
+  "new_scope_published": false,
+  "old47_scope_changed": false,
+  "original45_permission_guard_changed": false,
+  "owned": {
+    "bytes": 20365,
+    "path": "owned_readonly_lifetime.py",
+    "sha256": "c121e6eea1b5162048cbb40207aaef2861be527fed554e8bc5c44d3229524cc0"
+  },
+  "payload": {
+    "bytes": 200045,
+    "path": "stage.stdin.original.json",
+    "sha256": "991cd55a001d5ee5937fe10d29a81c21e2edd1a4f0e8a270f27b63792cf019d9"
+  },
+  "payload_members": [
+    {
+      "bytes": 20365,
+      "name": "owned_readonly_lifetime.py",
+      "sha256": "c121e6eea1b5162048cbb40207aaef2861be527fed554e8bc5c44d3229524cc0"
+    },
+    {
+      "bytes": 57910,
+      "name": "observe_native46.py",
+      "sha256": "4055403ac0fd5637c3f9183abeb04a813036c7a63cea4d7d994b7bd97cc2003b"
+    },
+    {
+      "bytes": 16586,
+      "name": "readonly_services_transport.py",
+      "sha256": "786793e5aaa718cac509615107ceec5a22c0fde0831cb0e632343effc34e546f"
+    },
+    {
+      "bytes": 2123,
+      "name": "request.review-only.json",
+      "sha256": "4f528d9944678dc30e81c7b05e04e525c75ad813eb9c17cf1fa85db5c630df13"
+    },
+    {
+      "bytes": 79176,
+      "name": "inputs/previous_pm.json",
+      "sha256": "185c6b0900aab78228e44788ea28b10d71c39cfeee8846fcb8c99c13a9f123fc"
+    },
+    {
+      "bytes": 12181,
+      "name": "inputs/failed_capture.json",
+      "sha256": "f5ff1b1758803a9537bd84023146fa62ac72d8587b1dc94605868413dd2ffc08"
+    },
+    {
+      "bytes": 730,
+      "name": "inputs/failed_terminal.json",
+      "sha256": "4a95cb262ac9b2d8d4a0437c53fde9e82ea47b4529e6fd0e79fa87b32ef24552"
+    }
+  ],
+  "peer_static_review": {
+    "agent": "/root/sidecar_evidence",
+    "controls_run_by_peer": false,
+    "limitation": "Both actual PM/resolver query pairs precede dump; final applications is native only.",
+    "remote_calls": 0,
+    "sources_reviewed": [
+      "discovery_functions.py.inc",
+      "worker-against-actual-r4.diff",
+      "readonly_services_transport.py",
+      "frozen core package_rows/apk_paths/hash_fd/app_scope"
+    ],
+    "verdict": "NO_CONCRETE_STATIC_BLOCKER_FOUND"
+  },
+  "process_payload_exact": true,
+  "process_request": {
+    "bytes": 227159,
+    "path": "process-request.review-only.json",
+    "sha256": "2289da4de5b64148455e05a9d2a59913c24ba05716333a2000834289e863aae7"
+  },
+  "production_ready": false,
+  "remote_submissions": 0,
+  "review_scope": "full source closure, local source comparisons and boundary controls; no target execution",
+  "schema": "pocket4-native46-discovery-local-source-review-v1",
+  "signature_verification_performed": false,
+  "source": {
+    "bytes": 57910,
+    "path": "observe_native46.py",
+    "sha256": "4055403ac0fd5637c3f9183abeb04a813036c7a63cea4d7d994b7bd97cc2003b"
+  },
+  "source_inheritance": {
+    "bytes": 5911,
+    "path": "SOURCE_INHERITANCE.json",
+    "sha256": "482352ce8b142d55f5d856aa892cb213a6b130ced75cf61e69a378fd1a332ed2"
+  },
+  "stage": {
+    "bytes": 7138,
+    "path": "stage_discovery_once.py",
+    "sha256": "9e76262fac1d8270453818d8ee9bd1ffa2dc463e85d44d333d280a6f05007419"
+  },
+  "status": "READY_FOR_ROOT_SOURCE_REVIEW_NOT_EXECUTED",
+  "transport": {
+    "bytes": 16586,
+    "path": "readonly_services_transport.py",
+    "sha256": "786793e5aaa718cac509615107ceec5a22c0fde0831cb0e632343effc34e546f"
+  },
+  "unchanged_definition_counts": {
+    "owned": 11,
+    "stage": 6,
+    "transport": 8,
+    "worker": 19
+  }
+}

@@ -1,0 +1,24 @@
+--- actual47-reader
++++ actual48-reader
+@@ -6,9 +6,9 @@
+ import stat
+ 
+ PIN = {
+-    'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json',
+-    'bytes': 58854,
+-    'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f',
++    'path': '/home/alex/work/pocket4-current-explicit-48-app-observation-20261106-r1/app-scope.private.json',
++    'bytes': 59957,
++    'sha256': 'b184299ce0a39a998752ed980a43192b396099f780bcf60bcfe53d0edf92ffe4',
+ }
+ FIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_size',
+           'st_nlink', 'st_mtime_ns', 'st_ctime_ns')
+@@ -76,7 +76,7 @@
+         need(not errors, 'OWNED_FDS_NOT_RETIRED')
+     need(census() == before, 'WHOLE_PROCESS_FD_IDENTITIES_CHANGED')
+     result = {
+-        'schema': 'pocket4-actual-explicit47-scope-readback-v1', 'ok': True,
++        'schema': 'pocket4-actual-explicit48-scope-readback-v1', 'ok': True,
+         'file': PIN, 'metadata': metadata, 'raw_utf8': bytes(body).decode('utf-8', 'strict'),
+         'whole_process_FD_identities_restored': True,
+         'owned_FDs_acquired': len(owned), 'owned_FDs_closed': len(owned),

@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/explicit48_scope_r1/test_exact_scope_controls.py", line 115, in <module>
+    main()
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/explicit48_scope_r1/test_exact_scope_controls.py", line 43, in main
+    actual, identity = worker.validate_inputs(artifact_raw, outer_raw, terminal_raw, validator)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/explicit48_scope_r1/observe_explicit_48.py", line 202, in validate_inputs
+    need(len(identity_raw) == NEW_IDENTITY["bytes"] and sha(identity_raw) == NEW_IDENTITY["sha256"] and
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/explicit48_scope_r1/observe_explicit_48.py", line 58, in need
+    raise RuntimeError(code)
+RuntimeError: ACTUAL_NEW_IDENTITY_RECEIPT_REQUIRED

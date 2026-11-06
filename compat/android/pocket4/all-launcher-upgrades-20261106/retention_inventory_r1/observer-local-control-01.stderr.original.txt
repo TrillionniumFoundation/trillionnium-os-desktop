@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/retention_inventory_r1/test_observer_metadata.py", line 101, in <module>
+    main()
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/retention_inventory_r1/test_observer_metadata.py", line 82, in main
+    receipt = output.finish_entries()
+              ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/retention_inventory_r1/observer-candidate-r1/observe_retention.py", line 259, in finish_entries
+    return self.readback("entries.private.jsonl", self.stream_bytes, self.stream_digest.hexdigest())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/retention_inventory_r1/observer-candidate-r1/observe_retention.py", line 205, in readback
+    need(stat.S_ISREG(before["st_mode"]) and before["st_uid"] == 0 and before["st_nlink"] == 1 and
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/retention_inventory_r1/observer-candidate-r1/observe_retention.py", line 18, in need
+    raise RuntimeError(code)
+RuntimeError: NEW_PRIVATE_METADATA_SHAPE

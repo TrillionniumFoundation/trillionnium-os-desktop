@@ -1,0 +1,288 @@
+#!/usr/bin/env python3
+REQUEST_BYTES = 156132
+REQUEST_SHA256 = '415209c3fb2cb091566147aa464098168a6ee95e6e4fef57d4d30aa68055e1b5'
+EXACT_ENTRIES_PATH = '/home/alex/work/pocket4-retention-metadata-observation-20261106-r2/entries.private.jsonl'
+
+"""Project one fixed prior metadata stream; never inspect its recorded targets."""
+import hashlib
+import json
+import os
+import re
+import stat
+import sys
+import time
+
+STAT = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+
+
+def need(value, code):
+    if not value:
+        raise RuntimeError(code)
+
+
+def canonical(value):
+    return json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=True, allow_nan=False).encode('ascii')
+
+
+def parse(raw):
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            need(key not in result, 'DUPLICATE_JSON_KEY')
+            result[key] = value
+        return result
+    def invalid(value):
+        raise RuntimeError('NONFINITE_JSON_NUMBER')
+    return json.loads(raw, object_pairs_hook=pairs, parse_constant=invalid)
+
+
+def metadata(fd):
+    value = os.fstat(fd)
+    result = {key: getattr(value, key) for key in STAT}
+    result['st_blocks'] = value.st_blocks
+    result['allocated_bytes'] = value.st_blocks * 512
+    return result
+
+
+def census():
+    rows = {}
+    for name in os.listdir('/proc/self/fd'):
+        try:
+            fd = int(name)
+            s = os.fstat(fd)
+            rows[name] = [os.readlink('/proc/self/fd/' + name), s.st_dev, s.st_ino, s.st_mode, s.st_uid, s.st_gid]
+        except FileNotFoundError:
+            continue
+        except OSError as error:
+            if error.errno != 9:
+                raise
+    return rows
+
+
+def safe_error(error):
+    result = {'type': type(error).__name__}
+    if isinstance(error, OSError):
+        result['errno'] = error.errno
+    elif isinstance(error, RuntimeError) and re.fullmatch(r'[A-Z0-9_]{1,96}', str(error)):
+        result['code'] = str(error)
+    else:
+        result['code'] = 'UNEXPECTED_DETAILS_NOT_EXPORTED'
+    return result
+
+
+def recorded_error(value):
+    need(type(value) is dict and set(value) <= {'type', 'errno', 'code'} and 'type' in value,
+         'CLOSED_RECORDED_ERROR')
+    need(type(value['type']) is str and re.fullmatch(r'[A-Za-z][A-Za-z0-9_]{0,63}', value['type']),
+         'CLOSED_RECORDED_ERROR_TYPE')
+    if 'errno' in value:
+        need(type(value['errno']) is int and 0 <= value['errno'] <= 4095, 'CLOSED_RECORDED_ERRNO')
+    if 'code' in value:
+        need(type(value['code']) is str and re.fullmatch(r'[A-Z0-9_]{1,96}', value['code']),
+             'CLOSED_RECORDED_ERROR_CODE')
+    return dict(value)
+
+
+def checked_stat(value):
+    need(type(value) is dict and set(value) == set(STAT) | {'st_blocks', 'allocated_bytes'}, 'RECORDED_METADATA_KEYS')
+    need(all(type(item) is int and item >= 0 for item in value.values()), 'RECORDED_METADATA_INTEGER')
+    need(value['allocated_bytes'] == value['st_blocks'] * 512, 'RECORDED_BLOCK_MULTIPLIER')
+    return dict(value)
+
+
+def summarize_fd(fd, request, end):
+    """Borrow one FD, use pread, and return only allowlisted reference metadata."""
+    expected = request['entries']
+    first = metadata(fd)
+    need(first == expected['file'] and first['st_size'] == expected['bytes'] and stat.S_ISREG(first['st_mode']),
+         'EXACT_ORIGINAL_ENTRY_STREAM_METADATA')
+    need(0 < expected['bytes'] <= 33554432, 'FIXED_ENTRY_STREAM_BYTE_BOUND')
+    references = {item['id']: item for item in request['references']}
+    need(len(references) == len(request['references']), 'REFERENCE_IDS_UNIQUE')
+    targets = {item['reference_id']: item for item in request['previous_APKs']}
+    need(len(targets) == len(request['previous_APKs']) and set(targets) <= set(references), 'OLD_APK_REFERENCE_IDS_UNIQUE')
+    phases = {'before': {}, 'after': {}}
+    digest, consumed, pending = hashlib.sha256(), 0, b''
+    lines, tree_lines, maximum_line = 0, 0, 0
+
+    def observe(raw):
+        nonlocal lines, tree_lines, maximum_line
+        lines += 1
+        need(lines <= 101594, 'FIXED_ENTRY_LINE_COUNT_BOUND')
+        maximum_line = max(maximum_line, len(raw))
+        value = parse(raw)
+        need(type(value) is dict, 'ENTRY_OBJECT_REQUIRED')
+        if 'reference_id' not in value:
+            # These paths and any private contents are neither emitted nor reopened.
+            need('tree_root' in value, 'UNKNOWN_ENTRY_ROW_KIND')
+            tree_lines += 1
+            return
+        identifier = value['reference_id']
+        need(type(identifier) is str and identifier in references, 'REFERENCE_ID_OUTSIDE_FIXED_SCOPE')
+        known = references[identifier]
+        need(value.get('path') == known['path'] and value.get('coordinate') == known['coordinate'],
+             'REFERENCE_COORDINATE_OR_PATH_CHANGED')
+        phase = value.get('phase')
+        need(phase in phases and identifier not in phases[phase], 'DUPLICATE_OR_UNKNOWN_REFERENCE_PHASE')
+        status = value.get('status')
+        need(status in ('OBSERVED_METADATA', 'ABSENT', 'UNRESOLVED_METADATA', 'UNSTABLE_METADATA'),
+             'UNKNOWN_RECORDED_METADATA_STATUS')
+        row = {'status': status}
+        if status == 'OBSERVED_METADATA':
+            row['stat'] = checked_stat(value.get('stat'))
+            mount = value.get('mount_id')
+            need(type(mount) is int and mount > 0, 'RECORDED_MOUNT_ID')
+            row['mount_id'] = mount
+            if 'symlink_not_followed' in value:
+                need(value['symlink_not_followed'] is True, 'RECORDED_SYMLINK_FLAG')
+                row['symlink_not_followed'] = True
+        elif 'error' in value:
+            row['error'] = recorded_error(value['error'])
+        phases[phase][identifier] = row
+
+    while consumed <= expected['bytes']:
+        need(time.monotonic() < end, 'FIXED_STREAM_READ_DEADLINE')
+        block = os.pread(fd, min(65536, expected['bytes'] + 1 - consumed), consumed)
+        if not block:
+            break
+        digest.update(block)
+        consumed += len(block)
+        need(consumed <= expected['bytes'], 'ENTRY_STREAM_SIZE_INCREASED')
+        pieces = (pending + block).split(b'\n')
+        pending = pieces.pop()
+        need(len(pending) <= 65536, 'ENTRY_LINE_BOUND')
+        for fragment in pieces:
+            need(0 < len(fragment) <= 65536, 'ENTRY_LINE_BOUND')
+            observe(fragment)
+    need(not pending, 'ORIGINAL_JSONL_TERMINATING_LF_REQUIRED')
+    need(consumed == expected['bytes'] and digest.hexdigest() == expected['sha256'] and metadata(fd) == first,
+         'FULL_STREAM_BYTES_HASH_OR_STAT_CHANGED')
+    need(all(set(rows) == set(references) for rows in phases.values()), 'BOTH_COMPLETE_REFERENCE_PHASES_REQUIRED')
+    changes = [identifier for identifier in references if any(phases['before'][identifier].get(key) !=
+               phases['after'][identifier].get(key) for key in ('status', 'stat', 'mount_id'))]
+    need(changes == request['reference_path_changes'], 'RECORDED_PATH_CHANGE_SET_DIFFERS')
+    before = phases['before']
+    summary = {'count': len(references), 'observed': sum(row['status'] == 'OBSERVED_METADATA' for row in before.values()),
+               'absent': sum(row['status'] == 'ABSENT' for row in before.values()),
+               'unresolved': sum(row['status'] not in ('ABSENT', 'OBSERVED_METADATA') for row in before.values())}
+    need(summary == request['expected_reference_summary'], 'RECORDED_REFERENCE_COUNTS_DIFFERS')
+    selected, gaps, distinct = [], [], {}
+    for identifier in sorted(references):
+        reference = references[identifier]
+        a, b = phases['before'][identifier], phases['after'][identifier]
+        if a['status'] != 'OBSERVED_METADATA':
+            gaps.append({'reference_id': identifier, 'coordinate': reference['coordinate'], 'path': reference['path'],
+                         'before': a, 'after': b, 'target_reobserved_by_this_reader': False})
+        if identifier in targets:
+            target = targets[identifier]
+            historical = target['historical_retained_pin']
+            row = {'reference_id': identifier, 'coordinate': reference['coordinate'], 'path': reference['path'],
+                   'package': target['package'], 'before': a, 'after': b,
+                   'historical_retained_pin': historical, 'target_reobserved_by_this_reader': False,
+                   'APK_content_rehashed_by_this_reader': False, 'cleanup_eligible': False, 'reclaimable_bytes': None}
+            if a['status'] == 'OBSERVED_METADATA':
+                record = a['stat']
+                row['full_recorded_stat_matches_retained_receipt'] = all(record[key] == historical['file'][key] for key in STAT)
+                row['logical_bytes_matches_retained_receipt'] = record['st_size'] == historical['bytes']
+                row['observation_allocated_bytes'] = record['allocated_bytes']
+                row['observation_logical_bytes'] = record['st_size']
+                row['observed_hardlink_count'] = record['st_nlink']
+                inode = (record['st_dev'], record['st_ino'])
+                if inode in distinct:
+                    need(distinct[inode] == record['allocated_bytes'], 'SELECTED_INODE_ALLOCATION_CONFLICT')
+                distinct[inode] = record['allocated_bytes']
+            else:
+                row['observation_allocated_bytes'] = None
+                row['observation_logical_bytes'] = None
+            selected.append(row)
+    return {'original_stream': {'path': expected['path'], 'bytes': consumed, 'sha256': digest.hexdigest(), 'file': first},
+            'whole_stream_hash_verified': True, 'line_count': lines, 'max_line_bytes': maximum_line,
+            'tree_rows_omitted_without_path_or_content_export': tree_lines,
+            'exact_reference_summary': summary, 'reference_path_changes': changes,
+            'previous_APKs': selected, 'gap_references': gaps,
+            'selected_observation_allocated_bytes_sum': sum(row['observation_allocated_bytes'] or 0 for row in selected),
+            'selected_observation_allocated_bytes_unique_inode': sum(distinct.values()),
+            'selected_unique_device_inode_pairs': len(distinct),
+            'all_other_observed_reference_rows_omitted': len(references) - len(set(targets) | {row['reference_id'] for row in gaps}),
+            'source_observation_still_partial': True, 'fresh_target_observation_performed': False,
+            'external_aliases_or_open_references_proved_absent': False, 'reclaimable_bytes': None,
+            'production_ready': False, 'cleanup_eligible': False}
+
+
+def open_original(path, descriptors):
+    need(path == EXACT_ENTRIES_PATH and all(part not in ('', '.', '..') for part in path[1:].split('/')),
+         'ONLY_FIXED_ORIGINAL_STREAM_PATH')
+    parent = os.open('/', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+    descriptors.append(parent)
+    parts = path[1:].split('/')
+    for part in parts[:-1]:
+        parent = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent)
+        descriptors.append(parent)
+    fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK, dir_fd=parent)
+    descriptors.append(fd)
+    return fd
+
+
+def read_exact(request):
+    descriptors = []
+    try:
+        expected = request['entries']
+        fd = open_original(expected['path'], descriptors)
+        first = metadata(fd)
+        need(first == expected['file'] and first['st_uid'] == first['st_gid'] == 0 and first['st_nlink'] == 1
+             and stat.S_IMODE(first['st_mode']) == 0o400, 'ORIGINAL_ROOT_PRIVATE_STREAM_REQUIRED')
+        result = summarize_fd(fd, request, time.monotonic() + 30)
+        again = open_original(expected['path'], descriptors)
+        need(metadata(again) == first == metadata(fd), 'ORIGINAL_STREAM_OR_ABSOLUTE_PATH_REPLACED')
+        result['held_file_and_absolute_path_full_stat_stable'] = True
+        return result
+    finally:
+        errors = []
+        for fd in reversed(descriptors):
+            try:
+                os.close(fd)
+            except OSError:
+                errors.append(fd)
+        need(not errors, 'RECORDED_STREAM_READER_FDS_NOT_RETIRED')
+
+
+def main():
+    need(os.getuid() == os.geteuid() == 0, 'EXISTING_AUTHORIZED_ROOT_READER_REQUIRED')
+    before = census()
+    result = {'schema': 'pocket4-recorded-retention-entry-summary-v1', 'ok': False, 'errors': [],
+              'Main_reads': 0, 'target_metadata_reobservations': 0, 'APK_content_reads': 0,
+              'namespace_entries': 0, 'native_commands': 0, 'tool_executions': 0,
+              'UI_actions': 0, 'installs': 0, 'permission_changes': 0, 'existing_process_signals': 0,
+              'deletions': 0, 'moves': 0, 'existing_files_modified': False,
+              'action_lock_acquired': False, 'automatic_retry': False, 'private_stream_body_exported': False,
+              'production_ready': False, 'cleanup_eligible': False, 'reclaimable_bytes': None}
+    try:
+        raw = sys.stdin.buffer.read(262145)
+        need(len(raw) == REQUEST_BYTES <= 262144 and hashlib.sha256(raw).hexdigest() == REQUEST_SHA256,
+             'EXACT_REVIEWED_SUMMARY_REQUEST')
+        request = parse(raw)
+        need(set(request) == {'schema', 'observation_binding', 'entries', 'references', 'previous_APKs',
+                             'expected_reference_summary', 'reference_path_changes'}, 'CLOSED_SUMMARY_REQUEST')
+        need(request['schema'] == 'pocket4-recorded-retention-summary-request-v1'
+             and len(request['references']) == 797 and len(request['previous_APKs']) == 12,
+             'FIXED_OBSERVED_SELECTION')
+        result['observation_binding'] = request['observation_binding']
+        result['summary'] = read_exact(request)
+        result['ok'] = True
+    except BaseException as error:
+        result['errors'].append(safe_error(error))
+    after = census()
+    result['process_FDs_before'] = len(before)
+    result['process_FDs_after'] = len(after)
+    result['original_descriptor_identities_restored'] = after == before
+    if after != before:
+        result['ok'] = False
+        result['errors'].append({'code': 'WHOLE_PROCESS_DESCRIPTOR_IDENTITIES_CHANGED'})
+    raw = canonical(result)
+    need(len(raw) <= 131072, 'PUBLIC_SELECTED_SUMMARY_BYTE_BOUND')
+    print(raw.decode('ascii'), flush=True)
+    return 0 if result['ok'] else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

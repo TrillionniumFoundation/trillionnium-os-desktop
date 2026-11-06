@@ -1,0 +1,160 @@
+--- parent/phases
++++ single-entry/phases
+@@ -1,7 +1,7 @@
+ def phases(case):
+     rows = []
+-    need(case['name'] == 'beike-close-and-observe-search-01' and len(case['steps']) == 2,
+-         'ONLY_THE_ACTUAL_TWO_STEP_CASE')
++    need(case['name'] == 'beike-search-click-observe-01' and len(case['steps']) == 1,
++         'ONLY_THE_ACTUAL_SINGLE_ENTRY_CASE')
+     for index, item in enumerate(case['steps']):
+         for kind, plan in (('operation', item['plan']), ('post_inspection', item['post_inspection'])):
+             need(plan['operation'] == ('click' if kind == 'operation' else 'inspect'), 'FIXED_CASE_OPERATIONS')
+@@ -13,5 +13,5 @@
+                 rows.append({'index': index, 'kind': kind, 'phase': phase, 'nonce': nonce,
+                              'op': 'state' if phase in ('before', 'after') else
+                              'inspect' if phase == 'inspect' else plan['operation']})
+-    need(len(rows) == len({row['nonce'] for row in rows}) == 14, 'ALL_FOURTEEN_DISTINCT_DECLARED_NONCES')
++    need(len(rows) == len({row['nonce'] for row in rows}) == 7, 'ALL_SEVEN_DISTINCT_DECLARED_NONCES')
+     return rows
+--- parent/allowed_name
++++ single-entry/allowed_name
+@@ -1,6 +1,6 @@
+ def allowed_name(name, phase_rows):
+     fixed = {'intent.json', 'result.json', 'held-main-binding.json'}
+-    fixed |= {'case-%02d-%s.json' % (i, kind) for i in range(2)
++    fixed |= {'case-%02d-%s.json' % (i, kind) for i in range(1)
+               for kind in ('operation', 'postcondition')}
+     fixed |= {row['nonce'] + suffix for row in phase_rows
+               for suffix in ('.request.json', '.assessment.json', '.failed-assessment.json')}
+@@ -8,6 +8,6 @@
+         return True
+     match = re.fullmatch(r'command-([0-9]{3})\.(intent\.json|result\.json|stdout|stderr)', name)
+     if match:
+-        return 1 <= int(match[1]) <= 38
++        return 1 <= int(match[1]) <= 19
+     match = re.fullmatch(r'transport-([0-9]{3})\.(intent|command-result|verified-result|failure)\.json', name)
+-    return bool(match and 1 <= int(match[1]) <= 50)
++    return bool(match and 1 <= int(match[1]) <= 25)
+--- parent/names_checked
++++ single-entry/names_checked
+@@ -1,5 +1,5 @@
+ def names_checked(names, phase_rows):
+-    need(type(names) is list and 3 <= len(names) <= 400 and len(set(names)) == len(names) and
++    need(type(names) is list and 3 <= len(names) <= 202 and len(set(names)) == len(names) and
+          {'intent.json', 'result.json', 'held-main-binding.json'} <= set(names) and
+          all(type(name) is str and allowed_name(name, phase_rows) for name in names),
+          'ONLY_FIXED_CASE_STEP_FILENAMES_NO_OTHER_CONTENT')
+--- parent/validate_actual
++++ single-entry/validate_actual
+@@ -1,15 +1,15 @@
+ def validate_actual(core):
+     raw = base64.b64decode(CONFIG['actual_stdout_base64'], validate=True)
+     terminal_raw = base64.b64decode(CONFIG['terminal_base64'], validate=True)
+-    need(len(raw) == 5920 and sha(raw) == CONFIG['actual_stdout_sha256'] and
++    need(len(raw) == 5009 and sha(raw) == CONFIG['actual_stdout_sha256'] and
+          len(terminal_raw) == CONFIG['terminal_bytes'] and sha(terminal_raw) == CONFIG['terminal_sha256'],
+          'EMBEDDED_ORIGINAL_CONTROLLER_EVIDENCE_BYTES')
+     outer, terminal = core.document(raw), core.document(terminal_raw)
+-    need(terminal['job_id'] == '1a1b272ec9d-fc05-7e0d' and terminal['state'] == 'failed' and
++    need(terminal['job_id'] == '1a1b30305de-fc05-8072' and terminal['state'] == 'failed' and
+          terminal['exit_code'] == 1 and all(terminal[key] is True for key in
+          ('audit_recorded', 'output_complete', 'output_durable', 'terminal_publication_confirmed')) and
+          all(terminal[key] is False for key in ('timed_out', 'cancelled', 'automatic_retry')) and
+-         terminal['log_bytes'] == {'stdout': {'seen': 5920, 'stored': 5920}, 'stderr': {'seen': 0, 'stored': 0}} and
++         terminal['log_bytes'] == {'stdout': {'seen': 5009, 'stored': 5009}, 'stderr': {'seen': 0, 'stored': 0}} and
+          terminal['log_synced'] == {'stdout': True, 'stderr': True} and
+          terminal['log_truncated'] == {'stdout': False, 'stderr': False} and
+          terminal['log_errors'] == {'stdout': None, 'stderr': None}, 'ACTUAL_DURABLE_FAILURE_NOT_RECLASSIFIED')
+@@ -19,13 +19,13 @@
+          outer['request'] == CONFIG['request'] and outer['reconciliation_published'] is False and
+          outer['original_UNKNOWN_rewritten'] is False, 'ORIGINAL_FAILED_OUTER_AND_UNKNOWN_RETAINED')
+     life = outer['child_lifecycle']
+-    need(life == {'child_pid': 1596573, 'errors': [], 'owned_child_sigkill_count': 0,
++    need(life == {'child_pid': 2441902, 'errors': [], 'owned_child_sigkill_count': 0,
+           'parent_descriptors_restored': True, 'pidfd_acquired': True, 'pidfd_closed': True,
+           'pidfd_exit_observed': True, 'returncode': 1, 'timeout': False} and
+          outer['child_stderr_original'] == '' and outer['child_stderr_bytes'] == 0 and
+          outer['child_stderr_sha256'] == sha(b''), 'ACTUAL_NORMAL_FAILED_CHILD_RETIRED_NOT_SUCCESSFUL')
+     child_raw = outer['child_stdout_original'].encode('utf-8')
+-    need(len(child_raw) == outer['child_stdout_bytes'] == 4046 and
++    need(len(child_raw) == outer['child_stdout_bytes'] == 3247 and
+          sha(child_raw) == outer['child_stdout_sha256'] == CONFIG['child_stdout_sha256'],
+          'ORIGINAL_CHILD_BYTES')
+     child = core.document(child_raw)
+@@ -35,7 +35,7 @@
+          child['outcome_unknown'] is True and child['source'] == CONFIG['sources']['worker'] and
+          child['request'] == CONFIG['request'], 'FAILED_ORIGINAL_CASE_ENTRY_NOT_RETRIED')
+     original_raw = child['original_stdout'].encode('utf-8')
+-    need(len(original_raw) == child['original_stdout_bytes'] == 1340 and
++    need(len(original_raw) == child['original_stdout_bytes'] == 563 and
+          sha(original_raw) == child['original_stdout_sha256'] == CONFIG['original_case_stdout_sha256'],
+          'ORIGINAL_CASE_STDOUT_BYTES')
+     original = core.document(original_raw)
+@@ -43,6 +43,6 @@
+          original['action_attempted'] is True and original['outcome_unknown'] is True and
+          original['epoch_sha256'] == EPOCH and original['case_sha256'] == CONFIG['case']['sha256'] and
+          original['errors'] == [{'code': 'EXACT_SUCCESSFUL_FINISH_REQUIRED', 'type': 'ProtocolError'}] and
+-         len(original['steps']) == 1 and original['steps'][0]['index'] == 0,
+-         'ACTUAL_PARTIAL_CASE_AND_STRICT_FINISH_REJECTION')
++         original['steps'] == [],
++         'ACTUAL_SINGLE_ENTRY_FAILED_BEFORE_POSTCONDITION_FINISH')
+     return original, life
+--- parent/analyze
++++ single-entry/analyze
+@@ -39,7 +39,7 @@
+             matches.append((argv, timeout, mutation, label, route))
+         need(len(matches) == 1, 'ONE_ORIGINAL_DECLARED_COMMAND')
+         argv, timeout, mutation, label, route = matches[0]
+-        need(route['parent_pid'] == 1596573 and (not routes or route == routes[0]), 'ACTUAL_ONE_HELD_CHILD_AUTHORITY')
++        need(route['parent_pid'] == 2441902 and (not routes or route == routes[0]), 'ACTUAL_ONE_HELD_CHILD_AUTHORITY')
+         routes.append(route)
+         need(cr['stdout_sha256'] == sha(out) and cr['stderr_sha256'] == sha(err), 'COMPLETE_RAW_STREAM_HASHES')
+         normal = (cr.get('returncode') == 0 and cr.get('spawned') is True and
+@@ -151,18 +151,12 @@
+                     need(saved.get('helper_rejection') == diagnostic, 'ORIGINAL_HELPER_REJECTION_REPARSED')
+                     row['helper_rejection'] = diagnostic
+         phase_results.append(row)
+-    post_name = 'case-00-postcondition.json'
+-    need(post_name in files and read(post_name) == result['steps'][0], 'ORIGINAL_FIRST_POSTCONDITION_RECEIPT')
+-    post = read(post_name); post_nonce = case['steps'][0]['post_inspection']['nonces']['inspect']
+-    need(post_nonce in qualified and post['post_nonce'] == post_nonce and
+-         post['post_wire_sha256'] == qualified[post_nonce]['wire_sha256'], 'FIRST_POST_INSPECT_ORIGINAL_RAW_BINDING')
+-    matched = core.match_postcondition(qa, qualified[post_nonce]['helper']['inspection'], case['steps'][0]['postcondition'])
+-    need(post['matched'] == {key: matched[key] for key in ('node_path', 'node_sha256', 'tree_sha256', 'window_sha256')},
+-         'FIRST_POSTCONDITION_RECOMPUTED_WITHOUT_EXPORTING_NODE_CONTENT')
++    need(result['steps'] == [] and 'case-00-postcondition.json' not in files,
++         'ORIGINAL_SINGLE_ENTRY_HAS_NO_COMPLETED_POSTCONDITION')
+     return {'commands': commands, 'transports': transport_rows, 'phases': phase_results,
+-            'first_declared_postcondition_reparsed': True,
+-            'later_case_operation_file_present': 'case-01-operation.json' in files,
+-            'later_postcondition_file_present': 'case-01-postcondition.json' in files,
++            'no_declared_postcondition_completed': True,
++            'single_case_operation_file_present': 'case-00-operation.json' in files,
++            'single_case_postcondition_file_present': False,
+             'all_recorded_commands_normal_zero_joined': all(row['normal_zero_joined'] for row in commands),
+             'all_recorded_transports_verified': all(row['verified_result_present'] for row in transport_rows),
+             'failure_remains_unknown': True, 'new_action_authority': False}
+--- parent/run
++++ single-entry/run
+@@ -59,17 +59,17 @@
+     need(census() == before, 'ALL_READ_DESCRIPTORS_CLOSED_EXACTLY')
+     # Preserve the exact evidence even if offline semantic diagnosis rejects it.
+     bundle = {'schema': 'pocket4-task878-failed-case-private-original-bytes-v1', 'flow': FLOW, 'step': STEP,
+-        'actual_job': '1a1b272ec9d-fc05-7e0d', 'full_original_bytes': True, 'contains_private_UI_evidence': True,
++        'actual_job': '1a1b30305de-fc05-8072', 'full_original_bytes': True, 'contains_private_UI_evidence': True,
+         'approved_for_Git': False, 'files': {key: {'path': row['path'], 'bytes': len(row['body']),
+         'sha256': sha(row['body']), 'stat': row['stat'], 'base64': base64.b64encode(row['body']).decode('ascii')}
+         for key, row in sorted(observed.items())}, 'step_file_set': names,
+-        'original_stdout': {'bytes': 5920, 'sha256': CONFIG['actual_stdout_sha256'],
++        'original_stdout': {'bytes': 5009, 'sha256': CONFIG['actual_stdout_sha256'],
+                             'base64': CONFIG['actual_stdout_base64']},
+         'original_terminal': {'bytes': CONFIG['terminal_bytes'], 'sha256': CONFIG['terminal_sha256'],
+                               'base64': CONFIG['terminal_base64']}}
+     raw_bundle = canonical(bundle) + b'\n'; need(len(raw_bundle) <= 48 * 1024 * 1024, 'PRIVATE_BUNDLE_BYTE_BOUND')
+     result = {'schema': 'pocket4-task878-failed-case-host-diagnostic-v1', 'ok': True,
+-        'collection_completed': True, 'source_sha256': source_sha, 'historical_job': '1a1b272ec9d-fc05-7e0d',
++        'collection_completed': True, 'source_sha256': source_sha, 'historical_job': '1a1b30305de-fc05-8072',
+         'original_stdout_sha256': CONFIG['actual_stdout_sha256'], 'original_terminal_sha256': CONFIG['terminal_sha256'],
+         'flow': FLOW, 'step': STEP, 'task': 878, 'files': len(observed), 'original_bytes': total,
+         'step_file_count': len(names), 'old_UNKNOWN_modified': False, 'original_case_success': False,

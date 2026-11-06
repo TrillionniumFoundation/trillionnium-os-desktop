@@ -1,0 +1,24 @@
+--- actual-staged-r3-explicit47
++++ review-only-r4-full48
+@@ -1,16 +1,16 @@
+-def qualify_explicit47_scope(scope, runtime_epoch_sha256):
+-    """This fixed request covers the observed 47 identities, not a resolver claim."""
++def qualify_explicit48_scope(scope, runtime_epoch_sha256):
++    """This fixed request covers the observed 48 identities, not a resolver claim."""
+     need(type(scope) is dict and scope.get('schema') == 'pocket4-versioned-app-scope-v1'
+          and scope.get('runtime_epoch_sha256') == runtime_epoch_sha256
+          and type(scope.get('apps')) is dict
+          and set(scope['apps']) == set(REVIEWED_EXPLICIT_PACKAGES)
+-         and len(scope['apps']) == 47 and ZBJ_PACKAGE in scope['apps'] and MEITUAN in scope['apps'],
+-         'CURRENT_EXACT_EXPLICIT47_APP_SCOPE_REQUIRED')
++         and len(scope['apps']) == 48 and ZBJ_PACKAGE in scope['apps'] and MEITUAN in scope['apps'],
++         'CURRENT_EXACT_EXPLICIT48_APP_SCOPE_REQUIRED')
+ 
+ 
+ def require_unchanged_non_target_rows(before, after):
+     """Retain the original content gate and additionally reject changed APK stat."""
+-    need(type(before) is dict and type(after) is dict and len(before) == len(after) == 46
++    need(type(before) is dict and type(after) is dict and len(before) == len(after) == 47
+          and ZBJ_PACKAGE not in before and ZBJ_PACKAGE not in after and before == after,
+          'NON_TARGET_COMPLETE_APP_IDENTITIES_CHANGED')
+ 

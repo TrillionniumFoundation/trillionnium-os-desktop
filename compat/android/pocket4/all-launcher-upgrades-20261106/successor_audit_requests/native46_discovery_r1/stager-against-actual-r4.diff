@@ -1,0 +1,38 @@
+--- actual-current-services-r4
++++ independent-native46-discovery-r1
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""New exact source/input stage, then five fixed read-only PackageManager queries."""
++"""Independent native46 discovery; six fixed read-only PM queries, no scope promotion."""
+ import hashlib
+ import json
+ import os
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT='/home/alex/work/pocket4-current-readonly-services-source-20261106-r4'
+-FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 18837, 'sha256': 'ad2db51aa4445e6e5b5dc07439182556d51ec629cd8487ac9d3b1e5cf947a55c'}, {'name': 'observe_current_services.py', 'bytes': 39573, 'sha256': '4fda5cdf8fda65155c4187a1e8e5381aba59011329c824b98ad2e0c0b8aa8f0e'}, {'name': 'readonly_services_transport.py', 'bytes': 16536, 'sha256': '4f8a4317332a1c80796378abfd0134a3329dd6acde9f06e96d8e52b70b3029b3'}, {'name': 'request.review-only.json', 'bytes': 2159, 'sha256': '9373ac552cb178431b989768318b013287e5dfe687338dd82f9ef8c7ced82f6c'}]
++ROOT = '/home/alex/work/pocket4-native46-discovery-source-20261106-r1'
++FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 20365, 'sha256': 'c121e6eea1b5162048cbb40207aaef2861be527fed554e8bc5c44d3229524cc0'}, {'name': 'observe_native46.py', 'bytes': 57910, 'sha256': '4055403ac0fd5637c3f9183abeb04a813036c7a63cea4d7d994b7bd97cc2003b'}, {'name': 'readonly_services_transport.py', 'bytes': 16586, 'sha256': '786793e5aaa718cac509615107ceec5a22c0fde0831cb0e632343effc34e546f'}, {'name': 'request.review-only.json', 'bytes': 2123, 'sha256': '4f528d9944678dc30e81c7b05e04e525c75ad813eb9c17cf1fa85db5c630df13'}, {'name': 'inputs/previous_pm.json', 'bytes': 79176, 'sha256': '185c6b0900aab78228e44788ea28b10d71c39cfeee8846fcb8c99c13a9f123fc'}, {'name': 'inputs/failed_capture.json', 'bytes': 12181, 'sha256': 'f5ff1b1758803a9537bd84023146fa62ac72d8587b1dc94605868413dd2ffc08'}, {'name': 'inputs/failed_terminal.json', 'bytes': 730, 'sha256': '4a95cb262ac9b2d8d4a0437c53fde9e82ea47b4529e6fd0e79fa87b32ef24552'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):
+@@ -66,7 +66,7 @@
+     os.umask(0o077);before_fds=len(os.listdir('/proc/self/fd'))
+     raw=sys.stdin.buffer.read(262145);need(0<len(raw)<=262144,'BOUNDED_EXACT_INPUT')
+     payload=json.loads(raw)
+-    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-current-readonly-services-source-stage-v4','CLOSED_STAGE_PAYLOAD')
++    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-native46-discovery-source-stage-v1','CLOSED_STAGE_PAYLOAD')
+     need(type(payload['files']) is list and len(payload['files'])==len(FILES),'EXACT_FILE_COUNT')
+     inputs=[]
+     for expected,item in zip(FILES,payload['files']):
+@@ -104,7 +104,7 @@
+             except OSError:errors.append(fd)
+         need(not errors,'STAGE_FDS_NOT_CLOSED')
+     after_fds=len(os.listdir('/proc/self/fd'));need(after_fds==before_fds,'STAGE_DESCRIPTOR_DIFFERENCE')
+-    print(canonical({'schema':'pocket4-current-readonly-services-source-stage-result-v4','source_stage_ok':True,'source_root':ROOT,'files':FILES,
++    print(canonical({'schema':'pocket4-native46-discovery-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
+          'bootstrap_FDs_before':before_fds,'bootstrap_FDs_after':after_fds,'worker_about_to_exec_once':True,
+          'stage_Main_reads':0,'stage_namespace_entries':0,'stage_installs':0,'stage_UI_actions':0,'automatic_retry':False}).decode(),flush=True)
+     wrapper=FILES[0]

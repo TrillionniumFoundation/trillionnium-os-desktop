@@ -1,0 +1,56 @@
+--- actual-staged-r3-explicit47
++++ review-only-r4-full48
+@@ -2,7 +2,7 @@
+ """One explicitly scoped signed App upgrade on an actually qualified successor.
+ 
+ A new immutable request selects one reviewed public candidate.
+-Revision 3 admits one exact ZBJ request using actual S43 and explicit47. The r2 JD predecessor logic remains unchanged. No UI, grants, launch, task claims, ADB, lifecycle or automatic retry.
++Revision 4 admits one exact ZBJ request using unchanged actual S43 and full48. The r2 JD predecessor logic remains unchanged. No UI, grants, launch, task claims, ADB, lifecycle or automatic retry.
+ The native daemon keeps its normal SO_PEERCRED and PackageManager checks.
+ The original Bili unknown evidence and Meituan location observations are retained.
+ """
+@@ -272,8 +272,8 @@
+ 
+ ZBJ_PACKAGE = 'com.zhubajie.client'
+ ZBJ_VENDOR_SIGNER = '556246aaaf05f61c8bbb9587dfc0660e01f6c3c6813ec038d18684d3ab378bbe'
+-REVIEWED_EXPLICIT_PACKAGES = ('com.Hyatt.hyt', 'com.MobileTicket', 'com.amazon.mShop.android.shopping', 'com.android.calendar', 'com.android.camera2', 'com.android.contacts', 'com.android.deskclock', 'com.android.dialer', 'com.android.documentsui', 'com.android.gallery3d', 'com.android.messaging', 'com.android.quicksearchbox', 'com.android.settings', 'com.android.threadnetwork.demoapp', 'com.bestbuy.android', 'com.ehi.national.mobile', 'com.enflick.android.TextNow', 'com.google.android.gms', 'com.hertz.android.digital', 'com.hilton.android.hhonors', 'com.ihg.apps.android', 'com.jingdong.app.mall', 'com.lianjia.beike', 'com.marriott.mrt', 'com.pinger.textfree', 'com.rytong.airchina', 'com.rytong.ceair', 'com.sankuai.meituan.takeoutnew', 'com.sdu.didi.psnger', 'com.ss.android.ugc.aweme', 'com.szzc', 'com.taobao.taobao', 'com.tencent.mm', 'com.ubercab', 'com.united.mobile.android', 'com.xunmeng.pinduoduo', 'com.zhubajie.client', 'com.zillow.android.streeteasy', 'ctrip.android.view', 'jp.co.ana.android.tabidachi', 'local.pocket4.actions.v2', 'local.pocket4.fixture', 'org.chromium.webview_shell', 'org.droidloom.qa.editorcontract', 'org.droidloom.qa.successor.p8f89f253350ba2fa.r1', 'org.fcitx.fcitx5.android', 'tv.danmaku.bili')
+-REVIEWED_ZBJ_REQUEST = {'schema': 'pocket4-successor-single-native-upgrade-v1', 'guard': {'path': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/current_baseline_guard.py', 'bytes': 3213, 'sha256': 'd84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3'}, 'app_scope': {'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json', 'bytes': 58854, 'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f'}, 'package': 'com.zhubajie.client', 'official_verifier': {'path': '/home/alex/work/pocket4-zbj-operator-full-verification-20261106-s43/result.json', 'bytes': 52573, 'sha256': '96c6931181555e575bffa3e626d704b93254298441095f318691d9d3ab70cb11'}, 'verifier_terminal': {'path': '/home/alex/work/pocket4-successor-install-input-20261106-zbj-s43-02/verifier-terminal.raw.json', 'bytes': 733, 'sha256': 'c42a9fd1a5bbf4f6d6ac7e335e0f3d0545379ce754c54fd9f6c99f0ba96e9076'}, 'output_root': '/home/alex/work/pocket4-successor-native-install-20261106-zbj-s43-02', 'coordination': {'unresolved_native_install_jobs': [], 'single_coordinator': True}}
++REVIEWED_EXPLICIT_PACKAGES = ('com.Hyatt.hyt', 'com.MobileTicket', 'com.amazon.mShop.android.shopping', 'com.android.calendar', 'com.android.camera2', 'com.android.contacts', 'com.android.deskclock', 'com.android.dialer', 'com.android.documentsui', 'com.android.gallery3d', 'com.android.messaging', 'com.android.quicksearchbox', 'com.android.settings', 'com.android.threadnetwork.demoapp', 'com.bestbuy.android', 'com.ehi.national.mobile', 'com.enflick.android.TextNow', 'com.example.ndk_tests', 'com.google.android.gms', 'com.hertz.android.digital', 'com.hilton.android.hhonors', 'com.ihg.apps.android', 'com.jingdong.app.mall', 'com.lianjia.beike', 'com.marriott.mrt', 'com.pinger.textfree', 'com.rytong.airchina', 'com.rytong.ceair', 'com.sankuai.meituan.takeoutnew', 'com.sdu.didi.psnger', 'com.ss.android.ugc.aweme', 'com.szzc', 'com.taobao.taobao', 'com.tencent.mm', 'com.ubercab', 'com.united.mobile.android', 'com.xunmeng.pinduoduo', 'com.zhubajie.client', 'com.zillow.android.streeteasy', 'ctrip.android.view', 'jp.co.ana.android.tabidachi', 'local.pocket4.actions.v2', 'local.pocket4.fixture', 'org.chromium.webview_shell', 'org.droidloom.qa.editorcontract', 'org.droidloom.qa.successor.p8f89f253350ba2fa.r1', 'org.fcitx.fcitx5.android', 'tv.danmaku.bili')
++REVIEWED_ZBJ_REQUEST = {'schema': 'pocket4-successor-single-native-upgrade-v1', 'guard': {'path': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/current_baseline_guard.py', 'bytes': 3213, 'sha256': 'd84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3'}, 'app_scope': {'path': '/home/alex/work/pocket4-current-explicit-48-app-observation-20261106-r1/app-scope.private.json', 'bytes': 59957, 'sha256': 'b184299ce0a39a998752ed980a43192b396099f780bcf60bcfe53d0edf92ffe4'}, 'package': 'com.zhubajie.client', 'official_verifier': {'path': '/home/alex/work/pocket4-zbj-operator-full-verification-20261106-s43/result.json', 'bytes': 52573, 'sha256': '96c6931181555e575bffa3e626d704b93254298441095f318691d9d3ab70cb11'}, 'verifier_terminal': {'path': '/home/alex/work/pocket4-successor-install-input-20261106-zbj-s43-full48-r4-01/verifier-terminal.raw.json', 'bytes': 733, 'sha256': 'c42a9fd1a5bbf4f6d6ac7e335e0f3d0545379ce754c54fd9f6c99f0ba96e9076'}, 'output_root': '/home/alex/work/pocket4-successor-native-install-20261106-zbj-s43-full48-r4-01', 'coordination': {'unresolved_native_install_jobs': [], 'single_coordinator': True}}
+ S43_RESULT_REFERENCE = {'path': '/home/alex/work/pocket4-zbj-operator-full-verification-20261106-s43/result.json', 'bytes': 52573, 'sha256': '96c6931181555e575bffa3e626d704b93254298441095f318691d9d3ab70cb11'}
+ S43_JOB_ID = '1a1b2c8fc38-fc05-7fc4'
+ S43_ACTUAL_TERMINAL = {'at_unix_ms': 1794000881263, 'audit_recorded': True, 'automatic_retry': False, 'cancelled': False, 'exit_code': 0, 'job_id': '1a1b2c8fc38-fc05-7fc4', 'launch_nonce': '4d78bbeb2cb165a024e11e0483f946c5', 'log_bytes': {'stderr': {'seen': 0, 'stored': 0}, 'stdout': {'seen': 52573, 'stored': 52573}}, 'log_errors': {'stderr': None, 'stdout': None}, 'log_synced': {'stderr': True, 'stdout': True}, 'log_truncated': {'stderr': False, 'stdout': False}, 'output_complete': True, 'output_durable': True, 'state': 'succeeded', 'terminal_publication_confirmed': True, 'terminal_publication_protocol': 1, 'timed_out': False}
+@@ -284,19 +284,19 @@
+ S43_COMMAND_ARGV = {'apksigner': ['/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java', '-Xmx256m', '-jar', '/usr/share/java/apksigner-35.0.2.jar', 'verify', '--verbose', '--print-certs', '/proc/self/fd/15'], 'badging': ['/usr/lib/android-sdk/build-tools/debian/aapt', 'dump', 'badging', '/proc/self/fd/15'], 'permissions': ['/usr/lib/android-sdk/build-tools/debian/aapt', 'dump', 'permissions', '/proc/self/fd/15']}
+ ZBJ_OFFICIAL_URL = 'https://s.shouji.qihucdn.com/261009/9b8bc092373e8f09d56861322b8ce1c9/com.zhubajie.client_370.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1794571897%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1793967097%26tok%3Db64e944d9e3de8d16861a770d758bee5%26v%3D%26f%3Dz.apk'
+ 
+-def qualify_explicit47_scope(scope, runtime_epoch_sha256):
+-    """This fixed request covers the observed 47 identities, not a resolver claim."""
++def qualify_explicit48_scope(scope, runtime_epoch_sha256):
++    """This fixed request covers the observed 48 identities, not a resolver claim."""
+     need(type(scope) is dict and scope.get('schema') == 'pocket4-versioned-app-scope-v1'
+          and scope.get('runtime_epoch_sha256') == runtime_epoch_sha256
+          and type(scope.get('apps')) is dict
+          and set(scope['apps']) == set(REVIEWED_EXPLICIT_PACKAGES)
+-         and len(scope['apps']) == 47 and ZBJ_PACKAGE in scope['apps'] and MEITUAN in scope['apps'],
+-         'CURRENT_EXACT_EXPLICIT47_APP_SCOPE_REQUIRED')
++         and len(scope['apps']) == 48 and ZBJ_PACKAGE in scope['apps'] and MEITUAN in scope['apps'],
++         'CURRENT_EXACT_EXPLICIT48_APP_SCOPE_REQUIRED')
+ 
+ 
+ def require_unchanged_non_target_rows(before, after):
+     """Retain the original content gate and additionally reject changed APK stat."""
+-    need(type(before) is dict and type(after) is dict and len(before) == len(after) == 46
++    need(type(before) is dict and type(after) is dict and len(before) == len(after) == 47
+          and ZBJ_PACKAGE not in before and ZBJ_PACKAGE not in after and before == after,
+          'NON_TARGET_COMPLETE_APP_IDENTITIES_CHANGED')
+ 
+@@ -622,7 +622,7 @@
+         need(held.before['binding']==expected,'EXACT_SUCCESSOR_PROCESS_BINDING')
+         core.verify_runtime(pool,held,baseline['runtime']);original_unknown(core)
+         scope=core.parse(core.pinned_record(request['app_scope']))
+-        qualify_explicit47_scope(scope,baseline['runtime_epoch_sha256'])
++        qualify_explicit48_scope(scope,baseline['runtime_epoch_sha256'])
+         packages=sorted(scope['apps']);guard.check_app_scope(request['app_scope'],packages)
+         before=core.app_scope(pool,held,packages);need(core.app_bytes(before)==core.app_bytes(scope['apps']),'APP_CONTENT_CHANGED')
+         package=request['package'];current=before[package];candidate,logs=verifier(core,request)

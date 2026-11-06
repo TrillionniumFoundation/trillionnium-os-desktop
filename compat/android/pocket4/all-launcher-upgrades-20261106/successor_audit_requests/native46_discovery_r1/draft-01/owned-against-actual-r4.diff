@@ -1,0 +1,50 @@
+--- actual-current-services-r4
++++ independent-native46-discovery-r1
+@@ -14,7 +14,7 @@
+ import zlib
+ 
+ sys.dont_write_bytecode = True
+-CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r4', 'worker': {'bytes': 39573, 'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r4/observe_current_services.py', 'sha256': '4fda5cdf8fda65155c4187a1e8e5381aba59011329c824b98ad2e0c0b8aa8f0e'}, 'request': {'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r4/request.review-only.json', 'bytes': 2159, 'sha256': '9373ac552cb178431b989768318b013287e5dfe687338dd82f9ef8c7ced82f6c'}, 'prior_source': {'bytes': 16637, 'sha256': '1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc', 'preserved': True, 'actual_prior_execution_job': '1a1b1e97bb7-fc05-7b79', 'scope_authority_not_inherited': True}}
++CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-native46-discovery-source-20261106-r1', 'worker': {'path': '/home/alex/work/pocket4-native46-discovery-source-20261106-r1/observe_native46.py', 'bytes': 57827, 'sha256': '380c919c370633ebb6ccfa544cbfc0f954f1ed69a3a2c24db0e7fd753f4c5a08'}, 'request': {'path': '/home/alex/work/pocket4-native46-discovery-source-20261106-r1/request.review-only.json', 'bytes': 2123, 'sha256': '7a1a7235af75dbfdc772134a8ad2bd0adc7af00c9d7c81fc6a13b1d9a1c816d0'}, 'prior_source': {'bytes': 18837, 'sha256': 'ad2db51aa4445e6e5b5dc07439182556d51ec629cd8487ac9d3b1e5cf947a55c', 'preserved': True, 'actual_prior_execution_job': '1a1b22e95d0-fc05-7cd4', 'scope_authority_not_inherited': True}}
+ SELF_PIN = None
+ SUPPORT = {
+     "path": "/home/alex/work/pocket4-beike-owned-generation-20261106-b34f158f88bbebf112840fd88df25d03/prepare_beike_owned_lifetime.py",
+@@ -137,14 +137,14 @@
+              "ORIGINAL_FAILURE_MUST_REMAIN")
+         actions = ("UI_actions", "App_launches", "permission_changes", "installs", "Android_namespace_commands", "ADB_commands", "business_data_content_reads")
+     else:
+-        need(value.get("schema") == "pocket4-current-readonly-services-observation-v1" and value.get("ok") is True and
+-             value.get("status") == "CURRENT_PM_AND_MAIN_LAUNCHER_OBSERVED" and
++        need(value.get("schema") == "pocket4-native46-discovery-observation-v1" and value.get("ok") is True and
++             value.get("status") == "NATIVE46_AND_NEW_PACKAGE_IDENTITY_OBSERVED_NO_SCOPE_PROMOTION" and
+              value.get("current_scope_47_unchanged") is True and len(value.get("packages", [])) == 47 and
+              value.get("app_scope_reference", {}).get("sha256") == "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f" and
+              value.get("PM_user0_installed_APK_packages_enumerated") is True and
+              value.get("MAIN_LAUNCHER_resolver_queried") is True and value.get("enumeration_samples_equal") is True and
+-             value.get("Android_namespace_commands") == 5 and value.get("native_command_count") == 3 and
+-             len(value.get("android_commands", [])) == 5 and len(value.get("native_commands", [])) == 3 and
++             value.get("Android_namespace_commands") == 6 and value.get("native_command_count") == 4 and
++             len(value.get("android_commands", [])) == 6 and len(value.get("native_commands", [])) == 4 and
+              all(row.get("complete") is True and row.get("joined") is True and row.get("returncode") == 0 and
+                  row.get("termination_attempted") is False and row.get("errors") == [] for row in value["android_commands"]) and
+              value.get("held_namespace_target_closed") is True and value.get("action_lock_released") is True and
+@@ -154,6 +154,19 @@
+              value.get("compiled_Beike_scope_modified") is False and value.get("old_Bili_unknown_reclassified") is False and
+              value.get("meituan_saved_location_unchanged") is True and value.get("all_installed_APK_bytes_bound") is False,
+              "READONLY_QUERY_MUST_NOT_CLAIM_GRANTS_OR_EXPAND_UI_AUTHORITY")
++        proof = value.get("discovery_comparison_before", {})
++        need(proof.get("matches_only_the_observed_new_component") is True and
++             proof.get("current_resolver_component_count") == proof.get("current_native_component_count") == 46 and
++             proof.get("added_components") == ["com.example.ndk_tests/com.example.ndk_tests.NdkTestsActivity"] and
++             proof.get("missing_components") == proof.get("framework_only_components") == proof.get("native_only_components") == [] and
++             value.get("discovery_comparison_after") == proof and value.get("new_package_identity_observed") is True and
++             value.get("original_b03_failure_preserved") is True and value.get("prior_sources_unchanged") is True and
++             value.get("original_permission_gate_modified") is False and value.get("new_scope_published") is False and
++             value.get("new_signature_verification_performed") is False and value.get("vendor_artifact_source_trust") == "UNKNOWN" and
++             all(row.get("command", {}).get("complete") is True and row["command"].get("joined") is True and
++                 row["command"].get("returncode") == 0 and row["command"].get("errors") == [] and
++                 row["command"].get("termination_attempted") is False for row in value["native_commands"]),
++             "FULL_NATIVE46_DISCOVERY_AND_UNPROMOTED_SCOPE_REQUIRED")
+         actions = ("UI_actions", "App_launches", "installs", "permission_changes", "lifecycle_commands", "ADB_commands", "business_data_content_reads")
+     need(all(type(value.get(key)) is int and value[key] == 0 for key in actions), "READ_ONLY_ACTION_BOUNDARY_CHANGED")
+ 

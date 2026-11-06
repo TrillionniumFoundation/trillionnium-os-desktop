@@ -1,0 +1,413 @@
+--- actual-partial-stage-a
++++ new-no-action-stage-a
+@@ -1,9 +1,8 @@
+ #!/usr/bin/env python3
+-"""Stage A only: the actual partial-case history and original runtime predicates.
+-
+-No compatibility publication function or UI mutation entry is provided.
+-The original recorder/helper/core remain frozen; a normally retired owned
+-child AND its separately collected durable controller terminal are required.
++"""Stage A: strictly prove this old click was rejected before dispatch.
++
++Reparse the actual failure, keep FAILED/UNKNOWN, and run only the original
++two readonly helper/task/foreground rounds. There is no publish function.
+ """
+ import hashlib
+ import json
+@@ -16,32 +15,37 @@
+ import types
+ 
+ sys.dont_write_bytecode = True
+-ROOT = '/home/alex/work/pocket4-beike-partial-case-runtime-20261106-r1'
+-FLOW = '/home/alex/work/pocket4-successor-qa-flow-b6de2bd4f04bcd572a074ef984ba7dbe'
+-STEP = 'partial-case-runtime-proof-01'
+-CASE_STEP = 'close-and-observe-search-01'
+-OBSERVATION_STEP = 'inspect-after-search-rejection-01'
+-TASK = 878
+-HELPER_UID = 10157
+-OPERATION = 'owned-qa-partial-case-runtime-proof'
+-CANDIDATE_SCHEMA = 'pocket4-owned-qa-partial-case-runtime-candidate-v1'
+-CHILD_SCHEMA = 'pocket4-owned-qa-partial-case-runtime-child-v1'
+-PARENT_SCHEMA = 'pocket4-owned-qa-partial-case-runtime-owned-result-v1'
+ BASE = {'path': '/home/alex/work/pocket4-beike-owned-cleanup-20261106-r1/cleanup_owned_task_once.py', 'bytes': 22233, 'sha256': '559ae3641a5f6e017914102af61c5f8e909605cb92be32d1a045ae7c66a935cf'}
+ UI_SOURCE = {'path': '/home/alex/work/pocket4-beike-owned-ui-reusable-20261106-r1/owned_ui_request_once.py', 'bytes': 25377, 'sha256': 'c394598e477f1912378c6c3d582850a196e64f77791d0b7f5c4d498ec9b61e38'}
+-HOST_SOURCE = {'path': '/home/alex/work/pocket4-beike-partial-case-proof-20261106-r1/verify_partial_case_host.py', 'bytes': 27116, 'sha256': 'afd9a9410051a4e72e4f5c7e9434bfa60b592fdb02672e7d1df1b3bd8d1ecd34'}
+-PARTIAL_SOURCE = {'bytes': 34105, 'path': '/home/alex/work/pocket4-beike-partial-case-proof-20261106-r1/partial_case_core.py', 'sha256': '13ff07c305afcd2894b240fae52b436567784cf605623361723a86253d33fb96'}
+-HOST_JOB = '1a1b2b679c3-fc05-7f6e'
+-HOST_STDOUT = {'path': '/home/alex/work/pocket4-beike-partial-case-runtime-20261106-r1/host.stdout.original.jsonl', 'bytes': 3405, 'sha256': '0033cfad5c04b9ed1b5ff8691c59a983ae790ed35a91282fc916a0c197240c4e'}
+-HOST_TERMINAL = {'path': '/home/alex/work/pocket4-beike-partial-case-runtime-20261106-r1/host.terminal.original.json', 'bytes': 731, 'sha256': '4c755da48c16bdca5c577ab528ca21e43f60cd776f378a5fbba09e1fd866a351'}
+-HOST_STAGE = {'Main_commands': 0, 'Main_locks_or_guards': 0, 'files': {'actual-build-result.original.json': {'bytes': 33691, 'sha256': 'c0dd8117cdb7fa8b551e2a59b466c91d48ee2f2d9a98908f69b3d3fb8807bf3d'}, 'inputs.json': {'bytes': 3631, 'sha256': '2bb7778d62d614ccd4514a2d7a573879e0fd0e01dd5046afba8a59cc4386cfce'}, 'observation.stdout.original.json': {'bytes': 13961, 'sha256': '50890b7a1c8a591f493a1af26606da2279f5b3c0cc1e7a893b19b77d200c0401'}, 'observation.terminal.original.json': {'bytes': 733, 'sha256': 'b314bd6a3cc8304d5d00038ece8f811e88bacadf0df09798c87cb42e613a5ede'}, 'partial_case_core.py': {'bytes': 34105, 'sha256': '13ff07c305afcd2894b240fae52b436567784cf605623361723a86253d33fb96'}, 'read_failed_case.frozen.py': {'bytes': 44768, 'sha256': '0e0716b7237199f2fe377ba9f067c2d0327d54a8efb5f40813b1f3e5ebc0021d'}, 'verify_partial_case_host.py': {'bytes': 27116, 'sha256': 'afd9a9410051a4e72e4f5c7e9434bfa60b592fdb02672e7d1df1b3bd8d1ecd34'}}, 'mode': 'host-only-verification-not-yet-invoked', 'namespace_entries': 0, 'private_bundle_copied': False, 'reconciliation_published': False, 'root': '/home/alex/work/pocket4-beike-partial-case-proof-20261106-r1', 'schema': 'pocket4-partial-case-historical-host-stage-v1', 'whole_process_fd_identities_unchanged': True}
+-HOST_PROOF = {'bytes': 52310, 'path': '/home/alex/work/pocket4-beike-partial-case-proof-20261106-r1/host-historical-proof.json', 'sha256': '2fc36b4de281ae511aff58d9fae7dc849b478fe07e1ccd5b3b7bc06a247507c3'}
+-OBSERVER_ARCHIVE = {'bytes': 810742, 'path': '/home/alex/work/pocket4-beike-partial-case-proof-20261106-r1/observer-originals.private.json', 'sha256': '1798e4de4e9b8799ab847f6b51cb98cf7b9ea224f1b44e2deebb5478c1f0b85c'}
+ BUILD_PATH = '/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/build-result.json'
+ BUILD_FILE_VERSION = '66306:35522864:33691:1793980378491478355:1793980378491478355'
+ APK_SHA = '006b3bdd64fcd8a03a4ceac0d036b3b99906140feadee61d198756cb6c55c8d9'
+ RECORDER_ROOT = '/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/recorder'
+-FIXED_REQUEST = {'schema': 'pocket4-fixed-partial-case-runtime-only-request-v1', 'flow': '/home/alex/work/pocket4-successor-qa-flow-b6de2bd4f04bcd572a074ef984ba7dbe', 'step': 'partial-case-runtime-proof-01', 'operation': 'owned-qa-partial-case-runtime-proof', 'original_failed_case': 'close-and-observe-search-01', 'later_observation': 'inspect-after-search-rejection-01', 'historical_proof': {'bytes': 52310, 'path': '/home/alex/work/pocket4-beike-partial-case-proof-20261106-r1/host-historical-proof.json', 'sha256': '2fc36b4de281ae511aff58d9fae7dc849b478fe07e1ccd5b3b7bc06a247507c3'}, 'historical_controller_job': '1a1b2b679c3-fc05-7f6e', 'source_revision': 'stage-a-candidate-r1', 'UI_actions': 0, 'instrumentation_calls': 0, 'permission_changes': 0, 'installs': 0, 'reconciliation_published': False, 'original_UNKNOWN_retained': True, 'stage_B_unsealed': True, 'automatic_retry': False}
++ROOT = '/home/alex/work/pocket4-beike-no-action-runtime-20261106-r1'
++FLOW = '/home/alex/work/pocket4-successor-qa-flow-b6de2bd4f04bcd572a074ef984ba7dbe'
++STEP = 'no-action-runtime-proof-01'
++CASE_STEP = 'search-click-after-partial-commit-01'
++OBSERVATION_STEP = None
++TASK = 878
++HELPER_UID = 10157
++FAILED_JOB = '1a1b30305de-fc05-8072'
++OPERATION = 'owned-qa-no-action-runtime-proof'
++CANDIDATE_SCHEMA = 'pocket4-owned-qa-no-action-runtime-candidate-v1'
++CHILD_SCHEMA = 'pocket4-owned-qa-no-action-runtime-child-v1'
++PARENT_SCHEMA = 'pocket4-owned-qa-no-action-runtime-owned-result-v1'
++PARTIAL_SOURCE = {'path': '/home/alex/work/pocket4-beike-no-action-runtime-20261106-r1/no_action_core.py', 'bytes': 38241, 'sha256': '92cbde977c018203f8206b47a178774bb9c408cfb9c4559be0a574751e01debd'}
++READER_SOURCE = {'path': '/home/alex/work/pocket4-beike-no-action-runtime-20261106-r1/read_failed_search_click.frozen.py', 'bytes': 42818, 'sha256': '4525a588639a695b9afcbee17d7dfc6d2a9f3445ad9a678c80e6cba3dd5e4b5b'}
++HOST_SOURCE = {'path': '/home/alex/work/pocket4-beike-no-action-runtime-20261106-r1/read_failed_search_click.frozen.py', 'bytes': 42818, 'sha256': '4525a588639a695b9afcbee17d7dfc6d2a9f3445ad9a678c80e6cba3dd5e4b5b'}
++HOST_JOB = '1a1b30c6205-fc05-8083'
++HOST_STDOUT = {'path': '/home/alex/work/pocket4-beike-no-action-runtime-20261106-r1/reader.stdout.original.json', 'bytes': 15496, 'sha256': 'c6b1396ac512fe5730497a2de75642cce3d6c0c24bccbc5a9a83a41b37002e9b'}
++HOST_TERMINAL = {'path': '/home/alex/work/pocket4-beike-no-action-runtime-20261106-r1/reader.terminal.original.json', 'bytes': 733, 'sha256': 'f3b1a5e3a34df13bcfcf906c3eb3da63c90e28c174385dcc0578691a14c34d5a'}
++HISTORY_BUNDLE = {'bytes': 1102634, 'path': '/home/alex/work/pocket4-beike-search-click-failure-evidence-20261106-r1/bundle.private.json', 'sha256': '85b3b9801685a427a484cc81b80de64e66df49ceb477efa99901ac2dfb01cee4'}
++PRIOR_STDOUT = {'path': '/home/alex/work/pocket4-beike-no-action-runtime-20261106-r1/prior-inspect.stdout.original.jsonl', 'bytes': 13947, 'sha256': '23639dfd1822118c1379e306ba45bf2a1e0d5c8b30ee660c6b50125e8b7cdf84'}
++PRIOR_TERMINAL = {'path': '/home/alex/work/pocket4-beike-no-action-runtime-20261106-r1/prior-inspect.terminal.original.json', 'bytes': 733, 'sha256': '8c1b239ea57641d497f59f8f417ec66c663d4290366bb4f2fa008f0460109037'}
++TASK_SOURCE = {'bytes': 17281, 'path': '/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/recorder/references/task_scope_baseline.py', 'sha256': 'a16e347abb0de2ccbff24f6d7990f6dab1be600675054b45203e907fa8eef528'}
++SOURCE_MANIFESTS = {'helper': {'bytes': 2431, 'path': '/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/SOURCE_PINS.json', 'sha256': 'dfb9b6a483f1069847433152b9b2e8b0f1b2cdd571a1dbde3068fc9393ad62c4'}, 'recorder': {'bytes': 1759, 'path': '/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/recorder/source-manifest.json', 'sha256': '646f6e4c7d931bf005ada01a84202a891c95e99e93bbde7a561f3307527008a4'}}
++ACTION_SOURCE = {'path': '/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner.java', 'bytes': 75269, 'sha256': 'c1df8cf13195150c938ff9db271d6234a90c42cda54e29aea743be0c1ad0cdfa'}
++FIXED_REQUEST = {'schema': 'pocket4-fixed-no-action-runtime-only-request-v1', 'flow': '/home/alex/work/pocket4-successor-qa-flow-b6de2bd4f04bcd572a074ef984ba7dbe', 'step': 'no-action-runtime-proof-01', 'operation': 'owned-qa-no-action-runtime-proof', 'original_failed_case': 'search-click-after-partial-commit-01', 'original_failed_controller': '1a1b30305de-fc05-8072', 'private_original_bundle': {'bytes': 1102634, 'path': '/home/alex/work/pocket4-beike-search-click-failure-evidence-20261106-r1/bundle.private.json', 'sha256': '85b3b9801685a427a484cc81b80de64e66df49ceb477efa99901ac2dfb01cee4'}, 'history_reader_job': '1a1b30c6205-fc05-8083', 'independent_later_observer_available': False, 'source_revision': 'stage-a-candidate-r1', 'UI_actions': 0, 'instrumentation_calls': 0, 'permission_changes': 0, 'installs': 0, 'reconciliation_published': False, 'original_UNKNOWN_retained': True, 'stage_B_unsealed': True, 'automatic_retry': False}
+ SELF = REQUEST = None
+ 
+ 
+@@ -49,11 +53,14 @@
+     if not value:
+         raise RuntimeError(reason)
+ 
++
+ def sha(raw):
+     return hashlib.sha256(raw).hexdigest()
+ 
++
+ def canonical(value):
+     return json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(',', ':'), allow_nan=False).encode('ascii')
++
+ 
+ def load_base():
+     """Bootstrap only the already deployed exact root-owned utility module."""
+@@ -135,31 +142,34 @@
+ 
+ 
+ def actual_host_gate(base, host, partial):
+-    raw = base.pinned(HOST_STDOUT)
+-    terminal = partial.document(base.pinned(HOST_TERMINAL))
+-    host.original_terminal(terminal, HOST_JOB, len(raw))
+-    lines = raw.splitlines()
+-    need(len(lines) == 2 and raw.endswith(b'\n'), 'EXACT_ACTUAL_HOST_STAGE_AND_RESULT')
+-    stage, value = [partial.document(line) for line in lines]
+-    need(stage == HOST_STAGE, 'EXACT_ACTUAL_HOST_SOURCE_CLOSURE_STAGE')
+-    need(value.get('schema') == 'pocket4-task878-partial-case-host-verification-v1' and
+-         all(value.get(key) is True for key in ('ok', 'host_historical_verification_completed',
+-             'historical_case_remains_failed_unknown', 'original_bytes_and_stat_unchanged',
+-             'whole_process_fd_identities_unchanged',
+-             'acceptance_requires_original_stdout_and_authoritative_durable_terminal')) and
+-         value.get('proof') == HOST_PROOF and value.get('private_observer_archive') == OBSERVER_ARCHIVE and
+-         value.get('verified_case_commands') == 29 and value.get('verified_case_transports') == 38 and
+-         value.get('verified_observer_commands') == 9 and value.get('verified_observer_transports') == 12 and
++    raw = base.pinned(HOST_STDOUT); terminal_raw = base.pinned(HOST_TERMINAL)
++    partial.original_terminal(partial.document(terminal_raw), HOST_JOB, len(raw))
++    value = partial.document(raw)
++    need(value.get('schema') == 'pocket4-task878-failed-case-host-diagnostic-v1' and
++         value.get('flow') == FLOW and value.get('step') == CASE_STEP and value.get('task') == TASK and
++         value.get('historical_job') == FAILED_JOB and value.get('source_sha256') == READER_SOURCE['sha256'] and
++         value.get('private_bundle') == HISTORY_BUNDLE and value.get('files') == 101 and
++         value.get('step_file_count') == 90 and value.get('original_bytes') == 782840 and
++         value.get('diagnosis_error') is None and
++         all(value.get(k) is True for k in ('ok', 'collection_completed', 'diagnosis_completed',
++             'original_file_bytes_and_stat_unchanged', 'whole_process_fd_identities_unchanged')) and
+          value.get('process_fds_before') == value.get('process_fds_after') and
+-         set(value['process_fds_before']) == {'0', '1', '2'} and
+-         all(type(value.get(key)) is int and value[key] == 0 for key in ('Main_commands',
+-             'Main_locks_or_guards', 'namespace_entries', 'UI_actions', 'instrumentation_calls',
+-             'installs', 'permission_changes', 'signals')) and
+-         all(value.get(key) is False for key in ('private_UI_raw_or_nodes_in_stdout',
+-             'reconciliation_published', 'current_action_authority', 'production_ready', 'automatic_retry')),
+-         'ACTUAL_COMPLETE_HOST_HISTORY_PROOF_NOT_CURRENT_AUTHORITY')
++         all(value.get(k) is False for k in ('old_UNKNOWN_modified', 'original_case_success',
++             'originals_modified', 'current_action_authority', 'reconciliation_published',
++             'production_ready', 'automatic_retry', 'private_UI_content_in_stdout')) and
++         all(type(value.get(k)) is int and value[k] == 0 for k in ('Main_commands', 'Main_locks_or_guards',
++             'UI_actions', 'installs', 'namespace_entries', 'permission_changes', 'signals')),
++         'ACTUAL_HOST_READER_COMPLETE_NOT_RECONCILIATION_OR_MAIN_AUTHORITY')
++    diagnosis = value['diagnosis']
++    need(diagnosis['all_recorded_commands_normal_zero_joined'] is True and
++         diagnosis['all_recorded_transports_verified'] is True and
++         len(diagnosis['commands']) == 10 and len(diagnosis['transports']) == 13 and
++         diagnosis['failure_remains_unknown'] is True and diagnosis['new_action_authority'] is False and
++         diagnosis['no_declared_postcondition_completed'] is True,
++         'ACTUAL_DIAGNOSIS_IS_COMPLETE_AND_STILL_FAILED')
+     return {'job_id': HOST_JOB, 'stdout': HOST_STDOUT, 'terminal': HOST_TERMINAL,
+-            'historical_proof': HOST_PROOF, 'private_observer_archive': OBSERVER_ARCHIVE}
++            'reader_source': READER_SOURCE, 'original_failed_job': FAILED_JOB,
++            'private_original_bundle': HISTORY_BUNDLE, 'independent_later_observer_available': False}
+ 
+ 
+ def no_publication_or_replay():
+@@ -175,51 +185,112 @@
+     return raw, metadata
+ 
+ 
++def original_directory_identity(path):
++    path = Path(path)
++    need(str(path.resolve()) == str(path), 'ORIGINAL_FAILED_STEP_CANONICAL_PATH')
++    value = os.stat(path, follow_symlinks=False)
++    need(stat.S_ISDIR(value.st_mode) and value.st_uid == 0 and stat.S_IMODE(value.st_mode) == 0o700,
++         'ORIGINAL_FAILED_STEP_ROOT_PRIVATE_DIRECTORY')
++    return {key: getattr(value, key) for key in base_stat_fields()}
++
++
+ def history_context(base, host, partial, core):
+     gate = actual_host_gate(base, host, partial)
+-    proof, archive, originals = host.collect_and_verify(base, HOST_SOURCE)
+-    archive_raw = canonical(archive) + b'\n'
+-    actual_archive, archive_stat = read_exact(base, OBSERVER_ARCHIVE)
+-    need(archive_raw == actual_archive, 'COMPLETE_LATER_PRIVATE_ARCHIVE_STILL_EXACT')
+-    proof.update(complete_later_observer_private_archive=OBSERVER_ARCHIVE,
+-                 verifier_source=HOST_SOURCE, verifier_inputs=host.INPUTS_PIN)
++    end = time.monotonic() + 180
++    originals = {}; total = 0
++    def tracked(pin):
++        nonlocal total
++        need(time.monotonic() < end, 'BOUNDED_NO_ACTION_HISTORY_READ')
++        raw, metadata = read_exact(base, pin)
++        if pin['path'] in originals:
++            need(originals[pin['path']] == (raw, metadata), 'NO_HISTORY_INPUT_CHANGED_DURING_READ')
++        else:
++            originals[pin['path']] = (raw, metadata); total += len(raw)
++            need(total <= 16 * 1024 * 1024, 'BOUNDED_NO_ACTION_HISTORY_TOTAL_BYTES')
++        return raw
++    def module(pin, name):
++        raw = tracked(pin)
++        value = types.ModuleType(name); value.__file__ = pin['path']
++        exec(compile(raw, pin['path'], 'exec'), value.__dict__)
++        return value
++    reader = module(READER_SOURCE, 'unchanged_actual_single_click_failure_reader')
++    need(reader.FLOW == FLOW and reader.STEP == CASE_STEP and reader.CONFIG['sources']['core'] == base.CORE,
++         'FIXED_ACTUAL_READER_SOURCE_CONTRACT')
++    bundle_raw = tracked(HISTORY_BUNDLE)
++    bundle, archived, files, failed_result, old_lifetime = partial.bundle_originals(bundle_raw, reader, core)
++    folder = FLOW + '/steps/' + CASE_STEP
++    folder_identity = original_directory_identity(folder)
++    need(sorted(os.listdir(folder)) == bundle['step_file_set'], 'EXACT_ORIGINAL_SINGLE_FAILED_STEP_FILE_SET')
++    for path, (body, identity) in archived.items():
++        again = tracked({'path': path, 'bytes': len(body), 'sha256': sha(body)})
++        need(again == body and originals[path][1] == identity, 'ARCHIVED_ORIGINAL_BYTES_AND_FULL_STAT_STILL_IDENTICAL')
++    qa = module(reader.CONFIG['sources']['qa'], 'unchanged_wire_contract_for_no_action')
++    adapter = module(reader.CONFIG['sources']['adapter'], 'unchanged_adapter_shape_for_no_action')
++    transport = module(reader.CONFIG['sources']['transport'], 'unchanged_original_held_transport')
++    runner = module(reader.CONFIG['sources']['run_case'], 'unchanged_case_contract_for_no_action')
++    tasks = module(TASK_SOURCE, 'unchanged_exact_task_parser')
++    closure = {}
++    for label, pin in SOURCE_MANIFESTS.items():
++        manifest = partial.document(tracked(pin))
++        need(type(manifest.get('files')) is dict and len(manifest['files']) == 13,
++             'TWO_COMPLETE_ORIGINAL_THIRTEEN_FILE_SOURCE_CLOSURES')
++        root = str(Path(pin['path']).parent)
++        for relative, row in sorted(manifest['files'].items()):
++            need(type(relative) is str and not relative.startswith('/') and '\\' not in relative and
++                 all(p not in ('', '.', '..') for p in relative.split('/')) and
++                 set(row) == {'bytes', 'sha256'}, 'EXACT_MANIFEST_SOURCE_MEMBER')
++            member = {'path': root + '/' + relative, **row}; tracked(member)
++            closure[label + '/' + relative] = member
++    need(len(closure) == 26, 'ALL_TWENTY_SIX_ORIGINAL_SOURCE_FILES')
++    java = tracked(ACTION_SOURCE)
++    method = b'    void act(JSONObject request, JSONObject result) throws Exception {'
++    need(java.count(method) == 1 and java.rstrip().endswith(b'}\n}'), 'EXACT_FINAL_ORIGINAL_ACT_METHOD')
++    method_offset = java.index(method)
++    act = java[method_offset:]
++    guard = b'"INSPECTED_TREE_OR_WINDOW_CHANGED"'
++    mark = b'timeBound(); actionAttempted = true;'
++    click = b'current.target.performAction(AccessibilityNodeInfo.ACTION_CLICK)'
++    need(act.count(guard) == act.count(mark) == act.count(click) == 1 and
++         act.index(guard) < act.index(mark) < act.index(click),
++         'FROZEN_COMPILED_SOURCE_REJECTION_PRECEDES_ATTEMPT_MARK_AND_CLICK_DISPATCH')
++    prior_raw = tracked(PRIOR_STDOUT); prior_terminal_raw = tracked(PRIOR_TERMINAL)
++    installed, prior_ended, prior = partial.prior_installed_identity(prior_raw, prior_terminal_raw, base, core)
++    def original(label):
++        row = bundle['files']['input/' + label]
++        return partial.document(archived[row['path']][0])
++    scope, launch, case = (original(label) for label in ('scope', 'launch', 'case'))
++    failed = partial.verify_failed_single_case(files, scope, launch, case, failed_result, installed, prior_ended,
++        core=core, qa=qa, adapter=adapter, transport=transport, tasks=tasks, runner=runner)
++    proof = partial.no_action_public_proof(failed, prior, reader=reader, source_pin=PARTIAL_SOURCE, core=core)
++    proof.update(original_source_closures=closure, original_failed_child_lifecycle=old_lifetime,
++        action_source_rejection_before_dispatch={'source': ACTION_SOURCE,
++            'act_method_byte_offset': method_offset,
++            'guard_byte_offset': method_offset + act.index(guard),
++            'attempt_mark_byte_offset': method_offset + act.index(mark),
++            'performAction_byte_offset': method_offset + act.index(click),
++            'source_is_bound_to_actual_qualified_build': True})
+     proof_raw = canonical(proof) + b'\n'
+-    actual_proof, proof_stat = read_exact(base, HOST_PROOF)
+-    need(proof_raw == actual_proof, 'REPARSED_HISTORY_MUST_EQUAL_REAL_HOST_PROOF_BYTES')
+-    originals[OBSERVER_ARCHIVE['path']] = (actual_archive, archive_stat)
+-    originals[HOST_PROOF['path']] = (actual_proof, proof_stat)
+-    for pin in (HOST_STDOUT, HOST_TERMINAL, HOST_SOURCE, PARTIAL_SOURCE, BASE, SELF, REQUEST):
+-        raw, metadata = read_exact(base, pin)
+-        originals[pin['path']] = (raw, metadata)
+-    def original(name):
+-        need(name in originals, 'ACTUAL_HOST_VERIFIER_MUST_HAVE_READ_REQUIRED_ORIGINAL')
+-        return partial.document(originals[name][0])
+-    failed = FLOW + '/steps/' + CASE_STEP + '/'
+-    later = FLOW + '/steps/' + OBSERVATION_STEP + '/'
+-    observation = original(later + 'result.json')
+-    case_intent = original(failed + 'intent.json')
+-    scope = original(FLOW + '/scope.json')
+-    launch = original(FLOW + '/launch-scope.json')
+-    core.fixed_scope(scope); partial.fixed_launch(launch, core)
+-    need(observation['foreground_before'] == observation['foreground_after'],
+-         'ACTUAL_LATER_OBSERVER_STABLE_FULL_FOREGROUND')
+-    return {'gate': gate, 'proof_raw': proof_raw, 'originals': originals,
+-            'scope': scope, 'launch': launch, 'build': case_intent['request']['build'],
+-            'installed': observation['installed_before'], 'foreground': observation['foreground_before'],
+-            'case_binding': original(failed + 'held-main-binding.json'),
+-            'observer_binding': original(later + 'held-main-binding.json'),
+-            'historical_hashes': {'case': proof['case_file_hashes'],
+-                                  'observer': proof['observation_file_hashes']}}
++    need(len(proof_raw) <= 131072, 'BOUNDED_PUBLIC_NO_ACTION_HISTORY_PROOF')
++    for pin in (HOST_STDOUT, HOST_TERMINAL, PARTIAL_SOURCE, BASE, SELF, REQUEST):
++        tracked(pin)
++    need(original_directory_identity(folder) == folder_identity and
++         sorted(os.listdir(folder)) == bundle['step_file_set'], 'ORIGINAL_FAILED_STEP_DIRECTORY_STILL_UNCHANGED')
++    return {'gate': gate, 'proof_raw': proof_raw, 'proof': proof, 'originals': originals,
++        'scope': scope, 'launch': launch, 'build': failed['build'], 'installed': installed,
++        'foreground': failed['rejected']['foreground_scope_from_actual_request'],
++        'case_binding': failed['binding'], 'historical_hashes': {'case': proof['case_file_hashes']},
++        'failed_step_directory_identity': folder_identity, 'independent_later_observer_available': False}
+ 
+ 
+ def recheck_history(base, context, deadline):
+     for path, (raw, metadata) in context['originals'].items():
+-        need(time.monotonic() < deadline, 'ALL_HISTORICAL_ORIGINALS_RECHECK_DEADLINE')
++        need(time.monotonic() < deadline, 'ALL_NO_ACTION_ORIGINALS_RECHECK_DEADLINE')
+         again, current = base.read(path, maximum=3 * 1024 * 1024)
+         need(again == raw and current == metadata, 'ORIGINAL_BYTES_OR_FULL_FILE_IDENTITY_CHANGED')
+-    for kind, step in (('case', CASE_STEP), ('observer', OBSERVATION_STEP)):
+-        need(sorted(os.listdir(Path(FLOW) / 'steps' / step)) == sorted(context['historical_hashes'][kind]),
+-             'ORIGINAL_STEP_FILE_SET_CHANGED')
++    folder = FLOW + '/steps/' + CASE_STEP
++    need(sorted(os.listdir(folder)) == sorted(context['historical_hashes']['case']) and
++         original_directory_identity(folder) == context['failed_step_directory_identity'],
++         'ORIGINAL_FAILED_STEP_SET_OR_DIRECTORY_IDENTITY_CHANGED')
+     no_publication_or_replay()
+ 
+ 
+@@ -363,7 +434,7 @@
+         builder = adapter.load(helper_root / 'build_candidate.py', manifest['files']['build_candidate.py']['sha256'],
+                                'unchanged_completed_build_validator')
+         build, build_stat = qualified_current_build(adapter, manifest, builder, core, context)
+-        for name in ('case_binding', 'observer_binding'):
++        for name in ('case_binding',):
+             partial.binding_identity(context[name], core, qa)
+         core.installed_identity(context['installed'], build)
+         qa.scope(context['foreground'])
+@@ -390,7 +461,7 @@
+         phase = 'fresh_held_binding'
+         binding = flow.bind(); partial.binding_identity(binding.record, core, qa)
+         comparisons = {name: core.compare_held_bindings(context[name], binding.record)
+-                       for name in ('case_binding', 'observer_binding')}
++                       for name in ('case_binding',)}
+         phase = 'two_original_session_rounds'
+         session = adapter.Session(flow, recorder, qa, build, HELPER_UID)
+         rounds = two_original_rounds(session, context['installed'], context['launch'], context['foreground'])
+@@ -420,7 +491,11 @@
+         phase = 'write_nonauthorizing_candidate'
+         candidate = {'schema': CANDIDATE_SCHEMA, 'created_utc': recorder.now(), 'source': SELF, 'request': REQUEST,
+             'flow': FLOW, 'step': STEP, 'producer_operation': OPERATION,
+-            'original_case': CASE_STEP, 'later_observation': OBSERVATION_STEP,
++            'original_case': CASE_STEP, 'later_observation': None,
++            'independent_later_observer_available': False,
++            'business_postcondition_observed': False,
++            'helper_requested_click_dispatch_attempted': False,
++            'no_action_history_sha256': sha(context['proof_raw']),
+             'historical_controller_and_proof': context['gate'],
+             'scope_sha256': partial.SCOPE_SHA, 'framework_epoch_sha256': core.MAIN_EPOCH,
+             'runtime_epoch_sha256': core.RUNTIME_EPOCH, 'app_scope_sha256': core.APP_SCOPE,
+@@ -447,9 +522,9 @@
+             'requires_parent_normal_pidfd_exit_and_durable_terminal': True,
+             'stage_B_not_sealed_or_executed': True, 'private_UI_raw_or_nodes_included': False}
+         copies = {'producer-source.py': base.pinned(SELF), 'producer-request.json': base.pinned(REQUEST),
+-                  'host-historical-proof.json': context['proof_raw'],
+-                  'host-controller.stdout.original.jsonl': base.pinned(HOST_STDOUT),
+-                  'host-controller.terminal.original.json': base.pinned(HOST_TERMINAL)}
++                  'no-action-history.json': context['proof_raw'],
++                  'history-reader.stdout.original.json': base.pinned(HOST_STDOUT),
++                  'history-reader.terminal.original.json': base.pinned(HOST_TERMINAL)}
+         for name, raw in copies.items():
+             recorder.write_new(flow.step / name, raw)
+         raw = canonical(candidate) + b'\n'
+@@ -463,7 +538,7 @@
+         need(final_descriptors(probe, support, frozen, library_fd, library, locks) == final,
+              'FINAL_RESOURCES_CHANGED_AFTER_NONAUTHORIZING_WRITE')
+         result.update(ok=True, candidate=candidate_pin, runtime_commands=command_evidence,
+-            original_historical_proof=HOST_PROOF, current_binding_sha256=candidate['current_binding_sha256'],
++            original_private_bundle=HISTORY_BUNDLE, current_binding_sha256=candidate['current_binding_sha256'],
+             held_Main_authority_closed=True, original_foreground_predicate_preserved=True,
+             all_historical_originals_unchanged=True, final_descriptors=final,
+             normal_process_exit_required_for_locks_and_library=True, unknown_descriptors_closed=0,
+@@ -494,7 +569,7 @@
+         if recorder is not None and flow is not None and flow.step is not None:
+             try:
+                 recorder.write_new(flow.step / 'result.json', {
+-                    'schema': 'pocket4-owned-qa-stage-a-step-result-v1', 'ok': result['ok'],
++                    'schema': 'pocket4-owned-qa-no-action-stage-a-step-result-v1', 'ok': result['ok'],
+                     'action_attempted': False, 'outcome_unknown': False, 'errors': result['errors'],
+                     'epoch_sha256': flow.scope['epoch_sha256'], 'ended_utc': recorder.now(),
+                     'automatic_retry': False, 'business_success_verified': False, 'production_ready': False,
+@@ -517,9 +592,13 @@
+     need(value.get('schema') == CANDIDATE_SCHEMA and value.get('source') == self_pin and
+          value.get('request') == request_pin and value.get('flow') == FLOW and value.get('step') == STEP and
+          value.get('producer_operation') == OPERATION and value.get('original_case') == CASE_STEP and
+-         value.get('later_observation') == OBSERVATION_STEP and
++         value.get('later_observation') is None and
++         value.get('independent_later_observer_available') is False and
++         value.get('business_postcondition_observed') is False and
++         value.get('helper_requested_click_dispatch_attempted') is False and
++         re.fullmatch('[0-9a-f]{64}', value.get('no_action_history_sha256', '')) and
+          value.get('historical_controller_and_proof', {}).get('job_id') == HOST_JOB and
+-         value.get('historical_controller_and_proof', {}).get('historical_proof') == HOST_PROOF and
++         value.get('historical_controller_and_proof', {}).get('private_original_bundle') == HISTORY_BUNDLE and
+          value.get('original_case_ok') is False and value.get('original_case_outcome_unknown') is True and
+          value.get('original_action_outcome') == 'unknown_retained' and
+          all(value.get(key) is True for key in ('two_original_rounds_equal',
+@@ -599,10 +678,19 @@
+         candidate_raw = base.pinned(pin); candidate = partial.document(candidate_raw)
+         need(candidate_raw == canonical(candidate) + b'\n', 'EXACT_CANDIDATE_SERIALIZATION')
+         candidate_gate(candidate, SELF, REQUEST)
++        proof_raw, _ = base.read(FLOW + '/steps/' + STEP + '/no-action-history.json')
++        need(sha(proof_raw) == candidate['no_action_history_sha256'], 'ACTUAL_NEW_NO_ACTION_HISTORY_COPY_PIN')
++        history = partial.document(proof_raw)
++        need(history.get('schema') == 'pocket4-owned-qa-rejected-before-dispatch-history-v1' and
++             history.get('original_case') == CASE_STEP and history.get('original_case_outcome_unknown') is True and
++             history.get('helper_requested_click_dispatch_attempted') is False and
++             history.get('independent_later_observer_available') is False and
++             history.get('business_postcondition_observed') is False,
++             'NO_ACTION_TYPED_HISTORY_DOES_NOT_MANUFACTURE_A_POSTCONDITION')
+         need(candidate['runtime_commands'] == value['runtime_commands'], 'SAME_ACTUAL_SIX_COMMAND_EVIDENCE')
+         step_result_raw, _ = base.read(Path(FLOW) / 'steps' / STEP / 'result.json')
+         step_result = partial.document(step_result_raw)
+-        need(step_result.get('schema') == 'pocket4-owned-qa-stage-a-step-result-v1' and
++        need(step_result.get('schema') == 'pocket4-owned-qa-no-action-stage-a-step-result-v1' and
+              step_result.get('ok') is True and step_result.get('errors') == [] and
+              step_result.get('action_attempted') is False and step_result.get('outcome_unknown') is False and
+              step_result.get('candidate') == pin and step_result.get('reconciliation_published') is False and
+@@ -610,7 +698,7 @@
+              step_result.get('original_case_ok') is False and step_result.get('original_case_outcome_unknown') is True,
+              'NEW_STEP_RESULT_AND_PARENT_JOINT_GATE')
+         for pin_to_check in (SELF, REQUEST, BASE, UI_SOURCE, HOST_SOURCE, PARTIAL_SOURCE,
+-                             HOST_STDOUT, HOST_TERMINAL, HOST_PROOF, base.SUPPORT, support.PROBE_SOURCE):
++                             HOST_STDOUT, HOST_TERMINAL, HISTORY_BUNDLE, base.SUPPORT, support.PROBE_SOURCE):
+             base.pinned(pin_to_check)
+         support.pin_runtime_files(probe, observed)
+         no_publication_or_replay()
+@@ -618,7 +706,7 @@
+         result.update(ok=True, candidate=pin, step_result={'path': FLOW + '/steps/' + STEP + '/result.json',
+             'bytes': len(step_result_raw), 'sha256': sha(step_result_raw)},
+             all_owned_child_resources_retired_by_normal_pidfd_exit=True,
+-            parent_whole_process_FD_identity_restored=True, historical_proof=HOST_PROOF,
++            parent_whole_process_FD_identity_restored=True, private_original_bundle=HISTORY_BUNDLE,
+             explicit_next_stage_requires_new_request_after_this_actual_durable_terminal=True)
+         artifact = write_once(base, Path(ROOT) / 'owned-runtime-candidate-joint.json', canonical(result) + b'\n')
+         need(probe.same_descriptors(before, probe.census()), 'PARENT_FD_IDENTITIES_AFTER_JOINT_ARTIFACT')

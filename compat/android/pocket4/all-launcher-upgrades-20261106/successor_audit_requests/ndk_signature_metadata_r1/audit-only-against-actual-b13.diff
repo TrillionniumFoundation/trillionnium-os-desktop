@@ -1,0 +1,180 @@
+--- actual-b13-audit
++++ independent-NDK-audit
+@@ -1,17 +1,16 @@
+ def audit(request):
+     validate_request(request)
+-    batch = PENDING_BATCHES[str(request["original_batch"])]
++    batch = {"APK_count": 1, "logical_APK_bytes": 1397258}
+     need(os.getuid() == os.geteuid() == 0, "EXISTING_ROOT_AUTHORITY_REQUIRED")
+     end = time.monotonic() + 840
+-    result = {"schema": "pocket4-independent-b13-fixture-version-corrective-audit-v1", "started_utc": now(),
+-        "original_failed_audit_reclassified": False, "original_batch_05_gate_advanced": False,
+-        "all_45_Launcher_apps_reobserved": False, "continuation_of": CONTINUATION_LINEAGE,
+-        "original_batch": request["original_batch"],
+-        "original_b13_failure": B13_FAILURE_LINEAGE, "original_batch_13_gate_advanced": False,
+-        "legacy_badging_reexecuted": False,
+-        "packages": request["packages"], "request": request, "roster_reference_sha256": ROSTER_REFERENCE_SHA,
++    result = {"schema": "pocket4-independent-ndk-apk-signature-metadata-v1", "started_utc": now(),
++        "packages": request["packages"], "protected_packages": PROTECTED_PACKAGES, "request": request,
++        "original_failures_reclassified": False, "old_ledger_modified": False,
++        "scope_claimed_as_signature_evidence": False, "vendor_artifact_source_trust": "UNKNOWN",
++        "UI_or_install_admitted": False, "all_current_launcher_APKs_reaudited": False,
+         "UI_actions": 0, "App_launches": 0, "permission_changes": 0, "installs": 0,
+         "Android_namespace_commands": 0, "ADB_commands": 0, "business_data_content_reads": 0,
++        "native_commands": 0, "new_scopes_published": 0,
+         "automatic_retry": False, "production_ready": False, "snapshot_consistent": False,
+         "effective_permission_grants": "UNKNOWN_NOT_QUERIED", "apps": [], "commands": [], "errors": []}
+     raw = read_bootstrap(request["guard"], 65536)
+@@ -25,7 +24,17 @@
+         need(result["guard_before"].get("schema") == "pocket4-successor-main-guard-v1", "ACTUAL_NEW_TYPED_GUARD_REQUIRED")
+         baseline = guard.current_baseline()
+         scope = core.parse(core.pinned_record(request["app_scope"]))
+-        need(scope.get("schema") == "pocket4-versioned-app-scope-v1" and scope.get("runtime_epoch_sha256") == baseline["runtime_epoch_sha256"] and set(request["packages"]) <= set(scope["apps"]), "SAME_SUCCESSOR_APP_SCOPE_REQUIRED")
++        need(scope.get("schema") == "pocket4-versioned-app-scope-v1" and
++             scope.get("runtime_epoch_sha256") == baseline["runtime_epoch_sha256"] and
++             sorted(scope["apps"]) == PROTECTED_PACKAGES and scope["apps"][NDK_EXPECTED["package"]] == NDK_EXPECTED,
++             "EXACT_CURRENT_48_SCOPE_AND_DISCOVERED_NDK_ROW")
++        result["scope_guard_before"] = guard.check_app_scope(request["app_scope"], PROTECTED_PACKAGES)
++        scope_validator_raw = core.pinned_record(SCOPE_VALIDATOR)
++        scope_validator = types.ModuleType("actual48_pure_qualification_validator"); scope_validator.__file__ = SCOPE_VALIDATOR["path"]
++        exec(compile(scope_validator_raw, scope_validator.__file__, "exec"), scope_validator.__dict__)
++        scope_stdout_raw = core.pinned_record(SCOPE_STDOUT)
++        scope_terminal_raw = core.pinned_record(SCOPE_TERMINAL)
++        result["scope_qualification"] = validate_scope_qualification(scope_stdout_raw, scope_terminal_raw, scope_validator)
+         expected = {name: scope["apps"][name] for name in request["packages"]}
+         proof_raw = core.pinned_record(request["legacy_candidate_proof"], 131072)
+         terminal_raw = core.pinned_record(request["legacy_candidate_terminal"], 65536)
+@@ -39,35 +48,9 @@
+             "static_graph_is_actual_loader_mapping_proof": False}
+         inventory_raw = core.pinned_record(request["legacy_candidate_inventory"], 65536)
+         result["actual_candidate_observation"] = verify_candidate_inventory(request["legacy_candidate_aapt2"], core.parse(inventory_raw))
+-        prior_b13_raw = core.pinned_record(B13_FAILED_RESULT, MAX_RESULT)
+-        prior_b13 = core.parse(prior_b13_raw)
+-        need(prior_b13.get("original_batch") == 13 and prior_b13.get("linked_batch_audit_complete") is False and
+-             prior_b13.get("status") == "LINKED_ORIGINAL_BATCH_AUDIT_INCOMPLETE_NO_RETRY", "ORIGINAL_B13_FAILURE_MUST_REMAIN")
+-        result["original_b13_failed_publication_reference"] = B13_FAILED_RESULT
+-        prior_failed_raw = core.pinned_record(ORIGINAL_FAILED_RESULT, MAX_RESULT)
+-        prior_control_raw = core.pinned_record(ORIGINAL_CONTROL_RESULT, MAX_RESULT)
+-        prior_failed, prior_control = core.parse(prior_failed_raw), core.parse(prior_control_raw)
+-        need(prior_failed.get("status") == "APK_AUDIT_INCOMPLETE_REVIEW_RAW_EVIDENCE" and prior_failed.get("all_commands_succeeded") is False, "ORIGINAL_B05_FAILURE_CHANGED")
+-        need(prior_control.get("status") == "ACTUAL_APK_AUDIT_VERIFIED" and prior_control.get("all_manifests_and_signatures_verified") is True, "ORIGINAL_FCITX_CONTROL_CHANGED")
+-        failed_commands = [row for row in prior_failed["commands"] if row.get("returncode") != 0]
+-        need(len(failed_commands) == 1 and failed_commands[0].get("package") == "com.android.calendar" and failed_commands[0].get("name") == "badging" and failed_commands[0].get("returncode") == 1, "EXACT_ORIGINAL_CALENDAR_FAILURE_REQUIRED")
+-        corrective_raw = core.pinned_record(CORRECTIVE_RESULT, MAX_RESULT)
+-        corrective = core.parse(corrective_raw)
+-        need(corrective.get("schema") == "pocket4-original-b05-corrective-apk-audit-v1" and
+-             corrective.get("status") == "ORIGINAL_B05_CORRECTIVE_APK_AUDIT_VERIFIED" and
+-             corrective.get("corrective_audit_complete") is True and corrective.get("errors") == [] and
+-             corrective.get("original_failed_audit_reclassified") is False and
+-             corrective.get("original_batch_05_gate_advanced") is False and
+-             corrective.get("collector_source", {}).get("sha256") == CONTINUATION_LINEAGE["corrective_source_sha256"],
+-             "EXACT_ACTUAL_B05_CORRECTIVE_PUBLICATION_REQUIRED")
+-        need(sum(len(row["apks"]) for row in expected.values()) == batch["APK_count"], "COMPLETE_ORIGINAL_BATCH_APK_COUNT_REQUIRED")
+-        result["corrective_publication_reference"] = CORRECTIVE_RESULT
+-        result["corrective_terminal_checked_by_local_coordinator_not_this_worker"] = True
+-        result["original_failure_reference"] = ORIGINAL_FAILED_RESULT
+-        result["original_passed_control_reference"] = ORIGINAL_CONTROL_RESULT
++        need(sum(len(row["apks"]) for row in expected.values()) == 1, "EXACT_ONE_CURRENT_NDK_APK")
+         total = sum(apk["bytes"] for row in expected.values() for apk in row["apks"])
+-        need(total == batch["logical_APK_bytes"] and 0 < total <= MAX_BATCH_BYTES and
+-             all(0 < len(row["apks"]) <= 32 for row in expected.values()), "EXACT_ORIGINAL_PENDING_BATCH_APK_SET_BOUND")
++        need(total == 1397258 and 0 < total <= MAX_BATCH_BYTES, "FIXED_COMPLETE_NDK_APK_BYTE_COUNT")
+         runtime = baseline["runtime"]
+         binding = runtime["held"]["process_snapshot"]["binding"]
+         held = core.HeldProcesses(pool, {name: row["host_pid"] for name, row in binding["processes"].items()})
+@@ -78,9 +61,8 @@
+         result["request_artifact"] = store.write("request.json", canonical(request) + b"\n")
+         result["collector_source"] = store.write("collector-source.py", core.host_read(str(Path(__file__).resolve()), 131072)[0])
+         result["candidate_inventory_artifact"] = store.write("candidate-inventory.original.json", inventory_raw)
+-        result["corrective_publication_artifact"] = store.write("actual-b05-corrective-result.json", corrective_raw)
+-        result["original_failed_result_artifact"] = store.write("original-b05-failed-result.json", prior_failed_raw)
+-        result["original_passed_control_artifact"] = store.write("original-b01-passed-result.json", prior_control_raw)
++        result["scope_joint_artifact"] = store.write("scope48.stdout.original.jsonl", scope_stdout_raw)
++        result["scope_terminal_artifact"] = store.write("scope48.terminal.original.json", scope_terminal_raw)
+         result["candidate_proof_artifact"] = store.write("prior-host-proof.outer.original.json", proof_raw)
+         result["candidate_terminal_artifact"] = store.write("prior-host-proof.terminal.original.json", terminal_raw)
+         result["official_host_stdout_artifact"] = store.write("official-host.stdout.original.jsonl", official_stdout_raw)
+@@ -135,7 +117,7 @@
+                         outputs[name] = streams["stdout"]
+                         recheck_tools(core, pool, tools, end, False)
+                     for name, fn in (("signature", lambda: parse_signature(outputs["apksigner"], item["commands"][0])),
+-                                     ("manifest", lambda: manifest_with_exact_fixture_default(outputs["badging"], outputs["manifest"], package, row, apk, item.get("signature"))),
++                                     ("manifest", lambda: ndk_manifest_with_observed_absence(outputs["badging"], outputs["manifest"], row, apk, item.get("signature"))),
+                                      ("declared_permissions", lambda: xml_permissions(outputs["manifest"]))):
+                         try:
+                             item[name] = fn()
+@@ -168,6 +150,8 @@
+         recheck_tools(core, pool, tools, end, True)
+         core.app_scope(pool, held, request["packages"], expected, False)
+         core.verify_runtime(pool, held, runtime)
++        result["scope_guard_after"] = guard.check_app_scope(request["app_scope"], PROTECTED_PACKAGES)
++        need(result["scope_guard_after"] == result["scope_guard_before"], "COMPLETE_48_PROTECTION_CHANGED")
+         result["guard_after"] = guard.current_guard()
+         need(result["guard_after"] == result["guard_before"], "TYPED_SUCCESSOR_GUARD_CHANGED")
+         core.pinned_record(request["app_scope"])
+@@ -175,13 +159,12 @@
+         core.pinned_record(request["legacy_candidate_inventory"], 65536)
+         core.pinned_record(request["legacy_candidate_proof"], 131072)
+         core.pinned_record(request["legacy_candidate_terminal"], 65536)
+-        core.pinned_record(B13_FAILED_RESULT, MAX_RESULT)
+-        core.pinned_record(ORIGINAL_FAILED_RESULT, MAX_RESULT)
+-        core.pinned_record(CORRECTIVE_RESULT, MAX_RESULT)
+-        core.pinned_record(ORIGINAL_CONTROL_RESULT, MAX_RESULT)
+         core.pinned_record(request["official_host_stdout"], 131072)
+         core.pinned_record(request["official_host_terminal"], 65536)
+         core.pinned_record(OFFICIAL_HOST_SOURCE, 131072)
++        core.pinned_record(SCOPE_STDOUT)
++        core.pinned_record(SCOPE_TERMINAL)
++        core.pinned_record(SCOPE_VALIDATOR)
+         official_layout.verify("after_all_APK_tools_and_file_checks", end)
+         result["snapshot_consistent"] = True
+     except BaseException as error:
+@@ -216,17 +199,11 @@
+         observations = result.get("official_private_layout", {}).get("observations", [])
+         result["official_layout_before_and_after_all_commands"] = len(observations) == 2 + 6 * batch["APK_count"] and all(
+             row.get("complete") is True and row.get("all_five_search_directories_and_thirty_candidates_proved") is True for row in observations)
+-        fixture_manifest = result["apps"][0].get("base_manifest") if result["apps"] else None
+-        result["fixture_absent_version_default_applied"] = bool(fixture_manifest and
+-            fixture_manifest.get("effective_version_code_source") == "ANDROID_ABSENT_ATTRIBUTE_DEFAULT_CONFIRMED_WITH_FIXED_PM_ZERO" and
+-            fixture_manifest.get("version_code") is None and fixture_manifest.get("version_name") is None and
+-            fixture_manifest.get("version_code_raw") == fixture_manifest.get("version_name_raw") == "" and
+-            fixture_manifest.get("long_version_code") == 0)
+-        result["corrective_batch13_audit_complete"] = (result["fixture_absent_version_default_applied"] and
+-            result["all_manifests_and_signatures_verified"] and
++        result["ndk_audit_complete"] = (result["all_manifests_and_signatures_verified"] and
+             result["all_primary_commands_succeeded"] and result["official_badging_stderr_empty"] and
+             result.get("official_layout_descriptors_closed") is True and result["official_layout_before_and_after_all_commands"] and
+-            result.get("corrective_publication_reference") == CORRECTIVE_RESULT)
++            result.get("scope_guard_before") == result.get("scope_guard_after") and
++            result.get("scope_qualification", {}).get("normal_owned_joint_validated") is True)
+         # Preserve every full observation losslessly, under the same private store.
+         # At 16 APKs the duplicate directory records otherwise exceed MAX_RESULT.
+         try:
+@@ -243,16 +220,16 @@
+                     "owned_directory_descriptors": layout["owned_directory_descriptors"],
+                     "full_original_observations_persisted_and_read_back": True}
+             else:
+-                result["corrective_batch13_audit_complete"] = False
++                result["ndk_audit_complete"] = False
+         except BaseException as error:
+             result["errors"].append({"stage": "full_layout_evidence_publication", "type": type(error).__name__, "reason": str(error)[:160]})
+             result["all_manifests_and_signatures_verified"] = False
+-            result["corrective_batch13_audit_complete"] = False
++            result["ndk_audit_complete"] = False
+         result["resource_table_integrity_fully_proved"] = False
+-        result["inference_limit"] = "Independent full correction of the exact failed b13. The original b05 and b13 failures remain unchanged. Only the fixed signed fixture uses Android absent-version default 0 while raw empty values and null declaration stay preserved. This does not prove all resource health, effective grants, business readiness or rewrite the old ledger."
++        result["inference_limit"] = "Current exact NDK APK normal cryptographic verification and manifest metadata only. PM signer equality does not authenticate package origin or authorize an upgrade. The 48-package identity scope, original FAILED/STOP/UNKNOWN records, permissions, UI and production gates remain unchanged. Resources are not fully validated by badging."
+         result["ended_utc"] = now()
+         result["owned_descriptors_before_final_receipt"] = pool.summary()
+-        result["status"] = "B13_FIXTURE_VERSION_CORRECTIVE_AUDIT_VERIFIED" if result["corrective_batch13_audit_complete"] else "B13_FIXTURE_VERSION_CORRECTIVE_AUDIT_INCOMPLETE_NO_RETRY"
++        result["status"] = "NDK_CURRENT_APK_SIGNATURE_AND_METADATA_VERIFIED" if result["ndk_audit_complete"] else "NDK_CURRENT_APK_AUDIT_INCOMPLETE_NO_RETRY"
+         try:
+             if store is not None:
+                 raw = canonical(result) + b"\n"; need(len(raw) <= MAX_RESULT, "RESULT_BYTE_BOUND")
+@@ -270,5 +247,5 @@
+                 result["status"] = "FD_RETIREMENT_FAILED"
+         result["owned_descriptors_final"] = pool.summary()
+         if not result["all_manifests_and_signatures_verified"]:
+-            result["corrective_batch13_audit_complete"] = False
++            result["ndk_audit_complete"] = False
+     return result
