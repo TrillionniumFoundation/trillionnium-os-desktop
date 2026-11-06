@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-B",
+      "-I",
+      "-c",
+      "#!/usr/bin/env python3\n\"\"\"First declared Douyin download from its observed normal Tencent store URL.\n\nUses the already available /usr/bin/curl, no retries, no Android interaction.\nPublished MD5 is a transfer check; full publisher signature verification is separate.\n\"\"\"\nimport concurrent.futures, datetime, hashlib, json, os, pathlib, shutil, subprocess\n\nROOT=pathlib.Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-douyin-tencent-s30')\nCANDIDATES=[{'package': 'com.ss.android.ugc.aweme', 'channel_version': '41.0.0', 'landing': 'https://a.app.qq.com/o/simple.jsp?pkgname=com.ss.android.ugc.aweme', 'url': 'https://imtt.dd.qq.com/sjy.00022/sjy.00004/16891/apk/D29FFA56119C27577DCACD650998B2C0.apk?fsname=com.ss.android.ugc.aweme_41.0.0.apk', 'expected_bytes': 364363658, 'metadata_md5': 'd29ffa56119c27577dcacd650998b2c0', 'metadata_page_sha256': 'b11fb5775bf73c080784dbab9d1fcbdcfdc3d2aec42f2ff5885c030ab1350e04', 'metadata_version_code': None, 'historical_installed_version_code_reference': 400801, 'store': 'Tencent MyApp official public store; observed normal download URL, HTTPS as normal page handler', 'original_vendor_partial_untouched': True}]\n\ndef now():return datetime.datetime.now(datetime.timezone.utc).isoformat()\ndef digest(path):\n h=hashlib.sha256();m=hashlib.md5();count=0\n with path.open('rb') as f:\n  first=f.read(4);f.seek(0)\n  for b in iter(lambda:f.read(1048576),b''):h.update(b);m.update(b);count+=len(b)\n return count,h.hexdigest(),m.hexdigest(),first\ndef require(v,reason):\n if not v:raise RuntimeError(reason)\n\ndef fetch(c):\n row=dict(c,started_utc=now(),automatic_retry=False,installs=0,UI_actions=0,Android_reads=0,Main_lock_or_fds=0,signature_verified=False,claimed_latest_usable=False,production_ready=False)\n part=ROOT/(c['package']+'.part');headers=ROOT/(c['package']+'.headers');err=ROOT/(c['package']+'.stderr');metrics=ROOT/(c['package']+'.curl-metrics.json')\n process=None\n try:\n  argv=['/usr/bin/curl','--fail','--location','--max-redirs','5','--proto','=https','--proto-redir','=https','--connect-timeout','25','--max-time','1600','--max-filesize',str(512*1024*1024),'--silent','--show-error','--user-agent','Mozilla/5.0 (Linux; Android 17) AppleWebKit/537.36','--dump-header',str(headers),'--output',str(part),'--write-out','%{json}',c['url']]\n  with err.open('xb') as e,metrics.open('xb') as out:\n   process=subprocess.Popen(argv,stdin=subprocess.DEVNULL,stdout=out,stderr=e)\n   row['download_pid']=process.pid\n   try:rc=process.wait(timeout=1620)\n   except subprocess.TimeoutExpired:\n    process.kill();rc=process.wait(timeout=20);row.update(timed_out=True,returncode=rc,joined=True);raise RuntimeError('CURL_SUBPROCESS_DEADLINE')\n  row.update(returncode=rc,joined=True,timed_out=False)\n  for label,p in [('headers',headers),('stderr',err),('curl_metrics',metrics)]:\n   raw=p.read_bytes();require(len(raw)<=65536,'CURL_METADATA_OUTPUT_BOUND');row[label]={'path':str(p),'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}\n  curl=json.loads(metrics.read_bytes());row['curl']={k:curl.get(k) for k in ('http_code','url_effective','content_type','size_download','time_total','speed_download','num_redirects','num_retries','ssl_verify_result','errormsg','exitcode')}\n  require(rc==0,'CURL_DOWNLOAD_FAILED')\n  require(int(row['curl']['http_code'])==200 and row['curl']['num_retries']==0 and row['curl']['ssl_verify_result']==0,'SECURE_HTTP_200_REQUIRED')\n  count,sha,md5,first=digest(part)\n  require(first==b'PK\\x03\\x04','NOT_APK_ZIP')\n  require(count==c['expected_bytes'] and md5==c['metadata_md5'],'PUBLISHED_STORE_TRANSFER_IDENTITY_MISMATCH')\n  final=ROOT/(c['package']+'.apk');require(not final.exists(),'FINAL_PATH_EXISTS');os.rename(part,final)\n  row.update(status='STAGED_PENDING_SIGNATURE_AND_IDENTITY_VERIFICATION',bytes=count,sha256=sha,actual_md5=md5,local_path=str(final),final_url=row['curl'].get('url_effective'))\n except BaseException as e:\n  row.update(status='DOWNLOAD_FAILED',error_type=type(e).__name__,error=str(e)[:512],partial_preserved=part.exists())\n  if part.exists():\n   count,sha,md5,first=digest(part);row.update(partial_bytes=count,partial_sha256=sha,partial_md5=md5)\n row['finished_utc']=now()\n with (ROOT/(c['package']+'-download-result.json')).open('x') as f:json.dump(row,f,indent=2);f.write('\\n');f.flush();os.fsync(f.fileno())\n print(json.dumps(row),flush=True);return row\n\ndef main():\n require(os.getuid()==1000 and os.geteuid()==1000,'EXACT_UNPRIVILEGED_AUTHORITY')\n require(shutil.disk_usage(ROOT.parent).free>=4*1024**3,'STAGING_SPACE_REQUIRED')\n os.umask(0o077);ROOT.mkdir(mode=0o700)\n with concurrent.futures.ThreadPoolExecutor(max_workers=1) as p:rows=list(p.map(fetch,CANDIDATES))\n report={'schema':'pocket4-official-store-declared-download-v1','installs':0,'Android_reads':0,'UI_actions':0,'Main_lock_or_fds':0,'automatic_retries':0,'candidates':rows}\n with (ROOT/'download-results.json').open('x') as f:json.dump(report,f,indent=2);f.write('\\n');f.flush();os.fsync(f.fileno())\n print(json.dumps({'report':str(ROOT/'download-results.json'),'downloaded':sum(x['status'].startswith('STAGED_') for x in rows),'failed':sum(x['status']=='DOWNLOAD_FAILED' for x in rows)}),flush=True)\n return 0 if all(x['status'].startswith('STAGED_') for x in rows) else 1\nif __name__=='__main__':raise SystemExit(main())\n"
+    ],
+    "created_unix_ms": 1793970266005,
+    "cwd": null,
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b0f5df95-fc05-745a",
+    "idempotency_key": "pocket4-douyin-tencent-normal-public-s30-download-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b0f5df95-fc05-745a",
+    "request_digest": "490a07202ffa04198f054ab6b19047c6a61d8a8ca4b5defda7bd93eb4c8cf61c",
+    "request_fingerprint": 5263026949361107993,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b0f5df95-fc05-745a"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b0f5df95-fc05-745a"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

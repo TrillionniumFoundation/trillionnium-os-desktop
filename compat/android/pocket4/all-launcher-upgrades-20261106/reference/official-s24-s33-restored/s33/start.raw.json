@@ -1,0 +1,37 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-B",
+      "-I",
+      "-c",
+      "import ast,hashlib,json,os,pathlib,stat,sys\nrequire=lambda x,m:None if x else (_ for _ in ()).throw(RuntimeError(m))\nrequire(os.geteuid()==0,'EXISTING_ROOT_TOOL_AUTHORITY_REQUIRED')\nraw=sys.stdin.buffer.read(16385);require(7000<len(raw)<=16384,'EXACT_SOURCE_INPUT_BOUND');ast.parse(raw)\nroot=pathlib.Path('/home/alex/work/pocket4-official-source-receipts-20261106-s33');os.umask(0o077);root.mkdir(mode=0o700);os.chown(root,1000,1000)\nrecords=[]\ndef put(name,data,source=None):\n path=root/name\n with path.open('xb') as f:f.write(data);f.flush();os.fsync(f.fileno())\n os.chown(path,1000,1000)\n row={'path':str(path),'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest(),'host_source':source};records.append(row);return row\nsource=put('verify_douyin_s32.py',raw)\nprint(json.dumps({'verification_source':source,'Android_reads':0,'Main_lock_or_fds':0}),flush=True)\nresult_code=1\ntry:\n sys.argv=[source['path']]\n exec(compile(raw,source['path'],'exec'),{'__name__':'__main__','__file__':source['path']})\n result_code=0\nexcept SystemExit as error:\n result_code=error.code if isinstance(error.code,int) else 1\nfinally:\n origin=pathlib.Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-douyin-tail-s32/com.ss.android.ugc.aweme-signature-verify-r1')\n for name in ('result.json','apksigner.stdout','apksigner.stderr','aapt-badging.stdout','aapt-badging.stderr'):\n  path=origin/name\n  if not path.exists():continue\n  fd=os.open(path,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW|os.O_NONBLOCK)\n  try:\n   before=os.fstat(fd);require(stat.S_ISREG(before.st_mode) and before.st_nlink==1 and before.st_size<=1048576,'EXACT_VERIFIER_OUTPUT_REQUIRED')\n   data=os.read(fd,1048577);after=os.fstat(fd)\n   require(len(data)==before.st_size and all(getattr(before,k)==getattr(after,k) for k in ('st_dev','st_ino','st_size','st_mtime_ns','st_ctime_ns')),'VERIFIER_OUTPUT_CHANGED')\n   current=os.lstat(path);require(current.st_dev==before.st_dev and current.st_ino==before.st_ino,'VERIFIER_OUTPUT_PATH_CHANGED')\n   put(name,data,str(path))\n  finally:os.close(fd)\n index=(json.dumps({'scope':'host-only fixed original APK and pinned verification tools; no Android or Main action','verifier_exit_code':result_code,'production_ready':False,'files':records},indent=2)+'\\n').encode()\n receipt=put('index.json',index)\n print(json.dumps({'archive':receipt,'verifier_exit_code':result_code,'source_bytes':len(raw),'source_sha256':hashlib.sha256(raw).hexdigest(),'Android_reads':0,'Main_lock_or_fds':0}),flush=True)\nraise SystemExit(result_code)\n"
+    ],
+    "created_unix_ms": 1793971443932,
+    "cwd": null,
+    "env_keys": [],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b107d8dc-fc05-7523",
+    "idempotency_key": "pocket4-douyin-s32-official-signature-verify-s33-r1-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b107d8dc-fc05-7523",
+    "request_digest": "a8dbad1ca5a55b9f055d4e88863c8a77ab7ca3568a74a6cf9f2b4b02006a1ce7",
+    "request_fingerprint": 12167509156821293983,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b107d8dc-fc05-7523"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b107d8dc-fc05-7523"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

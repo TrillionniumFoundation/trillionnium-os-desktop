@@ -1,0 +1,2615 @@
+{
+  "apps": {
+    "com.Hyatt.hyt": {
+      "actual_current_coverage": {
+        "core": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "fault_recovery": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "integrity": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "login_or_guest": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "network": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "permissions": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "restart": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "soak": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "startup": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "storage": {
+          "evidence_refs": [],
+          "status": "unknown"
+        }
+      },
+      "allowed_session_modes": [
+        "login"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "75b95cbfd9c02e40d289a5b4778a03f34b3a4f37e465810f7e73a6780240feed",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "hotel_detail_and_rate": "打开酒店详情并读取可售房型/价格和条件；不提交订房或付款。",
+        "hotel_search": "用已授权会员会话、明确城市和日期查询酒店；实际返回酒店列表。"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "evidence_class": "public_page_only_not_artifact_acceptance",
+        "observed_on": "2026-11-06",
+        "source_url": "https://play.google.com/store/apps/details?id=com.Hyatt.hyt",
+        "version_name": null
+      },
+      "name": "凯悦天地 / World of Hyatt",
+      "official_hosts": [
+        "play.google.com",
+        "www.hyatt.com",
+        "world.hyatt.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor.",
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.MobileTicket": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "5447a782c7c1518fc405388c92611ac553bc4d6f598ce5076be1ff14c8650962",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "rail_session": "正常登录/乘车资料边界",
+        "train_detail": "列车时刻与经停信息",
+        "train_search": "车次、座席与票价查询"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "kyfw.12306.cn",
+        "r.app.xiaomi.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.amazon.mShop.android.shopping": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "1d7d867375bfab815288a515fb0f23d0f1feaf7008780bcaa42feb93a2c8cc6b",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "product_detail": "商品详情与规格读回",
+        "product_search": "中文/英文商品搜索和筛选",
+        "reversible_cart": "自有测试购物车或收藏状态"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "play.google.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.calendar": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "53d3703a716fb71f24d843d0524dc74645511f2c860757aa1b11f891d66955f7",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "calendar_views": "日/周/月切换与提醒",
+        "event_persistence": "进程重建后事件持久化",
+        "local_event_crud": "本地测试事件创建/修改"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.camera2": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "20f8802a1c41cacd7326961236b391848b6a76bd6868813ffcfd46c6610504d5",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "camera_recovery": "相机占用/权限与生命周期",
+        "photo_capture": "真实相机取景和拍照",
+        "video_record": "短视频和音频录制"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.contacts": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "f9fcef7358ea9c8299f0310af34690802425dd20fe446274b32f71fd85f4f9c0",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "contact_crud": "本地中文测试联系人",
+        "contact_persistence": "重启后联系人和权限拒绝行为",
+        "vcard_roundtrip": "受控vCard导入/导出"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.deskclock": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "e96eb7f6df3ac7cd4b16672d5b26032e510a928a5c347e609a8c6a72cb96df1f",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "alarm_restart": "重开/重启后闹钟状态",
+        "stopwatch": "秒表计时和前后台",
+        "timer_alarm": "受控定时器与闹钟"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.dialer": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "85f2a77f750b883a75f1ed9bb8e926aba34c25ade83f7cfd364fd2b902a6be82",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "call_history": "自有测试通话记录",
+        "controlled_voice_call": "受控语音呼出/呼入",
+        "dialpad_and_role": "拨号输入和电话角色"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": true,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.documentsui": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "57f9392ba9e20e020eb8271c1e7f6c9bfb1f2a1b366bfb82063c659fdb511ada",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "saf_grant": "SAF选择/取消与URI权限",
+        "storage_failure": "只读/不可用文档provider",
+        "test_file_operations": "自有测试文件创建/复制/重命名"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.gallery3d": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "264e0e54625999464a4e375c6c937e30d4ef551bea0f33430696bc56636536b2",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "media_browse": "测试照片/视频枚举与解码",
+        "media_edit": "实际支持的可逆图片编辑",
+        "scoped_share": "受控接收组件的URI分享"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.messaging": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "d295948b850f2508030f25aaf09943a387d9801e214133615e5c6506eb491f05",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "controlled_mms": "实际启用MMS附件收发",
+        "controlled_sms": "受控SMS收发",
+        "sms_draft": "合成短信草稿与输入"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": true,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.quicksearchbox": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "d7e012b89f80afa56b1fcc4259fdda3ceeb8884cbb2422dd4b023a4b026aa89d",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "query_input": "中文/英文查询输入与编辑",
+        "search_navigation": "建议、取消与返回",
+        "search_results": "实际本地provider或Web搜索结果"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.settings": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "1b305849f917cfd792d458f43fde4d3daa10b772f7116061b15e053bafdb09c8",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "about_and_app_info": "系统与应用详情读回",
+        "network_storage_status": "网络/存储状态页面",
+        "permission_navigation": "权限页面与现有状态"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.android.threadnetwork.demoapp": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "7d3b8eddfe3b0feecd5c3f84c8f1716f9d8657bfbb5300044867f626eb0aef49",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "controlled_thread_join": "自有Thread网络入网",
+        "thread_capability": "真实Thread服务/设备识别",
+        "thread_recovery": "受控IPv6连通与故障恢复"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "android.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": true,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.bestbuy.android": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "711d42e5879f9a1d4516577c30bcd58e2e6b3b23ba04f0b29757c05b9fbc1bad",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "product_detail": "商品详情与规格读回",
+        "product_search": "中文/英文商品搜索和筛选",
+        "reversible_cart": "自有测试购物车或收藏状态"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "play.google.com",
+        "www.bestbuy.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.ehi.national.mobile": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "4dee9f35288dbd482185f314ece096eaafd01ada19215fb5487fd0edde933da1",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "rental_navigation": "返回修改与持久化",
+        "rental_search": "手动网点及取还车查询",
+        "vehicle_terms": "车型报价与条款"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "play.google.com",
+        "www.nationalcar.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.enflick.android.TextNow": {
+      "actual_current_coverage": {
+        "core": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "fault_recovery": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "integrity": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "login_or_guest": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "network": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "permissions": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "restart": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "soak": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "startup": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "storage": {
+          "evidence_refs": [],
+          "status": "unknown"
+        }
+      },
+      "allowed_session_modes": [
+        "login"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "e347e90ef86d724c6f0511173d5e6659a4be60687104ed5fa82eae4a10ed4e5b",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "controlled_call": "仅在另有明确通信授权的受控测试对端验证真实呼叫连接、音频及正常挂断；没有授权即 unknown。",
+        "controlled_text": "仅在另有明确通信授权的自有测试号码或受控测试对端验证真实文本收发及状态。"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "evidence_class": "public_page_only_not_artifact_acceptance",
+        "observed_on": "2026-11-06",
+        "source_url": "https://play.google.com/store/apps/details?id=com.enflick.android.TextNow",
+        "version_name": null
+      },
+      "name": "TextNow",
+      "official_hosts": [
+        "play.google.com",
+        "www.textnow.com",
+        "help.textnow.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": true,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor.",
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.google.android.gms": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "7540bfbe743415e2173ce0cfef456419d66719a09187b10a924d63d4cd2b91f2",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "controlled_service_api": "受控客户端调用真实API",
+        "enabled_cloud_messaging": "已启用推送/账号服务验证",
+        "microg_settings_selfcheck": "实际服务配置与自检读回"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "api.github.com",
+        "github.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": true,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.hertz.android.digital": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "f29b1dce401ad3c2e83dfca9ee4ebca6db6443cd99630e9b5ad060561c520a14",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "rental_navigation": "返回修改与持久化",
+        "rental_search": "手动网点及取还车查询",
+        "vehicle_terms": "车型报价与条款"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "play.google.com",
+        "www.hertz.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.hilton.android.hhonors": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "8a1b664c8d4a60e555f59fe78e7abada3c1d9e66ac6ff9077d81ec6e056bd2f8",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "hotel_search": "手动城市/日期酒店搜索",
+        "member_session": "Hilton Honors账号会话",
+        "rate_conditions": "房型、价格和取消条件读回"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "play.google.com",
+        "www.hilton.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.ihg.apps.android": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "91b30d32db7a1c5fd763d5350142b7e70a82a712ce14097df37c97888a08ed5a",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "hotel_search": "手动城市/日期酒店搜索",
+        "member_session": "IHG One Rewards账号会话",
+        "rate_conditions": "房型、价格和取消条件读回"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "play.google.com",
+        "www.ihg.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.jingdong.app.mall": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "7a2134d46420d7c4fef2198fbb40bbefd1d34822ff22d309e900336753325f42",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "product_detail": "商品详情与规格读回",
+        "product_search": "中文/英文商品搜索和筛选",
+        "reversible_cart": "自有测试购物车或收藏状态"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "sj.qq.com",
+        "wqs.jd.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.lianjia.beike": {
+      "actual_current_coverage": {
+        "core": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "fault_recovery": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "integrity": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "login_or_guest": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "network": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "permissions": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "restart": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "soak": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "startup": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "storage": {
+          "evidence_refs": [],
+          "status": "unknown"
+        }
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "0db7f179c6d7334c6c1cd0bc46dd61dcce83f265ce84c059ebecc51abd704487",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "chinese_listing_search": "手动选城市，以中文关键词搜索房源并读取真实列表。",
+        "listing_detail_and_filter": "打开房源详情，改变查询筛选并核对结果；不联系经纪人或预约。"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "evidence_class": "public_page_only_not_artifact_acceptance",
+        "observed_on": "2026-11-06",
+        "source_url": "https://r.app.xiaomi.com/details?id=com.lianjia.beike",
+        "version_name": "3.06.70"
+      },
+      "name": "贝壳找房",
+      "official_hosts": [
+        "m.ke.com",
+        "r.app.xiaomi.com",
+        "app.mi.com",
+        "sj.qq.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor.",
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.marriott.mrt": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "44c40c94023ec5e5dad6458f1f34a4e0eaf4ca887389b92a35efaa764834c795",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "hotel_search": "手动城市/日期酒店搜索",
+        "member_session": "Marriott Bonvoy账号会话",
+        "rate_conditions": "房型、价格和取消条件读回"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "help.marriott.com",
+        "play.google.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.pinger.textfree": {
+      "allowed_session_modes": [
+        "login"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "10336e1d60ebf599a79d0db2ae64016df5ba1e688b1537192e63a5714297ae25",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "controlled_call": "受控通话连接、音频与挂断",
+        "controlled_text": "受控文本双向收发",
+        "login_session": "合法账号登录和会话恢复"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "messages.textfree.us",
+        "play.google.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": true,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.rytong.airchina": {
+      "actual_current_coverage": {
+        "core": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "fault_recovery": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "integrity": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "login_or_guest": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "network": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "permissions": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "restart": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "soak": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "startup": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "storage": {
+          "evidence_refs": [],
+          "status": "unknown"
+        }
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "54b5a9fef9c6aa17a8c2b5cbc74123fcde2a023916e62dad993f92b91cafff73",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "flight_search_and_fare": "手动输入出发到达城市和日期，读取实际航班及票价条件；不提交订单。",
+        "flight_status": "查询明确航班的实时状态并核对返回字段。"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "evidence_class": "public_page_only_not_artifact_acceptance",
+        "observed_on": "2026-11-06",
+        "source_url": "https://sj.qq.com/appdetail/com.rytong.airchina",
+        "version_name": "7.53.0"
+      },
+      "name": "中国国航",
+      "official_hosts": [
+        "m.airchina.com.cn",
+        "www.airchina.com.cn",
+        "sj.qq.com",
+        "app.flyme.cn",
+        "play.google.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor.",
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.rytong.ceair": {
+      "actual_current_coverage": {
+        "core": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "fault_recovery": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "integrity": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "login_or_guest": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "network": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "permissions": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "restart": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "soak": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "startup": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "storage": {
+          "evidence_refs": [],
+          "status": "unknown"
+        }
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "6faa03cdc34fecc61ecf0145449ad4b2940beb020fc359830556e7328ca9e934",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "flight_search_and_fare": "手动输入出发到达城市和日期，读取实际航班及票价条件；不提交订单。",
+        "flight_status": "查询明确航班的实时状态并核对返回字段。"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "evidence_class": "public_page_only_not_artifact_acceptance",
+        "observed_on": "2026-11-06",
+        "source_url": "https://app.ceair.com/",
+        "version_name": "9.5.16"
+      },
+      "name": "东方航空",
+      "official_hosts": [
+        "app.ceair.com",
+        "ecactivity.ceair.com",
+        "www.ceair.com",
+        "sj.qq.com",
+        "r.app.xiaomi.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor.",
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.sankuai.meituan.takeoutnew": {
+      "actual_current_coverage": {
+        "core": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "fault_recovery": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "integrity": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "login_or_guest": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "network": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "permissions": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "restart": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "soak": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "startup": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "storage": {
+          "evidence_refs": [],
+          "status": "unknown"
+        }
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "28cb706f7045c169274f206b751870652423595238e25828fe6689ed965c76c1",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "manual_area_and_shop_search": "保持现有定位授权边界，使用手动城市/测试地址与中文关键词搜索并读取实际商家。",
+        "menu_and_cart_readback": "打开商家菜单，核对价格和可逆测试购物车读回；不提交订单或付款。"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "evidence_class": "public_page_only_not_artifact_acceptance",
+        "observed_on": "2026-11-06",
+        "source_url": "https://r.app.xiaomi.com/details?id=com.sankuai.meituan.takeoutnew",
+        "version_name": "8.85.1"
+      },
+      "name": "美团外卖",
+      "official_hosts": [
+        "waimai.meituan.com",
+        "r.app.xiaomi.com",
+        "app.mi.com",
+        "sj.qq.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor.",
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.sdu.didi.psnger": {
+      "allowed_session_modes": [
+        "login"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "3a55c8747d3bac38d2ef44dbdf40cf0c885dc33f46ddfb3daab88f941f380088",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "fare_preview": "车型、预估费用和等待时间",
+        "manual_route": "手动起终点与路线",
+        "route_recovery": "路线编辑和丢网恢复"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "r.app.xiaomi.com",
+        "www.didiglobal.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.ss.android.ugc.aweme": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "4fefc1d6e0c0c155f618692131f350216c72004091e7dcc61215c5e37c68a22e",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "playback_controls": "真实音视频播放",
+        "playback_recovery": "网络中断与播放器恢复",
+        "public_video_search": "中文公开视频搜索"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "r.app.xiaomi.com",
+        "www.douyin.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.szzc": {
+      "actual_current_coverage": {
+        "core": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "fault_recovery": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "integrity": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "login_or_guest": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "network": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "permissions": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "restart": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "soak": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "startup": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "storage": {
+          "evidence_refs": [],
+          "status": "unknown"
+        }
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "886bfd46c44349ca09c3ca24a765a403e521b16079b46fb423b02a20289e80b5",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "rental_search": "手动选择城市、网点、取还车时间并读取真实可租车辆。",
+        "vehicle_price_and_terms": "打开车型详情并读取费用与租赁条件；不提交订单、押金或付款。"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "evidence_class": "public_page_only_not_artifact_acceptance",
+        "observed_on": "2026-11-06",
+        "source_url": "https://r.app.xiaomi.com/details?id=com.szzc",
+        "version_name": "9.6.1"
+      },
+      "name": "神州租车",
+      "official_hosts": [
+        "www.zuche.com",
+        "m.zuche.com",
+        "r.app.xiaomi.com",
+        "app.mi.com",
+        "sj.qq.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor.",
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.taobao.taobao": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "d6ac5ecbf6a617b5f9ab171812e438c193a63fd2bf0ea7b14a661fcf453a8edf",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "product_detail": "商品详情与规格读回",
+        "product_search": "中文/英文商品搜索和筛选",
+        "reversible_cart": "自有测试购物车或收藏状态"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "sj.qq.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.tencent.mm": {
+      "allowed_session_modes": [
+        "login"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "9b09893ac5b77211c71d87f924cea55ebf4bc80fed7efb505ae6d702dd0a0b1b",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "controlled_attachment": "受控附件/语音或视频会话",
+        "controlled_call": "受控通话连接、音频与挂断",
+        "controlled_text": "受控文本双向收发",
+        "login_session": "合法账号登录和会话恢复"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "r.app.xiaomi.com",
+        "weixin.qq.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": true,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.ubercab": {
+      "allowed_session_modes": [
+        "login"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "acc1301ce7e7d2bfa2b381ca2d37e83e7c309a3cf5c429ede94de3d226655f81",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "fare_preview": "车型、预估费用和等待时间",
+        "manual_route": "手动起终点与路线",
+        "route_recovery": "路线编辑和丢网恢复"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "help.uber.com",
+        "play.google.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.united.mobile.android": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "92658d8609dbe345fa40660afeef7b6c4c05daa381b7bdc00debf089f277db7f",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "flight_search": "航班和票价查询",
+        "flight_status": "航班动态查询",
+        "search_state": "查询状态与导航恢复"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "play.google.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.xunmeng.pinduoduo": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "a1b907154c8120433c0e421132920c0587c88042177af65ab22c8b3676fa9a7b",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "product_detail": "商品详情与规格读回",
+        "product_search": "中文/英文商品搜索和筛选",
+        "reversible_cart": "自有测试购物车或收藏状态"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "r.app.xiaomi.com",
+        "www.pinduoduo.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.zhubajie.client": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "d5c1f2c480e76242b7ecbef254c2fd01673f99487d5c4bfd0bb83984db64d5a1",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "brand_and_route": "实际应用身份与启动品牌核对",
+        "service_detail": "服务商/作品与条款详情",
+        "service_search": "中文服务搜索"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "app.zbj.com",
+        "sj.qq.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "com.zillow.android.streeteasy": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "846821b423a62de098723a08f86397fd41acf01139fc98f2e41c3b057ea21113",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "map_listing_detail": "地图与房源详情联动",
+        "nyc_listing_search": "手动区域/地址房源搜索",
+        "saved_search": "可逆保存搜索"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "play.google.com",
+        "streeteasy.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "ctrip.android.view": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "4989a5244ac58485f75e8ece495641ae02d3b1fee93ca0e9316e4ca3592fc34b",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "flight_query": "航班查询",
+        "hotel_query": "酒店查询",
+        "rail_query": "火车票查询"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "m.ctrip.com",
+        "r.app.xiaomi.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "jp.co.ana.android.tabidachi": {
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "c7fd542eca3cd2e75a63ae9f543dd999d3a6828dbfbeab3fdb4942b2db41495e",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "flight_search": "航班和票价查询",
+        "flight_status": "航班动态查询",
+        "search_state": "查询状态与导航恢复"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "play.google.com",
+        "www.ana.co.jp"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "local.pocket4.fixture": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "reviewed_owner_source_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "c44bb0bb7e75a5124a2ce0df01626b841927c9c0d0976ae1bb3c543e77151058",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "execute_declared_probe": "执行源码明确的探针动作",
+        "fixture_source_contract": "解析真实ProbeActivity探针协议",
+        "probe_negative_and_restart": "探针拒绝路径与重启"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "org.chromium.webview_shell": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "qualified_framework_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "71e7b676632576b24846d0848178981daeb3c5f5888a02906ca8ba27a0e22094",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "https_dom_chinese": "受控HTTPS页面与中文输入",
+        "web_storage_and_file": "网页存储和文件选择",
+        "webview_provider": "实际WebView实现与renderer"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "chromium.googlesource.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "org.droidloom.qa.editorcontract": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "reviewed_owner_source_build",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "9f80e940aaa951b05d569532fc08995fbb5d8a7c4534659f8041fed6ee35a5a6",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "editor_contract": "当前编辑器测试契约",
+        "focus_and_restart": "焦点、前后台和恢复",
+        "unicode_editing": "真实中文输入、选择与删除"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "org.fcitx.fcitx5.android": {
+      "allowed_session_modes": [
+        "no_service_login"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "194d35c7ac133f88546dbbb8325010d73d59226f7606726a23d298ee9cb2cc88",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "chinese_candidates": "拼音/候选和字符提交",
+        "cross_app_input": "跨App焦点与字典持久化",
+        "ime_identity": "当前IME与中文引擎配置"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "source_url": null,
+        "version_name": null
+      },
+      "official_hosts": [
+        "api.github.com",
+        "github.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "provenance": null,
+        "status": "unknown"
+      }
+    },
+    "tv.danmaku.bili": {
+      "actual_current_coverage": {
+        "core": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "fault_recovery": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "integrity": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "login_or_guest": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "network": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "permissions": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "restart": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "soak": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "startup": {
+          "evidence_refs": [],
+          "status": "unknown"
+        },
+        "storage": {
+          "evidence_refs": [],
+          "status": "unknown"
+        }
+      },
+      "allowed_session_modes": [
+        "login",
+        "guest"
+      ],
+      "artifact_mode": "official_release",
+      "build_trust": {
+        "allowed_signer_sets": [],
+        "build_manifest_sha256": null,
+        "provenance_sha256s": [],
+        "source_lock_sha256": null,
+        "source_revision": null,
+        "status": "unknown"
+      },
+      "catalog_contract_sha256": "e10c50e5c71599db52545fbfd11bc61abd84791cfb9564b7c648f638caf84c04",
+      "core_definition_status": "defined",
+      "core_flows": {
+        "chinese_public_video_search": "在本次独立生产授权会话内使用中文搜索公开视频；不执行 Accept。",
+        "video_playback_controls": "真实播放公开视频，验证图像、音频、时间进度及暂停/继续/拖动恢复；只有页面或截图不能算通过。"
+      },
+      "input_nonrequirement_reviews": {},
+      "installed_artifact_pin": {
+        "apk_sha256s": null,
+        "version_code": null
+      },
+      "latest_candidate_pin": {
+        "evidence_class": "public_page_only_not_artifact_acceptance",
+        "observed_on": "2026-11-06",
+        "source_url": "https://r.app.xiaomi.com/details?id=tv.danmaku.bili",
+        "version_name": "9.18.0"
+      },
+      "name": "哔哩哔哩",
+      "official_hosts": [
+        "app.bilibili.com",
+        "www.bilibili.com",
+        "dl.hdslb.com",
+        "r.app.xiaomi.com",
+        "app.mi.com",
+        "sj.qq.com"
+      ],
+      "online_branch_review": {
+        "configuration_sha256": null,
+        "enabled_branch_ids": null,
+        "proof_sha256s": [],
+        "status": "unknown"
+      },
+      "requires_authorized_test_peer": false,
+      "vendor_trust": {
+        "allowed_signer_sets": [],
+        "note": "Historical installed certificate verification does not independently establish the official publisher. Review and pin primary-source provenance before changing this anchor.",
+        "provenance": null,
+        "status": "unknown"
+      }
+    }
+  },
+  "catalog_sha256": "d16a51f06be2b4ba2b5a61991dd649d481d1fdf53ff1ccf570ea23367611cb19",
+  "cleanup_policy": {
+    "ancestor_descendant_overlap_with_current_or_retained_paths_forbidden": true,
+    "cleanup_plan_entry_type": "regular_file only; enumerate obsolete tree files individually; this audit does not authorize recursive directory deletion",
+    "current_framework_and_APK_path_inventory_required": true,
+    "evaluator_deletes_nothing": true,
+    "may_remove_after_acceptance": [
+      "obsolete_framework",
+      "obsolete_app",
+      "obsolete_build",
+      "experiment",
+      "intermediate"
+    ],
+    "old_binary_backups_required_forever": false,
+    "preserve_original_failure_evidence_until_settled": true,
+    "requires_exact_path_and_sha256_list": true,
+    "requires_production_ready_for_full_launcher_and_framework_scope": true,
+    "retain_final": [
+      "working_source",
+      "working_configuration",
+      "reproduction_manifest",
+      "lightweight_resolution_receipt"
+    ],
+    "unresolved_failures_or_unknowns_allowed": false
+  },
+  "evidence_contract": {
+    "APK_signature": "Each APK has signature {tool:apksigner,verified:true,full_apk_checked:true,held_file_unchanged:true,verifier_joined:true,tool_exit_code:0,timed_out:false,signer_sha256s:[...],verified_schemes:{...},evidence_refs:[...]}. Signer set must match both installed identity and policy independent official vendor_trust.allowed_signer_sets. Mathematical signature validity alone is insufficient.",
+    "canonical_digest": "SHA-256 of UTF-8 JSON with sort_keys=True, ensure_ascii=False, separators=(comma,colon), allow_nan=False.",
+    "checks": "startup, login_or_guest, core, network, storage, permissions, integrity, soak, restart, fault_recovery; each needs bound non-screenshot evidence. App-specific flow IDs must exactly match policy. See --template and evaluator for typed metrics; no defaults imply successful execution.",
+    "current_identity": "package, android_user=0, uid, version_name, version_code, apk_sha256s, signer_sha256s; identity_before and identity_after must be byte-equivalent JSON values. Changing install UID/version/artifacts invalidates all app checks.",
+    "input": "One JSON object. --template emits UNKNOWN placeholders. Null, unknown, missing, stale, or unsupported entries block acceptance. Duplicate JSON keys and non-finite numbers are invalid.",
+    "launcher_inventory": "current_runtime_query; complete=true; joined processes; exit 0; Android user 0; exact MAIN/LAUNCHER resolution; rows [{package,components:[package/component],app_class:system|third_party}]. resolved_set_sha256 hashes rows sorted by package with each components array sorted. apps keys must equal this set.",
+    "official_candidate": "status=artifact_verified; latest_stable_for_target, complete_apk_set_obtained, installed_apk_set_equal all true; reviewed official source_url; release_refs and bound artifact_manifest_refs; version_name/code equal installed identity and known candidate pin. apks enumerate base and every required split, each with package/version_code, hash, bytes, split_name; base includes min_sdk.",
+    "record": {
+      "binding": {
+        "app_identity_sha256": "canonical digest of app.current_identity; app records only",
+        "helper_identity_sha256": "canonical digest of runtime.helpers",
+        "runtime_identity_sha256": "canonical digest of runtime.identity"
+      },
+      "evidence_refs": "nonempty list of unique IDs in references",
+      "scope": "production; historical/test-cell results cannot satisfy this gate",
+      "status": "pass|blocked|unknown; only pass is accepted"
+    },
+    "reference": {
+      "binding": "same binding as the record, except independent official release/provenance sources",
+      "captured_at": "ISO-8601 with timezone",
+      "kind": "exact required report kind checked by evaluator",
+      "sha256": "64 lowercase hexadecimal characters of actual report bytes",
+      "uri": "absolute local artifact path or original source URI; do not include credentials"
+    },
+    "retention": "Bound report with final source/config/repro/receipt/resolution/cleanup-plan references, actual existence attestations, no unresolved items, and exact obsolete artifact path/hash/kind entries. No deletion occurs; current or retained artifact overlap blocks cleanup. current_artifact_paths is [{path,sha256}] and must cover the entire accepted current framework/APK hash set; a bound current_artifact_path_inventory reference is required. Obsolete entries require artifact_type=regular_file and canonical absolute paths. Root, dot segments, wildcards, directory trees and ancestor/descendant overlap with current or retained final paths are rejected.",
+    "runtime": "identity must exactly match required_runtime_identity; helpers contains SHA-256 for sidecar, UI Automator, Chinese-input and location helpers and equals qualified_helpers. Qualification, admission, before/after guards and restart-requalification require separate bound reports. UI/install false always blocks.",
+    "schema": "pocket4-all-launcher-evidence-v1",
+    "trust_limit": "The auditor checks declarations and cross-bindings. It cannot authenticate invented JSON, read remote evidence or rerun cryptography. Referenced original reports remain the source of truth."
+  },
+  "execution_policy": {
+    "mode": "offline_evidence_audit_only",
+    "new_ADB_dependency_allowed": false,
+    "performs_download_install_UI_accept_permission_grant_or_cleanup": false,
+    "preserve_helpers": [
+      "sidecar",
+      "container_UI_Automator",
+      "Chinese_input",
+      "location"
+    ],
+    "read_only_organ_adapter_expansion_allowed": false,
+    "transport": "existing_sidecar_container_ui_automator"
+  },
+  "framework_trust": {
+    "accepted_provenance_sha256s": [],
+    "note": "Pin independent official/source-owner build provenance; current framework identity is not evidence of latest-version acceptance.",
+    "status": "unknown"
+  },
+  "frozen_inputs": {
+    "app_test_catalog.json": {
+      "bytes": 624217,
+      "sha256": "d16a51f06be2b4ba2b5a61991dd649d481d1fdf53ff1ccf570ea23367611cb19"
+    },
+    "evaluate_readiness.py": {
+      "bytes": 39761,
+      "sha256": "d2efd3f1271ff843d7b99269efd979b475cf24b1102f4be18cc57bbaad62d2c9"
+    },
+    "regression_manifest.json": {
+      "bytes": 27345,
+      "sha256": "3d5764e982a31692e77cf728cb4fa88e44c987b7f2d6dda65106741f952cf86e"
+    }
+  },
+  "generic_launcher_app_schema": {
+    "applies_to": [
+      "system",
+      "third_party"
+    ],
+    "core_definition_status": "unknown",
+    "core_flows": {},
+    "latest_candidate_pin": {
+      "source_url": null,
+      "version_name": null
+    },
+    "rule": "Register each newly discovered package under apps with its actual public core operations and reviewed publisher/update source. System apps use their real platform/OEM update source. A generic startup or screenshot does not settle an app-specific operation.",
+    "vendor_trust": {
+      "allowed_signer_sets": [],
+      "provenance": null,
+      "status": "unknown"
+    }
+  },
+  "historical_eight_packages": [
+    "com.Hyatt.hyt",
+    "com.enflick.android.TextNow",
+    "com.lianjia.beike",
+    "com.rytong.airchina",
+    "com.rytong.ceair",
+    "com.sankuai.meituan.takeoutnew",
+    "com.szzc",
+    "tv.danmaku.bili"
+  ],
+  "historical_roster_sha256": "ee08889a49ac84fa19d6b3d4c159e6a600eb2772d8375eb065fa1585e68543d1",
+  "proposed_acceptance_thresholds": {
+    "app_restart_cycles": 3,
+    "continuous_soak_seconds": 3600,
+    "network_recovery_cycles": 3,
+    "note": "60-minute continuous monitoring, three app restarts and three offline/online recoveries are newly proposed minimums. A real runtime restart needs a newly qualified epoch and repeat current-epoch app evidence. Update policy pins only after qualification; never reuse an old epoch.",
+    "origin": "new_proposal_this_round_not_a_historical_pass",
+    "runtime_restart_requalification_required": true
+  },
+  "reference_catalog_is_fresh_resolver": false,
+  "required_runtime_identity": {
+    "baseline_sha256": null,
+    "cell": "Main",
+    "config_sha256": null,
+    "epoch_sha256": null,
+    "qualification_sha256": null,
+    "runtime": "DroidLoom",
+    "target": "pocket4"
+  },
+  "review": {
+    "note": "Fill from reviewed actual successor/helper and artifact evidence; a template grants no admission.",
+    "receipt_sha256": null,
+    "status": "UNKNOWN"
+  },
+  "reviewed_helpers": null,
+  "safety_rules": {
+    "bilibili_accept": {
+      "evaluator_executes_accept": false,
+      "historical_authorization_is_production": false,
+      "historical_authorized_cell": "p4-bili-m30-cell-20261010",
+      "production_evidence_may_reuse_historical_guest_consent": false
+    },
+    "integrity_and_security": "Commercial integrity failures, permission restrictions and other effective security constraints remain BLOCKED; no bypass exception. Existing system permissions are observed, not inferred from store declarations.",
+    "meituan_location": {
+      "manual_area_selection_expected": true,
+      "proactively_grant_forbidden": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ]
+    }
+  },
+  "schema": "pocket4-reviewed-launcher-catalog-policy-v1",
+  "scope": "all_current_launcher_apps_and_framework",
+  "scope_rule": "The original eight are a required historical subset. Completion requires the exact current resolved MAIN/LAUNCHER package/component set from a qualified, current-epoch runtime query. Historical targets.json or a 45-app count is not current inventory."
+}

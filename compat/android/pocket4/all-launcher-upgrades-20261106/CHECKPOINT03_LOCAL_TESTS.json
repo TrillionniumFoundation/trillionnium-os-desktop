@@ -1,0 +1,22 @@
+{
+  "Git_actions": 0,
+  "Main_actions": 0,
+  "control_scope": "Actual immutable receipt reads and corrupted temporary copies only",
+  "errors": 0,
+  "exit_code": 0,
+  "failures": 0,
+  "schema": "pocket4-checkpoint03-local-receipt-controls-v1",
+  "skipped": 0,
+  "source": {
+    "checkpoint03_extension.py": {
+      "bytes": 45448,
+      "sha256": "156a4543a7a4cc9244f198cf704eee68c5fce6e885b08a5b0410a14ff21d7319"
+    },
+    "test_checkpoint03_extension.py": {
+      "bytes": 6353,
+      "sha256": "f7f1c6b763954ef6bb7204c78b14451f5bd576a33d2c482167aaf1adf8641399"
+    }
+  },
+  "test_output": "test_actual_s33_manifest_matches_douyin_installed_bytes (test_checkpoint03_extension.CheckpointReceiptControls.test_actual_s33_manifest_matches_douyin_installed_bytes) ... ok\ntest_actual_split_install_keeps_both_old_APKs_and_first_rejection (test_checkpoint03_extension.CheckpointReceiptControls.test_actual_split_install_keeps_both_old_APKs_and_first_rejection) ... ok\ntest_current_epoch_mismatch_refused (test_checkpoint03_extension.CheckpointReceiptControls.test_current_epoch_mismatch_refused) ... ok\ntest_data_identity_change_refused (test_checkpoint03_extension.CheckpointReceiptControls.test_data_identity_change_refused) ... ok\ntest_json_integer_precision_and_duplicate_key (test_checkpoint03_extension.CheckpointReceiptControls.test_json_integer_precision_and_duplicate_key) ... ok\ntest_lost_old_split_is_refused_even_with_resealed_envelope (test_checkpoint03_extension.CheckpointReceiptControls.test_lost_old_split_is_refused_even_with_resealed_envelope) ... ok\ntest_missing_terminal_does_not_count_upgrade (test_checkpoint03_extension.CheckpointReceiptControls.test_missing_terminal_does_not_count_upgrade) ... ok\ntest_nondurable_terminal_refused (test_checkpoint03_extension.CheckpointReceiptControls.test_nondurable_terminal_refused) ... ok\ntest_replaced_old_split_hash_is_refused (test_checkpoint03_extension.CheckpointReceiptControls.test_replaced_old_split_hash_is_refused) ... ok\ntest_unknown_new_version_name_never_uses_old_reference (test_checkpoint03_extension.CheckpointReceiptControls.test_unknown_new_version_name_never_uses_old_reference) ... ok\n\n----------------------------------------------------------------------\nRan 10 tests in 0.019s\n\nOK\n",
+  "tests_run": 10
+}

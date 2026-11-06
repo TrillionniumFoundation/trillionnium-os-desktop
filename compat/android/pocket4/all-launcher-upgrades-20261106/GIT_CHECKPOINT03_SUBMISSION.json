@@ -1,0 +1,2618 @@
+{
+  "Git_actions": 0,
+  "base_commit": "1f500f1f17a0f45710dbc4c6dd1af90cb064efbd",
+  "base_exact_unchanged_count": 126,
+  "base_exact_unchanged_paths": [
+    "app_test_catalog.json",
+    "collect_readonly.py",
+    "deploy_airchina_bound_r1.py",
+    "deploy_beike_bound_r3.py",
+    "deploy_ceair_bound_r1.py",
+    "deploy_wechat_before_readonly_r1.py",
+    "deploy_wechat_bound_r1.py",
+    "deploy_wechat_bound_r1.py.review.diff",
+    "install_airchina_bound_r1.py",
+    "install_airchina_bound_r1.py.diff",
+    "install_beike_bound_r3.py",
+    "install_ceair_bound_r1.py",
+    "install_ceair_bound_r1.py.diff",
+    "install_wechat_bound_r1.py",
+    "install_wechat_bound_r1.py.diff",
+    "observe_wechat_before_r1.py",
+    "recovery/README.md",
+    "recovery/SOURCE_PINS.json",
+    "recovery/current-cell-after-retirement-r1-terminal.json",
+    "recovery/current-cell-after-retirement-r1.stdout.raw.json",
+    "recovery/execute-packet-r1.json",
+    "recovery/execute-r1-result.json",
+    "recovery/execute-r1-terminal.json",
+    "recovery/execute-r1.stdout.raw.jsonl",
+    "recovery/failed-r1-diagnostic-terminal.json",
+    "recovery/failed-r1-diagnostic.stdout.raw.json",
+    "recovery/failed-r1-lineage-terminal.json",
+    "recovery/failed-r1-lineage.stdout.raw.json",
+    "recovery/framework_epoch.py",
+    "recovery/held_runtime_r5.py",
+    "recovery/observe_current_cell_after_retirement_r1.py",
+    "recovery/observe_successor_scope.py",
+    "recovery/orphan-r1-local-pidfd-control.json",
+    "recovery/orphan-retirement-r1-result.json",
+    "recovery/orphan-retirement-r1-terminal.json",
+    "recovery/orphan-retirement-r1.stdout.raw.json",
+    "recovery/readonly_abx.py",
+    "recovery/reference/actual-compat-unshare-r1.py",
+    "recovery/reference/actual-m579-droidloomctl.rs",
+    "recovery/resume_successor_qualification.py",
+    "recovery/retire-orphan-packet-r1.json",
+    "recovery/retire_exact_orphan_r1.py",
+    "recovery/stage_execute_once.py",
+    "recovery/successor_runtime.py",
+    "recovery/targets-45-plus-actions-reference.json",
+    "reference/airchina-install-attempt1.json",
+    "reference/airchina-install-r1-terminal.json",
+    "reference/airchina-install-r1.stdout.jsonl",
+    "reference/airchina-upgrade-verified-summary.json",
+    "reference/beike-install-attempt3.json",
+    "reference/beike-install-r3-terminal.json",
+    "reference/beike-install-r3.stdout.jsonl",
+    "reference/beike-native-install-interface.stdout.json",
+    "reference/beike-native-ownership.stdout.json",
+    "reference/beike-official-verification.json",
+    "reference/beike-upgrade-verified-summary.json",
+    "reference/ceair-install-attempt1.json",
+    "reference/ceair-install-r1-terminal.json",
+    "reference/ceair-install-r1.stdout.jsonl",
+    "reference/ceair-official-verification.json",
+    "reference/ceair-upgrade-verified-summary.json",
+    "reference/checkpoint-git-receipt-01.json",
+    "reference/completed-native-upgrades-20261106.json",
+    "reference/jd-source-s9-verification-terminal.raw.json",
+    "reference/jd-source-s9-verification.stdout.raw.jsonl",
+    "reference/launcher-candidate-verifications-r2.json",
+    "reference/pdd-source-s6-verification-terminal.raw.json",
+    "reference/pdd-source-s6-verification.stdout.raw.jsonl",
+    "reference/taobao-source-s10-verification-terminal.raw.json",
+    "reference/taobao-source-s10-verification.stdout.raw.jsonl",
+    "reference/wechat-before-r1-terminal.json",
+    "reference/wechat-before-r1.json",
+    "reference/wechat-before-r1.stdout.jsonl",
+    "reference/wechat-install-attempt1.json",
+    "reference/wechat-install-r1-terminal.json",
+    "reference/wechat-install-r1.stdout.jsonl",
+    "reference/wechat-upgrade-verified-summary.json",
+    "successor_apk_audit/AUDIT_PLAN.json",
+    "successor_apk_audit/SOURCE_PINS.json",
+    "successor_apk_audit/audit_successor_apks.py",
+    "successor_apk_audit/local-tests.stdout.txt",
+    "successor_apk_audit/official-release-apk-digests.json",
+    "successor_apk_audit/request.example.json",
+    "successor_apk_audit/test_audit_successor_apks.py",
+    "successor_qa/GENERATOR_PINS.json",
+    "successor_qa/README.md",
+    "successor_qa/actual/stage-r2-terminal.json",
+    "successor_qa/actual/stage-r2.stdout.raw.jsonl",
+    "successor_qa/check_owned_stage.py",
+    "successor_qa/generate_successor_sources.py",
+    "successor_qa/r2-stage-target-fix.diff",
+    "successor_qa/reference/bili/ActionRunner.java",
+    "successor_qa/reference/bili/AndroidManifest.xml",
+    "successor_qa/reference/bili/build_candidate.py",
+    "successor_qa/reference/bili/check_current_baseline.py",
+    "successor_qa/reference/bili/check_idle_contract.py",
+    "successor_qa/reference/bili/qa_adapter.py",
+    "successor_qa/reference/bili/qa_contract.py",
+    "successor_qa/reference/bili/src/org/droidloom/qa/bili/r9/InspectionIdleGate.java",
+    "successor_qa/reference/bili/src/org/droidloom/qa/bili/r9/PlayerButtonTransaction.java",
+    "successor_qa/reference/bili/src/org/droidloom/qa/bili/r9/TouchTransaction.java",
+    "successor_qa/reference/bili/tests/InspectionIdleGateChecks.java",
+    "successor_qa/reference/r5/bound_android_transport.py",
+    "successor_qa/reference/r5/current_coordinator.py",
+    "successor_qa/reference/r5/existing_ui_entry.py",
+    "successor_qa/reference/r5/main_binding.py",
+    "successor_qa/reference/r5/recorder.py",
+    "successor_qa/reference/r5/references/android_app.py",
+    "successor_qa/reference/r5/references/android_backend.py",
+    "successor_qa/reference/r5/references/bound_android_transport_r3.py",
+    "successor_qa/reference/r5/references/framework_epoch.py",
+    "successor_qa/reference/r5/references/held_runtime_r5.py",
+    "successor_qa/reference/r5/references/original_recorder.py",
+    "successor_qa/reference/r5/references/task_scope_baseline.py",
+    "successor_qa/reference/r5/source_contract.py",
+    "successor_qa/reference/stage-r2-execution/stage-r2-status-raw.json",
+    "successor_qa/reference/stage-r2-execution/stage-r2-stdout.raw.json",
+    "successor_qa/source-origins.json",
+    "successor_qa/stage-generator-r2-payload.json",
+    "successor_qa/stage_generator_r2.py",
+    "successor_qa/stage_helper_source.py",
+    "successor_qa/templates/flow_methods.py.in",
+    "successor_qa/templates/install_owned_helper.py.in",
+    "successor_qa/templates/main_binding_class.py.in",
+    "successor_qa/templates/run_case.py.in",
+    "successor_qa/templates/source_contract.py.in"
+  ],
+  "base_files_must_be_inherited_without_deletions": true,
+  "base_tree": "31c635bf6cde6f86a160b40e02987545f227a826",
+  "changed_or_not_in_known_base_count": 239,
+  "changed_or_not_in_known_base_paths": [
+    "CHECKPOINT03_LOCAL_TESTS.json",
+    "CURRENT_STATUS.md",
+    "GIT_CHECKPOINT_FILES_NEXT.json",
+    "build_checkpoint.py",
+    "checkpoint03_extension.py",
+    "current_status.json",
+    "evaluate_readiness.py",
+    "framework_provider_repair/normal05/INDEPENDENT_REVIEW_app_history_r1.md",
+    "framework_provider_repair/normal05/INDEPENDENT_REVIEW_app_history_r2.md",
+    "framework_provider_repair/normal05/PLAN_PINS.json",
+    "framework_provider_repair/normal05/execution-plan.json",
+    "framework_provider_repair/normal05/generate_sources.py",
+    "framework_provider_repair/normal05/prepare_normal05_plan.py",
+    "framework_provider_repair/normal05/pure_control_additions.py.inc",
+    "framework_provider_repair/normal05/recover_normal04_inputs.py",
+    "framework_provider_repair/normal05/seal_source_r2.py",
+    "framework_provider_repair/normal05/snapshot_typedguard_additions.py",
+    "framework_provider_repair/normal05/source-r2-from-source-r1.diff",
+    "framework_provider_repair/normal05/source-r2-stage-transport-from-normal04.diff",
+    "framework_provider_repair/normal05/source-r2/SOURCE_PINS.json",
+    "framework_provider_repair/normal05/source-r2/actual-builder469-qualification.json",
+    "framework_provider_repair/normal05/source-r2/actual-builder469-result.json",
+    "framework_provider_repair/normal05/source-r2/actual-current-baseline-guard.py",
+    "framework_provider_repair/normal05/source-r2/actual-current-guard-source-manifest.json",
+    "framework_provider_repair/normal05/source-r2/actual-current-qualification.json",
+    "framework_provider_repair/normal05/source-r2/actual-current-runtime-baseline.json",
+    "framework_provider_repair/normal05/source-r2/actual-native-prebuilt-Android.bp",
+    "framework_provider_repair/normal05/source-r2/actual-provider-source-lock.json",
+    "framework_provider_repair/normal05/source-r2/actual-published-source-manifest.json",
+    "framework_provider_repair/normal05/source-r2/actual-work-preparation.json",
+    "framework_provider_repair/normal05/source-r2/capture_lifecycle.py",
+    "framework_provider_repair/normal05/source-r2/exact-request.json",
+    "framework_provider_repair/normal05/source-r2/exact-stdin.json",
+    "framework_provider_repair/normal05/source-r2/expected-builder469-manifest.json",
+    "framework_provider_repair/normal05/source-r2/fenced_build.py",
+    "framework_provider_repair/normal05/source-r2/framework_build.py",
+    "framework_provider_repair/normal05/source-r2/frozen-work-inventory.py",
+    "framework_provider_repair/normal05/source-r2/local-exact-request-validation.json",
+    "framework_provider_repair/normal05/source-r2/local-pure-controls-result.json",
+    "framework_provider_repair/normal05/source-r2/main_snapshot.py",
+    "framework_provider_repair/normal05/source-r2/parent-normal03-framework_build.py",
+    "framework_provider_repair/normal05/source-r2/prior-framework-inner-terminal.json",
+    "framework_provider_repair/normal05/source-r2/prior-framework-outer-terminal.json",
+    "framework_provider_repair/normal05/source-r2/pure_controls.py",
+    "framework_provider_repair/normal05/source-r2/root_snapshot_supervisor.py",
+    "framework_provider_repair/normal05/source-r2/source-diff.patch",
+    "framework_provider_repair/normal05/source-r2/stage.py",
+    "framework_provider_repair/normal05/source-r2/transport-boundary.py",
+    "readiness_all_launcher/CURRENT_STATE.json",
+    "readiness_all_launcher/LOCAL_TEST_RESULT.json",
+    "readiness_all_launcher/README.md",
+    "readiness_all_launcher/SOURCE_PINS.json",
+    "readiness_all_launcher/evaluate_all.py",
+    "readiness_all_launcher/evidence.UNKNOWN.json",
+    "readiness_all_launcher/policy.template.json",
+    "readiness_all_launcher/test_evaluate_all.py",
+    "recovery/compat_wrapper_repair/actual-pocket4-r2/host-controls/result.json",
+    "recovery/compat_wrapper_repair/actual-pocket4-r3/host-controls/result.json",
+    "recovery/compat_wrapper_repair/actual-pocket4-r3/root-source-review.stdout.raw.jsonl",
+    "recovery/compat_wrapper_repair/actual-pocket4-r3/source/SOURCE_PINS.json",
+    "recovery/compat_wrapper_repair/actual-pocket4-r3/source/pidns_fixture.py",
+    "recovery/compat_wrapper_repair/actual-pocket4-r3/source/test_host_lifecycle.py",
+    "recovery/compat_wrapper_repair/actual-pocket4-r3/source/unshare_wrapper.py",
+    "recovery/compat_wrapper_repair/deploy_reviewed_wrapper_r1.py",
+    "recovery/independent_repair_r2/actual-execute-01/actual-transition.private.json",
+    "recovery/independent_repair_r2/actual-execute-01/baseline.private.json",
+    "recovery/independent_repair_r2/actual-execute-01/current_baseline_guard.py",
+    "recovery/independent_repair_r2/actual-execute-01/initial-app-scope.private.json",
+    "recovery/independent_repair_r2/actual-execute-01/native-start-receipt.private.json",
+    "recovery/independent_repair_r2/actual-execute-01/native-stop-receipt.private.json",
+    "recovery/independent_repair_r2/actual-execute-01/qualification.private.json",
+    "recovery/independent_repair_r2/actual-execute-01/retired-lifecycle.private.json",
+    "recovery/independent_repair_r2/actual-execute-01/stdout.raw.jsonl",
+    "recovery/independent_repair_r2/actual-execute-01/terminal.raw.json",
+    "recovery/independent_repair_r2/actual-execute-01/wrapper-activation.private.json",
+    "recovery/independent_repair_r2/candidate-r2/independent_repair_r2.py",
+    "recovery/independent_repair_r2/root-readback/actual-wrapper-deployment.original.json",
+    "recovery/independent_repair_r2/root-readback/host-source-controls-result.json",
+    "recovery/independent_repair_r2/root-readback/root-host-controls-stage-result.json",
+    "recovery/independent_repair_r2/stage_and_invoke_reviewed.py",
+    "reference/bilibili-official-verification.json",
+    "reference/current-all-launcher-metadata.json",
+    "reference/current-original-eight-inventory.json",
+    "reference/official-s22/com.sdu.didi.psnger.aapt-badging.stdout",
+    "reference/official-s22/com.sdu.didi.psnger.apksigner.stdout",
+    "reference/official-s22/com.taobao.taobao.aapt-badging.stdout",
+    "reference/official-s22/com.taobao.taobao.apksigner.stdout",
+    "reference/official-s22/ctrip-s13-download-terminal.raw.json",
+    "reference/official-s22/ctrip-s13-download.stdout.raw.jsonl",
+    "reference/official-s22/ctrip.android.view.aapt-badging.stdout",
+    "reference/official-s22/ctrip.android.view.apksigner.stdout",
+    "reference/official-s22/didi-ctrip-s15-verification-terminal.raw.json",
+    "reference/official-s22/didi-ctrip-s15-verification.stdout.raw.jsonl",
+    "reference/official-s22/index-01.json",
+    "reference/official-s22/international_official_channels.json",
+    "reference/official-s22/source-s10-continuation-terminal.raw.json",
+    "reference/official-s22/source-s10-continuation.stdout.raw.jsonl",
+    "reference/official-s22/source-s12-progress-through-offset-5962.raw.jsonl",
+    "reference/official-s22/source-s16-metadata-terminal.raw.json",
+    "reference/official-s22/source-s16-metadata.stdout.raw.jsonl",
+    "reference/official-s22/source-s18-metadata-terminal.raw.json",
+    "reference/official-s22/source-s18-metadata.stdout.raw.jsonl",
+    "reference/official-s22/source-s19-international-terminal.raw.json",
+    "reference/official-s22/source-s20-douyin-metadata-terminal.raw.json",
+    "reference/official-s22/source-s20-douyin-metadata.stdout.raw.jsonl",
+    "reference/official-s22/source-s8b-download-terminal.raw.json",
+    "reference/official-s22/source-s8b-download.stdout.raw.jsonl",
+    "reference/official-s22/taobao-s10-verification-terminal.raw.json",
+    "reference/official-s22/taobao-s10-verification.stdout.raw.jsonl",
+    "reference/official-s24-s33-restored/archive-index.json",
+    "reference/official-s24-s33-restored/s24/rail-0000.json",
+    "reference/official-s24-s33-restored/s24/rail-0001.json",
+    "reference/official-s24-s33-restored/s24/results.json",
+    "reference/official-s24-s33-restored/s24/start.raw.json",
+    "reference/official-s24-s33-restored/s24/stdout.raw.jsonl",
+    "reference/official-s24-s33-restored/s24/terminal.raw.json",
+    "reference/official-s24-s33-restored/s24/zbj-0031.json",
+    "reference/official-s24-s33-restored/s24/zbj-0031.stderr",
+    "reference/official-s24-s33-restored/s27/com.marriott.mrt.curl-metrics.json",
+    "reference/official-s24-s33-restored/s27/com.marriott.mrt.stderr",
+    "reference/official-s24-s33-restored/s27/download-results.json",
+    "reference/official-s24-s33-restored/s27/start.raw.json",
+    "reference/official-s24-s33-restored/s27/stdout.raw.jsonl",
+    "reference/official-s24-s33-restored/s27/terminal.raw.json",
+    "reference/official-s24-s33-restored/s28/0041.curl.json",
+    "reference/official-s24-s33-restored/s28/0041.json",
+    "reference/official-s24-s33-restored/s28/0041.stderr",
+    "reference/official-s24-s33-restored/s28/results.json",
+    "reference/official-s24-s33-restored/s28/start.raw.json",
+    "reference/official-s24-s33-restored/s28/stdout.raw.jsonl",
+    "reference/official-s24-s33-restored/s28/terminal.raw.json",
+    "reference/official-s24-s33-restored/s30/com.ss.android.ugc.aweme.curl-metrics.json",
+    "reference/official-s24-s33-restored/s30/com.ss.android.ugc.aweme.stderr",
+    "reference/official-s24-s33-restored/s30/download-results.json",
+    "reference/official-s24-s33-restored/s30/start.raw.json",
+    "reference/official-s24-s33-restored/s30/stdout.raw.jsonl",
+    "reference/official-s24-s33-restored/s30/terminal.raw.json",
+    "reference/official-s24-s33-restored/s32/0000.curl.json",
+    "reference/official-s24-s33-restored/s32/0000.json",
+    "reference/official-s24-s33-restored/s32/0000.stderr",
+    "reference/official-s24-s33-restored/s32/com.ss.android.ugc.aweme-result.json",
+    "reference/official-s24-s33-restored/s32/results.json",
+    "reference/official-s24-s33-restored/s32/start.raw.json",
+    "reference/official-s24-s33-restored/s32/stdout.raw.jsonl",
+    "reference/official-s24-s33-restored/s32/terminal.raw.json",
+    "reference/official-s24-s33-restored/s33/aapt-badging.stderr",
+    "reference/official-s24-s33-restored/s33/aapt-badging.stdout",
+    "reference/official-s24-s33-restored/s33/apksigner.stderr",
+    "reference/official-s24-s33-restored/s33/apksigner.stdout",
+    "reference/official-s24-s33-restored/s33/index.json",
+    "reference/official-s24-s33-restored/s33/result.json",
+    "reference/official-s24-s33-restored/s33/start.raw.json",
+    "reference/official-s24-s33-restored/s33/stdout.raw.jsonl",
+    "reference/official-s24-s33-restored/s33/terminal.raw.json",
+    "reference/official-s24-s33-restored/s33/verify_douyin_s32.py",
+    "regression_manifest.json",
+    "successor_audit_requests/FINAL_AUDIT_PLAN_PINS.json",
+    "successor_audit_requests/READONLY_SERVICE_PLAN.md",
+    "successor_audit_requests/SERIAL_EXECUTION.md",
+    "successor_audit_requests/audit_serial_gate.py",
+    "successor_audit_requests/final-upgrades-r1/REQUEST_MANIFEST.json",
+    "successor_audit_requests/final-upgrades-r1/batch-01.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-02.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-03.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-04.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-05.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-06.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-07.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-08.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-09.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-10.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-11.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-12.request.json",
+    "successor_audit_requests/final-upgrades-r1/batch-13.request.json",
+    "successor_audit_requests/prepare_requests.py",
+    "successor_audit_requests/reference/audit_successor_apks.py",
+    "successor_audit_requests/serial-gate-controls-r1/stderr.raw.txt",
+    "successor_audit_requests/serial-gate-controls-r1/stdout.raw.json",
+    "successor_audit_requests/test_audit_serial_gate.py",
+    "successor_install/actual/SOURCE_PINS.json",
+    "successor_install/actual/bili-01/stdout.raw.jsonl",
+    "successor_install/actual/bili-01/terminal.raw.json",
+    "successor_install/actual/bili-01/verifier-terminal.raw.json",
+    "successor_install/actual/ctrip-01/stdout.raw.jsonl",
+    "successor_install/actual/ctrip-01/terminal.raw.json",
+    "successor_install/actual/didi-01/stdout.raw.jsonl",
+    "successor_install/actual/didi-01/terminal.raw.json",
+    "successor_install/actual/douyin-01/app-scope-after.private.json",
+    "successor_install/actual/douyin-01/stdout.raw.jsonl",
+    "successor_install/actual/douyin-01/terminal.raw.json",
+    "successor_install/actual/douyin-01/verifier-terminal.raw.json",
+    "successor_install/actual/jd-01/stdout.raw.jsonl",
+    "successor_install/actual/jd-01/terminal.raw.json",
+    "successor_install/actual/jd-01/verifier-terminal.raw.json",
+    "successor_install/actual/jd-02/stdout.raw.jsonl",
+    "successor_install/actual/jd-02/terminal.raw.json",
+    "successor_install/actual/jd-02/verifier-terminal.raw.json",
+    "successor_install/actual/pdd-01/stdout.raw.jsonl",
+    "successor_install/actual/pdd-01/terminal.raw.json",
+    "successor_install/actual/pdd-01/verifier-terminal.raw.json",
+    "successor_install/actual/source-r2-controls/SOURCE_PINS.json",
+    "successor_install/actual/source-r2-controls/test_install_successor_r2.py.stderr",
+    "successor_install/actual/source-r2-controls/test_install_successor_r2.py.stdout",
+    "successor_install/actual/source-stage-r1-reconciliation.raw.json",
+    "successor_install/actual/source-stage-r1.stdout.raw.jsonl",
+    "successor_install/actual/source-stage-r2-terminal.raw.json",
+    "successor_install/actual/source-stage-r2.stdout.raw.jsonl",
+    "successor_install/actual/taobao-01/stdout.raw.jsonl",
+    "successor_install/actual/taobao-01/terminal.raw.json",
+    "successor_install/actual/taobao-01/verifier-terminal.raw.json",
+    "successor_install/actual/test_audit_successor_apks.py.stderr",
+    "successor_install/actual/test_install_successor_native.py.stderr",
+    "successor_install/official-verifier-pins.json",
+    "successor_install/read_pinned_compressed.py",
+    "successor_install/source-r1/audit_successor_apks.py",
+    "successor_install/source-r1/install_successor_native.py",
+    "successor_install/source-r1/reference_core.py",
+    "successor_install/source-r1/stage_source.py",
+    "successor_install/source-r1/test_audit_successor_apks.py",
+    "successor_install/source-r1/test_install_successor_native.py",
+    "successor_install/source-r2/LOCAL_STAGE_RESULT.json",
+    "successor_install/source-r2/REVIEW.md",
+    "successor_install/source-r2/SOURCE_DIFF.patch",
+    "successor_install/source-r2/SOURCE_PINS.json",
+    "successor_install/source-r2/install_successor_native.py",
+    "successor_install/source-r2/offline-controls.stderr.raw.txt",
+    "successor_install/source-r2/offline-controls.stdout.raw.json",
+    "successor_install/source-r2/reference/install_successor_native.r1.py",
+    "successor_install/source-r2/stage_source.py",
+    "successor_install/source-r2/test_install_successor_r2.py",
+    "successor_install/stage_request_and_invoke.py",
+    "successor_install/stage_request_and_invoke_r2.py",
+    "successor_qa/BEIKE_SOURCE_PREPARATION_PINS.json",
+    "successor_qa/beike-final-request-r1.json",
+    "successor_qa/prepare_beike_bound_source.py",
+    "successor_qa/source-preparation-controls-r2/stderr.raw.txt",
+    "successor_qa/source-preparation-controls-r2/stdout.raw.json",
+    "successor_qa/test_prepare_beike_bound_source.py",
+    "test_checkpoint03_extension.py"
+  ],
+  "file_count": 365,
+  "files": [
+    {
+      "bytes": 2301,
+      "path": "CHECKPOINT03_LOCAL_TESTS.json",
+      "sha256": "9bc21c3d2d40f8e73387f198fcbe4ce476528833d6c2f7250a743dbfc6575f82"
+    },
+    {
+      "bytes": 11960,
+      "path": "CURRENT_STATUS.md",
+      "sha256": "b683e583ddc9194bd5305d6c022ece140078f3f050a873f17422f39e223db6ef"
+    },
+    {
+      "bytes": 73020,
+      "path": "GIT_CHECKPOINT_FILES_NEXT.json",
+      "sha256": "0b07b798032cb3af41eb2620bcfc193526c3bea5235463110f33f5d73463e916"
+    },
+    {
+      "bytes": 624217,
+      "path": "app_test_catalog.json",
+      "sha256": "d16a51f06be2b4ba2b5a61991dd649d481d1fdf53ff1ccf570ea23367611cb19"
+    },
+    {
+      "bytes": 31382,
+      "path": "build_checkpoint.py",
+      "sha256": "de757af22c1e2001b9d7977281ebb92cb78c4768802b9ad59cafe3a8d77a8917"
+    },
+    {
+      "bytes": 45448,
+      "path": "checkpoint03_extension.py",
+      "sha256": "156a4543a7a4cc9244f198cf704eee68c5fce6e885b08a5b0410a14ff21d7319"
+    },
+    {
+      "bytes": 48526,
+      "path": "collect_readonly.py",
+      "sha256": "04dcc9337aa61ed663e3ce3dea8ab13a963c4826588fcd1c25554466ed30acd1"
+    },
+    {
+      "bytes": 228687,
+      "path": "current_status.json",
+      "sha256": "f138dfcb2f36736e0f9ccdf93885166a92ac8f68de788d888924834ea6cde7ec"
+    },
+    {
+      "bytes": 20170,
+      "path": "deploy_airchina_bound_r1.py",
+      "sha256": "f14933d38150021a379c1a11affd20f8d53f2b98bb31950a9b26bac01bd548da"
+    },
+    {
+      "bytes": 21536,
+      "path": "deploy_beike_bound_r3.py",
+      "sha256": "c92738606973dece466b33da74bacee7bed2635afa437252c112cf846df11905"
+    },
+    {
+      "bytes": 20121,
+      "path": "deploy_ceair_bound_r1.py",
+      "sha256": "ce7dbd9b1ce9c66a9397716afe3cbaa037aeed49a78ef00eab24e669fb6cef5c"
+    },
+    {
+      "bytes": 9137,
+      "path": "deploy_wechat_before_readonly_r1.py",
+      "sha256": "63f2098dc19b6e81a6d6c3c6498a1bb2c42461c6fe988ff471aff385085796f9"
+    },
+    {
+      "bytes": 21973,
+      "path": "deploy_wechat_bound_r1.py",
+      "sha256": "1bb7b08f69fdda23137381b95a89f52dff455c60b06ef8d800ab43279898d7d5"
+    },
+    {
+      "bytes": 4962,
+      "path": "deploy_wechat_bound_r1.py.review.diff",
+      "sha256": "34451cb34e52490a8bfcbbc1183e67f233e82707dd0ad07a2c5d90e4d1298598"
+    },
+    {
+      "bytes": 39761,
+      "path": "evaluate_readiness.py",
+      "sha256": "d2efd3f1271ff843d7b99269efd979b475cf24b1102f4be18cc57bbaad62d2c9"
+    },
+    {
+      "bytes": 6974,
+      "path": "framework_provider_repair/normal05/INDEPENDENT_REVIEW_app_history_r1.md",
+      "sha256": "6df45583323e5f37405491004586c0884389e38ce0177c2c973e84e1f8a88b3a"
+    },
+    {
+      "bytes": 4499,
+      "path": "framework_provider_repair/normal05/INDEPENDENT_REVIEW_app_history_r2.md",
+      "sha256": "6bbc117a2d51a77c487bb4d84a5b90547930a555b7281806dd4e3908c1170f9d"
+    },
+    {
+      "bytes": 4058,
+      "path": "framework_provider_repair/normal05/PLAN_PINS.json",
+      "sha256": "6a900f938baeadbcc7f9dad35565e3abdbfee38fe97f2b9ab13e54e54b089fcb"
+    },
+    {
+      "bytes": 21525,
+      "path": "framework_provider_repair/normal05/execution-plan.json",
+      "sha256": "6de16593c90d96f51017bfbcacde0bd3ead39a8067889b1193bd10687c6d1ce8"
+    },
+    {
+      "bytes": 17927,
+      "path": "framework_provider_repair/normal05/generate_sources.py",
+      "sha256": "c33f0d1641ac771e0958167ddad676aa748af5ade22fdb4baa78407b0ea79903"
+    },
+    {
+      "bytes": 17719,
+      "path": "framework_provider_repair/normal05/prepare_normal05_plan.py",
+      "sha256": "5921ae49faddf0e6d372c240df60404a82a4edfd4d9315289ab14e20a9186b3f"
+    },
+    {
+      "bytes": 3360,
+      "path": "framework_provider_repair/normal05/pure_control_additions.py.inc",
+      "sha256": "8a1267e996e445ec164f9db543a76d549c73bc71caaff1543a488ada26d3c7e8"
+    },
+    {
+      "bytes": 4326,
+      "path": "framework_provider_repair/normal05/recover_normal04_inputs.py",
+      "sha256": "bcf7e717bd0241d784d4627295219d89c7d1d672e19734f7a85e22d629fb9a47"
+    },
+    {
+      "bytes": 11347,
+      "path": "framework_provider_repair/normal05/seal_source_r2.py",
+      "sha256": "960c08f990ced5ac124266c897df31f0b5242058f8ebc352f11531fd10fae202"
+    },
+    {
+      "bytes": 5001,
+      "path": "framework_provider_repair/normal05/snapshot_typedguard_additions.py",
+      "sha256": "fb671e1ffb0f5497a7b78b51c253672eaaef17c6d8a937125294eb44c80fa72e"
+    },
+    {
+      "bytes": 6378,
+      "path": "framework_provider_repair/normal05/source-r2-from-source-r1.diff",
+      "sha256": "0b7fdd79fe6bf4118ba784eb40949da434cfaa1a4c44fec60a5edbd5edcd3a4c"
+    },
+    {
+      "bytes": 8614,
+      "path": "framework_provider_repair/normal05/source-r2-stage-transport-from-normal04.diff",
+      "sha256": "4d54ff33fbf2a9a1d09c68702773a5fa1437d3c7e8e249f06b37a5b35826e6d9"
+    },
+    {
+      "bytes": 9939,
+      "path": "framework_provider_repair/normal05/source-r2/SOURCE_PINS.json",
+      "sha256": "97f3585bcaec3de7fd08dbf17a5f6482e5072e04adae34bb72f3ab9ac9c07c1d"
+    },
+    {
+      "bytes": 65386,
+      "path": "framework_provider_repair/normal05/source-r2/actual-builder469-qualification.json",
+      "sha256": "f31bb31d29967bacdb0842eea99dae65f8b67425f26f10063c3d84099367fd64"
+    },
+    {
+      "bytes": 37384,
+      "path": "framework_provider_repair/normal05/source-r2/actual-builder469-result.json",
+      "sha256": "a14dde5d3a2e85fe44d90c651527c8c8402d341403ef84a7bc92b93252de72b9"
+    },
+    {
+      "bytes": 3213,
+      "path": "framework_provider_repair/normal05/source-r2/actual-current-baseline-guard.py",
+      "sha256": "d84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3"
+    },
+    {
+      "bytes": 749,
+      "path": "framework_provider_repair/normal05/source-r2/actual-current-guard-source-manifest.json",
+      "sha256": "b97002660594ad0ef6e7b453927b8c5b19cba49a5873bc133199d790019b1f9f"
+    },
+    {
+      "bytes": 1587,
+      "path": "framework_provider_repair/normal05/source-r2/actual-current-qualification.json",
+      "sha256": "4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6"
+    },
+    {
+      "bytes": 44041,
+      "path": "framework_provider_repair/normal05/source-r2/actual-current-runtime-baseline.json",
+      "sha256": "7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8"
+    },
+    {
+      "bytes": 1017,
+      "path": "framework_provider_repair/normal05/source-r2/actual-native-prebuilt-Android.bp",
+      "sha256": "d1eca99403572ee9d481e777febac8d4e062f44fd8844285ffc452b17beb531a"
+    },
+    {
+      "bytes": 96957,
+      "path": "framework_provider_repair/normal05/source-r2/actual-provider-source-lock.json",
+      "sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d"
+    },
+    {
+      "bytes": 108555,
+      "path": "framework_provider_repair/normal05/source-r2/actual-published-source-manifest.json",
+      "sha256": "afb23d210fda970a09482a14b9b38af1c92b5be505edd0eda2b76ce5ffc6067f"
+    },
+    {
+      "bytes": 11091,
+      "path": "framework_provider_repair/normal05/source-r2/actual-work-preparation.json",
+      "sha256": "ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c"
+    },
+    {
+      "bytes": 25240,
+      "path": "framework_provider_repair/normal05/source-r2/capture_lifecycle.py",
+      "sha256": "7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126"
+    },
+    {
+      "bytes": 906726,
+      "path": "framework_provider_repair/normal05/source-r2/exact-request.json",
+      "sha256": "a14c1205fa732325c7da71f7fd7559132987c25463b6af0630dc5c5fbf7569c4"
+    },
+    {
+      "bytes": 824918,
+      "path": "framework_provider_repair/normal05/source-r2/exact-stdin.json",
+      "sha256": "20e061e7a28c9aca81ef5ae33fa8578caf9ee35b7eef6660e8d7675c2db2762d"
+    },
+    {
+      "bytes": 97964,
+      "path": "framework_provider_repair/normal05/source-r2/expected-builder469-manifest.json",
+      "sha256": "d9340351c9653b10dfd0882afbff5ff4fc11dafaa6083191ed2a8fdb5c8dd934"
+    },
+    {
+      "bytes": 25681,
+      "path": "framework_provider_repair/normal05/source-r2/fenced_build.py",
+      "sha256": "16d60c8a43e7f42de0ee8264da72713b213bad2b39e3b8b94b34b9bdd1954d6c"
+    },
+    {
+      "bytes": 60970,
+      "path": "framework_provider_repair/normal05/source-r2/framework_build.py",
+      "sha256": "f4ab5e09fc22b759811bfa9480c2de555dbc5096bc1258a984dbd33809db734b"
+    },
+    {
+      "bytes": 48443,
+      "path": "framework_provider_repair/normal05/source-r2/frozen-work-inventory.py",
+      "sha256": "203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab"
+    },
+    {
+      "bytes": 1775,
+      "path": "framework_provider_repair/normal05/source-r2/local-exact-request-validation.json",
+      "sha256": "d0546b095f3e7c42e057b07170278082b6cfe7822b8314872f5536a93d39dcf5"
+    },
+    {
+      "bytes": 2739,
+      "path": "framework_provider_repair/normal05/source-r2/local-pure-controls-result.json",
+      "sha256": "f8eafafee8b7419fed958323ef21b4eed5d973b6cf95a1946e178de41e9d0464"
+    },
+    {
+      "bytes": 24529,
+      "path": "framework_provider_repair/normal05/source-r2/main_snapshot.py",
+      "sha256": "3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3"
+    },
+    {
+      "bytes": 59292,
+      "path": "framework_provider_repair/normal05/source-r2/parent-normal03-framework_build.py",
+      "sha256": "03f0b4aecba20149ad7f1301ea823eb5e7e5ba1efa00d08c92c4fa7ecf482132"
+    },
+    {
+      "bytes": 5239,
+      "path": "framework_provider_repair/normal05/source-r2/prior-framework-inner-terminal.json",
+      "sha256": "6a525b9838f43579bc41b1106891f2f734a0c2d92b0c5cc355f7ab02b39eb2a8"
+    },
+    {
+      "bytes": 24689,
+      "path": "framework_provider_repair/normal05/source-r2/prior-framework-outer-terminal.json",
+      "sha256": "273ba8a236253ee3873074a26f568144397044ebcfdd6f153ab8712b29ff70cf"
+    },
+    {
+      "bytes": 14631,
+      "path": "framework_provider_repair/normal05/source-r2/pure_controls.py",
+      "sha256": "89f11c85f2dd016c15030c17c926b85ffa142ebb14cefbdb0fa25666ce2e4d40"
+    },
+    {
+      "bytes": 12041,
+      "path": "framework_provider_repair/normal05/source-r2/root_snapshot_supervisor.py",
+      "sha256": "a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147"
+    },
+    {
+      "bytes": 32082,
+      "path": "framework_provider_repair/normal05/source-r2/source-diff.patch",
+      "sha256": "006f0159e12c53ff659941f5b547f28f17bc5a2b47f822b8a8563a4e0392f2bf"
+    },
+    {
+      "bytes": 7137,
+      "path": "framework_provider_repair/normal05/source-r2/stage.py",
+      "sha256": "5723e4064379832141e068fb87b7a4460e594545ffc3d9a94f779df847b9ad83"
+    },
+    {
+      "bytes": 1339,
+      "path": "framework_provider_repair/normal05/source-r2/transport-boundary.py",
+      "sha256": "4245450c2a4e97467735af703ce1be6548eccc3e19ec540b5f974ae04a796d61"
+    },
+    {
+      "bytes": 40295,
+      "path": "install_airchina_bound_r1.py",
+      "sha256": "fa1327bed4b40096839e81e4b9cb7142f2ebc61b7d7e106d6e3f5d678ee447c2"
+    },
+    {
+      "bytes": 8352,
+      "path": "install_airchina_bound_r1.py.diff",
+      "sha256": "d04dd7ec2deaf741350d48db143fca62ad7101afd56a9a318d95da119d313821"
+    },
+    {
+      "bytes": 40082,
+      "path": "install_beike_bound_r3.py",
+      "sha256": "166a732bcd8af19277f3b51f6611581a16c98527e6ba9b7a927f23f2d6bf2837"
+    },
+    {
+      "bytes": 40201,
+      "path": "install_ceair_bound_r1.py",
+      "sha256": "9fb03d57b806840ab2811c46955c0812c9eb0ec4a843931585f83a18515ed599"
+    },
+    {
+      "bytes": 8077,
+      "path": "install_ceair_bound_r1.py.diff",
+      "sha256": "cade1d3c1500bd5ec668903f35854aa0dd97ac6de8a5c8484fbe96c7d77ac620"
+    },
+    {
+      "bytes": 44618,
+      "path": "install_wechat_bound_r1.py",
+      "sha256": "07cab137e56de37ffa512609edc5ff7ab5412fe04882b5ab50e344d35e1b388e"
+    },
+    {
+      "bytes": 13619,
+      "path": "install_wechat_bound_r1.py.diff",
+      "sha256": "5e3da29087735ee36488e02b06b7ab672b358e5dcc0dd66dd4a65fd016b15c51"
+    },
+    {
+      "bytes": 13026,
+      "path": "observe_wechat_before_r1.py",
+      "sha256": "3cddf8dacd65fcfecb64a5c29f013bfb418a90900c9a7b56a72990917d5b9949"
+    },
+    {
+      "bytes": 6862,
+      "path": "readiness_all_launcher/CURRENT_STATE.json",
+      "sha256": "be06621d04e68f7aafd47bcc58ed162791c6726f2e60f658dd615b446aec58a9"
+    },
+    {
+      "bytes": 898,
+      "path": "readiness_all_launcher/LOCAL_TEST_RESULT.json",
+      "sha256": "4718093bf3996764aefb9685cfe3ee300cb27d3347a6f03abd050b7fbcb5d4c0"
+    },
+    {
+      "bytes": 10950,
+      "path": "readiness_all_launcher/README.md",
+      "sha256": "98da99f335bfc7824757b9649a378f6da8381fafbc4ea4a92e61c4cc8044e068"
+    },
+    {
+      "bytes": 1588,
+      "path": "readiness_all_launcher/SOURCE_PINS.json",
+      "sha256": "02e7577a8fc3a1af25d2b9b63b605271e2b3a4c001891be57f466a09094ecb12"
+    },
+    {
+      "bytes": 49768,
+      "path": "readiness_all_launcher/evaluate_all.py",
+      "sha256": "cc37412aab2b71bd7c3a511ef3b382a55eb3d1438c02a20b4ec71a4f7c891cb7"
+    },
+    {
+      "bytes": 410181,
+      "path": "readiness_all_launcher/evidence.UNKNOWN.json",
+      "sha256": "89822e713706808222e30fbaa9a3f2ad17b2214ede3fd46bfc60bacdf89e5794"
+    },
+    {
+      "bytes": 84888,
+      "path": "readiness_all_launcher/policy.template.json",
+      "sha256": "7217d5b8dfab454282092986303a038017da8a224161efb40ed777c377bd8897"
+    },
+    {
+      "bytes": 15564,
+      "path": "readiness_all_launcher/test_evaluate_all.py",
+      "sha256": "9c735404ddc08e296570aead9710799627079bd9296c020912d733bcea590785"
+    },
+    {
+      "bytes": 15788,
+      "path": "recovery/README.md",
+      "sha256": "e08d9e3d66eb7dfc59ea08057a34b23b1c88c84e42e10dcd0f0aae187e8d4182"
+    },
+    {
+      "bytes": 749,
+      "path": "recovery/SOURCE_PINS.json",
+      "sha256": "b97002660594ad0ef6e7b453927b8c5b19cba49a5873bc133199d790019b1f9f"
+    },
+    {
+      "bytes": 2481,
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r2/host-controls/result.json",
+      "sha256": "6bca68a3c66730e3edbe46882b55eb1d4134234301f9a0bff702c232af4ddf68"
+    },
+    {
+      "bytes": 9109,
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/host-controls/result.json",
+      "sha256": "069996c902d66cbed7de4a5c96881bbaa69e95247627344d7e16a66de40c5fa8"
+    },
+    {
+      "bytes": 43142,
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/root-source-review.stdout.raw.jsonl",
+      "sha256": "e937fb4aa422d15f6182081d1e29c2bca6c709dba29d4e94ecee54fa4a5d51da"
+    },
+    {
+      "bytes": 402,
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/source/SOURCE_PINS.json",
+      "sha256": "31b037052fee007650c92cd8706f0e4405eb67fe224813c153a8e4973639747c"
+    },
+    {
+      "bytes": 1013,
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/source/pidns_fixture.py",
+      "sha256": "da61ecac210799f4626cdc7afa83476049374f4a36e9b87ba0e6a92e664016d1"
+    },
+    {
+      "bytes": 16463,
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/source/test_host_lifecycle.py",
+      "sha256": "86195ddeeed6d1a6f2ee20913e180c6259b6ff1bd36121abfd3369345a644649"
+    },
+    {
+      "bytes": 6290,
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/source/unshare_wrapper.py",
+      "sha256": "df2365c026cc578048ce22ebd1b22bfefc25ccc144146683d845ec828c61bf1f"
+    },
+    {
+      "bytes": 15979,
+      "path": "recovery/compat_wrapper_repair/deploy_reviewed_wrapper_r1.py",
+      "sha256": "bce5870d6c1032a4b755818651fd1b8a287d477dbe3e8a1afbb03c55baf6bfb0"
+    },
+    {
+      "bytes": 734,
+      "path": "recovery/current-cell-after-retirement-r1-terminal.json",
+      "sha256": "b35dd48af3c740beb89170d2b26b45a095a92c89dc0c2bb65469f6709cab5ed0"
+    },
+    {
+      "bytes": 49955,
+      "path": "recovery/current-cell-after-retirement-r1.stdout.raw.json",
+      "sha256": "8939bf273b3feb6d5fb4360d2739e087ad42c1bb07ec692913eafee433a3d189"
+    },
+    {
+      "bytes": 23213,
+      "path": "recovery/execute-packet-r1.json",
+      "sha256": "eaa00188a5390365a9549bed03812583d369048a70effc80b8cae0b7a7d5c9dc"
+    },
+    {
+      "bytes": 1010,
+      "path": "recovery/execute-r1-result.json",
+      "sha256": "eaf9a964fc33b77e3a8841a51b5b2e4cb4f15fa4edd247f943a336f8bbdcac0f"
+    },
+    {
+      "bytes": 729,
+      "path": "recovery/execute-r1-terminal.json",
+      "sha256": "f02b409f80900d9d142827250e2751db0877016ba2c1a30e139fa8383bd0b718"
+    },
+    {
+      "bytes": 1517,
+      "path": "recovery/execute-r1.stdout.raw.jsonl",
+      "sha256": "70e4febeee160a12a1e32a5734a74c699918ca9ffda592897bf085375ca74c3c"
+    },
+    {
+      "bytes": 734,
+      "path": "recovery/failed-r1-diagnostic-terminal.json",
+      "sha256": "5220b3718db66c7214d1ee3cc34dfcbdc195b2ad22b4ebe783423169b31e6db7"
+    },
+    {
+      "bytes": 42276,
+      "path": "recovery/failed-r1-diagnostic.stdout.raw.json",
+      "sha256": "bc9be10c98bc3a6ea9c4a027e8aafb68c1fa4de53462b9826c57bc54d0e11089"
+    },
+    {
+      "bytes": 734,
+      "path": "recovery/failed-r1-lineage-terminal.json",
+      "sha256": "d1c3b71e59018f9aeb15afbe9c22c1dd8b2c76a8a550e628b422f9bbc6a87990"
+    },
+    {
+      "bytes": 11176,
+      "path": "recovery/failed-r1-lineage.stdout.raw.json",
+      "sha256": "106e92009c87248f9a078ac454b6c2883121fc41297483cd9dba3cf88e83c867"
+    },
+    {
+      "bytes": 8658,
+      "path": "recovery/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+    },
+    {
+      "bytes": 22691,
+      "path": "recovery/held_runtime_r5.py",
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+    },
+    {
+      "bytes": 3646,
+      "path": "recovery/independent_repair_r2/actual-execute-01/actual-transition.private.json",
+      "sha256": "f477ca38aca6458c4ff7072058c71f7309233d4485bc4d3adea5418fbaf39da2"
+    },
+    {
+      "bytes": 44041,
+      "path": "recovery/independent_repair_r2/actual-execute-01/baseline.private.json",
+      "sha256": "7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8"
+    },
+    {
+      "bytes": 3213,
+      "path": "recovery/independent_repair_r2/actual-execute-01/current_baseline_guard.py",
+      "sha256": "d84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3"
+    },
+    {
+      "bytes": 57713,
+      "path": "recovery/independent_repair_r2/actual-execute-01/initial-app-scope.private.json",
+      "sha256": "19d742f98193a09403990ed3ee6944d4624a26690fb953d66cac4361af6f6d77"
+    },
+    {
+      "bytes": 1286,
+      "path": "recovery/independent_repair_r2/actual-execute-01/native-start-receipt.private.json",
+      "sha256": "624254a06d994abef3dbe080186da58031cf3ea9293ef6823e0db4dfc40520fd"
+    },
+    {
+      "bytes": 1189,
+      "path": "recovery/independent_repair_r2/actual-execute-01/native-stop-receipt.private.json",
+      "sha256": "f6da9100a5172947cb70fa64550161af96ad229660f06d2cf8f35b60cfede5a9"
+    },
+    {
+      "bytes": 1587,
+      "path": "recovery/independent_repair_r2/actual-execute-01/qualification.private.json",
+      "sha256": "4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6"
+    },
+    {
+      "bytes": 2320,
+      "path": "recovery/independent_repair_r2/actual-execute-01/retired-lifecycle.private.json",
+      "sha256": "fffb7d669868a2e25eb10eb8f2e0b200777a1d270f26bee1f6ff39e3cab6a270"
+    },
+    {
+      "bytes": 4946,
+      "path": "recovery/independent_repair_r2/actual-execute-01/stdout.raw.jsonl",
+      "sha256": "f5a2416411710e3ce1c0a740d51a6ca7f9d9898fa3184f27b14594ead5c26723"
+    },
+    {
+      "bytes": 731,
+      "path": "recovery/independent_repair_r2/actual-execute-01/terminal.raw.json",
+      "sha256": "64aa9114dce9acee4ac9c796690f0fb153157b1ff528d613f800da87f3392b69"
+    },
+    {
+      "bytes": 2370,
+      "path": "recovery/independent_repair_r2/actual-execute-01/wrapper-activation.private.json",
+      "sha256": "cb1454e5e5a85036d78f576089f490f381efd5689863c25e9f34060e9e179550"
+    },
+    {
+      "bytes": 68350,
+      "path": "recovery/independent_repair_r2/candidate-r2/independent_repair_r2.py",
+      "sha256": "d45486fbc5b467a6c98ebf7fe8a0dfa6588fde9de5b6bfae466de42fd084b6c9"
+    },
+    {
+      "bytes": 2992,
+      "path": "recovery/independent_repair_r2/root-readback/actual-wrapper-deployment.original.json",
+      "sha256": "4d190ea23287ecd0fe17af7c8f893c2c766620a84950405fe9bd1d62f6d78034"
+    },
+    {
+      "bytes": 1273,
+      "path": "recovery/independent_repair_r2/root-readback/host-source-controls-result.json",
+      "sha256": "26ab235c35581bb4f76ba94af801fa4db1802788670fddeed589c0a39d382a0b"
+    },
+    {
+      "bytes": 3680,
+      "path": "recovery/independent_repair_r2/root-readback/root-host-controls-stage-result.json",
+      "sha256": "fb34f4270be0b373735da2157c9b8360a2e8c2ae1aefcc82632709cdc7c7b381"
+    },
+    {
+      "bytes": 6316,
+      "path": "recovery/independent_repair_r2/stage_and_invoke_reviewed.py",
+      "sha256": "28be1a9647130c309b4eb350ebfc3dcc1c204a8169c261511ab37e8bff2a8b22"
+    },
+    {
+      "bytes": 4237,
+      "path": "recovery/observe_current_cell_after_retirement_r1.py",
+      "sha256": "230f47fac67ca06d20fbe1723d398c2fc3c7468dd4c6c4cbb4bbf45cea89e2c6"
+    },
+    {
+      "bytes": 7695,
+      "path": "recovery/observe_successor_scope.py",
+      "sha256": "0a61313f518c7308f65f2654254689120df940cb0f5bd95d8873a42d6979914d"
+    },
+    {
+      "bytes": 267,
+      "path": "recovery/orphan-r1-local-pidfd-control.json",
+      "sha256": "5238da904dafb16457226a25fc2e48248f1fb2a16ec0fdce81b997575504ee82"
+    },
+    {
+      "bytes": 3043,
+      "path": "recovery/orphan-retirement-r1-result.json",
+      "sha256": "4c322a72ea61f3e7ff7e9c369c7996256beed8c74be1cd8c4b10524da285008d"
+    },
+    {
+      "bytes": 732,
+      "path": "recovery/orphan-retirement-r1-terminal.json",
+      "sha256": "552a0f5d9f07f8203431ef170a58e9c5cbb92ee742833711f19a923900ba97b6"
+    },
+    {
+      "bytes": 3236,
+      "path": "recovery/orphan-retirement-r1.stdout.raw.json",
+      "sha256": "a95fdabf268c530920468d987622565d346a4ebf5618cb12020d690d8013ade3"
+    },
+    {
+      "bytes": 48526,
+      "path": "recovery/readonly_abx.py",
+      "sha256": "04dcc9337aa61ed663e3ce3dea8ab13a963c4826588fcd1c25554466ed30acd1"
+    },
+    {
+      "bytes": 560,
+      "path": "recovery/reference/actual-compat-unshare-r1.py",
+      "sha256": "fe3a685034ed0dc948597436965dfd35ea183fc2b0519d9b0c5730c79d7c060b"
+    },
+    {
+      "bytes": 20413,
+      "path": "recovery/reference/actual-m579-droidloomctl.rs",
+      "sha256": "19a9e75d0deb0836fb9d125850600004a4a15be1b1ce8519fb8ca40e2165708d"
+    },
+    {
+      "bytes": 16826,
+      "path": "recovery/resume_successor_qualification.py",
+      "sha256": "90386e11415e8012edfc346d466e7a6bb479b89a1f31d07a9ba58784d471116d"
+    },
+    {
+      "bytes": 50621,
+      "path": "recovery/retire-orphan-packet-r1.json",
+      "sha256": "c380a200f7e91bd509503fdde2d8ea1809c6769e44bb401f6fd87b56a4694ea5"
+    },
+    {
+      "bytes": 17139,
+      "path": "recovery/retire_exact_orphan_r1.py",
+      "sha256": "bf9c4d0666cfe32b5025a52d4538faea4d46ddf7d338b05f7fb858944c85d40b"
+    },
+    {
+      "bytes": 8706,
+      "path": "recovery/stage_execute_once.py",
+      "sha256": "8ac4ee531acf6e6ff6ff08420aa4803abea7d56126c8341c493661aa3143b6e4"
+    },
+    {
+      "bytes": 65302,
+      "path": "recovery/successor_runtime.py",
+      "sha256": "53f79b2bdfc694a3006c0d33232a277a8729773407f301af6a07aa6a46f490d5"
+    },
+    {
+      "bytes": 1259,
+      "path": "recovery/targets-45-plus-actions-reference.json",
+      "sha256": "83c6c7a56250b6940104b788292cae09c4f64b8d5effd2649aa0ea5f29979a22"
+    },
+    {
+      "bytes": 37895,
+      "path": "reference/airchina-install-attempt1.json",
+      "sha256": "dabbb1fbdf498779afa032f208355f9c33a107ca764b7e39b934caea78ce5987"
+    },
+    {
+      "bytes": 734,
+      "path": "reference/airchina-install-r1-terminal.json",
+      "sha256": "587dd1cacdf2942eead2dd5e227eb88bc4f38b23d40f3ed8b236e0b79479142b"
+    },
+    {
+      "bytes": 39646,
+      "path": "reference/airchina-install-r1.stdout.jsonl",
+      "sha256": "9e7fd98f61792553240ce884fcbc00c25ca0a2a60d7cbf99d8a9fcb5909a27d5"
+    },
+    {
+      "bytes": 3316,
+      "path": "reference/airchina-upgrade-verified-summary.json",
+      "sha256": "5f02f6230bdecd90ed351b0b708ec62951b0776cf7155a256a8883f7876fbaa6"
+    },
+    {
+      "bytes": 37861,
+      "path": "reference/beike-install-attempt3.json",
+      "sha256": "323e82258b4feba4394885de7bccea3dd898ac175267882b2a3c3a5e787aa622"
+    },
+    {
+      "bytes": 734,
+      "path": "reference/beike-install-r3-terminal.json",
+      "sha256": "54c4dd507615576388d123bf082374ebfb52bf9532d3c4c741e7c539e0b2214e"
+    },
+    {
+      "bytes": 39942,
+      "path": "reference/beike-install-r3.stdout.jsonl",
+      "sha256": "fe09c64afee6a7b9cda6dd5d60ee7045c17b5387a15fcadde2427af9dcef1dbe"
+    },
+    {
+      "bytes": 2515,
+      "path": "reference/beike-native-install-interface.stdout.json",
+      "sha256": "d1deebd1ade4db3f29f6d83817823ba119f15fe56b370ea4c3824d7a527962fb"
+    },
+    {
+      "bytes": 4085,
+      "path": "reference/beike-native-ownership.stdout.json",
+      "sha256": "b5d5de222759b562b21c1f1739bc008e782589dab0af99a44778040bf62fb410"
+    },
+    {
+      "bytes": 1931,
+      "path": "reference/beike-official-verification.json",
+      "sha256": "f54eecd5ffca3ae31b5e8eb68d9a155a5159fb800e77a9e39976668d2b358306"
+    },
+    {
+      "bytes": 2579,
+      "path": "reference/beike-upgrade-verified-summary.json",
+      "sha256": "2c0a28e0b0bf2acdf7864eab12808ea78d4b43f5d65494279172dc97c5d7391c"
+    },
+    {
+      "bytes": 1866,
+      "path": "reference/bilibili-official-verification.json",
+      "sha256": "2faaee44fd41ee86f4ef1105113d7a27f858109adf6d81bdebc0a592bb1e94bf"
+    },
+    {
+      "bytes": 37687,
+      "path": "reference/ceair-install-attempt1.json",
+      "sha256": "2474723bbe119c6e03646605e94f99ab9b000810ee74c983438fb7b2571e698c"
+    },
+    {
+      "bytes": 734,
+      "path": "reference/ceair-install-r1-terminal.json",
+      "sha256": "2a87d5a265bc44af6a2e36b821d855c27e82430c3f37eca58bd83cdb9703a837"
+    },
+    {
+      "bytes": 39429,
+      "path": "reference/ceair-install-r1.stdout.jsonl",
+      "sha256": "1987633789bb6d3f43018df72a0ded8405f0a118c79b4f7c2a27bb6f9fe43376"
+    },
+    {
+      "bytes": 1934,
+      "path": "reference/ceair-official-verification.json",
+      "sha256": "10814fc51a4964ed3c1199d13522fc9f3b0ded34b5b5a6f5af570229631ded22"
+    },
+    {
+      "bytes": 3271,
+      "path": "reference/ceair-upgrade-verified-summary.json",
+      "sha256": "b35ff2ba8788ebced8b51ce28efd08eb11cd1eea20b6cd49e9c66765b4541b48"
+    },
+    {
+      "bytes": 584,
+      "path": "reference/checkpoint-git-receipt-01.json",
+      "sha256": "1254e3bb183f1e3e0969c5979cc927909b7fd0e284a08e9ffb69e1a012e0a1c0"
+    },
+    {
+      "bytes": 18026,
+      "path": "reference/completed-native-upgrades-20261106.json",
+      "sha256": "7b96af788177cff0f26948da9de6e99e613012faf0cbaf2795b568e1057f9d41"
+    },
+    {
+      "bytes": 287909,
+      "path": "reference/current-all-launcher-metadata.json",
+      "sha256": "daf3c5b81edcdd331b5e42149d088b88c51027e647583f91df588528ed5e5200"
+    },
+    {
+      "bytes": 68824,
+      "path": "reference/current-original-eight-inventory.json",
+      "sha256": "6863558f57829515744810d38209f5fa3b9c73f02ef545ef1fd7de55a891e804"
+    },
+    {
+      "bytes": 732,
+      "path": "reference/jd-source-s9-verification-terminal.raw.json",
+      "sha256": "dff2721f49535be017b0053874d015b100a6e5b561b006f5d771228e320f85e5"
+    },
+    {
+      "bytes": 1994,
+      "path": "reference/jd-source-s9-verification.stdout.raw.jsonl",
+      "sha256": "61b10bca992c2c9b5013e6964d024ff3694e1d72606a11373fbc4b226fbcbe4c"
+    },
+    {
+      "bytes": 7591,
+      "path": "reference/launcher-candidate-verifications-r2.json",
+      "sha256": "4c7d115102da373d43ae4955985c4c4ea4e9babea83cc37721ec65976470d4fb"
+    },
+    {
+      "bytes": 7159,
+      "path": "reference/official-s22/com.sdu.didi.psnger.aapt-badging.stdout",
+      "sha256": "f632c2b3946c4763d8a8a8fb88f6a5e43d0ea65a3fbea860198b83f6def487fc"
+    },
+    {
+      "bytes": 1018,
+      "path": "reference/official-s22/com.sdu.didi.psnger.apksigner.stdout",
+      "sha256": "ecc807713261b2f2d0d01b4b6bf5e3b93789d51064428c82baa4497567959a0c"
+    },
+    {
+      "bytes": 9013,
+      "path": "reference/official-s22/com.taobao.taobao.aapt-badging.stdout",
+      "sha256": "2a349ec86553bce60e86991bdf463079e69654389927244691e02154173c094a"
+    },
+    {
+      "bytes": 8096,
+      "path": "reference/official-s22/com.taobao.taobao.apksigner.stdout",
+      "sha256": "79889ef4f27a95dad9f4779e44f25331b4dbc35d76659bbfca9dba0184f40621"
+    },
+    {
+      "bytes": 731,
+      "path": "reference/official-s22/ctrip-s13-download-terminal.raw.json",
+      "sha256": "7c53c6357e83b405b60818483578cfb90c6eb35668a064de05838392f7aad463"
+    },
+    {
+      "bytes": 2540,
+      "path": "reference/official-s22/ctrip-s13-download.stdout.raw.jsonl",
+      "sha256": "62e538638119c25005e292030a2d4f5c421dde6d81ddfc63063bb153627c7c77"
+    },
+    {
+      "bytes": 6578,
+      "path": "reference/official-s22/ctrip.android.view.aapt-badging.stdout",
+      "sha256": "3161dcd0c85a3b5e32cf199ee4b0c609e887c74e958546c877386e60901dc2dd"
+    },
+    {
+      "bytes": 988,
+      "path": "reference/official-s22/ctrip.android.view.apksigner.stdout",
+      "sha256": "a5f8c5d920461e9e3a2bcbbd8e0e7e9739027f6a1c2ab10d62b3c40b314e1737"
+    },
+    {
+      "bytes": 731,
+      "path": "reference/official-s22/didi-ctrip-s15-verification-terminal.raw.json",
+      "sha256": "2bc80466d255e34a27f666794d1aecb85ccbc2d11512f4406e7f4f1f1418e0cb"
+    },
+    {
+      "bytes": 3999,
+      "path": "reference/official-s22/didi-ctrip-s15-verification.stdout.raw.jsonl",
+      "sha256": "1cc4e5a95493867964bd89108ecc914d0868f66cee37c16caa1889184a75402f"
+    },
+    {
+      "bytes": 16398,
+      "path": "reference/official-s22/index-01.json",
+      "sha256": "2f7cac8419f0622c2dcfa168db3a1ec55547dcb9ab7d18d07ae4673d2e70d5d9"
+    },
+    {
+      "bytes": 40087,
+      "path": "reference/official-s22/international_official_channels.json",
+      "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f"
+    },
+    {
+      "bytes": 730,
+      "path": "reference/official-s22/source-s10-continuation-terminal.raw.json",
+      "sha256": "a01f2dc614da9685bba31b82665a94631136f78cdb884a15d1da0e6e2c67d62d"
+    },
+    {
+      "bytes": 46618,
+      "path": "reference/official-s22/source-s10-continuation.stdout.raw.jsonl",
+      "sha256": "9333d8f9d6a09738359c8c76cf6c1e14c8c82936042d93f69c2724d0b99d863c"
+    },
+    {
+      "bytes": 5962,
+      "path": "reference/official-s22/source-s12-progress-through-offset-5962.raw.jsonl",
+      "sha256": "446704f742be2a8dd508ad693a9e5274626d00f6c682df6ceea9485a49613513"
+    },
+    {
+      "bytes": 731,
+      "path": "reference/official-s22/source-s16-metadata-terminal.raw.json",
+      "sha256": "06bc6401237641dd35f68c3151e3f0554fb1e3398a862293dd8c0cf773882cfa"
+    },
+    {
+      "bytes": 9542,
+      "path": "reference/official-s22/source-s16-metadata.stdout.raw.jsonl",
+      "sha256": "10d4d57fb5f6292d3ee9a3981fec9ac83364d3d8a67ec27124a5b82270cc8276"
+    },
+    {
+      "bytes": 731,
+      "path": "reference/official-s22/source-s18-metadata-terminal.raw.json",
+      "sha256": "8bf8807eeb27b51007745a8735ddde3a72ef821358fa6e41d83c88c698c6a096"
+    },
+    {
+      "bytes": 7210,
+      "path": "reference/official-s22/source-s18-metadata.stdout.raw.jsonl",
+      "sha256": "9ba90d273b7d0abd12b4d2f90f679025af9f2b5987d2b57c826d5a1a52214ac6"
+    },
+    {
+      "bytes": 731,
+      "path": "reference/official-s22/source-s19-international-terminal.raw.json",
+      "sha256": "89298b362a54ad89dac52b645b5a8d0049bdecc9808407f96e2b1bab3d391770"
+    },
+    {
+      "bytes": 733,
+      "path": "reference/official-s22/source-s20-douyin-metadata-terminal.raw.json",
+      "sha256": "bf530ab950614650ec512975741a45e3cf77f479b88c84d821cb1212ab54f3b0"
+    },
+    {
+      "bytes": 11447,
+      "path": "reference/official-s22/source-s20-douyin-metadata.stdout.raw.jsonl",
+      "sha256": "8f8397f49280586b8df2686733335e1ac547ffce98eba9f04c06f8ef700e1a4f"
+    },
+    {
+      "bytes": 730,
+      "path": "reference/official-s22/source-s8b-download-terminal.raw.json",
+      "sha256": "cf548450bd94489147e4f6c40d46d72d834367df7e439ef4862dd3fcdeed6106"
+    },
+    {
+      "bytes": 46020,
+      "path": "reference/official-s22/source-s8b-download.stdout.raw.jsonl",
+      "sha256": "5708d1553fa2d3c908fa33a65550bfda199d0841b515e701b5f451a14da5dc6d"
+    },
+    {
+      "bytes": 731,
+      "path": "reference/official-s22/taobao-s10-verification-terminal.raw.json",
+      "sha256": "8d31b46b4f98c1b15174782a93ad9ef7f30ac23acf44968a269fb7240b226429"
+    },
+    {
+      "bytes": 2026,
+      "path": "reference/official-s22/taobao-s10-verification.stdout.raw.jsonl",
+      "sha256": "0794be060e765468e23fd46cc2ff522669555c5492c37eab7eba1d9d4274c348"
+    },
+    {
+      "bytes": 20098,
+      "path": "reference/official-s24-s33-restored/archive-index.json",
+      "sha256": "9e61921748b5c8d2a7b71644e6f3222a464e63e42b745d4f0c9a05303d31fd49"
+    },
+    {
+      "bytes": 1771,
+      "path": "reference/official-s24-s33-restored/s24/rail-0000.json",
+      "sha256": "d23ad050f6515582763759d5d2e51907e73f7e293faa4ae44fbf589a71788c94"
+    },
+    {
+      "bytes": 1770,
+      "path": "reference/official-s24-s33-restored/s24/rail-0001.json",
+      "sha256": "3e85886f3fd8b909f8f1826772d505b147d0a2392503c44d17cf069c6cb9306f"
+    },
+    {
+      "bytes": 51049,
+      "path": "reference/official-s24-s33-restored/s24/results.json",
+      "sha256": "ac5bff80e9bf0e716cad6294e9e4cfb83ba66e05ac0a72ea633132c14c148fea"
+    },
+    {
+      "bytes": 13552,
+      "path": "reference/official-s24-s33-restored/s24/start.raw.json",
+      "sha256": "584e801a66a81bfb001f96fba874520ee6767b33042e384414733addc91ccf97"
+    },
+    {
+      "bytes": 33549,
+      "path": "reference/official-s24-s33-restored/s24/stdout.raw.jsonl",
+      "sha256": "8c9d654eb19a383b31f38f93c7fc78083556bd1288fec6336d96d68dba169c41"
+    },
+    {
+      "bytes": 730,
+      "path": "reference/official-s24-s33-restored/s24/terminal.raw.json",
+      "sha256": "552ce1b9acda7e69e2099a6dac9937039f128e8cad0e1707713b63a33ce5f323"
+    },
+    {
+      "bytes": 1893,
+      "path": "reference/official-s24-s33-restored/s24/zbj-0031.json",
+      "sha256": "2528d9ec6ccf66cab3f5777cbe69a3314fc7c03efd4da14af00ec9b416c522fe"
+    },
+    {
+      "bytes": 55,
+      "path": "reference/official-s24-s33-restored/s24/zbj-0031.stderr",
+      "sha256": "228459575ae3b5e06e5aff6651843df68bb5f83acd15296be82d6488c9698a06"
+    },
+    {
+      "bytes": 18634,
+      "path": "reference/official-s24-s33-restored/s27/com.marriott.mrt.curl-metrics.json",
+      "sha256": "e0abba127307ef8d133ad9c45e3e6df7d9b2764293dd05722503ede29623834f"
+    },
+    {
+      "bytes": 74,
+      "path": "reference/official-s24-s33-restored/s27/com.marriott.mrt.stderr",
+      "sha256": "9788a582299ed82a13d4004ca53eae6358f6c5dd736771f6d49348415a5e1880"
+    },
+    {
+      "bytes": 3266,
+      "path": "reference/official-s24-s33-restored/s27/download-results.json",
+      "sha256": "e63653486dbcc844dec39ccaf7a857f9d681c749a30e02cfc164df1785e615fd"
+    },
+    {
+      "bytes": 6534,
+      "path": "reference/official-s24-s33-restored/s27/start.raw.json",
+      "sha256": "514107b73cb2b20ebfdc8ce55a12e0ca8a974073524648ca42c18fc59f7a8d60"
+    },
+    {
+      "bytes": 2777,
+      "path": "reference/official-s24-s33-restored/s27/stdout.raw.jsonl",
+      "sha256": "b6c05a4bac56a374132f01d2630474214bead092779d66c1b6a96f62794e189f"
+    },
+    {
+      "bytes": 728,
+      "path": "reference/official-s24-s33-restored/s27/terminal.raw.json",
+      "sha256": "f80fa93623556e4bdc5385d7937d2fe3649be5cec634a50ab33c445b4832c820"
+    },
+    {
+      "bytes": 19373,
+      "path": "reference/official-s24-s33-restored/s28/0041.curl.json",
+      "sha256": "afaf1bd81ae8f2a3893e0d6d9fec095841e7acba0ea731abf64dc5eae8d5044a"
+    },
+    {
+      "bytes": 1958,
+      "path": "reference/official-s24-s33-restored/s28/0041.json",
+      "sha256": "89d991a6b4900eeebc443678cb14adae15d4cdf456c4a28971cebd44d5febdea"
+    },
+    {
+      "bytes": 54,
+      "path": "reference/official-s24-s33-restored/s28/0041.stderr",
+      "sha256": "65fbc3bf512297fcb09e485ab8b4e9c6fb17bd9547a77fba4dd7f69cba0b641f"
+    },
+    {
+      "bytes": 32127,
+      "path": "reference/official-s24-s33-restored/s28/results.json",
+      "sha256": "81fa90d9b79327cea524367213d6bde75967fc356afdf7351594ae3bb02c84e6"
+    },
+    {
+      "bytes": 15842,
+      "path": "reference/official-s24-s33-restored/s28/start.raw.json",
+      "sha256": "46b2704e4499729ee1ac2774da7eb5e88fc5aecc2e46e2d5b92a422727dd1485"
+    },
+    {
+      "bytes": 21169,
+      "path": "reference/official-s24-s33-restored/s28/stdout.raw.jsonl",
+      "sha256": "b9042927b116b88a034453b1cef88064475dbf29a89c0e9b9e6df5f773e732e9"
+    },
+    {
+      "bytes": 730,
+      "path": "reference/official-s24-s33-restored/s28/terminal.raw.json",
+      "sha256": "4274659d373393b89ee65ed999be21db790a1a464895f8a8283cffe8f18e5030"
+    },
+    {
+      "bytes": 20977,
+      "path": "reference/official-s24-s33-restored/s30/com.ss.android.ugc.aweme.curl-metrics.json",
+      "sha256": "4d351f3c8c318f5edf2fda8e84ea6b000d3ebd4e595534cce6cd8c9304fc1eba"
+    },
+    {
+      "bytes": 50,
+      "path": "reference/official-s24-s33-restored/s30/com.ss.android.ugc.aweme.stderr",
+      "sha256": "4fbeb3b068dfd0a00fd3fcd95b81af2190310bf9d119abbd0a75dfe1725b0c16"
+    },
+    {
+      "bytes": 3126,
+      "path": "reference/official-s24-s33-restored/s30/download-results.json",
+      "sha256": "fbf2b9f1d371f598a0327ca6f5512880bde69d758e5cf7d433ec8b9d62c6984d"
+    },
+    {
+      "bytes": 6385,
+      "path": "reference/official-s24-s33-restored/s30/start.raw.json",
+      "sha256": "98263d4dff48cad3657f5b457922b009b572fe711d55556342fb9a65249ffb39"
+    },
+    {
+      "bytes": 2661,
+      "path": "reference/official-s24-s33-restored/s30/stdout.raw.jsonl",
+      "sha256": "2d6c2502b2b61d4f32cfd3883f603235ac553b9be6781e7b3da9cce6511470c7"
+    },
+    {
+      "bytes": 728,
+      "path": "reference/official-s24-s33-restored/s30/terminal.raw.json",
+      "sha256": "7746a05d5e3e249e1067d7477ce67a7a78a68d5e17ec8015de4b6dcf343efe62"
+    },
+    {
+      "bytes": 20844,
+      "path": "reference/official-s24-s33-restored/s32/0000.curl.json",
+      "sha256": "26f26a771ae1256ee5a59df7b8a3065d99b33bb077c5a12f42128d69be267bd3"
+    },
+    {
+      "bytes": 2140,
+      "path": "reference/official-s24-s33-restored/s32/0000.json",
+      "sha256": "b4c276b8579207216fe7cf6cc598acc8915b461d5c37abdfa7ae163f5e8d5390"
+    },
+    {
+      "bytes": 0,
+      "path": "reference/official-s24-s33-restored/s32/0000.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 2543,
+      "path": "reference/official-s24-s33-restored/s32/com.ss.android.ugc.aweme-result.json",
+      "sha256": "1ba7f39492714a2a0edd1acd1e6818f8153ae710481f1f6225bbe807c987192e"
+    },
+    {
+      "bytes": 2923,
+      "path": "reference/official-s24-s33-restored/s32/results.json",
+      "sha256": "f46fffd1f5b03510858fba183fef5166b151659a25358ad80e1f981c0cdbf250"
+    },
+    {
+      "bytes": 12709,
+      "path": "reference/official-s24-s33-restored/s32/start.raw.json",
+      "sha256": "b5a00e48e98be921c83a32a58e99e4c5202e4a784c63eb96a923047e2e999886"
+    },
+    {
+      "bytes": 1243,
+      "path": "reference/official-s24-s33-restored/s32/stdout.raw.jsonl",
+      "sha256": "691f978ed24f4d0756f6e668c2277ccdaa736f87e8b4254df0439db87fe68946"
+    },
+    {
+      "bytes": 731,
+      "path": "reference/official-s24-s33-restored/s32/terminal.raw.json",
+      "sha256": "002dd7c6af293c7ac7c94447cc99c403eb52dd4213da033d0ab43fb17ce9d2c6"
+    },
+    {
+      "bytes": 0,
+      "path": "reference/official-s24-s33-restored/s33/aapt-badging.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 21605,
+      "path": "reference/official-s24-s33-restored/s33/aapt-badging.stdout",
+      "sha256": "c63deb72e84db7493efad5d7caac0ff762c778b4b1248bb6ad04ac22965b8b9a"
+    },
+    {
+      "bytes": 0,
+      "path": "reference/official-s24-s33-restored/s33/apksigner.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 9422,
+      "path": "reference/official-s24-s33-restored/s33/apksigner.stdout",
+      "sha256": "54ff814f4578f0f3921aed3a9396570d680545e0b37bd6acb866f3bb37b45aab"
+    },
+    {
+      "bytes": 2302,
+      "path": "reference/official-s24-s33-restored/s33/index.json",
+      "sha256": "c21b0e972b570166ebf1453535ab76ca5c058bf770a5e1413691a1dd2aadaefa"
+    },
+    {
+      "bytes": 2504,
+      "path": "reference/official-s24-s33-restored/s33/result.json",
+      "sha256": "1e7413b3fff71bcbd861d8f90372e314bfec1a9a0c9e104c71860ac65af91d69"
+    },
+    {
+      "bytes": 3612,
+      "path": "reference/official-s24-s33-restored/s33/start.raw.json",
+      "sha256": "250b799be41299a4be0adfac0f55aee674a54a2433376edbc25dc8dc0898184e"
+    },
+    {
+      "bytes": 2890,
+      "path": "reference/official-s24-s33-restored/s33/stdout.raw.jsonl",
+      "sha256": "4c9fddbb61dafc435695d801e3cbe74972342bcdddd0b8d2dc8b9c0d369051ba"
+    },
+    {
+      "bytes": 731,
+      "path": "reference/official-s24-s33-restored/s33/terminal.raw.json",
+      "sha256": "c64fd88d4e1e4d8f1f5f1edee3a74d61913333bee7bc07c7b3b416b9813b0fe2"
+    },
+    {
+      "bytes": 8510,
+      "path": "reference/official-s24-s33-restored/s33/verify_douyin_s32.py",
+      "sha256": "eac4841b04a774eddcf0d63383990c6b7138afe9485b5f6694fec131c085d4d6"
+    },
+    {
+      "bytes": 732,
+      "path": "reference/pdd-source-s6-verification-terminal.raw.json",
+      "sha256": "b8649b67f5359bcceefe11dd0d7f399845d6597c0c23908fdc25ca428c852e32"
+    },
+    {
+      "bytes": 1968,
+      "path": "reference/pdd-source-s6-verification.stdout.raw.jsonl",
+      "sha256": "ae6c8068bfb3e95dddbbe694ecad74a69764d605d18c8611a995f84ec127c30b"
+    },
+    {
+      "bytes": 732,
+      "path": "reference/taobao-source-s10-verification-terminal.raw.json",
+      "sha256": "515eb939ccbed02a8a00c174309d99292cd4dc40af40d53757ff862e505b509b"
+    },
+    {
+      "bytes": 2026,
+      "path": "reference/taobao-source-s10-verification.stdout.raw.jsonl",
+      "sha256": "0794be060e765468e23fd46cc2ff522669555c5492c37eab7eba1d9d4274c348"
+    },
+    {
+      "bytes": 734,
+      "path": "reference/wechat-before-r1-terminal.json",
+      "sha256": "f7af29c2a366880838334f7711a8c077f40b617346f78a4db64a6dbda0a2dfda"
+    },
+    {
+      "bytes": 17477,
+      "path": "reference/wechat-before-r1.json",
+      "sha256": "403bcb24c34dc041181379e3d45788231cc66ebe048cd5bb0e05ac619d555950"
+    },
+    {
+      "bytes": 18534,
+      "path": "reference/wechat-before-r1.stdout.jsonl",
+      "sha256": "3e9fb8e3a7c494c9c9f29e68343a7b0c8f1b3fe775f13f84ffd9109350d69397"
+    },
+    {
+      "bytes": 43656,
+      "path": "reference/wechat-install-attempt1.json",
+      "sha256": "78d8cd9caa4facf59a183ae2ff8ad36c42b4957d8f76e3ec1ce94acda2c4718b"
+    },
+    {
+      "bytes": 734,
+      "path": "reference/wechat-install-r1-terminal.json",
+      "sha256": "61fb6a4ea98d32465d0b5ca3041450e4f7f5ab8b64a5afa8fc8e68c97f50fe4c"
+    },
+    {
+      "bytes": 45416,
+      "path": "reference/wechat-install-r1.stdout.jsonl",
+      "sha256": "9447b2f192e6862f6a362914a630a500ffb4a23bbf05332c730c08c5d96d0026"
+    },
+    {
+      "bytes": 3887,
+      "path": "reference/wechat-upgrade-verified-summary.json",
+      "sha256": "a1afb9b88b97ea8a2721420274fdcb178177c054b189cddd4d43f0929d76e91d"
+    },
+    {
+      "bytes": 27345,
+      "path": "regression_manifest.json",
+      "sha256": "3d5764e982a31692e77cf728cb4fa88e44c987b7f2d6dda65106741f952cf86e"
+    },
+    {
+      "bytes": 7023,
+      "path": "successor_apk_audit/AUDIT_PLAN.json",
+      "sha256": "bde42cec868b0bc62d1d342713e6e15d8c6a1a766bb576a1a60f51817f9a44c4"
+    },
+    {
+      "bytes": 941,
+      "path": "successor_apk_audit/SOURCE_PINS.json",
+      "sha256": "f90c5be16bed21cd86de3bf4411949b6f5ba8e5e6dc30d567481a622b21508d3"
+    },
+    {
+      "bytes": 28920,
+      "path": "successor_apk_audit/audit_successor_apks.py",
+      "sha256": "f851b5b7fa88a291192ed44e8fc655fccb640d69a0771a3a0128434d1d4bf2cd"
+    },
+    {
+      "bytes": 1308,
+      "path": "successor_apk_audit/local-tests.stdout.txt",
+      "sha256": "36f6d4d968659f64171386bae734b5c8530a9b5c827f34ac84af2b1f4dc183dd"
+    },
+    {
+      "bytes": 4745,
+      "path": "successor_apk_audit/official-release-apk-digests.json",
+      "sha256": "2452530fa7ba56612c3136d69f925e3a51c5f27b637882d0dc938b8f18185e0d"
+    },
+    {
+      "bytes": 566,
+      "path": "successor_apk_audit/request.example.json",
+      "sha256": "90c1013a2739838049c7b43aa58991d9b646aa3798db11cda1d23f30fa46810d"
+    },
+    {
+      "bytes": 6288,
+      "path": "successor_apk_audit/test_audit_successor_apks.py",
+      "sha256": "ec95b457fa965edef716de38a50e9d405eae0b111f169c572e66b29c73713ecb"
+    },
+    {
+      "bytes": 2369,
+      "path": "successor_audit_requests/FINAL_AUDIT_PLAN_PINS.json",
+      "sha256": "0c5a51005ed0700f99c05aae39e758b7131c900691a468034c0b2ff8ff5fe05c"
+    },
+    {
+      "bytes": 10761,
+      "path": "successor_audit_requests/READONLY_SERVICE_PLAN.md",
+      "sha256": "9acac0db26644d2188c6be150f8896e42f53dda6abd7c17dcc3f50843fd59032"
+    },
+    {
+      "bytes": 5990,
+      "path": "successor_audit_requests/SERIAL_EXECUTION.md",
+      "sha256": "6679c100a2a84f67a63e24f576715d9f9e2216ef8faa6ddfd2707de5ebb02276"
+    },
+    {
+      "bytes": 14924,
+      "path": "successor_audit_requests/audit_serial_gate.py",
+      "sha256": "cdba68c6d86534f1c285e16a215c1038d7aed1f551c2bde7b68f7154f9a24240"
+    },
+    {
+      "bytes": 17548,
+      "path": "successor_audit_requests/final-upgrades-r1/REQUEST_MANIFEST.json",
+      "sha256": "d288affedc2eae8d28f2d7083df4c89d756e51ba8e5ebfb2264f9d3c6d783139"
+    },
+    {
+      "bytes": 704,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-01.request.json",
+      "sha256": "0295f6ed9a81386e62fb4c9192c64da2351ecef3a9ea712344e2939bbfa8c66b"
+    },
+    {
+      "bytes": 702,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-02.request.json",
+      "sha256": "b2ad63b1d5f839dde2a74f190c01511895927d1e7d59112eb1aa4f79e9bcdc49"
+    },
+    {
+      "bytes": 770,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-03.request.json",
+      "sha256": "4d615167b1ac3660a924f3bd89c9d2ad4a67bc46f8588a8675d60bd205c9c33a"
+    },
+    {
+      "bytes": 767,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-04.request.json",
+      "sha256": "6ffc13b6ecef33bdc813cfc1b4f4064c1b2fbf247d628987d91c26deb614aa2c"
+    },
+    {
+      "bytes": 792,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-05.request.json",
+      "sha256": "06ab902809dffe4921d5a98883e3c2caa8594e6585ed0f8fcb4f33df58d4cc98"
+    },
+    {
+      "bytes": 786,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-06.request.json",
+      "sha256": "605c80d1d4ea311994d641adf020d5fca28e54dc30bd545068edabd69a0d3c40"
+    },
+    {
+      "bytes": 792,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-07.request.json",
+      "sha256": "fc66d6daa88c497d1e5c031df6daa114212f305007baa175800ea7aef2fe2a05"
+    },
+    {
+      "bytes": 804,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-08.request.json",
+      "sha256": "6f7741329e91f61b05eae4f8b329c9769402f9dd0b5c0d6a404d6e259ae6f583"
+    },
+    {
+      "bytes": 787,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-09.request.json",
+      "sha256": "e8a6c97f5e4626de8033c9bb084c88750ae148c404f82f696b47658bd1ebe0ec"
+    },
+    {
+      "bytes": 796,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-10.request.json",
+      "sha256": "4fb648966734614cec80575ba467794b5bf955d9963ea8e7b141993643e52739"
+    },
+    {
+      "bytes": 778,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-11.request.json",
+      "sha256": "d504364f8923949dc6428008a2e0d9e761d8fadca182eca122d428e5b5f9d1bc"
+    },
+    {
+      "bytes": 797,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-12.request.json",
+      "sha256": "acffb13822a87e9504795acdf526d3f86016ccccb3e155cd164a2b1c6a9c1fac"
+    },
+    {
+      "bytes": 774,
+      "path": "successor_audit_requests/final-upgrades-r1/batch-13.request.json",
+      "sha256": "cdb513767ab31a0956fe152959f91a6a652ed7a4447a36ef4b83aa74889bbd95"
+    },
+    {
+      "bytes": 10687,
+      "path": "successor_audit_requests/prepare_requests.py",
+      "sha256": "98c357dda46fd43f3ecbc975f138adf5dfd96d635ec73b366dd524ed8daa3200"
+    },
+    {
+      "bytes": 29242,
+      "path": "successor_audit_requests/reference/audit_successor_apks.py",
+      "sha256": "faff199c1f6218b3c01d87e44be610d6fa211de396b5e8c862c188dec59d284a"
+    },
+    {
+      "bytes": 1172,
+      "path": "successor_audit_requests/serial-gate-controls-r1/stderr.raw.txt",
+      "sha256": "25d0c3156b4820bc40ed8c087fe41f06a48dd2fa94364d71c2c211ea6db59b10"
+    },
+    {
+      "bytes": 224,
+      "path": "successor_audit_requests/serial-gate-controls-r1/stdout.raw.json",
+      "sha256": "dc048a68ccffdf513067ed2d2dc43373d127ffacdbdfb098c75a5513631bbf27"
+    },
+    {
+      "bytes": 10638,
+      "path": "successor_audit_requests/test_audit_serial_gate.py",
+      "sha256": "a9000d532fb2f168efa45d7612c044791a1facb55521bb972f6341532d6c1022"
+    },
+    {
+      "bytes": 662,
+      "path": "successor_install/actual/SOURCE_PINS.json",
+      "sha256": "4698667f6b150efb1b89acaaf02deca1bb92242a8581b67b832427ad04532135"
+    },
+    {
+      "bytes": 11905,
+      "path": "successor_install/actual/bili-01/stdout.raw.jsonl",
+      "sha256": "494028be8eb3edb22029587ab84090aa445277065a96089ef25c02db7f0c13ad"
+    },
+    {
+      "bytes": 733,
+      "path": "successor_install/actual/bili-01/terminal.raw.json",
+      "sha256": "168da41ca04cd586d7f8d3489ad76f14f00e8da4161fe1871fe9097042701915"
+    },
+    {
+      "bytes": 731,
+      "path": "successor_install/actual/bili-01/verifier-terminal.raw.json",
+      "sha256": "ff6bd44b7013d14bc4e7ffa40e730edf3b42bf75eed9c2760d73d4768129da00"
+    },
+    {
+      "bytes": 12064,
+      "path": "successor_install/actual/ctrip-01/stdout.raw.jsonl",
+      "sha256": "b1c647a2d6c9e72ee1612f86b7c369db2fe419ece8e885a1852a76e991e071e3"
+    },
+    {
+      "bytes": 733,
+      "path": "successor_install/actual/ctrip-01/terminal.raw.json",
+      "sha256": "61845d266e18c5c8bd0304a038fb5e0af652ecc67eb8445812d32b7d5bb8ef58"
+    },
+    {
+      "bytes": 12077,
+      "path": "successor_install/actual/didi-01/stdout.raw.jsonl",
+      "sha256": "0bc6a2102cdd15a49ec1e220b74749855983c53741efba7daa892dbd309dabd8"
+    },
+    {
+      "bytes": 733,
+      "path": "successor_install/actual/didi-01/terminal.raw.json",
+      "sha256": "24ec33909037b03bd9e2c9f02fd8ee30975d84c0e246e27985df6893d7e9b955"
+    },
+    {
+      "bytes": 57340,
+      "path": "successor_install/actual/douyin-01/app-scope-after.private.json",
+      "sha256": "489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4"
+    },
+    {
+      "bytes": 15354,
+      "path": "successor_install/actual/douyin-01/stdout.raw.jsonl",
+      "sha256": "11e9bb6644b9bfc315e57652bd79b4556f3de1fbd85220446b2a8239929a6b6e"
+    },
+    {
+      "bytes": 733,
+      "path": "successor_install/actual/douyin-01/terminal.raw.json",
+      "sha256": "3bbac2d5ac2f616dc0a3b91a9eba8178cb0d85009029ae881c2acfa61d26bd93"
+    },
+    {
+      "bytes": 731,
+      "path": "successor_install/actual/douyin-01/verifier-terminal.raw.json",
+      "sha256": "c64fd88d4e1e4d8f1f5f1edee3a74d61913333bee7bc07c7b3b416b9813b0fe2"
+    },
+    {
+      "bytes": 2010,
+      "path": "successor_install/actual/jd-01/stdout.raw.jsonl",
+      "sha256": "e2ddc72288900f464c753836b68477b6f7a91d455468c82a9a26e6d79fde47de"
+    },
+    {
+      "bytes": 728,
+      "path": "successor_install/actual/jd-01/terminal.raw.json",
+      "sha256": "70f6a21869c59a000acee84b1d20274b265999639262068d0821f228b06308b7"
+    },
+    {
+      "bytes": 732,
+      "path": "successor_install/actual/jd-01/verifier-terminal.raw.json",
+      "sha256": "dff2721f49535be017b0053874d015b100a6e5b561b006f5d771228e320f85e5"
+    },
+    {
+      "bytes": 16727,
+      "path": "successor_install/actual/jd-02/stdout.raw.jsonl",
+      "sha256": "cf9b0b6772437f016b2e4c1cb839b2a24822225146e20d87bf8a7c06e9571637"
+    },
+    {
+      "bytes": 733,
+      "path": "successor_install/actual/jd-02/terminal.raw.json",
+      "sha256": "d44e998b6d22c0638cb328d8badaf3c6d3aa03d8ddc230cb7db0cfe787175594"
+    },
+    {
+      "bytes": 732,
+      "path": "successor_install/actual/jd-02/verifier-terminal.raw.json",
+      "sha256": "dff2721f49535be017b0053874d015b100a6e5b561b006f5d771228e320f85e5"
+    },
+    {
+      "bytes": 12071,
+      "path": "successor_install/actual/pdd-01/stdout.raw.jsonl",
+      "sha256": "9171b763159ec9557160687dce75d55b621daded06ddd606b962e3578ed0c772"
+    },
+    {
+      "bytes": 733,
+      "path": "successor_install/actual/pdd-01/terminal.raw.json",
+      "sha256": "afe66f749d4f94fdab4c7450986f7784a4582bf552d6202226e9dd12f88ee5f5"
+    },
+    {
+      "bytes": 732,
+      "path": "successor_install/actual/pdd-01/verifier-terminal.raw.json",
+      "sha256": "b8649b67f5359bcceefe11dd0d7f399845d6597c0c23908fdc25ca428c852e32"
+    },
+    {
+      "bytes": 310,
+      "path": "successor_install/actual/source-r2-controls/SOURCE_PINS.json",
+      "sha256": "55c103b080383d8f714e282307aec68cb932dec3fd9cfbee9c803edc5d1a249e"
+    },
+    {
+      "bytes": 1562,
+      "path": "successor_install/actual/source-r2-controls/test_install_successor_r2.py.stderr",
+      "sha256": "b95a429e8175c9e70d36e302b4085f9b2903aeed63aef2dc3550790f17e70c66"
+    },
+    {
+      "bytes": 527,
+      "path": "successor_install/actual/source-r2-controls/test_install_successor_r2.py.stdout",
+      "sha256": "9720bd5602657d405d5cb2d64b3e23ce04d74c74223bf5e89618b21596149587"
+    },
+    {
+      "bytes": 6866,
+      "path": "successor_install/actual/source-stage-r1-reconciliation.raw.json",
+      "sha256": "359927b19970d2a277ccf276496a03605f31a31581dca643a03e820380bbf5c6"
+    },
+    {
+      "bytes": 3282,
+      "path": "successor_install/actual/source-stage-r1.stdout.raw.jsonl",
+      "sha256": "25299891ca4e7533a09b87cf9b377456c00dca21b3b1ab164c6dc421017765c9"
+    },
+    {
+      "bytes": 731,
+      "path": "successor_install/actual/source-stage-r2-terminal.raw.json",
+      "sha256": "b9b167778675810304a3aeccd6b60b5ea8a6e319008403b4fdb69c649a2df363"
+    },
+    {
+      "bytes": 2079,
+      "path": "successor_install/actual/source-stage-r2.stdout.raw.jsonl",
+      "sha256": "b1e0dd53feebf30af849e5c4932cf5e9b1784f6d01b3dad9454499997921ac16"
+    },
+    {
+      "bytes": 12067,
+      "path": "successor_install/actual/taobao-01/stdout.raw.jsonl",
+      "sha256": "46097359c3e3a22e00e5071b4781e5857b120955a78353b4a9d57ffa5987267a"
+    },
+    {
+      "bytes": 733,
+      "path": "successor_install/actual/taobao-01/terminal.raw.json",
+      "sha256": "9912a43bf78fee6f10ba508eab6b881f9a90058bd6377107e2ca768d84c569ca"
+    },
+    {
+      "bytes": 732,
+      "path": "successor_install/actual/taobao-01/verifier-terminal.raw.json",
+      "sha256": "515eb939ccbed02a8a00c174309d99292cd4dc40af40d53757ff862e505b509b"
+    },
+    {
+      "bytes": 107,
+      "path": "successor_install/actual/test_audit_successor_apks.py.stderr",
+      "sha256": "2efea11edab81762ab3513692b43868f2df12f258198b58e6c588cacd1cc2830"
+    },
+    {
+      "bytes": 1206,
+      "path": "successor_install/actual/test_install_successor_native.py.stderr",
+      "sha256": "e47bb416f3433d506dc4b7cfa7936685799d2d84480f2b230b1bd409c8ba0d9d"
+    },
+    {
+      "bytes": 1469,
+      "path": "successor_install/official-verifier-pins.json",
+      "sha256": "d9613425386633e6b5eb62c51a60215d7324fc0a169f372ac7de9150898a20c5"
+    },
+    {
+      "bytes": 2073,
+      "path": "successor_install/read_pinned_compressed.py",
+      "sha256": "3720e074779425e94763deec151253e6dd0e10470fcabc1c86c7bedc7b632f4e"
+    },
+    {
+      "bytes": 29242,
+      "path": "successor_install/source-r1/audit_successor_apks.py",
+      "sha256": "faff199c1f6218b3c01d87e44be610d6fa211de396b5e8c862c188dec59d284a"
+    },
+    {
+      "bytes": 31327,
+      "path": "successor_install/source-r1/install_successor_native.py",
+      "sha256": "ad4227b4c63033018bd1147c3c589b2632168766306791696aabc53583229c96"
+    },
+    {
+      "bytes": 65302,
+      "path": "successor_install/source-r1/reference_core.py",
+      "sha256": "53f79b2bdfc694a3006c0d33232a277a8729773407f301af6a07aa6a46f490d5"
+    },
+    {
+      "bytes": 5068,
+      "path": "successor_install/source-r1/stage_source.py",
+      "sha256": "14382c0b1125bf98d90898d2f0aa29a20bf3e13effe4c63544d2d7074aee91fd"
+    },
+    {
+      "bytes": 7344,
+      "path": "successor_install/source-r1/test_audit_successor_apks.py",
+      "sha256": "b131711099438ef2ce090a30f0bf055c5634ae7fe12997fb86cbbf22ddb14fe5"
+    },
+    {
+      "bytes": 6428,
+      "path": "successor_install/source-r1/test_install_successor_native.py",
+      "sha256": "df45f3aea5d3252cd8e9e5bbd8fc04934b9dd84e79f58a3b466f9720e89425a1"
+    },
+    {
+      "bytes": 2783,
+      "path": "successor_install/source-r2/LOCAL_STAGE_RESULT.json",
+      "sha256": "ddb1900c04776f8d5a04754ff8f4d718161bbbfc43a52c128217c20387ef9ef7"
+    },
+    {
+      "bytes": 3355,
+      "path": "successor_install/source-r2/REVIEW.md",
+      "sha256": "b1af386f35234f08b8a3a058dc85c6b49378875de38df51d220841c77ea32875"
+    },
+    {
+      "bytes": 14031,
+      "path": "successor_install/source-r2/SOURCE_DIFF.patch",
+      "sha256": "33ac281a970b9101998efada15f6f0518d15056ddf547247aafeba34af7bc5d9"
+    },
+    {
+      "bytes": 1340,
+      "path": "successor_install/source-r2/SOURCE_PINS.json",
+      "sha256": "46e5e1a997530ea65ba7c9c0d59c141d2d7d6403e770da29423475d8227624d1"
+    },
+    {
+      "bytes": 38684,
+      "path": "successor_install/source-r2/install_successor_native.py",
+      "sha256": "7fe3d12fd280539939c930970755e9f33ab7cda51f08a03cc54eb5f9c52508eb"
+    },
+    {
+      "bytes": 1562,
+      "path": "successor_install/source-r2/offline-controls.stderr.raw.txt",
+      "sha256": "35a840d4eac15925c03375972d62b325fb4cefbd461a21b3fb3f7058f3caef9d"
+    },
+    {
+      "bytes": 533,
+      "path": "successor_install/source-r2/offline-controls.stdout.raw.json",
+      "sha256": "e1907a29ac43da9226c526b65f172c0596f4291522ae36261642b4fc06e1b99f"
+    },
+    {
+      "bytes": 31327,
+      "path": "successor_install/source-r2/reference/install_successor_native.r1.py",
+      "sha256": "ad4227b4c63033018bd1147c3c589b2632168766306791696aabc53583229c96"
+    },
+    {
+      "bytes": 4803,
+      "path": "successor_install/source-r2/stage_source.py",
+      "sha256": "b23f379fa2f6a50ba2158fe08defe3c5ecaa8d7195203cf4b21e5c621ceffb51"
+    },
+    {
+      "bytes": 9228,
+      "path": "successor_install/source-r2/test_install_successor_r2.py",
+      "sha256": "da46e787668d433324177a8ca29c571d71814c5f4d2d334f1b04f8ddbef75174"
+    },
+    {
+      "bytes": 5679,
+      "path": "successor_install/stage_request_and_invoke.py",
+      "sha256": "cdb7433f71a9d9c7c87438ffdbcabf573e14c6007c1edb3c8de54779d8b7efae"
+    },
+    {
+      "bytes": 5673,
+      "path": "successor_install/stage_request_and_invoke_r2.py",
+      "sha256": "ebff84d8e8bdee3c3d283afe885d296e1a0fad9a3bb6bdf9c90141f046f5cec4"
+    },
+    {
+      "bytes": 1940,
+      "path": "successor_qa/BEIKE_SOURCE_PREPARATION_PINS.json",
+      "sha256": "2c48455e5ee97987c55aa952d67fa2a67251e5d19a817362d1cdbe304b22afe5"
+    },
+    {
+      "bytes": 5098,
+      "path": "successor_qa/GENERATOR_PINS.json",
+      "sha256": "ad32c98479cbb763c6c7728336f65a3e10dd1826de17ea43d0662599f7ce7436"
+    },
+    {
+      "bytes": 15184,
+      "path": "successor_qa/README.md",
+      "sha256": "240a970838e730275affca6eec816b2e3e0186e839682fe3f2653e90c6ec58da"
+    },
+    {
+      "bytes": 732,
+      "path": "successor_qa/actual/stage-r2-terminal.json",
+      "sha256": "1e4078bba153339ef592aad5ddbe4cd6015394fcd5d1b4a2cedffb39552b2d11"
+    },
+    {
+      "bytes": 3926,
+      "path": "successor_qa/actual/stage-r2.stdout.raw.jsonl",
+      "sha256": "ef8ab39b2f5ff6aecda106d5c4c3fb98a2a5dcca14b551bd1252901adaa03bf7"
+    },
+    {
+      "bytes": 1250,
+      "path": "successor_qa/beike-final-request-r1.json",
+      "sha256": "362a42693e7c0a7ed815eb356b6ef2f71a9bf461e60aebb45158830682ce2de6"
+    },
+    {
+      "bytes": 8208,
+      "path": "successor_qa/check_owned_stage.py",
+      "sha256": "62740d2846c37987a927c7c7df45c46e35b097549c4c2dc9774cf62eaa7ca55b"
+    },
+    {
+      "bytes": 34825,
+      "path": "successor_qa/generate_successor_sources.py",
+      "sha256": "ec53b8444c068e58b0e8d9d8ae25321ed6dddbd7768f3b6a766a35fc1ed8f1ab"
+    },
+    {
+      "bytes": 22148,
+      "path": "successor_qa/prepare_beike_bound_source.py",
+      "sha256": "9db3af14e7f2903e3b94bc45ed43f202f2ceb243e95f904dcab3c363aa55cbde"
+    },
+    {
+      "bytes": 1220,
+      "path": "successor_qa/r2-stage-target-fix.diff",
+      "sha256": "e32fb1928030e5a0dd2cfb8917b4328c07d33055e0eba814caec1d64c0abef87"
+    },
+    {
+      "bytes": 74638,
+      "path": "successor_qa/reference/bili/ActionRunner.java",
+      "sha256": "2f123f873553ba79c4f7c23258017305c6522cc08aa8236316d6fcbc228ed63f"
+    },
+    {
+      "bytes": 712,
+      "path": "successor_qa/reference/bili/AndroidManifest.xml",
+      "sha256": "74e57467fc57c779ca200d26bc55f3d478e04c6014cdd4f9cf847b9e1ceb0b72"
+    },
+    {
+      "bytes": 25393,
+      "path": "successor_qa/reference/bili/build_candidate.py",
+      "sha256": "7ee0862e0418ae7997c3b605cf2ca84068dcc1217d350344eca0344b477258f5"
+    },
+    {
+      "bytes": 2637,
+      "path": "successor_qa/reference/bili/check_current_baseline.py",
+      "sha256": "05509b0d36a6affd2c43fb7b311d6ef2ea652759f54bf95244a25ccaeb2c82a0"
+    },
+    {
+      "bytes": 13481,
+      "path": "successor_qa/reference/bili/check_idle_contract.py",
+      "sha256": "96e696553bb8bd7b9dc8aeac1562112cb6dd85ff422c33858a172f479c5028a5"
+    },
+    {
+      "bytes": 28221,
+      "path": "successor_qa/reference/bili/qa_adapter.py",
+      "sha256": "c1f6a1f4f7ca673e169b1d09fa10ce65172e0e28815594379a6c2ca8c3cfbb70"
+    },
+    {
+      "bytes": 51820,
+      "path": "successor_qa/reference/bili/qa_contract.py",
+      "sha256": "0cdf34a459387c74af5fde17c47810148682e28d3df5e6ec7c9507e63c818a68"
+    },
+    {
+      "bytes": 3921,
+      "path": "successor_qa/reference/bili/src/org/droidloom/qa/bili/r9/InspectionIdleGate.java",
+      "sha256": "8fe3db24ea70cec07c9013eb7d99fc935517bce4bbf3efcdc7029ee39fa59c48"
+    },
+    {
+      "bytes": 2897,
+      "path": "successor_qa/reference/bili/src/org/droidloom/qa/bili/r9/PlayerButtonTransaction.java",
+      "sha256": "745ff923eaef435414d70b0a3d6a7acffc9e3dca58a972d66a65f30d814b979b"
+    },
+    {
+      "bytes": 4979,
+      "path": "successor_qa/reference/bili/src/org/droidloom/qa/bili/r9/TouchTransaction.java",
+      "sha256": "5c8312a8671598225ba0bf14e839695b96af1f9ad59280697f54b8d793293923"
+    },
+    {
+      "bytes": 11432,
+      "path": "successor_qa/reference/bili/tests/InspectionIdleGateChecks.java",
+      "sha256": "e39b0018c56b7fa19a927279300364773a257334bbe164f0a9352e7f086360bf"
+    },
+    {
+      "bytes": 15601,
+      "path": "successor_qa/reference/r5/bound_android_transport.py",
+      "sha256": "99bc2c4fc2e909ec5b821853a985b7472b0e9ef69abd18425b5d1c7f5c8e45dd"
+    },
+    {
+      "bytes": 7442,
+      "path": "successor_qa/reference/r5/current_coordinator.py",
+      "sha256": "fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2"
+    },
+    {
+      "bytes": 13582,
+      "path": "successor_qa/reference/r5/existing_ui_entry.py",
+      "sha256": "cbca5fdcb11355a1617f9395ef7c093f708d17db2c2254bee196295367073b8f"
+    },
+    {
+      "bytes": 9144,
+      "path": "successor_qa/reference/r5/main_binding.py",
+      "sha256": "878c011f03f5b0e2bef4254f8f70f912ad90577b2047a42e1cd59c7d0dbc693f"
+    },
+    {
+      "bytes": 41689,
+      "path": "successor_qa/reference/r5/recorder.py",
+      "sha256": "7101d2ab2cd4b73bf96cab1117c8d0177c2b290255c6946af52ec834115a7f44"
+    },
+    {
+      "bytes": 37574,
+      "path": "successor_qa/reference/r5/references/android_app.py",
+      "sha256": "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+    },
+    {
+      "bytes": 36401,
+      "path": "successor_qa/reference/r5/references/android_backend.py",
+      "sha256": "088be6d783e80006645a05b8c5b90cd100d3e38b6f3d4634dd499ab1de7898ae"
+    },
+    {
+      "bytes": 13721,
+      "path": "successor_qa/reference/r5/references/bound_android_transport_r3.py",
+      "sha256": "def4e9af81bda71cc4125b61c8a15251e07e4866627b577650e77a4fb127ecae"
+    },
+    {
+      "bytes": 8658,
+      "path": "successor_qa/reference/r5/references/framework_epoch.py",
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288"
+    },
+    {
+      "bytes": 22691,
+      "path": "successor_qa/reference/r5/references/held_runtime_r5.py",
+      "sha256": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4"
+    },
+    {
+      "bytes": 31945,
+      "path": "successor_qa/reference/r5/references/original_recorder.py",
+      "sha256": "28103c8cb444d5963eac54ffef6aeda842337e33a892336c49a71cc5b82da20b"
+    },
+    {
+      "bytes": 17281,
+      "path": "successor_qa/reference/r5/references/task_scope_baseline.py",
+      "sha256": "a16e347abb0de2ccbff24f6d7990f6dab1be600675054b45203e907fa8eef528"
+    },
+    {
+      "bytes": 11364,
+      "path": "successor_qa/reference/r5/source_contract.py",
+      "sha256": "47389dc89f2257c4f80ae475d977fb63b04a994414772ed708f49b479fcd0783"
+    },
+    {
+      "bytes": 731,
+      "path": "successor_qa/reference/stage-r2-execution/stage-r2-status-raw.json",
+      "sha256": "e536dc3b0b03a818a9f1ac1763227ad22a7dfcdc23bb48d492f037ab5865ed18"
+    },
+    {
+      "bytes": 3926,
+      "path": "successor_qa/reference/stage-r2-execution/stage-r2-stdout.raw.json",
+      "sha256": "ef8ab39b2f5ff6aecda106d5c4c3fb98a2a5dcca14b551bd1252901adaa03bf7"
+    },
+    {
+      "bytes": 18397,
+      "path": "successor_qa/source-origins.json",
+      "sha256": "8fa4d614982ce7aae13fd634568ece5172d82c14c80ea30467bb5462d9d3ed2c"
+    },
+    {
+      "bytes": 956,
+      "path": "successor_qa/source-preparation-controls-r2/stderr.raw.txt",
+      "sha256": "a6e05bbd4cf0ddadc04fbfa714182a7919e54147ae5a84482943408e37c4d9b1"
+    },
+    {
+      "bytes": 493,
+      "path": "successor_qa/source-preparation-controls-r2/stdout.raw.json",
+      "sha256": "4d9886916666a3ef0ba48277e5422bc73a1976413f7d5d08c75f59d3c980394b"
+    },
+    {
+      "bytes": 821105,
+      "path": "successor_qa/stage-generator-r2-payload.json",
+      "sha256": "d6307b441bc6ef03529c9297d8de8870f0a1638bb32c6088c86ae3f7e0808549"
+    },
+    {
+      "bytes": 10463,
+      "path": "successor_qa/stage_generator_r2.py",
+      "sha256": "5888a557dce66e04b4d72ff04790cd82f053e0757a0c430f5c10459c5932923f"
+    },
+    {
+      "bytes": 5608,
+      "path": "successor_qa/stage_helper_source.py",
+      "sha256": "745e0f15f8619c2b00a7d54c890837de826eb04e192bcbf273eb3687b6baeac6"
+    },
+    {
+      "bytes": 4141,
+      "path": "successor_qa/templates/flow_methods.py.in",
+      "sha256": "e31acfce5eaaf8b2067bfcfd7168b5163e3533040cccb7282d863e89b4949e8c"
+    },
+    {
+      "bytes": 11004,
+      "path": "successor_qa/templates/install_owned_helper.py.in",
+      "sha256": "362c6cf681d7ef328c5e6a4d04d371e5824cbd2808fc16af5cb2075636cfda18"
+    },
+    {
+      "bytes": 4221,
+      "path": "successor_qa/templates/main_binding_class.py.in",
+      "sha256": "481eb9004553ec4d49b9489bbb194bf819cb6bbf310ffd5429a49be14d468a57"
+    },
+    {
+      "bytes": 9558,
+      "path": "successor_qa/templates/run_case.py.in",
+      "sha256": "04112e01f489263b28aa99135fd4e8d35ffee18510d15d7cd419c4513734ff0b"
+    },
+    {
+      "bytes": 8531,
+      "path": "successor_qa/templates/source_contract.py.in",
+      "sha256": "0460e8e6fa0b43a4bdef77537830c4b33db4420e78e21beda912744e8968824d"
+    },
+    {
+      "bytes": 6946,
+      "path": "successor_qa/test_prepare_beike_bound_source.py",
+      "sha256": "6a3d0589f36a8bbc5754a400d03319b37519b3924b4fea73df08b35357ce51da"
+    },
+    {
+      "bytes": 6353,
+      "path": "test_checkpoint03_extension.py",
+      "sha256": "f7f1c6b763954ef6bb7204c78b14451f5bd576a33d2c482167aaf1adf8641399"
+    }
+  ],
+  "groups": {
+    "current_beike_source_request_controls": [
+      "successor_qa/BEIKE_SOURCE_PREPARATION_PINS.json",
+      "successor_qa/beike-final-request-r1.json",
+      "successor_qa/prepare_beike_bound_source.py",
+      "successor_qa/source-preparation-controls-r2/stderr.raw.txt",
+      "successor_qa/source-preparation-controls-r2/stdout.raw.json",
+      "successor_qa/test_prepare_beike_bound_source.py"
+    ],
+    "final_app_audit_driver_source_tests_docs_controls": [
+      "successor_audit_requests/FINAL_AUDIT_PLAN_PINS.json",
+      "successor_audit_requests/READONLY_SERVICE_PLAN.md",
+      "successor_audit_requests/SERIAL_EXECUTION.md",
+      "successor_audit_requests/audit_serial_gate.py",
+      "successor_audit_requests/prepare_requests.py",
+      "successor_audit_requests/reference/audit_successor_apks.py",
+      "successor_audit_requests/serial-gate-controls-r1/stderr.raw.txt",
+      "successor_audit_requests/serial-gate-controls-r1/stdout.raw.json",
+      "successor_audit_requests/test_audit_serial_gate.py"
+    ],
+    "final_app_audit_requests": [
+      "successor_audit_requests/final-upgrades-r1/REQUEST_MANIFEST.json",
+      "successor_audit_requests/final-upgrades-r1/batch-01.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-02.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-03.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-04.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-05.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-06.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-07.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-08.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-09.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-10.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-11.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-12.request.json",
+      "successor_audit_requests/final-upgrades-r1/batch-13.request.json"
+    ],
+    "frozen_original_293": [
+      "CHECKPOINT03_LOCAL_TESTS.json",
+      "CURRENT_STATUS.md",
+      "app_test_catalog.json",
+      "build_checkpoint.py",
+      "checkpoint03_extension.py",
+      "collect_readonly.py",
+      "current_status.json",
+      "deploy_airchina_bound_r1.py",
+      "deploy_beike_bound_r3.py",
+      "deploy_ceair_bound_r1.py",
+      "deploy_wechat_before_readonly_r1.py",
+      "deploy_wechat_bound_r1.py",
+      "deploy_wechat_bound_r1.py.review.diff",
+      "evaluate_readiness.py",
+      "install_airchina_bound_r1.py",
+      "install_airchina_bound_r1.py.diff",
+      "install_beike_bound_r3.py",
+      "install_ceair_bound_r1.py",
+      "install_ceair_bound_r1.py.diff",
+      "install_wechat_bound_r1.py",
+      "install_wechat_bound_r1.py.diff",
+      "observe_wechat_before_r1.py",
+      "readiness_all_launcher/CURRENT_STATE.json",
+      "readiness_all_launcher/LOCAL_TEST_RESULT.json",
+      "readiness_all_launcher/README.md",
+      "readiness_all_launcher/SOURCE_PINS.json",
+      "readiness_all_launcher/evaluate_all.py",
+      "readiness_all_launcher/evidence.UNKNOWN.json",
+      "readiness_all_launcher/policy.template.json",
+      "readiness_all_launcher/test_evaluate_all.py",
+      "recovery/README.md",
+      "recovery/SOURCE_PINS.json",
+      "recovery/compat_wrapper_repair/actual-pocket4-r2/host-controls/result.json",
+      "recovery/compat_wrapper_repair/actual-pocket4-r3/host-controls/result.json",
+      "recovery/compat_wrapper_repair/actual-pocket4-r3/root-source-review.stdout.raw.jsonl",
+      "recovery/compat_wrapper_repair/actual-pocket4-r3/source/SOURCE_PINS.json",
+      "recovery/compat_wrapper_repair/actual-pocket4-r3/source/pidns_fixture.py",
+      "recovery/compat_wrapper_repair/actual-pocket4-r3/source/test_host_lifecycle.py",
+      "recovery/compat_wrapper_repair/actual-pocket4-r3/source/unshare_wrapper.py",
+      "recovery/current-cell-after-retirement-r1-terminal.json",
+      "recovery/current-cell-after-retirement-r1.stdout.raw.json",
+      "recovery/execute-packet-r1.json",
+      "recovery/execute-r1-result.json",
+      "recovery/execute-r1-terminal.json",
+      "recovery/execute-r1.stdout.raw.jsonl",
+      "recovery/failed-r1-diagnostic-terminal.json",
+      "recovery/failed-r1-diagnostic.stdout.raw.json",
+      "recovery/failed-r1-lineage-terminal.json",
+      "recovery/failed-r1-lineage.stdout.raw.json",
+      "recovery/framework_epoch.py",
+      "recovery/held_runtime_r5.py",
+      "recovery/independent_repair_r2/actual-execute-01/actual-transition.private.json",
+      "recovery/independent_repair_r2/actual-execute-01/baseline.private.json",
+      "recovery/independent_repair_r2/actual-execute-01/current_baseline_guard.py",
+      "recovery/independent_repair_r2/actual-execute-01/initial-app-scope.private.json",
+      "recovery/independent_repair_r2/actual-execute-01/native-start-receipt.private.json",
+      "recovery/independent_repair_r2/actual-execute-01/native-stop-receipt.private.json",
+      "recovery/independent_repair_r2/actual-execute-01/qualification.private.json",
+      "recovery/independent_repair_r2/actual-execute-01/retired-lifecycle.private.json",
+      "recovery/independent_repair_r2/actual-execute-01/stdout.raw.jsonl",
+      "recovery/independent_repair_r2/actual-execute-01/terminal.raw.json",
+      "recovery/independent_repair_r2/actual-execute-01/wrapper-activation.private.json",
+      "recovery/independent_repair_r2/candidate-r2/independent_repair_r2.py",
+      "recovery/independent_repair_r2/root-readback/actual-wrapper-deployment.original.json",
+      "recovery/independent_repair_r2/root-readback/host-source-controls-result.json",
+      "recovery/independent_repair_r2/root-readback/root-host-controls-stage-result.json",
+      "recovery/independent_repair_r2/stage_and_invoke_reviewed.py",
+      "recovery/observe_current_cell_after_retirement_r1.py",
+      "recovery/observe_successor_scope.py",
+      "recovery/orphan-r1-local-pidfd-control.json",
+      "recovery/orphan-retirement-r1-result.json",
+      "recovery/orphan-retirement-r1-terminal.json",
+      "recovery/orphan-retirement-r1.stdout.raw.json",
+      "recovery/readonly_abx.py",
+      "recovery/reference/actual-compat-unshare-r1.py",
+      "recovery/reference/actual-m579-droidloomctl.rs",
+      "recovery/resume_successor_qualification.py",
+      "recovery/retire-orphan-packet-r1.json",
+      "recovery/retire_exact_orphan_r1.py",
+      "recovery/stage_execute_once.py",
+      "recovery/successor_runtime.py",
+      "recovery/targets-45-plus-actions-reference.json",
+      "reference/airchina-install-attempt1.json",
+      "reference/airchina-install-r1-terminal.json",
+      "reference/airchina-install-r1.stdout.jsonl",
+      "reference/airchina-upgrade-verified-summary.json",
+      "reference/beike-install-attempt3.json",
+      "reference/beike-install-r3-terminal.json",
+      "reference/beike-install-r3.stdout.jsonl",
+      "reference/beike-native-install-interface.stdout.json",
+      "reference/beike-native-ownership.stdout.json",
+      "reference/beike-official-verification.json",
+      "reference/beike-upgrade-verified-summary.json",
+      "reference/bilibili-official-verification.json",
+      "reference/ceair-install-attempt1.json",
+      "reference/ceair-install-r1-terminal.json",
+      "reference/ceair-install-r1.stdout.jsonl",
+      "reference/ceair-official-verification.json",
+      "reference/ceair-upgrade-verified-summary.json",
+      "reference/checkpoint-git-receipt-01.json",
+      "reference/completed-native-upgrades-20261106.json",
+      "reference/current-all-launcher-metadata.json",
+      "reference/current-original-eight-inventory.json",
+      "reference/jd-source-s9-verification-terminal.raw.json",
+      "reference/jd-source-s9-verification.stdout.raw.jsonl",
+      "reference/launcher-candidate-verifications-r2.json",
+      "reference/official-s22/com.sdu.didi.psnger.aapt-badging.stdout",
+      "reference/official-s22/com.sdu.didi.psnger.apksigner.stdout",
+      "reference/official-s22/com.taobao.taobao.aapt-badging.stdout",
+      "reference/official-s22/com.taobao.taobao.apksigner.stdout",
+      "reference/official-s22/ctrip-s13-download-terminal.raw.json",
+      "reference/official-s22/ctrip-s13-download.stdout.raw.jsonl",
+      "reference/official-s22/ctrip.android.view.aapt-badging.stdout",
+      "reference/official-s22/ctrip.android.view.apksigner.stdout",
+      "reference/official-s22/didi-ctrip-s15-verification-terminal.raw.json",
+      "reference/official-s22/didi-ctrip-s15-verification.stdout.raw.jsonl",
+      "reference/official-s22/index-01.json",
+      "reference/official-s22/international_official_channels.json",
+      "reference/official-s22/source-s10-continuation-terminal.raw.json",
+      "reference/official-s22/source-s10-continuation.stdout.raw.jsonl",
+      "reference/official-s22/source-s12-progress-through-offset-5962.raw.jsonl",
+      "reference/official-s22/source-s16-metadata-terminal.raw.json",
+      "reference/official-s22/source-s16-metadata.stdout.raw.jsonl",
+      "reference/official-s22/source-s18-metadata-terminal.raw.json",
+      "reference/official-s22/source-s18-metadata.stdout.raw.jsonl",
+      "reference/official-s22/source-s19-international-terminal.raw.json",
+      "reference/official-s22/source-s20-douyin-metadata-terminal.raw.json",
+      "reference/official-s22/source-s20-douyin-metadata.stdout.raw.jsonl",
+      "reference/official-s22/source-s8b-download-terminal.raw.json",
+      "reference/official-s22/source-s8b-download.stdout.raw.jsonl",
+      "reference/official-s22/taobao-s10-verification-terminal.raw.json",
+      "reference/official-s22/taobao-s10-verification.stdout.raw.jsonl",
+      "reference/official-s24-s33-restored/archive-index.json",
+      "reference/official-s24-s33-restored/s24/rail-0000.json",
+      "reference/official-s24-s33-restored/s24/rail-0001.json",
+      "reference/official-s24-s33-restored/s24/results.json",
+      "reference/official-s24-s33-restored/s24/start.raw.json",
+      "reference/official-s24-s33-restored/s24/stdout.raw.jsonl",
+      "reference/official-s24-s33-restored/s24/terminal.raw.json",
+      "reference/official-s24-s33-restored/s24/zbj-0031.json",
+      "reference/official-s24-s33-restored/s24/zbj-0031.stderr",
+      "reference/official-s24-s33-restored/s27/com.marriott.mrt.curl-metrics.json",
+      "reference/official-s24-s33-restored/s27/com.marriott.mrt.stderr",
+      "reference/official-s24-s33-restored/s27/download-results.json",
+      "reference/official-s24-s33-restored/s27/start.raw.json",
+      "reference/official-s24-s33-restored/s27/stdout.raw.jsonl",
+      "reference/official-s24-s33-restored/s27/terminal.raw.json",
+      "reference/official-s24-s33-restored/s28/0041.curl.json",
+      "reference/official-s24-s33-restored/s28/0041.json",
+      "reference/official-s24-s33-restored/s28/0041.stderr",
+      "reference/official-s24-s33-restored/s28/results.json",
+      "reference/official-s24-s33-restored/s28/start.raw.json",
+      "reference/official-s24-s33-restored/s28/stdout.raw.jsonl",
+      "reference/official-s24-s33-restored/s28/terminal.raw.json",
+      "reference/official-s24-s33-restored/s30/com.ss.android.ugc.aweme.curl-metrics.json",
+      "reference/official-s24-s33-restored/s30/com.ss.android.ugc.aweme.stderr",
+      "reference/official-s24-s33-restored/s30/download-results.json",
+      "reference/official-s24-s33-restored/s30/start.raw.json",
+      "reference/official-s24-s33-restored/s30/stdout.raw.jsonl",
+      "reference/official-s24-s33-restored/s30/terminal.raw.json",
+      "reference/official-s24-s33-restored/s32/0000.curl.json",
+      "reference/official-s24-s33-restored/s32/0000.json",
+      "reference/official-s24-s33-restored/s32/0000.stderr",
+      "reference/official-s24-s33-restored/s32/com.ss.android.ugc.aweme-result.json",
+      "reference/official-s24-s33-restored/s32/results.json",
+      "reference/official-s24-s33-restored/s32/start.raw.json",
+      "reference/official-s24-s33-restored/s32/stdout.raw.jsonl",
+      "reference/official-s24-s33-restored/s32/terminal.raw.json",
+      "reference/official-s24-s33-restored/s33/aapt-badging.stderr",
+      "reference/official-s24-s33-restored/s33/aapt-badging.stdout",
+      "reference/official-s24-s33-restored/s33/apksigner.stderr",
+      "reference/official-s24-s33-restored/s33/apksigner.stdout",
+      "reference/official-s24-s33-restored/s33/index.json",
+      "reference/official-s24-s33-restored/s33/result.json",
+      "reference/official-s24-s33-restored/s33/start.raw.json",
+      "reference/official-s24-s33-restored/s33/stdout.raw.jsonl",
+      "reference/official-s24-s33-restored/s33/terminal.raw.json",
+      "reference/official-s24-s33-restored/s33/verify_douyin_s32.py",
+      "reference/pdd-source-s6-verification-terminal.raw.json",
+      "reference/pdd-source-s6-verification.stdout.raw.jsonl",
+      "reference/taobao-source-s10-verification-terminal.raw.json",
+      "reference/taobao-source-s10-verification.stdout.raw.jsonl",
+      "reference/wechat-before-r1-terminal.json",
+      "reference/wechat-before-r1.json",
+      "reference/wechat-before-r1.stdout.jsonl",
+      "reference/wechat-install-attempt1.json",
+      "reference/wechat-install-r1-terminal.json",
+      "reference/wechat-install-r1.stdout.jsonl",
+      "reference/wechat-upgrade-verified-summary.json",
+      "regression_manifest.json",
+      "successor_apk_audit/AUDIT_PLAN.json",
+      "successor_apk_audit/SOURCE_PINS.json",
+      "successor_apk_audit/audit_successor_apks.py",
+      "successor_apk_audit/local-tests.stdout.txt",
+      "successor_apk_audit/official-release-apk-digests.json",
+      "successor_apk_audit/request.example.json",
+      "successor_apk_audit/test_audit_successor_apks.py",
+      "successor_install/actual/SOURCE_PINS.json",
+      "successor_install/actual/bili-01/stdout.raw.jsonl",
+      "successor_install/actual/bili-01/terminal.raw.json",
+      "successor_install/actual/bili-01/verifier-terminal.raw.json",
+      "successor_install/actual/ctrip-01/stdout.raw.jsonl",
+      "successor_install/actual/ctrip-01/terminal.raw.json",
+      "successor_install/actual/didi-01/stdout.raw.jsonl",
+      "successor_install/actual/didi-01/terminal.raw.json",
+      "successor_install/actual/douyin-01/app-scope-after.private.json",
+      "successor_install/actual/douyin-01/stdout.raw.jsonl",
+      "successor_install/actual/douyin-01/terminal.raw.json",
+      "successor_install/actual/douyin-01/verifier-terminal.raw.json",
+      "successor_install/actual/jd-01/stdout.raw.jsonl",
+      "successor_install/actual/jd-01/terminal.raw.json",
+      "successor_install/actual/jd-01/verifier-terminal.raw.json",
+      "successor_install/actual/jd-02/stdout.raw.jsonl",
+      "successor_install/actual/jd-02/terminal.raw.json",
+      "successor_install/actual/jd-02/verifier-terminal.raw.json",
+      "successor_install/actual/pdd-01/stdout.raw.jsonl",
+      "successor_install/actual/pdd-01/terminal.raw.json",
+      "successor_install/actual/pdd-01/verifier-terminal.raw.json",
+      "successor_install/actual/source-r2-controls/SOURCE_PINS.json",
+      "successor_install/actual/source-r2-controls/test_install_successor_r2.py.stderr",
+      "successor_install/actual/source-r2-controls/test_install_successor_r2.py.stdout",
+      "successor_install/actual/source-stage-r1-reconciliation.raw.json",
+      "successor_install/actual/source-stage-r1.stdout.raw.jsonl",
+      "successor_install/actual/source-stage-r2-terminal.raw.json",
+      "successor_install/actual/source-stage-r2.stdout.raw.jsonl",
+      "successor_install/actual/taobao-01/stdout.raw.jsonl",
+      "successor_install/actual/taobao-01/terminal.raw.json",
+      "successor_install/actual/taobao-01/verifier-terminal.raw.json",
+      "successor_install/actual/test_audit_successor_apks.py.stderr",
+      "successor_install/actual/test_install_successor_native.py.stderr",
+      "successor_install/official-verifier-pins.json",
+      "successor_install/read_pinned_compressed.py",
+      "successor_install/source-r1/audit_successor_apks.py",
+      "successor_install/source-r1/install_successor_native.py",
+      "successor_install/source-r1/reference_core.py",
+      "successor_install/source-r1/stage_source.py",
+      "successor_install/source-r1/test_audit_successor_apks.py",
+      "successor_install/source-r1/test_install_successor_native.py",
+      "successor_install/source-r2/LOCAL_STAGE_RESULT.json",
+      "successor_install/source-r2/REVIEW.md",
+      "successor_install/source-r2/SOURCE_DIFF.patch",
+      "successor_install/source-r2/SOURCE_PINS.json",
+      "successor_install/source-r2/install_successor_native.py",
+      "successor_install/source-r2/offline-controls.stderr.raw.txt",
+      "successor_install/source-r2/offline-controls.stdout.raw.json",
+      "successor_install/source-r2/reference/install_successor_native.r1.py",
+      "successor_install/source-r2/stage_source.py",
+      "successor_install/source-r2/test_install_successor_r2.py",
+      "successor_install/stage_request_and_invoke.py",
+      "successor_install/stage_request_and_invoke_r2.py",
+      "successor_qa/GENERATOR_PINS.json",
+      "successor_qa/README.md",
+      "successor_qa/actual/stage-r2-terminal.json",
+      "successor_qa/actual/stage-r2.stdout.raw.jsonl",
+      "successor_qa/check_owned_stage.py",
+      "successor_qa/generate_successor_sources.py",
+      "successor_qa/r2-stage-target-fix.diff",
+      "successor_qa/reference/bili/ActionRunner.java",
+      "successor_qa/reference/bili/AndroidManifest.xml",
+      "successor_qa/reference/bili/build_candidate.py",
+      "successor_qa/reference/bili/check_current_baseline.py",
+      "successor_qa/reference/bili/check_idle_contract.py",
+      "successor_qa/reference/bili/qa_adapter.py",
+      "successor_qa/reference/bili/qa_contract.py",
+      "successor_qa/reference/bili/src/org/droidloom/qa/bili/r9/InspectionIdleGate.java",
+      "successor_qa/reference/bili/src/org/droidloom/qa/bili/r9/PlayerButtonTransaction.java",
+      "successor_qa/reference/bili/src/org/droidloom/qa/bili/r9/TouchTransaction.java",
+      "successor_qa/reference/bili/tests/InspectionIdleGateChecks.java",
+      "successor_qa/reference/r5/bound_android_transport.py",
+      "successor_qa/reference/r5/current_coordinator.py",
+      "successor_qa/reference/r5/existing_ui_entry.py",
+      "successor_qa/reference/r5/main_binding.py",
+      "successor_qa/reference/r5/recorder.py",
+      "successor_qa/reference/r5/references/android_app.py",
+      "successor_qa/reference/r5/references/android_backend.py",
+      "successor_qa/reference/r5/references/bound_android_transport_r3.py",
+      "successor_qa/reference/r5/references/framework_epoch.py",
+      "successor_qa/reference/r5/references/held_runtime_r5.py",
+      "successor_qa/reference/r5/references/original_recorder.py",
+      "successor_qa/reference/r5/references/task_scope_baseline.py",
+      "successor_qa/reference/r5/source_contract.py",
+      "successor_qa/reference/stage-r2-execution/stage-r2-status-raw.json",
+      "successor_qa/reference/stage-r2-execution/stage-r2-stdout.raw.json",
+      "successor_qa/source-origins.json",
+      "successor_qa/stage-generator-r2-payload.json",
+      "successor_qa/stage_generator_r2.py",
+      "successor_qa/stage_helper_source.py",
+      "successor_qa/templates/flow_methods.py.in",
+      "successor_qa/templates/install_owned_helper.py.in",
+      "successor_qa/templates/main_binding_class.py.in",
+      "successor_qa/templates/run_case.py.in",
+      "successor_qa/templates/source_contract.py.in",
+      "test_checkpoint03_extension.py"
+    ],
+    "frozen_original_manifest": [
+      "GIT_CHECKPOINT_FILES_NEXT.json"
+    ],
+    "normal05_generators_plans_diffs_reviews": [
+      "framework_provider_repair/normal05/INDEPENDENT_REVIEW_app_history_r1.md",
+      "framework_provider_repair/normal05/INDEPENDENT_REVIEW_app_history_r2.md",
+      "framework_provider_repair/normal05/PLAN_PINS.json",
+      "framework_provider_repair/normal05/execution-plan.json",
+      "framework_provider_repair/normal05/generate_sources.py",
+      "framework_provider_repair/normal05/prepare_normal05_plan.py",
+      "framework_provider_repair/normal05/pure_control_additions.py.inc",
+      "framework_provider_repair/normal05/recover_normal04_inputs.py",
+      "framework_provider_repair/normal05/seal_source_r2.py",
+      "framework_provider_repair/normal05/snapshot_typedguard_additions.py",
+      "framework_provider_repair/normal05/source-r2-from-source-r1.diff",
+      "framework_provider_repair/normal05/source-r2-stage-transport-from-normal04.diff"
+    ],
+    "normal05_sealed_source_r2": [
+      "framework_provider_repair/normal05/source-r2/SOURCE_PINS.json",
+      "framework_provider_repair/normal05/source-r2/actual-builder469-qualification.json",
+      "framework_provider_repair/normal05/source-r2/actual-builder469-result.json",
+      "framework_provider_repair/normal05/source-r2/actual-current-baseline-guard.py",
+      "framework_provider_repair/normal05/source-r2/actual-current-guard-source-manifest.json",
+      "framework_provider_repair/normal05/source-r2/actual-current-qualification.json",
+      "framework_provider_repair/normal05/source-r2/actual-current-runtime-baseline.json",
+      "framework_provider_repair/normal05/source-r2/actual-native-prebuilt-Android.bp",
+      "framework_provider_repair/normal05/source-r2/actual-provider-source-lock.json",
+      "framework_provider_repair/normal05/source-r2/actual-published-source-manifest.json",
+      "framework_provider_repair/normal05/source-r2/actual-work-preparation.json",
+      "framework_provider_repair/normal05/source-r2/capture_lifecycle.py",
+      "framework_provider_repair/normal05/source-r2/exact-request.json",
+      "framework_provider_repair/normal05/source-r2/exact-stdin.json",
+      "framework_provider_repair/normal05/source-r2/expected-builder469-manifest.json",
+      "framework_provider_repair/normal05/source-r2/fenced_build.py",
+      "framework_provider_repair/normal05/source-r2/framework_build.py",
+      "framework_provider_repair/normal05/source-r2/frozen-work-inventory.py",
+      "framework_provider_repair/normal05/source-r2/local-exact-request-validation.json",
+      "framework_provider_repair/normal05/source-r2/local-pure-controls-result.json",
+      "framework_provider_repair/normal05/source-r2/main_snapshot.py",
+      "framework_provider_repair/normal05/source-r2/parent-normal03-framework_build.py",
+      "framework_provider_repair/normal05/source-r2/prior-framework-inner-terminal.json",
+      "framework_provider_repair/normal05/source-r2/prior-framework-outer-terminal.json",
+      "framework_provider_repair/normal05/source-r2/pure_controls.py",
+      "framework_provider_repair/normal05/source-r2/root_snapshot_supervisor.py",
+      "framework_provider_repair/normal05/source-r2/source-diff.patch",
+      "framework_provider_repair/normal05/source-r2/stage.py",
+      "framework_provider_repair/normal05/source-r2/transport-boundary.py"
+    ],
+    "restored_actual_wrapper_deployer": [
+      "recovery/compat_wrapper_repair/deploy_reviewed_wrapper_r1.py"
+    ]
+  },
+  "known_base_hash_mapping": {
+    "bytes": 18890,
+    "file_count": 131,
+    "path": "checkpoint03_known_base_hashes.json",
+    "sha256": "d7724265026e58e1824621e4f14f1f511718cdba3b8e4da43da5b0ef7d39cf22",
+    "source": "exact checkpoint02 tree submitted content retained in root V8"
+  },
+  "new_runtime_or_build_execution_facts_added": false,
+  "original_files_modified": false,
+  "original_frozen_files_verified": 293,
+  "original_frozen_manifest": {
+    "bytes": 73020,
+    "path": "GIT_CHECKPOINT_FILES_NEXT.json",
+    "sha256": "0b07b798032cb3af41eb2620bcfc193526c3bea5235463110f33f5d73463e916"
+  },
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "repository_prefix": "compat/android/pocket4/all-launcher-upgrades-20261106/",
+  "schema": "pocket4-checkpoint03-immutable-submission-v1",
+  "state": "SNAPSHOT_FOR_ROOT_REVIEW_NO_GIT_ACTION",
+  "status_preserved": {
+    "cleanup_bytes": 0,
+    "cleanup_performed": false,
+    "installed_upgrades": 11,
+    "production_ready": 0
+  },
+  "submission_manifest_excluded_from_own_file_rows": true,
+  "submission_manifest_included_in_transport": true,
+  "transport_directory_is_not_a_git_submission": true,
+  "transport_file_count_including_submission": 240,
+  "unsealed_duplicate_directories_added": false
+}

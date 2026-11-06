@@ -1,0 +1,221 @@
+--- source-r1/install_successor_native.py
++++ source-r2/install_successor_native.py
+@@ -1,8 +1,8 @@
+ #!/usr/bin/env python3
+ """One explicitly scoped signed App upgrade on an actually qualified successor.
+ 
+-A new immutable request selects one of the six currently reviewed public
+-candidates. No UI, grants, launch, task claims, ADB, lifecycle or automatic retry.
++A new immutable request selects one reviewed public candidate.
++Revision 2 additionally retains the exact reviewed JD base/split predecessor set. No UI, grants, launch, task claims, ADB, lifecycle or automatic retry.
+ The native daemon keeps its normal SO_PEERCRED and PackageManager checks.
+ The original Bili unknown evidence and Meituan location observations are retained.
+ """
+@@ -25,6 +25,7 @@
+  'com.sdu.didi.psnger':('imtt.dd.qq.com',),
+  'ctrip.android.view':('gdown.baidu.com',),
+  'tv.danmaku.bili':('dl.hdslb.com',),
++ 'com.ss.android.ugc.aweme':('imtt.dd.qq.com',),
+ }
+ MEITUAN='com.sankuai.meituan.takeoutnew'
+ UNKNOWN_ROOT='/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-474d7477074ea01fbc986e0d867924c1'
+@@ -125,11 +126,11 @@
+         need(not errors, "BOOTSTRAP_FD_CLOSE_FAILED")
+ 
+ 
+-def run_command(store, cli_fd, argv, name, seconds, budget, extra_fds=()):
+-    """One owned client; never signal Main, daemon, or an observed Android PID."""
++def run_command(store, cli_fd, argv, name, seconds, budget, extra_fds=(), *, host_tool_path=None, output_limit=MAX_OUTPUT):
++    """One owned host child; never signal Main, daemon, or an observed Android PID."""
+     budget.check()
+-    row = {"name": name, "argv": list(argv), "executable": CLI_PATH,
+-           "execution_from_held_cli_fd": True, "started_utc": now(),
++    row = {"name": name, "argv": list(argv), "executable": host_tool_path or CLI_PATH,
++           "execution_from_held_cli_fd": host_tool_path is None, "started_utc": now(),
+            "automatic_retry": False, "timeout_seconds": seconds,
+            "spawned": False, "joined": False, "timed_out": False,
+            "group_termination_requested": False, "native_daemon_worker_joined_by_this_client": False}
+@@ -155,7 +156,7 @@
+                 if not raw:
+                     selector.unregister(key.fileobj)
+                     continue
+-                need(len(output[key.data]) + len(raw) <= MAX_OUTPUT, "NATIVE_CLIENT_OUTPUT_BOUND")
++                need(len(output[key.data]) + len(raw) <= output_limit, "NATIVE_CLIENT_OUTPUT_BOUND")
+                 output[key.data].extend(raw)
+         proc.wait(timeout=max(0.001, deadline - time.monotonic()))
+     except BaseException as failure:
+@@ -293,6 +294,124 @@
+             outputs.append({'path':p,'bytes':len(data),'sha256':sha(data)})
+     return value,outputs
+ 
++
++REVIEWED_JD_OLD_APKS = {
++    'base.apk': (112144038, 'd74313ab4c41e2a1dfde6ec3369636b4d5c3e3ee2dbc10667f539e10b103b622'),
++    'split_config.arm64_v8a.apk': (182245069, '43d863966a005b885c5e70e36546b92f7ffde4125a651dcb067e2000baf4c3e7'),
++}
++DEPS_PATH = '/home/alex/work/pocket4-app-identities-20261105-r12-01/dependencies.json'
++
++
++def reviewed_previous_apks(package, current):
++    """The only additional old APK-set shape admitted by this revision is exact JD."""
++    need(current['package'] == package and type(current['uid']) is int and
++         10000 <= current['uid'] < 100000, 'REVIEWED_USER_ZERO_STANDALONE_APP_REQUIRED')
++    apks = current['apks']
++    need(type(apks) is list and len(apks) in (1, 2), 'REVIEWED_PREVIOUS_APK_SET_REQUIRED')
++    names = [Path(apk['path']).name for apk in apks]
++    need(len(set(names)) == len(names) and
++         all(str(Path(apk['path']).parent) == current['code_path'] for apk in apks),
++         'PREVIOUS_APK_SET_PATHS_DIFFER')
++    if len(apks) == 1:
++        need(names == ['base.apk'], 'REVIEWED_SINGLE_BASE_APK_REQUIRED')
++    else:
++        need(package == 'com.jingdong.app.mall' and current['uid'] == 10126 and
++             current['version_code'] == 102810 and set(names) == set(REVIEWED_JD_OLD_APKS),
++             'ONLY_EXACT_REVIEWED_JD_BASE_SPLIT_SET_ALLOWED')
++        for apk, name in zip(apks, names):
++            need((apk['bytes'], apk['sha256']) == REVIEWED_JD_OLD_APKS[name],
++                 'REVIEWED_JD_PREVIOUS_APK_BYTES_DIFFER')
++    return sorted(apks, key=lambda apk: Path(apk['path']).name)
++
++
++def complete_single_apk_manifest(raw):
++    """Read the existing aapt xmltree output; never infer completeness from badging."""
++    text = raw.decode('utf-8', 'strict')
++    lines = text.splitlines()
++    elements = []
++    for number, line in enumerate(lines):
++        if line.lstrip().startswith('E:'):
++            match = re.fullmatch(r'( *)E: ([A-Za-z_][A-Za-z0-9_.:-]*) \(line=\d+\)', line)
++            need(match is not None, 'MANIFEST_ELEMENT_OUTPUT_NOT_DECODED')
++            elements.append((number, len(match[1]), match[2]))
++    need(elements and elements[0][2] == 'manifest' and
++         all(depth > elements[0][1] for _, depth, _ in elements[1:]),
++         'ONE_COMPLETE_MANIFEST_ROOT_REQUIRED')
++    need(not any(name.rsplit(':', 1)[-1] == 'uses-split' for _, _, name in elements),
++         'COMPLETE_CANDIDATE_MUST_NOT_REQUIRE_USES_SPLIT')
++    end = elements[1][0] if len(elements) > 1 else len(lines)
++    attributes = {}
++    for line in lines[elements[0][0]+1:end]:
++        if not line.lstrip().startswith('A:'):
++            continue
++        match = re.fullmatch(r'\s+A: ([A-Za-z_][A-Za-z0-9_.:-]*)(?:\(0x[0-9a-fA-F]+\))?=(.*)', line)
++        need(match is not None, 'MANIFEST_ROOT_ATTRIBUTE_NOT_DECODED')
++        name = match[1].rsplit(':', 1)[-1]
++        need(name not in attributes, 'DUPLICATE_MANIFEST_ROOT_ATTRIBUTE')
++        attributes[name] = match[2]
++    need('package' in attributes and not {'split', 'configForSplit'} & set(attributes),
++         'COMPLETE_CANDIDATE_MUST_NOT_BE_SPLIT')
++    for flag in ('isFeatureSplit', 'isSplitRequired'):
++        if flag in attributes:
++            match = re.fullmatch(r'\(type 0x12\)0x([0-9a-fA-F]+)', attributes[flag])
++            need(match is not None and int(match[1], 16) == 0,
++                 'COMPLETE_CANDIDATE_MUST_NOT_REQUEST_SPLITS')
++    return {'schema': 'pocket4-complete-single-apk-manifest-v1',
++            'manifest_root_observed': True, 'split_marker_absent': True,
++            'uses_split_element_absent': True, 'feature_split_not_requested': True,
++            'required_splits_not_requested': True, 'element_count': len(elements),
++            'root_attribute_names': sorted(attributes)}
++
++
++def complete_manifest_command(raw, command):
++    need(command['spawned'] and command['joined'] and command['returncode'] == 0 and
++         not command['timed_out'] and command['output_capture_complete'] and 'error' not in command,
++         'CANDIDATE_MANIFEST_TOOL_NOT_COMPLETE')
++    return complete_single_apk_manifest(raw)
++
++
++def prove_complete_candidate(core, pool, store, candidate_fd, candidate, budget, result):
++    """One read-only host aapt call on the already held, verified private candidate."""
++    deps_ref = {'path': DEPS_PATH, 'sha256': DEPS_SHA}
++    deps = core.parse(core.pinned_record(deps_ref, 262144))
++    pin = deps['files']['aapt']
++    need(str(Path(pin['declared_path']).resolve()) == pin['resolved_path'],
++         'EXISTING_AAPT_RESOLUTION_CHANGED')
++    tool = core.open_host(pool, pin['resolved_path'])
++    observed = core.hash_fd(tool, 32*1024*1024, min(budget.deadline, time.monotonic()+30))
++    need(observed['bytes'] == pin['bytes'] and observed['sha256'] == pin['sha256'],
++         'EXISTING_AAPT_BYTES_CHANGED')
++    expected = {key: candidate[key] for key in ('bytes', 'sha256', 'file')}
++    need(core.hash_fd(candidate_fd, 512*1024*1024, min(budget.deadline, time.monotonic()+60)) == expected,
++         'PRIVATE_CANDIDATE_CHANGED_BEFORE_MANIFEST')
++    argv = (pin['resolved_path'], 'dump', 'xmltree',
++            '/proc/self/fd/'+str(candidate_fd), 'AndroidManifest.xml')
++    raw, command = run_command(store, tool, argv, 'candidate-manifest', 60, budget,
++        extra_fds=(candidate_fd,), host_tool_path=pin['resolved_path'], output_limit=4*1024*1024)
++    result['commands'].append(command)
++    need(core.hash_fd(tool, 32*1024*1024, min(budget.deadline, time.monotonic()+30)) == observed,
++         'EXISTING_AAPT_CHANGED_DURING_MANIFEST')
++    current = core.open_host(pool, pin['resolved_path'])
++    try:
++        need(core.metadata(current) == observed['file'], 'EXISTING_AAPT_PATH_CHANGED')
++    finally:
++        pool.close(current)
++    need(str(Path(pin['declared_path']).resolve()) == pin['resolved_path'],
++         'EXISTING_AAPT_RESOLUTION_CHANGED_AFTER_MANIFEST')
++    core.pinned_record(deps_ref, 262144)
++    need(core.hash_fd(candidate_fd, 512*1024*1024, min(budget.deadline, time.monotonic()+60)) == expected,
++         'PRIVATE_CANDIDATE_CHANGED_DURING_MANIFEST')
++    current = core.open_host(pool, candidate['path'])
++    try:
++        need(core.metadata(current) == expected['file'], 'PRIVATE_CANDIDATE_PATH_CHANGED')
++    finally:
++        pool.close(current)
++    return {**complete_manifest_command(raw, command), 'tool_dependencies': deps_ref,
++            'tool': {'pin': pin, 'observed': observed}, 'raw_stdout': command['stdout'],
++            'raw_stderr': command['stderr'], 'candidate': candidate,
++            'Android_commands': 0, 'candidate_bytes_and_path_unchanged': True}
++
++
+ def native_bind(core,pool,held):
+     files={};pins={}
+     for path in NATIVE_PARENT_IDENTITIES:
+@@ -366,8 +485,7 @@
+         need(candidate['manifest']['version_code']>current['version_code'],'STRICTLY_NEWER_OFFICIAL_CANDIDATE_REQUIRED')
+         need(current['package_manager_certificate_sha256']==candidate['signer_certificate_sha256'],
+              'CURRENT_OFFICIAL_SIGNER_MISMATCH_NO_UNINSTALL_OR_RESIGN')
+-        need(len(current['apks'])==1 and current['apks'][0]['path'].endswith('/base.apk')
+-             and 10000<=current['uid']<100000,'REVIEWED_USER_ZERO_STANDALONE_APP_REQUIRED')
++        previous_apks=reviewed_previous_apks(package,current)
+         candidate_fd=core.open_host(pool,candidate['apk']['path'])
+         need(core.metadata(candidate_fd)==candidate['apk']['stat'],'VERIFIED_CANDIDATE_STAT_CHANGED')
+         cbytes=core.hash_fd(candidate_fd,512*1024*1024,min(budget.deadline,time.monotonic()+60))
+@@ -393,12 +511,20 @@
+         result['request_artifact']=store.json('request.json',request)
+         source_raw=core.host_read(str(Path(__file__).resolve()),131072)[0]
+         result['worker_source']=store.write('worker-source.py',source_raw)
+-        available=os.fstatvfs(store.fd);need(available.f_bavail*available.f_frsize>=current['apks'][0]['bytes']+candidate['apk']['bytes']+32*1024*1024,
+-                                         'SPACE_FOR_EXACT_OLD_AND_NEW_APK_REQUIRED')
+-        old_fd=pool.own(core.H.open_in_root(held.roots['android_init'],current['apks'][0]['path'],os.O_RDONLY|os.O_NOFOLLOW))
+-        old_copy,result['previous_apk_retained']=store.copy('previous-base.apk',old_fd,current['apks'][0],budget)
+-        leases.close(old_copy)
++        previous_bytes=sum(apk['bytes']for apk in previous_apks)
++        available=os.fstatvfs(store.fd);need(available.f_bavail*available.f_frsize>=previous_bytes+candidate['apk']['bytes']+32*1024*1024,
++                                         'SPACE_FOR_COMPLETE_OLD_AND_NEW_APK_SET_REQUIRED')
++        result['previous_apks_retained']=[]
++        for apk in previous_apks:
++            old_fd=pool.own(core.H.open_in_root(held.roots['android_init'],apk['path'],os.O_RDONLY|os.O_NOFOLLOW))
++            need(core.metadata(old_fd)==apk['file'],'PREVIOUS_APK_HELD_STAT_CHANGED')
++            old_copy,retained=store.copy('previous-'+Path(apk['path']).name,old_fd,apk,budget)
++            result['previous_apks_retained'].append({'original':apk,'retained':retained})
++            leases.close(old_copy)
++        result['previous_complete_APK_set_retained']=len(result['previous_apks_retained'])==len(current['apks'])
++        result['previous_complete_APK_set_bytes']=previous_bytes
+         staged,result['private_candidate_apk']=store.copy('candidate-base.apk',candidate_fd,candidate['apk'],budget)
++        result['complete_candidate_manifest']=prove_complete_candidate(core,pool,store,staged,result['private_candidate_apk'],budget,result)
+         result['before']=current;result['data_before']={k:v['stat']for k,v in data.items()}
+         result['official_verifier']=request['official_verifier'];result['verifier_outputs']=logs
+         result['meituan_location_before']=location
+@@ -412,10 +538,11 @@
+         guard.check_app_scope(request['app_scope'],packages);recheck_data();recheck_native(core,pool,held,native,native_pins)
+         need(guard.current_guard()==result['guard_before'],'PRE_INSTALL_GUARD_CHANGED')
+         original_unknown(core);store.verify_path()
+-        install_scope={'schema':'pocket4-successor-explicit-install-scope-v1','runtime_epoch_sha256':baseline['runtime_epoch_sha256'],
++        install_scope={'schema':'pocket4-successor-explicit-install-scope-v2','runtime_epoch_sha256':baseline['runtime_epoch_sha256'],
+             'framework_epoch_sha256':baseline['framework_epoch']['sha256'],'guard':request['guard'],'parent_app_scope':request['app_scope'],
+             'package':package,'android_user':0,'uid':current['uid'],'from_version_code':current['version_code'],
+-            'to_version_code':candidate['manifest']['version_code'],'old_apk':current['apks'][0],
++            'to_version_code':candidate['manifest']['version_code'],'old_apks':previous_apks,
++            'retained_old_apks':result['previous_apks_retained'],'complete_candidate_manifest':result['complete_candidate_manifest'],
+             'candidate':result['private_candidate_apk'],'official_verifier':request['official_verifier'],
+             'native_artifacts':native_pins,'data_directories':result['data_before'],
+             'only_mutation':'one_normal_native_signed_package_update','UI_admitted':False,'permission_grants_admitted':False,

@@ -1,11 +1,16 @@
 {
   "schema": "pocket4-next-git-checkpoint-file-list-v1",
-  "generated_utc": "2026-11-06T12:02:58.757701+00:00",
+  "generated_utc": "2026-11-06T14:07:33.791321+00:00",
   "state": "PREPARED_FOR_ROOT_NO_GIT_ACTION_PERFORMED",
   "not_a_runtime_source_manifest": true,
   "repository": "TrillionniumFoundation/trillionnium-os-desktop",
   "branch": "fix/pocket4-all-launcher-upgrades-20261106",
-  "previous_recorded_commit": "1d4150f12bddf2f50ab81ef875a9c29b516a6f0b",
+  "previous_recorded_commit": "1f500f1f17a0f45710dbc4c6dd1af90cb064efbd",
+  "earlier_git_receipt": {
+    "path": "reference/checkpoint-git-receipt-01.json",
+    "bytes": 584,
+    "sha256": "1254e3bb183f1e3e0969c5979cc927909b7fd0e284a08e9ffb69e1a012e0a1c0"
+  },
   "files": [
     {
       "path": "reference/jd-source-s9-verification-terminal.raw.json",
@@ -63,8 +68,8 @@
     },
     {
       "path": "CURRENT_STATUS.md",
-      "bytes": 14525,
-      "sha256": "4b58a15f5d1308af9e61b51b22f9ee59d5b19925391e17f728953eb3cd6c3f98",
+      "bytes": 11960,
+      "sha256": "b683e583ddc9194bd5305d6c022ece140078f3f050a873f17422f39e223db6ef",
       "group": "derived_checkpoint"
     },
     {
@@ -75,14 +80,14 @@
     },
     {
       "path": "build_checkpoint.py",
-      "bytes": 40395,
-      "sha256": "2c7d23a8b65220f671e0349fb625d21838236f20540d946e12f5670d49d233a5",
+      "bytes": 31382,
+      "sha256": "de757af22c1e2001b9d7977281ebb92cb78c4768802b9ad59cafe3a8d77a8917",
       "group": "derived_checkpoint"
     },
     {
       "path": "current_status.json",
-      "bytes": 86944,
-      "sha256": "ef1548d9e2704d750cc4b4da0fed4fa920a6373358d547ca1c718f5c7d68945c",
+      "bytes": 228687,
+      "sha256": "f138dfcb2f36736e0f9ccdf93885166a92ac8f68de788d888924834ea6cde7ec",
       "group": "derived_checkpoint"
     },
     {
@@ -738,66 +743,1052 @@
       "bytes": 3926,
       "sha256": "ef8ab39b2f5ff6aecda106d5c4c3fb98a2a5dcca14b551bd1252901adaa03bf7",
       "group": "additional_existing_raw_receipts"
-    }
-  ],
-  "file_count": 122,
-  "external_prepared_artifacts_for_root_to_include": [
-    {
-      "local_path": "/dev/shm/pocket4-sidecar-next-20261106/audit_successor_apks.py",
-      "bytes": 28920,
-      "sha256": "f851b5b7fa88a291192ed44e8fc655fccb640d69a0771a3a0128434d1d4bf2cd",
-      "suggested_project_relative_path": "successor_apk_audit/audit_successor_apks.py",
-      "state": "PREPARED_LOCALLY_NOT_RUN_NOT_IMPORTED_BY_THIS_SCRIPT"
     },
     {
-      "local_path": "/dev/shm/pocket4-sidecar-next-20261106/test_audit_successor_apks.py",
-      "bytes": 6288,
-      "sha256": "ec95b457fa965edef716de38a50e9d405eae0b111f169c572e66b29c73713ecb",
-      "suggested_project_relative_path": "successor_apk_audit/test_audit_successor_apks.py",
-      "state": "PREPARED_LOCALLY_NOT_RUN_NOT_IMPORTED_BY_THIS_SCRIPT"
+      "path": "CHECKPOINT03_LOCAL_TESTS.json",
+      "bytes": 2301,
+      "sha256": "9bc21c3d2d40f8e73387f198fcbe4ce476528833d6c2f7250a743dbfc6575f82",
+      "group": "checkpoint03_successor_sources_and_evidence"
     },
     {
-      "local_path": "/dev/shm/pocket4-sidecar-next-20261106/AUDIT_PLAN.json",
+      "path": "checkpoint03_extension.py",
+      "bytes": 45448,
+      "sha256": "156a4543a7a4cc9244f198cf704eee68c5fce6e885b08a5b0410a14ff21d7319",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "readiness_all_launcher/CURRENT_STATE.json",
+      "bytes": 6862,
+      "sha256": "be06621d04e68f7aafd47bcc58ed162791c6726f2e60f658dd615b446aec58a9",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "readiness_all_launcher/LOCAL_TEST_RESULT.json",
+      "bytes": 898,
+      "sha256": "4718093bf3996764aefb9685cfe3ee300cb27d3347a6f03abd050b7fbcb5d4c0",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "readiness_all_launcher/README.md",
+      "bytes": 10950,
+      "sha256": "98da99f335bfc7824757b9649a378f6da8381fafbc4ea4a92e61c4cc8044e068",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "readiness_all_launcher/SOURCE_PINS.json",
+      "bytes": 1588,
+      "sha256": "02e7577a8fc3a1af25d2b9b63b605271e2b3a4c001891be57f466a09094ecb12",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "readiness_all_launcher/evaluate_all.py",
+      "bytes": 49768,
+      "sha256": "cc37412aab2b71bd7c3a511ef3b382a55eb3d1438c02a20b4ec71a4f7c891cb7",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "readiness_all_launcher/evidence.UNKNOWN.json",
+      "bytes": 410181,
+      "sha256": "89822e713706808222e30fbaa9a3f2ad17b2214ede3fd46bfc60bacdf89e5794",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "readiness_all_launcher/policy.template.json",
+      "bytes": 84888,
+      "sha256": "7217d5b8dfab454282092986303a038017da8a224161efb40ed777c377bd8897",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "readiness_all_launcher/test_evaluate_all.py",
+      "bytes": 15564,
+      "sha256": "9c735404ddc08e296570aead9710799627079bd9296c020912d733bcea590785",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r2/host-controls/result.json",
+      "bytes": 2481,
+      "sha256": "6bca68a3c66730e3edbe46882b55eb1d4134234301f9a0bff702c232af4ddf68",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/host-controls/result.json",
+      "bytes": 9109,
+      "sha256": "069996c902d66cbed7de4a5c96881bbaa69e95247627344d7e16a66de40c5fa8",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/root-source-review.stdout.raw.jsonl",
+      "bytes": 43142,
+      "sha256": "e937fb4aa422d15f6182081d1e29c2bca6c709dba29d4e94ecee54fa4a5d51da",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/source/SOURCE_PINS.json",
+      "bytes": 402,
+      "sha256": "31b037052fee007650c92cd8706f0e4405eb67fe224813c153a8e4973639747c",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/source/pidns_fixture.py",
+      "bytes": 1013,
+      "sha256": "da61ecac210799f4626cdc7afa83476049374f4a36e9b87ba0e6a92e664016d1",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/source/test_host_lifecycle.py",
+      "bytes": 16463,
+      "sha256": "86195ddeeed6d1a6f2ee20913e180c6259b6ff1bd36121abfd3369345a644649",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/compat_wrapper_repair/actual-pocket4-r3/source/unshare_wrapper.py",
+      "bytes": 6290,
+      "sha256": "df2365c026cc578048ce22ebd1b22bfefc25ccc144146683d845ec828c61bf1f",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/actual-transition.private.json",
+      "bytes": 3646,
+      "sha256": "f477ca38aca6458c4ff7072058c71f7309233d4485bc4d3adea5418fbaf39da2",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/baseline.private.json",
+      "bytes": 44041,
+      "sha256": "7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/current_baseline_guard.py",
+      "bytes": 3213,
+      "sha256": "d84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/initial-app-scope.private.json",
+      "bytes": 57713,
+      "sha256": "19d742f98193a09403990ed3ee6944d4624a26690fb953d66cac4361af6f6d77",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/native-start-receipt.private.json",
+      "bytes": 1286,
+      "sha256": "624254a06d994abef3dbe080186da58031cf3ea9293ef6823e0db4dfc40520fd",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/native-stop-receipt.private.json",
+      "bytes": 1189,
+      "sha256": "f6da9100a5172947cb70fa64550161af96ad229660f06d2cf8f35b60cfede5a9",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/qualification.private.json",
+      "bytes": 1587,
+      "sha256": "4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/retired-lifecycle.private.json",
+      "bytes": 2320,
+      "sha256": "fffb7d669868a2e25eb10eb8f2e0b200777a1d270f26bee1f6ff39e3cab6a270",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/stdout.raw.jsonl",
+      "bytes": 4946,
+      "sha256": "f5a2416411710e3ce1c0a740d51a6ca7f9d9898fa3184f27b14594ead5c26723",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/terminal.raw.json",
+      "bytes": 731,
+      "sha256": "64aa9114dce9acee4ac9c796690f0fb153157b1ff528d613f800da87f3392b69",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/actual-execute-01/wrapper-activation.private.json",
+      "bytes": 2370,
+      "sha256": "cb1454e5e5a85036d78f576089f490f381efd5689863c25e9f34060e9e179550",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/candidate-r2/independent_repair_r2.py",
+      "bytes": 68350,
+      "sha256": "d45486fbc5b467a6c98ebf7fe8a0dfa6588fde9de5b6bfae466de42fd084b6c9",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/root-readback/actual-wrapper-deployment.original.json",
+      "bytes": 2992,
+      "sha256": "4d190ea23287ecd0fe17af7c8f893c2c766620a84950405fe9bd1d62f6d78034",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/root-readback/host-source-controls-result.json",
+      "bytes": 1273,
+      "sha256": "26ab235c35581bb4f76ba94af801fa4db1802788670fddeed589c0a39d382a0b",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/root-readback/root-host-controls-stage-result.json",
+      "bytes": 3680,
+      "sha256": "fb34f4270be0b373735da2157c9b8360a2e8c2ae1aefcc82632709cdc7c7b381",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "recovery/independent_repair_r2/stage_and_invoke_reviewed.py",
+      "bytes": 6316,
+      "sha256": "28be1a9647130c309b4eb350ebfc3dcc1c204a8169c261511ab37e8bff2a8b22",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/com.sdu.didi.psnger.aapt-badging.stdout",
+      "bytes": 7159,
+      "sha256": "f632c2b3946c4763d8a8a8fb88f6a5e43d0ea65a3fbea860198b83f6def487fc",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/com.sdu.didi.psnger.apksigner.stdout",
+      "bytes": 1018,
+      "sha256": "ecc807713261b2f2d0d01b4b6bf5e3b93789d51064428c82baa4497567959a0c",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/com.taobao.taobao.aapt-badging.stdout",
+      "bytes": 9013,
+      "sha256": "2a349ec86553bce60e86991bdf463079e69654389927244691e02154173c094a",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/com.taobao.taobao.apksigner.stdout",
+      "bytes": 8096,
+      "sha256": "79889ef4f27a95dad9f4779e44f25331b4dbc35d76659bbfca9dba0184f40621",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/ctrip-s13-download-terminal.raw.json",
+      "bytes": 731,
+      "sha256": "7c53c6357e83b405b60818483578cfb90c6eb35668a064de05838392f7aad463",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/ctrip-s13-download.stdout.raw.jsonl",
+      "bytes": 2540,
+      "sha256": "62e538638119c25005e292030a2d4f5c421dde6d81ddfc63063bb153627c7c77",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/ctrip.android.view.aapt-badging.stdout",
+      "bytes": 6578,
+      "sha256": "3161dcd0c85a3b5e32cf199ee4b0c609e887c74e958546c877386e60901dc2dd",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/ctrip.android.view.apksigner.stdout",
+      "bytes": 988,
+      "sha256": "a5f8c5d920461e9e3a2bcbbd8e0e7e9739027f6a1c2ab10d62b3c40b314e1737",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/didi-ctrip-s15-verification-terminal.raw.json",
+      "bytes": 731,
+      "sha256": "2bc80466d255e34a27f666794d1aecb85ccbc2d11512f4406e7f4f1f1418e0cb",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/didi-ctrip-s15-verification.stdout.raw.jsonl",
+      "bytes": 3999,
+      "sha256": "1cc4e5a95493867964bd89108ecc914d0868f66cee37c16caa1889184a75402f",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/index-01.json",
+      "bytes": 16398,
+      "sha256": "2f7cac8419f0622c2dcfa168db3a1ec55547dcb9ab7d18d07ae4673d2e70d5d9",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/international_official_channels.json",
+      "bytes": 40087,
+      "sha256": "ff7e02cfb2df1185283c5614c5a319feb929681cf214bb6d952c8d56c1cf385f",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s10-continuation-terminal.raw.json",
+      "bytes": 730,
+      "sha256": "a01f2dc614da9685bba31b82665a94631136f78cdb884a15d1da0e6e2c67d62d",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s10-continuation.stdout.raw.jsonl",
+      "bytes": 46618,
+      "sha256": "9333d8f9d6a09738359c8c76cf6c1e14c8c82936042d93f69c2724d0b99d863c",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s12-progress-through-offset-5962.raw.jsonl",
+      "bytes": 5962,
+      "sha256": "446704f742be2a8dd508ad693a9e5274626d00f6c682df6ceea9485a49613513",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s16-metadata-terminal.raw.json",
+      "bytes": 731,
+      "sha256": "06bc6401237641dd35f68c3151e3f0554fb1e3398a862293dd8c0cf773882cfa",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s16-metadata.stdout.raw.jsonl",
+      "bytes": 9542,
+      "sha256": "10d4d57fb5f6292d3ee9a3981fec9ac83364d3d8a67ec27124a5b82270cc8276",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s18-metadata-terminal.raw.json",
+      "bytes": 731,
+      "sha256": "8bf8807eeb27b51007745a8735ddde3a72ef821358fa6e41d83c88c698c6a096",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s18-metadata.stdout.raw.jsonl",
+      "bytes": 7210,
+      "sha256": "9ba90d273b7d0abd12b4d2f90f679025af9f2b5987d2b57c826d5a1a52214ac6",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s19-international-terminal.raw.json",
+      "bytes": 731,
+      "sha256": "89298b362a54ad89dac52b645b5a8d0049bdecc9808407f96e2b1bab3d391770",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s20-douyin-metadata-terminal.raw.json",
+      "bytes": 733,
+      "sha256": "bf530ab950614650ec512975741a45e3cf77f479b88c84d821cb1212ab54f3b0",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s20-douyin-metadata.stdout.raw.jsonl",
+      "bytes": 11447,
+      "sha256": "8f8397f49280586b8df2686733335e1ac547ffce98eba9f04c06f8ef700e1a4f",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s8b-download-terminal.raw.json",
+      "bytes": 730,
+      "sha256": "cf548450bd94489147e4f6c40d46d72d834367df7e439ef4862dd3fcdeed6106",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/source-s8b-download.stdout.raw.jsonl",
+      "bytes": 46020,
+      "sha256": "5708d1553fa2d3c908fa33a65550bfda199d0841b515e701b5f451a14da5dc6d",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/taobao-s10-verification-terminal.raw.json",
+      "bytes": 731,
+      "sha256": "8d31b46b4f98c1b15174782a93ad9ef7f30ac23acf44968a269fb7240b226429",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s22/taobao-s10-verification.stdout.raw.jsonl",
+      "bytes": 2026,
+      "sha256": "0794be060e765468e23fd46cc2ff522669555c5492c37eab7eba1d9d4274c348",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/archive-index.json",
+      "bytes": 20098,
+      "sha256": "9e61921748b5c8d2a7b71644e6f3222a464e63e42b745d4f0c9a05303d31fd49",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s24/rail-0000.json",
+      "bytes": 1771,
+      "sha256": "d23ad050f6515582763759d5d2e51907e73f7e293faa4ae44fbf589a71788c94",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s24/rail-0001.json",
+      "bytes": 1770,
+      "sha256": "3e85886f3fd8b909f8f1826772d505b147d0a2392503c44d17cf069c6cb9306f",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s24/results.json",
+      "bytes": 51049,
+      "sha256": "ac5bff80e9bf0e716cad6294e9e4cfb83ba66e05ac0a72ea633132c14c148fea",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s24/start.raw.json",
+      "bytes": 13552,
+      "sha256": "584e801a66a81bfb001f96fba874520ee6767b33042e384414733addc91ccf97",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s24/stdout.raw.jsonl",
+      "bytes": 33549,
+      "sha256": "8c9d654eb19a383b31f38f93c7fc78083556bd1288fec6336d96d68dba169c41",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s24/terminal.raw.json",
+      "bytes": 730,
+      "sha256": "552ce1b9acda7e69e2099a6dac9937039f128e8cad0e1707713b63a33ce5f323",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s24/zbj-0031.json",
+      "bytes": 1893,
+      "sha256": "2528d9ec6ccf66cab3f5777cbe69a3314fc7c03efd4da14af00ec9b416c522fe",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s24/zbj-0031.stderr",
+      "bytes": 55,
+      "sha256": "228459575ae3b5e06e5aff6651843df68bb5f83acd15296be82d6488c9698a06",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s27/com.marriott.mrt.curl-metrics.json",
+      "bytes": 18634,
+      "sha256": "e0abba127307ef8d133ad9c45e3e6df7d9b2764293dd05722503ede29623834f",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s27/com.marriott.mrt.stderr",
+      "bytes": 74,
+      "sha256": "9788a582299ed82a13d4004ca53eae6358f6c5dd736771f6d49348415a5e1880",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s27/download-results.json",
+      "bytes": 3266,
+      "sha256": "e63653486dbcc844dec39ccaf7a857f9d681c749a30e02cfc164df1785e615fd",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s27/start.raw.json",
+      "bytes": 6534,
+      "sha256": "514107b73cb2b20ebfdc8ce55a12e0ca8a974073524648ca42c18fc59f7a8d60",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s27/stdout.raw.jsonl",
+      "bytes": 2777,
+      "sha256": "b6c05a4bac56a374132f01d2630474214bead092779d66c1b6a96f62794e189f",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s27/terminal.raw.json",
+      "bytes": 728,
+      "sha256": "f80fa93623556e4bdc5385d7937d2fe3649be5cec634a50ab33c445b4832c820",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s28/0041.curl.json",
+      "bytes": 19373,
+      "sha256": "afaf1bd81ae8f2a3893e0d6d9fec095841e7acba0ea731abf64dc5eae8d5044a",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s28/0041.json",
+      "bytes": 1958,
+      "sha256": "89d991a6b4900eeebc443678cb14adae15d4cdf456c4a28971cebd44d5febdea",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s28/0041.stderr",
+      "bytes": 54,
+      "sha256": "65fbc3bf512297fcb09e485ab8b4e9c6fb17bd9547a77fba4dd7f69cba0b641f",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s28/results.json",
+      "bytes": 32127,
+      "sha256": "81fa90d9b79327cea524367213d6bde75967fc356afdf7351594ae3bb02c84e6",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s28/start.raw.json",
+      "bytes": 15842,
+      "sha256": "46b2704e4499729ee1ac2774da7eb5e88fc5aecc2e46e2d5b92a422727dd1485",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s28/stdout.raw.jsonl",
+      "bytes": 21169,
+      "sha256": "b9042927b116b88a034453b1cef88064475dbf29a89c0e9b9e6df5f773e732e9",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s28/terminal.raw.json",
+      "bytes": 730,
+      "sha256": "4274659d373393b89ee65ed999be21db790a1a464895f8a8283cffe8f18e5030",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s30/com.ss.android.ugc.aweme.curl-metrics.json",
+      "bytes": 20977,
+      "sha256": "4d351f3c8c318f5edf2fda8e84ea6b000d3ebd4e595534cce6cd8c9304fc1eba",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s30/com.ss.android.ugc.aweme.stderr",
+      "bytes": 50,
+      "sha256": "4fbeb3b068dfd0a00fd3fcd95b81af2190310bf9d119abbd0a75dfe1725b0c16",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s30/download-results.json",
+      "bytes": 3126,
+      "sha256": "fbf2b9f1d371f598a0327ca6f5512880bde69d758e5cf7d433ec8b9d62c6984d",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s30/start.raw.json",
+      "bytes": 6385,
+      "sha256": "98263d4dff48cad3657f5b457922b009b572fe711d55556342fb9a65249ffb39",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s30/stdout.raw.jsonl",
+      "bytes": 2661,
+      "sha256": "2d6c2502b2b61d4f32cfd3883f603235ac553b9be6781e7b3da9cce6511470c7",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s30/terminal.raw.json",
+      "bytes": 728,
+      "sha256": "7746a05d5e3e249e1067d7477ce67a7a78a68d5e17ec8015de4b6dcf343efe62",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s32/0000.curl.json",
+      "bytes": 20844,
+      "sha256": "26f26a771ae1256ee5a59df7b8a3065d99b33bb077c5a12f42128d69be267bd3",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s32/0000.json",
+      "bytes": 2140,
+      "sha256": "b4c276b8579207216fe7cf6cc598acc8915b461d5c37abdfa7ae163f5e8d5390",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s32/0000.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s32/com.ss.android.ugc.aweme-result.json",
+      "bytes": 2543,
+      "sha256": "1ba7f39492714a2a0edd1acd1e6818f8153ae710481f1f6225bbe807c987192e",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s32/results.json",
+      "bytes": 2923,
+      "sha256": "f46fffd1f5b03510858fba183fef5166b151659a25358ad80e1f981c0cdbf250",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s32/start.raw.json",
+      "bytes": 12709,
+      "sha256": "b5a00e48e98be921c83a32a58e99e4c5202e4a784c63eb96a923047e2e999886",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s32/stdout.raw.jsonl",
+      "bytes": 1243,
+      "sha256": "691f978ed24f4d0756f6e668c2277ccdaa736f87e8b4254df0439db87fe68946",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s32/terminal.raw.json",
+      "bytes": 731,
+      "sha256": "002dd7c6af293c7ac7c94447cc99c403eb52dd4213da033d0ab43fb17ce9d2c6",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s33/aapt-badging.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s33/aapt-badging.stdout",
+      "bytes": 21605,
+      "sha256": "c63deb72e84db7493efad5d7caac0ff762c778b4b1248bb6ad04ac22965b8b9a",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s33/apksigner.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s33/apksigner.stdout",
+      "bytes": 9422,
+      "sha256": "54ff814f4578f0f3921aed3a9396570d680545e0b37bd6acb866f3bb37b45aab",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s33/index.json",
+      "bytes": 2302,
+      "sha256": "c21b0e972b570166ebf1453535ab76ca5c058bf770a5e1413691a1dd2aadaefa",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s33/result.json",
+      "bytes": 2504,
+      "sha256": "1e7413b3fff71bcbd861d8f90372e314bfec1a9a0c9e104c71860ac65af91d69",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s33/start.raw.json",
+      "bytes": 3612,
+      "sha256": "250b799be41299a4be0adfac0f55aee674a54a2433376edbc25dc8dc0898184e",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s33/stdout.raw.jsonl",
+      "bytes": 2890,
+      "sha256": "4c9fddbb61dafc435695d801e3cbe74972342bcdddd0b8d2dc8b9c0d369051ba",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s33/terminal.raw.json",
+      "bytes": 731,
+      "sha256": "c64fd88d4e1e4d8f1f5f1edee3a74d61913333bee7bc07c7b3b416b9813b0fe2",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "reference/official-s24-s33-restored/s33/verify_douyin_s32.py",
+      "bytes": 8510,
+      "sha256": "eac4841b04a774eddcf0d63383990c6b7138afe9485b5f6694fec131c085d4d6",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_apk_audit/AUDIT_PLAN.json",
       "bytes": 7023,
       "sha256": "bde42cec868b0bc62d1d342713e6e15d8c6a1a766bb576a1a60f51817f9a44c4",
-      "suggested_project_relative_path": "successor_apk_audit/AUDIT_PLAN.json",
-      "state": "PREPARED_LOCALLY_NOT_RUN_NOT_IMPORTED_BY_THIS_SCRIPT"
+      "group": "checkpoint03_successor_sources_and_evidence"
     },
     {
-      "local_path": "/dev/shm/pocket4-sidecar-next-20261106/official-release-apk-digests.json",
-      "bytes": 4745,
-      "sha256": "2452530fa7ba56612c3136d69f925e3a51c5f27b637882d0dc938b8f18185e0d",
-      "suggested_project_relative_path": "successor_apk_audit/official-release-apk-digests.json",
-      "state": "PREPARED_LOCALLY_NOT_RUN_NOT_IMPORTED_BY_THIS_SCRIPT"
-    },
-    {
-      "local_path": "/dev/shm/pocket4-sidecar-next-20261106/request.example.json",
-      "bytes": 566,
-      "sha256": "90c1013a2739838049c7b43aa58991d9b646aa3798db11cda1d23f30fa46810d",
-      "suggested_project_relative_path": "successor_apk_audit/request.example.json",
-      "state": "PREPARED_LOCALLY_NOT_RUN_NOT_IMPORTED_BY_THIS_SCRIPT"
-    },
-    {
-      "local_path": "/dev/shm/pocket4-sidecar-next-20261106/local-tests.stdout.txt",
-      "bytes": 1308,
-      "sha256": "36f6d4d968659f64171386bae734b5c8530a9b5c827f34ac84af2b1f4dc183dd",
-      "suggested_project_relative_path": "successor_apk_audit/local-tests.stdout.txt",
-      "state": "PREPARED_LOCALLY_NOT_RUN_NOT_IMPORTED_BY_THIS_SCRIPT"
-    },
-    {
-      "local_path": "/dev/shm/pocket4-sidecar-next-20261106/SOURCE_PINS.json",
+      "path": "successor_apk_audit/SOURCE_PINS.json",
       "bytes": 941,
       "sha256": "f90c5be16bed21cd86de3bf4411949b6f5ba8e5e6dc30d567481a622b21508d3",
-      "suggested_project_relative_path": "successor_apk_audit/SOURCE_PINS.json",
-      "state": "PREPARED_LOCALLY_NOT_RUN_NOT_IMPORTED_BY_THIS_SCRIPT"
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_apk_audit/audit_successor_apks.py",
+      "bytes": 28920,
+      "sha256": "f851b5b7fa88a291192ed44e8fc655fccb640d69a0771a3a0128434d1d4bf2cd",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_apk_audit/local-tests.stdout.txt",
+      "bytes": 1308,
+      "sha256": "36f6d4d968659f64171386bae734b5c8530a9b5c827f34ac84af2b1f4dc183dd",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_apk_audit/official-release-apk-digests.json",
+      "bytes": 4745,
+      "sha256": "2452530fa7ba56612c3136d69f925e3a51c5f27b637882d0dc938b8f18185e0d",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_apk_audit/request.example.json",
+      "bytes": 566,
+      "sha256": "90c1013a2739838049c7b43aa58991d9b646aa3798db11cda1d23f30fa46810d",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_apk_audit/test_audit_successor_apks.py",
+      "bytes": 6288,
+      "sha256": "ec95b457fa965edef716de38a50e9d405eae0b111f169c572e66b29c73713ecb",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/SOURCE_PINS.json",
+      "bytes": 662,
+      "sha256": "4698667f6b150efb1b89acaaf02deca1bb92242a8581b67b832427ad04532135",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/bili-01/stdout.raw.jsonl",
+      "bytes": 11905,
+      "sha256": "494028be8eb3edb22029587ab84090aa445277065a96089ef25c02db7f0c13ad",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/bili-01/terminal.raw.json",
+      "bytes": 733,
+      "sha256": "168da41ca04cd586d7f8d3489ad76f14f00e8da4161fe1871fe9097042701915",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/bili-01/verifier-terminal.raw.json",
+      "bytes": 731,
+      "sha256": "ff6bd44b7013d14bc4e7ffa40e730edf3b42bf75eed9c2760d73d4768129da00",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/ctrip-01/stdout.raw.jsonl",
+      "bytes": 12064,
+      "sha256": "b1c647a2d6c9e72ee1612f86b7c369db2fe419ece8e885a1852a76e991e071e3",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/ctrip-01/terminal.raw.json",
+      "bytes": 733,
+      "sha256": "61845d266e18c5c8bd0304a038fb5e0af652ecc67eb8445812d32b7d5bb8ef58",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/didi-01/stdout.raw.jsonl",
+      "bytes": 12077,
+      "sha256": "0bc6a2102cdd15a49ec1e220b74749855983c53741efba7daa892dbd309dabd8",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/didi-01/terminal.raw.json",
+      "bytes": 733,
+      "sha256": "24ec33909037b03bd9e2c9f02fd8ee30975d84c0e246e27985df6893d7e9b955",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/douyin-01/app-scope-after.private.json",
+      "bytes": 57340,
+      "sha256": "489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/douyin-01/stdout.raw.jsonl",
+      "bytes": 15354,
+      "sha256": "11e9bb6644b9bfc315e57652bd79b4556f3de1fbd85220446b2a8239929a6b6e",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/douyin-01/terminal.raw.json",
+      "bytes": 733,
+      "sha256": "3bbac2d5ac2f616dc0a3b91a9eba8178cb0d85009029ae881c2acfa61d26bd93",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/douyin-01/verifier-terminal.raw.json",
+      "bytes": 731,
+      "sha256": "c64fd88d4e1e4d8f1f5f1edee3a74d61913333bee7bc07c7b3b416b9813b0fe2",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/jd-01/stdout.raw.jsonl",
+      "bytes": 2010,
+      "sha256": "e2ddc72288900f464c753836b68477b6f7a91d455468c82a9a26e6d79fde47de",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/jd-01/terminal.raw.json",
+      "bytes": 728,
+      "sha256": "70f6a21869c59a000acee84b1d20274b265999639262068d0821f228b06308b7",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/jd-01/verifier-terminal.raw.json",
+      "bytes": 732,
+      "sha256": "dff2721f49535be017b0053874d015b100a6e5b561b006f5d771228e320f85e5",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/jd-02/stdout.raw.jsonl",
+      "bytes": 16727,
+      "sha256": "cf9b0b6772437f016b2e4c1cb839b2a24822225146e20d87bf8a7c06e9571637",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/jd-02/terminal.raw.json",
+      "bytes": 733,
+      "sha256": "d44e998b6d22c0638cb328d8badaf3c6d3aa03d8ddc230cb7db0cfe787175594",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/jd-02/verifier-terminal.raw.json",
+      "bytes": 732,
+      "sha256": "dff2721f49535be017b0053874d015b100a6e5b561b006f5d771228e320f85e5",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/pdd-01/stdout.raw.jsonl",
+      "bytes": 12071,
+      "sha256": "9171b763159ec9557160687dce75d55b621daded06ddd606b962e3578ed0c772",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/pdd-01/terminal.raw.json",
+      "bytes": 733,
+      "sha256": "afe66f749d4f94fdab4c7450986f7784a4582bf552d6202226e9dd12f88ee5f5",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/pdd-01/verifier-terminal.raw.json",
+      "bytes": 732,
+      "sha256": "b8649b67f5359bcceefe11dd0d7f399845d6597c0c23908fdc25ca428c852e32",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/source-r2-controls/SOURCE_PINS.json",
+      "bytes": 310,
+      "sha256": "55c103b080383d8f714e282307aec68cb932dec3fd9cfbee9c803edc5d1a249e",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/source-r2-controls/test_install_successor_r2.py.stderr",
+      "bytes": 1562,
+      "sha256": "b95a429e8175c9e70d36e302b4085f9b2903aeed63aef2dc3550790f17e70c66",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/source-r2-controls/test_install_successor_r2.py.stdout",
+      "bytes": 527,
+      "sha256": "9720bd5602657d405d5cb2d64b3e23ce04d74c74223bf5e89618b21596149587",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/source-stage-r1-reconciliation.raw.json",
+      "bytes": 6866,
+      "sha256": "359927b19970d2a277ccf276496a03605f31a31581dca643a03e820380bbf5c6",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/source-stage-r1.stdout.raw.jsonl",
+      "bytes": 3282,
+      "sha256": "25299891ca4e7533a09b87cf9b377456c00dca21b3b1ab164c6dc421017765c9",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/source-stage-r2-terminal.raw.json",
+      "bytes": 731,
+      "sha256": "b9b167778675810304a3aeccd6b60b5ea8a6e319008403b4fdb69c649a2df363",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/source-stage-r2.stdout.raw.jsonl",
+      "bytes": 2079,
+      "sha256": "b1e0dd53feebf30af849e5c4932cf5e9b1784f6d01b3dad9454499997921ac16",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/taobao-01/stdout.raw.jsonl",
+      "bytes": 12067,
+      "sha256": "46097359c3e3a22e00e5071b4781e5857b120955a78353b4a9d57ffa5987267a",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/taobao-01/terminal.raw.json",
+      "bytes": 733,
+      "sha256": "9912a43bf78fee6f10ba508eab6b881f9a90058bd6377107e2ca768d84c569ca",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/taobao-01/verifier-terminal.raw.json",
+      "bytes": 732,
+      "sha256": "515eb939ccbed02a8a00c174309d99292cd4dc40af40d53757ff862e505b509b",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/test_audit_successor_apks.py.stderr",
+      "bytes": 107,
+      "sha256": "2efea11edab81762ab3513692b43868f2df12f258198b58e6c588cacd1cc2830",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/actual/test_install_successor_native.py.stderr",
+      "bytes": 1206,
+      "sha256": "e47bb416f3433d506dc4b7cfa7936685799d2d84480f2b230b1bd409c8ba0d9d",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/official-verifier-pins.json",
+      "bytes": 1469,
+      "sha256": "d9613425386633e6b5eb62c51a60215d7324fc0a169f372ac7de9150898a20c5",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/read_pinned_compressed.py",
+      "bytes": 2073,
+      "sha256": "3720e074779425e94763deec151253e6dd0e10470fcabc1c86c7bedc7b632f4e",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r1/audit_successor_apks.py",
+      "bytes": 29242,
+      "sha256": "faff199c1f6218b3c01d87e44be610d6fa211de396b5e8c862c188dec59d284a",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r1/install_successor_native.py",
+      "bytes": 31327,
+      "sha256": "ad4227b4c63033018bd1147c3c589b2632168766306791696aabc53583229c96",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r1/reference_core.py",
+      "bytes": 65302,
+      "sha256": "53f79b2bdfc694a3006c0d33232a277a8729773407f301af6a07aa6a46f490d5",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r1/stage_source.py",
+      "bytes": 5068,
+      "sha256": "14382c0b1125bf98d90898d2f0aa29a20bf3e13effe4c63544d2d7074aee91fd",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r1/test_audit_successor_apks.py",
+      "bytes": 7344,
+      "sha256": "b131711099438ef2ce090a30f0bf055c5634ae7fe12997fb86cbbf22ddb14fe5",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r1/test_install_successor_native.py",
+      "bytes": 6428,
+      "sha256": "df45f3aea5d3252cd8e9e5bbd8fc04934b9dd84e79f58a3b466f9720e89425a1",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r2/LOCAL_STAGE_RESULT.json",
+      "bytes": 2783,
+      "sha256": "ddb1900c04776f8d5a04754ff8f4d718161bbbfc43a52c128217c20387ef9ef7",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r2/REVIEW.md",
+      "bytes": 3355,
+      "sha256": "b1af386f35234f08b8a3a058dc85c6b49378875de38df51d220841c77ea32875",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r2/SOURCE_DIFF.patch",
+      "bytes": 14031,
+      "sha256": "33ac281a970b9101998efada15f6f0518d15056ddf547247aafeba34af7bc5d9",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r2/SOURCE_PINS.json",
+      "bytes": 1340,
+      "sha256": "46e5e1a997530ea65ba7c9c0d59c141d2d7d6403e770da29423475d8227624d1",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r2/install_successor_native.py",
+      "bytes": 38684,
+      "sha256": "7fe3d12fd280539939c930970755e9f33ab7cda51f08a03cc54eb5f9c52508eb",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r2/offline-controls.stderr.raw.txt",
+      "bytes": 1562,
+      "sha256": "35a840d4eac15925c03375972d62b325fb4cefbd461a21b3fb3f7058f3caef9d",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r2/offline-controls.stdout.raw.json",
+      "bytes": 533,
+      "sha256": "e1907a29ac43da9226c526b65f172c0596f4291522ae36261642b4fc06e1b99f",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r2/reference/install_successor_native.r1.py",
+      "bytes": 31327,
+      "sha256": "ad4227b4c63033018bd1147c3c589b2632168766306791696aabc53583229c96",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r2/stage_source.py",
+      "bytes": 4803,
+      "sha256": "b23f379fa2f6a50ba2158fe08defe3c5ecaa8d7195203cf4b21e5c621ceffb51",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/source-r2/test_install_successor_r2.py",
+      "bytes": 9228,
+      "sha256": "da46e787668d433324177a8ca29c571d71814c5f4d2d334f1b04f8ddbef75174",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/stage_request_and_invoke.py",
+      "bytes": 5679,
+      "sha256": "cdb7433f71a9d9c7c87438ffdbcabf573e14c6007c1edb3c8de54779d8b7efae",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "successor_install/stage_request_and_invoke_r2.py",
+      "bytes": 5673,
+      "sha256": "ebff84d8e8bdee3c3d283afe885d296e1a0fad9a3bb6bdf9c90141f046f5cec4",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "test_checkpoint03_extension.py",
+      "bytes": 6353,
+      "sha256": "f7f1c6b763954ef6bb7204c78b14451f5bd576a33d2c482167aaf1adf8641399",
+      "group": "checkpoint03_successor_sources_and_evidence"
+    },
+    {
+      "path": "evaluate_readiness.py",
+      "bytes": 39761,
+      "sha256": "d2efd3f1271ff843d7b99269efd979b475cf24b1102f4be18cc57bbaad62d2c9",
+      "group": "unchanged_readiness_sources"
+    },
+    {
+      "path": "reference/bilibili-official-verification.json",
+      "bytes": 1866,
+      "sha256": "2faaee44fd41ee86f4ef1105113d7a27f858109adf6d81bdebc0a592bb1e94bf",
+      "group": "unchanged_readiness_sources"
+    },
+    {
+      "path": "reference/current-all-launcher-metadata.json",
+      "bytes": 287909,
+      "sha256": "daf3c5b81edcdd331b5e42149d088b88c51027e647583f91df588528ed5e5200",
+      "group": "unchanged_readiness_sources"
+    },
+    {
+      "path": "reference/current-original-eight-inventory.json",
+      "bytes": 68824,
+      "sha256": "6863558f57829515744810d38209f5fa3b9c73f02ef545ef1fd7de55a891e804",
+      "group": "unchanged_readiness_sources"
+    },
+    {
+      "path": "regression_manifest.json",
+      "bytes": 27345,
+      "sha256": "3d5764e982a31692e77cf728cb4fa88e44c987b7f2d6dda65106741f952cf86e",
+      "group": "unchanged_readiness_sources"
     }
   ],
-  "coordination_pending": [
-    {
-      "path": "recovery/NATIVE_RESTART_FINDINGS.md",
-      "owner": "app_history",
-      "instruction": "Include only after its owner freezes the report; this script neither reads nor writes it."
-    }
+  "file_count": 293,
+  "external_prepared_artifacts_for_root_to_include": [],
+  "coordination_pending": [],
+  "excluded_actual_paths": [
+    "recovery/independent_repair_r2/root-readback/host-controls.stderr.raw",
+    "reference/official-s24-s33-restored/s24/rail-0000.headers",
+    "reference/official-s24-s33-restored/s24/zbj-0031.headers",
+    "reference/official-s24-s33-restored/s27/com.marriott.mrt.headers",
+    "reference/official-s24-s33-restored/s28/0041.headers",
+    "reference/official-s24-s33-restored/s30/com.ss.android.ugc.aweme.headers",
+    "reference/official-s24-s33-restored/s32/0000.headers",
+    "successor_install/actual/bili-01/request.private.json",
+    "successor_install/actual/ctrip-01/request.private.json",
+    "successor_install/actual/douyin-01/request.private.json",
+    "successor_install/actual/jd-01/request.private.json",
+    "successor_install/actual/jd-02/request.private.json",
+    "successor_install/actual/pdd-01/request.private.json",
+    "successor_install/actual/taobao-01/request.private.json"
   ],
   "excluded_from_submission": [
     "APK binaries",

@@ -1,0 +1,126 @@
+--- framework_provider_repair/normal05/source-r1/main_snapshot.py
++++ framework_provider_repair/normal05/source-r2/main_snapshot.py
+@@ -215,8 +215,55 @@
+                    'path': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/qualification.private.json',
+                    'sha256': '4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6'},
+  'root': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01'}
+-APP_SCOPE_PIN = None
+-APP_SCOPE_PACKAGES = None
++APP_SCOPE_PIN = {'bytes': 57340,
++ 'path': '/home/alex/work/pocket4-successor-native-install-20261106-douyin-01/app-scope-after.private.json',
++ 'sha256': '489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4'}
++APP_SCOPE_PACKAGES = ['com.Hyatt.hyt',
++ 'com.MobileTicket',
++ 'com.amazon.mShop.android.shopping',
++ 'com.android.calendar',
++ 'com.android.camera2',
++ 'com.android.contacts',
++ 'com.android.deskclock',
++ 'com.android.dialer',
++ 'com.android.documentsui',
++ 'com.android.gallery3d',
++ 'com.android.messaging',
++ 'com.android.quicksearchbox',
++ 'com.android.settings',
++ 'com.android.threadnetwork.demoapp',
++ 'com.bestbuy.android',
++ 'com.ehi.national.mobile',
++ 'com.enflick.android.TextNow',
++ 'com.google.android.gms',
++ 'com.hertz.android.digital',
++ 'com.hilton.android.hhonors',
++ 'com.ihg.apps.android',
++ 'com.jingdong.app.mall',
++ 'com.lianjia.beike',
++ 'com.marriott.mrt',
++ 'com.pinger.textfree',
++ 'com.rytong.airchina',
++ 'com.rytong.ceair',
++ 'com.sankuai.meituan.takeoutnew',
++ 'com.sdu.didi.psnger',
++ 'com.ss.android.ugc.aweme',
++ 'com.szzc',
++ 'com.taobao.taobao',
++ 'com.tencent.mm',
++ 'com.ubercab',
++ 'com.united.mobile.android',
++ 'com.xunmeng.pinduoduo',
++ 'com.zhubajie.client',
++ 'com.zillow.android.streeteasy',
++ 'ctrip.android.view',
++ 'jp.co.ana.android.tabidachi',
++ 'local.pocket4.actions.v2',
++ 'local.pocket4.fixture',
++ 'org.chromium.webview_shell',
++ 'org.droidloom.qa.editorcontract',
++ 'org.fcitx.fcitx5.android',
++ 'tv.danmaku.bili']
+ 
+ """Inserted into the existing fixed snapshot; not a standalone entry point."""
+ 
+--- framework_provider_repair/normal05/source-r1/root_snapshot_supervisor.py
++++ framework_provider_repair/normal05/source-r2/root_snapshot_supervisor.py
+@@ -17,7 +17,7 @@
+ import time
+ 
+ LIFECYCLE_SHA = '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126'
+-SNAPSHOT_SHA = '8c8c4d8d8480edd3c48308634cee79ac04e6933cf8ad27409f31dc465ed41e5b'
++SNAPSHOT_SHA = '3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3'
+ MODES = frozenset(('before', 'after', 'control-timeout', 'control-escaped', 'control-pidfd'))
+ OBSERVATION_SECONDS = 15
+ RETIREMENT_SECONDS = 5
+--- framework_provider_repair/normal05/source-r1/fenced_build.py
++++ framework_provider_repair/normal05/source-r2/fenced_build.py
+@@ -11,8 +11,8 @@
+ 
+ CONTROLLER_SHA = 'f4ab5e09fc22b759811bfa9480c2de555dbc5096bc1258a984dbd33809db734b'
+ LIFECYCLE_SHA = '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126'
+-ROOT_SUPERVISOR_SHA = '69a65925a6716eb180bd42f41506fa1be6e0438ddc945bc907448765b6595bdc'
+-SNAPSHOT_SHA = '8c8c4d8d8480edd3c48308634cee79ac04e6933cf8ad27409f31dc465ed41e5b'
++ROOT_SUPERVISOR_SHA = 'a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147'
++SNAPSHOT_SHA = '3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3'
+ PREPARATION_SHA = 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'
+ ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-native-provider-build-05-20261106')
+ FENCE_ROOT = ROOT / 'build-fences-01'
+--- framework_provider_repair/normal05/source-r1/stage.py
++++ framework_provider_repair/normal05/source-r2/stage.py
+@@ -26,13 +26,13 @@
+  'expected-builder469-manifest.json': {'bytes': 97964,
+                                        'sha256': 'd9340351c9653b10dfd0882afbff5ff4fc11dafaa6083191ed2a8fdb5c8dd934'},
+  'fenced_build.py': {'bytes': 25681,
+-                     'sha256': 'ef1a6b7b26b7318dd67977b45015305dfec3bd0ef685a24cbc6fb4968cac316b'},
++                     'sha256': '16d60c8a43e7f42de0ee8264da72713b213bad2b39e3b8b94b34b9bdd1954d6c'},
+  'framework_build.py': {'bytes': 60970,
+                         'sha256': 'f4ab5e09fc22b759811bfa9480c2de555dbc5096bc1258a984dbd33809db734b'},
+  'frozen-work-inventory.py': {'bytes': 48443,
+                               'sha256': '203dd7f4efdac01891a4c31fd79f2eb3204e3c8c2be5702988f0875307cce9ab'},
+- 'main_snapshot.py': {'bytes': 23127,
+-                      'sha256': '8c8c4d8d8480edd3c48308634cee79ac04e6933cf8ad27409f31dc465ed41e5b'},
++ 'main_snapshot.py': {'bytes': 24529,
++                      'sha256': '3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3'},
+  'parent-normal03-framework_build.py': {'bytes': 59292,
+                                         'sha256': '03f0b4aecba20149ad7f1301ea823eb5e7e5ba1efa00d08c92c4fa7ecf482132'},
+  'prior-framework-inner-terminal.json': {'bytes': 5239,
+@@ -42,7 +42,7 @@
+  'pure_controls.py': {'bytes': 14631,
+                       'sha256': '89f11c85f2dd016c15030c17c926b85ffa142ebb14cefbdb0fa25666ce2e4d40'},
+  'root_snapshot_supervisor.py': {'bytes': 12041,
+-                                 'sha256': '69a65925a6716eb180bd42f41506fa1be6e0438ddc945bc907448765b6595bdc'}}
++                                 'sha256': 'a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147'}}
+ def main(packet):
+     if os.getuid()!=1000 or os.geteuid()!=1000:raise RuntimeError('operator UID1000 required')
+     if set(packet)!=set(EXPECTED):raise RuntimeError('staged source member set differs')
+--- framework_provider_repair/normal05/source-r1/transport-boundary.py
++++ framework_provider_repair/normal05/source-r2/transport-boundary.py
+@@ -1,8 +1,8 @@
+ import hashlib,json,sys
+-WIRE_BYTES = None
+-WIRE_SHA256 = None
++WIRE_BYTES = 824918
++WIRE_SHA256 = '20e061e7a28c9aca81ef5ae33fa8578caf9ee35b7eef6660e8d7675c2db2762d'
+ STAGE_BYTES = 7137
+-STAGE_SHA256 = 'b401cb2e731034233215f99bb9ecb0b5c0e247fbd90c224b3729787c3662d81c'
++STAGE_SHA256 = '5723e4064379832141e068fb87b7a4460e594545ffc3d9a94f779df847b9ad83'
+ if sys.argv[1:] != ['--execute-once']:
+     print(json.dumps({'state':'PLAN_ONLY','source_only':True,'submitted':False,'Main_actions':0,'Android_actions':0,'old_QA_epoch_invalid':True,'new_QA_epoch_qualified':False}))
+     raise SystemExit(0)

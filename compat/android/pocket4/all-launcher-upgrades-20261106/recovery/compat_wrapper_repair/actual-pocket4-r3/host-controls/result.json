@@ -1,0 +1,242 @@
+{
+  "Android_commands": 0,
+  "FD_count_after": 5,
+  "FD_count_before": 5,
+  "Pocket4_runtime_qualified": false,
+  "caller_uid": 0,
+  "candidate": {
+    "bytes": 6290,
+    "path": "/home/alex/work/pocket4-compat-wrapper-host-controls-20261106-r2/revision-3/source/unshare_wrapper.py",
+    "sha256": "df2365c026cc578048ce22ebd1b22bfefc25ccc144146683d845ec828c61bf1f"
+  },
+  "cases": [
+    {
+      "name": "actual_fork_parent_mismatch_rejected_before_exec",
+      "passed": true
+    },
+    {
+      "name": "real_native_command_arguments_preserved",
+      "passed": true
+    },
+    {
+      "Android_commands": 0,
+      "TERM_forwarded_to_exact_native_child_and_blocked": true,
+      "actual_native_argv": [
+        "/usr/bin/unshare",
+        "--user",
+        "--map-root-user",
+        "--pid",
+        "--fork",
+        "--kill-child=KILL",
+        "/usr/bin/python3",
+        "-B",
+        "-I",
+        "-c",
+        "#!/usr/bin/python3 -I\n\"\"\"Disposable PID-namespace init/child for the wrapper's host-only controls.\"\"\"\nimport json\nimport os\nfrom pathlib import Path\nimport signal\nimport time\n\n\ndef emit(kind):\n    raw = Path('/proc/self/stat').read_text()\n    tail = raw[raw.rindex(')') + 2:].split()\n    row = {'kind': kind, 'namespace_pid': os.getpid(),\n           'host_pid': int(raw.split('(', 1)[0]), 'host_parent': int(tail[1]),\n           'start_ticks': int(tail[19]), 'pid_namespace': os.readlink('/proc/self/ns/pid')}\n    os.write(1, (json.dumps(row, sort_keys=True) + '\\n').encode())\n\n\nif os.getpid() != 1:\n    raise SystemExit('FIXTURE_REQUIRES_A_NEW_PID_NAMESPACE')\nsignal.signal(signal.SIGTERM, lambda *_: emit('init_received_TERM'))\nsignal.signal(signal.SIGALRM, lambda *_: os._exit(124))\nsignal.alarm(25)\nchild = os.fork()\nif child == 0:\n    signal.signal(signal.SIGTERM, lambda *_: emit('leaf_received_TERM'))\n    signal.alarm(25)\n    emit('leaf_ready')\nelse:\n    emit('init_ready')\nwhile True:\n    time.sleep(.1)\n"
+      ],
+      "all_four_original_test_pidfds_dead": true,
+      "cleanup_error": null,
+      "existing_namespace_entries": 0,
+      "existing_native_ten_second_fallback_wait_reproduced": false,
+      "name": "TERM_then_supervisor_fallback",
+      "namespace_init_or_leaf_signal_sent_by_test": false,
+      "native_child_signal_sent_by_test": false,
+      "new_pid_namespace": "pid:[4026533070]",
+      "passed": true,
+      "pidfds": {
+        "acquired": 5,
+        "closed": 5
+      },
+      "processes": {
+        "namespace_init": {
+          "host_parent": 3133532,
+          "host_pid": 3133533,
+          "pid_namespace": "pid:[4026533070]",
+          "process_group": 3133489,
+          "start_ticks": 99407418,
+          "state": "S"
+        },
+        "namespace_leaf": {
+          "host_parent": 3133533,
+          "host_pid": 3133534,
+          "pid_namespace": "pid:[4026533070]",
+          "process_group": 3133489,
+          "start_ticks": 99407420,
+          "state": "S"
+        },
+        "native_unshare": {
+          "host_parent": 3133529,
+          "host_pid": 3133532,
+          "pid_namespace": "pid:[4026531836]",
+          "process_group": 3133489,
+          "start_ticks": 99407418,
+          "state": "S"
+        },
+        "sentinel": {
+          "host_parent": 3133519,
+          "host_pid": 3133528,
+          "pid_namespace": "pid:[4026531836]",
+          "process_group": 3133489,
+          "start_ticks": 99407416,
+          "state": "R"
+        },
+        "wrapper": {
+          "host_parent": 3133519,
+          "host_pid": 3133529,
+          "pid_namespace": "pid:[4026531836]",
+          "process_group": 3133489,
+          "start_ticks": 99407416,
+          "state": "R"
+        }
+      },
+      "ready": {
+        "init_ready": {
+          "host_parent": 3133532,
+          "host_pid": 3133533,
+          "kind": "init_ready",
+          "namespace_pid": 1,
+          "pid_namespace": "pid:[4026533070]",
+          "start_ticks": 99407418
+        },
+        "leaf_ready": {
+          "host_parent": 3133533,
+          "host_pid": 3133534,
+          "kind": "leaf_ready",
+          "namespace_pid": 2,
+          "pid_namespace": "pid:[4026533070]",
+          "start_ticks": 99407420
+        }
+      },
+      "signals": [
+        {
+          "signal": "SIGTERM",
+          "target": "owned_wrapper_pidfd"
+        },
+        {
+          "signal": "SIGKILL",
+          "target": "owned_wrapper_pidfd"
+        }
+      ],
+      "stderr": "",
+      "test_grace_interval_seconds": 0.3,
+      "unrelated_same_process_group_sentinel_unchanged": true,
+      "wrapper_returncode": -9
+    },
+    {
+      "Android_commands": 0,
+      "actual_native_argv": [
+        "/usr/bin/unshare",
+        "--user",
+        "--map-root-user",
+        "--pid",
+        "--fork",
+        "--kill-child=KILL",
+        "/usr/bin/python3",
+        "-B",
+        "-I",
+        "-c",
+        "#!/usr/bin/python3 -I\n\"\"\"Disposable PID-namespace init/child for the wrapper's host-only controls.\"\"\"\nimport json\nimport os\nfrom pathlib import Path\nimport signal\nimport time\n\n\ndef emit(kind):\n    raw = Path('/proc/self/stat').read_text()\n    tail = raw[raw.rindex(')') + 2:].split()\n    row = {'kind': kind, 'namespace_pid': os.getpid(),\n           'host_pid': int(raw.split('(', 1)[0]), 'host_parent': int(tail[1]),\n           'start_ticks': int(tail[19]), 'pid_namespace': os.readlink('/proc/self/ns/pid')}\n    os.write(1, (json.dumps(row, sort_keys=True) + '\\n').encode())\n\n\nif os.getpid() != 1:\n    raise SystemExit('FIXTURE_REQUIRES_A_NEW_PID_NAMESPACE')\nsignal.signal(signal.SIGTERM, lambda *_: emit('init_received_TERM'))\nsignal.signal(signal.SIGALRM, lambda *_: os._exit(124))\nsignal.alarm(25)\nchild = os.fork()\nif child == 0:\n    signal.signal(signal.SIGTERM, lambda *_: emit('leaf_received_TERM'))\n    signal.alarm(25)\n    emit('leaf_ready')\nelse:\n    emit('init_ready')\nwhile True:\n    time.sleep(.1)\n"
+      ],
+      "all_four_original_test_pidfds_dead": true,
+      "cleanup_error": null,
+      "existing_namespace_entries": 0,
+      "name": "wrapper_SIGKILL_without_TERM",
+      "namespace_init_or_leaf_signal_sent_by_test": false,
+      "native_child_signal_sent_by_test": false,
+      "new_pid_namespace": "pid:[4026533284]",
+      "passed": true,
+      "pidfds": {
+        "acquired": 5,
+        "closed": 5
+      },
+      "processes": {
+        "namespace_init": {
+          "host_parent": 3133538,
+          "host_pid": 3133539,
+          "pid_namespace": "pid:[4026533284]",
+          "process_group": 3133489,
+          "start_ticks": 99407456,
+          "state": "S"
+        },
+        "namespace_leaf": {
+          "host_parent": 3133539,
+          "host_pid": 3133540,
+          "pid_namespace": "pid:[4026533284]",
+          "process_group": 3133489,
+          "start_ticks": 99407458,
+          "state": "S"
+        },
+        "native_unshare": {
+          "host_parent": 3133537,
+          "host_pid": 3133538,
+          "pid_namespace": "pid:[4026531836]",
+          "process_group": 3133489,
+          "start_ticks": 99407456,
+          "state": "S"
+        },
+        "sentinel": {
+          "host_parent": 3133519,
+          "host_pid": 3133536,
+          "pid_namespace": "pid:[4026531836]",
+          "process_group": 3133489,
+          "start_ticks": 99407454,
+          "state": "R"
+        },
+        "wrapper": {
+          "host_parent": 3133519,
+          "host_pid": 3133537,
+          "pid_namespace": "pid:[4026531836]",
+          "process_group": 3133489,
+          "start_ticks": 99407454,
+          "state": "R"
+        }
+      },
+      "ready": {
+        "init_ready": {
+          "host_parent": 3133538,
+          "host_pid": 3133539,
+          "kind": "init_ready",
+          "namespace_pid": 1,
+          "pid_namespace": "pid:[4026533284]",
+          "start_ticks": 99407456
+        },
+        "leaf_ready": {
+          "host_parent": 3133539,
+          "host_pid": 3133540,
+          "kind": "leaf_ready",
+          "namespace_pid": 2,
+          "pid_namespace": "pid:[4026533284]",
+          "start_ticks": 99407458
+        }
+      },
+      "signals": [
+        {
+          "signal": "SIGKILL",
+          "target": "owned_wrapper_pidfd"
+        }
+      ],
+      "stderr": "",
+      "unrelated_same_process_group_sentinel_unchanged": true,
+      "wrapper_returncode": -9
+    }
+  ],
+  "errors": [],
+  "existing_namespace_entries": 0,
+  "fixture_sha256": "da61ecac210799f4626cdc7afa83476049374f4a36e9b87ba0e6a92e664016d1",
+  "fixture_transport": "pinned_utf8_source_via_python_c",
+  "kernel_release": "7.0.0-38-generic",
+  "native_unshare": {
+    "bytes": 47800,
+    "file_capabilities_absent": true,
+    "help_sha256": "2d4d2f36a921e9c77f86f7abf128d775b462f2d8b4b0533737a1bc3089e33443",
+    "mode": 493,
+    "path": "/usr/bin/unshare",
+    "sha256": "41c65e55107cbbb1a1f6994784a938dd7dbbe255d1fea6b7a58ec96eabe382ef",
+    "uid": 0,
+    "version": "unshare from util-linux 2.41.3"
+  },
+  "ok": true,
+  "production_wrapper_deployed": false,
+  "schema": "pocket4-compat-wrapper-real-host-controls-v1",
+  "test_revision": "r3-inline-pinned-fixture"
+}

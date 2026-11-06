@@ -1,0 +1,43 @@
+{
+  "schema": "normal05-exact-request-local-validation-v1",
+  "state": "PASS_LOCAL_ONLY",
+  "checks": [
+    "exact_actual_final_46_members_bound",
+    "original_qualified_initial_scope_pin_and_full_members_match",
+    "dropping_one_actual_package_rejected_before_sealing",
+    "sealed_transport_rejects_truncated_wire_before_stage_execution"
+  ],
+  "pure_controls_passed": 59,
+  "actual_main_guard_calls": 0,
+  "actual_app_scope_guard_calls": 0,
+  "actual_capture_lifecycle_controls_run": 0,
+  "runtime_QA_pass_count": 0,
+  "remote_submitted": false,
+  "host_stage_executed": false,
+  "builder_started": false,
+  "Soong_invoked": false,
+  "rejection_control": {
+    "returncode": 1,
+    "stdout": "",
+    "stderr": "Traceback (most recent call last):\n  File \"/workspace/scratch/265e5bca485a/pocket4_eight_apps/framework_provider_repair/normal05/source-r2/transport-boundary.py\", line 13, in <module>\n    raise RuntimeError('normal framework exact source packet changed')\nRuntimeError: normal framework exact source packet changed\n",
+    "input_bytes": 824917
+  },
+  "exact_source_members": 21,
+  "final_scope_members": 46,
+  "scope_reference": {
+    "path": "/home/alex/work/pocket4-successor-native-install-20261106-douyin-01/app-scope-after.private.json",
+    "bytes": 57340,
+    "sha256": "489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4"
+  },
+  "original_launch_envelope_sha256": "70e19da34d7ef06c5f4d0eadd90291e07983ead1f074a3fc4a6a1ee8c84f2eb5",
+  "request": {
+    "bytes": 906726,
+    "sha256": "a14c1205fa732325c7da71f7fd7559132987c25463b6af0630dc5c5fbf7569c4"
+  },
+  "wire": {
+    "bytes": 824918,
+    "sha256": "20e061e7a28c9aca81ef5ae33fa8578caf9ee35b7eef6660e8d7675c2db2762d"
+  },
+  "production_ready": false,
+  "cleanup_eligible": false
+}

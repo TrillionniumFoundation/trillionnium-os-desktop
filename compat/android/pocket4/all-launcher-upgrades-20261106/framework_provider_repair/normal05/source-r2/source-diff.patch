@@ -1,0 +1,516 @@
+--- normal04/framework_build.py
++++ normal05/framework_build.py
+@@ -175,7 +175,7 @@
+ 
+ # Input and completion bindings for the existing normal builder lifecycle.
+ OWNER = P('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01')
+-ROOT = OWNER / 'typed-ingress-framework-native-provider-build-04-20261106'
++ROOT = OWNER / 'typed-ingress-framework-native-provider-build-05-20261106'
+ HERE = ROOT / 'control-source'
+ WORK = OWNER / 'typed-ingress-framework-work-01-20261105'
+ OUT = ROOT / 'android-out'
+--- normal04/main_snapshot.py
++++ normal05/main_snapshot.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed seven-role pre/post host protection; never qualifies an Android QA epoch."""
++"""Fixed eight-role typedguard protection; never qualifies Android app or framework QA."""
+ import hashlib
+ import json
+ import os
+@@ -11,8 +11,8 @@
+ import time
+ 
+ BOOT_ID = '981ff371-cd72-4f81-9be3-a862111afdb1'
+-IDENTITY_SOURCE_SHA = '3918e517ac2ce2e2ee19aa862ac60b7631e48bf383c14788a1db2c0e0f4bccb7'
+-ACTUAL_READ02_STDOUT_SHA = 'b49bbb4276c5a95de610956c878b0d23a1abdde0a8411bea310dbaca585396a6'
++IDENTITY_SOURCE_SHA = '7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8'
++CURRENT_QUALIFICATION_SHA = '4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6'
+ ACTIVATION = Path('/home/alex/work/pocket4-app-production-20261104-r10/deployment-preparation/activation-after-01.json')
+ ACTIVATION_SHA = '7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615'
+ OLD_INVALID_EPOCH_SHA = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+@@ -22,7 +22,84 @@
+ ENGINE_SHA = 'c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d'
+ PRESENTER_SHA = '47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24'
+ DEADLINE = None
+-EXPECTED=json.loads("{\"android_init\":{\"pid\":3588093,\"start_ticks\":80797014,\"ppid\":3588092,\"uids\":[0,0,0,0],\"namespace_pids\":[3588093,1],\"cgroup\":\"0::/system.slice/droidloomd.service\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026533284]\",\"pid\":\"pid:[4026533288]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":106,\"inode\":1}},\"daemon\":{\"pid\":3588022,\"start_ticks\":80796995,\"ppid\":1,\"uids\":[0,0,0,0],\"namespace_pids\":[3588022],\"cgroup\":\"0::/system.slice/droidloomd.service\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026531832]\",\"pid\":\"pid:[4026531836]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":66306,\"inode\":2}},\"launcher\":{\"pid\":3588089,\"start_ticks\":80797013,\"ppid\":3588022,\"uids\":[0,0,0,0],\"namespace_pids\":[3588089],\"cgroup\":\"0::/system.slice/droidloomd.service\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026533281]\",\"pid\":\"pid:[4026531836]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":66306,\"inode\":2}},\"presenter\":{\"pid\":3588024,\"start_ticks\":80796995,\"ppid\":2472,\"uids\":[1000,1000,1000,1000],\"namespace_pids\":[3588024],\"cgroup\":\"0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026531832]\",\"pid\":\"pid:[4026531836]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":66306,\"inode\":2}},\"surfaceflinger\":{\"pid\":3588912,\"start_ticks\":80797155,\"ppid\":3588093,\"uids\":[1000,1000,1000,1000],\"namespace_pids\":[3588912,672],\"cgroup\":\"0::/system.slice/droidloomd.service/system/uid_1000/pid_672\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026533284]\",\"pid\":\"pid:[4026533288]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":106,\"inode\":1}},\"zygote64\":{\"pid\":90360,\"start_ticks\":96586437,\"ppid\":3588093,\"uids\":[0,0,0,0],\"namespace_pids\":[90360,1160345],\"cgroup\":\"0::/system.slice/droidloomd.service/system/uid_0/pid_1160345\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026533070]\",\"pid\":\"pid:[4026533288]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":106,\"inode\":1}},\"system_server\":{\"pid\":90516,\"start_ticks\":96586493,\"ppid\":90360,\"uids\":[1000,1000,1000,1000],\"namespace_pids\":[90516,1160408],\"cgroup\":\"0::/system.slice/droidloomd.service/system/uid_1000/pid_1160408\\n\",\"namespaces\":{\"mnt\":\"mnt:[4026533239]\",\"pid\":\"pid:[4026533288]\",\"user\":\"user:[4026531837]\"},\"root_identity\":{\"device\":106,\"inode\":1}}}")
++EXPECTED = {'android_init': {'cgroup': '0::/system.slice/droidloomd.service\n',
++                  'namespace_pids': [3268779, 1],
++                  'namespaces': {'mnt': 'mnt:[4026533280]',
++                                 'pid': 'pid:[4026533285]',
++                                 'user': 'user:[4026531837]'},
++                  'pid': 3268779,
++                  'ppid': 3268775,
++                  'root_identity': {'device': 106, 'inode': 1},
++                  'start_ticks': 99615082,
++                  'uids': [0, 0, 0, 0]},
++ 'composer': {'cgroup': '0::/system.slice/droidloomd.service/system/uid_1000/pid_652\n',
++              'namespace_pids': [3270341, 652],
++              'namespaces': {'mnt': 'mnt:[4026533280]',
++                             'pid': 'pid:[4026533285]',
++                             'user': 'user:[4026531837]'},
++              'pid': 3270341,
++              'ppid': 3268779,
++              'root_identity': {'device': 106, 'inode': 1},
++              'start_ticks': 99615244,
++              'uids': [1000, 1000, 1000, 1000]},
++ 'daemon': {'cgroup': '0::/system.slice/droidloomd.service\n',
++            'namespace_pids': [3588022],
++            'namespaces': {'mnt': 'mnt:[4026531832]', 'pid': 'pid:[4026531836]', 'user': 'user:[4026531837]'},
++            'pid': 3588022,
++            'ppid': 1,
++            'root_identity': {'device': 66306, 'inode': 2},
++            'start_ticks': 80796995,
++            'uids': [0, 0, 0, 0]},
++ 'launcher': {'cgroup': '0::/system.slice/droidloomd.service\n',
++              'namespace_pids': [3268774],
++              'namespaces': {'mnt': 'mnt:[4026533279]',
++                             'pid': 'pid:[4026531836]',
++                             'user': 'user:[4026531837]'},
++              'pid': 3268774,
++              'ppid': 3588022,
++              'root_identity': {'device': 66306, 'inode': 2},
++              'start_ticks': 99615080,
++              'uids': [0, 0, 0, 0]},
++ 'presenter': {'cgroup': '0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service\n',
++               'namespace_pids': [3588024],
++               'namespaces': {'mnt': 'mnt:[4026531832]',
++                              'pid': 'pid:[4026531836]',
++                              'user': 'user:[4026531837]'},
++               'pid': 3588024,
++               'ppid': 2472,
++               'root_identity': {'device': 66306, 'inode': 2},
++               'start_ticks': 80796995,
++               'uids': [1000, 1000, 1000, 1000]},
++ 'surfaceflinger': {'cgroup': '0::/system.slice/droidloomd.service/system/uid_1000/pid_661\n',
++                    'namespace_pids': [3270350, 661],
++                    'namespaces': {'mnt': 'mnt:[4026533280]',
++                                   'pid': 'pid:[4026533285]',
++                                   'user': 'user:[4026531837]'},
++                    'pid': 3270350,
++                    'ppid': 3268779,
++                    'root_identity': {'device': 106, 'inode': 1},
++                    'start_ticks': 99615245,
++                    'uids': [1000, 1000, 1000, 1000]},
++ 'system_server': {'cgroup': '0::/system.slice/droidloomd.service/system/uid_1000/pid_808\n',
++                   'namespace_pids': [3270611, 808],
++                   'namespaces': {'mnt': 'mnt:[4026533719]',
++                                  'pid': 'pid:[4026533285]',
++                                  'user': 'user:[4026531837]'},
++                   'pid': 3270611,
++                   'ppid': 3270325,
++                   'root_identity': {'device': 106, 'inode': 1},
++                   'start_ticks': 99615342,
++                   'uids': [1000, 1000, 1000, 1000]},
++ 'zygote64': {'cgroup': '0::/system.slice/droidloomd.service/system/uid_0/pid_638\n',
++              'namespace_pids': [3270325, 638],
++              'namespaces': {'mnt': 'mnt:[4026533718]',
++                             'pid': 'pid:[4026533285]',
++                             'user': 'user:[4026531837]'},
++              'pid': 3270325,
++              'ppid': 3268779,
++              'root_identity': {'device': 106, 'inode': 1},
++              'start_ticks': 99615242,
++              'uids': [0, 0, 0, 0]}}
+ LIMITS={"cpu.max":"200000 100000","memory.high":"5368709120","memory.max":"6442450944","memory.swap.max":"max","pids.max":"12288"}
+ STATUS_KEYS={'Uid','Gid','Groups','NSpid','CapInh','CapPrm','CapEff','CapBnd','CapAmb','Threads','State','PPid'}
+ 
+@@ -112,7 +189,7 @@
+ 
+ def qualify_process(role, row):
+     actual = identity(row)
+-    need(role in EXPECTED and actual == EXPECTED[role], 'FIXED_IDENTITY_DIFFERS_FROM_ACTUAL_READ02')
++    need(role in EXPECTED and actual == EXPECTED[role], 'FIXED_IDENTITY_DIFFERS_FROM_TYPED_BASELINE')
+     return actual
+ 
+ 
+@@ -121,8 +198,157 @@
+     for role, expected in EXPECTED.items():
+         check()
+         rows[role] = qualify_process(role, process(expected['pid'], expected['start_ticks']))
+-    need(set(rows) == set(EXPECTED) and len(rows) == 7, 'FIXED_SEVEN_ROLES_INCOMPLETE')
++    need(set(rows) == set(EXPECTED) and len(rows) == 8, 'FIXED_EIGHT_ROLES_INCOMPLETE')
+     return rows
++
++
++RUNTIME_EPOCH_SHA = 'a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9'
++FRAMEWORK_EPOCH_SHA = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
++CURRENT_GUARD_PIN = {'bytes': 3213,
++ 'path': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/current_baseline_guard.py',
++ 'sha256': 'd84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3'}
++CURRENT_GUARD_PINS = {'baseline': {'bytes': 44041,
++              'path': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/baseline.private.json',
++              'sha256': '7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8'},
++ 'manifest_sha': 'b97002660594ad0ef6e7b453927b8c5b19cba49a5873bc133199d790019b1f9f',
++ 'qualification': {'bytes': 1587,
++                   'path': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/qualification.private.json',
++                   'sha256': '4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6'},
++ 'root': '/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01'}
++APP_SCOPE_PIN = {'bytes': 57340,
++ 'path': '/home/alex/work/pocket4-successor-native-install-20261106-douyin-01/app-scope-after.private.json',
++ 'sha256': '489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4'}
++APP_SCOPE_PACKAGES = ['com.Hyatt.hyt',
++ 'com.MobileTicket',
++ 'com.amazon.mShop.android.shopping',
++ 'com.android.calendar',
++ 'com.android.camera2',
++ 'com.android.contacts',
++ 'com.android.deskclock',
++ 'com.android.dialer',
++ 'com.android.documentsui',
++ 'com.android.gallery3d',
++ 'com.android.messaging',
++ 'com.android.quicksearchbox',
++ 'com.android.settings',
++ 'com.android.threadnetwork.demoapp',
++ 'com.bestbuy.android',
++ 'com.ehi.national.mobile',
++ 'com.enflick.android.TextNow',
++ 'com.google.android.gms',
++ 'com.hertz.android.digital',
++ 'com.hilton.android.hhonors',
++ 'com.ihg.apps.android',
++ 'com.jingdong.app.mall',
++ 'com.lianjia.beike',
++ 'com.marriott.mrt',
++ 'com.pinger.textfree',
++ 'com.rytong.airchina',
++ 'com.rytong.ceair',
++ 'com.sankuai.meituan.takeoutnew',
++ 'com.sdu.didi.psnger',
++ 'com.ss.android.ugc.aweme',
++ 'com.szzc',
++ 'com.taobao.taobao',
++ 'com.tencent.mm',
++ 'com.ubercab',
++ 'com.united.mobile.android',
++ 'com.xunmeng.pinduoduo',
++ 'com.zhubajie.client',
++ 'com.zillow.android.streeteasy',
++ 'ctrip.android.view',
++ 'jp.co.ana.android.tabidachi',
++ 'local.pocket4.actions.v2',
++ 'local.pocket4.fixture',
++ 'org.chromium.webview_shell',
++ 'org.droidloom.qa.editorcontract',
++ 'org.fcitx.fcitx5.android',
++ 'tv.danmaku.bili']
++
++"""Inserted into the existing fixed snapshot; not a standalone entry point."""
++
++def expected_from_baseline(baseline):
++    runtime = baseline['runtime']
++    binding = runtime['held']['process_snapshot']['binding']
++    extra = runtime['held']['extra']
++    required = {'daemon', 'launcher', 'android_init', 'presenter', 'surfaceflinger', 'zygote64', 'system_server', 'composer'}
++    need(set(binding['processes']) == set(extra) == required, 'TYPED_EIGHT_ROLES_REQUIRED')
++    rows = {}
++    for role, value in binding['processes'].items():
++        item = extra[role]
++        proc = item['held_proc']
++        need(value['host_pid'] == proc['pid'] and value['start_ticks'] == int(proc['start']) and
++             value['parent_host_pid'] == proc['ppid'] and value['uids'] == [int(v) for v in proc['uid']] and
++             value['namespace_pids'] == [int(v) for v in proc['nspid']] and
++             value['cgroup'] == proc['cgroup'].splitlines() and
++             all(value['namespaces'][name] == item['namespaces'][name] for name in value['namespaces']),
++             'TYPED_BASELINE_ROLE_RECORDS_DISAGREE')
++        rows[role] = {'pid': value['host_pid'], 'start_ticks': value['start_ticks'],
++                      'ppid': value['parent_host_pid'], 'uids': value['uids'],
++                      'namespace_pids': value['namespace_pids'], 'cgroup': proc['cgroup'],
++                      'namespaces': {name: item['namespaces'][name] for name in ('mnt', 'pid', 'user')},
++                      'root_identity': item['root']}
++    return rows
++
++
++def qualify_baseline(baseline):
++    runtime_raw = json.dumps(baseline['runtime'], sort_keys=True, separators=(',', ':'),
++                             ensure_ascii=True, allow_nan=False).encode()
++    need(baseline['schema'] == 'pocket4-successor-runtime-baseline-v1' and
++         baseline['runtime_epoch_sha256'] == sha(runtime_raw) == RUNTIME_EPOCH_SHA and
++         baseline['framework_epoch']['sha256'] == FRAMEWORK_EPOCH_SHA and
++         baseline['runtime']['held']['process_snapshot']['binding']['boot_id'] == BOOT_ID and
++         baseline['production_ready'] is False and baseline['UI_or_install_runtime_admitted'] is False,
++         'TYPED_RUNTIME_BASELINE_CHANGED')
++    need(expected_from_baseline(baseline) == EXPECTED, 'TYPED_BASELINE_PROTECTED_ROLES_CHANGED')
++    need(baseline['runtime']['limits'] == LIMITS and baseline['runtime']['cell_config']['sha256'] == CELL_SHA,
++         'TYPED_BASELINE_CONFIG_OR_LIMITS_CHANGED')
++
++
++def qualify_scope_reference(pin, packages):
++    need(type(pin) is dict and set(pin) == {'path', 'bytes', 'sha256'} and
++         type(pin['path']) is str and pin['path'].startswith('/home/alex/work/') and
++         all(part not in ('', '.', '..') for part in pin['path'][1:].split('/')) and
++         type(pin['bytes']) is int and 0 < pin['bytes'] <= 4 * 1024 * 1024 and
++         type(pin['sha256']) is str and len(pin['sha256']) == 64 and
++         all(c in '0123456789abcdef' for c in pin['sha256']) and
++         type(packages) is list and 0 < len(packages) <= 128 and
++         all(type(name) is str and name for name in packages) and packages == sorted(set(packages)),
++         'FINAL_APP_SCOPE_PIN_REQUIRED')
++    return pin
++
++
++def qualify_typed_guard(receipt):
++    need(receipt.get('schema') == 'pocket4-successor-main-guard-v1' and
++         receipt.get('baseline_sha256') == IDENTITY_SOURCE_SHA and
++         receipt.get('runtime_epoch_sha256') == RUNTIME_EPOCH_SHA and
++         receipt.get('Main_epoch_sha256') == FRAMEWORK_EPOCH_SHA and
++         receipt.get('eight_roles_including_composer_match') is True and
++         receipt.get('complete_paired_classpath_matches') is True and
++         receipt.get('resource_limits_match') is True and
++         receipt.get('runtime_only_app_scopes_checked_separately') is True and
++         receipt.get('UI_or_install_runtime_admitted') is False and receipt.get('production_ready') is False,
++         'TYPED_GUARD_RECEIPT_REJECTED')
++
++
++def qualify_scope_receipt(receipt, pin, packages):
++    qualify_scope_reference(pin, packages)
++    need(receipt.get('schema') == 'pocket4-app-scope-guard-v1' and
++         receipt.get('runtime_epoch_sha256') == RUNTIME_EPOCH_SHA and
++         receipt.get('app_scope_sha256') == pin['sha256'] and receipt.get('packages') == packages and
++         receipt.get('current_apk_paths_and_file_identities_match') is True and
++         receipt.get('new_signature_verification_performed') is False and
++         receipt.get('UI_or_install_runtime_admitted') is False,
++         'CURRENT_APP_SCOPE_RECEIPT_REJECTED')
++
++
++def load_current_guard():
++    raw = read_regular(CURRENT_GUARD_PIN['path'])
++    need(len(raw) == CURRENT_GUARD_PIN['bytes'] and sha(raw) == CURRENT_GUARD_PIN['sha256'], 'CURRENT_GUARD_SOURCE_PIN')
++    scope = {'__name__': 'normal05_exact_current_typedguard', '__file__': CURRENT_GUARD_PIN['path']}
++    exec(compile(raw, CURRENT_GUARD_PIN['path'], 'exec'), scope, scope)
++    need(scope['PINS'] == CURRENT_GUARD_PINS, 'CURRENT_GUARD_AUTHORITY_PINS')
++    return scope
+ 
+ 
+ def qualify_finish(primary_error, cleanup_errors, within_deadline):
+@@ -135,16 +361,22 @@
+ def capture():
+     global DEADLINE
+     need(os.getuid() == 0 and os.geteuid() == 0, 'ROOT_SNAPSHOT_REQUIRED')
++    qualify_scope_reference(APP_SCOPE_PIN, APP_SCOPE_PACKAGES)
+     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+     started = time.monotonic_ns()
+     DEADLINE = time.monotonic() + 15
+     signal.signal(signal.SIGALRM, signal.SIG_DFL)
+-    signal.alarm(15)  # Self-only watchdog. This helper starts no child processes.
++    signal.alarm(15)  # Self-only watchdog. The existing typedguard may start fixed read-only service queries; its children remain owned by the root supervisor.
+     cg_fd = None
+     failure = None
+     cleanup_errors = []
+     result = None
+     try:
++        guard = load_current_guard()
++        current_baseline = guard['current_baseline']()
++        qualify_baseline(current_baseline)
++        typed_guard_receipt = guard['current_guard'](current_baseline, action_attempted=False)
++        qualify_typed_guard(typed_guard_receipt)
+         need(read('/proc/sys/kernel/random/boot_id', 128).decode('ascii').strip() == BOOT_ID, 'BOOT_CHANGED')
+         raw = read_regular(ACTIVATION)
+         need(sha(raw) == ACTIVATION_SHA, 'HISTORICAL_ACTIVATION_CHANGED')
+@@ -181,6 +413,8 @@
+         pressure = cg_read('memory.pressure')
+         need({name: cg_read(name) for name in LIMITS} == limits, 'MAIN_LIMITS_CHANGED_DURING_SNAPSHOT')
+         need(cg_id(os.fstat(cg_fd)) == cg_id(cg_info) == cg_id(CG.lstat()), 'MAIN_CGROUP_CHANGED_DURING_SNAPSHOT')
++        app_scope_receipt = guard['check_app_scope'](APP_SCOPE_PIN, APP_SCOPE_PACKAGES)
++        qualify_scope_receipt(app_scope_receipt, APP_SCOPE_PIN, APP_SCOPE_PACKAGES)
+         after_processes = snapshot_processes()
+         need(before_processes == after_processes == EXPECTED, 'PROTECTED_PROCESSES_CHANGED_DURING_SNAPSHOT')
+         need(read('/proc/sys/kernel/random/boot_id', 128).decode('ascii').strip() == BOOT_ID, 'BOOT_CHANGED')
+@@ -192,17 +426,21 @@
+                   'old_QA_epoch_invalid': True, 'new_QA_epoch_qualified': False,
+                   'protected_boot_id': BOOT_ID,
+                   'protected_identity_source_sha256': IDENTITY_SOURCE_SHA,
+-                  'actual_read02_stdout_sha256': ACTUAL_READ02_STDOUT_SHA,
++                  'current_qualification_sha256': CURRENT_QUALIFICATION_SHA,
+                   'protected_processes': after_processes,
++                  'runtime_epoch_sha256': RUNTIME_EPOCH_SHA, 'framework_epoch_sha256': FRAMEWORK_EPOCH_SHA,
++                  'current_guard_source_sha256': CURRENT_GUARD_PIN['sha256'],
++                  'app_scope_sha256': APP_SCOPE_PIN['sha256'], 'app_scope_packages': APP_SCOPE_PACKAGES,
++                  'typed_guard_receipt': typed_guard_receipt, 'app_scope_guard_receipt': app_scope_receipt,
+                   'cell_sha256': CELL_SHA, 'limits': limits,
+                   'main_cgroup': str(CG),
+                   'main_cgroup_identity': {'device': cg_info.st_dev, 'inode': cg_info.st_ino},
+                   'memory_events': events, 'current_resources': current, 'cpu_stat': cpu,
+                   'memory_pressure': pressure, 'started_monotonic_ns': started,
+-                  'Main_actions': 0, 'Android_actions': 0, 'subprocesses_started': 0,
++                  'Main_actions': 0, 'Android_actions': 0, 'subprocesses_started': None, 'readonly_guard_service_queries_possible': True,
+                   'runtime_authorization_enabled': False,
+                   'installed_engine_hash_observed': False,
+-                  'scope': 'Only the fixed current seven process identities, boot, historical activation pin, config, original Main limits and counters. No new QA epoch or full-interval noninterference qualification.'}
++                  'scope': 'Only the typedguard-bound eight process identities, current baseline/app scope, boot, historical activation pin, config, original Main limits and counters. No new QA epoch or full-interval noninterference qualification.'}
+     except BaseException as error:
+         failure = error
+     finally:
+--- normal04/capture_lifecycle.py
++++ normal05/capture_lifecycle.py
+@@ -21,7 +21,7 @@
+ import time
+ 
+ MAX_CHILDREN = 128
+-PROTECTED_PIDS = frozenset((3588093, 3588022, 3588089, 3588024, 3588912, 90360, 90516))
++PROTECTED_PIDS = frozenset((3268774, 3268779, 3270325, 3270341, 3270350, 3270611, 3588022, 3588024))
+ 
+ 
+ def require(value, message):
+--- normal04/root_snapshot_supervisor.py
++++ normal05/root_snapshot_supervisor.py
+@@ -4,7 +4,7 @@
+ No path, argv, PID, namespace, UID, command or Python body can be selected by
+ the transport. The two embedded source bodies must match these exact pins.
+ Root signals only children created by this supervisor or their adopted
+-descendants; the seven protected Main PIDs are explicitly excluded.
++descendants; the eight protected Main PIDs are explicitly excluded.
+ """
+ import ctypes
+ import errno
+@@ -16,8 +16,8 @@
+ import sys
+ import time
+ 
+-LIFECYCLE_SHA = '4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28'
+-SNAPSHOT_SHA = '1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf'
++LIFECYCLE_SHA = '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126'
++SNAPSHOT_SHA = '3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3'
+ MODES = frozenset(('before', 'after', 'control-timeout', 'control-escaped', 'control-pidfd'))
+ OBSERVATION_SECONDS = 15
+ RETIREMENT_SECONDS = 5
+--- normal04/fenced_build.py
++++ normal05/fenced_build.py
+@@ -9,12 +9,12 @@
+ import subprocess
+ import time
+ 
+-CONTROLLER_SHA = '16e1e03e466c946dcb4c72f5fc900f2552bba919fdcf49ba136c41d0e544cdc1'
+-LIFECYCLE_SHA = '4ffc5a7d6a54ad2cd4351ef30f90a12143614206953e97219f3d6cf5c6e1fc28'
+-ROOT_SUPERVISOR_SHA = 'f493a324cb5694f618d0fed3d5ed17ff90aa64924b671ea99550622f6090b5b7'
+-SNAPSHOT_SHA = '1fd614b6e7b4900feff1a114c0cd221a1fb00fc0cea9878db1f3ae5672d561cf'
++CONTROLLER_SHA = 'f4ab5e09fc22b759811bfa9480c2de555dbc5096bc1258a984dbd33809db734b'
++LIFECYCLE_SHA = '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126'
++ROOT_SUPERVISOR_SHA = 'a3a8f95260d71df60d5f2d51ed34b669fbe398b055dc0cb680002096caf53147'
++SNAPSHOT_SHA = '3c9c28efe41148a0e3812a9c96519ed7813c8e85f448bb7ba7596a608ac5adc3'
+ PREPARATION_SHA = 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'
+-ROOT = Path("/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-native-provider-build-04-20261106")
++ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-native-provider-build-05-20261106')
+ FENCE_ROOT = ROOT / 'build-fences-01'
+ 
+ 
+@@ -226,7 +226,7 @@
+             observation['old_QA_epoch_invalid'] is True and observation['new_QA_epoch_qualified'] is False and
+             observation['runtime_authorization_enabled'] is False and
+             set(observation['protected_processes']) ==
+-                {'android_init', 'daemon', 'launcher', 'presenter', 'surfaceflinger', 'zygote64', 'system_server'},
++                {'android_init', 'daemon', 'launcher', 'presenter', 'surfaceflinger', 'zygote64', 'system_server', 'composer'},
+             'Main snapshot failed: ' + label)
+     return observation
+ 
+@@ -305,8 +305,10 @@
+     identities = ('historical_activation_sha256', 'old_invalid_QA_epoch_sha256',
+                   'old_QA_epoch_invalid', 'new_QA_epoch_qualified',
+                   'protected_boot_id', 'protected_identity_source_sha256',
+-                  'actual_read02_stdout_sha256', 'protected_processes',
+-                  'cell_sha256', 'limits', 'main_cgroup', 'main_cgroup_identity')
++                  'current_qualification_sha256', 'protected_processes',
++                  'cell_sha256', 'limits', 'main_cgroup', 'main_cgroup_identity',
++                  'runtime_epoch_sha256', 'framework_epoch_sha256', 'current_guard_source_sha256',
++                  'app_scope_sha256', 'app_scope_packages')
+     require(all(row['old_QA_epoch_invalid'] is True and row['new_QA_epoch_qualified'] is False and
+                 row['runtime_authorization_enabled'] is False for row in [before, after]),
+             'host build snapshot cannot authorize a QA epoch')
+@@ -384,7 +386,7 @@
+             if before is not None:
+                 assessment = compare(before, after)
+                 if not assessment['main_fence_pass'] and failure is None:
+-                    failure = 'current seven-role identity, historical activation, limits or OOM fence failed'
++                    failure = 'current typedguard eight-role identity/app scope, historical activation, limits or OOM fence failed'
+         except BaseException as error:
+             if failure is None:
+                 failure = repr(error)
+--- normal04/pure_controls.py
++++ normal05/pure_controls.py
+@@ -44,7 +44,7 @@
+             target = target[key]
+         target[path[-1]] = value
+         return row
+-    exact_identity_error = 'FIXED_IDENTITY_DIFFERS_FROM_ACTUAL_READ02'
++    exact_identity_error = 'FIXED_IDENTITY_DIFFERS_FROM_TYPED_BASELINE'
+     for name, path, value in [
+         ('wrong_pid', ['pid'], 3588887),
+         ('wrong_uid', ['status', 'Uid'], '1000 1000 1000 1000'),
+@@ -141,15 +141,18 @@
+         'runtime_authorization_enabled': False,
+         'protected_boot_id': snapshot['BOOT_ID'],
+         'protected_identity_source_sha256': snapshot['IDENTITY_SOURCE_SHA'],
+-        'actual_read02_stdout_sha256': snapshot['ACTUAL_READ02_STDOUT_SHA'],
++        'current_qualification_sha256': snapshot['CURRENT_QUALIFICATION_SHA'],
+         'protected_processes': copy.deepcopy(snapshot['EXPECTED']),
++        'runtime_epoch_sha256': snapshot['RUNTIME_EPOCH_SHA'], 'framework_epoch_sha256': snapshot['FRAMEWORK_EPOCH_SHA'],
++        'current_guard_source_sha256': snapshot['CURRENT_GUARD_PIN']['sha256'],
++        'app_scope_sha256': '1' * 64, 'app_scope_packages': ['synthetic.one', 'synthetic.two'],
+         'cell_sha256': snapshot['CELL_SHA'], 'limits': copy.deepcopy(snapshot['LIMITS']),
+         'main_cgroup': str(snapshot['CG']), 'main_cgroup_identity': {'device': 30, 'inode': 123},
+         'memory_events': {'low': 0, 'high': 10, 'max': 0, 'oom': 0, 'oom_kill': 0, 'oom_group_kill': 0},
+         'current_resources': {'memory.current': 3000000000, 'memory.swap.current': 0, 'pids.current': 99},
+     }
+     need(fence['compare'](base, copy.deepcopy(base))['main_fence_pass'] is True, 'CONTROL_SAME_FENCE_FAILED')
+-    passed.append('same_current_seven_roles_pass')
++    passed.append('same_current_eight_roles_pass')
+     changed_fence = copy.deepcopy(base)
+     changed_fence['protected_processes']['zygote64']['pid'] = 3588887
+     need(fence['compare'](base, changed_fence)['main_fence_pass'] is False, 'CONTROL_CHANGED_PID_ACCEPTED')
+@@ -172,7 +175,55 @@
+     widened['new_QA_epoch_qualified'] = True
+     bad('host_snapshot_cannot_qualify_QA', lambda: fence['compare'](base, widened),
+         'host build snapshot cannot authorize a QA epoch')
+-    need(len(passed) == len(set(passed)) == 45, 'CONTROL_CASE_COUNT')
++    baseline = json.loads(packet['actual-current-runtime-baseline.json'])
++    good('actual_baseline_derives_eight_roles', lambda: snapshot['qualify_baseline'](baseline))
++    missing = copy.deepcopy(baseline)
++    missing['runtime']['held']['extra'].pop('composer')
++    bad('missing_composer_rejected', lambda: snapshot['expected_from_baseline'](missing), 'TYPED_EIGHT_ROLES_REQUIRED')
++    stale = copy.deepcopy(baseline)
++    stale['runtime_epoch_sha256'] = '0' * 64
++    bad('stale_runtime_baseline_rejected', lambda: snapshot['qualify_baseline'](stale), 'TYPED_RUNTIME_BASELINE_CHANGED')
++    bad('missing_final_scope_pin_rejected', lambda: snapshot['qualify_scope_reference'](None, None), 'FINAL_APP_SCOPE_PIN_REQUIRED')
++    guard_receipt = {
++        'schema': 'pocket4-successor-main-guard-v1', 'baseline_sha256': snapshot['IDENTITY_SOURCE_SHA'],
++        'runtime_epoch_sha256': snapshot['RUNTIME_EPOCH_SHA'], 'Main_epoch_sha256': snapshot['FRAMEWORK_EPOCH_SHA'],
++        'eight_roles_including_composer_match': True, 'complete_paired_classpath_matches': True,
++        'resource_limits_match': True, 'runtime_only_app_scopes_checked_separately': True,
++        'UI_or_install_runtime_admitted': False, 'production_ready': False,
++    }
++    for name, key, value in [
++        ('wrong_guard_baseline_receipt_rejected', 'baseline_sha256', '0' * 64),
++        ('wrong_guard_runtime_receipt_rejected', 'runtime_epoch_sha256', '0' * 64),
++        ('guard_cannot_grant_ui', 'UI_or_install_runtime_admitted', True),
++    ]:
++        bad(name, lambda key=key, value=value: snapshot['qualify_typed_guard']({**guard_receipt, key: value}), 'TYPED_GUARD_RECEIPT_REJECTED')
++    # Deliberately synthetic small fixture; never emitted as an actual app scope.
++    scope_pin = {'path': '/home/alex/work/pure-control-only/app-scope.json', 'bytes': 1, 'sha256': '1' * 64}
++    packages = ['synthetic.one', 'synthetic.two']
++    scope_receipt = {
++        'schema': 'pocket4-app-scope-guard-v1', 'runtime_epoch_sha256': snapshot['RUNTIME_EPOCH_SHA'],
++        'app_scope_sha256': scope_pin['sha256'], 'packages': packages,
++        'current_apk_paths_and_file_identities_match': True, 'new_signature_verification_performed': False,
++        'UI_or_install_runtime_admitted': False,
++    }
++    for name, key, value in [
++        ('scope_receipt_old_epoch_rejected', 'runtime_epoch_sha256', '0' * 64),
++        ('scope_receipt_wrong_apk_scope_rejected', 'app_scope_sha256', '0' * 64),
++        ('scope_receipt_missing_package_rejected', 'packages', ['synthetic.one']),
++        ('scope_cannot_claim_signature_verification', 'new_signature_verification_performed', True),
++    ]:
++        bad(name, lambda key=key, value=value: snapshot['qualify_scope_receipt']({**scope_receipt, key: value}, scope_pin, packages),
++            'CURRENT_APP_SCOPE_RECEIPT_REJECTED')
++    changed_scope = copy.deepcopy(base)
++    changed_scope['app_scope_sha256'] = '0' * 64
++    need(fence['compare'](base, changed_scope)['main_fence_pass'] is False, 'CONTROL_STALE_SCOPE_FENCE')
++    passed.append('stale_scope_fails_outer_fence')
++    changed_qualification = copy.deepcopy(base)
++    changed_qualification['current_qualification_sha256'] = '0' * 64
++    need(fence['compare'](base, changed_qualification)['main_fence_pass'] is False, 'CONTROL_STALE_QUALIFICATION_FENCE')
++    passed.append('old_qualification_fails_outer_fence')
++
++    need(len(passed) == len(set(passed)) == 59, 'CONTROL_CASE_COUNT')
+     return {'schema': 1, 'state': 'PASS', 'passed': len(passed), 'cases': passed,
+             'scope': 'Actual pure Python functions with synthetic identity/resource/failure fixtures and exact staged lock metadata; no device reuse, Main observation, Rust or Soong qualification.',
+             'remote_reads': 0, 'subprocesses': 0, 'Main_actions': 0, 'Android_actions': 0,

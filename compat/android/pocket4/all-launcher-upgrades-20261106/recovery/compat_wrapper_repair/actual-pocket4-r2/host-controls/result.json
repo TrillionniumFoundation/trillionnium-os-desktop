@@ -1,0 +1,80 @@
+{
+  "Android_commands": 0,
+  "FD_count_after": 5,
+  "FD_count_before": 5,
+  "Pocket4_runtime_qualified": false,
+  "caller_uid": 0,
+  "candidate": {
+    "bytes": 6290,
+    "path": "/home/alex/work/pocket4-compat-wrapper-host-controls-20261106-r2/source/unshare_wrapper.py",
+    "sha256": "df2365c026cc578048ce22ebd1b22bfefc25ccc144146683d845ec828c61bf1f"
+  },
+  "cases": [
+    {
+      "name": "actual_fork_parent_mismatch_rejected_before_exec",
+      "passed": true
+    },
+    {
+      "name": "real_native_command_arguments_preserved",
+      "passed": true
+    },
+    {
+      "Android_commands": 0,
+      "cleanup_error": null,
+      "error": {
+        "code": "NO_NAMESPACE_FIXTURE_OUTPUT",
+        "type": "RuntimeError"
+      },
+      "existing_namespace_entries": 0,
+      "name": "TERM_then_supervisor_fallback",
+      "new_pid_namespace": null,
+      "passed": false,
+      "pidfds": {
+        "acquired": 2,
+        "closed": 2
+      },
+      "signals": [],
+      "stderr": "/usr/bin/python3: can't open file '/home/alex/work/pocket4-compat-wrapper-host-controls-20261106-r2/source/pidns_fixture.py': [Errno 13] Permission denied\n"
+    },
+    {
+      "Android_commands": 0,
+      "cleanup_error": null,
+      "error": {
+        "code": "NO_NAMESPACE_FIXTURE_OUTPUT",
+        "type": "RuntimeError"
+      },
+      "existing_namespace_entries": 0,
+      "name": "wrapper_SIGKILL_without_TERM",
+      "new_pid_namespace": null,
+      "passed": false,
+      "pidfds": {
+        "acquired": 2,
+        "closed": 2
+      },
+      "signals": [],
+      "stderr": "/usr/bin/python3: can't open file '/home/alex/work/pocket4-compat-wrapper-host-controls-20261106-r2/source/pidns_fixture.py': [Errno 13] Permission denied\n"
+    }
+  ],
+  "errors": [
+    {
+      "code": "REAL_PROCESS_CONTROL_FAILED",
+      "type": "RuntimeError"
+    }
+  ],
+  "existing_namespace_entries": 0,
+  "fixture_sha256": "da61ecac210799f4626cdc7afa83476049374f4a36e9b87ba0e6a92e664016d1",
+  "kernel_release": "7.0.0-38-generic",
+  "native_unshare": {
+    "bytes": 47800,
+    "file_capabilities_absent": true,
+    "help_sha256": "2d4d2f36a921e9c77f86f7abf128d775b462f2d8b4b0533737a1bc3089e33443",
+    "mode": 493,
+    "path": "/usr/bin/unshare",
+    "sha256": "41c65e55107cbbb1a1f6994784a938dd7dbbe255d1fea6b7a58ec96eabe382ef",
+    "uid": 0,
+    "version": "unshare from util-linux 2.41.3"
+  },
+  "ok": false,
+  "production_wrapper_deployed": false,
+  "schema": "pocket4-compat-wrapper-real-host-controls-v1"
+}
