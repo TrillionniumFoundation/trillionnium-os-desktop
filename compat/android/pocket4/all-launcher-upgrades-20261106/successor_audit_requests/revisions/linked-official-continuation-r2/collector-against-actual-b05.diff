@@ -1,0 +1,231 @@
+--- actual-successful-b05/collector-against-actual-b05.diff
++++ linked-b06-b13/collector-against-actual-b05.diff
+@@ -1,11 +1,10 @@
+ #!/usr/bin/env python3
+-"""Complete corrective audit of original b05 using the qualified official tool.
+-
+-The four original packages and all six APKs are reobserved. The old failed
+-job, source and gate remain unchanged. All three primary commands for every
+-APK must succeed. Host tool identity, full 19+7 dependency checks, controlled
+-RUNPATH absence checks, typed runtime, held APKs/data, locks and owned lifetime
+-remain mandatory. No UI, Android command, permission change or installation.
++"""The eight original unclaimed batches after the independently settled b05 repair.
++
++The original failed job is preserved. Only the fixed original b06-b13 package
++groups are accepted. The successful b05 tool/parser, held APKs, signatures,
++19+7 dependency bindings, RUNPATH absence checks, typed guard and owned lifetime
++remain unchanged. No UI, Android command, permission change or installation.
+ """
+ import sys
+ sys.dont_write_bytecode = True
+@@ -30,7 +29,7 @@
+         "sha256": "dfe1182d8e0da4d3d6e842736378539df33e03a87cf0ed9ab4bbe9ae1f26c041"}
+ ENV = {"PATH": "/usr/bin:/bin", "LANG": "C", "LC_ALL": "C", "TZ": "UTC"}
+ STAT = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")
+-OUTPUT_PREFIX = '/home/alex/work/pocket4-successor-apk-audit-20261106-b05-official-tool-repair-r1-'
++OUTPUT_PREFIX = '/home/alex/work/pocket4-successor-apk-audit-20261106-linked-official-r2-'
+ MAX_APK = 512 * 1024 * 1024
+ MAX_BATCH_BYTES = 4 * 1024 * 1024 * 1024
+ MAX_TOOL_OUTPUT = 4 * 1024 * 1024
+@@ -50,7 +49,7 @@
+     "org.fcitx.fcitx5.android", "tv.danmaku.bili")
+ ROSTER_REFERENCE_SHA = "9c457f72522dc199ffc32e5d821c60c011662bb4e4e98651ea1cfe9a06e48eba"
+ 
+-REPAIR_PACKAGES = ['com.MobileTicket', 'com.amazon.mShop.android.shopping', 'com.android.calendar', 'com.android.camera2']
++PENDING_BATCHES = {'6': {'packages': ['com.android.contacts', 'com.android.deskclock', 'com.android.dialer', 'com.android.documentsui'], 'APK_count': 4, 'logical_APK_bytes': 39737716, 'original_request_sha256': '605c80d1d4ea311994d641adf020d5fca28e54dc30bd545068edabd69a0d3c40'}, '7': {'packages': ['com.android.gallery3d', 'com.android.messaging', 'com.android.quicksearchbox', 'com.android.settings'], 'APK_count': 4, 'logical_APK_bytes': 109385036, 'original_request_sha256': 'fc66d6daa88c497d1e5c031df6daa114212f305007baa175800ea7aef2fe2a05'}, '8': {'packages': ['com.android.threadnetwork.demoapp', 'com.bestbuy.android', 'com.ehi.national.mobile', 'com.hertz.android.digital'], 'APK_count': 12, 'logical_APK_bytes': 501001334, 'original_request_sha256': '6f7741329e91f61b05eae4f8b329c9769402f9dd0b5c0d6a404d6e259ae6f583'}, '9': {'packages': ['com.hilton.android.hhonors', 'com.ihg.apps.android', 'com.jingdong.app.mall', 'com.marriott.mrt'], 'APK_count': 9, 'logical_APK_bytes': 390160945, 'original_request_sha256': 'e8a6c97f5e4626de8033c9bb084c88750ae148c404f82f696b47658bd1ebe0ec'}, '10': {'packages': ['com.pinger.textfree', 'com.sankuai.meituan.takeoutnew', 'com.sdu.didi.psnger', 'com.ss.android.ugc.aweme'], 'APK_count': 7, 'logical_APK_bytes': 614804302, 'original_request_sha256': '4fb648966734614cec80575ba467794b5bf955d9963ea8e7b141993643e52739'}, '11': {'packages': ['com.taobao.taobao', 'com.ubercab', 'com.united.mobile.android', 'com.xunmeng.pinduoduo'], 'APK_count': 16, 'logical_APK_bytes': 703871873, 'original_request_sha256': 'd504364f8923949dc6428008a2e0d9e761d8fadca182eca122d428e5b5f9d1bc'}, '12': {'packages': ['com.zhubajie.client', 'com.zillow.android.streeteasy', 'ctrip.android.view', 'jp.co.ana.android.tabidachi'], 'APK_count': 10, 'logical_APK_bytes': 389233530, 'original_request_sha256': 'acffb13822a87e9504795acdf526d3f86016ccccb3e155cd164a2b1c6a9c1fac'}, '13': {'packages': ['local.pocket4.fixture', 'org.chromium.webview_shell', 'org.droidloom.qa.editorcontract'], 'APK_count': 3, 'logical_APK_bytes': 108766, 'original_request_sha256': 'cdb513767ab31a0956fe152959f91a6a652ed7a4447a36ef4b83aa74889bbd95'}}
+ ACTUAL_GUARD = {"path": "/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/current_baseline_guard.py",
+                 "bytes": 3213, "sha256": "d84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3"}
+ ACTUAL_SCOPE = {'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json', 'bytes': 58854, 'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f'}
+@@ -66,9 +65,8 @@
+     "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-final-upgrades-r1-b01/result.json",
+     "bytes": 21285, "sha256": "4e1e6126869e1f2476574a5576cbec9d661a76350fae41ffe77ed792d2a94477",
+ }
+-REPAIR_LINEAGE = {'original_batch': 5, 'original_job_id': '1a1b16f06d5-fc05-78b1', 'original_plan_sha256': 'd288affedc2eae8d28f2d7083df4c89d756e51ba8e5ebfb2264f9d3c6d783139', 'original_request_sha256': '06ab902809dffe4921d5a98883e3c2caa8594e6585ed0f8fcb4f33df58d4cc98', 'original_state': 'failed', 'original_exit_code': 1}
+-REPAIR_APK_COUNT = 6
+-REPAIR_LOGICAL_APK_BYTES = 341931165
++CONTINUATION_LINEAGE = {'original_plan_sha256': 'd288affedc2eae8d28f2d7083df4c89d756e51ba8e5ebfb2264f9d3c6d783139', 'original_failed_b05_job_id': '1a1b16f06d5-fc05-78b1', 'original_b05_state': 'failed', 'original_b05_exit_code': 1, 'corrective_job_id': '1a1b289b789-fc05-7e7e', 'corrective_result': {'path': '/home/alex/work/pocket4-successor-apk-audit-20261106-b05-official-tool-repair-r1-01/result.json', 'bytes': 276285, 'sha256': '3d0c794f4e2ac04ee6c67c22cd62ae4d560fc3c11e5f8faa7e514145f6a421f1'}, 'corrective_source_sha256': 'b4d27e1364feb28cab6634c77ed764e15359720025192117ecc8cb84d4391e1a', 'corrective_authoritative_terminal_sha256': 'c0d5d07a7be5d7ccbbbdc0451a4ac1a553bf690a1956b84ba7891aedc7f8652c'}
++CORRECTIVE_RESULT = {'path': '/home/alex/work/pocket4-successor-apk-audit-20261106-b05-official-tool-repair-r1-01/result.json', 'bytes': 276285, 'sha256': '3d0c794f4e2ac04ee6c67c22cd62ae4d560fc3c11e5f8faa7e514145f6a421f1'}
+ 
+ 
+ def validate_candidate(candidate):
+@@ -575,7 +573,7 @@
+ def clean_official_badging_observations(result):
+     badging = [row for row in result["commands"] if row.get("name") == "badging"]
+     expected = [(app["package"], apk["path"]) for app in result["apps"] for apk in app["apks"]]
+-    return bool(len(expected) == REPAIR_APK_COUNT and
++    return bool(len(expected) == PENDING_BATCHES[str(result["original_batch"])]["APK_count"] and
+                 [(row.get("package"), row.get("apk_path")) for row in badging] == expected and
+                 all(row.get("returncode") == 0 and row.get("output_capture_complete") is True and
+                     row.get("stderr", {}).get("bytes") == 0 and row.get("stderr", {}).get("sha256") ==
+@@ -583,10 +581,14 @@
+ 
+ 
+ def validate_request(request):
+-    need(set(request) == {"schema", "guard", "app_scope", "packages", "output_root", "official_release_assets", "legacy_candidate_aapt2", "legacy_candidate_inventory", "legacy_candidate_proof", "legacy_candidate_terminal", "official_candidate_aapt2", "official_host_stdout", "official_host_terminal", "repair_of"}, "CLOSED_B05_CORRECTIVE_REQUEST_SCHEMA")
+-    need(request["schema"] == "pocket4-original-b05-official-tool-repair-request-v1", "DIAGNOSTIC_REQUEST_SCHEMA")
+-    need(request["packages"] == REPAIR_PACKAGES and request["repair_of"] == REPAIR_LINEAGE,
+-         "EXACT_ORIGINAL_B05_FOUR_PACKAGE_CORRECTIVE_SCOPE_REQUIRED")
++    need(set(request) == {"schema", "guard", "app_scope", "packages", "output_root", "official_release_assets", "legacy_candidate_aapt2", "legacy_candidate_inventory", "legacy_candidate_proof", "legacy_candidate_terminal", "official_candidate_aapt2", "official_host_stdout", "official_host_terminal", "continuation_of", "original_batch"}, "CLOSED_LINKED_REMAINING_BATCH_REQUEST_SCHEMA")
++    need(request["schema"] == "pocket4-linked-official-remaining-batch-request-v1", "DIAGNOSTIC_REQUEST_SCHEMA")
++    need(type(request["original_batch"]) is int and str(request["original_batch"]) in PENDING_BATCHES,
++         "ONLY_ORIGINAL_UNCLAIMED_BATCHES_06_TO_13")
++    batch = PENDING_BATCHES[str(request["original_batch"])]
++    need(request["packages"] == batch["packages"] and request["continuation_of"] == CONTINUATION_LINEAGE and
++         request["output_root"] == OUTPUT_PREFIX + "b%02d" % request["original_batch"],
++         "EXACT_LINKED_ORIGINAL_BATCH_SCOPE_REQUIRED")
+     need(request["guard"] == ACTUAL_GUARD and request["app_scope"] == ACTUAL_SCOPE, "EXACT_ACTUAL_SUCCESSOR_AND_FINAL_SCOPE_REQUIRED")
+     need(request["official_release_assets"] is None, "NO_UNSTAGED_RELEASE_ASSERTION")
+     validate_candidate(request["legacy_candidate_aapt2"])
+@@ -608,11 +610,13 @@
+ 
+ def audit(request):
+     validate_request(request)
++    batch = PENDING_BATCHES[str(request["original_batch"])]
+     need(os.getuid() == os.geteuid() == 0, "EXISTING_ROOT_AUTHORITY_REQUIRED")
+     end = time.monotonic() + 840
+-    result = {"schema": "pocket4-original-b05-corrective-apk-audit-v1", "started_utc": now(),
++    result = {"schema": "pocket4-linked-official-remaining-apk-audit-v1", "started_utc": now(),
+         "original_failed_audit_reclassified": False, "original_batch_05_gate_advanced": False,
+-        "all_45_Launcher_apps_reobserved": False, "repair_of": REPAIR_LINEAGE,
++        "all_45_Launcher_apps_reobserved": False, "continuation_of": CONTINUATION_LINEAGE,
++        "original_batch": request["original_batch"],
+         "legacy_badging_reexecuted": False,
+         "packages": request["packages"], "request": request, "roster_reference_sha256": ROSTER_REFERENCE_SHA,
+         "UI_actions": 0, "App_launches": 0, "permission_changes": 0, "installs": 0,
+@@ -651,24 +655,23 @@
+         need(prior_control.get("status") == "ACTUAL_APK_AUDIT_VERIFIED" and prior_control.get("all_manifests_and_signatures_verified") is True, "ORIGINAL_FCITX_CONTROL_CHANGED")
+         failed_commands = [row for row in prior_failed["commands"] if row.get("returncode") != 0]
+         need(len(failed_commands) == 1 and failed_commands[0].get("package") == "com.android.calendar" and failed_commands[0].get("name") == "badging" and failed_commands[0].get("returncode") == 1, "EXACT_ORIGINAL_CALENDAR_FAILURE_REQUIRED")
+-        need(prior_failed.get("packages") == REPAIR_PACKAGES and
+-             [row.get("package") for row in prior_failed["apps"]] == REPAIR_PACKAGES, "EXACT_ORIGINAL_B05_PACKAGE_SET")
+-        prior_apps = {row["package"]: row for row in prior_failed["apps"]}
+-        need(sum(len(row["apks"]) for row in expected.values()) == REPAIR_APK_COUNT, "ORIGINAL_B05_SIX_APKS_REQUIRED")
+-        for package in REPAIR_PACKAGES:
+-            previous, current = prior_apps[package], expected[package]
+-            need(previous["uid"] == current["uid"] and previous["PM_version_code"] == current["version_code"] and
+-                 previous["code_path"] == current["code_path"] and previous["data_directories"] == current["data_directories"] and
+-                 previous["PM_certificate_sha256"] == current["package_manager_certificate_sha256"], "ORIGINAL_B05_APP_IDENTITY_CHANGED")
+-            projection = lambda rows: sorted(
+-                ({key: apk[key] for key in ("path", "bytes", "sha256", "file")} for apk in rows), key=lambda row: row["path"])
+-            need(projection(previous["apks"]) == projection(current["apks"]), "ORIGINAL_B05_COMPLETE_APK_SET_CHANGED")
+-        result["all_original_b05_APKs_and_app_identities_match_scope"] = True
++        corrective_raw = core.pinned_record(CORRECTIVE_RESULT, MAX_RESULT)
++        corrective = core.parse(corrective_raw)
++        need(corrective.get("schema") == "pocket4-original-b05-corrective-apk-audit-v1" and
++             corrective.get("status") == "ORIGINAL_B05_CORRECTIVE_APK_AUDIT_VERIFIED" and
++             corrective.get("corrective_audit_complete") is True and corrective.get("errors") == [] and
++             corrective.get("original_failed_audit_reclassified") is False and
++             corrective.get("original_batch_05_gate_advanced") is False and
++             corrective.get("collector_source", {}).get("sha256") == CONTINUATION_LINEAGE["corrective_source_sha256"],
++             "EXACT_ACTUAL_B05_CORRECTIVE_PUBLICATION_REQUIRED")
++        need(sum(len(row["apks"]) for row in expected.values()) == batch["APK_count"], "COMPLETE_ORIGINAL_BATCH_APK_COUNT_REQUIRED")
++        result["corrective_publication_reference"] = CORRECTIVE_RESULT
++        result["corrective_terminal_checked_by_local_coordinator_not_this_worker"] = True
+         result["original_failure_reference"] = ORIGINAL_FAILED_RESULT
+         result["original_passed_control_reference"] = ORIGINAL_CONTROL_RESULT
+         total = sum(apk["bytes"] for row in expected.values() for apk in row["apks"])
+-        need(total == REPAIR_LOGICAL_APK_BYTES and 0 < total <= MAX_BATCH_BYTES and
+-             all(0 < len(row["apks"]) <= 32 for row in expected.values()), "EXACT_B05_SCOPED_APK_SET_BOUND")
++        need(total == batch["logical_APK_bytes"] and 0 < total <= MAX_BATCH_BYTES and
++             all(0 < len(row["apks"]) <= 32 for row in expected.values()), "EXACT_ORIGINAL_PENDING_BATCH_APK_SET_BOUND")
+         runtime = baseline["runtime"]
+         binding = runtime["held"]["process_snapshot"]["binding"]
+         held = core.HeldProcesses(pool, {name: row["host_pid"] for name, row in binding["processes"].items()})
+@@ -679,6 +682,7 @@
+         result["request_artifact"] = store.write("request.json", canonical(request) + b"\n")
+         result["collector_source"] = store.write("collector-source.py", core.host_read(str(Path(__file__).resolve()), 131072)[0])
+         result["candidate_inventory_artifact"] = store.write("candidate-inventory.original.json", inventory_raw)
++        result["corrective_publication_artifact"] = store.write("actual-b05-corrective-result.json", corrective_raw)
+         result["original_failed_result_artifact"] = store.write("original-b05-failed-result.json", prior_failed_raw)
+         result["original_passed_control_artifact"] = store.write("original-b01-passed-result.json", prior_control_raw)
+         result["candidate_proof_artifact"] = store.write("prior-host-proof.outer.original.json", proof_raw)
+@@ -776,6 +780,7 @@
+         core.pinned_record(request["legacy_candidate_proof"], 131072)
+         core.pinned_record(request["legacy_candidate_terminal"], 65536)
+         core.pinned_record(ORIGINAL_FAILED_RESULT, MAX_RESULT)
++        core.pinned_record(CORRECTIVE_RESULT, MAX_RESULT)
+         core.pinned_record(ORIGINAL_CONTROL_RESULT, MAX_RESULT)
+         core.pinned_record(request["official_host_stdout"], 131072)
+         core.pinned_record(request["official_host_terminal"], 65536)
+@@ -808,21 +813,42 @@
+         result["all_tool_children_joined"] = all(x.get("joined") and x.get("pipes_closed") for x in result["commands"])
+         result["unjoined_tool_pids"] = [x.get("pid") for x in result["commands"] if x.get("spawned") and not x.get("joined")]
+         result["all_commands_succeeded"] = all(x.get("returncode") == 0 and not x.get("timed_out") and x.get("output_capture_complete") and not x.get("error") for x in result["commands"])
+-        result["all_primary_commands_succeeded"] = len(result["commands"]) == 3 * REPAIR_APK_COUNT and result["all_commands_succeeded"]
++        result["all_primary_commands_succeeded"] = len(result["commands"]) == 3 * batch["APK_count"] and result["all_commands_succeeded"]
+         result["all_manifests_and_signatures_verified"] = all_apk_evidence_verified(result, request["packages"])
+         result["official_badging_stderr_empty"] = clean_official_badging_observations(result)
+         observations = result.get("official_private_layout", {}).get("observations", [])
+-        result["official_layout_before_and_after_all_commands"] = len(observations) == 2 + 6 * REPAIR_APK_COUNT and all(
++        result["official_layout_before_and_after_all_commands"] = len(observations) == 2 + 6 * batch["APK_count"] and all(
+             row.get("complete") is True and row.get("all_five_search_directories_and_thirty_candidates_proved") is True for row in observations)
+-        result["corrective_audit_complete"] = (result["all_manifests_and_signatures_verified"] and
++        result["linked_batch_audit_complete"] = (result["all_manifests_and_signatures_verified"] and
+             result["all_primary_commands_succeeded"] and result["official_badging_stderr_empty"] and
+             result.get("official_layout_descriptors_closed") is True and result["official_layout_before_and_after_all_commands"] and
+-            result.get("all_original_b05_APKs_and_app_identities_match_scope") is True)
++            result.get("corrective_publication_reference") == CORRECTIVE_RESULT)
++        # Preserve every full observation losslessly, under the same private store.
++        # At 16 APKs the duplicate directory records otherwise exceed MAX_RESULT.
++        try:
++            if store is not None and "official_private_layout" in result:
++                layout = result["official_private_layout"]
++                layout_raw = canonical(layout) + b"\n"
++                need(len(layout_raw) <= MAX_RESULT, "FULL_LAYOUT_EVIDENCE_BYTE_BOUND")
++                layout_pin = store.write("official-layout-observations.private.json", layout_raw)
++                result["official_private_layout"] = {"artifact": layout_pin,
++                    "encoding": "zlib-base64", "data": base64.b64encode(zlib.compress(layout_raw, 9)).decode("ascii"),
++                    "observation_count": len(observations),
++                    "all_observations_complete": all(row.get("complete") is True and
++                        row.get("all_five_search_directories_and_thirty_candidates_proved") is True for row in observations),
++                    "owned_directory_descriptors": layout["owned_directory_descriptors"],
++                    "full_original_observations_persisted_and_read_back": True}
++            else:
++                result["linked_batch_audit_complete"] = False
++        except BaseException as error:
++            result["errors"].append({"stage": "full_layout_evidence_publication", "type": type(error).__name__, "reason": str(error)[:160]})
++            result["all_manifests_and_signatures_verified"] = False
++            result["linked_batch_audit_complete"] = False
+         result["resource_table_integrity_fully_proved"] = False
+-        result["inference_limit"] = "Complete current original-b05 APK/manifest/signature audit; the old failed job and gate remain unchanged. Badging does not prove all resource-table health, effective grants, or business readiness."
++        result["inference_limit"] = "One original remaining batch, same current APK/manifest/signature scope and explicit b05 corrective lineage. The old failed b05 remains failed. Badging does not prove all resource-table health, effective grants, or business readiness."
+         result["ended_utc"] = now()
+         result["owned_descriptors_before_final_receipt"] = pool.summary()
+-        result["status"] = "ORIGINAL_B05_CORRECTIVE_APK_AUDIT_VERIFIED" if result["corrective_audit_complete"] else "ORIGINAL_B05_CORRECTIVE_AUDIT_INCOMPLETE_NO_RETRY"
++        result["status"] = "LINKED_ORIGINAL_BATCH_APK_AUDIT_VERIFIED" if result["linked_batch_audit_complete"] else "LINKED_ORIGINAL_BATCH_AUDIT_INCOMPLETE_NO_RETRY"
+         try:
+             if store is not None:
+                 raw = canonical(result) + b"\n"; need(len(raw) <= MAX_RESULT, "RESULT_BYTE_BOUND")
+@@ -840,7 +866,7 @@
+                 result["status"] = "FD_RETIREMENT_FAILED"
+         result["owned_descriptors_final"] = pool.summary()
+         if not result["all_manifests_and_signatures_verified"]:
+-            result["corrective_audit_complete"] = False
++            result["linked_batch_audit_complete"] = False
+     return result
+ 
+ 
+@@ -855,20 +881,20 @@
+         request = json.loads(read_bootstrap({"path": args.request, "sha256": args.request_sha256}, 262144))
+         result = audit(request)
+     except BaseException as error:
+-        result = {"schema": "pocket4-original-b05-corrective-audit-entry-rejection-v1", "status": "ENTRY_OR_RECEIPT_REJECTED", "type": type(error).__name__,
++        result = {"schema": "pocket4-linked-remaining-audit-entry-rejection-v1", "status": "ENTRY_OR_RECEIPT_REJECTED", "type": type(error).__name__,
+                   "reason": str(error)[:256], "installs": 0, "UI_actions": 0, "automatic_retry": False, "production_ready": False}
+     result["process_FDs_before"] = process_fds_before
+     result["process_FDs_after"] = len(os.listdir("/proc/self/fd"))
+     if result["process_FDs_before"] != result["process_FDs_after"]:
+         result.setdefault("errors", []).append({"reason": "FINAL_PROCESS_FD_DIFFERENCE"})
+         result["all_manifests_and_signatures_verified"] = False
+-        result["corrective_audit_complete"] = False
++        result["linked_batch_audit_complete"] = False
+         result["status"] = "FINAL_PROCESS_FD_DIFFERENCE"
+     result["success_gate_requires_outer_final_stdout_and_authoritative_terminal"] = True
+     raw = canonical(result)
+     need(len(raw) <= MAX_RESULT, "STDOUT_ARTIFACT_BOUND")
+     print(json.dumps({"encoding": "zlib-base64", "artifact_bytes": len(raw), "artifact_sha256": sha(raw), "data": base64.b64encode(zlib.compress(raw, 9)).decode("ascii")}, separators=(",", ":")), flush=True)
+-    return 0 if result.get("corrective_audit_complete") is True else 1
++    return 0 if result.get("linked_batch_audit_complete") is True else 1
+ 
+ 
+ if __name__ == "__main__":

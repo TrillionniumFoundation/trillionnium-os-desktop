@@ -1,0 +1,78 @@
+{
+  "Main_actions": 0,
+  "actual_failed_case_not_reclassified": true,
+  "files": {
+    "LOCAL_PACKET_PROOF.json": {
+      "bytes": 800,
+      "sha256": "e2f2ac2f97c71d8d8162f8682a2ff7d93ee237e28786c3dc2b333a51a7d3d13b"
+    },
+    "README.md": {
+      "bytes": 6326,
+      "sha256": "b407780055fc03ab2381f450b88a9fc77649f53a6aaa10a1770bb79bb542e355"
+    },
+    "check_local_boundaries.py": {
+      "bytes": 3407,
+      "sha256": "ee06dfd9ca1c389a3b2771879f7fbdaac1045a0400b441b54aeff1eaefab1dac"
+    },
+    "local-controls.stderr.original.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "local-controls.stdout.original.jsonl": {
+      "bytes": 611,
+      "sha256": "9d4c91816eedd742bac24300c9576fa587ee289b4472fa91d8f61d1627e20150"
+    },
+    "prepare_packet.py": {
+      "bytes": 6991,
+      "sha256": "d44b42e1658fdd6ec72cd93e3bf394722c4ba5664dad1f27616854f5d3d337eb"
+    },
+    "process-request.review-only.json": {
+      "bytes": 45729,
+      "sha256": "510e9e090d7a2559959b3326c484fc7f6bc3af0eec34f375a62a0dd904ce4e72"
+    },
+    "read_failed_case.py": {
+      "bytes": 44768,
+      "sha256": "0e0716b7237199f2fe377ba9f067c2d0327d54a8efb5f40813b1f3e5ebc0021d"
+    },
+    "reader_body.py.in": {
+      "bytes": 30136,
+      "sha256": "912ee6241bc70f1795cd2a0e638a1b7bf2447708e3c684d08c66e56275df14c3"
+    }
+  },
+  "local_controls_actual": {
+    "Android_or_case_acceptance_claimed": false,
+    "Main_commands": 0,
+    "actual_uid": 1000,
+    "all_passed": true,
+    "checks": [
+      {
+        "name": "actual_failed_controller_and_case_remain_failed",
+        "passed": true
+      },
+      {
+        "name": "unrelated_ui_path_nonce_and_beyond_case_counts_rejected",
+        "negative_names": 6,
+        "passed": true
+      },
+      {
+        "name": "changed_actual_original_bytes_rejected",
+        "passed": true
+      },
+      {
+        "actual_uid": 1000,
+        "name": "real_unprivileged_file_and_symlink_rejected_fds_closed",
+        "passed": true,
+        "root_positive_claimed": false
+      }
+    ],
+    "count": 4,
+    "local_only": true,
+    "remote_submitted": false,
+    "whole_process_fd_identities_unchanged": true
+  },
+  "private_bundle_must_not_enter_Git": true,
+  "production_ready": false,
+  "raw_UI_in_source_or_packet": false,
+  "remote_submitted": false,
+  "schema": "pocket4-fixed-failed-case-reader-source-closure-v1"
+}

@@ -1,0 +1,35 @@
+--- reviewed-four-log-reader
++++ beike-two-private-service-log-reader
+@@ -1,12 +1,12 @@
+ #!/usr/bin/env python3
+-"""Read four exact existing official Calendar/Fcitx logs; no Main or tool execution."""
++"""Read two exact existing Beike service logs; private raw output, no Main command."""
+ import hashlib
+ import json
+ import os
+ import stat
+ import sys
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+-PINS = ({'bytes': 5786, 'path': '/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p00-a00-badging.stdout', 'sha256': '42a73692b7d066a9d0aa6572f0d2a70d8b6365c9a874229f05a8ba43c32eabcc'}, {'bytes': 20129, 'path': '/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p00-a00-manifest.stdout', 'sha256': '231279b8faaadaa39a043e2001cca6e8e0c11e2d563bbdd0a0675b4b528e8150'}, {'bytes': 4520, 'path': '/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p01-a00-badging.stdout', 'sha256': 'a84428e59d5c538f2348d0e27c739494081eef9b82b32bd2f1aafd33d93d0e34'}, {'bytes': 12000, 'path': '/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p01-a00-manifest.stdout', 'sha256': '0b10dd310ce5e142c3636fb537e136c790a7f830686d0061eb86665d1fdc6350'})
++PINS = ({'bytes': 50525, 'path': '/home/alex/work/pocket4-beike-permission-pilot-observation-20261106-r1/android-02.stdout', 'sha256': '001c37aab9fe84def6d2e9d87c1e6a81d34baf74e62e2f50643c45c1077b5487'}, {'bytes': 1720, 'path': '/home/alex/work/pocket4-beike-permission-pilot-observation-20261106-r1/android-03.stdout', 'sha256': 'f839074801868c1196b0df62916df5c31b40ef894649c522495668cfcbeb3b6d'})
+ 
+ def need(value,code):
+     if not value:raise RuntimeError(code)
+@@ -58,13 +58,14 @@
+         rows.append({**pin,'encoding':'hex','bytes_hex':raw.hex(),'held_file_and_path_rechecked':True})
+     after=len(os.listdir('/proc/self/fd'))
+     need(after==before,'HOST_READER_DESCRIPTOR_DIFFERENCE')
+-    result={'schema':'pocket4-four-exact-official-calendar-fcitx-logs-v1','ok':True,
+-            'official_comparison_job':'1a1b26bfb80-fc05-7dfa','files':rows,
++    result={'schema':'pocket4-two-exact-beike-private-service-logs-v1','ok':True,
++            'permission_observation_job':'1a1b279845c-fc05-7e2e','files':rows,
+             'process_FDs_before':before,'process_FDs_after':after,
+             'existing_files_modified':False,'Main_reads':0,'native_commands':0,
+             'Android_commands':0,'aapt_commands':0,'UI_actions':0,'installs':0,
+             'namespace_entries':0,'permission_changes':0,'action_lock_acquired':False,
+-            'automatic_retry':False,'original_failed_audit_reclassified':False}
++            'automatic_retry':False,'original_failed_audit_reclassified':False,
++            'raw_output_may_contain_private_state':True,'raw_output_repository_publication_admitted':False}
+     print(canonical(result).decode('ascii'),flush=True)
+ 
+ if __name__=='__main__':main()

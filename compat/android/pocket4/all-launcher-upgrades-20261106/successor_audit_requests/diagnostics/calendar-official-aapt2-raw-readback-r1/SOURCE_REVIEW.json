@@ -1,0 +1,88 @@
+{
+  "APK_reads": 0,
+  "Main_reads": 0,
+  "UI_actions": 0,
+  "aapt_commands": 0,
+  "actual_comparison_job": "1a1b26bfb80-fc05-7dfa",
+  "actual_comparison_worker": {
+    "bytes": 132387,
+    "path": "successor_audit_requests/diagnostics/calendar-official-aapt2-comparison-r1/actual/worker.stdout.original.json",
+    "sha256": "8e577c9e4a6eb77e6ad94e9993ca91aa97af958a4c02491237b32600dd6f4dfe"
+  },
+  "args_prefix": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "-c"
+  ],
+  "diff": {
+    "bytes": 2621,
+    "path": "reader-against-actual-b05-log-reader.diff",
+    "sha256": "acfb205f9cc815e095a0d9f6abd99b576be3edbce16f698f80f882b25202fc3d"
+  },
+  "executable": "/usr/bin/sudo",
+  "fixed_files": [
+    {
+      "bytes": 5786,
+      "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p00-a00-badging.stdout",
+      "sha256": "42a73692b7d066a9d0aa6572f0d2a70d8b6365c9a874229f05a8ba43c32eabcc"
+    },
+    {
+      "bytes": 20129,
+      "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p00-a00-manifest.stdout",
+      "sha256": "231279b8faaadaa39a043e2001cca6e8e0c11e2d563bbdd0a0675b4b528e8150"
+    },
+    {
+      "bytes": 4520,
+      "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p01-a00-badging.stdout",
+      "sha256": "a84428e59d5c538f2348d0e27c739494081eef9b82b32bd2f1aafd33d93d0e34"
+    },
+    {
+      "bytes": 12000,
+      "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p01-a00-manifest.stdout",
+      "sha256": "0b10dd310ce5e142c3636fb537e136c790a7f830686d0061eb86665d1fdc6350"
+    }
+  ],
+  "main_only_changes": "Schema and original job reference; read/hash/stat/path/FD logic unchanged.",
+  "min_sdk_inference_before_actual_raw_readback": false,
+  "namespace_entries": 0,
+  "native_commands": 0,
+  "original_b05_failure_reclassified": false,
+  "original_reader": {
+    "bytes": 3606,
+    "path": "successor_audit_requests/diagnostics/b05-calendar-r1/read_pinned_calendar_logs.py",
+    "sha256": "bbbdddf391c2a5f41b179e419893217b84361c6154f5c16ee1c9bbf69b1afa68"
+  },
+  "output": "Four original streams losslessly hex-encoded. Parent must require actual durable0/full output/FD count before interpreting.",
+  "permission_changes": 0,
+  "process_limits": {
+    "cpu_quota_percent": 25,
+    "cwd": "/home/alex/work",
+    "host": "pocket4",
+    "memory_max_bytes": 268435456,
+    "nice": 10,
+    "timeout_seconds": 60
+  },
+  "process_request": {
+    "bytes": 4439,
+    "path": "process-request.review-only.json",
+    "sha256": "06928110f5331926d8e8037bd99e429e91dbb06b12fe0543dff1cf8d9cdc9aaf"
+  },
+  "read_strategy": "Root-private files only; component-by-component nofollow, whole exact bytes/hash and held/path full stat recheck, all owned FDs closed.",
+  "reader": {
+    "bytes": 4074,
+    "path": "read_pinned_official_manifest_logs.py",
+    "sha256": "381446254e67adad33af4ae95f1dda4108eb4cc5185f691b0c1efd60283d14be"
+  },
+  "schema": "pocket4-official-calendar-fcitx-exact-log-reader-source-review-v1",
+  "state": "SOURCE_FROZEN_NOT_EXECUTED",
+  "total_original_bytes": 42435,
+  "unchanged_definitions": [
+    "need",
+    "sha",
+    "canonical",
+    "read_file",
+    "read_host_pin"
+  ]
+}

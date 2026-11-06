@@ -1,0 +1,346 @@
+{
+  "schema": "pocket4.zbj_explicit_continuation_proposal.v1",
+  "state": "CONDITIONAL_DRAFT_NOT_SEALED_NOT_EXECUTED",
+  "new_executable_or_process_request_prepared": false,
+  "package": "com.zhubajie.client",
+  "base_source": "official_source_scripts/s34_zbj_tail/resume_zbj_tail_s34_once.py",
+  "settled_previous_job": "1a1b19cedcf-fc05-79de",
+  "previous_result": {
+    "path": "official_source_scripts/s34_zbj_tail/actual-r1/com.zhubajie.client-result.raw.json",
+    "bytes": 65232,
+    "sha256": "c49b3c374226329c92810d11bacee29c75023c26bf648bf5c4a6ebf7ea741135"
+  },
+  "previous_failure": {
+    "path": "official_source_scripts/s34_zbj_tail/actual-r1/range-0003.raw.json",
+    "bytes": 2103,
+    "sha256": "a92c797bdd1d9471842afa76c3d2872249d78b42286997b393fe191949436a6b"
+  },
+  "new_information": [
+    "Current official360 page still exposes the same APK path.",
+    "S34 succeeded for three 1MiB ranges, then failed only at normal DNS resolution with zero bytes and HTTP0.",
+    "No HTTP refusal or retry was observed in that failed transfer; this does not establish current host DNS recovery."
+  ],
+  "blocking_inputs_before_packet_seal": [
+    "Read and pin all three COMPLETE range receipts using bounded-receipt-read-plan.json.",
+    "Bind each complete range body/header/metrics path and identity from those receipts; do not invent the body hashes.",
+    "Define a single bounded normal system-resolver admission for the exact existing CDN host; a failed result settles the attempt without a download.",
+    "Root reviews one explicit new attempt and a unique staging root/key. This proposal itself authorizes neither a retry nor a remote process."
+  ],
+  "download_url_candidate": "https://s.shouji.qihucdn.com/261009/9b8bc092373e8f09d56861322b8ce1c9/com.zhubajie.client_370.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1794571897%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1793967097%26tok%3Db64e944d9e3de8d16861a770d758bee5%26v%3D%26f%3Dz.apk",
+  "alternative_currently_observed_store_url": "https://s.shouji.qihucdn.com/261009/9b8bc092373e8f09d56861322b8ce1c9/com.zhubajie.client_370.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1794571796%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1793966996%26tok%3D5969849da6d36e613200ad4a0953dfdc%26v%3D%26f%3Dz.apk",
+  "url_choice": "Prefer unchanged original URL; a query-token change is not silently substituted. A changed URL requires separate explicit provenance and entity review.",
+  "expected_total_bytes": 166873622,
+  "original_verified_prefix_bytes": 124370944,
+  "original_verified_prefix_sha256": "b5afd036ee69dda692bc5e20a35ddd38c66431ce7704960e7bac3b6f2a3f2584",
+  "additional_complete_segments": [
+    {
+      "index": 0,
+      "start": 124370944,
+      "end": 125419519,
+      "bytes": 1048576,
+      "receipt": {
+        "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0000.json",
+        "bytes": 2367,
+        "sha256": "8494238ceca82c4a85e2a0bff2e732b67025035cdbc4255a654ccdfd10374e85"
+      },
+      "full_receipt_read_in_this_research": false
+    },
+    {
+      "index": 1,
+      "start": 125419520,
+      "end": 126468095,
+      "bytes": 1048576,
+      "receipt": {
+        "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0001.json",
+        "bytes": 2368,
+        "sha256": "afa7233fbd8f6c697b8602aaf140b842f7d44cbb433bfb6498ccd20b5f640608"
+      },
+      "full_receipt_read_in_this_research": false
+    },
+    {
+      "index": 2,
+      "start": 126468096,
+      "end": 127516671,
+      "bytes": 1048576,
+      "receipt": {
+        "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0002.json",
+        "bytes": 2368,
+        "sha256": "54af1656ae77feac6c103b58d7a38acc874976294846a10e71dc1d06f17f7579"
+      },
+      "full_receipt_read_in_this_research": false
+    }
+  ],
+  "conditional_reusable_prefix_bytes": 127516672,
+  "new_combined_prefix_sha256": null,
+  "new_combined_prefix_revalidated_on_host": false,
+  "remaining_bytes": 39356950,
+  "declared_ranges": [
+    {
+      "index": 0,
+      "start": 127516672,
+      "end": 128565247,
+      "bytes": 1048576
+    },
+    {
+      "index": 1,
+      "start": 128565248,
+      "end": 129613823,
+      "bytes": 1048576
+    },
+    {
+      "index": 2,
+      "start": 129613824,
+      "end": 130662399,
+      "bytes": 1048576
+    },
+    {
+      "index": 3,
+      "start": 130662400,
+      "end": 131710975,
+      "bytes": 1048576
+    },
+    {
+      "index": 4,
+      "start": 131710976,
+      "end": 132759551,
+      "bytes": 1048576
+    },
+    {
+      "index": 5,
+      "start": 132759552,
+      "end": 133808127,
+      "bytes": 1048576
+    },
+    {
+      "index": 6,
+      "start": 133808128,
+      "end": 134856703,
+      "bytes": 1048576
+    },
+    {
+      "index": 7,
+      "start": 134856704,
+      "end": 135905279,
+      "bytes": 1048576
+    },
+    {
+      "index": 8,
+      "start": 135905280,
+      "end": 136953855,
+      "bytes": 1048576
+    },
+    {
+      "index": 9,
+      "start": 136953856,
+      "end": 138002431,
+      "bytes": 1048576
+    },
+    {
+      "index": 10,
+      "start": 138002432,
+      "end": 139051007,
+      "bytes": 1048576
+    },
+    {
+      "index": 11,
+      "start": 139051008,
+      "end": 140099583,
+      "bytes": 1048576
+    },
+    {
+      "index": 12,
+      "start": 140099584,
+      "end": 141148159,
+      "bytes": 1048576
+    },
+    {
+      "index": 13,
+      "start": 141148160,
+      "end": 142196735,
+      "bytes": 1048576
+    },
+    {
+      "index": 14,
+      "start": 142196736,
+      "end": 143245311,
+      "bytes": 1048576
+    },
+    {
+      "index": 15,
+      "start": 143245312,
+      "end": 144293887,
+      "bytes": 1048576
+    },
+    {
+      "index": 16,
+      "start": 144293888,
+      "end": 145342463,
+      "bytes": 1048576
+    },
+    {
+      "index": 17,
+      "start": 145342464,
+      "end": 146391039,
+      "bytes": 1048576
+    },
+    {
+      "index": 18,
+      "start": 146391040,
+      "end": 147439615,
+      "bytes": 1048576
+    },
+    {
+      "index": 19,
+      "start": 147439616,
+      "end": 148488191,
+      "bytes": 1048576
+    },
+    {
+      "index": 20,
+      "start": 148488192,
+      "end": 149536767,
+      "bytes": 1048576
+    },
+    {
+      "index": 21,
+      "start": 149536768,
+      "end": 150585343,
+      "bytes": 1048576
+    },
+    {
+      "index": 22,
+      "start": 150585344,
+      "end": 151633919,
+      "bytes": 1048576
+    },
+    {
+      "index": 23,
+      "start": 151633920,
+      "end": 152682495,
+      "bytes": 1048576
+    },
+    {
+      "index": 24,
+      "start": 152682496,
+      "end": 153731071,
+      "bytes": 1048576
+    },
+    {
+      "index": 25,
+      "start": 153731072,
+      "end": 154779647,
+      "bytes": 1048576
+    },
+    {
+      "index": 26,
+      "start": 154779648,
+      "end": 155828223,
+      "bytes": 1048576
+    },
+    {
+      "index": 27,
+      "start": 155828224,
+      "end": 156876799,
+      "bytes": 1048576
+    },
+    {
+      "index": 28,
+      "start": 156876800,
+      "end": 157925375,
+      "bytes": 1048576
+    },
+    {
+      "index": 29,
+      "start": 157925376,
+      "end": 158973951,
+      "bytes": 1048576
+    },
+    {
+      "index": 30,
+      "start": 158973952,
+      "end": 160022527,
+      "bytes": 1048576
+    },
+    {
+      "index": 31,
+      "start": 160022528,
+      "end": 161071103,
+      "bytes": 1048576
+    },
+    {
+      "index": 32,
+      "start": 161071104,
+      "end": 162119679,
+      "bytes": 1048576
+    },
+    {
+      "index": 33,
+      "start": 162119680,
+      "end": 163168255,
+      "bytes": 1048576
+    },
+    {
+      "index": 34,
+      "start": 163168256,
+      "end": 164216831,
+      "bytes": 1048576
+    },
+    {
+      "index": 35,
+      "start": 164216832,
+      "end": 165265407,
+      "bytes": 1048576
+    },
+    {
+      "index": 36,
+      "start": 165265408,
+      "end": 166313983,
+      "bytes": 1048576
+    },
+    {
+      "index": 37,
+      "start": 166313984,
+      "end": 166873621,
+      "bytes": 559638
+    }
+  ],
+  "max_connections": 1,
+  "max_parallel_transfers": 1,
+  "requests_per_range": 1,
+  "automatic_retries": 0,
+  "proposed_total_deadline_seconds": 1800,
+  "client_contract": "Inherit existing curl UA Mozilla/5.0, normal certificate verification, HTTPS only, exact206 Content-Range, total length and per-range byte count; no --resolve, custom DNS, IP substitution, proxy changes, TLS/UA changes or mirror substitution.",
+  "stop_conditions": [
+    "DNS/TLS/HTTP/partial-body/shape failure",
+    "HTTP403",
+    "HTTP429",
+    "Retry-After",
+    "identity or hash mismatch",
+    "deadline exhaustion",
+    "unknown child outcome"
+  ],
+  "etag_status": {
+    "values": [],
+    "all_observations_equal": true,
+    "server_supplied_validator": false
+  },
+  "etag_interpretation": "No server validator was supplied. Empty equal values are not an entity-continuity proof. Do not send a fabricated If-Range validator or count ETag continuity as PASS.",
+  "final_candidate_gate": [
+    "All prior and newly complete body/header/metrics receipts remain byte-exact and are revalidated; failed or empty partials are never reused.",
+    "Complete166873622-byte APK is assembled in a new staging artifact and full SHA256 is recorded.",
+    "Do not infer MD5 from the URL path; metadata_md5 remains null unless separately published by an authoritative source.",
+    "A subsequent separately reviewed existing verifier must pass full-APK signature verification with a v2/v3 whole-APK scheme and the expected vendor signer; no concatenated candidate is installable before it passes.",
+    "Actual manifest must be com.zhubajie.client, versionCode370/versionName9.5.20 or separately reviewed newer metadata, and ABI/minSdk compatible with current qualified runtime.",
+    "Fresh installed identity and signer lineage must be read under the current guard before any separately authorized upgrade."
+  ],
+  "historical_expected_signer_sha256": [
+    "556246aaaf05f61c8bbb9587dfc0660e01f6c3c6813ec038d18684d3ab378bbe"
+  ],
+  "Android_reads": 0,
+  "Main_lock_or_fds": 0,
+  "installs": 0,
+  "complete_candidate_obtained": false,
+  "signature_verified": false,
+  "production_ready": false,
+  "cleanup_eligible": false
+}

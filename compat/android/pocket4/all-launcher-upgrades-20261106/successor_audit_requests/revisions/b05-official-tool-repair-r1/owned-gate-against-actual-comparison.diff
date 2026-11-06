@@ -1,0 +1,34 @@
+--- actual-successful-official-calendar-comparison/owned-gate-against-actual-comparison
++++ new-complete-original-b05-corrective-audit/owned-gate-against-actual-comparison
+@@ -14,7 +14,7 @@
+ import zlib
+ 
+ sys.dont_write_bytecode = True
+-CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'calendar', 'stage_root': '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1', 'worker': {'path': '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1/diagnose_calendar_and_fcitx.py', 'bytes': 62331, 'sha256': '191692dda06eaaaa3fcbe024399985cf2ac6a547b567fd25967c96a1b31b09f6'}, 'request': {'path': '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1/request.review-only.json', 'bytes': 2597, 'sha256': 'c4b5d05ff49bdc54fb6c7a1fa694dabdd1068cf69040206068ae67ccc4e87d92'}, 'prior_unexecuted_source': {'bytes': 46019, 'sha256': 'e9935fd73b49a72b1bf79c098ee21486c7a35c1fddf7fa188b7a4091d1dc0c89', 'preserved': True, 'meaning': 'prior Debian comparison source and its actual outcome retained; field name is inherited'}}
++CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'calendar', 'stage_root': '/home/alex/work/pocket4-b05-official-tool-repair-source-20261106-r1', 'worker': {'path': '/home/alex/work/pocket4-b05-official-tool-repair-source-20261106-r1/audit_original_b05.py', 'bytes': 62604, 'sha256': 'b4d27e1364feb28cab6634c77ed764e15359720025192117ecc8cb84d4391e1a'}, 'request': {'path': '/home/alex/work/pocket4-b05-official-tool-repair-source-20261106-r1/request.review-only.json', 'bytes': 2942, 'sha256': '4457641abbf45499b3431ee8b7d7749389412c71e2fa668ff61dce3b57ecd870'}, 'prior_unexecuted_source': {'bytes': 46019, 'sha256': 'e9935fd73b49a72b1bf79c098ee21486c7a35c1fddf7fa188b7a4091d1dc0c89', 'preserved': True, 'meaning': 'prior Debian comparison source and its actual outcome retained; field name is inherited'}}
+ SELF_PIN = None
+ SUPPORT = {
+     "path": "/home/alex/work/pocket4-beike-owned-generation-20261106-b34f158f88bbebf112840fd88df25d03/prepare_beike_owned_lifetime.py",
+@@ -127,13 +127,16 @@
+         need(value.get("framework_MAIN_LAUNCHER_resolver_queried") is False and value.get("all_Android_installed_packages_enumerated") is False,
+              "EXPLICIT_SCOPE_MUST_NOT_CLAIM_GLOBAL_RESOLVER")
+     else:
+-        need(value.get("schema") == "pocket4-independent-calendar-official-aapt2-resource-comparison-v1" and
+-             value.get("status") == "OFFICIAL_TOOL_TWO_APK_COMPARISON_COMPLETE" and
++        need(value.get("schema") == "pocket4-original-b05-corrective-apk-audit-v1" and
++             value.get("status") == "ORIGINAL_B05_CORRECTIVE_APK_AUDIT_VERIFIED" and
+              all(value.get(key) is True for key in ("snapshot_consistent", "all_primary_commands_succeeded",
+-                 "legacy_badging_observations_complete", "all_manifests_and_signatures_verified", "all_tool_children_joined", "action_lock_released",
+-                 "comparison_complete", "official_badging_stderr_empty", "official_layout_descriptors_closed", "official_layout_before_and_after_all_commands")) and
+-             value.get("unjoined_tool_pids") == [] and len(value.get("commands", [])) == 8 and
+-             value.get("packages") == ["com.android.calendar", "org.fcitx.fcitx5.android"], "CALENDAR_COMPARISON_GATE_FAILED")
++                 "all_commands_succeeded", "all_manifests_and_signatures_verified", "all_tool_children_joined", "action_lock_released",
++                 "corrective_audit_complete", "official_badging_stderr_empty", "official_layout_descriptors_closed", "official_layout_before_and_after_all_commands")) and
++             value.get("unjoined_tool_pids") == [] and len(value.get("commands", [])) == 18 and
++             value.get("packages") == ['com.MobileTicket', 'com.amazon.mShop.android.shopping', 'com.android.calendar', 'com.android.camera2'], "CALENDAR_COMPARISON_GATE_FAILED")
++        need(value.get("repair_of") == {'original_batch': 5, 'original_job_id': '1a1b16f06d5-fc05-78b1', 'original_plan_sha256': 'd288affedc2eae8d28f2d7083df4c89d756e51ba8e5ebfb2264f9d3c6d783139', 'original_request_sha256': '06ab902809dffe4921d5a98883e3c2caa8594e6585ed0f8fcb4f33df58d4cc98', 'original_state': 'failed', 'original_exit_code': 1} and
++             value.get("all_original_b05_APKs_and_app_identities_match_scope") is True and
++             value.get("legacy_badging_reexecuted") is False, "EXACT_FULL_ORIGINAL_B05_CORRECTIVE_COVERAGE")
+         need(value.get("original_failed_audit_reclassified") is False and value.get("original_batch_05_gate_advanced") is False,
+              "ORIGINAL_FAILURE_MUST_REMAIN")
+         actions = ("UI_actions", "App_launches", "permission_changes", "installs", "Android_namespace_commands", "ADB_commands", "business_data_content_reads")

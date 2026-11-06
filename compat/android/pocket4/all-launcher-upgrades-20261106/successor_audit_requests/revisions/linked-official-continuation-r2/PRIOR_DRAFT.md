@@ -1,0 +1,1 @@
+The unexecuted r1 draft is retained. This revision adds the losslessly compressed full layout record to each result in addition to its verified private file pin, so the coordinator can check all 5×6 absence observations without a second remote read. Every check, dependency and resource bound is unchanged. No r1 claim or process was created.

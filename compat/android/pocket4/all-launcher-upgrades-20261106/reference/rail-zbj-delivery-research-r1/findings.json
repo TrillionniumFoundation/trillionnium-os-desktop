@@ -1,0 +1,372 @@
+{
+  "schema": "pocket4.rail_zbj_official_delivery_research.v1",
+  "as_of_utc_date": "2026-11-06",
+  "state": "RESEARCH_AND_CONDITIONAL_PROPOSAL_NOT_EXECUTED",
+  "prior_matrix": {
+    "path": "reference/remaining34-source-actions.json",
+    "bytes": 259476,
+    "sha256": "7523031c7a1ef2e17d32d786512f8e06cfc39777f350a35b7987eededdfde6b4"
+  },
+  "primary_source_observations": [
+    {
+      "id": "rail_vendor",
+      "url": "https://kyfw.12306.cn/otn/appDownload/init",
+      "web_ref": "turn115view0",
+      "kind": "publisher",
+      "observed": "Official Android download link; no version published in parsed page."
+    },
+    {
+      "id": "rail_vendor_redirect",
+      "url": "https://dynamic.12306.cn/otn/appDownload/androiddownload",
+      "web_ref": "turn116view2",
+      "kind": "publisher",
+      "observed_final_url": "https://mobile.12306.cn/otsmobile/h5/otsbussiness/downloadapp/downloadapp.html",
+      "observed": "Normal publisher redirect; web reader returned zero readable lines. No current config or APK acquired."
+    },
+    {
+      "id": "rail_xiaomi",
+      "url": "https://app.mi.com/details?id=com.MobileTicket",
+      "web_ref": "turn115search0",
+      "kind": "official_store",
+      "version_name": "5.9.6.8",
+      "updated": "2026-07-15",
+      "observed": "Desktop page displays maintenance; metadata is not an APK."
+    },
+    {
+      "id": "rail_xiaomi_mobile",
+      "url": "https://m.app.mi.com/details?id=com.MobileTicket",
+      "web_ref": "turn116view1",
+      "kind": "official_store",
+      "version_name": "5.9.6.8",
+      "updated": "2026-07-15",
+      "observed": "Free download text appears, but this read exposed no APK href."
+    },
+    {
+      "id": "rail_sogou",
+      "url": "https://as.sogou.com/app/apkdetail?anchor=appDetail&cid=42&docid=-6087132986774887796&pid=34",
+      "web_ref": "turn117view0",
+      "kind": "official_store",
+      "version_name": "5.9.6.8",
+      "updated": "2026-07-15",
+      "delivery_source_published": "应用宝",
+      "observed": "Not evidence of an independent CDN or a new complete delivery; no APK href exposed."
+    },
+    {
+      "id": "rail_tencent",
+      "url": "https://sj.qq.com/appdetail/com.MobileTicket",
+      "web_ref": "turn117view1",
+      "kind": "official_store",
+      "displayed_version_literal": "V5.9.6",
+      "updated": "2026-07-15",
+      "observed": "Public store page; no new APK download URL exposed by this read."
+    },
+    {
+      "id": "rail_360_older",
+      "url": "https://app.so.com/detail/index?id=903638&pname=com.MobileTicket",
+      "web_ref": "turn116search0",
+      "kind": "official_store",
+      "version_name": "5.7.0.8",
+      "updated": "2023-08-28",
+      "use_as_upgrade": false
+    },
+    {
+      "id": "rail_play_different_package",
+      "url": "https://play.google.com/store/apps/details?hl=zh&id=com.chinarailway.globalticketing",
+      "web_ref": "turn116search5",
+      "kind": "official_store",
+      "package": "com.chinarailway.globalticketing",
+      "use_as_com_MobileTicket_upgrade": false,
+      "observed": "Different package; no substitution or Play delivery bypass."
+    },
+    {
+      "id": "zbj_vendor",
+      "url": "https://app.zbj.com/bz/pc/",
+      "web_ref": "turn116view0",
+      "actual_open_web_ref": "turn116view0",
+      "kind": "publisher",
+      "direct_open_version_name": "8.5.60",
+      "direct_open_updated": "2024-2-1",
+      "search_cache_version_name": "9.5.00",
+      "search_cache_updated": "2026-07-16",
+      "observed": "Conflicting cache and direct page; neither proves current deliverable version."
+    },
+    {
+      "id": "zbj_vendor_download",
+      "url": "https://app.zbj.com/bz/pc/download/",
+      "web_ref": "turn118view1",
+      "kind": "publisher",
+      "observed": "QR/download presentation; no current complete APK link exposed in this read."
+    },
+    {
+      "id": "zbj_360",
+      "url": "https://app.so.com/detail/index?id=238882&pt=oauth",
+      "web_ref": "turn115view1",
+      "kind": "official_store",
+      "version_name": "9.5.20",
+      "updated": "2026-10-09",
+      "observed_download_url": "https://s.shouji.qihucdn.com/261009/9b8bc092373e8f09d56861322b8ce1c9/com.zhubajie.client_370.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1794571796%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1793966996%26tok%3D5969849da6d36e613200ad4a0953dfdc%26v%3D%26f%3Dz.apk",
+      "download_web_ref": "turn116view3",
+      "observed": "Normal download click reached application/vnd.android.package-archive; web reader rejected binary content. No bytes, complete length, current ETag, signature or Pocket4 reachability were acquired."
+    },
+    {
+      "id": "zbj_tencent",
+      "url": "https://sj.qq.com/appdetail/com.zhubajie.client",
+      "web_ref": "turn117view2",
+      "kind": "official_store",
+      "version_name": "9.5.20",
+      "updated": "2026-10-09",
+      "observed": "Current matching metadata; no distinct complete APK URL exposed by this read."
+    },
+    {
+      "id": "oppo_store",
+      "url": "https://store.oppomobile.com/index.html",
+      "web_ref": "turn119search0",
+      "kind": "official_store",
+      "observed": "Official store client entry only; no package-specific delivery or authentication state established."
+    }
+  ],
+  "scope": [
+    "com.MobileTicket",
+    "com.zhubajie.client"
+  ],
+  "apps": [
+    {
+      "package": "com.MobileTicket",
+      "status": "BLOCKED_NO_NEW_COMPLETE_OFFICIAL_DELIVERY",
+      "historical_bound_identity": {
+        "reference": {
+          "path": "successor_install/actual/douyin-01/app-scope-after.private.json",
+          "bytes": 57340,
+          "sha256": "489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4"
+        },
+        "runtime_epoch_sha256": "a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9",
+        "version_code": 275,
+        "uid": 10121,
+        "version_name": null,
+        "historical_version_name_reference": "5.9.4.5",
+        "version_name_reference_authority": "HISTORICAL_REFERENCE_ONLY_CURRENT_MANIFEST_NOT_READ",
+        "full_apks": [
+          {
+            "path": "/data/app/~~8WknGWY1_FaWNGDrKZ_NZg==/com.MobileTicket-nuq4iEBbbWYXMgd8cHBMIA==/base.apk",
+            "bytes": 150377492,
+            "sha256": "c7e56101e5753002bba220ce40d07b00d4bc822e1eeef12bbe36ec9e2f8e272d"
+          }
+        ],
+        "package_manager_certificate_sha256": [
+          "53a2508d2efcef95deadf8ff74ef41eadcd1e96fbcc49b53d741787806c01904"
+        ],
+        "fresh_signature_verification_flag": false
+      },
+      "existing_candidate": {
+        "evidence_ref": {
+          "path": "reference/official-s24-s33-restored/s24/results.json",
+          "bytes": 51049,
+          "sha256": "ac5bff80e9bf0e716cad6294e9e4cfb83ba66e05ac0a72ea633132c14c148fea"
+        },
+        "publisher_entry_url": "https://kyfw.12306.cn/otn/appDownload/init",
+        "observed_normal_config_version_name": "5.9.4.5",
+        "candidate_version_name": "5.9.6.8",
+        "url": "https://imtt.dd.qq.com/sjy.00022/sjy.00004/16891/apk/AF77578EFAAF061D31249848B2132A3A.apk?fsname=com.MobileTicket_5.9.6.8.apk",
+        "total_bytes": 179817557,
+        "metadata_md5": "af77578efaaf061d31249848b2132a3a",
+        "verified_prefix_bytes": 105119744,
+        "verified_prefix_sha256": "e58eced73b6fb82f09923d02b96011201a70e0f45e86c6a206df5843d4aea872",
+        "complete_candidate_obtained": false,
+        "signature_verified": false,
+        "status": "SEGMENTED_TRANSFER_FAILED",
+        "segment_counts": {
+          "COMPLETE": 0,
+          "FAILED": 2,
+          "SKIPPED_AFTER_OTHER_RANGE_FAILURE": 34
+        }
+      },
+      "actual_old_tls_failures": [
+        {
+          "evidence": {
+            "path": "reference/official-s24-s33-restored/s24/rail-0000.json",
+            "bytes": 1771,
+            "sha256": "d23ad050f6515582763759d5d2e51907e73f7e293faa4ae44fbf589a71788c94"
+          },
+          "returncode": 35,
+          "curl": {
+            "http_code": 0,
+            "url_effective": "https://imtt.dd.qq.com/sjy.00022/sjy.00004/16891/apk/AF77578EFAAF061D31249848B2132A3A.apk?fsname=com.MobileTicket_5.9.6.8.apk",
+            "content_type": null,
+            "size_download": 0,
+            "time_total": 18.879158,
+            "speed_download": 0,
+            "num_redirects": 0,
+            "num_retries": 0,
+            "ssl_verify_result": 1,
+            "errormsg": "TLS connect error: error:0A000126:SSL routines::unexpected eof while reading",
+            "exitcode": 35
+          },
+          "start": 105119744,
+          "end": 107216895
+        },
+        {
+          "evidence": {
+            "path": "reference/official-s24-s33-restored/s24/rail-0001.json",
+            "bytes": 1770,
+            "sha256": "3e85886f3fd8b909f8f1826772d505b147d0a2392503c44d17cf069c6cb9306f"
+          },
+          "returncode": 35,
+          "curl": {
+            "http_code": 0,
+            "url_effective": "https://imtt.dd.qq.com/sjy.00022/sjy.00004/16891/apk/AF77578EFAAF061D31249848B2132A3A.apk?fsname=com.MobileTicket_5.9.6.8.apk",
+            "content_type": null,
+            "size_download": 0,
+            "time_total": 21.87954,
+            "speed_download": 0,
+            "num_redirects": 0,
+            "num_retries": 0,
+            "ssl_verify_result": 1,
+            "errormsg": "TLS connect error: error:0A000126:SSL routines::unexpected eof while reading",
+            "exitcode": 35
+          },
+          "start": 107216896,
+          "end": 109314047
+        }
+      ],
+      "current_primary_metadata_candidate": "5.9.6.8",
+      "new_complete_APK_or_independent_download_url": null,
+      "next_minimum_action": "Use a newly published ordinary official same-package delivery, or a normally available official store client. No store login or installation is presumed authorized by this research. Do not retry the unchanged failed Tencent endpoint without new cause-specific evidence.",
+      "rejected_substitutions": [
+        "Older3605.7.0.8",
+        "EarlierBaidu5.9.0.8/403",
+        "GooglePlay com.chinarailway.globalticketing",
+        "Third-party APK mirrors",
+        "Cloud browser URL-policy workaround"
+      ],
+      "original_normal_vendor_config": "Historical5.9.4.5; current config not reacquired in this research.",
+      "production_ready": false,
+      "cleanup_eligible": false
+    },
+    {
+      "package": "com.zhubajie.client",
+      "status": "BLOCKED_PARTIAL_ONLY_WITH_FINITE_CONDITIONAL_RESUME_PATH",
+      "historical_bound_identity": {
+        "reference": {
+          "path": "successor_install/actual/douyin-01/app-scope-after.private.json",
+          "bytes": 57340,
+          "sha256": "489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4"
+        },
+        "runtime_epoch_sha256": "a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9",
+        "version_code": 369,
+        "uid": 10144,
+        "version_name": null,
+        "historical_version_name_reference": "9.5.11",
+        "version_name_reference_authority": "HISTORICAL_REFERENCE_ONLY_CURRENT_MANIFEST_NOT_READ",
+        "full_apks": [
+          {
+            "path": "/data/app/~~wjZY1G1cbfAkGJnaXGJaYQ==/com.zhubajie.client-1UmIObgR5m_3uJn-8NGc1w==/base.apk",
+            "bytes": 166858796,
+            "sha256": "41c143d933240c0e1482b41873991def8e769fd9bcbe414e6e6bdbbe66bfea13"
+          }
+        ],
+        "package_manager_certificate_sha256": [
+          "556246aaaf05f61c8bbb9587dfc0660e01f6c3c6813ec038d18684d3ab378bbe"
+        ],
+        "fresh_signature_verification_flag": false
+      },
+      "current_primary_metadata_candidate": "9.5.20",
+      "actual_s34_result": {
+        "path": "official_source_scripts/s34_zbj_tail/actual-r1/com.zhubajie.client-result.raw.json",
+        "bytes": 65232,
+        "sha256": "c49b3c374226329c92810d11bacee29c75023c26bf648bf5c4a6ebf7ea741135"
+      },
+      "actual_terminal": {
+        "path": "official_source_scripts/s34_zbj_tail/actual-r1/terminal.raw.json",
+        "bytes": 730,
+        "sha256": "e10d132f8089f20add7a403ff05bd31620fd785ab8f7db934817bdae797ba239"
+      },
+      "actual_s34_failure": {
+        "path": "official_source_scripts/s34_zbj_tail/actual-r1/range-0003.raw.json",
+        "bytes": 2103,
+        "sha256": "a92c797bdd1d9471842afa76c3d2872249d78b42286997b393fe191949436a6b"
+      },
+      "failure_reason": "curl6: Could not resolve host: s.shouji.qihucdn.com; HTTP0 and zero body/header bytes.",
+      "actual_s34_new_complete_ranges": [
+        {
+          "index": 0,
+          "start": 124370944,
+          "end": 125419519,
+          "bytes": 1048576,
+          "receipt": {
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0000.json",
+            "bytes": 2367,
+            "sha256": "8494238ceca82c4a85e2a0bff2e732b67025035cdbc4255a654ccdfd10374e85"
+          },
+          "full_receipt_read_in_this_research": false
+        },
+        {
+          "index": 1,
+          "start": 125419520,
+          "end": 126468095,
+          "bytes": 1048576,
+          "receipt": {
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0001.json",
+            "bytes": 2368,
+            "sha256": "afa7233fbd8f6c697b8602aaf140b842f7d44cbb433bfb6498ccd20b5f640608"
+          },
+          "full_receipt_read_in_this_research": false
+        },
+        {
+          "index": 2,
+          "start": 126468096,
+          "end": 127516671,
+          "bytes": 1048576,
+          "receipt": {
+            "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0002.json",
+            "bytes": 2368,
+            "sha256": "54af1656ae77feac6c103b58d7a38acc874976294846a10e71dc1d06f17f7579"
+          },
+          "full_receipt_read_in_this_research": false
+        }
+      ],
+      "conditional_total_contiguous_bytes": 127516672,
+      "remaining_bytes": 39356950,
+      "server_validator_supplied": false,
+      "actual_owned_processes": {
+        "started": 4,
+        "joined": 4,
+        "outcome_unknown": false
+      },
+      "actual_prior_file_descriptors": {
+        "acquired": 43,
+        "closed": 43,
+        "errors": []
+      },
+      "bounded_read_plan": {
+        "path": "reference/rail-zbj-delivery-research-r1/bounded-receipt-read-plan.json",
+        "bytes": 2155,
+        "sha256": "e6e04c20a14a3d1f193f8ea1b6b1e3ffaf72ab5e41738dc15a4a550979546623"
+      },
+      "conditional_continuation_plan": {
+        "path": "reference/rail-zbj-delivery-research-r1/zbj-conditional-continuation-plan.json",
+        "bytes": 10333,
+        "sha256": "63a965ca13d288f7fa9c6a14995dab68a0facd1bd10c83bbb23f9eedae1bd984"
+      },
+      "new_complete_APK": null,
+      "signature_verified": false,
+      "production_ready": false,
+      "cleanup_eligible": false
+    }
+  ],
+  "limits": [
+    "Public metadata is not an artifact or proof of compatibility.",
+    "Web service CDN response is not Pocket4 DNS/TLS evidence.",
+    "Historical installed identities are not fresh runtime observations.",
+    "No vendor-global latest-version guarantee is inferred from store observations.",
+    "The original per-range successes and the overall FAILED result coexist; no failure is relabelled as success."
+  ],
+  "new_remote_processes": 0,
+  "Android_reads": 0,
+  "Main_lock_or_fds": 0,
+  "new_APK_bytes_downloaded": 0,
+  "installs": 0,
+  "permission_changes": 0,
+  "all_launcher_upgrade_complete": false,
+  "production_ready": false,
+  "cleanup_eligible": false
+}

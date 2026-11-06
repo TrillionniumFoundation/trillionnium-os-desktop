@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "state": "SEALED_TRANSPORT_CHAIN_AND_EXPLICIT_ENTRY_CONTROLS_PASS",
+  "positive_complete_inner_to_outer_chain": {
+    "snapshot": "7908f4730c658e0d2f43ca66a810eb6d7033634560fcba2d7d928b380795136e",
+    "lifecycle": "7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126",
+    "root_supervisor": "ced37d036b93ab8f85803c42ca6a2d0fb18939c78a5d62ef9a2fd0a215176f7b",
+    "controller": "09c4eebe8615076ca886363d450d103ec3145e532f86a186db2ebbeae5856f5a",
+    "fence": "7987820a8760c6ea4ffb7ca8fea186a7e5c5dfa9c64a12137a54a719c524db1f",
+    "stage": "4f5869fc262e128fb397177c641a73bea9fb17b0aebe8a69344add1e29019a4b",
+    "decoded_packet": "600ddd2ad954a34e1fb2c5098901b13531c13b37f1c733f5421e4818b4a9d549",
+    "encoded_stdin": "d94feeb040c858c67f579907bc188362db8d7b907567a2a773b1a458bbaa0c90"
+  },
+  "negative_stale_inner_snapshot_pin": {
+    "rejected": true,
+    "error": "INNER_ROOT_SNAPSHOT_PIN_DIFFERS"
+  },
+  "entry_controls": [
+    {
+      "name": "missing_explicit_contract_rejected",
+      "passed": true
+    },
+    {
+      "name": "wrong_explicit_contract_rejected",
+      "passed": true
+    },
+    {
+      "name": "explicit_contract_forwards_preparation_SHA_to_local_sentinel",
+      "passed": true,
+      "sentinel_only": true,
+      "real_build_called": false
+    }
+  ],
+  "control_count": 5,
+  "decoder_body_and_bounds_unchanged": true,
+  "stage_main_body_unchanged": true,
+  "candidate35_payload_members_byte_identical": true,
+  "original59_pure_controls_not_rerun_locally": true,
+  "original59_controls_still_required_by_stage": true,
+  "current28_Rust_tests_not_rerun": true,
+  "stage_called": false,
+  "real_builder_called": false,
+  "remote_commands": 0,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "production_ready": false
+}

@@ -1,0 +1,39 @@
+--- actual-beike-pilot/owned-adapter-against-actual-pilot.diff
++++ fixed-45-service-capture/owned-adapter-against-actual-pilot.diff
+@@ -14,7 +14,7 @@
+ import zlib
+ 
+ sys.dont_write_bytecode = True
+-CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1', 'worker': {'path': '/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1/observe_current_services.py', 'bytes': 41792, 'sha256': 'd403da0ef75940731df19032f3b1c495edd6a21fb11990df2b5d6744e14f08c4'}, 'request': {'path': '/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1/request.review-only.json', 'bytes': 2426, 'sha256': '5ee066bd403535a5ef634e66a27daede1d97cae713dd03d72362e639529e6fa5'}, 'prior_source': {'bytes': 16637, 'sha256': '1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc', 'preserved': True, 'actual_prior_execution_job': '1a1b1e97bb7-fc05-7b79', 'scope_authority_not_inherited': True}}
++CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01', 'worker': {'path': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01/observe_current_services.py', 'bytes': 46457, 'sha256': 'c261aa5e00dd1980a2154053fdd25ee72881f6963b584fa1761e3410425ceab5'}, 'request': {'path': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01/request.review-only.json', 'bytes': 2455, 'sha256': '9e3e72f0693f76d04f71584ebb809a4ca6e08868b24bd2efe377abda8f9169f4'}, 'prior_source': {'bytes': 16637, 'sha256': '1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc', 'preserved': True, 'actual_prior_execution_job': '1a1b1e97bb7-fc05-7b79', 'scope_authority_not_inherited': True}}
+ SELF_PIN = None
+ SUPPORT = {
+     "path": "/home/alex/work/pocket4-beike-owned-generation-20261106-b34f158f88bbebf112840fd88df25d03/prepare_beike_owned_lifetime.py",
+@@ -137,13 +137,14 @@
+              "ORIGINAL_FAILURE_MUST_REMAIN")
+         actions = ("UI_actions", "App_launches", "permission_changes", "installs", "Android_namespace_commands", "ADB_commands", "business_data_content_reads")
+     else:
+-        need(value.get("schema") == "pocket4-beike-permission-raw-observation-v1" and value.get("ok") is True and
+-             value.get("status") == "BEIKE_PERMISSION_SERVICE_RAW_CAPTURE_COMPLETE" and
++        need(value.get("schema") == "pocket4-fixed-launcher-permission-raw-capture-v1" and value.get("ok") is True and
++             value.get("status") == "FIXED_LAUNCHER_PERMISSION_SERVICE_RAW_CAPTURE_COMPLETE" and
+              value.get("current_scope_47_unchanged") is True and len(value.get("packages", [])) == 47 and
+              value.get("app_scope_reference", {}).get("sha256") == "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f" and
+-             value.get("target_package") == "com.lianjia.beike" and type(value.get("target_user")) is int and value["target_user"] == 0 and
+-             value.get("target_identity_from_pinned_scope") == {"package": "com.lianjia.beike", "uid": 10143, "version_code": 3067100} and
+-             value.get("service_target_packages") == ["com.lianjia.beike"] and value.get("service_output_capture_complete") is True and
++             value.get("batch") == 1 and value.get("target_packages") == ['org.fcitx.fcitx5.android'] and
++             type(value.get("target_user")) is int and value["target_user"] == 0 and
++             value.get("target_identities_from_pinned_scope") == [{'package': 'org.fcitx.fcitx5.android', 'uid': 10150, 'version_code': 114}] and
++             value.get("service_target_packages") == ['org.fcitx.fcitx5.android'] and value.get("service_output_capture_complete") is True and
+              value.get("PM_user0_installed_APK_packages_enumerated") is False and value.get("MAIN_LAUNCHER_resolver_queried") is False and
+              value.get("Android_namespace_commands") == 3 and value.get("native_command_count") == 3 and
+              len(value.get("android_commands", [])) == 3 and len(value.get("native_commands", [])) == 3 and
+@@ -159,6 +160,7 @@
+              value.get("permission_name_normalization") == "NONE_RAW_BYTES_PRESERVED" and set(value.get("help_results", {})) == {"package"} and
+              len(value.get("service_reports", [])) == 2 and
+              all(row.get("interpretation_status") == "RAW_CAPTURE_ONLY_NOT_INTERPRETED" for row in value["service_reports"]) and
++             value.get("native_catalog_matches_actual45_component_reference") is True and
+              value.get("compiled_Beike_scope_modified") is False and value.get("old_Bili_unknown_reclassified") is False and
+              value.get("meituan_saved_location_unchanged") is True and value.get("all_installed_APK_bytes_bound") is False,
+              "READONLY_QUERY_MUST_NOT_CLAIM_GRANTS_OR_EXPAND_UI_AUTHORITY")

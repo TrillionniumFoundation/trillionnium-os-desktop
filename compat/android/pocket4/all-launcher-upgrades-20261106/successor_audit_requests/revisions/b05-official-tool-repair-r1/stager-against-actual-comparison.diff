@@ -1,0 +1,13 @@
+--- actual-successful-official-calendar-comparison/stager-against-actual-comparison
++++ new-complete-original-b05-corrective-audit/stager-against-actual-comparison
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT = '/home/alex/work/pocket4-calendar-official-aapt2-source-20261106-r1'
+-FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 16925, 'sha256': 'a922596684aee084ae0aa07d0acaf1a4fa3b7088caf0e18b46b3fde5ca81a7ba'}, {'name': 'diagnose_calendar_and_fcitx.py', 'bytes': 62331, 'sha256': '191692dda06eaaaa3fcbe024399985cf2ac6a547b567fd25967c96a1b31b09f6'}, {'name': 'request.review-only.json', 'bytes': 2597, 'sha256': 'c4b5d05ff49bdc54fb6c7a1fa694dabdd1068cf69040206068ae67ccc4e87d92'}, {'name': 'inputs/inventory.original.json', 'bytes': 9876, 'sha256': '60ee9c47cb1719343a1667d306e26086d66f2376d62b8c5251f4e64446887341'}, {'name': 'inputs/aapt2-proof.outer.original.json', 'bytes': 54192, 'sha256': 'f9c289f7d28f836c51d845b4c851c1dbac0e8f326d658c7b98106b6ee327f192'}, {'name': 'inputs/aapt2-proof.terminal.original.json', 'bytes': 730, 'sha256': 'f797f008a250a386ca905e9b7e9065ac2f85cad2168be702c3ad01209d341802'}, {'name': 'inputs/official-host.stdout.original.jsonl', 'bytes': 7092, 'sha256': 'd7785fb80d8075267b99f1ccc5537cdd12dc014f38fd72c87eb575bd899dd343'}, {'name': 'inputs/official-host.terminal.original.json', 'bytes': 731, 'sha256': 'f456a3ee2db689339d5d60db5106904b0d2bde640663eccc222311db39f62435'}]
++ROOT = '/home/alex/work/pocket4-b05-official-tool-repair-source-20261106-r1'
++FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 17492, 'sha256': '608f0babd455c535ec6c0876ebfcfbe3dbf229340c498197fc161a08cea30467'}, {'name': 'audit_original_b05.py', 'bytes': 62604, 'sha256': 'b4d27e1364feb28cab6634c77ed764e15359720025192117ecc8cb84d4391e1a'}, {'name': 'request.review-only.json', 'bytes': 2942, 'sha256': '4457641abbf45499b3431ee8b7d7749389412c71e2fa668ff61dce3b57ecd870'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):

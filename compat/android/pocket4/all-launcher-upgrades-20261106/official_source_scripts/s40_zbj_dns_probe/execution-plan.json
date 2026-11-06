@@ -1,0 +1,60 @@
+{
+  "schema": "pocket4-zbj-dns-one-shot-plan-v1",
+  "state": "SEALED_FOR_ROOT_REVIEW_NOT_EXECUTED",
+  "purpose": "Observe whether the ordinary Pocket4 OS resolver currently resolves the exact official CDN hostname after the settled S34 curl6 failure.",
+  "hostname": "s.shouji.qihucdn.com",
+  "hostname_authority": {
+    "path": "official_source_scripts/s34_zbj_tail/actual-r1/com.zhubajie.client-result.raw.json",
+    "bytes": 65232,
+    "sha256": "c49b3c374226329c92810d11bacee29c75023c26bf648bf5c4a6ebf7ea741135"
+  },
+  "official_URL_literal": "https://s.shouji.qihucdn.com/261009/9b8bc092373e8f09d56861322b8ce1c9/com.zhubajie.client_370.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1794571897%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1793967097%26tok%3Db64e944d9e3de8d16861a770d758bee5%26v%3D%26f%3Dz.apk",
+  "prior_failure_kept": "official_source_scripts/s34_zbj_tail/actual-r1/range-0003.raw.json",
+  "completed_readback": {
+    "path": "reference/rail-zbj-delivery-research-r1/receipt-readback-r1/verification.json",
+    "bytes": 2758,
+    "sha256": "b4a65754c4c39931b821458c08de049ecf5421b2de28b531c2c4708e79981882"
+  },
+  "request": {
+    "path": "official_source_scripts/s40_zbj_dns_probe/process-request.json",
+    "bytes": 6074,
+    "sha256": "4f651078c3c3f729b339320bb311fa356d2645e7425f89c50cd9b8bb5cf1a075"
+  },
+  "source": {
+    "path": "official_source_scripts/s40_zbj_dns_probe/probe_once.py",
+    "bytes": 5589,
+    "sha256": "f73ea27378595d15f8cdc3a49b9ad8a07834e4224cf47620535a758a91b32d88"
+  },
+  "inherited_census_source": {
+    "path": "official_source_scripts/s38_szzc_operator_signature/observe_signature_as_owner.py",
+    "bytes": 21026,
+    "sha256": "5a223fd2fc4baa5ce3e2b80615e400f11adac27d48365fa67de2b821c275abf3"
+  },
+  "operation": "socket.getaddrinfo(hostname,443,AF_UNSPEC,SOCK_STREAM,IPPROTO_TCP,0) exactly once",
+  "system_configuration": "Use existing OS/NSS resolver unchanged. Normal resolver internal retransmissions and IPv4/IPv6 queries are not controlled or represented as a single wire packet.",
+  "timer": "The owned probe sets a20s ITIMER_REAL with SIG_DFL; if libc stalls, SIGALRM terminates only this process. Remote supervisor timeout45s is the outer bound.",
+  "timeout_interpretation": "A signal/timeout/missing final JSON is failure or incomplete observation, never PASS. The started marker does not prove successful resolution or FD restoration.",
+  "success_gate": [
+    "actual durable exit0",
+    "one complete started marker and one complete final JSON",
+    "ordinary UID/EUID/GID/EGID1000",
+    "exact hostname and one getaddrinfo call",
+    "nonempty bounded TCP IPv4/IPv6 answers for port443",
+    "no error",
+    "elapsed less than20s",
+    "original self FD identities restored",
+    "no supervisor timeout/cancellation/log truncation"
+  ],
+  "failure_action": "Keep original output/terminal and stop. No new key, automatic retry, address override or download follows.",
+  "source_read_scope_at_runtime": "Normal interpreter/library/NSS inputs and /proc/self/fd only. No Android path, Main FD, business data, APK or root-private dependency file.",
+  "stdout_owner": "Hepta durable process capture; worker creates no output files.",
+  "interpreter_provenance": "Existing /usr/bin/python3 -I -B entry used by the actual S38/S39 operator jobs. This probe records sys.executable/version; it does not falsely claim a full current interpreter hash qualification.",
+  "allowed_followup_after_success": "A separately reviewed explicit finite continuation candidate may cite this narrow DNS observation. It proves neither TLS/HTTP reachability nor stable future DNS or complete APK integrity.",
+  "remote_process_started_by_this_preparation": false,
+  "HTTP_requests": 0,
+  "APK_downloads": 0,
+  "Android_commands": 0,
+  "Main_actions": 0,
+  "installs": 0,
+  "production_ready": false
+}

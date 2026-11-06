@@ -1,0 +1,32 @@
+test_actual_settled_failure_and_dns_evidence_gate (__main__.LocalControls.test_actual_settled_failure_and_dns_evidence_gate) ... ERROR
+test_empty_dns_answer_not_a_resolved_gate (__main__.LocalControls.test_empty_dns_answer_not_a_resolved_gate) ... ok
+test_exact_finite_remainder (__main__.LocalControls.test_exact_finite_remainder) ... ok
+test_fresh_budget_rejects_before_any_spawn (__main__.LocalControls.test_fresh_budget_rejects_before_any_spawn) ... ok
+test_old_failure_cannot_be_relabelled_success (__main__.LocalControls.test_old_failure_cannot_be_relabelled_success) ... ok
+test_pidfd_acquisition_failure_retires_only_owned_child (__main__.LocalControls.test_pidfd_acquisition_failure_retires_only_owned_child) ... ERROR
+test_undurable_dns_terminal_rejected_even_with_matching_hash (__main__.LocalControls.test_undurable_dns_terminal_rejected_even_with_matching_hash) ... ok
+
+======================================================================
+ERROR: test_actual_settled_failure_and_dns_evidence_gate (__main__.LocalControls.test_actual_settled_failure_and_dns_evidence_gate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/official_source_scripts/s41_zbj_finite_tail/test_local_controls.py", line 46, in test_actual_settled_failure_and_dns_evidence_gate
+    result = scope['dns_observation_gate']()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<S41-offline-control>", line 711, in dns_observation_gate
+  File "<S41-offline-control>", line 255, in require
+RuntimeError: EXACT_ACTUAL_NARROW_DNS_SUCCESS_REQUIRED
+
+======================================================================
+ERROR: test_pidfd_acquisition_failure_retires_only_owned_child (__main__.LocalControls.test_pidfd_acquisition_failure_retires_only_owned_child)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/official_source_scripts/s41_zbj_finite_tail/test_local_controls.py", line 132, in test_pidfd_acquisition_failure_retires_only_owned_child
+    scope['own_curl'](['synthetic-not-executed'], -1, folder/'metrics', folder/'stderr', record, 1)
+  File "<S41-offline-control>", line 409, in own_curl
+AttributeError: 'types.SimpleNamespace' object has no attribute 'DEVNULL'
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.058s
+
+FAILED (errors=2)

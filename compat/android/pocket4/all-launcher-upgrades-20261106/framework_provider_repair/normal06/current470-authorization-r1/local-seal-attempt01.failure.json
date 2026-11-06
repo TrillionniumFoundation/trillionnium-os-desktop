@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "classification": "derived local tool failure record, not a remote/runtime receipt",
+  "state": "LOCAL_SEAL_CHECKER_FAILED_BEFORE_OUTPUT_CREATION",
+  "command": "python -B analysis_sources/seal_current470_authorization.py",
+  "actual_tool_chunk_id": "ab5075",
+  "exit_code": 1,
+  "exception": "RuntimeError: nonliteral global expression",
+  "location": "entry_and_plan; fixed controller line 4 is P = pathlib.Path",
+  "cause": "Local declaration-only evaluator did not recognize the exact pathlib.Path alias. No controller or fence source defect was observed.",
+  "generator_before_fix": {
+    "path": "analysis_sources/seal_current470_authorization.py",
+    "bytes": 17201,
+    "sha256": "69dcbfe6c4eb5defd2209e30a29be33253baf938514f800737b30c97f323e71a"
+  },
+  "sealed_output_created": false,
+  "remote_calls": 0,
+  "Main_actions": 0,
+  "candidate_source_changed": false
+}

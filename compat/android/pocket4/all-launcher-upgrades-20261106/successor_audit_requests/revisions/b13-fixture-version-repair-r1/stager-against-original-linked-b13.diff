@@ -1,0 +1,38 @@
+--- original-linked-b13/stager-against-original-linked-b13.diff
++++ independent-b13-version-repair/stager-against-original-linked-b13.diff
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""New exact source/input stage, then one explicit two-APK parser comparison."""
++"""New exact source/input stage, then one independent full three-APK b13 version correction."""
+ import hashlib
+ import json
+ import os
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT = '/home/alex/work/pocket4-linked-official-audit-source-20261106-r2-b13'
+-FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 22288, 'sha256': '371d96a7a0adff5473653a0a30278b1415a8d511bacd39c1a4f10098436ecf24'}, {'name': 'audit_remaining_batches.py', 'bytes': 67206, 'sha256': 'e92ee6edc129e0488c7ae13c2c853c804436bcb799f4413f84eab06a529d1e44'}, {'name': 'request.review-only.json', 'bytes': 3318, 'sha256': '675999fa3c72bb7cde1ad50a008a62bc09141ebfd2f0848a11fb6c707bf0ba5b'}]
++ROOT = '/home/alex/work/pocket4-b13-fixture-version-repair-source-20261106-r1'
++FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 24219, 'sha256': '626105be852ff8da2acaffe5bbd5aac5c4fec7e5b22a736f5bbceb9dacbc2689'}, {'name': 'audit_fixture_version_repair.py', 'bytes': 75666, 'sha256': '5eb184f3ae89749a00c5bbe3459f6a9bacd3bfdcc0cdcae7ba0ac90140013a71'}, {'name': 'request.review-only.json', 'bytes': 4048, 'sha256': 'cc7ef71d0570122b916234f2cf14d60ca9d210513cb0f1dccb47a4af09944519'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):
+@@ -66,7 +66,7 @@
+     os.umask(0o077);before_fds=len(os.listdir('/proc/self/fd'))
+     raw=sys.stdin.buffer.read(262145);need(0<len(raw)<=262144,'BOUNDED_EXACT_INPUT')
+     payload=json.loads(raw)
+-    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-calendar-official-comparison-source-stage-v1','CLOSED_STAGE_PAYLOAD')
++    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-b13-version-repair-source-stage-v1','CLOSED_STAGE_PAYLOAD')
+     need(type(payload['files']) is list and len(payload['files'])==len(FILES),'EXACT_FILE_COUNT')
+     inputs=[]
+     for expected,item in zip(FILES,payload['files']):
+@@ -104,7 +104,7 @@
+             except OSError:errors.append(fd)
+         need(not errors,'STAGE_FDS_NOT_CLOSED')
+     after_fds=len(os.listdir('/proc/self/fd'));need(after_fds==before_fds,'STAGE_DESCRIPTOR_DIFFERENCE')
+-    print(canonical({'schema':'pocket4-calendar-official-comparison-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
++    print(canonical({'schema':'pocket4-b13-version-repair-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
+          'bootstrap_FDs_before':before_fds,'bootstrap_FDs_after':after_fds,'worker_about_to_exec_once':True,
+          'stage_Main_reads':0,'stage_namespace_entries':0,'stage_installs':0,'stage_UI_actions':0,'automatic_retry':False}).decode(),flush=True)
+     wrapper=FILES[0]

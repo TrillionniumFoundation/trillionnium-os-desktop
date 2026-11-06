@@ -1,0 +1,54 @@
+{
+  "schema": "pocket4.fixed_public_artifact_receipt_read_plan.v1",
+  "state": "LOCAL_PLAN_NOT_EXECUTED",
+  "reason": "Read the three actual S34 COMPLETE receipts before deriving exact reusable segment paths and byte identities.",
+  "authority": [
+    {
+      "path": "official_source_scripts/s34_zbj_tail/actual-r1/com.zhubajie.client-result.raw.json",
+      "bytes": 65232,
+      "sha256": "c49b3c374226329c92810d11bacee29c75023c26bf648bf5c4a6ebf7ea741135"
+    },
+    {
+      "path": "official_source_scripts/s34_zbj_tail/actual-r1/range-0003.raw.json",
+      "bytes": 2103,
+      "sha256": "a92c797bdd1d9471842afa76c3d2872249d78b42286997b393fe191949436a6b"
+    },
+    {
+      "path": "official_source_scripts/s34_zbj_tail/actual-r1/terminal.raw.json",
+      "bytes": 730,
+      "sha256": "e10d132f8089f20add7a403ff05bd31620fd785ab8f7db934817bdae797ba239"
+    }
+  ],
+  "operation": "file_info then version-bound binary_read; no process submission",
+  "files": [
+    {
+      "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0000.json",
+      "bytes": 2367,
+      "sha256": "8494238ceca82c4a85e2a0bff2e732b67025035cdbc4255a654ccdfd10374e85"
+    },
+    {
+      "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0001.json",
+      "bytes": 2368,
+      "sha256": "afa7233fbd8f6c697b8602aaf140b842f7d44cbb433bfb6498ccd20b5f640608"
+    },
+    {
+      "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0002.json",
+      "bytes": 2368,
+      "sha256": "54af1656ae77feac6c103b58d7a38acc874976294846a10e71dc1d06f17f7579"
+    }
+  ],
+  "aggregate_expected_bytes": 7103,
+  "max_bytes_per_file": 4096,
+  "checks": [
+    "exact fixed path",
+    "regular no-follow file",
+    "actual size equals expected size",
+    "bind binary_read to file_info version",
+    "save raw tool payload before parsing",
+    "Python validates original byte length and full SHA-256",
+    "no automatic retry or alternate path"
+  ],
+  "remote_processes": 0,
+  "Android_reads": 0,
+  "Main_lock_or_fds": 0
+}

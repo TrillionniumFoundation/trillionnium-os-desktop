@@ -1,0 +1,56 @@
+{
+  "schema": "pocket4-zbj-s41-source-inheritance-v1",
+  "base_source": {
+    "path": "official_source_scripts/s34_zbj_tail/resume_zbj_tail_s34_once.py",
+    "bytes": 24186,
+    "sha256": "f3801399b9791aa3cc325cd6e7d62a26415ee32d69046ac1d1ccd818fef45c82"
+  },
+  "S34_functions_byte_unchanged": [
+    "now",
+    "require",
+    "identity",
+    "remaining",
+    "hashes",
+    "write_json",
+    "verify_path",
+    "read_pinned_json",
+    "pinned_metadata",
+    "header_etags",
+    "validate_response",
+    "validate_origin",
+    "load_verified_prefix",
+    "new_metadata"
+  ],
+  "S34_functions_changed": [
+    "opened",
+    "own_curl",
+    "tail_plan",
+    "one_segment",
+    "run",
+    "main"
+  ],
+  "S34_CANDIDATES_literal_equal": true,
+  "S34_curl_argv_AST_equal": true,
+  "S36_exact_function": {
+    "source": {
+      "path": "official_source_scripts/s36_szzc_finite_tail/continue_szzc_once.py",
+      "bytes": 15818,
+      "sha256": "8ee10437c33b881bd7658950d1a4413ea0c793e3279f37f711af77ca1de5dbfb"
+    },
+    "function": "census",
+    "byte_equal": true
+  },
+  "S36_concepts_reimplemented_not_claimed_byte_equal": [
+    "Walk existing parent directories with O_NOFOLLOW and preserve parent identity.",
+    "Explicit full identity and hash recheck before and after reuse.",
+    "Publish own new completed candidate using exclusive hardlink then remove only its own temporary name.",
+    "Require complete original self-FD census restoration for success."
+  ],
+  "S36_network_transport_used": false,
+  "S36_actual_network_implementation": "urllib with default verified HTTPS, no curl child",
+  "pidfd_acquisition_failure_fix": "If pidfd_open fails after Popen, kill/wait only that direct owned unreaped Popen child. Mark fallback; never treat that path as success. Original numeric or external PIDs are never targeted.",
+  "fresh_spawn_budget_fix": "Require remaining budget >= requested curl timeout+10 immediately before each Popen.",
+  "no_server_ETag": true,
+  "fabricated_If_Range": false,
+  "remote_execution_in_this_preparation": false
+}

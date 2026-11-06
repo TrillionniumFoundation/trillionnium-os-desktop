@@ -1,0 +1,36 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "#!/usr/bin/env python3\n\"\"\"One ordinary OS resolver observation; no HTTP, download, child or Android.\n\nThe only application-level DNS invocation is socket.getaddrinfo. The configured\nsystem resolver may perform its normal NSS lookups, IPv4/IPv6 queries or retries;\nthis script does not change that configuration or promise one wire packet.\n\"\"\"\nimport fcntl\nimport json\nimport os\nimport signal\nimport socket\nimport sys\nimport time\n\nHOSTNAME = 's.shouji.qihucdn.com'\nPORT = 443\nDNS_DEADLINE_SECONDS = 20\nENTRY = '--resolve-zbj-official-host-once'\n\n\ndef need(value, reason):\n    if not value:\n        raise RuntimeError(reason)\n\n\ndef census():\n    result={}\n    for name in os.listdir('/proc/self/fd'):\n        try:\n            fd=int(name);s=os.fstat(fd)\n            result[name]=[os.readlink('/proc/self/fd/'+name),s.st_dev,s.st_ino,s.st_mode,s.st_uid,s.st_gid,\n                          fcntl.fcntl(fd,fcntl.F_GETFD),fcntl.fcntl(fd,fcntl.F_GETFL)]\n        except OSError as e:\n            if e.errno not in (2,9):raise\n    return result\n\n\ndef emit(value):\n    print(json.dumps(value, ensure_ascii=False, sort_keys=True), flush=True)\n\n\ndef main():\n    need(os.getuid() == os.geteuid() == os.getgid() == os.getegid() == 1000,\n         'EXACT_UNPRIVILEGED_OPERATOR_REQUIRED')\n    need(sys.argv[1:] == [ENTRY], 'EXACT_SINGLE_OBSERVATION_ENTRY_REQUIRED')\n    before = census()\n    started = time.monotonic()\n    result = {\n        'schema': 'pocket4-zbj-system-resolver-observation-v1',\n        'ok': False, 'status': 'NOT_OBSERVED', 'errors': [],\n        'hostname': HOSTNAME, 'service_port': PORT,\n        'family': int(socket.AF_UNSPEC), 'socket_type': int(socket.SOCK_STREAM),\n        'protocol': int(socket.IPPROTO_TCP), 'flags': 0,\n        'application_getaddrinfo_calls': 0, 'application_retries': 0,\n        'normal_resolver_internal_query_count': None,\n        'normal_resolver_configuration_changed': False,\n        'resolution_completed': False, 'address_records': [],\n        'actual_uid': os.getuid(), 'actual_euid': os.geteuid(),\n        'actual_gid': os.getgid(), 'actual_egid': os.getegid(),\n        'python_executable_observed': sys.executable,\n        'python_version_observed': sys.version,\n        'python_full_file_identity_verified_by_this_probe': False,\n        'explicit_subprocesses': 0, 'HTTP_requests': 0, 'APK_downloads': 0,\n        'TLS_handshakes_requested': 0, 'proxy_configuration_changes': 0,\n        'TLS_configuration_changes': 0, 'IP_override_or_custom_resolver': False,\n        'files_written_by_probe': 0, 'Android_commands': 0, 'Main_actions': 0,\n        'Main_lock_or_fds': 0, 'installs': 0, 'permission_changes': 0,\n        'production_ready': False, 'authorizes_download_or_install': False,\n        'before_descriptor_identities': before,\n    }\n    try:\n        # SIG_DFL terminates this owned probe even if libc resolution remains\n        # blocked in C. Such an exit has no success result and must not pass.\n        signal.signal(signal.SIGALRM, signal.SIG_DFL)\n        signal.setitimer(signal.ITIMER_REAL, DNS_DEADLINE_SECONDS, 0)\n        result['application_getaddrinfo_calls'] = 1\n        emit({'event': 'DNS_RESOLUTION_STARTED', 'hostname': HOSTNAME,\n              'port': PORT, 'application_call_count': 1, 'automatic_retries': 0,\n              'own_process_default_SIGALRM_deadline_seconds': DNS_DEADLINE_SECONDS})\n        answers = socket.getaddrinfo(HOSTNAME, PORT, socket.AF_UNSPEC,\n                                     socket.SOCK_STREAM, socket.IPPROTO_TCP, 0)\n        signal.setitimer(signal.ITIMER_REAL, 0, 0)\n        result['resolution_completed'] = True\n        need(0 < len(answers) <= 256, 'BOUNDED_NONEMPTY_RESOLVER_ANSWER_REQUIRED')\n        for family, socktype, protocol, canonical, address in answers:\n            need(family in (socket.AF_INET, socket.AF_INET6) and\n                 socktype == socket.SOCK_STREAM and protocol == socket.IPPROTO_TCP,\n                 'EXPECTED_TCP_IP_RESOLVER_RECORD_REQUIRED')\n            need(isinstance(canonical, str) and len(canonical) <= 255 and\n                 isinstance(address, tuple) and len(address) in (2, 4) and\n                 isinstance(address[0], str) and len(address[0]) <= 255 and\n                 address[1] == PORT, 'BOUNDED_RESOLVER_RECORD_SHAPE_REQUIRED')\n            result['address_records'].append({\n                'family': int(family), 'socket_type': int(socktype),\n                'protocol': int(protocol), 'canonical_name': canonical,\n                'socket_address': list(address),\n            })\n        result['ok'] = True\n    except BaseException as error:\n        result['errors'].append({'type': type(error).__name__,\n                                 'errno': getattr(error, 'errno', None),\n                                 'reason': str(error)[:1024]})\n    finally:\n        signal.setitimer(signal.ITIMER_REAL, 0, 0)\n    result['elapsed_seconds'] = time.monotonic() - started\n    after = census()\n    result['after_descriptor_identities'] = after\n    result['original_descriptor_identities_restored'] = after == before\n    result['ok'] = (result['ok'] and result['original_descriptor_identities_restored']\n                    and result['application_getaddrinfo_calls'] == 1\n                    and result['elapsed_seconds'] < DNS_DEADLINE_SECONDS\n                    and not result['errors'])\n    result['status'] = ('OS_DNS_RESOLVED_ONLY_NOT_HTTP_OR_DOWNLOAD_VERIFIED'\n                        if result['ok'] else 'DNS_OBSERVATION_FAILED')\n    emit(result)\n    return 0 if result['ok'] else 1\n\n\nif __name__ == '__main__':\n    raise SystemExit(main())\n",
+      "--resolve-zbj-official-host-once"
+    ],
+    "created_unix_ms": 1793997683357,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2983a9d-fc05-7ed3",
+    "idempotency_key": "pocket4-zbj-system-resolver-observation-20261106-r1",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2983a9d-fc05-7ed3",
+    "request_digest": "068354be45b2bb7a5ec721840a7f67a9a51527ef5260070aa7c4e50dbc72b143",
+    "request_fingerprint": 469311962366524282,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2983a9d-fc05-7ed3"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2983a9d-fc05-7ed3"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

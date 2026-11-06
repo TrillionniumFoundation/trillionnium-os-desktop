@@ -1,0 +1,274 @@
+--- original-linked-b13/collector-against-original-linked-b13.diff
++++ independent-b13-version-repair/collector-against-original-linked-b13.diff
+@@ -1,10 +1,10 @@
+ #!/usr/bin/env python3
+-"""The eight original unclaimed batches after the independently settled b05 repair.
+-
+-The original failed job is preserved. Only the fixed original b06-b13 package
+-groups are accepted. The successful b05 tool/parser, held APKs, signatures,
+-19+7 dependency bindings, RUNPATH absence checks, typed guard and owned lifetime
+-remain unchanged. No UI, Android command, permission change or installation.
++"""Independent full b13 correction for one exact fixture with absent version attributes.
++
++Original b13 remains FAILED. All three current APK sets are reobserved with the
++original signatures, tools, guards, layout and owned-lifetime requirements.
++Only the fixed signed fixture may use the proven Android absent-version default.
++No APK edit, install, UI, permission change, Android command or old gate update.
+ """
+ import sys
+ sys.dont_write_bytecode = True
+@@ -29,7 +29,7 @@
+         "sha256": "dfe1182d8e0da4d3d6e842736378539df33e03a87cf0ed9ab4bbe9ae1f26c041"}
+ ENV = {"PATH": "/usr/bin:/bin", "LANG": "C", "LC_ALL": "C", "TZ": "UTC"}
+ STAT = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")
+-OUTPUT_PREFIX = '/home/alex/work/pocket4-successor-apk-audit-20261106-linked-official-r2-'
++OUTPUT_PREFIX = '/home/alex/work/pocket4-successor-apk-audit-20261106-b13-fixture-version-repair-r1-'
+ MAX_APK = 512 * 1024 * 1024
+ MAX_BATCH_BYTES = 4 * 1024 * 1024 * 1024
+ MAX_TOOL_OUTPUT = 4 * 1024 * 1024
+@@ -49,7 +49,7 @@
+     "org.fcitx.fcitx5.android", "tv.danmaku.bili")
+ ROSTER_REFERENCE_SHA = "9c457f72522dc199ffc32e5d821c60c011662bb4e4e98651ea1cfe9a06e48eba"
+ 
+-PENDING_BATCHES = {'6': {'packages': ['com.android.contacts', 'com.android.deskclock', 'com.android.dialer', 'com.android.documentsui'], 'APK_count': 4, 'logical_APK_bytes': 39737716, 'original_request_sha256': '605c80d1d4ea311994d641adf020d5fca28e54dc30bd545068edabd69a0d3c40'}, '7': {'packages': ['com.android.gallery3d', 'com.android.messaging', 'com.android.quicksearchbox', 'com.android.settings'], 'APK_count': 4, 'logical_APK_bytes': 109385036, 'original_request_sha256': 'fc66d6daa88c497d1e5c031df6daa114212f305007baa175800ea7aef2fe2a05'}, '8': {'packages': ['com.android.threadnetwork.demoapp', 'com.bestbuy.android', 'com.ehi.national.mobile', 'com.hertz.android.digital'], 'APK_count': 12, 'logical_APK_bytes': 501001334, 'original_request_sha256': '6f7741329e91f61b05eae4f8b329c9769402f9dd0b5c0d6a404d6e259ae6f583'}, '9': {'packages': ['com.hilton.android.hhonors', 'com.ihg.apps.android', 'com.jingdong.app.mall', 'com.marriott.mrt'], 'APK_count': 9, 'logical_APK_bytes': 390160945, 'original_request_sha256': 'e8a6c97f5e4626de8033c9bb084c88750ae148c404f82f696b47658bd1ebe0ec'}, '10': {'packages': ['com.pinger.textfree', 'com.sankuai.meituan.takeoutnew', 'com.sdu.didi.psnger', 'com.ss.android.ugc.aweme'], 'APK_count': 7, 'logical_APK_bytes': 614804302, 'original_request_sha256': '4fb648966734614cec80575ba467794b5bf955d9963ea8e7b141993643e52739'}, '11': {'packages': ['com.taobao.taobao', 'com.ubercab', 'com.united.mobile.android', 'com.xunmeng.pinduoduo'], 'APK_count': 16, 'logical_APK_bytes': 703871873, 'original_request_sha256': 'd504364f8923949dc6428008a2e0d9e761d8fadca182eca122d428e5b5f9d1bc'}, '12': {'packages': ['com.zhubajie.client', 'com.zillow.android.streeteasy', 'ctrip.android.view', 'jp.co.ana.android.tabidachi'], 'APK_count': 10, 'logical_APK_bytes': 389233530, 'original_request_sha256': 'acffb13822a87e9504795acdf526d3f86016ccccb3e155cd164a2b1c6a9c1fac'}, '13': {'packages': ['local.pocket4.fixture', 'org.chromium.webview_shell', 'org.droidloom.qa.editorcontract'], 'APK_count': 3, 'logical_APK_bytes': 108766, 'original_request_sha256': 'cdb513767ab31a0956fe152959f91a6a652ed7a4447a36ef4b83aa74889bbd95'}}
++PENDING_BATCHES = {'13': {'packages': ['local.pocket4.fixture', 'org.chromium.webview_shell', 'org.droidloom.qa.editorcontract'], 'APK_count': 3, 'logical_APK_bytes': 108766, 'original_request_sha256': 'cdb513767ab31a0956fe152959f91a6a652ed7a4447a36ef4b83aa74889bbd95'}}
+ ACTUAL_GUARD = {"path": "/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/current_baseline_guard.py",
+                 "bytes": 3213, "sha256": "d84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3"}
+ ACTUAL_SCOPE = {'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json', 'bytes': 58854, 'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f'}
+@@ -68,6 +68,13 @@
+ CONTINUATION_LINEAGE = {'original_plan_sha256': 'd288affedc2eae8d28f2d7083df4c89d756e51ba8e5ebfb2264f9d3c6d783139', 'original_failed_b05_job_id': '1a1b16f06d5-fc05-78b1', 'original_b05_state': 'failed', 'original_b05_exit_code': 1, 'corrective_job_id': '1a1b289b789-fc05-7e7e', 'corrective_result': {'path': '/home/alex/work/pocket4-successor-apk-audit-20261106-b05-official-tool-repair-r1-01/result.json', 'bytes': 276285, 'sha256': '3d0c794f4e2ac04ee6c67c22cd62ae4d560fc3c11e5f8faa7e514145f6a421f1'}, 'corrective_source_sha256': 'b4d27e1364feb28cab6634c77ed764e15359720025192117ecc8cb84d4391e1a', 'corrective_authoritative_terminal_sha256': 'c0d5d07a7be5d7ccbbbdc0451a4ac1a553bf690a1956b84ba7891aedc7f8652c'}
+ CORRECTIVE_RESULT = {'path': '/home/alex/work/pocket4-successor-apk-audit-20261106-b05-official-tool-repair-r1-01/result.json', 'bytes': 276285, 'sha256': '3d0c794f4e2ac04ee6c67c22cd62ae4d560fc3c11e5f8faa7e514145f6a421f1'}
+ 
++
++FIXTURE_SCOPE = {'apks': [{'bytes': 12713, 'file': {'st_ctime_ns': 1791344567298137603, 'st_dev': 1811, 'st_gid': 1000, 'st_ino': 655662, 'st_mode': 33188, 'st_mtime_ns': 1791344567298137603, 'st_nlink': 1, 'st_size': 12713, 'st_uid': 1000}, 'path': '/data/app/~~7AyAiJrTjYxPxlzdUP7O9g==/local.pocket4.fixture-Rn2WJdjmmGRSmI5foe64RA==/base.apk', 'sha256': '91e352c25e7c6ef54aa53ce652931e40ad1437dfcd0ebad2529bc662558a3dd6'}], 'code_path': '/data/app/~~7AyAiJrTjYxPxlzdUP7O9g==/local.pocket4.fixture-Rn2WJdjmmGRSmI5foe64RA==', 'data_directories': {'user': {'device': 1811, 'gid': 10115, 'inode': 132226, 'status': 'PRESENT', 'uid': 10115}, 'user_de': {'device': 1811, 'gid': 10115, 'inode': 132633, 'status': 'PRESENT', 'uid': 10115}}, 'fresh_signature_verification': False, 'package': 'local.pocket4.fixture', 'package_manager_certificate_sha256': ['df1baddab9b5bf8ec8581a35c5294519511e3bbeb709ce14dfee5e873afa3e1b'], 'uid': 10115, 'version_code': 0}
++FIXTURE_BADGING_PIN = {'bytes': 686, 'sha256': '28b2cf92369048b078c8fbf337bf8ae08173f49768e946baee8421bb0d0860b5'}
++FIXTURE_XML_PIN = {'bytes': 1244, 'sha256': '2deafdbfa41af5daf85f7980a82491408b1472bcb5aafb0904fa1ea72e9b351f'}
++ANDROID_VERSION_DEFAULT_REFERENCE = {'origin': 'AOSP primary source, not an assertion of exact live ELF provenance', 'commit': '13f9d65c456ee75c488b5d5eccdaa277437528ef', 'blob': '73df5e8e7b1bbf943a03c852bb5fa1ff8b10fa89', 'url': 'https://android.googlesource.com/platform/frameworks/base.git/+/13f9d65c456ee75c488b5d5eccdaa277437528ef/core/java/com/android/internal/pm/parsing/pkg/PackageImpl.java', 'symbol': 'PackageImpl constructor', 'versionCode_default': 0, 'versionCodeMajor_default': 0, 'method': 'TypedArray.getInteger(attribute, defaultValue)', 'versionName_omission_is_null_reference': 'https://android.googlesource.com/platform/frameworks/base.git/+/main/core/java/android/content/pm/PackageInfo.java', 'typed_version_name': 'nullable; no invented display name'}
++B13_FAILURE_LINEAGE = {'job_id': '1a1b2ab7980-fc05-7f3a', 'state': 'failed', 'exit_code': 1, 'authoritative_terminal_sha256': '0bb294937184c5c01f49e8e344ea2b6396e1b31788c10388220ff11a3db95508', 'worker_artifact_bytes': 72536, 'worker_artifact_sha256': 'db979e50d6bfa1e0c83fd7ae876239b48bdca3b4be80bfb5cce6e24f30948d33', 'failed_publication': {'bytes': 72128, 'path': '/home/alex/work/pocket4-successor-apk-audit-20261106-linked-official-r2-b13/result.json', 'sha256': '8fffef66c6c938372cb6a6f8d5f6c7beeb92a58dd122a21d8c0adb36a57e63a3'}, 'original_request_sha256': '675999fa3c72bb7cde1ad50a008a62bc09141ebfd2f0848a11fb6c707bf0ba5b', 'original_failed_source_sha256': 'e92ee6edc129e0488c7ae13c2c853c804436bcb799f4413f84eab06a529d1e44'}
++B13_FAILED_RESULT = {'bytes': 72128, 'path': '/home/alex/work/pocket4-successor-apk-audit-20261106-linked-official-r2-b13/result.json', 'sha256': '8fffef66c6c938372cb6a6f8d5f6c7beeb92a58dd122a21d8c0adb36a57e63a3'}
+ 
+ def validate_candidate(candidate):
+     need(type(candidate) is dict and set(candidate) == {"path", "bytes", "sha256", "file"}, "EXACT_CANDIDATE_PIN_SCHEMA")
+@@ -370,6 +377,93 @@
+     value["native_abi_source"] = "aapt2_dump_badging_current_APK"
+     value["version_code_major"] = int(attrs.get("versionCodeMajor", "0"))
+     value["long_version_code"] = value["version_code"] | (value["version_code_major"] << 32)
++    return value
++
++
++def fixture_xml_version_absence(raw):
++    """Decode the exact observed fixture XML root; never infer absence from a missing dump."""
++    need(len(raw) == FIXTURE_XML_PIN["bytes"] and sha(raw) == FIXTURE_XML_PIN["sha256"],
++         "EXACT_OBSERVED_FIXTURE_XML_REQUIRED")
++    text = raw.decode("utf-8", "strict")
++    lines = text.splitlines()
++    need(lines and lines[0] == "N: android=http://schemas.android.com/apk/res/android",
++         "FIXTURE_XML_ANDROID_NAMESPACE_REQUIRED")
++    roots = [i for i, line in enumerate(lines) if re.fullmatch(r"  E: manifest \(line=[0-9]+\)", line)]
++    need(len(roots) == 1 and roots[0] == 1, "ONE_EXACT_FIXTURE_XML_MANIFEST_ROOT_REQUIRED")
++    attributes = {}
++    for line in lines[roots[0] + 1:]:
++        if re.fullmatch(r"    E: [A-Za-z0-9_.:-]+ \(line=[0-9]+\)", line):
++            break
++        match = re.fullmatch(r"    A: ([A-Za-z0-9_.:-]+)(?:\(0x[0-9a-fA-F]+\))?=(.*)", line)
++        need(match is not None and match[1] not in attributes, "FIXTURE_XML_ROOT_ATTRIBUTE_UNPARSED_OR_DUPLICATE")
++        attributes[match[1]] = match[2]
++    version_keys = ("android:versionCode", "android:versionCodeMajor", "android:versionName")
++    need(not any(key in attributes for key in version_keys), "FIXTURE_VERSION_ATTRIBUTES_MUST_ACTUALLY_BE_ABSENT")
++    package = attributes.get("package")
++    literal = re.fullmatch(r'("(?:[^"\\]|\\.)*") \(Raw: ("(?:[^"\\]|\\.)*")\)', package or "")
++    need(literal is not None and json.loads(literal[1]) == json.loads(literal[2]) == FIXTURE_SCOPE["package"],
++         "EXACT_FIXTURE_XML_PACKAGE_REQUIRED")
++    return {"xml_stream": FIXTURE_XML_PIN, "root_package": FIXTURE_SCOPE["package"],
++            "root_version_attributes": {key: None for key in version_keys},
++            "all_three_version_attributes_absent": True, "missing_XML_accepted": False}
++
++
++def manifest_with_exact_fixture_default(raw, xml_raw, package, expected, apk, signature):
++    """Only the one signed, fixed fixture may use Android's absent-version default.
++
++    All other packages retain the original strict badging parser unchanged.
++    Empty raw values stay empty in evidence; absence stays null. The separate
++    effective long code is 0 only after XML, fresh signature and PM agree.
++    """
++    if package != FIXTURE_SCOPE["package"]:
++        return badging_manifest(raw)
++    need(expected == FIXTURE_SCOPE and expected["uid"] == 10115 and
++         type(expected["version_code"]) is int and expected["version_code"] == 0 and
++         expected["apks"] == [apk], "ONLY_EXACT_ALREADY_INSTALLED_FIXTURE_SCOPE")
++    need(signature is not None and signature.get("verified") is True and
++         signature.get("cryptographic_verification_performed") is True and
++         signature.get("API_minimum_override_used") is False and signature.get("integrity_check_bypassed") is False and
++         signature.get("signer_certificate_sha256") == expected["package_manager_certificate_sha256"],
++         "FRESH_NORMAL_SIGNATURE_AND_FIXED_PM_SIGNER_REQUIRED_BEFORE_DEFAULT")
++    need(len(raw) == FIXTURE_BADGING_PIN["bytes"] and sha(raw) == FIXTURE_BADGING_PIN["sha256"],
++         "EXACT_OBSERVED_EMPTY_FIXTURE_BADGING_REQUIRED")
++    absence = fixture_xml_version_absence(xml_raw)
++    text = raw.decode("utf-8", "strict")
++    lines = [line for line in text.splitlines() if line.startswith("package: ")]
++    need(len(lines) == 1, "UNIQUE_AAPT_PACKAGE_LINE")
++    attrs, at = {}, len("package:")
++    while at < len(lines[0]):
++        match = re.match(r"\s+([A-Za-z][A-Za-z0-9_-]*)='([^']*)'", lines[0][at:])
++        need(match is not None and match[1] not in attrs, "BADGING_ATTRIBUTE_UNPARSED_OR_DUPLICATE")
++        attrs[match[1]] = match[2]
++        at += match.end()
++    need(attrs.get("name") == package and attrs.get("versionCode") == "" and attrs.get("versionName") == "" and
++         "versionCodeMajor" not in attrs and "split" not in attrs, "ONLY_EXACT_EMPTY_ABSENT_FIXTURE_VERSION_FORM")
++    value = {"package": package, "version_code": None, "version_code_major": None, "version_name": None,
++             "version_code_raw": attrs["versionCode"], "version_name_raw": attrs["versionName"],
++             "split_name": None, "package_line_raw": lines[0], "long_version_code": 0,
++             "effective_version_code_source": "ANDROID_ABSENT_ATTRIBUTE_DEFAULT_CONFIRMED_WITH_FIXED_PM_ZERO",
++             "version_default_evidence": {"schema": "pocket4-exact-fixture-absent-version-evidence-v1",
++                 "badging_stream": FIXTURE_BADGING_PIN, "xml_absence": absence,
++                 "fixed_APK_sha256": apk["sha256"], "fixed_PM_version_code": 0,
++                 "fresh_signature_matches_fixed_PM": True, "declared_version_name_invented": False,
++                 "Android_parser_reference": ANDROID_VERSION_DEFAULT_REFERENCE}}
++    # This is the identical SDK/ABI parsing contract used by the original
++    # parser; no existing package receives a new version default.
++    for name, prefixes in (("min_sdk", ("sdkVersion:", "minSdkVersion:")),
++                           ("target_sdk", ("targetSdkVersion:",)), ("max_sdk", ("maxSdkVersion:",))):
++        found = [line for line in text.splitlines() if line.startswith(prefixes)]
++        need(len(found) <= 1, "AMBIGUOUS_AAPT_SDK")
++        if found:
++            parsed = re.fullmatch(r"(?:sdkVersion|minSdkVersion|targetSdkVersion|maxSdkVersion):'([^']+)'", found[0])
++            need(parsed is not None, "MALFORMED_AAPT_SDK_LINE")
++            value[name] = parsed[1]
++        else:
++            value[name] = None
++    native = [line for line in text.splitlines() if line.startswith("native-code:")]
++    need(len(native) <= 1, "AMBIGUOUS_AAPT_ABI")
++    value["native_abis"] = re.findall(r"'([^']*)'", native[0]) if native else []
++    value["native_abi_source"] = "aapt2_dump_badging_current_APK"
+     return value
+ 
+ 
+@@ -581,12 +675,13 @@
+ 
+ 
+ def validate_request(request):
+-    need(set(request) == {"schema", "guard", "app_scope", "packages", "output_root", "official_release_assets", "legacy_candidate_aapt2", "legacy_candidate_inventory", "legacy_candidate_proof", "legacy_candidate_terminal", "official_candidate_aapt2", "official_host_stdout", "official_host_terminal", "continuation_of", "original_batch"}, "CLOSED_LINKED_REMAINING_BATCH_REQUEST_SCHEMA")
+-    need(request["schema"] == "pocket4-linked-official-remaining-batch-request-v1", "DIAGNOSTIC_REQUEST_SCHEMA")
++    need(set(request) == {"schema", "guard", "app_scope", "packages", "output_root", "official_release_assets", "legacy_candidate_aapt2", "legacy_candidate_inventory", "legacy_candidate_proof", "legacy_candidate_terminal", "official_candidate_aapt2", "official_host_stdout", "official_host_terminal", "continuation_of", "original_batch", "original_b13_failure"}, "CLOSED_LINKED_REMAINING_BATCH_REQUEST_SCHEMA")
++    need(request["schema"] == "pocket4-independent-b13-fixture-version-repair-request-v1", "DIAGNOSTIC_REQUEST_SCHEMA")
+     need(type(request["original_batch"]) is int and str(request["original_batch"]) in PENDING_BATCHES,
+-         "ONLY_ORIGINAL_UNCLAIMED_BATCHES_06_TO_13")
++         "ONLY_INDEPENDENT_CORRECTION_OF_EXACT_FAILED_BATCH_13")
+     batch = PENDING_BATCHES[str(request["original_batch"])]
+     need(request["packages"] == batch["packages"] and request["continuation_of"] == CONTINUATION_LINEAGE and
++         request["original_b13_failure"] == B13_FAILURE_LINEAGE and
+          request["output_root"] == OUTPUT_PREFIX + "b%02d" % request["original_batch"],
+          "EXACT_LINKED_ORIGINAL_BATCH_SCOPE_REQUIRED")
+     need(request["guard"] == ACTUAL_GUARD and request["app_scope"] == ACTUAL_SCOPE, "EXACT_ACTUAL_SUCCESSOR_AND_FINAL_SCOPE_REQUIRED")
+@@ -613,10 +708,11 @@
+     batch = PENDING_BATCHES[str(request["original_batch"])]
+     need(os.getuid() == os.geteuid() == 0, "EXISTING_ROOT_AUTHORITY_REQUIRED")
+     end = time.monotonic() + 840
+-    result = {"schema": "pocket4-linked-official-remaining-apk-audit-v1", "started_utc": now(),
++    result = {"schema": "pocket4-independent-b13-fixture-version-corrective-audit-v1", "started_utc": now(),
+         "original_failed_audit_reclassified": False, "original_batch_05_gate_advanced": False,
+         "all_45_Launcher_apps_reobserved": False, "continuation_of": CONTINUATION_LINEAGE,
+         "original_batch": request["original_batch"],
++        "original_b13_failure": B13_FAILURE_LINEAGE, "original_batch_13_gate_advanced": False,
+         "legacy_badging_reexecuted": False,
+         "packages": request["packages"], "request": request, "roster_reference_sha256": ROSTER_REFERENCE_SHA,
+         "UI_actions": 0, "App_launches": 0, "permission_changes": 0, "installs": 0,
+@@ -648,6 +744,11 @@
+             "static_graph_is_actual_loader_mapping_proof": False}
+         inventory_raw = core.pinned_record(request["legacy_candidate_inventory"], 65536)
+         result["actual_candidate_observation"] = verify_candidate_inventory(request["legacy_candidate_aapt2"], core.parse(inventory_raw))
++        prior_b13_raw = core.pinned_record(B13_FAILED_RESULT, MAX_RESULT)
++        prior_b13 = core.parse(prior_b13_raw)
++        need(prior_b13.get("original_batch") == 13 and prior_b13.get("linked_batch_audit_complete") is False and
++             prior_b13.get("status") == "LINKED_ORIGINAL_BATCH_AUDIT_INCOMPLETE_NO_RETRY", "ORIGINAL_B13_FAILURE_MUST_REMAIN")
++        result["original_b13_failed_publication_reference"] = B13_FAILED_RESULT
+         prior_failed_raw = core.pinned_record(ORIGINAL_FAILED_RESULT, MAX_RESULT)
+         prior_control_raw = core.pinned_record(ORIGINAL_CONTROL_RESULT, MAX_RESULT)
+         prior_failed, prior_control = core.parse(prior_failed_raw), core.parse(prior_control_raw)
+@@ -739,7 +840,7 @@
+                         outputs[name] = streams["stdout"]
+                         recheck_tools(core, pool, tools, end, False)
+                     for name, fn in (("signature", lambda: parse_signature(outputs["apksigner"], item["commands"][0])),
+-                                     ("manifest", lambda: badging_manifest(outputs["badging"])),
++                                     ("manifest", lambda: manifest_with_exact_fixture_default(outputs["badging"], outputs["manifest"], package, row, apk, item.get("signature"))),
+                                      ("declared_permissions", lambda: xml_permissions(outputs["manifest"]))):
+                         try:
+                             item[name] = fn()
+@@ -779,6 +880,7 @@
+         core.pinned_record(request["legacy_candidate_inventory"], 65536)
+         core.pinned_record(request["legacy_candidate_proof"], 131072)
+         core.pinned_record(request["legacy_candidate_terminal"], 65536)
++        core.pinned_record(B13_FAILED_RESULT, MAX_RESULT)
+         core.pinned_record(ORIGINAL_FAILED_RESULT, MAX_RESULT)
+         core.pinned_record(CORRECTIVE_RESULT, MAX_RESULT)
+         core.pinned_record(ORIGINAL_CONTROL_RESULT, MAX_RESULT)
+@@ -819,7 +921,14 @@
+         observations = result.get("official_private_layout", {}).get("observations", [])
+         result["official_layout_before_and_after_all_commands"] = len(observations) == 2 + 6 * batch["APK_count"] and all(
+             row.get("complete") is True and row.get("all_five_search_directories_and_thirty_candidates_proved") is True for row in observations)
+-        result["linked_batch_audit_complete"] = (result["all_manifests_and_signatures_verified"] and
++        fixture_manifest = result["apps"][0].get("base_manifest") if result["apps"] else None
++        result["fixture_absent_version_default_applied"] = bool(fixture_manifest and
++            fixture_manifest.get("effective_version_code_source") == "ANDROID_ABSENT_ATTRIBUTE_DEFAULT_CONFIRMED_WITH_FIXED_PM_ZERO" and
++            fixture_manifest.get("version_code") is None and fixture_manifest.get("version_name") is None and
++            fixture_manifest.get("version_code_raw") == fixture_manifest.get("version_name_raw") == "" and
++            fixture_manifest.get("long_version_code") == 0)
++        result["corrective_batch13_audit_complete"] = (result["fixture_absent_version_default_applied"] and
++            result["all_manifests_and_signatures_verified"] and
+             result["all_primary_commands_succeeded"] and result["official_badging_stderr_empty"] and
+             result.get("official_layout_descriptors_closed") is True and result["official_layout_before_and_after_all_commands"] and
+             result.get("corrective_publication_reference") == CORRECTIVE_RESULT)
+@@ -839,16 +948,16 @@
+                     "owned_directory_descriptors": layout["owned_directory_descriptors"],
+                     "full_original_observations_persisted_and_read_back": True}
+             else:
+-                result["linked_batch_audit_complete"] = False
++                result["corrective_batch13_audit_complete"] = False
+         except BaseException as error:
+             result["errors"].append({"stage": "full_layout_evidence_publication", "type": type(error).__name__, "reason": str(error)[:160]})
+             result["all_manifests_and_signatures_verified"] = False
+-            result["linked_batch_audit_complete"] = False
++            result["corrective_batch13_audit_complete"] = False
+         result["resource_table_integrity_fully_proved"] = False
+-        result["inference_limit"] = "One original remaining batch, same current APK/manifest/signature scope and explicit b05 corrective lineage. The old failed b05 remains failed. Badging does not prove all resource-table health, effective grants, or business readiness."
++        result["inference_limit"] = "Independent full correction of the exact failed b13. The original b05 and b13 failures remain unchanged. Only the fixed signed fixture uses Android absent-version default 0 while raw empty values and null declaration stay preserved. This does not prove all resource health, effective grants, business readiness or rewrite the old ledger."
+         result["ended_utc"] = now()
+         result["owned_descriptors_before_final_receipt"] = pool.summary()
+-        result["status"] = "LINKED_ORIGINAL_BATCH_APK_AUDIT_VERIFIED" if result["linked_batch_audit_complete"] else "LINKED_ORIGINAL_BATCH_AUDIT_INCOMPLETE_NO_RETRY"
++        result["status"] = "B13_FIXTURE_VERSION_CORRECTIVE_AUDIT_VERIFIED" if result["corrective_batch13_audit_complete"] else "B13_FIXTURE_VERSION_CORRECTIVE_AUDIT_INCOMPLETE_NO_RETRY"
+         try:
+             if store is not None:
+                 raw = canonical(result) + b"\n"; need(len(raw) <= MAX_RESULT, "RESULT_BYTE_BOUND")
+@@ -866,7 +975,7 @@
+                 result["status"] = "FD_RETIREMENT_FAILED"
+         result["owned_descriptors_final"] = pool.summary()
+         if not result["all_manifests_and_signatures_verified"]:
+-            result["linked_batch_audit_complete"] = False
++            result["corrective_batch13_audit_complete"] = False
+     return result
+ 
+ 
+@@ -881,20 +990,20 @@
+         request = json.loads(read_bootstrap({"path": args.request, "sha256": args.request_sha256}, 262144))
+         result = audit(request)
+     except BaseException as error:
+-        result = {"schema": "pocket4-linked-remaining-audit-entry-rejection-v1", "status": "ENTRY_OR_RECEIPT_REJECTED", "type": type(error).__name__,
++        result = {"schema": "pocket4-b13-version-repair-entry-rejection-v1", "status": "ENTRY_OR_RECEIPT_REJECTED", "type": type(error).__name__,
+                   "reason": str(error)[:256], "installs": 0, "UI_actions": 0, "automatic_retry": False, "production_ready": False}
+     result["process_FDs_before"] = process_fds_before
+     result["process_FDs_after"] = len(os.listdir("/proc/self/fd"))
+     if result["process_FDs_before"] != result["process_FDs_after"]:
+         result.setdefault("errors", []).append({"reason": "FINAL_PROCESS_FD_DIFFERENCE"})
+         result["all_manifests_and_signatures_verified"] = False
+-        result["linked_batch_audit_complete"] = False
++        result["corrective_batch13_audit_complete"] = False
+         result["status"] = "FINAL_PROCESS_FD_DIFFERENCE"
+     result["success_gate_requires_outer_final_stdout_and_authoritative_terminal"] = True
+     raw = canonical(result)
+     need(len(raw) <= MAX_RESULT, "STDOUT_ARTIFACT_BOUND")
+     print(json.dumps({"encoding": "zlib-base64", "artifact_bytes": len(raw), "artifact_sha256": sha(raw), "data": base64.b64encode(zlib.compress(raw, 9)).decode("ascii")}, separators=(",", ":")), flush=True)
+-    return 0 if result.get("linked_batch_audit_complete") is True else 1
++    return 0 if result.get("corrective_batch13_audit_complete") is True else 1
+ 
+ 
+ if __name__ == "__main__":

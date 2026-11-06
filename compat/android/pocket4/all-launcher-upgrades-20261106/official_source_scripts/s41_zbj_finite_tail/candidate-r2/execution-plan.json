@@ -1,0 +1,103 @@
+{
+  "schema": "pocket4-zbj-s41-finite-tail-plan-v1",
+  "state": "SEALED_FOR_REVIEW_NOT_EXECUTED",
+  "request": {
+    "path": "official_source_scripts/s41_zbj_finite_tail/candidate-r2/process-request.json",
+    "bytes": 52384,
+    "sha256": "c88f9ddc026f913f4eface1f743d9441d6bbdfefa3d40afcb797ba838592afdb"
+  },
+  "source": {
+    "path": "official_source_scripts/s41_zbj_finite_tail/candidate-r2/continue_zbj_s41_once.py",
+    "bytes": 50714,
+    "sha256": "9b79c319611295e10d00f141b072a79d39f828549d78f9300572345375fbb2e4"
+  },
+  "diff": {
+    "path": "official_source_scripts/s41_zbj_finite_tail/candidate-r2/against-S34.diff",
+    "bytes": 38041,
+    "sha256": "1c412f2b134f0a5d1696b5548be06f0717dfbfb62373eb215e40b26021940ffd"
+  },
+  "source_inheritance": {
+    "path": "official_source_scripts/s41_zbj_finite_tail/candidate-r2/inheritance.json",
+    "bytes": 2046,
+    "sha256": "4b8492bf7501be71a144d259ea1c3f0749d09944621099c4f77acf64e3ea8b25"
+  },
+  "official_original_URL_preserved": "https://s.shouji.qihucdn.com/261009/9b8bc092373e8f09d56861322b8ce1c9/com.zhubajie.client_370.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1794571897%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1793967097%26tok%3Db64e944d9e3de8d16861a770d758bee5%26v%3D%26f%3Dz.apk",
+  "previous_result": {
+    "path": "official_source_scripts/s34_zbj_tail/actual-r1/com.zhubajie.client-result.raw.json",
+    "bytes": 65232,
+    "sha256": "c49b3c374226329c92810d11bacee29c75023c26bf648bf5c4a6ebf7ea741135"
+  },
+  "previous_failure": {
+    "path": "official_source_scripts/s34_zbj_tail/actual-r1/range-0003.raw.json",
+    "bytes": 2103,
+    "sha256": "a92c797bdd1d9471842afa76c3d2872249d78b42286997b393fe191949436a6b"
+  },
+  "previous_terminal": {
+    "path": "official_source_scripts/s34_zbj_tail/actual-r1/terminal.raw.json",
+    "bytes": 730,
+    "sha256": "e10d132f8089f20add7a403ff05bd31620fd785ab8f7db934817bdae797ba239"
+  },
+  "latest_three_segment_readback": {
+    "path": "reference/rail-zbj-delivery-research-r1/receipt-readback-r1/verification.json",
+    "bytes": 2758,
+    "sha256": "b4a65754c4c39931b821458c08de049ecf5421b2de28b531c2c4708e79981882"
+  },
+  "actual_DNS_success": {
+    "terminal": {
+      "path": "official_source_scripts/s40_zbj_dns_probe/actual/status-01.original.txt",
+      "bytes": 731,
+      "sha256": "7b06805ce07faf432aedcef9deec25571d4069ca668ed76c640de9205dd70fb0"
+    },
+    "stdout": {
+      "path": "official_source_scripts/s40_zbj_dns_probe/actual/stdout.original.jsonl",
+      "bytes": 2313,
+      "sha256": "61ecdfd852260204ef324d4fbd518eae55f9e9660bd7788bce110f6f99173c95"
+    },
+    "not_HTTP_or_future_DNS_proof": true
+  },
+  "new_host_root": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s41-r2",
+  "reused_inputs": {
+    "original_prefix_bytes": 38387712,
+    "S28_complete_2MiB_segments": 41,
+    "S34_complete_1MiB_segments": 3,
+    "complete_prefix_bytes": 127516672,
+    "S28_failed_partial_reused": false,
+    "S34_failed_empty_partial_reused": false
+  },
+  "old_prefix_sha_gate": "The reconstructed first124370944B must equal the actual S34 prefix SHA b5afd036ee69dda692bc5e20a35ddd38c66431ce7704960e7bac3b6f2a3f2584.",
+  "old_identity_policy": "Retain exact recorded full stat for existing complete bodies. Bind latest file_info versions for S34 result/failure/three receipts/three bodies. Older metadata without historical inode pins retain their original size/full-SHA/UID regular-file contract, capture current identity, and recheck; no historical inode is invented.",
+  "network_tail": {
+    "start": 127516672,
+    "end": 166873621,
+    "bytes": 39356950,
+    "ranges": 38,
+    "max_range_bytes": 1048576,
+    "last_range_bytes": 559638,
+    "concurrency": 1,
+    "attempts_each": 1,
+    "application_retries": 0,
+    "spacing_seconds": 2,
+    "total_deadline_seconds": 1800,
+    "curl_per_range_max_seconds": 180
+  },
+  "HTTPS_contract": "Original S34 curl executable/arguments and UA. Normal DNS, required TLS certificate verification, HTTPS only, no redirects, exact206 and Content-Range, exact length, no automatic retry. HTTP403/429/Retry-After and any transfer/identity failure stop further requests.",
+  "ETag_contract": "Actual prior server ETag absent. Record absence honestly; no If-Range is sent; empty equal validators are not entity-continuity proof.",
+  "final_artifact": "Only166873622 complete bytes with full SHA/readback and unchanged old inputs can be staged. New artifact remains pending normal full-APK v2/v3 signature, expected vendor signer, manifest version/package, SDK/ABI and fresh installed scope qualification.",
+  "success_gate": [
+    "durable process exit0 and complete untruncated output",
+    "exact prior source and failure gates passed",
+    "all38 requests complete without retries/refusal/signal",
+    "all owned curl children exited and pidfds closed",
+    "all prior held files closed with errors empty",
+    "whole original self descriptor identities restored",
+    "complete file full-hash readback",
+    "no unknown field interpreted as success"
+  ],
+  "failure_action": "Preserve original and new partial bytes/receipts; no automatic retry, cleanup of old versions or install.",
+  "actual_HTTP_requests_by_preparation": 0,
+  "actual_remote_processes_by_preparation": 0,
+  "Android_reads": 0,
+  "Main_lock_or_fds": 0,
+  "installs": 0,
+  "production_ready": false
+}

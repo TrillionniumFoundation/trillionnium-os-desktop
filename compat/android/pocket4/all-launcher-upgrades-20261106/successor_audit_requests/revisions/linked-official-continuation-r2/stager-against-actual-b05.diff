@@ -1,0 +1,13 @@
+--- actual-successful-b05/stager-against-actual-b05.diff
++++ linked-b06-b13/stager-against-actual-b05.diff
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT = '/home/alex/work/pocket4-b05-official-tool-repair-source-20261106-r1'
+-FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 17492, 'sha256': '608f0babd455c535ec6c0876ebfcfbe3dbf229340c498197fc161a08cea30467'}, {'name': 'audit_original_b05.py', 'bytes': 62604, 'sha256': 'b4d27e1364feb28cab6634c77ed764e15359720025192117ecc8cb84d4391e1a'}, {'name': 'request.review-only.json', 'bytes': 2942, 'sha256': '4457641abbf45499b3431ee8b7d7749389412c71e2fa668ff61dce3b57ecd870'}]
++ROOT = '/home/alex/work/pocket4-linked-official-audit-source-20261106-r2-b06'
++FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 22303, 'sha256': 'dca29be539ee4f1c3c7ed37bd493d4ba4faf6951dfd7ec749f95a2f4f9dd30ec'}, {'name': 'audit_remaining_batches.py', 'bytes': 67206, 'sha256': 'e92ee6edc129e0488c7ae13c2c853c804436bcb799f4413f84eab06a529d1e44'}, {'name': 'request.review-only.json', 'bytes': 3324, 'sha256': '0f12e78cdeb04f66a7ec00e5dd4ef338b5914ac7c87b402368608b1591af2a02'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):

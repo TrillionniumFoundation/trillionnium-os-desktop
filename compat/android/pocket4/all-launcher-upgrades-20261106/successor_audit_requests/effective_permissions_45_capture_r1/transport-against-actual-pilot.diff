@@ -1,0 +1,11 @@
+--- actual-beike-pilot/transport-against-actual-pilot.diff
++++ fixed-45-service-capture/transport-against-actual-pilot.diff
+@@ -21,7 +21,7 @@
+ FRAMEWORK_EPOCH_SHA256 = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
+ HELD_HELPER_SHA256 = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+ EXPLICIT_SCOPE_SHA256 = "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f"
+-READ_ONLY_COMMANDS = (('/system/bin/cmd', 'package', 'help'), ('/system/bin/cmd', 'package', 'dump-package', 'com.lianjia.beike'), ('/system/bin/cmd', 'appops', 'get', '--user', '0', 'com.lianjia.beike'))
++READ_ONLY_COMMANDS = (('/system/bin/cmd', 'package', 'help'), ('/system/bin/cmd', 'package', 'dump-package', 'org.fcitx.fcitx5.android'), ('/system/bin/cmd', 'appops', 'get', '--user', '0', 'org.fcitx.fcitx5.android'))
+ HOST_ENV = {"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "HOME": "/root", "LANG": "C.UTF-8"}
+ REQUIRED_ENV = {"PATH", "BOOTCLASSPATH", "DEX2OATBOOTCLASSPATH",
+                 "ANDROID_ROOT", "ANDROID_DATA", "ANDROID_ART_ROOT"}

@@ -1,0 +1,122 @@
+{
+  "APK_reads": 0,
+  "Main_reads": 0,
+  "absent_SDK_line_remains_None": true,
+  "actual_SDK_observations": [
+    {
+      "XML_input": [
+        20129,
+        "231279b8faaadaa39a043e2001cca6e8e0c11e2d563bbdd0a0675b4b528e8150"
+      ],
+      "badging_input": [
+        5786,
+        "42a73692b7d066a9d0aa6572f0d2a70d8b6365c9a874229f05a8ba43c32eabcc"
+      ],
+      "matches_actual_direct_uses_sdk_XML": true,
+      "max_sdk": null,
+      "min_sdk": "37",
+      "no_minimum_le_target_constraint_added": true,
+      "old_original_parser_min_sdk": null,
+      "package": "com.android.calendar",
+      "target_sdk": "34"
+    },
+    {
+      "XML_input": [
+        12000,
+        "0b10dd310ce5e142c3636fb537e136c790a7f830686d0061eb86665d1fdc6350"
+      ],
+      "badging_input": [
+        4520,
+        "a84428e59d5c538f2348d0e27c739494081eef9b82b32bd2f1aafd33d93d0e34"
+      ],
+      "matches_actual_direct_uses_sdk_XML": true,
+      "max_sdk": null,
+      "min_sdk": "23",
+      "no_minimum_le_target_constraint_added": true,
+      "old_original_parser_min_sdk": null,
+      "package": "org.fcitx.fcitx5.android",
+      "target_sdk": "36"
+    }
+  ],
+  "actual_diagnostic_gate_negative": {
+    "actual_two_package_diagnostic_rejected_as_b05": true,
+    "reason": "CALENDAR_COMPARISON_GATE_FAILED"
+  },
+  "all_other_owned_lifetime_functions_unchanged": true,
+  "changed_collector_functions": [
+    "all_apk_evidence_verified",
+    "audit",
+    "badging_manifest",
+    "clean_official_badging_observations",
+    "main",
+    "validate_request"
+  ],
+  "derived_legacy_label_compatibility_passed": true,
+  "exact_unchanged_tool_integrity_reader_and_runner_definitions": [
+    "read_bootstrap",
+    "Store",
+    "bind_tools",
+    "recheck_tools",
+    "run_tool",
+    "xml_permissions",
+    "parse_signature",
+    "validate_candidate",
+    "verify_candidate_inventory",
+    "verify_actual_proof",
+    "bind_static_dependencies",
+    "recheck_static_aliases",
+    "verify_official_host_proof",
+    "bind_existing_official_layout",
+    "add_official_tool_binding"
+  ],
+  "layout_verifications_expected": 38,
+  "local_process_FDs_after": 4,
+  "local_process_FDs_before": 4,
+  "logical_APK_bytes": 341931165,
+  "negative_SDK_fixtures": [
+    {
+      "derived_negative_fixture": "duplicate_minSdkVersion",
+      "reason": "AMBIGUOUS_AAPT_SDK",
+      "rejected": true
+    },
+    {
+      "derived_negative_fixture": "duplicate_legacy_sdkVersion",
+      "reason": "AMBIGUOUS_AAPT_SDK",
+      "rejected": true
+    },
+    {
+      "derived_negative_fixture": "two_aliases_same_value",
+      "reason": "AMBIGUOUS_AAPT_SDK",
+      "rejected": true
+    },
+    {
+      "derived_negative_fixture": "two_aliases_conflicting_values",
+      "reason": "AMBIGUOUS_AAPT_SDK",
+      "rejected": true
+    },
+    {
+      "derived_negative_fixture": "suffix_garbage",
+      "reason": "MALFORMED_AAPT_SDK_LINE",
+      "rejected": true
+    },
+    {
+      "derived_negative_fixture": "extra_quoted_value",
+      "reason": "MALFORMED_AAPT_SDK_LINE",
+      "rejected": true
+    },
+    {
+      "derived_negative_fixture": "present_but_empty",
+      "reason": "MALFORMED_AAPT_SDK_LINE",
+      "rejected": true
+    }
+  ],
+  "ok": true,
+  "original_b05_gate_advanced": false,
+  "original_four_packages_six_APKs_match_actual47_complete_identity": true,
+  "primary_commands_expected": 18,
+  "production_ready": false,
+  "runtime_jobs_submitted": 0,
+  "schema": "pocket4-b05-corrective-sdk-and-closure-local-controls-v1",
+  "three_exact_stage_files_and_packet_verified": true,
+  "tool_children_executed": 0
+}

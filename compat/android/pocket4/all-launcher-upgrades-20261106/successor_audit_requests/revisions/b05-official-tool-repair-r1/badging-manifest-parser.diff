@@ -1,0 +1,22 @@
+--- actual-successful-official-calendar-comparison/badging-manifest-parser
++++ new-complete-original-b05-corrective-audit/badging-manifest-parser
+@@ -11,10 +11,16 @@
+     need("name" in attrs and attrs.get("versionCode", "").isdigit(), "AAPT_PACKAGE_VERSION_REQUIRED")
+     value = {"package": attrs["name"], "version_code": int(attrs["versionCode"]), "version_name": attrs.get("versionName"),
+              "split_name": attrs.get("split"), "package_line_raw": lines[0]}
+-    for name, prefix in (("min_sdk", "sdkVersion:"), ("target_sdk", "targetSdkVersion:"), ("max_sdk", "maxSdkVersion:")):
+-        found = [line for line in text.splitlines() if line.startswith(prefix)]
++    for name, prefixes in (("min_sdk", ("sdkVersion:", "minSdkVersion:")),
++                           ("target_sdk", ("targetSdkVersion:",)), ("max_sdk", ("maxSdkVersion:",))):
++        found = [line for line in text.splitlines() if line.startswith(prefixes)]
+         need(len(found) <= 1, "AMBIGUOUS_AAPT_SDK")
+-        value[name] = re.findall(r"'([^']*)'", found[0])[0] if found and re.findall(r"'([^']*)'", found[0]) else None
++        if found:
++            parsed = re.fullmatch(r"(?:sdkVersion|minSdkVersion|targetSdkVersion|maxSdkVersion):'([^']+)'", found[0])
++            need(parsed is not None, "MALFORMED_AAPT_SDK_LINE")
++            value[name] = parsed[1]
++        else:
++            value[name] = None
+     native = [line for line in text.splitlines() if line.startswith("native-code:")]
+     need(len(native) <= 1, "AMBIGUOUS_AAPT_ABI")
+     value["native_abis"] = re.findall(r"'([^']*)'", native[0]) if native else []

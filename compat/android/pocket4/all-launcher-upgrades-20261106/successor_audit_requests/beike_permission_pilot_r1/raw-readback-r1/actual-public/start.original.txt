@@ -1,0 +1,37 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "#!/usr/bin/env python3\n\"\"\"Read two exact existing Beike service logs; private raw output, no Main command.\"\"\"\nimport hashlib\nimport json\nimport os\nimport stat\nimport sys\nSTAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')\nPINS = ({'bytes': 50525, 'path': '/home/alex/work/pocket4-beike-permission-pilot-observation-20261106-r1/android-02.stdout', 'sha256': '001c37aab9fe84def6d2e9d87c1e6a81d34baf74e62e2f50643c45c1077b5487'}, {'bytes': 1720, 'path': '/home/alex/work/pocket4-beike-permission-pilot-observation-20261106-r1/android-03.stdout', 'sha256': 'f839074801868c1196b0df62916df5c31b40ef894649c522495668cfcbeb3b6d'})\n\ndef need(value,code):\n    if not value:raise RuntimeError(code)\ndef sha(raw):return hashlib.sha256(raw).hexdigest()\ndef canonical(value):return json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=True,allow_nan=False).encode('ascii')\n\ndef read_file(parent,name,size,digest,owned_mode=None):\n    fd=os.open(name,os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC|os.O_NONBLOCK,dir_fd=parent)\n    try:\n        before=os.fstat(fd)\n        need(stat.S_ISREG(before.st_mode) and before.st_uid==0 and before.st_nlink==1 and\n             before.st_size==size and (owned_mode is None or stat.S_IMODE(before.st_mode)==owned_mode),'PINNED_ROOT_FILE')\n        body=bytearray()\n        while len(body)<=size:\n            part=os.read(fd,min(65536,size+1-len(body)))\n            if not part:break\n            body.extend(part)\n        again=os.open(name,os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parent)\n        try:\n            need(len(body)==size and sha(body)==digest and\n                 all(getattr(before,k)==getattr(os.fstat(fd),k)==getattr(os.fstat(again),k) for k in STAT_KEYS),'FILE_OR_PATH_CHANGED')\n        finally:os.close(again)\n        return bytes(body)\n    finally:os.close(fd)\n\ndef read_host_pin(pin):\n    path=pin['path'];parts=path[1:].split('/')\n    need(path.startswith('/') and all(x not in ('','.','..') for x in parts),'CANONICAL_PIN_PATH')\n    fds=[]\n    try:\n        parent=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);fds.append(parent)\n        for name in parts[:-1]:\n            parent=os.open(name,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parent);fds.append(parent)\n        return read_file(parent,parts[-1],pin['bytes'],pin['sha256'])\n    finally:\n        errors=[]\n        for fd in reversed(fds):\n            try:os.close(fd)\n            except OSError:errors.append(fd)\n        need(not errors,'PIN_READER_FDS_NOT_CLOSED')\n\n\ndef main():\n    need(os.getuid()==os.geteuid()==0,'EXISTING_AUTHORIZED_ROOT_READER_REQUIRED')\n    before=len(os.listdir('/proc/self/fd'))\n    rows=[]\n    for pin in PINS:\n        raw=read_host_pin(pin)\n        rows.append({**pin,'encoding':'hex','bytes_hex':raw.hex(),'held_file_and_path_rechecked':True})\n    after=len(os.listdir('/proc/self/fd'))\n    need(after==before,'HOST_READER_DESCRIPTOR_DIFFERENCE')\n    result={'schema':'pocket4-two-exact-beike-private-service-logs-v1','ok':True,\n            'permission_observation_job':'1a1b279845c-fc05-7e2e','files':rows,\n            'process_FDs_before':before,'process_FDs_after':after,\n            'existing_files_modified':False,'Main_reads':0,'native_commands':0,\n            'Android_commands':0,'aapt_commands':0,'UI_actions':0,'installs':0,\n            'namespace_entries':0,'permission_changes':0,'action_lock_acquired':False,\n            'automatic_retry':False,'original_failed_audit_reclassified':False,\n            'raw_output_may_contain_private_state':True,'raw_output_repository_publication_admitted':False}\n    print(canonical(result).decode('ascii'),flush=True)\n\nif __name__=='__main__':main()\n\n"
+    ],
+    "created_unix_ms": 1793995989126,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b27e6086-fc05-7e44",
+    "idempotency_key": "sidecar-evidence-20261106-beike-private-permission-log-readback-r1",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b27e6086-fc05-7e44",
+    "request_digest": "d9bcc6ad551c5d710f33a3db19cc033f3e7cbffe72cd3ad744a945e4ca2d18e0",
+    "request_fingerprint": 15689633649611529585,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b27e6086-fc05-7e44"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b27e6086-fc05-7e44"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

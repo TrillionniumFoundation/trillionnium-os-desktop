@@ -1,0 +1,38 @@
+--- actual-beike-pilot/stager-against-actual-pilot.diff
++++ fixed-45-service-capture/stager-against-actual-pilot.diff
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""New exact source/input stage, then three Beike permission metadata reads."""
++"""New exact source/input stage, then one fixed Launcher batch of permission metadata reads."""
+ import hashlib
+ import json
+ import os
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT = '/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1'
+-FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 19789, 'sha256': '4aece066777ca3940e83b046b38082cf2a68f7f9b036549dce6564246edbb2a5'}, {'name': 'observe_current_services.py', 'bytes': 41792, 'sha256': 'd403da0ef75940731df19032f3b1c495edd6a21fb11990df2b5d6744e14f08c4'}, {'name': 'readonly_services_transport.py', 'bytes': 16102, 'sha256': '5207d626008df00b7594310fb2d33933b6b9a9a6ccd982e4b5b7ed070cbebd76'}, {'name': 'request.review-only.json', 'bytes': 2426, 'sha256': '5ee066bd403535a5ef634e66a27daede1d97cae713dd03d72362e639529e6fa5'}, {'name': 'inputs/cmd-appops-help.original.txt', 'bytes': 1309, 'sha256': '95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc'}]
++ROOT = '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01'
++FILES = [{'name': 'owned_readonly_lifetime.py', 'bytes': 19964, 'sha256': '0db1088ebd9a2d19d0f6a9ef2e5bbe2dd7415d7827d9c1c6c1d66c14d4d82cfa'}, {'name': 'observe_current_services.py', 'bytes': 46457, 'sha256': 'c261aa5e00dd1980a2154053fdd25ee72881f6963b584fa1761e3410425ceab5'}, {'name': 'readonly_services_transport.py', 'bytes': 16116, 'sha256': 'bb2c347f3a208175a9db8b31aa8462d862bf732954adf726c795eb1c4fa20b3e'}, {'name': 'request.review-only.json', 'bytes': 2455, 'sha256': '9e3e72f0693f76d04f71584ebb809a4ca6e08868b24bd2efe377abda8f9169f4'}, {'name': 'inputs/cmd-appops-help.original.txt', 'bytes': 1309, 'sha256': '95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):
+@@ -66,7 +66,7 @@
+     os.umask(0o077);before_fds=len(os.listdir('/proc/self/fd'))
+     raw=sys.stdin.buffer.read(262145);need(0<len(raw)<=262144,'BOUNDED_EXACT_INPUT')
+     payload=json.loads(raw)
+-    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-beike-permission-pilot-source-stage-v1','CLOSED_STAGE_PAYLOAD')
++    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-fixed-launcher-permission-source-stage-v1','CLOSED_STAGE_PAYLOAD')
+     need(type(payload['files']) is list and len(payload['files'])==len(FILES),'EXACT_FILE_COUNT')
+     inputs=[]
+     for expected,item in zip(FILES,payload['files']):
+@@ -104,7 +104,7 @@
+             except OSError:errors.append(fd)
+         need(not errors,'STAGE_FDS_NOT_CLOSED')
+     after_fds=len(os.listdir('/proc/self/fd'));need(after_fds==before_fds,'STAGE_DESCRIPTOR_DIFFERENCE')
+-    print(canonical({'schema':'pocket4-beike-permission-pilot-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
++    print(canonical({'schema':'pocket4-fixed-launcher-permission-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
+          'bootstrap_FDs_before':before_fds,'bootstrap_FDs_after':after_fds,'worker_about_to_exec_once':True,
+          'stage_Main_reads':0,'stage_namespace_entries':0,'stage_installs':0,'stage_UI_actions':0,'automatic_retry':False}).decode(),flush=True)
+     wrapper=FILES[0]

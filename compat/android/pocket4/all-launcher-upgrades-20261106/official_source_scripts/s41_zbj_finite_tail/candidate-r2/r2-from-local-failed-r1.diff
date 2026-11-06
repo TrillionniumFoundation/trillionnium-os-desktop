@@ -1,0 +1,125 @@
+--- local-failed-r1/extensions.py
++++ candidate-r2/extensions.py
+@@ -76,7 +76,8 @@
+          all(value[k]==0 for k in ('HTTP_requests','APK_downloads','TLS_handshakes_requested','explicit_subprocesses',
+                                   'files_written_by_probe','Android_commands','Main_actions','Main_lock_or_fds','installs','permission_changes')) and
+          all(value[k] is False for k in ('normal_resolver_configuration_changed','IP_override_or_custom_resolver',
+-                                        'proxy_configuration_changes','TLS_configuration_changes','authorizes_download_or_install')),
++                                        'authorizes_download_or_install')) and
++         all(type(value[k]) is int and value[k]==0 for k in ('proxy_configuration_changes','TLS_configuration_changes')),
+          'EXACT_ACTUAL_NARROW_DNS_SUCCESS_REQUIRED')
+  return {'job_id':terminal['job_id'],'terminal_sha256':DNS_TERMINAL_SHA256,'stdout_sha256':DNS_STDOUT_SHA256,
+          'observed_at_unix_ms':terminal['at_unix_ms'],'elapsed_seconds':value['elapsed_seconds'],
+--- local-failed-r1/prepare_packet.py
++++ candidate-r2/prepare_packet.py
+@@ -9,7 +9,7 @@
+ import pprint
+ 
+ HERE = Path(__file__).resolve().parent
+-PROJECT = HERE.parent.parent
++PROJECT = HERE.parents[2]
+ BASE = PROJECT / 'official_source_scripts/s34_zbj_tail'
+ S36 = PROJECT / 'official_source_scripts/s36_szzc_finite_tail'
+ S40 = PROJECT / 'official_source_scripts/s40_zbj_dns_probe'
+@@ -58,7 +58,10 @@
+             if isinstance(node, ast.FunctionDef)}
+ 
+ 
+-base = exact(BASE / 'resume_zbj_tail_s34_once.py').decode()
++base = exact(BASE / 'resume_zbj_tail_s34_once.py', 'f3801399b9791aa3cc325cd6e7d62a26415ee32d69046ac1d1ccd818fef45c82').decode()
++base_request = json.loads((BASE / 'process-request.json').read_bytes())
++assert base_request['args'][-1] == base and base_request['host'] == 'pocket4'
++assert base_request['idempotency_key'] == 'pocket4-zbj-finite-tail-s34-20261106-r1'
+ base_functions = functions(base)
+ extension = exact(HERE / 'extensions.py').decode()
+ extra_functions = functions(extension)
+@@ -112,7 +115,7 @@
+     'Reuse the original prefix, COMPLETE s28 segments 0..40 and COMPLETE s34 segments 0..2.')
+ source = replace_once(source, 'import datetime\n', 'import datetime\nimport fcntl\nimport sys\n')
+ source = replace_once(source, "ROOT=Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34')",
+-    "ROOT=Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s41')")
++    "ROOT=Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s41-r2')")
+ source = replace_once(source, 'TAIL_START=124370944\n', 'TAIL_START=127516672\n')
+ 
+ constants = {
+@@ -238,7 +241,7 @@
+     'host': 'pocket4', 'executable': '/usr/bin/python3',
+     'args': ['-I', '-B', '-c', source, '--continue-zbj-38-ranges-once'],
+     'cwd': '/home/alex/work',
+-    'idempotency_key': 'pocket4-zbj-finite-tail-s41-20261106-r1',
++    'idempotency_key': 'pocket4-zbj-finite-tail-s41-20261106-r2',
+     'cpu_quota_percent': 100, 'memory_max_bytes': 536870912,
+     'nice': 10, 'timeout_seconds': 2100,
+ }
+@@ -278,7 +281,7 @@
+     'actual_DNS_success': {'terminal': pin(S40 / 'actual/status-01.original.txt'),
+                            'stdout': pin(S40 / 'actual/stdout.original.jsonl'),
+                            'not_HTTP_or_future_DNS_proof': True},
+-    'new_host_root': '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s41',
++    'new_host_root': '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s41-r2',
+     'reused_inputs': {'original_prefix_bytes': 38387712, 'S28_complete_2MiB_segments': 41,
+                       'S34_complete_1MiB_segments': 3, 'complete_prefix_bytes': 127516672,
+                       'S28_failed_partial_reused': False, 'S34_failed_empty_partial_reused': False},
+--- local-failed-r1/test_local_controls.py
++++ candidate-r2/test_local_controls.py
+@@ -12,7 +12,7 @@
+ import unittest
+ 
+ HERE = Path(__file__).resolve().parent
+-PROJECT = HERE.parent.parent
++PROJECT = HERE.parents[2]
+ 
+ 
+ def worker():
+@@ -89,7 +89,8 @@
+             calls.append((args, kwargs))
+             raise AssertionError('No spawn is authorized by insufficient budget')
+         scope['subprocess'] = types.SimpleNamespace(Popen=forbidden_spawn,
+-                                                   TimeoutExpired=scope['subprocess'].TimeoutExpired)
++                                                   TimeoutExpired=scope['subprocess'].TimeoutExpired,
++                                                   DEVNULL=scope['subprocess'].DEVNULL)
+         scope['DEADLINE'] = time.monotonic() + 5
+         record = {}
+         with tempfile.TemporaryDirectory() as name:
+@@ -123,7 +124,8 @@
+                 raise OSError(errno.EMFILE, 'synthetic pidfd acquisition failure')
+         scope['os'] = OSProxy()
+         scope['subprocess'] = types.SimpleNamespace(Popen=FakeOwnedProcess,
+-                                                   TimeoutExpired=scope['subprocess'].TimeoutExpired)
++                                                   TimeoutExpired=scope['subprocess'].TimeoutExpired,
++                                                   DEVNULL=scope['subprocess'].DEVNULL)
+         scope['DEADLINE'] = time.monotonic() + 60
+         record = {}
+         with tempfile.TemporaryDirectory() as name:
+--- local-failed-r1/continue_zbj_s41_once.py
++++ candidate-r2/continue_zbj_s41_once.py
+@@ -21,7 +21,7 @@
+ import threading
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s41')
++ROOT=Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s41-r2')
+ CHUNK=1024*1024
+ OLD_CHUNK=2*1024*1024
+ OLD_PREFIX=38387712
+@@ -720,7 +720,8 @@
+          all(value[k]==0 for k in ('HTTP_requests','APK_downloads','TLS_handshakes_requested','explicit_subprocesses',
+                                   'files_written_by_probe','Android_commands','Main_actions','Main_lock_or_fds','installs','permission_changes')) and
+          all(value[k] is False for k in ('normal_resolver_configuration_changed','IP_override_or_custom_resolver',
+-                                        'proxy_configuration_changes','TLS_configuration_changes','authorizes_download_or_install')),
++                                        'authorizes_download_or_install')) and
++         all(type(value[k]) is int and value[k]==0 for k in ('proxy_configuration_changes','TLS_configuration_changes')),
+          'EXACT_ACTUAL_NARROW_DNS_SUCCESS_REQUIRED')
+  return {'job_id':terminal['job_id'],'terminal_sha256':DNS_TERMINAL_SHA256,'stdout_sha256':DNS_STDOUT_SHA256,
+          'observed_at_unix_ms':terminal['at_unix_ms'],'elapsed_seconds':value['elapsed_seconds'],
+--- local-failed-r1/process-request.json
++++ candidate-r2/process-request.json
+@@ -9,7 +9,7 @@
+     "--continue-zbj-38-ranges-once"
+   ],
+   "cwd": "/home/alex/work",
+-  "idempotency_key": "pocket4-zbj-finite-tail-s41-20261106-r1",
++  "idempotency_key": "pocket4-zbj-finite-tail-s41-20261106-r2",
+   "cpu_quota_percent": 100,
+   "memory_max_bytes": 536870912,
+   "nice": 10,

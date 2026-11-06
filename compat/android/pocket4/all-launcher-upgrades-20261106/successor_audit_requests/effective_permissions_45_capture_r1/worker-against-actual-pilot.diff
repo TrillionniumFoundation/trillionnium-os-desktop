@@ -1,0 +1,142 @@
+--- actual-beike-pilot/worker-against-actual-pilot.diff
++++ fixed-45-service-capture/worker-against-actual-pilot.diff
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""New explicit47-bound Beike-only raw permission-service observation.
++"""New explicit47-bound fixed Launcher-batch raw permission-service observation.
+ 
+ This standalone source does not import or extend an existing per-App Flow or
+ its source contract. Frozen R5 entry/classpath primitives remain unchanged.
+@@ -43,13 +43,15 @@
+     "org.fcitx.fcitx5.android", "tv.danmaku.bili")
+ STAT = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")
+ PACKAGES = sorted((*LAUNCHERS, ACTIONS, HELPER))
+-TARGET_PACKAGE = 'com.lianjia.beike'
++TARGET_PACKAGES = ['org.fcitx.fcitx5.android']
++BATCH_NUMBER = 1
++ACTUAL45_COMPONENTS = ['com.Hyatt.hyt/com.hyt.auth.activities.SplashActivity', 'com.MobileTicket/com.MobileTicket.ui.activity.WelcomeGuideActivity', 'com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity', 'com.android.calendar/com.android.calendar.AllInOneActivity', 'com.android.camera2/com.android.camera.CameraLauncher', 'com.android.contacts/com.android.contacts.activities.PeopleActivity', 'com.android.deskclock/com.android.deskclock.DeskClock', 'com.android.dialer/com.android.dialer.main.impl.MainActivity', 'com.android.documentsui/com.android.documentsui.LauncherActivity', 'com.android.gallery3d/com.android.gallery3d.app.GalleryActivity', 'com.android.messaging/com.android.messaging.ui.conversationlist.ConversationListActivity', 'com.android.quicksearchbox/com.android.quicksearchbox.SearchActivity', 'com.android.settings/com.android.settings.Settings', 'com.android.threadnetwork.demoapp/com.android.threadnetwork.demoapp.MainActivity', 'com.bestbuy.android/com.bestbuy.android.activity.SplashActivity', 'com.ehi.national.mobile/com.ehi.national.mobile.MainActivity', 'com.enflick.android.TextNow/authorization.ui.AuthorizationActivity', 'com.google.android.gms/org.microg.gms.ui.SettingsActivity', 'com.hertz.android.digital/com.hertz.android.digital.MainActivity', 'com.hilton.android.hhonors/com.mofo.android.hilton.core.activity.BootActivity', 'com.ihg.apps.android/com.ihg.apps.android.activity.MainActivity', 'com.jingdong.app.mall/com.jingdong.app.mall.MainFrameActivity', 'com.lianjia.beike/com.lianjia.activity.MainActivity', 'com.marriott.mrt/com.marriott.mrt.v10.features.common.splash_screen.SplashScreenActivity', 'com.pinger.textfree/com.pinger.textfree.call.activities.TFSplash', 'com.rytong.airchina/com.rytong.airchina.unility.splash.activity.SplashActivity', 'com.rytong.ceair/com.rytong.ceair.main.ColdLaunchActivity', 'com.sankuai.meituan.takeoutnew/com.sankuai.meituan.takeoutnew.ui.page.boot.WelcomeActivity', 'com.sdu.didi.psnger/com.didi.sdk.app.launch.splash.SplashActivity', 'com.ss.android.ugc.aweme/com.ss.android.ugc.aweme.splash.SplashActivity', 'com.szzc/com.sz.ucar.rentcar.splash.activity.DefaultIcon', 'com.taobao.taobao/com.taobao.tao.welcome.Welcome', 'com.tencent.mm/com.tencent.mm.ui.LauncherUI', 'com.ubercab/com.ubercab.presidio.app.core.root.RootActivity', 'com.united.mobile.android/com.united.mobile.android.ui.splash.SplashActivity', 'com.xunmeng.pinduoduo/com.xunmeng.pinduoduo.ui.activity.MainFrameActivity', 'com.zhubajie.client/com.zhubajie.bundle_basic.home.LauncherActivity', 'com.zillow.android.streeteasy/com.zillow.android.streeteasy.home.HomeActivity', 'ctrip.android.view/ctrip.business.splash.CtripSplashActivity', 'jp.co.ana.android.tabidachi/jp.co.ana.android.tabidachi.home.SplashActivity', 'local.pocket4.fixture/local.pocket4.fixture.ProbeActivity', 'org.chromium.webview_shell/org.chromium.webview_shell.WebViewBrowserActivity', 'org.droidloom.qa.editorcontract/org.droidloom.qa.editorcontract.EditorContractActivity', 'org.fcitx.fcitx5.android/org.fcitx.fcitx5.android.ui.main.MainActivity', 'tv.danmaku.bili/tv.danmaku.bili.MainActivityV2']
+ TARGET_USER = 0
+-APP_OPS_HELP = {'path': '/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1/inputs/cmd-appops-help.original.txt', 'bytes': 1309, 'sha256': '95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc'}
+-STAGE = '/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1'
+-OUTPUT = '/home/alex/work/pocket4-beike-permission-pilot-observation-20261106-r1'
++APP_OPS_HELP = {'path': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01/inputs/cmd-appops-help.original.txt', 'bytes': 1309, 'sha256': '95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc'}
++STAGE = '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01'
++OUTPUT = '/home/alex/work/pocket4-launcher-permissions-observation-20261106-r1-b01'
+ APP_SCOPE = {'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json', 'bytes': 58854, 'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f'}
+-TRANSPORT = {'path': '/home/alex/work/pocket4-beike-permission-pilot-source-20261106-r1/readonly_services_transport.py', 'bytes': 16102, 'sha256': '5207d626008df00b7594310fb2d33933b6b9a9a6ccd982e4b5b7ed070cbebd76'}
++TRANSPORT = {'path': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b01/readonly_services_transport.py', 'bytes': 16116, 'sha256': 'bb2c347f3a208175a9db8b31aa8462d862bf732954adf726c795eb1c4fa20b3e'}
+ NATIVE_HELPERS = {'path': '/home/alex/work/pocket4-successor-install-audit-source-20261106-r1/install_successor_native.py', 'bytes': 31327, 'sha256': 'ad4227b4c63033018bd1147c3c589b2632168766306791696aabc53583229c96'}
+ 
+ def need(value, code):
+@@ -399,11 +401,12 @@
+ 
+ def validate_request(request):
+     need(type(request) is dict and set(request) == {"schema", "guard", "app_scope", "packages", "worker", "transport", "output_root",
+-                                                       "target_package", "target_user", "appops_help"},
++                                                       "target_packages", "target_user", "appops_help", "batch"},
+          "CLOSED_SERVICE_OBSERVATION_REQUEST")
+-    need(request["schema"] == "pocket4-beike-permission-raw-observation-request-v1" and request["guard"] == GUARD and
++    need(request["schema"] == "pocket4-fixed-launcher-permission-capture-request-v1" and request["guard"] == GUARD and
+          request["app_scope"] == APP_SCOPE and request["packages"] == PACKAGES and request["transport"] == TRANSPORT and
+-         request["output_root"] == OUTPUT and request["target_package"] == TARGET_PACKAGE and
++         request["output_root"] == OUTPUT and request["target_packages"] == TARGET_PACKAGES and
++         type(request["batch"]) is int and request["batch"] == BATCH_NUMBER and
+          type(request["target_user"]) is int and request["target_user"] == TARGET_USER and
+          request["appops_help"] == APP_OPS_HELP, "EXACT_SCOPE_AND_CLOSED_OPERATION_REQUEST")
+     need(request["worker"]["path"] == STAGE + "/observe_current_services.py" and str(Path(__file__).resolve()) == request["worker"]["path"],
+@@ -501,7 +504,7 @@
+     native_helpers = load_source(NATIVE_HELPERS, "unchanged_native_identity_helpers_only")
+     pool, leases = core.FDs(), core.FDs()
+     held, target, directory, lock = None, None, None, None
+-    result = {"schema": "pocket4-beike-permission-raw-observation-v1", "ok": False, "errors": [],
++    result = {"schema": "pocket4-fixed-launcher-permission-raw-capture-v1", "ok": False, "errors": [],
+               "automatic_retry": False, "production_ready": False, "UI_actions": 0, "App_launches": 0,
+               "installs": 0, "permission_changes": 0, "lifecycle_commands": 0, "ADB_commands": 0,
+               "business_data_content_reads": 0, "Android_namespace_commands": 0, "native_command_count": 0,
+@@ -510,8 +513,8 @@
+               "effective_AppOps_modes": "UNKNOWN_PENDING_SERVICE_OUTPUT_INTERPRETATION",
+               "role_status": "UNKNOWN_NOT_QUERIED", "service_output_semantics_verified": False,
+               "service_output_capture_complete": False, "permission_name_normalization": "NONE_RAW_BYTES_PRESERVED",
+-              "target_package": TARGET_PACKAGE, "target_user": TARGET_USER,
+-              "service_target_packages": [TARGET_PACKAGE], "package_dump_user_filter_applied": False,
++              "batch": BATCH_NUMBER, "target_packages": TARGET_PACKAGES, "target_user": TARGET_USER,
++              "service_target_packages": TARGET_PACKAGES, "package_dump_user_filter_applied": False,
+               "packages": PACKAGES, "app_scope_reference": APP_SCOPE,
+               "old_Bili_unknown_reclassified": False,
+               "compiled_Beike_scope_modified": False, "UI_or_install_admitted": False}
+@@ -617,8 +620,8 @@
+         need(scope.get("schema") == "pocket4-versioned-app-scope-v1" and scope.get("runtime_epoch_sha256") == EPOCH and
+              set(scope["apps"]) == set(PACKAGES), "ACTUAL_47_REFERENCE_REQUIRED")
+         result["scope_guard_before"] = guard.check_app_scope(APP_SCOPE, PACKAGES)
+-        result["target_identity_from_pinned_scope"] = {key: scope["apps"][TARGET_PACKAGE][key]
+-                    for key in ("package", "uid", "version_code")}
++        result["target_identities_from_pinned_scope"] = [{key: scope["apps"][package][key]
++                    for key in ("package", "uid", "version_code")} for package in TARGET_PACKAGES]
+         result["historical_appops_get_syntax_admission"] = require_appops_help(read_root_pin(APP_OPS_HELP))
+         native_helpers.original_unknown(core)
+         location = native_helpers.protected_location(core, pool, held, scope["apps"])
+@@ -638,6 +641,22 @@
+         result["native_before"] = native_read("status")
+         native_catalog = native_read("applications")
+         result["native_catalog"] = write("native-catalog.normalised.json", canonical(native_catalog)+b"\n")
++        native_rows = native_catalog.get("applications")
++        need(type(native_rows) is list and len(native_rows) <= 4096, "CURRENT_NATIVE_CATALOG_BOUND")
++        current_components = []
++        for row in native_rows:
++            parsed = component(row["component"])
++            need(parsed["package"] == row["package"], "NATIVE_COMPONENT_PACKAGE_DIFFERS")
++            current_components.append(parsed["component"])
++        result["native_catalog_comparison"] = {
++            "actual_framework_resolver_reference_job": "1a1b22e95d0-fc05-7cd4",
++            "expected_count": 45, "observed_count": len(current_components),
++            "added_components": sorted(set(current_components) - set(ACTUAL45_COMPONENTS)),
++            "missing_components": sorted(set(ACTUAL45_COMPONENTS) - set(current_components)),
++            "framework_resolver_requeried_by_this_worker": False}
++        need(len(current_components) == len(set(current_components)) == 45 and
++             sorted(current_components) == ACTUAL45_COMPONENTS, "EXACT_ACTUAL45_NATIVE_COMPONENT_REFERENCE_CHANGED")
++        result["native_catalog_matches_actual45_component_reference"] = True
+         transport = transport_module.BoundArun(target=target, environment=environment, guard=runtime_guard, record=record,
+                     epoch_sha256=baseline["framework_epoch"]["sha256"], init_pid=raw_init["pid"],
+                     app_scope_sha256=APP_SCOPE["sha256"], user=0, runner=runner)
+@@ -660,9 +679,9 @@
+         need(result["guard_after"] == result["guard_before"], "FINAL_TYPED_RUNTIME_CHANGED")
+         for pin in (GUARD, APP_SCOPE, TRANSPORT, NATIVE_HELPERS, APP_OPS_HELP, request["worker"]):
+             read_root_pin(pin)
+-        need(len(result["android_commands"]) == 3 and
++        need(len(result["android_commands"]) == 1 + 2 * len(TARGET_PACKAGES) and
+              all(row.get("stream_artifacts_complete") is True for row in result["android_commands"]),
+-             "THREE_COMPLETE_ORIGINAL_SERVICE_STREAMS_REQUIRED")
++             "COMPLETE_FIXED_BATCH_SERVICE_STREAMS_REQUIRED")
+         result.update(ok=True, current_scope_47_unchanged=True, service_output_capture_complete=True,
+                       PM_user0_installed_APK_packages_enumerated=False, MAIN_LAUNCHER_resolver_queried=False,
+                       all_installed_APK_bytes_bound=False)
+@@ -694,15 +713,17 @@
+         if result["errors"]:
+             result["ok"] = False
+     result["service_reports"] = [
+-        {"service": service, "argv": list(transport_module.READ_ONLY_COMMANDS[index]),
++        {"target_package": package, "target_user": TARGET_USER, "service": service,
++         "argv": list(transport_module.READ_ONLY_COMMANDS[index]),
+          "stdout": row.get("stdout"), "stderr": row.get("stderr"), "returncode": row.get("returncode"),
+          "complete": row.get("complete"), "joined": row.get("joined"),
+          "stream_artifacts_complete": row.get("stream_artifacts_complete", False),
+          "interpretation_status": "RAW_CAPTURE_ONLY_NOT_INTERPRETED"}
+-        for index, service in ((1, "package-dump-package"), (2, "appops-get-user0"))
++        for pi, package in enumerate(TARGET_PACKAGES)
++        for index, service in ((1 + 2 * pi, "package-dump-package"), (2 + 2 * pi, "appops-get-user0"))
+         if len(result["android_commands"]) > index for row in (result["android_commands"][index],)]
+     result["permission_queries_executed"] = any("host_pid" in row for row in result["android_commands"][1:])
+-    result["status"] = "BEIKE_PERMISSION_SERVICE_RAW_CAPTURE_COMPLETE" if result["ok"] else "BEIKE_PERMISSION_OBSERVATION_INCOMPLETE_NO_RETRY"
++    result["status"] = "FIXED_LAUNCHER_PERMISSION_SERVICE_RAW_CAPTURE_COMPLETE" if result["ok"] else "FIXED_LAUNCHER_PERMISSION_CAPTURE_INCOMPLETE_NO_RETRY"
+     return result
+ 
+ 
+@@ -718,7 +739,7 @@
+         request = parse(read_root_pin({"path": args.request, "bytes": size, "sha256": args.request_sha256}))
+         result = run(request)
+     except BaseException as error:
+-        result = {"schema": "pocket4-beike-permission-entry-rejection-v1", "ok": False, "type": type(error).__name__,
++        result = {"schema": "pocket4-fixed-launcher-permission-entry-rejection-v1", "ok": False, "type": type(error).__name__,
+                   "reason": str(error)[:512], "automatic_retry": False, "production_ready": False}
+     after = len(os.listdir("/proc/self/fd"))
+     result.update(process_FDs_before=before, process_FDs_after=after)

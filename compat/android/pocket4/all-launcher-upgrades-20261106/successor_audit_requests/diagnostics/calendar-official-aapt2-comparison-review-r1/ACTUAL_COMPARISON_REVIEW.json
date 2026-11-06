@@ -1,0 +1,116 @@
+{
+  "actual_bound_package_count": 2,
+  "all47_packages_reobserved_by_this_comparison": false,
+  "all_8_children_joined_and_pipes_closed": true,
+  "cleanup_eligible": false,
+  "diagnostic_does_not_satisfy_original_collector_source_or_command_count_or_all_commands_gate": true,
+  "exact_same_calendar_APK_as_failed_b05": true,
+  "inference": "The observed legacy badging failure depends on the parser for these exact APK bytes; the official tool completes with empty stderr.",
+  "job_id": "1a1b26bfb80-fc05-7dfa",
+  "legacy_badging_returncodes": {
+    "com.android.calendar": 1,
+    "org.fcitx.fcitx5.android": 0
+  },
+  "min_sdk_both_unknown_until_actual_raw_readback": true,
+  "new_runtime_jobs_submitted": 0,
+  "observations": [
+    {
+      "APK_bytes": 2635213,
+      "APK_sha256": "c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1",
+      "declared_permission_entry_count": 15,
+      "effective_permission_grants": "UNKNOWN_NOT_QUERIED",
+      "min_sdk": null,
+      "min_sdk_status": "NOT_DECODED_BY_CURRENT_PARSER_RAW_READBACK_REQUIRED",
+      "native_abis": [],
+      "package": "com.android.calendar",
+      "signers_equal_PM": true,
+      "target_sdk": "34",
+      "uid": 10061,
+      "version_code": 37,
+      "version_name": "17"
+    },
+    {
+      "APK_bytes": 46106936,
+      "APK_sha256": "aaeb569fc3e9e8ec532b0ea33be39ce77b143c8add824d172f17356ddc3b9ed2",
+      "declared_permission_entry_count": 5,
+      "effective_permission_grants": "UNKNOWN_NOT_QUERIED",
+      "min_sdk": null,
+      "min_sdk_status": "NOT_DECODED_BY_CURRENT_PARSER_RAW_READBACK_REQUIRED",
+      "native_abis": [
+        "x86_64"
+      ],
+      "package": "org.fcitx.fcitx5.android",
+      "signers_equal_PM": true,
+      "target_sdk": "36",
+      "uid": 10150,
+      "version_code": 114,
+      "version_name": "0.1.3-0-g048f581c"
+    }
+  ],
+  "official_badging_both_stderr_empty": true,
+  "ok": true,
+  "old_gate_failure": "AUTHORITATIVE_SUCCESSFUL_DURABLE_TERMINAL_REQUIRED",
+  "original_b05": {
+    "bytes": 108564,
+    "path": "successor_audit_requests/actual/batches-final-r1/batch-05/artifact.original.json",
+    "sha256": "e8fb751780f88ba3d79cb51f5975f5426d1cd6df586563d035824b3b69789d10"
+  },
+  "original_b05_failed_exit1_preserved": true,
+  "original_b05_terminal": {
+    "bytes": 730,
+    "path": "successor_audit_requests/actual/batches-final-r1/batch-05/terminal.original.json",
+    "sha256": "b50873a1e8603421f1980f9f8069c80268f0d02243203a19f7add3b388f70923"
+  },
+  "original_gate_still_STOP": true,
+  "original_stdout": {
+    "bytes": 28018,
+    "path": "successor_audit_requests/diagnostics/calendar-official-aapt2-comparison-r1/actual/stdout.original.jsonl",
+    "sha256": "8288017c0c0e4e1f349951a81a468fcbbdcb6fa4d1065c4889f96327ba290a76"
+  },
+  "original_terminal": {
+    "bytes": 733,
+    "path": "successor_audit_requests/diagnostics/calendar-official-aapt2-comparison-r1/actual/status-1.original.txt",
+    "sha256": "9adf47fe3cd156f468c3f360d3172ca2afc74fd01de77033d9e665eb366d210c"
+  },
+  "original_worker": {
+    "bytes": 132387,
+    "path": "successor_audit_requests/diagnostics/calendar-official-aapt2-comparison-r1/actual/worker.stdout.original.json",
+    "sha256": "8e577c9e4a6eb77e6ad94e9993ca91aa97af958a4c02491237b32600dd6f4dfe"
+  },
+  "outer_held_pidfd_and_parent_FDs_retired": true,
+  "owned_descriptors_final": {
+    "acquired": 6399,
+    "closed": 6399,
+    "errors": [],
+    "remaining": 0
+  },
+  "primary_commands_returncode_0": 6,
+  "process_FDs_after": 5,
+  "process_FDs_before": 5,
+  "production_ready": false,
+  "raw_readback_required": [
+    {
+      "bytes": 5786,
+      "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p00-a00-badging.stdout",
+      "sha256": "42a73692b7d066a9d0aa6572f0d2a70d8b6365c9a874229f05a8ba43c32eabcc"
+    },
+    {
+      "bytes": 20129,
+      "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p00-a00-manifest.stdout",
+      "sha256": "231279b8faaadaa39a043e2001cca6e8e0c11e2d563bbdd0a0675b4b528e8150"
+    },
+    {
+      "bytes": 4520,
+      "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p01-a00-badging.stdout",
+      "sha256": "a84428e59d5c538f2348d0e27c739494081eef9b82b32bd2f1aafd33d93d0e34"
+    },
+    {
+      "bytes": 12000,
+      "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-official-aapt2-r1-01/p01-a00-manifest.stdout",
+      "sha256": "0b10dd310ce5e142c3636fb537e136c790a7f830686d0061eb86665d1fdc6350"
+    }
+  ],
+  "resource_table_integrity_fully_proved": false,
+  "schema": "pocket4-independent-official-calendar-comparison-evidence-review-v1",
+  "scope_reference_package_count": 47
+}

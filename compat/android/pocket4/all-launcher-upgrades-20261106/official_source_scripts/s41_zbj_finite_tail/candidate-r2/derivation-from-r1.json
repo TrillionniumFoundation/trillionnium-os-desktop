@@ -1,0 +1,49 @@
+{
+  "schema": "pocket4-s41-local-r1-to-r2-derivation-v1",
+  "r1_remote_submissions": 0,
+  "r1_preserved": true,
+  "r1_sources": [
+    {
+      "path": "pocket4_eight_apps/official_source_scripts/s41_zbj_finite_tail/extensions.py",
+      "bytes": 12426,
+      "sha256": "931456c0cd97e9759904228c19bc10f7fcdf5f6aa3633df7513ea3403a8ba888"
+    },
+    {
+      "path": "pocket4_eight_apps/official_source_scripts/s41_zbj_finite_tail/prepare_packet.py",
+      "bytes": 21350,
+      "sha256": "aad4378f9e93213f415ad2b0db6977a663667dc85eac92c04c87993e3518856f"
+    },
+    {
+      "path": "pocket4_eight_apps/official_source_scripts/s41_zbj_finite_tail/test_local_controls.py",
+      "bytes": 6988,
+      "sha256": "5f8522598d6e435593a191202660b0ca6c12f9293f98215a491983af3beb05af"
+    },
+    {
+      "path": "pocket4_eight_apps/official_source_scripts/s41_zbj_finite_tail/continue_zbj_s41_once.py",
+      "bytes": 50644,
+      "sha256": "9a5af64e2b40f952f7739600f9e3594454c7fc17f3fbbf4fef35d7e710186eba"
+    },
+    {
+      "path": "pocket4_eight_apps/official_source_scripts/s41_zbj_finite_tail/process-request.json",
+      "bytes": 52313,
+      "sha256": "03c5e3bb6f202426be38cd6bdf0e4872e9088b6aeafcf145a3b87e919d13b3a6"
+    },
+    {
+      "path": "pocket4_eight_apps/official_source_scripts/s41_zbj_finite_tail/local-controls-01.stdout.json",
+      "bytes": 252,
+      "sha256": "b932075e5bb837ac1a603872a282a146b88858051412c29c88e6dc8361390bf7"
+    },
+    {
+      "path": "pocket4_eight_apps/official_source_scripts/s41_zbj_finite_tail/local-controls-01.stderr.txt",
+      "bytes": 2506,
+      "sha256": "e23fdc19c2bb3e2e7a3a6f18132e221c9a38686b23c13bf178cde6042829d372"
+    }
+  ],
+  "changes": [
+    "DNS gate: require the actual S40 integer-zero schema for proxy/TLS configuration changes; keep genuine boolean flags strict.",
+    "Local fake subprocess fixtures: add DEVNULL; no real child ever spawned.",
+    "Independent nested candidate-r2 path, host staging root and idempotency key.",
+    "Local sealer binds exact original S34 source SHA and request source text."
+  ],
+  "all_old_outcomes_unchanged": true
+}

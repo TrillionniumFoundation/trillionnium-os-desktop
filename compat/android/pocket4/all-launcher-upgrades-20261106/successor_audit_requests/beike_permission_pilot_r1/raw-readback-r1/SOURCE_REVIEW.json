@@ -1,0 +1,58 @@
+{
+  "APK_reads": 0,
+  "Main_reads": 0,
+  "UI_actions": 0,
+  "actual_worker": {
+    "bytes": 37959,
+    "path": "successor_audit_requests/beike_permission_pilot_r1/actual/worker.stdout.original.json",
+    "sha256": "42c94840e2e26ceeb2236bb01cff8787f1ae6440630ff481c73ab8007d61c01d"
+  },
+  "automatic_retry": false,
+  "diff": {
+    "bytes": 3027,
+    "path": "reader-against-reviewed-four-log-reader.diff",
+    "sha256": "96b943f6293bac7290b725e8f9d2607c85698989a327932f0032c18e90697c4b"
+  },
+  "fixed_files": [
+    {
+      "bytes": 50525,
+      "path": "/home/alex/work/pocket4-beike-permission-pilot-observation-20261106-r1/android-02.stdout",
+      "sha256": "001c37aab9fe84def6d2e9d87c1e6a81d34baf74e62e2f50643c45c1077b5487"
+    },
+    {
+      "bytes": 1720,
+      "path": "/home/alex/work/pocket4-beike-permission-pilot-observation-20261106-r1/android-03.stdout",
+      "sha256": "f839074801868c1196b0df62916df5c31b40ef894649c522495668cfcbeb3b6d"
+    }
+  ],
+  "installs": 0,
+  "main_changes": "Only schema/job and explicit private-output publication limit. Same byte/hash/stat/path and FD checks.",
+  "namespace_entries": 0,
+  "original_actual_job": "1a1b279845c-fc05-7e2e",
+  "permission_changes": 0,
+  "permission_state_interpreted": false,
+  "process_request": {
+    "bytes": 4091,
+    "path": "process-request.review-only.json",
+    "sha256": "902310c86c1bd26cc96d3cd5216f00beea7f15b3a4722f460f6571fb3ba9de35"
+  },
+  "public_repository_evidence": "This source/pins, hashes, redacted control/terminal facts and necessary permission conclusions only. No raw command stdout or response containing hex raw state.",
+  "raw_output_local_destination": "/workspace/scratch/265e5bca485a/p4_private_ui/beike-permission-pilot-r1",
+  "raw_output_repository_publication_admitted": false,
+  "roles": "UNKNOWN_NOT_QUERIED",
+  "schema": "pocket4-beike-private-permission-log-reader-source-review-v1",
+  "source": {
+    "bytes": 3720,
+    "path": "read_pinned_private_permission_logs.py",
+    "sha256": "222a42555dead8c8cf72a8de175b6318618db1e2ddab6ee6ddd6eccc7263e5c1"
+  },
+  "state": "SOURCE_FROZEN_NOT_EXECUTED",
+  "total_original_bytes": 52245,
+  "unchanged_definitions": [
+    "need",
+    "sha",
+    "canonical",
+    "read_file",
+    "read_host_pin"
+  ]
+}

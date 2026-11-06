@@ -1,0 +1,434 @@
+#!/usr/bin/env python3
+"""One fixed host-only verification of original partial-case evidence.
+
+No Main guard, action lock, namespace, Android command, instrumentation,
+foreground request, original-result write or compatibility publication occurs.
+"""
+import base64
+import fcntl
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import stat
+import sys
+import time
+import types
+
+ROOT = '/home/alex/work/pocket4-beike-partial-case-proof-20261106-r1'
+INPUTS_PIN = __INPUTS_PIN__
+BASE = {'path': '/home/alex/work/pocket4-beike-owned-cleanup-20261106-r1/cleanup_owned_task_once.py',
+        'bytes': 22233, 'sha256': '559ae3641a5f6e017914102af61c5f8e909605cb92be32d1a045ae7c66a935cf'}
+FIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_rdev',
+          'st_size', 'st_mtime_ns', 'st_ctime_ns')
+MAX_FILE = 3 * 1024 * 1024
+MAX_TOTAL = 16 * 1024 * 1024
+
+
+def need(value, code):
+    if not value:
+        raise RuntimeError(code)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def canonical(value):
+    return json.dumps(value, ensure_ascii=True, sort_keys=True,
+                      separators=(',', ':'), allow_nan=False).encode('ascii')
+
+
+def load_base():
+    """Bootstrap only the already deployed exact root-owned utility module."""
+    path = Path(BASE['path']); fds = []
+    try:
+        parent = os.open('/', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC); fds.append(parent)
+        for name in path.parts[1:-1]:
+            parent = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent)
+            fds.append(parent)
+        fd = os.open(path.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent); fds.append(fd)
+        before = os.fstat(fd)
+        need(stat.S_ISREG(before.st_mode) and before.st_uid == 0 and before.st_nlink == 1 and
+             not before.st_mode & 0o022 and before.st_size == BASE['bytes'], 'EXACT_ROOT_UTILITY_FILE')
+        raw = bytearray()
+        while len(raw) <= before.st_size:
+            part = os.read(fd, before.st_size + 1 - len(raw))
+            if not part:
+                break
+            raw.extend(part)
+        after, named = os.fstat(fd), os.stat(path.name, dir_fd=parent, follow_symlinks=False)
+        keys = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+        need(len(raw) == BASE['bytes'] and sha(raw) == BASE['sha256'] and
+             all(getattr(before, key) == getattr(after, key) == getattr(named, key) for key in keys), 'UTILITY_SOURCE_CHANGED')
+    finally:
+        for fd in reversed(fds):
+            os.close(fd)
+    module = types.ModuleType('unchanged_cleanup_utilities_only'); module.__file__ = str(path)
+    exec(compile(bytes(raw), str(path), 'exec'), module.__dict__)
+    return module
+
+
+def census():
+    """Close listdir's transient directory FD before inspecting persistent FDs."""
+    names = os.listdir('/proc/self/fd')
+    rows = {}
+    for name in sorted(names, key=int):
+        need(name.isdigit(), 'PROC_FD_NAME')
+        fd = int(name)
+        try:
+            first = os.fstat(fd)
+        except OSError as error:
+            need(error.errno == 9 and not os.path.lexists('/proc/self/fd/' + name),
+                 'FD_CENSUS_UNSTABLE_OR_REUSED')
+            continue
+        link = os.readlink('/proc/self/fd/' + name)
+        flags = fcntl.fcntl(fd, fcntl.F_GETFD)
+        after = os.fstat(fd)
+        identity = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_rdev')
+        need(all(getattr(first, key) == getattr(after, key) for key in identity) and
+             link == os.readlink('/proc/self/fd/' + name) and
+             flags == fcntl.fcntl(fd, fcntl.F_GETFD), 'FD_CHANGED_DURING_CENSUS')
+        rows[name] = {'link': link, 'flags': flags,
+                      **{key: getattr(first, key) for key in identity}}
+    return rows
+
+
+def original_terminal(value, job, byte_count):
+    need(value.get('job_id') == job and value.get('state') == 'succeeded' and value.get('exit_code') == 0 and
+         all(value.get(key) is True for key in ('audit_recorded', 'output_complete', 'output_durable',
+                                               'terminal_publication_confirmed')) and
+         all(value.get(key) is False for key in ('timed_out', 'cancelled', 'automatic_retry')) and
+         value.get('log_bytes') == {'stdout': {'seen': byte_count, 'stored': byte_count},
+                                     'stderr': {'seen': 0, 'stored': 0}} and
+         value.get('log_synced') == {'stdout': True, 'stderr': True} and
+         value.get('log_truncated') == {'stdout': False, 'stderr': False} and
+         value.get('log_errors') == {'stdout': None, 'stderr': None},
+         'ACTUAL_AUTHORITATIVE_OBSERVER_DURABLE_COMPLETE_ZERO')
+
+
+def open_private_directory(path, owned):
+    need(path.startswith('/') and str(Path(path)) == path and '..' not in Path(path).parts,
+         'EXACT_ABSOLUTE_PRIVATE_DIRECTORY')
+    fd = os.open('/', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC); owned.append(fd)
+    for part in Path(path).parts[1:]:
+        fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=fd)
+        owned.append(fd)
+    row = os.fstat(fd)
+    need(stat.S_ISDIR(row.st_mode) and row.st_uid == 0 and not row.st_mode & 0o077,
+         'EXACT_ROOT_PRIVATE_DIRECTORY')
+    return fd
+
+
+def identity(row):
+    return {key: getattr(row, key) for key in FIELDS}
+
+
+def expected_inspect_names(plan):
+    names = {'intent.json', 'result.json', 'held-main-binding.json'}
+    names |= {'command-%03d%s' % (index, suffix) for index in range(1, 10)
+              for suffix in ('.intent.json', '.result.json', '.stdout', '.stderr')}
+    names |= {'transport-%03d.%s.json' % (index, suffix) for index in range(1, 13)
+              for suffix in ('intent', 'command-result', 'verified-result')}
+    names |= {nonce + suffix for nonce in plan['nonces'].values()
+              for suffix in ('.request.json', '.assessment.json')}
+    need(len(names) == 81, 'FIXED_FULL_READONLY_OBSERVER_FILE_COUNT')
+    return sorted(names)
+
+
+def collect_and_verify(base, source_pin):
+    """Return a closed historical proof plus private bytes; never runtime admission."""
+    end = time.monotonic() + 180
+    observed = {}; total = 0; owned = []; directories = []
+    def read(path, pin=None):
+        nonlocal total
+        need(time.monotonic() < end, 'FIXED_TOTAL_HOST_READ_DEADLINE')
+        if path in observed:
+            raw, row = observed[path]
+        else:
+            raw, row = base.read(path, maximum=MAX_FILE)
+            total += len(raw); need(total <= MAX_TOTAL, 'FINITE_HOST_EVIDENCE_READ_BOUND')
+            observed[path] = (raw, row)
+        if pin is not None:
+            need(set(pin) == {'path', 'bytes', 'sha256'} and pin['path'] == path and
+                 type(pin['bytes']) is int and len(raw) == pin['bytes'] and sha(raw) == pin['sha256'],
+                 'EXACT_FROZEN_SOURCE_OR_HISTORICAL_INPUT_PIN')
+        return raw
+    def module(pin, name):
+        raw = read(pin['path'], pin)
+        result = types.ModuleType(name); result.__file__ = pin['path']
+        exec(compile(raw, pin['path'], 'exec'), result.__dict__)
+        return result
+    def directory(path, names):
+        fd = open_private_directory(path, owned)
+        first = identity(os.fstat(fd))
+        need(sorted(os.listdir(fd)) == names, 'EXACT_ORIGINAL_DIRECTORY_FILE_SET')
+        directories.append((path, fd, first, names))
+    def recheck():
+        for path, (raw, row) in observed.items():
+            need(time.monotonic() < end, 'ALL_ORIGINALS_RECHECK_DEADLINE')
+            again, current = base.read(path, maximum=MAX_FILE)
+            need(again == raw and current == row, 'ALL_ORIGINAL_FILE_BYTES_AND_COMPLETE_STAT_UNCHANGED')
+        for path, fd, first, names in directories:
+            need(sorted(os.listdir(fd)) == names and identity(os.fstat(fd)) == first and
+                 identity(os.stat(path, follow_symlinks=False)) == first,
+                 'ALL_ORIGINAL_STEP_DIRECTORIES_UNCHANGED')
+    before = census()
+    try:
+        read(source_pin['path'], source_pin); read(BASE['path'], BASE)
+        inputs_raw = read(INPUTS_PIN['path'], INPUTS_PIN)
+        inputs = json.loads(inputs_raw)
+        need(inputs.get('schema') == 'pocket4-task878-partial-case-fixed-host-inputs-v1' and
+             inputs.get('root') == ROOT, 'FIXED_NEW_HOST_INPUT_CLOSURE')
+        partial = module(inputs['new_core'], 'explicit_partial_case_protocol')
+        inputs = partial.document(inputs_raw)
+        old_reader = module(inputs['frozen_failed_reader'], 'unchanged_actual_failed_case_reader_definitions')
+        core = module(old_reader.CONFIG['sources']['core'], 'unchanged_historical_common_predicates')
+        qa = module(old_reader.CONFIG['sources']['qa'], 'unchanged_helper_wire_contract')
+        adapter = module(old_reader.CONFIG['sources']['adapter'], 'unchanged_plan_and_selector_contract')
+        transport = module(old_reader.CONFIG['sources']['transport'], 'unchanged_held_environment_contract')
+        runner = module(old_reader.CONFIG['sources']['run_case'], 'unchanged_case_shape_only')
+        tasks = module(inputs['task_source'], 'unchanged_task_parser_only')
+        source_closure = {}
+        for label in ('helper', 'recorder'):
+            pin = inputs['source_manifests'][label]
+            manifest = partial.document(read(pin['path'], pin))
+            need(type(manifest.get('files')) is dict and len(manifest['files']) == 13,
+                 'EXACT_TWO_ORIGINAL_THIRTEEN_FILE_SOURCE_CLOSURES')
+            root = str(Path(pin['path']).parent)
+            for relative, item in sorted(manifest['files'].items()):
+                need(type(relative) is str and not relative.startswith('/') and '\\' not in relative and
+                     all(part not in ('', '.', '..') for part in relative.split('/')) and
+                     set(item) == {'bytes', 'sha256'}, 'CLOSED_ORIGINAL_SOURCE_MANIFEST_MEMBER')
+                member = {'path': root + '/' + relative, **item}
+                read(member['path'], member); source_closure[label + '/' + relative] = member
+        # The actual build ran as UID 1000. Its already retrieved exact receipt
+        # is staged as a root-owned archival input; do not pretend the original
+        # build-result file is root-owned or claim a new live build validation.
+        archived_build = partial.document(read(inputs['archived_build_receipt']['path'],
+                                                inputs['archived_build_receipt']))
+        need(inputs['archived_build_receipt']['bytes'] == inputs['historical_build_receipt']['bytes'] == 33691 and
+             inputs['archived_build_receipt']['sha256'] == inputs['historical_build_receipt']['sha256'] ==
+             core.BUILD_RECEIPT and archived_build.get('state') == 'BUILT_STATIC_VERIFIED_ANDROID_UNRUN' and
+             archived_build.get('source_manifest_sha256') == core.HELPER_MANIFEST and
+             archived_build.get('signer_certificate_sha256') == core.SIGNER_SHA and
+             archived_build.get('source_unchanged') is True and archived_build.get('tools_unchanged') is True,
+             'EXACT_ARCHIVED_ACTUAL_UID1000_BUILD_RECEIPT_NOT_A_LIVE_REBUILD')
+        need(len(source_closure) == 26, 'ALL_ORIGINAL_HELPER_AND_RECORDER_SOURCES_PINNED')
+        bundle_pin = inputs['failed_private_bundle']
+        bundle_raw = read(bundle_pin['path'], bundle_pin)
+        bundle = partial.document(bundle_raw, maximum=3 * 1024 * 1024)
+        need(bundle_raw == partial.canonical(bundle) + b'\n' and
+             bundle.get('schema') == 'pocket4-task878-failed-case-private-original-bytes-v1' and
+             bundle.get('flow') == partial.FLOW and bundle.get('step') == partial.CASE_STEP and
+             bundle.get('actual_job') == '1a1b272ec9d-fc05-7e0d' and bundle.get('full_original_bytes') is True and
+             bundle.get('contains_private_UI_evidence') is True and bundle.get('approved_for_Git') is False and
+             type(bundle.get('files')) is dict and len(bundle['files']) == 268,
+             'EXACT_ACTUAL_FAILED_CASE_PRIVATE_BYTE_ARCHIVE')
+        case_files = {}; archive_bytes = 0
+        for key, row in sorted(bundle['files'].items()):
+            need(type(row) is dict and set(row) == {'path', 'bytes', 'sha256', 'stat', 'base64'},
+                 'CLOSED_PRIVATE_ORIGINAL_BYTE_ROW')
+            if key.startswith('source/'):
+                label = key[7:]; need(label in old_reader.CONFIG['sources'], 'ONLY_ORIGINAL_READER_SOURCE_ROWS')
+                pin = old_reader.CONFIG['sources'][label]
+            elif key.startswith('input/'):
+                label = key[6:]; need(label in ('scope', 'launch', 'case', 'request'), 'ONLY_ORIGINAL_READER_INPUT_ROWS')
+                pin = old_reader.CONFIG[label]
+            else:
+                need(key.startswith('step/') and '/' not in key[5:] and '\\' not in key,
+                     'ONLY_ORIGINAL_FAILED_STEP_MEMBER')
+                pin = {'path': partial.FLOW + '/steps/' + partial.CASE_STEP + '/' + key[5:],
+                       'bytes': row['bytes'], 'sha256': row['sha256']}
+            need(row['path'] == pin['path'] and row['bytes'] == pin['bytes'] and row['sha256'] == pin['sha256'] and
+                 type(row['bytes']) is int and 0 <= row['bytes'] <= 2 * 1024 * 1024,
+                 'PRIVATE_ARCHIVE_MEMBER_SCOPE_AND_PIN')
+            raw = base64.b64decode(row['base64'], validate=True)
+            need(base64.b64encode(raw).decode('ascii') == row['base64'] and
+                 len(raw) == row['bytes'] and sha(raw) == row['sha256'], 'ARCHIVED_ORIGINAL_EXACT_BYTES')
+            current = read(row['path'], pin)
+            need(current == raw and observed[row['path']][1] == row['stat'],
+                 'ORIGINAL_FILE_STILL_EQUALS_ARCHIVED_BYTES_AND_COMPLETE_STAT')
+            archive_bytes += len(raw)
+            if key.startswith('step/'):
+                case_files[key[5:]] = raw
+        need(archive_bytes == 1509462 and len(case_files) == 257 and
+             set(bundle['files']) == ({'source/' + key for key in old_reader.CONFIG['sources']} |
+                 {'input/' + key for key in ('scope', 'launch', 'case', 'request')} |
+                 {'step/' + key for key in case_files}), 'ALL_268_ACTUAL_ARCHIVED_ORIGINALS')
+        for key, prefix in (('original_stdout', 'actual_stdout'), ('original_terminal', 'terminal')):
+            row = bundle[key]
+            expected_b64 = old_reader.CONFIG[prefix + '_base64']
+            expected_raw = base64.b64decode(expected_b64, validate=True)
+            need(row == {'bytes': len(expected_raw), 'sha256': sha(expected_raw), 'base64': expected_b64},
+                 'EXACT_ARCHIVED_AUTHORITATIVE_ORIGINAL_FAILURE')
+        original_result, failed_life = old_reader.validate_actual(core)
+        scope = partial.document(read(old_reader.CONFIG['scope']['path'], old_reader.CONFIG['scope']))
+        launch = partial.document(read(old_reader.CONFIG['launch']['path'], old_reader.CONFIG['launch']))
+        case = partial.document(read(old_reader.CONFIG['case']['path'], old_reader.CONFIG['case']))
+        phase_rows = old_reader.phases(case)
+        names = old_reader.names_checked(bundle['step_file_set'], phase_rows)
+        need(names == sorted(case_files), 'EXACT_ARCHIVED_FAILED_STEP_FILE_SET')
+        directory(partial.FLOW + '/steps/' + partial.CASE_STEP, names)
+        failed = partial.verify_failed_case(case_files, scope, launch, case, original_result,
+            core=core, qa=qa, adapter=adapter, transport=transport, tasks=tasks, runner=runner)
+        need(archived_build['APK'] == failed['build']['APK'], 'ORIGINAL_BUILD_APK_AND_ACTUAL_CASE_PROOF_MATCH')
+        # The later observer is independently tied to its actual normal owned
+        # child and controller terminal, not inferred from a successful inspect.
+        actual = inputs['observation']
+        out_raw = read(actual['stdout']['path'], actual['stdout'])
+        terminal_raw = read(actual['terminal']['path'], actual['terminal'])
+        outer, terminal = partial.document(out_raw), partial.document(terminal_raw)
+        original_terminal(terminal, '1a1b285c279-fc05-7e67', len(out_raw))
+        joint_raw = read(actual['joint']['path'], actual['joint']); joint = partial.document(joint_raw)
+        need(joint_raw == canonical(joint) + b'\n' and
+             out_raw == canonical({**joint, 'joint_artifact': actual['joint']}) + b'\n' and
+             outer.get('joint_artifact') == actual['joint'], 'ACTUAL_OBSERVER_JOINT_AND_COMPLETE_STDOUT')
+        need(joint.get('schema') == 'pocket4-fixed-reusable-owned-ui-result-v1' and
+             joint.get('ok') is True and joint.get('errors') == [] and joint.get('flow') == partial.FLOW and
+             joint.get('step') == partial.OBSERVATION_STEP and joint.get('task') == 878 and
+             joint.get('kind') == 'plan' and joint.get('source') == old_reader.CONFIG['sources']['worker'] and
+             joint.get('request') == actual['request'] and joint.get('original_result') == actual['result'] and
+             joint.get('all_owned_child_resources_retired_by_normal_pidfd_exit') is True and
+             all(joint.get(key) is False for key in ('outcome_unknown', 'original_UNKNOWN_rewritten',
+                 'original_action_attempted', 'original_action_outcome_unknown', 'automatic_retry',
+                 'reconciliation_published', 'production_ready', 'allows_new_mutation_without_original_Flow_checks')),
+             'ACTUAL_NORMAL_READONLY_OBSERVER_NOT_AN_AUTHORITY_SHORTCUT')
+        base.require_owned_exit(joint['child_lifecycle'], b'')
+        need(joint['child_lifecycle']['child_pid'] == 2010422 and joint['child_stderr_original'] == '' and
+             joint['child_stderr_bytes'] == 0 and joint['child_stderr_sha256'] == sha(b''),
+             'ACTUAL_OBSERVER_CHILD_RETIREMENT_AND_EMPTY_STDERR')
+        child_raw = joint['child_stdout_original'].encode('utf-8')
+        need(len(child_raw) == joint['child_stdout_bytes'] == 10677 and
+             sha(child_raw) == joint['child_stdout_sha256'] == actual['child_stdout_sha256'],
+             'EXACT_OBSERVER_CHILD_STDOUT_BYTES')
+        child = partial.document(child_raw)
+        need(child.get('ok') is True and child.get('errors') == [] and child.get('original_returncode') == 0 and
+             child.get('schema') == 'pocket4-fixed-reusable-owned-ui-child-v1' and
+             child.get('flow') == partial.FLOW and child.get('step') == partial.OBSERVATION_STEP and
+             child.get('task') == 878 and child.get('kind') == 'plan' and child.get('declared_mutation') is False and
+             child.get('source') == old_reader.CONFIG['sources']['worker'] and child.get('request') == actual['request'] and
+             child.get('input_artifact') == actual['plan'] and child.get('original_result') == actual['result'],
+             'ACTUAL_OBSERVER_ORIGINAL_FROZEN_ENTRY_AND_REQUEST')
+        adapter_raw = child['original_stdout'].encode('utf-8')
+        need(len(adapter_raw) == child['original_stdout_bytes'] == 5752 and
+             sha(adapter_raw) == child['original_stdout_sha256'] == actual['adapter_stdout_sha256'],
+             'EXACT_OBSERVER_ORIGINAL_ADAPTER_OUTPUT')
+        observer_result_raw = read(actual['result']['path'], actual['result'])
+        observer_result = partial.document(observer_result_raw)
+        need(observer_result == partial.document(adapter_raw), 'ORIGINAL_OBSERVER_STEP_RESULT_EQUALS_ACTUAL_OUTPUT')
+        plan_raw = read(actual['plan']['path'], actual['plan']); plan = partial.document(plan_raw)
+        request_raw = read(actual['request']['path'], actual['request']); request = partial.document(request_raw)
+        need(request == {'schema': 'pocket4-fixed-beike-owned-ui-request-v1', 'kind': 'plan',
+             'step': partial.OBSERVATION_STEP, 'payload_sha256': actual['plan']['sha256'],
+             'payload_text': plan_raw.decode('utf-8')}, 'ORIGINAL_OBSERVER_REQUEST_PAYLOAD_EXACT')
+        observer_names = expected_inspect_names(plan)
+        folder = partial.FLOW + '/steps/' + partial.OBSERVATION_STEP
+        directory(folder, observer_names)
+        observer_files = {name: read(folder + '/' + name) for name in observer_names}
+        later = partial.verify_later_inspection(observer_files, scope, launch, plan, observer_result, failed,
+            core=core, qa=qa, adapter=adapter, transport=transport, tasks=tasks)
+        recheck()
+        proof = partial.public_historical_proof(failed, later, core=core)
+        proof.update(source_closure=source_closure, source_manifests=inputs['source_manifests'],
+            historical_build_receipt=inputs['historical_build_receipt'],
+            archived_exact_build_receipt=inputs['archived_build_receipt'],
+            live_build_receipt_revalidated_by_host_verifier=False, failed_private_archive=bundle_pin,
+            original_failed_controller_job='1a1b272ec9d-fc05-7e0d',
+            original_failed_stdout_sha256=old_reader.CONFIG['actual_stdout_sha256'],
+            original_failed_terminal_sha256=old_reader.CONFIG['terminal_sha256'],
+            original_failed_normal_child_retirement=failed_life,
+            observer_controller_job='1a1b285c279-fc05-7e67',
+            observer_original_stdout_sha256=sha(out_raw), observer_original_terminal_sha256=sha(terminal_raw),
+            observer_joint=actual['joint'], observer_normal_child_retirement=joint['child_lifecycle'],
+            all_original_bytes_and_stat_rechecked=True)
+        private = {'schema': 'pocket4-fixed-partial-proof-observer-private-archive-v1',
+            'flow': partial.FLOW, 'step': partial.OBSERVATION_STEP, 'contains_private_UI_evidence': True,
+            'approved_for_Git': False, 'original_file_set': observer_names,
+            'files': {name: {'path': folder + '/' + name, 'bytes': len(raw), 'sha256': sha(raw),
+                'stat': observed[folder + '/' + name][1], 'base64': base64.b64encode(raw).decode('ascii')}
+                for name, raw in sorted(observer_files.items())}}
+    finally:
+        for fd in reversed(owned):
+            os.close(fd)
+    need(time.monotonic() < end and census() == before, 'ALL_HISTORICAL_READ_FDS_CLOSED_EXACTLY')
+    return proof, private, observed
+
+
+def write_once(base, name, body, mode):
+    need(name in ('host-historical-proof.json', 'observer-originals.private.json') and
+         type(body) is bytes and 0 < len(body) <= 3 * 1024 * 1024,
+         'ONLY_BOUNDED_NEW_HOST_EVIDENCE_OUTPUT')
+    owned = []
+    try:
+        directory = open_private_directory(ROOT, owned)
+        fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                     mode, dir_fd=directory)
+        try:
+            offset = 0; end = time.monotonic() + 10
+            while offset < len(body):
+                need(time.monotonic() < end, 'OWNED_HOST_EVIDENCE_WRITE_DEADLINE')
+                count = os.write(fd, body[offset:offset + 65536]); need(count > 0, 'OWNED_WRITE_PROGRESS')
+                offset += count
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        os.fsync(directory)
+    finally:
+        for fd in reversed(owned):
+            os.close(fd)
+    checked, row = base.read(ROOT + '/' + name, maximum=3 * 1024 * 1024)
+    need(checked == body and stat.S_IMODE(row['st_mode']) == mode, 'OWNED_NEW_HOST_EVIDENCE_READBACK')
+    return {'path': ROOT + '/' + name, 'bytes': len(body), 'sha256': sha(body)}
+
+
+def main():
+    need(os.getuid() == os.geteuid() == 0 and len(sys.argv) == 6 and
+         sys.argv[1:3] == ['--verify-host-once', '--source-sha256'] and
+         sys.argv[4] == '--source-bytes' and re.fullmatch('[0-9a-f]{64}', sys.argv[3]) and
+         sys.argv[5].isdigit() and str(Path(__file__).resolve()) == ROOT + '/verify_partial_case_host.py',
+         'EXACT_NEW_HOST_ONLY_ONCE_ENTRY')
+    before = census(); base = load_base(); os.umask(0o077)
+    source_pin = {'path': str(Path(__file__).resolve()), 'bytes': int(sys.argv[5]), 'sha256': sys.argv[3]}
+    proof, private, originals = collect_and_verify(base, source_pin)
+    need(census() == before, 'HOST_VERIFIER_IMPORTED_NO_PERSISTENT_RESOURCE')
+    private_pin = write_once(base, 'observer-originals.private.json', canonical(private) + b'\n', 0o600)
+    proof.update(complete_later_observer_private_archive=private_pin,
+                 verifier_source=source_pin, verifier_inputs=INPUTS_PIN)
+    proof_pin = write_once(base, 'host-historical-proof.json', canonical(proof) + b'\n', 0o400)
+    end = time.monotonic() + 60
+    for path, (raw, row) in originals.items():
+        need(time.monotonic() < end, 'POST_OUTPUT_ORIGINAL_RECHECK_DEADLINE')
+        checked, current = base.read(path, maximum=MAX_FILE)
+        need(checked == raw and current == row, 'ORIGINAL_CHANGED_AFTER_NEW_HOST_EVIDENCE_WRITE')
+    after = census(); need(after == before, 'HOST_VERIFIER_FINAL_WHOLE_PROCESS_FD_IDENTITY')
+    result = {'schema': 'pocket4-task878-partial-case-host-verification-v1', 'ok': True,
+        'host_historical_verification_completed': True, 'proof': proof_pin,
+        'private_observer_archive': private_pin, 'historical_case_remains_failed_unknown': True,
+        'verified_case_commands': 29, 'verified_case_transports': 38,
+        'verified_observer_commands': 9, 'verified_observer_transports': 12,
+        'original_bytes_and_stat_unchanged': True, 'whole_process_fd_identities_unchanged': True,
+        'process_fds_before': before, 'process_fds_after': after,
+        'private_UI_raw_or_nodes_in_stdout': False, 'Main_commands': 0, 'Main_locks_or_guards': 0,
+        'namespace_entries': 0, 'UI_actions': 0, 'instrumentation_calls': 0, 'installs': 0,
+        'permission_changes': 0, 'signals': 0, 'reconciliation_published': False,
+        'current_action_authority': False, 'production_ready': False, 'automatic_retry': False,
+        'acceptance_requires_original_stdout_and_authoritative_durable_terminal': True}
+    raw = canonical(result) + b'\n'; need(len(raw) <= 65536, 'BOUNDED_PUBLIC_HOST_RESULT')
+    sys.stdout.buffer.write(raw); sys.stdout.buffer.flush()
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except BaseException as error:
+        message = str(error)
+        print(canonical({'schema': 'pocket4-task878-partial-case-host-verification-v1', 'ok': False,
+            'error': {'type': type(error).__name__, 'code': message if
+                re.fullmatch('[A-Z0-9_]{1,160}', message) else 'STRICT_HOST_PROOF_REJECTED'},
+            'original_case_remains_failed_unknown': True, 'only_new_host_files_may_be_partial': True,
+            'Main_commands': 0, 'Main_locks_or_guards': 0, 'namespace_entries': 0,
+            'UI_actions': 0, 'reconciliation_published': False, 'current_action_authority': False,
+            'production_ready': False, 'automatic_retry': False}).decode('ascii'), flush=True)
+        raise SystemExit(1)

@@ -1,0 +1,11 @@
+{
+  "schema": "pocket4.public_source_browser_observation.v1",
+  "requested_url": "https://mobile.12306.cn/otsmobile/h5/otsbussiness/downloadapp/downloadapp.html",
+  "surface": "cloud browser, independent of Pocket4 and Android",
+  "observed_state": "POLICY_REJECTED_BEFORE_PAGE_OBSERVATION",
+  "tool_message_transcribed": "Browser Use rejected this action due to browser security policy. Reason: The browser URL policy blocks this action. Cloud browser could not acquire authority to observe page content. The URL policy gate did not grant access. The requested URL protocol is not allowed. Allowed protocols: \"http:\", \"https:\". The agent must not attempt to achieve the same outcome via workaround, indirect execution, raw CDP or browser commands, alternate browser surfaces, or policy circumvention. Proceed only with a materially safer alternative that does not require this blocked browser action; if none exists, stop and request user input.",
+  "raw_mcp_transport_saved": false,
+  "followup_on_blocked_browser_route": "STOPPED",
+  "browser_completion_summary": "记录了官方下载页访问受限",
+  "does_not_prove": ["site outage", "site bot detection", "Pocket4 DNS failure", "APK download unavailable to every client"]
+}

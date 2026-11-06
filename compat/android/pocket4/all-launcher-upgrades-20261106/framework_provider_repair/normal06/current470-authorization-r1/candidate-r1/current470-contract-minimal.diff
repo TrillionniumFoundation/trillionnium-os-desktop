@@ -1,0 +1,637 @@
+--- source-r4/framework_build.py
++++ candidate-r1/framework_build.py
+@@ -175,7 +175,7 @@
+ 
+ # Input and completion bindings for the existing normal builder lifecycle.
+ OWNER = P('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01')
+-ROOT = OWNER / 'typed-ingress-framework-systemui-provider-build-07-20261106'
++ROOT = OWNER / 'typed-ingress-framework-systemui-provider-build-08-20261106'
+ HERE = ROOT / 'control-source'
+ WORK = OWNER / 'typed-ingress-framework-work-01-20261105'
+ OUT = ROOT / 'android-out'
+@@ -187,8 +187,8 @@
+ BUILDER_BYTES = 34817256
+ BUILD_RESULT = BUILD_PARENT / 'compile01/result.json'
+ BUILDER_MANIFEST = BUILD_PARENT / 'candidate-source-manifest.json'
+-QUALIFICATION_RESULT = BUILD_RESULT
+-QUALIFICATION_SHA = '6599026ebe5071ecdd5f0e2d962eb96cc791041be0dee9fd59a402735a6387d8'
++QUALIFICATION_RESULT = P('/home/alex/work/pocket4-builder470-explicit-current-qualification-01-20261106/qualify01/result.json')
++QUALIFICATION_SHA = '3673f75b77a2133b5fbeecd26b13441d6c4625312c304f7dab8604e2efbfbd69'
+ BUILD_RESULT_SHA = '6599026ebe5071ecdd5f0e2d962eb96cc791041be0dee9fd59a402735a6387d8'
+ BUILD_RESULT_BYTES = 76136
+ SOURCE_MANIFEST_SHA = 'f4a0e6ff82f1ecf9bd786872d99cc0b1608e1d94d0adc37761e87aed449c81bd'
+@@ -225,6 +225,115 @@
+ EXPECTED_SOURCE_TESTS = ['resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
+ EXPECTED_COMPILE_LABELS = ['rust-version', 'build', 'test-compile', 'test-list', 'projection-test-0', 'projection-test-1', 'projection-test-2', 'projection-test-3', 'projection-test-4', 'projection-test-5', 'projection-test-6', 'projection-test-7', 'projection-test-8', 'projection-test-9', 'projection-test-10', 'projection-test-11', 'projection-test-12', 'projection-test-13', 'projection-test-14', 'projection-test-15', 'projection-test-16', 'projection-test-17', 'projection-test-18']
+ EXPECTED_SOURCE_DELTA = {'unchanged_existing': 491, 'changed_existing': ['tools/droidloom-update/src/android.rs', 'tools/droidloom-update/src/native_role_ingress.rs'], 'added': ['android/manifest/m2-role-ingress-provider3-source-lock.json', 'android/native-role-ingress/provider-fixtures/SystemUI-pods-build.Android.bp', 'android/native-role-ingress/provider-fixtures/SystemUI-pods-policy.Android.bp', 'android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp', 'android/native-role-ingress/provider-fixtures/WindowManager-Shell.Android.bp'], 'actual_source_file_count': 498}
++
++
++# This distinct contract requires explicit selection; the old chain is not retried or repaired.
++CURRENT_BUILDER_CONTRACT = 'explicit-current470-34commands-28tests-v1'
++QUALIFICATION_BYTES = 121931
++CURRENT_QUALIFICATION_PIN = {'bytes': 121931,
++ 'identity': [66306, 38935432, 33152, 121931, 1793994070093963622, 1793994070093963622],
++ 'path': '/home/alex/work/pocket4-builder470-explicit-current-qualification-01-20261106/qualify01/result.json',
++ 'sha256': '3673f75b77a2133b5fbeecd26b13441d6c4625312c304f7dab8604e2efbfbd69'}
++CURRENT_QUALIFIER_PIN = {'bytes': 72093,
++ 'identity': [66306, 38934573, 33024, 72093, 1793993985801973315, 1793993985801973315],
++ 'path': '/home/alex/work/pocket4-builder470-explicit-current-qualification-01-20261106/qualify_current470.py',
++ 'sha256': 'f8a4fed5618f05be2db375ddc63d3b2bff2e884d6ed0d9468e46bb138e86f03e'}
++CURRENT_QUALIFICATION_STAGE_PIN = {'bytes': 904,
++ 'identity': [66306, 38934574, 33152, 904, 1793993985803040513, 1793993985803040513],
++ 'path': '/home/alex/work/pocket4-builder470-explicit-current-qualification-01-20261106/stage-receipt.json',
++ 'sha256': '4ed5c0e61a13c5597631eedc0dc1fa44b1059d2a58edc6cb068980190852a4d5'}
++CURRENT_QUALIFICATION_LABELS = ['rust-version',
++ 'current-builder-help',
++ 'current-typed-ingress-help',
++ 'updater-test-list',
++ 'projection-test-0',
++ 'projection-test-1',
++ 'projection-test-2',
++ 'projection-test-3',
++ 'projection-test-4',
++ 'projection-test-5',
++ 'projection-test-6',
++ 'projection-test-7',
++ 'projection-test-8',
++ 'projection-test-9',
++ 'projection-test-10',
++ 'projection-test-11',
++ 'projection-test-12',
++ 'projection-test-13',
++ 'projection-test-14',
++ 'projection-test-15',
++ 'projection-test-16',
++ 'projection-test-17',
++ 'projection-test-18',
++ 'source-resume-test-compile',
++ 'source-resume-test-list',
++ 'projection-test-100',
++ 'projection-test-101',
++ 'projection-test-102',
++ 'projection-test-103',
++ 'projection-test-104',
++ 'projection-test-105',
++ 'projection-test-106',
++ 'projection-test-107',
++ 'projection-test-108']
++CURRENT_QUALIFICATION_GATES = ['actual_current_470_compile_receipt_and_19_original_gates',
++ 'all2706_registry_files_and49_package_inputs_qualified',
++ 'all70_tools_and_explicit_Rust1_93_and_no_Cargo_config',
++ 'all_bound_inputs_and_owners_unchanged_after',
++ 'complete498_source_and_exact491_493_498_ancestry',
++ 'current_CLI_help_and19_updater_independent_tests',
++ 'exact242_project_lock_and_private_offline_resume_fixture_source',
++ 'exact34_fresh_commands_and28_independent_tests',
++ 'exact_stdio_and_prequalified_library_FD_set',
++ 'existing470_ELF_and_test_exact_original_identity_owner_and_SHA',
++ 'fresh_3GiB_and_owned_1GiB_1CPU_zero_swap',
++ 'fresh_current_source_resume_compile_and9_independent_tests',
++ 'original23_command_outputs_and19_independent_logs_revalidated',
++ 'owned_no_OOM_and_zero_swap',
++ 'strict_no_residual_owned_children']
++CURRENT_QUALIFICATION_ENVIRONMENT = {'CARGO_BUILD_JOBS': '1',
++ 'CARGO_ENCODED_RUSTDOCFLAGS': '',
++ 'CARGO_ENCODED_RUSTFLAGS': '',
++ 'CARGO_HOME': '/home/alex/.cargo',
++ 'CARGO_NET_OFFLINE': 'true',
++ 'CARGO_TARGET_DIR': '/home/alex/work/pocket4-builder470-explicit-current-qualification-01-20261106/qualify01/cargo-target',
++ 'CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER': '/usr/bin/cc',
++ 'GIT_CONFIG_GLOBAL': '/dev/null',
++ 'GIT_CONFIG_NOSYSTEM': '1',
++ 'GIT_OPTIONAL_LOCKS': '0',
++ 'LANG': 'C',
++ 'LC_ALL': 'C',
++ 'PATH': '/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin:/usr/bin:/bin',
++ 'RUSTC': '/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc',
++ 'RUSTC_WORKSPACE_WRAPPER': '',
++ 'RUSTC_WRAPPER': '',
++ 'RUSTDOC': '/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustdoc',
++ 'RUSTDOCFLAGS': '',
++ 'RUSTFLAGS': '',
++ 'TMPDIR': '/home/alex/work/pocket4-builder470-explicit-current-qualification-01-20261106/qualify01/tmp'}
++CURRENT_AUTHORITY_NAMES = ['current470-resource-admission',
++ 'current470-result',
++ 'current470-tool-inputs',
++ 'current498-manifest',
++ 'dependency-inputs',
++ 'legacy468-result',
++ 'legacy469-qualification',
++ 'legacy469-result',
++ 'legacy491-manifest',
++ 'legacy493-manifest',
++ 'tool-inputs']
++SETTLED_BUILD07_FILES = [('settled-build07-fence-terminal.original.json',
++  24701,
++  '22c315979504854e249d059762a2ef008fc278c93b26c4a2bd65e0ba0a68bc34'),
++ ('settled-build07-durable-terminal.original.json',
++  726,
++  '629a7963a7c7f2401c4d0f8a554352c262342d0bca246be39d644bcaa1118d82'),
++ ('settled-build07-diagnosis-stdout.original.jsonl',
++  4320,
++  '2a8c2c6c141a76bbc604c039d4dfcc22ab2daac80b6d51286b06718f19e6207b'),
++ ('settled-build07-diagnosis-terminal.original.json',
++  728,
++  '5adba93adeff2d4d540ac0f7ccb41a4d349b66bf2f9bb4769003365a36570d6f')]
+ 
+ 
+ def identity(info):
+@@ -329,19 +438,339 @@
+             'actual builder470 dependency or seven-file successor differs')
+ 
+ 
++def verify_source_ancestry(old491, old493, current):
++    require(len(old491) == 491 and len(old493) == 493 and len(current) == 498,
++            'closed source ancestry counts differ')
++    expected_changed = ['tools/droidloom-update/src/android.rs', 'tools/droidloom-update/src/native_role_ingress.rs']
++    changes = []
++    for label, earlier, later, added in [
++        ('491-to-493', old491, old493, [
++            'android/manifest/m2-role-ingress-provider2-source-lock.json',
++            'android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp']),
++        ('493-to-498', old493, current, EXPECTED_SOURCE_DELTA['added']),
++    ]:
++        changed = sorted(name for name in earlier if later.get(name) != earlier[name])
++        observed_added = sorted(set(later) - set(earlier))
++        require(set(earlier) <= set(later) and changed == expected_changed and observed_added == added,
++                'exact retained source ancestry differs: ' + label)
++        changes.append({'stage': label, 'changed': changed, 'added': observed_added,
++                        'removed': [], 'unchanged_count': len(earlier) - len(changed)})
++    unchanged = [name for name in current if name.startswith('tools/droidloom-source/')]
++    unchanged += ['Cargo.toml', 'Cargo.lock', 'rust-toolchain.toml']
++    require(len(set(unchanged)) == 7 and
++            all(old491[name] == old493[name] == current[name] for name in unchanged),
++            'source-resume library, dependency declarations or pinned toolchain changed')
++    require(current['android/manifest/m2-role-ingress-provider3-source-lock.json']['sha256'] ==
++            'f5717d49fe0d4656b952bd397beab5d2fa70aa0992dd936ac31f81246c9e4772',
++            'current exact provider3 lock changed')
++    return {'transitions': changes, 'unchanged_resume_and_cargo_inputs': sorted(unchanged),
++            'legacy_source_directories_claimed_current': False}
++
++def authorization_pin(recorded):
++    """Normalize the two existing receipt formats without losing nanoseconds."""
++    row = {key: recorded[key] for key in ('path', 'bytes', 'sha256', 'identity')}
++    value = row['identity']
++    if len(value) == 5:
++        require(all(type(item) is int for item in value[:3]) and
++                all(type(item) is str and item.isdecimal() for item in value[3:]),
++                'current qualification five-field identity differs')
++        require(recorded.get('resolved_path', recorded['path']) == recorded['path'],
++                'current qualification resolved path differs')
++        row['identity'] = value[:3] + [recorded['bytes'], int(value[3]), int(value[4])]
++    require(len(row['identity']) == 6 and all(type(item) is int for item in row['identity']) and
++            row['identity'][3] == row['bytes'], 'current qualification full identity differs')
++    return row
++
++
++def qualify_authorization_observation(row, observed_owner, wanted, owner=None):
++    require(row == wanted and observed_owner['identity'] == row['identity'] and
++            observed_owner['path'] == row['path'] and
++            observed_owner['uid'] == observed_owner['gid'] == 1000 and not row['identity'][2] & 0o6002,
++            'current authorization input full identity, owner or bytes changed')
++    if owner is None:
++        require(observed_owner['nlink'] == 1, 'current authorization single-link receipt differs')
++    else:
++        require(observed_owner == owner, 'current authorization recorded owner changed')
++
++
++def authorized_held(recorded, observations, owner=None, include_bytes=False):
++    wanted = authorization_pin(recorded)
++    row, raw = held_file(wanted['path'], wanted['bytes'], include_bytes)
++    info = P(wanted['path']).lstat()
++    observed_owner = {'path': row['path'], 'uid': info.st_uid, 'gid': info.st_gid,
++                      'nlink': info.st_nlink, 'identity': identity(info)}
++    qualify_authorization_observation(row, observed_owner, wanted, owner)
++    observation = {'pin': row, 'owner': observed_owner}
++    if observation not in observations:
++        observations.append(observation)
++    return raw
++
++
++def authorization_staged(name, size, checksum, observations):
++    row, raw = held_file(HERE / name, size, True)
++    require(row['bytes'] == size and row['sha256'] == checksum,
++            'current authorization staged original bytes changed: ' + name)
++    authorized_held(row, observations)
++    return raw
++
++
++def durable_current470_terminal(terminal, stdout):
++    require(terminal['job_id'] == '1a1b26092d9-fc05-7dc7' and
++            terminal['launch_nonce'] == '7da8162ba5cb9469071b73c7fc9edb2f' and
++            terminal['state'] == 'succeeded' and terminal['exit_code'] == 0 and
++            terminal['audit_recorded'] is True and terminal['output_complete'] is True and
++            terminal['output_durable'] is True and terminal['terminal_publication_confirmed'] is True and
++            terminal['terminal_publication_protocol'] == 1 and
++            terminal['timed_out'] is False and terminal['cancelled'] is False and
++            terminal['automatic_retry'] is False and
++            terminal['log_bytes'] == {'stderr': {'seen': 0, 'stored': 0},
++                'stdout': {'seen': len(stdout), 'stored': len(stdout)}} and
++            terminal['log_errors'] == {'stderr': None, 'stdout': None} and
++            terminal['log_synced'] == {'stderr': True, 'stdout': True} and
++            terminal['log_truncated'] == {'stderr': False, 'stdout': False},
++            'actual current470 authoritative terminal is incomplete or failed')
++
++
++def qualify_current470_authorization(result, terminal, stdout):
++    durable_current470_terminal(terminal, stdout)
++    require(result['schema'] == 'pocket4-builder470-explicit-current-qualification-v1' and
++            result['state'] == 'CURRENT470_EXPLICIT_28_TEST_QUALIFICATION_PASS' and
++            result['current_builder_qualification_complete'] is True and
++            result['errors'] == [] and result['cleanup'] == {'complete': True, 'children': [], 'errors': []} and
++            result['expected_gates'] == CURRENT_QUALIFICATION_GATES and
++            set(result['gates']) == set(CURRENT_QUALIFICATION_GATES) and
++            all(value is True for value in result['gates'].values()) and
++            result['command_count'] == 34 and result['tests_passed'] == 28 and
++            [row['label'] for row in result['commands']] == CURRENT_QUALIFICATION_LABELS and
++            all(row['returncode'] == 0 and row['timed_out'] is False for row in result['commands']),
++            'complete current470 34-command and 28-test qualification required')
++    require(result['Main_actions'] == result['Android_actions'] == result['install_actions'] == 0 and
++            all(result[key] is False for key in ('Soong_invoked', 'runtime_authorization_enabled',
++                'full_Android_Java_JNI_compiled', 'production_ready', 'cleanup_eligible',
++                'new_authorization_contract_connected', 'historical_originals_rewritten',
++                'legacy_binary_paths_written', 'legacy_binary_identities_claimed_current',
++                'updater_rebuilt', 'automatic_retry')) and
++            result['acceptance_requires_final_stdout_and_authoritative_durable_terminal'] is True and
++            result['source_resume_test_compiled_from_current498_source'] is True and
++            result['source_resume_test_fixtures_network_disabled_by_exact_cfg_test_source'] is True,
++            'actual current qualification scope was widened or history was rewritten')
++    require(result['owned_resource_gate']['pass'] is True and
++            all(result['owned_resource_gate']['events'][key] == 0 for key in ('max', 'oom', 'oom_kill', 'oom_group_kill')) and
++            result['memory_peak'] == '904175616' and result['swap_peak'] == '0' and
++            len(result['cpu_affinity']) == 1 and len(result['cpu_affinity_before']) >= 3,
++            'actual current qualification resource result differs')
++    require(result['qualifier_source'] == CURRENT_QUALIFIER_PIN and
++            result['stage_receipt'] == CURRENT_QUALIFICATION_STAGE_PIN and
++            result['command_environment'] == CURRENT_QUALIFICATION_ENVIRONMENT,
++            'actual current qualifier source, stage or offline command environment differs')
++    continuity = result['dependency_continuity']
++    require(continuity['recorded_files_and_archives'] == 2706 and continuity['selected_packages'] == 49 and
++            continuity['registry_packages'] == 45 and continuity['new_dependency_fetches'] == 0 and
++            len(continuity['current_updater_packages']) == 49 and
++            len(continuity['expected_source_resume_packages']) == 46 and
++            result['actual_source_resume_compile_packages'] == continuity['expected_source_resume_packages'] and
++            set(result['actual_source_resume_compile_packages']) <= set(continuity['current_updater_packages']),
++            'actual current dependency closure differs')
++    for names, offset, registered, artifact, gate_key in [
++            (EXPECTED_TESTS, 0, 209, result['current_artifacts']['test'], 'fresh_updater_independent_result_gates'),
++            (EXPECTED_SOURCE_TESTS, 100, 20, result['source_resume_test_executable'], 'fresh_source_resume_independent_result_gates')]:
++        gates = result[gate_key]
++        require(len(gates) == len(names), 'actual current exact test gate count differs')
++        for index, name in enumerate(names):
++            label = 'projection-test-' + str(index + offset)
++            row = next(value for value in result['commands'] if value['label'] == label)
++            log = ('ok ' + name + '\n').encode()
++            log_path = str(QUALIFICATION_RESULT.parent / (label + '.libtest'))
++            gate = {'outer_results': 1, 'expected_stdout_runs': 1, 'registered_tests': registered,
++                    'filtered_out_per_run': registered - 1, 'exact_name': name,
++                    'summary_and_independent_result_agree': True}
++            require(row['argv'] == [artifact['pin']['path'], '--exact', name, '--test-threads=1',
++                    '--nocapture', '--logfile', log_path] and row['cwd'] == str(BUILD_SOURCE) and
++                    row['focused_result_gate'] == gates[index] == gate and
++                    row['independent_libtest_result']['path'] == log_path and
++                    row['independent_libtest_result']['bytes'] == len(log) and
++                    row['independent_libtest_result']['sha256'] == hashlib.sha256(log).hexdigest(),
++                    'actual current exact independent test differs: ' + name)
++    rows = [json.loads(line) for line in stdout.splitlines()]
++    require(len(rows) == 36 and rows[0] == {'state': 'FRESH_RESOURCE_ADMISSION_OBSERVED',
++                'receipt': result['resource_admission']} and
++            rows[1:-1] == [{'event': 'FOCUSED_COMMAND_COMPLETED', 'label': label, 'returncode': 0}
++                          for label in CURRENT_QUALIFICATION_LABELS],
++            'actual current qualification stdout command closure differs')
++    require(rows[-1] == {'schema': 'pocket4-current470-qualification-final-summary-v1',
++                'state': 'PASS', 'current_builder_qualification_complete': True,
++                'result': CURRENT_QUALIFICATION_PIN, 'commands': 34, 'tests_passed': 28,
++                'late_error': None, 'Main_actions': 0, 'Soong_invoked': False,
++                'new_authorization_contract_connected': False, 'production_ready': False,
++                'cleanup_eligible': False, 'authoritative_durable_exit_zero_still_required': True},
++            'actual current qualification final stdout is absent or incomplete')
++    library = result['explicit_library_resource']
++    require(library['path'] == '/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0' and
++            library['sha256'] == '1a0dc86f787f73e025a6e521056360afcbe70f2a82cd808132fefc2b4ee95daa' and
++            library['bytes'] == 64184 and library['explicit_import_added_FDs'] == ['3'] and
++            set(library['inherited_stdio']) == {'0', '1', '2'} and library['manual_close'] is False and
++            library['retirement'] == 'authoritative durable normal process exit',
++            'actual explicit qualifier library lifetime changed')
++
++
++def current470_qualification_contract():
++    observations = []
++    raw = authorized_held(CURRENT_QUALIFICATION_PIN, observations, include_bytes=True)
++    staged = authorization_staged('actual-current470-qualification-result.json', QUALIFICATION_BYTES,
++                                  QUALIFICATION_SHA, observations)
++    require(raw == staged, 'actual current qualification and staged original differ')
++    result = json.loads(raw)
++    terminal_raw = authorization_staged('actual-current470-qualification-terminal.original.json',
++        731, '7042c5d094d24aae3eea354d03d9c3d6b94cb647fa0ca23a872814c3753e8e6a', observations)
++    stdout = authorization_staged('actual-current470-qualification-stdout.original.jsonl',
++        4024, '2854236b0227f6f89e9c6875708fa4863ead70306d02ee4b510d3fe7ddb790ac', observations)
++    qualify_current470_authorization(result, json.loads(terminal_raw), stdout)
++    authorized_held(result['qualifier_source'], observations)
++    stage_raw = authorized_held(result['stage_receipt'], observations, include_bytes=True)
++    stage = json.loads(stage_raw)
++    require(stage['schema'] == 'pocket4-current470-qualification-stage-v1' and
++            stage['state'] == 'SOURCE_STAGED_ONLY' and stage['qualifier_source'] == CURRENT_QUALIFIER_PIN and
++            stage['compiler_invoked'] is False and stage['Main_actions'] == 0,
++            'actual current qualifier stage binding differs')
++    documents = {}
++    require(set(result['authority_observations']) == set(CURRENT_AUTHORITY_NAMES),
++            'actual eleven authority groups are incomplete')
++    for name, row in result['authority_observations'].items():
++        documents[name] = json.loads(authorized_held(row['pin'], observations, row['owner'], True))
++    for row in [result['current_artifacts']['builder'], result['current_artifacts']['test'],
++                result['source_resume_test_executable']]:
++        authorized_held(row['pin'], observations, row['owner'])
++        require(row['pin']['identity'][2] & 0o111, 'current qualified ELF is not executable')
++    compile470 = documents['current470-result']
++    require(result['current_compile_authority'] == result['authority_observations']['current470-result'] and
++            result['current_artifacts']['builder']['pin'] == compile470['builder'] and
++            result['current_artifacts']['test']['pin'] == compile470['test_executable'] and
++            result['dependency_continuity']['authority']['pin'] == compile470['dependency_continuity']['authority'] and
++            result['dependency_continuity']['current_updater_packages'] ==
++                compile470['dependency_continuity']['actual_build_packages'],
++            'new qualification is not tied to the same current builder and dependencies')
++    for row in result['commands']:
++        for stream in ('stdout', 'stderr'):
++            authorized_held(row[stream], observations)
++        if 'independent_libtest_result' in row:
++            actual = authorized_held(row['independent_libtest_result'], observations, include_bytes=True)
++            require(actual == ('ok ' + row['focused_result_gate']['exact_name'] + '\n').encode(),
++                    'current independent libtest original changed')
++    admission = json.loads(authorized_held(result['resource_admission'], observations, include_bytes=True))
++    require(admission['profile'] == {'memory_max_bytes': 1073741824, 'memory_swap_max_bytes': 0,
++                'minimum_fresh_MemAvailable_bytes': 3221225472, 'admission_difference_bytes': 2147483648,
++                'global_swap_is_owned_budget': False} and
++            admission['owned_observed'] == {'memory.max': '1073741824', 'cpu.max': '100000 100000',
++                'memory.swap.max': '0', 'memory.swap.current': '0'} and
++            parse_admission_meminfo(admission['meminfo']['raw_ascii'].encode('ascii'))['MemAvailable'] >= 3*1024**3,
++            'actual new current qualification resource admission differs')
++    require(verify_source_ancestry(documents['legacy491-manifest'], documents['legacy493-manifest'],
++                documents['current498-manifest']) == result['source_ancestry'],
++            'actual 491/493/498 provenance differs')
++    return result, documents, observations
++
++
++def qualify_settled_build07(terminal, durable, diagnosis, diagnostic_durable):
++    for row, job, stdout_bytes in [(durable, '1a1b20bbc0a-fc05-7c2e', 877),
++                                  (diagnostic_durable, '1a1b2240691-fc05-7c96', 4320)]:
++        require(row['job_id'] == job and row['state'] == 'failed' and row['exit_code'] == 1 and
++                row['output_complete'] is True and row['output_durable'] is True and
++                row['terminal_publication_confirmed'] is True and row['timed_out'] is False and
++                row['cancelled'] is False and row['automatic_retry'] is False and
++                row['log_bytes'] == {'stderr': {'seen': 0, 'stored': 0},
++                    'stdout': {'seen': stdout_bytes, 'stored': stdout_bytes}} and
++                row['log_errors'] == {'stderr': None, 'stdout': None} and
++                row['log_synced'] == {'stderr': True, 'stdout': True} and
++                row['log_truncated'] == {'stderr': False, 'stdout': False},
++                'settled failure durable terminal differs')
++    require(terminal['state'] == 'FAILED' and terminal['error'] == "FileNotFoundError(2, 'No such file or directory')" and
++            terminal['inner_build_called'] is True and terminal['inner_returncode'] is None and
++            terminal['before_observed'] is True and terminal['after_observed'] is True and
++            terminal['main_fence_assessment']['main_fence_pass'] is True and
++            terminal['main_fence_assessment']['identity_or_limit_changes'] == [] and
++            terminal['main_fence_assessment']['main_oom_delta_zero'] is True and
++            terminal['capture_lifecycle_controls']['state'] == 'PASS' and
++            terminal['capture_lifecycle_controls']['passed'] == 4 and
++            terminal['Main_actions'] == terminal['Android_actions'] == 0 and
++            terminal['installed'] is False and terminal['production_ready'] is False,
++            'build07 failure or observed Main fence was relabeled')
++    phases = ['control-root-timeout', 'control-root-escaped', 'control-root-pidfd',
++              'control-outer-pidfd', 'before', 'after']
++    require([row['phase'] for row in terminal['capture_lifecycle_receipts']] == phases,
++            'build07 six outer child receipts differ')
++    for row in terminal['capture_lifecycle_receipts']:
++        command, reaper = row['command'], row['outer_subreaper']
++        is_outer_control = row['phase'] == 'control-outer-pidfd'
++        require(row['secondary_errors'] == [] and row['outer_watchdog_disarmed_and_restored'] is True and
++                row['within_absolute_outer_deadline'] is True and reaper['begin_passed'] is True and
++                reaper['restored'] is True and reaper['final_children_empty'] is True and
++                command['returncode'] == (-9 if is_outer_control else 0) and
++                command['kill_attempted'] is is_outer_control and command['timed_out'] is False and
++                command['child_reaped'] is True and command['pidfd_closed'] is True and
++                command['all_acquired_fds_closed'] is True and command['owned_tree_cleanup_complete'] is True and
++                command['remaining_owned_children'] == [] and command['secondary_errors'] == [] and
++                command['retirement_within_deadline'] is True and
++                all(command[key]['closed'] is True for key in ('input', 'stdout', 'stderr')) and
++                command['stdout']['complete'] is True and command['stderr']['complete'] is True,
++                'build07 actual child, FD, watchdog or subreaper retirement differs')
++    require(diagnosis['state'] == 'DIAGNOSIS_FAILED' and diagnosis['diagnosis_completed'] is False and
++            diagnosis['observed_failure']['type'] == 'FileNotFoundError' and
++            diagnosis['observed_failure']['errno'] == 2 and diagnosis['observed_failure']['filename'] ==
++                '/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/cargo-target/debug/droidloom-update' and
++            diagnosis['verify_prepared_called'] is True and diagnosis['verify_prepared_returned'] is False and
++            diagnosis['build_entrypoint_called'] is False and diagnosis['compiler_commands'] == 0 and
++            diagnosis['Main_commands'] == diagnosis['Android_commands'] == diagnosis['guard_or_lock_calls'] == 0 and
++            diagnosis['children_before'] == diagnosis['children_after'] == [] and
++            diagnosis['original_failure_rewritten'] is False and
++            len(diagnosis['secondary_errors']) == 1 and
++            diagnosis['secondary_errors'][0]['phase'] == 'resource_closure' and
++            diagnosis['secondary_errors'][0]['error']['repr'] == "RuntimeError('READONLY_DIAGNOSIS_CHANGED_FD_IDENTITIES')",
++            'old468 missing-file diagnosis or its separate FD failure was rewritten')
++
++
++def settled_build07_contract():
++    observations = []
++    documents = {}
++    for name, size, checksum in SETTLED_BUILD07_FILES:
++        documents[name] = json.loads(authorization_staged(name, size, checksum, observations))
++    remote = OWNER / 'typed-ingress-framework-systemui-provider-build-07-20261106/build-fences-01/terminal.json'
++    original, pin = json_pin(remote, '22c315979504854e249d059762a2ef008fc278c93b26c4a2bd65e0ba0a68bc34', 24701)
++    authorized_held(pin, observations)
++    require(original == documents['settled-build07-fence-terminal.original.json'],
++            'actual original build07 terminal differs')
++    qualify_settled_build07(original, documents['settled-build07-durable-terminal.original.json'],
++        documents['settled-build07-diagnosis-stdout.original.jsonl'],
++        documents['settled-build07-diagnosis-terminal.original.json'])
++    return observations
++
++
++def verify_current_authorization_after(context):
++    for row in context['current_builder_authorization']['observations']:
++        authorized_held(row['pin'], [], row['owner'])
++
++
++
+ def builder_contract():
+-    # Preserve the genuine normal05 predecessor contract and all its old
+-    # authorities. Neither its source nor receipts are rewritten as builder470.
+-    parent_path = HERE / 'parent-normal05-framework_build.py'
+-    parent_pin, parent_raw = held_file(parent_path, 65536, True)
+-    require(parent_pin['bytes'] == 60970 and
+-            parent_pin['sha256'] == 'f4ab5e09fc22b759811bfa9480c2de555dbc5096bc1258a984dbd33809db734b',
+-            'original normal05 builder contract changed')
+-    parent_scope = {'__name__': 'original_normal05_builder_contract', '__file__': str(parent_path)}
+-    exec(compile(parent_raw, str(parent_path), 'exec'), parent_scope, parent_scope)
+-    parent_compiled, parent_compiled_pin, parent_map, parent_map_pin, parent_builder = parent_scope['builder_contract']()
+-    parent_qualification, parent_qualification_pin = json_pin(
+-        parent_scope['QUALIFICATION_RESULT'], parent_scope['QUALIFICATION_SHA'], 65386)
++    # A newly selected current-builder contract, never an exception fallback.
++    # Original old03/05 controllers remain byte-bound provenance, not executable authority.
++    qualification, historical, observations = current470_qualification_contract()
++    for name, size, checksum in [
++            ('parent-normal03-framework_build.py', 59292,
++             '03f0b4aecba20149ad7f1301ea823eb5e7e5ba1efa00d08c92c4fa7ecf482132'),
++            ('parent-normal05-framework_build.py', 60970,
++             'f4ab5e09fc22b759811bfa9480c2de555dbc5096bc1258a984dbd33809db734b')]:
++        authorization_staged(name, size, checksum, observations)
++    authority = qualification['authority_observations']
++    parent_compiled, parent_compiled_pin = historical['legacy469-result'], authority['legacy469-result']['pin']
++    parent_qualification = historical['legacy469-qualification']
++    parent_qualification_pin = authority['legacy469-qualification']['pin']
++    parent_map, parent_map_pin = historical['legacy493-manifest'], authority['legacy493-manifest']['pin']
++    for name, key in [('actual-builder469-result.json', 'legacy469-result'),
++                      ('actual-builder469-qualification.json', 'legacy469-qualification'),
++                      ('expected-builder469-manifest.json', 'legacy493-manifest')]:
++        wanted = authority[key]['pin']
++        staged = json.loads(authorization_staged(name, wanted['bytes'], wanted['sha256'], observations))
++        require(staged == historical[key], 'immutable legacy receipt or source map differs')
+ 
+     result, pin = json_pin(BUILD_RESULT, BUILD_RESULT_SHA, BUILD_RESULT_BYTES)
+     staged, _ = json_pin(HERE / 'actual-builder470-result.json', BUILD_RESULT_SHA, BUILD_RESULT_BYTES)
+@@ -365,7 +794,7 @@
+     continuity = result['dependency_continuity']
+     dependency_authority, _ = held_file(continuity['authority']['path'], 2*1024*1024)
+     parent_continuity = parent_qualification['dependency_continuity']
+-    expected_packages = sorted(value.replace(str(parent_scope['BUILD_SOURCE']), str(BUILD_SOURCE))
++    expected_packages = sorted(value.replace(str(P(parent_map_pin['path']).parent / 'builder-source'), str(BUILD_SOURCE))
+                                for value in parent_continuity['actual_build_packages'])
+     require(dependency_authority == continuity['authority'] and
+             continuity['authority'] == parent_continuity['authority'] and
+@@ -409,7 +838,12 @@
+     require(builder['sha256'] == BUILDER_SHA and builder['bytes'] == BUILDER_BYTES and
+             builder['identity'][2] & 0o111,
+             'actual builder470 ELF changed')
+-    return result, pin, source_map, source_pin, builder
++    observations.extend(settled_build07_contract())
++    authorization = {'contract': CURRENT_BUILDER_CONTRACT,
++        'qualification': CURRENT_QUALIFICATION_PIN, 'qualification_job_id': '1a1b26092d9-fc05-7dc7',
++        'legacy_ELFs_opened': False, 'legacy_contracts_or_failures_rewritten': False,
++        'runtime_authorization_enabled': False, 'observations': observations}
++    return result, pin, source_map, source_pin, builder, authorization
+ 
+ 
+ def inventory_module():
+@@ -694,13 +1128,14 @@
+ 
+ def verify_prepared(expected_sha):
+     prepared, prepared_pin, manifests, manifest_pins = preparation_contract(expected_sha)
+-    compiled, compiled_pin, builder_map, builder_map_pin, builder_pin = builder_contract()
++    compiled, compiled_pin, builder_map, builder_map_pin, builder_pin, authorization = builder_contract()
+     scope, inventory_pin = inventory_module()
+     context = {'prepared': prepared, 'prepared_pin': prepared_pin, 'manifests': manifests,
+         'manifest_pins': manifest_pins, 'compiled': compiled, 'compiled_pin': compiled_pin,
+         'builder_map': builder_map, 'builder_map_pin': builder_map_pin, 'builder_pin': builder_pin,
+-        'inventory_scope': scope, 'inventory_pin': inventory_pin}
+-    context['qualification_pin'] = json_pin(QUALIFICATION_RESULT, QUALIFICATION_SHA, BUILD_RESULT_BYTES)[1]
++        'inventory_scope': scope, 'inventory_pin': inventory_pin,
++        'current_builder_authorization': authorization}
++    context['qualification_pin'] = json_pin(QUALIFICATION_RESULT, QUALIFICATION_SHA, QUALIFICATION_BYTES)[1]
+     context['published_manifest'], context['prior_failure_authority_pins'] = prior_failure_contract()
+     context['initial_observations'] = observe_inputs(context, True)
+     return context
+@@ -711,10 +1146,13 @@
+         'root': str(ROOT), 'work': str(WORK), 'aosp_source': str(PUBLISHED_SOURCE), 'out': str(OUT),
+         'builder_result_sha256': BUILD_RESULT_SHA, 'work_preparation_sha256': PREPARATION_SHA,
+         'builder_sha256': BUILDER_SHA, 'builder_source_manifest_sha256': SOURCE_MANIFEST_SHA,
+-        'builder_source_files': 498, 'actual_host_compile_commands': 23, 'actual_current_exact_controls': 19,
+-        'qualification_commands': 19, 'qualification_commands_included_in_host_compile': True,
+-        'separate_qualification_commands': 0, 'unchanged_source_resume_controls_inherited': 9,
+-        'source_resume_controls_rerun_in_successor': False, 'qualification_result_sha256': QUALIFICATION_SHA,
++        'builder_source_files': 498, 'actual_host_compile_commands': 23, 'actual_current_exact_controls': 28,
++        'original_host_compile_exact_controls': 19, 'qualification_commands': 34,
++        'qualification_commands_included_in_host_compile': False, 'separate_qualification_commands': 34,
++        'unchanged_source_resume_controls_inherited': 0, 'source_resume_controls_rerun_in_successor': True,
++        'qualification_result_sha256': QUALIFICATION_SHA, 'builder_contract': CURRENT_BUILDER_CONTRACT,
++        'actual_current_qualification_job_id': '1a1b26092d9-fc05-7dc7',
++        'legacy_468_missing_and_build07_failed_preserved': True,
+         'argv': [str(BUILDER), '--source', str(BUILD_SOURCE), '--jobs', '1',
+                  'native-role-ingress-build', '--work', str(WORK), '--out', str(OUT)],
+         'targets': TARGETS, 'dependency_mode': 'Strict', 'ALLOW_MISSING_DEPENDENCIES': False,
+@@ -735,6 +1173,7 @@
+         'admission_difference_bytes': MIN_AVAILABLE - MEMORY_MAX,
+         'prior_normal_peak_bytes': 3168141312, 'prior_normal_swap_peak_bytes': 0,
+         'actual_static_compile_peak_bytes': 1073741824, 'actual_static_compile_memory_max_events': 657,
++        'actual_separate_qualification_peak_bytes': 904175616, 'actual_separate_qualification_memory_max_events': 0,
+         'static_compile_pressure_not_normal_Soong_qualification': True,
+         'cpu_quota_percent': 200, 'jobs': 1, 'builder_wait_seconds': 6100,
+         'automatic_retry': False, 'Main_actions': 0, 'Android_actions': 0,
+@@ -849,6 +1288,7 @@
+     for wanted in context['prior_failure_authority_pins']:
+         row, _ = held_file(wanted['path'], wanted['bytes'])
+         require(row == wanted, 'original failure or staged source authority changed')
++    verify_current_authorization_after(context)
+     return observations
+ 
+ 
+@@ -896,7 +1336,8 @@
+         "work_preparation": context["prepared_pin"], "actual_builder_compile": context["compiled_pin"],
+         "actual_builder_manifest": context["builder_map_pin"], "actual_content_manifests": context["manifest_pins"],
+         "reused_inventory_source": context["inventory_pin"], "observations": context["initial_observations"],
+-        "prior_failure_authorities": context["prior_failure_authority_pins"]})
++        "prior_failure_authorities": context["prior_failure_authority_pins"],
++        "current_builder_authorization": context["current_builder_authorization"]})
+     print(json.dumps(claim), flush=True)
+     env = os.environ.copy()
+     env["DROIDLOOM_NATIVE_BRIDGE_SOURCE"] = str(ENGINE_SOURCE)
+@@ -981,6 +1422,8 @@
+                     "input_after_error": input_after_error,
+                     "work_preparation_sha256": PREPARATION_SHA, "builder_compile_sha256": BUILD_RESULT_SHA,
+                     "builder_sha256": BUILDER_SHA, "strict_targets": TARGETS,
++                    "current_builder_contract": CURRENT_BUILDER_CONTRACT,
++                    "actual_current_qualification_sha256": QUALIFICATION_SHA,
+                     "prior_failed_inner_sha256": PRIOR_INNER_SHA, "prior_failed_outer_sha256": PRIOR_OUTER_SHA,
+                     "published_source_path": str(PUBLISHED_SOURCE),
+                     "source_reconciliation_uses_normal_builder": True,
+@@ -1019,12 +1462,16 @@
+     parser = argparse.ArgumentParser()
+     parser.add_argument('--build', action='store_true')
+     parser.add_argument('--preparation-sha256')
++    parser.add_argument('--builder-contract')
+     args = parser.parse_args(argv)
+     if not args.build:
+-        require(args.preparation_sha256 is None, 'SHA provided without build mode')
++        require(args.preparation_sha256 is None and args.builder_contract is None,
++                'SHA or builder contract provided without build mode')
+         print(json.dumps(plan(), indent=2))
+         return 0
+     require(args.preparation_sha256 is not None, 'build requires its actual work receipt')
++    require(args.builder_contract == CURRENT_BUILDER_CONTRACT,
++            'explicit current470 contract selection is required; no legacy fallback')
+     return build(args.preparation_sha256)
+ 
+ if __name__ == '__main__':
+--- source-r4/fenced_build.py
++++ candidate-r1/fenced_build.py
+@@ -9,12 +9,12 @@
+ import subprocess
+ import time
+ 
+-CONTROLLER_SHA = 'c446be88a61f7d07c05aff1e3f3bb967bcf969b7fa3de568eb3de4915e59e7da'
++CONTROLLER_SHA = '09c4eebe8615076ca886363d450d103ec3145e532f86a186db2ebbeae5856f5a'
+ LIFECYCLE_SHA = '7fe6569f6665d6b710d2207c53e631261d6eb922d37e24ddfe5de15b841f0126'
+ ROOT_SUPERVISOR_SHA = 'ced37d036b93ab8f85803c42ca6a2d0fb18939c78a5d62ef9a2fd0a215176f7b'
+ SNAPSHOT_SHA = '7908f4730c658e0d2f43ca66a810eb6d7033634560fcba2d7d928b380795136e'
+ PREPARATION_SHA = 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'
+-ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-07-20261106')
++ROOT = Path('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-systemui-provider-build-08-20261106')
+ FENCE_ROOT = ROOT / 'build-fences-01'
+ 
+ 
+@@ -342,6 +342,7 @@
+              'VERIFIED_CONTROLLER_SHA256': CONTROLLER_SHA}
+     exec(compile(source, 'frozen_combined_build.py', 'exec'), scope, scope)
+     settled_previous_fence = scope['settled_normal06_fence_contract']()
++    settled_previous_fence.extend(row['pin'] for row in scope['settled_build07_contract']())
+     scope['no_alias'](ROOT)
+     require(sha((ROOT / 'control-source/actual-work-preparation.json').read_bytes()) == PREPARATION_SHA,
+             'staged actual work preparation changed')
+@@ -369,7 +370,8 @@
+                 'original activation five-limit contract differs; TasksMax must remain 12288')
+         save('before.json', before)
+         attempted = True
+-        inner_code = scope['main'](['--build', '--preparation-sha256', PREPARATION_SHA])
++        inner_code = scope['main'](['--build', '--preparation-sha256', PREPARATION_SHA,
++                                    '--builder-contract', 'explicit-current470-34commands-28tests-v1'])
+         require(inner_code == 0, 'inner full build failed')
+     except BaseException as error:
+         failure = repr(error)

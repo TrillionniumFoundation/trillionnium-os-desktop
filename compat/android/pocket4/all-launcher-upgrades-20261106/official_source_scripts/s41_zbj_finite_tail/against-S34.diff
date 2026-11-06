@@ -1,0 +1,603 @@
+--- S34/resume_zbj_tail_s34_once.py
++++ S41/continue_zbj_s41_once.py
+@@ -1,11 +1,13 @@
+ #!/usr/bin/env python3
+-"""One explicit s34 tail after settled s28: 41 sequential ranges, at most 1 MiB.
+-
+-Only the original prefix and COMPLETE s28 segments 0..40 are reused.
++"""One explicit s41 tail after settled s34 and DNS observation: 38 sequential ranges, at most 1 MiB.
++
++Reuse the original prefix, COMPLETE s28 segments 0..40 and COMPLETE s34 segments 0..2.
+ The failed s28 partial is excluded. All reuse follows pinned origin receipts,
+ secure HTTP metadata, complete bytes/hash/stat, and exact source paths.
+ No Android, Main descriptor, namespace, permissions, or application actions."""
+ import datetime
++import fcntl
++import sys
+ import hashlib
+ import json
+ import os
+@@ -19,11 +21,11 @@
+ import threading
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34')
++ROOT=Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s41')
+ CHUNK=1024*1024
+ OLD_CHUNK=2*1024*1024
+ OLD_PREFIX=38387712
+-TAIL_START=124370944
++TAIL_START=127516672
+ TOTAL_BYTES=166873622
+ TOTAL_SECONDS=1800
+ DEADLINE=None
+@@ -31,16 +33,255 @@
+ STAT=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ CURL_FIELDS=('http_code','url_effective','content_type','size_download','time_total','speed_download','num_redirects','num_retries','ssl_verify_result','errormsg','exitcode')
+ 
++OLD_TAIL_START=124370944
++S34_PREFIX_SHA256='b5afd036ee69dda692bc5e20a35ddd38c66431ce7704960e7bac3b6f2a3f2584'
++S34_FOLDER='/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m'
++S34_RESULT_PIN={'path': '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-result.json',
++ 'sha256': 'c49b3c374226329c92810d11bacee29c75023c26bf648bf5c4a6ebf7ea741135',
++ 'bytes': 65232}
++S34_FAILURE_PIN={'path': '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0003.json',
++ 'bytes': 2103,
++ 'sha256': 'a92c797bdd1d9471842afa76c3d2872249d78b42286997b393fe191949436a6b'}
++S34_COMPLETE_RECEIPTS=[{'path': '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0000.json',
++  'bytes': 2367,
++  'sha256': '8494238ceca82c4a85e2a0bff2e732b67025035cdbc4255a654ccdfd10374e85'},
++ {'path': '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0001.json',
++  'bytes': 2368,
++  'sha256': 'afa7233fbd8f6c697b8602aaf140b842f7d44cbb433bfb6498ccd20b5f640608'},
++ {'path': '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0002.json',
++  'bytes': 2368,
++  'sha256': '54af1656ae77feac6c103b58d7a38acc874976294846a10e71dc1d06f17f7579'}]
++S34_BODY_PINS=[{'path': '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0000.part',
++  'bytes': 1048576,
++  'sha256': '0258391795a9fe63feb5b94cc693670c76be1ed8549939324d64b87dff9ed880',
++  'stat': {'st_dev': 66306,
++           'st_ino': 35528248,
++           'st_mode': 33152,
++           'st_uid': 1000,
++           'st_gid': 1000,
++           'st_nlink': 1,
++           'st_size': 1048576,
++           'st_mtime_ns': 1793981238169055476,
++           'st_ctime_ns': 1793981238169055476}},
++ {'path': '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0001.part',
++  'bytes': 1048576,
++  'sha256': 'e8dbf99baadeb9c335b7326172a8747f9af9971baca4c370f1da517a296296d7',
++  'stat': {'st_dev': 66306,
++           'st_ino': 35528354,
++           'st_mode': 33152,
++           'st_uid': 1000,
++           'st_gid': 1000,
++           'st_nlink': 1,
++           'st_size': 1048576,
++           'st_mtime_ns': 1793981268995956313,
++           'st_ctime_ns': 1793981268995956313}},
++ {'path': '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0002.part',
++  'bytes': 1048576,
++  'sha256': '6cec6f1c39b72c5212103ebf3ed7c4fbf10ba80946d3bfc6b5df5a015643e63f',
++  'stat': {'st_dev': 66306,
++           'st_ino': 35532614,
++           'st_mode': 33152,
++           'st_uid': 1000,
++           'st_gid': 1000,
++           'st_nlink': 1,
++           'st_size': 1048576,
++           'st_mtime_ns': 1793981295450569011,
++           'st_ctime_ns': 1793981295450569011}}]
++EXACT_RECENT_IDENTITIES={'/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-result.json': {'bytes': 65232,
++                                                                                                                'mode': 384,
++                                                                                                                'version': '66306:35534958:65232:1793981307623579494:1793981307623579494'},
++ '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0003.json': {'bytes': 2103,
++                                                                                                                      'mode': 384,
++                                                                                                                      'version': '66306:35528635:2103:1793981307601897541:1793981307601897541'},
++ '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0000.json': {'bytes': 2367,
++                                                                                                                      'mode': 384,
++                                                                                                                      'version': '66306:35528368:2367:1793981238226811117:1793981238226811117'},
++ '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0000.part': {'bytes': 1048576,
++                                                                                                                      'mode': 384,
++                                                                                                                      'version': '66306:35528248:1048576:1793981238169055476:1793981238169055476'},
++ '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0001.json': {'bytes': 2368,
++                                                                                                                      'mode': 384,
++                                                                                                                      'version': '66306:35528456:2368:1793981269048181298:1793981269048181298'},
++ '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0001.part': {'bytes': 1048576,
++                                                                                                                      'mode': 384,
++                                                                                                                      'version': '66306:35528354:1048576:1793981268995956313:1793981268995956313'},
++ '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0002.json': {'bytes': 2368,
++                                                                                                                      'mode': 384,
++                                                                                                                      'version': '66306:35528622:2368:1793981295513358160:1793981295513358160'},
++ '/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s34/com.zhubajie.client-tail-1m/0002.part': {'bytes': 1048576,
++                                                                                                                      'mode': 384,
++                                                                                                                      'version': '66306:35532614:1048576:1793981295450569011:1793981295450569011'}}
++PARENT_IDENTITIES={}
++S28_TERMINAL_RAW=('{\n'
++ '  "at_unix_ms": 1793970297963,\n'
++ '  "audit_recorded": true,\n'
++ '  "automatic_retry": false,\n'
++ '  "cancelled": false,\n'
++ '  "exit_code": 1,\n'
++ '  "job_id": "1a1b0f20329-fc05-7444",\n'
++ '  "launch_nonce": "78fde25005c764d6350becc66a72f892",\n'
++ '  "log_bytes": {\n'
++ '    "stderr": {\n'
++ '      "seen": 0,\n'
++ '      "stored": 0\n'
++ '    },\n'
++ '    "stdout": {\n'
++ '      "seen": 21169,\n'
++ '      "stored": 21169\n'
++ '    }\n'
++ '  },\n'
++ '  "log_errors": {\n'
++ '    "stderr": null,\n'
++ '    "stdout": null\n'
++ '  },\n'
++ '  "log_synced": {\n'
++ '    "stderr": true,\n'
++ '    "stdout": true\n'
++ '  },\n'
++ '  "log_truncated": {\n'
++ '    "stderr": false,\n'
++ '    "stdout": false\n'
++ '  },\n'
++ '  "output_complete": true,\n'
++ '  "output_durable": true,\n'
++ '  "state": "failed",\n'
++ '  "terminal_publication_confirmed": true,\n'
++ '  "terminal_publication_protocol": 1,\n'
++ '  "timed_out": false\n'
++ '}')
++S28_TERMINAL_SHA256='4274659d373393b89ee65ed999be21db790a1a464895f8a8283cffe8f18e5030'
++S34_TERMINAL_RAW=('{\n'
++ '  "at_unix_ms": 1793981307650,\n'
++ '  "audit_recorded": true,\n'
++ '  "automatic_retry": false,\n'
++ '  "cancelled": false,\n'
++ '  "exit_code": 1,\n'
++ '  "job_id": "1a1b19cedcf-fc05-79de",\n'
++ '  "launch_nonce": "ef78cfd97e0df63a71b027302072c78f",\n'
++ '  "log_bytes": {\n'
++ '    "stderr": {\n'
++ '      "seen": 0,\n'
++ '      "stored": 0\n'
++ '    },\n'
++ '    "stdout": {\n'
++ '      "seen": 14495,\n'
++ '      "stored": 14495\n'
++ '    }\n'
++ '  },\n'
++ '  "log_errors": {\n'
++ '    "stderr": null,\n'
++ '    "stdout": null\n'
++ '  },\n'
++ '  "log_synced": {\n'
++ '    "stderr": true,\n'
++ '    "stdout": true\n'
++ '  },\n'
++ '  "log_truncated": {\n'
++ '    "stderr": false,\n'
++ '    "stdout": false\n'
++ '  },\n'
++ '  "output_complete": true,\n'
++ '  "output_durable": true,\n'
++ '  "state": "failed",\n'
++ '  "terminal_publication_confirmed": true,\n'
++ '  "terminal_publication_protocol": 1,\n'
++ '  "timed_out": false\n'
++ '}')
++S34_TERMINAL_SHA256='e10d132f8089f20add7a403ff05bd31620fd785ab8f7db934817bdae797ba239'
++DNS_TERMINAL_RAW=('{\n'
++ '  "at_unix_ms": 1793997695002,\n'
++ '  "audit_recorded": true,\n'
++ '  "automatic_retry": false,\n'
++ '  "cancelled": false,\n'
++ '  "exit_code": 0,\n'
++ '  "job_id": "1a1b2983a9d-fc05-7ed3",\n'
++ '  "launch_nonce": "3b8a802d335ffb9fb0c188e894406cc0",\n'
++ '  "log_bytes": {\n'
++ '    "stderr": {\n'
++ '      "seen": 0,\n'
++ '      "stored": 0\n'
++ '    },\n'
++ '    "stdout": {\n'
++ '      "seen": 2313,\n'
++ '      "stored": 2313\n'
++ '    }\n'
++ '  },\n'
++ '  "log_errors": {\n'
++ '    "stderr": null,\n'
++ '    "stdout": null\n'
++ '  },\n'
++ '  "log_synced": {\n'
++ '    "stderr": true,\n'
++ '    "stdout": true\n'
++ '  },\n'
++ '  "log_truncated": {\n'
++ '    "stderr": false,\n'
++ '    "stdout": false\n'
++ '  },\n'
++ '  "output_complete": true,\n'
++ '  "output_durable": true,\n'
++ '  "state": "succeeded",\n'
++ '  "terminal_publication_confirmed": true,\n'
++ '  "terminal_publication_protocol": 1,\n'
++ '  "timed_out": false\n'
++ '}')
++DNS_TERMINAL_SHA256='7b06805ce07faf432aedcef9deec25571d4069ca668ed76c640de9205dd70fb0'
++DNS_STDOUT_RAW=('{"application_call_count": 1, "automatic_retries": 0, "event": "DNS_RESOLUTION_STARTED", "hostname": '
++ '"s.shouji.qihucdn.com", "own_process_default_SIGALRM_deadline_seconds": 20, "port": 443}\n'
++ '{"APK_downloads": 0, "Android_commands": 0, "HTTP_requests": 0, "IP_override_or_custom_resolver": false, '
++ '"Main_actions": 0, "Main_lock_or_fds": 0, "TLS_configuration_changes": 0, "TLS_handshakes_requested": 0, '
++ '"actual_egid": 1000, "actual_euid": 1000, "actual_gid": 1000, "actual_uid": 1000, "address_records": '
++ '[{"canonical_name": "", "family": 2, "protocol": 6, "socket_address": ["104.192.108.17", 443], "socket_type": 1}, '
++ '{"canonical_name": "", "family": 2, "protocol": 6, "socket_address": ["104.192.108.21", 443], "socket_type": 1}, '
++ '{"canonical_name": "", "family": 2, "protocol": 6, "socket_address": ["104.192.108.19", 443], "socket_type": 1}, '
++ '{"canonical_name": "", "family": 2, "protocol": 6, "socket_address": ["104.192.108.20", 443], "socket_type": 1}], '
++ '"after_descriptor_identities": {"0": ["/dev/null", 7, 5, 8630, 0, 0, 0, 32770], "1": ["pipe:[3467063512]", 16, '
++ '3467063512, 4480, 1000, 1000, 0, 1], "2": ["pipe:[3467063513]", 16, 3467063513, 4480, 1000, 1000, 0, 1]}, '
++ '"application_getaddrinfo_calls": 1, "application_retries": 0, "authorizes_download_or_install": false, '
++ '"before_descriptor_identities": {"0": ["/dev/null", 7, 5, 8630, 0, 0, 0, 32770], "1": ["pipe:[3467063512]", 16, '
++ '3467063512, 4480, 1000, 1000, 0, 1], "2": ["pipe:[3467063513]", 16, 3467063513, 4480, 1000, 1000, 0, 1]}, '
++ '"elapsed_seconds": 10.099027179996483, "errors": [], "explicit_subprocesses": 0, "family": 0, '
++ '"files_written_by_probe": 0, "flags": 0, "hostname": "s.shouji.qihucdn.com", "installs": 0, '
++ '"normal_resolver_configuration_changed": false, "normal_resolver_internal_query_count": null, "ok": true, '
++ '"original_descriptor_identities_restored": true, "permission_changes": 0, "production_ready": false, "protocol": 6, '
++ '"proxy_configuration_changes": 0, "python_executable_observed": "/usr/bin/python3", '
++ '"python_full_file_identity_verified_by_this_probe": false, "python_version_observed": "3.14.4 (main, Aug 20 2026, '
++ '10:41:58) [GCC 15.2.0]", "resolution_completed": true, "schema": "pocket4-zbj-system-resolver-observation-v1", '
++ '"service_port": 443, "socket_type": 1, "status": "OS_DNS_RESOLVED_ONLY_NOT_HTTP_OR_DOWNLOAD_VERIFIED"}\n')
++DNS_STDOUT_SHA256='61ecdfd852260204ef324d4fbd518eae55f9e9660bd7788bce110f6f99173c95'
++
+ def now():return datetime.datetime.now(datetime.timezone.utc).isoformat()
+ def require(value,reason):
+  if not value:raise RuntimeError(reason)
+ def identity(fd):
+  s=os.fstat(fd);return {k:getattr(s,k) for k in STAT}
+ def opened(path):
+- fd=os.open(path,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW|os.O_NONBLOCK);before=identity(fd)
+- if not(stat.S_ISREG(before['st_mode']) and before['st_nlink']==1 and before['st_uid']==1000):
+-  os.close(fd);raise RuntimeError('EXACT_OWNED_REGULAR_FILE_REQUIRED')
+- return fd,before
++ """Keep S34 leaf contract and add S36-style nofollow parent traversal."""
++ path=Path(path);require(path.is_absolute() and '..' not in path.parts,'EXACT_ABSOLUTE_SOURCE_PATH')
++ parents=[];fd=None
++ try:
++  parent=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);parents.append(parent)
++  current=Path('/');remember_parent(parent,current)
++  for part in path.parts[1:-1]:
++   parent=os.open(part,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parent)
++   parents.append(parent);current=current/part;remember_parent(parent,current)
++  fd=os.open(path.name,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW|os.O_NONBLOCK,dir_fd=parent)
++  before=identity(fd)
++  require(stat.S_ISREG(before['st_mode']) and before['st_nlink']==1 and
++          before['st_uid']==before['st_gid']==1000,'EXACT_OWNED_REGULAR_FILE_REQUIRED')
++  pin=EXACT_RECENT_IDENTITIES.get(str(path))
++  if pin is not None:
++   require(before['st_size']==pin['bytes'] and stat.S_IMODE(before['st_mode'])==pin['mode'] and
++           ':'.join(str(before[k]) for k in ('st_dev','st_ino','st_size','st_mtime_ns','st_ctime_ns'))==pin['version'],
++           'ACTUAL_RECENT_FILE_INFO_IDENTITY_CHANGED')
++  for item in parents:
++   require(stat.S_ISDIR(os.fstat(item).st_mode),'OPENED_PARENT_CHANGED_KIND')
++  return fd,before
++ except BaseException:
++  if fd is not None:os.close(fd)
++  raise
++ finally:
++  for item in reversed(parents):os.close(item)
+ def remaining():
+  require(DEADLINE is not None and time.monotonic()<DEADLINE,'TOTAL_TRANSFER_DEADLINE')
+  return DEADLINE-time.monotonic()
+@@ -160,10 +401,11 @@
+ def own_curl(argv,fd,metrics,errors,record,seconds):
+  process=None;pidfd=None
+  record.update(joined=False,pidfd_acquired=False,pidfd_closed=False,pidfd_exit_observed=False,
+-               owned_curl_signal_count=0,outcome_unknown=False,timed_out=False)
++               owned_curl_signal_count=0,outcome_unknown=False,timed_out=False,owned_object_fallback_used=False)
+  try:
+   with metrics.open('xb') as met,errors.open('xb') as err:
+    try:
++    require(seconds>=1 and remaining()>=seconds+10,'OWNED_CURL_FRESH_BUDGET_BEFORE_SPAWN')
+     process=subprocess.Popen(argv,stdin=subprocess.DEVNULL,stdout=met,stderr=err,pass_fds=(fd,),close_fds=True)
+     record.update(pid=process.pid,request_attempts=1)
+     pidfd=os.pidfd_open(process.pid,0);record['pidfd_acquired']=True
+@@ -178,6 +420,13 @@
+        try:signal.pidfd_send_signal(pidfd,signal.SIGKILL,None,0);record['owned_curl_signal_count']+=1
+        except ProcessLookupError:pass
+        except BaseException as e:record['signal_error']=type(e).__name__
++     if process.returncode is None and pidfd is None:
++      # The direct, unreaped child is still owned by this Popen object.
++      # Retire it if acquiring a pidfd failed; this path can never pass.
++      record['owned_object_fallback_used']=True
++      try:process.kill();record['owned_curl_signal_count']+=1
++      except ProcessLookupError:pass
++      except BaseException as e:record['signal_error']=type(e).__name__
+      try:process.wait(timeout=10);record.update(joined=True,returncode=process.returncode)
+      except BaseException as e:record.update(outcome_unknown=True,join_error=type(e).__name__)
+      if pidfd is not None:
+@@ -201,13 +450,13 @@
+  require(c['total_bytes']==TOTAL_BYTES,'EXACT_TOTAL_REQUIRED')
+  ranges=[(i,start,min(start+CHUNK-1,TOTAL_BYTES-1))
+          for i,start in enumerate(range(TAIL_START,TOTAL_BYTES,CHUNK))]
+- require(len(ranges)==41 and sum(end-start+1 for _,start,end in ranges)==42502678,
++ require(len(ranges)==38 and sum(end-start+1 for _,start,end in ranges)==39356950,
+          'FINITE_TAIL_PLAN_REQUIRED')
+  return ranges
+ 
+ def one_segment(c,folder,index,start,end,abort):
+  record={'index':index,'start':start,'end':end,'expected_bytes':end-start+1,'started_utc':now(),
+-         'request_attempts':0,'automatic_retries':0,'range_namespace':'S34_TAIL_1M_NO_CACHE'}
++         'request_attempts':0,'automatic_retries':0,'range_namespace':'S41_TAIL_1M_NO_CACHE'}
+  part=folder/(f'{index:04d}.part');headers=folder/(f'{index:04d}.headers');metrics=folder/(f'{index:04d}.curl.json');errors=folder/(f'{index:04d}.stderr')
+  fd=None
+  try:
+@@ -260,12 +509,15 @@
+  return record
+ 
+ def run(c):
+- row=dict(c,started_utc=now(),strategy='one explicit s34 tail; old prefix+41 complete 2MiB segments; 41 sequential <=1MiB requests; no retries',
++ row=dict(c,started_utc=now(),strategy='one explicit s41 tail; old prefix+41 complete 2MiB segments+3 complete S34 1MiB segments; 38 sequential <=1MiB requests; no retries',
++          prior_jobs=c['prior_jobs']+['1a1b19cedcf-fc05-79de','1a1b2983a9d-fc05-7ed3'],
+           Android_reads=0,Main_lock_or_fds=0,installs=0,signature_verified=False,production_ready=False,total_deadline_seconds=TOTAL_SECONDS)
+  held=[];part=ROOT/(c['package']+'.part');folder=ROOT/(c['package']+'-tail-1m');segments=[]
+  try:
+   folder.mkdir(mode=0o700)
+   prefix_segments=load_verified_prefix(c);row['verified_old_complete_segments']=41
++  s34_segments=load_s34_complete(c,prefix_segments);row['verified_s34_complete_segments']=3
++  row['failed_s34_empty_partial_not_reused']=True;row['observed_prior_sources']=[]
+   row['failed_s28_partial_not_reused']=True
+   d=c['prior_header'];fd,before=opened(d['path']);held.append((fd,before,d))
+   require(before['st_size']==d['bytes'] and hashes(fd)[:2]==(d['bytes'],d['sha256']),'PRIOR_HEADER_CHANGED')
+@@ -273,18 +525,26 @@
+   require(re.findall(r'^HTTP/\S+\s+(\d+)',text,re.M)==[str(d['status'])],'PRIOR_HTTP_STATUS_MISMATCH')
+   require(not re.search(r'^Retry-After\s*:',text,re.I|re.M),'ORIGINAL_PREFIX_REFUSAL')
+   c['expected_etags']=header_etags(text)
++  require(c['expected_etags']==[],'ACTUAL_PRIOR_SOURCE_HAS_NO_SERVER_ETAG')
+   require(all(s.get('etag',[])==c['expected_etags'] for s in prefix_segments),'PREFIX_ENTITY_TAG_CHAIN_CHANGED')
+   row['etag_chain']={'values':c['expected_etags'],'all_observations_equal':True,
+-                    'server_supplied_validator':bool(c['expected_etags'])}
++                    'server_supplied_validator':False,'entity_continuity_proven_by_etag':False}
+   source_prefix=c['prefix_sources'];require(len(source_prefix)==1 and source_prefix[0]['bytes']==OLD_PREFIX,'EXACT_ORIGINAL_PREFIX')
+   sources=list(source_prefix)+[{'path':s['path'],'bytes':s['bytes'],'sha256':s['sha256'],'stat':s['stat'],
+                                 'receipt_chain':s['receipt_chain'],'prior_index':s['prior_index']} for s in prefix_segments]
++  sources.extend({'path':s['path'],'bytes':s['bytes'],'sha256':s['sha256'],'stat':s['stat'],
++                  'receipt_chain':s['receipt_chain'],'prior_s34_index':s['prior_s34_index']} for s in s34_segments)
+   h=hashlib.sha256();m=hashlib.md5();count=0
+   with part.open('xb') as out:
+    for d in sources:
+     remaining();fd,before=opened(d['path']);held.append((fd,before,d))
+     require(before['st_size']==d['bytes'] and ('stat' not in d or before==d['stat']) and
+             hashes(fd)[:2]==(d['bytes'],d['sha256']),'PRIOR_COMPLETE_SOURCE_IDENTITY_CHANGED')
++    row['observed_prior_sources'].append({'path':d['path'],'bytes':d['bytes'],'sha256':d['sha256'],
++            'observed_stat':before,'historical_full_stat_pin_present':'stat' in d})
++    if count==OLD_TAIL_START:
++     require(h.hexdigest()==S34_PREFIX_SHA256,'RECONSTRUCTED_S34_PREFIX_CHANGED')
++     row['reconstructed_s34_prefix_sha256']=h.hexdigest()
+     copied=0
+     for block in iter(lambda:os.read(fd,1048576),b''):
+      remaining()
+@@ -292,14 +552,16 @@
+      out.write(block);h.update(block);m.update(block);count+=len(block);copied+=len(block)
+     require(copied==d['bytes'] and identity(fd)==before,'PRIOR_COMPLETE_SOURCE_CHANGED_DURING_COPY')
+     verify_path(d['path'],before)
+-   require(count==TAIL_START==OLD_PREFIX+41*OLD_CHUNK,'EXACT_NEW_TAIL_START_REQUIRED')
++   require(count==TAIL_START==OLD_PREFIX+41*OLD_CHUNK+3*CHUNK and
++           row.get('reconstructed_s34_prefix_sha256')==S34_PREFIX_SHA256,'EXACT_NEW_TAIL_START_REQUIRED')
+    row.update(prefix_bytes=count,prefix_sha256=h.hexdigest(),verified_prefix_sources=sources)
+    out.flush();os.fsync(out.fileno())
+    ranges=tail_plan(c)
+    row['declared_ranges']=[{'index':i,'start':s,'end':e} for i,s,e in ranges]
+    write_json(folder/'request-plan.json',{'package':c['package'],'url':c['url'],'ranges':row['declared_ranges'],
+               'each_range_max_attempts':1,'concurrency':1,'request_spacing_seconds':2,
+-              'range_namespace':'S34_TAIL_1M_NO_CACHE','old_index_namespace':'S28_PREFIX_2M',
++              'range_namespace':'S41_TAIL_1M_NO_CACHE','old_index_namespace':'S28_PREFIX_2M',
++              's34_prefix_index_namespace':'S34_TAIL_1M_NO_CACHE',
+               'total_deadline_seconds':TOTAL_SECONDS})
+    abort=threading.Event()
+    for i,s,e in ranges:segments.append(one_segment(c,folder,i,s,e,abort))
+@@ -327,9 +589,13 @@
+    remaining();require(identity(fd)==before and hashes(fd)[:2]==(d['bytes'],d['sha256']) and identity(fd)==before,
+                         'PRIOR_SOURCE_CHANGED');verify_path(d['path'],before)
+   require(load_verified_prefix(c)==prefix_segments,'PRIOR_RECEIPT_CHAIN_CHANGED')
+-  final=ROOT/(c['package']+'.apk');require(not final.exists(),'FINAL_PATH_EXISTS');os.rename(part,final)
+-  directory=os.open(ROOT,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC)
+-  try:os.fsync(directory)
++  require(load_s34_complete(c,prefix_segments)==s34_segments,'S34_RECEIPT_CHAIN_CHANGED')
++  final=ROOT/(c['package']+'.apk')
++  directory=os.open(ROOT,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
++  try:
++   require(os.fstat(directory).st_uid==1000 and stat.S_IMODE(os.fstat(directory).st_mode)==0o700,'NEW_PRIVATE_PUBLICATION_ROOT')
++   os.link(part.name,final.name,src_dir_fd=directory,dst_dir_fd=directory,follow_symlinks=False)
++   os.unlink(part.name,dir_fd=directory);os.fsync(directory)
+   finally:os.close(directory)
+   fd,final_stat=opened(final)
+   try:
+@@ -340,7 +606,10 @@
+   row.update(status='STAGED_PENDING_SIGNATURE_AND_IDENTITY_VERIFICATION',bytes=count,sha256=h.hexdigest(),
+              actual_md5=m.hexdigest(),local_path=str(final),all_prior_sources_unchanged=True,
+              verification_required={'package':'com.zhubajie.client','version_code':370,
+-                                    'greater_than_installed_code':369,'vendor_signature':True,'ABI':True})
++                                    'greater_than_historical_installed_code':369,'vendor_signature':True,'ABI':True,
++                                    'whole_APK_v2_or_v3_signature':True,'fresh_current_scope_before_install':True,
++                                    'historical_vendor_signer_sha256':'556246aaaf05f61c8bbb9587dfc0660e01f6c3c6813ec038d18684d3ab378bbe'},
++             outer_process_closure_success_also_required=True,partial_or_complete_candidate_installable=False)
+  except BaseException as error:
+   row.update(status='SEGMENTED_TRANSFER_FAILED',error_type=type(error).__name__,error=str(error)[:512],
+              new_prefix_copy_preserved=part.exists(),final_candidate_path_preserved=(ROOT/(c['package']+'.apk')).exists())
+@@ -362,14 +631,164 @@
+ 
+ def main():
+  global DEADLINE
+- require(os.getuid()==1000 and os.geteuid()==1000,'EXACT_UNPRIVILEGED_AUTHORITY')
+- require(shutil.disk_usage(ROOT.parent).free>=4*1024**3,'STAGING_SPACE_REQUIRED')
+- os.umask(0o077);ROOT.mkdir(mode=0o700);DEADLINE=time.monotonic()+TOTAL_SECONDS
+- rows=[run(c) for c in CANDIDATES]
+- result={'candidates':rows,'Android_reads':0,'Main_lock_or_fds':0,'automatic_retries':0,'production_ready':False}
+- receipt=write_json(ROOT/'results.json',result)
+- print(json.dumps({'report':receipt,'staged':sum(x['status'].startswith('STAGED_') for x in rows),
+-                   'failed':sum(not x['status'].startswith('STAGED_') for x in rows)}),flush=True)
+- return 0 if all(x['status'].startswith('STAGED_') for x in rows) else 1
++ require(os.getuid()==os.geteuid()==os.getgid()==os.getegid()==1000 and
++         sys.argv[1:]==['--continue-zbj-38-ranges-once'],'EXACT_UNPRIVILEGED_EXPLICIT_ENTRY')
++ before=census();created=False;rows=[]
++ result={'schema':'pocket4-zbj-explicit-s41-tail-v1','ok':False,'candidates':rows,'errors':[],
++         'Android_reads':0,'Main_lock_or_fds':0,'automatic_retries':0,'installs':0,'permission_changes':0,
++         'production_ready':False,'cleanup_eligible':False,'old_files_modified_or_deleted':False,
++         'signature_or_manifest_verified':False,'prior_failures_preserved':True}
++ try:
++  require(ROOT.parent.resolve()==ROOT.parent and shutil.disk_usage(ROOT.parent).free>=4*1024**3,
++          'FIXED_STAGING_PARENT_AND_SPACE_REQUIRED')
++  result['dns_observation_basis']=dns_observation_gate()
++  os.umask(0o077);ROOT.mkdir(mode=0o700);created=True;DEADLINE=time.monotonic()+TOTAL_SECONDS
++  rows.extend(run(c) for c in CANDIDATES)
++  result['ok']=len(rows)==1 and all(row['status']=='STAGED_PENDING_SIGNATURE_AND_IDENTITY_VERIFICATION' and
++       row.get('all_prior_sources_unchanged') is True and row['prior_file_descriptors']['errors']==[] and
++       row['owned_curl_processes']['started']==row['owned_curl_processes']['joined']==38 and
++       row['owned_curl_processes']['outcome_unknown'] is False for row in rows)
++ except BaseException as error:
++  result['errors'].append({'type':type(error).__name__,'reason':str(error)[:1024]})
++ after=census();result['before_descriptor_identities']=before;result['after_descriptor_identities']=after
++ result['original_descriptor_identities_restored']=before==after
++ result['ok']=bool(result['ok'] and before==after and not result['errors'])
++ result['state']='STAGED_PENDING_FULL_APK_VERIFICATION' if result['ok'] else 'FINITE_CONTINUATION_FAILED_NO_RETRY'
++ result['staged']=sum(row['status']=='STAGED_PENDING_SIGNATURE_AND_IDENTITY_VERIFICATION' for row in rows)
++ result['failed']=sum(row['status']!='STAGED_PENDING_SIGNATURE_AND_IDENTITY_VERIFICATION' for row in rows)
++ result['partial_or_complete_candidate_installable']=False
++ if created:result['report']=write_json(ROOT/'results.json',result)
++ print(json.dumps(result,ensure_ascii=False),flush=True)
++ return 0 if result['ok'] else 1
++
++def census():
++    rows = {}
++    for name in os.listdir('/proc/self/fd'):
++        try:
++            fd = int(name)
++            s = os.fstat(fd)
++            rows[name] = [os.readlink('/proc/self/fd/' + name), s.st_dev, s.st_ino,
++                          s.st_mode, s.st_uid, s.st_gid, s.st_rdev,
++                          fcntl.fcntl(fd, fcntl.F_GETFD), fcntl.fcntl(fd, fcntl.F_GETFL)]
++        except FileNotFoundError:
++            continue
++        except OSError as error:
++            if error.errno != 9:
++                raise
++    return rows
++
++def directory_identity(fd):
++ s=os.fstat(fd)
++ return tuple(getattr(s,key) for key in ('st_dev','st_ino','st_mode','st_uid','st_gid'))
++
++def remember_parent(fd,path):
++ value=directory_identity(fd)
++ require(stat.S_ISDIR(value[2]),'ACTUAL_PARENT_NOT_DIRECTORY')
++ key=str(path)
++ if key in PARENT_IDENTITIES:require(PARENT_IDENTITIES[key]==value,'SOURCE_PARENT_IDENTITY_CHANGED')
++ else:PARENT_IDENTITIES[key]=value
++
++def settled_terminal(raw,expected_sha,job_id,state,exit_code,stdout_bytes):
++ require(hashlib.sha256(raw.encode()).hexdigest()==expected_sha,'EMBEDDED_TERMINAL_PIN_CHANGED')
++ value=json.loads(raw)
++ require(value['job_id']==job_id and value['state']==state and value['exit_code']==exit_code and
++         all(value[k] is True for k in ('output_complete','output_durable','terminal_publication_confirmed','audit_recorded')) and
++         all(value[k] is False for k in ('automatic_retry','timed_out','cancelled')) and
++         value['log_bytes']=={'stdout':{'seen':stdout_bytes,'stored':stdout_bytes},'stderr':{'seen':0,'stored':0}} and
++         value['log_errors']=={'stdout':None,'stderr':None} and
++         value['log_synced']=={'stdout':True,'stderr':True} and
++         value['log_truncated']=={'stdout':False,'stderr':False},'DURABLE_EXACT_PRIOR_OUTCOME_REQUIRED')
++ return value
++
++def dns_observation_gate():
++ terminal=settled_terminal(DNS_TERMINAL_RAW,DNS_TERMINAL_SHA256,
++           '1a1b2983a9d-fc05-7ed3','succeeded',0,len(DNS_STDOUT_RAW.encode()))
++ require(hashlib.sha256(DNS_STDOUT_RAW.encode()).hexdigest()==DNS_STDOUT_SHA256,'ACTUAL_DNS_STDOUT_PIN_CHANGED')
++ lines=DNS_STDOUT_RAW.splitlines();require(len(lines)==2,'EXACT_TWO_DNS_RECORDS')
++ started,value=map(json.loads,lines)
++ require(started['event']=='DNS_RESOLUTION_STARTED' and started['hostname']=='s.shouji.qihucdn.com' and
++         started['application_call_count']==1 and started['automatic_retries']==0,'EXACT_DNS_STARTED_MARKER')
++ require(value['schema']=='pocket4-zbj-system-resolver-observation-v1' and value['ok'] is True and
++         value['status']=='OS_DNS_RESOLVED_ONLY_NOT_HTTP_OR_DOWNLOAD_VERIFIED' and
++         value['hostname']=='s.shouji.qihucdn.com' and value['service_port']==443 and
++         value['application_getaddrinfo_calls']==1 and value['application_retries']==0 and
++         value['resolution_completed'] is True and value['errors']==[] and
++         0<value['elapsed_seconds']<20 and 0<len(value['address_records'])<=256 and
++         all(value[k]==1000 for k in ('actual_uid','actual_euid','actual_gid','actual_egid')) and
++         value['before_descriptor_identities']==value['after_descriptor_identities'] and
++         value['original_descriptor_identities_restored'] is True and
++         all(value[k]==0 for k in ('HTTP_requests','APK_downloads','TLS_handshakes_requested','explicit_subprocesses',
++                                  'files_written_by_probe','Android_commands','Main_actions','Main_lock_or_fds','installs','permission_changes')) and
++         all(value[k] is False for k in ('normal_resolver_configuration_changed','IP_override_or_custom_resolver',
++                                        'proxy_configuration_changes','TLS_configuration_changes','authorizes_download_or_install')),
++         'EXACT_ACTUAL_NARROW_DNS_SUCCESS_REQUIRED')
++ return {'job_id':terminal['job_id'],'terminal_sha256':DNS_TERMINAL_SHA256,'stdout_sha256':DNS_STDOUT_SHA256,
++         'observed_at_unix_ms':terminal['at_unix_ms'],'elapsed_seconds':value['elapsed_seconds'],
++         'address_record_count':len(value['address_records']),'addresses_used_as_override':False,
++         'scope':'past ordinary OS DNS observation only; normal curl resolution still required for every request'}
++
++def s34_result_gate(c,prior):
++ settled_terminal(S28_TERMINAL_RAW,S28_TERMINAL_SHA256,'1a1b0f20329-fc05-7444','failed',1,21169)
++ settled_terminal(S34_TERMINAL_RAW,S34_TERMINAL_SHA256,'1a1b19cedcf-fc05-79de','failed',1,14495)
++ require(prior['package']==c['package'] and prior['url']==c['url'] and prior['total_bytes']==TOTAL_BYTES and
++         prior['channel_version']=='9.5.20' and prior['metadata_md5'] is None and
++         all(prior[k]==c[k] for k in ('prefix_sources','prior_header','s24_result','previous_segment_result')),
++         'EXACT_S34_SOURCE_LINEAGE_REQUIRED')
++ require(prior['status']=='SEGMENTED_TRANSFER_FAILED' and prior['error']=='ONE_OR_MORE_RANGES_INCOMPLETE' and
++         prior['segment_counts']=={'COMPLETE':3,'FAILED':1,'SKIPPED_AFTER_OTHER_RANGE_FAILURE':37} and
++         prior['prefix_bytes']==OLD_TAIL_START and prior['prefix_sha256']==S34_PREFIX_SHA256 and
++         prior['verified_old_complete_segments']==41 and prior['failed_s28_partial_not_reused'] is True and
++         prior['owned_curl_processes']=={'started':4,'joined':4,'outcome_unknown':False} and
++         prior['prior_file_descriptors']=={'acquired':43,'closed':43,'errors':[]} and
++         prior['etag_chain']=={'values':[],'all_observations_equal':True,'server_supplied_validator':False},
++         'EXACT_SETTLED_S34_FAILURE_AND_CLOSURE_REQUIRED')
++ rows=prior['segment_receipts']
++ require(len(rows)==41 and [r['index'] for r in rows]==list(range(41)) and
++         all(rows[i]['status']=='COMPLETE' and rows[i]['receipt']==S34_COMPLETE_RECEIPTS[i] for i in range(3)) and
++         rows[3]['status']=='FAILED' and rows[3]['receipt']==S34_FAILURE_PIN and
++         all(r['status']=='SKIPPED_AFTER_OTHER_RANGE_FAILURE' for r in rows[4:]),
++         'ONLY_THREE_S34_COMPLETE_RANGES_MAY_BE_REUSED')
++ require(prior['declared_ranges']==[{'index':i,'start':s,'end':min(s+CHUNK-1,TOTAL_BYTES-1)}
++                                 for i,s in enumerate(range(OLD_TAIL_START,TOTAL_BYTES,CHUNK))],
++         'EXACT_S34_ORIGINAL_RANGE_DECLARATIONS')
++
++def s34_failure_gate(failure):
++ require(failure['index']==3 and failure['status']=='FAILED' and failure['start']==TAIL_START and
++         failure['end']==TAIL_START+CHUNK-1 and failure['expected_bytes']==CHUNK and
++         failure['returncode']==6 and failure['request_attempts']==1 and failure['automatic_retries']==0 and
++         failure['partial_bytes']==0 and failure['partial_size_snapshot']==0 and
++         failure['partial_sha256']==hashlib.sha256(b'').hexdigest() and
++         failure['curl']['http_code']==0 and failure['curl']['size_download']==0 and
++         failure['curl']['errormsg']=='Could not resolve host: s.shouji.qihucdn.com' and
++         failure['joined'] is True and failure['pidfd_acquired'] is True and
++         failure['pidfd_closed'] is True and failure['pidfd_exit_observed'] is True and
++         failure['outcome_unknown'] is False and failure['timed_out'] is False and
++         failure['owned_curl_signal_count']==0,'ACTUAL_SETTLED_S34_DNS_FAILURE_REQUIRED')
++
++def load_s34_complete(c,prefix_segments):
++ prior=read_pinned_json(S34_RESULT_PIN);s34_result_gate(c,prior)
++ s34_failure_gate(read_pinned_json(S34_FAILURE_PIN))
++ expected_prior=list(c['prefix_sources'])+[{'path':s['path'],'bytes':s['bytes'],'sha256':s['sha256'],'stat':s['stat'],
++       'receipt_chain':s['receipt_chain'],'prior_index':s['prior_index']} for s in prefix_segments]
++ require(prior['verified_prefix_sources']==expected_prior,'S34_PREFIX_CHAIN_DIFFERS_FROM_VERIFIED_S28')
++ result=[]
++ for index,declaration in enumerate(S34_COMPLETE_RECEIPTS):
++  remaining();item=read_pinned_json(declaration);stem=S34_FOLDER+f'/{index:04d}'
++  require(item['index']==index and item['status']=='COMPLETE' and item['start']==OLD_TAIL_START+index*CHUNK and
++          item['end']==OLD_TAIL_START+(index+1)*CHUNK-1 and item['bytes']==CHUNK and
++          item['request_attempts']==1 and item['automatic_retries']==0 and
++          item['path']==stem+'.part' and item['pidfd_acquired'] is True and item['pidfd_closed'] is True and
++          item['pidfd_exit_observed'] is True and item['owned_curl_signal_count']==0 and item['outcome_unknown'] is False,
++          'EXACT_S34_COMPLETED_RANGE_AND_RETIREMENT')
++  expected=S34_BODY_PINS[index]
++  require(item['path']==expected['path'] and item['bytes']==expected['bytes'] and
++          item['sha256']==expected['sha256'] and item['stat']==expected['stat'],'ACTUAL_READBACK_BODY_BINDING_CHANGED')
++  headers=pinned_metadata(item['headers'],stem+'.headers').decode('iso-8859-1')
++  metrics=json.loads(pinned_metadata(item['metrics'],stem+'.curl.json'))
++  require({key:metrics.get(key) for key in CURL_FIELDS}==item['curl'],'S34_CURL_METRICS_CHANGED')
++  require(pinned_metadata(item['stderr'],stem+'.stderr')==b'','S34_SUCCESSFUL_STDERR_NOT_EMPTY')
++  require(validate_response(c,item,headers)==item['etag']==[],'S34_NO_SERVER_ETAG_EXPECTED')
++  result.append(dict(item,receipt_chain=[S34_RESULT_PIN,declaration],prior_s34_index=index))
++ return result
+ 
+ if __name__=='__main__':raise SystemExit(main())
