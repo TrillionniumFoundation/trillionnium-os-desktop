@@ -1,0 +1,143 @@
+--- read01/read_current.py
++++ read02/read_current.py
+@@ -4,7 +4,7 @@
+ ROOT=Path('/home/alex/work/pocket4-ihg-r4-public-london-input-01')
+ SOURCE=ROOT/'source'
+ FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b')
+-STEP=FLOW/'steps/native-launch-state-read-01'
++STEP=FLOW/'steps/native-launch-state-read-02'
+ PACKAGE='com.ihg.apps.android'
+ COMPONENT=PACKAGE+'/.activity.MainActivity'
+ SOURCE_MANIFEST='24a8491dbb44faf1288869d278da96290597b7af1fcdcce12a72fd62bad9435f'
+@@ -160,6 +160,79 @@
+  need(len(cases)==3,'EXACT_THREE_HISTORICAL_CONTROLS')
+  return cases
+ 
++def current_read_plans(entry):
++ # Exact shape used by the fixed production worker, even for phase='launch'.
++ search_plan=json.loads(json.dumps(entry.SEARCH_PLAN));click_plan=json.loads(json.dumps(entry.PLAN))
++ input_plan=json.loads(json.dumps(entry.INPUT_PLAN))
++ post_plan=json.loads(json.dumps(entry.POST_PLAN));readiness_plans=json.loads(json.dumps(entry.SEARCH_READINESS_PLANS))
++ return {'search':search_plan,'destination':click_plan,'input':input_plan,'post':post_plan,'readiness':readiness_plans}
++def open_current_read_context(task,q,context,transport,result,verify_runtime,deadline,scope,plans):
++ return task.open_task_context(q.ref,q.util,context,SOURCE_MANIFEST,verify_runtime,FLOW,STEP,
++  transport,result,deadline,'launch',q.qa,plans,q.resolver.RESOLVE,scope,
++  install_source_manifest=q.resolver.INSTALL_SOURCE_SHA)
++def current_plan_route_controls(task,q,entry,plans):
++ import inspect
++ cases=[]
++ try:task.Policy('launch',q.qa,q.resolver.RESOLVE,entry.PLAN,Path('/synthetic'),lambda *a:None,lambda:None)
++ except RuntimeError as error:
++  need(str(error)=='EXPLICIT_SEARCH_DESTINATION_LONDON_POST_AND_EIGHT_NO_ACTION_READINESS_PLANS',
++   'LEGACY_PLAN_CONTROL_WRONG_FIRST_ERROR')
++  cases.append({'name':'original-single-destination-plan-reproduces-production-rejection','passed':True})
++ else:raise RuntimeError('LEGACY_SINGLE_PLAN_ACCEPTED')
++ signature=inspect.signature(task.open_task_context);calls=[];sentinel=object()
++ context=object();transport=object();result={};verify=lambda value:None;deadline=1.0;scope={}
++ class SignatureOnlyTask:
++  # This seam binds the real production signature; it does not execute held I/O.
++  @staticmethod
++  def open_task_context(*args,**kwargs):
++   bound=signature.bind(*args,**kwargs)
++   expected={'ref':q.ref,'util':q.util,'context':context,'source_manifest':SOURCE_MANIFEST,
++    'source_verify':verify,'flow_root':FLOW,'step':STEP,'transport':transport,'result':result,
++    'deadline':deadline,'phase':'launch','qa':q.qa,'inspect_plan':plans,'resolve':q.resolver.RESOLVE,
++    'expected_scope':scope,'install_source_manifest':q.resolver.INSTALL_SOURCE_SHA}
++   need(bound.arguments==expected and bound.arguments['inspect_plan'] is plans,
++    'CURRENT_READ_PRODUCTION_ROUTE_BINDING')
++   calls.append((args,kwargs));return sentinel
++ need(open_current_read_context(SignatureOnlyTask,q,context,transport,result,verify,deadline,scope,plans) is sentinel and
++  len(calls)==1,'ONE_CURRENT_READ_CONTEXT_CALL')
++ cases.append({'name':'production-read-route-binds-complete-plans-and-install-source','passed':True})
++ try:signature.bind(*calls[0][0])
++ except TypeError as error:
++  need('install_source_manifest' in str(error),'MISSING_INSTALL_SOURCE_WRONG_REJECTION')
++  cases.append({'name':'production-context-rejects-omitted-keyword-install-source','passed':True})
++ else:raise RuntimeError('MISSING_INSTALL_SOURCE_ACCEPTED')
++ need(len(cases)==3,'EXACT_THREE_PLAN_ROUTE_CONTROLS')
++ return cases
++def current_main_read_window(result):
++ keys=('Main_before_lock','Main_after_locks','Main_after')
++ sampled=[key for key in keys if key in result]
++ need('Main_after' in sampled,'INDEPENDENT_FINAL_MAIN_SAMPLE_REQUIRED')
++ need(all(type(result[key]) is dict and result[key]==MAIN_BEFORE_FIXED for key in sampled),
++  'MAIN_READ_WINDOW_CHANGED')
++ return {'sampled_fields':sampled,'all_available_samples_equal':True,'complete':sampled==list(keys),
++  'historical_Main_fields_used':False,'missing_samples_filled':False}
++def current_main_window_controls():
++ cases=[]
++ incomplete={'Main_before_lock':dict(MAIN_BEFORE_FIXED),'Main_after':dict(MAIN_BEFORE_FIXED)}
++ observed=current_main_read_window(incomplete)
++ need(observed=={'sampled_fields':['Main_before_lock','Main_after'],'all_available_samples_equal':True,
++  'complete':False,'historical_Main_fields_used':False,'missing_samples_filled':False} and
++  'Main_after_locks' not in incomplete,'EARLY_FAILURE_RETAINS_INCOMPLETE_CURRENT_WINDOW')
++ cases.append({'name':'early-failure-equal-current-samples-incomplete-without-false-drift','passed':True})
++ complete={key:dict(MAIN_BEFORE_FIXED) for key in ('Main_before_lock','Main_after_locks','Main_after')}
++ need(current_main_read_window(complete)['complete'] is True,'COMPLETE_CURRENT_MAIN_WINDOW')
++ cases.append({'name':'three-actual-current-samples-required-for-complete-window','passed':True})
++ for key in ('Main_after_locks','Main_after'):
++  changed={name:dict(value) for name,value in complete.items()}
++  changed[key]['Main_epoch_sha256']='0'*64
++  try:current_main_read_window(changed)
++  except RuntimeError as error:
++   need(str(error)=='MAIN_READ_WINDOW_CHANGED','WRONG_CURRENT_MAIN_DRIFT_REJECTION')
++   cases.append({'name':'sampled-'+key+'-drift-rejected','passed':True});continue
++  raise RuntimeError('CURRENT_MAIN_DRIFT_ACCEPTED')
++ need(len(cases)==4,'EXACT_FOUR_CURRENT_MAIN_WINDOW_CONTROLS')
++ return cases
++
+ def main():
+  need(os.getuid()==os.geteuid()==0,'ROOT_OWNED_OBSERVATION_REQUIRED')
+  need(type(INPUTS) is dict and INPUTS.get('actual_historical_chain_qualified') is True,'ACTUAL_HISTORICAL_CHAIN_REQUIRED')
+@@ -216,8 +289,10 @@
+   need(result['Main_before_lock']==MAIN_BEFORE_FIXED,'FRESH_CURRENT_MAIN_BASELINE_DIFFERS')
+   # A new guarded observation never fills the missing historical Main_after.
+   result['historical_final_Main_qualified']=False
+-  result['controls']=gate_controls(task,q.qa,entry.PLAN)+historical_worker_controls(worker)
+-  need(len(result['controls'])==14,'EXACT_FOURTEEN_READ_CONTROLS')
++  plans=current_read_plans(entry)
++  result['controls']=(gate_controls(task,q.qa,plans)+historical_worker_controls(worker)+
++   current_plan_route_controls(task,q,entry,plans)+current_main_window_controls())
++  need(len(result['controls'])==21,'EXACT_TWENTY_ONE_READ_CONTROLS')
+   result['flow_lock_admission']={};flow_lock=u.acquire_action_lock(FLOW/'flow.lock',result['flow_lock_admission'])
+   result['global_lock_admission']={};action_lock=u.acquire_action_lock(recorder.ACTION_LOCK,result['global_lock_admission'])
+   result['Main_after_locks']=guard()
+@@ -233,8 +308,7 @@
+     original=INPUTS['historical_file_pins'][key]
+     read_exact(path,{k:original[k] for k in ('bytes','sha256')},131072 if key=='prelaunch_stacks' else 65536)
+   stage='held_current_ihg_context'
+-  flow,recorder,phase_guard=task.open_task_context(ref,u,context,SOURCE_MANIFEST,verify_runtime,FLOW,STEP,
+-   transport,result,began+175,'launch',q.qa,entry.PLAN,q.resolver.RESOLVE,scope)
++  flow,recorder,phase_guard=open_current_read_context(task,q,context,transport,result,verify_runtime,began+175,scope,plans)
+   view=ReadOnlyView(flow,task)
+   baseline_roots,baseline_tasks=flow.tasks.parse_stacks(private['prelaunch_stacks'].decode('utf-8','strict'))
+   historical=task_projection(private['prelaunch_stacks'],baseline_roots,baseline_tasks)
+@@ -271,7 +345,8 @@
+   stage='current_target_after';result['target_after']=artifacts.after()
+   need(result['target_after']==result['target_before'],'CURRENT_TARGET_CHANGED')
+   need(view.counts==flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':2,'helper_path':2,'stacks':2} and
+-   flow.command_index==10 and flow.action_attempted is False and not flow.launch_claimed and session.nonces==set(),
++   flow.command_index==10 and flow.action_attempted is False and not flow.launch_claimed and session.nonces==set() and
++   flow.policy.used_nonces==set(),
+    'EXACT_TEN_READ_ONLY_COMMANDS_NO_NONCE_CONSUMPTION')
+   for index in range(1,11):result['command_records'].append(command_record(index))
+   result['current_read_sequence_completed']=True
+@@ -298,7 +373,7 @@
+      except BaseException as error:remember('retained_read_command',error)
+   try:
+    result['Main_after']=guard()
+-   need(result['Main_after']==result.get('Main_before_lock')==result.get('Main_after_locks'),'MAIN_READ_WINDOW_CHANGED')
++   result['current_Main_read_window']=current_main_read_window(result)
+   except BaseException as error:remember('independent_final_Main',error)
+   for fd,name in ((action_lock,'global_action_lock'),(flow_lock,'flow_lock')):
+    if fd is not None:
+@@ -311,7 +386,8 @@
+    except BaseException as error:remember('final_owned_resources',error)
+  result['ok']=bool(result['error'] is None and not result['secondary_errors'] and result.get('current_read_sequence_completed') is True and
+   result.get('final_held_guard_passed') is True and result.get('held_binding_released') is True and
+-  result.get('global_action_lock_released') is True and result.get('flow_lock_released') is True)
++  result.get('global_action_lock_released') is True and result.get('flow_lock_released') is True and
++  result.get('current_Main_read_window',{}).get('complete') is True)
+  result['outcome_unknown']=False
+  if step_created:
+   try:ref.write_new(STEP/'result.json',result)

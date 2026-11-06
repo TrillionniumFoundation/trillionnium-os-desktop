@@ -1,0 +1,79 @@
+{
+  "schema": "pocket4-status-lifecycle-readiness-source-work01",
+  "state": "SOURCE_ONLY_INCOMPLETE_UI_CALLER_AUDIT_AND_TESTS",
+  "changes": [
+    {
+      "file": "control.rs",
+      "why": "explicit separate one-shot readiness request",
+      "old": "    /// Report daemon and cell state.\n    Status,\n",
+      "new": "    /// Report daemon and owned-cell lifecycle; does not check Android readiness.\n    Status,\n    /// Take one fresh Android readiness snapshot without waiting for boot.\n    Readiness,\n",
+      "at": 3374
+    },
+    {
+      "file": "control.rs",
+      "why": "actual dispatcher keeps lifecycle and fresh readiness separate",
+      "old": "            ControlRequest::Status => self.status(peer_uid),\n",
+      "new": "            ControlRequest::Status => self.status(peer_uid),\n            ControlRequest::Readiness => self.readiness(peer_uid),\n",
+      "at": 10172
+    },
+    {
+      "file": "control.rs",
+      "why": "move original fresh snapshot body intact to explicit readiness; lifecycle path has no snapshot",
+      "old": "    fn status(&self, peer_uid: u32) -> Result<ControlResponse, ControlError> {\n        if let Some(active) = &self.active {\n            authorize_uid(peer_uid, active.spec.host_uid)?;\n            let (_, phase) = android_boot_snapshot(&active.spec)?;\n            Ok(self.success(format!(\n                \"cell {} is running from {}; {}\",\n                active.spec.id(),\n                active.spec_path.display(),\n                phase.map_or_else(\n                    || \"Android is ready\".to_owned(),\n                    |phase| format!(\"Android boot phase: {phase}\")\n                )\n            )))\n        } else {\n            Ok(self.success(self.last_exit.as_deref().unwrap_or(\"cell is stopped\")))\n        }\n    }\n\n",
+      "new": "    fn status(&self, peer_uid: u32) -> Result<ControlResponse, ControlError> {\n        if let Some(active) = &self.active {\n            authorize_uid(peer_uid, active.spec.host_uid)?;\n            Ok(self.success(format!(\n                \"cell {} is running from {}; Android readiness has not been checked\",\n                active.spec.id(),\n                active.spec_path.display()\n            )))\n        } else {\n            Ok(self.success(self.last_exit.as_deref().unwrap_or(\"cell is stopped\")))\n        }\n    }\n\n    fn readiness(&self, peer_uid: u32) -> Result<ControlResponse, ControlError> {\n        if let Some(active) = &self.active {\n            authorize_uid(peer_uid, active.spec.host_uid)?;\n            let (_, phase) = android_boot_snapshot(&active.spec)?;\n            Ok(self.success(format!(\n                \"cell {} is running from {}; {}\",\n                active.spec.id(),\n                active.spec_path.display(),\n                phase.map_or_else(\n                    || \"Android is ready\".to_owned(),\n                    |phase| format!(\"Android boot phase: {phase}\")\n                )\n            )))\n        } else {\n            Ok(self.success(self.last_exit.as_deref().unwrap_or(\"cell is stopped\")))\n        }\n    }\n\n",
+      "at": 13858
+    },
+    {
+      "file": "droidloomctl.rs",
+      "why": "CLI separates lifecycle from a one-shot readiness check",
+      "old": "    /// Report whether the cell is running.\n    Status,\n",
+      "new": "    /// Report whether the cell is running, without checking Android readiness.\n    Status,\n    /// Check Android readiness once, without waiting for boot or restarting it.\n    Readiness,\n",
+      "at": 3125
+    },
+    {
+      "file": "droidloomctl.rs",
+      "why": "exact readiness CLI route",
+      "old": "            Command::Status => ControlRequest::Status,\n",
+      "new": "            Command::Status => ControlRequest::Status,\n            Command::Readiness => ControlRequest::Readiness,\n",
+      "at": 9894
+    },
+    {
+      "file": "current_discovery.py",
+      "why": "retain original 8-second checked subprocess and readiness gate, explicitly request fresh readiness",
+      "old": "[app.CTL,'status','--json']",
+      "new": "[app.CTL,'readiness','--json']",
+      "at": 4764
+    }
+  ],
+  "inverse": {
+    "control.rs": {
+      "bytes": 70656,
+      "sha256": "8289b74fdf040d2bd3a85d12f4488a82bdab4e1c4c6844ab90fe113228d91200",
+      "git_blob": "2bed3026cc4f00c819de2ba7fd253165d29bebbb",
+      "edits": 3
+    },
+    "droidloomctl.rs": {
+      "bytes": 20413,
+      "sha256": "19a9e75d0deb0836fb9d125850600004a4a15be1b1ce8519fb8ca40e2165708d",
+      "git_blob": "6f523958b64d22b481f77595fae7ab9842a6085a",
+      "edits": 2
+    },
+    "current_discovery.py": {
+      "bytes": 8332,
+      "sha256": "9ed0069897faebba50cec3d93b08da54f1c791d6e2e775d26ec798c38b227886",
+      "git_blob": "d94308531ea7d6b014c79900a1c61f001e081717",
+      "edits": 1
+    }
+  },
+  "production_claims": {
+    "installed_source_version_verified": false,
+    "runtime_binary_modified": false,
+    "UI_allowed": false,
+    "WaitReady_and_Launch_changed": false
+  },
+  "remaining": [
+    "Read exact current reference Applications UI callers",
+    "Add real dispatch no-child regression and caller-specific controls",
+    "Compile in owned host build before any runtime installation"
+  ]
+}

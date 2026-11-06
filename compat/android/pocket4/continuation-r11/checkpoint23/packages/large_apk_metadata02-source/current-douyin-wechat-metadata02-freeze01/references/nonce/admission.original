@@ -1,0 +1,37 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import sys,hashlib;raw=sys.stdin.buffer.read(65537);assert len(raw)==33847 and hashlib.sha256(raw).hexdigest()==\"b6fc31724690e0b7361871818b4d298e4bea98dde652691b25d3686b9eb743f5\";scope={'__name__':'fixed_large_apk_metadata_nonce_generator','SOURCE_SHA256':\"b6fc31724690e0b7361871818b4d298e4bea98dde652691b25d3686b9eb743f5\"};exec(compile(raw,'<fixed-large-apk-metadata-nonce-generator>','exec'),scope);raise SystemExit(scope['main']())"
+    ],
+    "created_unix_ms": 1793999857691,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2b9681b-fc05-7f7a",
+    "idempotency_key": "pocket4-current-cell02-large-apk-metadata-nonce2-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2b9681b-fc05-7f7a",
+    "request_digest": "6fd26fc44a687850a8e9425de0801b3410a214fe876c423a55557270d2ca736e",
+    "request_fingerprint": 8057625572171872336,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2b9681b-fc05-7f7a"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2b9681b-fc05-7f7a"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

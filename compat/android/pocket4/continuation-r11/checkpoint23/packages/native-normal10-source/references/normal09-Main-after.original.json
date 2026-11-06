@@ -1,0 +1,258 @@
+{
+  "schema": 2,
+  "ok": true,
+  "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "old_invalid_QA_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "old_QA_epoch_invalid": true,
+  "new_QA_epoch_qualified": false,
+  "protected_boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+  "protected_identity_source_sha256": "a949d51bad870db6e95941849faac1c91e95c6fe574bf270702c6c039fa4313e",
+  "actual_baseline02_stdout_sha256": "107bf1487ace30a38c113057812a0a18415e3430640f11db0b5131e462d05269",
+  "protected_processes": {
+    "android_init": {
+      "pid": 3268779,
+      "start_ticks": 99615082,
+      "ppid": 3268775,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3268779,
+        1
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533280]",
+        "pid": "pid:[4026533285]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "daemon": {
+      "pid": 3588022,
+      "start_ticks": 80796995,
+      "ppid": 1,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3588022
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026531832]",
+        "pid": "pid:[4026531836]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 66306,
+        "inode": 2
+      }
+    },
+    "launcher": {
+      "pid": 3268774,
+      "start_ticks": 99615080,
+      "ppid": 3588022,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3268774
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533279]",
+        "pid": "pid:[4026531836]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 66306,
+        "inode": 2
+      }
+    },
+    "owner_intermediary": {
+      "pid": 3268775,
+      "start_ticks": 99615082,
+      "ppid": 3268774,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3268775
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533280]",
+        "pid": "pid:[4026531836]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "presenter": {
+      "pid": 3588024,
+      "start_ticks": 80796995,
+      "ppid": 2472,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "namespace_pids": [
+        3588024
+      ],
+      "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026531832]",
+        "pid": "pid:[4026531836]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 66306,
+        "inode": 2
+      }
+    },
+    "surfaceflinger": {
+      "pid": 3270350,
+      "start_ticks": 99615245,
+      "ppid": 3268779,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "namespace_pids": [
+        3270350,
+        661
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service/system/uid_1000/pid_661\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533280]",
+        "pid": "pid:[4026533285]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "system_server": {
+      "pid": 3270611,
+      "start_ticks": 99615342,
+      "ppid": 3270325,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "namespace_pids": [
+        3270611,
+        808
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service/system/uid_1000/pid_808\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533719]",
+        "pid": "pid:[4026533285]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "zygote64": {
+      "pid": 3270325,
+      "start_ticks": 99615242,
+      "ppid": 3268779,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3270325,
+        638
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service/system/uid_0/pid_638\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533718]",
+        "pid": "pid:[4026533285]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    }
+  },
+  "cell_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+  "limits": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "main_cgroup": "/sys/fs/cgroup/system.slice/droidloomd.service",
+  "main_cgroup_identity": {
+    "device": 30,
+    "inode": 26651611
+  },
+  "memory_events": {
+    "low": 0,
+    "high": 49897,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "sock_throttled": 5147
+  },
+  "current_resources": {
+    "memory.current": 2209280000,
+    "memory.swap.current": 2669232128,
+    "pids.current": 2628
+  },
+  "cpu_stat": {
+    "usage_usec": 226656511408,
+    "user_usec": 203212585770,
+    "system_usec": 23443925637,
+    "nice_usec": 51744234000,
+    "core_sched.force_idle_usec": 0,
+    "nr_periods": 2113308,
+    "nr_throttled": 214373,
+    "throttled_usec": 14685739911,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=61501157\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=58955554",
+  "started_monotonic_ns": 1019868180041526,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "subprocesses_started": 0,
+  "runtime_authorization_enabled": false,
+  "installed_engine_hash_observed": false,
+  "scope": "Only the fixed current eight process identities, boot, historical activation pin, config, original Main limits and counters. No new QA epoch or full-interval noninterference qualification.",
+  "finished_monotonic_ns": 1019868182386342,
+  "cleanup_errors": []
+}

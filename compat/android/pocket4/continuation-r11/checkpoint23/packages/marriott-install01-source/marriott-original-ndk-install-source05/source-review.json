@@ -1,0 +1,98 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_ENTRY_CONTROLS_AND_EXECUTABLE_BINDING_NOT_YET_CREATED",
+  "install_only": true,
+  "automatic_retry": false,
+  "no_Hepta_or_device_actions": true,
+  "source_manifest": {
+    "bytes": 1054,
+    "sha256": "50dce3c5572a40562c1928264219173a61d92fb9f39a96be9feb956695ba8c2e",
+    "git_blob_sha": "90fc9fadcec84ad52c13de91e687f219fda44e07"
+  },
+  "sources": {
+    "fixture_contract.py": {
+      "bytes": 25331,
+      "sha256": "3af80963b8f36876e5ff9e183422746649ed1b2447bc6414a74c28f930f2f46f",
+      "git_blob_sha": "74dfaee1325a642ac294ed5d8662ca9ab4fa5177"
+    },
+    "fixture_context.py": {
+      "bytes": 21898,
+      "sha256": "bbf7000ed08182db3017e89c8e7e2f0a77b285c30dfaef3b759ce078e9d4a741",
+      "git_blob_sha": "10a9f57a0c3d382433598c2593a5180dfd2e8f77"
+    },
+    "fixture_transport.py": {
+      "bytes": 14639,
+      "sha256": "8430f9384f61ad1b59534d7cc3d2006c5aa848bc404a067680d8b20845027fe6",
+      "git_blob_sha": "9890dc83ff7a5a00a911fa995a7a9383671f1cfb"
+    },
+    "fixture_phases.py": {
+      "bytes": 25021,
+      "sha256": "a41ce080e4242053d4152753e577b7fc923e31d536d94d540c2bd2cb506d800a",
+      "git_blob_sha": "c99046dc6eef35aa813fe2ffecede47bd64b6608"
+    },
+    "current_discovery.py": {
+      "bytes": 8332,
+      "sha256": "9ed0069897faebba50cec3d93b08da54f1c791d6e2e775d26ec798c38b227886",
+      "git_blob_sha": "d94308531ea7d6b014c79900a1c61f001e081717"
+    },
+    "install_lease.py": {
+      "bytes": 19771,
+      "sha256": "95786d789f09ea369f21f230b2099eb7d71d329bca17afaaad38c4bea7d3da9f",
+      "git_blob_sha": "d05768f77b31ac2e029b51fa1de52ed81e15c6d7"
+    },
+    "install_worker.py": {
+      "bytes": 22059,
+      "sha256": "9d50985b0f33fdb2774d07a680ab60e961a849eb0e2295ceff7286e2455c56d8",
+      "git_blob_sha": "c83a8a1640494c4168431d99d73c8c908d22a1c2"
+    }
+  },
+  "original_contract_transport_discovery_byte_identical": true,
+  "original_8_install_plan_byte_identical": true,
+  "run_and_retirement_bodies_byte_identical_and_unbound": true,
+  "changes": [
+    "FixedSources uses an external root and manifest for exactly seven leaves; no self-embedded digest.",
+    "One optional install admission in install_once/open_context; defaults fail before IO; each Main guard verifies live lease and all seven source files.",
+    "Fixed root-owned create-only host root, flow lock, existing unchanged global action lock, exclusive step lock and durable once claim.",
+    "All shared directory ancestor edges use held/named dev/ino/mode/uid/gid; shared timestamps ignored.",
+    "Worker requires real APK03 report and signer, original actual38, the exact actual single nonce, and a future successful current-source control result plus terminal.",
+    "Current build, target23, full Main guard, eight command plan and installed actual UID remain enforced."
+  ],
+  "nonce_actual": {
+    "tree": "eb140f36131dcdc0041b8e8f2d2d4b64d20dd1f4",
+    "stdout": {
+      "bytes": 796,
+      "sha256": "60d4b010d6927f384494904501511deefaf2e06c49345ba223a23a02985d6807",
+      "git_blob_sha": "28a03db896f454d8a2b69cc9c237ab4b50b1167b"
+    },
+    "terminal": {
+      "bytes": 729,
+      "sha256": "bacee98f31395c26e1825c02d7b434749fb39df0ce135a330a2da84cbf407762",
+      "git_blob_sha": "f914ef252ff02727658c83225841387d2dc95907"
+    },
+    "nonce": "e4b5a1bdac8be04ff2ea3188a6d946d6",
+    "consumed_by_install": false
+  },
+  "current_entry_controls": {
+    "expected_counts": {
+      "fixture": 38,
+      "manifest": 4,
+      "lease": 8
+    },
+    "executed": false,
+    "lease_controls_source_pending": true
+  },
+  "runtime": {
+    "installed_UID": null,
+    "install_request": null,
+    "original_NdkTests_qualified": false,
+    "commercial45_ready": false
+  },
+  "resources": {
+    "worker_work_seconds": 175,
+    "global_lock_wait_seconds": 5,
+    "command_output_bytes": 262144,
+    "result_max_bytes": 1048576,
+    "worker_cgroup_observation": false
+  },
+  "local_Python_compile_or_execution": false
+}

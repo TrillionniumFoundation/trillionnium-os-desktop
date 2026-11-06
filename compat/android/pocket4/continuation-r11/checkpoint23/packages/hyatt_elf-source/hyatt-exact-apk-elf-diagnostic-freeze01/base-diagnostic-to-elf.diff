@@ -1,0 +1,881 @@
+--- a/read_apk_metadata.py
++++ b/read_apk_metadata.py
+@@ -1,5 +1,6 @@
+ #!/usr/bin/env python3
+-"""One historically bound APK, metadata only; no command, child, APK read or file write."""
++"""Fixed Hyatt APK/native-member static observation; no child, App execution or file write."""
++import binascii
+ import errno
+ import fcntl
+ import hashlib
+@@ -9,11 +10,13 @@
+ import re
+ import signal
+ import stat
++import struct
+ import sys
+ import time
+ import types
++import zlib
+ 
+-FIXED = json.loads("{\"kind\":\"pocket4-douyin-one-apk-fstat-diagnostic-01\",\"package\":\"com.ss.android.ugc.aweme\",\"result\":{\"path\":\"/home/alex/work/pocket4-current-cell02-douyin-metadata-01/result.json\",\"bytes\":7852,\"sha256\":\"bad61d846ce2c2b0e84964f94e34df898fab835db5e67597694583880c26d2bf\"},\"source\":{\"path\":\"/home/alex/work/pocket4-current-cell02-douyin-metadata-01/source/read_target.py\",\"bytes\":30072,\"sha256\":\"8d9bdff0bbc0d4bbcd125c8cfbb9dc3c5cfbb5bf152ec750393f73e2ed10cb43\"},\"observed_metadata\":{\"package\":\"com.ss.android.ugc.aweme\",\"uid\":10122,\"user\":0,\"version_code\":410001},\"apk_path\":\"/data/app/~~qK8WI0EE2QSJnIxyz_V7nQ==/com.ss.android.ugc.aweme-2Hs2HIYwjnR31Lu6N2QZVA==/base.apk\"}")
++FIXED = json.loads("{\"kind\":\"pocket4-hyatt-exact-apk-native-member-elf-diagnostic-01\",\"package\":\"com.Hyatt.hyt\",\"result\":{\"path\":\"/home/alex/work/pocket4-current-cell02-hyatt-metadata-01/result.json\",\"bytes\":13115,\"sha256\":\"4e087d0a84cb0a640206d25cb3c958181b6aba11e7869f60eadff96caad7a0ce\"},\"source\":{\"path\":\"/home/alex/work/pocket4-current-cell02-hyatt-metadata-01/source/read_target.py\",\"bytes\":30076,\"sha256\":\"ae72ce1347b32b010fc44b1714ab1f7cb2e9af8ed0c950a20db5421b2f513b78\"},\"observed_metadata\":{\"package\":\"com.Hyatt.hyt\",\"uid\":10138,\"user\":0,\"version_code\":26090096},\"apks\":[{\"path\":\"/data/app/~~A6gjlE_0JmK0-1YfBKd1jA==/com.Hyatt.hyt-OM9RgNn6aeXPvCmypGaS_Q==/base.apk\",\"bytes\":138951987,\"sha256\":\"418dbf6fd2a42f87b79cc4d0a806c1d13baec34b8f85f48104a6c855b6f7d5e2\"},{\"path\":\"/data/app/~~A6gjlE_0JmK0-1YfBKd1jA==/com.Hyatt.hyt-OM9RgNn6aeXPvCmypGaS_Q==/split_config.arm64_v8a.apk\",\"bytes\":1192682,\"sha256\":\"9fd69f616d5a20d549647690ffc0adc50631bf040400b7d0309ad1454dd1680f\"},{\"path\":\"/data/app/~~A6gjlE_0JmK0-1YfBKd1jA==/com.Hyatt.hyt-OM9RgNn6aeXPvCmypGaS_Q==/split_config.xxhdpi.apk\",\"bytes\":654090,\"sha256\":\"74892b430c50b442d3f9b19dd28083a6912bc96c229227bda7af1c82e62c3d12\"}],\"historical_apks\":[{\"bytes\":138951987,\"filename\":\"base.apk\",\"sha256\":\"418dbf6fd2a42f87b79cc4d0a806c1d13baec34b8f85f48104a6c855b6f7d5e2\"},{\"bytes\":1192682,\"filename\":\"split_config.arm64_v8a.apk\",\"sha256\":\"9fd69f616d5a20d549647690ffc0adc50631bf040400b7d0309ad1454dd1680f\"},{\"bytes\":654090,\"filename\":\"split_config.xxhdpi.apk\",\"sha256\":\"74892b430c50b442d3f9b19dd28083a6912bc96c229227bda7af1c82e62c3d12\"}],\"total_apk_bytes\":140798759,\"target_member\":\"lib/arm64-v8a/libdexprotector.so\"}")
+ SHARED = Path('/home/alex/work/pocket4-current-host-r6-source-01')
+ MANIFEST_SHA = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
+ SOURCE_SHA = 'f92d2598221c5bf65e783df39864879a2056da47f794680668b34df11f97da49'
+@@ -23,10 +26,10 @@
+ QUALIFICATION_SHA = 'ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e'
+ ACTION_LOCK = '/run/lock/android-digitalis-actions.lock'
+ ORIGINAL_FILE_LIMIT = 256 * 1024 * 1024
+-OBSERVATION_SECONDS = 30
+-FINAL_SECONDS = 45
+-ALARM_SECONDS = 55
+-OUTPUT_LIMIT = 65536
++OBSERVATION_SECONDS = 120
++FINAL_SECONDS = 150
++ALARM_SECONDS = 165
++OUTPUT_LIMIT = 131072
+ START = None
+ 
+ 
+@@ -219,14 +222,16 @@
+ 
+ def qualify_original(raw):
+     value = json.loads(raw)
+-    need(type(value) is dict and value.get('schema') == 1 and value.get('ok') is False and
++    need(type(value) is dict and value.get('schema') == 1 and value.get('ok') is True and
+          value.get('package') == FIXED['package'] and
+          value.get('source_sha256') == FIXED['source']['sha256'] and
+-         value.get('metadata_before') == FIXED['observed_metadata'] and
+-         value.get('apk_paths_before') == [FIXED['apk_path']] and
+-         value.get('error') == {'message':'TICKET12306_INSTALLED_APK_SHAPE_OR_BOUND',
+-                                'phase':'held_APK_hash','type':'RuntimeError'} and
+-         value.get('secondary_errors') == [], 'EXACT_FAILED_METADATA_REPORT_REQUIRED')
++         value.get('metadata_before') == value.get('metadata_after') == FIXED['observed_metadata'] and
++         value.get('apk_paths_before') == [row['path'] for row in FIXED['apks']] and
++         value.get('error') is None and value.get('secondary_errors') == [] and
++         value.get('actual_package_UID_version_APK_chain_stable') is True and
++         value.get('package_read_commands_completed') == 5 and
++         value.get('total_apk_bytes') == FIXED['total_apk_bytes'],
++         'EXACT_PASSED_HYATT_METADATA_REPORT_REQUIRED')
+     need(value.get('held_binding_released') is True and value.get('action_lock_released') is True and
+          value.get('final_Main_guard_passed') is True and
+          value.get('target_directory_cleanup') == {'contents_read':False,'held_data_directory_FDs_closed':2},
+@@ -238,13 +243,14 @@
+          before.get('current_baseline_sha256') == BASELINE_SHA and
+          before.get('current_baseline_qualification_sha256') == QUALIFICATION_SHA,
+          'ORIGINAL_CURRENT_MAIN_BINDING_REQUIRED')
++    package = FIXED['package']
++    listed = ['/system/bin/cmd','package','list','packages','-U','--show-versioncode','--user','0',package]
++    paths = ['/system/bin/cmd','package','path','--user','0',package]
++    resolve = ['/system/bin/cmd','package','resolve-activity','--brief','--user','0',
++               '-a','android.intent.action.MAIN','-c','android.intent.category.LAUNCHER',package]
+     commands = value.get('command_observations')
+-    expected = [
+-        ['/system/bin/cmd','package','list','packages','-U','--show-versioncode','--user','0',FIXED['package']],
+-        ['/system/bin/cmd','package','path','--user','0',FIXED['package']],
+-    ]
+-    need(type(commands) is list and len(commands) == 2, 'EXACT_TWO_OLD_PM_READS_REQUIRED')
+-    for index,(row,argv) in enumerate(zip(commands,expected),1):
++    need(type(commands) is list and len(commands) == 5, 'EXACT_FIVE_OLD_PM_READS_REQUIRED')
++    for index,(row,argv) in enumerate(zip(commands,[listed,paths,resolve,paths,listed]),1):
+         need(row.get('index') == index and row.get('argv') == argv and
+              row.get('spawned') is True and row.get('joined') is True and row.get('entry_entered') is True and
+              row.get('returncode') == 0 and row.get('host_timed_out') is False and
+@@ -253,14 +259,34 @@
+              'ORIGINAL_PM_READ_NOT_COMPLETE')
+     need(all(value.get(key) == 0 for key in
+              ('UI_actions','App_launches','instrumentation_calls','permission_grants','settings_writes')) and
+-         value.get('business_action_authority') is False and
++         value.get('business_action_authority') is False and value.get('APK_bytes_exported') is False and
+          value.get('whole_app_production_ready') is False, 'ORIGINAL_METADATA_SCOPE_CHANGED')
+-    path = FIXED['apk_path']
+-    parts = path.split('/')
+-    need(len(parts) == 6 and parts[:3] == ['','data','app'] and
+-         re.fullmatch(r'~~[A-Za-z0-9_=-]+',parts[3]) and
+-         re.fullmatch(re.escape(FIXED['package'])+r'-[A-Za-z0-9_=-]+',parts[4]) and
+-         parts[5] == 'base.apk', 'ONE_FIXED_ORIGINAL_BASE_APK_REQUIRED')
++    artifacts = value.get('artifacts')
++    need(type(artifacts) is list and len(artifacts) == len(FIXED['apks']) == 3,
++         'THREE_EXACT_HYATT_APKS_REQUIRED')
++    old_current = []
++    parent = None
++    for pin,row in zip(FIXED['apks'],artifacts):
++        need(row.get('path') == pin['path'] and row.get('sha256') == pin['sha256'] and
++             type(row.get('held_file')) is dict and row['held_file'].get('bytes') == pin['bytes'] and
++             set(row['held_file']) == {'device','inode','mode','uid','gid','nlink','bytes','mtime_ns','ctime_ns'} and
++             all(type(item) is int for item in row['held_file'].values()) and
++             all(original_predicates(row['held_file']).values()), 'ORIGINAL_FULL_APK_PIN_REQUIRED')
++        parts = pin['path'].split('/')
++        need(len(parts) == 6 and parts[:3] == ['','data','app'] and
++             re.fullmatch(r'~~[A-Za-z0-9_=-]+',parts[3]) and
++             re.fullmatch(re.escape(package)+r'-[A-Za-z0-9_=-]+',parts[4]) and
++             parts[5] in ('base.apk','split_config.arm64_v8a.apk','split_config.xxhdpi.apk'),
++             'FIXED_CURRENT_HYATT_APK_PATH_REQUIRED')
++        current_parent = '/'.join(parts[:-1])
++        if parent is None:
++            parent = current_parent
++        need(current_parent == parent, 'ONE_FIXED_HYATT_INSTALL_DIRECTORY_REQUIRED')
++        old_current.append({'filename':parts[5],'bytes':pin['bytes'],'sha256':pin['sha256']})
++    need(old_current == FIXED['historical_apks'] and
++         sum(row['bytes'] for row in FIXED['apks']) == FIXED['total_apk_bytes'] == 140798759 and
++         FIXED['observed_metadata']['version_code'] == 26090096,
++         'HISTORICAL_AND_CURRENT_APK_SET_NOT_EXACT')
+     return value
+ 
+ 
+@@ -381,44 +407,568 @@
+         need(self.held.pidfd_alive(self.pidfd), 'CURRENT_INIT_EXITED_DURING_RECHECK')
+ 
+ 
+-class OneApkView:
+-    def __init__(self, journal, target, path):
++
++MAX_ZIP_ENTRIES = 65534
++MAX_CENTRAL_BYTES = 8 * 1024 * 1024
++MAX_MEMBER_COMPRESSED = 32 * 1024 * 1024
++MAX_ELF_BYTES = 64 * 1024 * 1024
++MAX_SYMBOLS = 131072
++MAX_CODE_WINDOW = 16384
++APK_READ_LIMIT = 384 * 1024 * 1024
++APK_READ_BYTES = 0
++
++
++def bounds(offset, size, total, code='BINARY_RANGE_OUTSIDE_FIXED_INPUT'):
++    need(type(offset) is int and type(size) is int and
++         0 <= offset <= total and 0 <= size <= total - offset, code)
++
++
++def word(raw, offset, form):
++    size = struct.calcsize(form)
++    bounds(offset, size, len(raw))
++    return struct.unpack_from(form, raw, offset)
++
++
++class VerifiedApk:
++    def __init__(self, journal, target, pin, metadata):
+         self.journal = journal
+         self.target = target
++        self.pin = pin
++        self.expected = metadata
+         self.edges = []
+-        self.path = path
+-        self.leaf = path.rsplit('/',1)[1]
+-        parts = path[1:].split('/')
++        self.path = pin['path']
++        self.leaf = self.path.rsplit('/', 1)[1]
++        parts = self.path[1:].split('/')
+         current = target.root
+         for part in parts[:-1]:
+             deadline()
+             parent = current
+-            current = journal.take(os.open(part,os.O_PATH|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,
+-                                            dir_fd=parent),'APK:fixed_parent')
++            current = journal.take(os.open(part, os.O_PATH | os.O_DIRECTORY |
++                os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent), 'APK:fixed_parent')
+             row = directory_identity(identity(current))
+-            need(stat.S_ISDIR(row['mode']) and row == directory_identity(named_identity(parent,part)),
++            need(stat.S_ISDIR(row['mode']) and
++                 row == directory_identity(named_identity(parent, part)),
+                  'APK_PARENT_NAME_DIFFERS')
+-            self.edges.append((parent,part,current,row))
++            self.edges.append((parent, part, current, row))
+         self.parent = current
+-        # O_PATH does not open the file for reading and cannot read APK contents.
+-        self.fd = journal.take(os.open(self.leaf,os.O_PATH|os.O_NOFOLLOW|os.O_CLOEXEC,
+-                                       dir_fd=self.parent),'APK:metadata_only_leaf')
++        self.fd = journal.take(os.open(self.leaf, os.O_RDONLY | os.O_NOFOLLOW |
++                                      os.O_CLOEXEC, dir_fd=current), 'APK:readonly_leaf')
++        self.read_bytes = 0
++        self.observe()
+ 
+     def observe(self, final=False):
+         self.target.verify(final)
+-        for parent,name,fd,expected in self.edges:
++        for parent, name, fd, expected in self.edges:
+             need(directory_identity(identity(fd)) == expected ==
+-                 directory_identity(named_identity(parent,name)), 'APK_PARENT_CHANGED')
+-        held = identity(self.fd)
+-        named = named_identity(self.parent,self.leaf)
+-        need(held == named, 'APK_HELD_OR_NAMED_IDENTITY_DIFFERS')
+-        predicates = original_predicates(held)
+-        return {'path':self.path,'held':held,'named':named,'held_equals_named':True,
+-                'original_predicates':predicates,'original_predicate_conjunction':all(predicates.values()),
+-                'failed_original_predicates':[key for key,value in predicates.items() if not value],
+-                'APK_content_bytes_read':0,'APK_hash_computed':False}
++                 directory_identity(named_identity(parent, name)), 'APK_PARENT_CHANGED')
++        row = identity(self.fd)
++        need(row == self.expected == named_identity(self.parent, self.leaf) and
++             row['bytes'] == self.pin['bytes'] and all(original_predicates(row).values()),
++             'EXACT_CURRENT_APK_IDENTITY_OR_SHAPE_CHANGED')
++        return {'path':self.path, 'held':row, 'held_equals_named':True}
+ 
++    def read(self, offset, size, final=False):
++        global APK_READ_BYTES
++        bounds(offset, size, self.pin['bytes'])
++        need(size <= 1024 * 1024, 'ONE_APK_READ_BOUND')
++        chunks = []
++        count = 0
++        while count < size:
++            deadline(final)
++            need(APK_READ_BYTES + (size - count) <= APK_READ_LIMIT,
++                 'TOTAL_APK_READ_BOUND')
++            block = os.pread(self.fd, size - count, offset + count)
++            need(bool(block), 'APK_UNEXPECTED_EOF')
++            count += len(block)
++            self.read_bytes += len(block)
++            APK_READ_BYTES += len(block)
++            chunks.append(block)
++        return b''.join(chunks)
+ 
++    def full_hash(self, final=False):
++        global APK_READ_BYTES
++        self.observe(final)
++        value = hashlib.sha256()
++        count = 0
++        while count < self.pin['bytes']:
++            block = self.read(count, min(1024 * 1024, self.pin['bytes'] - count), final)
++            value.update(block)
++            count += len(block)
++        deadline(final)
++        need(APK_READ_BYTES + 1 <= APK_READ_LIMIT, 'TOTAL_APK_READ_BOUND')
++        extra = os.pread(self.fd, 1, self.pin['bytes'])
++        self.read_bytes += len(extra)
++        APK_READ_BYTES += len(extra)
++        need(extra == b'', 'APK_SIZE_GREW')
++        digest = value.hexdigest()
++        need(count == self.pin['bytes'] and digest == self.pin['sha256'],
++             'APK_COMPLETE_SHA256_CHANGED')
++        self.observe(final)
++        return {'path':self.path, 'bytes':count, 'sha256':digest, 'EOF_observed':True}
++
++
++def central_member(apk):
++    total = apk.pin['bytes']
++    tail_start = max(0, total - 65557)
++    tail = apk.read(tail_start, total - tail_start)
++    candidates = []
++    cursor = 0
++    while True:
++        offset = tail.find(b'PK\x05\x06', cursor)
++        if offset < 0:
++            break
++        cursor = offset + 1
++        if offset + 22 <= len(tail):
++            comment = word(tail, offset + 20, '<H')[0]
++            if offset + 22 + comment == len(tail):
++                candidates.append(offset)
++    need(len(candidates) == 1, 'ONE_COMPLETE_ZIP_EOCD_REQUIRED')
++    index = candidates[0]
++    disk, central_disk, on_disk, entries, size, start, comment = word(tail, index + 4, '<4H2IH')
++    need(disk == central_disk == 0 and on_disk == entries and
++         0 < entries <= MAX_ZIP_ENTRIES and size <= MAX_CENTRAL_BYTES and
++         start != 0xffffffff and size != 0xffffffff, 'ZIP_DIRECTORY_LIMIT_OR_ZIP64')
++    bounds(start, size, total)
++    need(start + size == tail_start + index, 'ZIP_DIRECTORY_END_DIFFERS')
++    chunks = []
++    done = 0
++    while done < size:
++        chunk = apk.read(start + done, min(1024 * 1024, size - done))
++        chunks.append(chunk)
++        done += len(chunk)
++    raw = b''.join(chunks)
++    position = 0
++    matches = []
++    named = []
++    for entry in range(entries):
++        deadline()
++        bounds(position, 46, len(raw))
++        need(raw[position:position+4] == b'PK\x01\x02', 'ZIP_CENTRAL_SIGNATURE')
++        flags, method = word(raw, position + 8, '<2H')
++        crc, packed, unpacked = word(raw, position + 16, '<3I')
++        name_size, extra_size, comment_size, member_disk = word(raw, position + 28, '<4H')
++        external, local = word(raw, position + 38, '<2I')
++        need(0 < name_size <= 4096 and member_disk == 0 and
++             packed != 0xffffffff and unpacked != 0xffffffff and local != 0xffffffff,
++             'ZIP_MEMBER_DIRECTORY_BOUND')
++        width = 46 + name_size + extra_size + comment_size
++        bounds(position, width, len(raw))
++        name = raw[position+46:position+46+name_size]
++        need(b'\0' not in name, 'ZIP_NAME_CONTAINS_NUL')
++        if name.rsplit(b'/', 1)[-1] == b'libdexprotector.so':
++            need(len(named) < 16, 'DEXPROTECTOR_BASENAME_MATCH_BOUND')
++            named.append({'member_name_bytes':len(name), 'member_name_sha256':sha(name),
++                          'fixed_arm64_path':name == FIXED['target_member'].encode('ascii'),
++                          'method':method, 'compressed_bytes':packed, 'member_bytes':unpacked})
++        if name == FIXED['target_member'].encode('ascii'):
++            matches.append({'name':name, 'flags':flags, 'method':method, 'crc32':crc,
++                            'compressed_bytes':packed, 'member_bytes':unpacked,
++                            'external_attributes':external, 'local_offset':local,
++                            'central_offset':start})
++        position += width
++    need(position == len(raw), 'ZIP_DIRECTORY_PARSE_NOT_COMPLETE')
++    need(len(matches) <= 1, 'DUPLICATE_FIXED_NATIVE_MEMBER')
++    return {'APK_filename':apk.leaf, 'entries':entries, 'directory_bytes':size,
++            'directory_sha256':sha(raw), 'EOCD_and_directory_complete':True,
++            'fixed_member_matches':len(matches), 'same_basename_metadata':named}, matches
++
++
++def decompress_member(apk, item):
++    need(item['flags'] & 1 == 0 and item['method'] in (0, 8),
++         'NATIVE_MEMBER_ENCRYPTION_OR_METHOD_UNSUPPORTED')
++    need(0 < item['compressed_bytes'] <= MAX_MEMBER_COMPRESSED and
++         64 <= item['member_bytes'] <= MAX_ELF_BYTES, 'NATIVE_MEMBER_SIZE_BOUND')
++    unix_mode = item['external_attributes'] >> 16
++    need(stat.S_IFMT(unix_mode) in (0, stat.S_IFREG), 'NATIVE_MEMBER_NOT_REGULAR')
++    header = apk.read(item['local_offset'], 30)
++    need(header[:4] == b'PK\x03\x04', 'ZIP_LOCAL_SIGNATURE')
++    flags, method = word(header, 6, '<2H')
++    crc, packed, unpacked = word(header, 14, '<3I')
++    name_size, extra_size = word(header, 26, '<2H')
++    need(flags == item['flags'] and method == item['method'] and
++         name_size == len(item['name']), 'ZIP_LOCAL_CENTRAL_MISMATCH')
++    if flags & 8 == 0:
++        need((crc, packed, unpacked) ==
++             (item['crc32'], item['compressed_bytes'], item['member_bytes']),
++             'ZIP_LOCAL_SIZES_DIFFER')
++    name = apk.read(item['local_offset'] + 30, name_size)
++    need(name == item['name'], 'ZIP_LOCAL_NAME_DIFFERS')
++    data_start = item['local_offset'] + 30 + name_size + extra_size
++    bounds(data_start, item['compressed_bytes'], apk.pin['bytes'])
++    need(data_start + item['compressed_bytes'] <= item['central_offset'],
++         'ZIP_MEMBER_OVERLAPS_CENTRAL_DIRECTORY')
++    output = bytearray()
++    compressed = hashlib.sha256()
++    decoder = zlib.decompressobj(-15) if method == 8 else None
++    done = 0
++    while done < item['compressed_bytes']:
++        block = apk.read(data_start + done, min(65536, item['compressed_bytes'] - done))
++        done += len(block)
++        compressed.update(block)
++        if decoder is None:
++            output.extend(block)
++            need(len(output) <= item['member_bytes'], 'NATIVE_MEMBER_EXPANSION_BOUND')
++        else:
++            pending = block
++            while pending:
++                deadline()
++                room = item['member_bytes'] + 1 - len(output)
++                need(room > 0, 'NATIVE_MEMBER_EXPANSION_BOUND')
++                old = len(pending)
++                chunk = decoder.decompress(pending, min(65536, room))
++                output.extend(chunk)
++                need(len(output) <= item['member_bytes'], 'NATIVE_MEMBER_EXPANSION_BOUND')
++                need(not decoder.unused_data, 'NATIVE_MEMBER_COMPRESSED_TRAILING_BYTES')
++                pending = decoder.unconsumed_tail
++                need(chunk or len(pending) < old, 'NATIVE_MEMBER_DECOMPRESS_NO_PROGRESS')
++    if decoder is not None:
++        need(decoder.eof and not decoder.unused_data and not decoder.unconsumed_tail,
++             'NATIVE_MEMBER_DEFLATE_INCOMPLETE')
++    need(len(output) == item['member_bytes'] and
++         binascii.crc32(output) & 0xffffffff == item['crc32'], 'NATIVE_MEMBER_LENGTH_OR_CRC')
++    return bytes(output), {'member':FIXED['target_member'], 'APK_filename':apk.leaf,
++                          'method':method, 'bytes':len(output), 'sha256':sha(output),
++                          'compressed_bytes':done, 'compressed_sha256':compressed.hexdigest(),
++                          'CRC32_matched':True, 'extracted_to_disk':False}
++
++
++def elf_metadata(raw):
++    need(64 <= len(raw) <= MAX_ELF_BYTES and raw[:7] == b'\x7fELF\x02\x01\x01',
++         'ELF64_LITTLE_ENDIAN_REQUIRED')
++    values = word(raw, 16, '<HHIQQQIHHHHHH')
++    kind, machine, version, entry, phoff, shoff, flags, ehsize, phsize, phcount, shsize, shcount, shstr = values
++    need(kind == 3 and machine == 183 and version == 1 and ehsize == 64 and
++         phsize == 56 and 0 < phcount <= 256, 'ARM64_SHARED_ELF_HEADER_REQUIRED')
++    bounds(phoff, phsize * phcount, len(raw))
++    segments = []
++    for index in range(phcount):
++        ptype, pflags, offset, vaddr, paddr, filesz, memsz, align = word(raw, phoff + 56 * index, '<II6Q')
++        bounds(offset, filesz, len(raw))
++        need((ptype != 1 or filesz <= memsz) and vaddr + memsz <= (1 << 64),
++             'ELF_SEGMENT_RANGE')
++        segments.append({'type':ptype, 'flags':pflags, 'offset':offset,
++                         'vaddr':vaddr, 'filesz':filesz, 'memsz':memsz})
++    loads = [x for x in segments if x['type'] == 1]
++    need(bool(loads), 'ELF_LOAD_SEGMENT_REQUIRED')
++
++    def mapped(address, size, executable=False):
++        need(type(address) is int and type(size) is int and address >= 0 and size >= 0,
++             'ELF_VIRTUAL_RANGE')
++        choices = [x for x in loads if address >= x['vaddr'] and
++                   address - x['vaddr'] <= x['filesz'] and
++                   size <= x['filesz'] - (address - x['vaddr']) and
++                   (not executable or x['flags'] & 1)]
++        need(len(choices) == 1, 'ELF_VIRTUAL_RANGE_NOT_UNIQUE_FILE_BACKED')
++        item = choices[0]
++        offset = item['offset'] + address - item['vaddr']
++        bounds(offset, size, len(raw))
++        return offset
++
++    build_ids = []
++    note_bytes = 0
++    for segment in [x for x in segments if x['type'] == 4]:
++        note_bytes += segment['filesz']
++        need(note_bytes <= 1024 * 1024, 'ELF_NOTE_BYTE_BOUND')
++        offset, end = segment['offset'], segment['offset'] + segment['filesz']
++        while offset < end:
++            deadline()
++            if end - offset < 12:
++                need(raw[offset:end] == b'\0' * (end-offset), 'ELF_NOTE_TRAILING_BYTES')
++                break
++            namesz, descsz, note_type = word(raw, offset, '<3I')
++            offset += 12
++            need(namesz <= 65536 and descsz <= 65536, 'ELF_NOTE_FIELD_BOUND')
++            padded_name, padded_desc = (namesz+3)&~3, (descsz+3)&~3
++            bounds(offset, padded_name+padded_desc, end)
++            name = raw[offset:offset+namesz]
++            desc = raw[offset+padded_name:offset+padded_name+descsz]
++            if name == b'GNU\0' and note_type == 3:
++                need(1 <= descsz <= 64 and len(build_ids) < 4, 'ELF_BUILD_ID_BOUND')
++                build_ids.append(desc.hex())
++            offset += padded_name+padded_desc
++    need(len(set(build_ids)) <= 1, 'ELF_BUILD_ID_CONFLICT')
++
++    dynamic = [x for x in segments if x['type'] == 2]
++    need(len(dynamic) == 1 and dynamic[0]['filesz'] % 16 == 0 and
++         16 <= dynamic[0]['filesz'] <= 1024*1024, 'ONE_BOUNDED_DYNAMIC_TABLE_REQUIRED')
++    tags = {}
++    terminated = False
++    wanted = {4,5,6,10,11,14,0x6ffffef5}
++    for offset in range(dynamic[0]['offset'], dynamic[0]['offset']+dynamic[0]['filesz'], 16):
++        tag, value = word(raw, offset, '<qQ')
++        if tag == 0:
++            terminated = True
++            break
++        if tag in wanted:
++            need(tag not in tags, 'DUPLICATE_REQUIRED_DYNAMIC_TAG')
++            tags[tag] = value
++    need(terminated and all(tag in tags for tag in (5,6,10,11)) and tags[11] == 24 and
++         0 < tags[10] <= 16*1024*1024, 'ELF_DYNSYM_DYNAMIC_CONTRACT')
++    strings = mapped(tags[5], tags[10])
++    count = None
++    if 4 in tags:
++        table = mapped(tags[4], 8)
++        buckets, chains = word(raw, table, '<2I')
++        need(0 < buckets <= MAX_SYMBOLS and 0 < chains <= MAX_SYMBOLS, 'ELF_HASH_COUNT_BOUND')
++        mapped(tags[4], 8+4*(buckets+chains))
++        count = chains
++    if 0x6ffffef5 in tags:
++        address = tags[0x6ffffef5]
++        at = mapped(address, 16)
++        buckets, first, bloom, shift = word(raw, at, '<4I')
++        need(0 < buckets <= MAX_SYMBOLS and 0 < bloom <= MAX_SYMBOLS and first < MAX_SYMBOLS,
++             'ELF_GNU_HASH_COUNT_BOUND')
++        size = 16 + bloom*8 + buckets*4
++        at = mapped(address, size)
++        values = word(raw, at+16+bloom*8, '<'+'I'*buckets)
++        need(all(x == 0 or first <= x < MAX_SYMBOLS for x in values), 'ELF_GNU_HASH_BUCKET')
++        last = max(values)
++        derived = first
++        if last:
++            index = last
++            while True:
++                deadline()
++                need(index < MAX_SYMBOLS, 'ELF_GNU_HASH_CHAIN_BOUND')
++                here = mapped(address+size+4*(index-first),4)
++                value = word(raw,here,'<I')[0]
++                index += 1
++                if value & 1:
++                    derived = index
++                    break
++        if count is None:
++            count = derived
++        else:
++            need(derived == count, 'ELF_HASH_COUNTS_DIFFER')
++    need(type(count) is int and 0 < count <= MAX_SYMBOLS, 'BOUNDED_ELF_SYMBOL_COUNT_REQUIRED')
++    table = mapped(tags[6], 24*count)
++    symbols = []
++    target = b'JNI_OnLoad\0'
++    for index in range(count):
++        if index % 512 == 0:
++            deadline()
++        name, info, other, section, value, size = word(raw,table+24*index,'<IBBHQQ')
++        need(name < tags[10], 'ELF_DYNSYM_NAME_RANGE')
++        if name+len(target) <= tags[10] and raw[strings+name:strings+name+len(target)] == target:
++            symbols.append({'index':index,'binding':info>>4,'type':info&15,'visibility':other&3,
++                            'section_index':section,'value':value,'size':size})
++    need(len(symbols) == 1, 'ONE_JNI_ONLOAD_DYNSYM_REQUIRED')
++    symbol = symbols[0]
++    need(symbol['type'] == 2 and symbol['binding'] in (1,2) and
++         symbol['section_index'] not in (0,0xfff1,0xfff2) and symbol['value'] % 4 == 0,
++         'DEFINED_ARM64_JNI_ONLOAD_FUNCTION_REQUIRED')
++    choices = [x for x in loads if x['flags'] & 1 and
++               x['vaddr'] <= symbol['value'] < x['vaddr']+x['filesz']]
++    need(len(choices) == 1, 'JNI_ONLOAD_EXECUTABLE_SEGMENT')
++    available = choices[0]['filesz'] - (symbol['value']-choices[0]['vaddr'])
++    if symbol['size']:
++        need(symbol['size'] <= available, 'JNI_ONLOAD_SYMBOL_EXCEEDS_FILE_BACKED_SEGMENT')
++    length = min(symbol['size'] or 4096, MAX_CODE_WINDOW, available)
++    length -= length % 4
++    need(length >= 4, 'JNI_ONLOAD_CODE_WINDOW_EMPTY')
++    offset = mapped(symbol['value'],length,True)
++    code = raw[offset:offset+length]
++    counts = {'RET':0,'BR':0,'BLR':0,'B':0,'BL':0,'MOVZ_OR_MOVN_REGISTER0':0}
++    observations = []
++    def observe(item):
++        if len(observations) < 128:
++            observations.append(item)
++    for index in range(0,len(code),4):
++        insn = word(code,index,'<I')[0]
++        base = insn & 0xfffffc1f
++        at = symbol['value']+index
++        if base in (0xd65f0000,0xd61f0000,0xd63f0000):
++            category = {0xd65f0000:'RET',0xd61f0000:'BR',0xd63f0000:'BLR'}[base]
++            counts[category] += 1
++            observe({'offset':index,'kind':category,'register':(insn>>5)&31})
++        elif insn & 0x7c000000 == 0x14000000:
++            category = 'BL' if insn & 0x80000000 else 'B'
++            displacement = insn & 0x03ffffff
++            if displacement & (1<<25):
++                displacement -= 1<<26
++            destination = at + 4*displacement
++            counts[category] += 1
++            observe({'offset':index,'kind':category,'destination_vaddr':destination,
++                     'destination_inside_inspected_window':
++                         symbol['value'] <= destination < symbol['value']+length})
++        elif insn & 31 == 0 and (insn & 0x7f800000) in (0x12800000,0x52800000):
++            width = 64 if insn & 0x80000000 else 32
++            half = (insn>>21)&3
++            if width == 32 and half >= 2:
++                continue
++            immediate = ((insn>>5)&0xffff) << (16*half)
++            if insn & 0x7f800000 == 0x12800000:
++                immediate = (~immediate) & ((1<<width)-1)
++            low = immediate & 0xffffffff
++            signed = low if low < (1<<31) else low-(1<<32)
++            counts['MOVZ_OR_MOVN_REGISTER0'] += 1
++            # Only fixed JNI constants/sentinel are public; other immediates
++            # are counted without exposing arbitrary instruction data.
++            label = {-500:'MINUS_500',-1:'JNI_ERR',0x10002:'JNI_VERSION_1_2',
++                     0x10004:'JNI_VERSION_1_4',0x10006:'JNI_VERSION_1_6'}.get(signed)
++            if label is not None:
++                observe({'offset':index,'kind':'REGISTER0_FIXED_IMMEDIATE',
++                         'width':width,'constant':label,
++                         'next_instruction_is_RET':index+8 <= len(code) and
++                            word(code,index+4,'<I')[0]&0xfffffc1f == 0xd65f0000})
++    return {'ELF_class':'ELF64','endianness':'little','machine':'EM_AARCH64',
++            'type':'ET_DYN','bytes':len(raw),'sha256':sha(raw),
++            'BuildId':build_ids[0] if build_ids else None,
++            'BuildId_status':'OBSERVED_GNU_NOTE' if build_ids else 'NOT_PRESENT_IN_PT_NOTE',
++            'program_headers':phcount,'dynamic_symbols':count,'JNI_OnLoad':symbol,
++            'return_path_metadata':{
++                'scope':'LINEAR_INSTRUCTION_WINDOW_NOT_CONTROL_FLOW_OR_RETURN_PROOF',
++                'file_offset':offset,'vaddr':symbol['value'],'bytes':length,'sha256':sha(code),
++                'whole_symbol_bytes_inspected':bool(symbol['size'] and symbol['size']==length),
++                'symbol_size_unknown':symbol['size']==0,
++                'opcode_counts':counts,'observations':observations,
++                'observation_limit':128,
++                'observation_list_may_be_truncated':sum(counts.values()) > 128,
++                'function_executed':False,'actual_return_value_observed':False,
++                'minus_500_cause_established':False},
++            'APK_or_ELF_bytes_exported':False}
++
++def parser_controls():
++    """Pure in-memory fixtures call the production binary readers, with no OS seam."""
++    passed = []
++    class MemoryApk:
++        def __init__(self, raw):
++            self.raw = raw
++            self.pin = {'bytes':len(raw)}
++            self.leaf = 'synthetic.apk'
++        def read(self, offset, size, final=False):
++            deadline(final)
++            bounds(offset,size,len(self.raw))
++            need(size <= 1024*1024, 'ONE_APK_READ_BOUND')
++            return self.raw[offset:offset+size]
++
++    def synthetic_elf(gnu=False):
++        raw = bytearray(1536)
++        raw[:16] = b'\x7fELF\x02\x01\x01'+b'\0'*9
++        struct.pack_into('<HHIQQQIHHHHHH',raw,16,3,183,1,0,64,0,0,64,56,3,0,0,0)
++        struct.pack_into('<II6Q',raw,64,1,5,0,0x10000,0,1536,1536,4096)
++        struct.pack_into('<II6Q',raw,120,2,4,256,0x10100,0,96,96,8)
++        struct.pack_into('<II6Q',raw,176,4,4,704,0x102c0,0,20,20,4)
++        table = [(5,0x10200),(6,0x10240),(10,12),(11,24),
++                 (0x6ffffef5 if gnu else 4,0x10280),(0,0)]
++        for index,(tag,value) in enumerate(table):
++            struct.pack_into('<qQ',raw,256+16*index,tag,value)
++        raw[512:524] = b'\0JNI_OnLoad\0'
++        struct.pack_into('<IBBHQQ',raw,600,1,0x12,0,1,0x10300,8)
++        if gnu:
++            struct.pack_into('<4I',raw,640,1,1,1,5)
++            struct.pack_into('<Q',raw,656,0)
++            struct.pack_into('<2I',raw,664,1,1)
++        else:
++            struct.pack_into('<5I',raw,640,1,2,1,0,0)
++        struct.pack_into('<3I',raw,704,4,4,3)
++        raw[716:720] = b'GNU\0'
++        raw[720:724] = b'\x11\x22\x33\x44'
++        struct.pack_into('<2I',raw,768,0x12800000 | (499<<5),0xd65f03c0)
++        return bytes(raw)
++
++    def synthetic_zip(member, method=0, duplicate=False, bad_crc=False,
++                      declared=None, truncate_deflate=False, append_deflate=False):
++        name = FIXED['target_member'].encode('ascii')
++        if method == 8:
++            encoder = zlib.compressobj(6,zlib.DEFLATED,-15)
++            packed = encoder.compress(member)+encoder.flush()
++            if truncate_deflate:
++                packed = packed[:-1]
++            if append_deflate:
++                packed += b'\0'
++        else:
++            packed = member
++        crc = binascii.crc32(member)&0xffffffff
++        if bad_crc:
++            crc ^= 1
++        size = len(member) if declared is None else declared
++        local = struct.pack('<I5H3I2H',0x04034b50,20,0,method,0,0,crc,len(packed),size,len(name),0)+name+packed
++        central = struct.pack('<I6H3I5H2I',0x02014b50,0x0314,20,0,method,0,0,
++                              crc,len(packed),size,len(name),0,0,0,0,0o100444<<16,0)+name
++        if duplicate:
++            central += central
++        count = 2 if duplicate else 1
++        end = struct.pack('<I4H2IH',0x06054b50,0,0,count,count,len(central),len(local),0)
++        return local+central+end
++
++    def case(name, fn):
++        deadline()
++        fn()
++        passed.append(name)
++    def reject(name, code, fn):
++        def run():
++            try:
++                fn()
++            except RuntimeError as error:
++                need(str(error) == code, 'PARSER_CONTROL_WRONG_REJECTION')
++            else:
++                raise RuntimeError('PARSER_CONTROL_EXPECTED_REJECTION')
++        case(name,run)
++    def inspect_zip(raw):
++        apk = MemoryApk(raw)
++        projection,found = central_member(apk)
++        need(projection['fixed_member_matches'] == 1 and len(found) == 1,
++             'PARSER_CONTROL_ONE_FIXED_MEMBER')
++        return decompress_member(apk,found[0])
++
++    elf = synthetic_elf()
++    def valid_sysv():
++        value = elf_metadata(elf)
++        need(value['BuildId'] == '11223344' and value['dynamic_symbols'] == 2 and
++             value['JNI_OnLoad']['size'] == 8 and
++             value['return_path_metadata']['whole_symbol_bytes_inspected'] is True and
++             value['return_path_metadata']['actual_return_value_observed'] is False and
++             value['return_path_metadata']['minus_500_cause_established'] is False and
++             value['return_path_metadata']['opcode_counts']['RET'] == 1 and
++             any(row.get('constant') == 'MINUS_500' and row['next_instruction_is_RET']
++                 for row in value['return_path_metadata']['observations']),
++             'PARSER_CONTROL_SYSV_POSITIVE')
++    case('elf_sysv_exact_symbol_buildid_and_fixed_immediate_metadata',valid_sysv)
++    def valid_gnu():
++        value = elf_metadata(synthetic_elf(True))
++        need(value['dynamic_symbols'] == 2 and value['JNI_OnLoad']['value'] == 0x10300,
++             'PARSER_CONTROL_GNU_POSITIVE')
++    case('elf_gnu_hash_exact_symbol_count',valid_gnu)
++    reject('elf_short_header_rejected','ELF64_LITTLE_ENDIAN_REQUIRED',lambda:elf_metadata(elf[:63]))
++    wrong = bytearray(elf);struct.pack_into('<H',wrong,18,62)
++    reject('elf_wrong_machine_rejected','ARM64_SHARED_ELF_HEADER_REQUIRED',lambda:elf_metadata(wrong))
++    wrong_strings = bytearray(elf);struct.pack_into('<Q',wrong_strings,264,0x90000)
++    reject('elf_unmapped_string_table_rejected','ELF_VIRTUAL_RANGE_NOT_UNIQUE_FILE_BACKED',
++           lambda:elf_metadata(wrong_strings))
++    wrong_syment = bytearray(elf);struct.pack_into('<Q',wrong_syment,312,8)
++    reject('elf_wrong_symbol_stride_rejected','ELF_DYNSYM_DYNAMIC_CONTRACT',
++           lambda:elf_metadata(wrong_syment))
++    wrong_size = bytearray(elf);struct.pack_into('<Q',wrong_size,616,MAX_ELF_BYTES)
++    reject('elf_symbol_size_outside_executable_segment_rejected',
++           'JNI_ONLOAD_SYMBOL_EXCEEDS_FILE_BACKED_SEGMENT',lambda:elf_metadata(wrong_size))
++    def stored():
++        raw,proof = inspect_zip(synthetic_zip(elf))
++        need(raw == elf and proof['sha256'] == sha(elf) and proof['CRC32_matched'] is True,
++             'PARSER_CONTROL_STORED_POSITIVE')
++    case('zip_stored_member_full_hash_and_crc',stored)
++    def deflated():
++        raw,proof = inspect_zip(synthetic_zip(elf,8))
++        need(raw == elf and proof['sha256'] == sha(elf) and proof['CRC32_matched'] is True,
++             'PARSER_CONTROL_DEFLATE_POSITIVE')
++    case('zip_deflate_member_complete_and_exact',deflated)
++    reject('zip_duplicate_fixed_member_rejected','DUPLICATE_FIXED_NATIVE_MEMBER',
++           lambda:central_member(MemoryApk(synthetic_zip(elf,duplicate=True))))
++    reject('zip_wrong_crc_rejected','NATIVE_MEMBER_LENGTH_OR_CRC',
++           lambda:inspect_zip(synthetic_zip(elf,bad_crc=True)))
++    reject('zip_declared_member_over_bound_rejected','NATIVE_MEMBER_SIZE_BOUND',
++           lambda:inspect_zip(synthetic_zip(elf,declared=MAX_ELF_BYTES+1)))
++    reject('zip_truncated_deflate_rejected','NATIVE_MEMBER_DEFLATE_INCOMPLETE',
++           lambda:inspect_zip(synthetic_zip(elf,8,truncate_deflate=True)))
++    reject('zip_deflate_trailing_bytes_rejected','NATIVE_MEMBER_COMPRESSED_TRAILING_BYTES',
++           lambda:inspect_zip(synthetic_zip(elf,8,append_deflate=True)))
++    reject('zip_truncated_eocd_rejected','ONE_COMPLETE_ZIP_EOCD_REQUIRED',
++           lambda:central_member(MemoryApk(synthetic_zip(elf)[:-1])))
++    need(len(passed) == 15, 'EXACT_PARSER_CONTROL_COUNT')
++    return {'count':15,'passed':passed,'pure_memory_only':True,
++            'real_APK_or_ELF_used':False,'Main_or_FD_lifecycle_exercised':False,
++            'runtime_return_or_cause_proven':False}
++
++
+ class ReadDeadline(BaseException):
+     pass
+ 
+@@ -428,15 +978,20 @@
+ 
+ 
+ def main():
+-    global START
++    global START, APK_READ_BYTES
+     START = time.monotonic()
++    APK_READ_BYTES = 0
+     result = {
+         'schema':1,'kind':FIXED['kind'],'package':FIXED['package'],'collection_complete':False,
+         'first_error':None,'secondary_errors':[],
+         'Main_actions':0,'Android_commands':0,'children_spawned':0,'namespace_entry':False,
+-        'files_created_or_modified':0,'APK_content_bytes_read':0,'directory_enumeration':False,
++        'files_created_or_modified':0,'APK_content_bytes_read':0,'filesystem_directory_enumeration':False,
+         'private_baseline_exported':False,'App_nonce_consumed':False,'automatic_retry':False,
+-        'original_metadata_status':'FAILED','original_failed_predicate_at_that_time':'UNKNOWN',
++        'original_metadata_status':'PASS',
++        'historical_runtime_failure':{'library':'libdexprotector.so','JNI_OnLoad_returned':-500,
++            'failure_reclassified':False,'underlying_return_reason_established':False},
++        'historical_and_current_APK_bytes_equal':False,
++        'current_PM_UID_version_not_requeried':True,
+         'installed_package_metadata_qualified':False,'signer_qualified':False,
+         'launch_install_or_business_authority':False,'whole_app_production_ready':False,
+         'global_ambient_FD_equality_asserted':False,
+@@ -444,9 +999,19 @@
+         'original_predicates_modified':False,'original_file_limit_bytes':ORIGINAL_FILE_LIMIT,
+         'observation_seconds':OBSERVATION_SECONDS,'final_seconds':FINAL_SECONDS,
+         'alarm_seconds':ALARM_SECONDS,'timer_and_handler_restored':False,
++        'APK_total_read_byte_limit':APK_READ_LIMIT,
++        'ZIP_central_directory_limit_per_APK':MAX_CENTRAL_BYTES,
++        'ZIP_entry_limit_per_APK':MAX_ZIP_ENTRIES,
++        'native_member_compressed_byte_limit':MAX_MEMBER_COMPRESSED,
++        'native_member_uncompressed_byte_limit':MAX_ELF_BYTES,
++        'ELF_dynamic_symbol_limit':MAX_SYMBOLS,'instruction_window_byte_limit':MAX_CODE_WINDOW,
++        'APKs_before':[],'APK_hashes_before':[],'APKs_after':[],'APK_hashes_after':[],
++        'APK_ZIP_directories':[],'APKs_final':[],
++        'APK_or_ELF_raw_bytes_exported':False,'symbol_window_is_linear_metadata_only':True,
+     }
+     journal = Journal()
+-    lock = view = apk = guard = None
++    lock = view = guard = None
++    apks = []
+     source = contract = None
+     timer_set = handler_set = False
+     old_handler = None
+@@ -465,13 +1030,17 @@
+         handler_set = True
+         signal.setitimer(signal.ITIMER_REAL,ALARM_SECONDS)
+         timer_set = True
+-        stage = 'original_failed_report'
++        stage = 'pure_binary_parser_controls'
++        result['parser_controls'] = parser_controls()
++        stage = 'original_metadata_report'
+         original = read_exact_file(journal,FIXED['result']['path'],FIXED['result']['bytes'],FIXED['result']['sha256'])
+         historical = qualify_original(original)
+         result['original_result'] = FIXED['result']
+         result['historical_package_metadata_observation'] = historical['metadata_before']
+-        result['original_error'] = historical['error']
+-        result['fixed_apk_path'] = historical['apk_paths_before'][0]
++        result['original_metadata_qualified'] = True
++        result['fixed_apk_paths'] = historical['apk_paths_before']
++        result['historical_and_current_APK_bytes_equal'] = True
++        result['historical_current_APK_pin_comparison'] = FIXED['historical_apks']
+         stage = 'original_metadata_source'
+         read_exact_file(journal,FIXED['source']['path'],FIXED['source']['bytes'],FIXED['source']['sha256'])
+         stage = 'original_R6_source_contract'
+@@ -519,18 +1088,43 @@
+         view = HeldInitView(journal,held,binding,baseline)
+         result['held_init_root'] = view.root_identity
+         result['held_pidfd_and_six_namespaces_qualified'] = True
+-        stage = 'fixed_APK_first_fstat'
+-        apk = OneApkView(journal,view,FIXED['apk_path'])
+-        result['APK_before'] = apk.observe()
+-        stage = 'fixed_APK_second_fstat'
+-        result['APK_after'] = apk.observe()
+-        need(result['APK_after'] == result['APK_before'], 'APK_CHANGED_BETWEEN_METADATA_OBSERVATIONS')
+-        result['two_held_and_named_observations_equal'] = True
++        stage = 'three_fixed_APKs_full_hash_before'
++        for pin,row in zip(FIXED['apks'],historical['artifacts']):
++            apk = VerifiedApk(journal,view,pin,row['held_file'])
++            apks.append(apk)
++            result['APKs_before'].append(apk.observe())
++            result['APK_hashes_before'].append(apk.full_hash())
++        need(len(result['APK_hashes_before']) == 3, 'THREE_FULL_APK_HASHES_REQUIRED')
++        result['all_APK_full_hashes_qualified_before_member_read'] = True
++        stage = 'three_fixed_ZIP_directories'
++        selected = []
++        for index,apk in enumerate(apks):
++            projection,matches = central_member(apk)
++            result['APK_ZIP_directories'].append(projection)
++            selected.extend((index,item) for item in matches)
++        need(len(selected) == 1, 'ONE_FIXED_ARM64_NATIVE_MEMBER_ACROSS_THREE_APKS')
++        member_index,item = selected[0]
++        stage = 'fixed_native_member_complete_read'
++        member,proof = decompress_member(apks[member_index],item)
++        result['native_member'] = proof
++        stage = 'fixed_native_member_ELF_metadata'
++        result['ELF'] = elf_metadata(member)
++        need(result['ELF']['sha256'] == proof['sha256'] and
++             result['ELF']['bytes'] == proof['bytes'], 'ELF_AND_MEMBER_FULL_PIN_DIFFER')
++        del member
++        stage = 'three_fixed_APKs_full_hash_after'
++        for apk in apks:
++            result['APK_hashes_after'].append(apk.full_hash())
++            result['APKs_after'].append(apk.observe())
++        need(result['APK_hashes_before'] == result['APK_hashes_after'] and
++             result['APKs_before'] == result['APKs_after'],
++             'APK_CHANGED_DURING_STATIC_MEMBER_OBSERVATION')
++        result['two_complete_hashes_and_held_named_observations_equal'] = True
+         stage = 'original_report_after'
+         again = read_exact_file(journal,FIXED['result']['path'],FIXED['result']['bytes'],FIXED['result']['sha256'])
+-        need(again == original, 'ORIGINAL_FAILED_REPORT_CHANGED')
++        need(again == original, 'ORIGINAL_METADATA_REPORT_CHANGED')
+         qualify_original(again)
+-        result['original_failed_report_unchanged'] = True
++        result['original_metadata_report_unchanged'] = True
+         observed = True
+     except BaseException as error:
+         remember(result,stage,error)
+@@ -543,12 +1137,14 @@
+                 result['original_R6_and_metadata_source_unchanged'] = True
+             except BaseException as error:
+                 remember(result,'final_original_Main_and_source_guard',error)
+-        if apk is not None:
++        for index,apk in enumerate(apks):
+             try:
+-                result['APK_final'] = apk.observe(True)
+-                need(result.get('APK_before') == result['APK_final'], 'APK_CHANGED_BEFORE_FD_CLOSE')
++                final = apk.observe(True)
++                result['APKs_final'].append(final)
++                need(index < len(result['APKs_before']) and
++                     result['APKs_before'][index] == final, 'APK_CHANGED_BEFORE_FD_CLOSE')
+             except BaseException as error:
+-                remember(result,'final_APK_named_and_held',error)
++                remember(result,'final_APK_'+str(index)+'_named_and_held',error)
+         if lock is not None:
+             lock.release(result)
+         journal.finish(result)
+@@ -565,15 +1161,21 @@
+                 result['timer_and_handler_restored'] = True
+             except BaseException as error:
+                 remember(result,'self_handler_restore',error)
+-    if time.monotonic() >= START + ALARM_SECONDS:
++    result['APK_content_bytes_read'] = APK_READ_BYTES
++    result['APK_bytes_read_per_open_leaf'] = [{'filename':apk.leaf,'bytes':apk.read_bytes} for apk in apks]
++    if time.monotonic() >= START + FINAL_SECONDS:
+         remember(result,'final_collection_deadline',RuntimeError('FINAL_COLLECTION_DEADLINE'))
+     result['collection_complete'] = bool(
+         observed and result['first_error'] is None and not result['secondary_errors'] and
+-        result.get('two_held_and_named_observations_equal') is True and
+-        result.get('original_failed_report_unchanged') is True and
++        result.get('parser_controls',{}).get('count') == 15 and
++        result.get('all_APK_full_hashes_qualified_before_member_read') is True and
++        result.get('two_complete_hashes_and_held_named_observations_equal') is True and
++        result.get('original_metadata_report_unchanged') is True and
+         result.get('final_Main_guard_passed') is True and
+         result.get('original_R6_and_metadata_source_unchanged') is True and
+-        result.get('APK_final') == result.get('APK_before') and
++        len(result['APKs_before']) == len(result['APKs_final']) == 3 and
++        result['APKs_final'] == result['APKs_before'] and
++        len(result['APK_hashes_after']) == 3 and result.get('ELF') is not None and
+         result.get('all_journal_FDs_closed') is True and
+         result.get('action_lock',{}).get('released') is True and
+         result['timer_and_handler_restored'])

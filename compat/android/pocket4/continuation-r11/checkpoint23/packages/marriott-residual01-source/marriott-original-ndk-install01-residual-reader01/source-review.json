@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "state": "ROOT_REVIEW_REQUIRED_UNRUN",
+  "scope": "One independent childless read after install01 failure; historical UNKNOWN remains.",
+  "source": {
+    "bytes": 27595,
+    "sha256": "35dedd754a3dc3bd865aba5b718633e20f7dff1da0657d760b3b0a782e231238",
+    "git_blob_sha": "f8d1dd1babedac5d60e92dd2a5919d8f454cfed9"
+  },
+  "request_key": "p4-ndk-install01-residual-read01-35dedd754a3dc3bd",
+  "authority": {
+    "failed_install": {
+      "job": "1a1b271b3a6-fc05-7e09",
+      "result": {
+        "path": "/home/alex/work/pocket4-original-ndk-fixture-APK03-install-01/result.json",
+        "bytes": 8994,
+        "sha256": "0c3669215137fc4b8fce1603c586a6e8d8451777a359c926a29e9b43200cf202",
+        "git_blob_sha": "055af604d46464e7755a74c5fb34e5798ceee5b1"
+      },
+      "UID": null,
+      "status": "UNKNOWN"
+    },
+    "Main_epoch": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "current_baseline_sha256": "633912ff4595ce898c4c0e0f9ac06c1f422203d90fbd2e583192f35ff7a04364",
+    "qualification_sha256": "ae8d54ee64fe23676d7f68f8092c0915d3f0f41662d8b7d4be86b85201071a6e",
+    "R6_source_contract": {
+      "bytes": 11359,
+      "sha256": "f92d2598221c5bf65e783df39864879a2056da47f794680668b34df11f97da49",
+      "git_blob_sha": "85bb8838b54edaa4cb7092acb0d64f97cd3d9533"
+    },
+    "R6_manifest": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff",
+    "R6_current_guard": {
+      "bytes": 11541,
+      "sha256": "96dbdaf7673d5298e6fe17cb1b7ebae29b37110ee59f31b0c927e2cb0ef4b150",
+      "git_blob_sha": "3804363d0cdc2e14a8e5ebe8fe340858d7c2d66f"
+    }
+  },
+  "observation": [
+    "Full fixed old result before/after with original whole pin, never relabelled",
+    "Original R6 SourceContract full closure/helper evidence/current8 guard before-lock/after-lock/before-and-after observations/final",
+    "Fresh exact init identity to held proc/pidfd/six namespaces/root; no entry() or Android command",
+    "Exactly two whole regular single-link packages.list reads with held/named/fullhash equality, only com.example.ndk_tests UID projected",
+    "Only /data/user/0 and /data/user_de/0 parent directories and fixed package leaf O_PATH/NOFOLLOW; parent named/held identity, two leaf observations; no content or enumeration"
+  ],
+  "locking": "Existing root-owned single-link non-writable-by-others global action lock; O_RDWR without create/chmod/truncate, one LOCK_EX|LOCK_NB attempt, ancestors/dev-inode-mode-uid-gid and leaf rechecked, exact own unlock/close. No old flow/step claim or action nonce reused.",
+  "timing": {
+    "observation_seconds": 20,
+    "final_Main_guard_seconds": 25,
+    "self_SIGALRM_seconds": 30,
+    "outer_seconds": 45,
+    "CPU100": true,
+    "memory_max_bytes": 134217728,
+    "nice": 15,
+    "resources_not_claimed_observed_by_reader": true
+  },
+  "failure_close": "Owned journal registers before fallible qualification and never retries failed close numbers. HeldTarget close is original exact primitive. Main/lock verification errors retained; all close paths attempted. No unknown ambient FD is closed, no global FD equality asserted; ctypes import lifetime is not mislabelled own leak.",
+  "privacy": "No baseline, package-table body, other package row, data contents, raw init or UI output. Errors expose fixed uppercase code when applicable, otherwise type/errno plus message hash/length. Public paths are fixed scope.",
+  "qualification_boundary": [
+    "Presence/absence is only the selected packages.list row and exact two data leaves",
+    "No PackageManager all-user/uninstalled-record or APK-path absence claim",
+    "Observed UID remains metadata; installed_UID_qualified stays null",
+    "No install/run/retire authority; future install retains original first all-user PM absence gate",
+    "Original install UNKNOWN remains even if these current metadata observations are absent"
+  ],
+  "controls": {
+    "new_pure_parser_cases_defined": 6,
+    "Python_executed": false,
+    "local_or_remote_controls_executed": false,
+    "FD_lifecycle_runtime_qualified": false,
+    "source_uses_original_read_exact_file_byte_identically": true
+  },
+  "no_actions": {
+    "Android_commands": 0,
+    "children": 0,
+    "namespace_entry": 0,
+    "files_created_or_modified": 0,
+    "process_signals": 0,
+    "directory_enumeration": 0,
+    "Main_restart_or_mutation": 0,
+    "Hepta_calls_by_author": 0
+  },
+  "predecessor_WIP": {
+    "blob": "56965c2bdc46a12451a0ea762a01d61e8c1dc711",
+    "state": "SOURCE_ONLY_NEVER_DISPATCHED",
+    "change": "Require nonempty actual package table; clarify nonselected positive fixture; explicitly record/end-check package/data observation completion time."
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "pocket4-ihg877-independent-retirement01-fixed-evidence-review-v1",
+  "actual": {
+    "blob": "eef5723a89f6e55c3cb6dec46d593e4b18d38178",
+    "bytes": 24051,
+    "sha256": "dd040d4a5ac8050a2fd3d854e0dec74be386c048f33b68d0e4b200aaa4a79e9a"
+  },
+  "comparison_method": "Top-level JSON raw value tokens sliced without numeric parsing or serialization; exact byte equality",
+  "comparisons": [
+    {
+      "left": "Main_before_lock",
+      "right": "Main_after_locks",
+      "exact_raw_value_tokens_equal": true,
+      "left_sha256": "fac946b239efa0327c406b18efe262806b1c5e7657c89febc3f7f692b12f5b81",
+      "right_sha256": "fac946b239efa0327c406b18efe262806b1c5e7657c89febc3f7f692b12f5b81"
+    },
+    {
+      "left": "Main_after_locks",
+      "right": "Main_after",
+      "exact_raw_value_tokens_equal": true,
+      "left_sha256": "fac946b239efa0327c406b18efe262806b1c5e7657c89febc3f7f692b12f5b81",
+      "right_sha256": "fac946b239efa0327c406b18efe262806b1c5e7657c89febc3f7f692b12f5b81"
+    },
+    {
+      "left": "helper_before",
+      "right": "helper_after",
+      "exact_raw_value_tokens_equal": true,
+      "left_sha256": "58e11f3fb24b7588b983d2db0c5ee741e57cd7b125e93cf413df560ef493937b",
+      "right_sha256": "58e11f3fb24b7588b983d2db0c5ee741e57cd7b125e93cf413df560ef493937b"
+    },
+    {
+      "left": "target_before",
+      "right": "target_after",
+      "exact_raw_value_tokens_equal": true,
+      "left_sha256": "cb02980cd280f7c87bd036bc59d2c2dc15f43999115e84749b8c6aecaec7d6a0",
+      "right_sha256": "cb02980cd280f7c87bd036bc59d2c2dc15f43999115e84749b8c6aecaec7d6a0"
+    }
+  ],
+  "owned_stable_fields": [
+    "cpu.max",
+    "device",
+    "inode",
+    "memory.events",
+    "memory.max",
+    "memory.swap.current",
+    "memory.swap.max",
+    "memory.swap.peak",
+    "path",
+    "pids.max"
+  ],
+  "owned_memory_current_and_peak_are_dynamic": true,
+  "controls": 38,
+  "joined_read_commands": 9,
+  "first_error": {
+    "exception_type": "RuntimeError",
+    "fixed_code": "OTHER_TASK_SET_CHANGED",
+    "message_sha256": "822aca1d3693d9ce997c9600640cb0abbb958113cf18c14feb0c2bd957073bc3",
+    "phase": "current_complete_table_1",
+    "raw_message_exported": false
+  },
+  "remove_requested": false,
+  "removal_action_attempted": false,
+  "retirement_outcome_unknown": false,
+  "original_launch_outcome": "unknown_retained",
+  "Main_current_window_complete": true,
+  "held_binding_released": true,
+  "flow_lock_released": true,
+  "global_action_lock_released": true,
+  "target_FD_cleanup": {
+    "commercial_files_changed": false,
+    "held_APK_FDs_closed": 1
+  },
+  "command005": {
+    "path": "/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b/steps/current-ihg877-independent-retirement-01/command-005.result.json",
+    "bytes": 443,
+    "sha256": "f887e2f9da435418a3c6da526efb258015a734c8b901ed29b62f0a7652c40879",
+    "stdout_sha256": "bf84e8d77523a712a7b4dc5712dea5ab7e65d7c0a6c3b285eed2b30baec18b8b"
+  },
+  "table_bytes_previously_observed": null,
+  "table_shape_not_yet_observed": true,
+  "new_Android_or_cleanup_authority": false
+}

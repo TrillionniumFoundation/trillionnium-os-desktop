@@ -1,0 +1,223 @@
+{
+  "schema": 1,
+  "kind": "pocket4-original-ndk-APK05-install02-final-binder",
+  "state": "SOURCE_FROZEN_CURRENT50_ACTUAL_UNBOUND",
+  "original_binder": {
+    "bytes": 15280,
+    "sha256": "f3388feef031c5aa2a8eb7fa542d2228367be478d8a47a2103405ddabf69bd9e",
+    "git_blob_sha1": "990abbbbab55bb56de3d5c4fbbf6b828762052f4"
+  },
+  "original_wrapper": {
+    "bytes": 4710,
+    "sha256": "2edb2be25dbe6db762634c2b926022348a6940210f264d8fda8ed67dd06a65c7",
+    "git_blob_sha1": "03a74cff654f959e7f9169fea462290f186418f3"
+  },
+  "binder": {
+    "bytes": 15280,
+    "sha256": "d25128c35ad9422a4ce708a828b1dda4eb42b4dafbf6274abc934dff9523113a",
+    "git_blob_sha1": "26b205e455758c8a04bdd10c7b72f8af022d160a"
+  },
+  "wrapper": {
+    "bytes": 4710,
+    "sha256": "63b928d521437446e68b6b681cdb8aeda0a5c184ef17088a194649b6e55237e2",
+    "git_blob_sha1": "552fb9fb8dc24af7f8275e913ad605ff17dae26d"
+  },
+  "EXPECTED": {
+    "base_packet": {
+      "bytes": 235774,
+      "sha256": "1de1413339cf1bc6150164e2a8feaa133c917cfac8af805249d4216d75683057"
+    },
+    "wrapper_template": {
+      "bytes": 4710,
+      "sha256": "63b928d521437446e68b6b681cdb8aeda0a5c184ef17088a194649b6e55237e2"
+    },
+    "source_manifest": {
+      "bytes": 1054,
+      "sha256": "684209fb84cf81921a1c65e8c52c7bf95db87ca0167d46badf8a8d974a2ba237"
+    },
+    "controls": {
+      "check_fixture.py": {
+        "bytes": 17942,
+        "sha256": "cd367e402119d2f353acfd66e1e5431a149f6e38b5d6a28a630995c8dc795852"
+      },
+      "check_external_manifest.py": {
+        "bytes": 4681,
+        "sha256": "1bd278bd296084e46dd43b6dfc45420b85568a02c05e3823b11704fa14bd9e06"
+      },
+      "check_install_lease.py": {
+        "bytes": 15887,
+        "sha256": "ce8a1cac2bbde4f99319845914a7328e907c222a26a5ddc43e0540d8056510ae"
+      }
+    },
+    "cases": {
+      "fixture": [
+        "three_separate_fixed_fixture_scopes",
+        "scope_rejects_commercial_package",
+        "scope_rejects_old_epoch",
+        "scope_rejects_old_baseline",
+        "scope_rejects_inherited_scope",
+        "scope_rejects_automatic_retry",
+        "install_rejects_adopted_old_UID",
+        "actual_instrumentation_supplies_complete23_and_exact12_filter",
+        "empty_VerifyTestList_cannot_be_admitted",
+        "actual_phase_plans_keep_install_run_retirement_separate",
+        "run_scope_cannot_invoke_retirement_plan",
+        "install_must_start_from_all_user_absence",
+        "package_parser_uses_new_UID_and_rejects_protected_UID",
+        "numeric_process_parser_projects_only_fixed_UID",
+        "actual_instrumentation_parser_requires_one_original_testMain",
+        "failed_instrumentation_status_cannot_pass",
+        "actual_XML_parser_requires_exact12_without_runtime_inference",
+        "XML_rejects_failures",
+        "XML_rejects_disabled",
+        "XML_rejects_skipped",
+        "XML_rejects_errors",
+        "XML_rejects_duplicate_test_body",
+        "XML_rejects_missing_test_body",
+        "XML_rejects_unexecuted_test_body",
+        "XML_entity_definitions_are_rejected",
+        "source_only_install_stops_before_any_IO",
+        "source_only_run_stops_before_any_IO",
+        "source_only_retire_stops_before_any_IO",
+        "source_only_context_stops_before_any_IO",
+        "source_only_source_loader_stops_before_any_IO",
+        "real_install_constructor_separates_tuple_from_scope_authority",
+        "install_constructor_rejects_equal_but_old_Main_pair",
+        "install_constructor_rejects_wrong_source_manifest",
+        "install_constructor_rejects_unreleased_held_binding",
+        "install_constructor_rejects_incomplete_staging_cleanup",
+        "install_constructor_rejects_wrong_built_APK",
+        "install_constructor_rejects_scope_fields_in_exact_tuple",
+        "install_constructor_rejects_wrong_observed_UID"
+      ],
+      "manifest": [
+        "unbound_source_root_stops_before_read",
+        "external_pin_qualifies_own_phase_and_is_copied",
+        "self_embedded_manifest_authority_is_rejected",
+        "wrong_external_manifest_hash_is_rejected"
+      ],
+      "lease": [
+        "install_worker_unbound_stops_before_OS_or_Main",
+        "real_lease_claims_three_locks_and_exact_seven_sources",
+        "same_lease_cannot_enter_install_twice",
+        "install_lease_cannot_authorize_retirement_scope",
+        "install_lease_rejects_changed_external_manifest",
+        "real_renamed_shared_ancestor_is_rejected_before_command",
+        "real_lock_contention_and_failed_acquire_FD_remain_accounted",
+        "unlock_failure_stays_failed_and_all_owned_FDs_close"
+      ]
+    },
+    "root": "/home/alex/work/pocket4-original-ndk-fixture-APK05-install-02",
+    "install_nonce": "06a571251aa6fcc77591494edda1f801",
+    "source_tree": "66e25bf5462043cdd6c755e4a725b925719515e9",
+    "controls_tree": "66e25bf5462043cdd6c755e4a725b925719515e9",
+    "controls_request": {
+      "bytes": 254263,
+      "sha256": "3f0327b9172e5d94fddb0ac750eaaec0266becc8792a15b4f846f0cbb2af9c7d"
+    }
+  },
+  "function_literal_replacements": [
+    [
+      "pocket4-original-ndk-install-entry-controls01",
+      "pocket4-original-ndk-install-entry-controls02",
+      1
+    ],
+    [
+      "global890.original.json",
+      "global921.original.json",
+      1
+    ],
+    [
+      "global891.original.json",
+      "global922.original.json",
+      2
+    ],
+    [
+      "globalBefore.length===890",
+      "globalBefore.length===921",
+      1
+    ],
+    [
+      "globalAfter.length===891",
+      "globalAfter.length===922",
+      1
+    ],
+    [
+      "global891_original",
+      "global922_original",
+      1
+    ],
+    [
+      "p4-ndk-fixture-APK03-install01-",
+      "p4-ndk-fixture-APK05-install02-",
+      1
+    ],
+    [
+      "target_sdk:23",
+      "target_sdk:24",
+      1
+    ]
+  ],
+  "wrapper_replacements": [
+    [
+      "SOURCE_MANIFEST = {'bytes':1054,'sha256':'50dce3c5572a40562c1928264219173a61d92fb9f39a96be9feb956695ba8c2e'}",
+      "SOURCE_MANIFEST = {'bytes':1054,'sha256':'684209fb84cf81921a1c65e8c52c7bf95db87ca0167d46badf8a8d974a2ba237'}",
+      1
+    ],
+    [
+      "WORKER = {'bytes':22059,'sha256':'9d50985b0f33fdb2774d07a680ab60e961a849eb0e2295ceff7286e2455c56d8'}",
+      "WORKER = {'bytes':22059,'sha256':'d7ba4227604949ed80d491c6cef45e4f52267267e002b1e6ff796cdd68d1b046'}",
+      1
+    ],
+    [
+      "/home/alex/work/pocket4-original-ndk-fixture-APK03-install-01/source",
+      "/home/alex/work/pocket4-original-ndk-fixture-APK05-install-02/source",
+      1
+    ],
+    [
+      "pocket4-original-ndk-install-wrapper-failure01",
+      "pocket4-original-ndk-install-wrapper-failure02",
+      1
+    ]
+  ],
+  "all_other_binder_function_bytes_identical": true,
+  "wrapper_full_inverse_equal": true,
+  "gate": "Independent future complete current host50 stdout/terminal must bind the current seven-source manifest and all three exact controls. Old50 or a missing actual cannot create an install request.",
+  "preserved": {
+    "counts": {
+      "fixture": 38,
+      "manifest": 4,
+      "lease": 8
+    },
+    "worker_work_seconds": 175,
+    "outer_timeout_seconds": 240,
+    "memory_max_bytes": 536870912,
+    "cpu_quota_percent": 100,
+    "nice": 15,
+    "args": [
+      "/usr/bin/sudo",
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-"
+    ],
+    "source_worker_pending_binding": null,
+    "original_eight_install_commands": true,
+    "first_all_user_PM_absence_gate": true,
+    "current_Main_guards_and_locks": true,
+    "target_sdk": 24,
+    "target_sdk_bypass": false
+  },
+  "honest_boundaries": {
+    "actual_source_readonly38_qualified": true,
+    "actual_nonce02_qualified": true,
+    "actual_current50": null,
+    "actual_installed_UID": null,
+    "new_install_request": null,
+    "run_or_retire_nonce": null,
+    "original_install01_outcome": "UNKNOWN",
+    "residual02_only_selected_index_and_two_leaves": true
+  },
+  "performed": "Pure V8 source derivation, exact function and wrapper inverse, callable syntax, absent-actual first-gate rejection. No Python, Main, Android, nonce generation or dispatch."
+}

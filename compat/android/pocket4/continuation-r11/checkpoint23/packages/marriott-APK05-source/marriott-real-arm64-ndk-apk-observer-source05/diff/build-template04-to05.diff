@@ -1,0 +1,13 @@
+--- APK04/build-template.py
++++ APK05/build-template.py
+@@ -1176,8 +1176,8 @@
+     try:
+         require(os.getuid()==os.geteuid()==os.getgid()==os.getegid()==1000,
+                 'ordinary operator UID/GID1000 required')
+-        require(CFG['kind']=='p4-marriott-real-arm64-ndk-apk-build04' and
+-                root==Path('/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-04-20261106') and
++        require(CFG['kind']=='p4-marriott-real-arm64-ndk-apk-build05' and
++                root==Path('/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106') and
+                 aosp==Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source'),
+                 'fixed new APK build/source root differs')
+         require(CFG['java_home']==str(aosp/'prebuilts/jdk/jdk21/linux-x86') and

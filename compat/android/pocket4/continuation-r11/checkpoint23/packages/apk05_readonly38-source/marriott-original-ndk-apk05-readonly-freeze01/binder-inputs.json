@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "binder": "bind_readonly.js",
+  "input_mapping": {
+    "report": {
+      "external_original": true,
+      "bytes": 9811685,
+      "sha256": "d8eb53c924fa6a76bee19304bd8538bf2a57306b7e9bd6a55df8787d4ea33411",
+      "git_blob_sha": "b9e554da10457c28186be38db3c8916bc7edb79f"
+    },
+    "sources": {
+      "current_discovery.py": "source/current_discovery.py",
+      "fixture_context.py": "source/fixture_context.py",
+      "fixture_contract.py": "source/fixture_contract.py",
+      "fixture_phases.py": "source/fixture_phases.py",
+      "fixture_transport.py": "source/fixture_transport.py"
+    },
+    "template": "read-template.py",
+    "check": "controls/check_fixture.py",
+    "baseRequest": {
+      "git_blob_sha": "e862cce86ee4ade73bd0ff30fecd4f1e01667849",
+      "bytes": 174014,
+      "sha256": "92036009bcee0e3311cdd616f37fcf650d62374d3055320a04ab2609122e4e68"
+    },
+    "terminal": "references/build-terminal.original.json",
+    "stdout": "references/build-stdout.original.json",
+    "review": "references/independent-review.json"
+  },
+  "API": "Function(bind_readonly_js+'\\nreturn bindAPK05Readonly;')()(inputs,U,B), where U is pinned pureJS UTF8/SHA/Git helper and B is strict byte-only canonical base64.",
+  "pureJS_blob": "443e39b58cd6fe72faa1cb1d1c7b0a813fa0032d",
+  "no_actual_Android_or_Python_run": true
+}

@@ -1,0 +1,108 @@
+--- a/framework_build.py
++++ b/framework_build.py
+@@ -175,7 +175,7 @@
+ 
+ # Input and completion bindings for the existing normal builder lifecycle.
+ OWNER = P('/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01')
+-ROOT = OWNER / 'typed-ingress-framework-provider-build-09-20261106'
++ROOT = OWNER / 'typed-ingress-framework-provider-build-10-20261106'
+ HERE = ROOT / 'control-source'
+ WORK = OWNER / 'typed-ingress-framework-work-01-20261105'
+ OUT = ROOT / 'android-out'
+@@ -210,6 +210,7 @@
+ 
+ 
+ PREVIOUS_ROOT = OWNER / 'typed-ingress-framework-provider-build-08-20261106'
++RESOURCE_REJECTED_ROOT = OWNER / 'typed-ingress-framework-provider-build-09-20261106'
+ PUBLISHED_SOURCE = WORK / 'aosp-source'
+ PUBLISHED_MANIFEST_SHA = '5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d'
+ PUBLISHED_MANIFEST_BYTES = 109252
+@@ -429,6 +430,10 @@
+     authorities = [
+         (PREVIOUS_ROOT / 'attempt-01/terminal.json', 'prior-framework-inner-terminal.json', PRIOR_INNER_SHA, 2898),
+         (PREVIOUS_ROOT / 'build-fences-01/terminal.json', 'prior-framework-outer-terminal.json', PRIOR_OUTER_SHA, 24714),
++        (RESOURCE_REJECTED_ROOT / 'build-fences-01/terminal.json', 'prior-normal09-outer-terminal.json',
++         '873a8c03dc51a62e69aaeab28e7929ef2b8b48019d9d1ca949e23ce07d3f3d1a', 24759),
++        (RESOURCE_REJECTED_ROOT / 'resource-admission.json', 'prior-normal09-resource-admission.json',
++         '62bc5109a8ed50722560b6374caa1b0581d53abaa0d300e510adbeb85acfb2cd', 2749),
+     ]
+     documents = []
+     pins = []
+@@ -438,7 +443,7 @@
+         require(document == staged, 'original failed authority differs from its frozen actual bytes')
+         documents.append(document)
+         pins.extend([row, staged_row])
+-    inner, outer = documents
++    inner, outer, rejected_outer, rejected_resource = documents
+     require(inner['state'] == 'FAILED' and inner['builder_returncode'] == 1 and
+             inner['error'] == "RuntimeError('normal builder returned 1')" and
+             inner['cleanup'] == json.loads("{\"complete\":true,\"children\":[{\"pid\":1067696,\"wait_status\":65280,\"reaped\":true}],\"errors\":[]}") and
+@@ -485,6 +490,68 @@
+             require(row['qualified_success'] is True and command['qualified_success'] is True and
+                     command['returncode'] == 0 and row['first_error'] is None and
+                     command['first_error'] is None, 'prior capture failed unexpectedly')
++    # Normal09 rejected the fresh RAM gate before its owned builder was started.
++    # Preserve that failure independently of Normal08's genuine Soong failure.
++    # These historical bytes never satisfy the new run's fresh resource admission.
++    require(rejected_outer['state'] == 'FAILED' and
++            rejected_outer['error'] == "RuntimeError('less than 15 GiB MemAvailable for independent zero-swap profile; no automatic retry')" and
++            rejected_outer['inner_build_called'] is True and rejected_outer['inner_returncode'] is None and
++            rejected_outer['before_observed'] is True and rejected_outer['after_observed'] is True and
++            rejected_outer['main_fence_assessment']['main_fence_pass'] is True and
++            rejected_outer['main_fence_assessment']['identity_or_limit_changes'] == [] and
++            rejected_outer['main_fence_assessment']['main_oom_delta_zero'] is True and
++            all(value == 0 for value in rejected_outer['main_fence_assessment']['main_memory_event_deltas'].values()) and
++            rejected_outer['main_fence_assessment']['main_current_resource_deltas']['memory.swap.current'] == 0 and
++            rejected_outer['main_fence_assessment']['unobserved_transient_effects_excluded'] is False and
++            rejected_outer['main_fence_assessment']['causal_attribution_of_counter_changes'] is False,
++            'prior Normal09 resource rejection or limited Main fence result differs')
++    resource_controls = rejected_outer['capture_lifecycle_controls']
++    require(resource_controls['state'] == 'PASS' and resource_controls['passed'] == 4 and
++            len(resource_controls['rows']) == 4 and all(row['passed'] is True and
++                row['owned_children_empty'] is True and row['Main_read_performed'] is False
++                for row in resource_controls['rows']) and
++            [row['phase'] for row in rejected_outer['capture_lifecycle_receipts']] == phases,
++            'prior Normal09 four real controls or six capture records differ')
++    for row in rejected_outer['capture_lifecycle_receipts']:
++        command = row['command']
++        require(row['outer_subreaper']['final_children_empty'] is True and
++                row['outer_subreaper']['restored'] is True and
++                row['within_absolute_outer_deadline'] is True and not row['secondary_errors'] and
++                command['child_reaped'] is True and command['owned_tree_cleanup_complete'] is True and
++                command['pidfd_closed'] is True and command['all_acquired_fds_closed'] is True and
++                command['retirement_within_deadline'] is True and
++                not command['remaining_owned_children'] and not command['secondary_errors'],
++                'prior Normal09 capture was not completely retired')
++        if row['phase'] == 'control-outer-pidfd':
++            require(row['qualified_success'] is False and command['returncode'] == -9 and
++                    row['first_error']['errno'] == 24 and command['first_error']['errno'] == 24,
++                    'prior Normal09 expected pidfd failure was relabeled')
++        else:
++            require(row['qualified_success'] is True and command['qualified_success'] is True and
++                    command['returncode'] == 0 and row['first_error'] is None and
++                    command['first_error'] is None, 'prior Normal09 capture failed unexpectedly')
++    require(rejected_resource['schema'] == 1 and
++            rejected_resource['state'] == 'OBSERVED_BEFORE_RESOURCE_ADMISSION' and
++            rejected_resource['profile'] == {
++                'memory_max_bytes': 10737418240, 'memory_swap_max_bytes': 0,
++                'minimum_fresh_MemAvailable_bytes': 16106127360,
++                'admission_difference_bytes': 5368709120, 'global_swap_is_owned_budget': False} and
++            rejected_resource['owned_observed'] == {
++                'memory.max': '10737418240', 'cpu.max': '200000 100000',
++                'memory.swap.max': '0', 'memory.swap.current': '0'} and
++            rejected_resource['decision_performed'] is False and
++            rejected_resource['historical_sample_used_for_admission'] is False,
++            'prior Normal09 resource receipt shape or original zero-swap profile differs')
++    resource_raw = rejected_resource['meminfo']['raw_ascii'].encode('ascii', 'strict')
++    require(len(resource_raw) == rejected_resource['meminfo']['bytes'] == 1672 and
++            hashlib.sha256(resource_raw).hexdigest() == rejected_resource['meminfo']['sha256'] ==
++                'f8edcc866dfa4f605af8a5e50f3a42172b716bf819030f11ed6b533323219b38',
++            'prior Normal09 exact bounded meminfo differs')
++    resource_memory = parse_admission_meminfo(resource_raw)
++    require(resource_memory['MemAvailable'] == 14854873088 and
++            resource_memory['MemAvailable'] < MIN_AVAILABLE and
++            MIN_AVAILABLE - resource_memory['MemAvailable'] == 1251254272,
++            'prior Normal09 failed RAM threshold was changed')
+     published, row = json_pin(HERE / 'actual-current225-source-manifest.json',
+                              PUBLISHED_MANIFEST_SHA, PUBLISHED_MANIFEST_BYTES)
+     pins.append(row)

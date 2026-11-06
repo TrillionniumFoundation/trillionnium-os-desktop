@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "unchanged_original_functions": [
+    "identity (formatting only)"
+  ],
+  "borrowed_unchanged_sources": [
+    "R6 SourceContract",
+    "R6 current_baseline_guard",
+    "R6 main_binding.same_epoch_identity",
+    "R6 held_runtime.proc_identity_at/pidfd_alive/NS_TYPES"
+  ],
+  "removed_paths": [
+    "metadata stage creation",
+    "nonce/claim consumption",
+    "discover_main and classpath discovery",
+    "all PM commands",
+    "packages.list and data-directory reads",
+    "APK content hash",
+    "result file write"
+  ],
+  "added_paths": [
+    "fixed complete original-result binding",
+    "per-predicate fstat projection",
+    "journaled owned held-init FDs",
+    "O_PATH no-follow single-leaf path",
+    "whole observation and retirement deadlines"
+  ],
+  "frozen_inputs_mutated": false,
+  "existing_app_metadata_gate_changed": false
+}

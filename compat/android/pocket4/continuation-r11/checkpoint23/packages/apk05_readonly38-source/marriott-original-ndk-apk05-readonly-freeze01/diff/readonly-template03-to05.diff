@@ -1,0 +1,46 @@
+--- baseline/readonly-template.py
++++ candidate/readonly-template.py
+@@ -1,4 +1,4 @@
+-"""Only qualify the exact completed APK03 public report and run 38 pure fixture controls.
++"""Only qualify the exact completed APK05 public report and run 38 pure fixture controls.
+ No installation, Android command, namespace entry, process child, or Main read.
+ The source modules retain all unbound runtime barriers.
+ """
+@@ -15,8 +15,8 @@
+ PACKET_B64 = None  # Exact UTF8-byte packet binding, not a runtime authority.
+ PACKET_SHA256 = None
+ PACKET_BYTES = None
+-REPORT = '/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-03-20261106/build-result.json'
+-REPORT_PIN = {'bytes':9811525,'sha256':'02b979004666268ae73814c809ffeba54de261e4c826a130af267fe717f3f46f'}
++REPORT = '/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/build-result.json'
++REPORT_PIN = {'bytes':9811685,'sha256':'d8eb53c924fa6a76bee19304bd8538bf2a57306b7e9bd6a55df8787d4ea33411'}
+ SOURCE_NAMES = {'fixture_contract.py','fixture_context.py','fixture_transport.py',
+                 'fixture_phases.py','current_discovery.py'}
+ MEMBER_NAMES = SOURCE_NAMES | {'check_fixture.py','SOURCE_PINS.json',
+@@ -52,7 +52,7 @@
+ 
+ def main():
+     started=time.monotonic()
+-    result={'schema':1,'kind':'pocket4-original-ndk-fixture-APK03-readonly-controls01',
++    result={'schema':1,'kind':'pocket4-original-ndk-fixture-APK05-readonly-controls01',
+         'ok':False,'errors':[],'complete_static_APK_report_qualified':False,
+         'source_pins':{},'controls':None,'actual_installed_UID':None,
+         'fixture_attempt_nonces':None,'Main_reads':0,'Android_commands':0,
+@@ -86,7 +86,7 @@
+              'EXACT_UTF8_SOURCE_PACKET_REQUIRED')
+         packet=json.loads(packet_raw)
+         need(packet.get('schema')==1 and
+-             packet.get('kind')=='pocket4-original-ndk-fixture-APK03-readonly-controls' and
++             packet.get('kind')=='pocket4-original-ndk-fixture-APK05-readonly-controls' and
+              set(packet.get('members',{}))==MEMBER_NAMES,'EXACT_TEN_MEMBER_PACKET_REQUIRED')
+         data={}
+         for name,row in packet['members'].items():
+@@ -116,7 +116,7 @@
+              phases.PENDING_SOURCE_MANIFEST is None,'RUNTIME_BARRIERS_MUST_REMAIN_UNBOUND')
+         result['runtime_source_barriers_retained']=True
+         binding=json.loads(data['actual-static-build.json'])
+-        need(binding.get('kind')=='pocket4-original-ndk-fixture-actual-APK03-static-binding' and
++        need(binding.get('kind')=='pocket4-original-ndk-fixture-actual-APK05-static-binding' and
+              binding['build_result']['path']==REPORT and
+              {k:binding['build_result'][k] for k in ('bytes','sha256')}==REPORT_PIN and
+              binding['source_manifest']==whole(data['SOURCE_PINS.json']) and

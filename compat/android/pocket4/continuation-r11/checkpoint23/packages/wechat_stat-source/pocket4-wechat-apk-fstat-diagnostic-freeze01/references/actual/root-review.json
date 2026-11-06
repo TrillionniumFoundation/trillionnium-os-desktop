@@ -1,0 +1,61 @@
+{
+  "schema": "root-current-metadata22-actual-review-v1",
+  "slug": "wechat",
+  "package": "com.tencent.mm",
+  "qualified": false,
+  "checks": [
+    {
+      "name": "complete terminal",
+      "passed": false
+    },
+    {
+      "name": "worker and stage complete",
+      "passed": false
+    },
+    {
+      "name": "exact requested nonce and source",
+      "passed": true
+    },
+    {
+      "name": "unchanged Main across worker and stage",
+      "passed": true
+    },
+    {
+      "name": "exact five joined readonly commands",
+      "passed": false
+    },
+    {
+      "name": "current metadata and directories stable",
+      "passed": false
+    },
+    {
+      "name": "APK complete bound",
+      "passed": false
+    },
+    {
+      "name": "original closures",
+      "passed": true
+    },
+    {
+      "name": "no UI or production upgrade",
+      "passed": true
+    }
+  ],
+  "uid": 10114,
+  "version_code": 3220,
+  "result": {
+    "bytes": 7768,
+    "sha256": "8fac7f6c2e8431fd58a1803f415206fa5a56556d96cdcf8c9d7a67a7d47ba2b7",
+    "git_blob_sha1": "1c87117a5c694fe97257d7b8328f98446d4a4060"
+  },
+  "stage": {
+    "bytes": 3091,
+    "sha256": "72b980d1da8a72ed945895a8686385de3ad13174d6bb878722cc7b6705382ddb",
+    "git_blob_sha1": "1cc9d8d8fbe703faf33e0d74bc2632df18d38132"
+  },
+  "producer_file_reconstruction": "Exact original JSON tokens with producer indent only; full original bytes and SHA match. No separate disk read is claimed.",
+  "whole_app_production_ready": false,
+  "automatic_retry": false,
+  "signer_independently_verified": false,
+  "shared_helper_process_tree_cleanup_qualified": false
+}

@@ -1,0 +1,21 @@
+--- baseline/read.py
++++ candidate/read.py
+@@ -15,7 +15,9 @@
+ import time
+ import types
+ 
+-KIND='pocket4-original-ndk-install01-residual-read01'
++KIND='pocket4-original-ndk-install01-residual-read02'
++PRIOR_RESIDUAL_RESULT={'job_id':'1a1b2a4e11f-fc05-7f1d','bytes':4749,
++    'sha256':'642be65fb1edc94b866c1f0bc578ae1d8801100f6d25ced64de4505c52fba6e8'}
+ PACKAGE='com.example.ndk_tests'
+ FAILED_JOB='1a1b271b3a6-fc05-7e09'
+ FAILED_RESULT='/home/alex/work/pocket4-original-ndk-fixture-APK03-install-01/result.json'
+@@ -396,6 +398,7 @@
+             'process_signals_sent':0,'directory_enumeration':False,'data_contents_read':False,
+             'private_baseline_or_package_table_exported':False,'automatic_retry':False,
+             'old_install_status':'UNKNOWN','installed_UID_qualified':None,
++            'prior_residual_observation':dict(PRIOR_RESIDUAL_RESULT),
+             'future_install_authorized':False,'run_or_retire_authorized':False,
+             'PM_all_user_absence_qualified':False,'APK_path_residue_qualified':False,
+             'whole_invocation_resource_observed':False,'global_ambient_FD_equality_asserted':False,

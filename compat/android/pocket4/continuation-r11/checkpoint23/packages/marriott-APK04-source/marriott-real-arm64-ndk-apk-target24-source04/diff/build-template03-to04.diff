@@ -1,0 +1,60 @@
+--- APK03/build-template.py
++++ APK04/build-template.py
+@@ -1024,8 +1024,8 @@
+             'original NDK permissions differ')
+     sdks = document.findall('uses-sdk')
+     require(len(sdks) == 1 and sdks[0].attrib ==
+-            {attr+'minSdkVersion':'14',attr+'targetSdkVersion':'23'},
+-            'original NDK min14/target23 contract changed')
++            {attr+'minSdkVersion':'14',attr+'targetSdkVersion':'24'},
++            'approved fixture min14/target24 contract changed')
+     app = document.findall('application')
+     require(len(app)==1 and app[0].attrib == {attr+'label':'NDK Tests',attr+'debuggable':'true'} and
+             [x.tag for x in app[0]] == ['uses-library','activity'] and
+@@ -1077,7 +1077,7 @@
+             body,row = read_input(objects[name],33554432,roots=[root])
+             remember_input(watch,row)
+             archive.writestr('lib/arm64-v8a/'+name,body)
+-    # The original APK keeps native libraries compressed and the target23 extraction behavior.
++    # Native libraries remain compressed; extraction is handled by the platform.
+     command(report,root,[tool['zipalign'],'-f','4',str(unsigned),str(aligned)],timeout=45)
+     password,store = private/'password.txt',private/'owned.p12'
+     create(password,(secrets.token_hex(32)+'\n').encode(),mode=0o600)
+@@ -1103,7 +1103,7 @@
+     xml = command(report,root,[tool['aapt'],'dump','xmltree',str(final),'AndroidManifest.xml'],
+                   timeout=30)['stdout']
+     require("package: name='com.example.ndk_tests'" in badging and "sdkVersion:'14'" in badging and
+-            "targetSdkVersion:'23'" in badging and 'application-debuggable' in badging and
++            "targetSdkVersion:'24'" in badging and 'application-debuggable' in badging and
+             len(re.findall(r"^native-code: ([^\r\n]*)$",badging,re.M)) == 1 and
+             shlex.split(re.findall(r"^native-code: ([^\r\n]*)$",badging,re.M)[0]) == ['arm64-v8a'],
+             'actual APK package, SDK or ARM64 architecture differs')
+@@ -1144,7 +1144,7 @@
+     require(final_again == apk_row,'final complete APK tuple changed')
+     remember_input(watch,apk_row)
+     report['APK']=apk_row
+-    report['APK_contract']={'package':'com.example.ndk_tests','min_sdk':14,'target_sdk':23,
++    report['APK_contract']={'package':'com.example.ndk_tests','min_sdk':14,'target_sdk':24,
+         'instrumentation':'android.test.InstrumentationTestRunner',
+         'java_classes':2,'native_members':native,'SDK_interfaces_packaged':False,
+         'runtime_executed':False,'signature_certificate_sha256':certificate[0],
+@@ -1176,8 +1176,8 @@
+     try:
+         require(os.getuid()==os.geteuid()==os.getgid()==os.getegid()==1000,
+                 'ordinary operator UID/GID1000 required')
+-        require(CFG['kind']=='p4-marriott-real-arm64-ndk-apk-build03' and
+-                root==Path('/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-03-20261106') and
++        require(CFG['kind']=='p4-marriott-real-arm64-ndk-apk-build04' and
++                root==Path('/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-04-20261106') and
+                 aosp==Path('/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source'),
+                 'fixed new APK build/source root differs')
+         require(CFG['java_home']==str(aosp/'prebuilts/jdk/jdk21/linux-x86') and
+@@ -1289,7 +1289,7 @@
+             'libgtest_ndk_c++':{'declared':'9','normalized':21},
+             'cpufeatures':{'declared':'minimum','normalized':21},
+             'architecture_floor_source':'android.FirstLp64Version',
+-            'manifest_min_sdk':14,'manifest_target_sdk':23,
++            'manifest_min_sdk':14,'manifest_target_sdk':24,
+             'CRT_brand':sdk_version,'SDK_values_modified':False}
+         CHILD_REAPER=OwnChildReaper()
+         report['child_tree_guard']=CHILD_REAPER.record

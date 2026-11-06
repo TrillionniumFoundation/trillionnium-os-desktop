@@ -1,0 +1,28 @@
+--- APK03/read.py
++++ APK05/read.py
+@@ -8,12 +8,12 @@
+ import time
+ import zlib
+ 
+-ROOT = '/home/alex/work/p4-marriott-apk03-report-transport01-20261106'
++ROOT = '/home/alex/work/p4-marriott-apk05-report-transport01-20261106'
+ PARENT = '/home/alex/work'
+ INPUTS = (
+-    ('marriott_apk03', '/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-03-20261106/build-result.json',
+-     9811525, '02b979004666268ae73814c809ffeba54de261e4c826a130af267fe717f3f46f',
+-     0o400, 'marriott-apk03-build-result.json.zlib'),
++    ('marriott_apk05', '/home/alex/work/pocket4-marriott-real-arm64-ndk-apk-05-20261106/build-result.json',
++     9811685, 'd8eb53c924fa6a76bee19304bd8538bf2a57306b7e9bd6a55df8787d4ea33411',
++     0o400, 'marriott-apk05-build-result.json.zlib'),
+ )
+ STARTED = time.monotonic()
+ WORK_END = STARTED + 40.0
+@@ -25,7 +25,7 @@
+ DIRECTORIES = []
+ ERRORS = []
+ REPORT = {
+-    'schema': 1, 'kind': 'p4-fixed-marriott-apk03-report-zlib-transport01',
++    'schema': 1, 'kind': 'p4-fixed-marriott-apk05-report-zlib-transport01',
+     'collection_complete': False, 'report_contents_parsed': False,
+     'runtime_or_compile_qualification_asserted': False,
+     'source_files_modified': False, 'Main_actions': 0, 'Android_actions': 0,

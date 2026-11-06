@@ -1,0 +1,1102 @@
+{
+  "schema": "pocket4-r11-checkpoint23-reviewable",
+  "checkpoint": 23,
+  "cut_utc": "2026-11-06 21:56:09 UTC",
+  "parent_head": "5f3d73b486297a4cf1c999f62f953bbd3a42b55d",
+  "publication_state": "IMMUTABLE_CANDIDATE_FOR_CAS_PUBLICATION",
+  "whole_apps_ready": 0,
+  "launcher_apps": 45,
+  "commercial_apps_ready": 0,
+  "all_apps_production_ready": false,
+  "task_complete": false,
+  "Main_deployed": false,
+  "current_gate": "SHARED_UI_HOLD_STATUS_READINESS_REPAIR_AND_WHOLE_APP_ACCEPTANCE_PENDING",
+  "inherited_ledger": {
+    "manifest": {
+      "bytes": 6578519,
+      "sha256": "0837ea5e93e75e80d07accacaeb43175934d9039bd0ce8ec06d571f4ba4b790d",
+      "git_blob_sha1": "619fcef974424b2da275817bc81ec824610d252e"
+    },
+    "payload_rows_preserved": 18930,
+    "payload_bytes_preserved": 413016354,
+    "all_prior_FAIL_UNKNOWN_and_per_app_ledgers_retained": true,
+    "old_file_rows_preserved_in_exact_order": true,
+    "historical_raw_root_values_preserved_without_numeric_reserialization": true
+  },
+  "evidence_scope": {
+    "unique_original_archive_roots": 239,
+    "normalized_package_tree": "5d0cb56fc67967b79307e68f671d08f0ff5b930a",
+    "package_files": 2379,
+    "package_bytes": 69161137,
+    "unique_original_leaf_blob_objects": 1367,
+    "retained_original_leaf_entries": 1901,
+    "canonical_prior_checkpoint_roots": 695,
+    "total_canonical_roots": 934,
+    "dependency_cuts": 332,
+    "original_leaf_bodies_byte_identical": true,
+    "derived_metadata_not_original_API_response_bytes": true,
+    "full_blob_verification_by_assembler_and_independent_Root_Merkle_verification": true,
+    "after_cut_results_included": false,
+    "private_baseline_and_raw_Owner_runtime_excluded": true,
+    "host_tests_not_Android_runtime_or_whole_app_acceptance": true
+  },
+  "Main": {
+    "current_baseline_qualified": true,
+    "baseline": {
+      "original_tree": "df158984ab6f8565c64db454acc7b9872f56a8a2",
+      "checkpoint": 22,
+      "canonical_package": "main_baseline02-actual"
+    },
+    "epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "current_host_r6": {
+      "original_tree": "fef592dc0e96f99fb483b77233e8f95788e7a926",
+      "checkpoint": 22,
+      "canonical_package": "current_host_r6-actual"
+    },
+    "qualified_identity_role_count": 8,
+    "original_unique_direct_child_guard_retained": true,
+    "Main_deployment_or_restart_performed": false,
+    "UI_acceptance_held": true,
+    "hold_reason": "Historical IHG launch outcome and final Main fence remain unqualified. A separate current Status call exhibited an extra direct daemon child while in flight; this observation does not attribute the historical launch failure.",
+    "current_status_child_observation": {
+      "original_tree": "c9466b22f297239cdfe70a0d0ce2d4255ff643d9",
+      "checkpoint": 23,
+      "canonical_package": "native_status_child01-actual"
+    },
+    "status_source_read": {
+      "original_tree": "298a77f582ce6d316d45a27be729d867d5e49170",
+      "checkpoint": 23,
+      "canonical_package": "status_ui_sources_read01-actual"
+    },
+    "Status_Readiness_fix": "SOURCE_AND_TEST_WORK_IN_PROGRESS_AT_CUT",
+    "Status_fix_compiled_or_deployed_at_cut": false,
+    "current_framework_runtime_production_qualified": false
+  },
+  "current_cell_metadata": {
+    "latest_additional22": [
+      {
+        "slug": "hyatt",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b27c275c-fc05-7e3b",
+        "actual_tree": "4e9587fcc0a11d6cfebd8f392c9fdeb23fbbb1f3",
+        "package": "com.Hyatt.hyt",
+        "uid": 10138,
+        "version_code": 26090096,
+        "apk_count": 3,
+        "artifact": {
+          "bytes": 13115,
+          "sha256": "4e087d0a84cb0a640206d25cb3c958181b6aba11e7869f60eadff96caad7a0ce",
+          "git_blob_sha1": "b2392da4b3b250d6f38880f6a6a723621cd11140"
+        }
+      },
+      {
+        "slug": "national",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b287ba18-fc05-7e72",
+        "actual_tree": "621d40cfb7d67101fd82aa49c19078a549bbc46c",
+        "package": "com.ehi.national.mobile",
+        "uid": 10141,
+        "version_code": 9354,
+        "apk_count": 4,
+        "artifact": {
+          "bytes": 13909,
+          "sha256": "0e3a1eb251f1448d66b92df324fcd349e95e7318c29de8d5257bc10f08cf7be3",
+          "git_blob_sha1": "83b72ff03dbed55315609e9bf0ef78f87bb2986c"
+        }
+      },
+      {
+        "slug": "textnow",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b288740d-fc05-7e75",
+        "actual_tree": "06a13ba0fe7aac19f30856c98442c05d7d6dc258",
+        "package": "com.enflick.android.TextNow",
+        "uid": 10127,
+        "version_code": 15733,
+        "apk_count": 3,
+        "artifact": {
+          "bytes": 13400,
+          "sha256": "9ca35004ef709bc53a45e182b297611f73e9848cd093b747d5ef923de0f3ac29",
+          "git_blob_sha1": "30aa5bf9ff03c8d11ed146cb020ae650836ccc16"
+        }
+      },
+      {
+        "slug": "hertz",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b288f67f-fc05-7e7a",
+        "actual_tree": "89d34498a6d8a9a49f561ab76afbc491075fd158",
+        "package": "com.hertz.android.digital",
+        "uid": 10140,
+        "version_code": 1389,
+        "apk_count": 4,
+        "artifact": {
+          "bytes": 13929,
+          "sha256": "f7c346077322905e3eb3fcb37b2c87acc8887c790d29e712768a6cc21986b2a8",
+          "git_blob_sha1": "a9827a43ca6304b99438c7d0d9c1124ba31d95ee"
+        }
+      },
+      {
+        "slug": "jd",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b289d314-fc05-7e7f",
+        "actual_tree": "b60197ebf0ef2f47436802be4619298106e08ebb",
+        "package": "com.jingdong.app.mall",
+        "uid": 10126,
+        "version_code": 102918,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12011,
+          "sha256": "f931ba2817f303a274672c52a8f04e5934066e2d758e09dd46780577bc331fe1",
+          "git_blob_sha1": "f3c2fc77791d1660f6d9eca01629c6f7880d45c3"
+        }
+      },
+      {
+        "slug": "beike",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b28a1f27-fc05-7e80",
+        "actual_tree": "abd6c5aebe44684fec74807a5b8dd2f43e716533",
+        "package": "com.lianjia.beike",
+        "uid": 10143,
+        "version_code": 3067100,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11979,
+          "sha256": "b3ad5d01f8b7616b257f7acf30ecc106562de4c7e3c61067bae31f6f8c3d6a5d",
+          "git_blob_sha1": "144f9b718aa8ff868b62a997863cc9941aa9f8c6"
+        }
+      },
+      {
+        "slug": "marriott",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b28a625f-fc05-7e82",
+        "actual_tree": "18034847b0d2d3af0b9243a8b97f655550c208e4",
+        "package": "com.marriott.mrt",
+        "uid": 10136,
+        "version_code": 671,
+        "apk_count": 3,
+        "artifact": {
+          "bytes": 13190,
+          "sha256": "1bcd8b2c4078b89081d3c22c6c7f5ca2e5a9c401d4471bbb5c4cd07f565bc0c4",
+          "git_blob_sha1": "830ecdc870e3e3c4d56da3fce6f35a285b24767e"
+        }
+      },
+      {
+        "slug": "textfree",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b28bcfc5-fc05-7e8e",
+        "actual_tree": "1e07703e7accd52f1abe8d2e74edf12719dd581d",
+        "package": "com.pinger.textfree",
+        "uid": 10128,
+        "version_code": 260172,
+        "apk_count": 4,
+        "artifact": {
+          "bytes": 13823,
+          "sha256": "3f799b165acdd8d3b1944c10150c64de834beb207eb7d9c521c6b49931399c1f",
+          "git_blob_sha1": "9c240e560cd16af1e3fd67a79e603dc680789a3f"
+        }
+      },
+      {
+        "slug": "airchina",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b28c66df-fc05-7e92",
+        "actual_tree": "6b26fd37df3ebb544b13959af0de31014e9a2c9b",
+        "package": "com.rytong.airchina",
+        "uid": 10132,
+        "version_code": 75300,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12029,
+          "sha256": "e0b3cd3a958b400a34d9235c4e90fa9a39caad80ef97ac5f6957e74dba255ac1",
+          "git_blob_sha1": "1638121dbbbc56e261dced407e7c813c092139e1"
+        }
+      },
+      {
+        "slug": "ceair",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b28cd96f-fc05-7e95",
+        "actual_tree": "4be60c6610864ce8ce59d637bdfd10317b4d9a94",
+        "package": "com.rytong.ceair",
+        "uid": 10145,
+        "version_code": 239,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11952,
+          "sha256": "7961973afbedccfccdbb4977df11ad40894ad81a1b644ef5bfb8de4a3051ae01",
+          "git_blob_sha1": "029cb66f6f66c57ec7bae99d8db52bcf84369c0f"
+        }
+      },
+      {
+        "slug": "meituan",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2900898-fc05-7ea3",
+        "actual_tree": "b076c776d5cf49129c66adc22b367258493a935f",
+        "package": "com.sankuai.meituan.takeoutnew",
+        "uid": 10147,
+        "version_code": 800830002,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12222,
+          "sha256": "d83aae3c10b8f58eac596d010954e2290bc10a5ef4c8d59839e2998334c4d7ed",
+          "git_blob_sha1": "611148254ebf880a4c66c3a9a774f45d2880171b"
+        }
+      },
+      {
+        "slug": "didi",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2906368-fc05-7ea6",
+        "actual_tree": "a727a812ff8c6fc25abf1a879c05b07a1bf17ada",
+        "package": "com.sdu.didi.psnger",
+        "uid": 10131,
+        "version_code": 1208001805,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12026,
+          "sha256": "f53a869bb4ed9d3e8814f51896612c71e56f8741a46d236a5bffe12e47f52376",
+          "git_blob_sha1": "9049bb64a489d992f2e64ea21ef084d9ca54126c"
+        }
+      },
+      {
+        "slug": "douyin",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2c2c579-fc05-7fa2",
+        "actual_tree": "abed289cc18b7426341243559322d6168326bae1",
+        "package": "com.ss.android.ugc.aweme",
+        "uid": 10122,
+        "version_code": 410001,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12091,
+          "sha256": "2182abb3c7b08b012729ff53238c93fc6c7d5cc2792de1d2dba8df051cb6c9cc",
+          "git_blob_sha1": "e080e72ec3701fed3c5e75e294b3f01e26ee96d6"
+        }
+      },
+      {
+        "slug": "szzc",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b294869d-fc05-7ec0",
+        "actual_tree": "9670520669482260cd4782642d981455bc216b67",
+        "package": "com.szzc",
+        "uid": 10146,
+        "version_code": 327,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11821,
+          "sha256": "993de376a382b0f3c143c5b5e4eb466129a6ac0390cd1d515760025e7f612b70",
+          "git_blob_sha1": "64090cc8aff1981344c59c5aca5359029e60b1a2"
+        }
+      },
+      {
+        "slug": "taobao",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b294caf8-fc05-7ec2",
+        "actual_tree": "79a9af66590857e0153d6a1de09e0d3df5278d02",
+        "package": "com.taobao.taobao",
+        "uid": 10120,
+        "version_code": 866,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11969,
+          "sha256": "1b7e2fe3b473b3f8c57218b5f665a3ea110d35b3fc12e8c553d030a2e507ce26",
+          "git_blob_sha1": "915d1d6de09ea7bb950e93dbe8fb3c80954e30a1"
+        }
+      },
+      {
+        "slug": "wechat",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2c494d2-fc05-7fab",
+        "actual_tree": "3b35c557b70a31651880764ed373191201698000",
+        "package": "com.tencent.mm",
+        "uid": 10114,
+        "version_code": 3220,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11906,
+          "sha256": "7374d382c6805796563511fc09cd277a0656ee61f0000f51a694d45427d31b87",
+          "git_blob_sha1": "e822352a0a138856d46309c958a4bf90c4b569f9"
+        }
+      },
+      {
+        "slug": "uber",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2983d87-fc05-7ed4",
+        "actual_tree": "68bc60d6b9b60f5d9e2a27888fd56bfa0cc4cd91",
+        "package": "com.ubercab",
+        "uid": 10139,
+        "version_code": 316108,
+        "apk_count": 10,
+        "artifact": {
+          "bytes": 17209,
+          "sha256": "7a9a866787ba5a66af2362d06e616d8f12b33f4800bf5f1905e6590720dcd887",
+          "git_blob_sha1": "02cfd9913c876ca2ec3698e922dd719339fc016f"
+        }
+      },
+      {
+        "slug": "pinduoduo",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2988b40-fc05-7ed5",
+        "actual_tree": "8d2531c3195685a982e91cbd1a1d5b7a5561b2be",
+        "package": "com.xunmeng.pinduoduo",
+        "uid": 10142,
+        "version_code": 83000,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12061,
+          "sha256": "edcd297f5964b23fe95c4a3fec6e3384dc2ffc208c6eebe3332f5bc32eab8858",
+          "git_blob_sha1": "b739faac0754cc541781dffc5bcf6c994cc10855"
+        }
+      },
+      {
+        "slug": "zhubajie",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b29a8cce-fc05-7edf",
+        "actual_tree": "9173d536ba6a6b3692e35520229d3b22ecdd2580",
+        "package": "com.zhubajie.client",
+        "uid": 10144,
+        "version_code": 369,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12031,
+          "sha256": "deecab964caa6c65dd417b1a8262fb9d76eaaa11ce6679d284c916ff01dad4fb",
+          "git_blob_sha1": "a2dd42aa87ed3131dbdbd3105d140fa01baa2f2e"
+        }
+      },
+      {
+        "slug": "streeteasy",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b29ada9b-fc05-7ee2",
+        "actual_tree": "80146534552c1f2753f8ff698e564af2a7520df7",
+        "package": "com.zillow.android.streeteasy",
+        "uid": 10123,
+        "version_code": 22850,
+        "apk_count": 4,
+        "artifact": {
+          "bytes": 14056,
+          "sha256": "59c0bd7375e0c16ced21fdd8e6e6319ee0d6581ae8729e8adb8e81e6857b502c",
+          "git_blob_sha1": "4eee605e8452bb467962408080ee20cb6b4b19d1"
+        }
+      },
+      {
+        "slug": "ctrip",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b29bdf02-fc05-7ee8",
+        "actual_tree": "56b658126f0a9c58487f90842cc9bfd913aa2116",
+        "package": "ctrip.android.view",
+        "uid": 10119,
+        "version_code": 2133,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11994,
+          "sha256": "4f2737da9eeb7032332e110e197be6391904090bb46105b8471be19771bbadc2",
+          "git_blob_sha1": "63f3afa3ad755a8e51fcf5699803f6d249f9b35d"
+        }
+      },
+      {
+        "slug": "ana",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b29c5006-fc05-7eeb",
+        "actual_tree": "b7e0d759a33582ffd78ead5816eeecd284bb6a1f",
+        "package": "jp.co.ana.android.tabidachi",
+        "uid": 10134,
+        "version_code": 339,
+        "apk_count": 4,
+        "artifact": {
+          "bytes": 13966,
+          "sha256": "973140c08577c753403abb4167f9af0fceafa96c81231b452145d8dc1efe36c6",
+          "git_blob_sha1": "374efa441464c962b0168c6510d82181ee9a00db"
+        }
+      }
+    ],
+    "original22_attempts": [
+      {
+        "slug": "hyatt",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b27c275c-fc05-7e3b",
+        "actual_tree": "4e9587fcc0a11d6cfebd8f392c9fdeb23fbbb1f3",
+        "package": "com.Hyatt.hyt",
+        "uid": 10138,
+        "version_code": 26090096,
+        "apk_count": 3,
+        "artifact": {
+          "bytes": 13115,
+          "sha256": "4e087d0a84cb0a640206d25cb3c958181b6aba11e7869f60eadff96caad7a0ce",
+          "git_blob_sha1": "b2392da4b3b250d6f38880f6a6a723621cd11140"
+        }
+      },
+      {
+        "slug": "national",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b287ba18-fc05-7e72",
+        "actual_tree": "621d40cfb7d67101fd82aa49c19078a549bbc46c",
+        "package": "com.ehi.national.mobile",
+        "uid": 10141,
+        "version_code": 9354,
+        "apk_count": 4,
+        "artifact": {
+          "bytes": 13909,
+          "sha256": "0e3a1eb251f1448d66b92df324fcd349e95e7318c29de8d5257bc10f08cf7be3",
+          "git_blob_sha1": "83b72ff03dbed55315609e9bf0ef78f87bb2986c"
+        }
+      },
+      {
+        "slug": "textnow",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b288740d-fc05-7e75",
+        "actual_tree": "06a13ba0fe7aac19f30856c98442c05d7d6dc258",
+        "package": "com.enflick.android.TextNow",
+        "uid": 10127,
+        "version_code": 15733,
+        "apk_count": 3,
+        "artifact": {
+          "bytes": 13400,
+          "sha256": "9ca35004ef709bc53a45e182b297611f73e9848cd093b747d5ef923de0f3ac29",
+          "git_blob_sha1": "30aa5bf9ff03c8d11ed146cb020ae650836ccc16"
+        }
+      },
+      {
+        "slug": "hertz",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b288f67f-fc05-7e7a",
+        "actual_tree": "89d34498a6d8a9a49f561ab76afbc491075fd158",
+        "package": "com.hertz.android.digital",
+        "uid": 10140,
+        "version_code": 1389,
+        "apk_count": 4,
+        "artifact": {
+          "bytes": 13929,
+          "sha256": "f7c346077322905e3eb3fcb37b2c87acc8887c790d29e712768a6cc21986b2a8",
+          "git_blob_sha1": "a9827a43ca6304b99438c7d0d9c1124ba31d95ee"
+        }
+      },
+      {
+        "slug": "jd",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b289d314-fc05-7e7f",
+        "actual_tree": "b60197ebf0ef2f47436802be4619298106e08ebb",
+        "package": "com.jingdong.app.mall",
+        "uid": 10126,
+        "version_code": 102918,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12011,
+          "sha256": "f931ba2817f303a274672c52a8f04e5934066e2d758e09dd46780577bc331fe1",
+          "git_blob_sha1": "f3c2fc77791d1660f6d9eca01629c6f7880d45c3"
+        }
+      },
+      {
+        "slug": "beike",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b28a1f27-fc05-7e80",
+        "actual_tree": "abd6c5aebe44684fec74807a5b8dd2f43e716533",
+        "package": "com.lianjia.beike",
+        "uid": 10143,
+        "version_code": 3067100,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11979,
+          "sha256": "b3ad5d01f8b7616b257f7acf30ecc106562de4c7e3c61067bae31f6f8c3d6a5d",
+          "git_blob_sha1": "144f9b718aa8ff868b62a997863cc9941aa9f8c6"
+        }
+      },
+      {
+        "slug": "marriott",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b28a625f-fc05-7e82",
+        "actual_tree": "18034847b0d2d3af0b9243a8b97f655550c208e4",
+        "package": "com.marriott.mrt",
+        "uid": 10136,
+        "version_code": 671,
+        "apk_count": 3,
+        "artifact": {
+          "bytes": 13190,
+          "sha256": "1bcd8b2c4078b89081d3c22c6c7f5ca2e5a9c401d4471bbb5c4cd07f565bc0c4",
+          "git_blob_sha1": "830ecdc870e3e3c4d56da3fce6f35a285b24767e"
+        }
+      },
+      {
+        "slug": "textfree",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b28bcfc5-fc05-7e8e",
+        "actual_tree": "1e07703e7accd52f1abe8d2e74edf12719dd581d",
+        "package": "com.pinger.textfree",
+        "uid": 10128,
+        "version_code": 260172,
+        "apk_count": 4,
+        "artifact": {
+          "bytes": 13823,
+          "sha256": "3f799b165acdd8d3b1944c10150c64de834beb207eb7d9c521c6b49931399c1f",
+          "git_blob_sha1": "9c240e560cd16af1e3fd67a79e603dc680789a3f"
+        }
+      },
+      {
+        "slug": "airchina",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b28c66df-fc05-7e92",
+        "actual_tree": "6b26fd37df3ebb544b13959af0de31014e9a2c9b",
+        "package": "com.rytong.airchina",
+        "uid": 10132,
+        "version_code": 75300,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12029,
+          "sha256": "e0b3cd3a958b400a34d9235c4e90fa9a39caad80ef97ac5f6957e74dba255ac1",
+          "git_blob_sha1": "1638121dbbbc56e261dced407e7c813c092139e1"
+        }
+      },
+      {
+        "slug": "ceair",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b28cd96f-fc05-7e95",
+        "actual_tree": "4be60c6610864ce8ce59d637bdfd10317b4d9a94",
+        "package": "com.rytong.ceair",
+        "uid": 10145,
+        "version_code": 239,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11952,
+          "sha256": "7961973afbedccfccdbb4977df11ad40894ad81a1b644ef5bfb8de4a3051ae01",
+          "git_blob_sha1": "029cb66f6f66c57ec7bae99d8db52bcf84369c0f"
+        }
+      },
+      {
+        "slug": "meituan",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2900898-fc05-7ea3",
+        "actual_tree": "b076c776d5cf49129c66adc22b367258493a935f",
+        "package": "com.sankuai.meituan.takeoutnew",
+        "uid": 10147,
+        "version_code": 800830002,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12222,
+          "sha256": "d83aae3c10b8f58eac596d010954e2290bc10a5ef4c8d59839e2998334c4d7ed",
+          "git_blob_sha1": "611148254ebf880a4c66c3a9a774f45d2880171b"
+        }
+      },
+      {
+        "slug": "didi",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2906368-fc05-7ea6",
+        "actual_tree": "a727a812ff8c6fc25abf1a879c05b07a1bf17ada",
+        "package": "com.sdu.didi.psnger",
+        "uid": 10131,
+        "version_code": 1208001805,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12026,
+          "sha256": "f53a869bb4ed9d3e8814f51896612c71e56f8741a46d236a5bffe12e47f52376",
+          "git_blob_sha1": "9049bb64a489d992f2e64ea21ef084d9ca54126c"
+        }
+      },
+      {
+        "slug": "douyin",
+        "state": "FAILED_SHAPE_DIAGNOSTIC_PENDING",
+        "job_id": "1a1b291a46e-fc05-7eb1",
+        "actual_tree": "38e0ae52e9fb62df5228db90ab7fc8f8f85aae56",
+        "uid": 10122,
+        "version_code": 410001,
+        "safe_for_remaining_metadata": true,
+        "diagnostic_delegated": true
+      },
+      {
+        "slug": "szzc",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b294869d-fc05-7ec0",
+        "actual_tree": "9670520669482260cd4782642d981455bc216b67",
+        "package": "com.szzc",
+        "uid": 10146,
+        "version_code": 327,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11821,
+          "sha256": "993de376a382b0f3c143c5b5e4eb466129a6ac0390cd1d515760025e7f612b70",
+          "git_blob_sha1": "64090cc8aff1981344c59c5aca5359029e60b1a2"
+        }
+      },
+      {
+        "slug": "taobao",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b294caf8-fc05-7ec2",
+        "actual_tree": "79a9af66590857e0153d6a1de09e0d3df5278d02",
+        "package": "com.taobao.taobao",
+        "uid": 10120,
+        "version_code": 866,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11969,
+          "sha256": "1b7e2fe3b473b3f8c57218b5f665a3ea110d35b3fc12e8c553d030a2e507ce26",
+          "git_blob_sha1": "915d1d6de09ea7bb950e93dbe8fb3c80954e30a1"
+        }
+      },
+      {
+        "slug": "wechat",
+        "state": "FAILED_SHAPE_DIAGNOSTIC_PENDING",
+        "job_id": "1a1b295be95-fc05-7ec8",
+        "actual_tree": "8c61efe0e534a5518461211be6f40c940a67845e",
+        "package": "com.tencent.mm",
+        "uid": 10114,
+        "version_code": 3220,
+        "artifact": {
+          "bytes": 7768,
+          "sha256": "8fac7f6c2e8431fd58a1803f415206fa5a56556d96cdcf8c9d7a67a7d47ba2b7",
+          "git_blob_sha1": "1c87117a5c694fe97257d7b8328f98446d4a4060"
+        },
+        "safe_for_remaining_metadata": true,
+        "diagnostic_delegated": true
+      },
+      {
+        "slug": "uber",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2983d87-fc05-7ed4",
+        "actual_tree": "68bc60d6b9b60f5d9e2a27888fd56bfa0cc4cd91",
+        "package": "com.ubercab",
+        "uid": 10139,
+        "version_code": 316108,
+        "apk_count": 10,
+        "artifact": {
+          "bytes": 17209,
+          "sha256": "7a9a866787ba5a66af2362d06e616d8f12b33f4800bf5f1905e6590720dcd887",
+          "git_blob_sha1": "02cfd9913c876ca2ec3698e922dd719339fc016f"
+        }
+      },
+      {
+        "slug": "pinduoduo",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2988b40-fc05-7ed5",
+        "actual_tree": "8d2531c3195685a982e91cbd1a1d5b7a5561b2be",
+        "package": "com.xunmeng.pinduoduo",
+        "uid": 10142,
+        "version_code": 83000,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12061,
+          "sha256": "edcd297f5964b23fe95c4a3fec6e3384dc2ffc208c6eebe3332f5bc32eab8858",
+          "git_blob_sha1": "b739faac0754cc541781dffc5bcf6c994cc10855"
+        }
+      },
+      {
+        "slug": "zhubajie",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b29a8cce-fc05-7edf",
+        "actual_tree": "9173d536ba6a6b3692e35520229d3b22ecdd2580",
+        "package": "com.zhubajie.client",
+        "uid": 10144,
+        "version_code": 369,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12031,
+          "sha256": "deecab964caa6c65dd417b1a8262fb9d76eaaa11ce6679d284c916ff01dad4fb",
+          "git_blob_sha1": "a2dd42aa87ed3131dbdbd3105d140fa01baa2f2e"
+        }
+      },
+      {
+        "slug": "streeteasy",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b29ada9b-fc05-7ee2",
+        "actual_tree": "80146534552c1f2753f8ff698e564af2a7520df7",
+        "package": "com.zillow.android.streeteasy",
+        "uid": 10123,
+        "version_code": 22850,
+        "apk_count": 4,
+        "artifact": {
+          "bytes": 14056,
+          "sha256": "59c0bd7375e0c16ced21fdd8e6e6319ee0d6581ae8729e8adb8e81e6857b502c",
+          "git_blob_sha1": "4eee605e8452bb467962408080ee20cb6b4b19d1"
+        }
+      },
+      {
+        "slug": "ctrip",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b29bdf02-fc05-7ee8",
+        "actual_tree": "56b658126f0a9c58487f90842cc9bfd913aa2116",
+        "package": "ctrip.android.view",
+        "uid": 10119,
+        "version_code": 2133,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11994,
+          "sha256": "4f2737da9eeb7032332e110e197be6391904090bb46105b8471be19771bbadc2",
+          "git_blob_sha1": "63f3afa3ad755a8e51fcf5699803f6d249f9b35d"
+        }
+      },
+      {
+        "slug": "ana",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b29c5006-fc05-7eeb",
+        "actual_tree": "b7e0d759a33582ffd78ead5816eeecd284bb6a1f",
+        "package": "jp.co.ana.android.tabidachi",
+        "uid": 10134,
+        "version_code": 339,
+        "apk_count": 4,
+        "artifact": {
+          "bytes": 13966,
+          "sha256": "973140c08577c753403abb4167f9af0fceafa96c81231b452145d8dc1efe36c6",
+          "git_blob_sha1": "374efa441464c962b0168c6510d82181ee9a00db"
+        }
+      }
+    ],
+    "latest02_replacements": [
+      {
+        "slug": "douyin",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2c2c579-fc05-7fa2",
+        "actual_tree": "abed289cc18b7426341243559322d6168326bae1",
+        "package": "com.ss.android.ugc.aweme",
+        "uid": 10122,
+        "version_code": 410001,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 12091,
+          "sha256": "2182abb3c7b08b012729ff53238c93fc6c7d5cc2792de1d2dba8df051cb6c9cc",
+          "git_blob_sha1": "e080e72ec3701fed3c5e75e294b3f01e26ee96d6"
+        }
+      },
+      {
+        "slug": "wechat",
+        "state": "QUALIFIED_CURRENT_METADATA",
+        "job_id": "1a1b2c494d2-fc05-7fab",
+        "actual_tree": "3b35c557b70a31651880764ed373191201698000",
+        "package": "com.tencent.mm",
+        "uid": 10114,
+        "version_code": 3220,
+        "apk_count": 1,
+        "artifact": {
+          "bytes": 11906,
+          "sha256": "7374d382c6805796563511fc09cd277a0656ee61f0000f51a694d45427d31b87",
+          "git_blob_sha1": "e822352a0a138856d46309c958a4bf90c4b569f9"
+        }
+      }
+    ],
+    "original_failures_retained": true,
+    "large_APK_correction": {
+      "source": {
+        "original_tree": "62d12a798c8a5706c1fac72315c98563788b7a32",
+        "checkpoint": 23,
+        "canonical_package": "large_apk_metadata02-source"
+      },
+      "fixed_apps": [
+        "com.ss.android.ugc.aweme",
+        "com.tencent.mm"
+      ],
+      "exact_per_file_limit_bytes": 536870912,
+      "aggregate_limit_bytes": 536870912,
+      "all_other_path_identity_Source_Main_FD_gates_preserved": true
+    },
+    "metadata_only": true,
+    "independent_installed_signer_qualified": false,
+    "whole_process_cleanup_qualified": false,
+    "business_acceptance_qualified": false
+  },
+  "helper_builds": {
+    "ticket12306": {
+      "original_tree": "d3658ea015ab963d33e3a30a2b1e885be3f7da74",
+      "checkpoint": 23,
+      "canonical_package": "ticket12306-helper-build-qualified",
+      "state": "HOST_BUILD_PASS"
+    },
+    "Hilton": {
+      "original_tree": "2d1d0206c6a31fb714dec4c95a83b8980ff9ca4f",
+      "checkpoint": 23,
+      "canonical_package": "hilton-helper-build-qualified",
+      "state": "HOST_BUILD_PASS"
+    },
+    "United": {
+      "original_tree": "9add84f90dbb3c8906a71ff37cfac019372dbaf6",
+      "checkpoint": 23,
+      "canonical_package": "united-helper-build-qualified",
+      "state": "HOST_BUILD_PASS"
+    },
+    "each": {
+      "commands": 12,
+      "scope_controls": 32,
+      "deep_controls": 16,
+      "min_sdk": 31,
+      "target_sdk": 33,
+      "version_code": 2,
+      "test_only": true,
+      "APK_bytes": 24720
+    },
+    "installation_and_business_acceptance_proved": false
+  },
+  "helper_installs": {
+    "inherited": {
+      "IHG": {
+        "original_tree": "89dca18ded58c4e090ae93a0c2bc5c1c7a666fb1",
+        "checkpoint": 22,
+        "canonical_package": "ihg_r4_install02-actual_raw",
+        "uid": 10158,
+        "controls": 69,
+        "commands": 13
+      },
+      "Amazon": {
+        "original_tree": "71946912bf3163b8eb4640aa161b940861df4cff",
+        "checkpoint": 22,
+        "canonical_package": "amazon_r4_install02-actual_raw",
+        "uid": 10159,
+        "controls": 68,
+        "commands": 13
+      },
+      "BestBuy": {
+        "original_tree": "6bd8858925aceeb89392f404a4d62b95fc68741b",
+        "checkpoint": 22,
+        "canonical_package": "bestbuy_r4_install02-actual_raw",
+        "uid": 10160,
+        "controls": 68,
+        "commands": 13
+      },
+      "Bilibili": {
+        "original_tree": "897fa68fea1d4162087bc9666d0de52a0c538a51",
+        "checkpoint": 22,
+        "canonical_package": "bili_r10_install02-actual_raw",
+        "uid": 10161,
+        "controls": 37,
+        "commands": 9
+      },
+      "helper_installation_is_not_whole_app_acceptance": true
+    },
+    "ticket12306_attempt01": {
+      "original_tree": "c24af22842c13b3dcc580d100821f622d60f24bf",
+      "checkpoint": 23,
+      "canonical_package": "ticket12306_helper_install01-actual",
+      "state": "FAIL_BEFORE_STAGE_OR_ANDROID_COMMANDS",
+      "reason": "Target metadata reference schema mismatch",
+      "automatic_replay": false,
+      "old_pair_retired": true
+    },
+    "Hilton_at_cut": "SOURCE_READY_UNRUN",
+    "United_at_cut": "SOURCE_READY_UNRUN"
+  },
+  "IHG": {
+    "whole_app_production_ready": false,
+    "original_London_launch": {
+      "original_tree": "6ca5b3c4b26fdb9f1738b3a908fd20b57919721a",
+      "checkpoint": 22,
+      "canonical_package": "ihg_r4_london_ui01-actual",
+      "job_id": "1a1b1f2759d-fc05-7ba5",
+      "outcome": "UNKNOWN_RETAINED",
+      "native_returncode": 1,
+      "native_timed_out": false,
+      "owned_native_child_joined": true,
+      "original_final_Main_guard_error": "OWNER_SINGLE_DIRECT_CHILD_REQUIRED",
+      "durable_commands": 7,
+      "click_actions": 0,
+      "text_actions": 0,
+      "all_40_nonces_retired": true,
+      "automatic_replay": false,
+      "cleanup_authority": false
+    },
+    "current_owned_task877_retirement02": {
+      "original_tree": "b05a9748f294105a33196ecbce6e72eff78b9cfd",
+      "checkpoint": 23,
+      "canonical_package": "ihg877_retirement02-actual",
+      "state": "EXACT_OWNED_TASK_REMOVAL_PASS",
+      "controls": 46,
+      "commands": 13,
+      "only_task_removed": 877,
+      "other_tasks_unchanged": [
+        875,
+        878
+      ],
+      "Main_windows_equal": 3,
+      "source_and_FD_closure_qualified": true
+    },
+    "historical_UNKNOWN_resolved": false,
+    "shared_UI_hold": true,
+    "historical_task876_disappearance_and_task878_origin_qualified": false
+  },
+  "scoped_UI_candidates": {
+    "Bilibili": {
+      "original_tree": "6ae492c91706056c3b939dd30b4973503ece84d4",
+      "checkpoint": 22,
+      "canonical_package": "bili-current-player-ui-source",
+      "state": "SOURCE_READY_UNRUN_UI_HOLD",
+      "fresh_non_consumed_nonces": 146
+    },
+    "Amazon": {
+      "original_tree": "e72d0a479accb539087513b6943ecf7e4ac201a8",
+      "checkpoint": 22,
+      "canonical_package": "amazon_r4_search_ui01-source",
+      "state": "SOURCE_READY_UNRUN_UI_HOLD",
+      "maximum_Search_clicks": 1,
+      "query_inputs": 0,
+      "fresh_non_consumed_nonces": 32
+    },
+    "BestBuy": {
+      "original_tree": "6126e98f401a1cc6d98cd7838cbe4c05854fa30d",
+      "checkpoint": 22,
+      "canonical_package": "bestbuy_r4_readiness_ui01-source",
+      "state": "SOURCE_READY_UNRUN_UI_HOLD",
+      "readiness_rounds": 3,
+      "round_offsets_seconds": [
+        0,
+        10,
+        20
+      ],
+      "fresh_non_consumed_nonces": 10,
+      "input_actions": 0
+    },
+    "state": "SOURCE_READY_UNRUN_SHARED_UI_HOLD"
+  },
+  "Native": {
+    "builder472": {
+      "original_tree": "79ee39b56f1b6975786fc3e073def0507004a241",
+      "checkpoint": 23,
+      "canonical_package": "native472_compile01-actual",
+      "state": "HOST_PASS",
+      "commands": 71,
+      "focused_tests": 32
+    },
+    "builder473": {
+      "original_tree": "93580065ac53ccfd40f3334dec7d3f88a737c9ef",
+      "checkpoint": 23,
+      "canonical_package": "native473_compile01-actual",
+      "state": "HOST_PASS",
+      "commands": 71,
+      "focused_tests": 33
+    },
+    "builder474": {
+      "original_tree": "277a3e5d83999b26c303998a683cb641c82ca525",
+      "checkpoint": 23,
+      "canonical_package": "native474_compile01-actual",
+      "state": "HOST_PASS",
+      "commands": 74,
+      "focused_tests": 35,
+      "source_files": 501,
+      "source_projects": 225,
+      "own_memory_peak_bytes": 1073741824,
+      "memory_max_events": 205,
+      "OOM_events": 0,
+      "swap_observed_bytes": 0,
+      "swap_max": "max"
+    },
+    "normal09": {
+      "original_tree": "0364500bdb51a4e38ccfcfe99594edfd41cf548d",
+      "checkpoint": 23,
+      "canonical_package": "normal09-actual",
+      "state": "FRESH_RESOURCE_GATE_FAIL_BEFORE_BUILD",
+      "pure_controls": 46,
+      "real_lifecycle_controls": 4,
+      "Main_identities_equal": 8,
+      "MemAvailable_bytes": 14854873088,
+      "required_MemAvailable_bytes": 16106127360
+    },
+    "normal10_source": {
+      "original_tree": "5b2df754758a987ecda38b0c5794a95d8059df3d",
+      "checkpoint": 23,
+      "canonical_package": "native-normal10-source",
+      "state": "REVIEWED_SOURCE_UNRUN_RESOURCE_HOLD"
+    },
+    "Composer_normal01_source": {
+      "original_tree": "4994ffd17604c81f75d50c3ffe3601c8c463656b",
+      "checkpoint": 23,
+      "canonical_package": "composer_normal01-source",
+      "state": "REVIEWED_SOURCE_UNRUN_RESOURCE_HOLD",
+      "Android_AIDL_Binder_GPU_runtime_qualified": false
+    },
+    "latest_memory_observation": {
+      "original_tree": "a568029fd09d3eb78ab44fbe47fddcfe809eb12a",
+      "checkpoint": 23,
+      "canonical_package": "normal10_memory_read02-actual",
+      "observed_utc": "2026-11-06 21:00:17.456477 UTC",
+      "MemAvailable_bytes": 14140059648,
+      "required_MemAvailable_bytes": 16106127360,
+      "gate_pass": false
+    },
+    "framework_Java_JNI_and_runtime_not_qualified": true
+  },
+  "NDK_fixture": {
+    "whole_app_production_ready": false,
+    "APK05": {
+      "original_tree": "8a327ae27f0f50e4fcacbe63e8aa537f1bfcfaf1",
+      "checkpoint": 23,
+      "canonical_package": "marriott-APK05-qualified-actual",
+      "state": "REAL_ARM64_BUILD_PASS",
+      "commands": 50,
+      "relocatable_objects": 16,
+      "links": 7,
+      "registered_TestBody_symbols": 23,
+      "ProcSelfMaps_TestBody_symbols": 12,
+      "APK": {
+        "bytes": 1397258,
+        "sha256": "b3bf438dedbcdd5f3ac871733a273b3cece446db6be308df73f95b08cb46d164",
+        "min_sdk": 14,
+        "target_sdk": 24,
+        "signer_sha256": "a899ddfa8c4b57a962c2bb1ae885a44bd904d7b63f6fd301abf514edf70ad72c"
+      },
+      "original_report": {
+        "bytes": 9811685,
+        "sha256": "d8eb53c924fa6a76bee19304bd8538bf2a57306b7e9bd6a55df8787d4ea33411",
+        "git_blob_sha1": "b9e554da10457c28186be38db3c8916bc7edb79f"
+      },
+      "original_kill_attempted_flags_retained": true,
+      "whole_invocation_resource_qualified": false,
+      "swap_zero_claimed": false
+    },
+    "readonly38": {
+      "original_tree": "49c85436a970750e623c289d0b27c70bfdb5d775",
+      "checkpoint": 23,
+      "canonical_package": "marriott_apk05_readonly38-actual",
+      "state": "HOST_PASS",
+      "controls": 38
+    },
+    "new_entry50": {
+      "original_tree": "40dd38f7d15c78a357b4a9d36adf0ca90305603b",
+      "checkpoint": 23,
+      "canonical_package": "marriott_entry50_02-actual",
+      "state": "HOST_PASS",
+      "controls": 50
+    },
+    "original_install01": {
+      "state": "UNKNOWN_RETAINED",
+      "known_native_failure": "INSTALL_FAILED_DEPRECATED_SDK_VERSION; target23 requires at least24",
+      "old_nonce_retired": true,
+      "automatic_replay": false
+    },
+    "residual02": {
+      "original_tree": "97dbd7da82c7dc2fdf78d145a0948e2d37a68a94",
+      "checkpoint": 23,
+      "canonical_package": "marriott_residual_read02-actual",
+      "state": "CURRENT_PACKAGE_LIST_AND_DATA_ABSENCE_ONLY",
+      "all_user_PM_absence_authority": false
+    },
+    "install02_at_cut": "SOURCE_PREPARATION_AND_OLD_BINDER_ONLY",
+    "installed_uid_at_cut": null,
+    "ARM64_runtime_tests_executed_at_cut": false
+  },
+  "Hyatt_diagnostic": {
+    "admission": {
+      "original_tree": "eab828b1dabacaa7942bbc091d269698cfb19a5c",
+      "checkpoint": 23,
+      "canonical_package": "hyatt_apk_elf01-admission"
+    },
+    "job_id": "1a1b2db75b3-fc05-8006",
+    "state": "ADMITTED_RESULT_UNCOLLECTED_BY_ROOT_AT_CUT",
+    "actual_running_state_observed_at_cut": false,
+    "actual_result_included": false,
+    "historical_minus500_cause": "UNKNOWN"
+  },
+  "nonce_ledger": {
+    "global_values": 922,
+    "original": {
+      "count": 922,
+      "bytes": 35039,
+      "sha256": "31d5455e4c3cbe6f1951d032a45d94c442c2535ce3eddc3f745769f7a8969520",
+      "git_blob_sha1": "0f6ff7b838f0dfaa0d933b65a5bbd38ad98e471a"
+    },
+    "prior_consumed_failed_unknown_pools_retained": true,
+    "unknown_admissions_or_launches_never_replayed": true
+  },
+  "pending": [
+    "Complete and actually test Status/Readiness production source; keep current8 and unique-child ownership guards intact.",
+    "Run three corrected helper installation/state flows with fresh authority for any failed attempt; retain original failure records.",
+    "Qualify NDK fixture installation and the real ARM64 run/independent cleanup; source and host controls alone do not qualify runtime.",
+    "Require fresh MemAvailable of at least15GiB before normal or Composer build.",
+    "Reconcile shared UI state and then run fresh guarded Bilibili/Amazon/BestBuy and remaining per-app business flows.",
+    "Close whole process/FD/resource gates and all45 whole-app acceptance rows; preserve distinct system-app scope and historical crash uncertainty."
+  ],
+  "cut_policy": {
+    "fixed_cut_immutable": true,
+    "subsequent_results_require_later_checkpoint": true,
+    "failures_unknowns_and_resource_caveats_retained": true,
+    "original_unknown_actions_not_replayed": true,
+    "old_task_ids_do_not_authorize_current_cleanup": true
+  }
+}

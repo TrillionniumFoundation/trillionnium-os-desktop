@@ -1,0 +1,38 @@
+{
+  "schema": "root-helper-install01-controls-failure-v1",
+  "job_id": "1a1b2d3c17d-fc05-7fef",
+  "terminal": {
+    "bytes": 726,
+    "sha256": "58463a9121c0ff612246a796cbb49936f9ca4b3023f51f42a5a5b60c7729502b",
+    "git_blob_sha1": "c5301b2d8870b7b83918f8507a4c5f36540166d3"
+  },
+  "stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "git_blob_sha1": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+  },
+  "stderr": {
+    "bytes": 748,
+    "sha256": "b5bb8695ee70889f42aafa0203c88fdbed4e6877eae8ca946d14598e96bbd0b2",
+    "git_blob_sha1": "029b6966983d6e31c1696eabfc6d7115e808c2f0"
+  },
+  "outcome": "FAILED_DURING_PRESTAGING_CONTROLS",
+  "first_error": "ACTUAL_METADATA_AND_BUILT_TARGET_ARTIFACT_REFERENCE_MUST_MATCH",
+  "trace_route": [
+    "stage_execute.main line101",
+    "check_install_binding.run_controls line58",
+    "ticket12306_context.qualify_target_metadata line123"
+  ],
+  "complete_control_pass": false,
+  "production_stage_ROOT_creation_reached": false,
+  "production_install_attempted": false,
+  "Android_command_path_reached": false,
+  "Main_guard_not_reached_in_stage_main": true,
+  "prior_source_reads_and_synthetic_controls_not_claimed_zero_IO": true,
+  "helper_UID": null,
+  "actual_full_Main_before_after_observation_available": false,
+  "automatic_retry": false,
+  "assigned_flow_and_state_pair_retired": true,
+  "next_install_requires_separate_corrected_source_and_fresh_pair": true,
+  "whole_app_production_ready": false
+}

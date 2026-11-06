@@ -1,0 +1,40 @@
+{
+  "schema": "pocket4-status-real-dispatch-tests-work01",
+  "state": "SOURCE_ONLY_UNCOMPILED_UNEXECUTED",
+  "parent_tree": "e25f44af4b5bb2e26f286f21ad688eff1b6fc8de",
+  "test_cases": 3,
+  "ignored_subprocess_entry": 1,
+  "production_development_delta": {
+    "anchor": "impl DevelopmentCell {\n",
+    "insert": "    /// Test-only ownership of an ordinary child, with no Android resources.\n    ///\n    /// The caller must stop and join this child. The fixture has created no\n    /// namespace, network, or runtime directory for cleanup to mutate.\n    #[cfg(test)]\n    pub(crate) fn owned_process_for_lifecycle_test(spec: CellSpec, child: Child) -> Self {\n        Self {\n            spec,\n            child,\n            network: None,\n            cleaned: true,\n        }\n    }\n\n",
+    "all_other_bytes_equal": true
+  },
+  "real_route": "Daemon.handle -> poll -> exact selected request arm",
+  "process_filter": {
+    "platform": "linux-x86_64",
+    "scope": "current test thread only",
+    "denied": [
+      "fork",
+      "vfork",
+      "clone",
+      "clone3",
+      "x32 aliases"
+    ],
+    "failure_is_test_failure": true
+  },
+  "fixture": {
+    "ordinary_owned_child": true,
+    "Android": false,
+    "Main_service": false,
+    "seccomp_installed_after_fixture_start": true,
+    "explicit_stop_and_join": true
+  },
+  "unchanged_ready_routes": [
+    "WaitReady",
+    "Launch",
+    "ListApplications",
+    "ApplicationIcon"
+  ],
+  "kernel_reference": "https://docs.kernel.org/userspace-api/seccomp_filter.html",
+  "installed_version_verified": false
+}

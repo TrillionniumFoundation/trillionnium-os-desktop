@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "original_helper": {
+    "bytes": 6122,
+    "sha256": "f42c18cdf019ac5304aaf8702e45c29d1d7aad89fc485f20fb2a61a8e03a8372",
+    "git_blob_sha1": "d088a16e393e8f3764dfbc008aa6d97702041b32"
+  },
+  "new_helper": {
+    "bytes": 6178,
+    "sha256": "8d8ab9f3877f63ad42530dcec86bebfcba99301a90632f2d453e1cee81644ec3",
+    "git_blob_sha1": "b83a2ee5c007b82d8f47ce4d350b36aa85944434"
+  },
+  "onlyReviewedChanges": [
+    [
+      "async function completeMetadata(",
+      "async function completeMetadata02("
+    ],
+    [
+      "const prefix=\"metadata22_\"+slug+\"01\",q=load(\"metadata22_root_bound_requests\")[slug],packet=JSON.parse(q.stdin);",
+      "const prefix=slug+\"_metadata02\",q=JSON.parse(load(\"large_apk_metadata02_file_\"+slug+\"/exact-request.json\")),packet=JSON.parse(q.stdin);"
+    ],
+    [
+      "a.held_file.bytes<=268435456",
+      "a.held_file.bytes<=536870912"
+    ],
+    [
+      "root-current-metadata22-actual-review-v1",
+      "root-current-large-apk-metadata02-actual-review-v1"
+    ],
+    [
+      "bound:\"a600ebe93c1553c1589ff2adfcd92b418a028d78\"",
+      "bound:\"62d12a798c8a5706c1fac72315c98563788b7a32\""
+    ],
+    [
+      "load(\"metadata22_execution_rows\")",
+      "load(\"large_apk_metadata02_execution_rows\")"
+    ],
+    [
+      "store(\"metadata22_execution_rows\",rows)",
+      "store(\"large_apk_metadata02_execution_rows\",rows)"
+    ]
+  ],
+  "original_metadata22_rows_unmodified": true,
+  "new_fixed_two_package_source_and512MiB_bound": true
+}

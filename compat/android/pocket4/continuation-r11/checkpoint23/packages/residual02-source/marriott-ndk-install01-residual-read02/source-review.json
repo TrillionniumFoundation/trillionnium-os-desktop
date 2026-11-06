@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "kind": "marriott-ndk-residual02-source-review",
+  "status": "FROZEN_UNRUN_ROOT_DISPATCH_ONLY",
+  "scope": "One independent newly authorized observation; original install01 UNKNOWN and residual01 lock contention remain historical failures.",
+  "changes": [
+    "KIND read01 to read02",
+    "Add only original residual01 job/bytes/SHA immutable historical pin",
+    "Emit that pin as prior_residual_observation",
+    "Request changes only stdin and a fresh key; original resource/argv bounds unchanged"
+  ],
+  "baseline": {
+    "bytes": 27595,
+    "sha256": "35dedd754a3dc3bd865aba5b718633e20f7dff1da0657d760b3b0a782e231238",
+    "git_blob_sha1": "f8d1dd1babedac5d60e92dd2a5919d8f454cfed9"
+  },
+  "source": {
+    "bytes": 27816,
+    "sha256": "1565d12e5d31a5486bc669dd6f6b0267ae8270ce12d89ffeb4c7b50fc581e276",
+    "git_blob_sha1": "3530a389b3afe508a55a95b0db6f0408c0ebb1ed"
+  },
+  "request": {
+    "bytes": 28753,
+    "sha256": "b382e27df23204eec5c6b79e485e1eb7930035ddb2d1010c518816bee957e49d",
+    "git_blob_sha1": "c59431a8050ac1cc8a9f30d088faaeec64f9808b"
+  },
+  "original_residual01": {
+    "bytes": 4749,
+    "sha256": "642be65fb1edc94b866c1f0bc578ae1d8801100f6d25ced64de4505c52fba6e8",
+    "git_blob_sha1": "4274e67bc55f3f9d2dabd253c5158663a808000d",
+    "job_id": "1a1b2a4e11f-fc05-7f1d",
+    "first_error_stage": "existing_global_lock",
+    "errno": 11,
+    "package_or_data_read": false,
+    "install_status": "UNKNOWN"
+  },
+  "lock_observation": {
+    "bytes": 5531,
+    "sha256": "3993eca9c999abceb39608a02a0d569296ae25b957a70fb37aff549db8e66191",
+    "git_blob_sha1": "5c54c4a95d71e6ba09c399fe30d1bc7606ec5e84",
+    "job_id": "1a1b2b371bd-fc05-7f5f",
+    "collection_complete": true,
+    "matched_records_each_view": 0,
+    "initial_namespace_or_global_absence_proven": false,
+    "historical_cause_proven": false,
+    "used_as_runtime_admission": false
+  },
+  "preserved": [
+    "one flock LOCK_EX|LOCK_NB attempt, no polling or retry",
+    "same original existing lock, no create/chmod",
+    "same exact failed install result path/size/SHA",
+    "same R6 source/full helper/Main guards and held init",
+    "same two private package table reads and exactly two fixed data leaves",
+    "same uid inference only from current actual packages.list, no guessed UID",
+    "same no command/namespace/signal/cleanup/directory-enumeration scope",
+    "same 20s observe/25s final guard/30s alarm/45s outer bounds",
+    "same all owned FD finalization and first error semantics"
+  ],
+  "verification": {
+    "pure_V8_exact_inverse": true,
+    "exact_request_reproduction": true,
+    "Python_compilation_or_execution": false,
+    "Main_or_Android_actions": 0,
+    "Hepta_calls": 0
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "fixed-Status-callers-source-read-v1",
+  "state": "SOURCE_ONLY_UNRUN",
+  "source": {
+    "bytes": 10678,
+    "sha256": "30018f31bc48324379debca883a369a0538f9cf6043303688cd20f06e238c695",
+    "git_blob": "9c440a8fcc98726886331c6abf0d9c86f6f42f0b"
+  },
+  "request": {
+    "bytes": 11323,
+    "sha256": "a7e0385a8f06f7fba78467076751b1137542f7389f23103f3afea9289f6e6f14",
+    "git_blob": "386bbd59f3503d51e41adeaacaea835c03acf3ce"
+  },
+  "original_source": {
+    "bytes": 10849,
+    "sha256": "a867855b234015c9012c3620a32a11d4f3502f53976debaf65f8f101a5d42704",
+    "git_blob": "c794210b397288769b526fcda4535e4cb8549256"
+  },
+  "original_request": {
+    "bytes": 11512,
+    "sha256": "222af2027cfd4cbec36939693716e520d469140e3d58291439705dd86895fe08",
+    "git_blob": "35cd09099f2646c87584cfac2d3669142015fa1e"
+  },
+  "exact_fixed_499_manifest_verified_in_V8": true,
+  "selected_sources": [
+    {
+      "path": "runtime/droidloom-applications/src/lib.rs",
+      "bytes": 34447,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "e219a1dbeeda5c58f7efa4828b39f3e9f3e90777821e44e0a0aa3684353ec023"
+    },
+    {
+      "path": "runtime/droidloom-applications/src/main.rs",
+      "bytes": 2893,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "a75f608367ea58989eaac0882a2eed62bd2015f5fe0188c90e0e39a9142bd409"
+    }
+  ],
+  "inverse_exact": true,
+  "edits": [
+    {
+      "offset": 3,
+      "old": "Read exactly three public engine/handshake sources from owned builder469.",
+      "replacement": "Read exactly two public application-menu sources from owned builder469.",
+      "label": "fixed public callers"
+    },
+    {
+      "offset": 520,
+      "old": "PINS = [{\"path\":\"graphics/droidloom-wayland/src/main.rs\",\"bytes\":106816,\"kind\":\"file\",\"mode\":436,\"sha256\":\"908ec80b8ec2d059b86664cb76d6fe39908c17ba1fa33416e37644416e73357a\"},{\"path\":\"graphics/droidloom-composer-service/src/main.rs\",\"bytes\":17437,\"kind\":\"file\",\"mode\":436,\"sha256\":\"d60ba608023be4325e14e9126c326203188e78d2a7b715b65ba2588dd4cdb6cf\"},{\"path\":\"graphics/droidloom-wayland/Cargo.toml\",\"bytes\":1766,\"kind\":\"file\",\"mode\":436,\"sha256\":\"f369e41d8c86c0b948992d2d07ab8fbdaf3779bd21493e3389730c51a33ea098\"}]",
+      "replacement": "PINS = [{\"path\":\"runtime/droidloom-applications/src/lib.rs\",\"bytes\":34447,\"kind\":\"file\",\"mode\":436,\"sha256\":\"e219a1dbeeda5c58f7efa4828b39f3e9f3e90777821e44e0a0aa3684353ec023\"},{\"path\":\"runtime/droidloom-applications/src/main.rs\",\"bytes\":2893,\"kind\":\"file\",\"mode\":436,\"sha256\":\"a75f608367ea58989eaac0882a2eed62bd2015f5fe0188c90e0e39a9142bd409\"}]",
+      "label": "two exact 499 manifest leaves"
+    },
+    {
+      "offset": 1583,
+      "old": "exact-builder469-engine-retirement-three-sources-readonly01",
+      "replacement": "exact-builder469-Status-UI-callers-two-sources-readonly01",
+      "label": "fresh scope"
+    },
+    {
+      "offset": 9845,
+      "old": "len(RESULT['files']) == 3",
+      "replacement": "len(RESULT['files']) == 2",
+      "label": "exact completion count"
+    }
+  ],
+  "previous_packet_source_equals_standalone": true,
+  "source_file_is_selected_authority": true,
+  "request_uses_complete_new_source_not_legacy_argv": true,
+  "source_execution": false,
+  "Main_access": false,
+  "Status_RPC": false,
+  "children": 0,
+  "writes": 0,
+  "resource_limits": {
+    "read_seconds": 8,
+    "tool_seconds": 15,
+    "memory_bytes": 134217728,
+    "cpu_percent": 25,
+    "explicit_FDs": 40
+  },
+  "Git_fixed_commit_attempt": {
+    "commit": "5f3d73b486297a4cf1c999f62f953bbd3a42b55d",
+    "paths": [
+      "runtime/droidloom-applications/src/lib.rs",
+      "runtime/droidloom-applications/src/main.rs"
+    ],
+    "result": "both exact Git contents returned 404; no source observed"
+  },
+  "installed_Main_same_source_qualified": false
+}

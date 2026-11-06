@@ -1,0 +1,53 @@
+--- install01/controls/check_install_lease.py
++++ install02/controls/check_install_lease.py
+@@ -13,8 +13,8 @@
+ import time
+ import types
+ 
+-CONTROL_ROOT = Path('/home/alex/work/p4-ndk-fixture-install-lease-controls01-20261106')
+-ACTION_HOLDER = Path('/home/alex/work/p4-ndk-fixture-install-lease-controls01-20261106-action')
++CONTROL_ROOT = Path('/home/alex/work/p4-ndk-fixture-install-lease-controls02-20261106')
++ACTION_HOLDER = Path('/home/alex/work/p4-ndk-fixture-install-lease-controls02-20261106-action')
+ ACTION_PARENT = ACTION_HOLDER/'original'
+ ACTION_MOVED = ACTION_HOLDER/'moved'
+ 
+@@ -108,7 +108,7 @@
+             return
+         # All names are fixed consequences of this lease; no listdir/scandir/glob.
+         for path in (CONTROL_ROOT,CONTROL_ROOT/'source',CONTROL_ROOT/'steps',
+-                     CONTROL_ROOT/'steps'/'install-01'):
++                     CONTROL_ROOT/'steps'/'install-02'):
+             if not any(x[0]==path for x in directories):
+                 try:
+                     remember_directory(path)
+@@ -116,8 +116,8 @@
+                     pass
+         names=[CONTROL_ROOT/'source'/x for x in sorted(module.SOURCE_NAMES)]
+         names += [CONTROL_ROOT/'source'/'SOURCE_PINS.json',CONTROL_ROOT/'flow.lock',
+-                  CONTROL_ROOT/'failure.lock',CONTROL_ROOT/'steps'/'install-01'/'step.lock',
+-                  CONTROL_ROOT/'steps'/'install-01'/'once.claim.json']
++                  CONTROL_ROOT/'failure.lock',CONTROL_ROOT/'steps'/'install-02'/'step.lock',
++                  CONTROL_ROOT/'steps'/'install-02'/'once.claim.json']
+         for path in names:
+             if not any(x[0]==path for x in files):
+                 try:
+@@ -140,7 +140,7 @@
+         case('install_worker_unbound_stops_before_OS_or_Main',unbound_worker)
+         module.ROOT=CONTROL_ROOT
+         module.SOURCE=CONTROL_ROOT/'source'
+-        module.STEP=CONTROL_ROOT/'steps'/'install-01'
++        module.STEP=CONTROL_ROOT/'steps'/'install-02'
+         module.ACTION_LOCK=str(ACTION_PARENT/'action.lock')
+         # Each control directory is new; an old failed run cannot be adopted.
+         os.mkdir(ACTION_HOLDER,0o700)
+--- install01/controls/runner-template.py
++++ install02/controls/runner-template.py
+@@ -12,7 +12,7 @@
+ import time
+ import types
+ 
+-KIND = 'pocket4-original-ndk-install-entry-controls01'
++KIND = 'pocket4-original-ndk-install-entry-controls02'
+ PACKET_SHA256 = '__PACKET_SHA256__'
+ PACKET_BYTES = __PACKET_BYTES__
+ PACKET_B64 = '__PACKET_B64__'

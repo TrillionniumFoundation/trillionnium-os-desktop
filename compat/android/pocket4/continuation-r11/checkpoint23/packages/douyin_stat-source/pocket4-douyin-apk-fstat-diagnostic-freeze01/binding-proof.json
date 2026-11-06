@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNRUN",
+  "kind": "pocket4-douyin-one-apk-fstat-diagnostic-01",
+  "original_report": {
+    "bytes": 7852,
+    "sha256": "bad61d846ce2c2b0e84964f94e34df898fab835db5e67597694583880c26d2bf",
+    "git_blob_sha1": "ab6371430d20ef424c7b21b6a2b687b0efe93694"
+  },
+  "original_metadata_source": {
+    "bytes": 30072,
+    "sha256": "8d9bdff0bbc0d4bbcd125c8cfbb9dc3c5cfbb5bf152ec750393f73e2ed10cb43",
+    "git_blob_sha1": "654d4a22d171c2533acd7cd5fa6f92b2a893db5c"
+  },
+  "original_request": {
+    "bytes": 46289,
+    "sha256": "1b6bd14f72d9f9e242e8d7c63b164a3c8379e4217dffe295f22d8498d2888b61",
+    "git_blob_sha1": "a60c39fd5c36024f14e30a35d1305b19ec26ff46"
+  },
+  "original_failure_preserved": true,
+  "original_failed_predicate_at_failure_time": "UNKNOWN",
+  "original_uid_version": {
+    "package": "com.ss.android.ugc.aweme",
+    "uid": 10122,
+    "user": 0,
+    "version_code": 410001
+  },
+  "one_fixed_apk_path": "/data/app/~~qK8WI0EE2QSJnIxyz_V7nQ==/com.ss.android.ugc.aweme-2Hs2HIYwjnR31Lu6N2QZVA==/base.apk",
+  "original_predicate_source": "            need(stat.S_ISREG(first['mode']) and first['nlink']==1 and\n                 first['uid']==first['gid']==1000 and not first['mode']&0o022 and\n                 0<first['bytes']<=FILE_LIMIT,'TICKET12306_INSTALLED_APK_SHAPE_OR_BOUND')",
+  "original_limit_bytes": 268435456,
+  "fixed_bindings": {
+    "kind": "pocket4-douyin-one-apk-fstat-diagnostic-01",
+    "package": "com.ss.android.ugc.aweme",
+    "result": {
+      "path": "/home/alex/work/pocket4-current-cell02-douyin-metadata-01/result.json",
+      "bytes": 7852,
+      "sha256": "bad61d846ce2c2b0e84964f94e34df898fab835db5e67597694583880c26d2bf"
+    },
+    "source": {
+      "path": "/home/alex/work/pocket4-current-cell02-douyin-metadata-01/source/read_target.py",
+      "bytes": 30072,
+      "sha256": "8d9bdff0bbc0d4bbcd125c8cfbb9dc3c5cfbb5bf152ec750393f73e2ed10cb43"
+    },
+    "observed_metadata": {
+      "package": "com.ss.android.ugc.aweme",
+      "uid": 10122,
+      "user": 0,
+      "version_code": 410001
+    },
+    "apk_path": "/data/app/~~qK8WI0EE2QSJnIxyz_V7nQ==/com.ss.android.ugc.aweme-2Hs2HIYwjnR31Lu6N2QZVA==/base.apk"
+  },
+  "new_source": {
+    "bytes": 29330,
+    "sha256": "0878c762de8ee0b6b19b3b8836a236120e6294ed4cfffc7a40ea621c2b73c076",
+    "git_blob_sha1": "1fa1313657cb76addcdef69d0d728f34fe17f60b"
+  },
+  "exact_request": {
+    "bytes": 30896,
+    "sha256": "ccb2369123e0c4d98d5a7f264c12db4be42c172d481dc9a072009e9799360e29",
+    "git_blob_sha1": "e6a77ff6b3e2cd52e3f7022564385cdc012b849e"
+  },
+  "exact_stdin": {
+    "bytes": 29330,
+    "sha256": "0878c762de8ee0b6b19b3b8836a236120e6294ed4cfffc7a40ea621c2b73c076",
+    "git_blob_sha1": "1fa1313657cb76addcdef69d0d728f34fe17f60b"
+  },
+  "transport": {
+    "bytes": 407,
+    "sha256": "75cffe6754b650be1bbdaa87a4eebb25f6548bdd594d790a409aa0c2ff703566",
+    "git_blob_sha1": "1b903d53ffa95de3cee824c0914276b90b0272b6"
+  },
+  "original_App_nonce_present_in_new_source": false,
+  "App_nonce_consumption": 0,
+  "filesystem_writes": 0,
+  "Android_commands": 0,
+  "children_spawned": 0,
+  "APK_content_reads": 0,
+  "directory_enumeration": false,
+  "namespace_entry": false,
+  "global_ambient_FD_equality_claimed": false,
+  "unchanged_R6_manifest": "002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff",
+  "unchanged_R6_guard": "96dbdaf7673d5298e6fe17cb1b7ebae29b37110ee59f31b0c927e2cb0ef4b150",
+  "unchanged_R6_held_runtime": "72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4",
+  "new_owned_read_scope": [
+    "Whole bound historical result and its exact metadata source, twice",
+    "Unchanged R6 SourceContract, current Main guard and qualified shared-helper source inputs",
+    "Existing action-lock file opened O_RDONLY, one nonblocking flock, no creation",
+    "Fixed current init proc/pidfd, six namespace FDs and held root",
+    "Four fixed APK ancestor components; only O_PATH/fstat/no-follow named stat on the one base.apk"
+  ],
+  "success_means": "Current fstat observation complete, unchanged named/held identity, original source and Main guards passed, all journal FDs closed; not APK metadata admission.",
+  "errors": "First error retained; each journal close attempted once; final Main/source/name/close/deadline failure forbids collection_complete.",
+  "validation": {
+    "V8_reproduction_and_static_contract_checks": "PASS",
+    "Python_compilation": "NOT_PERFORMED",
+    "Python_controls": "NOT_PERFORMED",
+    "device_execution": "UNRUN"
+  },
+  "peer_review": "NOT_PERFORMED; App agent prioritized current Main diagnostic",
+  "raw_originals_reencoded": false
+}

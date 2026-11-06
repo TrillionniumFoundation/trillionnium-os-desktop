@@ -1,0 +1,68 @@
+--- a/composer-completion-functions.py
++++ b/composer-completion-functions.py
+@@ -58,9 +58,10 @@
+                 for relative, row in COMPOSER_PROJECTED_BLUEPRINTS.items()),
+             'COMPOSER_EXACT_PROJECTION')
+     effective = inputs['effective_vendor_Android_bp_sha256']
+-    require(isinstance(effective, str) and len(effective) == 64 and
+-            all(c in '0123456789abcdef' for c in effective) and
+-            projection['files'].get('vendor/droidloom/Android.bp') == effective,
++    # The exact Composer route copies this root Blueprint unchanged. Only the
++    # disjoint NativeBridge-only route projects it after the vendor mirror.
++    require(effective == COMPOSER_DECLARATIONS['Android.bp']['sha256'] and
++            'vendor/droidloom/Android.bp' not in projection['files'],
+             'COMPOSER_VENDOR_BLUEPRINT')
+     for relative, value in projection['patches'].items():
+         require(relative in source_map and source_map[relative]['kind'] == 'file' and
+@@ -106,7 +107,7 @@
+     vendor_bp, _ = held_file(PUBLISHED_SOURCE / 'vendor/droidloom/Android.bp', 65536)
+     require(vendor_bp['bytes'] == COMPOSER_DECLARATIONS['Android.bp']['bytes'] and
+             vendor_bp['sha256'] == COMPOSER_DECLARATIONS['Android.bp']['sha256'],
+-            'Composer vendor Blueprint original was not restored')
++            'Composer vendor Blueprint differs from the exact copied source')
+     mirrors = {}
+     for relative, expected in COMPOSER_INPUTS.items():
+         row, _ = held_file(PUBLISHED_SOURCE / 'vendor/droidloom' / relative, 1024*1024)
+@@ -118,7 +119,7 @@
+         'actual_published_manifest': manifest_pin, 'published_projects': 225, 'published_root_links': 8,
+         'actual_locked_native_prebuilt_provider': native_bp,
+         'two_exact_Blueprint_originals_restored': restored,
+-        'vendor_Blueprint_original_restored': vendor_bp,
++        'exact_vendor_Blueprint_after_build': vendor_bp,
+         'nine_production_vendor_mirrors': mirrors,
+         'checkout_declarations_verified_by_actual_builder_and_complete_source_map': COMPOSER_DECLARATIONS,
+         'targets': TARGETS, 'dependency_mode': 'Strict', 'source_projection_restored': True,
+--- a/composer-record-controls.py.fragment
++++ b/composer-record-controls.py.fragment
+@@ -12,9 +12,8 @@
+         'source_projection_journal': str(framework['WORK'] / 'source-projection.json'),
+         'command_completed': False}
+     composer_projection = {
+-        'files': {**{name: row['projected_sha256'] for name, row in
+-                     framework['COMPOSER_PROJECTED_BLUEPRINTS'].items()},
+-                  'vendor/droidloom/Android.bp': 'a' * 64},
++        'files': {name: row['projected_sha256'] for name, row in
++                  framework['COMPOSER_PROJECTED_BLUEPRINTS'].items()},
+         'patches': {name: composer_map[name]['sha256'] for name in [
+             framework['GO_PATCH'], 'android/apex-compat/0009-blueprint-stream-uncached-module-actions.patch']}}
+     composer_inputs = {**copy.deepcopy(common), 'ALLOW_MISSING_DEPENDENCIES': False,
+@@ -23,7 +22,8 @@
+         'fixed_production_inputs': copy.deepcopy(framework['COMPOSER_INPUTS']),
+         'nine_production_vendor_mirrors_exact': True,
+         'fixed_checkout_declarations': copy.deepcopy(framework['COMPOSER_DECLARATIONS']),
+-        'effective_vendor_Android_bp_sha256': 'a' * 64, 'source_projection': composer_projection}
++        'effective_vendor_Android_bp_sha256': framework['COMPOSER_DECLARATIONS']['Android.bp']['sha256'],
++        'source_projection': composer_projection}
+     composer_command = {**copy.deepcopy(common), 'state': 'NORMAL_BUILD_COMMAND_SUCCEEDED',
+         'source_projection_restored': True, 'actual_ELF_AIDL_and_native_link_inputs_qualified': False}
+     composer_records = [composer_attempt, composer_inputs, composer_command]
+@@ -43,6 +43,9 @@
+             'materialized_manifest_sha256', '0' * 64), 'COMPOSER_INPUT_BINDING'),
+         ('composer_unqualified_mirrors_rejected', lambda r: r[1].__setitem__(
+             'nine_production_vendor_mirrors_exact', False), 'COMPOSER_INPUT_BINDING'),
++        ('composer_copied_vendor_blueprint_cannot_be_projected', lambda r: r[1]['source_projection']['files'].__setitem__(
++            'vendor/droidloom/Android.bp', framework['COMPOSER_DECLARATIONS']['Android.bp']['sha256']),
++            'COMPOSER_VENDOR_BLUEPRINT'),
+         ('composer_wrong_exact_projection_rejected', lambda r: r[1]['source_projection']['files'].__setitem__(
+             'hardware/interfaces/automotive/audiocontrol/aidl/default/Android.bp', '0' * 64),
+             'COMPOSER_EXACT_PROJECTION'),

@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "kind": "pocket4-original-ndk-install-nonce02-source-review",
+  "state": "SOURCE_ONLY_NEVER_DISPATCHED",
+  "purpose": "One fresh install-only nonce for APK05 install02, excluding the complete actual global921. This package does not install or qualify a runtime.",
+  "baseline": {
+    "old_source": {
+      "bytes": 37193,
+      "sha256": "4510114c716912b31687d69ae4cb7d2e6e70d84748e7de74b57acd90fab8b339",
+      "git_blob_sha1": "ed23905da748939bc99100dcf612c1f9136f759e"
+    },
+    "old_request": {
+      "bytes": 40279,
+      "sha256": "0b96a071491ab9e5591a4e512a18943303fe9aef6663cf162fb8099728416b38",
+      "git_blob_sha1": "9eb9ca78ff58ef58f56db2139859ae919b7dc9e3"
+    },
+    "global921": {
+      "bytes": 35001,
+      "sha256": "735f9acaf4100e82bf7bfdacbecf9510286b1099f8dee92bf668e942e8780bac",
+      "git_blob_sha1": "ffda46203066f1fa704ab92071de8b86867c3589"
+    }
+  },
+  "output": {
+    "source": {
+      "bytes": 38371,
+      "sha256": "7c3d28f70f1f9a0a62bb50e00d2fa98d400e8ce223238722f8514f9b2500c04e",
+      "git_blob_sha1": "112daeabc74befada7db2eb6d9b6d06c9131c541"
+    },
+    "request": {
+      "bytes": 41550,
+      "sha256": "bdb0f9d5cfc9bcc7a13d307c695b5c8678ed6c5341e00454a1cb490b0c6dea47",
+      "git_blob_sha1": "f3a0cd7b4e6faff8abfe479cd4578f25dcf78726"
+    }
+  },
+  "derivation": {
+    "literal_pairs": 10,
+    "full_source_inverse": true,
+    "request_only_stdin_and_idempotency_key_changed": true,
+    "request_complete_replay_equal": true,
+    "global_pool_count": 921,
+    "prior_consumed_install_nonce_explicitly_excluded": true
+  },
+  "execution": {
+    "uid": 1000,
+    "gid": 1000,
+    "python_args": [
+      "-I",
+      "-B",
+      "-"
+    ],
+    "outer_seconds": 20,
+    "self_timer_seconds": 5,
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 67108864,
+    "nice": 15,
+    "draw": "secrets.token_hex(16)",
+    "draw_count_max": 1,
+    "redraw": false,
+    "collision": "failure, never redraw",
+    "stdout_max_bytes": 4096
+  },
+  "boundaries": {
+    "python_executed": false,
+    "actual_nonce": null,
+    "Main_reads": 0,
+    "Android_commands": 0,
+    "child_processes": 0,
+    "explicit_file_mutations": 0,
+    "standard_library_entropy_IO_excluded_from_counters": true,
+    "old_install01_unknown_preserved": true,
+    "run_or_retire_nonce_authority": false,
+    "install_authorized": false
+  },
+  "checks_performed": "Pure V8 input pins, pool shape, full literal inverse and complete request byte replay. No added Python control or device call."
+}

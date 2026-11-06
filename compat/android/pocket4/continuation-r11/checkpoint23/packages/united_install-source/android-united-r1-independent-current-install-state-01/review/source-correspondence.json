@@ -1,0 +1,720 @@
+{
+  "schema": "next3-independent-target-complete-source-correspondence-v1",
+  "context": {
+    "bytes": 24456,
+    "sha256": "b3402a26cdb30a698f1a78a462bc70b9efe09056346e0d4cfad900945c89209e",
+    "git_blob": "bc939992041923dbffc9675256ed08c8a0247670",
+    "parent": {
+      "bytes": 18045,
+      "sha256": "fed91b109d375984eac188546759b6fe203ea2321e45c43e2989dacd929b2343",
+      "git_blob": "4b4ab6c4a8566b20e15425bebba269f01f81e836"
+    },
+    "edits": [
+      {
+        "before": "com.bestbuy.android",
+        "after": "com.united.mobile.android",
+        "count": 1,
+        "positions": [
+          552
+        ]
+      },
+      {
+        "before": "bestbuy",
+        "after": "united",
+        "count": 8,
+        "positions": [
+          1900,
+          10278,
+          10441,
+          10528,
+          10601,
+          10813,
+          12014,
+          13047
+        ]
+      },
+      {
+        "before": "BestBuy",
+        "after": "United",
+        "count": 1,
+        "positions": [
+          3
+        ]
+      },
+      {
+        "before": "BESTBUY",
+        "after": "UNITED",
+        "count": 16,
+        "positions": [
+          1918,
+          8124,
+          8567,
+          8657,
+          10909,
+          13799,
+          14118,
+          14379,
+          14751,
+          14929,
+          15154,
+          15341,
+          16576,
+          17207,
+          17331,
+          17890
+        ]
+      },
+      {
+        "before": "UID = 10130",
+        "after": "UID = 10133",
+        "count": 1,
+        "positions": [
+          578
+        ]
+      },
+      {
+        "before": "VERSION = 2012312321",
+        "after": "VERSION = 3617",
+        "count": 1,
+        "positions": [
+          590
+        ]
+      },
+      {
+        "before": "qa.SELF == self_package == 'org.droidloom.qa.united.r4'",
+        "after": "qa.SELF == self_package == 'org.droidloom.qa.united.r1'",
+        "count": 1,
+        "positions": [
+          1848
+        ]
+      },
+      {
+        "before": "HASH_SECONDS = 45",
+        "after": "HASH_SECONDS = 45\nAPK_COUNT = 4\nMETADATA_RESULT_BYTES = 13946\nMETADATA_RESULT_SHA = \"7820efe97d7a8ebd55f91b6234d829576e2f0c2c0e6277710f143aca3759dc76\"\nTARGET_REFERENCE_SHA = \"9fd00a8b3b3f88e958b75d093247e27d8736747e9191bda26b4ac9955f16cc9a\"",
+        "count": 1,
+        "positions": [
+          1324
+        ]
+      },
+      {
+        "before": "def current_scope():\n    return {'schema':'pocket4-current-recorder-scope-v2',\n            'current_baseline_schema':'pocket4-main-current-baseline-v2',\n            'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,\n            'current_baseline_qualification_sha256':QUALIFICATION_SHA,\n            'package':PACKAGE,'uid':UID,'user':0}\n\n",
+        "after": "def qualify_target_metadata(value, artifact_reference):\n    \"\"\"Qualify pinned public metadata; never extend the immutable Main baseline.\"\"\"\n    exact = {'package':PACKAGE,'uid':UID,'user':0,'version_code':VERSION}\n    require(type(value) is dict and value.get('schema') == 1 and\n            value.get('ok') is True and value.get('error') is None and\n            value.get('secondary_errors') == [] and value.get('package') == PACKAGE and\n            value.get('metadata_before') == value.get('metadata_after') == exact and\n            all(type(value['metadata_before'][k]) is int for k in ('uid','user','version_code')) and\n            value.get('actual_package_UID_version_APK_chain_stable') is True and\n            value.get('package_read_commands_completed') == 5,\n            'ACTUAL_INDEPENDENT_FIXED_TARGET_METADATA_REQUIRED')\n    expected_scope = {'schema':'pocket4-fixed-new-target-metadata-scope-v1',\n        'current_baseline_schema':'pocket4-main-current-baseline-v2',\n        'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,\n        'current_baseline_qualification_sha256':QUALIFICATION_SHA,\n        'package':PACKAGE,'user':0,'Bili_scope_reused':False,\n        'UID_version_APKs_and_data_directories_pending':True,\n        'baseline_packages_modified':False,'business_action_authority':False}\n    require(value.get('current_metadata_scope') == expected_scope and\n            type(value['current_metadata_scope']['user']) is int and\n            value.get('immutable_baseline_packages_modified') is False and\n            value.get('Bili_scope_modified') is False and\n            value.get('future_install_or_UI_requires_separate_target_scope') is True and\n            value.get('business_action_authority') is False and\n            value.get('whole_app_production_ready') is False,\n            'SEPARATE_CURRENT_TARGET_AUTHORITY_WITH_UNMODIFIED_BASELINE_REQUIRED')\n    main = value.get('Main_before')\n    require(type(main) is dict and main == value.get('Main_after') and\n            main.get('schema') == 'pocket4-current-main-guard-v2' and\n            main.get('Main_epoch_sha256') == CURRENT_EPOCH and\n            main.get('current_baseline_sha256') == BASELINE_SHA and\n            main.get('current_baseline_qualification_sha256') == QUALIFICATION_SHA and\n            value.get('final_Main_guard_passed') is True and\n            value.get('held_binding_released') is True and\n            value.get('action_lock_released') is True,\n            'ACTUAL_METADATA_CURRENT_MAIN_AND_CLOSURE_REQUIRED')\n    rows = value.get('command_observations')\n    resolver = ['/system/bin/cmd','package','resolve-activity','--brief','--user','0',\n                '-a','android.intent.action.MAIN','-c','android.intent.category.LAUNCHER',PACKAGE]\n    require(type(rows) is list and len(rows) == 5 and\n            [r.get('argv') for r in rows] == [LIST,PATHS,resolver,PATHS,LIST] and\n            [r.get('index') for r in rows] == list(range(1,6)) and\n            all(r.get('returncode') == 0 and r.get('spawned') is True and r.get('joined') is True and\n                r.get('host_timed_out') is False and r.get('first_error') is None and\n                r.get('secondary_errors') == [] and r.get('recorder_errors') == [] and\n                r.get('stderr_bytes') == 0 and r.get('Android_UI_action') is False for r in rows) and\n            all(type(value.get(k)) is int and value[k] == 0 for k in\n                ('App_launches','UI_actions','instrumentation_calls','permission_grants','settings_writes')) and\n            value.get('private_baseline_exported') is False and\n            value.get('target_data_directory_contents_read') is False and\n            value.get('APK_bytes_exported') is False,\n            'FIVE_COMPLETED_READONLY_METADATA_COMMANDS_REQUIRED')\n    require(type(artifact_reference) is dict and artifact_reference.get('target') == exact and\n            value.get('artifacts') == artifact_reference.get('artifacts') and\n            type(value.get('artifacts')) is list and len(value['artifacts']) == APK_COUNT and\n            value.get('apk_paths_before') == sorted(r['path'] for r in value['artifacts']) and\n            value.get('total_apk_bytes') == sum(r['held_file']['bytes'] for r in value['artifacts']),\n            'ACTUAL_METADATA_AND_BUILT_TARGET_ARTIFACT_REFERENCE_MUST_MATCH')\n    dirs = value.get('data_directories_before')\n    require(type(dirs) is list and dirs == value.get('data_directories_after') and len(dirs) == 2 and\n            [r.get('path') for r in dirs] == ['/data/user/0/'+PACKAGE,'/data/user_de/0/'+PACKAGE] and\n            value.get('target_directory_cleanup') == {'contents_read':False,'held_data_directory_FDs_closed':2},\n            'COMPLETE_INDEPENDENT_TARGET_DIRECTORY_PAIR_REQUIRED')\n    for row in dirs:\n        require(type(row) is dict and set(row) == {'path','device','inode','mode','uid','gid'} and\n                all(type(row[k]) is int and row[k] >= 0 for k in ('device','inode','mode','uid','gid')) and\n                row['inode'] > 0 and stat.S_ISDIR(row['mode']) and\n                row['uid'] == row['gid'] == UID,\n                'INDEPENDENT_TARGET_DIRECTORY_IDENTITY_REQUIRED')\n    return value\n\n\ndef load_target_metadata(util, manifest, source_root):\n    require(manifest['files']['actual-target-metadata.json'] ==\n            {'bytes':METADATA_RESULT_BYTES,'sha256':METADATA_RESULT_SHA} and\n            manifest['files']['target-artifact-reference.json']['sha256'] == TARGET_REFERENCE_SHA,\n            'INDEPENDENT_TARGET_AUTHORITY_SOURCE_PINS_REQUIRED')\n    value = json.loads(util.read(source_root/'actual-target-metadata.json',\n        METADATA_RESULT_BYTES,METADATA_RESULT_SHA,METADATA_RESULT_BYTES))\n    reference = json.loads(util.read(source_root/'target-artifact-reference.json',\n        65536,TARGET_REFERENCE_SHA,manifest['files']['target-artifact-reference.json']['bytes']))\n    return qualify_target_metadata(value, reference)\n\n\ndef current_scope():\n    return {'schema':'pocket4-current-recorder-scope-v2',\n            'current_baseline_schema':'pocket4-main-current-baseline-v2',\n            'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,\n            'current_baseline_qualification_sha256':QUALIFICATION_SHA,\n            'package':PACKAGE,'uid':UID,'user':0,\n            'target_metadata_authority_sha256':METADATA_RESULT_SHA,\n            'target_artifact_reference_sha256':TARGET_REFERENCE_SHA,\n            'target_authority_kind':'separately-qualified-fixed-target-metadata',\n            'immutable_baseline_packages_modified':False}\n\n",
+        "count": 1,
+        "positions": [
+          3019
+        ]
+      },
+      {
+        "before": "def baseline_scope(ref, baseline):\n    require(baseline.get('schema') == 'pocket4-main-current-baseline-v2' and\n            baseline.get('kind') == 'current-cell-generation' and\n            'main_deployed' not in baseline and baseline.get('deployment_performed') is False and\n            baseline['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and\n            ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            type(baseline['packages'].get(PACKAGE)) is int and baseline['packages'][PACKAGE] == UID and\n            baseline.get('framework_exit_cause_resolved') is False and\n            baseline.get('whole_app_production_ready') is False,\n            'TYPED_CURRENT_BASELINE_AND_ACTUAL_TARGET_UID_REQUIRED')\n    for kind in ('user','user_de'):\n        row = baseline['app_directories'][kind+'/0/'+PACKAGE]\n        require(type(row) is dict and set(row) == {'device','inode','uid','gid'} and\n                all(type(v) is int and v >= 0 for v in row.values()) and\n                row['inode'] > 0 and row['uid'] == UID,\n                'CURRENT_TARGET_DATA_DIRECTORY_BINDING_REQUIRED')\n    return {'schema':'pocket4-current-recorder-scope-v2',\n            'current_baseline_schema':baseline['schema'],\n            'epoch_sha256':baseline['framework_epoch']['sha256'],\n            'current_baseline_sha256':ref.BASELINE_SHA,\n            'current_baseline_qualification_sha256':ref.QUALIFICATION_SHA,\n            'package':PACKAGE,'uid':baseline['packages'][PACKAGE],'user':0}\n\n",
+        "after": "def baseline_scope(ref, baseline, authority):\n    require(baseline.get('schema') == 'pocket4-main-current-baseline-v2' and\n            baseline.get('kind') == 'current-cell-generation' and\n            'main_deployed' not in baseline and baseline.get('deployment_performed') is False and\n            baseline['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and\n            ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            baseline.get('framework_exit_cause_resolved') is False and\n            baseline.get('whole_app_production_ready') is False,\n            'TYPED_CURRENT_BASELINE_AND_INDEPENDENT_TARGET_REQUIRED')\n    # Separate pinned authority, never additions to B.packages/app_directories.\n    qualify_target_metadata(authority, {\n        'target':authority.get('metadata_before'),'artifacts':authority.get('artifacts')})\n    return current_scope()\n\n",
+        "count": 1,
+        "positions": [
+          9584
+        ]
+      },
+      {
+        "before": "def verify_target_data(target, baseline, binding):",
+        "after": "def verify_target_data(target, authority, binding):",
+        "count": 1,
+        "positions": [
+          10498
+        ]
+      },
+      {
+        "before": "        expected = baseline['app_directories'][relative]",
+        "after": "        expected = authority['data_directories_before'][0 if kind == 'user' else 1]\n        require(expected['path'] == '/data/'+relative, 'FIXED_INDEPENDENT_TARGET_DIRECTORY_PATH_REQUIRED')",
+        "count": 1,
+        "positions": [
+          10770
+        ]
+      },
+      {
+        "before": "(value.st_dev,value.st_ino,value.st_uid,value.st_gid) ==\n                    (expected['device'],expected['inode'],expected['uid'],expected['gid'])",
+        "after": "(value.st_dev,value.st_ino,value.st_mode,value.st_uid,value.st_gid) ==\n                    (expected['device'],expected['inode'],expected['mode'],expected['uid'],expected['gid'])",
+        "count": 1,
+        "positions": [
+          11190
+        ]
+      },
+      {
+        "before": "    scope = baseline_scope(ref,activation)",
+        "after": "    source_rows = source_verify(source_manifest)\n    authority = load_target_metadata(util,source_rows,source_root)\n    scope = baseline_scope(ref,activation,authority)",
+        "count": 1,
+        "positions": [
+          16638
+        ]
+      },
+      {
+        "before": "        observation = ref.main_guard(activation,epoch)\n        if target is not None:\n            verify_target_data(target,activation,binding)",
+        "after": "        observation = ref.main_guard(activation,epoch)\n        require(observation == authority['Main_before'], 'INDEPENDENT_METADATA_AND_CURRENT_MAIN_DIFFER')\n        if target is not None:\n            verify_target_data(target,authority,binding)",
+        "count": 1,
+        "positions": [
+          17263
+        ]
+      },
+      {
+        "before": "'current_target_scope':scope,'current_target_data_directory_count':2}",
+        "after": "'current_target_scope':scope,'current_target_data_directory_count':2,\n            'independent_target_metadata_sha256':METADATA_RESULT_SHA,\n            'independent_target_artifact_reference_sha256':TARGET_REFERENCE_SHA,\n            'immutable_baseline_packages_modified':False}",
+        "count": 1,
+        "positions": [
+          19334
+        ]
+      },
+      {
+        "before": "\"\"\"The exact three installed commercial APKs, read-only and held to exit.\"\"\"",
+        "after": "\"\"\"The exact 4 installed commercial APKs, read-only and held to exit.\"\"\"",
+        "count": 1,
+        "positions": [
+          19956
+        ]
+      },
+      {
+        "before": "len(values) == 3",
+        "after": "len(values) == APK_COUNT",
+        "count": 1,
+        "positions": [
+          20737
+        ]
+      },
+      {
+        "before": "len(self.opened) == len(self.records) == 3",
+        "after": "len(self.opened) == len(self.records) == APK_COUNT",
+        "count": 2,
+        "positions": [
+          22463,
+          22812
+        ]
+      },
+      {
+        "before": "ACTUAL_THREE_UNITED_APK_PATH_CHANGED",
+        "after": "ACTUAL_FIXED_UNITED_APK_PATH_CHANGED",
+        "count": 1,
+        "positions": [
+          20780
+        ]
+      },
+      {
+        "before": "THREE_APK_TOTAL_BOUND",
+        "after": "FIXED_APK_TOTAL_BOUND",
+        "count": 1,
+        "positions": [
+          22118
+        ]
+      },
+      {
+        "before": "EXACT_THREE_HELD_APKS_REQUIRED",
+        "after": "EXACT_FIXED_HELD_APKS_REQUIRED",
+        "count": 1,
+        "positions": [
+          22515
+        ]
+      },
+      {
+        "before": "OPEN_THREE_APK_SET_REQUIRED",
+        "after": "OPEN_FIXED_APK_SET_REQUIRED",
+        "count": 1,
+        "positions": [
+          22864
+        ]
+      }
+    ],
+    "offset_inverse_exact": true
+  },
+  "parent_installer_template": {
+    "schema": "independent-target-installer-template-proof-v1",
+    "state": "SOURCE_ONLY_CONTROLS_PENDING_NONCES_UNBOUND",
+    "newRoot": "/home/alex/work/pocket4-owned-united-qa-r1-install-state-01",
+    "helper_package": "org.droidloom.qa.united.r1",
+    "target": {
+      "slug": "united",
+      "label": "United",
+      "package": "com.united.mobile.android",
+      "uid": 10133,
+      "version": 3617,
+      "apks": 4,
+      "tree": "1e57b20f9f7783db37fa12d3edf43876a35e5a1b",
+      "job": "1a1b229e173-fc05-7cbd",
+      "blob": "a47962c9d7fb8cd344dd67f8667ed1d3520a7a7f",
+      "bytes": 13946,
+      "sha256": "7820efe97d7a8ebd55f91b6234d829576e2f0c2c0e6277710f143aca3759dc76",
+      "reference_pin": {
+        "bytes": 5048,
+        "sha256": "9fd00a8b3b3f88e958b75d093247e27d8736747e9191bda26b4ac9955f16cc9a"
+      }
+    },
+    "edits": {
+      "bestbuy_transport.py": {
+        "parent_sha256": "5666d94ba5d9c90a8ea8edd7b063ff4764b83b1bfafe4dd238018d720ab7d4a9",
+        "source_sha256": "f9be976eddf67e1b1a90925c434ace5eed279496294a15234e75d7b18a84990a",
+        "inverse_exact": true,
+        "steps": [
+          {
+            "before": "EXPECTED_PACKAGE = \"com.bestbuy.android\"",
+            "after": "EXPECTED_PACKAGE = \"com.united.mobile.android\"",
+            "positions": [
+              829
+            ]
+          },
+          {
+            "before": "EXPECTED_UID = 10130",
+            "after": "EXPECTED_UID = 10133",
+            "positions": [
+              876
+            ]
+          }
+        ]
+      },
+      "install_state.py": {
+        "parent_sha256": "fb8ebc169dcc8b8e65893028c57dcdbd750d2f5d6253368eae1b6f6e3918fc3c",
+        "source_sha256": "f010112adecb442fcc3a49bcd5a2310d12130388c6b5f0835a22a035c298c228",
+        "inverse_exact": true,
+        "steps": [
+          {
+            "before": "com.bestbuy.android",
+            "after": "com.united.mobile.android",
+            "positions": [
+              26867,
+              27658,
+              35423,
+              39567
+            ]
+          },
+          {
+            "before": "bestbuy",
+            "after": "united",
+            "positions": [
+              737,
+              981,
+              1038,
+              1195,
+              1380,
+              1563,
+              1591,
+              2528,
+              2622,
+              3048,
+              3068,
+              3259,
+              11704,
+              13279,
+              13614,
+              18438,
+              23908,
+              24072,
+              24205,
+              28378,
+              28416,
+              28447,
+              28503,
+              28543,
+              28576,
+              28642,
+              28665,
+              28836,
+              29045,
+              29243,
+              31206,
+              31305,
+              36005
+            ]
+          },
+          {
+            "before": "BestBuy",
+            "after": "United",
+            "positions": [
+              42,
+              324
+            ]
+          },
+          {
+            "before": "BESTBUY",
+            "after": "UNITED",
+            "positions": [
+              17838,
+              26165,
+              26659,
+              26919,
+              27122,
+              32299,
+              34830,
+              36887
+            ]
+          },
+          {
+            "before": "pocket4-owned-united-qa-r4-install-state-02",
+            "after": "pocket4-owned-united-qa-r1-install-state-01",
+            "positions": [
+              721
+            ]
+          },
+          {
+            "before": "org.droidloom.qa.united.r4",
+            "after": "org.droidloom.qa.united.r1",
+            "positions": [
+              962
+            ]
+          },
+          {
+            "before": "pocket4-owned-united-qa-r4-source-01",
+            "after": "pocket4-owned-united-qa-r1-source-01",
+            "positions": [
+              1022,
+              1364
+            ]
+          },
+          {
+            "before": "pocket4-owned-united-qa-r4-build-01",
+            "after": "pocket4-owned-united-qa-r1-build-01",
+            "positions": [
+              1179,
+              1547
+            ]
+          },
+          {
+            "before": "united_r4_transport",
+            "after": "united_r1_transport",
+            "positions": [
+              28569
+            ]
+          },
+          {
+            "before": "NONCE = 'b6275faedda72f2dec85914ab42b2b7b'",
+            "after": "NONCE = '__FRESH_INSTALL_FLOW__'",
+            "positions": [
+              862
+            ]
+          },
+          {
+            "before": "STATE_NONCE = 'a499f5a6a566ed0cebed5c98e234eede'",
+            "after": "STATE_NONCE = '__FRESH_INSTALL_STATE__'",
+            "positions": [
+              895
+            ]
+          },
+          {
+            "before": "QA_MANIFEST = 'cda79d5b01ebfd91d6b9148be6853c78495da92130fb4f153422daac7d14ad0b'",
+            "after": "QA_MANIFEST = \"1317ce458785a654ff04c82e340c08774e71b3c925662af1996b4ccb0e2a1dd6\"",
+            "positions": [
+              1049
+            ]
+          },
+          {
+            "before": "BUILD_SHA = '8bd0c70e64a543129aca0d8eeb08030bb135f95eb1be6bcda3b7933ac02433fb'",
+            "after": "BUILD_SHA = \"3f3b22b58eea4daf77b979e82fc7389bd076eb2c3056de5208bace8fa17c21b4\"",
+            "positions": [
+              1216
+            ]
+          },
+          {
+            "before": "BUILD_BYTES = 23340",
+            "after": "BUILD_BYTES = 23290",
+            "positions": [
+              1295
+            ]
+          },
+          {
+            "before": "STAGE_SHA = '037ffdf74d57b1cad24d40dd06754032ec4adbd50c9ef3e99b529471730089c7'",
+            "after": "STAGE_SHA = \"3d0e795709fbafbfa7fcc348152ac620ed0352e806d4147ee3ca30301ecba099\"",
+            "positions": [
+              1402
+            ]
+          },
+          {
+            "before": "STAGE_BYTES = 1950",
+            "after": "STAGE_BYTES = 1946",
+            "positions": [
+              1481
+            ]
+          },
+          {
+            "before": "APK_SHA = '708887e252bad787781768e4c96db9040444b4b32308381ec1d38af3deb0cc2c'",
+            "after": "APK_SHA = \"6cecb979ae1b50148df2010cb9a3aa2fb7423c52d652b618f94afb33abad7400\"",
+            "positions": [
+              1586
+            ]
+          },
+          {
+            "before": "SIGNER_SHA = '32b07f5c29e267541086154af0e5b0424cd53a65feb1b64f82b9277cccfb7c31'",
+            "after": "SIGNER_SHA = \"ff4dad8b3251ae18d60fda3bb6c9c8de5928ceb1ffdf86fe797315bde1311859\"",
+            "positions": [
+              1681
+            ]
+          },
+          {
+            "before": "READER_SHA = 'ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77'",
+            "after": "READER_SHA = \"13862d58dff080c86227f9adc57557f68dc5a7c45f2dcc0c15030f4153008070\"",
+            "positions": [
+              2395
+            ]
+          },
+          {
+            "before": "PREVIOUS_HELPER_UID",
+            "after": "PARENT_HELPER_UID",
+            "positions": [
+              2367,
+              10144
+            ]
+          },
+          {
+            "before": "PARENT_HELPER_UID = 10155",
+            "after": "PARENT_HELPER_UID = 10160",
+            "positions": [
+              2367
+            ]
+          },
+          {
+            "before": "uid not in (10130,10121,10129,10117,10125,10164,10165,10166,10169,10170,10175,10184,10190,10137,10196,10198,10203)",
+            "after": "uid != 10133",
+            "positions": [
+              10166
+            ]
+          },
+          {
+            "before": "references/read_united.py",
+            "after": "references/target_metadata_parsers.py",
+            "positions": [
+              3220,
+              18306,
+              28518
+            ]
+          },
+          {
+            "before": "qa.UID == 10130",
+            "after": "qa.UID == 10133",
+            "positions": [
+              26785
+            ]
+          },
+          {
+            "before": "if len(artifacts.records)==3 and",
+            "after": "if len(artifacts.records)==4 and",
+            "positions": [
+              32832
+            ]
+          },
+          {
+            "before": "'current_discovery.py', 'check_current_discovery.py'}",
+            "after": "'current_discovery.py', 'check_current_discovery.py', 'actual-target-metadata.json'}",
+            "positions": [
+              3293
+            ]
+          },
+          {
+            "before": "its exact three current APKs",
+            "after": "its exact 4 current APKs",
+            "positions": [
+              350
+            ]
+          }
+        ]
+      },
+      "stage_execute.py": {
+        "parent_sha256": "b2c76ff89ffda73a0b5fe3372baaea6b72a9e128cfc539d1f2aa5ee44a43133c",
+        "source_sha256": "5cecb7ee9f977c95c222034d9d34519b2b4ce340c6eda0e6a0d2ea11124dd5ae",
+        "inverse_exact": true,
+        "steps": [
+          {
+            "before": "bestbuy",
+            "after": "united",
+            "positions": [
+              32,
+              230,
+              436,
+              456,
+              653,
+              5868,
+              5896,
+              5981,
+              6011
+            ]
+          },
+          {
+            "before": "pocket4-owned-united-qa-r4-install-state-02",
+            "after": "pocket4-owned-united-qa-r1-install-state-01",
+            "positions": [
+              216
+            ]
+          },
+          {
+            "before": "NONCE = 'b6275faedda72f2dec85914ab42b2b7b'",
+            "after": "NONCE = '__FRESH_INSTALL_FLOW__'",
+            "positions": [
+              283
+            ]
+          },
+          {
+            "before": "references/read_united.py",
+            "after": "references/target_metadata_parsers.py",
+            "positions": [
+              627
+            ]
+          },
+          {
+            "before": "'current_discovery.py', 'check_current_discovery.py'}",
+            "after": "'current_discovery.py', 'check_current_discovery.py', 'actual-target-metadata.json'}",
+            "positions": [
+              700
+            ]
+          }
+        ]
+      },
+      "make_request.py": {
+        "parent_sha256": "e9ae15f782837b86956c1e8085daa213fa59574c2a6243ba36adde297338423d",
+        "source_sha256": "9ee43cf88abb0c3968421eccc7dd78f9bcce5ffab5c48012af97a7d56d37cf3c",
+        "inverse_exact": true,
+        "steps": [
+          {
+            "before": "bestbuy",
+            "after": "united",
+            "positions": [
+              241,
+              330
+            ]
+          },
+          {
+            "before": "pocket4-owned-united-qa-r4-current-r6-install-state-02",
+            "after": "pocket4-owned-united-qa-r1-current-r6-install-state-01",
+            "positions": [
+              227
+            ]
+          },
+          {
+            "before": "pocket4-owned-united-qa-r4-install-state-02",
+            "after": "pocket4-owned-united-qa-r1-install-state-01",
+            "positions": [
+              316
+            ]
+          },
+          {
+            "before": "NONCE = 'b6275faedda72f2dec85914ab42b2b7b'",
+            "after": "NONCE = '__FRESH_INSTALL_FLOW__'",
+            "positions": [
+              361
+            ]
+          }
+        ]
+      },
+      "check_current_discovery.py": {
+        "parent_sha256": "8ccff7b0b23f88431f9b275cb332ac8f941e94de7722902471bf25b2e70d9599",
+        "source_sha256": "a73f9ecc30898674295e1c872beacf0f0b8edd3099c4e187772de2cc9d5c6e6d",
+        "inverse_exact": true,
+        "steps": [
+          {
+            "before": "context_source = files[{\"com.ihg.apps.android\":\"ihg_context.py\",\n        \"com.amazon.mShop.android.shopping\":\"amazon_context.py\",\n        \"com.bestbuy.android\":\"bestbuy_context.py\"}[context_name]]",
+            "after": "need(context_name == \"com.united.mobile.android\", \"EXACT_INDEPENDENT_TARGET_CONTEXT_REQUIRED\")\n    context_source = files[\"united_context.py\"]",
+            "positions": [
+              10318
+            ]
+          }
+        ]
+      }
+    },
+    "parser": {
+      "parent": {
+        "bytes": 21069,
+        "sha256": "ce4ff1399953fe0d5e89bc0210ae9cdb323d1e08e436327df1521f6cb167ef77"
+      },
+      "source": {
+        "bytes": 1981,
+        "sha256": "13862d58dff080c86227f9adc57557f68dc5a7c45f2dcc0c15030f4153008070"
+      },
+      "original_functions": [
+        "need",
+        "metadata",
+        "apk_paths"
+      ],
+      "bodies_exact": true,
+      "no_execution_entry": true
+    },
+    "unchanged": [
+      "current_discovery.py",
+      "host/source-manifest.json",
+      "host-stage-actual.json",
+      "helper target-artifact-reference.json",
+      "all helper QA/Java sources"
+    ],
+    "installed_UID": null,
+    "scope_not_added_to_baseline": true,
+    "no_execution_request": true
+  },
+  "controls": {
+    "parent": {
+      "bytes": 13983,
+      "sha256": "00eda82236e8ccced9f74e321e74cc96e1846299e50f4df0d40768304e163c8b",
+      "blob": "d29cdd3762a4b2d72325696460e760d8bae6c0c2"
+    },
+    "candidate": {
+      "bytes": 28555,
+      "sha256": "f0b91b3ff2d68baaff9df54969733fb84ab400dd2832c4bb14a617e3f096c172",
+      "blob": "ab11b3e93f881b38126843d86a717e041118f15f"
+    },
+    "fragment": {
+      "bytes": 13604,
+      "sha256": "a3dde076e2f5480e943f277c878512e2c92579f37205d9b7bfa8c7722d65c719",
+      "blob": "7bb15afb7ceb47195e931e8496d2dc61241fa5b4"
+    },
+    "edits": 15,
+    "inverse_exact": true,
+    "control_count": 75,
+    "Python_executed": false
+  },
+  "final_bindings": [
+    {
+      "file": "install_state.py",
+      "label": "actual flow install_state.py",
+      "offset": 858,
+      "old": "NONCE = '__FRESH_INSTALL_FLOW__'",
+      "replacement": "NONCE = '3d4d2496058c6c7cb4e520d15505b38d'"
+    },
+    {
+      "file": "stage_execute.py",
+      "label": "actual flow stage_execute.py",
+      "offset": 283,
+      "old": "NONCE = '__FRESH_INSTALL_FLOW__'",
+      "replacement": "NONCE = '3d4d2496058c6c7cb4e520d15505b38d'"
+    },
+    {
+      "file": "make_request.py",
+      "label": "actual flow make_request.py",
+      "offset": 361,
+      "old": "NONCE = '__FRESH_INSTALL_FLOW__'",
+      "replacement": "NONCE = '3d4d2496058c6c7cb4e520d15505b38d'"
+    },
+    {
+      "file": "install_state.py",
+      "label": "actual state",
+      "offset": 901,
+      "old": "STATE_NONCE = '__FRESH_INSTALL_STATE__'",
+      "replacement": "STATE_NONCE = 'dd1180e836d21668b8840551fcb48225'"
+    },
+    {
+      "file": "stage_execute.py",
+      "label": "75 actual production controls count",
+      "offset": 6435,
+      "old": "controls['count']==68",
+      "replacement": "controls['count']==75"
+    },
+    {
+      "file": "stage_execute.py",
+      "label": "75 actual cases count",
+      "offset": 6473,
+      "old": "len(controls['cases'])==68",
+      "replacement": "len(controls['cases'])==75"
+    }
+  ],
+  "unmodified_runtime_sources": [
+    "current_discovery.py",
+    "host/source-manifest.json",
+    "host-stage-actual.json"
+  ],
+  "helper_source_and_all_actual_build_tool_inputs_unchanged": true,
+  "commercial_reference_byte_exact_from_actual_helper_build": true,
+  "actual_target_metadata_byte_exact": true,
+  "namespace_and_mtime_values_transported_as_original_text": true,
+  "original_B_Q_R6_guard_files_unchanged": true,
+  "runtime_policy": "same thirteen ordered commands; same state operation, all-users absence and install; no commercial launch/UI",
+  "envelope_except_packet_wrapper_key_unchanged": true,
+  "source_count": 15,
+  "packet_count": 16,
+  "Python_compile_or_controls_executed_in_this_preparation": false
+}

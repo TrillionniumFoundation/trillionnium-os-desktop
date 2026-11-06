@@ -1,0 +1,30 @@
+--- unrun-wip/read.py
++++ candidate/read.py
+@@ -323,10 +323,15 @@
+         result['exact_lock_key']=key
+         phase='own_proc_metadata'
+         procroot=names.directory(root,'proc','proc_root')
+-        pid=os.getpid()
+-        proc=names.directory(procroot,str(pid),'own_proc')
++        own_pid=os.getpid()
++        own_proc_name=os.readlink('self',dir_fd=procroot)
++        need(re.fullmatch('[1-9][0-9]{0,9}',own_proc_name) and
++             int(own_proc_name)<=2147483647,'OWN_PROC_SELF_LINK_SHAPE')
++        pid=int(own_proc_name)
++        proc=names.directory(procroot,own_proc_name,'own_proc')
+         fdinfo=names.directory(proc,'fdinfo','own_fdinfo_directory')
+-        result['self_pid']=pid
++        result['self_pid']=own_pid
++        result['self_pid_in_this_proc_view']=pid
+         result['own_namespaces_before']=own_namespaces(proc)
+         result['target_fdinfo_before']=own_fdinfo(journal,fdinfo,target,before['inode'])
+         phase='first_proc_locks_snapshot'
+@@ -346,6 +351,8 @@
+         result['target_fdinfo_after']=own_fdinfo(journal,fdinfo,target,before['inode'])
+         need(result['target_fdinfo_after']['fields']==result['target_fdinfo_before']['fields'],
+              'OWN_TARGET_FDINFO_CHANGED')
++        need(os.readlink('self',dir_fd=procroot)==own_proc_name and
++             os.getpid()==own_pid,'OWN_PROC_SELF_LINK_CHANGED')
+         result['own_namespaces_after']=own_namespaces(proc)
+         need(result['own_namespaces_after']==result['own_namespaces_before'],
+              'OWN_NAMESPACE_VIEW_CHANGED')

@@ -1,0 +1,207 @@
+{
+  "schema": 1,
+  "kind": "INDEPENDENT_COMPOSER_NORMAL01_COMPLETION_SOURCE_REVIEW",
+  "created_utc": "2026-11-06T21:00:46.102Z",
+  "repository": "TrillionniumFoundation/trillionnium-os-desktop",
+  "reviewed_frozen_tree": "4994ffd17604c81f75d50c3ffe3601c8c463656b",
+  "reviewer_task": "/root/native_recovery_resume",
+  "conclusion": "NO_DEFINITE_BLOCKER_FOUND_WITHIN_REVIEWED_SOURCE_SCOPE",
+  "source_only": true,
+  "executed": {
+    "Python": false,
+    "Rust": false,
+    "Soong": false,
+    "Android": false,
+    "Main": false,
+    "Hepta": false
+  },
+  "mutation": {
+    "reviewed_source": false,
+    "request": false,
+    "branch": false,
+    "ref": false
+  },
+  "sources": [
+    {
+      "path": "framework_build.py",
+      "bytes": 77645,
+      "sha256": "22a6f09f5a119217f78e6ae23cd6ebb23d1abc8c8c97f2d06371ca53a0674d5d",
+      "git_blob": "ae06c31c3c8c7ab99f2647a0c0bf8106121e261a"
+    },
+    {
+      "path": "composer-completion-functions.py",
+      "bytes": 8992,
+      "sha256": "05afc29ca24636c8a2c253641d9b812bc94ecd06b177ccca756c41ebe2a1c993",
+      "git_blob": "dfd611f876f1dc871c507e4241299373f92b87c7"
+    },
+    {
+      "path": "composer-record-controls.py.fragment",
+      "bytes": 4401,
+      "sha256": "80478de0f048b519caa6825f2d6638328e4d7971e9f0cb65da4e634bcee2821f",
+      "git_blob": "9b0faaaa857825b640e10b59088a3bdf6b4f8d2a"
+    },
+    {
+      "path": "pure_controls.py",
+      "bytes": 15427,
+      "sha256": "57cebcaf1adb8b67bfad3f43416b7cb4e7fae20fb4e184d8ede27b8532bb05f0",
+      "git_blob": "88d5dfd2d15ce91475edc1df6ce801f009abf7e1"
+    },
+    {
+      "path": "references/actual474-android.rs",
+      "bytes": 329800,
+      "sha256": "72fe8ba4dfec2422b5809fa5af8c84387537527245c35d0e3a13c10060a361cc",
+      "git_blob": "ebd2e297c53402d014285f6d489cb49a3a138726"
+    },
+    {
+      "path": "references/actual474-native_bridge.rs",
+      "bytes": 37984,
+      "sha256": "dbdc2047120c3ce607a3127ac261c4ffd9218c09acd5f490f835fae3b79827e0",
+      "git_blob": "3884b0981a6a4d9b8950a0bc34380e18fddce061"
+    },
+    {
+      "path": "references/SystemUI-tests.original.Android.bp",
+      "bytes": 3392,
+      "sha256": "f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da",
+      "git_blob": "6a36068e1286d9969307d47659f52e5606bb503f"
+    },
+    {
+      "path": "references/audiocontrol-example.original.Android.bp",
+      "bytes": 1869,
+      "sha256": "9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6",
+      "git_blob": "1c11c989b787549a3e1da01b4ded84b9689ad1f0"
+    },
+    {
+      "path": "expected-builder474-manifest.json",
+      "bytes": 99750,
+      "sha256": "e18fe837795e9c3bd684592f3c91228604b2b21ca9d918ac56cebdb4b40754dd",
+      "git_blob": "a7d4b9f738c1304d98ac76610550ca21a7696b17"
+    },
+    {
+      "path": "actual-builder474-result.json",
+      "bytes": 197750,
+      "sha256": "d3b0264441b2af0684c9f147bbb32e274a6d42f96fd83c19f0f24ba6937ad294",
+      "git_blob": "7eb6b9df263275e5c5362c15dc2800ff69143305"
+    }
+  ],
+  "inherited_actual474": {
+    "actual_tree": "277a3e5d83999b26c303998a683cb641c82ca525",
+    "report": {
+      "path": "actual-builder474-result.json",
+      "bytes": 197750,
+      "sha256": "d3b0264441b2af0684c9f147bbb32e274a6d42f96fd83c19f0f24ba6937ad294",
+      "git_blob": "7eb6b9df263275e5c5362c15dc2800ff69143305"
+    },
+    "report_semantics": {
+      "commands_completed": 74,
+      "focused_controls": 35,
+      "updater_focused": 26,
+      "source_focused": 9,
+      "registered_updater": 216,
+      "registered_source": 20,
+      "cleanup_remaining": 0,
+      "cleanup_forced": false
+    },
+    "observed_resources": {
+      "memory_peak_bytes": 1073741824,
+      "memory_max_events_delta": 205,
+      "oom_events": 0,
+      "swap_peak_observed": 0,
+      "swap_current_observed": 0,
+      "swap_max_observed": "max"
+    },
+    "scope": "Existing host compiler qualification is inherited evidence; this review did not rerun it and does not qualify Main identity, Soong, Android Binder ABI or GPU retirement."
+  },
+  "findings": [
+    {
+      "id": "FIXED_RECORD_PRODUCER_AND_CONSUMER_MATCH",
+      "source_locations": [
+        "framework_build.py:764-840",
+        "references/actual474-android.rs:2526-2610"
+      ],
+      "evidence": "Compared exact field sets of attempt/inputs/command records, schema, two target names, Strict mode, 728 exact lock, fixed production inputs and checkout declarations. Independently parsed all 9 production and 3 declaration Rust tuples and compared them to the controller literals; every path/byte count/SHA256 matched.",
+      "result": "PASS_SOURCE_COMPARISON"
+    },
+    {
+      "id": "COMMAND_AND_RESTORATION_PRECEDE_COMPLETION",
+      "source_locations": [
+        "references/actual474-android.rs:3250-3263",
+        "framework_build.py:984-987",
+        "framework_build.py:990-1071"
+      ],
+      "evidence": "Rust captures run_build result, requires Projection.restore success, then propagates the command result; only then writes the completion record. Python requires complete owned-child cleanup and builder return code zero before completion_gate; finally input/resource observation failures still prevent success.",
+      "result": "NO_FALSE_COMPLETION_PATH_FOUND_IN_REVIEWED_FLOW"
+    },
+    {
+      "id": "VENDOR_ROOT_BLUEPRINT_IS_FULL_COPY",
+      "source_locations": [
+        "references/actual474-android.rs:3080-3116",
+        "references/actual474-android.rs:976-978",
+        "references/actual474-native_bridge.rs:47-201",
+        "framework_build.py:823-828",
+        "framework_build.py:870-885"
+      ],
+      "evidence": "Composer mirrors the complete 13561-byte Android.bp declaration. The post-copy root Blueprint projection is confined to native_bridge_only/native_engine_only targets, not the two Composer targets; native_bridge.prepare_build does not change the vendor root Blueprint. Consumer requires its full declaration hash and absence from projection.files, then re-reads its full bytes/hash after build.",
+      "expected_vendor_blueprint": {
+        "bytes": 13561,
+        "sha256": "5f124886cad4dbf79ddac0c71bb2a8743f235ec218c8821d0b9befaf08f1fd80"
+      },
+      "label": "exact_vendor_Blueprint_after_build",
+      "not_claimed": "Restoration of vendor/droidloom/Android.bp as a projected file",
+      "result": "CORRECT_FULL_COPY_BOUNDARY"
+    },
+    {
+      "id": "PROJECTED_LEAVES_AND_NINE_MIRRORS",
+      "source_locations": [
+        "framework_build.py:820-822",
+        "framework_build.py:843-892",
+        "references/actual474-android.rs:2473-2513"
+      ],
+      "evidence": "The exact SystemUI tests and Audiocontrol example projections have separately pinned projected hashes; completion independently reads their restored complete originals. It also reads all nine vendor production mirrors and the current materialized manifest. Journal absence is checked independently.",
+      "result": "NO_FALSE_VENDOR_RESTORATION_SUBSTITUTION_FOUND"
+    },
+    {
+      "id": "TEN_RECORD_CONTROLS_STATIC_REVIEW",
+      "source_locations": [
+        "composer-record-controls.py.fragment"
+      ],
+      "evidence": "Reviewed one exact-shape positive and nine independently mutated negative fixtures for target widening, allow-missing, ACK input drift, manifest digest, unqualified mirrors, falsely projected vendor Blueprint, incorrect metadata projection, ABI-success claim and failed restoration. Mutated fields reach the expected rejection in the inspected predicate order.",
+      "result": "NO_DEFINITE_FIXTURE_FAILURE_FOUND",
+      "execution": "NOT_PERFORMED",
+      "limitation": "These fixtures test qualify_composer_records only; they do not execute completion_gate file reads, Rust restoration, Soong or Android/Binder."
+    }
+  ],
+  "qualification_boundary": {
+    "candidate_status": "UNRUN_RESOURCE_HOLD_AS_LAST_REPORTED_BY_ROOT",
+    "state_after_possible_command_success": "COMPOSER_NORMAL_COMMAND_COMPLETED_ARTIFACT_QUALIFICATION_PENDING",
+    "fresh_225_project_Git_verification": "Performed by pinned Rust at start of a future real build; no new verification was executed by this review.",
+    "post_build_scope": "Pinned Rust restoration plus exact two Blueprint originals, nine mirrors, manifest and controller input checks. This is not a second external full 225-project Git audit.",
+    "actual_ELF_AIDL_and_native_link_inputs_qualified": false,
+    "Android_Binder_ABI_qualified": false,
+    "Wayland_GPU_runtime_qualified": false,
+    "tests_executed_by_candidate": false,
+    "installation_performed": false,
+    "service_activation_performed": false,
+    "Main_interval_noninterference_proven": false,
+    "fixed_resource_gates_unchanged": {
+      "owned_RAM_bytes": 10737418240,
+      "minimum_fresh_MemAvailable_bytes": 16106127360,
+      "owned_swap_max": 0,
+      "owned_swap_current": 0,
+      "CPU_count": 2,
+      "jobs": 1
+    },
+    "full_current_Main_gate_unchanged": true,
+    "automatic_retry": false,
+    "new_dispatch_authorized_by_this_review": false
+  },
+  "preserved_history": {
+    "early_vendor_projection_requirement": "Incorrect UNRUN WIP retained in existing package history and corrected before final delivery/admission.",
+    "correction_artifact": {
+      "path": "unrun-vendor-gate-correction.diff",
+      "bytes": 4627,
+      "sha256": "d4f195bcd813df98353639ecf2743841435b319a033cc2bc286d087286751bd3",
+      "git_blob": "f45ec1f5da3fcc6d35d13654cc523969292c2c02"
+    },
+    "frozen_candidate_modified": false
+  }
+}

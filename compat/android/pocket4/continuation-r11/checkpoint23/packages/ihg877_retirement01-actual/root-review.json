@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "kind": "root-IHG877-retirement01-current-task-set-drift",
+  "source_tree": "51f57c843b4d4d9c4a3350014d34879c674e67d3",
+  "job_id": "1a1b268555e-fc05-7dee",
+  "state": "FAILED_CLOSED_BEFORE_REMOVAL",
+  "stdout": {
+    "bytes": 24051,
+    "sha256": "dd040d4a5ac8050a2fd3d854e0dec74be386c048f33b68d0e4b200aaa4a79e9a",
+    "git_blob_sha1": "eef5723a89f6e55c3cb6dec46d593e4b18d38178"
+  },
+  "terminal": {
+    "bytes": 730,
+    "sha256": "08f364721b77b50e99ca0faed94526a93a627b47531b3456708f09dd8af6cea1",
+    "git_blob_sha1": "f4e4b91db159b7893d04e3d7c9e2d83c13e4a1ff"
+  },
+  "actual_controls": 38,
+  "joined_readonly_commands": 9,
+  "errors": [
+    {
+      "exception_type": "RuntimeError",
+      "fixed_code": "OTHER_TASK_SET_CHANGED",
+      "message_sha256": "822aca1d3693d9ce997c9600640cb0abbb958113cf18c14feb0c2bd957073bc3",
+      "phase": "current_complete_table_1",
+      "raw_message_exported": false
+    }
+  ],
+  "remove_requested": false,
+  "removal_action_attempted": false,
+  "retirement_outcome_unknown": false,
+  "current_Main_window": {
+    "all_available_samples_equal": true,
+    "complete": true,
+    "historical_Main_fields_used": false,
+    "missing_samples_filled": false,
+    "sampled_fields": [
+      "Main_before_lock",
+      "Main_after_locks",
+      "Main_after"
+    ]
+  },
+  "locks_and_held_released": true,
+  "target_FD_cleanup": {
+    "commercial_files_changed": false,
+    "held_APK_FDs_closed": 1
+  },
+  "target_and_helper_before_after_same": true,
+  "source_and_artifact_inputs_unchanged": true,
+  "original_London_unknown_retained": true,
+  "no_old_nonce_consumption": true,
+  "new_saved_current_table": {
+    "command_index": 5,
+    "command_path": "/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b/steps/current-ihg877-independent-retirement-01/command-005.result.json",
+    "stdout_sha256": "bf84e8d77523a712a7b4dc5712dea5ab7e65d7c0a6c3b285eed2b30baec18b8b",
+    "path": "/home/alex/work/pocket4-ihg-owned-qa-r4-flow-ec4f2977574102b1e5869d2494e8416b/steps/current-ihg877-independent-retirement-01/before-stacks-01.txt"
+  },
+  "current_other_task_cause_unknown": true,
+  "UI_hold_retained": true,
+  "whole_App_ready_count": 0,
+  "automatic_retry": false
+}

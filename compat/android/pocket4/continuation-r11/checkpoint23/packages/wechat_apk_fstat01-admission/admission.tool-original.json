@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,sys\nraw=sys.stdin.buffer.read(29299)\nif len(raw)!=29298 or hashlib.sha256(raw).hexdigest()!=\"3f214b5bdd304ba2839369b8053f0cd48ab9dac271aa19c1f4e1bdb5a5ff52da\":\n    raise RuntimeError('EXACT_FIXED_DIAGNOSTIC_SOURCE_REQUIRED')\nscope={'__name__':'__main__','__file__':\"<pocket4-wechat-one-apk-fstat-diagnostic-01>\"}\nexec(compile(raw,\"<pocket4-wechat-one-apk-fstat-diagnostic-01>\",'exec'),scope)\n"
+    ],
+    "created_unix_ms": 1793999653879,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2b64bf6-fc05-7f6d",
+    "idempotency_key": "pocket4-current-cell02-wechat-apk-fstat-diagnostic-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2b64bf6-fc05-7f6d",
+    "request_digest": "d8bf07b71133b7a9cc7cef5fc1b0aec94f5b4336c41f74215dd1b3f0265d6a87",
+    "request_fingerprint": 15618210515593181097,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2b64bf6-fc05-7f6d"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2b64bf6-fc05-7f6d"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

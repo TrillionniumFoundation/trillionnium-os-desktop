@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_COMPOSER_AUDIOCONTROL_EXAMPLE_NOT_COMPILED",
+  "baseline": {
+    "revision": 472,
+    "android": {
+      "bytes": 321919,
+      "sha256": "0be2c4d9607c719a8e2bec337d0f23caced603381b0823659559844f77eea996",
+      "git_blob_sha1": "b19deb72a9b8e47918b01cecc0a51ca636be26d2"
+    },
+    "manifest": {
+      "bytes": 99523,
+      "sha256": "fcbf72b891d9a9bbbcd015777e50cc3ade436f25732a603b51de261eab9cb27a",
+      "git_blob_sha1": "fb2f8303d265c0497171545c1a9356beb213d873"
+    },
+    "actual": {
+      "bytes": 185025,
+      "sha256": "4c2f97bee3d6dbcc742f736c46fa18e9dc869830fe82211fb83c0afed6dfdbf4",
+      "git_blob_sha1": "3eb5f300ed6016559fa02ce66d01a6e56da00416"
+    },
+    "actual_tree": "79ee39b56f1b6975786fc3e073def0507004a241"
+  },
+  "candidate": {
+    "android": {
+      "bytes": 329800,
+      "sha256": "72fe8ba4dfec2422b5809fa5af8c84387537527245c35d0e3a13c10060a361cc",
+      "git_blob_sha1": "ebd2e297c53402d014285f6d489cb49a3a138726"
+    },
+    "manifest": {
+      "bytes": 99750,
+      "sha256": "e18fe837795e9c3bd684592f3c91228604b2b21ca9d918ac56cebdb4b40754dd",
+      "git_blob_sha1": "a7d4b9f738c1304d98ac76610550ca21a7696b17"
+    },
+    "source_files": 501,
+    "unchanged": 499,
+    "replaced": [
+      "tools/droidloom-update/src/android.rs"
+    ],
+    "added": [
+      "android/native-role-ingress/provider-fixtures/audiocontrol-example.Android.bp"
+    ]
+  },
+  "fixture": {
+    "bytes": 1869,
+    "sha256": "9c8a0aecfa46ce0f1874362fa9dfff6a34326f9bf569b6fe7206dd6db1b3c9a6",
+    "git_blob_sha1": "1c11c989b787549a3e1da01b4ded84b9689ad1f0"
+  },
+  "scope": {
+    "entry": "composer-retirement-build",
+    "targets": [
+      "android.hardware.graphics.composer3-service.droidloom",
+      "droidloom-composer-aidl-tests"
+    ],
+    "source_lock_sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d",
+    "projects": 225,
+    "only_path": "hardware/interfaces/automotive/audiocontrol/aidl/default/Android.bp",
+    "only_module": "android.hardware.automotive.audiocontrol-service.example",
+    "metadata_bytes": 346,
+    "metadata_sha256": "d73b00f17a80375d2d59e408088c5e875c3311bd0f7487b117d4b8d28f7cff93",
+    "typed473_branch_unmodified": true,
+    "all_parent500_other_sources_unchanged": true,
+    "ACK9_byte_identical": true,
+    "Strict_preserved": true,
+    "journal_restore_preserved": true,
+    "global_find_ignore_not_added": true,
+    "whole_generated_variant_graph_qualified": false,
+    "host_compile_performed": false
+  },
+  "new_focused_tests": [
+    "android::tests::composer_retirement_audiocontrol_example_projection_keeps_metadata_and_sibling_sources",
+    "android::tests::composer_retirement_audiocontrol_example_projection_rejects_source_drift_before_write",
+    "android::tests::composer_retirement_audiocontrol_example_projection_recovers_full_observed_original"
+  ],
+  "expected_host": {
+    "commands": 74,
+    "updater_focused": 26,
+    "source_focused": 9,
+    "updater_registered": 216,
+    "source_registered": 20
+  },
+  "typed473_test_source": {
+    "bytes": 309074,
+    "sha256": "88732b10c27bb0891cf0cac26bbe876b5ff4b134ee7048d073542fb052878cad",
+    "git_blob_sha1": "516598053f62351ed04b3c405b91905c9cbbfc04"
+  },
+  "inverse_exact": true,
+  "original_failures_preserved": true,
+  "source_lock_writer": "UNKNOWN",
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "production_ready": false
+}

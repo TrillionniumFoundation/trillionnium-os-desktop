@@ -1,0 +1,220 @@
+{
+  "parent": {
+    "bytes": 18045,
+    "sha256": "fed91b109d375984eac188546759b6fe203ea2321e45c43e2989dacd929b2343"
+  },
+  "source": {
+    "bytes": 24565,
+    "sha256": "6614dfec823bd78f1ae0d95523f443cdd4c52ae5b6941e95c9eeac708a4634f0"
+  },
+  "inverse_exact": true,
+  "edits": [
+    {
+      "before": "com.bestbuy.android",
+      "after": "com.MobileTicket",
+      "count": 1,
+      "positions": [
+        552
+      ]
+    },
+    {
+      "before": "bestbuy",
+      "after": "ticket12306",
+      "count": 8,
+      "positions": [
+        1891,
+        10274,
+        10442,
+        10534,
+        10612,
+        10829,
+        12035,
+        13073
+      ]
+    },
+    {
+      "before": "BestBuy",
+      "after": "12306",
+      "count": 1,
+      "positions": [
+        3
+      ]
+    },
+    {
+      "before": "BESTBUY",
+      "after": "TICKET12306",
+      "count": 16,
+      "positions": [
+        1913,
+        8124,
+        8572,
+        8667,
+        10949,
+        13854,
+        14178,
+        14444,
+        14821,
+        15004,
+        15234,
+        15426,
+        16666,
+        17302,
+        17431,
+        17995
+      ]
+    },
+    {
+      "before": "UID = 10130",
+      "after": "UID = 10121",
+      "count": 1,
+      "positions": [
+        568
+      ]
+    },
+    {
+      "before": "VERSION = 2012312321",
+      "after": "VERSION = 275",
+      "count": 1,
+      "positions": [
+        580
+      ]
+    },
+    {
+      "before": "qa.SELF == self_package == 'org.droidloom.qa.ticket12306.r4'",
+      "after": "qa.SELF == self_package == 'org.droidloom.qa.ticket12306.r1'",
+      "count": 1,
+      "positions": [
+        1837
+      ]
+    },
+    {
+      "before": "HASH_SECONDS = 45",
+      "after": "HASH_SECONDS = 45\nAPK_COUNT = 1\nMETADATA_RESULT_BYTES = 11978\nMETADATA_RESULT_SHA = \"f573eb50b3e0c2a098101035df116ba76bfdbf5f486e3dafb7588399661bb868\"\nTARGET_REFERENCE_SHA = \"57220958eacec13fb0b82755d4e22ffb6e02e42ecb05224103c6c5d37036db0c\"",
+      "count": 1,
+      "positions": [
+        1313
+      ]
+    },
+    {
+      "before": "def current_scope():\n    return {'schema':'pocket4-current-recorder-scope-v2',\n            'current_baseline_schema':'pocket4-main-current-baseline-v2',\n            'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,\n            'current_baseline_qualification_sha256':QUALIFICATION_SHA,\n            'package':PACKAGE,'uid':UID,'user':0}\n\n",
+      "after": "def qualify_target_metadata(value, artifact_reference):\n    \"\"\"Qualify pinned public metadata; never extend the immutable Main baseline.\"\"\"\n    exact = {'package':PACKAGE,'uid':UID,'user':0,'version_code':VERSION}\n    require(type(value) is dict and value.get('schema') == 1 and\n            value.get('ok') is True and value.get('error') is None and\n            value.get('secondary_errors') == [] and value.get('package') == PACKAGE and\n            value.get('metadata_before') == value.get('metadata_after') == exact and\n            all(type(value['metadata_before'][k]) is int for k in ('uid','user','version_code')) and\n            value.get('actual_package_UID_version_APK_chain_stable') is True and\n            value.get('package_read_commands_completed') == 5,\n            'ACTUAL_INDEPENDENT_FIXED_TARGET_METADATA_REQUIRED')\n    expected_scope = {'schema':'pocket4-fixed-new-target-metadata-scope-v1',\n        'current_baseline_schema':'pocket4-main-current-baseline-v2',\n        'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,\n        'current_baseline_qualification_sha256':QUALIFICATION_SHA,\n        'package':PACKAGE,'user':0,'Bili_scope_reused':False,\n        'UID_version_APKs_and_data_directories_pending':True,\n        'baseline_packages_modified':False,'business_action_authority':False}\n    require(value.get('current_metadata_scope') == expected_scope and\n            type(value['current_metadata_scope']['user']) is int and\n            value.get('immutable_baseline_packages_modified') is False and\n            value.get('Bili_scope_modified') is False and\n            value.get('future_install_or_UI_requires_separate_target_scope') is True and\n            value.get('business_action_authority') is False and\n            value.get('whole_app_production_ready') is False,\n            'SEPARATE_CURRENT_TARGET_AUTHORITY_WITH_UNMODIFIED_BASELINE_REQUIRED')\n    main = value.get('Main_before')\n    require(type(main) is dict and main == value.get('Main_after') and\n            main.get('schema') == 'pocket4-current-main-guard-v2' and\n            main.get('Main_epoch_sha256') == CURRENT_EPOCH and\n            main.get('current_baseline_sha256') == BASELINE_SHA and\n            main.get('current_baseline_qualification_sha256') == QUALIFICATION_SHA and\n            value.get('final_Main_guard_passed') is True and\n            value.get('held_binding_released') is True and\n            value.get('action_lock_released') is True,\n            'ACTUAL_METADATA_CURRENT_MAIN_AND_CLOSURE_REQUIRED')\n    rows = value.get('command_observations')\n    resolver = ['/system/bin/cmd','package','resolve-activity','--brief','--user','0',\n                '-a','android.intent.action.MAIN','-c','android.intent.category.LAUNCHER',PACKAGE]\n    require(type(rows) is list and len(rows) == 5 and\n            [r.get('argv') for r in rows] == [LIST,PATHS,resolver,PATHS,LIST] and\n            [r.get('index') for r in rows] == list(range(1,6)) and\n            all(r.get('returncode') == 0 and r.get('spawned') is True and r.get('joined') is True and\n                r.get('host_timed_out') is False and r.get('first_error') is None and\n                r.get('secondary_errors') == [] and r.get('recorder_errors') == [] and\n                r.get('stderr_bytes') == 0 and r.get('Android_UI_action') is False for r in rows) and\n            all(type(value.get(k)) is int and value[k] == 0 for k in\n                ('App_launches','UI_actions','instrumentation_calls','permission_grants','settings_writes')) and\n            value.get('private_baseline_exported') is False and\n            value.get('target_data_directory_contents_read') is False and\n            value.get('APK_bytes_exported') is False,\n            'FIVE_COMPLETED_READONLY_METADATA_COMMANDS_REQUIRED')\n    require(type(artifact_reference) is dict and artifact_reference.get('target') == exact and\n            value.get('artifacts') == artifact_reference.get('artifacts') and\n            type(value.get('artifacts')) is list and len(value['artifacts']) == APK_COUNT and\n            value.get('apk_paths_before') == sorted(r['path'] for r in value['artifacts']) and\n            value.get('total_apk_bytes') == sum(r['held_file']['bytes'] for r in value['artifacts']),\n            'ACTUAL_METADATA_AND_BUILT_TARGET_ARTIFACT_REFERENCE_MUST_MATCH')\n    dirs = value.get('data_directories_before')\n    require(type(dirs) is list and dirs == value.get('data_directories_after') and len(dirs) == 2 and\n            [r.get('path') for r in dirs] == ['/data/user/0/'+PACKAGE,'/data/user_de/0/'+PACKAGE] and\n            value.get('target_directory_cleanup') == {'contents_read':False,'held_data_directory_FDs_closed':2},\n            'COMPLETE_INDEPENDENT_TARGET_DIRECTORY_PAIR_REQUIRED')\n    for row in dirs:\n        require(type(row) is dict and set(row) == {'path','device','inode','mode','uid','gid'} and\n                all(type(row[k]) is int and row[k] >= 0 for k in ('device','inode','mode','uid','gid')) and\n                row['inode'] > 0 and stat.S_ISDIR(row['mode']) and\n                row['uid'] == row['gid'] == UID,\n                'INDEPENDENT_TARGET_DIRECTORY_IDENTITY_REQUIRED')\n    return value\n\n\ndef load_target_metadata(util, manifest, source_root):\n    require(manifest['files']['actual-target-metadata.json'] ==\n            {'bytes':METADATA_RESULT_BYTES,'sha256':METADATA_RESULT_SHA} and\n            manifest['files']['target-artifact-reference.json']['sha256'] == TARGET_REFERENCE_SHA,\n            'INDEPENDENT_TARGET_AUTHORITY_SOURCE_PINS_REQUIRED')\n    value = json.loads(util.read(source_root/'actual-target-metadata.json',\n        METADATA_RESULT_BYTES,METADATA_RESULT_SHA,METADATA_RESULT_BYTES))\n    reference = json.loads(util.read(source_root/'target-artifact-reference.json',\n        65536,TARGET_REFERENCE_SHA,manifest['files']['target-artifact-reference.json']['bytes']))\n    return qualify_target_metadata(value, reference)\n\n\ndef current_scope():\n    return {'schema':'pocket4-current-recorder-scope-v2',\n            'current_baseline_schema':'pocket4-main-current-baseline-v2',\n            'epoch_sha256':CURRENT_EPOCH,'current_baseline_sha256':BASELINE_SHA,\n            'current_baseline_qualification_sha256':QUALIFICATION_SHA,\n            'package':PACKAGE,'uid':UID,'user':0,\n            'target_metadata_authority_sha256':METADATA_RESULT_SHA,\n            'target_artifact_reference_sha256':TARGET_REFERENCE_SHA,\n            'target_authority_kind':'separately-qualified-fixed-target-metadata',\n            'immutable_baseline_packages_modified':False}\n\n",
+      "count": 1,
+      "positions": [
+        3018
+      ]
+    },
+    {
+      "before": "def baseline_scope(ref, baseline):\n    require(baseline.get('schema') == 'pocket4-main-current-baseline-v2' and\n            baseline.get('kind') == 'current-cell-generation' and\n            'main_deployed' not in baseline and baseline.get('deployment_performed') is False and\n            baseline['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and\n            ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            type(baseline['packages'].get(PACKAGE)) is int and baseline['packages'][PACKAGE] == UID and\n            baseline.get('framework_exit_cause_resolved') is False and\n            baseline.get('whole_app_production_ready') is False,\n            'TYPED_CURRENT_BASELINE_AND_ACTUAL_TARGET_UID_REQUIRED')\n    for kind in ('user','user_de'):\n        row = baseline['app_directories'][kind+'/0/'+PACKAGE]\n        require(type(row) is dict and set(row) == {'device','inode','uid','gid'} and\n                all(type(v) is int and v >= 0 for v in row.values()) and\n                row['inode'] > 0 and row['uid'] == UID,\n                'CURRENT_TARGET_DATA_DIRECTORY_BINDING_REQUIRED')\n    return {'schema':'pocket4-current-recorder-scope-v2',\n            'current_baseline_schema':baseline['schema'],\n            'epoch_sha256':baseline['framework_epoch']['sha256'],\n            'current_baseline_sha256':ref.BASELINE_SHA,\n            'current_baseline_qualification_sha256':ref.QUALIFICATION_SHA,\n            'package':PACKAGE,'uid':baseline['packages'][PACKAGE],'user':0}\n\n",
+      "after": "def baseline_scope(ref, baseline, authority):\n    require(baseline.get('schema') == 'pocket4-main-current-baseline-v2' and\n            baseline.get('kind') == 'current-cell-generation' and\n            'main_deployed' not in baseline and baseline.get('deployment_performed') is False and\n            baseline['framework_epoch']['sha256'] == CURRENT_EPOCH == ref.EPOCH and\n            ref.BASELINE_SHA == BASELINE_SHA and ref.QUALIFICATION_SHA == QUALIFICATION_SHA and\n            baseline.get('framework_exit_cause_resolved') is False and\n            baseline.get('whole_app_production_ready') is False,\n            'TYPED_CURRENT_BASELINE_AND_INDEPENDENT_TARGET_REQUIRED')\n    # Separate pinned authority, never additions to B.packages/app_directories.\n    qualify_target_metadata(authority, {\n        'target':authority.get('metadata_before'),'artifacts':authority.get('artifacts')})\n    return current_scope()\n\n",
+      "count": 1,
+      "positions": [
+        9583
+      ]
+    },
+    {
+      "before": "def verify_target_data(target, baseline, binding):",
+      "after": "def verify_target_data(target, authority, binding):",
+      "count": 1,
+      "positions": [
+        10497
+      ]
+    },
+    {
+      "before": "        expected = baseline['app_directories'][relative]",
+      "after": "        expected = authority['data_directories_before'][0 if kind == 'user' else 1]\n        require(expected['path'] == '/data/'+relative, 'FIXED_INDEPENDENT_TARGET_DIRECTORY_PATH_REQUIRED')",
+      "count": 1,
+      "positions": [
+        10769
+      ]
+    },
+    {
+      "before": "(value.st_dev,value.st_ino,value.st_uid,value.st_gid) ==\n                    (expected['device'],expected['inode'],expected['uid'],expected['gid'])",
+      "after": "(value.st_dev,value.st_ino,value.st_mode,value.st_uid,value.st_gid) ==\n                    (expected['device'],expected['inode'],expected['mode'],expected['uid'],expected['gid'])",
+      "count": 1,
+      "positions": [
+        11189
+      ]
+    },
+    {
+      "before": "    scope = baseline_scope(ref,activation)",
+      "after": "    source_rows = source_verify(source_manifest)\n    authority = load_target_metadata(util,source_rows,source_root)\n    scope = baseline_scope(ref,activation,authority)",
+      "count": 1,
+      "positions": [
+        16672
+      ]
+    },
+    {
+      "before": "        observation = ref.main_guard(activation,epoch)\n        if target is not None:\n            verify_target_data(target,activation,binding)",
+      "after": "        observation = ref.main_guard(activation,epoch)\n        require(observation == authority['Main_before'], 'INDEPENDENT_METADATA_AND_CURRENT_MAIN_DIFFER')\n        if target is not None:\n            verify_target_data(target,authority,binding)",
+      "count": 1,
+      "positions": [
+        17307
+      ]
+    },
+    {
+      "before": "'current_target_scope':scope,'current_target_data_directory_count':2}",
+      "after": "'current_target_scope':scope,'current_target_data_directory_count':2,\n            'independent_target_metadata_sha256':METADATA_RESULT_SHA,\n            'independent_target_artifact_reference_sha256':TARGET_REFERENCE_SHA,\n            'immutable_baseline_packages_modified':False}",
+      "count": 1,
+      "positions": [
+        19388
+      ]
+    },
+    {
+      "before": "\"\"\"The exact three installed commercial APKs, read-only and held to exit.\"\"\"",
+      "after": "\"\"\"The exact 1 installed commercial APKs, read-only and held to exit.\"\"\"",
+      "count": 1,
+      "positions": [
+        20010
+      ]
+    },
+    {
+      "before": "len(values) == 3",
+      "after": "len(values) == APK_COUNT",
+      "count": 1,
+      "positions": [
+        20801
+      ]
+    },
+    {
+      "before": "len(self.opened) == len(self.records) == 3",
+      "after": "len(self.opened) == len(self.records) == APK_COUNT",
+      "count": 2,
+      "positions": [
+        22552,
+        22901
+      ]
+    },
+    {
+      "before": "ACTUAL_THREE_TICKET12306_APK_PATH_CHANGED",
+      "after": "ACTUAL_FIXED_TICKET12306_APK_PATH_CHANGED",
+      "count": 1,
+      "positions": [
+        20844
+      ]
+    },
+    {
+      "before": "THREE_APK_TOTAL_BOUND",
+      "after": "FIXED_APK_TOTAL_BOUND",
+      "count": 1,
+      "positions": [
+        22207
+      ]
+    },
+    {
+      "before": "EXACT_THREE_HELD_APKS_REQUIRED",
+      "after": "EXACT_FIXED_HELD_APKS_REQUIRED",
+      "count": 1,
+      "positions": [
+        22604
+      ]
+    },
+    {
+      "before": "OPEN_THREE_APK_SET_REQUIRED",
+      "after": "OPEN_FIXED_APK_SET_REQUIRED",
+      "count": 1,
+      "positions": [
+        22953
+      ]
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "schema": "next3-independent-install-final-binding-v1",
+  "state": "FROZEN_ACTUAL_BOUND_INSTALL_UNRUN",
+  "helper_uid": null,
+  "target": {
+    "package": "com.hilton.android.hhonors",
+    "uid": 10135,
+    "user": 0,
+    "version_code": 1004
+  },
+  "control_count": 75,
+  "Python_controls_executed": false,
+  "old_baseline_modified": false,
+  "nonce_actual": {
+    "bytes": 1453,
+    "sha256": "689fd9c3dc2f2e91b529635f3b4b52fb3ec273e7f066634e1c1d1cfae1085930",
+    "git_blob": "f1ed0b6990ad27ec673433690236941c8644a3ca"
+  },
+  "assigned_labels": [
+    "hilton_r1_install_flow",
+    "hilton_r1_install_state"
+  ],
+  "flow_nonce": "2fd1a0e95fa54abae85ff1b6602a35c8",
+  "state_nonce": "8e54b63f8b86beb3e07bbf4e1c19d768",
+  "final_binding_edits": [
+    {
+      "file": "install_state.py",
+      "label": "actual flow install_state.py",
+      "offset": 858,
+      "old": "NONCE = '__FRESH_INSTALL_FLOW__'",
+      "replacement": "NONCE = '2fd1a0e95fa54abae85ff1b6602a35c8'"
+    },
+    {
+      "file": "stage_execute.py",
+      "label": "actual flow stage_execute.py",
+      "offset": 283,
+      "old": "NONCE = '__FRESH_INSTALL_FLOW__'",
+      "replacement": "NONCE = '2fd1a0e95fa54abae85ff1b6602a35c8'"
+    },
+    {
+      "file": "make_request.py",
+      "label": "actual flow make_request.py",
+      "offset": 361,
+      "old": "NONCE = '__FRESH_INSTALL_FLOW__'",
+      "replacement": "NONCE = '2fd1a0e95fa54abae85ff1b6602a35c8'"
+    },
+    {
+      "file": "install_state.py",
+      "label": "actual state",
+      "offset": 901,
+      "old": "STATE_NONCE = '__FRESH_INSTALL_STATE__'",
+      "replacement": "STATE_NONCE = '8e54b63f8b86beb3e07bbf4e1c19d768'"
+    },
+    {
+      "file": "stage_execute.py",
+      "label": "75 actual production controls count",
+      "offset": 6435,
+      "old": "controls['count']==68",
+      "replacement": "controls['count']==75"
+    },
+    {
+      "file": "stage_execute.py",
+      "label": "75 actual cases count",
+      "offset": 6473,
+      "old": "len(controls['cases'])==68",
+      "replacement": "len(controls['cases'])==75"
+    }
+  ],
+  "inverse_to_unbound_template_exact": true,
+  "source_manifest": {
+    "bytes": 2860,
+    "sha256": "bd4a15fe5858d3235e3bfa427e155db390801118dfc8a097a4634f25db1db280",
+    "git_blob": "03e351d8a11794defe70a2b3b4e81485b56ca8d9"
+  },
+  "packet": {
+    "bytes": 202450,
+    "sha256": "de42bcfa519d0335b869148a43765fa67ed81e53af579dd83d77ed3ff1bf421b",
+    "git_blob": "25b3037a074d2d24b1147b86efdfc9ed0b9c9093"
+  },
+  "exact_request": {
+    "bytes": 214486,
+    "sha256": "17a48991cf9651a171f2580911f5c9a2ccdc81cc51908ef8fb5b3744e9f6da91",
+    "git_blob": "86a3c3cded5840a644fcbeebc3fdb92174198cad"
+  },
+  "source_files": 15,
+  "packet_files": 16,
+  "ordered_commands": 13,
+  "UI_or_commercial_launch": false
+}

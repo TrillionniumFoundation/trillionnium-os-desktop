@@ -1,0 +1,11 @@
+--- a/read_apk_metadata.py
++++ b/read_apk_metadata.py
+@@ -13,7 +13,7 @@
+ import time
+ import types
+ 
+-FIXED = json.loads("{\"kind\":\"pocket4-douyin-one-apk-fstat-diagnostic-01\",\"package\":\"com.ss.android.ugc.aweme\",\"result\":{\"path\":\"/home/alex/work/pocket4-current-cell02-douyin-metadata-01/result.json\",\"bytes\":7852,\"sha256\":\"bad61d846ce2c2b0e84964f94e34df898fab835db5e67597694583880c26d2bf\"},\"source\":{\"path\":\"/home/alex/work/pocket4-current-cell02-douyin-metadata-01/source/read_target.py\",\"bytes\":30072,\"sha256\":\"8d9bdff0bbc0d4bbcd125c8cfbb9dc3c5cfbb5bf152ec750393f73e2ed10cb43\"},\"observed_metadata\":{\"package\":\"com.ss.android.ugc.aweme\",\"uid\":10122,\"user\":0,\"version_code\":410001},\"apk_path\":\"/data/app/~~qK8WI0EE2QSJnIxyz_V7nQ==/com.ss.android.ugc.aweme-2Hs2HIYwjnR31Lu6N2QZVA==/base.apk\"}")
++FIXED = json.loads("{\"kind\":\"pocket4-wechat-one-apk-fstat-diagnostic-01\",\"package\":\"com.tencent.mm\",\"result\":{\"path\":\"/home/alex/work/pocket4-current-cell02-wechat-metadata-01/result.json\",\"bytes\":7768,\"sha256\":\"8fac7f6c2e8431fd58a1803f415206fa5a56556d96cdcf8c9d7a67a7d47ba2b7\"},\"source\":{\"path\":\"/home/alex/work/pocket4-current-cell02-wechat-metadata-01/source/read_target.py\",\"bytes\":30060,\"sha256\":\"faecbf9ae802c905e58316bf538b992121fa43082f8455739ac340caf08416ad\"},\"observed_metadata\":{\"package\":\"com.tencent.mm\",\"uid\":10114,\"user\":0,\"version_code\":3220},\"apk_path\":\"/data/app/~~7Nr5uTXd_mo6DbORr7S2Mg==/com.tencent.mm-RXKT7zh0aRVlBRMB6I8lKA==/base.apk\"}")
+ SHARED = Path('/home/alex/work/pocket4-current-host-r6-source-01')
+ MANIFEST_SHA = '002ee581a4bb399536dd7d594d01f050e2540d9c049b0cfb37e1c96954b6caff'
+ SOURCE_SHA = 'f92d2598221c5bf65e783df39864879a2056da47f794680668b34df11f97da49'

@@ -1,0 +1,293 @@
+--- nonce01/material.py
++++ nonce02/material.py
+@@ -10,8 +10,8 @@
+ import signal
+ import time
+ 
+-KIND = 'pocket4-original-ndk-fixture-install-nonce01'
+-PROFILE = 'pocket4-original-ndk-fixture-APK03-install01'
++KIND = 'pocket4-original-ndk-fixture-install-nonce02'
++PROFILE = 'pocket4-original-ndk-fixture-APK05-install02'
+ POOL_RAW = r'''[
+   "00b0db7edb523fc1d810d2062db19e00",
+   "00d1dc3dde06ebff70c79f8582bd58cc",
+@@ -22,6 +22,7 @@
+   "01cd903e1763b88b0759d188917f47ed",
+   "021b419d41d28e0be834e1c0b02c2af3",
+   "023ae8ad6451af6ba359004cf0ff28f6",
++  "02d4a7217dd5c86e1b890ad503473ee5",
+   "03957013c5dbf044fade6c4be5067d17",
+   "039bc106a5b2e5866b39f1b112fb34f7",
+   "03c16697daa8f0fa6d9823d434ed4b00",
+@@ -71,6 +72,7 @@
+   "0e478613e6efd97d57e65c857449cf92",
+   "0eb794a7a592506d4bd0b81a36434c0c",
+   "0ebf4c992ea5165bdabcacddd28654f5",
++  "0ed38fb4b592c3a15190ab2199523aca",
+   "0f71fa4efc14c0fef0cf2c72258fd760",
+   "0fa4660e3bf220f2cf7185db78b53156",
+   "0fb03c7b838a81d68feadf5d7e999f14",
+@@ -80,6 +82,7 @@
+   "1052ea26086958cbf311e4bc42f8d2b8",
+   "109f68fcf087b09e575b7a02ed1174d7",
+   "10bb5bde6e3fe791a382e5d190a4ce16",
++  "114877d166a4f73465f00c807692ea17",
+   "115093066f53500d1c8f52105e3f2948",
+   "115eeb61b418f330118a05742b36e79b",
+   "116c01805c2aa32c3e579470000e1128",
+@@ -123,6 +126,7 @@
+   "1bd1227d56678f224b38caef71384c1d",
+   "1bd2b0ce4294670bb1ce459073a0164b",
+   "1c07f50abee2dbc9c9af740fc514c984",
++  "1c64cc8ee1a7cc937a5ce3c3934f7e83",
+   "1c8accb1e44dbb52b6f936f78723fbe4",
+   "1caa03e79a36efc9035cb3fcbb0511b7",
+   "1cd4f5fec8b9e9afbd3bedd9411b12fe",
+@@ -143,6 +147,7 @@
+   "210c913e909eed00256d393caebe732b",
+   "212228893b58870e91d3047d4cd8518c",
+   "2187039d065568442b6eee6ac84733ea",
++  "21e06e993ae04f23c349da431ec5d4aa",
+   "2209896412ad18e4babad6c94acd73a1",
+   "2244058de84299f62f3cbfaa3b5865c7",
+   "22b2d27c8a98287c0da93b290dcbff5c",
+@@ -155,6 +160,7 @@
+   "24cfaea394180059c2835a470d38e022",
+   "2511a0797db92cd43785fb4445c52486",
+   "2558314fbbbd11a7afbbadbc417d82bd",
++  "25e675d0646ad06348689e6bca3849a9",
+   "2677b6c1d847232431dbab9b34e72fde",
+   "267a6041d7c5e4bd66aa01c5e28c6a4b",
+   "27188f89bf33c923d9840b5b08ae93b8",
+@@ -182,11 +188,13 @@
+   "2dca95dd01fa9b8ceea2d9cda76687eb",
+   "2de4cc0c9868b786633eebfeb01839c5",
+   "2e02cc7cb78355d00d2d90b0feda02a8",
++  "2e2072ccda00932cf3331184fc41f662",
+   "2e4c0829135071b1585aeb8726d8162b",
+   "2e9a1c9b501f49c21cd815f76a564cea",
+   "2f701d429b3e7b4bbf9edb4d9a07bc51",
+   "2f90fb8e13b8968d6489b0fa7ee4a28b",
+   "2fbd2c9fcc13b12d4d2dfa75147b3234",
++  "2fd1a0e95fa54abae85ff1b6602a35c8",
+   "303e80806bfad747d4b02ee9ddf0efd5",
+   "30d18b0774d032cd080bb4bdf85f2f25",
+   "30f6eabe4faf719b137619d5ed9fb54f",
+@@ -201,6 +209,7 @@
+   "3258d42691a37c6cda69b59d73619d3f",
+   "325e25f9d4b85637cf303f9b9922eca9",
+   "32ccb15f1c26ccbb03997aff4478cd94",
++  "339435594d14759231c308a7e1dfc0b7",
+   "346c1ba3ccdabce9a2dd39f0cdf64a1e",
+   "34aa9ced9a430e1944f08b32a59eb141",
+   "35c01dd267afb7e81c35f7ec6bb1e6ac",
+@@ -210,6 +219,7 @@
+   "36fe1bae5d78c899c87e1546bbbb8ba6",
+   "37171de7fdec664e698b463c38f255fa",
+   "373719218060f5fb9a87a82b55d10ae8",
++  "378b4fe3e29fd88116a9d687f2108b6a",
+   "3795b440eac2fe22ab72fee6899d4763",
+   "37adebcb62453f908af6f0bdbc74524e",
+   "37bc22ef0da517866f0afc0dba10c30e",
+@@ -226,6 +236,7 @@
+   "3c3d669648cde85530344ca92b5aa01a",
+   "3d004706f9adf4411761495fdc6ed859",
+   "3d0465fe8043017891364304ec739b05",
++  "3d4d2496058c6c7cb4e520d15505b38d",
+   "3d6a5048b0cfbb742198a85517878882",
+   "3da7c23612dc6a1a09e0fa9196fa5308",
+   "3dac995259ecc18488343d6ba8f074ef",
+@@ -335,6 +346,7 @@
+   "5c96342a18f5078d5c365d1dcec5eddf",
+   "5cffa11e8a0ea76216f876a3e75a2497",
+   "5d67f508ec2b6914b4bdbe4f7d7b0d1f",
++  "5ddfa31acb7e6bc8f97288d059cf9dee",
+   "5e1900cb672de8aa918162e0f436b9e2",
+   "5e617e15de874ee0338604b67d4c4458",
+   "5ecd1e7f6d2733afea06c21596447c60",
+@@ -410,6 +422,7 @@
+   "74ee876ff9ae299ce5d50c4e6a27f2c8",
+   "74f0c4d8c70dad53aa71d50209fa5564",
+   "754453c637de24610aaf181ff9aec007",
++  "754f0bfb414d4fcf4876c8be4db37f8f",
+   "75bd19353a7921d6a6b65de4cc55d9bd",
+   "7644d507d277d48c1993abd9602e7d1c",
+   "76b3d6b790c30a95b5bb8ae0d20cd37c",
+@@ -477,6 +490,7 @@
+   "88b72373cc3c0769418d11b560da0f61",
+   "88c48428ef2c17f64f50b88beb6f1ec3",
+   "88d662a142db608bbfeb4529d0093d51",
++  "89613b6337baf9887900cd52c1b2d8ac",
+   "89dbe1c6f1bcdc8dfcb2f3630b36bbfa",
+   "89ef7cac0fe7bbb1d9d1ea271cafcc3b",
+   "8aa89265b767ec4896a4afccb5f7da21",
+@@ -487,6 +501,7 @@
+   "8cdd5183d82a46a7eed25dbe4c0f6509",
+   "8cf05580718cd9ad138edbfdf73fe845",
+   "8d0e9920af3ee81e71485350063cd0ed",
++  "8e54b63f8b86beb3e07bbf4e1c19d768",
+   "8ea7b1aa49f5940cb43746c5d7329463",
+   "8ec3da7ef0c773e5c6334218c11bc575",
+   "8ed271d98443328e2cbdfa588a3c00b1",
+@@ -521,6 +536,7 @@
+   "973c8962a6356166e145c3a05368d814",
+   "97e9cacd2361c50bdca834b416f2aa47",
+   "9887377df4a2a8e5e5d322f11395d8c8",
++  "98db1077a8088743a30af1d68cdd7428",
+   "9910b6bc6cde134f0b3009a92c09cb76",
+   "99f5c1b27968739ac363d73e82445891",
+   "9a35a247fb6ed16d82996ea9445452ce",
+@@ -535,6 +551,7 @@
+   "9c3628ef6c5b1ba5628afc39bc8a272d",
+   "9c939ac03680db07ca1e930e39bf0d33",
+   "9d03999f34848fa15fa47bf818781df7",
++  "9e086fb95c31f9486075d383aed17586",
+   "9e2e24ce7e1308eb24e7f603896a3630",
+   "9e418a9c4635ef27984fa25238eb5074",
+   "9ed62e6d856166f9cf67f9217533dbe8",
+@@ -557,6 +574,7 @@
+   "a2fdf5a5645ea0b2c5367defa5deb409",
+   "a30bde0cd95019fcb5a36a28cbcf8e11",
+   "a310d69ae8462853561e70b68f974b40",
++  "a31f41deafbc07340db59afa36c83228",
+   "a3bd5d4b4c8b40bd077c68723c7ddfb4",
+   "a4493c3b20c5bfecdb4f139bb18d13f5",
+   "a4895e09d9639bf85c6cbe541aceadfc",
+@@ -620,6 +638,7 @@
+   "b3c9405c0d9a50598fa63df7c54b134c",
+   "b478e81d5c844ddd8f545516d19a687b",
+   "b49246f06de30057ef0037b707fbe852",
++  "b4a05551a692501d52736a9555ff7bef",
+   "b4b286dbe740306579d8a82df2d0db1c",
+   "b53d1e9582d0e5e445b2ed5c4253968f",
+   "b622f7ece15d1622174ad9c40fc2fbd7",
+@@ -655,6 +674,7 @@
+   "bfd6a9ee5173d5b167ebc33585a1eefd",
+   "bfd74c6cf4b9461d172943abf8f4f1ee",
+   "bfd9e58df6be911327ca2befe3eed85f",
++  "c0cd6371cbcdffa8d449293b2d7515e1",
+   "c0d307847de46f7a3788a7777fcfc095",
+   "c10058f4e383888255e43f877e5b22db",
+   "c10acdbc052e01fb898f925cdfd17156",
+@@ -662,6 +682,7 @@
+   "c158454d29f243c4a152d3c910d7d9ab",
+   "c176c3f3581c920d9b27c9fe631f23a1",
+   "c1c5379d26d49a7cf1fe78adaf8993d1",
++  "c1f999ecfcfbf423641a2af8f0e2f7b8",
+   "c296619272cb68fddb8923891ff0dff9",
+   "c2a2e5ceca3854310a9edc6a9ec2e9ad",
+   "c2cb8a78dab9653abc1c91da9a5166b9",
+@@ -675,11 +696,13 @@
+   "c3d1b53519adc0b1b1efb9040e4a2db5",
+   "c405b4abcb34cb0577e05b5baddeddce",
+   "c450284208520396b12e55bbd8b1397f",
++  "c473025f42a35647a16df154aae43d08",
+   "c4c3c0fc48dc24bc3954ceceae0290c9",
+   "c4d30268ae09db936f5d853cd528a12e",
+   "c4fe0319e5d99980d181c39a1405be64",
+   "c54ac38b58cbf6ac67a949462df0b9c3",
+   "c5d34ddcb3578d308d939e31be89770a",
++  "c66689201c01080d050ae0c774db9f28",
+   "c66c450fdd017a27e7c352a7b011cb21",
+   "c6a5535f17a1d21ff2cb1804086bf2e1",
+   "c6c12c2ac8ae440fd0a40f9faa207d2f",
+@@ -712,6 +735,7 @@
+   "ccb78db9bdd234eaf0af45028cd8d8a2",
+   "cd6c58cfa5c7abf2aa54775d3e66ae08",
+   "cd6f15f50a69d0fb2ee6a8d624b22871",
++  "cd926958efbabadfbe30c45de78f42e7",
+   "cdba6f92685230750f25a7ffbc1a511f",
+   "ce046681092b781f36a6bbb765747e99",
+   "ce0bd70c8ae83e61ecd058e1bd7abba4",
+@@ -733,11 +757,13 @@
+   "d327cfd21d7b59df0c45a68efdd74c98",
+   "d32ca58a13e39335dd87842cc1eaf0ce",
+   "d349a50006d3326ee7e99182b7a4be8a",
++  "d3570da465e808ba39be1fc0fdfa0bff",
+   "d37fceafd88aecca98ae5275deffc92d",
+   "d3a404935de5cd6d8aa12581a31a1721",
+   "d3bd71b05e98c238f8f06f87908800e7",
+   "d3c915638b6d6c3d4abb17704eadb77a",
+   "d4599c2b5518a036facfc3bf2d15d2f9",
++  "d465460a068cec965839e112aeccac5c",
+   "d47d8fec8e2dab51ffb564fdcaa1ca9d",
+   "d53dc79edc9083c8ebcbadf65b289823",
+   "d53e2ffae3d5f15245d70b80bf8b78c7",
+@@ -770,6 +796,7 @@
+   "dc9dddbab03003243ec68bc899692b2f",
+   "dcbd7c6b830e24232d88e1c94be00a07",
+   "dcc941cba0ec9efa13bd0e2612afe96d",
++  "dd1180e836d21668b8840551fcb48225",
+   "dd180c9f6bea5c4ca3ab03fd752c9e5f",
+   "ddd0ecb9ca57d12251d52300d469b58c",
+   "ddfd52c18b78690b2435e1375fba7fcb",
+@@ -796,6 +823,7 @@
+   "e3bf33999a4a82f7270861b0ff10d276",
+   "e43cb8aa3c43c406caf2adb91b4595ef",
+   "e487bccc434e561b1ff802c8f56f5929",
++  "e4b5a1bdac8be04ff2ea3188a6d946d6",
+   "e4d1ea5d7e27e3fdfa72de613d42bbb0",
+   "e50df9203904b146d5f6f5f294cdf358",
+   "e62ca847506d78dc51a9d5b0856d0fdb",
+@@ -813,6 +841,7 @@
+   "e8adb6379f2d23cb55b1e8f7b187a0fd",
+   "e8fd71e720ff039a4700f469bb09d008",
+   "e9091cc59d97fc30b59907290b71d48d",
++  "ea5f0cbb29d26672cc275ce2be5ca43c",
+   "ea6af32bfc10709c64c7ce7147f050aa",
+   "ea837abea26ef69582edef058ed93056",
+   "ea89c40e114e0deb51b17d56bbddb01b",
+@@ -867,6 +896,7 @@
+   "f53af1b49505939c66f578b771e65a6e",
+   "f53b8139964cafb2529eef811d8ca895",
+   "f53ee3b554417ef02a628c2e4c2ced2a",
++  "f5623a78269d5a9bee49afaccaf07d72",
+   "f58f96f7f127e7083230eb2e3068f3d0",
+   "f5944d87dc798e675176175990466f7e",
+   "f59ca94b4792276bae603bd38a2683d9",
+@@ -888,6 +918,7 @@
+   "fa7660d21939207667e9ef4790c551ae",
+   "fa999bbdcf540bbaa97d519aae84eb9b",
+   "fae86116b3bc0c00f1867bf52cee178a",
++  "fb3593a2e4734bed7aec0f61d2024131",
+   "fb90e417011ce0ff2c0e9b1c28ab557f",
+   "fbb50c3489b91291d5f19af3b759cfc0",
+   "fbe2b865fc32eeb185f46b5057b69877",
+@@ -905,9 +936,9 @@
+   "ffd751558d7ce6d1ac2f7dd582745a68"
+ ]
+ '''.encode('ascii')
+-POOL_BYTES = 33823
+-POOL_SHA256 = '62066a9a8b68629be8ea7bf0ec74f112ef5d7714d1a19fb61bdc815bddf5fa1e'
+-POOL_GIT_BLOB = '2df00e13580bb0d17124263affd9e43c86ab6c14'
++POOL_BYTES = 35001
++POOL_SHA256 = '735f9acaf4100e82bf7bfdacbecf9510286b1099f8dee92bf668e942e8780bac'
++POOL_GIT_BLOB = 'ffda46203066f1fa704ab92071de8b86867c3589'
+ 
+ def require(value, code):
+     if not value:
+@@ -924,7 +955,7 @@
+         'generator': 'secrets.token_hex(16)', 'draw_count': 0,
+         'redraw_attempted': False, 'nonce': None,
+         'exclusion_pool': {'bytes': POOL_BYTES, 'sha256': POOL_SHA256,
+-                           'git_blob_sha': POOL_GIT_BLOB, 'count': 890},
++                           'git_blob_sha': POOL_GIT_BLOB, 'count': 921},
+         'fresh_against_exact_pool': False, 'uid': os.getuid(), 'gid': os.getgid(),
+         'Main_reads': 0, 'Android_commands': 0, 'child_processes': 0,
+         'explicit_filesystem_reads': 0, 'explicit_filesystem_writes': 0,
+@@ -937,12 +968,12 @@
+         require(result['uid'] == 1000 and result['gid'] == 1000, 'ORDINARY_USER_REQUIRED')
+         require(len(POOL_RAW) == POOL_BYTES and
+                 hashlib.sha256(POOL_RAW).hexdigest() == POOL_SHA256,
+-                'EXACT_GLOBAL_890_BYTES_REQUIRED')
++                'EXACT_GLOBAL_921_BYTES_REQUIRED')
+         old = json.loads(POOL_RAW)
+-        require(type(old) is list and len(old) == 890 and len(set(old)) == 890 and
++        require(type(old) is list and len(old) == 921 and len(set(old)) == 921 and
+                 old == sorted(old) and all(type(x) is str and
+                 re.fullmatch('[0-9a-f]{32}', x) for x in old),
+-                'EXACT_UNIQUE_GLOBAL_890_SHAPE_REQUIRED')
++                'EXACT_UNIQUE_GLOBAL_921_SHAPE_REQUIRED')
+         result['draw_count'] = 1
+         candidate = secrets.token_hex(16)
+         require(type(candidate) is str and re.fullmatch('[0-9a-f]{32}', candidate),

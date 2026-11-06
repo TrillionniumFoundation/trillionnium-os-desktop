@@ -1,0 +1,100 @@
+--- a/fixture_phases.py
++++ b/fixture_phases.py
+@@ -1,7 +1,7 @@
+ """Fixed NDK install / original instrumentation / independent retirement steps.
+ SOURCE_ONLY. This module deliberately has no dispatchable CLI, future APK,
++installed UID or nonce. Install alone requires an explicit held admission;
++all default, run and retirement routes retain the unbound contract gate. No commercial App is adopted or made ready by this fixture.
+-installed UID, run directory, or nonce. All runtime routes first hit the
+-unbound contract gate. No commercial App is adopted or made ready by this fixture.
+ """
+ import hashlib
+ import json
+@@ -14,7 +14,7 @@
+ 
+ PACKAGE='com.example.ndk_tests'
+ FIXED_SOURCE_NAMES={'fixture_contract.py','fixture_context.py','fixture_transport.py',
++                    'fixture_phases.py','current_discovery.py','install_lease.py','install_worker.py'}
+-                    'fixture_phases.py','current_discovery.py'}
+ PENDING_SOURCE_ROOT=None
+ PENDING_SOURCE_MANIFEST=None
+ ACTION_LOCK='/run/lock/android-digitalis-actions.lock'
+@@ -29,7 +29,7 @@
+     return hashlib.sha256(raw).hexdigest()
+ 
+ 
++def read_exact_file(path,limit,pin=None,expected_identity=None):
+-def read_exact_file(path,limit,pin=None):
+     path=str(path)
+     need(path.startswith('/') and not path.startswith('//') and '\0' not in path and
+          all(x not in ('','.','..') for x in path[1:].split('/')),'EXACT_FILE_PATH_GRAMMAR')
+@@ -52,6 +52,13 @@
+         keys=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+         need(stat.S_ISREG(before.st_mode) and before.st_nlink==1 and
+              0<=before.st_size<=limit,'FIXED_REGULAR_FILE_BOUND')
++        if expected_identity is not None:
++            actual={k:getattr(before,v) for k,v in {
++                'device':'st_dev','inode':'st_ino','mode':'st_mode','uid':'st_uid',
++                'gid':'st_gid','nlink':'st_nlink','bytes':'st_size',
++                'mtime_ns':'st_mtime_ns','ctime_ns':'st_ctime_ns'}.items()}
++            need(type(expected_identity) is dict and actual==expected_identity,
++                 'FIXED_ACTUAL_INPUT_IDENTITY_CHANGED')
+         chunks=[]
+         count=0
+         while True:
+@@ -88,16 +95,26 @@
+ 
+ 
+ class FixedSources:
++    """Exactly seven local install sources; no generic loader or command bridge."""
++    def __init__(self, manifest_pin=None, source_root=None):
++        # The caller's frozen worker carries the manifest pin. This phase file
++        # is itself a member of that manifest and cannot embed its own digest.
++        need(source_root is not None and manifest_pin is not None,
+-    """Exactly five local source leaves; not a generic loader or command bridge."""
+-    def __init__(self):
+-        need(PENDING_SOURCE_ROOT is not None and PENDING_SOURCE_MANIFEST is not None,
+              'SOURCE_ONLY_OWN_ROOT_AND_MANIFEST_UNBOUND')
++        need(PENDING_SOURCE_ROOT is None and PENDING_SOURCE_MANIFEST is None and
++             type(source_root) is str and source_root.startswith('/') and
++             type(manifest_pin) is dict and
++             set(manifest_pin)=={'bytes','sha256'} and
++             type(manifest_pin['bytes']) is int and 0<manifest_pin['bytes']<=65536 and
++             type(manifest_pin['sha256']) is str and
++             re.fullmatch('[0-9a-f]{64}',manifest_pin['sha256']),
++             'EXTERNAL_EXACT_SOURCE_MANIFEST_PIN_REQUIRED')
++        self.root=Path(source_root)
++        self.pin=dict(manifest_pin)
+-        self.root=Path(PENDING_SOURCE_ROOT)
+-        self.pin=PENDING_SOURCE_MANIFEST
+         raw=read_exact_file(self.root/'SOURCE_PINS.json',65536,self.pin)
+         data=json.loads(raw)
+         need(data.get('schema')=='pocket4-original-ndk-fixture-source-v1' and
++             set(data.get('files',{}))==FIXED_SOURCE_NAMES,'FIXED_SEVEN_SOURCE_SET')
+-             set(data.get('files',{}))==FIXED_SOURCE_NAMES,'FIXED_FIVE_SOURCE_SET')
+         self.files=data['files']
+         self.sha256=self.pin['sha256']
+         self.verify()
+@@ -317,16 +334,19 @@
+                 'all_staging_FDs_closed':True,'recursive_cleanup':False}
+ 
+ 
++def install_once(sources,fixture,context_module,scope,build,apk_raw,step,deadline,admission=None):
++    if admission is None:
++        fixture.pending_gate()
+-def install_once(sources,fixture,context_module,scope,build,apk_raw,step,deadline):
+-    fixture.pending_gate()
+     fixture.validate_scope(scope)
++    need(scope['phase']=='install' and scope['uid'] is None,'INSTALL_ONLY_ADMISSION_REQUIRED')
++    admission.enter_install_once(sources,fixture,scope,step,deadline)
+     guest='/data/local/tmp/p4-ndk-'+scope['attempt_nonce']+'/owned-ndk-fixture.apk'
+     plan=fixture.installation_plan(scope,guest)
+     result=empty_result(scope,sources.pin)
+     context=artifact=staged=guard=None
+     try:
+         context,binding,guard=context_module.open_context(
++            sources,fixture,scope,step,plan,result,deadline,admission=admission)
+-            sources,fixture,scope,step,plan,result,deadline)
+         raw,row=joined_command(context,*plan[0])
+         result['package_absence']=fixture.package_absent(raw)
+         for kind in ('user','user_de'):

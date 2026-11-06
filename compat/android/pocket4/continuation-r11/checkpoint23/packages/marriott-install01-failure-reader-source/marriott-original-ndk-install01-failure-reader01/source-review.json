@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNRUN",
+  "kind": "pocket4-original-ndk-install01-failure-read01",
+  "authority": {
+    "actual_tree": "6ba52168353a1f469c34cf27e064ace0ad619b46",
+    "job": "1a1b271b3a6-fc05-7e09",
+    "summary": {
+      "bytes": 537,
+      "sha256": "0f2ad089141dd8cda896c133cd3bd3bd9e0d4b886da970e1d7412996077e7d98",
+      "git_blob_sha1": "d968c70e1a61b99505870e12e843484d7d4f97c5"
+    },
+    "terminal": {
+      "bytes": 726,
+      "sha256": "4d69cd6cbd841e547a41c1b2f7b9cfbc7fc95f4df16a4f3bdccf09e17ae2a710",
+      "git_blob_sha1": "a4f3f661988377df5db597391425a89f1a6490e7"
+    },
+    "original_failed_state_preserved": true,
+    "install_attempted": true,
+    "outcome_unknown": true,
+    "installed_UID": null
+  },
+  "exact_files": [
+    {
+      "path": "/home/alex/work/pocket4-original-ndk-fixture-APK03-install-01/result.json",
+      "bytes": 8994,
+      "sha256": "0c3669215137fc4b8fce1603c586a6e8d8451777a359c926a29e9b43200cf202",
+      "maximum": 1048576
+    },
+    {
+      "path": "/home/alex/work/pocket4-original-ndk-fixture-APK03-install-01/steps/install-01/command-002.result.json",
+      "pin": "first complete observed only",
+      "maximum": 65536
+    },
+    {
+      "path": "/home/alex/work/pocket4-original-ndk-fixture-APK03-install-01/steps/install-01/command-002.stdout",
+      "pin": "must match complete command002 record stdout_sha256",
+      "maximum": 262144
+    },
+    {
+      "path": "/home/alex/work/pocket4-original-ndk-fixture-APK03-install-01/steps/install-01/command-002.stderr",
+      "pin": "must match complete command002 record stderr_sha256",
+      "maximum": 262144
+    }
+  ],
+  "read_function": {
+    "origin_blob": "c99046dc6eef35aa813fe2ffecede47bd64b6608",
+    "origin_bytes": 25021,
+    "origin_sha256": "a41ce080e4242053d4152753e577b7fc923e31d536d94d540c2bd2cb506d800a",
+    "function": "read_exact_file",
+    "copied_byte_for_byte": true,
+    "body": {
+      "bytes": 2870,
+      "sha256": "80c5a2bba1cbe3da45cf7557a59db40c54a151c0e826efd3926771ceb5b9c224",
+      "git_blob_sha1": "f9456f7b6becb6012bce91ecbfa77acbde11035e"
+    },
+    "semantics": [
+      "all fixed path components opened O_NOFOLLOW",
+      "regular nlink1 and exact bounded complete bytes",
+      "held before/after and final named dev/inode/mode/uid/gid/nlink/size/mtime/ctime equality",
+      "whole expected report hash, command stdio hash binding",
+      "same four files repeated with their first-read whole pins",
+      "every owned FD close attempted in finally; close errors fail; no unknown FD close/retry"
+    ]
+  },
+  "new_logic": [
+    "inline exact failed summary/terminal raw pins qualify one original attempt",
+    "report body is retained before narrow scope validation; any original failure stays failed",
+    "only three literal command002 files are attempted; missing files remain errors and no path fallback exists",
+    "command nonzero returncode/error/timeout are not rejected or relabeled; they are original diagnostic evidence",
+    "base64 carrier preserves exact original bytes; Root privately reviews and decides any safe projection"
+  ],
+  "limits": {
+    "inner_seconds": 20,
+    "outer_seconds": 30,
+    "memory_max_bytes": 134217728,
+    "cpu_quota_percent": 100,
+    "nice": 15,
+    "stdout_maximum": 2097152,
+    "local_python_executed": false
+  },
+  "actions": {
+    "Main_reads": 0,
+    "Android_commands": 0,
+    "namespace_entries": 0,
+    "children": 0,
+    "file_writes": 0,
+    "directory_scans": 0,
+    "install_replay": false,
+    "run_or_retire_request": false,
+    "arbitrary_paths": false
+  },
+  "disclosures": {
+    "raw_stdio_not_to_be_published_without_Root_review": true,
+    "reader_does_not_qualify_install_or_UID": true,
+    "original_target23_policy_unchanged": true,
+    "whole_invocation_resource_observed": false,
+    "standard_library_import_IO_included": false
+  },
+  "Root_only_dispatch": true
+}

@@ -1,0 +1,152 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNRUN",
+  "historical_current_APK_bytes_equal": true,
+  "historical_failure": "Bad JNI version returned from JNI_OnLoad in libdexprotector.so: -500",
+  "original_failure_preserved": true,
+  "internal_return_reason": "UNKNOWN",
+  "current_App_process_maps": "NOT_OBSERVED",
+  "source_lineage": {
+    "base_fstat_source": {
+      "bytes": 29330,
+      "sha256": "0878c762de8ee0b6b19b3b8836a236120e6294ed4cfffc7a40ea621c2b73c076",
+      "git_blob_sha1": "1fa1313657cb76addcdef69d0d728f34fe17f60b"
+    },
+    "base_actual_tree": "f43579d66da429ee7b92480226ebba2572719031",
+    "current_metadata_actual_tree": "4e9587fcc0a11d6cfebd8f392c9fdeb23fbbb1f3",
+    "historical_report_url": "https://api.github.com/repos/TrillionniumFoundation/trillionnium-os-desktop/contents/compat/android/pocket4/evidence/business-hyatt-20261104.json?ref=0894ebe5c269af391ea4ac4940c6e82c34e69eac"
+  },
+  "unchanged_lifecycle_helpers": [
+    "need",
+    "sha",
+    "identity",
+    "named_identity",
+    "directory_identity",
+    "deadline",
+    "public_error",
+    "remember",
+    "Journal",
+    "read_exact_file",
+    "module",
+    "original_predicates",
+    "ExistingActionLock",
+    "HeldInitView",
+    "ReadDeadline",
+    "alarm_handler"
+  ],
+  "nested_original_Main_and_source_guard_byte_equal": true,
+  "new_behavior": [
+    "Read only the three fixed APKs through the existing held init root and no-follow parents.",
+    "Enforce all nine original artifact identity fields as lossless Python integers, the old seven APK predicates and complete SHA256 before member parsing.",
+    "Parse the bounded central directory of each fixed APK; only the fixed arm64 libdexprotector.so member may be decompressed.",
+    "Accept stored or raw-DEFLATE member data only with exact local/central agreement, complete stream, exact length and CRC.",
+    "Report bounded ELF64 little-endian AArch64 shared-object program/dynamic/hash/symbol metadata and GNU BuildId if present.",
+    "Inspect only a maximum 16 KiB linear JNI_OnLoad window, reporting fixed opcode categories, addresses and approved JNI immediate labels; no raw instruction bytes.",
+    "Rehash all three APKs fully, then revalidate held/named identity, original metadata report, unchanged R6/current8 and every explicit owned FD closure."
+  ],
+  "no_APK_content_export": true,
+  "no_ELF_content_export": true,
+  "no_folder_enumeration": true,
+  "no_commands_or_children": true,
+  "no_namespace_entry": true,
+  "no_writes": true,
+  "no_nonce_consumption": true,
+  "no_automatic_retry": true,
+  "budget": {
+    "APK_total_bytes": 140798759,
+    "two_complete_hash_bytes": 281597518,
+    "all_APK_content_reads_max": 402653184,
+    "one_pread_max": 1048576,
+    "central_per_APK_max": 8388608,
+    "ZIP_entries_per_APK_max": 65534,
+    "compressed_member_max": 33554432,
+    "member_max": 67108864,
+    "ELF_symbols_max": 131072,
+    "linear_instruction_window_max": 16384,
+    "public_instruction_rows_max": 128,
+    "observation_seconds": 120,
+    "final_qualification_seconds": 150,
+    "self_alarm_seconds": 165,
+    "outer_seconds": 180,
+    "output_bytes_max": 131072,
+    "memory_max_bytes": 268435456,
+    "cpu_quota_percent": 100,
+    "nice": 15
+  },
+  "memory_boundary": "APK whole hashes stream in <=1 MiB reads. Central-directory copies are <=8 MiB each and discarded before member parsing. One decompressed ELF is <=64 MiB; converting bytearray to bytes briefly has both copies. Runtime peak has not been observed; outer memory.max remains 256 MiB.",
+  "timing_boundary": "Observation deadline starts at main entry. Import/compile startup remains covered only by the 180 s outer request. Completed collection additionally requires <=150 s with a 165 s one-shot self alarm. A deadline or cleanup error never qualifies collection.",
+  "caveats": [
+    "Fixed member path has not yet been observed; absent, duplicate, encrypted, ZIP64, unsupported or malformed input fails without fallback.",
+    "A static MOVN/MOVZ or following RET is only a linear instruction feature, not proof of executed control flow or the historical -500 cause.",
+    "No current PM query is made; fresh current Main/root/held APK content is verified, while UID/version are retained from the bound prior metadata observation.",
+    "No all-process or global-ambient-FD equality claim. The explicit FD journal and propagated original R6 cleanup exceptions define the reported cleanup scope.",
+    "The 15 new controls are pure memory fixtures over production parsers. They have not run in Python and do not test Main/FD lifecycle.",
+    "JNI_OnLoad is a defined global/weak STT_FUNC in the dynamic table, with numeric visibility recorded. Neither visibility nor symbol presence proves successful loader lookup."
+  ],
+  "validation": {
+    "schema": 1,
+    "ok": true,
+    "validation": "V8_EXACT_SOURCE_AND_WIRE_REPRODUCTION",
+    "reproduced": [
+      "read_elf.py",
+      "exact-stdin.py",
+      "transport.py",
+      "exact-request.json",
+      "binding-proof.json",
+      "base-diagnostic-to-elf.diff"
+    ],
+    "source_bytes": 61152,
+    "source_sha256": "2dbdd5e7ba69060d329ae7630144724a4cd4395263e0b913fd3af7b6a053a425",
+    "request_bytes": 63515,
+    "request_sha256": "b04b6f726cb5b3b20d2e20b47c828bac388cf4fea129fe0683b541fc51cf939f",
+    "all_three_historical_current_APK_filename_size_SHA256_equal": true,
+    "unchanged_lifecycle_helpers": 16,
+    "unchanged_nested_Main_guard": true,
+    "Python_compilation": "NOT_PERFORMED",
+    "Python_parser_controls": "NOT_PERFORMED",
+    "device_execution": "UNRUN",
+    "App_nonce_consumed": 0,
+    "Hepta_calls": 0
+  },
+  "peer_review": {
+    "status": "LIMITED_STATIC_REVIEW_COMPLETED",
+    "agent": "android_acceptance",
+    "core": {
+      "bytes": 20456,
+      "sha256": "93c9d2a73b59e026dbeeb907d6ba60fc6b0fe12f7d5c31cc2fcf0b09e06e4397",
+      "blob": "5c488387742dfec5eda632c0f03325963d131b91"
+    },
+    "controls": {
+      "bytes": 7300,
+      "sha256": "eedfe95e0d301c8f4252a0b20977ea99263bb7bf7d2fe53cfadd90e21207b21e",
+      "blob": "1e0b291256487a5b663ad259a6b42e6ef1b6781f",
+      "positive": 4,
+      "negative_ELF": 5,
+      "negative_ZIP": 6,
+      "total": 15
+    },
+    "scope": [
+      "ZIP central/local bounds",
+      "CRC and complete raw-DEFLATE",
+      "ELF64 ARM64 load mappings",
+      "SysV/GNU hash counts",
+      "dynamic symbol and bounded instruction window",
+      "pure memory fixture offsets and rejection gates"
+    ],
+    "concrete_blockers_found": [],
+    "Python_execution": "NOT_PERFORMED",
+    "actual_APK_observation": "NOT_PERFORMED",
+    "Main_and_FD_finally_reviewed_by_peer": false,
+    "dynamic_symbol_visibility_not_export_or_lookup_proof": true
+  },
+  "scope_exclusions": [
+    "App launch",
+    "JNI invocation",
+    "accepting unsupported JNI version",
+    "uninstall/reinstall",
+    "signer qualification",
+    "App private data",
+    "Main deployment/restart",
+    "runtime causality proof"
+  ]
+}

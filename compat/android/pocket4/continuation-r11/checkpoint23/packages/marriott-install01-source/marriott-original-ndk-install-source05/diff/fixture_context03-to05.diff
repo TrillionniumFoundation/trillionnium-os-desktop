@@ -1,0 +1,43 @@
+--- a/fixture_context.py
++++ b/fixture_context.py
+@@ -164,10 +164,14 @@
+         self.target.close()
+ 
+ 
++def open_context(sources,fixture,scope,step,plan,result,deadline,admission=None):
++    if admission is None:
++        fixture.pending_gate()
++    fixture.validate_scope(scope)
++    need(scope['phase']=='install' and scope['uid'] is None,'INSTALL_ONLY_ADMISSION_REQUIRED')
++    admission.verify_install(sources,fixture,scope,step,deadline)
++    # Only the separately pinned install worker supplies this live lease.
++    # Run and retirement keep their original unbound entry points.
+-def open_context(sources,fixture,scope,step,plan,result,deadline):
+-    fixture.pending_gate()
+-    # The future actual binder must qualify source, build, terminal, lock,
+-    # nonce and installed identity before this source-only barrier is removed.
+     sources.verify()
+     raw=sources.fixed_reference(INSTALLED_SHARED/'source_contract.py',CONTRACT_BYTES,CONTRACT_SHA)
+     source=sources.module(raw,INSTALLED_SHARED/'source_contract.py','ndk_shared_contract')
+@@ -183,6 +187,7 @@
+     _,epoch,_,_=current.source_modules()
+     target=None
+     def guard():
++        admission.verify_install(sources,fixture,scope,step,deadline)
+         need(time.monotonic()<deadline,'FIXTURE_PHASE_DEADLINE')
+         sources.verify()
+         contract.verify()
+@@ -236,7 +241,12 @@
+         result['held_main_binding']={'file':'held-main-binding.private.json',
+             'same_current_Main8':True,'six_namespace_FDs':6,
+             'numeric_PID_namespace_entry':False,'private_body_exported':False}
++        def independent_guard():
++            admission.verify_install(sources,fixture,scope,step,deadline)
++            sources.verify()
++            contract.verify()
++            return current.current_guard(baseline,action_attempted=False)
++        return context,binding,independent_guard
+-        return context,binding,lambda:current.current_guard(baseline,action_attempted=False)
+     except BaseException as primary:
+         if target is not None:
+             try:

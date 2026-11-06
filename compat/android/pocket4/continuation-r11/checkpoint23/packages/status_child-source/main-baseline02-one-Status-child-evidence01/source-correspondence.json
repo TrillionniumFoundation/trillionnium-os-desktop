@@ -1,0 +1,45 @@
+{
+  "schema": "pocket4-one-Status-child-evidence-correspondence-v1",
+  "original_parent_diagnostic": {
+    "blob": "80b00df48560e6e6bddac1e8a256da724b0e9d84",
+    "bytes": 19475,
+    "sha256": "6349b8bb54ec14fb670593d92944b817ea900f9976f9fd89a6870d99893ea2de"
+  },
+  "unchanged_helper_block": {
+    "bytes": 8449,
+    "sha256": "5d17662b59bcf5266084e133711b359638048b668c50773e8b9bfccf5b56eb94",
+    "functions": [
+      "need",
+      "sha",
+      "canonical",
+      "safe_error",
+      "read_guard",
+      "table_verdict",
+      "table_pair",
+      "controls",
+      "identity_projection"
+    ]
+  },
+  "original_baseline_policy": "bc893fd0811ba1c5f83c6ec2ee792a9c631b32bf",
+  "original_ancestry": "63eb7359345900c1c174331863eafafc1a9b247f",
+  "original_generated_guard": "3804363d0cdc2e14a8e5ebe8fe340858d7c2d66f",
+  "runtime_call_closure": [
+    "execute -> exact read_guard -> original load_current -> full production baseline/qualification",
+    "probe_controls -> original controls 10 + new 14; no socket or live reads inside controls",
+    "execute -> original g.current_guard before any Status",
+    "execute -> original fixed seven plus intermediary held identity/root/namespace/exe setup",
+    "observe -> sample_once -> exact original c.sample with explicit ObservedPolicy argument",
+    "c.sample -> ObservedPolicy.validate_child_table -> require_observed_table -> real p.validate_child_table",
+    "real rejection -> capture exact parent and each already-validated child -> original exception re-raised",
+    "send_status_once -> exact authenticated fixed socket request once",
+    "receive_with_samples -> no sampling after first rejection -> drain same response only",
+    "execute finally -> original full identity/source/executable/limit verification -> original g.current_guard",
+    "all tracked input/socket/pidfd/received-rights descriptors retired even on failure"
+  ],
+  "global_monkeypatches": false,
+  "shared_frozen_source_edits": false,
+  "original_unique_child_requirement_unchanged": true,
+  "root_cause_or_old_error_reclassification": false,
+  "concrete_controls24_not_executed_locally": true,
+  "request_envelope_unchanged_except_key_stdin_wrapper": true
+}

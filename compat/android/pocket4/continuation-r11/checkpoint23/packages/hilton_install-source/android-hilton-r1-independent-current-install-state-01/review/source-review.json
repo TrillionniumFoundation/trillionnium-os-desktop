@@ -1,0 +1,183 @@
+{
+  "schema": "next3-independent-target-install-source-review-v1",
+  "state": "FROZEN_ACTUAL_BOUND_INSTALL_UNRUN",
+  "target": {
+    "package": "com.hilton.android.hhonors",
+    "uid": 10135,
+    "user": 0,
+    "version_code": 1004
+  },
+  "helper_package": "org.droidloom.qa.hilton.r1",
+  "helper_uid": null,
+  "request": {
+    "bytes": 214486,
+    "sha256": "17a48991cf9651a171f2580911f5c9a2ccdc81cc51908ef8fb5b3744e9f6da91",
+    "git_blob": "86a3c3cded5840a644fcbeebc3fdb92174198cad"
+  },
+  "source_manifest": {
+    "bytes": 2860,
+    "sha256": "bd4a15fe5858d3235e3bfa427e155db390801118dfc8a097a4634f25db1db280",
+    "git_blob": "03e351d8a11794defe70a2b3b4e81485b56ca8d9"
+  },
+  "packet": {
+    "bytes": 202450,
+    "sha256": "de42bcfa519d0335b869148a43765fa67ed81e53af579dd83d77ed3ff1bf421b",
+    "git_blob": "25b3037a074d2d24b1147b86efdfc9ed0b9c9093"
+  },
+  "source_count": 15,
+  "packet_file_count": 16,
+  "source_qualification_controls": 75,
+  "actual_build": {
+    "slug": "hilton",
+    "actual_build": {
+      "bytes": 23290,
+      "sha256": "7f54f1941d8ecc6c780b1cb42ad2de51f7f76369e3d2d406df4c434490db8ca3",
+      "blob": "4d42c20a5092021a85fc4ff9b0b4286a6264b935",
+      "tree": "2d1d0206c6a31fb714dec4c95a83b8980ff9ca4f"
+    },
+    "actual_stage": {
+      "bytes": 1947,
+      "sha256": "bf11dbe06054dbd7471bcf1fdad4c24e9c2bc611f132ae15207124ed3ce75f14",
+      "blob": "7b9e9d21d836208be9352c4102590669a51dfeba"
+    },
+    "state": "ACTUAL_STATIC_BUILD_INDEPENDENTLY_QUALIFIED",
+    "source_manifest_sha256": "d8e2e4b4a0ed105a94cb08a67b3e0e45f1c68bbdfa500698c65c79400776c175",
+    "source_files": 13,
+    "command_count": 12,
+    "scope_controls": 32,
+    "deep_protocol_controls": 16,
+    "tool_values_unchanged_lossless": true,
+    "scope_controls_not_scanner_execution": true,
+    "APK": {
+      "bytes": 24720,
+      "path": "/home/alex/work/pocket4-owned-hilton-qa-r1-build-01/owned-hilton-qa.apk",
+      "sha256": "7274d57e7f8d776f6a028afcea67edab2cb167064753a8ddfc6332b2e25333f4"
+    },
+    "signer_certificate_sha256": "748e14bf5b68f31f7d23bce5997dd89edc90944c697cc9e43c8c6868cf81be68",
+    "helper_UID": null,
+    "installed": false,
+    "UI_or_launch": false,
+    "whole_app_production_ready": false
+  },
+  "actual_nonce": {
+    "pins": {
+      "bytes": 1453,
+      "sha256": "689fd9c3dc2f2e91b529635f3b4b52fb3ec273e7f066634e1c1d1cfae1085930",
+      "blob": "f1ed0b6990ad27ec673433690236941c8644a3ca"
+    },
+    "labels": [
+      "ticket12306_r1_install_flow",
+      "ticket12306_r1_install_state",
+      "hilton_r1_install_flow",
+      "hilton_r1_install_state",
+      "united_r1_install_flow",
+      "united_r1_install_state"
+    ],
+    "generated": [
+      {
+        "label": "ticket12306_r1_install_flow",
+        "nonce": "5ddfa31acb7e6bc8f97288d059cf9dee",
+        "package": "com.MobileTicket"
+      },
+      {
+        "label": "ticket12306_r1_install_state",
+        "nonce": "c1f999ecfcfbf423641a2af8f0e2f7b8",
+        "package": "com.MobileTicket"
+      },
+      {
+        "label": "hilton_r1_install_flow",
+        "nonce": "2fd1a0e95fa54abae85ff1b6602a35c8",
+        "package": "com.hilton.android.hhonors"
+      },
+      {
+        "label": "hilton_r1_install_state",
+        "nonce": "8e54b63f8b86beb3e07bbf4e1c19d768",
+        "package": "com.hilton.android.hhonors"
+      },
+      {
+        "label": "united_r1_install_flow",
+        "nonce": "3d4d2496058c6c7cb4e520d15505b38d",
+        "package": "com.united.mobile.android"
+      },
+      {
+        "label": "united_r1_install_state",
+        "nonce": "dd1180e836d21668b8840551fcb48225",
+        "package": "com.united.mobile.android"
+      }
+    ],
+    "exclusion_count": 913,
+    "global_count_after": 919,
+    "raw_exact": true,
+    "ordered_labels": true,
+    "no_redraw": true,
+    "all_sources_exact": true
+  },
+  "metadata_authority": {
+    "bytes": 13997,
+    "sha256": "cd4f46876a1bd0b48289d6b6a9c8379b2480073b4a24849397f8d990cabeb0dd",
+    "git_blob": "5e43bfe675aae41e387bc7752668eb08f1825a2d",
+    "git_tree": "c6bd83d45273194cfc923bed8d6d39d017dae080",
+    "job_id": "1a1b22928c9-fc05-7cb7"
+  },
+  "production_call_chain": [
+    "stage checked_packet -> all fifteen source pins -> actual immutable R6 SourceContract -> 75 production-path controls",
+    "install_state.worker -> actual helper QA/source/build qualification -> original action-lock admission",
+    "own open_context -> pinned metadata loader -> immutable Main baseline plus separate exact target scope",
+    "original held init -> current discovery actual call -> exact owner/intermediary/init -> original two-root/classpath checks",
+    "live packages.list UID plus both O_PATH target directory identities -> own Context/BoundArun -> held-binding receipt",
+    "ArtifactSet exact target metadata/paths/full SHA -> original thirteen commands -> one owned-helper install -> one no-UiAutomation state",
+    "target/helper before-after equality -> staging/held/FD/lock cleanup; failure and unknown preserved"
+  ],
+  "scope_authority": "The two full public metadata/reference files are pinned and qualified before held binding. No package or directory is inserted into the immutable Main baseline.",
+  "new_controls": {
+    "count": 7,
+    "actual_entry_points": [
+      "load_target_metadata",
+      "baseline_scope",
+      "verify_target_data",
+      "open_context",
+      "current_discovery",
+      "Context",
+      "BoundArun"
+    ],
+    "explicit_synthetic_boundaries": [
+      "held process/FD and packages.list I/O",
+      "source module/read I/O for open_context",
+      "Main guard observations and classpath I/O"
+    ],
+    "inherited_source_controls": "Five production verify_source tests create/remove owned temporary source directories and verify the actual immutable R6 reference.",
+    "actual_Python_execution": "NOT_RUN"
+  },
+  "original_guards_preserved": [
+    "full Main v2 and unique ancestry tables",
+    "all source/helper/build/artifact pins",
+    "transport body except fixed target package and UID",
+    "single ordered install mutation",
+    "all-user helper absence",
+    "no-UiAutomation state",
+    "one invocation nonce",
+    "target/helper before-after",
+    "original FD/worker/locks"
+  ],
+  "no_Bili_Flow_or_MainBinding_constructor": true,
+  "no_private_baseline_export": true,
+  "no_commercial_launch_or_UI": true,
+  "limits": {
+    "worker_seconds": 175,
+    "worker_subprocess_seconds": 190,
+    "tool_seconds": 300,
+    "packet_max_bytes": 262144,
+    "source_file_max_bytes": 65536,
+    "memory_bytes": 536870912,
+    "cpu_percent": 100,
+    "nice": 10
+  },
+  "known_limits": [
+    "Helper UID remains unknown until exact actual install/state receipts.",
+    "Shared command qualification joins its direct child; whole-process-tree cleanup is not claimed.",
+    "Target signer is not independently verified; exact full APK hashes remain required.",
+    "The prior native launch/Main child-table cause remains unresolved. This request does not launch a commercial app."
+  ],
+  "dispatched": false,
+  "whole_app_production_ready": false
+}

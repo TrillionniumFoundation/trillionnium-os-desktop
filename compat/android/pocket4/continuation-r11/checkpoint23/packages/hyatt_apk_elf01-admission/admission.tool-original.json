@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,sys\nraw=sys.stdin.buffer.read(61153)\nif len(raw)!=61152 or hashlib.sha256(raw).hexdigest()!=\"2dbdd5e7ba69060d329ae7630144724a4cd4395263e0b913fd3af7b6a053a425\":\n    raise RuntimeError('EXACT_FIXED_DIAGNOSTIC_SOURCE_REQUIRED')\nscope={'__name__':'__main__','__file__':\"<pocket4-hyatt-exact-apk-native-member-elf-diagnostic-01>\"}\nexec(compile(raw,\"<pocket4-hyatt-exact-apk-native-member-elf-diagnostic-01>\",'exec'),scope)\n"
+    ],
+    "created_unix_ms": 1794002089395,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2db75b3-fc05-8006",
+    "idempotency_key": "pocket4-current-cell02-hyatt-exact-apk-elf-diagnostic-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2db75b3-fc05-8006",
+    "request_digest": "b9615ef565977d8dd508ee1e063d1ff5c32fcfdf529cbbe4abd9dfda0cd6f98b",
+    "request_fingerprint": 13358062377822027149,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2db75b3-fc05-8006"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2db75b3-fc05-8006"
+  },
+  "local_record_pending": false,
+  "reused": false
+}
