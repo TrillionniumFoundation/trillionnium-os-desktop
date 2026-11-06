@@ -1,0 +1,102 @@
+--- preserved-actual-failed-r2/observe_current_services.py
++++ new-independent-r3/observe_current_services.py
+@@ -43,10 +43,10 @@
+     "org.fcitx.fcitx5.android", "tv.danmaku.bili")
+ STAT = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")
+ PACKAGES = sorted((*LAUNCHERS, ACTIONS, HELPER))
+-STAGE = '/home/alex/work/pocket4-current-readonly-services-source-20261106-r2'
+-OUTPUT = '/home/alex/work/pocket4-current-readonly-services-observation-20261106-r2'
++STAGE = '/home/alex/work/pocket4-current-readonly-services-source-20261106-r3'
++OUTPUT = '/home/alex/work/pocket4-current-readonly-services-observation-20261106-r3'
+ APP_SCOPE = {'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json', 'bytes': 58854, 'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f'}
+-TRANSPORT = {'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r2/readonly_services_transport.py', 'bytes': 16620, 'sha256': '69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590'}
++TRANSPORT = {'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r3/readonly_services_transport.py', 'bytes': 16620, 'sha256': '69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590'}
+ NATIVE_HELPERS = {'path': '/home/alex/work/pocket4-successor-install-audit-source-20261106-r1/install_successor_native.py', 'bytes': 31327, 'sha256': 'ad4227b4c63033018bd1147c3c589b2632168766306791696aabc53583229c96'}
+ 
+ def need(value, code):
+@@ -357,6 +357,43 @@
+                               record["stderr_eof"] and not record["errors"] and not buffers["stderr"])
+     return bytes(buffers["stdout"]), bytes(buffers["stderr"]), record
+ 
++def write_empty_raw_stream(core, pool, directory, root_identity, path, raw):
++    """Create only an exact empty command stream; other artifacts use frozen core."""
++    name = path.rsplit("/", 1)[-1]
++    need(type(raw) is bytes and raw == b"" and
++         re.fullmatch(r"(?:native|android)-[0-9]{2}\.(?:stdout|stderr)", name) is not None,
++         "ONLY_EMPTY_COMMAND_RAW_STREAM")
++    need(all(core.metadata(directory)[key] == root_identity[key]
++             for key in ("st_dev", "st_ino", "st_uid", "st_gid", "st_mode")),
++         "EMPTY_STREAM_PARENT_IDENTITY_CHANGED")
++    fd = pool.own(os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
++                          0o400, dir_fd=directory))
++    try:
++        os.fchmod(fd, 0o400)
++        os.fsync(fd)
++        observed = os.fstat(fd)
++        need(stat.S_ISREG(observed.st_mode) and observed.st_uid == root_identity["st_uid"] and
++             stat.S_IMODE(observed.st_mode) == 0o400 and observed.st_nlink == 1 and observed.st_size == 0,
++             "EMPTY_RAW_STREAM_METADATA")
++        os.fsync(directory)
++    finally:
++        pool.close(fd)
++    return {"path": path, "sha256": sha(raw), "bytes": 0}
++
++
++def remember_child_streams(rows, row, write, prefix, raw, stderr):
++    """Retain the actual child result even if an owned receipt cannot be saved."""
++    rows.append(row)
++    row.update(stdout=None, stderr=None, stream_artifacts_complete=False)
++    try:
++        row["stdout"] = write(prefix + ".stdout", raw)
++        row["stderr"] = write(prefix + ".stderr", stderr)
++        row["stream_artifacts_complete"] = True
++    except BaseException as error:
++        row["stream_artifact_error"] = safe_error(error)
++        raise
++
++
+ def validate_request(request):
+     need(type(request) is dict and set(request) == {"schema", "guard", "app_scope", "packages", "worker", "transport", "output_root"},
+          "CLOSED_SERVICE_OBSERVATION_REQUEST")
+@@ -470,7 +507,10 @@
+                  "OBSERVATION_OUTPUT_DIRECTORY_REPLACED")
+         finally:
+             pool.close(current)
+-        pin = core.write_new(OUTPUT + "/" + name, raw)
++        if type(raw) is bytes and raw == b"":
++            pin = write_empty_raw_stream(core, pool, directory, root_identity, OUTPUT + "/" + name, raw)
++        else:
++            pin = core.write_new(OUTPUT + "/" + name, raw)
+         need(core.pinned_record(pin, max(len(raw), 1)) == raw, "EXACT_OWNED_RECEIPT_READBACK")
+         return pin
+ 
+@@ -493,8 +533,9 @@
+         write("native-%02d.intent.json" % index, canonical({"argv": argv, "caller_uid": 1000, "automatic_retry": False})+b"\n")
+         raw, stderr, row = core.bounded_child(argv, seconds=30, limit=262144)
+         result["native_command_count"] += 1
+-        outpin, errpin = write("native-%02d.stdout" % index, raw), write("native-%02d.stderr" % index, stderr)
+-        result["native_commands"].append({"operation": operation, "caller_uid": 1000, "command": row, "stdout": outpin, "stderr": errpin})
++        remember_child_streams(result["native_commands"],
++                               {"operation": operation, "caller_uid": 1000, "command": row},
++                               write, "native-%02d" % index, raw, stderr)
+         value = core.native_running(raw, row)
+         need(value["host_pid"] == owner, "ACTUAL_NATIVE_OWNER_CHANGED")
+         native_helpers.recheck_native(core, pool, held, native_files, native_pins)
+@@ -516,12 +557,12 @@
+               "timeout_seconds": options["timeout"], "readonly": True, "automatic_retry": False})+b"\n")
+         raw, stderr, row = held_bounded_child(argv, options["timeout"], 262144, tuple(options["pass_fds"]), options["env"])
+         result["Android_namespace_commands"] += 1
+-        row["stdout"] = write("android-%02d.stdout" % index, raw)
+-        row["stderr"] = write("android-%02d.stderr" % index, stderr)
+-        result["android_commands"].append(row)
++        try:
++            remember_child_streams(result["android_commands"], row, write, "android-%02d" % index, raw, stderr)
++        finally:
++            if not row["joined"]:
++                target.poison_unjoined_command()
+         write("android-%02d.result.json" % index, canonical(row)+b"\n")
+-        if not row["joined"]:
+-            target.poison_unjoined_command()
+         captured = subprocess.CompletedProcess(argv, row["returncode"], raw, stderr)
+         captured.host_timed_out = row["termination_attempted"]
+         captured.recorder_errors = row["errors"]

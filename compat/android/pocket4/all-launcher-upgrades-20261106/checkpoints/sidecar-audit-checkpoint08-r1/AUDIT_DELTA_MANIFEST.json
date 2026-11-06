@@ -1,0 +1,1284 @@
+{
+  "archive": {
+    "bytes": 3496793,
+    "path": "checkpoints/sidecar-audit-checkpoint08-r1/AUDIT_DELTA_FILES.raw.json",
+    "sha256": "9440b4ee76b9613dd589f7c0dc1e468962491b14a37c7d583ff4174af454b227"
+  },
+  "baseline_commit": "f491498a8a7bad7795c293f0e3f63e3ecdcaa383",
+  "baseline_file_manifest": {
+    "bytes": 141971,
+    "path": "checkpoints/checkpoint06-files.json",
+    "sha256": "bef5b1857717dde6c0cdf1aa502dfd1e8d919423299631ebbb876fb8979c4442"
+  },
+  "classification_counts": {
+    "actual local control or exact reference evidence": 33,
+    "actual raw evidence or exact metadata readback": 39,
+    "exact pinned request or source-stage input": 23,
+    "review, source pin, or summary": 11,
+    "source, test source, or source difference": 69
+  },
+  "comparison_boundary": "Compared to the exact local checkpoint06 610-file manifest. No local .git exists; root must reconcile final Git tree and include any later actual r3 receipts separately.",
+  "covered_roots": [
+    "successor_audit_requests/explicit47_scope_r1",
+    "successor_audit_requests/explicit47_scope_r2",
+    "successor_audit_requests/diagnostics/calendar-resource-parser-r1",
+    "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1",
+    "successor_audit_requests/current_services_r1",
+    "successor_audit_requests/current_services_r2",
+    "successor_audit_requests/current_services_r3",
+    "successor_audit_requests/reference"
+  ],
+  "evidence_status": {
+    "calendar_r3": "Actual durable success job 1a1b1f10cbf-fc05-7b9c for signature/manifest extraction; independent stderr review proves 23800 E-level resource diagnostics, resource health remains unresolved; original batch05 stays failed.",
+    "calendar_stderr_summary": "Actual durable success job 1a1b1fb3b37-fc05-7bdc; exact full-hash stream summary, not new APK parsing.",
+    "explicit47_r2": "Actual durable success job 1a1b1e97bb7-fc05-7b79; 47 explicit apps/87 APKs, not yet full PM/Launcher resolver set.",
+    "services_r1": "Blocked before execution due to undefined standalone error class; original source and review retained.",
+    "services_r2": "Actual durable failure job 1a1b208dd0d-fc05-7c22 at empty native stderr artifact; one native command count, zero Android commands, all FD/leases retired; full raw failure preserved.",
+    "services_r3": "New source and one focused local control frozen; root submitted job 1a1b21fcc13-fc05-7c7a. Only actual files already present at this manifest snapshot are included; do not infer terminal success."
+  },
+  "excluded": [
+    {
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/__pycache__/summarize_fixed_stderr.cpython-312.pyc",
+      "reason": "compiled, binary, image or key type not in text-only checkpoint scope"
+    }
+  ],
+  "file_count": 175,
+  "files": [
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 505,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/BLOCKED_BEFORE_EXECUTION.json",
+      "sha256": "31a25d9016e5dc01b97028687ba2897bca278a8347ef0de418fc38bb0543fb80"
+    },
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 9382,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/SOURCE_REVIEW.json",
+      "sha256": "1f4bf825340b2b31165402961f3c13ede01a8ad757b2a37ab00289323e57886c"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6165,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/assemble_candidate.py",
+      "sha256": "3a5e07a470828b8605b2009ce52cd8646f00892c3bc7e5f5b5ed427e5e773e07"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 1153,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/controls.stderr.original.txt",
+      "sha256": "7aa947a9162f199fd33d534549c173448aad000403a3eddae65b5b58020fe38c"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 255,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/controls.stdout.original.jsonl",
+      "sha256": "507011aff8ed2cf4aa33792f58f1c6816ff6e5faae0564ab3a4719f3bcfd248b"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 37775,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/observe_current_services.py",
+      "sha256": "39998d4d0bc7329e153a8177e0af9d8515016ffce368216c504519b1c57607d6"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6885,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/owned-adapter-against-actual-explicit47.diff",
+      "sha256": "a316a73c6f2085df2408ccbd205b62e8951ccce91bdec752dcf78da4011d0b8f"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 18701,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/owned_readonly_lifetime.py",
+      "sha256": "4d489fa8e38e1e0f70c47d7576a6509aacf3c0aa3c9b87b99d6a485b10f9a82a"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 37629,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/pre-final-assembly/observe_current_services.py",
+      "sha256": "1fa52bfdb29fc6d1fc54d85105b697106977249404bbebfb711aaca7bb795077"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6210,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/pre-final-assembly/owned-adapter-before-reference-label.diff",
+      "sha256": "bda596ee5716acbf483e113fa376e2801b3b17a3f462b6531d982bdbf3778bfc"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 18733,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/pre-final-assembly/owned-adapter-before-reference-label.py",
+      "sha256": "5fe0a811f68be1c9122947a26bfeb1fabec722e6a4527f122a7aae407b1658f5"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 2159,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/pre-final-assembly/request.review-only.json",
+      "sha256": "582a5022fa5988c77fdf73f4130547c7d346a6a91e2c475f77c5705d19c9cfdb"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 946,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/pre-final-assembly/runner-against-original.diff",
+      "sha256": "4fb971c8719bdd7bfd18865b8a12eb4303f52b25dfd07d741c085adafbb42d3a"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 93052,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/process-request.review-only.json",
+      "sha256": "a8cc5da0d7ede442cd5e733e43aae7f21525e6b06497921cefc09dd39fd24f33"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 16620,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/readonly_services_transport.py",
+      "sha256": "69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 2159,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/request.review-only.json",
+      "sha256": "4ed6b2db9de632ac0e62e6f70511130977b38ac861fd3017433bb8d2a27dc771"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 946,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/runner-against-original.diff",
+      "sha256": "4fb971c8719bdd7bfd18865b8a12eb4303f52b25dfd07d741c085adafbb42d3a"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 539,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/stage-lifetime-controls.stderr.original.txt",
+      "sha256": "6026bf3413c67d39d1184924c68eac35879f7b58c143817f0dc143a17f99f342"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 214,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/stage-lifetime-controls.stdout.original.jsonl",
+      "sha256": "046f51735b5acc6ecdce7eaa82def0fa5e2cbd81293fa95dc95355bfefd00aba"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 79390,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/stage.stdin.original.json",
+      "sha256": "6f80ac45de401e749cd8b8765f434e7fc4daaa3d0a7578606f7c2701dec4baa5"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6763,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/stage_and_run_services.py",
+      "sha256": "738ecd8809a6e0e7c284bfe5260a83f020f067fa3b58bc8ae4a2faa51b45864a"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 3464,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/stager-against-actual-explicit47.diff",
+      "sha256": "8680d77690a4b86d7961195c0858396abdc7710ad14a1fa85073222ca9dcd618"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 8459,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/test_local_controls.py",
+      "sha256": "b24ebbaa2b6690dec8c609f0e2d55325a473ba6aa89443eea00f58a14baad4a0"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 3590,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/test_stage_and_lifetime.py",
+      "sha256": "51812499c3c8f5d54609237fc07d3ee36aea7f2aec3693be57e877976af17ee7"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 3933,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/transport-against-original.diff",
+      "sha256": "56c1ca664434a9c45da35231fe358ddc860d6c84184780d448ddb03ed28b630d"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 19156,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r1/worker_body.py",
+      "sha256": "691990c53092595ea71600a50c1a46a2b6b6bd6c267d59a13ac5467f6b12df69"
+    },
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 6492,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/SOURCE_REVIEW.json",
+      "sha256": "13726047cdfeff69f059602bc85882c2d59203f7294a75d3d17bc6ff1a7152c5"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 56,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/actual/first-status-transport-error.original.txt",
+      "sha256": "530b92eb33c2169bee59c37b3ee3fe3037e81ac2781fab94049342c95c63542e"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 42807,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/actual/process-read.original.json",
+      "sha256": "bd57db5259dd10917477afb66622ab2f860c7c7a428c01abc92595419a5d8454"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 7927,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/actual/process-start.original.json",
+      "sha256": "c422c35f38364c8a7119084dd60059202e847d86709be4cc29738e16336048ee"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 0,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/actual/stderr.original.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 13759,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/actual/stdout.original.jsonl",
+      "sha256": "cbe34113d2ddc30f92e49a5749b5b021046625c50f14fe96cbf38217bded5581"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 730,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/actual/terminal.original.json",
+      "sha256": "799111a200812990ddcfdee98c150f1ad6a63e6c464b353c96c7ce5a43b23465"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 3648,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/actual/worker.envelope.original.json",
+      "sha256": "d4a23f657da8f2394a971d85dcb91d8a4df501456e4a9996f1c9fd38bf1af55b"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 7671,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/actual/worker.stdout.original.json",
+      "sha256": "b7f4882891e33ca4415ad9df7c2eec2c759d2a413ea1d541639ac075df0be0df"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6339,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/assemble_candidate.py",
+      "sha256": "4e11ce3f32c41ec6c2b7ae7e844612120a0e8542516ad3e3be8a862e809c14eb"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 37779,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/observe_current_services.py",
+      "sha256": "391ab40c114c9b47e201f7de9ed29bd7a86869caf1383b46f0589dc5a8995c2f"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 1948,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/owned-adapter-against-preserved-r1.diff",
+      "sha256": "5e74423b4ce166ac407f21c27109b93532a1e0ed993e9b3bbf2909d6416bcb12"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 18701,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/owned_readonly_lifetime.py",
+      "sha256": "932a4a79e02c0bef0c35eee2bd65056edbd594485e5c5f33dfaa1effc14f61c1"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 93056,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/process-request.review-only.json",
+      "sha256": "1378a3ff399c95f456ad3c5dcee4f68b85e7e535a0563c4ff30218cab0e7befb"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 16620,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/readonly_services_transport.py",
+      "sha256": "69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 2159,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/request.review-only.json",
+      "sha256": "e3084966e2e7f954d4584e2a66b262376f80a7ddbc98d21631408f0d67fe213e"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 946,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/runner-against-original.diff",
+      "sha256": "4fb971c8719bdd7bfd18865b8a12eb4303f52b25dfd07d741c085adafbb42d3a"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 79394,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/stage.stdin.original.json",
+      "sha256": "ade55453df2afe9c32f553bdde56e292916e0db538afa41ebce0ae0ea45fb4bb"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6763,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/stage_and_run_services.py",
+      "sha256": "4aef5e955f1a761e661b6252f1c02ffa4f5873c58254a1bf3619c16bdf8af971"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 2932,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/stager-against-preserved-r1.diff",
+      "sha256": "ca6b46cf18aae5bcb30052e9908d6e0f02cef3af5aa34b04dd5f75729771a990"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 1739,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/test_real_owned_timeout.py",
+      "sha256": "b2ba4c72b7bebe0241bf38a92d3e5b1d3866a581ed120ad71c252c64d4b98c9b"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 0,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/timeout-control.stderr.original.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 930,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/timeout-control.stdout.original.jsonl",
+      "sha256": "a610fb998100b6bae772094e729da82a92832ca7ad45f638a3c4d5af79914701"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 1963,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/worker-against-preserved-blocked-r1.diff",
+      "sha256": "a11627a0958f88ec8bb8c93b171a013878e5c49f0079598122012c2c3c929752"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 19156,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r2/worker_body.py",
+      "sha256": "691990c53092595ea71600a50c1a46a2b6b6bd6c267d59a13ac5467f6b12df69"
+    },
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 9559,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/SOURCE_REVIEW.json",
+      "sha256": "f76a8db8310cb24c96e8552a19bd897255e4db6648c4cf824b0664efc9ed459a"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 7929,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/actual/process-start.original.txt",
+      "sha256": "c905b558ef3fe5161e4cb441fff5cc05f229e0cac42581b9532d5690d735a55e"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6339,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/assemble_candidate.py",
+      "sha256": "0b12ff17b1feec747d729da01549315d4edff8c2070b49e1d679593f6fa3ab96"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 0,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/empty-stream-control.stderr.original.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 1274,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/empty-stream-control.stdout.original.jsonl",
+      "sha256": "5181e20966dfb0bb9722d0bdf091c81cc120daffdac9ca53175223905d4f9712"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 39597,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/observe_current_services.py",
+      "sha256": "ace355c5c227e86ff82804428e23fa9c89fd1028d37089c906016c049753c76e"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 1990,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/owned-adapter-against-preserved-failed-r2.diff",
+      "sha256": "f8d81425c0061c634dc7ae2339b02bb3a95ec64bcbd78097511ee55a991fb81f"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 18701,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/owned_readonly_lifetime.py",
+      "sha256": "3690832983fc24032c4acc874373d059e0f866e2a0a2d80ce2673b48725da8d2"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 95099,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/process-request.review-only.json",
+      "sha256": "2252d60c81eaea69d4179fa509c023f877b050622eca45089044571b60d2bc7d"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 16620,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/readonly_services_transport.py",
+      "sha256": "69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 2159,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/request.review-only.json",
+      "sha256": "01df5d11723f1f54b668834d885985ded7f895cb2ef01dc66d693bac725ad4ae"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 946,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/runner-against-original.diff",
+      "sha256": "4fb971c8719bdd7bfd18865b8a12eb4303f52b25dfd07d741c085adafbb42d3a"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 81300,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/stage.stdin.original.json",
+      "sha256": "1d9580fa6d200f7e9e4c377282386ef27ad19e48ed8cec2b0059cc631d9b9ea5"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6765,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/stage_and_run_services.py",
+      "sha256": "fb513678f9729dd892611a4b74f2d42ca4b11b333fa487c1ca843b6028bb2f37"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 2974,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/stager-against-preserved-failed-r2.diff",
+      "sha256": "a2a7060b3f5945dda1fb9baba1a2e751a27746ab39a114a4cbbc9c5483ddf051"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 4744,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/test_empty_stream_receipt.py",
+      "sha256": "30c2fdd0e6c3f9dc1a5d1059e01ea004656d87140554880801ab482a603ecdaf"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6290,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/worker-against-preserved-failed-r2.diff",
+      "sha256": "44a1d1cd907f726f02fc8bf5471aca879a46f30e584f79f5a21c5961f04aaff3"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 20974,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/current_services_r3/worker_body.py",
+      "sha256": "415ea221c89bac9333ed682d22ca45de81e9d640696771919bb99337bab9f4f3"
+    },
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 2898,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/RESOURCE_FINDINGS.json",
+      "sha256": "1b6adce09ea9233f6a7be06e521f103dc307febe6f1c906a7bdcfb0a60b3175a"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 24149,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/actual/process-read.original.json",
+      "sha256": "0fe58b2da4fc0a11003174f7890f5355c65665732f88537c2d75d41e2e246035"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 8204,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/actual/process-start.original.json",
+      "sha256": "132c0eef87f404c348747b681cc9cdce783fdcd16d5dd162d96f304fbc2c08c6"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 0,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/actual/stderr.original.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 7779,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/actual/stdout.original.json",
+      "sha256": "eb4337878f1db6bb494e09a91a74313c4818206868fda9cfcc235d5530c2a7e1"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 731,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/actual/terminal.original.json",
+      "sha256": "5a3a9e4d93f3515765c050e9cc794bf68afdf4b2378303a4466b18102890bd17"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 0,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/controls.stderr.original.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 411,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/controls.stdout.original.jsonl",
+      "sha256": "5babb2a8b29f4ec4083b7dd4b298dca6ce14c7cde548f7ed2307e951c261dc25"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 624,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/prior-control-unnamed-fixture-error.txt",
+      "sha256": "2a5877fc3ca75bd4049ae2c7f4d04abcfafb27d144975c1de489feeaf7c7c614"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 7434,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/process-request.review-only.json",
+      "sha256": "960e58de9c56c0393426aa8725ff3e1b3ec43422b3f593f809f11e1f0e5e0a84"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6746,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/summarize_fixed_stderr.py",
+      "sha256": "da59f267afcd49acd5b10f887d3036ea04cd833058cb59cf590830fc7f51fd3a"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 2807,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-aapt2-stderr-summary-r1/test_local_controls.py",
+      "sha256": "f225474390ca8603ca5d81ac179270c9528b124ec110a18e22fbbefd254d14c5"
+    },
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 973,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/PENDING_INPUTS.json",
+      "sha256": "632236c39111e99647592341c76718edd69ee142929af2803e7b7c2c57b66f9c"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 16573,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/against-faff199c.diff",
+      "sha256": "0676883f91c1c52e7bd35b81d2a6797ca7ec0f00b97ba2410166cf1784ab6f4c"
+    },
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 4447,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/SOURCE_REVIEW.json",
+      "sha256": "ab354c0b530dd0a253b1e001ba5a2b651e45516fae30947f8f87cbc93b626c56"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 23216,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/against-preserved-draft-r1.diff",
+      "sha256": "df4cad226c48a5a62d659244b84baa8d63d45ede6a4da84eeb50d3757cede1c6"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 1132,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/controls.stderr.original.txt",
+      "sha256": "b674f0563021fe91be8267fc92d8648b7760522a9701c8449a52c70bb96704bf"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 266,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/controls.stdout.original.jsonl",
+      "sha256": "b801ff2d41c48d88284b38379b2a723b2f45b67984575577aaa1659f5e19e3d7"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 46019,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/diagnose_calendar_and_fcitx.py",
+      "sha256": "4cf6bda1b90cf7454a1c13da0ce7d378d756ef28623e54b0c09f661cbd26f072"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 54192,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/inputs/aapt2-proof.outer.original.json",
+      "sha256": "f9c289f7d28f836c51d845b4c851c1dbac0e8f326d658c7b98106b6ee327f192"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 730,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/inputs/aapt2-proof.terminal.original.json",
+      "sha256": "f797f008a250a386ca905e9b7e9065ac2f85cad2168be702c3ad01209d341802"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 9876,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/inputs/inventory.original.json",
+      "sha256": "60ee9c47cb1719343a1667d306e26086d66f2376d62b8c5251f4e64446887341"
+    },
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 443,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/prior-control-path-error/OBSERVED_FIRST_FAILURE.json",
+      "sha256": "48b5094b543b3205e367d1265b3e712332152c23f9f14fa76521f390870cd8d0"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 5744,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/prior-control-path-error/test_offline_controls.original.py",
+      "sha256": "b8b6c05716432c9597c4be97b9c2ffa8a04ea94b1213942611a2720efbfe95f7"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 146181,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/process-request.review-only.json",
+      "sha256": "adab5169258f5d65e58fa4ad19c9d04eea15a7324a8bf7317acbbd28e5e66cc4"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 1703,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/request.review-only.json",
+      "sha256": "d3a663cdc6440cf235f0b0874497b3e3f7f37d5863ee2780e9ca8954ca315743"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 121751,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/stage.stdin.original.json",
+      "sha256": "79b556a44b6a3a684218eb065692c15663e5aeaa93cf9e7c74d452b765895562"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6888,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/stage_and_run_comparison_r2.py",
+      "sha256": "a7b4e2b794ea563380ae418b5d9708a6c67ab736a06b3aac7f91d36525fe6dd2"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 5744,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r2/test_offline_controls.py",
+      "sha256": "11a27ff8d61cde8066c115319b5a357a61da4a08aa56d1fee7f914afe78fb715"
+    },
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 5834,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/SOURCE_REVIEW.json",
+      "sha256": "ff7641d4f92e0c21996de8691dd1ad7a4890b949f4dcfc55caac96177f17cfc9"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 50750,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/actual/process-read-0.original.json",
+      "sha256": "c4969e62723d0e65badabc37fc833b1d100ee5e1c9f4261485573a53c5c1d0c3"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 22865,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/actual/process-read-1.original.json",
+      "sha256": "662f86f6bc5c8b6c9ec7f15d2d2af1a00a5e9e5f37e8c1fc642d37be55bf7bbf"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 8228,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/actual/process-start.original.json",
+      "sha256": "87a1837a5944e002dd1f06f6b042830ea8b9aba418036ac2b263f34c2f7d04f0"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 0,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/actual/stderr.original.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 23867,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/actual/stdout.original.jsonl",
+      "sha256": "e461369fd74234088764551ebd44a7dfee904e79a5431ccf5fa9cdef01baef73"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 733,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/actual/terminal.original.json",
+      "sha256": "a1c573c32e7d566ac2976b26fa84d02adec8c6c9ff455f88c40a0ba46cf40405"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 58074,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/actual/worker.artifact.original.json",
+      "sha256": "6afc779a4fcfa5e8f0d59470ef101330ad1dd8f4ba4d781b121abd62df3ece90"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 12293,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/actual/worker.stdout.original.jsonl",
+      "sha256": "599d519bcb7fd44f78944111870297c3f6a421334c0901130d80014a8fc8842b"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 46019,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/diagnose_calendar_and_fcitx.py",
+      "sha256": "e9935fd73b49a72b1bf79c098ee21486c7a35c1fddf7fa188b7a4091d1dc0c89"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 54192,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/inputs/aapt2-proof.outer.original.json",
+      "sha256": "f9c289f7d28f836c51d845b4c851c1dbac0e8f326d658c7b98106b6ee327f192"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 730,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/inputs/aapt2-proof.terminal.original.json",
+      "sha256": "f797f008a250a386ca905e9b7e9065ac2f85cad2168be702c3ad01209d341802"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 9876,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/inputs/inventory.original.json",
+      "sha256": "60ee9c47cb1719343a1667d306e26086d66f2376d62b8c5251f4e64446887341"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 1877,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/owned-adapter-against-actual-explicit47.diff",
+      "sha256": "fd878dad6bd9a62427dfb3f0e9febd3270b1fba7ae9556494d86cd5f63b23350"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 801,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/owned-controls.stderr.original.txt",
+      "sha256": "85446da72ab7bdd4bd1ca7f6fa200b97b90e1a0866bbc489e591256a09bf4e3c"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 243,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/owned-controls.stdout.original.jsonl",
+      "sha256": "75d064e1c7e0c18398816dcc9e428c97d5842f033575084166b0efa9482fbbed"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 16667,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/owned_readonly_lifetime.py",
+      "sha256": "6a818a4fd0a28cc2dd565acf37b709b349011aa87d587fe5cf95c10be9d1916e"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 165438,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/process-request.review-only.json",
+      "sha256": "69aaf704d1502d32957bb219e3bb63d364b95d1b4ff9c104c7d444586e6f539e"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 1703,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/request.review-only.json",
+      "sha256": "114ae69bf7c1dfc10632a4bb542920c20bc227dc79a563c8a7c64796f51ce6a6"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 139353,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/stage.stdin.original.json",
+      "sha256": "21176215a328715fa8cea61a19de44a0b93803c031c7320dc55cc1ed76603579"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 7051,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/stage_and_run_comparison_r3.py",
+      "sha256": "7937e50e7d17fc662826bde96a9bd8f03407824ffaf2c8468bf0e5d8ca74bb83"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 3885,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/stager-against-actual-explicit47.diff",
+      "sha256": "91b1b71640938abfd289da18816d14d9724ab2634ec559d2942cd9a9f04dfe9a"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 5744,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/test_offline_controls.py",
+      "sha256": "11a27ff8d61cde8066c115319b5a357a61da4a08aa56d1fee7f914afe78fb715"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 5506,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/test_owned_controls.py",
+      "sha256": "8eccd0f9f1c6883f15218fa20e9c47da7f947182ef65b418b2b87a4020fc61fb"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 2390,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/worker-against-preserved-r2.diff",
+      "sha256": "208dda3c00aa09fca53bdf229c9145432d4b35a0235a537e8689de4cf1344a2c"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 1132,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/worker-controls.stderr.original.txt",
+      "sha256": "1f3b36f8d20e90d194b3979ca7e18c3343bf76dd65beca23728368ce61f51751"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 266,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/worker-controls.stdout.original.jsonl",
+      "sha256": "b801ff2d41c48d88284b38379b2a723b2f45b67984575577aaa1659f5e19e3d7"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 36675,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/diagnose_calendar_with_observed_aapt2.py",
+      "sha256": "bd8119e8eed6fd5119de9dadac0c668c7eb485520189c216bdc123fa9bebb290"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 19051,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/prepare_candidate_r2.py",
+      "sha256": "b963358651e32acb8d03f709a5aac9cbb684cf16768f7f1b2f14baeebd0348c5"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 29242,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/diagnostics/calendar-resource-parser-r1/reference/audit_successor_apks.py",
+      "sha256": "faff199c1f6218b3c01d87e44be610d6fa211de396b5e8c862c188dec59d284a"
+    },
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 3806,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/SOURCE_REVIEW.json",
+      "sha256": "66280838eac471f3f67c9caff1c9e57631b56fbc2d093a23752301f5428b5475"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 999,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/controls.stderr.original.txt",
+      "sha256": "b4b07597857048420352222f6c1e2b3ba692616248f1c29c9a0301840aace77d"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 243,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/controls.stdout.original.jsonl",
+      "sha256": "8ea4b166927ffbae31fe33c3684cfb6714d08f8a7fb42cb92e245b868ee56f15"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 4262,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/inputs/helper-install.stdout.original.jsonl",
+      "sha256": "68d4fcc329964f143794f5b59ce8556ddce5b7ba92546709025bd8ff52fea51a"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 731,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/inputs/helper-install.terminal.original.json",
+      "sha256": "00d055ff77076430c9800957063a59e8ccbae249115213a09bdb32d7d71c5150"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 10114,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/inputs/native45.original.json",
+      "sha256": "1352cb70367b09af255283dcbaecd8680c4d6bad662cf6432d01e2f2d6cabf54"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 18139,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/observe_explicit_47.py",
+      "sha256": "6ca6c99c773e8646b50d568c95620b4731b337c3ec21f1d3efa00cbb617c93da"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 51094,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/process-request.review-only.json",
+      "sha256": "aedea543adaad64a99cad2cacc20e410e29b0b7899ee1e5d280aaa0c7d6d8367"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 2804,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/request.review-only.json",
+      "sha256": "9857cc12e117e7855bae40ef115ea8195d99c282e196c9eb7e98bd50ff1b52b8"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 39048,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/stage.stdin.original.json",
+      "sha256": "8450d0192db0cfb66b56912a841f77fb08833db8a64a9f359ea6050f6ef8815a"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 6876,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/stage_and_run_explicit47_r1.py",
+      "sha256": "8949902192b2c0186a2b5e5ac3f76d6f965551c59cb0e6af364a3c1757616900"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 4563,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r1/test_offline_controls.py",
+      "sha256": "e7a8464b0c35d078d6bde6ea628299d5d11f3e9afa86904c3a56bc419b9f23c0"
+    },
+    {
+      "artifact_kind": "review, source pin, or summary",
+      "bytes": 4158,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/SOURCE_REVIEW.json",
+      "sha256": "b68c997ac67037661ec26eb2bf805a7708bd7a6fadb0c3de81c92628d7e4fa2a"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 58854,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual-readback/app-scope.private.json",
+      "sha256": "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 52249,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual-readback/process-read-0.original.json",
+      "sha256": "c3e8ef9d4ecceabef976b6350cde44ee7ff026cedfd6e348eab81334b9a471f6"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 52022,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual-readback/process-read-1.original.json",
+      "sha256": "d3ec78910d61106e41dc58afde187a6d5e906b3ffbd8829d14edeb690a565ba5"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 52082,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual-readback/process-read-2.original.json",
+      "sha256": "900a2a8debe8e8642410ca9725bb2aa5aabf7cabfed6b8e108b462e9529a7d44"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 49136,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual-readback/process-read-3.original.json",
+      "sha256": "3ea70dc83916cbfa99f13ef9b3b2023dc8ac48f08832a1351ee72a2f0ffe9d99"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 4003,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual-readback/process-request.json",
+      "sha256": "1412f4cfdeb7207d0a86b44e0f6c31735412138e68a48463f51a968f6ff61216"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 4703,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual-readback/process-start.original.json",
+      "sha256": "913dc788a0a682b01bb6c11b30b77e843c6b1fcf264bd396df5fd4cf41f71c88"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 0,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual-readback/stderr.original.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 64626,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual-readback/stdout.original.json",
+      "sha256": "ce1eb0201e5fa780f9bde383f7be667a0260909a1f0fbcf142b756d6ccf0c09a"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 733,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual-readback/terminal.original.json",
+      "sha256": "4b262c585d272161c8b728f277d2e61ff184d17985bbacbe6e7b85e52f1ec766"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 51546,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual/process-read-0.original.json",
+      "sha256": "ded1be55e37c616f5f1ee59b8e9968a1876258b64568f2046167953d55eed03b"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 4863,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual/process-read-1.original.json",
+      "sha256": "0f7692a9f827aac0cb6432744e5429aa56544da6b3152c26a9fa9265f93c51fa"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 8218,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual/process-start.original.json",
+      "sha256": "ad85550fc0fdb515b7c904e3f0e3953195cb40c5d52baf4ebbde5245cf34eb77"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 0,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual/stderr.original.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 17857,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual/stdout.original.jsonl",
+      "sha256": "2752f58cbc84128beb0a0e3e99882dde5806fd40e291dddc586994e7ec632ecf"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 733,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual/terminal.original.json",
+      "sha256": "95229a6aade31b67f486c0bf1cc10788bbf4b34a4550aa9022fe76854828925e"
+    },
+    {
+      "artifact_kind": "actual raw evidence or exact metadata readback",
+      "bytes": 5905,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/actual/worker.stdout.original.jsonl",
+      "sha256": "247d05c5d0526b0975f33b565a1285b1b95aff513c95b6c36215f3a9063ef2c7"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 990,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/controls.stderr.original.txt",
+      "sha256": "450aa272e43ae6d38c0f83a2019b1215e573de53d58dbdb1fdefe84809db2bf9"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 245,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/controls.stdout.original.jsonl",
+      "sha256": "5f677c43689fac8d973d8289e4eceb6c5ca6927053721d8d722a02f051163191"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 4262,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/inputs/helper-install.stdout.original.jsonl",
+      "sha256": "68d4fcc329964f143794f5b59ce8556ddce5b7ba92546709025bd8ff52fea51a"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 731,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/inputs/helper-install.terminal.original.json",
+      "sha256": "00d055ff77076430c9800957063a59e8ccbae249115213a09bdb32d7d71c5150"
+    },
+    {
+      "artifact_kind": "actual local control or exact reference evidence",
+      "bytes": 10114,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/inputs/native45.original.json",
+      "sha256": "1352cb70367b09af255283dcbaecd8680c4d6bad662cf6432d01e2f2d6cabf54"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 18139,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/observe_explicit_47.py",
+      "sha256": "56922fbe372cf8cd2d0e39f75ddb69b16843f098d8090d65834b5737db04a656"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 16637,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/owned_readonly_lifetime.py",
+      "sha256": "1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 70325,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/process-request.review-only.json",
+      "sha256": "1434c2bf0a995d759f46858a098038180b6df92e5943580edfeab1bb4818d363"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 3558,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/read_actual_scope_once.py",
+      "sha256": "af2de9d29dcea1b9d13ad0070b2f539f872647be7c52d3b7dcd7bc1c86d8dcf5"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 2804,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/request.review-only.json",
+      "sha256": "06ca66a6fee69d8ff874167e89be3634973eae9ca0dde56a6435526f0330bd57"
+    },
+    {
+      "artifact_kind": "exact pinned request or source-stage input",
+      "bytes": 56620,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/stage.stdin.original.json",
+      "sha256": "3f71cea27d885628785b70c1bbd664b78370ca99d6f94993e06f8393e031e716"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 7043,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/stage_and_run_explicit47_r2.py",
+      "sha256": "80b8f696cddbbcbf27a08134eb790bef98bb8d808337dc460e2ca2c945fc1961"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 3821,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/stager-against-preserved-r1.diff",
+      "sha256": "16a06ff06d80485e645fd4a90781f1a66f62d8a4fbfb398cef5db993f2e07324"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 5046,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/test_owned_controls.py",
+      "sha256": "821c24da61098cbd8c0b0b09296362cd9d0cca071a9361923dad5fe2c2ec2c7b"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 817,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/explicit47_scope_r2/worker-against-preserved-r1.diff",
+      "sha256": "f46832b3a42a51082a0763563dfb96b8fe862ae23e224d2d83b732b724922b77"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 29242,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/reference/audit_successor_apks.py",
+      "sha256": "faff199c1f6218b3c01d87e44be610d6fa211de396b5e8c862c188dec59d284a"
+    },
+    {
+      "artifact_kind": "source, test source, or source difference",
+      "bytes": 31327,
+      "checkpoint06_index_state": "not present in checkpoint06 file manifest",
+      "path": "successor_audit_requests/reference/install_successor_native.py",
+      "sha256": "ad4227b4c63033018bd1147c3c589b2632168766306791696aabc53583229c96"
+    }
+  ],
+  "latest_parent_reported_by_root": "859d7afbdb8b4284577e8e72f307a3690c18dfbb",
+  "no_APK_or_other_binaries_included": true,
+  "no_git_commit_performed_by_subagent": true,
+  "no_private_business_UI_content_included": true,
+  "no_signing_keys_or_credentials_included": true,
+  "old_products_deleted_bytes": 0,
+  "permissions": "Manifest declarations and saved metadata are not effective grants. No grants/roles/AppOps changes or Beike scope enlargement performed.",
+  "production_ready_apps": 0,
+  "schema": "pocket4-sidecar-checkpoint08-candidate-delta-manifest-v1",
+  "total_file_bytes": 3155792,
+  "unchanged_baseline_files_omitted": []
+}

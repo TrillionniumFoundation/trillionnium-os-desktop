@@ -1,0 +1,26 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/curl",
+  "args": [
+    "--proto",
+    "=https",
+    "--tlsv1.2",
+    "--connect-timeout",
+    "10",
+    "--max-time",
+    "30",
+    "--max-filesize",
+    "1024",
+    "--fail",
+    "--silent",
+    "--show-error",
+    "--write-out",
+    "%{stderr}\nP4_GOOGLE_MAVEN_SHA256 http=%{http_code} url=%{url_effective} size=%{size_download} tls_verify=%{ssl_verify_result}\n",
+    "https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2/9.5.1-16666295/aapt2-9.5.1-16666295-linux.jar.sha256"
+  ],
+  "idempotency_key": "pocket4-official-google-maven-aapt2-9-5-1-sha256-20261106-r1",
+  "cpu_quota_percent": 100,
+  "memory_max_bytes": 268435456,
+  "nice": 10,
+  "timeout_seconds": 50
+}

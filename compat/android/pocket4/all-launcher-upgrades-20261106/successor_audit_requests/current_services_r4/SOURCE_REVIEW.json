@@ -1,0 +1,167 @@
+{
+  "actual_package_help_review": {
+    "bytes": 5120,
+    "path": "ACTUAL_PACKAGE_HELP_ADMISSION.json",
+    "sha256": "99af58526707949d0b20a27e5b99bb004cfa0e6525408934955bae67abb53cdf"
+  },
+  "cleanup_eligible": false,
+  "controls": "No new child/runtime controls were executed for r4. Source compilation/closure and exact byte/AST comparison were performed; the actual package help readback was validated locally. r3 empty-stream and r2 timeout controls remain historical evidence.",
+  "current_permission_claims": {
+    "effective_AppOps_and_roles": "UNKNOWN_NOT_QUERIED",
+    "effective_permission_grants": "UNKNOWN",
+    "permission_queries_executed": false
+  },
+  "files": [
+    {
+      "bytes": 5120,
+      "path": "ACTUAL_PACKAGE_HELP_ADMISSION.json",
+      "sha256": "99af58526707949d0b20a27e5b99bb004cfa0e6525408934955bae67abb53cdf"
+    },
+    {
+      "bytes": 2643,
+      "path": "STATIC_SCOPE_REVIEW.json",
+      "sha256": "845835b7a58a387844fadfc236399816e63b2a9eddbc997a3433df7ffda2fb19"
+    },
+    {
+      "bytes": 6330,
+      "path": "assemble_candidate.py",
+      "sha256": "b3dfce9f47813667a3270ff261814ec151776a7e6d8c7899bed8c20aa14db573"
+    },
+    {
+      "bytes": 39573,
+      "path": "observe_current_services.py",
+      "sha256": "4fda5cdf8fda65155c4187a1e8e5381aba59011329c824b98ad2e0c0b8aa8f0e"
+    },
+    {
+      "bytes": 3858,
+      "path": "owned-adapter-against-preserved-failed-r3.diff",
+      "sha256": "d203899d17d5f560cacad58bb3ae87e6d8579bde9f27e563554587f116d9cb58"
+    },
+    {
+      "bytes": 18837,
+      "path": "owned_readonly_lifetime.py",
+      "sha256": "ad2db51aa4445e6e5b5dc07439182556d51ec629cd8487ac9d3b1e5cf947a55c"
+    },
+    {
+      "bytes": 95091,
+      "path": "process-request.review-only.json",
+      "sha256": "0d99c817131c6243ba4be0212e923df6e4e2951466dbba67827356e6560c4e1b"
+    },
+    {
+      "bytes": 16536,
+      "path": "readonly_services_transport.py",
+      "sha256": "4f8a4317332a1c80796378abfd0134a3329dd6acde9f06e96d8e52b70b3029b3"
+    },
+    {
+      "bytes": 2159,
+      "path": "request.review-only.json",
+      "sha256": "9373ac552cb178431b989768318b013287e5dfe687338dd82f9ef8c7ced82f6c"
+    },
+    {
+      "bytes": 946,
+      "path": "runner-against-original.diff",
+      "sha256": "4fb971c8719bdd7bfd18865b8a12eb4303f52b25dfd07d741c085adafbb42d3a"
+    },
+    {
+      "bytes": 81319,
+      "path": "stage.stdin.original.json",
+      "sha256": "e0b6d0704f89d0ce84dcf28a87b14c77d5583f6e30f150449b991fb6a6c69cf4"
+    },
+    {
+      "bytes": 6763,
+      "path": "stage_and_run_services.py",
+      "sha256": "01efa4fad2e4b16e04fac90cf3e3883836d0e65e9d8eff393aa82e09b10e7882"
+    },
+    {
+      "bytes": 3248,
+      "path": "stager-against-preserved-failed-r3.diff",
+      "sha256": "9ae95d3adedf1eabea2ad6c58f3da9ee47d44402765b5337364c9f827e1cbc72"
+    },
+    {
+      "bytes": 805,
+      "path": "transport-against-preserved-failed-r3.diff",
+      "sha256": "40674da0234aa624896a5f12f670b7e82d0473760892a9517174f5f030bbafdf"
+    },
+    {
+      "bytes": 4410,
+      "path": "worker-against-preserved-failed-r3.diff",
+      "sha256": "9cc7bea7fc6f3f07b0c7d9da2eda27b03a279b10c41d22d73834fb1ebf95dcf4"
+    },
+    {
+      "bytes": 20959,
+      "path": "worker_body.py",
+      "sha256": "15560ec972feed7d72a4102ba4169f6db667a0efa052f90c27b7f403ce068a6a"
+    }
+  ],
+  "guard_and_retirement_boundary": [
+    "Original typed runtime epoch, explicit47 APK/stat/UID/data scope, held Android root and seven authority FDs remain unchanged.",
+    "Original action lock plus a new independent flow lock remain mandatory; old compiled Beike scope and Bili UNKNOWN are not changed.",
+    "Fresh PackageManager help is captured and its exact required literals must pass before either enumeration command.",
+    "Original transport classes/functions and child runner remain byte-identical: every nonzero, timeout, incomplete output, guard mismatch, or unjoined child still fails and permanently poisons that observation.",
+    "The two package samples and the two resolver samples must match. Unknown, duplicate, malformed or out-of-bound output is rejected, not guessed.",
+    "Outer final gate requires exactly five complete rc0 Android rows and three complete native reads, original held target and FD/lease closure, actual owned-child original pidfd death, and original parent descriptors restored.",
+    "No grant, AppOps mutation, role change, install, launch, UI, ADB, lifecycle operation or automatic retry is admitted."
+  ],
+  "only_scope_change": "A new independent source and transport allow five PackageManager reads only: help, list, MAIN+LAUNCHER resolver, list, resolver. The unrelated AppOps/role help commands are excluded; their prior failure remains unchanged.",
+  "previous_actual_r3_failure": {
+    "Android_namespace_commands": 2,
+    "actual_Android_returncodes": [
+      0,
+      255
+    ],
+    "error": [
+      {
+        "reason": "ANDROID_COMMAND_FAILED",
+        "type": "TransportError"
+      }
+    ],
+    "job_id": "1a1b21fcc13-fc05-7c7a",
+    "lease_FDs_final": {
+      "acquired": 20,
+      "closed": 20,
+      "errors": [],
+      "remaining": 0
+    },
+    "native_command_count": 2,
+    "native_command_rows": 2,
+    "no_role_or_package_list_or_resolver_query_executed": true,
+    "observation_FDs_final": {
+      "acquired": 7137,
+      "closed": 7137,
+      "errors": [],
+      "remaining": 0
+    },
+    "old_failure_or_exit255_reclassified": false,
+    "outer_stdout": {
+      "bytes": 16697,
+      "path": "successor_audit_requests/current_services_r3/actual/stdout.original.jsonl",
+      "sha256": "c98413ddfc2f1694e4b64e6fdd92bdf38ef7481f6482ea644f4edd058531a961"
+    },
+    "raw_stdout_and_zero_stderr_saved": true,
+    "worker_result": {
+      "bytes": 24357,
+      "path": "successor_audit_requests/current_services_r3/actual/worker.stdout.original.json",
+      "sha256": "e1b550b2fcbe440285aec340865df69a257bb4541a8ee0ea62b41eb74211a076"
+    }
+  },
+  "process_request": {
+    "bytes": 95091,
+    "path": "process-request.review-only.json",
+    "sha256": "0d99c817131c6243ba4be0212e923df6e4e2951466dbba67827356e6560c4e1b"
+  },
+  "production_ready": false,
+  "runtime_executed_by_subagent": false,
+  "schema": "pocket4-independent-pm-resolver-revision4-review-v1",
+  "semantic_limits": "The query covers user0 installed non-APEX APK package metadata, including static shared/SDK libraries, and enabled/resolvable MAIN+LAUNCHER components. Additional PM rows are not full APK byte scopes or UI/install authorisations. This does not claim effective grants or business readiness.",
+  "source_worker": {
+    "bytes": 39573,
+    "path": "observe_current_services.py",
+    "sha256": "4fda5cdf8fda65155c4187a1e8e5381aba59011329c824b98ad2e0c0b8aa8f0e"
+  },
+  "state": "SOURCE_FROZEN_NOT_EXECUTED_BY_SUBAGENT",
+  "static_scope_review": {
+    "bytes": 2643,
+    "path": "STATIC_SCOPE_REVIEW.json",
+    "sha256": "845835b7a58a387844fadfc236399816e63b2a9eddbc997a3433df7ffda2fb19"
+  }
+}

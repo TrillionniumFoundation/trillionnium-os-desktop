@@ -1,0 +1,142 @@
+{
+  "schema": "pocket4-calendar-aapt2-owned-comparison-candidate-r3-v1",
+  "state": "SOURCE_FROZEN_NOT_EXECUTED",
+  "files": [
+    {
+      "path": "diagnose_calendar_and_fcitx.py",
+      "bytes": 46019,
+      "sha256": "e9935fd73b49a72b1bf79c098ee21486c7a35c1fddf7fa188b7a4091d1dc0c89"
+    },
+    {
+      "path": "inputs/aapt2-proof.outer.original.json",
+      "bytes": 54192,
+      "sha256": "f9c289f7d28f836c51d845b4c851c1dbac0e8f326d658c7b98106b6ee327f192"
+    },
+    {
+      "path": "inputs/aapt2-proof.terminal.original.json",
+      "bytes": 730,
+      "sha256": "f797f008a250a386ca905e9b7e9065ac2f85cad2168be702c3ad01209d341802"
+    },
+    {
+      "path": "inputs/inventory.original.json",
+      "bytes": 9876,
+      "sha256": "60ee9c47cb1719343a1667d306e26086d66f2376d62b8c5251f4e64446887341"
+    },
+    {
+      "path": "owned-adapter-against-actual-explicit47.diff",
+      "bytes": 1877,
+      "sha256": "fd878dad6bd9a62427dfb3f0e9febd3270b1fba7ae9556494d86cd5f63b23350"
+    },
+    {
+      "path": "owned-controls.stderr.original.txt",
+      "bytes": 801,
+      "sha256": "85446da72ab7bdd4bd1ca7f6fa200b97b90e1a0866bbc489e591256a09bf4e3c"
+    },
+    {
+      "path": "owned-controls.stdout.original.jsonl",
+      "bytes": 243,
+      "sha256": "75d064e1c7e0c18398816dcc9e428c97d5842f033575084166b0efa9482fbbed"
+    },
+    {
+      "path": "owned_readonly_lifetime.py",
+      "bytes": 16667,
+      "sha256": "6a818a4fd0a28cc2dd565acf37b709b349011aa87d587fe5cf95c10be9d1916e"
+    },
+    {
+      "path": "process-request.review-only.json",
+      "bytes": 165438,
+      "sha256": "69aaf704d1502d32957bb219e3bb63d364b95d1b4ff9c104c7d444586e6f539e"
+    },
+    {
+      "path": "request.review-only.json",
+      "bytes": 1703,
+      "sha256": "114ae69bf7c1dfc10632a4bb542920c20bc227dc79a563c8a7c64796f51ce6a6"
+    },
+    {
+      "path": "stage.stdin.original.json",
+      "bytes": 139353,
+      "sha256": "21176215a328715fa8cea61a19de44a0b93803c031c7320dc55cc1ed76603579"
+    },
+    {
+      "path": "stage_and_run_comparison_r3.py",
+      "bytes": 7051,
+      "sha256": "7937e50e7d17fc662826bde96a9bd8f03407824ffaf2c8468bf0e5d8ca74bb83"
+    },
+    {
+      "path": "stager-against-actual-explicit47.diff",
+      "bytes": 3885,
+      "sha256": "91b1b71640938abfd289da18816d14d9724ab2634ec559d2942cd9a9f04dfe9a"
+    },
+    {
+      "path": "test_offline_controls.py",
+      "bytes": 5744,
+      "sha256": "11a27ff8d61cde8066c115319b5a357a61da4a08aa56d1fee7f914afe78fb715"
+    },
+    {
+      "path": "test_owned_controls.py",
+      "bytes": 5506,
+      "sha256": "8eccd0f9f1c6883f15218fa20e9c47da7f947182ef65b418b2b87a4020fc61fb"
+    },
+    {
+      "path": "worker-against-preserved-r2.diff",
+      "bytes": 2390,
+      "sha256": "208dda3c00aa09fca53bdf229c9145432d4b35a0235a537e8689de4cf1344a2c"
+    },
+    {
+      "path": "worker-controls.stderr.original.txt",
+      "bytes": 1132,
+      "sha256": "1f3b36f8d20e90d194b3979ca7e18c3343bf76dd65beca23728368ce61f51751"
+    },
+    {
+      "path": "worker-controls.stdout.original.jsonl",
+      "bytes": 266,
+      "sha256": "b801ff2d41c48d88284b38379b2a723b2f45b67984575577aaa1659f5e19e3d7"
+    }
+  ],
+  "worker_diff": "Only new private stage and output paths from preserved candidate-r2; original guard, APK set/stat/hash, data UID, PM signer, manifest, raw command capture, deadline, subprocess retirement and whole-process FD checks are unchanged.",
+  "owned_adapter_diff": "Only CONFIG differs from actual explicit47 r2 adapter16637B/1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc. All functions are identical.",
+  "actual_adapter_precedent": {
+    "job_id": "1a1b1e97bb7-fc05-7b79",
+    "state": "succeeded",
+    "exit_code": 0,
+    "stdout_bytes": 17857,
+    "stdout_sha256": "2752f58cbc84128beb0a0e3e99882dde5806fd40e291dddc586994e7ec632ecf",
+    "new_Calendar_observation_proved": false
+  },
+  "owned_lifetime": "Unchanged pinned20132B support and18199B probe establish fresh stdio, explicit exact Python/_ctypes/ctypes/libffi resource identity, whole descriptor-set freezing, original worker.main and actual original owned-child pidfd normal retirement. No library FD manual close and no allow-one-FD adjustment.",
+  "authoritative_gate": "Final outer stdout plus complete durable terminal0, actual no-signal owned child pidfd death, parent FD identity restoration, original worker FD equality/retirement, original worker command and snapshot gates. An early result.json or inner PASS alone cannot qualify.",
+  "comparison": {
+    "packages": [
+      "com.android.calendar",
+      "org.fcitx.fcitx5.android"
+    ],
+    "primary_commands": 6,
+    "legacy_badging_commands": 2,
+    "all_primary_commands_must_succeed": true,
+    "legacy_nonzero_is_preserved_as_observation": true,
+    "all_eight_children_must_join": true,
+    "original_batch05_reclassified": false,
+    "original_serial_gate_advanced": false
+  },
+  "read_scope": "Both exact APK targets are checked against unchanged original46 reference; this is not an all47 scope revalidation. Current explicit47 success independently proved original46 unchanged. Host tools only; no Android namespace command or APK execution.",
+  "limits": [
+    "Installed dpkg membership/checksum is not a new vendor signature.",
+    "Static ELF dependencies do not by themselves prove actual loader resolution.",
+    "Candidate absolute path execution is pre/post byte/stat/path pinned; it is not FD-exec.",
+    "New AAPT2 resource compatibility remains untested until actual diagnostic completes."
+  ],
+  "local_controls": {
+    "worker": 8,
+    "owned_protocol": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "FDs_before": 4,
+    "FDs_after": 4,
+    "new_Pocket4_bootstrap_executed": false,
+    "Main_remote_reads": 0
+  },
+  "runtime_executed": false,
+  "production_ready": false,
+  "cleanup_eligible": false
+}

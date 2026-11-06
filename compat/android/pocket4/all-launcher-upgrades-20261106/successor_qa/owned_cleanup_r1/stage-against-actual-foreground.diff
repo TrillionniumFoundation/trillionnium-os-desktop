@@ -1,0 +1,62 @@
+--- actual-successful-foreground-stage-e9e29573
++++ new-original-cleanup-stage-r1
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Stage a fixed current-foreground readonly diagnostic, then invoke it once."""
++"""Stage one fixed original-recorder cleanup wrapper, then invoke it once."""
+ import base64
+ import errno
+ import hashlib
+@@ -9,11 +9,10 @@
+ import stat
+ import sys
+ 
+-ROOT = Path('/home/alex/work/pocket4-beike-foreground-diagnostic-20261106-b1510395d16c9c3e1bf9992eee8a78da')
+-PINS = {'observe_current_foreground_r1.py': {'bytes': 13787, 'sha256': '89aab3853d29a1400b45eb8495cc1b35aa8527088ccf0443975971191a98ce37'}, 'request.json': {'bytes': 827, 'sha256': 'a767827fb2f58ae2334699642bf22d470d4064b1663a3b2e76e60d54ac99810e'}}
+-ENTRY_SHA = '89aab3853d29a1400b45eb8495cc1b35aa8527088ccf0443975971191a98ce37'
+-REQUEST_SHA = 'a767827fb2f58ae2334699642bf22d470d4064b1663a3b2e76e60d54ac99810e'
+-PAYLOAD_SHA = 'd794e4f651c67168964f76e0830bb440153b1b6dcf168ff22c379e32e5e2a898'
++ROOT = Path('/home/alex/work/pocket4-beike-owned-cleanup-20261106-r1')
++PINS = {'cleanup_owned_task_once.py': {'bytes': 22233, 'sha256': '559ae3641a5f6e017914102af61c5f8e909605cb92be32d1a045ae7c66a935cf'}}
++ENTRY_SHA = '559ae3641a5f6e017914102af61c5f8e909605cb92be32d1a045ae7c66a935cf'
++PAYLOAD_SHA = '4cac0c38f7abd057929efc626ded4ddce25efc2a07c3e1100ee65196d97ffc80'
+ FIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+ 
+ 
+@@ -47,7 +46,7 @@
+     need(len(raw) <= 524288 and sha(raw) == PAYLOAD_SHA, 'EXACT_BOUNDED_PAYLOAD')
+     payload = json.loads(raw)
+     need(set(payload) == {'schema', 'root', 'files'} and
+-         payload['schema'] == 'pocket4-owned-postcondition-host-stage-payload-v1' and
++         payload['schema'] == 'pocket4-original-owned-cleanup-stage-payload-v1' and
+          payload['root'] == str(ROOT) and set(payload['files']) == set(PINS), 'CLOSED_FIXED_STAGE_PAYLOAD')
+     bodies = {}
+     for name, pin in PINS.items():
+@@ -60,7 +59,7 @@
+         if name.endswith('.py'):
+             compile(body, str(ROOT / name), 'exec')
+         bodies[name] = body
+-    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name.startswith('pocket4-beike-foreground-diagnostic-20261106-'),
++    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name == 'pocket4-beike-owned-cleanup-20261106-r1',
+          'EXACT_NEW_HOST_PRIVATE_ROOT')
+     os.umask(0o077)
+     ROOT.mkdir(mode=0o700)
+@@ -101,13 +100,13 @@
+     finally:
+         os.close(directory)
+     need(census() == before, 'STAGE_WHOLE_PROCESS_FD_IDENTITIES_CHANGED')
+-    print(json.dumps({'schema': 'pocket4-current-foreground-diagnostic-stage-v1', 'root': str(ROOT),
+-        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'readonly-current-foreground',
++    print(json.dumps({'schema': 'pocket4-original-owned-cleanup-stage-v1', 'root': str(ROOT),
++        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'original-owned-task-cleanup-not-yet-invoked',
+         'Main_commands': 0, 'namespace_entries': 0, 'Main_locks_or_guards': 0,
+         'private_bundle_copied': False, 'reconciliation_published': False}, sort_keys=True), flush=True)
+-    entry = ROOT / 'observe_current_foreground_r1.py'
+-    sys.argv = [str(entry), '--observe-once', '--source-sha256', ENTRY_SHA, '--source-bytes', str(PINS['observe_current_foreground_r1.py']['bytes']), '--request-sha256', REQUEST_SHA, '--request-bytes', str(PINS['request.json']['bytes'])]
+-    exec(compile(bodies['observe_current_foreground_r1.py'], str(entry), 'exec'),
++    entry = ROOT / 'cleanup_owned_task_once.py'
++    sys.argv = [str(entry), '--execute-cleanup-once', '--source-sha256', ENTRY_SHA, '--source-bytes', str(PINS['cleanup_owned_task_once.py']['bytes'])]
++    exec(compile(bodies['cleanup_owned_task_once.py'], str(entry), 'exec'),
+          {'__name__': '__main__', '__file__': str(entry)})
+ 
+ 

@@ -1,0 +1,9 @@
+# One publication using the already staged r2 source
+
+`process-request.json` directly invokes the existing staged publisher with `--publish-once`, its exact source SHA, and the existing request SHA. It adds no prelude, source revision, new guard, or consumer change. The internal deadline remains 240 seconds; the process envelope allows 360 seconds for normal completion and cleanup.
+
+The real host-only predecessor is now successful: job `1a1b1ed877a-fc05-7b8d`, durable exit 0, complete 6,921-byte stdout and empty stderr. `ACTUAL_HOST_GATE.json` binds that exact original evidence, the staged 15-file closure and this exact publication request. This is an explicit **external coordinator gate**: the existing publisher has no host-receipt CLI parameter. The original earlier `SUBMISSION_GATES.json` records preparation while that result was still pending and remains unchanged.
+
+Host-only validation does not qualify current Main state. The actual publisher reacquires the original held R5 runtime/App authority and original flow/global locks, revalidates the two raw helper sequences, checks installed helper UID/APK, task 876 and foreground twice, performs six recorded readonly commands plus two private foreground observations, reruns the exact guards and complete descriptor checks, and only then publishes a new no-replace typed proof and compatibility envelope. The original click result remains UNKNOWN.
+
+Root alone submits this exact one-shot request after enforcing the real host-only gate. An uncertain launch is reconciled under the same idempotency key and exact request. A partial publication or failed/unknown terminal does not authorize another UI decision. The next step requires the complete original publisher stdout, an authoritative durable successful exit, the expected committed proof/envelope pins and successful original Flow-consumer evidence validation. This preparation file does not claim publication has occurred.

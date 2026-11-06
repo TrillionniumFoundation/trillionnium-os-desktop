@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "#!/usr/bin/env python3\n\"\"\"Stage a fixed current-foreground readonly diagnostic, then invoke it once.\"\"\"\nimport base64\nimport errno\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport stat\nimport sys\n\nROOT = Path('/home/alex/work/pocket4-beike-foreground-diagnostic-20261106-b1510395d16c9c3e1bf9992eee8a78da')\nPINS = {'observe_current_foreground_r1.py': {'bytes': 13787, 'sha256': '89aab3853d29a1400b45eb8495cc1b35aa8527088ccf0443975971191a98ce37'}, 'request.json': {'bytes': 827, 'sha256': 'a767827fb2f58ae2334699642bf22d470d4064b1663a3b2e76e60d54ac99810e'}}\nENTRY_SHA = '89aab3853d29a1400b45eb8495cc1b35aa8527088ccf0443975971191a98ce37'\nREQUEST_SHA = 'a767827fb2f58ae2334699642bf22d470d4064b1663a3b2e76e60d54ac99810e'\nPAYLOAD_SHA = 'd794e4f651c67168964f76e0830bb440153b1b6dcf168ff22c379e32e5e2a898'\nFIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')\n\n\ndef need(value, code):\n    if not value:\n        raise RuntimeError(code)\n\n\ndef sha(raw):\n    return hashlib.sha256(raw).hexdigest()\n\n\ndef census():\n    found = {}\n    for name in os.listdir('/proc/self/fd'):\n        try:\n            fd = int(name); row = os.fstat(fd)\n            found[name] = (os.readlink('/proc/self/fd/' + name), row.st_dev, row.st_ino,\n                           row.st_mode, row.st_uid, row.st_gid)\n        except OSError as failure:\n            if failure.errno not in (errno.EBADF, errno.ENOENT):\n                raise\n    return found\n\n\ndef main():\n    need(os.getuid() == os.geteuid() == 0, 'ACTUAL_ROOT_HOST_STAGE')\n    need(sys.argv[1:] == ['--payload-sha256', PAYLOAD_SHA], 'EXACT_STAGE_ARGUMENTS')\n    before = census()\n    raw = sys.stdin.buffer.read(524289)\n    need(len(raw) <= 524288 and sha(raw) == PAYLOAD_SHA, 'EXACT_BOUNDED_PAYLOAD')\n    payload = json.loads(raw)\n    need(set(payload) == {'schema', 'root', 'files'} and\n         payload['schema'] == 'pocket4-owned-postcondition-host-stage-payload-v1' and\n         payload['root'] == str(ROOT) and set(payload['files']) == set(PINS), 'CLOSED_FIXED_STAGE_PAYLOAD')\n    bodies = {}\n    for name, pin in PINS.items():\n        need('/' not in name and name not in ('', '.', '..'), 'FLAT_FIXED_STAGE_PATH')\n        row = payload['files'][name]\n        need(set(row) == {'bytes', 'sha256', 'base64'} and row['bytes'] == pin['bytes'] and\n             row['sha256'] == pin['sha256'], 'EXTERNAL_MEMBER_PIN')\n        body = base64.b64decode(row['base64'], validate=True)\n        need(len(body) == pin['bytes'] and sha(body) == pin['sha256'], 'EXACT_MEMBER_BYTES')\n        if name.endswith('.py'):\n            compile(body, str(ROOT / name), 'exec')\n        bodies[name] = body\n    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name.startswith('pocket4-beike-foreground-diagnostic-20261106-'),\n         'EXACT_NEW_HOST_PRIVATE_ROOT')\n    os.umask(0o077)\n    ROOT.mkdir(mode=0o700)\n    directory = os.open(ROOT, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)\n    try:\n        info = os.fstat(directory)\n        need(info.st_uid == 0 and stat.S_IMODE(info.st_mode) == 0o700, 'ACTUAL_ROOT_PRIVATE_STAGE')\n        for name, body in bodies.items():\n            fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,\n                         0o400, dir_fd=directory)\n            try:\n                offset = 0\n                while offset < len(body):\n                    count = os.write(fd, body[offset:]); need(count > 0, 'MEMBER_WRITE_PROGRESS'); offset += count\n                os.fsync(fd)\n            finally:\n                os.close(fd)\n        os.fsync(directory)\n        need(set(os.listdir(directory)) == set(PINS), 'EXACT_STAGED_FILE_SET')\n        for name, pin in PINS.items():\n            fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory)\n            try:\n                first = os.fstat(fd)\n                need(stat.S_ISREG(first.st_mode) and first.st_uid == 0 and first.st_nlink == 1 and\n                     stat.S_IMODE(first.st_mode) == 0o400 and first.st_size == pin['bytes'], 'STAGED_FILE_METADATA')\n                data = bytearray()\n                while len(data) <= first.st_size:\n                    part = os.read(fd, min(65536, first.st_size + 1 - len(data)))\n                    if not part:\n                        break\n                    data.extend(part)\n                last = os.fstat(fd); current = os.stat(name, dir_fd=directory, follow_symlinks=False)\n                need(bytes(data) == bodies[name] and len(data) == pin['bytes'] and sha(data) == pin['sha256'] and\n                     all(getattr(first, k) == getattr(last, k) == getattr(current, k) for k in FIELDS),\n                     'STAGED_SOURCE_READBACK_CHANGED')\n            finally:\n                os.close(fd)\n    finally:\n        os.close(directory)\n    need(census() == before, 'STAGE_WHOLE_PROCESS_FD_IDENTITIES_CHANGED')\n    print(json.dumps({'schema': 'pocket4-current-foreground-diagnostic-stage-v1', 'root': str(ROOT),\n        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'readonly-current-foreground',\n        'Main_commands': 0, 'namespace_entries': 0, 'Main_locks_or_guards': 0,\n        'private_bundle_copied': False, 'reconciliation_published': False}, sort_keys=True), flush=True)\n    entry = ROOT / 'observe_current_foreground_r1.py'\n    sys.argv = [str(entry), '--observe-once', '--source-sha256', ENTRY_SHA, '--source-bytes', str(PINS['observe_current_foreground_r1.py']['bytes']), '--request-sha256', REQUEST_SHA, '--request-bytes', str(PINS['request.json']['bytes'])]\n    exec(compile(bodies['observe_current_foreground_r1.py'], str(entry), 'exec'),\n         {'__name__': '__main__', '__file__': str(entry)})\n\n\nif __name__ == '__main__':\n    main()\n",
+      "--payload-sha256",
+      "d794e4f651c67168964f76e0830bb440153b1b6dcf168ff22c379e32e5e2a898"
+    ],
+    "created_unix_ms": 1793988155527,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b206d887-fc05-7c16",
+    "idempotency_key": "pocket4-beike-current-foreground-readonly-20261106-r1-b1510395d16c9c3e1bf9992eee8a78da",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b206d887-fc05-7c16",
+    "request_digest": "d44ccfc191276b3169eeebec6b3342f1a5ffaa6c267ef930735a804c075eba3a",
+    "request_fingerprint": 15297830464541649713,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b206d887-fc05-7c16"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b206d887-fc05-7c16"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

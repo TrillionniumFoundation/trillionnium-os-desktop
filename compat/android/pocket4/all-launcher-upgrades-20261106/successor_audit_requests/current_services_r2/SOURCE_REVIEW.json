@@ -1,0 +1,155 @@
+{
+  "schema": "pocket4-independent-readonly-services-revision2-review-v1",
+  "state": "SOURCE_FROZEN_NOT_EXECUTED",
+  "files": [
+    {
+      "path": "assemble_candidate.py",
+      "bytes": 6339,
+      "sha256": "4e11ce3f32c41ec6c2b7ae7e844612120a0e8542516ad3e3be8a862e809c14eb"
+    },
+    {
+      "path": "observe_current_services.py",
+      "bytes": 37779,
+      "sha256": "391ab40c114c9b47e201f7de9ed29bd7a86869caf1383b46f0589dc5a8995c2f"
+    },
+    {
+      "path": "owned-adapter-against-preserved-r1.diff",
+      "bytes": 1948,
+      "sha256": "5e74423b4ce166ac407f21c27109b93532a1e0ed993e9b3bbf2909d6416bcb12"
+    },
+    {
+      "path": "owned_readonly_lifetime.py",
+      "bytes": 18701,
+      "sha256": "932a4a79e02c0bef0c35eee2bd65056edbd594485e5c5f33dfaa1effc14f61c1"
+    },
+    {
+      "path": "process-request.review-only.json",
+      "bytes": 93056,
+      "sha256": "1378a3ff399c95f456ad3c5dcee4f68b85e7e535a0563c4ff30218cab0e7befb"
+    },
+    {
+      "path": "readonly_services_transport.py",
+      "bytes": 16620,
+      "sha256": "69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590"
+    },
+    {
+      "path": "request.review-only.json",
+      "bytes": 2159,
+      "sha256": "e3084966e2e7f954d4584e2a66b262376f80a7ddbc98d21631408f0d67fe213e"
+    },
+    {
+      "path": "runner-against-original.diff",
+      "bytes": 946,
+      "sha256": "4fb971c8719bdd7bfd18865b8a12eb4303f52b25dfd07d741c085adafbb42d3a"
+    },
+    {
+      "path": "stage.stdin.original.json",
+      "bytes": 79394,
+      "sha256": "ade55453df2afe9c32f553bdde56e292916e0db538afa41ebce0ae0ea45fb4bb"
+    },
+    {
+      "path": "stage_and_run_services.py",
+      "bytes": 6763,
+      "sha256": "4aef5e955f1a761e661b6252f1c02ffa4f5873c58254a1bf3619c16bdf8af971"
+    },
+    {
+      "path": "stager-against-preserved-r1.diff",
+      "bytes": 2932,
+      "sha256": "ca6b46cf18aae5bcb30052e9908d6e0f02cef3af5aa34b04dd5f75729771a990"
+    },
+    {
+      "path": "test_real_owned_timeout.py",
+      "bytes": 1739,
+      "sha256": "b2ba4c72b7bebe0241bf38a92d3e5b1d3866a581ed120ad71c252c64d4b98c9b"
+    },
+    {
+      "path": "timeout-control.stderr.original.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "timeout-control.stdout.original.jsonl",
+      "bytes": 930,
+      "sha256": "a610fb998100b6bae772094e729da82a92832ca7ad45f638a3c4d5af79914701"
+    },
+    {
+      "path": "worker-against-preserved-blocked-r1.diff",
+      "bytes": 1963,
+      "sha256": "a11627a0958f88ec8bb8c93b171a013878e5c49f0079598122012c2c3c929752"
+    },
+    {
+      "path": "worker_body.py",
+      "bytes": 19156,
+      "sha256": "691990c53092595ea71600a50c1a46a2b6b6bd6c267d59a13ac5467f6b12df69"
+    }
+  ],
+  "previous_candidate": {
+    "path": "../current_services_r1",
+    "source_bytes": 37775,
+    "source_sha256": "39998d4d0bc7329e153a8177e0af9d8515016ffce368216c504519b1c57607d6",
+    "blocked_before_execution": true,
+    "unchanged": true
+  },
+  "only_behavior_change": "Standalone safe_error now recognises RuntimeError raised by its own need(), preserving the original closed uppercase CODE regular expression. No source-local Rejected symbol is needed. Original frozen core remains unchanged.",
+  "other_differences": "New independent r2 source/output roots, exact worker/request pins, wrapper CONFIG and stage schema/key only. Transport16620B/69b9fe... is byte-identical to r1; all runtime,47scope,helper,environment,authority-FD,command-sequence,timeout/join and permissions constraints unchanged.",
+  "focused_actual_control": {
+    "count": 1,
+    "kind": "real local owned child timeout",
+    "result": {
+      "Main_operations": 0,
+      "Pocket4_operations": 0,
+      "command": {
+        "argv": [
+          "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+          "-I",
+          "-B",
+          "-c",
+          "import time; time.sleep(30)"
+        ],
+        "complete": false,
+        "errors": [
+          {
+            "code": "CHILD_TIMEOUT",
+            "type": "RuntimeError"
+          }
+        ],
+        "finished_monotonic_ns": 8640896929686,
+        "host_pid": 7,
+        "joined": true,
+        "returncode": -9,
+        "started_monotonic_ns": 8640694542877,
+        "stderr_bytes": 0,
+        "stderr_eof": false,
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout_bytes": 0,
+        "stdout_eof": false,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "termination_attempted": true
+      },
+      "control_count": 1,
+      "namespace_entries": 0,
+      "ok": true,
+      "original_owned_child_reaped": true,
+      "process_FDs_after": 4,
+      "process_FDs_before": 4,
+      "schema": "pocket4-readonly-services-r2-real-owned-timeout-control-v1",
+      "source_sha256": "391ab40c114c9b47e201f7de9ed29bd7a86869caf1383b46f0589dc5a8995c2f"
+    },
+    "other_boundary_controls_not_rerun": true
+  },
+  "source_closure_review": "Four exact staged files, request pins, payload and process packet embedded source independently rehashed and all source compiled. This is host source validation, not a new Android or Main result.",
+  "stop_on_mismatch": [
+    "Exact current typed epoch and explicit47 Appscope/package UID/APK/data metadata must hold.",
+    "Actual package help must contain all closed list/query/intent syntax before either enumeration command.",
+    "Seven exact ordered Android read-only commands; no grant/set/role mutation/UI/install command can enter.",
+    "Native callerUID1000, original CLI/daemon/socket identities and current owner must hold.",
+    "Each child must exit0, capture complete stdout/stderr without errors, join, and preserve both namespace lease and runtime guard.",
+    "Two actual PM and resolver samples must match; unrecognised/duplicate/partial rows are rejected.",
+    "No next command after any transport error; no automatic retry or new-key replay.",
+    "All target/observation/lease/library resources must retire through the original checks and original owned child pidfd normal exit before final outer success."
+  ],
+  "permission_next_step": "Use actual help raw pins and actual PM/resolver sets to prepare a separate closed read-only grants/AppOps/roles snapshot. Do not guess check-permission or enlarge old compiled Beike scope.",
+  "runtime_executed": false,
+  "production_ready": false,
+  "cleanup_eligible": false
+}

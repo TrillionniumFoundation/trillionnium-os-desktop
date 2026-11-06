@@ -1,0 +1,172 @@
+--- host-stage-candidate-r1/owned_postcondition_core.py
++++ candidate-r2/owned_postcondition_core.py
+@@ -5,6 +5,7 @@
+ and complete byte bundles, then independently revalidate live held authority.
+ No value returned here is Android or production admission.
+ """
++import copy
+ import datetime
+ import hashlib
+ import json
+@@ -59,6 +60,83 @@
+                        parse_constant=constant)
+     need(type(value) is dict, 'JSON_OBJECT_REQUIRED')
+     return value
++
++
++# Only these records come from namespace FDs in the pinned R5 producer.
++# R5 checks NS_GET_NSTYPE, proc namespace inode links and held process identity.
++# fd_record also retains nsfs mtime as an observation, not namespace identity.
++HELD_R5_SHA = '72cf33399ca3c280fc0c9288669f7d6c13d387e41b5fb930cf477f2b940f16b4'
++NAMESPACE_NAMES = ('mnt', 'pid', 'uts', 'ipc', 'net', 'cgroup')
++NAMESPACE_FD_KEYS = {'device', 'inode', 'mode', 'uid', 'gid', 'bytes', 'mtime_ns', 'nlink'}
++
++
++def held_binding_identity(binding):
++    """Copy one binding; project mtime only at eight proven namespace-FD sites.
++
++    Original dictionaries and bytes are never changed. All namespace identity
++    and metadata other than mtime, and every other binding field, stay exact.
++    Type admission was performed by the frozen R5 NS_GET_NSTYPE checks; this
++    function verifies their recorded inode links and closed fd_record shape.
++    It does not itself acquire or qualify any live namespace.
++    """
++    need(type(binding) is dict and
++         binding.get('schema') == 'pocket4-successor-held-binding-r5-v1' and
++         binding.get('held_runtime_r5_sha256') == HELD_R5_SHA,
++         'PINNED_R5_NAMESPACE_RECORD_PROVENANCE')
++    target, classpath = binding.get('target'), binding.get('classpath')
++    need(type(target) is dict and type(classpath) is dict and
++         type(target.get('namespaces')) is dict and
++         set(target['namespaces']) == set(NAMESPACE_NAMES) and
++         type(target.get('init')) is dict and type(target['init'].get('ns')) is dict and
++         set(target['init']['ns']) == set(NAMESPACE_NAMES) and
++         type(classpath.get('zygote')) is dict and
++         type(classpath['zygote'].get('namespaces')) is dict and
++         classpath.get('schema') == 2 and classpath.get('main_classpath_read') is True,
++         'CLOSED_R5_NAMESPACE_RECORD_LOCATIONS')
++    need(classpath['zygote']['namespaces'].get('pid') == target['init']['ns']['pid'],
++         'R5_ZYGOTE_INIT_PID_NAMESPACE_IDENTITY')
++    projected = copy.deepcopy(binding)
++    observations = {}
++
++    def namespace_row(row, name, link, path):
++        need(type(row) is dict and set(row) == NAMESPACE_FD_KEYS and
++             all(type(value) is int and value >= 0 for value in row.values()) and
++             row['inode'] > 0 and row['nlink'] > 0 and stat.S_ISREG(row['mode']),
++             'CLOSED_NAMESPACE_FD_METADATA:' + path)
++        match = re.fullmatch(re.escape(name) + r':\[(\d+)\]', link) if type(link) is str else None
++        need(match is not None and row['inode'] == int(match[1]),
++             'NAMESPACE_FD_MATCHES_RECORDED_PROCESS_LINK:' + path)
++        observations[path + '/mtime_ns'] = row.pop('mtime_ns')
++
++    for name in NAMESPACE_NAMES:
++        namespace_row(projected['target']['namespaces'][name], name, target['init']['ns'][name],
++                      '/target/namespaces/' + name)
++    namespace_row(projected['classpath'].get('command_mount_namespace'), 'mnt', target['init']['ns']['mnt'],
++                  '/classpath/command_mount_namespace')
++    namespace_row(projected['classpath'].get('zygote_mount_namespace'), 'mnt',
++                  classpath['zygote']['namespaces'].get('mnt'), '/classpath/zygote_mount_namespace')
++    need(projected['classpath']['command_mount_namespace'] == projected['target']['namespaces']['mnt'],
++         'R5_COMMAND_MOUNT_RECORD_IS_THE_SAME_HELD_INIT_NAMESPACE')
++    return projected, observations
++
++
++def compare_held_bindings(left, right):
++    """Exact cross-observation identity under the frozen namespace contract."""
++    left_identity, left_times = held_binding_identity(left)
++    right_identity, right_times = held_binding_identity(right)
++    need(left_identity == right_identity, 'EXACT_R5_IDENTITY_EXCEPT_NAMESPACE_OBSERVATION_MTIME')
++    observations = [{'path': path, 'left_mtime_ns': left_times[path], 'right_mtime_ns': right_times[path]}
++                    for path in sorted(left_times)]
++    return {'schema': 'pocket4-r5-namespace-identity-comparison-v1',
++            'held_runtime_r5_sha256': HELD_R5_SHA,
++            'canonical_identity_projection_sha256': sha(json.dumps(left_identity, ensure_ascii=True,
++                sort_keys=True, separators=(',', ':'), allow_nan=False).encode()),
++            'namespace_mtime_observations': observations,
++            'namespace_mtime_differences': [row for row in observations if row['left_mtime_ns'] != row['right_mtime_ns']],
++            'all_other_binding_fields_exactly_equal': True,
++            'namespace_device_inode_mode_uid_gid_size_nlink_exactly_equal': True,
++            'original_binding_objects_rewritten': False,
++            'live_namespace_qualification_performed_by_comparison': False}
+ 
+ 
+ def timestamp(value):
+@@ -247,13 +325,14 @@
+          result.get('source_manifest_sha256') == HELPER_MANIFEST, 'ORIGINAL_PLAN_AND_BUILD_BINDING')
+     need(timestamp(intent['started_utc']) <= timestamp(result['ended_utc']), 'STEP_UTC_ORDER')
+     binding = read('held-main-binding.json')
+-    need(binding == expected_binding and binding.get('schema') == 'pocket4-successor-held-binding-r5-v1' and
++    need(binding.get('schema') == 'pocket4-successor-held-binding-r5-v1' and
+          binding.get('framework_epoch_sha256') == MAIN_EPOCH and
+          binding.get('runtime_epoch_sha256') == RUNTIME_EPOCH and binding.get('app_scope_sha256') == APP_SCOPE and
+          binding.get('package') == PACKAGE and binding.get('uid') == UID and
+          binding.get('ui_actions_performed_by_binding') is False and binding.get('production_ready') is False and
+          binding['target'].get('pidfd_held') is True and binding['target'].get('numeric_target_used_for_entry') is False,
+          'EXACT_HELD_R5_RUNTIME_APP_CLASSPATH_BINDING')
++    binding_comparison = compare_held_bindings(binding, expected_binding)
+     installed = installed_identity(result.get('installed_before'), build)
+     need(installed == result.get('installed_after') and result.get('owned_task') == launch and
+          result.get('after_state_attempted') is True and result.get('after_state_completed') is True and
+@@ -372,7 +451,8 @@
+             'files_sha256': {key: sha(value) for key, value in sorted(files.items())},
+             'command_count': command_index, 'transport_count': len(sequence),
+             'private_foreground_raw_persisted': False,
+-            'binding': binding, 'installed': installed, 'owned_task': launch}
++            'binding': binding, 'binding_comparison': binding_comparison,
++            'installed': installed, 'owned_task': launch}
+ 
+ 
+ def validate_pair(action, observed, postcondition, *, qa, now):
+@@ -386,14 +466,19 @@
+          'INDEPENDENT_INSPECT_MUST_USE_NEW_NONCES')
+     need(action['assessments']['after']['helper']['finished_elapsed_ms'] <=
+          observed['assessments']['before']['helper']['started_elapsed_ms'], 'ANDROID_MONOTONIC_OBSERVATION_ORDER')
+-    need(action['installed'] == observed['installed'] and action['owned_task'] == observed['owned_task'] and
+-         action['binding'] == observed['binding'], 'NO_HELPER_TASK_OR_HELD_RUNTIME_CHANGE_BETWEEN_STEPS')
++    need(action['installed'] == observed['installed'] and action['owned_task'] == observed['owned_task'],
++         'NO_HELPER_OR_TASK_CHANGE_BETWEEN_STEPS')
++    binding_comparison = compare_held_bindings(action['binding'], observed['binding'])
++    binding_comparison['raw_held_binding_file_sha256'] = {
++        'left': action['files_sha256']['held-main-binding.json'],
++        'right': observed['files_sha256']['held-main-binding.json']}
+     matched = match_postcondition(qa, observed['assessments']['inspect']['helper']['inspection'], postcondition)
+     return {'schema': 'pocket4-beike-owned-qa-postcondition-offline-proof-v1',
+             'original_action_outcome': 'unknown_retained', 'original_action_result_rewritten': False,
+             'matched': matched, 'postcondition': postcondition,
+             'later_inspection_nonce': observed['plan']['nonces']['inspect'],
+             'later_inspection_wire_sha256': observed['assessments']['inspect']['wire_sha256'],
++            'held_binding_comparison': binding_comparison,
+             'raw_protocol_recomputed': True, 'complete_sequences_verified': True,
+             'requires_fresh_held_runtime_task_and_helper_check': True,
+             'Flow_admission_published': False, 'business_success_verified': False,
+--- host-stage-candidate-r1/publish_owned_reconciliation.py
++++ candidate-r2/publish_owned_reconciliation.py
+@@ -21,8 +21,8 @@
+ import time
+ import types
+ 
+-CORE_BYTES = 23654
+-CORE_SHA = '4653c827e236680a227e50d739eaa45b4432126d5326c5bc38d184a58a31f3dc'
++CORE_BYTES = 28714
++CORE_SHA = '6f780bdd021942617a6817dbc449eeacc60eeda9972d619fdb192ec4ae313e41'
+ SOURCE_ROOT = Path('/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03')
+ HELPER_ROOT = Path('/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03')
+ RECORDER_ROOT = SOURCE_ROOT / 'recorder'
+@@ -457,6 +457,7 @@
+             'private_bundle': PRIVATE_BUNDLE, 'files_verified': len(archive['pins']),
+             'original_bytes_verified': 888207, 'original_action_outcome': 'unknown_retained',
+             'actual_execution_evidence': archive['execution'], 'matched': archive['offline']['matched'],
++            'held_binding_comparison': archive['offline']['held_binding_comparison'],
+             'action_commands_verified': archive['action']['command_count'],
+             'observation_commands_verified': archive['observed']['command_count'],
+             'whole_process_fd_identities_unchanged': True, 'Main_commands': 0,
+@@ -563,6 +564,8 @@
+                  'observation_step': request['observation_step'], 'current_native_task': launch,
+                  'current_installed_helper': live_installed, 'current_foreground': live_foreground,
+                  'current_held_R5_runtime_app_task_helper_rechecked': True,
++                 'original_to_current_binding_comparisons': {
++                     'action': action['binding_comparison'], 'observation': observed['binding_comparison']},
+                  'held_binding_released': True, 'new_instrumentation_or_UI_actions': 0,
+                  'library_resource': {'path': library['path'], 'bytes': library['bytes'], 'sha256': library['sha256'],
+                                       'manual_close': False, 'retirement': 'producer process exit'},

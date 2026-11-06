@@ -1,0 +1,116 @@
+{
+  "schema": "pocket4-calendar-fcitx-aapt2-comparison-candidate-r2-v1",
+  "state": "FROZEN_SOURCE_FOR_ROOT_REVIEW_NOT_EXECUTED",
+  "files": [
+    {
+      "path": "against-preserved-draft-r1.diff",
+      "bytes": 23216,
+      "sha256": "df4cad226c48a5a62d659244b84baa8d63d45ede6a4da84eeb50d3757cede1c6"
+    },
+    {
+      "path": "controls.stderr.original.txt",
+      "bytes": 1132,
+      "sha256": "b674f0563021fe91be8267fc92d8648b7760522a9701c8449a52c70bb96704bf"
+    },
+    {
+      "path": "controls.stdout.original.jsonl",
+      "bytes": 266,
+      "sha256": "b801ff2d41c48d88284b38379b2a723b2f45b67984575577aaa1659f5e19e3d7"
+    },
+    {
+      "path": "diagnose_calendar_and_fcitx.py",
+      "bytes": 46019,
+      "sha256": "4cf6bda1b90cf7454a1c13da0ce7d378d756ef28623e54b0c09f661cbd26f072"
+    },
+    {
+      "path": "inputs/aapt2-proof.outer.original.json",
+      "bytes": 54192,
+      "sha256": "f9c289f7d28f836c51d845b4c851c1dbac0e8f326d658c7b98106b6ee327f192"
+    },
+    {
+      "path": "inputs/aapt2-proof.terminal.original.json",
+      "bytes": 730,
+      "sha256": "f797f008a250a386ca905e9b7e9065ac2f85cad2168be702c3ad01209d341802"
+    },
+    {
+      "path": "inputs/inventory.original.json",
+      "bytes": 9876,
+      "sha256": "60ee9c47cb1719343a1667d306e26086d66f2376d62b8c5251f4e64446887341"
+    },
+    {
+      "path": "prior-control-path-error/OBSERVED_FIRST_FAILURE.json",
+      "bytes": 443,
+      "sha256": "48b5094b543b3205e367d1265b3e712332152c23f9f14fa76521f390870cd8d0"
+    },
+    {
+      "path": "prior-control-path-error/test_offline_controls.original.py",
+      "bytes": 5744,
+      "sha256": "b8b6c05716432c9597c4be97b9c2ffa8a04ea94b1213942611a2720efbfe95f7"
+    },
+    {
+      "path": "process-request.review-only.json",
+      "bytes": 146181,
+      "sha256": "adab5169258f5d65e58fa4ad19c9d04eea15a7324a8bf7317acbbd28e5e66cc4"
+    },
+    {
+      "path": "request.review-only.json",
+      "bytes": 1703,
+      "sha256": "d3a663cdc6440cf235f0b0874497b3e3f7f37d5863ee2780e9ca8954ca315743"
+    },
+    {
+      "path": "stage.stdin.original.json",
+      "bytes": 121751,
+      "sha256": "79b556a44b6a3a684218eb065692c15663e5aeaa93cf9e7c74d452b765895562"
+    },
+    {
+      "path": "stage_and_run_comparison_r2.py",
+      "bytes": 6888,
+      "sha256": "a7b4e2b794ea563380ae418b5d9708a6c67ab736a06b3aac7f91d36525fe6dd2"
+    },
+    {
+      "path": "test_offline_controls.py",
+      "bytes": 5744,
+      "sha256": "11a27ff8d61cde8066c115319b5a357a61da4a08aa56d1fee7f914afe78fb715"
+    }
+  ],
+  "new_idempotency_key": "sidecar-evidence-20261106-calendar-fcitx-aapt2-comparison-r2",
+  "packages": [
+    "com.android.calendar",
+    "org.fcitx.fcitx5.android"
+  ],
+  "comparison_commands_per_APK": [
+    "original apksigner verify",
+    "observed aapt2 dump badging",
+    "original aapt dump xmltree",
+    "original aapt dump badging"
+  ],
+  "original_runner_is_byte_identical_to_faff199c": true,
+  "actual_prior_help_job_remains_failed": {
+    "job_id": "1a1b1cdd0e7-fc05-7ae1",
+    "exit_code": 1,
+    "reclassified": false
+  },
+  "runtime_guards": "Pinned current typed guard, held original runtime, exact two App APK/UID/CEDE scope before/after; original action lock. The 46-App file is a parent reference, not an all-46 per-run check.",
+  "tools": "Exact observed AAPT2 bytes/stat, all 19 static dependency bytes/stat and declared aliases; original DEPS/JDK/AAPT/apksigner closure. Path execution is not FD execution.",
+  "success_gate": "Only final outer stdout plus actual durable successful terminal, full command capture/join and zero remaining FDs. Primary six commands/signatures/PM records must pass. Both legacy-badging observations must complete; their nonzero return is recorded diagnostically.",
+  "old_audit_gate_advanced": false,
+  "original_b05_reclassified": false,
+  "grants_queried": false,
+  "production_ready": false,
+  "main_executed": false,
+  "local_controls": {
+    "passed": 8,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "FDs_before": 4,
+    "FDs_after": 4,
+    "root_authority_tested": false
+  },
+  "known_limits": [
+    "Two exact APKs only; no generalized AAPT2/Android37 compatibility claim.",
+    "dpkg metadata/checksum is not distribution signature proof; static ELF closure is not runtime loader mapping proof.",
+    "Early result.json is intermediate; final outer stdout/terminal determine success.",
+    "The original r1 draft and r2 host failed proof remain unchanged."
+  ]
+}

@@ -1,0 +1,17 @@
+--- original-frozen-core-bounded-child
++++ seven-authority-fd-adapter
+@@ -1,4 +1,4 @@
+-def bounded_child(argv, seconds=5, limit=65536):
++def held_bounded_child(argv, seconds, limit, pass_fds, host_env):
+     """No shell. Only the owned client process group may be killed on failure."""
+     need(0 < seconds <= 60 and 0 < limit <= 262144, "CHILD_BOUNDS_REQUIRED")
+     end = time.monotonic() + seconds
+@@ -9,7 +9,7 @@
+     selector = selectors.DefaultSelector()
+     try:
+         child = subprocess.Popen(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+-                                 cwd="/", env=ENV, close_fds=True, start_new_session=True)
++                                 cwd="/", env=host_env, pass_fds=pass_fds, close_fds=True, start_new_session=True)
+         record["host_pid"] = child.pid
+         for key, pipe in (("stdout", child.stdout), ("stderr", child.stderr)):
+             pipes.append(pipe)

@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "<string>", line 115, in <module>
+    main()
+    ~~~~^^
+  File "<string>", line 110, in main
+    exec(compile(bodies['publish_owned_reconciliation.py'], str(entry), 'exec'),
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         {'__name__': '__main__', '__file__': str(entry)})
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/work/pocket4-beike-owned-postcondition-20261106-25bd347fa5b74ba0bbf1a0cc29aa96fb/publish_owned_reconciliation.py", line 662, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/alex/work/pocket4-beike-owned-postcondition-20261106-25bd347fa5b74ba0bbf1a0cc29aa96fb/publish_owned_reconciliation.py", line 658, in main
+    return run(args)
+  File "/home/alex/work/pocket4-beike-owned-postcondition-20261106-25bd347fa5b74ba0bbf1a0cc29aa96fb/publish_owned_reconciliation.py", line 453, in run
+    archive = verify_private_bundle(core, here, request, context, deadline)
+  File "/home/alex/work/pocket4-beike-owned-postcondition-20261106-25bd347fa5b74ba0bbf1a0cc29aa96fb/publish_owned_reconciliation.py", line 379, in verify_private_bundle
+    observed = core.validate_step(phase_files['observation_step'], mutation=False, **common)
+  File "/home/alex/work/pocket4-beike-owned-postcondition-20261106-25bd347fa5b74ba0bbf1a0cc29aa96fb/owned_postcondition_core.py", line 250, in validate_step
+    need(binding == expected_binding and binding.get('schema') == 'pocket4-successor-held-binding-r5-v1' and
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         binding.get('framework_epoch_sha256') == MAIN_EPOCH and
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+         binding['target'].get('pidfd_held') is True and binding['target'].get('numeric_target_used_for_entry') is False,
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+         'EXACT_HELD_R5_RUNTIME_APP_CLASSPATH_BINDING')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/alex/work/pocket4-beike-owned-postcondition-20261106-25bd347fa5b74ba0bbf1a0cc29aa96fb/owned_postcondition_core.py", line 41, in need
+    raise Rejected(code)
+beike_owned_postcondition_core.Rejected: EXACT_HELD_R5_RUNTIME_APP_CLASSPATH_BINDING

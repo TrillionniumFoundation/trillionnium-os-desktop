@@ -1,0 +1,101 @@
+{
+  "schema": "pocket4-explicit47-owned-observation-candidate-r2-v1",
+  "state": "SOURCE_FROZEN_NOT_EXECUTED",
+  "files": [
+    {
+      "path": "controls.stderr.original.txt",
+      "bytes": 990,
+      "sha256": "450aa272e43ae6d38c0f83a2019b1215e573de53d58dbdb1fdefe84809db2bf9"
+    },
+    {
+      "path": "controls.stdout.original.jsonl",
+      "bytes": 245,
+      "sha256": "5f677c43689fac8d973d8289e4eceb6c5ca6927053721d8d722a02f051163191"
+    },
+    {
+      "path": "inputs/helper-install.stdout.original.jsonl",
+      "bytes": 4262,
+      "sha256": "68d4fcc329964f143794f5b59ce8556ddce5b7ba92546709025bd8ff52fea51a"
+    },
+    {
+      "path": "inputs/helper-install.terminal.original.json",
+      "bytes": 731,
+      "sha256": "00d055ff77076430c9800957063a59e8ccbae249115213a09bdb32d7d71c5150"
+    },
+    {
+      "path": "inputs/native45.original.json",
+      "bytes": 10114,
+      "sha256": "1352cb70367b09af255283dcbaecd8680c4d6bad662cf6432d01e2f2d6cabf54"
+    },
+    {
+      "path": "observe_explicit_47.py",
+      "bytes": 18139,
+      "sha256": "56922fbe372cf8cd2d0e39f75ddb69b16843f098d8090d65834b5737db04a656"
+    },
+    {
+      "path": "owned_readonly_lifetime.py",
+      "bytes": 16637,
+      "sha256": "1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc"
+    },
+    {
+      "path": "process-request.review-only.json",
+      "bytes": 70325,
+      "sha256": "1434c2bf0a995d759f46858a098038180b6df92e5943580edfeab1bb4818d363"
+    },
+    {
+      "path": "request.review-only.json",
+      "bytes": 2804,
+      "sha256": "06ca66a6fee69d8ff874167e89be3634973eae9ca0dde56a6435526f0330bd57"
+    },
+    {
+      "path": "stage.stdin.original.json",
+      "bytes": 56620,
+      "sha256": "3f71cea27d885628785b70c1bbd664b78370ca99d6f94993e06f8393e031e716"
+    },
+    {
+      "path": "stage_and_run_explicit47_r2.py",
+      "bytes": 7043,
+      "sha256": "80b8f696cddbbcbf27a08134eb790bef98bb8d808337dc460e2ca2c945fc1961"
+    },
+    {
+      "path": "stager-against-preserved-r1.diff",
+      "bytes": 3821,
+      "sha256": "16a06ff06d80485e645fd4a90781f1a66f62d8a4fbfb398cef5db993f2e07324"
+    },
+    {
+      "path": "test_owned_controls.py",
+      "bytes": 5046,
+      "sha256": "821c24da61098cbd8c0b0b09296362cd9d0cca071a9361923dad5fe2c2ec2c7b"
+    },
+    {
+      "path": "worker-against-preserved-r1.diff",
+      "bytes": 817,
+      "sha256": "f46832b3a42a51082a0763563dfb96b8fe862ae23e224d2d83b732b724922b77"
+    }
+  ],
+  "worker_diff": "Exactly two new private stage/output paths; original guard, observer, 47-package validation, data ownership, successful helper install proof and original process FD count gate remain unchanged.",
+  "owned_lifetime": "Original proven20132B support bootstrap and18199B probe helper are loaded at their existing pinned root paths; only their host bootstrap/identity/pidfd functions are called. No prior Beike worker, generated helper, flow or old callback is invoked.",
+  "lifetime_order": [
+    "Original parent acquires owned child pidfd before releasing its R marker.",
+    "Child must start with only actual stdin/stdout/stderr.",
+    "Explicit original initialize_library pins Python/_ctypes/ctypes bytes and actual libffi FD/hash/stat/maps; freezes exact descriptor identities.",
+    "Original worker.main runs under that baseline; count equality and full library/FD identity checks remain.",
+    "Parent requires actual normal owned child exit and original pidfd death, closes pidfd/pipes and restores parent descriptor identities."
+  ],
+  "authoritative_gate": "Final owned outer stdout plus durable terminal0. Original worker success alone is not sufficient; forced child exit leaves descendants UNKNOWN and is not retried.",
+  "proven_actual_bootstrap_job": "1a1b16bbf10-fc05-7891",
+  "scope": "Exactly47 explicit packages; not Android whole installed population or MAIN/LAUNCHER resolver.",
+  "local_controls": {
+    "passed": 6,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "FDs_before": 4,
+    "FDs_after": 4,
+    "root_or_Main_operations": 0,
+    "new_Pocket4_bootstrap_executed": false
+  },
+  "runtime_executed": false,
+  "production_ready": false,
+  "cleanup_eligible": false
+}

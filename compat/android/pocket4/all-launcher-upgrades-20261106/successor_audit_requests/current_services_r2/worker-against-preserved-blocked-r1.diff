@@ -1,0 +1,25 @@
+--- preserved-unexecuted-r1
++++ standalone-safe-error-r2
+@@ -43,10 +43,10 @@
+     "org.fcitx.fcitx5.android", "tv.danmaku.bili")
+ STAT = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")
+ PACKAGES = sorted((*LAUNCHERS, ACTIONS, HELPER))
+-STAGE = '/home/alex/work/pocket4-current-readonly-services-source-20261106-r1'
+-OUTPUT = '/home/alex/work/pocket4-current-readonly-services-observation-20261106-r1'
++STAGE = '/home/alex/work/pocket4-current-readonly-services-source-20261106-r2'
++OUTPUT = '/home/alex/work/pocket4-current-readonly-services-observation-20261106-r2'
+ APP_SCOPE = {'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json', 'bytes': 58854, 'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f'}
+-TRANSPORT = {'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r1/readonly_services_transport.py', 'bytes': 16620, 'sha256': '69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590'}
++TRANSPORT = {'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r2/readonly_services_transport.py', 'bytes': 16620, 'sha256': '69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590'}
+ NATIVE_HELPERS = {'path': '/home/alex/work/pocket4-successor-install-audit-source-20261106-r1/install_successor_native.py', 'bytes': 31327, 'sha256': 'ad4227b4c63033018bd1147c3c589b2632168766306791696aabc53583229c96'}
+ 
+ def need(value, code):
+@@ -289,7 +289,7 @@
+     result = {"type": type(error).__name__}
+     if isinstance(error, OSError):
+         result["errno"] = error.errno
+-    elif isinstance(error, Rejected) and re.fullmatch(r"[A-Z0-9_]{1,96}", str(error)):
++    elif isinstance(error, RuntimeError) and re.fullmatch(r"[A-Z0-9_]{1,96}", str(error)):
+         result["code"] = str(error)
+     else:
+         result["code"] = "UNEXPECTED_FAILURE_DETAILS_RETAINED_PRIVATELY"

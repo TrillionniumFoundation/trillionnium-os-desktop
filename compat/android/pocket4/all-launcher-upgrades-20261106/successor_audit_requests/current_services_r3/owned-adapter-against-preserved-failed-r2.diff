@@ -1,0 +1,11 @@
+--- preserved-actual-failed-r2/owned_readonly_lifetime.py
++++ new-independent-r3/owned_readonly_lifetime.py
+@@ -14,7 +14,7 @@
+ import zlib
+ 
+ sys.dont_write_bytecode = True
+-CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r2', 'worker': {'bytes': 37779, 'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r2/observe_current_services.py', 'sha256': '391ab40c114c9b47e201f7de9ed29bd7a86869caf1383b46f0589dc5a8995c2f'}, 'request': {'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r2/request.review-only.json', 'bytes': 2159, 'sha256': 'e3084966e2e7f954d4584e2a66b262376f80a7ddbc98d21631408f0d67fe213e'}, 'prior_source': {'bytes': 16637, 'sha256': '1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc', 'preserved': True, 'actual_prior_execution_job': '1a1b1e97bb7-fc05-7b79', 'scope_authority_not_inherited': True}}
++CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r3', 'worker': {'bytes': 39597, 'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r3/observe_current_services.py', 'sha256': 'ace355c5c227e86ff82804428e23fa9c89fd1028d37089c906016c049753c76e'}, 'request': {'path': '/home/alex/work/pocket4-current-readonly-services-source-20261106-r3/request.review-only.json', 'bytes': 2159, 'sha256': '01df5d11723f1f54b668834d885985ded7f895cb2ef01dc66d693bac725ad4ae'}, 'prior_source': {'bytes': 16637, 'sha256': '1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc', 'preserved': True, 'actual_prior_execution_job': '1a1b1e97bb7-fc05-7b79', 'scope_authority_not_inherited': True}}
+ SELF_PIN = None
+ SUPPORT = {
+     "path": "/home/alex/work/pocket4-beike-owned-generation-20261106-b34f158f88bbebf112840fd88df25d03/prepare_beike_owned_lifetime.py",

@@ -1,0 +1,38 @@
+--- successor_audit_requests/explicit47_scope_r2/stage_and_run_explicit47_r2.py
++++ successor_audit_requests/diagnostics/calendar-resource-parser-r1/candidate-r3/stage_and_run_comparison_r3.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""New exact source/input stage, then one explicit 47-package read-only observation."""
++"""New exact source/input stage, then one explicit two-APK parser comparison."""
+ import hashlib
+ import json
+ import os
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT='/home/alex/work/pocket4-explicit-47-scope-source-20261106-r2'
+-FILES=[{'name': 'owned_readonly_lifetime.py', 'bytes': 16637, 'sha256': '1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc'}, {'name': 'observe_explicit_47.py', 'bytes': 18139, 'sha256': '56922fbe372cf8cd2d0e39f75ddb69b16843f098d8090d65834b5737db04a656'}, {'name': 'request.review-only.json', 'bytes': 2804, 'sha256': '06ca66a6fee69d8ff874167e89be3634973eae9ca0dde56a6435526f0330bd57'}, {'name': 'inputs/native45.original.json', 'bytes': 10114, 'sha256': '1352cb70367b09af255283dcbaecd8680c4d6bad662cf6432d01e2f2d6cabf54'}, {'name': 'inputs/helper-install.stdout.original.jsonl', 'bytes': 4262, 'sha256': '68d4fcc329964f143794f5b59ce8556ddce5b7ba92546709025bd8ff52fea51a'}, {'name': 'inputs/helper-install.terminal.original.json', 'bytes': 731, 'sha256': '00d055ff77076430c9800957063a59e8ccbae249115213a09bdb32d7d71c5150'}]
++ROOT='/home/alex/work/pocket4-calendar-aapt2-diagnostic-source-20261106-r3'
++FILES=[{'name': 'owned_readonly_lifetime.py', 'bytes': 16667, 'sha256': '6a818a4fd0a28cc2dd565acf37b709b349011aa87d587fe5cf95c10be9d1916e'}, {'name': 'diagnose_calendar_and_fcitx.py', 'bytes': 46019, 'sha256': 'e9935fd73b49a72b1bf79c098ee21486c7a35c1fddf7fa188b7a4091d1dc0c89'}, {'name': 'request.review-only.json', 'bytes': 1703, 'sha256': '114ae69bf7c1dfc10632a4bb542920c20bc227dc79a563c8a7c64796f51ce6a6'}, {'name': 'inputs/inventory.original.json', 'bytes': 9876, 'sha256': '60ee9c47cb1719343a1667d306e26086d66f2376d62b8c5251f4e64446887341'}, {'name': 'inputs/aapt2-proof.outer.original.json', 'bytes': 54192, 'sha256': 'f9c289f7d28f836c51d845b4c851c1dbac0e8f326d658c7b98106b6ee327f192'}, {'name': 'inputs/aapt2-proof.terminal.original.json', 'bytes': 730, 'sha256': 'f797f008a250a386ca905e9b7e9065ac2f85cad2168be702c3ad01209d341802'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):
+@@ -66,7 +66,7 @@
+     os.umask(0o077);before_fds=len(os.listdir('/proc/self/fd'))
+     raw=sys.stdin.buffer.read(262145);need(0<len(raw)<=262144,'BOUNDED_EXACT_INPUT')
+     payload=json.loads(raw)
+-    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-explicit47-owned-scope-source-stage-v2','CLOSED_STAGE_PAYLOAD')
++    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-calendar-owned-comparison-source-stage-v3','CLOSED_STAGE_PAYLOAD')
+     need(type(payload['files']) is list and len(payload['files'])==len(FILES),'EXACT_FILE_COUNT')
+     inputs=[]
+     for expected,item in zip(FILES,payload['files']):
+@@ -104,7 +104,7 @@
+             except OSError:errors.append(fd)
+         need(not errors,'STAGE_FDS_NOT_CLOSED')
+     after_fds=len(os.listdir('/proc/self/fd'));need(after_fds==before_fds,'STAGE_DESCRIPTOR_DIFFERENCE')
+-    print(canonical({'schema':'pocket4-explicit47-owned-scope-source-stage-result-v2','source_stage_ok':True,'source_root':ROOT,'files':FILES,
++    print(canonical({'schema':'pocket4-calendar-owned-comparison-source-stage-result-v3','source_stage_ok':True,'source_root':ROOT,'files':FILES,
+          'bootstrap_FDs_before':before_fds,'bootstrap_FDs_after':after_fds,'worker_about_to_exec_once':True,
+          'stage_Main_reads':0,'stage_namespace_entries':0,'stage_installs':0,'stage_UI_actions':0,'automatic_retry':False}).decode(),flush=True)
+     wrapper=FILES[0]

@@ -1,0 +1,46 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "--proto",
+      "=https",
+      "--tlsv1.2",
+      "--connect-timeout",
+      "10",
+      "--max-time",
+      "30",
+      "--max-filesize",
+      "1048576",
+      "--fail",
+      "--silent",
+      "--show-error",
+      "--write-out",
+      "%{stderr}\nP4_GOOGLE_MAVEN_METADATA http=%{http_code} url=%{url_effective} size=%{size_download} tls_verify=%{ssl_verify_result}\n",
+      "https://dl.google.com/dl/android/maven2/com/android/tools/build/aapt2/maven-metadata.xml"
+    ],
+    "created_unix_ms": 1793989474406,
+    "cwd": null,
+    "env_keys": [],
+    "executable": "/usr/bin/curl",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b21af866-fc05-7c62",
+    "idempotency_key": "pocket4-official-google-maven-aapt2-metadata-20261106-r1",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b21af866-fc05-7c62",
+    "request_digest": "0316d0538b1f82e65d55b5e318c52fe7d3f250351137259dfa4211ae849f6ce3",
+    "request_fingerprint": 222594288836379366,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b21af866-fc05-7c62"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b21af866-fc05-7c62"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

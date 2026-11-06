@@ -1,0 +1,31 @@
+--- preserved-services-r1-stage
++++ services-r2-new-path-and-pins
+@@ -7,8 +7,8 @@
+ import stat
+ import sys
+ 
+-ROOT='/home/alex/work/pocket4-current-readonly-services-source-20261106-r1'
+-FILES=[{'name': 'owned_readonly_lifetime.py', 'bytes': 18701, 'sha256': '4d489fa8e38e1e0f70c47d7576a6509aacf3c0aa3c9b87b99d6a485b10f9a82a'}, {'name': 'observe_current_services.py', 'bytes': 37775, 'sha256': '39998d4d0bc7329e153a8177e0af9d8515016ffce368216c504519b1c57607d6'}, {'name': 'readonly_services_transport.py', 'bytes': 16620, 'sha256': '69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590'}, {'name': 'request.review-only.json', 'bytes': 2159, 'sha256': '4ed6b2db9de632ac0e62e6f70511130977b38ac861fd3017433bb8d2a27dc771'}]
++ROOT='/home/alex/work/pocket4-current-readonly-services-source-20261106-r2'
++FILES=[{'name': 'owned_readonly_lifetime.py', 'bytes': 18701, 'sha256': '932a4a79e02c0bef0c35eee2bd65056edbd594485e5c5f33dfaa1effc14f61c1'}, {'name': 'observe_current_services.py', 'bytes': 37779, 'sha256': '391ab40c114c9b47e201f7de9ed29bd7a86869caf1383b46f0589dc5a8995c2f'}, {'name': 'readonly_services_transport.py', 'bytes': 16620, 'sha256': '69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590'}, {'name': 'request.review-only.json', 'bytes': 2159, 'sha256': 'e3084966e2e7f954d4584e2a66b262376f80a7ddbc98d21631408f0d67fe213e'}]
+ STAT_KEYS=('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ 
+ def need(value,code):
+@@ -66,7 +66,7 @@
+     os.umask(0o077);before_fds=len(os.listdir('/proc/self/fd'))
+     raw=sys.stdin.buffer.read(262145);need(0<len(raw)<=262144,'BOUNDED_EXACT_INPUT')
+     payload=json.loads(raw)
+-    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-current-readonly-services-source-stage-v1','CLOSED_STAGE_PAYLOAD')
++    need(set(payload)=={'schema','files'} and payload['schema']=='pocket4-current-readonly-services-source-stage-v2','CLOSED_STAGE_PAYLOAD')
+     need(type(payload['files']) is list and len(payload['files'])==len(FILES),'EXACT_FILE_COUNT')
+     inputs=[]
+     for expected,item in zip(FILES,payload['files']):
+@@ -104,7 +104,7 @@
+             except OSError:errors.append(fd)
+         need(not errors,'STAGE_FDS_NOT_CLOSED')
+     after_fds=len(os.listdir('/proc/self/fd'));need(after_fds==before_fds,'STAGE_DESCRIPTOR_DIFFERENCE')
+-    print(canonical({'schema':'pocket4-current-readonly-services-source-stage-result-v1','source_stage_ok':True,'source_root':ROOT,'files':FILES,
++    print(canonical({'schema':'pocket4-current-readonly-services-source-stage-result-v2','source_stage_ok':True,'source_root':ROOT,'files':FILES,
+          'bootstrap_FDs_before':before_fds,'bootstrap_FDs_after':after_fds,'worker_about_to_exec_once':True,
+          'stage_Main_reads':0,'stage_namespace_entries':0,'stage_installs':0,'stage_UI_actions':0,'automatic_retry':False}).decode(),flush=True)
+     wrapper=FILES[0]

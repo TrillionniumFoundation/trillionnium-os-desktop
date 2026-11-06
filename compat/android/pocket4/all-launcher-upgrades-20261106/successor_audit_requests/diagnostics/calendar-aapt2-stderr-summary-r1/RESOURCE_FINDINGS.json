@@ -1,0 +1,64 @@
+{
+  "schema": "pocket4-calendar-resource-diagnostic-interpretation-v1",
+  "evidence_jobs": {
+    "original_batch05": "1a1b16f06d5-fc05-78b1",
+    "independent_comparison": "1a1b1f10cbf-fc05-7b9c",
+    "exact_stderr_summary": "1a1b1fb3b37-fc05-7bdc"
+  },
+  "verified_stderr": {
+    "path": "/home/alex/work/pocket4-successor-apk-audit-20261106-calendar-aapt2-comparison-r3-01/p00-a00-badging.stderr",
+    "bytes": 2486748,
+    "sha256": "256a56fc10b83a17488572225c07cc2f04a1f5a54b06db033d578f21c18df631",
+    "line_count": 23800,
+    "normalised_message_counts_top20": [
+      {
+        "count": 15847,
+        "prefix": "#-# #:#:#.# # # e aapt2   : index # points to entry with unaligned offset #"
+      },
+      {
+        "count": 7416,
+        "prefix": "#-# #:#:#.# # # e aapt2   : entry offset at index # points outside the type's boundaries"
+      },
+      {
+        "count": 530,
+        "prefix": "#-# #:#:#.# # # e aapt2   : entry at index # extends beyond type's boundaries"
+      },
+      {
+        "count": 7,
+        "prefix": "#-# #:#:#.# # # e aapt2   : entry at index # is too small (#)"
+      }
+    ]
+  },
+  "actual_level": "E aapt2 on all four observed normalised message classes covering all23800lines",
+  "keyword_count_caveat": "The word error occurred zero times, because the actual format uses E severity. This does not mean zero resource errors.",
+  "supported_findings": [
+    "Exact same Calendar APK2635213B/c8a9d40dbfb3c975748e7c0520515316a5ef573414193e3128efa9ed400665e1 remained unchanged.",
+    "Actual AAPT2 badging returned0 and parsed Calendar17/versionCode37/minSDK37/targetSDK34.",
+    "Original AAPT XML manifest and actual apksigner each returned0; signer matched current PM certificate.",
+    "Original Calendar AAPT badging remained exit1; Fcitx original and AAPT2 both returned0."
+  ],
+  "not_proved": [
+    "All Calendar resources can be decoded correctly by this Debian AAPT2.",
+    "The23800entry-boundary/offset diagnostics prove only an old-tool format mismatch.",
+    "The APK resources are corrupt.",
+    "Calendar runtime/business/long-run/restart readiness."
+  ],
+  "interpretation": "Manifest/version/signature/declaration extraction is supported. Resource format compatibility versus malformed resources remains unresolved; exit0 alone does not settle it.",
+  "original_receipts_rewritten": false,
+  "original_batch05_gate_advanced": false,
+  "additional_tool_trials_performed": false,
+  "production_ready": false,
+  "cleanup_eligible": false,
+  "raw_evidence": [
+    {
+      "path": "actual/stdout.original.json",
+      "bytes": 7779,
+      "sha256": "eb4337878f1db6bb494e09a91a74313c4818206868fda9cfcc235d5530c2a7e1"
+    },
+    {
+      "path": "../calendar-resource-parser-r1/candidate-r3/actual/worker.artifact.original.json",
+      "bytes": 58074,
+      "sha256": "6afc779a4fcfa5e8f0d59470ef101330ad1dd8f4ba4d781b121abd62df3ece90"
+    }
+  ]
+}

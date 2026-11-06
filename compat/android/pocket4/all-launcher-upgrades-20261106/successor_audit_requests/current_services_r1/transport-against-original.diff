@@ -1,0 +1,57 @@
+--- preserved-actual-generated-R5-transport
++++ independent-readonly-seven-command-transport
+@@ -20,8 +20,16 @@
+ ANDROID_APP_SHA256 = "eb24b1b0eefb275025d10647ccf218f9395b1f74cf6d912aaabf384210d1aa66"
+ FRAMEWORK_EPOCH_SHA256 = '7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c'
+ HELD_HELPER_SHA256 = "21ba02ff60ba07667c3b5601c1ff9cb9b2d9cce2fae9290a6f39e47c18126689"
+-EXPECTED_PACKAGE = 'com.lianjia.beike'
+-EXPECTED_UID = 10143
++EXPLICIT_SCOPE_SHA256 = "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f"
++READ_ONLY_COMMANDS = (
++    ("/system/bin/cmd", "package", "help"),
++    ("/system/bin/cmd", "appops", "help"),
++    ("/system/bin/cmd", "role", "help"),
++    ("/system/bin/cmd", "package", "list", "packages", "-U", "--show-versioncode", "--match-libraries", "--user", "0"),
++    ("/system/bin/cmd", "package", "query-activities", "--components", "--user", "0", "-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER"),
++    ("/system/bin/cmd", "package", "list", "packages", "-U", "--show-versioncode", "--match-libraries", "--user", "0"),
++    ("/system/bin/cmd", "package", "query-activities", "--components", "--user", "0", "-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER"),
++)
+ HOST_ENV = {"PATH": "/usr/sbin:/usr/bin:/sbin:/bin", "HOME": "/root", "LANG": "C.UTF-8"}
+ REQUIRED_ENV = {"PATH", "BOOTCLASSPATH", "DEX2OATBOOTCLASSPATH",
+                 "ANDROID_ROOT", "ANDROID_DATA", "ANDROID_ART_ROOT"}
+@@ -115,12 +123,9 @@
+     inner timeout and the recorder's exact task cleanup remain necessary.
+     """
+     def __init__(self, *, target, environment, guard, record, epoch_sha256,
+-                 init_pid, package, uid, interactive_production,
+-                 runner=subprocess.run):
+-        require(epoch_sha256 == FRAMEWORK_EPOCH_SHA256 and package == EXPECTED_PACKAGE
+-                and type(uid) is int and uid == EXPECTED_UID,
+-                "MAIN_APP_SCOPE_DIFFERS")
+-        require(interactive_production is True, "INTERACTIVE_PRODUCTION_NOT_ADMITTED")
++                 init_pid, app_scope_sha256, user, runner):
++        require(epoch_sha256 == FRAMEWORK_EPOCH_SHA256 and app_scope_sha256 == EXPLICIT_SCOPE_SHA256
++                and type(user) is int and user == 0, "EXACT_NEW_READONLY_SERVICE_SCOPE_REQUIRED")
+         require(type(init_pid) is int and init_pid > 1 and target.expected["pid"] == init_pid,
+                 "HELD_TARGET_INIT_DIFFERS")
+         require(target.helper_sha256 == HELD_HELPER_SHA256,
+@@ -144,6 +149,8 @@
+         require(self._lock.acquire(blocking=False), "TRANSPORT_ALREADY_ACTIVE")
+         try:
+             require(not self._poisoned, "TRANSPORT_CLOSED_AFTER_FAILURE")
++            require(self._sequence < len(READ_ONLY_COMMANDS) and tuple(args) == READ_ONLY_COMMANDS[self._sequence],
++                    "EXACT_READONLY_COMMAND_SEQUENCE_REQUIRED")
+             require(isinstance(args, (list, tuple)) and args and
+                     all(isinstance(x, str) and x and "\0" not in x for x in args)
+                     and args[0].startswith("/"), "ANDROID_COMMAND_INVALID")
+@@ -157,7 +164,9 @@
+                         str(inner), *args]
+             self._sequence += 1
+             identity = {"sequence": self._sequence, "epoch_sha256": FRAMEWORK_EPOCH_SHA256,
+-                        "package": EXPECTED_PACKAGE, "uid": EXPECTED_UID,
++                        "app_scope_sha256": EXPLICIT_SCOPE_SHA256, "user": 0,
++                        "scope_kind": "independent-user0-service-observation", "Android_command_uid": 2000,
++                        "UI_or_install_admitted": False, "permission_mutation_admitted": False,
+                         "command_sha256": hashlib.sha256(json.dumps(args, ensure_ascii=False,
+                             separators=(",", ":")).encode()).hexdigest(),
+                         "timeout_seconds": timeout, "inner_timeout_seconds": inner,

@@ -1,0 +1,360 @@
+{
+  "schema": "pocket4-build07-actual-failure-summary-before-readonly-diagnosis-v1",
+  "actual_job_id": "1a1b20bbc0a-fc05-7c2e",
+  "originals": [
+    {
+      "relative_path": "actual-build07/terminal.process-status.original.json",
+      "bytes": 726,
+      "sha256": "629a7963a7c7f2401c4d0f8a554352c262342d0bca246be39d644bcaa1118d82"
+    },
+    {
+      "relative_path": "actual-build07/stdout.original.jsonl",
+      "bytes": 877,
+      "sha256": "9971c2ebeda5b9d28652f810a3cab9c24b8dd4e7b9708837f0784705c8d62b84"
+    },
+    {
+      "relative_path": "actual-build07/stderr.original.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "relative_path": "actual-build07/fence-terminal.original.json",
+      "bytes": 24701,
+      "sha256": "22c315979504854e249d059762a2ef008fc278c93b26c4a2bd65e0ba0a68bc34"
+    },
+    {
+      "relative_path": "actual-build07/readback-index-01.json",
+      "bytes": 2883,
+      "sha256": "51b341dc3ee342501da3b3df2cb00818c4716ab654335d4a631251fcb0f12f45"
+    }
+  ],
+  "source": {
+    "relative_path": "source-r4/framework_build.py",
+    "bytes": 68088,
+    "sha256": "c446be88a61f7d07c05aff1e3f3bb967bcf969b7fa3de568eb3de4915e59e7da"
+  },
+  "first_start_payload": {
+    "available_in_this_agent": false,
+    "parent_report_only_path": "actual-build07/normal06_build07_root_start_message.json",
+    "message_is_not_original_start": true
+  },
+  "actual_terminal": {
+    "state": "failed",
+    "exit_code": 1,
+    "output_durable": true,
+    "output_complete": true,
+    "timed_out": false,
+    "cancelled": false,
+    "automatic_retry": false,
+    "log_errors": {
+      "stderr": null,
+      "stdout": null
+    },
+    "log_truncated": {
+      "stderr": false,
+      "stdout": false
+    }
+  },
+  "outer_result": {
+    "state": "FAILED",
+    "error": "FileNotFoundError(2, 'No such file or directory')",
+    "inner_build_called": true,
+    "inner_returncode": null,
+    "seconds": 2.1280745370313525,
+    "before_observed": true,
+    "after_observed": true,
+    "main_fence_assessment": {
+      "main_fence_pass": true,
+      "identity_or_limit_changes": [],
+      "main_memory_event_deltas": {
+        "low": 0,
+        "high": 0,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 0
+      },
+      "main_oom_delta_zero": true,
+      "main_current_resource_deltas": {
+        "memory.current": 7745536,
+        "memory.swap.current": -4096,
+        "pids.current": 0
+      },
+      "pressure_counter_increases_observed": {},
+      "unobserved_transient_effects_excluded": false,
+      "causal_attribution_of_counter_changes": false,
+      "old_QA_epoch_invalid": true,
+      "new_QA_epoch_qualified": false,
+      "scope": "Only the pinned pre/post invariants and OOM deltas are gated; full interval absence of interference is not claimed."
+    },
+    "production_ready": false,
+    "installed": false,
+    "new_QA_epoch_qualified": false
+  },
+  "capture_controls": {
+    "schema": 1,
+    "kind": "real-fixed-capture-lifecycle-controls02",
+    "state": "PASS",
+    "qualification_seconds_limit": 30,
+    "elapsed_seconds": 1.2473910640692338,
+    "hard_execution_deadline_claimed": false,
+    "passed": 4,
+    "rows": [
+      {
+        "name": "control-root-timeout",
+        "passed": true,
+        "actor_uids": [
+          0,
+          0,
+          0
+        ],
+        "owned_children_empty": true,
+        "Main_read_performed": false,
+        "original_expected_failure": {
+          "stage": "start_or_wait",
+          "type": "TimeoutError",
+          "errno": null,
+          "message": "owned child exit deadline"
+        },
+        "outer_lifecycle_sha256": "2c7e9224a032db980e3d783beeeb924122b60ed965033d3c8ed770b641b72935",
+        "root_stdout_sha256": "83e0ee44e808c76dcf2da421420b9b690ab8e71efb102317f4de35a5b47c17f4"
+      },
+      {
+        "name": "control-root-escaped",
+        "passed": true,
+        "actor_uids": [
+          0,
+          0,
+          0
+        ],
+        "owned_children_empty": true,
+        "Main_read_performed": false,
+        "original_expected_failure": {
+          "stage": "driver_left_descendants",
+          "type": "RuntimeError",
+          "errno": null,
+          "message": "driver left descendant processes after its exit"
+        },
+        "outer_lifecycle_sha256": "29ed08972e55bd6cfacaa4805e96ffd01ddfb4d3782e3fddcdd7638f28e99313",
+        "root_stdout_sha256": "2986a2a6ec4e1d12aca01b9ff23b7cfb4b986f2bf5d29aaa37b1b742c63eeccd"
+      },
+      {
+        "name": "control-root-pidfd",
+        "passed": true,
+        "actor_uids": [
+          0,
+          0,
+          0
+        ],
+        "owned_children_empty": true,
+        "Main_read_performed": false,
+        "original_expected_failure": {
+          "stage": "start_or_wait",
+          "type": "OSError",
+          "errno": 24,
+          "message": "[Errno 24] explicit fixed-root pidfd allocation control seam"
+        },
+        "outer_lifecycle_sha256": "68c70d941dfeb9124e43ad49ea4a483a2a3172f0cbd2a8d11cf600fca45ed8ec",
+        "root_stdout_sha256": "289940f31c001de839bbad201d8706e7ba4161fae2b3fa25528e5ca49b5eddd3"
+      },
+      {
+        "name": "control-outer-pidfd",
+        "passed": true,
+        "actor_uids": [
+          1000,
+          1000,
+          1000
+        ],
+        "owned_children_empty": true,
+        "Main_read_performed": false,
+        "root_startup_required_for_control": false,
+        "original_expected_failure": {
+          "stage": "start_or_wait",
+          "type": "OSError",
+          "errno": 24,
+          "message": "[Errno 24] explicit outer owned-child pidfd allocation control seam"
+        },
+        "secondary_failures_retained": [],
+        "outer_lifecycle_sha256": "c517939a7fb1232cff3039d6e44b3b3286827e929b13ad8d31acb71758d7e89e"
+      }
+    ],
+    "Python_processes_actually_run": true,
+    "privileged_commands_limited_to_pinned_supervisor": true,
+    "Main_read_performed": false,
+    "Main_actions": 0,
+    "Android_actions": 0,
+    "new_QA_epoch_qualified": false
+  },
+  "lifecycle_summary": [
+    {
+      "phase": "control-root-timeout",
+      "root_mode": "control-timeout",
+      "returncode": 0,
+      "child_started": true,
+      "child_reaped": true,
+      "pidfd_closed": true,
+      "all_acquired_fds_closed": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "secondary_errors": [],
+      "outer_subreaper_restored": true,
+      "outer_subreaper_final_children_empty": true,
+      "outer_watchdog_disarmed_and_restored": true,
+      "outer_within_deadline": true,
+      "kill_attempted": false,
+      "expected_failure_control": false,
+      "stdout_pin": {
+        "acquired": true,
+        "closed": true,
+        "fd": 5,
+        "bytes": 2560,
+        "sha256": "83e0ee44e808c76dcf2da421420b9b690ab8e71efb102317f4de35a5b47c17f4",
+        "complete": true
+      }
+    },
+    {
+      "phase": "control-root-escaped",
+      "root_mode": "control-escaped",
+      "returncode": 0,
+      "child_started": true,
+      "child_reaped": true,
+      "pidfd_closed": true,
+      "all_acquired_fds_closed": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "secondary_errors": [],
+      "outer_subreaper_restored": true,
+      "outer_subreaper_final_children_empty": true,
+      "outer_watchdog_disarmed_and_restored": true,
+      "outer_within_deadline": true,
+      "kill_attempted": false,
+      "expected_failure_control": false,
+      "stdout_pin": {
+        "acquired": true,
+        "closed": true,
+        "fd": 5,
+        "bytes": 2586,
+        "sha256": "2986a2a6ec4e1d12aca01b9ff23b7cfb4b986f2bf5d29aaa37b1b742c63eeccd",
+        "complete": true
+      }
+    },
+    {
+      "phase": "control-root-pidfd",
+      "root_mode": "control-pidfd",
+      "returncode": 0,
+      "child_started": true,
+      "child_reaped": true,
+      "pidfd_closed": true,
+      "all_acquired_fds_closed": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "secondary_errors": [],
+      "outer_subreaper_restored": true,
+      "outer_subreaper_final_children_empty": true,
+      "outer_watchdog_disarmed_and_restored": true,
+      "outer_within_deadline": true,
+      "kill_attempted": false,
+      "expected_failure_control": false,
+      "stdout_pin": {
+        "acquired": true,
+        "closed": true,
+        "fd": 5,
+        "bytes": 2280,
+        "sha256": "289940f31c001de839bbad201d8706e7ba4161fae2b3fa25528e5ca49b5eddd3",
+        "complete": true
+      }
+    },
+    {
+      "phase": "control-outer-pidfd",
+      "root_mode": "control-timeout",
+      "returncode": -9,
+      "child_started": true,
+      "child_reaped": true,
+      "pidfd_closed": true,
+      "all_acquired_fds_closed": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "secondary_errors": [],
+      "outer_subreaper_restored": true,
+      "outer_subreaper_final_children_empty": true,
+      "outer_watchdog_disarmed_and_restored": true,
+      "outer_within_deadline": true,
+      "kill_attempted": true,
+      "expected_failure_control": true,
+      "stdout_pin": {
+        "acquired": true,
+        "closed": true,
+        "fd": 5,
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "complete": true
+      }
+    },
+    {
+      "phase": "before",
+      "root_mode": "before",
+      "returncode": 0,
+      "child_started": true,
+      "child_reaped": true,
+      "pidfd_closed": true,
+      "all_acquired_fds_closed": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "secondary_errors": [],
+      "outer_subreaper_restored": true,
+      "outer_subreaper_final_children_empty": true,
+      "outer_watchdog_disarmed_and_restored": true,
+      "outer_within_deadline": true,
+      "kill_attempted": false,
+      "expected_failure_control": false,
+      "stdout_pin": {
+        "acquired": true,
+        "closed": true,
+        "fd": 5,
+        "bytes": 11163,
+        "sha256": "cdf24c0a5ba8fa986e54af29161343fc194b009daa43909d797346a56e53e7a5",
+        "complete": true
+      }
+    },
+    {
+      "phase": "after",
+      "root_mode": "after",
+      "returncode": 0,
+      "child_started": true,
+      "child_reaped": true,
+      "pidfd_closed": true,
+      "all_acquired_fds_closed": true,
+      "owned_tree_cleanup_complete": true,
+      "remaining_owned_children": [],
+      "secondary_errors": [],
+      "outer_subreaper_restored": true,
+      "outer_subreaper_final_children_empty": true,
+      "outer_watchdog_disarmed_and_restored": true,
+      "outer_within_deadline": true,
+      "kill_attempted": false,
+      "expected_failure_control": false,
+      "stdout_pin": {
+        "acquired": true,
+        "closed": true,
+        "fd": 5,
+        "bytes": 11163,
+        "sha256": "68da597340b7f0fa192dfcf914e254e2763b50b109e52d5c33c85a49ad0687e8",
+        "complete": true
+      }
+    }
+  ],
+  "read_only_diagnosis_pending": true,
+  "filename_not_recorded_by_original_repr": true,
+  "actual_compiler_error_observed": false,
+  "source_ordering_inference": {
+    "normal_builder_process_not_reached": true,
+    "basis": "Complete original stdout contains only the final outer failure line. In fixed framework_build.py, the inner claim is printed with flush=True at line900, before the sole builder subprocess.Popen at line917; that claim is absent. This is source-ordering evidence, not a new remote process observation.",
+    "no_new_runtime_or_worktree_observation_implied": true
+  },
+  "resource_admission": "NOT_OBSERVED_IN_RETRIEVED_ORIGINALS; do not label as 15GiB pass or failure.",
+  "published_source_manifest_after": "NOT_READ_BY_THIS_AGENT; last executed builder was normal05, build06 never entered inner, build07 has no normal-builder launch evidence.",
+  "source_mutations": 0,
+  "build_retries": 0,
+  "cleanup_actions": 0
+}

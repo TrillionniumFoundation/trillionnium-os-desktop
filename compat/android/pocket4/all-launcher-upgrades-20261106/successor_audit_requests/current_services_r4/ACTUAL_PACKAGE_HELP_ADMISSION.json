@@ -1,0 +1,196 @@
+{
+  "actual_admission": {
+    "actual_help_sha256": "a58bc73742b985565a5d72b668db8d8a575d38efa49851069364a120b8735ef4",
+    "no_guessed_service_transaction": true,
+    "required_literals": [
+      "list packages",
+      "-U",
+      "--show-versioncode",
+      "--match-libraries",
+      "--user USER_ID",
+      "[FILTER]",
+      "query-activities",
+      "--components",
+      "INTENT",
+      "-a <ACTION>",
+      "-c <CATEGORY>"
+    ]
+  },
+  "actual_package_help": {
+    "bytes": 40229,
+    "path": "successor_audit_requests/current_services_r3/help-readback-r1/cmd-package-help.original.txt",
+    "sha256": "a58bc73742b985565a5d72b668db8d8a575d38efa49851069364a120b8735ef4"
+  },
+  "current_package_list_and_resolver_not_yet_observed": true,
+  "effective_grants": "UNKNOWN",
+  "evidence_origin_job": "1a1b21fcc13-fc05-7c7a",
+  "fixed_host_reader_job": "1a1b225d7c9-fc05-7ca4",
+  "fresh_help_required_again_at_r4_runtime": true,
+  "ok": true,
+  "old_AppOps_255_or_failed_r3_reclassified": false,
+  "relevant_original_lines": [
+    {
+      "line_1based": 30,
+      "text": ""
+    },
+    {
+      "line_1based": 31,
+      "text": "  list packages [-f] [-d] [-e] [-s] [-q] [-3] [-i] [-l] [-u] [-U] "
+    },
+    {
+      "line_1based": 32,
+      "text": "      [--show-versioncode] [--apex-only] [--factory-only]"
+    },
+    {
+      "line_1based": 33,
+      "text": "      [--uid UID] [--user USER_ID] [FILTER]"
+    },
+    {
+      "line_1based": 34,
+      "text": "    Prints all packages; optionally only those whose name contains"
+    },
+    {
+      "line_1based": 35,
+      "text": "    the text in FILTER.  Options are:"
+    },
+    {
+      "line_1based": 45,
+      "text": "      -u: also include uninstalled packages"
+    },
+    {
+      "line_1based": 46,
+      "text": "      --show-versioncode: also show the version code"
+    },
+    {
+      "line_1based": 47,
+      "text": "      --apex-only: only show APEX packages"
+    },
+    {
+      "line_1based": 48,
+      "text": "      --factory-only: only show system packages excluding updates"
+    },
+    {
+      "line_1based": 49,
+      "text": "      --uid UID: filter to only show packages with the given UID"
+    },
+    {
+      "line_1based": 50,
+      "text": "      --user USER_ID: only list packages belonging to the given user"
+    },
+    {
+      "line_1based": 51,
+      "text": "      --match-libraries: include packages that declare static shared and SDK libraries"
+    },
+    {
+      "line_1based": 52,
+      "text": ""
+    },
+    {
+      "line_1based": 53,
+      "text": "  list permission-groups"
+    },
+    {
+      "line_1based": 54,
+      "text": "    Prints all known permission groups."
+    },
+    {
+      "line_1based": 72,
+      "text": ""
+    },
+    {
+      "line_1based": 73,
+      "text": "  resolve-activity [--brief] [--components] [--query-flags FLAGS]"
+    },
+    {
+      "line_1based": 74,
+      "text": "       [--user USER_ID] INTENT"
+    },
+    {
+      "line_1based": 75,
+      "text": "    Prints the activity that resolves to the given INTENT."
+    },
+    {
+      "line_1based": 76,
+      "text": ""
+    },
+    {
+      "line_1based": 77,
+      "text": "  query-activities [--brief] [--components] [--query-flags FLAGS]"
+    },
+    {
+      "line_1based": 78,
+      "text": "       [--user USER_ID] INTENT"
+    },
+    {
+      "line_1based": 79,
+      "text": "    Prints all activities that can handle the given INTENT."
+    },
+    {
+      "line_1based": 80,
+      "text": ""
+    },
+    {
+      "line_1based": 81,
+      "text": "  query-services [--brief] [--components] [--query-flags FLAGS]"
+    },
+    {
+      "line_1based": 82,
+      "text": "       [--user USER_ID] INTENT"
+    },
+    {
+      "line_1based": 83,
+      "text": "    Prints all services that can handle the given INTENT."
+    },
+    {
+      "line_1based": 84,
+      "text": ""
+    },
+    {
+      "line_1based": 85,
+      "text": "  query-receivers [--brief] [--components] [--query-flags FLAGS]"
+    },
+    {
+      "line_1based": 86,
+      "text": "       [--user USER_ID] INTENT"
+    },
+    {
+      "line_1based": 87,
+      "text": "    Prints all broadcast receivers that can handle the given INTENT."
+    },
+    {
+      "line_1based": 88,
+      "text": ""
+    },
+    {
+      "line_1based": 740,
+      "text": "<INTENT> specifications include these flags and arguments:"
+    },
+    {
+      "line_1based": 741,
+      "text": "    [-a <ACTION>] [-d <DATA_URI>] [-t <MIME_TYPE>] [-i <IDENTIFIER>]"
+    },
+    {
+      "line_1based": 742,
+      "text": "    [-c <CATEGORY> [-c <CATEGORY>] ...]"
+    },
+    {
+      "line_1based": 743,
+      "text": "    [-n <COMPONENT_NAME>]"
+    },
+    {
+      "line_1based": 744,
+      "text": "    [-e|--es <EXTRA_KEY> <EXTRA_STRING_VALUE> ...]"
+    },
+    {
+      "line_1based": 745,
+      "text": "    [--esn <EXTRA_KEY> ...]"
+    }
+  ],
+  "runtime_executed": false,
+  "schema": "pocket4-pm-r4-actual-package-help-admission-v1",
+  "worker": {
+    "bytes": 39573,
+    "path": "successor_audit_requests/current_services_r4/observe_current_services.py",
+    "sha256": "4fda5cdf8fda65155c4187a1e8e5381aba59011329c824b98ad2e0c0b8aa8f0e"
+  }
+}

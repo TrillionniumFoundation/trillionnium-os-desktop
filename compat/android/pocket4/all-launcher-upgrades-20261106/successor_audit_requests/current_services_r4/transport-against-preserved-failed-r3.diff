@@ -1,0 +1,11 @@
+--- preserved-actual-failed-r3/readonly_services_transport.py
++++ independent-PackageManager-only-r4/readonly_services_transport.py
+@@ -23,8 +23,6 @@
+ EXPLICIT_SCOPE_SHA256 = "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f"
+ READ_ONLY_COMMANDS = (
+     ("/system/bin/cmd", "package", "help"),
+-    ("/system/bin/cmd", "appops", "help"),
+-    ("/system/bin/cmd", "role", "help"),
+     ("/system/bin/cmd", "package", "list", "packages", "-U", "--show-versioncode", "--match-libraries", "--user", "0"),
+     ("/system/bin/cmd", "package", "query-activities", "--components", "--user", "0", "-a", "android.intent.action.MAIN", "-c", "android.intent.category.LAUNCHER"),
+     ("/system/bin/cmd", "package", "list", "packages", "-U", "--show-versioncode", "--match-libraries", "--user", "0"),

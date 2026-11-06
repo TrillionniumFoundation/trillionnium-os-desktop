@@ -1,0 +1,223 @@
+{
+  "changes": [
+    "A source-local empty raw-stream writer accepts only b-empty for closed native/android NN stdout/stderr names. It uses the already held private output directory, O_EXCL/O_NOFOLLOW/O_CLOEXEC, 0400, regular/single-link/zero-size/current-directory-owner checks, file fsync and directory fsync, then the existing exact SHA/byte readback. Every nonempty artifact still uses frozen core.write_new unchanged.",
+    "The production run still requires uid/euid0 and unchanged core.create_private_root root-owned0700; root_identity is that actual held directory. The empty writer compares file owner to this bound owner. The focused local fixture uses its real UID1000 and makes no claim to exercise production root authority.",
+    "Both native and Android actual child rows are appended before writing raw stream receipts. A write failure keeps joined/exit/errors/stream hashes and records structured artifact_error; it still fails the entire observation.",
+    "The existing Android unjoined poison call is in finally around stream persistence so an I/O failure cannot skip that original obligation. The underlying runner, held transport, cleanup algorithm and all runtime/scope guards are unchanged.",
+    "Only new r3 source/output roots, exact pins and stage key/schema differ otherwise. The original r1 blocked source and actual failed r2 remain unchanged; no automatic retry or original-key replay is introduced."
+  ],
+  "cleanup_eligible": false,
+  "controls_not_rerun": "Original r1 ten controls and r2 timeout control are retained historical evidence, not r3 executions. Only this one actual owned-child/empty-stream/exclusive-write control was run.",
+  "files": [
+    {
+      "bytes": 6339,
+      "path": "assemble_candidate.py",
+      "sha256": "0b12ff17b1feec747d729da01549315d4edff8c2070b49e1d679593f6fa3ab96"
+    },
+    {
+      "bytes": 0,
+      "path": "empty-stream-control.stderr.original.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 1274,
+      "path": "empty-stream-control.stdout.original.jsonl",
+      "sha256": "5181e20966dfb0bb9722d0bdf091c81cc120daffdac9ca53175223905d4f9712"
+    },
+    {
+      "bytes": 39597,
+      "path": "observe_current_services.py",
+      "sha256": "ace355c5c227e86ff82804428e23fa9c89fd1028d37089c906016c049753c76e"
+    },
+    {
+      "bytes": 1990,
+      "path": "owned-adapter-against-preserved-failed-r2.diff",
+      "sha256": "f8d81425c0061c634dc7ae2339b02bb3a95ec64bcbd78097511ee55a991fb81f"
+    },
+    {
+      "bytes": 18701,
+      "path": "owned_readonly_lifetime.py",
+      "sha256": "3690832983fc24032c4acc874373d059e0f866e2a0a2d80ce2673b48725da8d2"
+    },
+    {
+      "bytes": 95099,
+      "path": "process-request.review-only.json",
+      "sha256": "2252d60c81eaea69d4179fa509c023f877b050622eca45089044571b60d2bc7d"
+    },
+    {
+      "bytes": 16620,
+      "path": "readonly_services_transport.py",
+      "sha256": "69b9fe3639d18908efcdbfafb1bd3aa908d7417b91720035b19656d74a9f7590"
+    },
+    {
+      "bytes": 2159,
+      "path": "request.review-only.json",
+      "sha256": "01df5d11723f1f54b668834d885985ded7f895cb2ef01dc66d693bac725ad4ae"
+    },
+    {
+      "bytes": 946,
+      "path": "runner-against-original.diff",
+      "sha256": "4fb971c8719bdd7bfd18865b8a12eb4303f52b25dfd07d741c085adafbb42d3a"
+    },
+    {
+      "bytes": 81300,
+      "path": "stage.stdin.original.json",
+      "sha256": "1d9580fa6d200f7e9e4c377282386ef27ad19e48ed8cec2b0059cc631d9b9ea5"
+    },
+    {
+      "bytes": 6765,
+      "path": "stage_and_run_services.py",
+      "sha256": "fb513678f9729dd892611a4b74f2d42ca4b11b333fa487c1ca843b6028bb2f37"
+    },
+    {
+      "bytes": 2974,
+      "path": "stager-against-preserved-failed-r2.diff",
+      "sha256": "a2a7060b3f5945dda1fb9baba1a2e751a27746ab39a114a4cbbc9c5483ddf051"
+    },
+    {
+      "bytes": 4744,
+      "path": "test_empty_stream_receipt.py",
+      "sha256": "30c2fdd0e6c3f9dc1a5d1059e01ea004656d87140554880801ab482a603ecdaf"
+    },
+    {
+      "bytes": 6290,
+      "path": "worker-against-preserved-failed-r2.diff",
+      "sha256": "44a1d1cd907f726f02fc8bf5471aca879a46f30e584f79f5a21c5961f04aaff3"
+    },
+    {
+      "bytes": 20974,
+      "path": "worker_body.py",
+      "sha256": "415ea221c89bac9333ed682d22ca45de81e9d640696771919bb99337bab9f4f3"
+    }
+  ],
+  "focused_actual_control": {
+    "Main_operations": 0,
+    "Pocket4_operations": 0,
+    "actual_fixture_uid": 1000,
+    "command": {
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "-I",
+        "-B",
+        "-c",
+        "pass"
+      ],
+      "complete": true,
+      "errors": [],
+      "finished_monotonic_ns": 10114280073725,
+      "host_pid": 7,
+      "joined": true,
+      "returncode": 0,
+      "started_monotonic_ns": 10114267163863,
+      "stderr_bytes": 0,
+      "stderr_eof": true,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_eof": true,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "termination_attempted": false
+    },
+    "command_retained_before_actual_write_failure": true,
+    "control_count": 1,
+    "empty_stdout_and_stderr_saved_exactly": true,
+    "existing_stream_overwrite_rejected": true,
+    "frozen_core_unchanged": true,
+    "namespace_entries": 0,
+    "observation_FDs": {
+      "acquired": 3,
+      "closed": 3,
+      "errors": [],
+      "remaining": 0
+    },
+    "ok": true,
+    "owned_child_reaped": true,
+    "process_FDs_after": 4,
+    "process_FDs_before": 4,
+    "production_root_authority_not_simulated": true,
+    "raw_files_mode": "0400",
+    "real_owned_children": 1,
+    "schema": "pocket4-services-r3-real-empty-stream-and-receipt-failure-control-v1",
+    "source_sha256": "ace355c5c227e86ff82804428e23fa9c89fd1028d37089c906016c049753c76e",
+    "write_failure": {
+      "errno": 17,
+      "type": "FileExistsError"
+    }
+  },
+  "previous_actual_failure": {
+    "Android_namespace_commands": 0,
+    "action_lock_released": true,
+    "errors": [
+      {
+        "reason": "PRIVATE_ARTIFACT_SIZE_BOUND",
+        "type": "Rejected"
+      }
+    ],
+    "job_id": "1a1b208dd0d-fc05-7c22",
+    "lease_FDs_final": {
+      "acquired": 20,
+      "closed": 20,
+      "errors": [],
+      "remaining": 0
+    },
+    "native_command_count": 1,
+    "native_command_rows_retained_by_r2": 0,
+    "observation_FDs_final": {
+      "acquired": 2618,
+      "closed": 2618,
+      "errors": [],
+      "remaining": 0
+    },
+    "old_failure_not_reclassified": true,
+    "old_source_and_actual_receipts_unchanged": true,
+    "preserved_original_evidence": [
+      {
+        "bytes": 13759,
+        "path": "successor_audit_requests/current_services_r2/actual/stdout.original.jsonl",
+        "sha256": "cbe34113d2ddc30f92e49a5749b5b021046625c50f14fe96cbf38217bded5581"
+      },
+      {
+        "bytes": 7671,
+        "path": "successor_audit_requests/current_services_r2/actual/worker.stdout.original.json",
+        "sha256": "b7f4882891e33ca4415ad9df7c2eec2c759d2a413ea1d541639ac075df0be0df"
+      },
+      {
+        "bytes": 730,
+        "path": "successor_audit_requests/current_services_r2/actual/terminal.original.json",
+        "sha256": "799111a200812990ddcfdee98c150f1ad6a63e6c464b353c96c7ce5a43b23465"
+      }
+    ],
+    "preserved_source": {
+      "bytes": 37779,
+      "path": "successor_audit_requests/current_services_r2/observe_current_services.py",
+      "sha256": "391ab40c114c9b47e201f7de9ed29bd7a86869caf1383b46f0589dc5a8995c2f"
+    },
+    "whole_process_FDs": [
+      5,
+      5
+    ]
+  },
+  "production_ready": false,
+  "runtime_executed": false,
+  "schema": "pocket4-independent-readonly-services-revision3-review-v1",
+  "semantic_limits": "Actual user0 non-APEX installed APK package metadata and current enabled/resolvable MAIN+LAUNCHER only. Explicit47 are separately byte/stat/UID/data bound; new PM rows are not automatically APK- or UI-qualified. AppOps/role are help-only, effective grants remain UNKNOWN, and old compiled Beike scope is not extended.",
+  "source_closure_checks": {
+    "all_source_compiles": true,
+    "four_staged_file_pins_and_full_packet_equal": true,
+    "frozen_core_sha256": "53f79b2bdfc694a3006c0d33232a277a8729773407f301af6a07aa6a46f490d5",
+    "held_bounded_child_byte_identical_to_r2": true,
+    "old_r2_all_original_source_review_file_pins_unchanged": true,
+    "owned_wrapper_function_bodies_byte_identical_to_r2": true,
+    "transport_byte_identical_to_r2": true
+  },
+  "state": "SOURCE_FROZEN_NOT_EXECUTED",
+  "stop_on_mismatch": [
+    "Exact current typed epoch and explicit47 Appscope/package UID/APK/data metadata must hold.",
+    "Actual package help must contain all closed list/query/intent syntax before either enumeration command.",
+    "Seven exact ordered Android read-only commands; no grant/set/role mutation/UI/install command can enter.",
+    "Native callerUID1000, original CLI/daemon/socket identities and current owner must hold.",
+    "Each child must exit0, capture complete stdout/stderr without errors, join, and preserve both namespace lease and runtime guard.",
+    "Two actual PM and resolver samples must match; unrecognised/duplicate/partial rows are rejected.",
+    "No next command after any transport error; no automatic retry or new-key replay.",
+    "All target/observation/lease/library resources must retire through the original checks and original owned child pidfd normal exit before final outer success."
+  ]
+}

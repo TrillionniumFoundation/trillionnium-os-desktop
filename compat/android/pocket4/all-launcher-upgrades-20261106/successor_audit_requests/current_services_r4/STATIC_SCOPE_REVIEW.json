@@ -1,0 +1,113 @@
+{
+  "AppOps_and_roles": "UNKNOWN_NOT_QUERIED",
+  "actual_package_help_raw_review": "PENDING_ROOT_FIXED_READER_READBACK",
+  "closed_command_count": 5,
+  "commands": [
+    [
+      "/system/bin/cmd",
+      "package",
+      "help"
+    ],
+    [
+      "/system/bin/cmd",
+      "package",
+      "list",
+      "packages",
+      "-U",
+      "--show-versioncode",
+      "--match-libraries",
+      "--user",
+      "0"
+    ],
+    [
+      "/system/bin/cmd",
+      "package",
+      "query-activities",
+      "--components",
+      "--user",
+      "0",
+      "-a",
+      "android.intent.action.MAIN",
+      "-c",
+      "android.intent.category.LAUNCHER"
+    ],
+    [
+      "/system/bin/cmd",
+      "package",
+      "list",
+      "packages",
+      "-U",
+      "--show-versioncode",
+      "--match-libraries",
+      "--user",
+      "0"
+    ],
+    [
+      "/system/bin/cmd",
+      "package",
+      "query-activities",
+      "--components",
+      "--user",
+      "0",
+      "-a",
+      "android.intent.action.MAIN",
+      "-c",
+      "android.intent.category.LAUNCHER"
+    ]
+  ],
+  "new_scope_or_UI_authority_granted": false,
+  "new_transport_functions_and_classes_byte_identical_to_r3": true,
+  "no_new_child_test_executed": true,
+  "nonzero_and_timeout_error_policy_unchanged": true,
+  "old_r3_commands_removed": [
+    [
+      "/system/bin/cmd",
+      "appops",
+      "help"
+    ],
+    [
+      "/system/bin/cmd",
+      "role",
+      "help"
+    ]
+  ],
+  "outer_gate_requires_exact5_PM_commands_and3_native_reads": true,
+  "packet": {
+    "bytes": 95091,
+    "path": "successor_audit_requests/current_services_r4/process-request.review-only.json",
+    "sha256": "0d99c817131c6243ba4be0212e923df6e4e2951466dbba67827356e6560c4e1b"
+  },
+  "runtime_executed": false,
+  "schema": "pocket4-pm-only-r4-static-scope-review-v1",
+  "source": {
+    "bytes": 39573,
+    "path": "successor_audit_requests/current_services_r4/observe_current_services.py",
+    "sha256": "4fda5cdf8fda65155c4187a1e8e5381aba59011329c824b98ad2e0c0b8aa8f0e"
+  },
+  "unchanged_worker_definitions": [
+    "need",
+    "sha",
+    "canonical",
+    "parse",
+    "read_root_pin",
+    "load_source",
+    "bounded_file",
+    "verify_shared_helper",
+    "same_epoch_identity",
+    "selected_environment",
+    "main_classpaths",
+    "safe_error",
+    "held_bounded_child",
+    "write_empty_raw_stream",
+    "remember_child_streams",
+    "validate_request",
+    "parse_packages",
+    "component",
+    "parse_resolver",
+    "require_help_for_closed_queries",
+    "compare_catalogs",
+    "main"
+  ],
+  "worker_except_and_finally_unchanged": true,
+  "wrapper_functions_unchanged_except_exact_worker_gate": true
+}
