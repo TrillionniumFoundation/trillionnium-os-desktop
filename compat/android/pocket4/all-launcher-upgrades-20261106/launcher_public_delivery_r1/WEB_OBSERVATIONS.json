@@ -1,0 +1,196 @@
+{
+  "schema": "pocket4-public-delivery-web-observations-v1",
+  "observation_date_utc": "2026-11-06",
+  "semantics": "Factual fields transcribed from public search/open/click tool results; not raw HTTP bodies, not downloaded APK evidence, and not publisher endorsement of third-party distribution.",
+  "target_or_remote_process_calls": 0,
+  "APK_downloads": 0,
+  "installs": 0,
+  "sources": [
+    {
+      "id": "ihg_publisher",
+      "authority": "publisher",
+      "url": "https://www.ihg.com.cn/content/cn/zh/support/mobile",
+      "refs": [
+        "turn162view2",
+        "turn173view0"
+      ],
+      "facts": [
+        "Official IHG Android guidance links to Google Play.",
+        "No direct same-package APK artifact was obtained."
+      ]
+    },
+    {
+      "id": "ihg_play",
+      "authority": "official_store",
+      "url": "https://play.google.com/store/apps/details?id=com.ihg.apps.android",
+      "refs": [
+        "turn170view1",
+        "turn173view1"
+      ],
+      "facts": [
+        "Exact com.ihg.apps.android listing.",
+        "Rendered page update date November 3, 2026.",
+        "Fresh rendered page did not expose versionName or versionCode."
+      ]
+    },
+    {
+      "id": "ihg_mirror_release",
+      "authority": "public_third_party_distribution",
+      "url": "https://www.apkmirror.com/apk/ihg-mobile/ihg-hotel-deals-rewards/ihg-one-rewards-book-hotels-5-110-0-release/",
+      "refs": [
+        "turn170view0"
+      ],
+      "facts": [
+        "Lists 5.110.0; page label is not proof of publisher-global latest usable release."
+      ]
+    },
+    {
+      "id": "ihg_mirror_variant",
+      "authority": "public_third_party_distribution",
+      "url": "https://www.apkmirror.com/apk/ihg-mobile/ihg-hotel-deals-rewards/ihg-one-rewards-book-hotels-5-110-0-release/ihg-one-rewards-book-hotels-5-110-0-android-apk-download/",
+      "refs": [
+        "turn171view0",
+        "turn173view2"
+      ],
+      "claims": {
+        "package": "com.ihg.apps.android",
+        "version_name": "5.110.0",
+        "version_code": 50023496,
+        "bytes": 47668450,
+        "sha256": "f6be54a948d96c34579f280b75d3e139bc3d430847173e14197e208331351f2f",
+        "certificate_sha256": "1448dc9480a27e52b06c886b3f6386f2b122b115b1df1f156b81b9aebcc73163",
+        "artifact_format": "single APK",
+        "min_sdk": 26,
+        "target_sdk": 36,
+        "native_abis": [
+          "arm64-v8a",
+          "armeabi",
+          "armeabi-v7a",
+          "x86",
+          "x86_64"
+        ],
+        "density": "nodpi",
+        "uploader": "HoldTheDoor",
+        "uploaded_utc": "2026-10-28T14:43:00Z"
+      },
+      "all_claims_unverified_until_actual_complete_APK_and_normal_verification": true
+    },
+    {
+      "id": "ihg_mirror_intermediate",
+      "authority": "public_third_party_distribution",
+      "url": "https://www.apkmirror.com/apk/ihg-mobile/ihg-hotel-deals-rewards/ihg-one-rewards-book-hotels-5-110-0-release/ihg-one-rewards-book-hotels-5-110-0-android-apk-download/download/?key=b0b3cbac8065608f28b9e64014b145770202a52a",
+      "refs": [
+        "turn172view0"
+      ],
+      "facts": [
+        "Ordinary published Download APK link opened an HTML download-start page.",
+        "The here anchor was not followed; final artifact URL is unknown."
+      ],
+      "prior_key_must_not_be_replayed": true
+    },
+    {
+      "id": "amazon_mirror_secondary",
+      "authority": "public_third_party_distribution",
+      "url": "https://www.apkmirror.com/apk/amazon-mobile-llc/amazon-shopping/amazon-shopping-32-20-0-100-release/amazon-shopping-32-20-0-100-android-apk-download/",
+      "refs": [
+        "turn168view0",
+        "turn169view0"
+      ],
+      "facts": [
+        "Page described 32.20.0.100/code1243260206 as an APKM base-plus-three-split bundle, not a monolithic APK.",
+        "ARM64 and 480/640dpi configurations were listed.",
+        "Ordinary download click returned an expired/invalid nonce page; no file fetched and no replay attempted.",
+        "Fresh official-version association remains incomplete."
+      ]
+    },
+    {
+      "id": "amazon_china_package_difference",
+      "authority": "publisher_and_official_store",
+      "urls": [
+        "https://www.amazon.cn/warmshop888/",
+        "https://app.mi.com/details?id=cn.amazon.mShop.android"
+      ],
+      "refs": [
+        "turn162view0",
+        "turn167view0"
+      ],
+      "facts": [
+        "Chinese-store package cn.amazon.mShop.android differs from installed com.amazon.mShop.android.shopping.",
+        "The publisher China APK link was not fetched or parsed; it is not a qualified same-package update."
+      ]
+    },
+    {
+      "id": "hilton_china_package_difference",
+      "authority": "publisher_and_official_store",
+      "urls": [
+        "https://www.hilton.com.cn/app/",
+        "https://app.mi.com/details?id=cn.hilton.android.hhonors",
+        "https://www.prnasia.com/story/258107-1.shtml"
+      ],
+      "refs": [
+        "turn162view1",
+        "turn167view1",
+        "turn167view2"
+      ],
+      "facts": [
+        "China app package cn.hilton.android.hhonors differs from installed com.hilton.android.hhonors; it cannot be substituted as an update."
+      ]
+    },
+    {
+      "id": "railway_publisher",
+      "authority": "publisher",
+      "urls": [
+        "https://kyfw.12306.cn/otn/appDownload/init",
+        "https://dynamic.12306.cn/otn/appDownload/androiddownload",
+        "https://mobile.12306.cn/otsmobile/h5/otsbussiness/downloadapp/downloadapp.html"
+      ],
+      "refs": [
+        "turn158view0",
+        "turn159view0"
+      ],
+      "facts": [
+        "Ordinary published Android navigation reached a publisher mobile HTML page.",
+        "No fresh complete APK URL/version was obtained by this research.",
+        "Existing incomplete Tencent transfer and its TLS failures are retained; the same failed endpoint was not retried."
+      ]
+    },
+    {
+      "id": "microg_latest",
+      "authority": "upstream_project_release",
+      "url": "https://github.com/microg/GmsCore/releases/latest",
+      "refs": [
+        "turn157view1"
+      ],
+      "facts": [
+        "Latest release navigation resolved to v0.3.17.252432, equal to the installed release reference.",
+        "No new download or reinstall."
+      ]
+    },
+    {
+      "id": "fcitx_latest",
+      "authority": "upstream_project_release",
+      "url": "https://github.com/fcitx5-android/fcitx5-android/releases/latest",
+      "refs": [
+        "turn157view2"
+      ],
+      "facts": [
+        "Latest release navigation resolved to 0.1.3.",
+        "Installed x86_64 code114 already matches its prior official asset digest; an ARM64 code112 asset is not an upgrade.",
+        "No ABI swap or input-method reinstall."
+      ]
+    },
+    {
+      "id": "textnow_eligibility",
+      "authority": "publisher_support",
+      "url": "https://help.textnow.com/hc/en-us/articles/360042529194-Is-TextNow-available-in-my-country/",
+      "refs": [
+        "turn165search2"
+      ],
+      "facts": [
+        "Publisher support describes North American availability.",
+        "Actual target account/device/region eligibility was not observed and remains unknown.",
+        "No location/proxy/store-eligibility workaround proposed."
+      ]
+    }
+  ]
+}

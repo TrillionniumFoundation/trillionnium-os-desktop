@@ -1,0 +1,276 @@
+{
+  "Android_calls": 0,
+  "reports": {
+    "check_current_baseline.py": {
+      "Android_commands": 0,
+      "UI_actions": 0,
+      "all_passed": true,
+      "cases": [
+        {
+          "name": "exact_new_current_scope",
+          "passed": true
+        },
+        {
+          "name": "missing_main_baseline_schema",
+          "passed": true
+        },
+        {
+          "name": "missing_main_baseline_sha256",
+          "passed": true
+        },
+        {
+          "name": "missing_main_baseline_qualification_sha256",
+          "passed": true
+        },
+        {
+          "name": "old_epoch",
+          "passed": true
+        },
+        {
+          "name": "old_baseline_schema",
+          "passed": true
+        },
+        {
+          "name": "wrong_baseline_digest",
+          "passed": true
+        },
+        {
+          "name": "wrong_qualification_digest",
+          "passed": true
+        },
+        {
+          "name": "extra_scope_field",
+          "passed": true
+        },
+        {
+          "name": "wrong_target_uid",
+          "passed": true
+        },
+        {
+          "name": "foreign_package",
+          "passed": true
+        },
+        {
+          "name": "wrong_display",
+          "passed": true
+        },
+        {
+          "name": "missing_runtime_epoch_sha256",
+          "passed": true
+        },
+        {
+          "name": "wrong_runtime_epoch_sha256",
+          "passed": true
+        },
+        {
+          "name": "missing_app_scope_sha256",
+          "passed": true
+        },
+        {
+          "name": "wrong_app_scope_sha256",
+          "passed": true
+        }
+      ],
+      "count": 16,
+      "helper_installed_uid": null,
+      "main_baseline_qualification_sha256": "4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6",
+      "main_baseline_schema": "pocket4-successor-runtime-baseline-v1",
+      "main_baseline_sha256": "7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8",
+      "main_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+      "production_contract_sha256": "496def43dcb48f9694fc4bebe459bc382ad934613184a6c9c45567433e6b2607",
+      "schema": "pocket4-successor-app-scope-controls-v1"
+    },
+    "check_idle_contract.py": {
+      "all_passed": true,
+      "android_calls": 0,
+      "cases": [
+        {
+          "name": "actual_parser_accepts_complete_inspection_after_idle",
+          "passed": true
+        },
+        {
+          "name": "actual_parser_accepts_already_quiet_immediate_return",
+          "passed": true
+        },
+        {
+          "name": "state_success_keeps_no_automation_idle_or_capture",
+          "passed": true
+        },
+        {
+          "name": "missing_idle_record_rejected",
+          "passed": true
+        },
+        {
+          "name": "empty_idle_cannot_qualify_inspect",
+          "passed": true
+        },
+        {
+          "name": "extra_idle_key_rejected",
+          "passed": true
+        },
+        {
+          "name": "non_boolean_qualified_rejected",
+          "passed": true
+        },
+        {
+          "name": "call_count_cannot_exceed_one",
+          "passed": true
+        },
+        {
+          "name": "quiet_budget_constant_cannot_change",
+          "passed": true
+        },
+        {
+          "name": "global_cap_cannot_change",
+          "passed": true
+        },
+        {
+          "name": "original_operation_budget_cannot_change",
+          "passed": true
+        },
+        {
+          "name": "effective_global_must_equal_remaining_budget",
+          "passed": true
+        },
+        {
+          "name": "operation_start_must_bind_same_helper",
+          "passed": true
+        },
+        {
+          "name": "boolean_time_rejected",
+          "passed": true
+        },
+        {
+          "name": "content_readiness_claim_rejected",
+          "passed": true
+        },
+        {
+          "name": "future_stability_claim_rejected",
+          "passed": true
+        },
+        {
+          "name": "event_quiet_scope_must_be_explicit",
+          "passed": true
+        },
+        {
+          "name": "api_ack_without_qualification_rejected",
+          "passed": true
+        },
+        {
+          "name": "no_api_return_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "gate_error_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "cause_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "secondary_clock_error_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "actual_wait_duration_must_match_clocks",
+          "passed": true
+        },
+        {
+          "name": "returned_api_after_global_budget_rejected",
+          "passed": true
+        },
+        {
+          "name": "idle_observation_cannot_outlive_helper_result",
+          "passed": true
+        },
+        {
+          "name": "tree_capture_cannot_precede_idle_end",
+          "passed": true
+        },
+        {
+          "name": "event_idle_cannot_qualify_partial_tree",
+          "passed": true
+        },
+        {
+          "name": "later_null_child_retains_original_failure_and_idle_only_metadata",
+          "passed": true
+        },
+        {
+          "name": "timeout_remains_failed_without_capture_or_successful_finish",
+          "passed": true
+        },
+        {
+          "name": "failure_before_gate_can_only_have_empty_idle_metadata",
+          "passed": true
+        },
+        {
+          "name": "all_noninspect_operations_require_empty_idle_metadata",
+          "passed": true
+        },
+        {
+          "name": "old_r7_uid_rejected_even_when_wire_uid_matches_argument",
+          "passed": true
+        }
+      ],
+      "count": 32,
+      "input_actions": 0,
+      "production_contract_sha256": "496def43dcb48f9694fc4bebe459bc382ad934613184a6c9c45567433e6b2607",
+      "schema": 1,
+      "tree_captures": 0
+    },
+    "check_search_contract.py": {
+      "all_passed": true,
+      "android_calls": 0,
+      "cases": [
+        {
+          "name": "complete_search_wire_with_three_equal_trees",
+          "passed": true
+        },
+        {
+          "name": "general_and_player_operations_still_closed",
+          "passed": true
+        },
+        {
+          "name": "different_target_tree_rejected",
+          "passed": true
+        },
+        {
+          "name": "different_final_window_rejected",
+          "passed": true
+        },
+        {
+          "name": "different_connection_id_rejected",
+          "passed": true
+        },
+        {
+          "name": "changed_observed_target_hash_rejected",
+          "passed": true
+        },
+        {
+          "name": "selection_age_1001_rejected",
+          "passed": true
+        },
+        {
+          "name": "missing_second_refresh_rejected",
+          "passed": true
+        },
+        {
+          "name": "failure_keeps_complete_private_trees_and_never_passes",
+          "passed": true
+        },
+        {
+          "name": "failed_tree_hash_cannot_be_claimed_complete",
+          "passed": true
+        }
+      ],
+      "count": 10,
+      "input_actions": 0,
+      "production_contract_sha256": "496def43dcb48f9694fc4bebe459bc382ad934613184a6c9c45567433e6b2607",
+      "schema": 1,
+      "tree_captures": 0
+    }
+  },
+  "runtime_or_business_qualification": false,
+  "schema": "pocket4-new-search-local-python-controls-v1"
+}

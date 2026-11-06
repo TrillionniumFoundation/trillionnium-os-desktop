@@ -1,0 +1,37 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "#!/usr/bin/env python3\n\"\"\"Publish only this new fixed helper source, then call the unchanged stager.\n\nNo build, Main read, Android command, installation, permission, or UI action.\nThe old helper, flow, source, and failure records are never opened or modified.\n\"\"\"\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport stat\nimport sys\nimport types\n\nsys.dont_write_bytecode = True\nROOT = Path('/home/alex/work/pocket4-beike-fixed-search-source-20261106-362bdb6f45eeb344b3584aa998cb03e1')\nOUTPUT = Path('/home/alex/work/pocket4-successor-qa-build-source-362bdb6f45eeb344b3584aa998cb03e1')\nMANIFEST_SHA = '0bd7c10043f46063fdbf46e19a48e40430c02f3373d697ad7a44af8ad64b8489'\nSTAGER_SHA = '745e0f15f8619c2b00a7d54c890837de826eb04e192bcbf273eb3687b6baeac6'\nPAYLOAD_BYTES = 303060\nPAYLOAD_SHA = '56f993aa2cc27a31d6890cce5af089b04a802275a5bc3fc0be5ec49ea438d024'\n\n\ndef need(value, code):\n    if not value:\n        raise RuntimeError(code)\n\n\ndef sha(raw):\n    return hashlib.sha256(raw).hexdigest()\n\n\ndef canonical(value):\n    return json.dumps(value, ensure_ascii=True, sort_keys=True, separators=(',', ':'), allow_nan=False).encode('ascii')\n\n\ndef validated_payload(raw):\n    need(len(raw) == PAYLOAD_BYTES <= 524288 and sha(raw) == PAYLOAD_SHA, 'EXACT_BOUNDED_SOURCE_PAYLOAD')\n    value = json.loads(raw)\n    need(type(value) is dict and set(value) == {'schema', 'manifest_text', 'files', 'stage_source'} and\n         value['schema'] == 'pocket4-fixed-search-helper-source-payload-v1' and canonical(value) + b'\\n' == raw,\n         'EXACT_CANONICAL_SOURCE_PAYLOAD')\n    manifest_raw = value['manifest_text'].encode('utf-8')\n    need(len(manifest_raw) == 3259 and sha(manifest_raw) == MANIFEST_SHA, 'EXACT_FINAL_HELPER_MANIFEST')\n    manifest = json.loads(manifest_raw)\n    need(manifest['helper_package'] == 'org.droidloom.qa.successor.p8f89f253350ba2fa.r2' and\n         manifest['allowed_operations'] == ['state', 'inspect', 'search_click'] and\n         manifest['UI_admitted'] is False and manifest['build_performed'] is False and\n         manifest['old_helper_qualification_inherited'] is False, 'NEW_UNBUILT_FIXED_HELPER_ONLY')\n    files = value['files']\n    need(type(files) is dict and set(files) == set(manifest['files']) and len(files) == 15,\n         'EXACT_FIFTEEN_SOURCE_MEMBERS')\n    bodies = {}\n    for name, text in files.items():\n        rel = Path(name)\n        need(type(text) is str and not rel.is_absolute() and str(rel) == name and\n             all(part not in ('', '.', '..') for part in name.split('/')), 'CANONICAL_SOURCE_MEMBER')\n        body = text.encode('utf-8')\n        need(manifest['files'][name] == {'bytes': len(body), 'sha256': sha(body)}, 'EXACT_SOURCE_MEMBER_PIN')\n        bodies[name] = body\n    stage_raw = value['stage_source'].encode('utf-8')\n    need(len(stage_raw) == 5608 and sha(stage_raw) == STAGER_SHA, 'ORIGINAL_STAGER_BYTES')\n    return manifest_raw, bodies, stage_raw\n\n\ndef write_new(path, raw):\n    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC, 0o400)\n    try:\n        remaining = memoryview(raw)\n        while remaining:\n            count = os.write(fd, remaining)\n            need(count > 0, 'SOURCE_WRITE_PROGRESS')\n            remaining = remaining[count:]\n        os.fsync(fd)\n        meta = os.fstat(fd)\n        need(stat.S_ISREG(meta.st_mode) and meta.st_nlink == 1 and meta.st_uid == 0 and\n             meta.st_size == len(raw) and stat.S_IMODE(meta.st_mode) == 0o400, 'NEW_PRIVATE_SOURCE_IDENTITY')\n    finally:\n        os.close(fd)\n\n\ndef main():\n    need(os.getuid() == os.geteuid() == 0 and sys.argv == ['-c'], 'EXACT_ROOT_SOURCE_PUBLICATION_ENTRY')\n    os.umask(0o077)\n    result = {'schema': 'pocket4-fixed-search-helper-host-source-publication-v1', 'ok': False,\n              'Android_commands': 0, 'Main_reads': 0, 'build_performed': False, 'installs': 0,\n              'UI_admitted': False, 'existing_files_modified': False, 'production_ready': False,\n              'automatic_retry': False, 'errors': []}\n    try:\n        raw = sys.stdin.buffer.read(524289)\n        manifest_raw, files, stage_raw = validated_payload(raw)\n        need(ROOT.parent.resolve() == ROOT.parent and OUTPUT.parent == ROOT.parent, 'CANONICAL_PUBLICATION_PARENT')\n        ROOT.mkdir(mode=0o700)\n        source = ROOT / 'helper'; source.mkdir(mode=0o700)\n        directories = {ROOT, source}\n        for name, body in sorted(files.items()):\n            path = source / name\n            missing, parent = [], path.parent\n            while parent != source:\n                missing.append(parent); parent = parent.parent\n            for folder in reversed(missing):\n                if folder not in directories:\n                    folder.mkdir(mode=0o700); directories.add(folder)\n            write_new(path, body)\n        write_new(source / 'SOURCE_PINS.json', manifest_raw)\n        write_new(ROOT / 'stage_helper_source.py', stage_raw)\n        write_new(ROOT / 'source-payload.original.json', raw)\n        for path in sorted(directories, key=lambda p: len(p.parts), reverse=True):\n            fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)\n            try:\n                os.fsync(fd)\n            finally:\n                os.close(fd)\n        stage = types.ModuleType('unchanged_reviewed_helper_source_stager')\n        stage.__file__ = str(ROOT / 'stage_helper_source.py')\n        exec(compile(stage_raw, stage.__file__, 'exec'), stage.__dict__)\n        receipt = stage.stage(source, MANIFEST_SHA, OUTPUT)\n        result.update(ok=True, original_stager_receipt=receipt, source_publication=str(ROOT),\n                      manifest_sha256=MANIFEST_SHA, source_payload_bytes=len(raw), source_payload_sha256=sha(raw))\n        write_new(ROOT / 'publication-result.json', canonical(result) + b'\\n')\n    except BaseException as error:\n        result['ok'] = False\n        result['errors'].append({'type': type(error).__name__, 'code': str(error)[:256]})\n    print(canonical(result).decode('ascii'), flush=True)\n    return 0 if result['ok'] else 1\n\n\nif __name__ == '__main__':\n    raise SystemExit(main())\n"
+    ],
+    "created_unix_ms": 1794008217736,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b338f888-fc05-812f",
+    "idempotency_key": "pocket4-beike-fixed-search-helper-source-stage-r2-20261106-362bdb6f45eeb344b3584aa998cb03e1",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b338f888-fc05-812f",
+    "request_digest": "857f6d79db36a87cd56a25b510b260963e1f376c9d5289fd3e2cfd32689d8728",
+    "request_fingerprint": 9619527699222931580,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b338f888-fc05-812f"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b338f888-fc05-812f"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

@@ -1,0 +1,110 @@
+{
+  "Android_calls": 0,
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx128m",
+        "-m",
+        "jdk.compiler/com.sun.tools.javac.Main",
+        "-proc:none",
+        "-d",
+        "successor_qa/search_click_same_process_r1/candidate-r1/local-java21-controls-02/classes",
+        "successor_qa/search_click_same_process_r1/candidate-r1/helper/src/org/droidloom/qa/successor/p8f89f253350ba2fa/r2/PlayerButtonTransaction.java",
+        "successor_qa/search_click_same_process_r1/candidate-r1/helper/tests/SearchTransactionChecks.java"
+      ],
+      "returncode": 0,
+      "seconds": 0.4580120539976633,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx128m",
+        "-cp",
+        "successor_qa/search_click_same_process_r1/candidate-r1/local-java21-controls-02/classes",
+        "org.droidloom.qa.successor.p8f89f253350ba2fa.r2.SearchTransactionChecks"
+      ],
+      "returncode": 0,
+      "seconds": 0.030907652999303536,
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 761,
+      "stdout_sha256": "ccf0e181e6741165a19e43ef3d6820a09f7b865e2a929ffc59fb81039acb9e89"
+    }
+  ],
+  "compiled_classes_not_for_Git": true,
+  "explicit_scope": "LOCAL_JAVA21_ONLY_NOT_PRODUCTION_JAVA8_OR_ANDROID",
+  "local_controls_passed": true,
+  "local_java_path": "/usr/lib/jvm/java-21-openjdk-amd64/bin/java",
+  "local_java_sha256": "1a7e0b17c39003c75b457d686775ccb032e56fa9c8afe3c492d8eb3715e8951a",
+  "prior_local_release8_failure_preserved": true,
+  "production_builder_release8_unchanged": true,
+  "report": {
+    "all_passed": true,
+    "android_calls": 0,
+    "cases": [
+      {
+        "name": "three_equal_captures_one_click_all_closed",
+        "passed": true
+      },
+      {
+        "name": "target_tree_change_no_click",
+        "passed": true
+      },
+      {
+        "name": "target_window_change_no_click",
+        "passed": true
+      },
+      {
+        "name": "target_connection_change_no_click",
+        "passed": true
+      },
+      {
+        "name": "refresh_change_no_click",
+        "passed": true
+      },
+      {
+        "name": "final_tree_change_no_click",
+        "passed": true
+      },
+      {
+        "name": "final_window_change_no_click",
+        "passed": true
+      },
+      {
+        "name": "final_connection_change_no_click",
+        "passed": true
+      },
+      {
+        "name": "age_1001_no_click",
+        "passed": true
+      },
+      {
+        "name": "final_close_failure_no_click",
+        "passed": true
+      },
+      {
+        "name": "ack_false_single_attempt_no_retry",
+        "passed": true
+      },
+      {
+        "name": "selection_failure_no_click",
+        "passed": true
+      }
+    ],
+    "count": 12,
+    "input_actions": 0,
+    "schema": 1,
+    "tree_captures": 0
+  },
+  "runtime_or_business_qualification": false,
+  "schema": "pocket4-local-search-transaction-java21-controls-v1"
+}

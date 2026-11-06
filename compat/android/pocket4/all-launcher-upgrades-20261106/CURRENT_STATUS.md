@@ -1,4 +1,4 @@
-# Pocket4 全 Launcher App 修复：检查点 13（进行中）
+# Pocket4 全 Launcher App 修复：检查点 14（进行中）
 
 工作尚未完成。范围为实机全部 Launcher App，原定八个只是其中子集。新的完整实测确认 46 个 Launcher App、206 个非 APEX APK 包；新增 `com.example.ndk_tests/com.example.ndk_tests.NdkTestsActivity`。原 45 包清单保留为历史快照，不冒充当前全集。用户要求完成后清掉旧 Android/framework、旧 App 版本和相关产物，仅保留最新可工作版本、源码、配置与复现清单。真实可用验收仍是清理前提：目前 production ready 为 0 App，删除旧产物为 0 字节。
 
@@ -6,7 +6,13 @@
 
 当前整合清单位于 `current_launcher_inventory_r3/`。根进程已阅读新证据关联实现，并以只读方式实际重跑：29 项原文输入、46 行 / 86 个 Launcher APK、48 包 / 88 APK 保护范围、12 次升级、3 份有效权限快照、0 个生产验收和 0 字节清理联合断言通过，生成内容与冻结文件逐字节一致。`INVENTORY.json` 为 1,703,185 B / `8932d7b7f18218717de09a2b05860f29d0f3d80f646127d89b6959bd60cc1ea9`。46 项成员关系来自最近完整 native46/PM206 观察；猪八戒升级后没有重新全局枚举。
 
-最新单次搜索失败的独立 no-action 阶段 A 已在新进程实际完成：`1a1b33331ac-fc05-8102` durable exit0，完整 stdout15,528 B / `099a24caac0527f24a97417419cea432b57663cde227d7c844204b2896b08561`。它核实101份历史原件及原拒绝在点击分发前发生，再以原 Session 完成两轮 helper/task/full-foreground 检查，6条记录命令、8个传输、50份当前运行时原件通过；child2531797正常0退出、pidfd关闭、父FD身份恢复。新 candidate15,151 B / `80e722995f0c4304fa6b2d75d03cdb0c32a3fc382d31c4bb0c4781081553bde6` 仅是非授权候选，阶段B尚未实际发布。旧失败继续为FAILED/UNKNOWN；没有伪造后置条件，没有重放点击。新同进程搜索 helper 源已准备，但尚未进行宿主构建、安装或UI操作。
+最新单次搜索失败的独立 no-action 阶段 A 已在新进程实际完成：`1a1b33331ac-fc05-8102` durable exit0，完整 stdout15,528 B / `099a24caac0527f24a97417419cea432b57663cde227d7c844204b2896b08561`。它核实101份历史原件及原拒绝在点击分发前发生，再以原 Session 完成两轮 helper/task/full-foreground 检查，6条记录命令、8个传输、50份当前运行时原件通过；child2531797正常0退出、pidfd关闭、父FD身份恢复。candidate15,151 B / `80e722995f0c4304fa6b2d75d03cdb0c32a3fc382d31c4bb0c4781081553bde6` 保留阶段A本身不授权的语义，之后的独立阶段B已实际完成。
+
+新 no-action 阶段 B `1a1b33fbae4-fc05-8172` durable exit0，完整 stdout19,805 B / `3a046f40503768c5e0411daee65c5b233e6245b32c0098c8fd4493a8915a9cbf`，terminal733 B / `29f4241e351442586e8080fa0d252c883075df864934add9657216cecde72ece`。它再次完成两轮原 Session 运行时检查，211份关联原件闭合，以独立 `owned-qa-no-action-commit` 生产器发布29,722 B / `306475d1ac5f9d03626c325653e9c158b3c6b06dc99baccabcc45808d53e1da4` 的 reconciliation。typed proof19,528 B / `120b57ddd5dcf5d5fd83b04452af4d04a05ff8a53a0cad2db297e9bfec8285ea`；owned child2559108正常0、pidfd关闭、父FD恢复，与完整durable terminal经根进程联合核验。原 FAILED/UNKNOWN 和原 consumer 保持，observation_step/postcondition均为null，不伪造业务后置条件、不重放点击。该结果支持重新基于现行身份和新鲜界面检查决策，不证明贝壳业务成功。
+
+固定同进程搜索 helper r2 已完成实际源发布和普通 UID1000 宿主构建，尚未安装或执行界面动作。source-stage `1a1b338f888-fc05-812f` durable exit0，15份源码 readback匹配；build `1a1b339c056-fc05-8136` durable exit0，15条正常工具命令全部完整退出0，原 `qualified_build` 对完整39,246 B / `0d6a4e19388358032c9ba4ad4f034e714470d7d194c36599226bd0ba6745330f` 回执实际核验通过。APK41,104 B / `968c23aac929130a76dfa49d796fbe5264c073f805b7f048b68737e427d96372`，包名 `org.droidloom.qa.successor.p8f89f253350ba2fa.r2`，signer `f5eb5f24311fb19187b37219db272837d2d68632d9e8b855a89b2b6518904143`。testOnly=true、debuggable=false、无声明权限；仅state/inspect/fixed search_click，不增加ADB。新动作在同一进程/连接中执行三次完整新鲜树一致性检查后才允许一次指定搜索点击，旧helper及完整树校验保持。共存安装正在绑定实际build与阶段B，设备分配的新UID尚未知。
+
+IHG独立公共分发页面观察 `1a1b3437276-fc05-818f` durable failed1。第一条默认urllib请求返回HTTP403、`Cf-Mitigated: challenge`，第二页未请求。完整stdout4,757 B / `acf3430ad2b4c759e54afe06a17c0b3ff71da0cbd945fcf13e4972a16db63260` 与terminal728 B / `9ba6041290ae4b9479fa5edc16040f9aa32849af8115fcd143da719ad6e3eff0` 已核验，原FD身份恢复。0 APK下载、0 Main/Android/UI/安装/权限修改；该交付路径停止，不改身份、挑战、代理、DNS、TLS或端点重试。网页5.110.0/code50023496与证书元数据仍只是候选信息，未取得真实可安装的新包。
 
 独立发现任务 `1a1b307f521-fc05-807a` 已 durable exit 0，完整 stdout 31,226 B / `474893612abaf6192653b31d16adb808a2d46e92cf6e1683760e532684d5fe5d`，原始 artifact 112,546 B / `69482778466e03dceff2defc85fb8f68880c360a3f112e129561a8fd5e6e5400`。两轮完整 PM/resolver 与 native 目录一致，仅新增上述 NDK 包，旧 47 包保护身份全部不变。新增包实测 UID 10162、code 0、单 APK 1,397,258 B / `b3bf438dedbcdd5f3ac871733a273b3cece446db6be308df73f95b08cb46d164`。PM 的 versionName 字面值为 null，来源仍未知，未据此声称 APK manifest 或正常验签已通过。六条 Android、四条 native 查询正常 0；16,571 个观察 FD 和 20 个 lease 全闭、进程 FD 5→5、owned child 正常 0、pidfd 收口。独立 scope48 任务随后实际通过，旧 scope 和 STOP 保留；新增 APK 的正常验签也已完成，见下文。
 
@@ -184,3 +190,4 @@ microG 完整私有回读 `1a1b2ea0995-fc05-8030` durable exit 0，压缩 stdout
 - 检查点 10 已提交并推送：`c178b683e62158585788b871bd50a12b548d93a2`，tree `03e9848b474f579866e260c0c6156e661c2a15bd`。这份提交保留当时42/82联合通过及b13正在执行的真实快照；后续结果由新的检查点接续。
 - 检查点 11 已提交并推送：`366f94b69b65aa122b10e80ad5e2e8097a75f294`，tree `4cedec3ccd1f57fa23a3de9e26827f9b51489540`。它冻结 45/85/255 完整关联、microG 独立采集更正、贝壳阶段 A 和猪八戒 S43 的实际结果；本检查点继续保留所有原失败与历史快照。
 - 检查点 12 已提交并推送：`c79a17933966b5c61c76adfb0b4995f2ce5b7c25`，tree `1bd49d4168c0232ffad9f48d4c17e6c227a81b10`。它冻结 microG 有效权限解释、原 b03 因 native46 停止、贝壳阶段 B 与 fresh inspect/reader、猪八戒 source-stage 和万豪 S44 HTTP 403；之后的新发现与搜索失败由检查点 13 接续。
+- 检查点 13 已提交并推送：`fdff6f219713ab53696059b9d55599c5bcc504c5`，tree `6a96da0e562d21a3457b73dbae94d165dcead288`。它冻结完整native46发现、NDK正常签名/manifest审计、ZBJ同签名升级和实际48包身份原文、r3清单、旧产物空间观察、原15GiB RAM不足及最新搜索失败的no-action阶段A。阶段B、新helper实际构建和IHG403由检查点14接续；没有删除旧产物。

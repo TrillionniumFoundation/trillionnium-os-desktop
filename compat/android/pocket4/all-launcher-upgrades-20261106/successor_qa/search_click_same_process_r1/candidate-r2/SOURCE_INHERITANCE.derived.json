@@ -1,0 +1,169 @@
+{
+  "Android_calls": 0,
+  "UI_actions": 0,
+  "all_other_Java_bytes_except_declared_policy_dispatch_and_added_fragment_unchanged": true,
+  "base_manifest": {
+    "bytes": 2431,
+    "path": "successor_qa/reconstructed/source-generation-r2/helper/SOURCE_PINS.json",
+    "sha256": "dfb9b6a483f1069847433152b9b2e8b0f1b2cdd571a1dbde3068fc9393ad62c4"
+  },
+  "candidate_manifest": {
+    "bytes": 3259,
+    "path": "successor_qa/search_click_same_process_r1/candidate-r2/helper/SOURCE_PINS.json",
+    "sha256": "0bd7c10043f46063fdbf46e19a48e40430c02f3373d697ad7a44af8ad64b8489"
+  },
+  "host_build": false,
+  "installer_only_non_namespace_change": "Stage takes the fresh validated state_nonce instead of the previously used flow nonce",
+  "namespace_only_files": [
+    "AndroidManifest.xml",
+    "check_current_baseline.py",
+    "check_idle_contract.py",
+    "src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate.java",
+    "src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/PlayerButtonTransaction.java",
+    "src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/TouchTransaction.java",
+    "tests/InspectionIdleGateChecks.java"
+  ],
+  "new_helper_requires_actual_new_build_signer_uid_and_scope": true,
+  "old_act_and_following_bytes_unchanged": true,
+  "original_PlayerButtonTransaction_body_unchanged": true,
+  "production_ready": false,
+  "python_functions": {
+    "build_candidate.py": {
+      "changed_functions": [
+        "source_contract",
+        "build_once"
+      ],
+      "new_functions": [],
+      "removed_functions": [],
+      "unchanged_functions": [
+        "validate_idle_controls",
+        "require",
+        "digest",
+        "metadata",
+        "file_pin",
+        "manifest_contract",
+        "write_new",
+        "run_command",
+        "main"
+      ]
+    },
+    "check_current_baseline.py": {
+      "changed_functions": [],
+      "new_functions": [],
+      "removed_functions": [],
+      "unchanged_functions": [
+        "run_controls"
+      ]
+    },
+    "check_idle_contract.py": {
+      "changed_functions": [],
+      "new_functions": [],
+      "removed_functions": [],
+      "unchanged_functions": [
+        "run"
+      ]
+    },
+    "install_owned_helper.py": {
+      "changed_functions": [
+        "execute"
+      ],
+      "new_functions": [],
+      "removed_functions": [],
+      "unchanged_functions": [
+        "need",
+        "sha",
+        "read",
+        "load",
+        "command",
+        "Stage.__init__",
+        "Stage.stage",
+        "Stage.close",
+        "main"
+      ]
+    },
+    "qa_adapter.py": {
+      "changed_functions": [
+        "validate_plan",
+        "qualified_build",
+        "Session.__init__",
+        "Session.instrument",
+        "Session.sequence",
+        "execute",
+        "main"
+      ],
+      "new_functions": [],
+      "removed_functions": [],
+      "unchanged_functions": [
+        "require",
+        "sha",
+        "bounded",
+        "pinned",
+        "load",
+        "own_source",
+        "Session.installed",
+        "Session.foreground",
+        "Session.task"
+      ]
+    },
+    "qa_contract.py": {
+      "changed_functions": [
+        "validate_request",
+        "parse_completed",
+        "inspection_idle_observation",
+        "failure_diagnostic",
+        "tree_observations"
+      ],
+      "new_functions": [
+        "assess_search_click",
+        "fixed_search_node",
+        "search_failure_diagnostic"
+      ],
+      "removed_functions": [],
+      "unchanged_functions": [
+        "require",
+        "sha",
+        "_json_types",
+        "canonical",
+        "nonce",
+        "digest",
+        "scope",
+        "instrumentation_argv",
+        "state",
+        "decode_wire",
+        "inspect_record",
+        "window_observation",
+        "select_unique_clickable",
+        "select_unique_editable",
+        "reveal_rect",
+        "player_reveal_scope",
+        "same_reveal_frame",
+        "reveal_request_fields",
+        "touch_observation",
+        "assess_reveal",
+        "assess_restoration",
+        "player_frame",
+        "player_button_current",
+        "player_button_request_fields",
+        "assess_player_button"
+      ]
+    },
+    "run_case.py": {
+      "changed_functions": [
+        "validate_case"
+      ],
+      "new_functions": [],
+      "removed_functions": [],
+      "unchanged_functions": [
+        "need",
+        "match_postcondition",
+        "execute",
+        "main"
+      ]
+    }
+  },
+  "schema": "pocket4-fixed-search-final-source-inheritance-v1",
+  "source_closures_verified": [
+    13,
+    15
+  ]
+}

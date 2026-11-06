@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "#!/usr/bin/env python3\n\"\"\"Stage the fixed Stage B owner and already completed Stage A receipts.\"\"\"\nimport base64\nimport errno\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport stat\nimport sys\n\nROOT = Path('/home/alex/work/pocket4-beike-no-action-commit-20261106-r1')\nPINS = {'commit_stage_b_once.py': {'bytes': 77716, 'sha256': 'f36e146221d43359690b2d73969244dce337a9ac36da038d2bae506a2de981b7'}, 'request.json': {'bytes': 2531, 'sha256': 'a2e6b26f52fc0874a5dddac3435df326124558765236e7a1d19d85c3584c6449'}, 'stage-a.stdout.original.jsonl': {'bytes': 15528, 'sha256': '099a24caac0527f24a97417419cea432b57663cde227d7c844204b2896b08561'}, 'stage-a.terminal.original.json': {'bytes': 733, 'sha256': '8ca15446afb6c5a4623632071495abafb57c007459257fc463bac3001529abbe'}}\nENTRY_SHA = 'f36e146221d43359690b2d73969244dce337a9ac36da038d2bae506a2de981b7'\nPAYLOAD_SHA = 'c2eb39af252fa6e4c4b40820484150fe739748493048f7ac9f1c49c719403bd9'\nFIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')\n\n\ndef need(value, code):\n    if not value:\n        raise RuntimeError(code)\n\n\ndef sha(raw):\n    return hashlib.sha256(raw).hexdigest()\n\n\ndef census():\n    found = {}\n    for name in os.listdir('/proc/self/fd'):\n        try:\n            fd = int(name); row = os.fstat(fd)\n            found[name] = (os.readlink('/proc/self/fd/' + name), row.st_dev, row.st_ino,\n                           row.st_mode, row.st_uid, row.st_gid)\n        except OSError as failure:\n            if failure.errno not in (errno.EBADF, errno.ENOENT):\n                raise\n    return found\n\n\ndef main():\n    need(os.getuid() == os.geteuid() == 0, 'ACTUAL_ROOT_HOST_STAGE')\n    need(sys.argv[1:] == ['--payload-sha256', PAYLOAD_SHA], 'EXACT_STAGE_ARGUMENTS')\n    before = census()\n    raw = sys.stdin.buffer.read(524289)\n    need(len(raw) <= 524288 and sha(raw) == PAYLOAD_SHA, 'EXACT_BOUNDED_PAYLOAD')\n    payload = json.loads(raw)\n    need(set(payload) == {'schema', 'root', 'files'} and\n         payload['schema'] == 'pocket4-stage-b-no-action-commit-stage-payload-v1' and\n         payload['root'] == str(ROOT) and set(payload['files']) == set(PINS), 'CLOSED_FIXED_STAGE_PAYLOAD')\n    bodies = {}\n    for name, pin in PINS.items():\n        need('/' not in name and name not in ('', '.', '..'), 'FLAT_FIXED_STAGE_PATH')\n        row = payload['files'][name]\n        need(set(row) == {'bytes', 'sha256', 'base64'} and row['bytes'] == pin['bytes'] and\n             row['sha256'] == pin['sha256'], 'EXTERNAL_MEMBER_PIN')\n        body = base64.b64decode(row['base64'], validate=True)\n        need(len(body) == pin['bytes'] and sha(body) == pin['sha256'], 'EXACT_MEMBER_BYTES')\n        if name.endswith('.py'):\n            compile(body, str(ROOT / name), 'exec')\n        bodies[name] = body\n    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name == 'pocket4-beike-no-action-commit-20261106-r1',\n         'EXACT_NEW_HOST_PRIVATE_ROOT')\n    os.umask(0o077)\n    ROOT.mkdir(mode=0o700)\n    directory = os.open(ROOT, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)\n    try:\n        info = os.fstat(directory)\n        need(info.st_uid == 0 and stat.S_IMODE(info.st_mode) == 0o700, 'ACTUAL_ROOT_PRIVATE_STAGE')\n        for name, body in bodies.items():\n            fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,\n                         0o400, dir_fd=directory)\n            try:\n                offset = 0\n                while offset < len(body):\n                    count = os.write(fd, body[offset:]); need(count > 0, 'MEMBER_WRITE_PROGRESS'); offset += count\n                os.fsync(fd)\n            finally:\n                os.close(fd)\n        os.fsync(directory)\n        need(set(os.listdir(directory)) == set(PINS), 'EXACT_STAGED_FILE_SET')\n        for name, pin in PINS.items():\n            fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory)\n            try:\n                first = os.fstat(fd)\n                need(stat.S_ISREG(first.st_mode) and first.st_uid == 0 and first.st_nlink == 1 and\n                     stat.S_IMODE(first.st_mode) == 0o400 and first.st_size == pin['bytes'], 'STAGED_FILE_METADATA')\n                data = bytearray()\n                while len(data) <= first.st_size:\n                    part = os.read(fd, min(65536, first.st_size + 1 - len(data)))\n                    if not part:\n                        break\n                    data.extend(part)\n                last = os.fstat(fd); current = os.stat(name, dir_fd=directory, follow_symlinks=False)\n                need(bytes(data) == bodies[name] and len(data) == pin['bytes'] and sha(data) == pin['sha256'] and\n                     all(getattr(first, k) == getattr(last, k) == getattr(current, k) for k in FIELDS),\n                     'STAGED_SOURCE_READBACK_CHANGED')\n            finally:\n                os.close(fd)\n    finally:\n        os.close(directory)\n    need(census() == before, 'STAGE_WHOLE_PROCESS_FD_IDENTITIES_CHANGED')\n    print(json.dumps({'schema': 'pocket4-stage-b-no-action-commit-stage-v1', 'root': str(ROOT),\n        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'single-no-action-commit-owner-not-yet-invoked',\n        'Main_commands': 0, 'namespace_entries': 0, 'Main_locks_or_guards': 0,\n        'private_bundle_copied': False, 'reconciliation_published': False}, sort_keys=True), flush=True)\n    entry = ROOT / 'commit_stage_b_once.py'\n    sys.argv = [str(entry), '--publish-once', '--source-sha256', ENTRY_SHA, '--source-bytes', str(PINS['commit_stage_b_once.py']['bytes']), '--request-sha256', 'a2e6b26f52fc0874a5dddac3435df326124558765236e7a1d19d85c3584c6449', '--request-bytes', '2531']\n    exec(compile(bodies['commit_stage_b_once.py'], str(entry), 'exec'),\n         {'__name__': '__main__', '__file__': str(entry)})\n\n\nif __name__ == '__main__':\n    main()\n",
+      "--payload-sha256",
+      "c2eb39af252fa6e4c4b40820484150fe739748493048f7ac9f1c49c719403bd9"
+    ],
+    "created_unix_ms": 1794008660708,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b33fbae4-fc05-8172",
+    "idempotency_key": "pocket4-beike-task878-no-action-commit-stage-b-r1-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b33fbae4-fc05-8172",
+    "request_digest": "464d485dffb57d86103179de42a2e6f48087a7095de6835eefac4d5a379d5ca1",
+    "request_fingerprint": 5065784724420918662,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b33fbae4-fc05-8172"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b33fbae4-fc05-8172"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

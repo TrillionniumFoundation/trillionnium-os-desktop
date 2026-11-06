@@ -1,0 +1,51 @@
+--- actual-partial-stage-b/stage_commit_once.py
++++ no-action-stage-b/stage_commit_once.py
+@@ -9,10 +9,10 @@
+ import stat
+ import sys
+ 
+-ROOT = Path('/home/alex/work/pocket4-beike-partial-case-commit-20261106-r1')
+-PINS = {'commit_stage_b_once.py': {'bytes': 70203, 'sha256': '28673ff6509c51dd818140107acfdd5d5847b7baeee366527735ff164e337a63'}, 'request.json': {'bytes': 2596, 'sha256': 'ca6d11780cc7f6d6a3adf58f5f2bcbe10eefc07fde9c636398b55f2a11d7d82c'}, 'stage-a.stdout.original.jsonl': {'bytes': 15030, 'sha256': '6891adc64b25707ce078b2e57ec24f10afb5ca74a80d0dc2e89632104c38aec4'}, 'stage-a.terminal.original.json': {'bytes': 733, 'sha256': '720ab02fbee47261645eee5312d577f73b010f50788728150bdcb4698e338f37'}}
+-ENTRY_SHA = '28673ff6509c51dd818140107acfdd5d5847b7baeee366527735ff164e337a63'
+-PAYLOAD_SHA = '39a598c946d2752174349a5676ba98d737091bdf8217318558df84badbf64840'
++ROOT = Path('/home/alex/work/pocket4-beike-no-action-commit-20261106-r1')
++PINS = {'commit_stage_b_once.py': {'bytes': 77716, 'sha256': 'f36e146221d43359690b2d73969244dce337a9ac36da038d2bae506a2de981b7'}, 'request.json': {'bytes': 2531, 'sha256': 'a2e6b26f52fc0874a5dddac3435df326124558765236e7a1d19d85c3584c6449'}, 'stage-a.stdout.original.jsonl': {'bytes': 15528, 'sha256': '099a24caac0527f24a97417419cea432b57663cde227d7c844204b2896b08561'}, 'stage-a.terminal.original.json': {'bytes': 733, 'sha256': '8ca15446afb6c5a4623632071495abafb57c007459257fc463bac3001529abbe'}}
++ENTRY_SHA = 'f36e146221d43359690b2d73969244dce337a9ac36da038d2bae506a2de981b7'
++PAYLOAD_SHA = 'c2eb39af252fa6e4c4b40820484150fe739748493048f7ac9f1c49c719403bd9'
+ FIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+ 
+ 
+@@ -46,7 +46,7 @@
+     need(len(raw) <= 524288 and sha(raw) == PAYLOAD_SHA, 'EXACT_BOUNDED_PAYLOAD')
+     payload = json.loads(raw)
+     need(set(payload) == {'schema', 'root', 'files'} and
+-         payload['schema'] == 'pocket4-stage-b-partial-case-commit-stage-payload-v1' and
++         payload['schema'] == 'pocket4-stage-b-no-action-commit-stage-payload-v1' and
+          payload['root'] == str(ROOT) and set(payload['files']) == set(PINS), 'CLOSED_FIXED_STAGE_PAYLOAD')
+     bodies = {}
+     for name, pin in PINS.items():
+@@ -59,7 +59,7 @@
+         if name.endswith('.py'):
+             compile(body, str(ROOT / name), 'exec')
+         bodies[name] = body
+-    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name == 'pocket4-beike-partial-case-commit-20261106-r1',
++    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name == 'pocket4-beike-no-action-commit-20261106-r1',
+          'EXACT_NEW_HOST_PRIVATE_ROOT')
+     os.umask(0o077)
+     ROOT.mkdir(mode=0o700)
+@@ -100,12 +100,12 @@
+     finally:
+         os.close(directory)
+     need(census() == before, 'STAGE_WHOLE_PROCESS_FD_IDENTITIES_CHANGED')
+-    print(json.dumps({'schema': 'pocket4-stage-b-partial-case-commit-stage-v1', 'root': str(ROOT),
+-        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'single-partial-case-commit-owner-not-yet-invoked',
++    print(json.dumps({'schema': 'pocket4-stage-b-no-action-commit-stage-v1', 'root': str(ROOT),
++        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'single-no-action-commit-owner-not-yet-invoked',
+         'Main_commands': 0, 'namespace_entries': 0, 'Main_locks_or_guards': 0,
+         'private_bundle_copied': False, 'reconciliation_published': False}, sort_keys=True), flush=True)
+     entry = ROOT / 'commit_stage_b_once.py'
+-    sys.argv = [str(entry), '--publish-once', '--source-sha256', ENTRY_SHA, '--source-bytes', str(PINS['commit_stage_b_once.py']['bytes']), '--request-sha256', 'ca6d11780cc7f6d6a3adf58f5f2bcbe10eefc07fde9c636398b55f2a11d7d82c', '--request-bytes', '2596']
++    sys.argv = [str(entry), '--publish-once', '--source-sha256', ENTRY_SHA, '--source-bytes', str(PINS['commit_stage_b_once.py']['bytes']), '--request-sha256', 'a2e6b26f52fc0874a5dddac3435df326124558765236e7a1d19d85c3584c6449', '--request-bytes', '2531']
+     exec(compile(bodies['commit_stage_b_once.py'], str(entry), 'exec'),
+          {'__name__': '__main__', '__file__': str(entry)})
+ 

@@ -1,0 +1,107 @@
+{
+  "Bili_general_or_player_operations_opened": false,
+  "Git_exclusions": [
+    "Private UI original and derived values under p4_private_ui; no private tree in this package.",
+    "Local generated .class binaries, which are reproducible from the included source and receipts."
+  ],
+  "UI_attempted": false,
+  "actual_Android_compile": false,
+  "actual_host_build": false,
+  "actual_source_stage": false,
+  "budget_report": {
+    "bytes": 4097,
+    "path": "successor_qa/search_click_same_process_r1/candidate-r2/WIRE_BUDGET.derived.json",
+    "sha256": "5a1b66ce891b113c63258e862491dba4026a13c46611a76621fb0f30f49ee428"
+  },
+  "candidate_source_not_proof_of_runtime_compatibility": true,
+  "cleanup_eligible": false,
+  "complete_tree_nodes_masked": false,
+  "connection_id_compared_only_within_same_connection": true,
+  "declared_contract_change": "New search_click operation makes the previous full inspection contextual, while retaining the exact prior target node/path/hash and stable window. It captures and compares three complete fresh trees within one helper connection, refreshes the target twice, and dispatches only one fixed Beike search click within 1000ms. Existing act() and old helper are unchanged.",
+  "final_helper_manifest": {
+    "bytes": 3259,
+    "path": "successor_qa/search_click_same_process_r1/candidate-r2/helper/SOURCE_PINS.json",
+    "sha256": "0bd7c10043f46063fdbf46e19a48e40430c02f3373d697ad7a44af8ad64b8489"
+  },
+  "fresh_helper_absence_UID_signer_APK_and_whole_scope_qualification_required": true,
+  "helper_package": "org.droidloom.qa.successor.p8f89f253350ba2fa.r2",
+  "inherited_controls_reused_for_final_r2_byte_identical_inputs": true,
+  "install_attempted": false,
+  "local_controls": {
+    "Java21_only": {
+      "compiler_returncode": 0,
+      "new_pure_transaction_cases": 12,
+      "not_Android_or_production_Java8_qualification": true,
+      "receipt": {
+        "bytes": 3333,
+        "path": "successor_qa/search_click_same_process_r1/candidate-r1/local-java21-controls-02/RESULT.derived.json",
+        "sha256": "8db52955f4e22a568dce163d90702c71cd2262481f21ea073cb0673b9b37d9f1"
+      },
+      "tests_returncode": 0
+    },
+    "Java_release8": {
+      "attempt": "local-java-controls-01",
+      "compiler_returncode": 2,
+      "original_exec_result": {
+        "bytes": 1015,
+        "path": "successor_qa/search_click_same_process_r1/local-java-controls-01.exec-result.json",
+        "sha256": "e78e28834a90d71032fbb757d27462379fc71624ab6dfa6a3de1f7284fee9fa4"
+      },
+      "result": "FAILED_COMPILER_RELEASE_8_UNSUPPORTED",
+      "stderr": {
+        "bytes": 119,
+        "path": "successor_qa/search_click_same_process_r1/candidate-r1/local-java-controls-01/00.stderr.original.txt",
+        "sha256": "8170fa29d743b759ed08aa256ec3def67c7f2916b32e6eecd7441d8113a0f090"
+      },
+      "tests_executed": false
+    },
+    "Python": {
+      "all_passed": true,
+      "inherited_baseline_cases": 16,
+      "inherited_idle_protocol_cases": 32,
+      "new_search_protocol_cases": 10,
+      "receipt": {
+        "bytes": 7398,
+        "path": "successor_qa/search_click_same_process_r1/candidate-r1/local-python-controls-01.json",
+        "sha256": "41151668ff0c8a2d6ce7b46cce4aa0ad0ec566e455b9bfc32d9dbbd12dae4f38"
+      }
+    }
+  },
+  "next_minimal_sequence": [
+    "Root reviews frozen source and two host-only requests.",
+    "Publish new source once, verify durable source-stage receipt and all source bytes.",
+    "Build once with original pinned host JDK --release8, Android SDK and signer/tool gates.",
+    "Retain actual full build/signature results; no source/qualification substitution.",
+    "Only after root reviews actual build and no-action A/B succeeds: bind current full scope, prove new helper absent, then separately authorize normal coexistence install and publish the next actual scope.",
+    "Fresh state/inspect and one explicit search_click plus independent post-inspection use the original Session/Flow/task/identity controls."
+  ],
+  "no_action_reconciliation_owner": "app_history; separate A/B original r1 contract; no publication performed here",
+  "old_helper_kept": "org.droidloom.qa.successor.p8f89f253350ba2fa.r1 / UID10157",
+  "only_selector": {
+    "class": "android.widget.TextView",
+    "resource_id": "com.lianjia.beike:id/tv_nav_right_search_text",
+    "text": "\u641c\u7d22"
+  },
+  "prior_FAILED_and_UNKNOWN_unchanged": true,
+  "prior_failed_case": "search-click-after-partial-commit-01",
+  "production_ready": false,
+  "r1_to_r2_installer_only_change": "Use already validated fresh state_nonce for unique new guest APK staging, preserving original flow and old stage.",
+  "same_process_full_tree_and_window_mismatch_still_rejected": true,
+  "schema": "pocket4-fixed-search-helper-review-handoff-v1",
+  "source_bytes": 285946,
+  "source_file_count": 15,
+  "source_inheritance": {
+    "bytes": 4520,
+    "path": "successor_qa/search_click_same_process_r1/candidate-r2/SOURCE_INHERITANCE.derived.json",
+    "sha256": "d208562a88aec144106c94a652b742de1ca6ff109b05e4ff9956e08b403b6d08"
+  },
+  "status": "SOURCE_AND_TWO_HOST_ONLY_REQUESTS_FROZEN_UNSUBMITTED",
+  "target_business_operation_success": null,
+  "unresolved_limits": [
+    "No actual new helper package absence or UID is proved yet.",
+    "The old failed action did not export its changed tree field; historical dynamic-node differences support the timing-race hypothesis but do not prove the exact failed field.",
+    "Three same-connection captures reduce the old cross-process interval but are not an atomic Android transaction.",
+    "The size specimen uses two copies of one previously captured full tree, not two new actual captures. Future raw/gzip over-limit output still fails closed.",
+    "A click acknowledgment and independent visible postcondition do not establish login, core business, long-run or whole-app production readiness."
+  ]
+}

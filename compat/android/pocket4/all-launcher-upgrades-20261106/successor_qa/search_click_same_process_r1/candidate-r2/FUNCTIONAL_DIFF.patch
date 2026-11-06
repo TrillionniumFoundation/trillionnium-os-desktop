@@ -1,0 +1,808 @@
+--- actual-r1/helper/build_candidate.py
++++ candidate-r2/helper/build_candidate.py
+@@ -17,7 +17,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ PACKAGE = 'org.droidloom.qa.successor.p8f89f253350ba2fa.r1'
+-OUTPUT = Path('/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03')
++OUTPUT = Path('/home/alex/work/pocket4-successor-qa-build-362bdb6f45eeb344b3584aa998cb03e1')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -31,6 +31,9 @@
+ }
+ R21_INPUT_RECEIPT_SHA = '2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6'
+ ATTR = '{http://schemas.android.com/apk/res/android}'
++
++SEARCH_PROTOCOL_CASES = ['complete_search_wire_with_three_equal_trees', 'general_and_player_operations_still_closed', 'different_target_tree_rejected', 'different_final_window_rejected', 'different_connection_id_rejected', 'changed_observed_target_hash_rejected', 'selection_age_1001_rejected', 'missing_second_refresh_rejected', 'failure_keeps_complete_private_trees_and_never_passes', 'failed_tree_hash_cannot_be_claimed_complete']
++SEARCH_GATE_CASES = ['three_equal_captures_one_click_all_closed', 'target_tree_change_no_click', 'target_window_change_no_click', 'target_connection_change_no_click', 'refresh_change_no_click', 'final_tree_change_no_click', 'final_window_change_no_click', 'final_connection_change_no_click', 'age_1001_no_click', 'final_close_failure_no_click', 'ack_false_single_attempt_no_retry', 'selection_failure_no_click']
+ 
+ IDLE_GATE_CASES = [
+     "fixed_original_budgets",
+@@ -150,7 +153,7 @@
+         require(actual['sha256'] == row['sha256'] and actual['bytes'] == row['bytes'], 'source differs: ' + name)
+     require({'AndroidManifest.xml', 'src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner.java', 'src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/TouchTransaction.java', 'src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/PlayerButtonTransaction.java',
+              'src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate.java',
+-             'tests/InspectionIdleGateChecks.java', 'check_idle_contract.py', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
++             'tests/InspectionIdleGateChecks.java', 'check_idle_contract.py', 'qa_contract.py', 'build_candidate.py', 'check_search_contract.py', 'tests/SearchTransactionChecks.java'} <= set(files), 'required sources missing')
+     return files
+ 
+ 
+@@ -314,6 +317,24 @@
+             'report':idle_controls,'stdout_sha256':digest(idle_output),
+             'gate_source_sha256':source['src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate.java']['sha256'],
+             'control_source_sha256':source['tests/InspectionIdleGateChecks.java']['sha256']}
++        search_scope={'__name__':'owned_search_protocol_controls'}
++        exec(compile((HERE/'check_search_contract.py').read_bytes(),str(HERE/'check_search_contract.py'),'exec'),search_scope)
++        search_report=search_scope['run']((HERE/'qa_contract.py').read_text(encoding='utf-8'))
++        validate_idle_controls(search_report,SEARCH_PROTOCOL_CASES,source['qa_contract.py']['sha256'])
++        result['search_protocol_controls']={'report':search_report,'control_source_sha256':source['check_search_contract.py']['sha256']}
++        (OUTPUT/'search-control-classes').mkdir(mode=0o700)
++        search_gate=source_java.with_name('PlayerButtonTransaction.java')
++        search_checks=HERE/'tests/SearchTransactionChecks.java'
++        command('search-gate-javac',[tool['javac'],'-J-XX:ActiveProcessorCount=1','-J-XX:+UseSerialGC','-J-Xmx256m',
++            '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','--release','8','-d',str(OUTPUT/'search-control-classes'),str(search_gate),str(search_checks)])
++        search_classes=sorted((OUTPUT/'search-control-classes').rglob('*.class'))
++        require(1<=len(search_classes)<=16 and all(x.is_file() and x.stat().st_size<=262144 for x in search_classes),'SEARCH_CONTROL_CLASS_OUTPUT_BOUND')
++        search_output=command('search-gate-java',java+['-cp',str(OUTPUT/'search-control-classes'),PACKAGE+'.SearchTransactionChecks'],timeout=15)
++        require(0<len(search_output)<=16384,'SEARCH_CONTROL_STDOUT_BOUND')
++        search_gate_report=validate_idle_controls(json.loads(search_output),SEARCH_GATE_CASES)
++        result['search_transaction_controls']={'report':search_gate_report,'stdout_sha256':digest(search_output),
++            'gate_source_sha256':source['src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/PlayerButtonTransaction.java']['sha256'],
++            'control_source_sha256':source['tests/SearchTransactionChecks.java']['sha256']}
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
+             '-d',str(OUTPUT/'classes'),str(source_java),str(source_java.with_name('TouchTransaction.java')),str(source_java.with_name('PlayerButtonTransaction.java')),str(idle_gate)])
+--- actual-r1/helper/check_search_contract.py
++++ candidate-r2/helper/check_search_contract.py
+@@ -0,0 +1,155 @@
++"""Finite synthetic controls of the new production parser; no Android state or input."""
++import base64
++import copy
++import gzip
++import hashlib
++import types
++
++
++CASES = [
++    'complete_search_wire_with_three_equal_trees',
++    'general_and_player_operations_still_closed',
++    'different_target_tree_rejected',
++    'different_final_window_rejected',
++    'different_connection_id_rejected',
++    'changed_observed_target_hash_rejected',
++    'selection_age_1001_rejected',
++    'missing_second_refresh_rejected',
++    'failure_keeps_complete_private_trees_and_never_passes',
++    'failed_tree_hash_cannot_be_claimed_complete',
++]
++
++
++def run(contract_source):
++    qa = types.ModuleType('owned_fixed_search_contract_controls')
++    exec(compile(contract_source, 'qa_contract.py', 'exec'), qa.__dict__)
++    def need(value, why):
++        if not value:
++            raise AssertionError(why)
++    rows = []
++    def check(name, body):
++        body(); rows.append({'name': name, 'passed': True})
++    scope = {'package': qa.PACKAGE, 'uid': qa.UID, 'user': 0, 'display': 0,
++             'activity': qa.PACKAGE + '/com.lianjia.activity.MainActivity', 'window_token': 'abc',
++             'main_epoch_sha256': qa.MAIN_EPOCH, 'main_baseline_schema': qa.MAIN_BASELINE_SCHEMA,
++             'main_baseline_sha256': qa.MAIN_BASELINE_SHA, 'main_baseline_qualification_sha256': qa.MAIN_BASELINE_QUALIFICATION_SHA,
++             'runtime_epoch_sha256': qa.RUNTIME_EPOCH, 'app_scope_sha256': qa.APP_SCOPE_SHA}
++    node = {'package': qa.PACKAGE, 'path': '0', 'visible': True, 'password': False, 'enabled': True, 'clickable': True,
++            'editable': False, 'supports_set_text': False, 'focused': False, 'selected': False, 'checked': False,
++            'child_count': 0, 'bounds': [1, 1, 30, 30], **qa.SEARCH_SELECTOR, 'content_desc': ''}
++    for field in ('resource_id', 'class', 'text', 'content_desc'):
++        node[field + '_sha256'] = qa.sha(node[field].encode())
++        node[field + '_truncated'] = False
++    node['node_sha256'] = qa.sha(qa.canonical(node))
++    window = {'package': qa.PACKAGE, 'display': 0, 'type': 1, 'focused': True, 'bounds': [0, 0, 100, 100]}
++    selection = {'complete': True, 'traversal': 'visible-non-password-subtrees', 'window': window,
++                 'window_sha256': qa.sha(qa.canonical(window)), 'nodes': [node], 'tree_sha256': qa.sha(qa.canonical([node])),
++                 'connection_scoped_window_id': 7, 'observed_elapsed_ms': 1700}
++    request = {'protocol': qa.PROTOCOL, 'nonce': '2' * 32, 'op': 'search_click', 'scope': scope,
++               'inspection_nonce': '1' * 32, 'inspection_sha256': '3' * 64,
++               'node_path': '0', 'node_sha256': node['node_sha256']}
++    idle = {'schema': 1, 'operation': 'inspect', 'invoked': True, 'call_count': 1, 'operation_started_elapsed_ms': 1000,
++            'began_elapsed_ms': 1100, 'last_elapsed_ms': 1600, 'waited_ms': 500, 'quiet_timeout_ms': 500,
++            'global_timeout_cap_ms': 2000, 'global_timeout_ms': 2000, 'operation_deadline_ms': 8000,
++            'api_returned': True, 'qualified': True, 'exception_class': '', 'secondary_clock_exception_class': '',
++            'gate_error': '', 'event_quiet_only': True, 'content_ready_proven': False, 'future_stability_proven': False}
++    state = {'accessibility_enabled': False, 'touch_exploration_enabled': False,
++             'enabled_service_count': 0, 'enabled_services_sha256': '0' * 64}
++    census = {'sample': 1, 'event_serial': 0, 'elapsed_ms': 0, 'displays': [0],
++              'windows': [{'display': 0, 'id': 7, 'type': 1, 'focused': True, 'active': True,
++                           'accessibility_focused': False, 'layer': 0}]}
++    observed_window = {'requested_display': 0, 'selection': 'exact-display-0-focused-application',
++                       'wait_budget_ms': 2000, 'recheck_max_ms': 100, 'ready': True, 'first': census, 'last': census,
++                       'samples': 1, 'waited_ms': 0, 'selected_display': 0, 'selected_window_id': 7,
++                       'sample_timings': [{'sample': 1, 'event_serial': 0, 'elapsed_ms': 0, 'cache_cleared': True}],
++                       'cache_api': 'android.app.UiAutomation.clearCache()',
++                       'cache_policy': 'require_public_own_connection_clear_before_each_query', 'cache_runtime_sdk': 37,
++                       'cache_attempts': 1, 'cache_clears': 1, 'cache_last_result': True, 'cache_last_exception': None}
++    bindings = []; counters = []
++    for i, purpose in enumerate(('search_selection', 'action_target', 'action_final_window')):
++        bindings.append({'tree_sha256': selection['tree_sha256'], 'window_sha256': selection['window_sha256'],
++                         'connection_scoped_window_id': 7, 'observed_elapsed_ms': 1700 + i * 100})
++        counters.append({'capture': i + 1, 'purpose': purpose, 'node_limit': 512, 'depth_limit': 32, 'child_limit': 64,
++                         'json_byte_limit': qa.MAX_RESULT - 65536, 'attempted_nodes': 1, 'emitted_nodes': 1,
++                         'max_attempted_depth': 0, 'max_observed_children': 0, 'serialized_bytes': len(qa.canonical(selection)),
++                         'complete': True, 'began_elapsed_ms': 1600 + i * 100, 'last_elapsed_ms': 1700 + i * 100})
++    value = {'protocol': qa.PROTOCOL, 'nonce': request['nonce'], 'op': 'search_click', 'request_sha256': qa.sha(qa.canonical(request)),
++             'wire_codec': 'gzip-canonical-json-v1', 'self_uid': 30001, 'self_pid': 99999, 'ok': True, 'error': None,
++             'secondary_errors': [], 'claim_persistence_completed': True, 'helper_work_completed': True,
++             'automatic_retry': False, 'business_success_verified': False, 'accessibility_mode_restoration_verified': None,
++             'started_elapsed_ms': 1000, 'finished_elapsed_ms': 2100, 'action_attempted': True, 'outcome_unknown': True,
++             'restoration': {'service_info_verified': True, 'service_info_captured': True, 'connection_flags': 1,
++                             'service_flags_before': 0, 'service_flags_during': 80, 'service_flags_after': 0,
++                             'service_capabilities_before': 0, 'service_capabilities_after': 0},
++             'host_scope_attestation': scope, 'activity_verified_inside_helper': False, 'target_uid_verified': qa.UID,
++             'requires_post_termination_state_check': True, 'accessibility_state_before_connection': state,
++             'window_observation': observed_window, 'tree_observations': counters, 'inspection_idle_observation': idle,
++             'inspection_nonce': request['inspection_nonce'], 'inspection_sha256': request['inspection_sha256'],
++             'prior_whole_tree_is_context_only': True, 'prior_target_and_window_still_required': True,
++             'prior_window_sha256': selection['window_sha256'], 'atomic_android_transaction': False,
++             'search_contract': 'fixed-beike-search-three-capture-v1', 'same_connection_full_tree_rechecks': 2,
++             'search_selection': selection, 'search_selection_sha256': qa.sha(qa.canonical(selection)),
++             'target_node_path': '0', 'target_node_sha256': node['node_sha256'], 'action_window': window,
++             'connection_scoped_window_id': 7, 'search_capture_bindings': bindings,
++             'search_action_admitted_elapsed_ms': 2000, 'search_selection_age_ms': 300,
++             'search_selection_age_limit_ms': 1000, 'target_refresh_count': 2,
++             'node_action': 'ACTION_CLICK', 'node_action_returned': True}
++    def wire(body, finish=-1):
++        return (b'INSTRUMENTATION_RESULT: owned_qa_result_gzip_base64=' +
++                base64.b64encode(gzip.compress(qa.canonical(body), mtime=0)) +
++                b'\nINSTRUMENTATION_CODE: ' + str(finish).encode() + b'\n')
++    def parse(body):
++        return qa.parse_completed(wire(body), b'', 0, request, 30001)
++    check(CASES[0], lambda: parse(copy.deepcopy(value)))
++    def closed():
++        need(qa.ALLOWED_OPERATIONS == ('state', 'inspect', 'search_click'), 'exact new operation closure')
++        for op in ('click', 'set_text', 'reveal_controls', 'player_button', 'accept'):
++            altered = copy.deepcopy(request); altered['op'] = op
++            try: qa.validate_request(altered)
++            except qa.ProtocolError as error: need(str(error) == 'COMPILED_OPERATION_POLICY', 'closed operation reason')
++            else: raise AssertionError('general operation accepted')
++    check(CASES[1], closed)
++    def rejects(name, mutate):
++        def control():
++            changed = copy.deepcopy(value); mutate(changed)
++            try: parse(changed)
++            except qa.ProtocolError: pass
++            else: raise AssertionError('changed evidence accepted')
++        check(name, control)
++    rejects(CASES[2], lambda v: v['search_capture_bindings'][1].update(tree_sha256='f' * 64))
++    rejects(CASES[3], lambda v: v['search_capture_bindings'][2].update(window_sha256='f' * 64))
++    rejects(CASES[4], lambda v: v['search_capture_bindings'][1].update(connection_scoped_window_id=8))
++    rejects(CASES[5], lambda v: v.update(target_node_sha256='f' * 64))
++    rejects(CASES[6], lambda v: v.update(search_action_admitted_elapsed_ms=2701, search_selection_age_ms=1001, finished_elapsed_ms=2800))
++    rejects(CASES[7], lambda v: v.update(target_refresh_count=1))
++    failed = copy.deepcopy(value)
++    changed_tree = copy.deepcopy(selection); changed_tree['nodes'][0]['selected'] = True
++    changed_tree['nodes'][0]['node_sha256'] = qa.sha(qa.canonical({k: x for k, x in changed_tree['nodes'][0].items() if k != 'node_sha256'}))
++    changed_tree['tree_sha256'] = qa.sha(qa.canonical(changed_tree['nodes'])); changed_tree['observed_elapsed_ms'] = 1800
++    failed.update(ok=False, error='SEARCH_CURRENT_TREE_OR_WINDOW_CHANGED', action_attempted=False, outcome_unknown=False,
++                  tree_observations=counters[:2], search_private_diagnostic={
++                      'schema': 1, 'private_UI_evidence': True, 'reason': 'SEARCH_CURRENT_TREE_OR_WINDOW_CHANGED',
++                      'captured_before_dispatch': True, 'current_post_action_state_proven': False,
++                      'original_result_budget': qa.MAX_RESULT, 'pair_capture_budget': qa.MAX_SEARCH_CAPTURE,
++                      'selection_full_omitted_for_result_budget': False, 'complete_capture_available': True,
++                      'complete_captures': [{'role': 'selection', 'inspection': selection}, {'role': 'target', 'inspection': changed_tree}]})
++    failed.pop('search_selection')
++    def failed_complete():
++        diagnostic = qa.failure_diagnostic(wire(failed, 0), request, 30001)
++        need(diagnostic['qualified_success'] is False and diagnostic['search_failure']['private_full_tree_in_raw_wire'] is True and
++             len(diagnostic['search_failure']['captures']) == 2 and 'inspection' not in diagnostic['search_failure'],
++             'only safe metadata in diagnostic summary')
++        try: qa.parse_completed(wire(failed, 0), b'', 0, request, 30001)
++        except qa.ProtocolError as error: need(str(error) == 'EXACT_SUCCESSFUL_FINISH_REQUIRED', 'failed finish unchanged')
++        else: raise AssertionError('failed wire passed')
++    check(CASES[8], failed_complete)
++    def failed_hash():
++        altered = copy.deepcopy(failed); altered['search_private_diagnostic']['complete_captures'][1]['inspection']['tree_sha256'] = 'f' * 64
++        try: qa.failure_diagnostic(wire(altered, 0), request, 30001)
++        except qa.ProtocolError: pass
++        else: raise AssertionError('bad diagnostic tree accepted')
++    check(CASES[9], failed_hash)
++    need([row['name'] for row in rows] == CASES, 'exact fixed control set')
++    return {'schema': 1, 'all_passed': True, 'count': len(rows), 'cases': rows,
++            'android_calls': 0, 'tree_captures': 0, 'input_actions': 0,
++            'production_contract_sha256': hashlib.sha256(contract_source.encode()).hexdigest()}
+--- actual-r1/helper/install_owned_helper.py
++++ candidate-r2/helper/install_owned_helper.py
+@@ -150,7 +150,7 @@
+         held = flow.bind()
+         absence = command(flow,['/system/bin/cmd','package','list','packages','-u','-U','--user','all',SELF])
+         need(absence == b'', 'NEW_HELPER_OR_RETAINED_PACKAGE_ALREADY_EXISTS')
+-        stage = Stage(held.target,args.flow_dir.name.rsplit('-',1)[1])
++        stage = Stage(held.target,args.state_nonce)
+         stage.stage(apk,args.apk_sha256)
+         result['guest_stage'] = stage.record
+         del apk
+--- actual-r1/helper/qa_adapter.py
++++ candidate-r2/helper/qa_adapter.py
+@@ -19,7 +19,7 @@
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '646f6e4c7d931bf005ada01a84202a891c95e99e93bbde7a561f3307527008a4'
+ SELF = 'org.droidloom.qa.successor.p8f89f253350ba2fa.r1'
+-BUILD_COMMANDS = ['idle-gate-javac','idle-gate-java','javac','d8','aapt-package','align','create-owned-signing-key','sign',
++BUILD_COMMANDS = ['idle-gate-javac','idle-gate-java','search-gate-javac','search-gate-java','javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+ 
+@@ -89,16 +89,18 @@
+ 
+ def validate_plan(plan, qa):
+     require(isinstance(plan, dict) and plan.get('schema') == 1 and
+-            plan.get('operation') in ('state','inspect','click','set_text','reveal_controls','player_button'), 'OWNED_PLAN_REQUIRED')
++            plan.get('operation') in ('state','inspect','click','set_text','reveal_controls','player_button','search_click'), 'OWNED_PLAN_REQUIRED')
+     op = plan['operation']; keys = {'schema','operation','nonces'}
+     require(op in qa.ALLOWED_OPERATIONS, 'COMPILED_OPERATION_POLICY')
+-    if op in ('click','set_text'):
++    if op in ('click','set_text','search_click'):
+         keys.add('selector')
+         selector = plan.get('selector')
+         require(isinstance(selector, dict) and selector and
+                 set(selector) <= {'resource_id','text','content_desc','class'} and
+                 all(isinstance(v, str) and 0 < len(v.encode('utf-8')) <= 256 for v in selector.values()),
+                 'EXACT_NODE_SELECTOR_REQUIRED')
++    if op == 'search_click':
++        require(plan['selector'] == qa.SEARCH_SELECTOR, 'ONLY_FIXED_BEIKE_SEARCH_SELECTOR')
+     if op == 'set_text':
+         keys.add('value')
+         require(plan.get('value') == qa.PUBLIC_SEARCH_QUERY and
+@@ -109,7 +111,7 @@
+         keys.add('transition')
+         require(plan.get('transition') in ('pause','resume'),'FIXED_PLAYER_TRANSITION_REQUIRED')
+     require(set(plan) == keys and isinstance(plan['nonces'], dict), 'EXACT_PLAN_KEYS_REQUIRED')
+-    names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text','reveal_controls','player_button') else set())
++    names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text','reveal_controls','player_button','search_click') else set())
+     require(set(plan['nonces']) == names, 'EXACT_PHASE_NONCES_REQUIRED')
+     values = [qa.nonce(value) for value in plan['nonces'].values()]
+     require(len(set(values)) == len(values), 'DISTINCT_PHASE_NONCES_REQUIRED')
+@@ -154,6 +156,14 @@
+             idle_gate['control_source_sha256']==manifest['files']['tests/InspectionIdleGateChecks.java']['sha256'] and
+             idle_protocol['control_source_sha256']==manifest['files']['check_idle_contract.py']['sha256'],
+             'ACTUAL_IDLE_CONTROLS_SOURCE_OR_COMMAND_BINDING_CHANGED')
++    search_protocol = receipt.get('search_protocol_controls', {})
++    search_gate = receipt.get('search_transaction_controls', {})
++    builder.validate_idle_controls(search_protocol.get('report'), builder.SEARCH_PROTOCOL_CASES, manifest['files']['qa_contract.py']['sha256'])
++    builder.validate_idle_controls(search_gate.get('report'), builder.SEARCH_GATE_CASES)
++    require(search_protocol.get('control_source_sha256') == manifest['files']['check_search_contract.py']['sha256'] and
++            search_gate.get('control_source_sha256') == manifest['files']['tests/SearchTransactionChecks.java']['sha256'] and
++            search_gate.get('gate_source_sha256') == manifest['files']['src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/PlayerButtonTransaction.java']['sha256'] and
++            search_gate.get('stdout_sha256') == commands[3]['stdout_sha256'], 'ACTUAL_NEW_SEARCH_CONTROLS_REQUIRED')
+     scope_controls = receipt.get('current_baseline_scope_controls', {})
+     require(scope_controls.get('source_sha256') == manifest['files']['check_current_baseline.py']['sha256'] and
+             scope_controls.get('report', {}).get('schema') == 'pocket4-successor-app-scope-controls-v1' and
+@@ -177,7 +187,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184,10202),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10157,10125,10164,10165,10166,10169,10170,10175,10184,10202),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         require(helper_uid != qa.UID, 'HELPER_CANNOT_SHARE_TARGET_UID')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+@@ -211,7 +221,7 @@
+         self.nonces.add(request['nonce'])
+         self.recorder.write_new(f.step/(request['nonce']+'.request.json'), request)
+         before = f.command_index
+-        out = f.android(qa.instrumentation_argv(request), 20, mutation=request['op'] in ('click','set_text','reveal_controls','player_button'))
++        out = f.android(qa.instrumentation_argv(request), 20, mutation=request['op'] in ('click','set_text','reveal_controls','player_button','search_click'))
+         require(f.command_index == before+1, 'ONE_ACTUAL_HELD_COMMAND_REQUIRED')
+         stem = f.step/('command-%03d' % f.command_index)
+         raw = bounded(str(stem)+'.result.json', 65536); row = json.loads(raw)
+@@ -322,6 +332,17 @@
+                 require(middle['helper']['action_window'] == inspected['helper']['inspection']['window'],
+                         'ACKNOWLEDGED_ACTION_WINDOW_DIFFERS')
+                 result['set_text_acknowledged' if editing else 'click_acknowledged'] = True
++            elif plan['operation']=='search_click':
++                node = qa.fixed_search_node(inspected['helper']['inspection'])
++                action = request('action','search_click',scope=scope,inspection_nonce=names['inspect'],
++                    inspection_sha256=inspected['wire_sha256'],**node)
++                middle = None
++                middle = self.instrument(action)
++                require(middle['helper']['action_window'] == inspected['helper']['inspection']['window'],
++                        'SEARCH_ACKNOWLEDGED_STABLE_WINDOW_DIFFERS')
++                result['search_click_acknowledged'] = True
++                result['search_selection_sha256'] = middle['helper']['search_selection_sha256']
++                result['atomic_android_transaction'] = False
+             elif plan['operation']=='reveal_controls':
+                 fields=qa.reveal_request_fields(inspected['helper']['inspection'],scope)
+                 action=request('action','reveal_controls',scope=scope,inspection_nonce=names['inspect'],
+@@ -432,7 +453,7 @@
+ 
+     try:
+         flow = recorder.Flow(flow_args)
+-        flow.begin(flow_args, mutation=plan['operation'] in ('click','set_text','reveal_controls','player_button'))
++        flow.begin(flow_args, mutation=plan['operation'] in ('click','set_text','reveal_controls','player_button','search_click'))
+         action_lock = recorder.lock_file(recorder.ACTION_LOCK)
+         result.update(Session(flow, recorder, qa, proof, args.helper_uid).sequence(plan))
+         result['ok'] = True
+@@ -478,7 +499,7 @@
+     args = parser.parse_args()
+     if not args.execute_once:
+         print(json.dumps({'state':'PLAN_ONLY', 'package':SELF, 'recorder_manifest_sha256':RECORDER_MANIFEST_SHA,
+-            'operations':['state','inspect','click','set_text','reveal_controls','player_button'], 'install_launch_task_cleanup_or_UI_actions':0,
++            'operations':['state','inspect','search_click'], 'install_launch_task_cleanup_or_UI_actions':0,
+             'actual_build_install_and_runtime_qualification_required':True}))
+         return 0
+     require(all(getattr(args, name) is not None for name in ('source_manifest_sha256','build_receipt_sha256',
+--- actual-r1/helper/qa_contract.py
++++ candidate-r2/helper/qa_contract.py
+@@ -23,7 +23,7 @@
+ PUBLIC_SEARCH_QUERY = "\u5317\u4eac"
+ RUNTIME_EPOCH = 'a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9'
+ APP_SCOPE_SHA = '2f3ed55a035e64401189cd2afbaded2414c7b0b9a3c641a82308a1c68b96a8eb'
+-ALLOWED_OPERATIONS = ('state', 'inspect', 'click', 'set_text')
++ALLOWED_OPERATIONS = ('state', 'inspect', 'search_click')
+ SCOPE_KEYS = {'runtime_epoch_sha256', 'app_scope_sha256', 'package', 'uid', 'user', 'display', 'activity', 'window_token', 'main_epoch_sha256', 'main_baseline_schema', 'main_baseline_sha256', 'main_baseline_qualification_sha256'}
+ 
+ 
+@@ -92,10 +92,10 @@
+     op = value.get('op')
+     require(op in ALLOWED_OPERATIONS, 'COMPILED_OPERATION_POLICY')
+     expected = {'protocol', 'nonce', 'op'}
+-    if op in ('inspect', 'click', 'set_text','reveal_controls','player_button'):
++    if op in ('inspect', 'click', 'set_text','reveal_controls','player_button','search_click'):
+         expected.add('scope')
+         scope(value.get('scope'))
+-    if op in ('click','set_text'):
++    if op in ('click','set_text','search_click'):
+         expected.update(('inspection_nonce', 'inspection_sha256', 'node_path', 'node_sha256'))
+         require(nonce(value.get('inspection_nonce')) != value['nonce'], 'DISTINCT_ACTION_NONCE_REQUIRED')
+         digest(value.get('inspection_sha256')); digest(value.get('node_sha256'))
+@@ -118,7 +118,7 @@
+         digest(value.get('inspection_sha256'));digest(value.get('player_frame_sha256'))
+         require(value.get('transition') in ('pause','resume') and value['scope']['activity']==REVEAL_ACTIVITY,
+                 'FIXED_PLAYER_TRANSITION_AND_CONTEXT_REQUIRED')
+-    require(op in ('state', 'inspect', 'click', 'set_text','reveal_controls','player_button') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
++    require(op in ('state', 'inspect', 'click', 'set_text','reveal_controls','player_button','search_click') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
+     raw = canonical(value)
+     require(0 < len(raw) <= MAX_REQUEST, 'REQUEST_BOUND')
+     return raw
+@@ -186,7 +186,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10202) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10157, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184, 10202) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+@@ -235,6 +235,8 @@
+             require(observed_trees[0]['emitted_nodes'] == len(value['inspection']['nodes']) and
+                     observed_trees[0]['serialized_bytes'] == len(canonical(value['inspection'])),
+                     'COMPLETE_TREE_COUNTERS_MUST_MATCH_ACTUAL_INSPECTION')
++        elif request['op']=='search_click':
++            assess_search_click(value,request,observed_window,observed_trees,observed_idle)
+         elif request['op']=='reveal_controls':
+             assess_reveal(value,request,observed_window,observed_trees)
+         elif request['op']=='player_button':
+@@ -261,7 +263,7 @@
+ def inspection_idle_observation(value, operation, started, success_required):
+     """Safe event-quiet metadata only; neither complete-tree nor future-action qualification."""
+     require(isinstance(value,dict) and len(canonical(value))<=4096,'SAFE_INSPECTION_IDLE_BOUND')
+-    if operation!='inspect':
++    if operation not in ('inspect','search_click'):
+         require(value=={},'ONLY_INSPECT_MAY_WAIT_FOR_EVENT_IDLE')
+         return value
+     if value=={}:
+@@ -373,6 +375,8 @@
+     if 'inspection_idle_observation' in value:
+         result['inspection_idle_observation']=inspection_idle_observation(
+             value['inspection_idle_observation'],request['op'],value.get('started_elapsed_ms'),success_required=False)
++    if request['op']=='search_click':
++        result['search_failure']=search_failure_diagnostic(value)
+     if request['op']=='reveal_controls' and 'touch' in value:
+         result['touch_observation']=touch_observation(value['touch'],False)
+     return result
+@@ -387,7 +391,8 @@
+         return value
+     expected=(['inspection'] if operation=='inspect' else ['reveal_target','reveal_final_window','reveal_after']
+               if operation=='reveal_controls' else ['player_selection','action_target','action_final_window']
+-              if operation=='player_button' else ['action_target','action_final_window'])
++              if operation=='player_button' else ['search_selection','action_target','action_final_window']
++              if operation=='search_click' else ['action_target','action_final_window'])
+     require(len(value)<=len(expected),'TREE_CAPTURE_COUNT_BOUND')
+     if complete_required:require(len(value)==len(expected),'COMPLETE_TREE_CAPTURE_SEQUENCE_REQUIRED')
+     keys={'capture','purpose','node_limit','depth_limit','child_limit','json_byte_limit','attempted_nodes',
+@@ -770,3 +775,91 @@
+         0<=value['player_selection_age_ms']<=MAX_PLAYER_SELECTION_AGE_MS and
+         value.get('player_selection_age_limit_ms')==MAX_PLAYER_SELECTION_AGE_MS,
+         'CURRENT_PLAYER_SELECTION_FRESHNESS_REQUIRED')
++
++
++SEARCH_SELECTOR = {'resource_id': 'com.lianjia.beike:id/tv_nav_right_search_text',
++                   'class': 'android.widget.TextView', 'text': '\u641c\u7d22'}
++MAX_SEARCH_CAPTURE = (MAX_RESULT - 65536) // 2
++MAX_SEARCH_SELECTION_AGE_MS = 1000
++
++
++def fixed_search_node(inspection):
++    inspect_record(inspection)
++    selected = select_unique_clickable(inspection, SEARCH_SELECTOR)
++    return selected
++
++
++def assess_search_click(value, request, observed_window, observed_trees, observed_idle):
++    require(value.get('search_contract') == 'fixed-beike-search-three-capture-v1' and
++            value.get('prior_whole_tree_is_context_only') is True and value.get('prior_target_and_window_still_required') is True and
++            value.get('atomic_android_transaction') is False and value.get('same_connection_full_tree_rechecks') == 2 and
++            value.get('action_attempted') is True and value.get('outcome_unknown') is True and
++            value.get('node_action') == 'ACTION_CLICK' and value.get('node_action_returned') is True and
++            value.get('inspection_nonce') == request['inspection_nonce'] and value.get('inspection_sha256') == request['inspection_sha256'] and
++            'search_private_diagnostic' not in value and 'search_diagnostic_error' not in value,
++            'FIXED_SEARCH_REQUEST_AND_SINGLE_ACK_REQUIRED')
++    selected = inspect_record(value.get('search_selection'))
++    require(len(canonical(selected)) <= MAX_SEARCH_CAPTURE and value.get('search_selection_sha256') == sha(canonical(selected)),
++            'BOUNDED_COMPLETE_NEW_SEARCH_SELECTION')
++    node = fixed_search_node(selected)
++    require(node == {'node_path': request['node_path'], 'node_sha256': request['node_sha256']} and
++            value.get('target_node_path') == node['node_path'] and value.get('target_node_sha256') == node['node_sha256'] and
++            value.get('action_window') == selected['window'] and value.get('prior_window_sha256') == selected['window_sha256'] and
++            value.get('connection_scoped_window_id') == selected['connection_scoped_window_id'] == observed_window['selected_window_id'],
++            'OBSERVED_SEARCH_NODE_AND_STABLE_WINDOW_REQUIRED')
++    bindings = value.get('search_capture_bindings')
++    require(type(bindings) is list and len(bindings) == 3 and len(observed_trees) == 3,
++            'THREE_COMPLETE_SEARCH_CAPTURE_BINDINGS')
++    previous = selected['observed_elapsed_ms']
++    for index, row in enumerate(bindings):
++        require(type(row) is dict and set(row) == {'tree_sha256', 'window_sha256', 'connection_scoped_window_id', 'observed_elapsed_ms'} and
++                row['tree_sha256'] == selected['tree_sha256'] and row['window_sha256'] == selected['window_sha256'] and
++                type(row['connection_scoped_window_id']) is int and row['connection_scoped_window_id'] == selected['connection_scoped_window_id'] and
++                type(row['observed_elapsed_ms']) is int and previous <= row['observed_elapsed_ms'],
++                'EVERY_COMPLETE_SEARCH_TREE_WINDOW_AND_CONNECTION_EQUAL')
++        require(observed_trees[index]['emitted_nodes'] == len(selected['nodes']) and
++                observed_trees[index]['began_elapsed_ms'] <= row['observed_elapsed_ms'] <= observed_trees[index]['last_elapsed_ms'] and
++                observed_trees[index]['serialized_bytes'] <= MAX_SEARCH_CAPTURE,
++                'ACTUAL_COMPLETE_SEARCH_CAPTURE_TIMING_AND_BOUND')
++        previous = row['observed_elapsed_ms']
++    require(bindings[0]['observed_elapsed_ms'] == selected['observed_elapsed_ms'] and
++            observed_trees[0]['serialized_bytes'] == len(canonical(selected)) and
++            observed_trees[0]['began_elapsed_ms'] >= observed_idle['last_elapsed_ms'] and
++            type(value.get('search_action_admitted_elapsed_ms')) is int and
++            value['started_elapsed_ms'] <= selected['observed_elapsed_ms'] <= previous <= value['search_action_admitted_elapsed_ms'] <= value['finished_elapsed_ms'] and
++            type(value.get('search_selection_age_ms')) is int and
++            value['search_selection_age_ms'] == value['search_action_admitted_elapsed_ms'] - selected['observed_elapsed_ms'] and
++            0 <= value['search_selection_age_ms'] <= MAX_SEARCH_SELECTION_AGE_MS and
++            value.get('search_selection_age_limit_ms') == MAX_SEARCH_SELECTION_AGE_MS and
++            type(value.get('target_refresh_count')) is int and value['target_refresh_count'] == 2,
++            'FRESH_SEARCH_SELECTION_AFTER_FINAL_REFRESH_REQUIRED')
++
++
++def search_failure_diagnostic(value):
++    """Validate private complete trees; return only hashes/roles in public failure metadata."""
++    if 'search_private_diagnostic' not in value:
++        return {'complete_capture_available': False, 'diagnostic_error': value.get('search_diagnostic_error'),
++                'private_full_tree_in_raw_wire': False, 'qualified_success': False}
++    diagnostic = value['search_private_diagnostic']
++    require(type(diagnostic) is dict and diagnostic.get('schema') == 1 and diagnostic.get('private_UI_evidence') is True and
++            diagnostic.get('reason') == value['error'] and diagnostic.get('captured_before_dispatch') is (not value['action_attempted']) and
++            diagnostic.get('current_post_action_state_proven') is False and diagnostic.get('original_result_budget') == MAX_RESULT and
++            diagnostic.get('pair_capture_budget') == MAX_SEARCH_CAPTURE and
++            type(diagnostic.get('selection_full_omitted_for_result_budget')) is bool,
++            'EXACT_PRIVATE_SEARCH_FAILURE_DIAGNOSTIC')
++    captures = diagnostic.get('complete_captures')
++    require(type(captures) is list and len(captures) <= 2 and
++            diagnostic.get('complete_capture_available') is bool(captures), 'BOUNDED_FULL_SEARCH_FAILURE_CAPTURE_SET')
++    rows = []; roles = set()
++    for entry in captures:
++        require(type(entry) is dict and set(entry) == {'role', 'inspection'} and entry['role'] in ('selection', 'target', 'final') and
++                entry['role'] not in roles, 'EXACT_SEARCH_FAILURE_CAPTURE_ROLE')
++        roles.add(entry['role']); captured = inspect_record(entry['inspection'])
++        rows.append({'role': entry['role'], 'inspection_sha256': sha(canonical(captured)),
++                     'tree_sha256': captured['tree_sha256'], 'window_sha256': captured['window_sha256'],
++                     'connection_scoped_window_id': captured['connection_scoped_window_id'],
++                     'observed_elapsed_ms': captured['observed_elapsed_ms'], 'nodes': len(captured['nodes'])})
++    return {'complete_capture_available': bool(captures), 'captures': rows,
++            'private_full_tree_in_raw_wire': bool(captures), 'qualified_success': False,
++            'selection_full_omitted_for_result_budget': diagnostic['selection_full_omitted_for_result_budget'],
++            'raw_wire_still_private': True}
+--- actual-r1/helper/run_case.py
++++ candidate-r2/helper/run_case.py
+@@ -31,7 +31,7 @@
+         need(type(entry) is dict and set(entry) == {'plan','post_inspection','postcondition'},'CLOSED_CASE_STEP')
+         plan = adapter.validate_plan(entry['plan'],qa)
+         post = adapter.validate_plan(entry['post_inspection'],qa)
+-        need(plan['operation'] in ('inspect','click','set_text','reveal_controls','player_button') and
++        need(plan['operation'] in ('inspect','click','set_text','reveal_controls','player_button','search_click') and
+              post['operation'] == 'inspect','EXPLICIT_ACTION_AND_INDEPENDENT_POST_INSPECT')
+         for selected in (plan,post):
+             for nonce in selected['nonces'].values():
+--- actual-r1/helper/src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner.java
++++ candidate-r2/helper/src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner.java
+@@ -176,10 +176,11 @@
+             JSONObject request = new JSONObject(new String(raw, StandardCharsets.UTF_8));
+             need(Arrays.equals(canonical(request).getBytes(StandardCharsets.UTF_8), raw), "CANONICAL_JSON_REQUIRED");
+             String op = string(request, "op", 16);
+-            need(Arrays.asList("state", "inspect", "click", "set_text").contains(op), "COMPILED_OPERATION_POLICY");
++            need(Arrays.asList("state", "inspect", "search_click").contains(op), "COMPILED_OPERATION_POLICY");
+             if (op.equals("state")) keys(request, "protocol", "nonce", "op");
+             else if (op.equals("inspect")) keys(request, "protocol", "nonce", "op", "scope");
+             else if (op.equals("click")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256");
++            else if (op.equals("search_click")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256");
+             else if (op.equals("reveal_controls")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "player_scope_sha256", "viewport_bounds");
+             else if (op.equals("player_button")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "transition", "player_frame_sha256");
+             else if (op.equals("set_text")) {
+@@ -212,7 +213,8 @@
+                     Capture captured = inspect(null, "inspection");
+                     try { result.put("inspection", captured.json); }
+                     finally { captured.close(); }
+-                } else if (op.equals("reveal_controls")) revealControls(request, result);
++                } else if (op.equals("search_click")) searchClick(request, result);
++                else if (op.equals("reveal_controls")) revealControls(request, result);
+                 else if (op.equals("player_button")) playerButton(request, result);
+                 else act(request, result);
+             }
+@@ -984,6 +986,205 @@
+             }
+             @Override public void close(Capture capture) { capture.close(); }
+         });
++    }
++
++    // This new operation is only for the observed Beike search button.
++    // The old act() implementation and its old cross-process comparison remain unchanged.
++    static final String SEARCH_RESOURCE = "com.lianjia.beike:id/tv_nav_right_search_text";
++    static final String SEARCH_CLASS = "android.widget.TextView";
++    static final String SEARCH_TEXT = "\u641c\u7d22";
++    // Two complete captures plus the existing result metadata must fit MAX_RESULT.
++    // This is a narrower bound for the new operation, not a larger old result budget.
++    static final int MAX_SEARCH_CAPTURE = (MAX_RESULT - 65536) / 2;
++
++    static JSONObject fixedSearchNode(JSONObject inspection) throws Exception {
++        need(inspection.getBoolean("complete") && "visible-non-password-subtrees".equals(inspection.getString("traversal")),
++            "SEARCH_COMPLETE_TREE_REQUIRED");
++        JSONObject window = inspection.getJSONObject("window");
++        JSONArray nodes = inspection.getJSONArray("nodes");
++        need(PACKAGE.equals(window.getString("package")) && integer(window,"display") == 0
++            && integer(window,"type") == 1 && window.getBoolean("focused")
++            && hashJson(window).equals(inspection.getString("window_sha256"))
++            && 0 < nodes.length() && nodes.length() <= MAX_NODES
++            && hashJson(nodes).equals(inspection.getString("tree_sha256")), "SEARCH_COMPLETE_TREE_WINDOW_HASH");
++        JSONObject selected = null; int matches = 0;
++        for (int i = 0; i < nodes.length(); i++) {
++            JSONObject row = nodes.getJSONObject(i);
++            if (row.getBoolean("visible") && !row.getBoolean("password") && row.getBoolean("enabled")
++                && row.getBoolean("clickable") && SEARCH_RESOURCE.equals(row.getString("resource_id"))
++                && SEARCH_CLASS.equals(row.getString("class")) && SEARCH_TEXT.equals(row.getString("text"))
++                && !row.getBoolean("resource_id_truncated") && !row.getBoolean("class_truncated")
++                && !row.getBoolean("text_truncated")) {
++                need(PACKAGE.equals(row.getString("package")), "SEARCH_TARGET_PACKAGE_CHANGED");
++                selected = row; matches++;
++            }
++        }
++        need(matches == 1, "ONE_EXACT_ELIGIBLE_BEIKE_SEARCH_REQUIRED");
++        return selected;
++    }
++
++    Capture searchCapture(String path, String purpose, int index, JSONObject[] captured) throws Exception {
++        Capture value = inspect(path, purpose);
++        captured[index] = value.json;
++        try {
++            need(canonical(value.json).getBytes(StandardCharsets.UTF_8).length <= MAX_SEARCH_CAPTURE,
++                "SEARCH_PAIRED_DIAGNOSTIC_CAPTURE_BOUND");
++            return value;
++        } catch (Exception primary) {
++            try { value.close(); } catch (Exception secondary) { primary.addSuppressed(secondary); }
++            throw primary;
++        }
++    }
++
++    JSONObject searchPrivateDiagnostic(JSONObject[] captured, JSONObject refreshed, Exception error) throws Exception {
++        int last = -1;
++        for (int i = 0; i < captured.length; i++) if (captured[i] != null) last = i;
++        JSONObject diagnostic = new JSONObject().put("schema", 1).put("private_UI_evidence", true)
++            .put("reason", errorCode(error)).put("captured_before_dispatch", !actionAttempted)
++            .put("current_post_action_state_proven", false).put("original_result_budget", MAX_RESULT)
++            .put("pair_capture_budget", MAX_SEARCH_CAPTURE).put("selection_full_omitted_for_result_budget", false);
++        JSONArray records = new JSONArray();
++        String[] roles = new String[]{"selection", "target", "final"};
++        if (last >= 0) {
++            // Keep the complete last capture even when a size gate rejected it.
++            // Never truncate a tree, remove a dynamic node, or invent a failed capture.
++            int lastBytes = canonical(captured[last]).getBytes(StandardCharsets.UTF_8).length;
++            if (last > 0 && captured[0] != null) {
++                int firstBytes = canonical(captured[0]).getBytes(StandardCharsets.UTF_8).length;
++                boolean fits = firstBytes <= MAX_SEARCH_CAPTURE && lastBytes <= MAX_SEARCH_CAPTURE;
++                if (fits) records.put(new JSONObject().put("role", "selection").put("inspection", captured[0]));
++                else diagnostic.put("selection_full_omitted_for_result_budget", true)
++                    .put("selection_binding", playerCaptureBindingJson(captured[0]));
++            }
++            records.put(new JSONObject().put("role", roles[last]).put("inspection", captured[last]));
++        }
++        diagnostic.put("complete_captures", records).put("complete_capture_available", last >= 0);
++        if (refreshed != null) diagnostic.put("refreshed_target_node", refreshed);
++        return diagnostic;
++    }
++
++    static JSONObject playerCaptureBindingJson(JSONObject captured) throws Exception {
++        return new JSONObject().put("tree_sha256", captured.getString("tree_sha256"))
++            .put("window_sha256", captured.getString("window_sha256"))
++            .put("connection_scoped_window_id", integer(captured,"connection_scoped_window_id"))
++            .put("observed_elapsed_ms", integer(captured,"observed_elapsed_ms"));
++    }
++
++    void searchClick(final JSONObject request, final JSONObject result) throws Exception {
++        final String priorNonce = string(request,"inspection_nonce",32);
++        final String priorHash = string(request,"inspection_sha256",64);
++        need(!priorNonce.equals(string(request,"nonce",32)) && priorHash.matches("[0-9a-f]{64}"),
++            "SEARCH_DISTINCT_PRIOR_NONCE_AND_HASH");
++        byte[] previousRaw = readInspection(priorNonce);
++        need(hash(previousRaw).equals(priorHash), "SEARCH_PRIOR_BYTES_CHANGED");
++        JSONObject previous = new JSONObject(new String(previousRaw,StandardCharsets.UTF_8));
++        need(PROTOCOL.equals(previous.getString("protocol")) && "inspect".equals(previous.getString("op"))
++            && priorNonce.equals(previous.getString("nonce")) && previous.getBoolean("ok")
++            && previous.getBoolean("claim_persistence_completed") && previous.getBoolean("helper_work_completed")
++            && !previous.getBoolean("action_attempted") && previous.getJSONObject("restoration").getBoolean("service_info_verified"),
++            "SEARCH_SUCCESSFUL_RESTORED_CONTEXT_REQUIRED");
++        need(canonical(previous.getJSONObject("host_scope_attestation")).equals(canonical(request.getJSONObject("scope"))),
++            "SEARCH_PRIOR_HOST_SCOPE_CHANGED");
++        final JSONObject prior = previous.getJSONObject("inspection");
++        long priorAge = SystemClock.elapsedRealtime() - integer(prior,"observed_elapsed_ms");
++        need(priorAge >= 0 && priorAge <= MAX_INSPECTION_AGE_MS, "SEARCH_PRIOR_INSPECTION_TOO_OLD");
++        JSONObject priorNode = fixedSearchNode(prior);
++        final String path = string(request,"node_path",160), nodeHash = string(request,"node_sha256",64);
++        need(path.matches("0(?:/[0-9]{1,2}){0,32}") && nodeHash.matches("[0-9a-f]{64}")
++            && path.equals(priorNode.getString("path")) && nodeHash.equals(priorNode.getString("node_sha256")),
++            "SEARCH_PRIOR_EXACT_NODE_BINDING");
++        final JSONObject[] captured = new JSONObject[3];
++        final JSONObject[] refreshed = new JSONObject[1];
++        final Capture[] currentTarget = new Capture[1];
++        result.put("inspection_nonce", priorNonce).put("inspection_sha256", priorHash)
++            .put("prior_whole_tree_is_context_only", true).put("prior_target_and_window_still_required", true)
++            .put("prior_window_sha256", prior.getString("window_sha256"))
++            .put("atomic_android_transaction", false).put("search_contract", "fixed-beike-search-three-capture-v1");
++        try {
++            // Original bounded event-quiet gate, once, before the new selection capture.
++            waitForInspectionIdle();
++            PlayerButtonTransaction.run(new PlayerButtonTransaction.Backend<Capture,JSONObject>() {
++                @Override public Capture inspectSelection() throws Exception {
++                    return searchCapture(null,"search_selection",0,captured);
++                }
++                @Override public JSONObject selectCurrent(Capture first) throws Exception {
++                    JSONObject selected = fixedSearchNode(first.json);
++                    need(path.equals(selected.getString("path")) && nodeHash.equals(selected.getString("node_sha256")),
++                        "SEARCH_OBSERVED_TARGET_IDENTITY_CHANGED");
++                    need(first.json.getString("window_sha256").equals(prior.getString("window_sha256"))
++                        && canonical(first.json.getJSONObject("window")).equals(canonical(prior.getJSONObject("window"))),
++                        "SEARCH_PRIOR_STABLE_WINDOW_CHANGED");
++                    return selected;
++                }
++                @Override public Capture inspectTarget(JSONObject selected) throws Exception {
++                    Capture current = searchCapture(path,"action_target",1,captured);
++                    currentTarget[0] = current; return current;
++                }
++                @Override public void requireSameWholeTreeAndWindow(Capture first,Capture target) throws Exception {
++                    need(first.windowId == target.windowId
++                        && first.json.getString("tree_sha256").equals(target.json.getString("tree_sha256"))
++                        && first.json.getString("window_sha256").equals(target.json.getString("window_sha256")),
++                        "SEARCH_CURRENT_TREE_OR_WINDOW_CHANGED");
++                }
++                void refreshExact(Capture current) throws Exception {
++                    need(current != null && current.target != null && current.target.refresh(), "TARGET_REFRESH_FAILED");
++                    refreshed[0] = node(current.target,path);
++                    need(hashJson(refreshed[0]).equals(nodeHash), "TARGET_CHANGED_BEFORE_ACTION");
++                    need(current.target.getWindowId() == current.windowId && current.target.isEnabled()
++                        && current.target.isVisibleToUser() && !current.target.isPassword()
++                        && current.target.isClickable(), "ACTION_TARGET_NOT_ELIGIBLE");
++                }
++                @Override public void requireRefreshedTarget(Capture target,JSONObject selected) throws Exception {
++                    refreshExact(target);
++                }
++                @Override public Capture inspectFinal() throws Exception {
++                    return searchCapture(null,"action_final_window",2,captured);
++                }
++                @Override public void requireFinalWholeTreeAndWindow(Capture target,Capture last) throws Exception {
++                    need(last.windowId == target.windowId
++                        && last.json.getString("tree_sha256").equals(target.json.getString("tree_sha256"))
++                        && last.json.getString("window_sha256").equals(target.json.getString("window_sha256")),
++                        "FOCUS_CHANGED_BEFORE_ACTION");
++                }
++                @Override public void bindEvidence(Capture first,Capture target,Capture last,JSONObject selected) throws Exception {
++                    result.put("search_selection",first.json).put("search_selection_sha256",hashJson(first.json))
++                        .put("target_node_path",path).put("target_node_sha256",nodeHash)
++                        .put("action_window",target.json.getJSONObject("window"))
++                        .put("connection_scoped_window_id",target.windowId)
++                        .put("search_capture_bindings",new JSONArray().put(playerCaptureBinding(first))
++                            .put(playerCaptureBinding(target)).put(playerCaptureBinding(last)))
++                        .put("same_connection_full_tree_rechecks",2);
++                }
++                @Override public long selectedAt(Capture first) throws Exception { return integer(first.json,"observed_elapsed_ms"); }
++                @Override public long now() { return SystemClock.elapsedRealtime(); }
++                @Override public void beforeAction(long admitted,long age) throws Exception {
++                    timeBound(); refreshExact(currentTarget[0]);
++                    long actual = SystemClock.elapsedRealtime(), actualAge = actual - integer(captured[0],"observed_elapsed_ms");
++                    need(actual >= admitted && actualAge >= 0 && actualAge <= PlayerButtonTransaction.MAX_SELECTION_AGE_MS,
++                        "SEARCH_SELECTION_TOO_OLD_AFTER_FINAL_REFRESH");
++                    timeBound();
++                    result.put("search_action_admitted_elapsed_ms",actual).put("search_selection_age_ms",actualAge)
++                        .put("search_selection_age_limit_ms",PlayerButtonTransaction.MAX_SELECTION_AGE_MS)
++                        .put("target_refresh_count",2);
++                }
++                @Override public boolean clickOnce(Capture target) throws Exception {
++                    actionAttempted = true;
++                    boolean acknowledged = target.target.performAction(AccessibilityNodeInfo.ACTION_CLICK);
++                    result.put("node_action","ACTION_CLICK").put("node_action_returned",acknowledged);
++                    return acknowledged;
++                }
++                @Override public void close(Capture value) { value.close(); }
++            });
++        } catch (Exception primary) {
++            // Preserve the original failure. No retry or action is issued by diagnostics.
++            result.remove("search_selection");
++            try { result.put("search_private_diagnostic",searchPrivateDiagnostic(captured,refreshed[0],primary)); }
++            catch (Exception secondary) {
++                primary.addSuppressed(secondary);
++                result.put("search_diagnostic_error",errorCode(secondary));
++            }
++            throw primary;
++        }
+     }
+ 
+     void act(JSONObject request, JSONObject result) throws Exception {
+--- actual-r1/helper/tests/SearchTransactionChecks.java
++++ candidate-r2/helper/tests/SearchTransactionChecks.java
+@@ -0,0 +1,58 @@
++package org.droidloom.qa.successor.p8f89f253350ba2fa.r1;
++
++/** Synthetic controls of the exact inherited transaction; no Android imports or input. */
++public final class SearchTransactionChecks {
++    static final String[] NAMES = {
++        "three_equal_captures_one_click_all_closed", "target_tree_change_no_click", "target_window_change_no_click",
++        "target_connection_change_no_click", "refresh_change_no_click", "final_tree_change_no_click",
++        "final_window_change_no_click", "final_connection_change_no_click", "age_1001_no_click",
++        "final_close_failure_no_click", "ack_false_single_attempt_no_retry", "selection_failure_no_click"
++    };
++    static final class Capture { final int id; boolean closed; Capture(int value) { id=value; } }
++    static final class Backend implements PlayerButtonTransaction.Backend<Capture,Integer> {
++        final String fault; final Capture[] captures=new Capture[3]; int clicks,checks;
++        Backend(String value) { fault=value; }
++        void fail(String phase) throws Exception { if (fault.equals(phase)) throw new Exception(phase); }
++        public Capture inspectSelection() { return captures[0]=new Capture(0); }
++        public Integer selectCurrent(Capture first) throws Exception { fail("selection"); return 0; }
++        public Capture inspectTarget(Integer selected) { return captures[1]=new Capture(1); }
++        public void requireSameWholeTreeAndWindow(Capture first,Capture target) throws Exception {
++            checks++;fail("target_tree");fail("target_window");fail("target_connection");
++        }
++        public void requireRefreshedTarget(Capture target,Integer selected) throws Exception { fail("refresh"); }
++        public Capture inspectFinal() { return captures[2]=new Capture(2); }
++        public void requireFinalWholeTreeAndWindow(Capture target,Capture last) throws Exception {
++            checks++;fail("final_tree");fail("final_window");fail("final_connection");
++        }
++        public void bindEvidence(Capture first,Capture target,Capture last,Integer selected) {
++            if (checks!=2) throw new AssertionError("all comparisons before evidence");
++        }
++        public long selectedAt(Capture first) { return 1000; }
++        public long now() { return fault.equals("age") ? 2001 : 1500; }
++        public void beforeAction(long admitted,long age) {
++            if (checks!=2 || !captures[2].closed) throw new AssertionError("all checks and final close before click");
++        }
++        public boolean clickOnce(Capture target) { clicks++;return !fault.equals("ack"); }
++        public void close(Capture capture) throws Exception {
++            if (capture.closed) throw new AssertionError("double close");capture.closed=true;
++            if (capture.id==2) fail("final_close");
++        }
++    }
++    public static void main(String[] args) throws Exception {
++        if(args.length!=0)throw new AssertionError("no runtime arguments");
++        String[] faults={"", "target_tree", "target_window", "target_connection", "refresh", "final_tree",
++                         "final_window", "final_connection", "age", "final_close", "ack", "selection"};
++        StringBuilder out=new StringBuilder("{\"schema\":1,\"all_passed\":true,\"count\":12,\"cases\":[");
++        for(int i=0;i<faults.length;i++) {
++            Backend backend=new Backend(faults[i]);Exception error=null;
++            try { PlayerButtonTransaction.run(backend); } catch(Exception observed) { error=observed; }
++            if ((i==0)!=(error==null))throw new AssertionError("success/failure "+NAMES[i]);
++            int expectedClicks=(i==0 || faults[i].equals("ack"))?1:0;
++            if(backend.clicks!=expectedClicks)throw new AssertionError("exact click count "+NAMES[i]);
++            for(Capture capture:backend.captures)if(capture!=null && !capture.closed)throw new AssertionError("unclosed capture");
++            if(i>0)out.append(',');out.append("{\"name\":\"").append(NAMES[i]).append("\",\"passed\":true}");
++        }
++        out.append("],\"android_calls\":0,\"tree_captures\":0,\"input_actions\":0}");
++        System.out.println(out.toString());
++    }
++}

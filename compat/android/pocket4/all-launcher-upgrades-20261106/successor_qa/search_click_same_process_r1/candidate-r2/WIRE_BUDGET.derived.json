@@ -1,0 +1,89 @@
+{
+  "actual_input": {
+    "complete_tree_bytes": 221484,
+    "complete_tree_nodes": 245,
+    "inspection_wire_sha256": "3d5cf94834c0a7234b9b0e364ebc35abd1329defada5ee26acc42a867672854e",
+    "private_original_sha256": "85b3b9801685a427a484cc81b80de64e66df49ceb477efa99901ac2dfb01cee4"
+  },
+  "actual_new_search_result": false,
+  "any_existing_budget_increased": false,
+  "arbitrary_future_trees_guaranteed_to_compress_under_limit": false,
+  "base64_encoded_limit": 349528,
+  "gzip_limit": 262144,
+  "instrumentation_stdout_limit": 353624,
+  "measurement_kind": "LOCAL_SIZE_MODEL_USING_TWO_COPIES_OF_ONE_ALREADY_CAPTURED_TREE",
+  "measurements": [
+    {
+      "base64_bytes": 70360,
+      "canonical_json_bytes": 447002,
+      "gzip_bytes": 52768,
+      "gzip_level": 6,
+      "instrumentation_stdout_bytes": 70437,
+      "raw_sha256": "891ec031bb0aa7fde23ba9a7b2b1c0592655daf5cc3471d73a40289def2716d7",
+      "roundtrip_exact": true,
+      "wire_sha256": "57ddb1872dab2946c42043466fc353f1a0c3f13f4bcbc636089f04efe1594c71"
+    }
+  ],
+  "namespace_flow_stdout_independent_byte_limit": null,
+  "namespace_flow_stdout_policy": "Original Flow.command writes complete am stdout to exclusive private command files; BoundArun records exact lengths/hashes. No second base64/JSON re-encoding into the outer child stream.",
+  "new_capture_lost_or_truncated_to_fit": false,
+  "original_outer_owned_child_stderr_limit": 16384,
+  "original_outer_owned_child_stdout_limit": 131072,
+  "outer_stream_policy": "run_case and Session summaries only; private helper trees remain command stdout, raw helper result, and private assessment. New failure_diagnostic exposes hashes/counts, not node bodies.",
+  "overflow_behavior_unchanged": "Raw or compressed bound failure is not success. Compressed-bound failure occurs after the complete private raw result write; fixed readback still needs actual path metadata/pin. No truncation or auto retry.",
+  "raw_JSON_limit": 524288,
+  "raw_private_size_model_saved": false,
+  "remote_execution": false,
+  "result_persistence_order": [
+    "canonical raw JSON bound",
+    "writeNew nonce.result.json",
+    "gzip bound",
+    "base64 into instrumentation result"
+  ],
+  "same_existing_lossless_codec": true,
+  "schema": "pocket4-fixed-search-wire-budget-review-v1",
+  "single_capture_pair_limit": 229376,
+  "source_references": [
+    {
+      "bytes": 89439,
+      "path": "successor_qa/search_click_same_process_r1/candidate-r2/helper/src/org/droidloom/qa/successor/p8f89f253350ba2fa/r2/ActionRunner.java",
+      "sha256": "4c4668a716fddda2c4df9bcdb5f170ba79f966e6c76b2df825933834e404fe96"
+    },
+    {
+      "bytes": 59630,
+      "path": "successor_qa/search_click_same_process_r1/candidate-r2/helper/qa_contract.py",
+      "sha256": "496def43dcb48f9694fc4bebe459bc382ad934613184a6c9c45567433e6b2607"
+    },
+    {
+      "bytes": 31253,
+      "path": "successor_qa/search_click_same_process_r1/candidate-r2/helper/qa_adapter.py",
+      "sha256": "15559f9f1cd59bb1e9540251d4270a4f37a9e229bf86d9ec1e2f9b65d625692f"
+    },
+    {
+      "bytes": 9610,
+      "path": "successor_qa/search_click_same_process_r1/candidate-r2/helper/run_case.py",
+      "sha256": "022056fcb96cb488e7cee6f72c64ea3f950601e3905cca92677c2f2c410e3c54"
+    },
+    {
+      "bytes": 39563,
+      "path": "successor_qa/reconstructed/source-generation-r2/recorder/recorder.py",
+      "sha256": "0e50c67b1d5d251766fb58a69d9e62e119f0663ff2c4115ae326874cf95d6c09"
+    },
+    {
+      "bytes": 15603,
+      "path": "successor_qa/reconstructed/source-generation-r2/recorder/bound_android_transport.py",
+      "sha256": "069d003809d95b33e0d727fdec3ca6e8488e214180449cacbad07e66a302652f"
+    },
+    {
+      "bytes": 18199,
+      "path": "successor_qa/ffi_bootstrap_probe_r1/probe_ffi_bootstrap.py",
+      "sha256": "c7fc2c4a9397d861e27f257e3e0788cd76f7867f006d1b873b2916303b35ce82"
+    },
+    {
+      "bytes": 25377,
+      "path": "successor_qa/reusable_owned_ui_r1/owned_ui_request_once.py",
+      "sha256": "c394598e477f1912378c6c3d582850a196e64f77791d0b7f5c4d498ec9b61e38"
+    }
+  ],
+  "two_capture_raw_budget": 458752
+}

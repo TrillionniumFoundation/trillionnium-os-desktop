@@ -1,0 +1,11 @@
+--- candidate-r1/helper/install_owned_helper.py
++++ candidate-r2/helper/install_owned_helper.py
+@@ -150,7 +150,7 @@
+         held = flow.bind()
+         absence = command(flow,['/system/bin/cmd','package','list','packages','-u','-U','--user','all',SELF])
+         need(absence == b'', 'NEW_HELPER_OR_RETAINED_PACKAGE_ALREADY_EXISTS')
+-        stage = Stage(held.target,args.flow_dir.name.rsplit('-',1)[1])
++        stage = Stage(held.target,args.state_nonce)
+         stage.stage(apk,args.apk_sha256)
+         result['guest_stage'] = stage.record
+         del apk
