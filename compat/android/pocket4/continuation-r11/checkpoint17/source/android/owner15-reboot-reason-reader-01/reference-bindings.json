@@ -1,0 +1,44 @@
+{
+  "actual_debugfs_reference": {
+    "banner": "debugfs 1.47.2 (1-Jan-2025)\n",
+    "decoded_report_bytes": 5058,
+    "decoded_report_sha256": "6f7f854d2fe1d3e2052662fc6a460030706ac0169b8f5b4f5c405a0639efbcc5",
+    "local_stdout": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner14-data-directories01/stdout.log",
+    "source_file_pin": "864e1d7b445e7b5bfc831da78330dbcafc590fa82b89ea9de60b7527f989954f"
+  },
+  "actual_mount_source": {
+    "bytes": 95905,
+    "local_path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/namespace-child-exit-source-freeze-15/candidate/runtime/droidloom-supervisor/src/development.rs",
+    "mapping": "metadata.img mounts at guest /metadata; the fixed image-internal path omits /metadata.",
+    "sha256": "b4a73b76934c79d32fe2a95f6a39829b66be33209ad46c872c14d8ef97d260b1"
+  },
+  "current_init_artifact": {
+    "bytes": 2967000,
+    "frozen_path": "/opt/p4-media-composer-diagnostic-20261102-chat2-r5/payload/android-init",
+    "origin": "Owner15 frozen plan base.records[66]",
+    "sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73"
+  },
+  "current_init_source_closure_verified": false,
+  "schema": 1,
+  "upstream_references": [
+    {
+      "git_blob_sha1": "24e32d560a2f73adf4d10b3361225a1f1c8cccfd",
+      "observed_fact": "LAST_REBOOT_REASON_FILE resolves to /metadata/bootstat/persist.sys.boot.reason.",
+      "url": "https://android.googlesource.com/platform/system/core/+/android16-release/libcutils/include/cutils/android_reboot.h"
+    },
+    {
+      "git_blob_sha1": "ef9db9fdae30bf7adb56ae937982644151e749ae",
+      "observed_fact": "DoReboot calls PersistRebootReason; it opens the fixed metadata file, writes the reason and fsyncs.",
+      "url": "https://android.googlesource.com/platform/system/core/+/0168b2a55d82230e5fbf5db12642f9b1fc326506/init/reboot.cpp"
+    },
+    {
+      "git_blob_sha1": "547b1869f3c45f4a806408fdeef80bbb193356d3",
+      "observed_fact": "InitFatalReboot can call RebootSystem directly; absence of the fixed reason file cannot exclude this path.",
+      "url": "https://android.googlesource.com/platform/system/core/+/0168b2a55d82230e5fbf5db12642f9b1fc326506/init/reboot_utils.cpp"
+    },
+    {
+      "observed_fact": "Noninitial PID namespace RESTART/RESTART2 may be reported to its parent as SIGHUP; this is an alternative mechanism, not evidence that Owner15 called reboot.",
+      "url": "https://man7.org/linux/man-pages/man2/reboot.2.html"
+    }
+  ]
+}

@@ -1,0 +1,687 @@
+--- R6/AndroidManifest.xml
++++ R7/AndroidManifest.xml
+@@ -1,11 +1,11 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-    package="org.droidloom.qa.bili.r6" android:versionCode="1" android:versionName="1">
++    package="org.droidloom.qa.bili.r7" android:versionCode="1" android:versionName="1">
+     <uses-sdk android:minSdkVersion="31" android:targetSdkVersion="33" />
+     <queries><package android:name="tv.danmaku.bili" /></queries>
+     <application android:label="Owned Bili QA" android:debuggable="false"
+         android:testOnly="true" android:allowBackup="false" android:hasCode="true" />
+-    <instrumentation android:name="org.droidloom.qa.bili.r6.ActionRunner"
+-        android:targetPackage="org.droidloom.qa.bili.r6"
++    <instrumentation android:name="org.droidloom.qa.bili.r7.ActionRunner"
++        android:targetPackage="org.droidloom.qa.bili.r7"
+         android:functionalTest="true" android:handleProfiling="false" />
+ </manifest>
+--- R6/README.md
++++ R7/README.md
+@@ -1,31 +1,11 @@
+-# Owned Bili QA R6: one current-player controls-reveal transaction
++# Owned Bili R7: fixed current player button
+ 
+-This new self-instrumentation package is `org.droidloom.qa.bili.r6`, protocol `pocket4-owned-bili-qa-v6`. It targets itself, queries only `tv.danmaku.bili` UID 10117, and adds one operation, `reveal_controls`. R5 sources, installed helper, prior failures and actual successful samples remain unchanged. There is no Activity, native code, requested permission or network feature. Build-only does not install or invoke Android.
++R7 preserves the R6 state, inspect, click, set_text and reveal_controls operations. The only new operation is player_button with the fixed pause or resume intent. It uses no caller coordinates or arbitrary selector. The earlier successful complete inspection proves the exact public course and player frame; its tree and node are explicitly context only for this new operation.
+ 
+-## Evidence and scope
++The helper takes a new complete tree inside the action invocation, verifies the original full title/author/rendering/geometry predicate and the unique fixed current player button, and takes two further complete captures. Every field in the captured tree and window must remain equal, all three captures belong to the same UiAutomation connection/window, and the original target refresh, full node hash, eligibility and final window checks remain. A fresh selection age limit of 1000 ms applies before one ACTION_CLICK. Any mismatch fails without another attempt. This is not an Android atomic transaction.
+ 
+-The retired R5 controls-only reader actually examined two complete 153-node observations. Both had zero visible enabled clickable player descendants and no SeekBar. This explains why the existing ACTION_CLICK contract cannot select a pause/seek/reveal node in those observations. The controls reader's original stdout SHA256 is `1b910b63eeca23c80e283c4d7c4c8ebea3c8a2f9e3af6a5e431c68a01387c45b`. Those retired observations authorize no new action. Raw trees, account text and pixels are excluded from this source package.
++The helper result binds current private inspection bytes, all three complete capture hashes, exact selected node, intended transition, frame context, action acknowledgement and original own-service restoration. Host parsing independently verifies the public role and complete current inspection. It requires an independent no-automation after-state after helper termination. Acknowledgement alone does not establish a pause, resume, audio result or whole-App production readiness; an independent later label observation remains required, and failed/unknown actions never authorize automatic resume or retry.
+ 
+-R6 uses the original Session's new independent inspection, then the helper rereads its complete current tree and final window. Both hashes must match the inspected tree. The fixed course title/author hashes, exact Details activity, focused display-0 application window, two distinct SurfaceView geometries and their complete direct parents must qualify. The current control container must be empty, with no visible enabled clickable player node or SeekBar. The point is computed inside the current crop, at its center with a strict 16-pixel interior margin; arbitrary coordinates are not accepted.
++All R6 request/result, compression, tree/depth/child/window, helper/watchdog, per-command, build resource and timeout limits remain. The previous helper UID 10184 is explicitly excluded for the separately installed R7 package; R7 UID/APK/signer remain unknown until actual build/install. R6 files, installed helper and failed attempts are not modified or replayed.
+ 
+-One DOWN and one UP use pointer 0, finger tool, touchscreen source, device 0 and explicit display 0. The event timestamps use uptimeMillis. The production TouchTransaction records attempts before injection; uncertain or failed DOWN/UP permits one CANCEL with a current timestamp, never a repeated DOWN/UP. Every created event has an independent recycle attempt. Primary and secondary failures remain distinct. A successful ACK is insufficient: the helper then reads a third complete tree and requires the same absolute window, crop, player roles and renderer-structure hash. The tree itself may change when controls appear; the complete pre-input tree freshness gate is unchanged.
+-
+-The result intentionally leaves `controls_revealed` null and business qualification false. A separately observed new control tree is required before selecting pause or seek. No pause, seek, Back, audio or continuous-playback qualification is added here. Post-input complete trees are private evidence, never source/public summary data.
+-
+-## Public API and bounded failure behavior
+-
+-The official MotionEvent reference lists the 16-argument public static obtain factory with explicit displayId as API 34. R6 resolves that exact public signature with getMethod, verifies declaring class/static/return type and requires runtime API >=34. It does not use setAccessible, a hidden display setter or a fallback factory. Compile SDK remains pinned API 31, minSdk 31 and targetSdk 33; reflection permits the public newer runtime API without changing those compiler inputs.
+-https://developer.android.com/reference/android/view/MotionEvent
+-
+-The official UiAutomation reference documents injectInputEvent as public API 18, returning injection acknowledgement and requiring caller event recycling. It also documents waiting for window animations/surface work. R6 invokes the existing non-suppressing UiAutomation connection with sync=true; it does not adopt shell permissions, grant permissions or change settings.
+-https://developer.android.com/reference/android/app/UiAutomation
+-
+-The 150 ms value is the DOWN/UP admission deadline. It is not a hard bound on a blocking Binder call or proof that Android held the pointer for only 150 ms. Hard process termination, VM Errors or a permanently blocked call cannot be guaranteed to execute Java cleanup. A failed/unknown command cannot be retried, and remains subject to the outer held Main guards, timeout, exact owned-task cleanup and later state evidence. The receipts explicitly deny atomic input target attribution: before/after window agreement cannot prove an atomic receiver binding.
+-
+-Existing 2 s window readiness, 100 ms query cadence, 64-query limit, 8 s operation budget, 12 s watchdog, 512 nodes, depth 32, 64 children and 512 KiB result remain. Public own-connection cache clearing before each query, original ACTION_CLICK/ACTION_SET_TEXT behavior, accessibility state restoration and independent after-state are retained. R6 Session additionally requires unchanged post-action foreground for reveal_controls.
+-
+-## Verification and next admission
+-
+-The exact production TouchTransaction compiled under host JDK 17 and passed 16 controls. Inputs, clock and allocation are explicit seams; this is not Android input execution. Twenty-one Python controls run the actual complete-tree parser, player proof, request/receipt predicates and original Session finally with a command seam. They reject partial/wrong-display/wrong-course/extra-surface/interactive/buffering/moved geometry, caller coordinates, incomplete input ACK and cleanup errors. New helper Android compilation, installation and controls reveal are still unperformed.
+-
+-The exact build request retains pinned SDK31/JDK21/aapt/D8/zipalign/apksigner, 11 commands, 1 CPU, 512 MiB RAM, swap 0, TasksMax 128 and fresh create-only source/output roots. Both Java production files are mandatory inputs. Actual APK hash, actual signer, source/tool receipts and installed UID must be bound before a later fresh owned flow. No old helper qualifies the new request. The host recorder/namespace transport remains the already pinned R4/R5 lineage; no alternate entry or old-v2 fallback is added.
++This is a source and build-only candidate. Root alone may dispatch the exact static build, then bind actual build and installation originals before any separately reviewed fresh UI flow. No commercial package/signature/settings/permission change is included. No whole-App or business success is claimed.
+--- R6/build-input-reference.json
++++ R7/build-input-reference.json
+@@ -4,19 +4,22 @@
+     "sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+     "was_read_and_all_seven_values_checked_before_disconnection": true
+   },
+-  "artifact": "owned-bili-qa-r6-pinned-tool-reference",
++  "artifact": "owned-bili-qa-r7-pinned-tool-reference",
+   "compile_sdk_api": 31,
+   "min_sdk": 31,
+   "new_helper_compilation_performed": false,
+   "original_reference_file_recovered": false,
+   "r3_actual_compilation_performed": false,
+   "r6_actual_compilation_performed": false,
++  "r7_actual_compilation_performed": false,
+   "schema": 1,
+   "source_history": {
++    "R7_not_qualified_by_prior_builds": true,
+     "actual_r2_build_result_bytes": 17188,
+     "actual_r2_build_result_sha256": "714be386573242c2763d6fb69f91e557a5f7537e33b30f75ccdaaebfb694deae",
+     "actual_r5_build02_result_bytes": 17188,
+     "actual_r5_build02_result_sha256": "9482c57026a8e29956bc339dad8a0ce5f6c74ebe835ea0620a09c988d04e5077",
++    "frozen_r6_source_manifest_sha256": "6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419",
+     "r2_receipt_is_prior_tool_evidence_not_r3_build_qualification": true,
+     "r5_is_prior_tool_evidence_not_r6_qualification": true,
+     "tool_table_reused_without_changes": true
+--- R6/build_candidate.py
++++ R7/build_candidate.py
+@@ -16,8 +16,8 @@
+ import zipfile
+ 
+ HERE = Path(__file__).resolve().parent
+-PACKAGE = 'org.droidloom.qa.bili.r6'
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-build-01')
++PACKAGE = 'org.droidloom.qa.bili.r7'
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r7-build-01')
+ JDK = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86'
+ SDK_BASE = '/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts'
+ TOOLS = {
+@@ -74,7 +74,7 @@
+         require(not path.is_absolute() and '..' not in path.parts and path.as_posix() == name, 'source relative path')
+         actual = file_pin(HERE / name, 1024 * 1024)
+         require(actual['sha256'] == row['sha256'] and actual['bytes'] == row['bytes'], 'source differs: ' + name)
+-    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r6/ActionRunner.java', 'src/org/droidloom/qa/bili/r6/TouchTransaction.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
++    require({'AndroidManifest.xml', 'src/org/droidloom/qa/bili/r7/ActionRunner.java', 'src/org/droidloom/qa/bili/r7/TouchTransaction.java', 'src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java', 'qa_contract.py', 'build_candidate.py'} <= set(files), 'required sources missing')
+     return files
+ 
+ 
+@@ -196,10 +196,10 @@
+     try:
+         for name in ('classes','dex','res','private-signing'):
+             (OUTPUT/name).mkdir(mode=0o700)
+-        source_java = HERE/'src/org/droidloom/qa/bili/r6/ActionRunner.java'
++        source_java = HERE/'src/org/droidloom/qa/bili/r7/ActionRunner.java'
+         command('javac', [tool['javac'], '-J-XX:ActiveProcessorCount=1', '-J-XX:+UseSerialGC', '-J-Xmx256m',
+             '-proc:none','-Xmaxerrs','20','-Xmaxwarns','20','-source','8','-target','8','-bootclasspath',resolved['android_jar'],
+-            '-d',str(OUTPUT/'classes'),str(source_java),str(source_java.with_name('TouchTransaction.java'))])
++            '-d',str(OUTPUT/'classes'),str(source_java),str(source_java.with_name('TouchTransaction.java')),str(source_java.with_name('PlayerButtonTransaction.java'))])
+         classes = sorted((OUTPUT/'classes').rglob('*.class'))
+         require(1 <= len(classes) <= 32 and all(x.is_file() and x.stat().st_size <= 262144 for x in classes), 'class output bound')
+         command('d8', java+['-cp',resolved['r8'],'com.android.tools.r8.D8','--lib',resolved['android_jar'],
+@@ -218,10 +218,10 @@
+         # pinned Java runtime. No platform/commercial signing key is consumed.
+         command('create-owned-signing-key', java+['-m','java.base/sun.security.tools.keytool.Main',
+             '-genkeypair','-noprompt','-storetype','PKCS12','-keystore',str(store),'-storepass:file',str(password),
+-            '-alias','owned-bili-qa-r6','-keyalg','RSA','-keysize','3072','-validity','3650',
+-            '-dname','CN=Pocket4 Owned Bili QA R6,O=Owned Test,C=US'])
++            '-alias','owned-bili-qa-r7','-keyalg','RSA','-keysize','3072','-validity','3650',
++            '-dname','CN=Pocket4 Owned Bili QA R7,O=Owned Test,C=US'])
+         command('sign', [tool['apksigner'],'sign','--ks',str(store),'--ks-pass','file:'+str(password),
+-            '--ks-key-alias','owned-bili-qa-r6','--min-sdk-version','31','--v1-signing-enabled','false',
++            '--ks-key-alias','owned-bili-qa-r7','--min-sdk-version','31','--v1-signing-enabled','false',
+             '--v2-signing-enabled','true','--v3-signing-enabled','true','--out',str(OUTPUT/'owned-bili-qa.apk'),
+             str(OUTPUT/'aligned.apk')])
+         signature = command('signature', [tool['apksigner'],'verify','--verbose','--print-certs','--min-sdk-version','31',str(OUTPUT/'owned-bili-qa.apk')])
+@@ -231,7 +231,7 @@
+         badging = command('badging', [tool['aapt'],'dump','badging',str(OUTPUT/'owned-bili-qa.apk')])
+         permissions = command('permissions', [tool['aapt'],'dump','permissions',str(OUTPUT/'owned-bili-qa.apk')])
+         xml = command('manifest', [tool['aapt'],'dump','xmltree',str(OUTPUT/'owned-bili-qa.apk'),'AndroidManifest.xml'])
+-        require(b"package: name='org.droidloom.qa.bili.r6' versionCode='1'" in badging and
++        require(b"package: name='org.droidloom.qa.bili.r7' versionCode='1'" in badging and
+                 b"sdkVersion:'31'" in badging and b"targetSdkVersion:'33'" in badging, 'actual APK package/SDK differs')
+         require(b'uses-permission' not in permissions and b'uses-permission' not in xml and
+                 b'application-debuggable' not in badging and b'launchable-activity' not in badging, 'actual APK privilege/component differs')
+--- R6/make_build_request.py
++++ R7/make_build_request.py
+@@ -5,7 +5,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bili-qa-r6-static-build-01-20261105'
++KEY='pocket4-owned-bili-qa-r7-static-build-01-20261106'
+ 
+ 
+ def encode(value):
+--- R6/qa_adapter.py
++++ R7/qa_adapter.py
+@@ -18,7 +18,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SELF = 'org.droidloom.qa.bili.r6'
++SELF = 'org.droidloom.qa.bili.r7'
+ BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+@@ -78,15 +78,16 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
+-             'src/org/droidloom/qa/bili/r6/ActionRunner.java',
+-             'src/org/droidloom/qa/bili/r6/TouchTransaction.java'} <= set(manifest['files']),
++             'src/org/droidloom/qa/bili/r7/ActionRunner.java',
++             'src/org/droidloom/qa/bili/r7/TouchTransaction.java',
++             'src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+ 
+ 
+ def validate_plan(plan, qa):
+     require(isinstance(plan, dict) and plan.get('schema') == 1 and
+-            plan.get('operation') in ('state','inspect','click','set_text','reveal_controls'), 'OWNED_PLAN_REQUIRED')
++            plan.get('operation') in ('state','inspect','click','set_text','reveal_controls','player_button'), 'OWNED_PLAN_REQUIRED')
+     op = plan['operation']; keys = {'schema','operation','nonces'}
+     if op in ('click','set_text'):
+         keys.add('selector')
+@@ -101,8 +102,11 @@
+                 {'resource_id','class'}<=set(plan['selector']) and plan['selector']['class']=='android.widget.EditText' and
+                 re.fullmatch(r'tv\.danmaku\.bili:id/[A-Za-z0-9_]+',plan['selector']['resource_id']),
+                 'ONLY_OBSERVED_EXACT_EDIT_RESOURCE_AND_PUBLIC_QUERY')
++    if op == 'player_button':
++        keys.add('transition')
++        require(plan.get('transition') in ('pause','resume'),'FIXED_PLAYER_TRANSITION_REQUIRED')
+     require(set(plan) == keys and isinstance(plan['nonces'], dict), 'EXACT_PLAN_KEYS_REQUIRED')
+-    names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text','reveal_controls') else set())
++    names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text','reveal_controls','player_button') else set())
+     require(set(plan['nonces']) == names, 'EXACT_PHASE_NONCES_REQUIRED')
+     values = [qa.nonce(value) for value in plan['nonces'].values()]
+     require(len(set(values)) == len(values), 'DISTINCT_PHASE_NONCES_REQUIRED')
+@@ -147,7 +151,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165,10166,10169,10170,10175),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+@@ -180,7 +184,7 @@
+         self.nonces.add(request['nonce'])
+         self.recorder.write_new(f.step/(request['nonce']+'.request.json'), request)
+         before = f.command_index
+-        out = f.android(qa.instrumentation_argv(request), 20, mutation=request['op'] in ('click','set_text','reveal_controls'))
++        out = f.android(qa.instrumentation_argv(request), 20, mutation=request['op'] in ('click','set_text','reveal_controls','player_button'))
+         require(f.command_index == before+1, 'ONE_ACTUAL_HELD_COMMAND_REQUIRED')
+         stem = f.step/('command-%03d' % f.command_index)
+         raw = bounded(str(stem)+'.result.json', 65536); row = json.loads(raw)
+@@ -299,6 +303,18 @@
+                 result['reveal_input_acknowledged']=True
+                 result['controls_revealed']=None
+                 result['post_input_inspection_sha256']=qa.sha(qa.canonical(middle['helper']['post_inspection']))
++            elif plan['operation']=='player_button':
++                fields=qa.player_button_request_fields(inspected['helper']['inspection'],scope,plan['transition'])
++                action=request('action','player_button',scope=scope,inspection_nonce=names['inspect'],
++                    inspection_sha256=inspected['wire_sha256'],**fields)
++                middle=None
++                middle=self.instrument(action)
++                require(middle['helper']['action_window']==inspected['helper']['inspection']['window'],
++                        'PLAYER_BUTTON_ACKNOWLEDGED_WINDOW_DIFFERS')
++                result['player_button_acknowledged']=True
++                result['player_transition_requested']=plan['transition']
++                result['player_current_inspection_sha256']=middle['helper']['player_inspection_sha256']
++                result['atomic_android_transaction']=False
+         except BaseException as error:
+             remember('state_inspection_or_action',error)
+         finally:
+@@ -325,7 +341,7 @@
+             if scope is not None:
+                 try:
+                     result['foreground_after'] = self.foreground()
+-                    if plan['operation'] in ('inspect','reveal_controls'):
++                    if plan['operation'] in ('inspect','reveal_controls','player_button'):
+                         require(result['foreground_after'] == scope,'READ_ONLY_INSPECT_FOREGROUND_CHANGED')
+                 except BaseException as error:
+                     remember('post_foreground',error)
+@@ -386,7 +402,7 @@
+ 
+     try:
+         flow = recorder.Flow(flow_args)
+-        flow.begin(flow_args, mutation=plan['operation'] in ('click','set_text','reveal_controls'))
++        flow.begin(flow_args, mutation=plan['operation'] in ('click','set_text','reveal_controls','player_button'))
+         action_lock = recorder.lock_file(recorder.ACTION_LOCK)
+         result.update(Session(flow, recorder, qa, proof, args.helper_uid).sequence(plan))
+         result['ok'] = True
+@@ -430,7 +446,7 @@
+     args = parser.parse_args()
+     if not args.execute_once:
+         print(json.dumps({'state':'PLAN_ONLY', 'package':SELF, 'recorder_manifest_sha256':RECORDER_MANIFEST_SHA,
+-            'operations':['state','inspect','click','set_text','reveal_controls'], 'install_launch_task_cleanup_or_UI_actions':0,
++            'operations':['state','inspect','click','set_text','reveal_controls','player_button'], 'install_launch_task_cleanup_or_UI_actions':0,
+             'actual_build_install_and_runtime_qualification_required':True}))
+         return 0
+     require(all(getattr(args, name) is not None for name in ('source_manifest_sha256','build_receipt_sha256',
+--- R6/qa_contract.py
++++ R7/qa_contract.py
+@@ -5,8 +5,8 @@
+ import re
+ import zlib
+ 
+-PROTOCOL = 'pocket4-owned-bili-qa-v6'
+-SELF = 'org.droidloom.qa.bili.r6'
++PROTOCOL = 'pocket4-owned-bili-qa-v7'
++SELF = 'org.droidloom.qa.bili.r7'
+ COMPONENT = SELF + '/' + SELF + '.ActionRunner'
+ PACKAGE = 'tv.danmaku.bili'
+ UID = 10117
+@@ -81,7 +81,7 @@
+     nonce(value.get('nonce'))
+     op = value.get('op')
+     expected = {'protocol', 'nonce', 'op'}
+-    if op in ('inspect', 'click', 'set_text','reveal_controls'):
++    if op in ('inspect', 'click', 'set_text','reveal_controls','player_button'):
+         expected.add('scope')
+         scope(value.get('scope'))
+     if op in ('click','set_text'):
+@@ -101,7 +101,13 @@
+         require(nonce(value.get('inspection_nonce'))!=value['nonce'],'DISTINCT_REVEAL_NONCE_REQUIRED')
+         digest(value.get('inspection_sha256'));digest(value.get('player_scope_sha256'));reveal_rect(value.get('viewport_bounds'))
+         require(value['scope']['activity']==REVEAL_ACTIVITY,'REVEAL_EXACT_COURSE_ACTIVITY')
+-    require(op in ('state', 'inspect', 'click', 'set_text','reveal_controls') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
++    if op == 'player_button':
++        expected.update(('inspection_nonce','inspection_sha256','transition','player_frame_sha256'))
++        require(nonce(value.get('inspection_nonce'))!=value['nonce'],'DISTINCT_PLAYER_BUTTON_NONCE_REQUIRED')
++        digest(value.get('inspection_sha256'));digest(value.get('player_frame_sha256'))
++        require(value.get('transition') in ('pause','resume') and value['scope']['activity']==REVEAL_ACTIVITY,
++                'FIXED_PLAYER_TRANSITION_AND_CONTEXT_REQUIRED')
++    require(op in ('state', 'inspect', 'click', 'set_text','reveal_controls','player_button') and set(value) == expected, 'EXACT_OPERATION_KEYS_REQUIRED')
+     raw = canonical(value)
+     require(0 < len(raw) <= MAX_REQUEST, 'REQUEST_BOUND')
+     return raw
+@@ -169,7 +175,7 @@
+             value.get('op') == request['op'] and value.get('request_sha256') == sha(raw_request) and
+             value.get('wire_codec') == 'gzip-canonical-json-v1',
+             'RESULT_REQUEST_BINDING_FAILED')
+-    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175) and value.get('self_uid') == helper_uid and
++    require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (UID, 10125, 10164, 10165, 10166, 10169, 10170, 10175, 10184) and value.get('self_uid') == helper_uid and
+             type(value.get('self_pid')) is int and value['self_pid'] > 1, 'INSTALLED_HELPER_IDENTITY_REQUIRED')
+     require(value.get('ok') is True and value.get('error') is None and value.get('secondary_errors') == [] and
+             value.get('claim_persistence_completed') is True and value.get('helper_work_completed') is True,
+@@ -213,6 +219,8 @@
+                     'COMPLETE_TREE_COUNTERS_MUST_MATCH_ACTUAL_INSPECTION')
+         elif request['op']=='reveal_controls':
+             assess_reveal(value,request,observed_window,observed_trees)
++        elif request['op']=='player_button':
++            assess_player_button(value,request,observed_window,observed_trees)
+         else:
+             require(value.get('action_attempted') is True and value.get('outcome_unknown') is True and
+                     value.get('node_action') == ('ACTION_SET_TEXT' if request['op']=='set_text' else 'ACTION_CLICK') and
+@@ -299,7 +307,8 @@
+         require(value==[],'STATE_CANNOT_ENUMERATE_TREES')
+         return value
+     expected=(['inspection'] if operation=='inspect' else ['reveal_target','reveal_final_window','reveal_after']
+-              if operation=='reveal_controls' else ['action_target','action_final_window'])
++              if operation=='reveal_controls' else ['player_selection','action_target','action_final_window']
++              if operation=='player_button' else ['action_target','action_final_window'])
+     require(len(value)<=len(expected),'TREE_CAPTURE_COUNT_BOUND')
+     if complete_required:require(len(value)==len(expected),'COMPLETE_TREE_CAPTURE_SEQUENCE_REQUIRED')
+     keys={'capture','purpose','node_limit','depth_limit','child_limit','json_byte_limit','attempted_nodes',
+@@ -580,7 +589,7 @@
+ def assess_restoration(before, operation, after):
+     """These inputs must be parse_completed returns from three joined commands."""
+     first, middle, last = before['helper'], operation['helper'], after['helper']
+-    require(first['op'] == last['op'] == 'state' and middle['op'] in ('inspect','click','set_text','reveal_controls'), 'STATE_OPERATION_STATE_SEQUENCE_REQUIRED')
++    require(first['op'] == last['op'] == 'state' and middle['op'] in ('inspect','click','set_text','reveal_controls','player_button'), 'STATE_OPERATION_STATE_SEQUENCE_REQUIRED')
+     require(len({first['nonce'], middle['nonce'], last['nonce']}) == 3, 'DISTINCT_PHASE_NONCES_REQUIRED')
+     require(first['self_uid'] == middle['self_uid'] == last['self_uid'], 'HELPER_UID_CHANGED')
+     require(first['state'] == middle['accessibility_state_before_connection'] == last['state'] and
+@@ -591,3 +600,94 @@
+             'state_before': first['state'], 'state_after': last['state'],
+             'wire_sha256': [before['wire_sha256'], operation['wire_sha256'], after['wire_sha256']],
+             'business_success_verified': False, 'whole_app_production_ready': False}
++
++PLAYER_BUTTON_RESOURCE = PACKAGE+':id/gemini_halfscreen_play'
++PLAYER_BUTTON_LABELS = {'pause':'暂停','resume':'播放'}
++MAX_PLAYER_SELECTION_AGE_MS = 1000
++
++
++def player_frame(proof):
++    keys=('scope','window','window_sha256','viewport_bounds','full_area_bounds',
++          'render_structure_sha256','title_text_sha256','author_text_sha256')
++    return {key:proof[key] for key in keys}
++
++
++def player_button_current(inspection,host_scope,transition):
++    """Fixed current role, never caller coordinates or an arbitrary selector."""
++    require(transition in PLAYER_BUTTON_LABELS,'FIXED_PLAYER_TRANSITION_REQUIRED')
++    proof=player_reveal_scope(inspection,host_scope,False)
++    nodes=inspection['nodes'];by_path={n['path']:n for n in nodes}
++    rows=[n for n in nodes if n.get('resource_id')==PLAYER_BUTTON_RESOURCE]
++    require(len(rows)==1,'UNIQUE_CURRENT_PLAYBACK_RESOURCE_REQUIRED')
++    label=PLAYER_BUTTON_LABELS[transition]
++    target=select_unique_clickable(inspection,{'resource_id':PLAYER_BUTTON_RESOURCE,
++        'class':'android.widget.ImageView','content_desc':label})
++    node=rows[0];controls=[n for n in nodes if n.get('resource_id')==PACKAGE+':id/control_container']
++    require(len(controls)==1,'UNIQUE_CURRENT_CONTROL_CONTAINER_REQUIRED')
++    controls=controls[0]
++    containers=[n for n in nodes if n.get('resource_id')==PACKAGE+':id/video_container']
++    require(len(containers)==1,'UNIQUE_CURRENT_VIDEO_CONTAINER_REQUIRED')
++    parent=by_path.get(node['path'].rsplit('/',1)[0]);crop=proof['viewport_bounds'];bounds=reveal_rect(node['bounds'])
++    def eligible(n):
++        return isinstance(n,dict) and n.get('visible') is True and n.get('enabled') is True and n.get('password') is False and n.get('class_truncated') is False and n.get('resource_id_truncated') is False
++    require(eligible(controls) and controls['class']=='android.widget.FrameLayout' and
++        controls['path'].startswith(containers[0]['path']+'/') and controls['bounds']==crop and
++        type(controls['child_count']) is int and controls['child_count']==1 and
++        eligible(parent) and parent['class']=='android.view.ViewGroup' and parent['resource_id']=='' and
++        parent['path'].rsplit('/',1)[0]==controls['path'] and parent['bounds']==crop and
++        node['editable'] is False and node['text']=='' and node['text_truncated'] is False and
++        node['content_desc_sha256']==sha(label.encode()) and
++        crop[0]<=bounds[0]<bounds[2]<=crop[2] and crop[1]<=bounds[1]<bounds[3]<=crop[3] and
++        target=={'node_path':node['path'],'node_sha256':node['node_sha256']},
++        'EXACT_CURRENT_PLAYER_DIRECT_CONTROL_REQUIRED')
++    return target,proof
++
++
++def player_button_request_fields(inspection,host_scope,transition):
++    _,proof=player_button_current(inspection,host_scope,transition)
++    return {'transition':transition,'player_frame_sha256':sha(canonical(player_frame(proof)))}
++
++
++def assess_player_button(value,request,observed_window,observed_trees):
++    require(value.get('action_attempted') is True and value.get('outcome_unknown') is True and
++        value.get('node_action')=='ACTION_CLICK' and value.get('node_action_returned') is True and
++        value.get('inspection_nonce')==request['inspection_nonce'] and
++        value.get('inspection_sha256')==request['inspection_sha256'] and
++        value.get('transition')==request['transition'] and
++        value.get('player_frame_sha256')==request['player_frame_sha256'] and
++        value.get('prior_inspection_is_context_only') is True and
++        value.get('atomic_android_transaction') is False and
++        value.get('same_connection_full_tree_rechecks')==2,
++        'CURRENT_PLAYER_BUTTON_REQUEST_AND_ACK_REQUIRED')
++    current=inspect_record(value.get('player_inspection'))
++    target,proof=player_button_current(current,request['scope'],request['transition'])
++    require(value.get('player_scope')==proof and
++        sha(canonical(player_frame(proof)))==request['player_frame_sha256'] and
++        value.get('player_inspection_sha256')==sha(canonical(current)) and
++        value.get('target_node_path')==target['node_path'] and
++        value.get('target_node_sha256')==target['node_sha256'] and
++        value.get('action_window')==current['window'] and
++        value.get('connection_scoped_window_id')==current['connection_scoped_window_id']==observed_window['selected_window_id'],
++        'CURRENT_PLAYER_CAPTURE_ROLE_AND_CONTEXT_REQUIRED')
++    captures=value.get('player_capture_bindings')
++    require(type(captures) is list and len(captures)==3,'THREE_CURRENT_PLAYER_CAPTURE_BINDINGS_REQUIRED')
++    previous=current['observed_elapsed_ms']
++    for index,row in enumerate(captures):
++        require(type(row) is dict and set(row)=={'tree_sha256','window_sha256','connection_scoped_window_id','observed_elapsed_ms'} and
++            row['tree_sha256']==current['tree_sha256'] and row['window_sha256']==current['window_sha256'] and
++            type(row['connection_scoped_window_id']) is int and row['connection_scoped_window_id']==current['connection_scoped_window_id'] and
++            type(row['observed_elapsed_ms']) is int and previous<=row['observed_elapsed_ms'],
++            'CURRENT_PLAYER_WHOLE_TREE_WINDOW_OR_CAPTURE_ORDER_CHANGED')
++        require(observed_trees[index]['emitted_nodes']==len(current['nodes']) and
++            observed_trees[index]['began_elapsed_ms']<=row['observed_elapsed_ms']<=observed_trees[index]['last_elapsed_ms'],
++            'CURRENT_PLAYER_COMPLETE_CAPTURE_TIMING_REQUIRED')
++        previous=row['observed_elapsed_ms']
++    require(captures[0]['observed_elapsed_ms']==current['observed_elapsed_ms'] and
++        observed_trees[0]['serialized_bytes']==len(canonical(current)) and
++        type(value.get('player_action_admitted_elapsed_ms')) is int and
++        value['started_elapsed_ms']<=current['observed_elapsed_ms']<=previous<=value['player_action_admitted_elapsed_ms']<=value['finished_elapsed_ms'] and
++        type(value.get('player_selection_age_ms')) is int and
++        value['player_selection_age_ms']==value['player_action_admitted_elapsed_ms']-current['observed_elapsed_ms'] and
++        0<=value['player_selection_age_ms']<=MAX_PLAYER_SELECTION_AGE_MS and
++        value.get('player_selection_age_limit_ms')==MAX_PLAYER_SELECTION_AGE_MS,
++        'CURRENT_PLAYER_SELECTION_FRESHNESS_REQUIRED')
+--- R6/src/org/droidloom/qa/bili/r7/ActionRunner.java
++++ R7/src/org/droidloom/qa/bili/r7/ActionRunner.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r6;
++package org.droidloom.qa.bili.r7;
+ 
+ import android.accessibilityservice.AccessibilityServiceInfo;
+ import android.app.Instrumentation;
+@@ -41,9 +41,9 @@
+ 
+ /** An owned self-instrumentation; it never instruments the commercial app. */
+ public final class ActionRunner extends Instrumentation {
+-    static final String PROTOCOL = "pocket4-owned-bili-qa-v6";
++    static final String PROTOCOL = "pocket4-owned-bili-qa-v7";
+     static final String PACKAGE = "tv.danmaku.bili";
+-    static final String SELF = "org.droidloom.qa.bili.r6";
++    static final String SELF = "org.droidloom.qa.bili.r7";
+     static final String MAIN_EPOCH = "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f";
+     static final int TARGET_UID = 10117;
+     static final int MAX_REQUEST = 16384, MAX_RESULT = 524288, MAX_COMPRESSED_WIRE = 262144;
+@@ -174,6 +174,7 @@
+             else if (op.equals("inspect")) keys(request, "protocol", "nonce", "op", "scope");
+             else if (op.equals("click")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256");
+             else if (op.equals("reveal_controls")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "player_scope_sha256", "viewport_bounds");
++            else if (op.equals("player_button")) keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "transition", "player_frame_sha256");
+             else if (op.equals("set_text")) {
+                 keys(request, "protocol", "nonce", "op", "scope", "inspection_nonce", "inspection_sha256", "node_path", "node_sha256", "node_resource_id", "value");
+                 need(PUBLIC_SEARCH_QUERY.equals(string(request, "value", 64)), "ONLY_FIXED_PUBLIC_SEARCH_QUERY_ALLOWED");
+@@ -204,6 +205,7 @@
+                     try { result.put("inspection", captured.json); }
+                     finally { captured.close(); }
+                 } else if (op.equals("reveal_controls")) revealControls(request, result);
++                else if (op.equals("player_button")) playerButton(request, result);
+                 else act(request, result);
+             }
+         } catch (Exception error) { primary = error; }
+@@ -249,7 +251,7 @@
+     }
+ 
+     static String errorCode(Exception error) {
+-        return error instanceof Rejected || error instanceof TouchTransaction.Fault
++        return error instanceof Rejected || error instanceof TouchTransaction.Fault || error instanceof PlayerButtonTransaction.Fault
+             ? error.getMessage() : "EXCEPTION_" + error.getClass().getSimpleName();
+     }
+     void writeNew(String name, byte[] value) throws Exception {
+@@ -814,6 +816,129 @@
+                     .put("scope_unchanged_after_input",true).put("requires_independent_controls_readback",true);
+             } finally { after.close(); }
+         } finally { current.close(); }
++    }
++
++    static final String PLAYER_BUTTON_RESOURCE = PACKAGE+":id/gemini_halfscreen_play";
++    static JSONObject playerFrame(JSONObject proof) throws Exception {
++        JSONObject value=new JSONObject();
++        for (String key:new String[]{"scope","window","window_sha256","viewport_bounds","full_area_bounds",
++                "render_structure_sha256","title_text_sha256","author_text_sha256"}) value.put(key,proof.get(key));
++        return value;
++    }
++    static final class PlayerSelection {
++        final String path,nodeHash,inspectionHash;final JSONObject proof;
++        PlayerSelection(String p,String h,String whole,JSONObject value) { path=p;nodeHash=h;inspectionHash=whole;proof=value; }
++    }
++    static PlayerSelection playerButtonCurrent(JSONObject inspection,JSONObject scope,String transition) throws Exception {
++        need("pause".equals(transition)||"resume".equals(transition),"FIXED_PLAYER_TRANSITION_REQUIRED");
++        String label="pause".equals(transition)?"暂停":"播放";
++        JSONObject proof=revealPlayer(inspection,scope,false);JSONArray nodes=inspection.getJSONArray("nodes");
++        JSONObject button=null,controls=null,container=null,parent=null;int buttonCount=0,controlsCount=0,containerCount=0;
++        for (int i=0;i<nodes.length();i++) {
++            JSONObject node=nodes.getJSONObject(i);String resource=node.getString("resource_id");
++            if (PLAYER_BUTTON_RESOURCE.equals(resource)) { button=node;buttonCount++; }
++            if ((PACKAGE+":id/control_container").equals(resource)) { controls=node;controlsCount++; }
++            if ((PACKAGE+":id/video_container").equals(resource)) { container=node;containerCount++; }
++        }
++        need(buttonCount==1,"UNIQUE_CURRENT_PLAYBACK_RESOURCE_REQUIRED");
++        need(controlsCount==1,"UNIQUE_CURRENT_CONTROL_CONTAINER_REQUIRED");
++        need(containerCount==1,"UNIQUE_CURRENT_VIDEO_CONTAINER_REQUIRED");
++        need(revealEligible(button) && "android.widget.ImageView".equals(button.getString("class")) && button.getBoolean("clickable")
++            && !button.getBoolean("content_desc_truncated") && label.equals(button.getString("content_desc"))
++            && hash(label.getBytes(StandardCharsets.UTF_8)).equals(button.getString("content_desc_sha256")),
++            "EXACT_CURRENT_PLAYER_BUTTON_LABEL_REQUIRED");
++        String path=button.getString("path");int slash=path.lastIndexOf('/');need(slash>0,"CURRENT_PLAYER_BUTTON_PARENT_PATH");
++        String parentPath=path.substring(0,slash);int parentCount=0;
++        for (int i=0;i<nodes.length();i++) {
++            JSONObject candidate=nodes.getJSONObject(i);
++            if (parentPath.equals(candidate.getString("path"))) { parent=candidate;parentCount++; }
++        }
++        int[] crop=revealRect(proof.getJSONArray("viewport_bounds")),box=revealRect(button.getJSONArray("bounds"));
++        need(revealEligible(controls) && "android.widget.FrameLayout".equals(controls.getString("class"))
++            && revealUnder(controls,container) && Arrays.equals(crop,revealRect(controls.getJSONArray("bounds")))
++            && integer(controls,"child_count")==1 && parentCount==1 && revealEligible(parent)
++            && "android.view.ViewGroup".equals(parent.getString("class")) && parent.getString("resource_id").isEmpty()
++            && parentPath.lastIndexOf('/')>0 && parentPath.substring(0,parentPath.lastIndexOf('/')).equals(controls.getString("path"))
++            && Arrays.equals(crop,revealRect(parent.getJSONArray("bounds"))) && !button.getBoolean("editable")
++            && button.getString("text").isEmpty() && !button.getBoolean("text_truncated") && revealInside(box,crop),
++            "EXACT_CURRENT_PLAYER_DIRECT_CONTROL_REQUIRED");
++        return new PlayerSelection(path,button.getString("node_sha256"),hashJson(inspection),proof);
++    }
++    static JSONObject playerCaptureBinding(Capture capture) throws Exception {
++        return new JSONObject().put("tree_sha256",capture.json.getString("tree_sha256"))
++            .put("window_sha256",capture.json.getString("window_sha256"))
++            .put("connection_scoped_window_id",capture.windowId)
++            .put("observed_elapsed_ms",integer(capture.json,"observed_elapsed_ms"));
++    }
++    void playerButton(final JSONObject request,final JSONObject result) throws Exception {
++        final String transition=string(request,"transition",6);
++        need("pause".equals(transition)||"resume".equals(transition),"FIXED_PLAYER_TRANSITION_REQUIRED");
++        String priorNonce=string(request,"inspection_nonce",32),priorHash=string(request,"inspection_sha256",64);
++        need(!priorNonce.equals(string(request,"nonce",32)) && priorHash.matches("[0-9a-f]{64}"),"PLAYER_CONTEXT_NONCE_AND_HASH");
++        byte[] previousRaw=readInspection(priorNonce);need(hash(previousRaw).equals(priorHash),"PLAYER_CONTEXT_BYTES_CHANGED");
++        JSONObject previous=new JSONObject(new String(previousRaw,StandardCharsets.UTF_8));
++        need(PROTOCOL.equals(previous.getString("protocol")) && previous.getBoolean("ok")
++            && previous.getBoolean("claim_persistence_completed") && previous.getBoolean("helper_work_completed")
++            && "inspect".equals(previous.getString("op")) && priorNonce.equals(previous.getString("nonce"))
++            && !previous.getBoolean("action_attempted") && previous.getJSONObject("restoration").getBoolean("service_info_verified"),
++            "PLAYER_SUCCESSFUL_RESTORED_CONTEXT_REQUIRED");
++        final JSONObject scope=request.getJSONObject("scope");
++        need(canonical(previous.getJSONObject("host_scope_attestation")).equals(canonical(scope)),"PLAYER_CONTEXT_SCOPE_CHANGED");
++        JSONObject inspected=previous.getJSONObject("inspection");
++        long age=SystemClock.elapsedRealtime()-integer(inspected,"observed_elapsed_ms");
++        need(age>=0 && age<=MAX_INSPECTION_AGE_MS,"PLAYER_CONTEXT_INSPECTION_TOO_OLD");
++        PlayerSelection prior=playerButtonCurrent(inspected,scope,transition);
++        final String frameHash=string(request,"player_frame_sha256",64);
++        need(frameHash.matches("[0-9a-f]{64}") && hashJson(playerFrame(prior.proof)).equals(frameHash),"PLAYER_CONTEXT_FRAME_CHANGED");
++        result.put("inspection_nonce",priorNonce).put("inspection_sha256",priorHash)
++            .put("transition",transition).put("player_frame_sha256",frameHash)
++            .put("prior_inspection_is_context_only",true).put("atomic_android_transaction",false);
++        PlayerButtonTransaction.run(new PlayerButtonTransaction.Backend<Capture,PlayerSelection>() {
++            @Override public Capture inspectSelection() throws Exception { return inspect(null,"player_selection"); }
++            @Override public PlayerSelection selectCurrent(Capture first) throws Exception {
++                PlayerSelection selected=playerButtonCurrent(first.json,scope,transition);
++                need(hashJson(playerFrame(selected.proof)).equals(frameHash),"CURRENT_PLAYER_CONTEXT_FRAME_CHANGED");
++                return selected;
++            }
++            @Override public Capture inspectTarget(PlayerSelection selected) throws Exception { return inspect(selected.path,"action_target"); }
++            @Override public void requireSameWholeTreeAndWindow(Capture first,Capture target) throws Exception {
++                need(first.windowId==target.windowId && first.json.getString("tree_sha256").equals(target.json.getString("tree_sha256"))
++                    && first.json.getString("window_sha256").equals(target.json.getString("window_sha256")),
++                    "CURRENT_PLAYER_TREE_OR_WINDOW_CHANGED");
++            }
++            @Override public void requireRefreshedTarget(Capture current,PlayerSelection selected) throws Exception {
++                need(current.target!=null && current.target.refresh(),"TARGET_REFRESH_FAILED");
++                need(hashJson(node(current.target,selected.path)).equals(selected.nodeHash),"TARGET_CHANGED_BEFORE_ACTION");
++                need(current.target.getWindowId()==current.windowId && current.target.isEnabled()
++                    && current.target.isVisibleToUser() && !current.target.isPassword(),"ACTION_TARGET_NOT_ELIGIBLE");
++                need(current.target.isClickable(),"ACTION_TARGET_NOT_CLICKABLE");
++            }
++            @Override public Capture inspectFinal() throws Exception { return inspect(null,"action_final_window"); }
++            @Override public void requireFinalWholeTreeAndWindow(Capture target,Capture last) throws Exception {
++                need(last.windowId==target.windowId && last.json.getString("tree_sha256").equals(target.json.getString("tree_sha256"))
++                    && last.json.getString("window_sha256").equals(target.json.getString("window_sha256")),"FOCUS_CHANGED_BEFORE_ACTION");
++            }
++            @Override public void bindEvidence(Capture first,Capture current,Capture last,PlayerSelection selected) throws Exception {
++                result.put("player_inspection",first.json).put("player_inspection_sha256",selected.inspectionHash)
++                    .put("player_scope",selected.proof).put("target_node_path",selected.path).put("target_node_sha256",selected.nodeHash)
++                    .put("action_window",current.json.getJSONObject("window")).put("connection_scoped_window_id",current.windowId)
++                    .put("player_capture_bindings",new JSONArray().put(playerCaptureBinding(first)).put(playerCaptureBinding(current)).put(playerCaptureBinding(last)))
++                    .put("same_connection_full_tree_rechecks",2);
++            }
++            @Override public long selectedAt(Capture first) throws Exception { return integer(first.json,"observed_elapsed_ms"); }
++            @Override public long now() { return SystemClock.elapsedRealtime(); }
++            @Override public void beforeAction(long admitted,long selectionAge) throws Exception {
++                timeBound();result.put("player_action_admitted_elapsed_ms",admitted).put("player_selection_age_ms",selectionAge)
++                    .put("player_selection_age_limit_ms",PlayerButtonTransaction.MAX_SELECTION_AGE_MS);
++            }
++            @Override public boolean clickOnce(Capture current) throws Exception {
++                actionAttempted=true;
++                boolean acknowledged=current.target.performAction(AccessibilityNodeInfo.ACTION_CLICK);
++                result.put("node_action","ACTION_CLICK").put("node_action_returned",acknowledged);
++                return acknowledged;
++            }
++            @Override public void close(Capture capture) { capture.close(); }
++        });
+     }
+ 
+     void act(JSONObject request, JSONObject result) throws Exception {
+--- R6/src/org/droidloom/qa/bili/r7/TouchTransaction.java
++++ R7/src/org/droidloom/qa/bili/r7/TouchTransaction.java
+@@ -1,4 +1,4 @@
+-package org.droidloom.qa.bili.r6;
++package org.droidloom.qa.bili.r7;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+--- R6/stage_build.py
++++ R7/stage_build.py
+@@ -8,8 +8,8 @@
+ import sys
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-source-01')
+-OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-build-01')
++ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r7-source-01')
++OUTPUT = Path('/home/alex/work/pocket4-owned-bili-qa-r7-build-01')
+ MEMORY = 536870912
+ 
+ 
+--- R6/src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java
++++ R7/src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java
+@@ -0,0 +1,59 @@
++package org.droidloom.qa.bili.r7;
++
++/** Exactly one current-selection transaction; no retry and no Android atomicity claim. */
++public final class PlayerButtonTransaction {
++    public static final long MAX_SELECTION_AGE_MS = 1000;
++    public static final class Fault extends Exception {
++        Fault(String code) { super(code); }
++    }
++    public interface Backend<C,S> {
++        C inspectSelection() throws Exception;
++        S selectCurrent(C selection) throws Exception;
++        C inspectTarget(S selection) throws Exception;
++        void requireSameWholeTreeAndWindow(C selection,C target) throws Exception;
++        void requireRefreshedTarget(C target,S selection) throws Exception;
++        C inspectFinal() throws Exception;
++        void requireFinalWholeTreeAndWindow(C target,C last) throws Exception;
++        void bindEvidence(C selection,C target,C last,S selected) throws Exception;
++        long selectedAt(C selection) throws Exception;
++        long now();
++        void beforeAction(long admitted,long age) throws Exception;
++        boolean clickOnce(C target) throws Exception;
++        void close(C capture) throws Exception;
++    }
++    private static <C,S> Exception close(Backend<C,S> backend,C capture,Exception primary) {
++        if (capture == null) return primary;
++        try { backend.close(capture); }
++        catch (Exception error) {
++            if (primary == null) primary=error;
++            else primary.addSuppressed(error);
++        }
++        return primary;
++    }
++    public static <C,S> void run(Backend<C,S> backend) throws Exception {
++        C first=null,target=null,last=null;Exception primary=null;
++        try {
++            first=backend.inspectSelection();
++            S selected=backend.selectCurrent(first);
++            target=backend.inspectTarget(selected);
++            backend.requireSameWholeTreeAndWindow(first,target);
++            backend.requireRefreshedTarget(target,selected);
++            last=backend.inspectFinal();
++            backend.requireFinalWholeTreeAndWindow(target,last);
++            backend.bindEvidence(first,target,last,selected);
++            // Match the original action: close the final read before dispatch.
++            C closing=last;last=null;backend.close(closing);
++            long admitted=backend.now(),age=admitted-backend.selectedAt(first);
++            if (age<0 || age>MAX_SELECTION_AGE_MS) throw new Fault("CURRENT_PLAYER_SELECTION_TOO_OLD");
++            backend.beforeAction(admitted,age);
++            if (!backend.clickOnce(target)) throw new Fault("PLAYER_BUTTON_NOT_ACKNOWLEDGED_OUTCOME_UNKNOWN");
++        } catch (Exception error) { primary=error; }
++        finally {
++            primary=close(backend,last,primary);
++            primary=close(backend,target,primary);
++            primary=close(backend,first,primary);
++        }
++        if (primary!=null) throw primary;
++    }
++    private PlayerButtonTransaction() {}
++}

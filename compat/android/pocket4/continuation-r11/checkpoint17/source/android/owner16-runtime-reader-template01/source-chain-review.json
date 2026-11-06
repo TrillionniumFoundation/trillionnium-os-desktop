@@ -1,0 +1,53 @@
+{
+  "4MiB_constant_use_in_this_control_source_is_application_icon_check": true,
+  "64KiB_constant_applies_to_inbound_request_only": true,
+  "Owner_or_Android_runtime_qualified": false,
+  "actor_consumer": {
+    "bytes": 17466,
+    "path": "/workspace/scratch/94990735b266/android-owner16-normal01-freeze-01/source/owned.py",
+    "sha256": "fb2371b148bac2faf644cbf30cb2fc959260e0d9af7c3424bba027f1dc62abfd"
+  },
+  "actor_fixed_hex_occurrences_max": 6,
+  "actor_result_bytes_max": 4194304,
+  "actor_wire_bytes_max": 1048576,
+  "actor_writer_encodes_complete_pretty_ASCII_JSON_no_256KiB_cap": true,
+  "atomic_writer": {
+    "bytes": 13377,
+    "path": "/workspace/scratch/94990735b266/android-owner16-normal01-freeze-01/source/pinned_support.py",
+    "sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e"
+  },
+  "control_source": {
+    "bytes": 83587,
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/producer07-audit-freeze-02/source/runtime/droidloom-supervisor/src/control.rs",
+    "sha256": "3818e0023f9dbc09a1b98986354147e5adc24f84f92b89e7f0db2f1872a54870"
+  },
+  "control_source_matches_actual_Host16_33_inputs": true,
+  "coordinator": {
+    "bytes": 14404,
+    "path": "/workspace/scratch/94990735b266/android-owner16-normal01-freeze-01/source/coordinator.py",
+    "sha256": "9947402bc927ec52f63bc4728e362ef1bb4f8a14f8e288111e6f425bcc8a14e0"
+  },
+  "coordinator_reads_exact_4MiB_actor_with_schema_credits_and_preserves_first_error": true,
+  "coordinator_writer_embeds_full_actor_without_truncation": true,
+  "exact_runtime_report_pin_required_before_any_remote_open": true,
+  "existing_fixture_actor_bytes": 3244236,
+  "existing_fixture_runtime_bytes": 3261874,
+  "existing_full_prefix_fixture": {
+    "bytes": 1516,
+    "path": "/workspace/scratch/94990735b266/android-owner16-runtime-log-bounds-source-freeze02/local-control04/stdout.log",
+    "sha256": "436927480230dc38164968f2406d6bb4459396e21554eebefc92ca76754534e4"
+  },
+  "full_runtime_report_reader_max": 5242880,
+  "full_runtime_size_not_predicted_from_success": true,
+  "larger_than_5MiB_actual_report_must_fail_whole_read": true,
+  "new_validation": "only pure JSON/gzip/base64 worst ASCII escaping; no repeat lifecycle controls",
+  "old_256KiB_server_response_truncation_found": false,
+  "ordinary_response_non_log_bytes_max": 262144,
+  "original_directory_NOFOLLOW_root_ownership_held_named_file_checks_and_close_paths_unchanged": true,
+  "per_prefix_hex_bytes_max": 524288,
+  "producer_io_errors_remain_errors_not_partial_success": true,
+  "producer_writer": "authorized Status/Stop -> complete audit snapshot -> serde_json::to_vec(response) -> newline -> UnixStream.write_all",
+  "remote_read_executed": false,
+  "schema": 1,
+  "scope": "exact compiled producer writer and dedicated Python result-consumption source chain; no new runtime"
+}

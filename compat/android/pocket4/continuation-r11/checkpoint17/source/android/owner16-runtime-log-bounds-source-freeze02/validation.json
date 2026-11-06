@@ -1,0 +1,59 @@
+{
+  "actor_exact_fixed_fd202_addition_only": true,
+  "bounds_proof": "6 fixed slots * 524288 hex bytes + original 1048576 non-log bytes = 4194304 actor hard bound",
+  "changed_existing_definitions": {
+    "actor.py": [
+      "native_lmkd"
+    ],
+    "coordinator.py": [
+      "run"
+    ],
+    "owned.py": [
+      "control"
+    ]
+  },
+  "coordinator_exact_one_read_call_only": true,
+  "core_source_manifest": {
+    "bytes": 5043,
+    "sha256": "c5afbb0a61653f5fa554ef42cd68f77e71a38893b229151d2b685b5e2d032050"
+  },
+  "full_runtime_collector_proposed_limit": 5242880,
+  "generic_record_limit": 1048576,
+  "legacy_non_diagnostic_response_limit": 262144,
+  "local_controls": {
+    "children_spawned_in_final_run": 0,
+    "groups": 7,
+    "prior_failures_preserved": [
+      "missing Python seal constants",
+      "managed pidfd PID mismatch",
+      "AF_UNIX EPERM"
+    ],
+    "real_memfd_and_regular_io": true,
+    "receive_stream_adapter_seam": true,
+    "synthetic_logger_audit": true,
+    "unix_socket_and_peer_admission_executed": false
+  },
+  "new_actor_limit": 4194304,
+  "new_response_limit": 1048576,
+  "original_control_process_socket_inode_peer_send_prefix_ast_unchanged": true,
+  "original_first_error_handshake_main_and_retirement_gates_unchanged": true,
+  "original_unchanged_source_references": {
+    "pinned_support.py": {
+      "bytes": 13377,
+      "sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e"
+    },
+    "prepare.py": {
+      "bytes": 15281,
+      "sha256": "e8b334966a4e705d09281dbad49ea4f20018ca0a90b30ea058b43cf0a8be891d"
+    },
+    "qualify.py": {
+      "bytes": 10249,
+      "sha256": "a843d4a0ac4da1dd1baa8707ff3d0f59e4ed4c3cd26fd6fa1eae2ed9f21a6fad"
+    }
+  },
+  "production_rust_c_sources_changed": false,
+  "ready_for_runtime": false,
+  "reason": "actual Host16 compile/ordinary and Android C16 artifacts plus a fresh exact plan still required",
+  "remote_executed": false,
+  "schema": 1
+}

@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "kind": "owner18_normal01_actual_source_binding",
+  "prepare_submitted": false,
+  "runtime_submitted": false,
+  "host_compile": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner17-host-mode-compile01/compile-result.json",
+    "bytes": 50235,
+    "sha256": "86c8078472a4e6ecc271ccb39e86cf8aba24bc7a4828dcabfdf3d3f38bbd5466"
+  },
+  "android_compile": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner16-android-log-build01/build-result.json",
+    "bytes": 661519,
+    "sha256": "2c53bba3ab02b396d2698dfd6e04d870ce69cc55724c6077003dca81ae9a2e0b"
+  },
+  "ordinary": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner17-host-ordinary01/run-result.json",
+    "bytes": 37889,
+    "sha256": "b6a1349a8b0d147d6dfe5b0defcef51ce4b3d478325d6bb104e02229c0a2c14a"
+  },
+  "ordinary_binding": {
+    "receipt_sha256": "b6a1349a8b0d147d6dfe5b0defcef51ce4b3d478325d6bb104e02229c0a2c14a",
+    "commands": 7,
+    "compiled_source_inputs": 33,
+    "tests": {
+      "droidloom-pressure-relay": 39,
+      "droidloom-supervisor": 139
+    },
+    "IPC": 7,
+    "targeted_retirement": [
+      {
+        "failed": 0,
+        "filtered_out": 38,
+        "ignored": 0,
+        "measured": 0,
+        "name": "lifecycle_bootstrap::tests::producer05_three_second_retirement_is_rejected_before_transport",
+        "passed": 1
+      },
+      {
+        "failed": 0,
+        "filtered_out": 38,
+        "ignored": 0,
+        "measured": 0,
+        "name": "lifecycle_bootstrap::tests::shared_retirement_bound_sends_exact_request_and_receives_terminal_ack",
+        "passed": 1
+      }
+    ],
+    "resources": {
+      "memory_peak": 58748928,
+      "memory_max": 536870912,
+      "observed_swap_current_and_peak_zero": true,
+      "memory_swap_max": "max",
+      "pids_max": 30053,
+      "all_memory_event_deltas_zero": true,
+      "whole_invocation_resource_qualified": false
+    },
+    "Owner_or_Android_runtime_qualified": false
+  },
+  "source_manifest_sha256": "dca55eadb80fe20905f4aadc2420ac89406fb9c019bea97a73e67526b408a845",
+  "capture_source_manifest_sha256": "c4c34d194586e98289c766bb8518230a81555068ebf7fb51c42698dec70a8810",
+  "prior_owner17_failure": {
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner17-runtime-read01/runtime-result.json",
+    "bytes": 752649,
+    "sha256": "701522531cd0166e02f90fe5f49da3d6f828cd65ea8c0bd8fb5df94617e91530"
+  },
+  "prior_failure_not_reclassified": true,
+  "artifacts_bound_to_actual_builds": 5,
+  "all_five_Host17_LMKD_C16_artifacts_exact_original": true,
+  "base86_unchanged": true,
+  "actor_and_collector_exact_frozen_overlay_bytes": true,
+  "retained_actor_kind_is_implementation_label_not_attempt_identity": "owner17-real-normal01",
+  "seven_runtime_sources_one_frozen_observation_overlay": true,
+  "private_logdr_frozen_candidate_included": true,
+  "NORMAL_Stop_and_original_retirement_unchanged": true,
+  "Main_guard_and_original12288_limits_unchanged": true,
+  "fresh_live_Main_ID_resource_and_file_absence_checks_still_required": true,
+  "new_attempt_nonce": "107a8c96a470ed4086162f4ca8ca033918387980e183261c838321797e91aa67",
+  "synthetic_uid": 61288,
+  "subordinate_start": 22000000,
+  "subordinate_count": 100000,
+  "live_UID_subid_absence_not_observed_by_this_binder": true,
+  "CellSpec_host_uid_not_asserted_as_actual_init_credentials": true,
+  "Rust_field_order_verified_against_actual_unchanged_inputs": true,
+  "canonical_spec_sha256": "9d3c3c0f7f943fc0c380128d5e4b6c8e7798ecbe5b34a7e277b82466bcfb9ec5",
+  "published_plan_sha256": "ba87f7f6da990b8e2da1e731645a0852a976dcfc2f391596052904889baff1ef",
+  "expected_prepared_serialized_plan_sha256": "ebdddc59d50e5c6b14e24ea3bfe0fd981d973351f4efd32d193fe5b073769ed0",
+  "prepare_packet_bytes": 223707,
+  "prepare_packet_sha256": "6288e9c3ed46999b569397906666734b126b3e5d3b5e5d998f685eed25d1b365",
+  "prepare_stdin_bytes": 299364,
+  "prepare_stdin_sha256": "757799eaeb34c5beeeee6ba3ffea99c5e4b3f556322289929ec29d087f2c6c76",
+  "prepare_request_bytes": 299721,
+  "prepare_request_sha256": "0779ce7dc82b1255bf67856e5a6727db67467a05186b244e10f4795d8e9acd17",
+  "idempotency_key": "p4-owner18-normal01-prepare01-757799eaeb34c5be",
+  "prepare_wrapper_unchanged": true,
+  "only_request_stdin_and_key_changed": true,
+  "runtime_template_requires_external_actual_prepared_digest": true,
+  "runtime_resource_window_dispatch_is_Root_only": true,
+  "prior_generation_logger_success_not_new_generation_qualification": true,
+  "production_ready": false,
+  "app_qualified": false,
+  "no_remote_action_by_this_binder": true
+}

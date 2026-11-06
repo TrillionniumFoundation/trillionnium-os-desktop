@@ -1,0 +1,33 @@
+{
+  "Hepta_or_UI_calls": 0,
+  "Reader_read_called": false,
+  "collect_called": false,
+  "command_and_navigation_fixture_are_synthetic": true,
+  "controls": [
+    {
+      "case": "actual_two_parent_originals",
+      "passed": true
+    },
+    {
+      "case": "synthetic_exact_command_and_failed_navigation_scope",
+      "passed": true
+    },
+    {
+      "case": "foreign_command_argv_rejected",
+      "expected_error": "EXACT_ORIGINAL_NAVIGATION_COMMAND",
+      "passed": true
+    },
+    {
+      "case": "old_worker_nonce_rejected",
+      "expected_error": "EXACT_FAILED_OR_COMPLETED_NAVIGATION_BODY_SCOPE",
+      "passed": true
+    }
+  ],
+  "passed": 4,
+  "schema": 1,
+  "source": {
+    "bytes": 10945,
+    "sha256": "246876f828570aca16cb78e3368eb81c2b92ebc2c8f8aae8817e8008213e46b0"
+  },
+  "uses_actual_parent_JSON": true
+}

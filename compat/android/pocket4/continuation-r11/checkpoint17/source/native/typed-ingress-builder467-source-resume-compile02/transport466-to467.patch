@@ -1,0 +1,13 @@
+--- a/transport-boundary.py
++++ b/transport-boundary.py
+@@ -1,7 +1,7 @@
+ import base64,hashlib,json,sys,zlib
+-ENVELOPE = {'bytes': 202169, 'sha256': 'cfd013eb5a3a564619bbd79ade7662184fefcc926716f63693ee934d5df9a54a'}
+-COMPRESSED = {'bytes': 151426, 'sha256': 'd1bb7d61b64f5d8b315ed25731d74590a5e67c1804565a1f2b001b3e8b55047e'}
+-UNCOMPRESSED = {'bytes': 937337, 'sha256': '0258db6146d279f90e30ac161251b16c7fb72638a2e9faca49ffffe3dc90f508'}
++ENVELOPE = {'bytes': 305990, 'sha256': '9d231ddc02b1006902bbc88133afe48974abb716ee5d77d153456d652ab7bdf8'}
++COMPRESSED = {'bytes': 229292, 'sha256': '1a9dda39e8ea5805529876a79325f6cd1bba41e0bf2a04ca367e74f50bbd1508'}
++UNCOMPRESSED = {'bytes': 1300599, 'sha256': '9854c513380d23a19f424d9db66e061f2d295cdd8a292a41d0e9bb4c28f0a479'}
+ def exact(raw, expected):
+     if len(raw)!=expected['bytes'] or hashlib.sha256(raw).hexdigest()!=expected['sha256']:
+         raise RuntimeError('fixed compiler transport length/hash mismatch')

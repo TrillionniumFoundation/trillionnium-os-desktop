@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "scope": "one_readonly_snapshot_of_owned_framework_job",
+  "source_fully_read": true,
+  "source_bytes": 13368,
+  "source_sha256": "6f020cf032073d9ecdc70ad4925e223aab472fa7ff3dc3d712ce1c4ca28c482c",
+  "exact_wrapper_machine_bound": true,
+  "actual_claim_and_reviewed_controller_local_pins_reverified": true,
+  "exact_cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1ad81164b-fc05-5a14.service",
+  "constraints": {
+    "subprocesses": false,
+    "filesystem_mutation": false,
+    "signals": false,
+    "retries": false,
+    "environment_read": false,
+    "fd_scan": false,
+    "proc_enumeration": false,
+    "unowned_arguments_returned": false,
+    "maximum_pids": 128,
+    "soft_seconds": 2.4,
+    "timeout_seconds": 3,
+    "cpu_quota_percent": 25,
+    "memory_max_bytes": 67108864,
+    "output_bytes_max": 131072
+  },
+  "interpretation": "Exit zero is not complete coverage; unobserved or PID changes preserve complete=false. No build or runtime qualification claim."
+}

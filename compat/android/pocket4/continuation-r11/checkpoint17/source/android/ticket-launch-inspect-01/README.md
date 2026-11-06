@@ -1,0 +1,3 @@
+# Ticket first owned launch and read-only inspection
+
+This fresh flow binds the actual Ticket helper UID 10190, signed APK, install receipts, one commercial target APK and the original Main fence. It consumes the real five-command Ticket metadata/launcher result, then resolves the component again under the original action lock before one native launch. It runs state/inspect/state and preserves original exact owned-task retirement. No clicks, text entry, screenshots, audio, grants, settings, login or purchases are admitted. Retained UI trees remain root-private and are excluded from publication. No remote request has been submitted.

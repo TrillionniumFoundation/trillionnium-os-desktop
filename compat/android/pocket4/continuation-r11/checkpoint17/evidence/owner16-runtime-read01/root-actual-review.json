@@ -1,0 +1,139 @@
+{
+  "Main_equal_original": true,
+  "Main_pids_max": "12288",
+  "actual_runtime_success": false,
+  "children": [
+    {
+      "forced_kill": false,
+      "pid": 3345649,
+      "reaped": true,
+      "returncode": 0,
+      "role": "daemon"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3345635,
+      "reaped": true,
+      "returncode": -15,
+      "role": "presenter"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3345599,
+      "reaped": true,
+      "returncode": 0,
+      "role": "sway"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3345594,
+      "reaped": true,
+      "returncode": 0,
+      "role": "bus"
+    }
+  ],
+  "exact_unit_cleanup": {
+    "cgroup_absent": true,
+    "invocation": "8675c1ae3e7746aab3483d78efcc9080",
+    "original_actor_dead": true,
+    "unit": "p4-owner16-normal-20261105-01.service",
+    "unit_not_found": true
+  },
+  "first_error": {
+    "error": "RuntimeError('owned unit authoritative terminal failed; actor first error={\\'error\\': \"RuntimeError(\\'actual lifecycle audit records a failure\\')\", \\'stage\\': \\'normal\\'}')",
+    "stage": "normal_coordinator"
+  },
+  "init_log": {
+    "capacity_bytes": 262144,
+    "capacity_reached": false,
+    "captured_bytes": 161943,
+    "captured_sha256": "5390a06ec64a6af36fef0432a629b79fa3cb9898ab47ff04ccfc6a260a3c646d",
+    "device": 1,
+    "exact_writer_per_line_proven": false,
+    "first_error": null,
+    "held_fds_closed": true,
+    "inode": 3018916,
+    "marker_verified_after_held_init_hello": true,
+    "nonce": "104b1b9ae67b70da4b117184af3a431c1b50df774d04804b96242aaf4a872580",
+    "observed_writer_offset": 161943,
+    "retirement_proven_before_capture": true,
+    "schema": 1,
+    "secondary_errors": [],
+    "source_scope": "generation-private cached init logger; fork-before-exec writers not individually attributed",
+    "stream_completeness_claimed": false
+  },
+  "init_log_original": {
+    "bytes": 161943,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner16-runtime-read01/init-log-prefix.log",
+    "sha256": "5390a06ec64a6af36fef0432a629b79fa3cb9898ab47ff04ccfc6a260a3c646d"
+  },
+  "limits": [
+    "No complete stream or exact per-line writer claim",
+    "LMKD EACCES and hwservicemanager repeated SIGABRT are separate observed faults; causes not fully proven",
+    "Namespace owner signal1 sender and causal order not independently proven"
+  ],
+  "owned_memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+  "owned_memory_peak": 570916864,
+  "qualification": {
+    "app_qualified": false,
+    "installed_owner_qualified": false,
+    "pressure_effect_qualified": false,
+    "production_ready": false,
+    "rc_property_reload_qualified": false
+  },
+  "relay_first_failure": {
+    "message": "real broker retired; complete old cell recovery is required",
+    "observed_monotonic_ns": 944411715518316,
+    "origin": "runtime"
+  },
+  "result": {
+    "bytes": 382901,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner16-runtime-read01/runtime-result.json",
+    "sha256": "04ed56c29b388b381bfeb13110607a8ee25b9a4d5a903c5bb421ef002f0214cb"
+  },
+  "retirement_sequences": [
+    [
+      10,
+      "broker_retired"
+    ],
+    [
+      11,
+      "processes_dead"
+    ],
+    [
+      12,
+      "domain_empty"
+    ],
+    [
+      13,
+      "retired"
+    ],
+    [
+      14,
+      "resources_removed"
+    ],
+    [
+      15,
+      "claim_released"
+    ]
+  ],
+  "schema": 1,
+  "terminal": {
+    "ActiveState": "failed",
+    "ControlGroup": "",
+    "Description": "Pocket4 Owner16 bounded init log NORMAL01 48166604b7871ecfbea8800c9b6edcd1dd2a7fe6cd3b63777195a949521b541a",
+    "ExecMainCode": "1",
+    "ExecMainExitTimestampMonotonic": "944411948372",
+    "ExecMainPID": "3345584",
+    "ExecMainStartTimestampMonotonic": "944381329932",
+    "ExecMainStatus": "1",
+    "InvocationID": "8675c1ae3e7746aab3483d78efcc9080",
+    "LoadState": "loaded",
+    "MainPID": "0",
+    "MemoryPeak": "570916864",
+    "MemorySwapPeak": "0",
+    "Result": "exit-code",
+    "SubState": "failed",
+    "Transient": "yes"
+  }
+}

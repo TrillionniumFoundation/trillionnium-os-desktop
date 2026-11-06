@@ -1,0 +1,66 @@
+{
+  "actual_R7_APK": null,
+  "actual_R7_helper_UID": null,
+  "actual_R7_signer": null,
+  "build": {
+    "actual_remote_build": "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/build-result.json",
+    "actual_remote_stage": "/home/alex/work/pocket4-owned-bili-qa-r7-source-01/stage-result.json",
+    "qualification": "Original R7 qa_adapter.qualified_build, exact source/tools/manifest and all 11 completed commands",
+    "request": "/workspace/scratch/94990735b266/owned-bili-qa-r7-player-button-01/request/exact-request.json",
+    "source": "/workspace/scratch/94990735b266/owned-bili-qa-r7-player-button-01/source",
+    "source_manifest_sha256": "f6722f5163403c753a81912944e3390e424858795e2db059ea9a75cf8f56c310"
+  },
+  "catalog_changed": false,
+  "fresh_flow": {
+    "R6_05_failure_preserved": true,
+    "actual_install_required": [
+      "coordinator and stage external pins",
+      "parent-bound worker and worker-command pins",
+      "actual installed UID and exact APK file identity",
+      "state nonce/wire and exact original state command receipt"
+    ],
+    "baseline": "/workspace/scratch/94990735b266/android-bili-r6-first-search-foreground-05",
+    "baseline_manifest_sha256": "1219f775585458f7905b7fcf544c0f5c5d2ae15bdb5c30fc09e65daf23362b67",
+    "first_search_observer": "derive owned first-search observer from actual R7 Session with only its reviewed post-foreground call difference",
+    "future_UI_request_generated": false,
+    "planned_state_command_slot": 6,
+    "player_delta": "Only fixed pause/resume plans use R7 player_button; keep external context inspect, independent reveal observation and finally readback; no resume after failed/unknown pause",
+    "resource_caps_not_preapproved_for_change": true,
+    "state_command_slot_requires_actual_verification": true
+  },
+  "install": {
+    "generator": {
+      "bytes": 16488,
+      "path": "/workspace/scratch/94990735b266/android-qa-r7-install-preparation01/prepare_install.py",
+      "sha256": "072650614406412eac51bb5528b521dc85d0bcdf80134db3884ae7a726dfd894"
+    },
+    "helper_UID_remains_unknown_after_generation": true,
+    "output_candidate": "/workspace/scratch/94990735b266/android-qa-r7-install-state-01",
+    "preserved": [
+      "original R4 recorder and transport bytes",
+      "all-users absence including uninstalled records",
+      "-R no replacement install",
+      "one no-UiAutomation state",
+      "held Main and global lock",
+      "exact owned staging cleanup"
+    ],
+    "required_actual_inputs": [
+      "build file, bytes and SHA256",
+      "stage file, bytes and SHA256",
+      "Root actual job identifier"
+    ],
+    "semantic_delta": [
+      "R7 namespace and owned paths",
+      "fresh flow/state nonce",
+      "actual R7 build/APK/signer pins",
+      "reject old R6 helper UID 10184"
+    ],
+    "source_baseline": "/workspace/scratch/94990735b266/android-qa-r6-install-state-01",
+    "source_baseline_manifest_sha256": "8c02c3bf010998e23ed30ae13b88c5e4f5d824775702e055e772788966b93e59",
+    "source_gate": "Actual externally pinned build/stage pass before directory creation"
+  },
+  "remote_or_device_calls": 0,
+  "schema": 1,
+  "state": "SOURCE_PREPARATION_ONLY_WAITING_ACTUAL_R7_BUILD",
+  "whole_app_production_ready": false
+}

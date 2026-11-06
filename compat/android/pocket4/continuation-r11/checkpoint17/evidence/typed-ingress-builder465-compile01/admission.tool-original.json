@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import base64,hashlib,json,sys,zlib\nENVELOPE = {'bytes': 315342, 'sha256': '4c1929177171b438a3e9f3afab7be65b362efd06042560fd831fab697edcd1e0'}\nCOMPRESSED = {'bytes': 236306, 'sha256': '50a8b56b4f389836dc6cf88f36fa4c1f59a082bb04e093eb2550183608b728e6'}\nUNCOMPRESSED = {'bytes': 1344731, 'sha256': '507259d04f5846f17dd49b6066d0f2da1cebc3a366086c308393ee7586bba1c2'}\ndef exact(raw, expected):\n    if len(raw)!=expected['bytes'] or hashlib.sha256(raw).hexdigest()!=expected['sha256']:\n        raise RuntimeError('fixed compiler transport length/hash mismatch')\nwire=sys.stdin.buffer.read(ENVELOPE['bytes']+1)\nexact(wire,ENVELOPE)\nvalue=json.loads(wire)\nif set(value)!={'schema','encoding','compressed','uncompressed','payload'} or value['schema']!=1 or value['encoding']!='gzip+base64' or value['compressed']!=COMPRESSED or value['uncompressed']!=UNCOMPRESSED:\n    raise RuntimeError('fixed compiler transport envelope differs')\npacked=base64.b64decode(value['payload'],validate=True)\nexact(packed,COMPRESSED)\ndecoder=zlib.decompressobj(16+zlib.MAX_WBITS)\nraw=decoder.decompress(packed,UNCOMPRESSED['bytes']+1)\nif not decoder.eof or decoder.unused_data or decoder.unconsumed_tail:\n    raise RuntimeError('compiler transport has incomplete/trailing/oversized gzip content')\nexact(raw,UNCOMPRESSED)\nscope={'__name__':'__main__','__file__':'<stdin>'}\nexec(compile(raw,'<stdin>','exec'),scope,scope)\n"
+    ],
+    "created_unix_ms": 1793905750873,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1ad1d7359-fc05-5895",
+    "idempotency_key": "pocket4-native-typed-ingress-builder465-matching-compile-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1ad1d7359-fc05-5895",
+    "request_digest": "9870dab39b7fec25e7c40221fd15807dc6b361955defc315d999a0f65b36836d",
+    "request_fingerprint": 10984519956099492901,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1ad1d7359-fc05-5895"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1ad1d7359-fc05-5895"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

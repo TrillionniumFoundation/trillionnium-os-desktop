@@ -1,0 +1,54 @@
+--- owner16/read-template.py
++++ owner17/read-template.py
+@@ -7,7 +7,7 @@
+ import stat
+ import traceback
+ 
+-ROOT_NAME = 'p4-owner16-normal-20261105-01-state'
++ROOT_NAME = 'p4-owner17-normal-20261105-01-state'
+ EXPECTED_REPORT_BYTES = None
+ EXPECTED_REPORT_SHA256 = None
+ NAMES = ('runtime-result.json',)
+@@ -72,7 +72,7 @@
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'fixed-owner16-normal01-runtime-read', 'collection_complete': False,
++    result = {'schema': 1, 'kind': 'fixed-owner17-normal01-runtime-read', 'collection_complete': False,
+               'files': {}, 'errors': [], 'mutations': False, 'qualification': False}
+     fds = []
+     try:
+--- owner16/bind_reader.py
++++ owner17/bind_reader.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fill only actual terminal size/hash in this one fixed Owner16 result reader."""
++"""Fill only actual terminal size/hash in this one fixed Owner17 result reader."""
+ import argparse
+ import ast
+ import hashlib
+@@ -8,7 +8,7 @@
+ import re
+ 
+ HERE = Path(__file__).resolve().parent
+-OUT = HERE.parent / 'android-owner16-normal01-runtime-reader-01'
++OUT = HERE.parent / 'android-owner17-normal01-runtime-reader-01'
+ 
+ 
+ def sha(raw):
+@@ -36,12 +36,12 @@
+     source = source.replace('EXPECTED_REPORT_SHA256 = None', 'EXPECTED_REPORT_SHA256 = ' + repr(args.sha256))
+     assert source.replace('EXPECTED_REPORT_BYTES = ' + str(args.bytes), 'EXPECTED_REPORT_BYTES = None').replace(
+         'EXPECTED_REPORT_SHA256 = ' + repr(args.sha256), 'EXPECTED_REPORT_SHA256 = None') == template
+-    ast.parse(source); compile(source, '<fixed Owner16 runtime result reader>', 'exec')
++    ast.parse(source); compile(source, '<fixed Owner17 runtime result reader>', 'exec')
+     request = json.loads((HERE / 'request-template.json').read_bytes())
+     assert request['stdin'] == template
+-    request.update(stdin=source, idempotency_key='p4-owner16-normal01-runtime-read01-' + sha(source.encode())[:16])
++    request.update(stdin=source, idempotency_key='p4-owner17-normal01-runtime-read01-' + sha(source.encode())[:16])
+     members = {'read.py': source.encode(), 'request.json': pretty(request), 'binding.json': pretty({
+-        'schema': 1, 'expected_report_path': '/opt/p4-owner16-normal-20261105-01-state/runtime-result.json',
++        'schema': 1, 'expected_report_path': '/opt/p4-owner17-normal-20261105-01-state/runtime-result.json',
+         'expected_report_bytes': args.bytes, 'expected_report_sha256': args.sha256,
+         'template_manifest_sha256': sha((HERE / 'SOURCE_PINS.json').read_bytes()),
+         'original_resources_and_protected_metadata_FD_gates_unchanged': True,

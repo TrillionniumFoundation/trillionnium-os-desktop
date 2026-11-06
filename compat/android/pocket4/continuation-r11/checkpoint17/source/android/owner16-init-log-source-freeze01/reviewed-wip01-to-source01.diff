@@ -1,0 +1,157 @@
+--- wip01/android/init_relay_barrier.c
++++ wip02/android/init_relay_barrier.c
+@@ -510,6 +510,15 @@
+   if(unsetenv(DIR_LOG_ABI_ENV)&&!first)first=errno;
+   if(unsetenv(DIR_LOG_FD_ENV)&&!first)first=errno;
+   if(first)return dir_error(first);
++  /* Verify the cached route once more after removing every diagnostic env
++   * key. A logger that only consulted the env on the first call is not enough
++   * evidence that later init logs will use this same private object. */
++  m=snprintf(message,sizeof(message),"P4_INIT_LOG_CACHED_V1 nonce=%s",nonce_text);
++  if(m<=0||(size_t)m>=sizeof(message))return dir_error(EOVERFLOW);
++  logger(0,2,"droidloom-init-log",__FILE__,0,message);
++  off_t after=lseek(fd,0,SEEK_CUR);
++  if(after<0)return -1;
++  if(after!=position+(off_t)(strlen("<6>droidloom-init-log: ")+(size_t)m+1))return dir_error(EPROTO);
+   return 0;
+ }
+ 
+@@ -524,10 +533,29 @@
+   void *symbol=dlsym(RTLD_DEFAULT,DIR_KERNEL_LOGGER_SYMBOL);
+   const char *lookup_error=dlerror();
+   if(!symbol||lookup_error)return dir_error(ENOSYS);
++  Dl_info definition;
++  if(!dladdr(symbol,&definition)||!definition.dli_fname||!definition.dli_sname||
++     definition.dli_saddr!=symbol||strcmp(definition.dli_sname,DIR_KERNEL_LOGGER_SYMBOL))
++    return dir_error(EPROTO);
++  const char *name=strrchr(definition.dli_fname,'/');
++  name=name?name+1:definition.dli_fname;
++  if(strcmp(name,"libbase.so")||definition.dli_fname[0]!='/'||
++     strnlen(definition.dli_fname,257)>256)return dir_error(EPROTO);
++  for(const unsigned char *p=(const unsigned char *)definition.dli_fname;*p;++p)
++    if(*p<0x21||*p>0x7e)return dir_error(EPROTO);
+   dir_kernel_logger logger;
+   _Static_assert(sizeof(logger)==sizeof(symbol),"native function-pointer representation differs");
+   memcpy(&logger,&symbol,sizeof(logger));
+-  return dir_prime_log((int)fd,nonce_text,logger);
++  if(dir_prime_log((int)fd,nonce_text,logger))return -1;
++  /* Retain the actual defining object path as an observation. Its bytes/build
++   * are not certified by dladdr and must not be claimed as read here. */
++  char observation[512];int length=snprintf(observation,sizeof(observation),
++    "P4_INIT_LOG_DEFINITION_V1 object=%s symbol=%s",definition.dli_fname,DIR_KERNEL_LOGGER_SYMBOL);
++  if(length<=0||(size_t)length>=sizeof(observation))return dir_error(EOVERFLOW);
++  off_t before=lseek((int)fd,0,SEEK_CUR);if(before<0)return -1;
++  logger(0,2,"droidloom-init-log",__FILE__,0,observation);
++  off_t after=lseek((int)fd,0,SEEK_CUR);if(after<0)return -1;
++  return after==before+(off_t)(strlen("<6>droidloom-init-log: ")+(size_t)length+1)?0:dir_error(EPROTO);
+ }
+ __attribute__((visibility("default"))) uint32_t droidloom_init_relay_barrier_abi(void) { return DIR_ABI; }
+ #ifndef DROIDLOOM_BARRIER_TESTING
+--- wip01/runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs
++++ wip02/runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs
+@@ -504,6 +504,48 @@
+     }
+ 
+     #[test]
++    fn saturated_init_prefix_roundtrips_without_replacing_the_lifecycle_failure() {
++        let audit = fixture();
++        audit.failure(FailureOrigin::Runtime, "original init namespace failure");
++        let first = audit.snapshot().first_failure;
++        let capture = init_log::Capture::new([7; 32]).unwrap();
++        // Real owned memfd plus synthetic longest bytes, not an Android log.
++        (&*capture.writer().unwrap()).write_all(&vec![0xff; init_log::CAPACITY]).unwrap();
++        let record = capture.finish(false);
++        assert!(record.capacity_reached && record.held_fds_closed);
++        assert_eq!(record.captured_hex.len(), 512 * 1024);
++        audit.init_log(record.clone());
++        let result = audit.snapshot();
++        assert_eq!(result.first_failure, first);
++        assert!(!result.recording_incomplete);
++        let encoded = serde_json::to_vec(&result).unwrap();
++        assert!(encoded.len() > 512 * 1024 && encoded.len() < 1024 * 1024);
++        let decoded: RelayLifecycleAudit = serde_json::from_slice(&encoded).unwrap();
++        assert_eq!(decoded, result);
++        // A duplicate final observation is a recording gap, never a new
++        // lifecycle success or an overwrite of the first capture/failure.
++        audit.init_log(record);
++        assert!(audit.snapshot().recording_incomplete);
++        assert_eq!(audit.snapshot().first_failure, first);
++        assert_eq!(audit.snapshot().init_log, result.init_log);
++    }
++
++    #[test]
++    fn wrong_nonce_or_overbound_log_cannot_enter_the_retained_audit() {
++        for foreign in [false, true] {
++            let audit = fixture();
++            audit.failure(FailureOrigin::Admission, "original attach failure");
++            let mut record = init_log::Capture::new(if foreign { [8; 32] } else { [7; 32] })
++                .unwrap().finish(false);
++            if !foreign { record.captured_bytes = init_log::CAPACITY + 1; }
++            audit.init_log(record);
++            let result = audit.snapshot();
++            assert!(result.init_log.is_none() && result.recording_incomplete);
++            assert_eq!(result.first_failure.unwrap().message, "original attach failure");
++        }
++    }
++
++    #[test]
+     fn missing_observation_and_clock_or_order_failure_remain_incomplete() {
+         let audit = fixture();
+         audit.record(Err(domain::error("failed held-pidfd observation")));
+--- wip01/runtime/droidloom-supervisor/src/relay_lifecycle/init_log.rs
++++ wip02/runtime/droidloom-supervisor/src/relay_lifecycle/init_log.rs
+@@ -27,7 +27,8 @@
+ fn error(message: &'static str) -> io::Error { domain::error(message) }
+ 
+ pub(crate) fn marker(nonce: &[u8; 32]) -> Vec<u8> {
+-    format!("<6>droidloom-init-log: P4_INIT_LOG_V1 nonce={}\n", policy::hex(nonce)).into_bytes()
++    format!("<6>droidloom-init-log: P4_INIT_LOG_V1 nonce={}\n<6>droidloom-init-log: P4_INIT_LOG_CACHED_V1 nonce={}\n",
++        policy::hex(nonce), policy::hex(nonce)).into_bytes()
+ }
+ 
+ /// Validate only the explicitly inherited diagnostic writer. A pipe, socket,
+@@ -285,6 +286,44 @@
+     }
+ 
+     #[test]
++    fn attach_and_worker_start_error_seams_retain_the_owners_only_sink() {
++        for phase in ["later attach field", "worker start"] {
++            let owner = SharedCapture::new([12; 32]).unwrap();
++            let mut writer = owner.duplicate_writer().unwrap();
++            writer.write_all(&marker(&[12; 32])).unwrap();
++            drop(writer);
++            // Explicit failure seam around the actual shared type: later
++            // field construction or thread creation returns Err and drops
++            // the temporary Session copy. No HostContext/Android is invented.
++            let failed = (|| -> io::Result<()> {
++                let _partial_session = owner.clone();
++                Err(error(phase))
++            })().unwrap_err();
++            assert_eq!(failed.to_string(), phase);
++            let record = owner.finish(false).unwrap();
++            assert_eq!(record.captured_hex, policy::hex(&marker(&[12; 32])));
++            assert!(record.held_fds_closed);
++            assert!(!record.marker_verified_after_held_init_hello);
++            assert!(!record.retirement_proven_before_capture);
++            assert!(owner.finish(false).is_none());
++        }
++    }
++
++    #[test]
++    fn poisoned_capture_keeps_data_and_closes_without_claiming_retirement() {
++        let owner = SharedCapture::new([13; 32]).unwrap();
++        let thread_copy = owner.clone();
++        assert!(std::thread::spawn(move || {
++            let _guard = thread_copy.0.lock().unwrap();
++            panic!("owned diagnostic lock poison control");
++        }).join().is_err());
++        let record = owner.finish(true).unwrap();
++        assert!(!record.retirement_proven_before_capture);
++        assert!(record.held_fds_closed && record.first_error.unwrap().contains("poisoned"));
++        assert!(owner.finish(false).is_none());
++    }
++
++    #[test]
+     fn real_child_exec_does_not_receive_the_cloexec_writer() {
+         let capture = Capture::new([11; 32]).unwrap();
+         let raw = capture.writer().unwrap().as_raw_fd();

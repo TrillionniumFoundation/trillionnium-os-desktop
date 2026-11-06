@@ -1,0 +1,53 @@
+{
+  "baseline": {
+    "bytes": 16466,
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/action-lock-once-admission-01/probe_lock.py",
+    "sha256": "c98c6031edf12b7984c06553e429afcb4430f6e2dce7a10b143691b39a8a8368"
+  },
+  "byte_identical_inherited_helpers": [
+    "need",
+    "sha",
+    "error_record",
+    "OwnedFDs",
+    "open_fixed",
+    "read_input",
+    "read_boot",
+    "validate_prior"
+  ],
+  "controls": {
+    "actual_passed": 6,
+    "local_PID_view_mapping_only": true,
+    "prior_failed_attempts_retained": [
+      "controls01",
+      "controls02"
+    ],
+    "production_self_namespace_gate_locally_qualified": false,
+    "stdout_bytes": 2475,
+    "stdout_sha256": "e54eb431d27df2a996fe6690c5f5bcaa5404f8a4cec47e568063030585d7dec3"
+  },
+  "coverage_note": "prior visible_pid_fd_scan ENOENT is an aggregate coverage gap; no PID or exact failure point was emitted",
+  "device_execution": false,
+  "global_lock_absent_claimed": false,
+  "holder_identified": false,
+  "original_guards_preserved": [
+    "five pinned inputs held/named recheck",
+    "original Main before/after",
+    "boot before/after",
+    "exact root0600 single-link target identity",
+    "one own target EX and successful immediate UN",
+    "independent own anonymous EX and successful immediate UN",
+    "owned FD close and first error retention"
+  ],
+  "peer_review_of_two_arm_delta": "NOT_PERFORMED",
+  "prior_single_admission_sha256": "cdbd347f32d7a48ec5e95106580208171f45fd3883c008c2e8aab30fa980624e",
+  "prior_ticket_sha256": "13179fb6aa36a1fde53892cc6287994ae269e492199a94eb12eeafe83fe290cc",
+  "root_source_review": "complete initial 35238-byte source plus final selected-mount parser delta; exact machine binding pending Root",
+  "same_future_admission_claimed": false,
+  "schema": 1,
+  "scope": "exact two-arm source and local controls; no device execution",
+  "source": {
+    "bytes": 35329,
+    "sha256": "caad07035d43dd0e76d8cb0af33b455b2e77eff2aceb90d90c80f0162ee9a49d"
+  },
+  "support_unchanged": true
+}

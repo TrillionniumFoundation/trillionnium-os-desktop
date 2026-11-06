@@ -1,0 +1,88 @@
+{
+  "changed_helper_asts": [
+    "regular",
+    "validate_records",
+    "image_metadata",
+    "emit",
+    "main"
+  ],
+  "guards": [
+    "exact prepared/runtime full SHA and retired actor/unit/children/terminal records",
+    "fixed root-owned nofollow directory/file chain, held and named identity before/after",
+    "metadata image original inode/size/label and current ext4 clean state; unchanged header and file stat",
+    "actual pinned debugfs full bytes/hash/metadata/capability gate before and after",
+    "root/bootstat directory and target regular single-link <=4096-byte metadata before body",
+    "same six stat observations before/after; one bounded cat at most",
+    "all own children independently drained/reaped and descriptors closed; first error retained"
+  ],
+  "limits": [
+    "Only a fixed reason candidate; no broad disk/path/log scan.",
+    "No image mount/write/repair/journal replay/full-image hash.",
+    "No live Main inspection, UI, Android command, service action or namespace entry.",
+    "No exclusive external-opener claim and no atomic image snapshot claim.",
+    "Debugfs tool errors and missing/unsupported metadata are preserved; return code zero does not prove presence or absence.",
+    "A captured reason is not automatically attributed to init or accepted as the sole root cause.",
+    "No matching full current init logger/reboot source closure is claimed.",
+    "Local ext4 controls used actual local debugfs 1.47.0 with an explicit configuration fixture; remote 1.47.2 parsing and collection are unrun."
+  ],
+  "local_controls": {
+    "actual_read_only_children_reaped": 25,
+    "cases": 7,
+    "passed": true,
+    "production_main_executed": false
+  },
+  "new_helpers": [
+    "collect_reason",
+    "command_bytes",
+    "observed_reason",
+    "parse_stat",
+    "query_reason",
+    "reason_argv"
+  ],
+  "old_source": {
+    "bytes": 27192,
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner14-data-directories-freeze01/read_directories.py",
+    "sha256": "630476be09e9c7c4d4097bb974da15b8034892c6ad98a81d2d53aad87708747b"
+  },
+  "qualification": false,
+  "removed_helpers": [
+    "directory_argv",
+    "observation_pin",
+    "query_directory"
+  ],
+  "schema": 1,
+  "scope": {
+    "cpu_percent": 100,
+    "fixed_retired_image": "/opt/p4-owner15-normal-20261105-01-state/data/metadata.img",
+    "image_bytes": 134217728,
+    "image_device": 66306,
+    "image_inode": 44574155,
+    "image_label": "p4owner07meta",
+    "max_children": 7,
+    "maximum_body_attempts": 1,
+    "maximum_body_bytes": 4096,
+    "memory_bytes": 134217728,
+    "prior_metadata_uuid_available": false,
+    "reason_path": "/bootstat/persist.sys.boot.reason",
+    "request_timeout_seconds": 50,
+    "stat_queries": 6,
+    "total_deadline_seconds": 35,
+    "uuid_observed_only": true
+  },
+  "state": "FROZEN_SOURCE_AND_LOCAL_CONTROLS_REMOTE_UNRUN",
+  "unchanged_helper_asts": [
+    "need",
+    "check_time",
+    "identity",
+    "stamp",
+    "directory_stamp",
+    "directory",
+    "read_exact",
+    "read_record",
+    "tool_metadata",
+    "recheck",
+    "remembered",
+    "stream_record",
+    "collect_owned"
+  ]
+}

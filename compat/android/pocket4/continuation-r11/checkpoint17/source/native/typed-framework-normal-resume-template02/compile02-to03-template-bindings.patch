@@ -1,0 +1,31 @@
+--- a/framework_build.template.py
++++ b/framework_build.template.py
+@@ -125,7 +125,7 @@
+ WORK = OWNER / 'typed-ingress-framework-work-01-20261105'
+ OUT = ROOT / 'android-out'
+ ATTEMPT = ROOT / 'attempt-01'
+-BUILD_PARENT = P('/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-02-20261105')
++BUILD_PARENT = P('/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106')
+ BUILD_SOURCE = BUILD_PARENT / 'builder-source'
+ BUILDER = BUILD_PARENT / 'attempt01/cargo-target/debug/droidloom-update'
+ BUILDER_SHA = None
+@@ -133,7 +133,7 @@
+ BUILD_RESULT = BUILD_PARENT / 'attempt01/result.json'
+ BUILD_RESULT_SHA = None
+ BUILD_RESULT_BYTES = None
+-SOURCE_MANIFEST_SHA = 'b35914b4482115b06b4d517c5a9b5092d13cde6d8882698d8e5b24aef1f6442e'
++SOURCE_MANIFEST_SHA = '71768da388021a870ef5f5516cc3efbfd956288a8fa74cb9b176b312f68d7605'
+ PREPARE_PARENT = OWNER / 'typed-framework-work-preparation-01-20261105'
+ PREPARATION = PREPARE_PARENT / 'attempt01/result.json'
+ PREPARATION_SHA = 'ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c'
+--- a/bind_actual_compile.py
++++ b/bind_actual_compile.py
+@@ -15,7 +15,7 @@
+ OLD = HERE.parent / 'typed-framework-normal-build-freeze01'
+ DEST = HERE.parent / 'typed-framework-normal-resume-bound01'
+ REMOTE = '/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-resume-build-01-20261106'
+-COMPILE_REMOTE = '/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-02-20261105'
++COMPILE_REMOTE = '/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106'
+ KEY = 'pocket4-native-typed-ingress-framework-strict-two-target-resume-build-01-20261106'
+ 
+ 

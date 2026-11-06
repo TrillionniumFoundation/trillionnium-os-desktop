@@ -1,0 +1,84 @@
+--- a/tools/droidloom-update/src/native_role_ingress.rs
++++ b/tools/droidloom-update/src/native_role_ingress.rs
+@@ -19,6 +19,11 @@
+ const ORIGINAL_LOCK_BYTES: usize = 84522;
+ const ORIGINAL_LOCK_SHA: &str =
+     "4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178";
++// Derived from the three observed fixed-commit root trees. Structural extension
++// checks alone cannot prove that an appended directory was actually observed.
++const SOURCE_LOCK_BYTES: usize = 86293;
++const SOURCE_LOCK_SHA: &str =
++    "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54";
+ const PATCH: &str = "android/native-role-ingress/typed-ingress02-framework.patch";
+ const PATCH_BYTES: usize = 17019;
+ const PATCH_SHA: &str =
+@@ -192,7 +197,9 @@
+         bytes: ORIGINAL_LOCK_BYTES, sha256: ORIGINAL_LOCK_SHA,
+     })?;
+     let path = repo.join(SOURCE_LOCK);
+-    let expanded = bounded_file(&path, 1024 * 1024)?;
++    let expanded = fixed_file(&path, Pin {
++        bytes: SOURCE_LOCK_BYTES, sha256: SOURCE_LOCK_SHA,
++    })?;
+     validate_lock_extension(&serde_json::from_slice(&original)?, &serde_json::from_slice(&expanded)?)?;
+     // The normal source library validates the full lock schema, exact revisions,
+     // URL policy, path bounds and every materialized Git project separately.
+@@ -326,3 +333,58 @@
+         "actual_Java_JNI_pair_and_platform_lifecycle_qualified": false,
+     }))
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++
++    fn repository() -> PathBuf {
++        Path::new(env!("CARGO_MANIFEST_DIR"))
++            .parent().unwrap().parent().unwrap().to_owned()
++    }
++
++    #[test]
++    fn observed_lock_passes_normal_schema_and_exact_extension_gate() {
++        let repo = repository();
++        let path = source_lock_path(&repo).unwrap();
++        assert_eq!(path, repo.join(SOURCE_LOCK));
++        let bytes = fixed_file(&path, Pin {
++            bytes: SOURCE_LOCK_BYTES, sha256: SOURCE_LOCK_SHA,
++        }).unwrap();
++        assert_eq!(bytes.len(), SOURCE_LOCK_BYTES);
++        assert_eq!(digest(&bytes), SOURCE_LOCK_SHA);
++    }
++
++    #[test]
++    fn structurally_valid_unobserved_root_is_rejected_before_source_actions() {
++        let repo = repository();
++        let original = fixed_file(&repo.join(ORIGINAL_LOCK), Pin {
++            bytes: ORIGINAL_LOCK_BYTES, sha256: ORIGINAL_LOCK_SHA,
++        }).unwrap();
++        let expanded = fixed_file(&repo.join(SOURCE_LOCK), Pin {
++            bytes: SOURCE_LOCK_BYTES, sha256: SOURCE_LOCK_SHA,
++        }).unwrap();
++        let original_value: Value = serde_json::from_slice(&original).unwrap();
++        let mut changed: Value = serde_json::from_slice(&expanded).unwrap();
++        let project = changed["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|project| project["path"] == "frameworks/base").unwrap();
++        let paths = project["sparse_paths"].as_array_mut().unwrap();
++        paths.push(Value::String("unobserved-role-ingress-root".to_owned()));
++        // This is the old shape gate's accepted case. The public entry must
++        // additionally require the actual derived bytes before any source work.
++        validate_lock_extension(&original_value, &changed).unwrap();
++        let scratch = tempfile::tempdir().unwrap();
++        let manifest = scratch.path().join("android/manifest");
++        fs::create_dir_all(&manifest).unwrap();
++        fs::write(scratch.path().join(ORIGINAL_LOCK), &original).unwrap();
++        fs::write(scratch.path().join(SOURCE_LOCK), serde_json::to_vec_pretty(&changed).unwrap())
++            .unwrap();
++        let error = source_lock_path(scratch.path()).unwrap_err().to_string();
++        assert!(error.contains(SOURCE_LOCK));
++        assert!(error.contains("typed ingress fixed input bytes differ")
++            || error.contains("typed ingress input type or bound differs"));
++        assert!(!scratch.path().join("aosp-source").exists());
++        assert!(!scratch.path().join("source-projection.json").exists());
++        assert_eq!(fs::read(scratch.path().join(ORIGINAL_LOCK)).unwrap(), original);
++    }
++}

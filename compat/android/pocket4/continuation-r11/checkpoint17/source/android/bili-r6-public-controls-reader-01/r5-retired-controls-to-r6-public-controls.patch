@@ -1,0 +1,411 @@
+--- r5/read_controls.py
++++ r6/read_controls.py
+@@ -1,9 +1,11 @@
+ #!/usr/bin/env python3
+-"""Read two exact retained ready-player assessments; emit structural metadata only.
+-
+-No Android, process, namespace, click or screenshot operation. Unknown commercial
+-text and descriptions are represented only by existing hashes. These observations
+-belong to a retired task and never authorize a future UI action.
++"""Read one exact retired R6 control observation; emit public control metadata only.
++
++No Android, process, namespace, input, screenshot or audio operation. The full
++fixed assessment is read only to verify its pinned canonical wire and complete
++inspection; output is restricted to its verified control-container subtree.
++Unknown commercial text/descriptions and every node outside that subtree are
++omitted from output. This retired observation grants no future action authority.
+ """
+ import argparse
+ import hashlib
+@@ -15,69 +17,60 @@
+ import time
+ import types
+ 
+-ROOT = Path('/home/alex/work/pocket4-bilibili-r5-player-fresh-before-01')
+-FLOW = Path('/home/alex/work/pocket4-bilibili-owned-qa-r5-flow-c1eaefa79cbafc86cb32f638900443bf')
+-STEP = FLOW / 'steps/buffer-viewport-01'
+-NONCE = 'c1eaefa79cbafc86cb32f638900443bf'
+-SOURCE_SHA = 'f151b6737f72c53e9f776076ed81fecce4a68b327b59d2bf2f971fe838372283'
+-EPOCH = '48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
+-QA_SOURCE = Path('/home/alex/work/pocket4-owned-bili-qa-r5-source-02/source/qa_contract.py')
+-QA_SHA = 'f31f55de33d940d247cacbf3277b11760b7a774e4a3da8b2d5969d0dd0466643'
+-VIEWPORT_SOURCE = ROOT / 'source/viewport_observation.py'
+-VIEWPORT_SHA = '2f1b46c7d4f4a5ed5626421aded9cd4936aede7bbc87e5e8bee382057afae20f'
+-INPUTS = {
+-    'coordinator': (ROOT / 'result.json', 249889, 'ff2c8e0f8a09f194c7dea3ae1358e425a1c1376d5b68fe273e779cd7b5f75ec3', 0),
+-    'stage': (ROOT / 'stage-result.json', 1651, '780d97c06491bcfd51ff9da0d97552b08cda25406f839ff160dc8e989e1b567a', 0),
+-    'navigation': (STEP / 'result.json', 268643, 'b1cc104486632c7ec6c42d609c8c0d23c97a72ca3e2823c5ff48abc93bba7483', 0),
+-    'cleanup': (FLOW / 'steps/cleanup-01/result.json', 446, '14ad1897af7ee9c0b8d220de63213f07a121aea640f363dd87d43d38b64e0eda', 0),
+-    'source_manifest': (ROOT / 'source/SOURCE_PINS.json', 997, SOURCE_SHA, 0),
+-    'qa_contract': (QA_SOURCE, 27891, QA_SHA, 1000),
+-    'viewport': (VIEWPORT_SOURCE, 17420, VIEWPORT_SHA, 0),
++ROOT=Path('/home/alex/work/pocket4-bilibili-r6-controls-reveal-01')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-395ea60f6cff2da163672b2f660131a4')
++STEP=FLOW/'steps/controls-reveal-01'
++NONCE='395ea60f6cff2da163672b2f660131a4'
++INSPECT_NONCE='234fec58dcab499091b31feb950ec438'
++SOURCE_SHA='59401749d76711faeb9e9bc0326039d34661c8e27d364d9c9cfdbf23cf63e795'
++EPOCH='48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f'
++QA_SOURCE=Path('/home/alex/work/pocket4-owned-bili-qa-r6-source-01/source/qa_contract.py')
++QA_SHA='871c784812063739a6ab976784fb38243af52266b0d9a95aa1244779ccd2c005'
++REVEAL_SOURCE=ROOT/'source/controls_reveal.py'
++REVEAL_SHA='8836a366f995f07470210c1ab2d6e25e265572bc1c8aed3685f30a94cf7c8a9b'
++WIRE_SHA='73f69809b9a3af386c61f2183b60270077a86c37a8eba4ab9670e230c8a82bc2'
++INPUTS={
++    'coordinator':(ROOT/'result.json',198643,'acb1b45d1093c47fc38b5c8eb52c9587eb767ec4d1cc6bfdeb514af2c7bb2305',0),
++    'stage':(ROOT/'stage-result.json',1647,'62426a0c217286e11f8a8a3c458f3625d8446fd64546de3e5d3c922e2bd4ab2f',0),
++    'navigation':(STEP/'result.json',220311,'60f34589dc30aeeec9f9c46278222fa4e26b400f7e7c6b468e619b9ec18314b9',0),
++    'cleanup':(FLOW/'steps/cleanup-01/result.json',464,'dce6110752e5747d09d7fd0021c80dd643e3090bef28cbd16a827bcca1254bac',0),
++    'source_manifest':(ROOT/'source/SOURCE_PINS.json',992,SOURCE_SHA,0),
++    'qa_contract':(QA_SOURCE,39280,QA_SHA,1000),
++    'reveal':(REVEAL_SOURCE,10981,REVEAL_SHA,0),
++    'independent':(STEP/(INSPECT_NONCE+'.assessment.json'),228168,'60d3cedb4d18aac3146a9607d869c7a5f39c34496f95ebefa849936cbc1e2cab',0),
++    'independent_request':(STEP/(INSPECT_NONCE+'.request.json'),None,None,0),
+ }
+-CASES = (
+-    ('before_third_capture', 'before_observation', '6dc4166396c10395929c7dd557b07953',
+-     'a32255d410fe50d215d81e64e27037f83b33cb304186e3c0549abfc212881424',
+-     'd4d5e3d8fb7618fdb4fd18231051c7c83e8e2df885403b8fbe20ff9278f30632'),
+-    ('after_third_capture', 'after_observation', 'a519199d1d99892d6d0616dd85e1277a',
+-     '7ee64382e85ca7b9d7c28ac28910ff08f69c97404aadfb4d95e4dc99bc00a859',
+-     'a03587dfaf2bbfbfa2a130b14ba74edd8a90e94ade6d0200728a4ec6d915f2e3'),
+-)
+-for label, _, nonce, digest, _ in CASES:
+-    INPUTS[label] = (STEP / (nonce + '.assessment.json'), 199415, digest, 0)
+-    INPUTS[label + '_request'] = (STEP / (nonce + '.request.json'), None, None, 0)
+-
+-TREE_SHA = '396e3ce14634facc9bc01e1d3d387f8ee536e8977d4c025e94ffc32a8b971633'
+-WINDOW_SHA = 'b77a2ca09720fc0ff1f4cf9e588ecd50aa5c4260f6a76c050d2c5be0672f91be'
+-STRUCTURE_SHA = '85d0c17f42798b0f5a89e86e7a58344b079141b9f7d8c6034b66944128f8f7c3'
++
++
+ PUBLIC_CONTROL_LABELS = frozenset(('Play', 'Pause', 'Resume', 'Back', 'Replay',
+     'Fullscreen', 'Full screen', 'Exit full screen', 'Seek', '播放', '暂停',
+     '继续播放', '返回', '重播', '全屏', '退出全屏'))
++
+ PUBLIC_CLASSES = frozenset(('android.view.View', 'android.view.ViewGroup',
+     'android.view.SurfaceView', 'android.widget.FrameLayout', 'android.widget.LinearLayout',
+     'android.widget.RelativeLayout', 'android.widget.ImageButton', 'android.widget.ImageView',
+     'android.widget.TextView', 'android.widget.Button', 'android.widget.SeekBar',
+     'android.widget.ProgressBar', 'android.widget.CheckBox', 'android.widget.ToggleButton'))
++
+ ROLE_IDS = {'area': 'tv.danmaku.bili:id/video_area',
+     'container': 'tv.danmaku.bili:id/video_container',
+     'overlay': 'tv.danmaku.bili:id/video_area_float_layer_container',
+-    'toolbar': 'tv.danmaku.bili:id/collapsing_toolbar'}
+-
++    'toolbar': 'tv.danmaku.bili:id/collapsing_toolbar',
++    'controls': 'tv.danmaku.bili:id/control_container'}
+ 
+ def need(value, reason):
+     if not value:
+         raise RuntimeError(reason)
+ 
+-
+ def sha(raw):
+     return hashlib.sha256(raw).hexdigest()
+-
+ 
+ class Reader:
+     def __init__(self):
+         self.started = time.monotonic(); self.bytes = 0; self.records = []
+ 
+     def read(self, name):
+-        need(name in INPUTS, 'FIXED_ELEVEN_INPUT_ALLOWLIST_REQUIRED')
++        need(name in INPUTS, 'FIXED_NINE_INPUT_ALLOWLIST_REQUIRED')
+         path, size, expected, owner = INPUTS[name]
+         current = os.open('/', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC); fd = None
+         try:
+@@ -113,46 +106,6 @@
+                 os.close(fd)
+             os.close(current)
+ 
+-
+-def validate_retained(c, s, n, cleanup):
+-    for value in (c, s, n):
+-        need(value['nonce'] == NONCE and value['source_manifest_sha256'] == SOURCE_SHA
+-             and value['ok'] is True and value['error'] is None and value['secondary_errors'] == []
+-             and value['business_success_verified'] is False and value['whole_app_production_ready'] is False,
+-             'EXACT_RETAINED_SCOPED_SUCCESS_REQUIRED')
+-    need(n['outcome_unknown'] is True and n['business_outcome_unknown'] is True
+-         and c['business_outcome_unknown'] is True, 'BUSINESS_UNKNOWN_MUST_REMAIN_RECORDED')
+-    need(c['Main_before'] == c['Main_after'] == s['Main_before'] == s['Main_after']
+-         and c['Main_before']['Main_epoch_sha256'] == EPOCH, 'RETAINED_MAIN_CHAIN_CHANGED')
+-    for parent, field, name in ((s, 'coordinator_result', 'coordinator'),
+-                              (c, 'navigation_result', 'navigation'), (c, 'cleanup_result', 'cleanup')):
+-        path, size, digest, _ = INPUTS[name]
+-        need(parent[field] == {'path': str(path), 'bytes': size, 'sha256': digest},
+-             'RETAINED_PARENT_CHAIN_CHANGED')
+-    need(n['helper_package'] == 'org.droidloom.qa.bili.r5' and n['helper_uid'] == 10170
+-         and n['package'] == 'tv.danmaku.bili' and n['uid'] == 10117
+-         and all(n[k] is True for k in ('final_Main_guard_passed', 'held_binding_released',
+-             'action_lock_released', 'video_click_acknowledged', 'video_click_and_observations_completed',
+-             'buffer_viewport_observation_completed')) and c['source_and_artifact_unchanged'] is True
+-         and s['source_unchanged'] is True, 'ORIGINAL_FINAL_GATES_REQUIRED')
+-    need(c['owned_task']['task'] == 936 and c['owned_task']['prelaunch_task_ids'] == [851]
+-         and c['owned_task_absent_after_cleanup'] is True and cleanup['ok'] is True
+-         and cleanup['new_leaf_removed_and_verified'] is True and cleanup['other_tasks_preserved'] is True
+-         and cleanup['task_ids_after'] == [851], 'RETAINED_TASK_RETIREMENT_REQUIRED')
+-    record = n['buffer_viewport_observation']
+-    need(record['fresh_before_read_per_capture'] is True and len(record['viewport_samples']) == 3
+-         and 'failed_capture' not in record and record['action_replayed'] is False
+-         and record['failed_read_retried'] is False and record['audio_captured'] is False
+-         and record['playback_verified'] is False, 'ORIGINAL_THREE_CAPTURE_SCOPE_REQUIRED')
+-    sample = record['viewport_samples'][2]
+-    need(sample['index'] == 3 and sample['fresh_before_read_completed'] is True
+-         and sample['capture_attempted'] is True and sample['private_crop_published'] is True
+-         and sample['scope_checked_before_and_after'] is True and sample['atomic_frame_attribution'] is False
+-         and sample['playback_verified'] is False and sample['audio_captured'] is False,
+-         'QUALIFIED_THIRD_CAPTURE_REQUIRED')
+-    return sample
+-
+-
+ def safe_label(node, key):
+     # Unknown text is never returned, even if it looks like a UI label.
+     value = node.get(key)
+@@ -160,9 +113,8 @@
+         return value
+     return None
+ 
+-
+ def controls_metadata(inspection, proof):
+-    """No action selection: report bounded nodes inside the verified player area."""
++    """No action selection: report bounded nodes only inside the verified control-container subtree."""
+     nodes = inspection['nodes']; role_nodes = {}
+     for role, resource in ROLE_IDS.items():
+         rows = [node for node in nodes if node['resource_id'] == resource and
+@@ -171,7 +123,7 @@
+                 and node['enabled'] is True and node['password'] is False]
+         need(len(rows) == 1, 'VERIFIED_PLAYER_ROLE_MUST_REMAIN_UNIQUE')
+         role_nodes[role] = rows[0]
+-    area_path = role_nodes['area']['path']
++    area_path = role_nodes['controls']['path']
+     rows = []; redacted = 0; outside = 0
+     for node in nodes:
+         inside = node['path'] == area_path or node['path'].startswith(area_path + '/')
+@@ -208,14 +160,13 @@
+                'standalone_time_pattern': node['text_truncated'] is False and
+                    re.fullmatch(r'(?:[0-9]{1,2}:)?[0-9]{1,3}:[0-9]{2}', node['text']) is not None}
+         rows.append(row)
+-    return {'rows': rows, 'row_count': len(rows), 'outside_player_nodes_omitted': outside,
++    return {'rows': rows, 'row_count': len(rows), 'outside_control_container_nodes_omitted': outside,
+             'invisible_or_password_nodes_omitted': redacted,
+             'clickable_visible_enabled_count': sum(row['clickable'] is True and row['enabled'] is True for row in rows),
+             'seekbar_class_count': sum(row['class_name'] == 'android.widget.SeekBar' for row in rows),
+             'accessibility_range_or_set_progress_support_observed': False,
+             'actions_list_in_original_helper_schema': False,
+             'control_presence_does_not_authorize_action': True}
+-
+ 
+ def no_raw_ui(value):
+     if isinstance(value, dict):
+@@ -228,87 +179,138 @@
+             no_raw_ui(item)
+ 
+ 
++def validate_retained(c, s, n, cleanup):
++    for value in (c, s, n):
++        need(value['nonce'] == NONCE and value['source_manifest_sha256'] == SOURCE_SHA
++             and value['ok'] is True and value['error'] is None and value['secondary_errors'] == []
++             and value['business_success_verified'] is False and value['whole_app_production_ready'] is False,
++             'EXACT_RETAINED_SCOPED_SUCCESS_REQUIRED')
++    need(c['Main_before'] == c['Main_after'] == s['Main_before'] == s['Main_after']
++         and c['Main_before']['Main_epoch_sha256'] == EPOCH
++         and c['Main_before']['resource_limits_match'] is True,
++         'ORIGINAL_MAIN_GUARD_CHAIN_REQUIRED')
++    for parent, key, name in ((s, 'coordinator_result', 'coordinator'),
++                              (c, 'navigation_result', 'navigation'), (c, 'cleanup_result', 'cleanup')):
++        path, size, digest, _ = INPUTS[name]
++        need(parent[key] == {'path':str(path), 'bytes':size, 'sha256':digest},
++             'EXACT_RETAINED_PARENT_PIN_REQUIRED')
++    need(c['package'] == n['package'] == 'tv.danmaku.bili' and c['uid'] == n['uid'] == 10117
++         and c['helper_package'] == n['helper_package'] == 'org.droidloom.qa.bili.r6'
++         and c['helper_uid'] == n['helper_uid'] == 10184
++         and c['business_outcome_unknown'] is True and n['business_outcome_unknown'] is True
++         and n['outcome_unknown'] is True and c['source_and_artifact_unchanged'] is True
++         and s['source_unchanged'] is True
++         and all(n[k] is True for k in ('final_Main_guard_passed', 'held_binding_released',
++             'action_lock_released', 'controls_reveal_and_observation_completed')),
++         'EXACT_ORIGINAL_R6_FINAL_GATES_REQUIRED')
++    need(c['owned_task']['task'] == 970 and c['owned_task']['prelaunch_task_ids'] == [851, 968, 969]
++         and c['owned_task']['prelaunch_absent'] is True and c['owned_task_absent_after_cleanup'] is True
++         and cleanup['ok'] is True and cleanup['outcome_unknown'] is False
++         and cleanup['epoch_sha256'] == EPOCH
++         and ((cleanup.get('new_leaf_removed_and_verified') is True and
++               cleanup.get('other_tasks_preserved') is True) or
++              (cleanup.get('new_task_already_absent') is True and cleanup.get('removal_attempted') is False)),
++         'ORIGINAL_EXACT_TASK_CLEANUP_REQUIRED')
++    if 'task_ids_after' in cleanup:
++        need(970 not in cleanup['task_ids_after'] and
++             set(c['owned_task']['prelaunch_task_ids']).issubset(cleanup['task_ids_after']),
++             'ORIGINAL_TASK_RETIREMENT_AND_PREEXISTING_PRESERVATION_REQUIRED')
++    record = c['navigation']['controls_reveal_observation']
++    need(record == n['controls_reveal_observation'] and record['input_acknowledged'] is True
++         and record['independent_read_completed'] is True and record['controls_revealed_observed'] is True
++         and record['atomic_input_target_attribution'] is False and record['pause_seek_or_audio_qualified'] is False
++         and record['business_success_verified'] is False and record['automatic_retry'] is False,
++         'BOUND_ONE_INPUT_AND_INDEPENDENT_OBSERVATION_REQUIRED')
++    return record
++
++
+ def collect():
+     need(os.getuid() == os.geteuid() == 0, 'ROOT_FIXED_RETAINED_READ_REQUIRED')
+     reader = Reader()
+-    values = {name: json.loads(reader.read(name)) for name in ('coordinator', 'stage', 'navigation', 'cleanup')}
+-    sample = validate_retained(values['coordinator'], values['stage'], values['navigation'], values['cleanup'])
++    values = {name:json.loads(reader.read(name)) for name in ('coordinator','stage','navigation','cleanup')}
++    record = validate_retained(values['coordinator'],values['stage'],values['navigation'],values['cleanup'])
+     manifest = json.loads(reader.read('source_manifest'))
+-    need(manifest['files']['viewport_observation.py'] == {'bytes': 17420, 'sha256': VIEWPORT_SHA},
+-         'EXACT_ORIGINAL_VIEWPORT_SOURCE_REQUIRED')
+-    qa = types.ModuleType('exact_qa_contract'); qa.__file__ = str(QA_SOURCE)
+-    exec(compile(reader.read('qa_contract'), str(QA_SOURCE), 'exec'), qa.__dict__)
+-    viewport = types.ModuleType('exact_viewport'); viewport.__file__ = str(VIEWPORT_SOURCE)
+-    exec(compile(reader.read('viewport'), str(VIEWPORT_SOURCE), 'exec'), viewport.__dict__)
+-    base = types.SimpleNamespace(require=need, sha=sha, BILI='tv.danmaku.bili')
+-    need(tuple(viewport.PLANS[i]['nonces']['inspect'] for i in (16, 17)) == tuple(row[2] for row in CASES),
+-         'EXACT_ORIGINAL_THIRD_CAPTURE_PLANS_REQUIRED')
+-    result_rows = []; actual_proofs = []
+-    for label, key, nonce, digest, wire in CASES:
+-        observation = sample[key]; summary = observation['assessments']['inspect']; scope = observation['proof']['scope']
+-        qa.scope(scope)
+-        need(observation['after_state_completed'] is True and observation['restoration_qualified'] is True
+-             and observation['proof']['buffering_label_present'] is False and summary['complete'] is True
+-             and summary['nonce'] == nonce and summary['assessment_sha256'] == digest
+-             and summary['assessment_bytes'] == 199415 and summary['wire_sha256'] == wire
+-             and summary['tree_sha256'] == TREE_SHA and summary['window_sha256'] == WINDOW_SHA,
+-             'EXACT_SUCCESSFUL_RETAINED_INSPECTION_REQUIRED')
+-        raw = reader.read(label); assessed = json.loads(raw); helper = assessed['helper']
+-        need(assessed['held_transport_returned_after_post_guard'] is True
+-             and assessed['actual_command_returncode'] == summary['actual_command_returncode'] == 0
+-             and assessed['actual_instrumentation_finish_code'] == summary['actual_instrumentation_finish_code'] == -1
+-             and helper['ok'] is True and helper['error'] is None and helper['secondary_errors'] == []
+-             and helper['protocol'] == qa.PROTOCOL and helper['nonce'] == nonce and helper['op'] == 'inspect'
+-             and helper['self_uid'] == 10170 and helper['action_attempted'] is False
+-             and helper['outcome_unknown'] is False, 'ACTUAL_READ_ONLY_HELPER_REQUIRED')
+-        need(sha(qa.canonical(helper)) == assessed['wire_sha256'] == wire, 'CANONICAL_WIRE_PIN_REQUIRED')
+-        request = json.loads(reader.read(label + '_request')); qa.validate_request(request)
+-        need(request == {'protocol': qa.PROTOCOL, 'nonce': nonce, 'op': 'inspect', 'scope': scope}
+-             and sha(qa.canonical(request)) == helper['request_sha256']
+-             and helper['host_scope_attestation'] == scope, 'EXACT_REQUEST_SCOPE_REQUIRED')
+-        inspection = qa.inspect_record(helper['inspection'])
+-        window = qa.window_observation(helper['window_observation'])
+-        counters = qa.tree_observations(helper['tree_observations'], 'inspect', True)
+-        need(inspection['tree_sha256'] == TREE_SHA and inspection['window_sha256'] == WINDOW_SHA
+-             and len(inspection['nodes']) == 153 and counters == summary['tree_observations'],
+-             'COMPLETE_ORIGINAL_TREE_COUNTERS_REQUIRED')
+-        proof = viewport.viewport(base, qa, inspection, scope)
+-        need(proof == observation['proof'] and proof['render_structure_sha256'] == STRUCTURE_SHA
+-             and proof['buffering_label_present'] is False, 'EXACT_ORIGINAL_PLAYER_PROOF_REQUIRED')
+-        actual_proofs.append(proof)
+-        controls = controls_metadata(inspection, proof)
+-        result_rows.append({'label': label, 'nonce': nonce, 'scope': scope, 'assessment_sha256': sha(raw),
+-            'wire_sha256': wire, 'tree_sha256': TREE_SHA, 'window_sha256': WINDOW_SHA,
+-            'complete_node_count': 153, 'render_structure_sha256': STRUCTURE_SHA,
+-            'window_ready': window['ready'], 'cache_attempts': window['cache_attempts'],
+-            'cache_clears': window['cache_clears'], 'cache_last_result': window['cache_last_result'],
+-            'controls': controls})
+-    need(viewport.same_scope(*actual_proofs), 'ORIGINAL_THIRD_TRANSACTION_SCOPE_CHANGED')
+-    need(result_rows[0]['controls'] == result_rows[1]['controls'], 'ORIGINAL_CONTROL_METADATA_CHANGED')
+-    result = {'schema': 1, 'state': 'COLLECTED_RETIRED_PLAYER_CONTROL_METADATA_ONLY',
+-        'flow_nonce': NONCE, 'source_manifest_sha256': SOURCE_SHA, 'records': result_rows,
+-        'input_file_pins': reader.records, 'input_bytes': reader.bytes,
+-        'scope': 'two exact complete observations around the third already-qualified capture',
+-        'retained_scoped_success_preserved': True, 'business_outcome_unknown_preserved': True,
+-        'control_metadata_equal_across_retained_pair': True, 'observed_task_already_retired': True,
+-        'reuse_for_click_forbidden': True, 'Android_or_process_actions': 0,
+-        'raw_commercial_tree_or_unknown_text_or_descriptions_or_pixels_exported': False,
+-        'pause_resume_seek_functionality_verified': False, 'playback_or_audio_verified': False,
+-        'whole_app_ready': False}
++    need(manifest['files']['controls_reveal.py'] == {'bytes':10981,'sha256':REVEAL_SHA},
++         'EXACT_ORIGINAL_REVEAL_MODULE_REQUIRED')
++    qa = types.ModuleType('exact_r6_contract'); qa.__file__ = str(QA_SOURCE)
++    exec(compile(reader.read('qa_contract'),str(QA_SOURCE),'exec'),qa.__dict__)
++    reveal = types.ModuleType('exact_reveal_observation'); reveal.__file__ = str(REVEAL_SOURCE)
++    exec(compile(reader.read('reveal'),str(REVEAL_SOURCE),'exec'),reveal.__dict__)
++    need(qa.PROTOCOL == 'pocket4-owned-bili-qa-v6'
++         and reveal.POST_PLAN['nonces']['inspect'] == INSPECT_NONCE,
++         'EXACT_RETAINED_INDEPENDENT_INSPECTION_PLAN_REQUIRED')
++    qa.touch_observation(record['input_lifecycle'],True)
++    sequence = record['independent_sequence']; metadata = record['independent_assessment']
++    observed = record['independent_observation']; scope = record['final_scope']
++    qa.scope(scope)
++    need(metadata['nonce'] == INSPECT_NONCE and metadata['operation'] == 'inspect'
++         and metadata['assessment_bytes'] == INPUTS['independent'][1]
++         and metadata['assessment_sha256'] == INPUTS['independent'][2]
++         and metadata['wire_sha256'] == sequence['inspection_wire_sha256'] == WIRE_SHA
++         and metadata['actual_command_returncode'] == 0 and metadata['actual_instrumentation_finish_code'] == -1
++         and sequence['foreground_before'] == sequence['foreground_after'] == scope
++         and sequence['restoration_qualified'] is True and sequence['after_state_completed'] is True
++         and sequence['post_state_matches_before'] is True
++         and sequence['post_termination_state']['ui_automation_connected'] is False
++         and sequence['installed_before'] == sequence['installed_after'] == values['navigation']['live_installed_before']
++         and sequence['installed_before']['uid'] == 10184
++         and sequence['installed_before']['apk_sha256'] == 'f7df7d6ce8dd0ed2ab7a8cda929d5b06e2b097c358490b32450c4a238bc1562a',
++         'EXACT_COMPLETED_INDEPENDENT_SEQUENCE_REQUIRED')
++    raw = reader.read('independent'); assessed = json.loads(raw); helper = assessed['helper']
++    need(assessed['held_transport_returned_after_post_guard'] is True
++         and assessed['actual_command_returncode'] == 0 and assessed['actual_instrumentation_finish_code'] == -1
++         and helper['ok'] is True and helper['error'] is None and helper['secondary_errors'] == []
++         and helper['protocol'] == qa.PROTOCOL and helper['nonce'] == INSPECT_NONCE and helper['op'] == 'inspect'
++         and helper['self_uid'] == 10184 and helper['action_attempted'] is False
++         and helper['outcome_unknown'] is False
++         and sha(qa.canonical(helper)) == assessed['wire_sha256'] == WIRE_SHA,
++         'EXACT_CANONICAL_SUCCESSFUL_READ_ONLY_WIRE_REQUIRED')
++    request = json.loads(reader.read('independent_request')); qa.validate_request(request)
++    need(request == {'protocol':qa.PROTOCOL,'nonce':INSPECT_NONCE,'op':'inspect','scope':scope}
++         and helper['host_scope_attestation'] == scope and sha(qa.canonical(request)) == helper['request_sha256'],
++         'EXACT_RETAINED_REQUEST_AND_SCOPE_REQUIRED')
++    inspection = qa.inspect_record(helper['inspection'])
++    window = qa.window_observation(helper['window_observation'])
++    counters = qa.tree_observations(helper['tree_observations'],'inspect',True)
++    actual_observed = reveal.controls_evidence(qa,inspection,scope)
++    need(actual_observed == observed and observed['complete'] is True and observed['node_count'] == 175
++         and len(inspection['nodes']) == 175 and observed['complete_control_descendant_count'] == 8
++         and observed['visible_enabled_clickable_count'] == 2 and observed['visible_enabled_seekbar_count'] == 0
++         and qa.same_reveal_frame(record['immediate_post_observation']['proof'],observed['proof']),
++         'COMPLETE_ORIGINAL_PUBLIC_CONTROLS_OBSERVATION_REQUIRED')
++    controls = controls_metadata(inspection,{'crop':observed['proof']['viewport_bounds']})
++    need(controls['clickable_visible_enabled_count'] == 2 and controls['seekbar_class_count'] == 0,
++         'EXACT_CONTROL_SUBTREE_COUNTS_REQUIRED')
++    result = {'schema':1,'state':'COLLECTED_RETIRED_R6_PUBLIC_CONTROL_METADATA_ONLY',
++        'flow_nonce':NONCE,'source_manifest_sha256':SOURCE_SHA,'inspection_nonce':INSPECT_NONCE,
++        'assessment_sha256':sha(raw),'wire_sha256':WIRE_SHA,'scope':scope,
++        'tree_sha256':inspection['tree_sha256'],'window_sha256':inspection['window_sha256'],
++        'complete_node_count':175,'complete_control_descendant_count':8,
++        'window_ready':window['ready'],'cache_attempts':window['cache_attempts'],
++        'cache_clears':window['cache_clears'],'cache_last_result':window['cache_last_result'],
++        'tree_observations':counters,
++        'proof':observed['proof'],'controls':controls,'original_cleanup':values['cleanup'],
++        'original_owned_task':970,'prelaunch_task_ids':[851,968,969],
++        'input_file_pins':reader.records,'input_bytes':reader.bytes,
++        'outside_control_container_nodes_omitted':True,'observed_task_already_retired':True,
++        'reuse_for_click_forbidden':True,'Android_or_process_actions':0,
++        'raw_commercial_tree_or_unknown_text_or_descriptions_or_pixels_exported':False,
++        'pause_resume_seek_functionality_verified':False,'playback_or_audio_verified':False,
++        'business_outcome_unknown_preserved':True,'whole_app_ready':False}
+     no_raw_ui(result)
+-    raw = (json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(',', ':')) + '\n').encode()
+-    need(len(raw) <= 131072, 'COMPLETE_METADATA_OUTPUT_BOUND')
+-    print(raw.decode(), end='', flush=True)
++    output = (json.dumps(result,ensure_ascii=False,sort_keys=True,separators=(',',':'))+'\n').encode()
++    need(len(output) <= 131072, 'COMPLETE_METADATA_OUTPUT_BOUND')
++    print(output.decode(),end='',flush=True)
+     return 0
+ 
+ 
+ def main(argv=None):
+-    parser = argparse.ArgumentParser(description=__doc__)
+-    parser.add_argument('--collect-once', action='store_true'); args = parser.parse_args(argv)
++    parser=argparse.ArgumentParser(description=__doc__)
++    parser.add_argument('--collect-once',action='store_true'); args=parser.parse_args(argv)
+     if not args.collect_once:
+-        print(json.dumps({'state': 'PLAN_ONLY', 'fixed_files': [str(value[0]) for value in INPUTS.values()],
+-            'file_count': len(INPUTS), 'complete_output_bound_bytes': 131072,
+-            'Android_or_process_actions': 0, 'unknown_text_or_pixels_exported': False}))
++        print(json.dumps({'state':'PLAN_ONLY','fixed_files':[str(v[0]) for v in INPUTS.values()],
++            'file_count':len(INPUTS),'complete_output_bound_bytes':131072,
++            'Android_or_process_actions':0,'unknown_text_or_pixels_exported':False}))
+         return 0
+     return collect()
+ 

@@ -1,0 +1,123 @@
+{
+  "Hepta_or_UI_calls": 0,
+  "actual_parent_pins": {
+    "coordinator": {
+      "bytes": 7418,
+      "sha256": "360fa744c2162c73c03fe0dd76e9b818544558b4ce732047cf84f208458a6ead"
+    },
+    "stage": {
+      "bytes": 1773,
+      "sha256": "b0a199faa698e507c6a271968b5101663161276c1159e96f2f0f1d1d1e98f5ad"
+    }
+  },
+  "actual_parent_prelaunch_tasks": [
+    851,
+    1005
+  ],
+  "actual_parent_task": 1006,
+  "all_bound_files_mandatory": true,
+  "baseline_reader": {
+    "bytes": 11203,
+    "path": "/workspace/scratch/94990735b266/android-bili-r6-pause-resume-fresh02-failure-reader-01/read_summary.py",
+    "sha256": "737eb8a5755a47d014842b37a73200a08f791a00e5cc3ba46435cb277e70c14e"
+  },
+  "child_pins": {
+    "cleanup": {
+      "bytes": 457,
+      "path": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-a14743fa3566f851b6724a54b0509744/steps/cleanup-01/result.json",
+      "sha256": "012da7d203bfdfb7f07426d67f5c9bec107e5d0e21dd2a021a29bf08a0b7c0b2"
+    },
+    "launch": {
+      "bytes": 5130,
+      "path": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-a14743fa3566f851b6724a54b0509744/steps/launch-01/result.json",
+      "sha256": "5bc03f3e991f3819c7f6dfd0b4bd48972c36aba2a38b28100ea7ae5bfc321c01"
+    },
+    "navigation": {
+      "bytes": 44783,
+      "path": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-a14743fa3566f851b6724a54b0509744/steps/pause-resume-01/result.json",
+      "sha256": "ecda84ea8a8e701172cd087a3750ea3f06bb34b44bdc6420cd2cbd888db9537e"
+    }
+  },
+  "literal_rebindings": [
+    [
+      "pocket4-bilibili-r6-pause-resume-02",
+      "pocket4-bilibili-r6-pause-resume-04"
+    ],
+    [
+      "8f28dc51812add5280cb6b7ba411aad0",
+      "a14743fa3566f851b6724a54b0509744"
+    ],
+    [
+      "0611a55350a19de18b14b1da7fe6342caed8f8e6082746e83b028b345abd8d97",
+      "a49770d55b487e4e172aa38ebc1a454220ec7e668c499f8c8d5b838962e9da42"
+    ],
+    [
+      "d04701a323982b972cdfde1dad4ae0e476f4f2a3b47efcdb973c762b0c9d1f00",
+      "360fa744c2162c73c03fe0dd76e9b818544558b4ce732047cf84f208458a6ead"
+    ],
+    [
+      "9ad3fdbd324dedd87bb4570bf0e09c7c5265f92b44f6133f63e1e29b409ad15b",
+      "b0a199faa698e507c6a271968b5101663161276c1159e96f2f0f1d1d1e98f5ad"
+    ],
+    [
+      "1f5bc45e0d60e3b94d9c2c2946bca5d3e969bede051fa5714f8987b1a6077a40",
+      "012da7d203bfdfb7f07426d67f5c9bec107e5d0e21dd2a021a29bf08a0b7c0b2"
+    ],
+    [
+      "e7403db0e2a65637281ed00489d2fa70e796881b06cf8d23720cce28fac834d6",
+      "ecda84ea8a8e701172cd087a3750ea3f06bb34b44bdc6420cd2cbd888db9537e"
+    ],
+    [
+      "7406",
+      "7418"
+    ],
+    [
+      "214331",
+      "44783"
+    ],
+    [
+      "'bytes':448",
+      "'bytes':457"
+    ],
+    [
+      "012da7d203bfdfb7f07426d67f5c9bec107e5d0e21dd2a021a29bf08a0b7c0b2',448",
+      "012da7d203bfdfb7f07426d67f5c9bec107e5d0e21dd2a021a29bf08a0b7c0b2',457"
+    ],
+    [
+      "navigation-command.json",
+      "launch.json"
+    ]
+  ],
+  "no_actual_child_outcome_or_cleanup_qualification_assumed": true,
+  "no_private_assessment_or_tree_reads": true,
+  "original_bounds": {
+    "CPU_percent": 100,
+    "bundle": 3145728,
+    "memory_bytes": 134217728,
+    "other_single_file": 262144,
+    "request_seconds": 30,
+    "seconds": 8,
+    "small_launch_file": 32768,
+    "total": 2097152
+  },
+  "pure_controls": {
+    "bytes": 831,
+    "sha256": "625e61a313d4b920762e3e9f80b463fae02e33526ca0297be3490bdcf88ebdc9"
+  },
+  "runtime_changes": [
+    "Replace navigation command leaf with actual launch result leaf, preserving its 32768-byte cap.",
+    "Replace command-specific binding with the identical worker body scope check specialized to launch.",
+    "Require launch_result and retained launch pin equality; preserve exact retained navigation and cleanup bindings."
+  ],
+  "schema": 1,
+  "state": "FIXED_THREE_PHASE_SAFE_READER_NOT_SUBMITTED",
+  "terminal_job": "1a1ae04d786-fc05-5caa",
+  "unchanged_AST_after_literal_normalization": [
+    "Reader",
+    "need",
+    "sha",
+    "no_raw_ui",
+    "navigation_binding",
+    "main"
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "state": "RELEASED_AFTER_VERIFIED_OWNED_BILI_R6_COMPLETION",
+  "prefix": "bili_r6_controls_reveal01",
+  "job_id": "1a1acd28c21-fc05-5723",
+  "original_terminal": {
+    "exit_code": 0,
+    "complete": true,
+    "durable": true
+  },
+  "coordinator": {
+    "bytes": 198643,
+    "sha256": "acb1b45d1093c47fc38b5c8eb52c9587eb767ec4d1cc6bfdeb514af2c7bb2305"
+  },
+  "stage": {
+    "bytes": 1647,
+    "sha256": "62426a0c217286e11f8a8a3c458f3625d8446fd64546de3e5d3c922e2bd4ab2f"
+  },
+  "protected_read": {
+    "job_id": "1a1acdfa504-fc05-5764",
+    "stdout_bytes": 32500,
+    "stdout_sha256": "734761c1fa06e49c8694e44d4a7be8024e5381df7580cb4ae7b76411a9429733",
+    "bundle_bytes": 216278,
+    "bundle_sha256": "7561a2a7e797e8896c3efd64e73aaaa77a684816d498e59e93c0597704237319"
+  },
+  "Root_actual_verification": "Full exact c/s bytes from independently bound protected read; all original Main guard maps equal original post-restore guard; sources/artifacts unchanged, errors empty, both input and independent inspection helper sequences restored.",
+  "owned_task": {
+    "id": 970,
+    "prelaunch_absent": true,
+    "absent_after_cleanup": true,
+    "cleanup_requested": true
+  },
+  "controls": {
+    "input_down_up_acknowledged": true,
+    "created_events_recycled": true,
+    "stream_terminated": true,
+    "up_admission_ms": 16,
+    "up_admission_budget_ms": 150,
+    "immediate": {
+      "complete": true,
+      "nodes": 155,
+      "descendants": 0,
+      "visible_enabled_clickable": 0,
+      "revealed": false
+    },
+    "independent": {
+      "complete": true,
+      "nodes": 175,
+      "descendants": 8,
+      "visible_enabled_clickable": 2,
+      "seekbars": 0,
+      "revealed": true
+    }
+  },
+  "owned_resources": {
+    "memory_peak_bytes": 132501504,
+    "memory_events_all_zero": true,
+    "swap_current": 0,
+    "swap_peak": 0,
+    "swap_max": 0,
+    "memory_max_bytes": 536870912,
+    "cpu_quota_percent": 100
+  },
+  "limits": "Controls reveal observation only. No atomic input-target attribution, pause/seek/audio or whole-App qualification. Raw UI remains private.",
+  "whole_app_production_ready": false
+}

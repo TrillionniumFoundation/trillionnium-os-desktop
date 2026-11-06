@@ -1,0 +1,44 @@
+--- literal-normalized-R6/install_state.py
++++ actual-R7/install_state.py
+@@ -30,15 +30,15 @@
+ QA_ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r7-source-01/source')
+ QA_MANIFEST = 'f6722f5163403c753a81912944e3390e424858795e2db059ea9a75cf8f56c310'
+ BUILD = Path('/home/alex/work/pocket4-owned-bili-qa-r7-build-01/build-result.json')
+-BUILD_SHA = '158e0ca24d0807f12dd4f5c03dac24a04052ce8ac876d0da6df4212bbfa28f1d'
+-BUILD_BYTES = 18043
++BUILD_SHA = 'eb5b84b424b951342c984ab42923da3d35252de816837405c60b4cca93f27090'
++BUILD_BYTES = 18933
+ STAGE = Path('/home/alex/work/pocket4-owned-bili-qa-r7-source-01/stage-result.json')
+-STAGE_SHA = '76a315152f472f6d213ec663b1d9404b67d19621b1c2376ea9a0c757c2994c40'
++STAGE_SHA = '37bc868243c1fc005ce7eb68727d748b9bbdbf1ef27a1d43f3041ab14161da03'
+ STAGE_BYTES = 1939
+ APK = Path('/home/alex/work/pocket4-owned-bili-qa-r7-build-01/owned-bili-qa.apk')
+-APK_SHA = 'f7df7d6ce8dd0ed2ab7a8cda929d5b06e2b097c358490b32450c4a238bc1562a'
+-APK_BYTES = 32912
+-SIGNER_SHA = '45e4127727aca864ee976c95c667cc8707566ece6a0f940ba8c53b158192f611'
++APK_SHA = 'f55b972a5ec968070ea0ea407f4a459913927c4693d0d9e949e6c472bcbcc641'
++APK_BYTES = 37008
++SIGNER_SHA = '096152ac7ae183be9c713b61d8dac64eb789593b332fa8636536c2af80021391'
+ RECORDER_ROOT = SOURCE / 'recorder-r4'
+ RECORDER_MANIFEST = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+ REFERENCE_SHA = 'e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+@@ -245,7 +245,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
+-    require(10000 <= uid < 100000 and uid not in (10117,10125,10164,10165,10166,10169,10170,10175), 'NEW_APP_UID_REQUIRED')
++    require(10000 <= uid < 100000 and uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ 
+--- literal-normalized-R6/make_request.py
++++ actual-R7/make_request.py
+@@ -7,7 +7,7 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-bili-qa-r7-install-state-01-20261105'
++KEY='pocket4-owned-bili-qa-r7-install-state-01-20261106'
+ ROOT='/home/alex/work/pocket4-owned-bili-qa-r7-install-state-01'
+ NONCE='587084d5b51af906d6b05a12a3c30087'
+ 

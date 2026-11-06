@@ -1,0 +1,56 @@
+--- owner15/read.py
++++ owner16/read-template.py
+@@ -7,11 +7,13 @@
+ import stat
+ import traceback
+ 
+-ROOT_NAME = 'p4-owner15-normal-20261105-01-state'
+-EXPECTED_REPORT_BYTES = 59461
+-EXPECTED_REPORT_SHA256 = '6d35b126c24604d373175479c9bc69e0246a45c05f2061bb8f8077399f0926d5'
++ROOT_NAME = 'p4-owner16-normal-20261105-01-state'
++EXPECTED_REPORT_BYTES = None
++EXPECTED_REPORT_SHA256 = None
+ NAMES = ('runtime-result.json',)
+-LIMIT = 1048576
++LIMIT = 5 * 1024 * 1024
++ENVELOPE_LIMIT = 2 * LIMIT + 65536
++GZIP_LIMIT = ENVELOPE_LIMIT + 65536
+ 
+ 
+ def need(ok, message):
+@@ -57,6 +59,7 @@
+         need(stamp(before) == stamp(after) == stamp(named) and len(data) == after.st_size,
+              'member changed while held')
+         body = bytes(data)
++        need(body.isascii(), 'fixed original JSON writer ASCII encoding differs')
+         result = {'path': '/opt/' + ROOT_NAME + '/' + name, 'bytes': len(body),
+                   'sha256': hashlib.sha256(body).hexdigest(), 'identity': stamp(after),
+                   'content': body.decode('utf-8')}
+@@ -69,10 +72,14 @@
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'fixed-owner15-normal01-runtime-read', 'collection_complete': False,
++    result = {'schema': 1, 'kind': 'fixed-owner16-normal01-runtime-read', 'collection_complete': False,
+               'files': {}, 'errors': [], 'mutations': False, 'qualification': False}
+     fds = []
+     try:
++        need(type(EXPECTED_REPORT_BYTES) is int and 0 < EXPECTED_REPORT_BYTES <= LIMIT and
++             isinstance(EXPECTED_REPORT_SHA256, str) and len(EXPECTED_REPORT_SHA256) == 64 and
++             all(c in '0123456789abcdef' for c in EXPECTED_REPORT_SHA256),
++             'external actual report size and full SHA are required before opening any path')
+         need(os.geteuid() == 0 and os.getegid() == 0, 'root read required')
+         slash = directory('/'); fds.append(slash)
+         opt = directory('opt', slash); fds.append(opt)
+@@ -98,9 +105,9 @@
+                 result['errors'].append({'close_error': repr(error)})
+     result['collection_complete'] = result['collection_complete'] and not result['errors']
+     raw = (json.dumps(result, sort_keys=True, separators=(',', ':')) + '\n').encode()
+-    need(len(raw) <= 2097152, 'read envelope exceeds bound')
++    need(len(raw) <= ENVELOPE_LIMIT, 'read envelope exceeds bound')
+     compressed = gzip.compress(raw, mtime=0)
+-    need(len(compressed) <= 1048576, 'compressed envelope exceeds bound')
++    need(len(compressed) <= GZIP_LIMIT, 'compressed envelope exceeds bound')
+     print(json.dumps({'schema': 1, 'collection_complete': result['collection_complete'],
+         'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
+         'gzip_bytes': len(compressed), 'gzip_sha256': hashlib.sha256(compressed).hexdigest(),

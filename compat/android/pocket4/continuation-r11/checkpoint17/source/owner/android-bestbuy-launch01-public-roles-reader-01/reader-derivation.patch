@@ -1,0 +1,200 @@
+--- reviewed-IHG-public-role-reader
++++ fixed-BestBuy-public-role-reader
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed historical IHG public hotel-entry role counts; no UI or process action.
++"""Fixed historical BESTBUY public entry and onboarding role counts; no UI or process action.
+ 
+ Only one exact retired-task assessment is inspected in memory. Unknown text,
+ labels, identifiers, nodes, coordinates and pixels are never exported.
+@@ -14,48 +14,29 @@
+ import time
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-ihg-owned-launch-inspect-01')
+-FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r1-flow-399444a5b72d53139b880a4afefdb31a')
++ROOT=Path('/home/alex/work/pocket4-bestbuy-owned-launch-inspect-01')
++FLOW=Path('/home/alex/work/pocket4-bestbuy-owned-qa-r1-flow-e5c3f2c938e436b52539d52cdbfab8c5')
+ STEP=FLOW/'steps/inspect-01'
+-NONCE='399444a5b72d53139b880a4afefdb31a'
+-SOURCE_SHA='704bf0640c6a207ad8177dfc0240896cc785b6fa6db34521fbea5cd02e42a6fd'
+-QA_SOURCE=Path('/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/source/qa_contract.py')
+-QA_SHA='573fdcd691ed51b76f965151b74b38cfcbd12ed5aa972d668146ae136744d7e1'
+-QA_MANIFEST='ab971f5b361f1d97b8036c954a6b88734b7faedbeed6349b873ead85fa79d5f3'
+-INSPECT_NONCE='212fb7088216fc6760d30b7224f245ee'
+-INSPECT_WIRE='902c325a2ceaecafced4abc93a4654ad22699dddce216a3af3f8d7c6d938fa3a'
++NONCE='e5c3f2c938e436b52539d52cdbfab8c5'
++SOURCE_SHA='4ac1247dfd9bba4cfb69c33331d7d4d4cd29b8c22651db7e7994ce40d47f0925'
++QA_SOURCE=Path('/home/alex/work/pocket4-owned-bestbuy-qa-r1-source-01/source/qa_contract.py')
++QA_SHA='e751f26cba0e02258427216fdc69fb8cbfdd673623148c3700ea2dbe35364195'
++QA_MANIFEST='1dc5ae021d8b4d3165ac81dd09aef7035651118a9a81380139bdd1caaef668f8'
++INSPECT_NONCE='304e502d5e668874fe3879215395eecd'
++INSPECT_WIRE='a90f9ddeb81782efd67b11aeb540c5dbc568cae12476658d5bf973d27dba8a65'
+ PINS={
+- ROOT/'result.json':(13631,'6a354bc4cfe0066263b8f6041be90d674fce05700cd57b21dcf5880122312211'),
+- ROOT/'stage-result.json':(1710,'bb34503b97e7702a8b10c6da10cb4bb6e3a95043168ff59859a15cbdf56d7bf1'),
+- STEP/'result.json':(19064,'6ded83f7b28e3b9658efe9c1d166513734b58d21a05267d5612b6ddce6d4f836'),
+- FLOW/'steps/cleanup-01/result.json':(10012,'eea9b4b856e6a799255626f02213c643ceefced73a86ae503c82119faba9591f'),
+- QA_SOURCE:(28150,QA_SHA),
+- STEP/(INSPECT_NONCE+'.assessment.json'):(86558,'2e0a9c2af7c403b330e92566a058dd8a0e790654b8c2f89e1a89330e035123de'),
++ ROOT/'result.json':(13536, '1b9632bc59f615cf364e148d4dd5d14a5c540e48764616d1cfded9a904159b07'),
++ ROOT/'stage-result.json':(1713, '8a1f5f8b6b24b8e53c47d409a4e2e4a8005d4b4695703e916160ab4b3d5ca60f'),
++ FLOW/'steps/launch-01/result.json':(13279, '82c72f7a7be021c5acbddf500ce497b323da06e7746fabbc14da06fc42176eb9'),
++ STEP/'result.json':(21067, '95b15ea5f365c7a672cffa446ddb39faed675388ed7b123c84db8f55f818fd14'),
++ FLOW/'steps/cleanup-01/result.json':(12151, 'fb11b08fb51bc6228c737b3dad48ce3e85a72e233c123a561bd2dd248a5b2f8b'),
++ QA_SOURCE:(28173,QA_SHA),
++ STEP/(INSPECT_NONCE+'.assessment.json'):(19799,'63f143c770ff2194f2b0e25f69026961764224af4c9f0d6836ba59d3bb6cf549'),
+ }
+ FILES={p:1000 if p==QA_SOURCE else 0 for p in PINS}
+ # Query candidates only: none of these labels or resource IDs is claimed observed.
+-PUBLIC_ROLES={
+- 'find_hotel':('find a hotel','find hotels','search hotels','search for hotels','book a hotel','find and book','find & book'),
+- 'search_tab':('search',),'hotels_tab':('hotels',),'book_tab':('book',),'home_tab':('home',),
+- 'guest_continue':('continue as guest','continue without signing in','browse as guest'),
+- 'defer_signin':('not now','maybe later','skip'),
+- 'onboarding_continue':('get started','next','continue'),
+- 'destination':('destination','where are you going?','city, airport or hotel','search destinations'),
+- 'dates':('dates','check-in','check out','check-out','check in'),
+- 'rooms_guests':('rooms','guests','rooms and guests','rooms & guests'),
+- 'sign_in':('sign in','log in'),'join':('join','join now','create account','create an account'),
+- 'retry':('retry','try again'),'fixed_network_error':('no internet connection','something went wrong'),
+- 'find_hotel_zh':('查找酒店','搜索酒店','酒店搜索','预订酒店'),
+- 'guest_continue_zh':('以游客身份继续','游客访问','暂不登录','跳过'),
+- 'destination_zh':('目的地','城市、机场或酒店'),
+-}
+-PUBLIC_RESOURCES=(
+- 'android:id/button1','android:id/button2','android:id/button3','android:id/search_src_text',
+- 'com.ihg.apps.android:id/search_button','com.ihg.apps.android:id/btn_search',
+- 'com.ihg.apps.android:id/search','com.ihg.apps.android:id/destination',
+- 'com.ihg.apps.android:id/book','com.ihg.apps.android:id/skip',
+- 'com.ihg.apps.android:id/continue_as_guest','com.ihg.apps.android:id/bottom_navigation',
+-)
++PUBLIC_ROLES={'search_tab': ('search',), 'home_tab': ('home',), 'shop_tab': ('shop',), 'browse_tab': ('browse',), 'search_products': ('search products', 'search best buy', 'search bestbuy'), 'country_selector': ('country', 'select country', 'select your country', 'choose your country', 'country/region', 'select your country or region'), 'united_states': ('united states', 'united states of america', 'usa', 'u.s.', 'u.s.a.'), 'canada': ('canada',), 'continue': ('continue',), 'next': ('next',), 'skip': ('skip',), 'get_started': ('get started',), 'guest_continue': ('continue as guest', 'continue without signing in', 'browse as guest'), 'defer_signin': ('not now', 'maybe later'), 'sign_in': ('sign in', 'log in'), 'retry': ('retry', 'try again'), 'fixed_network_error': ('no internet connection', 'something went wrong')}
++PUBLIC_RESOURCES=('android:id/button1', 'android:id/button2', 'android:id/button3', 'android:id/search_src_text', 'com.bestbuy.android:id/search_button', 'com.bestbuy.android:id/search', 'com.bestbuy.android:id/search_src_text', 'com.bestbuy.android:id/country', 'com.bestbuy.android:id/country_selector', 'com.bestbuy.android:id/continue_button', 'com.bestbuy.android:id/btn_continue', 'com.bestbuy.android:id/skip', 'com.bestbuy.android:id/continue_as_guest', 'com.bestbuy.android:id/bottom_navigation')
+ PUBLIC_CLASSES=('android.widget.TextView','android.widget.Button','android.widget.EditText',
+  'android.widget.ImageButton','android.widget.ImageView','android.widget.FrameLayout',
+  'android.widget.LinearLayout','android.view.ViewGroup','android.view.View','android.webkit.WebView')
+@@ -71,7 +52,7 @@
+         self.started=time.monotonic();self.bytes=0;self.records=[]
+ 
+     def read(self,path,expected=None,size=None):
+-        need(path in FILES,'FIXED_SIX_FILE_ALLOWLIST_REQUIRED')
++        need(path in FILES,'FIXED_SEVEN_FILE_ALLOWLIST_REQUIRED')
+         current=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);fd=None
+         try:
+             for name in path.parts[1:-1]:
+@@ -114,7 +95,7 @@
+          assessed.get('actual_command_returncode')==0 and assessed.get('actual_instrumentation_finish_code')==-1 and
+          helper.get('ok') is True and helper.get('error') is None and helper.get('secondary_errors')==[] and
+          helper.get('protocol')==qa.PROTOCOL and helper.get('nonce')==nonce and helper.get('op')=='inspect' and
+-         helper.get('self_uid')==10196 and helper.get('action_attempted') is False and helper.get('outcome_unknown') is False and
++         helper.get('self_uid')==10198 and helper.get('action_attempted') is False and helper.get('outcome_unknown') is False and
+          helper.get('claim_persistence_completed') is True and helper.get('helper_work_completed') is True and
+          helper.get('automatic_retry') is False and helper.get('business_success_verified') is False,
+          'ACTUAL_SUCCESSFUL_NO_ACTION_INSPECTION_REQUIRED')
+@@ -141,34 +122,43 @@
+     return {'path':str(path),'bytes':size,'sha256':digest}
+ 
+ 
+-def validate_retained(c,s,phase,cleanup):
+-    for value in (c,s,phase,cleanup):
++def validate_retained(c,s,launch,phase,cleanup):
++    for value in (c,s,launch,phase,cleanup):
+         need(value.get('nonce')==NONCE and value.get('source_manifest_sha256')==SOURCE_SHA and
+-             value.get('package')=='com.ihg.apps.android' and value.get('ok') is True and
++             value.get('package')=='com.bestbuy.android' and value.get('ok') is True and
+              value.get('error') is None and value.get('secondary_errors')==[] and
+              value.get('business_success_verified') is False and value.get('whole_app_production_ready') is False,
+-             'EXACT_COMPLETED_IHG_FLOW_REQUIRED')
++             'EXACT_COMPLETED_BESTBUY_FLOW_REQUIRED')
+         need(value.get('Main_before')==value.get('Main_after')==c['Main_before'],
+              'EXACT_ORIGINAL_MAIN_CHAIN_REQUIRED')
+-    need(c.get('flow')==str(FLOW) and c.get('helper_uid')==10196 and
+-         c.get('helper_package')=='org.droidloom.qa.ihg.r1' and c.get('uid')==10137 and
++    need(c.get('flow')==str(FLOW) and c.get('helper_uid')==10198 and
++         c.get('helper_package')=='org.droidloom.qa.bestbuy.r1' and c.get('uid')==10130 and
+          c.get('read_only_inspection_completed') is True and c.get('source_and_artifact_unchanged') is True and
+-         s.get('source_unchanged') is True,'EXACT_IHG_HELPER_AND_SOURCE_REQUIRED')
++         s.get('source_unchanged') is True,'EXACT_BESTBUY_HELPER_AND_SOURCE_REQUIRED')
+     need(s.get('coordinator_result')==fixed_pin(ROOT/'result.json') and
++         c.get('launch_result')==c.get('retained_phase_results',{}).get('launch')==fixed_pin(FLOW/'steps/launch-01/result.json') and
+          c.get('inspection_result')==c.get('retained_phase_results',{}).get('inspect')==fixed_pin(STEP/'result.json') and
+          c.get('cleanup_result')==c.get('retained_phase_results',{}).get('cleanup')==fixed_pin(FLOW/'steps/cleanup-01/result.json'),
+          'EXACT_PARENT_CHILD_RESULT_PINS_REQUIRED')
+-    for value,kind in ((phase,'inspect'),(cleanup,'cleanup')):
+-        need(value.get('phase')==kind and value.get('helper_package')=='org.droidloom.qa.ihg.r1' and
+-             value.get('helper_uid')==10196 and value.get('uid')==10137 and value.get('outcome_unknown') is False and
++    for value,kind in ((launch,'launch'),(phase,'inspect'),(cleanup,'cleanup')):
++        need(value.get('phase')==kind and value.get('helper_package')=='org.droidloom.qa.bestbuy.r1' and
++             value.get('helper_uid')==10198 and value.get('uid')==10130 and value.get('outcome_unknown') is False and
+              value.get('held_binding_released') is True and value.get('flow_lock_released') is True and
+              value.get('final_Main_guard_passed') is True and value.get('Main_before_lock')==c['Main_before'] and
+              value.get('source_and_artifact_unchanged') is True and
+-             value.get('build',{}).get('source_manifest_sha256')==QA_MANIFEST,'EXACT_CLOSED_IHG_PHASE_REQUIRED')
++             value.get('build',{}).get('source_manifest_sha256')==QA_MANIFEST,'EXACT_CLOSED_BESTBUY_PHASE_REQUIRED')
+     need(phase.get('action_attempted') is False and phase.get('action_lock_released') is True and
+          phase.get('inspection_completed') is True,'EXACT_ORIGINAL_NO_ACTION_PHASE_REQUIRED')
++    need(launch.get('action_lock_released') is True and launch.get('launch',{}).get('native_launch_acknowledged') is True,
++         'EXACT_ORIGINAL_NATIVE_LAUNCH_RETIRED')
++    for value in (launch,phase,cleanup):
++        need(value.get('target_before')==value.get('target_after')==phase['target_before'] and
++             value['target_FD_cleanup']['held_APK_FDs_closed']==3 and
++             value.get('helper_before')==value.get('helper_after')==phase['helper_before'],
++             'EXACT_THREE_APK_AND_HELPER_PHASE_IDENTITIES_REQUIRED')
+     task=c['owned_task']
+-    need(task.get('task')==1002 and task.get('prelaunch_task_ids')==[851] and task.get('prelaunch_absent') is True and
++    need(launch.get('owned_task')==task,'EXACT_LAUNCH_OWNED_TASK_REQUIRED')
++    need(task.get('task')==1012 and task.get('prelaunch_task_ids')==[851] and task.get('prelaunch_absent') is True and
+          task.get('cleanup_allowed') is True and c.get('owned_task_absent_after_cleanup') is True and
+          cleanup.get('owned_task')==task and cleanup.get('owned_task_absent') is True and
+          cleanup.get('task_ids_after')==c.get('task_ids_after')==[851] and
+@@ -188,8 +178,8 @@
+          meta['wire_sha256']==sequence['inspection_wire_sha256']==INSPECT_WIRE and
+          meta['assessment_bytes']==PINS[STEP/(INSPECT_NONCE+'.assessment.json')][0] and
+          meta['assessment_sha256']==PINS[STEP/(INSPECT_NONCE+'.assessment.json')][1] and
+-         meta.get('complete') is True and meta.get('node_count')==63,'EXACT_PRIVATE_ASSESSMENT_PIN_REQUIRED')
+-    need(scope['activity']=='com.ihg.apps.android/com.ihg.apps.android.activity.MainActivity',
++         meta.get('complete') is True and meta.get('node_count')==12,'EXACT_PRIVATE_ASSESSMENT_PIN_REQUIRED')
++    need(scope['activity']=='com.bestbuy.android/com.bestbuy.android.activity.MainActivity',
+          'EXACT_RETAINED_MAIN_ACTIVITY_REQUIRED')
+     return scope,meta,sequence['accessibility_restoration']['state_before']
+ 
+@@ -249,12 +239,13 @@
+         size,digest=PINS[path]
+         return json.loads(reader.read(path,digest,size))
+     c=read_json(ROOT/'result.json');s=read_json(ROOT/'stage-result.json')
++    launch=read_json(FLOW/'steps/launch-01/result.json')
+     phase=read_json(STEP/'result.json');cleanup=read_json(FLOW/'steps/cleanup-01/result.json')
+-    scope,metadata,state_before=validate_retained(c,s,phase,cleanup)
+-    qa=types.ModuleType('fixed_actual_ihg_r1_pure_contract');qa.__file__=str(QA_SOURCE)
+-    exec(compile(reader.read(QA_SOURCE,QA_SHA,28150),str(QA_SOURCE),'exec'),qa.__dict__)
+-    need(qa.PROTOCOL=='pocket4-owned-ihg-qa-v1' and qa.SELF=='org.droidloom.qa.ihg.r1' and
+-         qa.PACKAGE=='com.ihg.apps.android' and qa.UID==10137,'EXACT_IHG_R1_PURE_CONTRACT_REQUIRED')
++    scope,metadata,state_before=validate_retained(c,s,launch,phase,cleanup)
++    qa=types.ModuleType('fixed_actual_bestbuy_r1_pure_contract');qa.__file__=str(QA_SOURCE)
++    exec(compile(reader.read(QA_SOURCE,QA_SHA,28173),str(QA_SOURCE),'exec'),qa.__dict__)
++    need(qa.PROTOCOL=='pocket4-owned-bestbuy-qa-v1' and qa.SELF=='org.droidloom.qa.bestbuy.r1' and
++         qa.PACKAGE=='com.bestbuy.android' and qa.UID==10130,'EXACT_BESTBUY_R1_PURE_CONTRACT_REQUIRED')
+     qa.scope(scope)
+     assessed=read_json(STEP/(INSPECT_NONCE+'.assessment.json'))
+     helper,inspection,window,counters=validated_assessment(qa,assessed,INSPECT_NONCE,INSPECT_WIRE,scope)
+@@ -264,8 +255,8 @@
+          window==metadata['window_observation'] and
+          assessed['recorder_command_result_sha256']==metadata['recorder_command_result_sha256'],
+          'EXACT_ORIGINAL_SUMMARY_TREE_STATE_AND_COMMAND_BINDING_REQUIRED')
+-    result={'schema':1,'state':'RETAINED_IHG_PUBLIC_ROLE_COUNTS_ONLY','flow_nonce':NONCE,
+-        'source_manifest_sha256':SOURCE_SHA,'owned_task_retired':1002,'old_task_ids_preserved':[851],
++    result={'schema':1,'state':'RETAINED_BESTBUY_PUBLIC_ROLE_COUNTS_ONLY','flow_nonce':NONCE,
++        'source_manifest_sha256':SOURCE_SHA,'owned_task_retired':1012,'old_task_ids_preserved':[851],
+         'assessment_nonce':INSPECT_NONCE,'canonical_helper_wire_sha256':INSPECT_WIRE,
+         'tree_sha256':inspection['tree_sha256'],'window_sha256':inspection['window_sha256'],
+         'node_count':len(inspection['nodes']),'scope':scope,'complete_tree_verified':True,
+@@ -274,7 +265,7 @@
+         'input_file_pins':reader.records,'all_observations_from_retired_task':True,
+         'current_runtime_or_future_action_authority':False,'raw_commercial_tree_or_user_text_or_pixels_exported':False,
+         'Android_or_process_actions':0,'runtime_qualification_asserted':False,
+-        'hotel_search_login_or_booking_verified':False,'whole_app_production_ready':False}
++        'shopping_login_or_purchase_verified':False,'whole_app_production_ready':False}
+     no_raw_ui(result)
+     raw=(json.dumps(result,ensure_ascii=False,sort_keys=True,separators=(',',':'))+'\n').encode()
+     need(len(raw)<=32768,'ROLE_DIAGNOSTIC_ONLY_OUTPUT_BOUND')

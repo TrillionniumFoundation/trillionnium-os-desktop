@@ -1,0 +1,107 @@
+{
+  "Main_pids_max": 12288,
+  "Main_three_maps_original": true,
+  "SIGHUP_sender_and_causal_order_qualified": false,
+  "active_observed": false,
+  "broker_failure_receipt": {
+    "faulted": true,
+    "granted": false,
+    "incomplete": true,
+    "registrations": []
+  },
+  "broker_ready_observed": true,
+  "child_retirement": [
+    {
+      "forced_kill": false,
+      "pid": 3534985,
+      "reaped": true,
+      "returncode": 0,
+      "role": "daemon"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3534972,
+      "reaped": true,
+      "returncode": -15,
+      "role": "presenter"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3534932,
+      "reaped": true,
+      "returncode": 0,
+      "role": "sway"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3534931,
+      "reaped": true,
+      "returncode": 0,
+      "role": "bus"
+    }
+  ],
+  "cleanup_pass_does_not_reclassify_runtime_failure": true,
+  "exact_unit_cleanup": {
+    "cgroup_absent": true,
+    "invocation": "95c09a89103d49b3a85aa463d60318d7",
+    "original_actor_dead": true,
+    "unit": "p4-owner17-normal-20261105-01.service",
+    "unit_not_found": true
+  },
+  "first_actor_error": {
+    "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+    "stage": "normal"
+  },
+  "hwservicemanager_SIGABRT_observations": 5,
+  "init_prefix": {
+    "bytes": 172830,
+    "exact_writer_per_line": false,
+    "full_stream_complete": false,
+    "lines": 2064,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner17-runtime-read01/init-log-prefix.log",
+    "sha256": "088aa46603bd42b6b88ff82a8f2d00e4c48e2dd925cef6be5fe835b5ab71603e"
+  },
+  "job_id": "1a1ae3217cd-fc05-5e14",
+  "lmkd_SIGABRT_observations": 5,
+  "lmkd_exec_permission_error_in_captured_prefix": 0,
+  "namespace_child_SIGHUP_observed": true,
+  "original_historical_failures_preserved": true,
+  "own_events_all_zero": true,
+  "own_memory_peak": 590712832,
+  "own_service_abort_message_captured": false,
+  "own_swap_max_current_peak_zero": true,
+  "retirement_events": [
+    [
+      10,
+      "broker_retired"
+    ],
+    [
+      11,
+      "processes_dead"
+    ],
+    [
+      12,
+      "domain_empty"
+    ],
+    [
+      13,
+      "retired"
+    ],
+    [
+      14,
+      "resources_removed"
+    ],
+    [
+      15,
+      "claim_released"
+    ]
+  ],
+  "runtime_report": {
+    "bytes": 752649,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner17-runtime-read01/runtime-result.json",
+    "sha256": "701522531cd0166e02f90fe5f49da3d6f828cd65ea8c0bd8fb5df94617e91530"
+  },
+  "schema": 1,
+  "state": "ACTUAL_OWNER17_NORMAL_FAILED_BEFORE_ACTIVE_EXACT_RETIREMENT_PASS",
+  "whole_app_production_ready": false
+}

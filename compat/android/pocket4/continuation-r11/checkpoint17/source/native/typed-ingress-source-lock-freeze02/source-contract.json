@@ -1,0 +1,116 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_ROOT_DIRECTORY_INPUTS_AND_DERIVED_LOCK_FROZEN_NOT_COMPILED",
+  "actual_reader": {
+    "job_id": "1a1acfe7155-fc05-57ef",
+    "terminal_provenance": "Root-provided authoritative terminal; this agent did not call Hepta",
+    "exit_code": 0,
+    "output_complete": true,
+    "output_durable": true,
+    "terminal_confirmed": true,
+    "stderr_bytes": 0,
+    "initial_timeout_retained": true,
+    "first_dispatch_nonexecution_proven": false
+  },
+  "frozen_generator_origin": {
+    "tree": "f4f80a67a761d5429ca9fa23f88c7f988f98dd8a",
+    "path": "typed-ingress-builder-draft01/derive_source_lock.py"
+  },
+  "local_derivation": {
+    "executed": true,
+    "interpreter": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "arguments": [
+      "-I",
+      "-B",
+      "derive_source_lock.py",
+      "--actual-report",
+      "references/root-trees-reader-report.json",
+      "--actual-bytes",
+      "51842",
+      "--actual-sha256",
+      "0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8",
+      "--base-lock",
+      "references/base-source-lock.json",
+      "--output-directory",
+      "a-new-absent-directory"
+    ],
+    "exit_code": 0,
+    "stderr_bytes": 0
+  },
+  "independent_local_lock_comparison": {
+    "unchanged_original_arrays_preserved_as_prefix": true,
+    "unchanged_other_projects_and_metadata": true,
+    "counts": [
+      {
+        "path": "external/skia",
+        "old": 1,
+        "new": 36
+      },
+      {
+        "path": "frameworks/base",
+        "old": 67,
+        "new": 114
+      },
+      {
+        "path": "frameworks/native",
+        "old": 104,
+        "new": 115
+      }
+    ]
+  },
+  "observed_resources": {
+    "memory_peak": 23224320,
+    "memory_events_all_zero": true,
+    "swap_peak": 0,
+    "swap_max": "max",
+    "Main_identity_observed": false
+  },
+  "source_inputs": {
+    "references/base-source-lock.json": {
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/typed-builder462-sparse-lock-read01/m2-sparse-source-lock.json",
+      "bytes": 84522,
+      "sha256": "4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178"
+    },
+    "references/root-trees-wire.json": {
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/typed-ingress-root-trees-read02/stdout.log",
+      "bytes": 26763,
+      "sha256": "011caeaf21bfacf9e6dedbf1d7a5bfff6d69dea045f5842b7fe512a7dea00b4a"
+    },
+    "references/root-trees-reader-report.json": {
+      "local_path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-root-trees-actual02/reader-report.json",
+      "bytes": 51842,
+      "sha256": "0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8"
+    },
+    "references/decode.json": {
+      "local_path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-root-trees-actual02/decode.json",
+      "bytes": 881,
+      "sha256": "64e3129a3dd68e7724540fc27574c881320356fd968ac8284cc897cac10b0f0f"
+    },
+    "derive_source_lock.py": {
+      "local_path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/checkpoint16-publication/candidate01/recovered-origin/typed-ingress-builder-draft01/derive_source_lock.py",
+      "bytes": 10704,
+      "sha256": "bb5e1dbd63b6a8b6df51e59235cb9a536448320bd0e85add688eaaf57ae8405e"
+    },
+    "m2-role-ingress-source-lock.json": {
+      "local_path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-source-lock-derived02/m2-role-ingress-source-lock.json",
+      "bytes": 86293,
+      "sha256": "ca62c69ff22eba9ff84992aaa18114b74c951802c084bd8cb25cfc22d741ae54"
+    },
+    "derivation.json": {
+      "local_path": "/workspace/scratch/94990735b266/native-recovery-20261105-02/typed-ingress-source-lock-derived02/derivation.json",
+      "bytes": 6051,
+      "sha256": "c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0"
+    }
+  },
+  "scope": {
+    "top_level_git_trees_only": true,
+    "normal_Rust_source_library_validation_executed": false,
+    "source_materialized": false,
+    "Rust_builder_compiled": false,
+    "framework_Java_compiled": false,
+    "Android_JNI_TU_compiled": false,
+    "transitive_build_closure_qualified": false,
+    "runtime_authorization_enabled": false,
+    "Main_actions": 0
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "full_source_reviewed": true,
+  "source": {
+    "bytes": 1806,
+    "sha256": "98162b5577a110dd511f044df72b0a1c4d87d3c8181e8acd7cca9cdc986a8f0f"
+  },
+  "request": {
+    "bytes": 2203,
+    "sha256": "2d93a1b2879329c226f04cc7549d3c38c2ff93d13d8a04664f657f4df016f370"
+  },
+  "reason": "Ordinary binary_read of the exact root-owned build-result path returned PermissionError. No rebuild or original request retry.",
+  "expected": {
+    "path": "/opt/p4-owner16-init-log-android-20261105-build-01/build-result.json",
+    "bytes": 661519,
+    "sha256": "2c53bba3ab02b396d2698dfd6e04d870ce69cc55724c6077003dca81ae9a2e0b"
+  },
+  "checks": [
+    "one fixed root-owned directory and regular nofollow leaf",
+    "exact length and full SHA from original successful build stdout",
+    "held and named before/after identity",
+    "all held descriptors closed before emitting exact original bytes"
+  ],
+  "writes_remote_files": false,
+  "starts_child_processes": false,
+  "runtime_or_UI": false,
+  "automatic_retry": false
+}

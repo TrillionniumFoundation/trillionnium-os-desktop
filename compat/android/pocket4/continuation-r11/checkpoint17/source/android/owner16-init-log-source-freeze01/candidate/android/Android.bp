@@ -1,0 +1,9 @@
+cc_library_shared {
+    name: "libdroidloom_init_relay",
+    vendor: true,
+    srcs: ["init_relay_barrier.c"],
+    stl: "none",
+    shared_libs: ["libdl"],
+    cflags: ["-Wall", "-Wextra", "-Werror", "-fvisibility=hidden"],
+    version_script: "exported.map.txt",
+}

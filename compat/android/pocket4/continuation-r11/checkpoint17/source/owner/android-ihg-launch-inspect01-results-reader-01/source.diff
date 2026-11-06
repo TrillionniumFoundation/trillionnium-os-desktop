@@ -1,0 +1,100 @@
+--- reviewed-Ticket02/read_summary.py
++++ IHG-launch01-five-results/read_summary.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed summary-only reader for the parent-bound Ticket02 launch phase and two exact terminal parents."""
++"""Fixed summary-only reader for three parent-bound IHG launch/inspect/cleanup phases and two exact terminal parents."""
+ import argparse
+ import base64
+ import gzip
+@@ -11,15 +11,17 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-ticket-owned-launch-inspect-02')
+-FLOW=Path('/home/alex/work/pocket4-ticket-owned-qa-r1-flow-fbda47500730b71354278064649b0bf9')
+-NONCE='fbda47500730b71354278064649b0bf9'
+-SOURCE_SHA='abb667a93f1e55b916da3b04bcebe05b28904655ff18cff1a1f1ef8b66a7b845'
+-HELPER_UID=10190
++ROOT=Path('/home/alex/work/pocket4-ihg-owned-launch-inspect-01')
++FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r1-flow-399444a5b72d53139b880a4afefdb31a')
++NONCE='399444a5b72d53139b880a4afefdb31a'
++SOURCE_SHA='704bf0640c6a207ad8177dfc0240896cc785b6fa6db34521fbea5cd02e42a6fd'
++HELPER_UID=10196
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+     'launch.json':FLOW/'steps/launch-01/result.json',
++    'inspect.json':FLOW/'steps/inspect-01/result.json',
++    'cleanup.json':FLOW/'steps/cleanup-01/result.json',
+ }
+ 
+ 
+@@ -87,46 +89,43 @@
+     need(all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x) for x in (coordinator_sha,stage_sha)),
+          'EXTERNAL_EXACT_TERMINAL_PINS_REQUIRED')
+     expected={'coordinator.json':coordinator_sha,'stage.json':stage_sha}
+-    sizes={'coordinator.json':5828,'stage.json':1804}
+-    reader=Reader();files={};missing=[];values={}
++    sizes={'coordinator.json':13631,'stage.json':1710}
++    reader=Reader();files={};values={}
+     for name in ('coordinator.json','stage.json'):
+         path=FILES[name];raw=reader.read(path)
+         need(sha(raw)==expected[name] and len(raw)==sizes[name],
+              'EXTERNAL_TERMINAL_BYTES_CHANGED:'+name)
+         value=json.loads(raw);no_raw_ui(value)
+         need(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==NONCE and
+-             value.get('package')=='com.MobileTicket','EXACT_FRESH_FLOW_SOURCE_BINDING_REQUIRED:'+name)
++             value.get('package')=='com.ihg.apps.android','EXACT_FRESH_FLOW_SOURCE_BINDING_REQUIRED:'+name)
+         values[name]=value
+         files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+     coordinator=values['coordinator.json'];stage=values['stage.json']
+-    if 'coordinator_result' in stage:
+-        observed=files['coordinator.json']
+-        need(stage['coordinator_result']=={k:observed[k] for k in ('path','bytes','sha256')},
+-             'STAGE_COORDINATOR_LINK_REQUIRED')
++    observed=files['coordinator.json']
++    need(stage.get('coordinator_result')=={k:observed[k] for k in ('path','bytes','sha256')},
++         'STAGE_COORDINATOR_LINK_REQUIRED')
++    need(coordinator.get('helper_package')=='org.droidloom.qa.ihg.r1' and
++         coordinator.get('helper_uid')==HELPER_UID and coordinator.get('uid')==10137 and
++         coordinator.get('flow')==str(FLOW),'EXACT_IHG_COORDINATOR_SCOPE_REQUIRED')
+     retained=coordinator.get('retained_phase_results')
+-    need(type(retained) is dict,'RETAINED_PHASE_RESULT_MAP_REQUIRED')
+-    if 'launch' not in retained:
+-        need('launch_result' not in coordinator,'UNBOUND_SUCCESSFUL_LAUNCH_RESULT')
+-        missing.append({'name':'launch.json','path':str(FILES['launch.json']),
+-                        'reason':'exact pinned coordinator did not bind a retained launch result',
+-                        'file_open_attempted':False})
+-    else:
+-        pin=retained['launch'];path=FILES['launch.json']
++    fields={'launch':'launch_result','inspect':'inspection_result','cleanup':'cleanup_result'}
++    need(type(retained) is dict and set(retained)==set(fields),'EXACT_THREE_RETAINED_PHASE_PINS_REQUIRED')
++    for phase,field in fields.items():
++        name=phase+'.json';pin=retained[phase];path=FILES[name]
+         need(type(pin) is dict and set(pin)=={'path','bytes','sha256'} and pin['path']==str(path) and
+              type(pin['bytes']) is int and 0<pin['bytes']<=262144 and
+              isinstance(pin['sha256'],str) and re.fullmatch('[0-9a-f]{64}',pin['sha256']),
+-             'ONLY_EXACT_PARENT_BOUND_LAUNCH_PATH_AND_BOUNDED_PIN')
+-        if 'launch_result' in coordinator:
+-            need(coordinator['launch_result']==pin,'TWO_PARENT_LAUNCH_PINS_DIFFER')
++             'ONLY_EXACT_PARENT_BOUND_PHASE_PATH_AND_BOUNDED_PIN:'+phase)
++        need(coordinator.get(field)==pin,'TWO_PARENT_PHASE_PINS_DIFFER:'+phase)
+         raw=reader.read(path)
+-        need(len(raw)==pin['bytes'] and sha(raw)==pin['sha256'],'PARENT_BOUND_LAUNCH_BYTES_CHANGED')
++        need(len(raw)==pin['bytes'] and sha(raw)==pin['sha256'],'PARENT_BOUND_PHASE_BYTES_CHANGED:'+phase)
+         value=json.loads(raw);no_raw_ui(value)
+         need(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==NONCE and
+-             value.get('phase')=='launch' and value.get('helper_package')=='org.droidloom.qa.ticket.r1' and
+-             value.get('helper_uid')==HELPER_UID and value.get('package')=='com.MobileTicket' and
+-             value.get('uid')==10121,'EXACT_TICKET_LAUNCH_SCOPE_REQUIRED')
+-        files['launch.json']={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    bundle={'schema':1,'scope':'fixed-Ticket02-terminal-parents-and-only-parent-bound-launch-result','files':files,'missing':missing,
++             value.get('phase')==phase and value.get('helper_package')=='org.droidloom.qa.ihg.r1' and
++             value.get('helper_uid')==HELPER_UID and value.get('package')=='com.ihg.apps.android' and
++             value.get('uid')==10137,'EXACT_IHG_PHASE_SCOPE_REQUIRED:'+phase)
++        files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
++    bundle={'schema':1,'scope':'fixed-IHG-launch01-terminal-parents-and-three-parent-bound-phase-results','files':files,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}

@@ -1,0 +1,20 @@
+--- a/tools/droidloom-source/src/resume.rs
++++ b/tools/droidloom-source/src/resume.rs
+@@ -115,6 +115,7 @@
+         .arg(format!("{seconds}s")).arg("/usr/bin/git")
+         .args(["--no-optional-locks", "-C"]).arg(checkout)
+         .args(["-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false",
++            "-c", "maintenance.auto=false", "-c", "gc.auto=0",
+             "-c", "protocol.allow=never"]);
+     if network {
+         command.args(["-c", "protocol.https.allow=always"]);
+@@ -497,7 +498,8 @@
+         let output = Command::new("/usr/bin/git").env_clear()
+             .env("PATH", "/usr/bin:/bin").env("LC_ALL", "C")
+             .env("GIT_CONFIG_NOSYSTEM", "1").env("GIT_CONFIG_GLOBAL", "/dev/null")
+-            .args(["-C"]).arg(root).args(args).output().unwrap();
++            .args(["-c", "maintenance.auto=false", "-c", "gc.auto=0", "-C"])
++            .arg(root).args(args).output().unwrap();
+         assert!(output.status.success(), "local fixture Git: {}", String::from_utf8_lossy(&output.stderr));
+         output.stdout
+     }

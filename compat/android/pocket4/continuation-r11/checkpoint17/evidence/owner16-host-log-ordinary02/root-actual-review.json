@@ -1,0 +1,51 @@
+{
+  "Owner_runtime_qualified": false,
+  "all_seven_commands_zero_not_timed_out_stderr_empty": true,
+  "compiled_entry_ABI": "droidloom-relay-entry-v3",
+  "executed_held_ELF_pins_match_actual_compile": true,
+  "job_id": "1a1adb3f0fa-fc05-5aab",
+  "kind": "root-owner16-host-ordinary02-actual-review",
+  "memory_event_delta": {
+    "high": 0,
+    "low": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_group_kill": 0,
+    "oom_kill": 0,
+    "sock_throttled": 0
+  },
+  "ordinary_IPC_controls": 7,
+  "report": {
+    "bytes": 37632,
+    "sha256": "5186036b7acab780f9f7d23ed6979773e1592532f896bab2679d33601f236095"
+  },
+  "rust_tests_passed": {
+    "droidloom-pressure-relay": 39,
+    "droidloom-supervisor": 136
+  },
+  "sample_memory_peak_bytes": 37724160,
+  "schema": 1,
+  "scope": "selected library targets and named ordinary controls; integration/bin suites excluded",
+  "source_inputs_unchanged": 33,
+  "targeted_retirement_controls": [
+    {
+      "failed": 0,
+      "filtered_out": 38,
+      "ignored": 0,
+      "measured": 0,
+      "name": "lifecycle_bootstrap::tests::producer05_three_second_retirement_is_rejected_before_transport",
+      "passed": 1
+    },
+    {
+      "failed": 0,
+      "filtered_out": 38,
+      "ignored": 0,
+      "measured": 0,
+      "name": "lifecycle_bootstrap::tests::shared_retirement_bound_sends_exact_request_and_receives_terminal_ack",
+      "passed": 1
+    }
+  ],
+  "terminal": "PASS_0_FULL_DURABLE_STDERR_0",
+  "whole_app_production_ready": false,
+  "worker_context_passed": true
+}

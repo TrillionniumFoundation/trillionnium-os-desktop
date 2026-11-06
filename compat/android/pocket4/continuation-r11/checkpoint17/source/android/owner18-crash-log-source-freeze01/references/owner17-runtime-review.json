@@ -1,0 +1,237 @@
+{
+  "App_qualification": false,
+  "LMKD_SIGABRT_lines_and_guest_pids": [
+    [
+      370,
+      560
+    ],
+    [
+      752,
+      644
+    ],
+    [
+      1144,
+      689
+    ],
+    [
+      1595,
+      778
+    ],
+    [
+      2030,
+      860
+    ]
+  ],
+  "LMKD_exec_EACCES_lines": [],
+  "LMKD_exec_permission_cause_complete": false,
+  "actor_result_sha256": "ef2ecc7640c281341f0a656ba84e4d93f2ac27756aa7917c2e4230b45adfd20a",
+  "actual_kernel_logger_two_markers_passed": true,
+  "actual_logger_definition_object": "/system/lib64/libbase.so",
+  "broker_active_observed": false,
+  "broker_ready_observed": true,
+  "broker_retired_receipt": {
+    "authority_generation": "d765000a0f8dfa4ff15ffef59db7ec3f2e56253f89d14a0457d9f89d265f4feb",
+    "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+    "cgroup": {
+      "device": 30,
+      "inode": 32150324
+    },
+    "event_overflow": false,
+    "event_records": 0,
+    "faulted": true,
+    "granted": false,
+    "incomplete": true,
+    "lease_generation": "0000000000000000000000000000000000000000000000000000000000000000",
+    "observations": 0,
+    "packets_queued": 0,
+    "registrations": [],
+    "retired_monotonic_ns": 949629472329887,
+    "status": {
+      "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+      "cgroup": {
+        "device": 30,
+        "inode": 32150324
+      },
+      "endpoint": {
+        "device": 1048693,
+        "inode": 66
+      },
+      "faulted": true,
+      "generation": "d765000a0f8dfa4ff15ffef59db7ec3f2e56253f89d14a0457d9f89d265f4feb",
+      "granted": false,
+      "nonce": "5ae29d7fc9aaf9c06da5aa89309ccbef8708b128163efdcc300eb59368c51098",
+      "state": 3
+    },
+    "stop_reason": 0
+  },
+  "captured_prefix_bytes": 172830,
+  "captured_prefix_sha256": "088aa46603bd42b6b88ff82a8f2d00e4c48e2dd925cef6be5fe835b5ab71603e",
+  "causal_boundary": "This run independently records HWS repeated SIGABRT followed by init fatal reboot, with the namespace child SIGHUP wait result. No external signal sender, HWS or LMKD service abort message, or sole permissions-cause inference is claimed.",
+  "checks_passed": [
+    "exact retained owner17-runtime-read01/runtime-result.json",
+    "exact retained owner17-runtime-read01/stdout.log",
+    "complete compressed wire",
+    "complete envelope",
+    "fixed single original result",
+    "authoritative terminal 1a1ae377154-fc05-5e40",
+    "authoritative terminal 1a1ae3217cd-fc05-5e14",
+    "exact retained owner17-normal-runtime01/stdout.log",
+    "runtime summary binds failed original",
+    "exact retained owner17-prepared-read01/prepared.json",
+    "entire actor writer serialization",
+    "attempt and actual prepared binding",
+    "failure never promoted to product success",
+    "all original Main maps and pids max unchanged",
+    "same actual unit and actor invocation",
+    "outer resource identity and finite limits preserved",
+    "no reported outer OOM or swap",
+    "exact four children reaped without forced kill",
+    "outer exact cleanup",
+    "original audit first error and complete append-only prefix",
+    "exact ordered lifecycle, with no ACTIVE",
+    "canonical CellSpec and generation binding",
+    "audit producer externally held identity binding",
+    "held init and actual binary identity",
+    "exact ABI3 HELLO PROJECT PROJECTED COMMIT DONE framing",
+    "broker was READY but never granted or ACTIVE",
+    "six terminal retirement events complete",
+    "owned namespace child SIGHUP wait status preserved",
+    "full bounded prefix and same-generation logger",
+    "both actual logger markers and exact definition object",
+    "capture attribution limits not hidden",
+    "no original LMKD exec denial in this complete retained prefix",
+    "five new LMKD SIGABRT observations, without held executable qualification",
+    "actual repeated critical service failure and init reboot",
+    "one generation logdr socket creation and logd spawn, no observed logd exit",
+    "failure Stop is retained and all direct child statuses are exact",
+    "actual restrictive service mask retained"
+  ],
+  "count": 37,
+  "critical_init_fatal_reboot_observed": true,
+  "events": [
+    "prepared",
+    "owner_attached",
+    "init_hello",
+    "broker_ready",
+    "init_project_sent",
+    "init_projected_accepted",
+    "init_commit_sent",
+    "init_done_accepted",
+    "retiring",
+    "broker_retired",
+    "processes_dead",
+    "domain_empty",
+    "retired",
+    "resources_removed",
+    "claim_released"
+  ],
+  "exact_unit_cleanup": {
+    "cgroup_absent": true,
+    "invocation": "95c09a89103d49b3a85aa463d60318d7",
+    "original_actor_dead": true,
+    "unit": "p4-owner17-normal-20261105-01.service",
+    "unit_not_found": true
+  },
+  "full_Owner_NORMAL_qualification": false,
+  "generation_nonce": "5ae29d7fc9aaf9c06da5aa89309ccbef8708b128163efdcc300eb59368c51098",
+  "hwservicemanager_SIGABRT_lines_and_guest_pids": [
+    [
+      373,
+      563
+    ],
+    [
+      838,
+      651
+    ],
+    [
+      1155,
+      719
+    ],
+    [
+      1613,
+      809
+    ],
+    [
+      2049,
+      887
+    ]
+  ],
+  "hwservicemanager_abort_message_observed": false,
+  "logdr_candidate_evidence": {
+    "gid": 1036,
+    "logd_guest_pid": 559,
+    "peer_or_protocol_qualification": false,
+    "socket_mode": "0666",
+    "uid": 1036
+  },
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+  "memory_peak_bytes": 590712832,
+  "mode_repair_runtime_boundary": "This attempt used the actual Host17 daemon, preserved unit UMask0077 and recorded no former LMKD exec denial. Five LMKD spawn/SIGABRT pairs are new observations; the actor never reached its held native_lmkd executable proof or broker ACTIVE, so they do not establish native enrollment or the full SIGABRT cause.",
+  "namespace_owner_exit": {
+    "core_dumped": false,
+    "exit_code": null,
+    "explicit_stop_requested_before_observation": false,
+    "host_pid": 3535029,
+    "observed_monotonic_ns": 949629522102362,
+    "process": {
+      "birth": 94959293,
+      "pid": 3535029,
+      "pidfd": {
+        "device": 6,
+        "inode": 24418184
+      },
+      "proc_dir": {
+        "device": 26,
+        "inode": 535441862
+      }
+    },
+    "raw_status": 1,
+    "signal": 1,
+    "worker_retirement_started_before_observation": true
+  },
+  "original_Main_all_three_maps_equal": true,
+  "original_Main_pids_max": "12288",
+  "owned_children_reaped": [
+    {
+      "forced_kill": false,
+      "pid": 3534985,
+      "reaped": true,
+      "returncode": 0,
+      "role": "daemon"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3534972,
+      "reaped": true,
+      "returncode": -15,
+      "role": "presenter"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3534932,
+      "reaped": true,
+      "returncode": 0,
+      "role": "sway"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3534931,
+      "reaped": true,
+      "returncode": 0,
+      "role": "bus"
+    }
+  ],
+  "per_line_writer_or_complete_stream_attribution": false,
+  "prepared_sha256": "b31dbe0fccd293b05687f28caa7e747f0f5b6092585611c9670ffb86c87d0b8d",
+  "production_ready": false,
+  "raw_prefix_copied_into_review_package": false,
+  "runtime_bytes": 752649,
+  "runtime_failed_preserved": true,
+  "runtime_job": "1a1ae3217cd-fc05-5e14",
+  "runtime_sha256": "701522531cd0166e02f90fe5f49da3d6f828cd65ea8c0bd8fb5df94617e91530",
+  "schema": 1,
+  "scope": "LOCAL_COMPLETE_RETAINED_OWNER17_RUNTIME_REVIEW",
+  "six_post_retiring_events_complete": true,
+  "source_or_runtime_mutation_by_review": false,
+  "swap_peak_bytes": 0
+}

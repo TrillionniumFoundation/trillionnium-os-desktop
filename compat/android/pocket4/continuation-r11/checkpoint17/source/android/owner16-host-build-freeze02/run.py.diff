@@ -1,0 +1,96 @@
+--- unsubmitted-host16-01/run.py
++++ direct-host16-02/run.py
+@@ -13,10 +13,18 @@
+ CONTROL_REVISION = 'producer16-bounded-init-log01'
+ BASE = Path('/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01')
+ SOURCE = BASE / "candidate"
+-OUT = Path('/home/alex/work/pocket4-supervisor-lmkd-init-log-r11-build-16-01')
++OUT = Path('/home/alex/work/pocket4-supervisor-lmkd-init-log-r11-build-16-02')
+ CANDIDATE = OUT / "candidate"
+ TARGET = OUT / "target"
+-CARGO = "/home/alex/.cargo/bin/cargo"
++CARGO = '/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo'
++RUST_SYSROOT = '/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu'
++RUSTC = RUST_SYSROOT + '/bin/rustc'
++RUSTDOC = RUST_SYSROOT + '/bin/rustdoc'
++DIRECT_TOOL_PINS = {'/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/cargo': {'bytes': 40753664, 'sha256': '9548937d530bf439ff1ba47a3b2bd26eeb9c3aff1961c20c01798613de922578'}, '/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustc': {'bytes': 656704, 'sha256': 'd32249a7c3bfcfc67b471460386e46323accae7125e344567a12d5664d99bb57'}, '/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu/bin/rustdoc': {'bytes': 13173040, 'sha256': 'ece7829b8e7448a9d59c88080e2b16253b885c560f792002837901c7f24b7695'}}
++DIRECT_TOOL_VERSIONS = {'cargo': 'cargo 1.93.0 (083ac5135 2025-12-15)\n', 'rustc': 'rustc 1.93.0 (254b59607 2026-01-19)\nbinary: rustc\ncommit-hash: 254b59607d4417e9dffbc307138ae5c86280fe4c\ncommit-date: 2026-01-19\nhost: x86_64-unknown-linux-gnu\nrelease: 1.93.0\nLLVM version: 21.1.8\n'}
++DIRECT_TOOL_OBSERVATION_SHA = '60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb'
++DIRECT_TOOL_ACTUAL_BUILD_SHA = '2d6c80a29e957b1e97764d8785257eb47c3d0b899f301e64c9a9c418e96ea0ab'
++
+ PRIOR_RECEIPT = BASE / "compile-result.json"
+ PRIOR_RECEIPT_SHA = '3327495b8cc3302dcc18ac72a7495f88d3354788404d2b05d1194d1e6e89ee30'
+ PRIOR_INVENTORY_SHA = 'acd7a623dc28f83363d67aec1d4befe64c85cf852fa564312783005abc7a05b8'
+@@ -169,17 +177,47 @@
+     return result
+ 
+ def command_env(target):
+-    env = dict(os.environ)
+-    for key in list(env):
+-        if key in {"RUSTC_WRAPPER", "RUSTC_WORKSPACE_WRAPPER", "RUSTFLAGS",
+-                   "CARGO_ENCODED_RUSTFLAGS", "RUSTDOCFLAGS", "RUSTDOC",
+-                   "RUSTC", "CARGO_TARGET_DIR"}:
+-            env.pop(key, None)
+-    env.update(CARGO_BUILD_JOBS="1", CARGO_INCREMENTAL="0",
+-               CARGO_PROFILE_DEV_DEBUG="0", CARGO_PROFILE_TEST_DEBUG="0",
+-               RUST_TEST_THREADS="1", CARGO_TARGET_DIR=str(target),
+-               CARGO_HOME="/home/alex/.cargo", RUSTUP_HOME="/home/alex/.rustup")
+-    return env
++    # Fresh fixed environment: no ambient rustup selection, wrappers, loader
++    # injection or Cargo flags survive. Empty wrapper values also override a
++    # same-name Cargo config selection; no doctests are requested.
++    return {
++        "PATH": RUST_SYSROOT + "/bin:/usr/bin:/bin", "HOME": "/home/alex",
++        "CARGO_HOME": "/home/alex/.cargo", "RUSTC": RUSTC, "RUSTDOC": RUSTDOC,
++        "LANG": "C", "LC_ALL": "C", "CARGO_NET_OFFLINE": "true",
++        "CARGO_BUILD_JOBS": "1", "CARGO_INCREMENTAL": "0",
++        "CARGO_PROFILE_DEV_DEBUG": "0", "CARGO_PROFILE_TEST_DEBUG": "0",
++        "RUST_TEST_THREADS": "1", "CARGO_TARGET_DIR": str(target),
++        "RUSTC_WRAPPER": "", "RUSTC_WORKSPACE_WRAPPER": "", "RUSTFLAGS": "",
++        "CARGO_ENCODED_RUSTFLAGS": "", "RUSTDOCFLAGS": "", "CARGO_ENCODED_RUSTDOCFLAGS": "",
++        "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER": "/usr/bin/cc",
++    }
++
++def direct_tool_pins():
++    result = {}
++    for name, expected in DIRECT_TOOL_PINS.items():
++        path = Path(name)
++        need(path.resolve(strict=True) == path, "fixed direct Rust tool acquired an alias")
++        before = path.lstat()
++        need(stat.S_ISREG(before.st_mode) and before.st_uid == os.geteuid() and
++             before.st_mode & 0o22 == 0, "direct Rust tool owner/mode differs")
++        row = file_pin(path, require_elf=True)
++        after = path.lstat()
++        need(stamp(before) == stamp(after) and row["device"] == after.st_dev and
++             row["inode"] == after.st_ino and path.resolve(strict=True) == path,
++             "direct Rust tool named/held identity differs")
++        need(row["bytes"] == expected["bytes"] and row["sha256"] == expected["sha256"],
++             "actual observed direct Rust tool contents differ: " + name)
++        result[name] = row
++    return result
++
++def direct_tool_versions(report, env):
++    rows = {}
++    for name, argv in [("cargo", [CARGO, "--version"]), ("rustc", [RUSTC, "-vV"])]:
++        out, err = run_command(report, OUT, argv, CANDIDATE, env, 10)
++        need(not err and out.decode("utf-8") == DIRECT_TOOL_VERSIONS[name],
++             "actual direct Rust version differs: " + name)
++        rows[name] = out.decode("utf-8")
++    return rows
+ 
+ def run_command(report, directory, argv, cwd, env, timeout, pass_fds=()):
+     index = len(report["commands"])
+@@ -647,6 +685,13 @@
+              actual["all_source_inventory_before_sha256"] ==
+              actual["all_source_inventory_after_sha256"],
+              "actual matching compile admission failed")
++        need(actual["direct_tool_authority"]["observation_sha256"] == DIRECT_TOOL_OBSERVATION_SHA and
++             actual["direct_tool_authority"]["actual_builder_compile_sha256"] == DIRECT_TOOL_ACTUAL_BUILD_SHA and
++             actual["direct_tool_authority"]["rustup_proxy_executed"] is False and
++             actual["direct_toolchain_before"] == actual["direct_toolchain_after"] and
++             {p: {k: row[k] for k in ("bytes", "sha256")} for p, row in actual["direct_toolchain_before"].items()} == DIRECT_TOOL_PINS and
++             actual["direct_versions_before"] == actual["direct_versions_after"] == DIRECT_TOOL_VERSIONS,
++             "actual compile direct Rust tool authority differs")
+         put(run_dir / "admitted-compile-result.json", raw)
+         payload = read_regular(OUT / "payload.json", 512 * 1024)
+         need(sha(payload) == actual["payload_sha256"], "compiled payload digest differs")

@@ -1,0 +1,53 @@
+{
+  "baseline": {
+    "bytes": 7458,
+    "path": "/workspace/scratch/94990735b266/android-ticket-launch-inspect02-launch-reader-01/read_summary.py",
+    "sha256": "8e46dd685a65098783dd6e8bb1db242f6e26a519fd6917c3488f5cfd640a1e95"
+  },
+  "changes": [
+    "bind exact IHG launch01 root, nonce, source, target UID 10137 and installed helper UID 10196",
+    "require exact stage-to-coordinator link and three retained phase pins",
+    "require launch_result / inspection_result / cleanup_result pins to equal retained pins",
+    "read only fixed phase result JSON files; never assessment, raw UI or command stdout"
+  ],
+  "externally_pinned_actuals": {
+    "coordinator": {
+      "bytes": 13631,
+      "sha256": "6a354bc4cfe0066263b8f6041be90d674fce05700cd57b21dcf5880122312211"
+    },
+    "job": "1a1add98701-fc05-5b20",
+    "stage": {
+      "bytes": 1710,
+      "sha256": "bb34503b97e7702a8b10c6da10cb4bb6e3a95043168ff59859a15cbdf56d7bf1"
+    }
+  },
+  "pure_controls": {
+    "controls": [
+      "original_reader_and_no_raw_ui_AST_unchanged",
+      "five_fixed_paths_and_failed_child_original_preserved",
+      "foreign_child_path_rejected",
+      "disagreeing_child_pins_rejected",
+      "changed_child_bytes_rejected",
+      "nested_private_UI_rejected"
+    ],
+    "count": 6,
+    "ok": true,
+    "remote_actions": 0,
+    "schema": 1,
+    "synthetic_only": true
+  },
+  "qualification": {
+    "device_actions": 0,
+    "dispatch_attempted": false,
+    "private_UI_exported": false,
+    "runtime_asserted": false
+  },
+  "schema": 1,
+  "unchanged": [
+    "Reader and no_raw_ui AST",
+    "262144-byte file, 2097152-byte aggregate, 8-second reader bound",
+    "root single-link regular files, nofollow every path component, stable held descriptor metadata",
+    "3145728-byte uncompressed bundle bound",
+    "30-second, 1 CPU, 128 MiB, nice 10 request resources"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "Hepta_calls": 0,
+  "baseline_source": {
+    "bytes": 6105,
+    "sha256": "bcf50e9f5b49de462fdc51e1a2bc9434a3a6dd3ee4d09b6edf91611d5b8b4228"
+  },
+  "collect_executed": false,
+  "default_PLAN_returncode": 0,
+  "exact_inverse_literal_reconstruction": true,
+  "function_changes": "collect fixed size pair and scope label only; every other function/class unchanged",
+  "known_actual_files": {
+    "coordinator.json": {
+      "bytes": 6359,
+      "path": "/home/alex/work/pocket4-bilibili-r6-pause-resume-01/result.json",
+      "sha256": "05ab6c8427b6994d4b21bc6a58a30cb9285d223ca3b6d78f1a704c49d16bb0c7"
+    },
+    "stage.json": {
+      "bytes": 1773,
+      "path": "/home/alex/work/pocket4-bilibili-r6-pause-resume-01/stage-result.json",
+      "sha256": "530923b0e302736a9897884264f12ec8397841b872b31e1e5d460e7bc17f754e"
+    }
+  },
+  "limitations": [
+    "held before/after and full external size/hash; no end-of-read named proof or atomic two-file snapshot",
+    "upstream FAIL remains FAIL; reader exit0 only means collection",
+    "same inherited Reader FD error behavior; no new filesystem mutation"
+  ],
+  "limits": {
+    "deadline_seconds": 8,
+    "output_bundle": 3145728,
+    "per_file": 262144,
+    "total": 2097152
+  },
+  "next_step": "Only after parent originals are read, bind exact retained phase output paths/bytes/SHA.",
+  "nonce": "f293d9ad6b688c72e7c98e76753a8c3f",
+  "request_stdin_exact": true,
+  "resources_unchanged": true,
+  "runtime_business_or_cleanup_qualification": false,
+  "schema": 1,
+  "scope": "exact two externally pinned parent results only",
+  "source": {
+    "bytes": 6094,
+    "sha256": "ee775c1edca2a7e985d18d59913c54542b2705d4f8e1c7dd4556d4275da42dd3"
+  },
+  "source_manifest_sha256": "f4a73707341f1c78e28f41ca618f60f6350ae4803ccfc0e084be07f190d35463",
+  "terminal_stdout": {
+    "bytes": 928,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/bili-r6-pause-resume-metadata02/stdout.log",
+    "sha256": "3b7643733d66dfc9562a9954822a0b282367b3320c78ac3531c00aa84d8be339"
+  }
+}

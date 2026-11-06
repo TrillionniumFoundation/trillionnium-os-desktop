@@ -1,0 +1,72 @@
+{
+  "Main_modified": false,
+  "actor": {
+    "bytes": 28108,
+    "sha256": "59c4892b95159fc29751b847c36375febc80e72f3051d5880920490e7450bc63"
+  },
+  "admission": [
+    "Exactly one retained init HELLO and prepared-domain audit record; held process/namespace/executable/hash match.",
+    "Init UID/GID must actually be 0 in the unchanged actor initial user namespace. The prior 61288 downgrade proposal was disproved by retained actual init identity and never executed.",
+    "Held current init root must equal HELLO root and be root-owned private synthetic tmpfs; cgroup exact generation identity from audit.",
+    "Only /dev/socket/logdr and /system/bin/logd within that root. Socket uid/gid1036 mode0666 is supported by actual Owner17 init record.",
+    "One SOCK_SEQPACKET connection. SO_PEERCRED plus socket-associated CLOEXEC SO_PEERPIDFD77, live pidfd/proc birth and fresh status; no numeric-PID fallback.",
+    "Peer init parent, UID/GID1036, PID/user namespaces, root, readonly ELF inode/full SHA and exact generation cgroup all match before any read request.",
+    "One stream lids=4 read request only; no reconnect, log clear, logger configuration, namespace entry, setuid, subprocess, Main logs or service access."
+  ],
+  "all_original_run_statements_after_removing_new_observation_blocks_AST_equal": true,
+  "baseline_actor": {
+    "bytes": 26836,
+    "sha256": "c82c854d0f86fec169302737ad4854a8445a99604a7f68b6250e253e59e15ee6"
+  },
+  "bounds": {
+    "connect_wait_max_seconds": 0.2,
+    "final": "after original Stop and four direct-child retirement, one nonblocking drain; no waiting for new data",
+    "packet_bytes": 5120,
+    "packets_per_poll": 32,
+    "private_file_bytes_including_framing": 262144,
+    "records": 2048,
+    "startup_deadline": "existing actor 65-second deadline, not extended"
+  },
+  "changed_actor_functions": [
+    "load",
+    "run"
+  ],
+  "control_publication_history": "A prior local create-exclusive result output collision is preserved separately; no control result was inferred from that failed publication. Final 12 controls ran against the exact final module into a new retained leaf.",
+  "crash_log": {
+    "bytes": 33100,
+    "sha256": "0cb46ca1ca813e162e7474a198f5c79dcf70fd68e3b20c5e499abf7def0f1bc3"
+  },
+  "failure_and_private_evidence": [
+    "Any external admission/receive/parse/write error remains first; later cleanup errors are secondary. No observation retry after failure.",
+    "Unexpected SCM_RIGHTS including zero-payload are closed then rejected; close uncertainty prevents held_fds_closed.",
+    "One complete bounded unrecognized protocol packet is retained in the private file before failing; no next packet is consumed.",
+    "Output created only within existing owned evidence directory, exclusive0600 then0400, fsync and full-byte hash plus held/named file identity; partial writes stay false/incomplete.",
+    "Raw packets are never placed in general actor JSON or this source package. JSON has public tag allowlist and bounded numeric/identity/hash metadata only."
+  ],
+  "full_Owner_NORMAL_qualified": false,
+  "known_limits": [
+    "Official AOSP reference header/protocol and UID policy do not qualify this actual logd binary until execution.",
+    "Fresh generation logd ELF is hashed and bound to peer at runtime, not described as previously externally individually pinned.",
+    "No atomic cross-process attribution, complete log stream, per-record writer authentication, HWS health or LMKD ELF/native enrollment is granted.",
+    "Existing actor identity helpers remain unchanged. These local controls use an explicit init/peer identity seam and do not exercise real kernel peer/init admission.",
+    "Observation adds bounded work during the original pre-ACTIVE polling window; it never delays an already recognized ACTIVE/failure decision or changes Stop policy."
+  ],
+  "local_controls": {
+    "Android_protocol_qualification": false,
+    "bytes": 3956,
+    "failed": 0,
+    "passed": 12,
+    "real_external_peer_init_qualification": false,
+    "real_owned_SEQPACKET": true,
+    "sha256": "c8198cb3f83a92d3a00ae75be4506f4e5bebdaeed8e3bc66d98577dd6af88fd1"
+  },
+  "original_ACTIVE_failure_and_Stop_order_unchanged": true,
+  "original_qualify_py_unchanged": true,
+  "peer_review": "NOT_PERFORMED_FOR_FINAL_SOURCE",
+  "production_Rust_C_ELFs_changed": false,
+  "remote_calls": 0,
+  "runtime_request_included": false,
+  "schema": 1,
+  "scope": "One generation-private logdr crash buffer 4 observation beside original NORMAL lifecycle",
+  "state": "SOURCE_FROZEN_NOT_PREPARED_NOT_RUNTIME_EXECUTED"
+}

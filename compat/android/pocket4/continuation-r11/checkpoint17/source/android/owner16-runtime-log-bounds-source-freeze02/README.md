@@ -1,0 +1,11 @@
+# Owner16 bounded diagnostic consumer source
+
+Source-only delta. There is no executable runtime request, plan, new generation nonce, or device action in this package. The copied coordinator still contains the exact preimage Owner15 path constants; it is an input to the future actual-bound Owner16 generator, never a request to replay Owner15.
+
+The paired new control receiver allows at most 1 MiB on the wire. Only the exact init-log observation, bound to its containing audit nonce and full captured-prefix SHA256, earns allowance for at most 512 KiB of hex. The rest of each wire response must still fit the original 256 KiB. Failed marker, failed capture, failed retirement and failed descriptor close remain visible; none is promoted to successful lifecycle evidence.
+
+The dedicated actor-result reader has a 4 MiB hard limit and checks the exact original atomic_json serialization. Subtracting valid hex only in the six fixed response fields must leave at most the original 1 MiB. Six maximum hex copies plus the old record budget fit exactly within 4 MiB. MAX_RECORD and all unrelated records retain their old limit. The eventual exact runtime-result collector needs a separate 5 MiB bound; it is not implemented or dispatched here.
+
+All existing functions are unchanged except the control receive tail, the coordinator's one actor-result read and the native LMKD inherited-FD tuple (new FD202 added). Existing process/socket credentials, source pins, Main fences, first error, handshake and retirement gates remain byte/AST equal as recorded in validation.json.
+
+Final local controls use a real sealed, capacity-filled memfd, full serialized original-retained-record shape, actual owned-file reads and an explicit recv adapter seam. The six-copy actor is 3,244,236 bytes and corresponding coordinator 3,261,874 bytes; full value equality and original first_error are checked. Ten malformed-log cases plus original response/record limits are rejected. Local attempts to run the unchanged full Process/socket admission failed because of a managed pidfd PID mismatch and AF_UNIX EPERM; those actual failures are retained. They are not Android or producer qualifications. The final run spawned no child and does not claim the peer admission was executed.

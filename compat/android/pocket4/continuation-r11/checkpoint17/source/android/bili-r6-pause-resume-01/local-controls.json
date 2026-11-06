@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "passed": 9,
+  "controls": [
+    {
+      "case": "success",
+      "passed": true,
+      "actual_click_IO_calls": 2,
+      "new_action_or_read_nonce_count": 14,
+      "transitions_attempted": 2,
+      "primary_error": null,
+      "secondary_error_count": 0
+    },
+    {
+      "case": "wrong_fresh_label",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "new_action_or_read_nonce_count": 6,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "NODE_SELECTOR_NOT_UNIQUE_AND_ELIGIBLE"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "changed_foreground",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "new_action_or_read_nonce_count": 6,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "ACTION_BOUND_FOREGROUND_AND_OWNED_TASK_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "translated_fresh_frame",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "new_action_or_read_nonce_count": 6,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "ABSOLUTE_PLAYER_CHANGED_BEFORE_TOGGLE"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "duplicate_resource",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "new_action_or_read_nonce_count": 6,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "UNIQUE_CURRENT_PLAYBACK_RESOURCE_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "wrong_parent",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "new_action_or_read_nonce_count": 6,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "EXACT_CURRENT_PLAYER_DIRECT_CONTROL_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "ack_without_label_transition",
+      "passed": true,
+      "actual_click_IO_calls": 1,
+      "new_action_or_read_nonce_count": 7,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_independent_read",
+        "type": "ProtocolError",
+        "message": "NODE_SELECTOR_NOT_UNIQUE_AND_ELIGIBLE"
+      },
+      "secondary_error_count": 0
+    },
+    {
+      "case": "first_error",
+      "passed": true,
+      "actual_click_IO_calls": 1,
+      "new_action_or_read_nonce_count": 7,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "RuntimeError",
+        "message": "CONTROL_FIRST_INPUT_ERROR"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "first_and_post_errors",
+      "passed": true,
+      "actual_click_IO_calls": 1,
+      "new_action_or_read_nonce_count": 7,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "RuntimeError",
+        "message": "CONTROL_FIRST_INPUT_ERROR"
+      },
+      "secondary_error_count": 1
+    }
+  ],
+  "production_Session_and_selector_and_round_logic": true,
+  "synthetic_complete_public_course_trees": true,
+  "explicit_instrumentation_and_summary_IO_seams": true,
+  "Android_or_namespace_or_UI_execution": false,
+  "helper_Java_not_executed": true,
+  "source_pins": {
+    "playback_controls.py": "b7aaea145e838252b3defaf13dcb6236c404ae9904ae58f91f4011c632cf0987",
+    "controls_reveal.py": "08ca6522f99eeb75f4d96444fcefa76ce8b9725cf0f0049201d8e46e3a35dea0"
+  }
+}

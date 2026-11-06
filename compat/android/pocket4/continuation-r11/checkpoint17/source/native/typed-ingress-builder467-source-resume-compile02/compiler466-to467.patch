@@ -1,0 +1,277 @@
+--- a/compile_builder.py
++++ b/compile_builder.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Compile a fresh paired-generation builder466 Go5 revision and run 9 exact projection/CLI/typed-lock tests; no platform execution."""
++"""Compile a fresh builder467 source-resume revision and run 9 updater plus 9 source-resume controls; no platform execution."""
+ import ctypes
+ import datetime
+ import hashlib
+@@ -196,16 +196,16 @@
+             'memory_peak':int(after['fields']['memory.peak']), 'memory_swap_peak':int(after['fields']['memory.swap.peak']),
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+-BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder465-compile-01-20261105/builder-source')
+-ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder466-go5-compile-02-20261105')
++BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder466-go5-compile-02-20261105/builder-source')
++ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-02-20261105')
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+ RUST_SYSROOT = Path('/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu')
+ CARGO_HOME = Path('/home/alex/.cargo')
+ TOOLCHAIN = '1.93.0'
+-MANIFEST_PARENT = '6b15e35c79575f2da99fcaf383a29e1d0ddcfaa34f9bc9bb5ae070fb3367ee10'
+-MANIFEST_466 = 'f09b908745cf294735f897a64d0d956a207d27f78277781f536d5059bb856d0f'
++MANIFEST_PARENT = 'f09b908745cf294735f897a64d0d956a207d27f78277781f536d5059bb856d0f'
++MANIFEST_467 = 'b35914b4482115b06b4d517c5a9b5092d13cde6d8882698d8e5b24aef1f6442e'
+ GO_PATCH = '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307'
+ OBSERVATION = '60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb'
+ GO_CONTROL = '391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674'
+@@ -224,7 +224,9 @@
+ TYPED_INGRESS_TESTS = ['native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate', 'native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions']
+ PARENT_TESTS = ORIGINAL_TESTS + PAIR_TESTS + ART_PROJECTION_TESTS + TYPED_INGRESS_TESTS
+ TESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS
+-FIXED_GO5_DELTA = ['android/apex-compat/0008-soong-leaf-go-memory-budget.patch']
++FIXED_RESUME_DELTA = ['tools/droidloom-source/src/lib.rs', 'tools/droidloom-source/src/resume.rs', 'tools/droidloom-update/src/android.rs', 'tools/droidloom-update/src/main.rs']
++SOURCE_RESUME_TESTS = ['resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
++SOURCE_REGISTERED_TESTS = ['tests::project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync', 'tests::source_lock_accepts_bounded_133_sparse_paths_but_rejects_257', 'tests::plan_uses_only_exact_official_projects', 'tests::platform_compat_uses_its_official_tools_namespace', 'tests::traversal_and_full_sync_policy_are_rejected_together', 'tests::duplicate_projects_and_moving_refs_are_rejected', 'tests::root_links_are_relative_to_their_parent', 'tests::exact_local_git_fetch_and_manifest_link_are_verified', 'tests::reconciliation_accepts_only_monotonic_plan_expansion', 'tests::reconciliation_accepts_bounded_sparse_path_expansion', 'tests::materialized_verification_rejects_dirty_projects', 'resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
+ DEADLINE = None
+ OBSERVED_SIGNALS = []
+ 
+@@ -409,7 +411,7 @@
+     rustc_version=command([str(selected['rustc']),'-vV'],COPIED,base_env,'rustc-version',report['commands'],10).decode()
+     require(cargo_version.startswith('cargo '+TOOLCHAIN+' ') and '\nrelease: '+TOOLCHAIN+'\n' in rustc_version,
+             'actual toolchain version differs from repository pin')
+-    for path in [Path('/usr/bin/git'),Path('/usr/bin/ninja'),Path('/usr/bin/cp'),Path('/usr/bin/ldd')]:
++    for path in [Path('/usr/bin/git'),Path('/usr/bin/timeout'),Path('/usr/bin/ninja'),Path('/usr/bin/cp'),Path('/usr/bin/ldd')]:
+         rows.append(pin_resolved(path,allowed))
+     library_rows=regular_tree(sysroot/'lib/rustlib/x86_64-unknown-linux-gnu/lib',512,1536*1024*1024)
+     for row in library_rows.values():
+@@ -419,7 +421,7 @@
+         rows.append(pin_resolved(path,allowed))
+     linked=set()
+     for index,path in enumerate([selected['cargo'],selected['rustc'],Path('/usr/bin/cc'),Path('/usr/bin/ld'),
+-                                Path('/usr/bin/git'),Path('/usr/bin/ninja'),selected['rustdoc']]):
++                                Path('/usr/bin/git'),Path('/usr/bin/timeout'),Path('/usr/bin/ninja'),selected['rustdoc']]):
+         raw=command(['/usr/bin/ldd',str(path)],COPIED,base_env,'linked-libraries-'+str(index),report['commands'],10).decode()
+         require('not found' not in raw,'tool runtime library missing')
+         for line in raw.splitlines():
+@@ -852,9 +854,9 @@
+     allowed=sorted(os.sched_getaffinity(0))
+     require(len(allowed)>=3,'cannot leave two logical CPUs free')
+     os.sched_setaffinity(0,[allowed[-1]])
+-    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh builder466 Go5 revision, 465 source files and 9 exact projection/CLI/typed-lock tests; no Soong/Java/Android/full-engine/service execution',
++    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh builder467 source-resume revision, 466 source files, 9 exact updater tests and 9 source-resume controls in owned local fixtures; no real staging/Soong/Java/Android/service execution',
+             'Main_actions':0,'Main_identity_observed':False,'install_actions':0,'network_downloads_permitted':False,
+-            'commands':[],'allowed_cpus_before':allowed,'selected_cpus':[allowed[-1]],'expected_test_names':TESTS}
++            'commands':[],'allowed_cpus_before':allowed,'selected_cpus':[allowed[-1]],'expected_test_names':TESTS,'expected_source_resume_test_names':SOURCE_RESUME_TESTS}
+     def interrupted(number,frame):
+         OBSERVED_SIGNALS.append(number)
+         raise RuntimeError('owned controller interrupted by signal '+str(number))
+@@ -874,10 +876,10 @@
+                 'actual complete-package comparison gate is not qualified')
+         report['actual_Go_comparison_gate']=go_control_pin
+         report['upstream_vet_pass_claimed']=False
+-        old_bytes,_=pinned_packet('compiled-parent465-manifest.json',MANIFEST_PARENT)
+-        new_bytes,_=pinned_packet('expected-builder466-manifest.json',MANIFEST_466)
++        old_bytes,_=pinned_packet('compiled-parent466-manifest.json',MANIFEST_PARENT)
++        new_bytes,_=pinned_packet('expected-builder467-manifest.json',MANIFEST_467)
+         expected=json.loads(old_bytes);copied_expected=json.loads(new_bytes)
+-        require(len(expected)==465 and len(copied_expected)==465,'source manifest count changed')
++        require(len(expected)==465 and len(copied_expected)==466,'source manifest count changed')
+         original_rows,copied_before=exact_source_copy(expected)
+         original_manifest=portable(original_rows,expected)
+         report['original_manifest']=write_new(OUT/'original-builder-source-manifest.json',(json.dumps(original_manifest,indent=2)+'\n').encode())
+@@ -887,18 +889,18 @@
+              'TMPDIR':str(OUT/'tmp'),'GIT_CONFIG_NOSYSTEM':'1','GIT_CONFIG_GLOBAL':'/dev/null'}
+         tools,tool_rows=toolchain(report,env)
+         report['tool_inputs']=write_new(OUT/'tool-inputs-before.json',tool_rows)
+-        parent_raw,parent_pin=pinned_packet('compiled-parent465-result.json',
+-            '36158e522a8562b42e2800c89fc4e96a3b8bed8ad8c7e4d0fc8a7b56278028d8')
++        parent_raw,parent_pin=pinned_packet('compiled-parent466-result.json',
++            '2d6c80a29e957b1e97764d8785257eb47c3d0b899f301e64c9a9c418e96ea0ab')
+         parent=json.loads(parent_raw)
+-        require(parent['state']=='PASS' and parent['focused_tests_passed']==26 and parent['actual_registered_test_count']==199 and
++        require(parent['state']=='PASS' and parent['focused_tests_passed']==9 and parent['actual_registered_test_count']==199 and
+                 parent['copied_manifest']['sha256']==MANIFEST_PARENT and
+-                parent['builder_elf']['sha256']=='061a79f701c87b3e2e8227a69398c6ba0333eb1e723a950a3bde028b0a52b135' and
++                parent['builder_elf']['sha256']=='309e96393ab482c958a519b78a455a6c75d156a6edb805c840aa6d21f76fa96a' and
+                 parent['owned_resource_gate']['pass'] is True and not parent['dependency_changes'] and
+                 not parent['tool_changes'] and not parent['cleanup']['errors'] and not parent['cleanup']['remaining'] and
+                 not parent['cleanup']['forced_cleanup'] and parent['copied_source_unchanged_after'] is True and
+                 parent['original_source_unchanged_after'] is True and parent['cargo_configs_unchanged_after'] is True,
+-                'actual compiled parent465 qualification differs')
+-        report['actual_parent465_compile_authority']=parent_pin
++                'actual compiled parent466 qualification differs')
++        report['actual_parent466_compile_authority']=parent_pin
+         roots_raw,roots_pin=pinned_packet('typed-root-trees-result.json',
+             '0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8')
+         roots=json.loads(roots_raw)
+@@ -920,48 +922,41 @@
+         report['actual_typed_root_tree_authority']=roots_pin
+         report['typed_lock_derivation_authority']=derivation_pin
+         changes=[name for name in copied_expected if copied_expected[name]!=expected.get(name)]
+-        wanted=FIXED_GO5_DELTA
+-        require(sorted(changes)==wanted and set(expected)==set(copied_expected) and
+-                sum(name not in expected for name in changes)==0 and
+-                sum(name in expected for name in changes)==1,
+-                'Go5 source delta is not exactly one existing runtime patch edit')
++        wanted=FIXED_RESUME_DELTA
++        require(sorted(changes)==wanted and set(expected).issubset(copied_expected) and
++                sum(name not in expected for name in changes)==1 and
++                sum(name in expected for name in changes)==3 and
++                set(copied_expected)-set(expected)=={'tools/droidloom-source/src/resume.rs'},
++                'source-resume delta is not exactly three replacements and one added module')
+         for name in changes:
+             wanted_row=copied_expected[name]
+             data,pin=pinned_packet('delta/'+name,wanted_row['sha256'])
+-            require(pin['bytes']==wanted_row['bytes'] and wanted_row['kind']=='file','paired source delta differs')
++            require(pin['bytes']==wanted_row['bytes'] and wanted_row['kind']=='file','source-resume delta differs')
+             target=COPIED/name
+-            previous,previous_pin=held(target,4*1024*1024)
+-            require(previous_pin==copied_before[name] and len(previous)==len(data)==583 and
+-                    previous.count(b'\"6GiB\"')==1 and
+-                    previous.replace(b'\"6GiB\"',b'\"5GiB\"')==data and
+-                    [i for i,(a,b) in enumerate(zip(previous,data)) if a!=b]==[468],
+-                    'Go5 runtime data differs from the single observed ASCII replacement')
+             if name in expected:
+                 require(hash_held(target)==copied_before[name],
+-                        'copied parent source differs before paired delta')
++                        'copied parent source differs before source-resume delta')
+                 fd=os.open(target,os.O_WRONLY|os.O_TRUNC|os.O_CLOEXEC|os.O_NOFOLLOW)
+                 with os.fdopen(fd,'wb') as stream:
+-                    require(stream.write(data)==len(data),'short paired source write')
++                    require(stream.write(data)==len(data),'short source-resume write')
+                     stream.flush();os.fsync(stream.fileno())
+             else:
+                 write_new(target,data)
+             os.chmod(target,wanted_row['mode'],follow_symlinks=False)
+         candidate_rows=regular_tree(COPIED)
+         actual_map=portable(candidate_rows,copied_expected)
+-        # Full held path/hash/bytes/mode equality is checked above. Retain the
+-        # exact frozen manifest serialization, including its key order.
+-        actual_bytes=new_bytes
+-        require(json.loads(actual_bytes)==actual_map and sha(actual_bytes)==MANIFEST_466,
+-                'actual copied 465 manifest differs')
+-        report['copied_manifest']=write_new(OUT/'copied-builder-source-manifest.json',actual_bytes)
+-        report['source_delta']={'changed_existing':wanted,'added':[],
+-                                'unchanged_existing':464,'actual_source_file_count':465,
+-                                'builder_revision_name':'466-go5','Go_memory_soft_limit_before':'6GiB',
+-                                'Go_memory_soft_limit_after':'5GiB','changed_byte_offset':468,
+-                                'Rust_source_files_changed':0,'engine_source_files_changed':0,
+-                                'Blueprint_streaming_patch_changed':False,'ART_source_data_files_changed':0,
++        require(json.loads(new_bytes)==actual_map and sha(new_bytes)==MANIFEST_467,
++                'actual copied 466-file builder467 manifest differs')
++        report['copied_manifest']=write_new(OUT/'copied-builder-source-manifest.json',new_bytes)
++        report['source_delta']={'changed_existing':[name for name in wanted if name in expected],
++                                'added':[name for name in wanted if name not in expected],
++                                'unchanged_existing':462,'actual_source_file_count':466,
++                                'builder_revision_name':'467-source-resume','Rust_source_files_changed':4,
++                                'Cargo_lock_or_dependency_manifest_changed':False,
++                                'Go5_or_Blueprint_patch_changed':False,'engine_source_files_changed':0,
+                                 'typed_ingress_framework_patch_changed':False,'source_lock_changed':False,
+-                                'framework_sources_executed_or_built':False,'runtime_authorization_enabled':False}
++                                'real_source_staging_accessed':False,'framework_sources_executed_or_built':False,
++                                'runtime_authorization_enabled':False}
+         env.update({'PATH':str(tools['cargo'].parent)+':/usr/bin:/bin','RUSTC':str(tools['rustc']),
+                     'RUSTDOC':str(tools['rustdoc']),'RUSTDOCFLAGS':'','CARGO_ENCODED_RUSTDOCFLAGS':'',
+                     'RUSTC_WRAPPER':'','RUSTC_WORKSPACE_WRAPPER':'','RUSTFLAGS':'','CARGO_ENCODED_RUSTFLAGS':'',
+@@ -1022,6 +1017,9 @@
+                 b'native-generation-pair' in help_output and b'native-generation-art-build' in help_output and
+                 b'native-role-ingress-build' in help_output,
+                 'normal builder or explicit paired-record/ART/typed-ingress build-only CLI missing')
++        resume_help=command([str(builder),'native-role-ingress-build','--help'],COPIED,env,'source-resume-cli-help',report['commands'],10)
++        require(all(option in resume_help for option in [b'--work',b'--out',b'--resume-source-staging']),
++                'typed source-resume CLI does not expose the explicit fixed route arguments')
+         test_build=command([common[0],'test',*common[1:],'--no-run','--message-format=json-render-diagnostics'],COPIED,env,'builder-test-compile',report['commands'],180)
+         report['actual_test_compile_packages']=qualify_compiler_inputs(test_build,packages,dependency_rows,candidate_rows)
+         test_binary=build_artifact(test_build,package_id,True)
+@@ -1050,10 +1048,65 @@
+         for index,name in enumerate(TESTS):
+             report['focused_result_gates'].append(focused_test(
+                 test_binary,name,index,len(listed_names),test_env,report['commands']))
++        source_packages=[p for p in metadata['packages'] if p['name']=='droidloom-source' and
++                         p['manifest_path']==str(COPIED/'tools/droidloom-source/Cargo.toml') and p['source'] is None]
++        require(len(source_packages)==1,'source controls do not identify the exact copied library package')
++        source_package=source_packages[0]
++        source_tree=command([str(tools['cargo']),'tree','--offline','--locked','-p','droidloom-source',
++                             '--target','x86_64-unknown-linux-gnu','--edges','normal,build,dev',
++                             '--prefix','none','--format','{p}','--color','never'],
++                            COPIED,env,'source-resume-selected-test',report['commands'],30)
++        selected_source=parse_selected_tree(source_tree,COPIED)
++        selected_builder=parse_selected_tree(trees[1],COPIED)
++        require(selected_source and all(key in selected_builder and selected_builder[key]==directory
++                for key,directory in selected_source.items()),
++                'source test dependency closure adds a package outside the already qualified complete builder closure')
++        source_build=command([str(tools['cargo']),'test','--offline','--locked','-j','1','-p',
++                              'droidloom-source','--lib','--no-run','--message-format=json-render-diagnostics'],
++                             COPIED,env,'source-resume-test-compile',report['commands'],90)
++        report['actual_source_test_compile_packages']=qualify_compiler_inputs(
++            source_build,packages,dependency_rows,candidate_rows)
++        source_artifacts=[]
++        for line in source_build.decode().splitlines():
++            if not line.strip():continue
++            item=json.loads(line)
++            if item.get('reason')=='compiler-artifact' and item.get('package_id')==source_package['id'] and item.get('executable'):
++                require(item['profile']['test'] is True and item['target']['kind']==['lib'] and
++                        item['target']['src_path']==str(COPIED/'tools/droidloom-source/src/lib.rs'),
++                        'source control artifact is not the exact copied library test target')
++                source_artifacts.append(Path(item['executable']))
++        require(len(source_artifacts)==1 and source_artifacts[0].is_relative_to(OUT/'cargo-target'),
++                'source test executable is ambiguous or escaped the new target')
++        source_test_binary=source_artifacts[0]
++        source_test_pin=hash_held(source_test_binary)
++        require(source_test_binary.lstat().st_mode&0o111,'source test artifact is not executable')
++        with source_test_binary.open('rb') as stream:
++            require(stream.read(4)==b'\x7fELF','source test artifact is not ELF')
++        source_list=command([str(source_test_binary),'--list'],COPIED,env,'source-resume-test-list',report['commands'],10).decode()
++        source_names=[line[:-6] for line in source_list.splitlines() if line.endswith(': test')]
++        require(len(source_names)==len(set(source_names))==20 and set(source_names)==set(SOURCE_REGISTERED_TESTS) and
++                not any(line.endswith(': benchmark') for line in source_list.splitlines()),
++                'source test registrations differ from the eleven baseline and nine new controls')
++        source_help=command([str(source_test_binary),'--help'],COPIED,env,'source-resume-test-help',report['commands'],10).decode()
++        require(re.search(r'^\s*--logfile\s',source_help,re.MULTILINE) is not None and
++                'Write logs to the specified file' in source_help,
++                'source test executable lacks independent libtest result support')
++        report['source_resume_result_gates']=[]
++        for index,name in enumerate(SOURCE_RESUME_TESTS,start=len(TESTS)):
++            report['source_resume_result_gates'].append(focused_test(
++                source_test_binary,name,index,len(source_names),test_env,report['commands']))
++        require(hash_held(source_test_binary)==source_test_pin,'source test ELF changed while tested')
++        report['source_test_elf']=source_test_pin
++        report['source_actual_registered_test_count']=len(source_names)
++        report['source_resume_tests_passed']=len(SOURCE_RESUME_TESTS)
++        report['source_original_tests_listed_not_rerun']=len(SOURCE_REGISTERED_TESTS)-len(SOURCE_RESUME_TESTS)
++        report['source_test_fixtures_network_disabled']=True
++        report['actual_device_staging_reuse_qualified']=False
+         require(hash_held(builder)==builder_pin and hash_held(test_binary)==test_pin,'actual ELF changed while tested')
+         report['builder_elf']=builder_pin
+         report['test_elf']=test_pin
+-        report['focused_tests_passed']=len(TESTS)
++        report['updater_focused_tests_passed']=len(TESTS)
++        report['focused_tests_passed']=len(TESTS)+len(SOURCE_RESUME_TESTS)
+         report['original_projection_tests_passed']=len(ORIGINAL_TESTS)
+         report['pairing_tests_passed']=0
+         report['ART_projection_tests_passed']=0
+@@ -1062,7 +1115,7 @@
+         report['transitive_framework_closure_qualified']=False
+         report['runtime_authorization_enabled']=False
+         report['real_image_test_count']=0
+-        report['parent_targeted_tests_passed_historically']=26
++        report['parent_targeted_tests_passed_historically']=9
+         report['parent_only_test_names_not_rerun']=PAIR_TESTS+ART_PROJECTION_TESTS
+         report['platform_APEX_signature_validated']=False
+         report['actual_enabled_ART_lifecycle_validated']=False
+@@ -1117,9 +1170,9 @@
+ 
+ if __name__=='__main__':
+     if sys.argv[1:]==[]:
+-        print(json.dumps({'mode':'PLAN','root':str(ROOT),'base_source':str(BASE_SOURCE),'source_files':465,
++        print(json.dumps({'mode':'PLAN','root':str(ROOT),'base_source':str(BASE_SOURCE),'source_files':466,
+                           'requires_explicit_execute_once':True,'Rust_toolchain':TOOLCHAIN,'Main_actions':0,
+-                          'Android_and_full_engine_execution':False,'focused_existing_tests':TESTS}))
++                          'Android_and_full_engine_execution':False,'focused_existing_tests':TESTS,'source_resume_tests':SOURCE_RESUME_TESTS}))
+     elif sys.argv[1:]==['--execute-once']:
+         raise SystemExit(execute())
+     else:

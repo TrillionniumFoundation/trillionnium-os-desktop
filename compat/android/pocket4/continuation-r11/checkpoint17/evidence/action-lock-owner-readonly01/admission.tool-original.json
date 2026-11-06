@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys,types\nEXPECTED = {'read_lock_owner.py': (21531, 'c19d8a6ff875ee26e0754a91799d6bd901a50efc9b7fe2069a84a127b9e27019'), 'read_main_identity.py': (18537, '4b955afce019418e98282aa4af549ab1089afc040a5c8990b7713be5f8b4585e'), 'prior-launch.json': (6043, '5b0c66f234675d9170652729a2cacc66a74d4bb76e2f151ade5280332e935029')}\nraw = sys.stdin.buffer.read(65537)\nif len(raw) != 47567 or hashlib.sha256(raw).hexdigest() != '952347f748ec74146cef301e4a2a42e8d2a3091476ba0f6a9ce41ff4c214bd7d':\n    raise SystemExit('fixed packet size or SHA256 mismatch')\npacket = json.loads(raw)\nif type(packet) is not dict or set(packet) != {'schema', 'files'} or type(packet['schema']) is not int or packet['schema'] != 1:\n    raise SystemExit('fixed packet schema mismatch')\nif type(packet['files']) is not dict or set(packet['files']) != set(EXPECTED):\n    raise SystemExit('fixed packet member set mismatch')\nbodies = {}\nfor name, expected in EXPECTED.items():\n    value = packet['files'][name]\n    if type(value) is not str:\n        raise SystemExit('fixed packet member type mismatch')\n    body = value.encode('utf-8')\n    if len(body) != expected[0] or hashlib.sha256(body).hexdigest() != expected[1]:\n        raise SystemExit('fixed packet member size or SHA256 mismatch')\n    bodies[name] = body\ndef load(name, module_name):\n    module = types.ModuleType(module_name)\n    module.__file__ = '<fixed-packet:' + name + '>'\n    exec(compile(bodies[name], module.__file__, 'exec'), module.__dict__)\n    return module\nsupport = load('read_main_identity.py', 'fixed_original_Main_identity_support')\nreader = load('read_lock_owner.py', 'fixed_action_lock_owner_reader')\nraise SystemExit(reader.main(support, bodies['prior-launch.json'], ['--collect-once']))\n"
+    ],
+    "created_unix_ms": 1793905830885,
+    "cwd": "/",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1ad1eabe5-fc05-589d",
+    "idempotency_key": "p4-action-lock-owner-readonly01-952347f748ec7414",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1ad1eabe5-fc05-589d",
+    "request_digest": "b2587b2213d36c7362747aa36f91d19eb3a1c3e3fa357afd2c69fb3fbacf4eb8",
+    "request_fingerprint": 12851156922993437811,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1ad1eabe5-fc05-589d"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1ad1eabe5-fc05-589d"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

@@ -1,0 +1,462 @@
+--- admission01/probe_lock.py
++++ differential02/probe_lock.py
+@@ -1,21 +1,30 @@
+ #!/usr/bin/env python3
+-"""One nonblocking admission on the exact existing action lock; no Android action."""
++"""One exact-lock attempt and one same-filesystem anonymous control; no Android."""
+ import argparse
++import errno
+ import fcntl
+ import hashlib
+ import json
+ import os
++import re
+ import stat
+ import sys
+ import time
+ 
+ LOCK = '/run/lock/android-digitalis-actions.lock'
++LOCK_PARENT = '/run/lock'
+ LOCK_DEV, LOCK_INO = 28, 8312
+ LOCK_MODE = stat.S_IFREG | 0o600
+ PRIOR_SHA = '13179fb6aa36a1fde53892cc6287994ae269e492199a94eb12eeafe83fe290cc'
+ PRIOR_BYTES = 6053
+ PRIOR_NONCE = 'c398efeb8c07781670825f5ad68e13af'
+ PRIOR_SOURCE = '16f371bda457b830b11536f977a11f8dcce3347eded286605400a9162ba079a8'
++PRIOR_ADMISSION_SHA = 'cdbd347f32d7a48ec5e95106580208171f45fd3883c008c2e8aab30fa980624e'
++PRIOR_ADMISSION_BYTES = 8816
++TABLE_MAX, TABLE_LINES_MAX, LINE_MAX = 1048576, 16384, 2048
++MATCH_MAX, PID_MAX = 32, 16
++FDINFO_MAX, MOUNTINFO_MAX = 16384, 524288
++PROC_DEV = 26
+ DEADLINE_SECONDS = 15.0
+ OUTPUT_MAX = 131072
+ 
+@@ -165,10 +174,15 @@
+         need(not os.get_inheritable(fd), 'OWN_ADMISSION_FD_CLOEXEC')
+         support.check_time(deadline)
+         observation['exclusive_calls'] += 1
++        observation['call_monotonic_ns'] = time.monotonic_ns()
+         try:
+             fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+         except OSError as error:
++            observation['returned_monotonic_ns'] = time.monotonic_ns()
+             observation['exclusive_errno'] = error.errno
++            # Retain this same contender OFD through the adjacent observation.
++            # The original syscall error remains primary if sampling fails.
++            observe_target(fds, support, fd, before, observation, deadline)
+             raise
+         else:
+             observation['exclusive_errno'] = 0
+@@ -182,6 +196,9 @@
+                 raise
+             observation['unlock_errno'] = 0
+             observation['unlocked'] = True
++            observation['returned_monotonic_ns'] = time.monotonic_ns()
++            # Success is unlocked first; it never holds a lock while sampling.
++            observe_target(fds, support, fd, before, observation, deadline)
+         observation['held_after_unlock'] = support.metadata(fd)
+         need(observation['held_after_unlock'] == before == support.metadata(anchor),
+              'POST_UNLOCK_HELD_LOCK_CHANGED')
+@@ -195,13 +212,15 @@
+                 observation['close_confirmed'] = len(fds.close_errors) == errors_before
+ 
+ 
+-def collect(support, prior_raw):
++def collect(support, prior_raw, prior_admission_raw):
+     prior = validate_prior(prior_raw)
++    validate_prior_admission(prior_admission_raw, prior)
+     started = time.monotonic()
+     deadline = started + DEADLINE_SECONDS
+     result = dict(schema=1, success=False, error=None, secondary_errors=[],
+-                  scope='single nonblocking admission on one exact existing action lock',
++                  scope='single exact-lock admission plus one unnamed same-filesystem control',
+                   prior_failure=dict(bytes=PRIOR_BYTES, sha256=PRIOR_SHA, nonce=PRIOR_NONCE),
++                  prior_single_admission=dict(bytes=PRIOR_ADMISSION_BYTES, sha256=PRIOR_ADMISSION_SHA),
+                   expected_lock=dict(path=LOCK, device=LOCK_DEV, inode=LOCK_INO,
+                                      mode=LOCK_MODE, uid=0, gid=0, nlink=1),
+                   inputs={}, final_inputs={}, main_guard_before=None, main_guard_after=None,
+@@ -209,21 +228,28 @@
+                                       exclusive_errno=None, acquired=False, unlock_calls=0,
+                                       unlock_errno=None, unlocked=False, close_attempted=False,
+                                       close_confirmed=False),
++                  anonymous_control=dict(open_attempted=False, opened=False, exclusive_calls=0,
++                      exclusive_errno=None, acquired=False, unlock_calls=0, unlock_errno=None,
++                      unlocked=False, close_attempted=False, close_confirmed=False, error=None),
++                  differential_outcome='not_available',
+                   original_Main_guard_unchanged=True, original_five_limit_equality_required=True,
+                   output_is_sequential_not_atomic=True, deadline_seconds=DEADLINE_SECONDS,
+-                  maximum_exclusive_attempts=1, retry_attempts=0, wait_seconds=0,
++                  maximum_exclusive_attempts_per_OFD=1, total_maximum_exclusive_attempts=2,
++                  retry_attempts=0, wait_seconds=0,
+                   runtime_authorized=False, future_UI_requires_own_normal_lock_admission=True,
+                   historical_holder_identified=False, unlocked_at_future_admission_proven=False,
+                   observation_grants_kill_or_cleanup_authority=False,
+                   Android_actions=0, Android_contexts_opened=0, process_starts=0,
+                   process_signals=0, namespace_entries=0, lock_content_reads=0,
+-                  lock_content_writes=0, lock_file_creation=0, lock_replacement_or_deletion=0,
++                  lock_content_writes=0, named_file_creations=0, maximum_anonymous_inodes=1,
++                  anonymous_inode_content_writes=0, lock_replacement_or_deletion=0,
+                   proc_lock_table_reads=0, PID_or_FD_directory_scans=0,
+                   owned_fds_closed=False)
+     fds = OwnedFDs()
+     anchors = {}
+     activation = reference = epoch = None
+     anchor = None
++    parent = None
+ 
+     def remember(phase, error):
+         row = error_record(phase, error)
+@@ -266,10 +292,38 @@
+         anchor = open_fixed(fds, support, LOCK, os.O_PATH, deadline)
+         result['lock_before'] = support.metadata(anchor)
+         exact_lock(result['lock_before'])
+-        admit_once(fds, support, anchor, result['lock_before'], result['lock_operation'], deadline)
++        parent = open_fixed(fds, support, LOCK_PARENT, os.O_PATH | os.O_DIRECTORY, deadline)
++        result['parent_before'] = support.metadata(parent)
++        need(stat.S_ISDIR(result['parent_before']['mode']) and
++             (result['parent_before']['device'], result['parent_before']['uid'], result['parent_before']['gid']) ==
++             (LOCK_DEV, 0, 0), 'EXACT_LOCK_PARENT_ROOT_DIRECTORY_ON_SAME_DEVICE')
++        try:
++            admit_once(fds, support, anchor, result['lock_before'], result['lock_operation'], deadline)
++        except Exception as error:
++            remember('single_target_lock_admission', error)
++        target = result['lock_operation']
++        if target.get('adjacent_observation_error') is not None:
++            remember('target_observation', RuntimeError('ADJACENT_TARGET_OBSERVATION_FAILED'))
++        # An expected syscall refusal does not skip the independent control.
++        # A failed identity/sample/close gate does: do not proceed from ambiguity.
++        if (target['exclusive_calls'] == 1 and target['close_confirmed'] and
++                target.get('adjacent_observation', {}).get('complete') and not fds.close_errors):
++            need(support.metadata(anchor) == result['lock_before'], 'TARGET_ANCHOR_BEFORE_CONTROL_CHANGED')
++            same_parent(fds, support, parent, result['parent_before'], deadline)
++            try:
++                anonymous_once(fds, support, parent, result['anonymous_control'], deadline)
++            except Exception as error:
++                result['anonymous_control']['error'] = error_record('anonymous_control', error)
++                remember('anonymous_control', error)
+     except Exception as error:
+-        remember('single_lock_admission', error)
+-    finally:
++        remember('two_arm_lock_observation', error)
++    finally:
++        if parent is not None:
++            try:
++                result['parent_after'] = support.metadata(parent)
++                result['parent_named_after'] = same_parent(fds, support, parent, result['parent_before'], deadline)
++            except Exception as error:
++                remember('final_parent_identity', error)
+         if anchor is not None:
+             try:
+                 result['lock_after'] = support.metadata(anchor)
+@@ -302,27 +356,52 @@
+             result['secondary_errors'].extend(fds.close_errors)
+         result['owned_fds_closed'] = not fds.values and not fds.close_errors
+         lock = result['lock_operation']
++        control = result['anonymous_control']
++        result['proc_lock_table_reads'] = int(bool(lock.get('adjacent_observation', {}).get('table_read_attempted')))
++        non_operation_errors = [row for row in ([result['error']] if result['error'] else []) + result['secondary_errors']
++                                if row['phase'] not in ('single_target_lock_admission', 'anonymous_control')]
++        guards_complete = (result['owned_fds_closed'] and len(result['inputs']) == len(result['final_inputs']) == 5 and
++            result['main_guard_before'] == result['main_guard_after'] == prior['Main_before_lock'] and
++            result.get('lock_before') == result.get('lock_after') == result.get('lock_named_after') and
++            result.get('boot_before') == result.get('boot_after') and
++            'parent_named_after' in result and not non_operation_errors)
++        observed = (guards_complete and lock['exclusive_calls'] == 1 and lock['close_confirmed'] and
++            lock.get('adjacent_observation', {}).get('complete') and control['exclusive_calls'] == 1 and
++            control['close_confirmed'] and control.get('held_identity_unchanged') is True)
++        if observed:
++            if lock['exclusive_errno'] == errno.EAGAIN and control['exclusive_errno'] == 0 and control['unlocked']:
++                result['differential_outcome'] = 'target_refused_control_acquired_and_released'
++            elif lock['exclusive_errno'] == control['exclusive_errno'] == errno.EAGAIN:
++                result['differential_outcome'] = 'both_nonblocking_calls_returned_EAGAIN'
++            elif lock['exclusive_errno'] == control['exclusive_errno'] == 0 and lock['unlocked'] and control['unlocked']:
++                result['differential_outcome'] = 'both_acquired_and_released'
++            else:
++                result['differential_outcome'] = 'other_observed_pair'
+         result['success'] = (result['error'] is None and not result['secondary_errors'] and
+             result['owned_fds_closed'] and lock['exclusive_calls'] == lock['unlock_calls'] == 1 and
+             lock['acquired'] and lock['unlocked'] and lock['close_confirmed'] and
++            control['exclusive_calls'] == control['unlock_calls'] == 1 and control['unlocked'] and
++            control['close_confirmed'] and observed and
+             len(result['inputs']) == len(result['final_inputs']) == 5 and
+             result['main_guard_before'] == result['main_guard_after'] == prior['Main_before_lock'])
+         result['elapsed_ms'] = int((time.monotonic() - started) * 1000)
+     return result
+ 
+ 
+-def main(support, prior_raw, argv=None):
++def main(support, prior_raw, prior_admission_raw, argv=None):
+     parser = argparse.ArgumentParser(description=__doc__)
+     parser.add_argument('--admit-once', action='store_true')
+     args = parser.parse_args(argv)
+     if args.admit_once:
+-        result = collect(support, prior_raw)
++        result = collect(support, prior_raw, prior_admission_raw)
+     else:
+         result = dict(state='PLAN_ONLY', lock_path=LOCK, lock_device=LOCK_DEV, lock_inode=LOCK_INO,
+                       root_mode=LOCK_MODE, single_link_required=True,
+                       existing_open_flags=['O_RDWR', 'O_NOFOLLOW', 'O_CLOEXEC'],
+-                      exclusive_attempts=1, exclusive_flags=['LOCK_EX', 'LOCK_NB'],
++                      exclusive_attempts_per_arm=1, exclusive_flags=['LOCK_EX', 'LOCK_NB'],
+                       unlock_only_after_success=True, close_own_fd_on_all_paths=True,
++                      anonymous_parent=LOCK_PARENT, anonymous_flags=['O_TMPFILE','O_RDWR','O_CLOEXEC'],
++                      named_creation_or_fallback=False, adjacent_tables=1, own_fdinfo_only=True,
+                       original_Main_guard_calls=2, original_five_inputs=5,
+                       deadline_seconds=DEADLINE_SECONDS, output_maximum_bytes=OUTPUT_MAX,
+                       wait_seconds=0, retry_attempts=0, Android_actions=0,
+@@ -331,3 +410,254 @@
+     need(len(raw) <= OUTPUT_MAX, 'COMPLETE_OUTPUT_BOUND_NO_TRUNCATION')
+     print(raw.decode('ascii'), end='', flush=True)
+     return 0 if not args.admit_once or result['success'] else 1
++
++
++def parse_locks(raw):
++    """Parse a bounded kernel table but return only the exact device/inode rows."""
++    need(type(raw) is bytes and len(raw) <= TABLE_MAX, 'LOCK_TABLE_BYTES_BOUND')
++    lines = raw.splitlines()
++    need(len(lines) <= TABLE_LINES_MAX, 'LOCK_TABLE_LINE_BOUND')
++    records = []
++    for number, line in enumerate(lines, 1):
++        need(0 < len(line) <= LINE_MAX and b'\0' not in line, 'LOCK_TABLE_LINE_FORMAT')
++        fields = line.decode('ascii', 'strict').split()
++        waiting = len(fields) > 1 and fields[1] == '->'
++        if waiting:
++            fields.pop(1)
++        need(len(fields) == 8 and re.fullmatch(r'[0-9]{1,20}:', fields[0]) is not None,
++             'LOCK_TABLE_FIELD_SHAPE')
++        need(all(re.fullmatch(r'[A-Z_]+', value) for value in fields[1:4]), 'LOCK_TABLE_TYPE_SHAPE')
++        need(re.fullmatch(r'-?[0-9]{1,10}', fields[4]) is not None, 'LOCK_TABLE_PID_SHAPE')
++        pid = int(fields[4])
++        need(-1 <= pid <= 2147483647, 'LOCK_TABLE_PID_BOUND')
++        match = re.fullmatch(r'([0-9a-fA-F]{1,16}):([0-9a-fA-F]{1,16}):([0-9]{1,20})', fields[5])
++        need(match is not None, 'LOCK_TABLE_DEVICE_SHAPE')
++        major, minor, inode = int(match[1], 16), int(match[2], 16), int(match[3])
++        need(inode <= 18446744073709551615, 'LOCK_TABLE_INODE_BOUND')
++        need(re.fullmatch(r'[0-9]{1,20}', fields[6]) is not None and
++             (fields[7] == 'EOF' or re.fullmatch(r'[0-9]{1,20}', fields[7]) is not None),
++             'LOCK_TABLE_RANGE_SHAPE')
++        if (major, minor, inode) != (os.major(LOCK_DEV), os.minor(LOCK_DEV), LOCK_INO):
++            continue
++        need(len(records) < MATCH_MAX, 'MATCHING_LOCK_RECORD_BOUND')
++        records.append(dict(record_id=int(fields[0][:-1]), waiting=waiting,
++                            kind=fields[1], mode=fields[2], access=fields[3],
++                            kernel_reported_pid=pid, device_major=major, device_minor=minor,
++                            inode=inode, range_start=fields[6], range_end=fields[7],
++                            raw_matching_line=line.decode('ascii')))
++    pids = sorted({r['kernel_reported_pid'] for r in records if r['kernel_reported_pid'] > 0})
++    need(len(pids) <= PID_MAX, 'MATCHING_POSITIVE_PID_BOUND')
++    return dict(bytes_read=len(raw), table_line_count=len(lines), matched_records=records,
++                matched_positive_pids=pids, complete=True)
++
++
++def validate_prior_admission(raw, prior):
++    need(type(raw) is bytes and len(raw) == PRIOR_ADMISSION_BYTES and sha(raw) == PRIOR_ADMISSION_SHA,
++         'EXACT_PRIOR_SINGLE_ADMISSION')
++    value = json.loads(raw)
++    op = value['lock_operation']
++    need(value['success'] is False and value['error']['phase'] == 'single_lock_admission' and
++         value['error']['errno'] == errno.EAGAIN and value['secondary_errors'] == [] and
++         value['owned_fds_closed'] is True and value['runtime_authorized'] is False,
++         'PRIOR_ADMISSION_ACTUAL_REFUSAL')
++    need(op['opened_existing'] is True and op['exclusive_calls'] == 1 and
++         op['exclusive_errno'] == errno.EAGAIN and op['acquired'] is False and op['unlock_calls'] == 0 and
++         op['close_attempted'] is True and op['close_confirmed'] is True, 'PRIOR_ONE_CALL_OWN_CLOSE')
++    need(value['lock_before'] == value['lock_after'] == value['lock_named_after'] and
++         value['inputs'] == value['final_inputs'] and value['boot_before'] == value['boot_after'] and
++         value['main_guard_before'] == value['main_guard_after'] == prior['Main_before_lock'],
++         'PRIOR_ALL_ORIGINAL_GUARDS')
++    exact_lock(value['lock_before'])
++
++
++def parent_identity(value):
++    # Directory timestamps and link counts are recorded, not identity claims.
++    return tuple(value[name] for name in ('device', 'inode', 'mode', 'uid', 'gid'))
++
++
++def same_parent(fds, support, parent, before, deadline):
++    fd = open_fixed(fds, support, LOCK_PARENT, os.O_PATH | os.O_DIRECTORY, deadline)
++    try:
++        named = support.metadata(fd)
++        need(parent_identity(before) == parent_identity(support.metadata(parent)) == parent_identity(named),
++             'LOCK_PARENT_HELD_NAMED_IDENTITY_CHANGED')
++        return named
++    finally:
++        fds.close(fd)
++
++
++def read_proc_record(fds, support, path, maximum, deadline):
++    fd = open_fixed(fds, support, path, os.O_RDONLY | os.O_NONBLOCK, deadline)
++    try:
++        before = support.metadata(fd)
++        need(stat.S_ISREG(before['mode']) and before['device'] == PROC_DEV, 'FIXED_PROC_REGULAR_DEVICE')
++        raw = support.read_bounded(fd, maximum, deadline)
++        need(before == support.metadata(fd), 'HELD_PROC_SAMPLE_CHANGED')
++        return raw, dict(path=path, bytes=len(raw), sha256=sha(raw), metadata=before)
++    finally:
++        fds.close(fd)
++
++
++def parse_own_fdinfo(raw):
++    need(type(raw) is bytes and len(raw) <= FDINFO_MAX, 'OWN_FDINFO_BOUND')
++    lines = raw.splitlines()
++    need(0 < len(lines) <= 64, 'OWN_FDINFO_LINES')
++    values, locks = {}, []
++    for line in lines:
++        need(0 < len(line) <= LINE_MAX and b'\0' not in line, 'OWN_FDINFO_LINE')
++        name, separator, value = line.decode('ascii').partition(':')
++        need(separator == ':', 'OWN_FDINFO_KEY_VALUE')
++        value = value.strip()
++        if name == 'lock':
++            need(len(locks) < MATCH_MAX, 'OWN_FDINFO_LOCK_BOUND')
++            locks.append(value.encode('ascii'))
++        else:
++            need(name in ('pos', 'flags', 'mnt_id', 'ino') and name not in values, 'OWN_FDINFO_FIELDS')
++            need(re.fullmatch(r'[0-9]{1,24}', value), 'OWN_FDINFO_NUMBER')
++            values[name] = int(value, 8 if name == 'flags' else 10)
++    need(set(values) == {'pos', 'flags', 'mnt_id', 'ino'} and values['ino'] == LOCK_INO and
++         values['flags'] & os.O_ACCMODE == os.O_RDWR and values['mnt_id'] > 0, 'OWN_TARGET_FDINFO_IDENTITY')
++    parsed = parse_locks(b'\n'.join(locks))
++    need(len(parsed['matched_records']) == len(locks), 'OWN_FDINFO_LOCK_ROWS_MATCH_TARGET')
++    return dict(fields=values, matching_lock_records=parsed['matched_records'],
++                does_not_list_conflicting_other_OFD_locks=True)
++
++
++def parse_selected_mount(raw, mount_id):
++    need(type(raw) is bytes and len(raw) <= MOUNTINFO_MAX, 'OWN_MOUNTINFO_BOUND')
++    lines = raw.splitlines()
++    need(len(lines) <= 8192, 'OWN_MOUNTINFO_LINES')
++    selected = []
++    for line in lines:
++        need(0 < len(line) <= 8192 and b'\0' not in line, 'OWN_MOUNTINFO_LINE')
++        first = line.split(b' ', 1)[0]
++        need(re.fullmatch(rb'[0-9]{1,20}', first), 'OWN_MOUNTINFO_ID')
++        if int(first) != mount_id:
++            continue
++        parts = line.decode('ascii').split()
++        need(len(parts) >= 10, 'OWN_TARGET_MOUNTINFO_SHAPE')
++        need(len(selected) == 0 and parts.count('-') == 1, 'EXACT_ONE_TARGET_MOUNT')
++        separator = parts.index('-')
++        need(separator >= 6 and len(parts) == separator + 4 and
++             parts[2] == str(os.major(LOCK_DEV)) + ':' + str(os.minor(LOCK_DEV)),
++             'TARGET_MOUNT_DEVICE')
++        selected.append(dict(mount_id=mount_id, parent_id=int(parts[1]), device=parts[2],
++            root=parts[3], mountpoint=parts[4], mount_options=parts[5],
++            optional_fields=parts[6:separator], filesystem=parts[separator+1],
++            mount_source=parts[separator+2], super_options=parts[separator+3]))
++    need(len(selected) == 1, 'OWN_FD_MOUNT_ID_FOUND_ONCE')
++    return selected[0]
++
++
++def observe_target(fds, support, fd, before, operation, deadline):
++    sample = dict(complete=False, started_monotonic_ns=time.monotonic_ns())
++    operation['adjacent_observation'] = sample
++    try:
++        need(fd in fds.values and support.metadata(fd) == before, 'SAME_CONTENDER_OFD_HELD')
++        pid = os.getpid()
++        need(os.readlink('/proc/self') == str(pid), 'SELF_PROC_VIEW_GETPID_MATCH')
++        sample['collector_pid'] = pid
++        sample['kernel_release'] = os.uname().release
++        sample['flock_callable'] = dict(module=getattr(fcntl.flock, '__module__', None),
++                                        name=getattr(fcntl.flock, '__name__', None),
++                                        type=type(fcntl.flock).__name__)
++        raw, record = read_proc_record(fds, support, '/proc/' + str(pid) + '/fdinfo/' + str(fd),
++                                       FDINFO_MAX, deadline)
++        sample['own_fdinfo'] = record
++        sample['own_fdinfo']['parsed'] = parse_own_fdinfo(raw)
++        sample['own_fdinfo']['observed_monotonic_ns'] = time.monotonic_ns()
++        sample['table_read_attempted'] = True
++        raw, record = read_proc_record(fds, support, '/proc/locks', TABLE_MAX, deadline)
++        sample['table'] = record
++        sample['table']['parsed'] = parse_locks(raw)
++        sample['table']['observed_monotonic_ns'] = time.monotonic_ns()
++        raw, record = read_proc_record(fds, support, '/proc/' + str(pid) + '/mountinfo',
++                                       MOUNTINFO_MAX, deadline)
++        sample['mountinfo'] = record
++        sample['mountinfo']['selected'] = parse_selected_mount(raw, sample['own_fdinfo']['parsed']['fields']['mnt_id'])
++        # This is metadata of the collector's own namespace, not a process scan.
++        proc = open_fixed(fds, support, '/proc/' + str(pid), os.O_PATH | os.O_DIRECTORY, deadline)
++        try:
++            nsdir = fds.take(os.open('ns', os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=proc))
++            try:
++                label = os.readlink('pid', dir_fd=nsdir)
++                need(re.fullmatch(r'pid:\[[0-9]{1,20}\]', label), 'SELF_PID_NAMESPACE_LABEL')
++                nsfd = fds.take(os.open('pid', os.O_RDONLY | os.O_CLOEXEC, dir_fd=nsdir))
++                try:
++                    metadata = support.metadata(nsfd)
++                    need(int(label[5:-1]) == metadata['inode'] and
++                         label == os.readlink('pid', dir_fd=nsdir), 'SELF_PID_NAMESPACE_HELD_LABEL')
++                    sample['collector_pid_namespace'] = dict(label=label, metadata=metadata)
++                finally:
++                    fds.close(nsfd)
++            finally:
++                fds.close(nsdir)
++        finally:
++            fds.close(proc)
++        sample['held_after'] = support.metadata(fd)
++        need(sample['held_after'] == before, 'CONTENDER_HELD_IDENTITY_CHANGED_DURING_SAMPLE')
++        sample['complete'] = True
++    except Exception as error:
++        operation['adjacent_observation_error'] = error_record('adjacent_target_sample', error)
++    finally:
++        sample['ended_monotonic_ns'] = time.monotonic_ns()
++
++
++def anonymous_once(fds, support, parent, operation, deadline):
++    fd = None
++    primary = None
++    try:
++        support.check_time(deadline)
++        operation['open_attempted'] = True
++        # Unlinked inode on the same held directory/filesystem. Never fallback.
++        fd = fds.take(os.open('.', os.O_TMPFILE | os.O_RDWR | os.O_CLOEXEC, 0o600, dir_fd=parent))
++        operation['opened'] = True
++        operation['held_before'] = support.metadata(fd)
++        before = operation['held_before']
++        need(stat.S_ISREG(before['mode']) and before['mode'] == LOCK_MODE and before['device'] == LOCK_DEV and
++             before['inode'] != LOCK_INO and (before['uid'], before['gid'], before['nlink']) == (0, 0, 0),
++             'ANONYMOUS_ROOT0600_UNLINKED_SAME_DEVICE_DISTINCT_INODE')
++        need(not os.get_inheritable(fd), 'ANONYMOUS_CLOEXEC')
++        support.check_time(deadline)
++        operation['exclusive_calls'] += 1
++        operation['call_monotonic_ns'] = time.monotonic_ns()
++        try:
++            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
++        except OSError as error:
++            operation['exclusive_errno'] = error.errno
++            raise
++        else:
++            operation['exclusive_errno'] = 0
++            operation['acquired'] = True
++            operation['unlock_calls'] += 1
++            try:
++                fcntl.flock(fd, fcntl.LOCK_UN)
++            except OSError as error:
++                operation['unlock_errno'] = error.errno
++                raise
++            operation['unlock_errno'] = 0
++            operation['unlocked'] = True
++    except BaseException as error:
++        primary = error
++        raise
++    finally:
++        operation['returned_monotonic_ns'] = time.monotonic_ns()
++        if fd is not None:
++            try:
++                after = support.metadata(fd)
++                operation['held_after'] = after
++                need('held_before' in operation and after == operation['held_before'],
++                     'ANONYMOUS_HELD_IDENTITY_CHANGED')
++                operation['held_identity_unchanged'] = True
++            except Exception as error:
++                operation['held_identity_error'] = error_record('anonymous_final_metadata', error)
++                if primary is None:
++                    primary = error
++                    raise
++            finally:
++                operation['close_attempted'] = True
++                errors_before = len(fds.close_errors)
++                try:
++                    fds.close(fd)
++                finally:
++                    operation['close_confirmed'] = len(fds.close_errors) == errors_before

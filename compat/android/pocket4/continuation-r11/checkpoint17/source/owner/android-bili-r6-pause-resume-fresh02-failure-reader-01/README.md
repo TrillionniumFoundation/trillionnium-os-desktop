@@ -1,0 +1,1 @@
+Fresh02 failure reader: two exact parent records, then the parent-pinned cleanup, navigation command, and navigation worker. No navigation stdout read, UI actions, runtime qualification, lock change, or UI-window release claim. Original no-raw-UI and held-file read gates remain unchanged.

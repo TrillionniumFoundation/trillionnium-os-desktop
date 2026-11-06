@@ -1,0 +1,33 @@
+{
+  "collect_executed": false,
+  "count": 5,
+  "device_qualification": false,
+  "live_proc_reads": false,
+  "old_Main7_FAIL_preserved": true,
+  "results": [
+    {
+      "name": "retained_actual_nsfs_timestamp_diff_is_not_identity",
+      "passed": true
+    },
+    {
+      "name": "proc_root_nlink_not_identity_but_device_inode_owner_are",
+      "passed": true
+    },
+    {
+      "name": "actual_owned_numeric_PID_directory_filter_and_bound",
+      "passed": true
+    },
+    {
+      "name": "actual_owned_nonmatches_never_read_process_or_fdinfo_and_gap_is_sanitized",
+      "passed": true
+    },
+    {
+      "name": "matched_initial_identity_failure_stays_sticky_and_never_opens_fdinfo",
+      "passed": true
+    }
+  ],
+  "schema": 1,
+  "scope": "five new local controls; retained actual timestamp replay and owned directory/FD seams",
+  "source_bytes": 41061,
+  "source_sha256": "8fed4dffbfb67467571189895f6dc56e8bd13aba0fba094107260526a697200e"
+}

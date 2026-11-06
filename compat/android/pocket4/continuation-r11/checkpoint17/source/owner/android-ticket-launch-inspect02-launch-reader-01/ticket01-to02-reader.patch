@@ -1,0 +1,46 @@
+--- ticket01/read_summary.py
++++ ticket02/read_summary.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed summary-only reader for the parent-bound Ticket01 launch phase and two exact terminal parents."""
++"""Fixed summary-only reader for the parent-bound Ticket02 launch phase and two exact terminal parents."""
+ import argparse
+ import base64
+ import gzip
+@@ -11,10 +11,10 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-ticket-owned-launch-inspect-01')
+-FLOW=Path('/home/alex/work/pocket4-ticket-owned-qa-r1-flow-c398efeb8c07781670825f5ad68e13af')
+-NONCE='c398efeb8c07781670825f5ad68e13af'
+-SOURCE_SHA='16f371bda457b830b11536f977a11f8dcce3347eded286605400a9162ba079a8'
++ROOT=Path('/home/alex/work/pocket4-ticket-owned-launch-inspect-02')
++FLOW=Path('/home/alex/work/pocket4-ticket-owned-qa-r1-flow-fbda47500730b71354278064649b0bf9')
++NONCE='fbda47500730b71354278064649b0bf9'
++SOURCE_SHA='abb667a93f1e55b916da3b04bcebe05b28904655ff18cff1a1f1ef8b66a7b845'
+ HELPER_UID=10190
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+@@ -126,7 +126,7 @@
+              value.get('helper_uid')==HELPER_UID and value.get('package')=='com.MobileTicket' and
+              value.get('uid')==10121,'EXACT_TICKET_LAUNCH_SCOPE_REQUIRED')
+         files['launch.json']={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    bundle={'schema':1,'scope':'fixed-Ticket01-terminal-parents-and-only-parent-bound-launch-result','files':files,'missing':missing,
++    bundle={'schema':1,'scope':'fixed-Ticket02-terminal-parents-and-only-parent-bound-launch-result','files':files,'missing':missing,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}
+--- ticket01/make_summary_request.py
++++ ticket02/make_summary_request.py
+@@ -8,8 +8,8 @@
+ import re
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='9eff195234de5f02c730170180a8f4d17847c3d9bf2c156863cd9718505d4d4a'
+-KEY='pocket4-ticket-launch-inspect01-parent-bound-launch-readonly-01-20261105'
++READER_SHA='8e46dd685a65098783dd6e8bb1db242f6e26a519fd6917c3488f5cfd640a1e95'
++KEY='pocket4-ticket-launch-inspect02-parent-bound-launch-readonly-01-20261105'
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__)

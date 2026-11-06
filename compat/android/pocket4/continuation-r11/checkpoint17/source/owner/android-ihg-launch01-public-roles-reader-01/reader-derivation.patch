@@ -1,0 +1,422 @@
+--- reviewed-Bili-roles/read_roles.py
++++ IHG-public-roles/read_roles.py
+@@ -1,9 +1,8 @@
+ #!/usr/bin/env python3
+-"""Read three exact retained R6 assessments; export role counts and fixed errors.
+-
+-This is historical file analysis only. No Android, process, UI, namespace,
+-new observation, replay, lock mutation or release operation is available.
+-No commercial nodes, text, descriptions, unknown labels or pixels are emitted.
++"""Fixed historical IHG public hotel-entry role counts; no UI or process action.
++
++Only one exact retired-task assessment is inspected in memory. Unknown text,
++labels, identifiers, nodes, coordinates and pixels are never exported.
+ """
+ import argparse
+ import hashlib
+@@ -15,29 +14,51 @@
+ import time
+ import types
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r6-pause-resume-02')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-8f28dc51812add5280cb6b7ba411aad0')
+-STEP=FLOW/'steps/pause-resume-01'
+-NONCE='8f28dc51812add5280cb6b7ba411aad0'
+-SOURCE_SHA='0611a55350a19de18b14b1da7fe6342caed8f8e6082746e83b028b345abd8d97'
+-COORDINATOR_SHA='d04701a323982b972cdfde1dad4ae0e476f4f2a3b47efcdb973c762b0c9d1f00'
+-STAGE_SHA='9ad3fdbd324dedd87bb4570bf0e09c7c5265f92b44f6133f63e1e29b409ad15b'
+-NAV_SHA='e7403db0e2a65637281ed00489d2fa70e796881b06cf8d23720cce28fac834d6'
+-CLEANUP_SHA='1f5bc45e0d60e3b94d9c2c2946bca5d3e969bede051fa5714f8987b1a6077a40'
+-QA_SOURCE=Path('/home/alex/work/pocket4-owned-bili-qa-r6-source-01/source/qa_contract.py')
+-QA_SHA='871c784812063739a6ab976784fb38243af52266b0d9a95aa1244779ccd2c005'
+-QA_MANIFEST='6c75b4a976990d4815de58f504912d3f9a7181c0d5a9094c6319180a1279c419'
+-FIRST_ERROR={'phase':'controls_reveal_input','type':'ProtocolError','message':'REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED'}
+-SECONDARY_ERROR={'phase':'independent_controls_readback','type':'ProtocolError','message':'REVEAL_UNIQUE_PLAYER_ROLE_REQUIRED'}
+-CASES=(
+- ('last_video_post','75b18ea61c126b869c8598097cefc528','0937c0e5678012708d8c1c5cf18392045341a821926a2c606702050073e36b64',
+-  101178,'145489a5313ff2debc8cf46f2cdb0969990d80b497e13eec0ecff2bfab1247d0'),
+- ('reveal_admission','6996ba8e828fd43f664e57ded3ac3925','748999e4565f8772b518ea809501fd4907a4cb65cc2614ba19e3f423f602dd8e',None,None),
+- ('failed_reveal_finally','5fae7f824e27026ed285fd4634a00408','08690ce9cde9a5a1e54c095c47f22e9239ef249b2f9f4ef9d7cb097073516b92',None,None),
++ROOT=Path('/home/alex/work/pocket4-ihg-owned-launch-inspect-01')
++FLOW=Path('/home/alex/work/pocket4-ihg-owned-qa-r1-flow-399444a5b72d53139b880a4afefdb31a')
++STEP=FLOW/'steps/inspect-01'
++NONCE='399444a5b72d53139b880a4afefdb31a'
++SOURCE_SHA='704bf0640c6a207ad8177dfc0240896cc785b6fa6db34521fbea5cd02e42a6fd'
++QA_SOURCE=Path('/home/alex/work/pocket4-owned-ihg-qa-r1-source-01/source/qa_contract.py')
++QA_SHA='573fdcd691ed51b76f965151b74b38cfcbd12ed5aa972d668146ae136744d7e1'
++QA_MANIFEST='ab971f5b361f1d97b8036c954a6b88734b7faedbeed6349b873ead85fa79d5f3'
++INSPECT_NONCE='212fb7088216fc6760d30b7224f245ee'
++INSPECT_WIRE='902c325a2ceaecafced4abc93a4654ad22699dddce216a3af3f8d7c6d938fa3a'
++PINS={
++ ROOT/'result.json':(13631,'6a354bc4cfe0066263b8f6041be90d674fce05700cd57b21dcf5880122312211'),
++ ROOT/'stage-result.json':(1710,'bb34503b97e7702a8b10c6da10cb4bb6e3a95043168ff59859a15cbdf56d7bf1'),
++ STEP/'result.json':(19064,'6ded83f7b28e3b9658efe9c1d166513734b58d21a05267d5612b6ddce6d4f836'),
++ FLOW/'steps/cleanup-01/result.json':(10012,'eea9b4b856e6a799255626f02213c643ceefced73a86ae503c82119faba9591f'),
++ QA_SOURCE:(28150,QA_SHA),
++ STEP/(INSPECT_NONCE+'.assessment.json'):(86558,'2e0a9c2af7c403b330e92566a058dd8a0e790654b8c2f89e1a89330e035123de'),
++}
++FILES={p:1000 if p==QA_SOURCE else 0 for p in PINS}
++# Query candidates only: none of these labels or resource IDs is claimed observed.
++PUBLIC_ROLES={
++ 'find_hotel':('find a hotel','find hotels','search hotels','search for hotels','book a hotel','find and book','find & book'),
++ 'search_tab':('search',),'hotels_tab':('hotels',),'book_tab':('book',),'home_tab':('home',),
++ 'guest_continue':('continue as guest','continue without signing in','browse as guest'),
++ 'defer_signin':('not now','maybe later','skip'),
++ 'onboarding_continue':('get started','next','continue'),
++ 'destination':('destination','where are you going?','city, airport or hotel','search destinations'),
++ 'dates':('dates','check-in','check out','check-out','check in'),
++ 'rooms_guests':('rooms','guests','rooms and guests','rooms & guests'),
++ 'sign_in':('sign in','log in'),'join':('join','join now','create account','create an account'),
++ 'retry':('retry','try again'),'fixed_network_error':('no internet connection','something went wrong'),
++ 'find_hotel_zh':('查找酒店','搜索酒店','酒店搜索','预订酒店'),
++ 'guest_continue_zh':('以游客身份继续','游客访问','暂不登录','跳过'),
++ 'destination_zh':('目的地','城市、机场或酒店'),
++}
++PUBLIC_RESOURCES=(
++ 'android:id/button1','android:id/button2','android:id/button3','android:id/search_src_text',
++ 'com.ihg.apps.android:id/search_button','com.ihg.apps.android:id/btn_search',
++ 'com.ihg.apps.android:id/search','com.ihg.apps.android:id/destination',
++ 'com.ihg.apps.android:id/book','com.ihg.apps.android:id/skip',
++ 'com.ihg.apps.android:id/continue_as_guest','com.ihg.apps.android:id/bottom_navigation',
+ )
+-FILES={ROOT/'result.json':0,ROOT/'stage-result.json':0,STEP/'result.json':0,
+-       FLOW/'steps/cleanup-01/result.json':0,QA_SOURCE:1000}
+-for _,nonce,_,_,_ in CASES:FILES[STEP/(nonce+'.assessment.json')]=0
++PUBLIC_CLASSES=('android.widget.TextView','android.widget.Button','android.widget.EditText',
++ 'android.widget.ImageButton','android.widget.ImageView','android.widget.FrameLayout',
++ 'android.widget.LinearLayout','android.view.ViewGroup','android.view.View','android.webkit.WebView')
+ 
+ def need(value, reason):
+     if not value:raise RuntimeError(reason)
+@@ -50,7 +71,7 @@
+         self.started=time.monotonic();self.bytes=0;self.records=[]
+ 
+     def read(self,path,expected=None,size=None):
+-        need(path in FILES,'FIXED_EIGHT_FILE_ALLOWLIST_REQUIRED')
++        need(path in FILES,'FIXED_SIX_FILE_ALLOWLIST_REQUIRED')
+         current=os.open('/',os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC);fd=None
+         try:
+             for name in path.parts[1:-1]:
+@@ -87,115 +108,13 @@
+     elif isinstance(value,list):
+         for item in value:no_raw_ui(item)
+ 
+-
+-def validate_retained(c,s,nav,cleanup):
+-    for value in (c,s,nav):
+-        need(value.get('nonce')==NONCE and value.get('source_manifest_sha256')==SOURCE_SHA and
+-             value.get('ok') is False and value.get('business_success_verified') is False and
+-             value.get('whole_app_production_ready') is False,'EXACT_ORIGINAL_FAILED_FLOW_REQUIRED')
+-    need(c.get('secondary_errors')==s.get('secondary_errors')==[] and
+-         c.get('Main_before')==c.get('Main_after')==s.get('Main_before')==s.get('Main_after') and
+-         c.get('source_and_artifact_unchanged') is True and s.get('source_unchanged') is True,
+-         'ORIGINAL_MAIN_AND_SOURCE_CHAIN_REQUIRED')
+-    need(s.get('coordinator_result')=={'path':str(ROOT/'result.json'),'bytes':7406,'sha256':COORDINATOR_SHA} and
+-         c.get('retained_phase_results',{}).get('navigate')=={'path':str(STEP/'result.json'),'bytes':214331,'sha256':NAV_SHA} and
+-         c.get('cleanup_result')=={'path':str(FLOW/'steps/cleanup-01/result.json'),'bytes':448,'sha256':CLEANUP_SHA},
+-         'EXACT_RETAINED_PARENT_PINS_REQUIRED')
+-    need({k:nav.get('error',{}).get(k) for k in FIRST_ERROR}==FIRST_ERROR and
+-         nav.get('secondary_errors')==[SECONDARY_ERROR] and
+-         nav.get('helper_package')=='org.droidloom.qa.bili.r6' and nav.get('helper_uid')==10184 and
+-         nav.get('package')=='tv.danmaku.bili' and nav.get('uid')==10117 and
+-         nav.get('build',{}).get('source_manifest_sha256')==QA_MANIFEST and
+-         all(nav.get(k) is True for k in ('video_click_and_observations_completed','video_click_acknowledged',
+-             'final_Main_guard_passed','held_binding_released','action_lock_released')) and
+-         'playback_button_observation' not in nav,'EXACT_REVEAL_ROLE_FAILURE_BEFORE_PAUSE_REQUIRED')
+-    need(c.get('owned_task',{}).get('task')==998 and c['owned_task'].get('prelaunch_task_ids')==[851] and
+-         c.get('owned_task_absent_after_cleanup') is True and cleanup.get('ok') is True and
+-         cleanup.get('new_leaf_removed_and_verified') is True and cleanup.get('other_tasks_preserved') is True and
+-         cleanup.get('task_ids_after')==[851] and cleanup.get('outcome_unknown') is False,
+-         'EXACT_RETIRED_TASK_AND_OLD_TASK_PRESERVATION_REQUIRED')
+-    record=nav['controls_reveal_observation']
+-    need(record.get('input_sequence_started') is True and record.get('input_acknowledged') is False and
+-         record.get('independent_read_attempted') is True and record.get('independent_read_completed') is False and
+-         record.get('controls_revealed_observed') is False and
+-         'independent_read_deferred_to_pause_fresh_inspect' not in record,
+-         'ORIGINAL_FAILED_REVEAL_AND_FINALLY_READ_REQUIRED')
+-    failed=record['failed_input_sequence'];final=record['independent_sequence']
+-    need(failed.get('error')=={'phase':'state_inspection_or_action','type':'ProtocolError',
+-         'message':FIRST_ERROR['message']} and not failed.get('reveal_input_acknowledged',False) and
+-         final.get('error') is None and record.get('failed_independent_sequence')==final,
+-         'HOST_PREDICATE_FAILURE_AND_SUCCESSFUL_INDEPENDENT_INSPECT_REQUIRED')
+-    scopes={}
+-    for label,seq,wire in (('reveal_admission',failed,CASES[1][2]),('failed_reveal_finally',final,CASES[2][2])):
+-        need(seq.get('inspection_wire_sha256')==wire and seq.get('secondary_errors')==[] and
+-             seq.get('after_state_completed') is True and seq.get('restoration_qualified') is True and
+-             seq.get('post_state_matches_before') is True and
+-             seq.get('foreground_before')==seq.get('foreground_after') and
+-             seq.get('installed_before')==seq.get('installed_after')==nav['live_installed_before'] and
+-             seq.get('owned_task')==c['owned_task'],'EXACT_RESTORED_RETAINED_SEQUENCE_REQUIRED')
+-        scopes[label]=seq['foreground_after']
+-    posts=nav['video_post_observations'];need(len(posts)==3,'THREE_ORIGINAL_VIDEO_POSTS_REQUIRED')
+-    post=posts[2];meta=post['assessments']['inspect']
+-    need(post.get('index')==3 and post.get('restoration_qualified') is True and post.get('after_state_completed') is True and
+-         meta.get('nonce')==CASES[0][1] and meta.get('wire_sha256')==CASES[0][2] and
+-         meta.get('assessment_bytes')==CASES[0][3] and meta.get('assessment_sha256')==CASES[0][4] and
+-         meta.get('complete') is True,'EXACT_LAST_VIDEO_POST_ASSESSMENT_REQUIRED')
+-    scopes['last_video_post']=post['foreground']
+-    need(scopes['last_video_post']==scopes['reveal_admission']==scopes['failed_reveal_finally'],
+-         'RETAINED_SAME_HOST_SCOPE_REQUIRED')
+-    return scopes,meta
+-
+-
+-def role_counts(qa,inspection):
+-    nodes=inspection['nodes'];result={};chosen={}
+-    def eligible(n):
+-        return n.get('visible') is True and n.get('enabled') is True and n.get('password') is False and n.get('class_truncated') is False and n.get('resource_id_truncated') is False
+-    roles=(('title','title','android.widget.TextView',qa.REVEAL_TITLE),
+-           ('author','author_name','android.widget.TextView',qa.REVEAL_AUTHOR),
+-           ('area','video_area','android.widget.FrameLayout',None),
+-           ('container','video_container','android.widget.FrameLayout',None),
+-           ('overlay','video_area_float_layer_container','android.widget.FrameLayout',None),
+-           ('toolbar','collapsing_toolbar','android.widget.FrameLayout',None),
+-           ('controls','control_container','android.widget.FrameLayout',None))
+-    for label,resource,kind,text_hash in roles:
+-        matching_resource=[n for n in nodes if n.get('resource_id')==qa.PACKAGE+':id/'+resource]
+-        matching=[n for n in matching_resource if n.get('class')==kind]
+-        accepted=[n for n in matching if eligible(n)]
+-        exact=[n for n in accepted if text_hash is None or
+-               (n.get('text_truncated') is False and isinstance(n.get('text'),str) and
+-                n.get('text_sha256')==text_hash==sha(n['text'].encode()))]
+-        row={'matching_resource_count':len(matching_resource),'matching_resource_and_class_count':len(matching),
+-             'eligible_count':len(accepted),'qualified_count':len(exact),'unique_qualified':len(exact)==1,
+-             'eligibility_rejection_counts':{
+-                 'not_visible':sum(n.get('visible') is not True for n in matching),
+-                 'not_enabled':sum(n.get('enabled') is not True for n in matching),
+-                 'not_non_password':sum(n.get('password') is not False for n in matching),
+-                 'class_incomplete':sum(n.get('class_truncated') is not False for n in matching),
+-                 'resource_incomplete':sum(n.get('resource_id_truncated') is not False for n in matching)}}
+-        if text_hash is not None:
+-            row['expected_text_digest_match_count']=len(exact)
+-            row['eligible_incomplete_text_count']=sum(n.get('text_truncated') is not False or not isinstance(n.get('text'),str) for n in accepted)
+-            row['eligible_nonmatching_complete_text_count']=sum(n.get('text_truncated') is False and isinstance(n.get('text'),str) and n.get('text_sha256')!=text_hash for n in accepted)
+-        if len(exact)==1:chosen[label]=exact[0]
+-        result[label]=row
+-    container=chosen.get('container')
+-    underneath=[] if container is None else [n for n in nodes if n['path'].startswith(container['path']+'/')]
+-    return {'role_order':[x[0] for x in roles],'roles':result,
+-        'first_nonunique_role_in_declared_order':next((x[0] for x in roles if result[x[0]]['qualified_count']!=1),None),
+-        'known_render_class_counts':{kind:sum(n['class']==kind for n in nodes)
+-            for kind in ('android.view.SurfaceView','android.view.TextureView')},
+-        'visible_buffering_prefix_count_under_unique_container':None if container is None else
+-            sum(n.get('visible') is True and isinstance(n.get('text'),str) and n['text'].startswith('Buffering...') for n in underneath),
+-        'no_unknown_node_labels_or_text_digests_emitted':True,'action_selection_performed':False}
+-
+-
+ def validated_assessment(qa,assessed,nonce,wire,scope):
+     helper=assessed['helper']
+     need(assessed.get('held_transport_returned_after_post_guard') is True and
+          assessed.get('actual_command_returncode')==0 and assessed.get('actual_instrumentation_finish_code')==-1 and
+          helper.get('ok') is True and helper.get('error') is None and helper.get('secondary_errors')==[] and
+          helper.get('protocol')==qa.PROTOCOL and helper.get('nonce')==nonce and helper.get('op')=='inspect' and
+-         helper.get('self_uid')==10184 and helper.get('action_attempted') is False and helper.get('outcome_unknown') is False and
++         helper.get('self_uid')==10196 and helper.get('action_attempted') is False and helper.get('outcome_unknown') is False and
+          helper.get('claim_persistence_completed') is True and helper.get('helper_work_completed') is True and
+          helper.get('automatic_retry') is False and helper.get('business_success_verified') is False,
+          'ACTUAL_SUCCESSFUL_NO_ACTION_INSPECTION_REQUIRED')
+@@ -217,62 +136,145 @@
+          'ORIGINAL_COMPLETE_INSPECTION_AND_WINDOW_COUNTERS_REQUIRED')
+     return helper,inspection,window,counters
+ 
+-
+-def predicate_errors(qa,inspection,scope):
+-    results={}
+-    for name,hidden in (('require_hidden',True),('allow_shown',False)):
+-        error=None
+-        try:qa.player_reveal_scope(inspection,scope,hidden)
+-        except qa.ProtocolError as caught:
+-            error=str(caught)
+-            need(re.fullmatch(r'REVEAL_[A-Z0-9_]{1,100}',error),'ONLY_FIXED_PUBLIC_PREDICATE_ERROR_ALLOWED')
+-        results[name]=error
+-    return results
++def fixed_pin(path):
++    size,digest=PINS[path]
++    return {'path':str(path),'bytes':size,'sha256':digest}
++
++
++def validate_retained(c,s,phase,cleanup):
++    for value in (c,s,phase,cleanup):
++        need(value.get('nonce')==NONCE and value.get('source_manifest_sha256')==SOURCE_SHA and
++             value.get('package')=='com.ihg.apps.android' and value.get('ok') is True and
++             value.get('error') is None and value.get('secondary_errors')==[] and
++             value.get('business_success_verified') is False and value.get('whole_app_production_ready') is False,
++             'EXACT_COMPLETED_IHG_FLOW_REQUIRED')
++        need(value.get('Main_before')==value.get('Main_after')==c['Main_before'],
++             'EXACT_ORIGINAL_MAIN_CHAIN_REQUIRED')
++    need(c.get('flow')==str(FLOW) and c.get('helper_uid')==10196 and
++         c.get('helper_package')=='org.droidloom.qa.ihg.r1' and c.get('uid')==10137 and
++         c.get('read_only_inspection_completed') is True and c.get('source_and_artifact_unchanged') is True and
++         s.get('source_unchanged') is True,'EXACT_IHG_HELPER_AND_SOURCE_REQUIRED')
++    need(s.get('coordinator_result')==fixed_pin(ROOT/'result.json') and
++         c.get('inspection_result')==c.get('retained_phase_results',{}).get('inspect')==fixed_pin(STEP/'result.json') and
++         c.get('cleanup_result')==c.get('retained_phase_results',{}).get('cleanup')==fixed_pin(FLOW/'steps/cleanup-01/result.json'),
++         'EXACT_PARENT_CHILD_RESULT_PINS_REQUIRED')
++    for value,kind in ((phase,'inspect'),(cleanup,'cleanup')):
++        need(value.get('phase')==kind and value.get('helper_package')=='org.droidloom.qa.ihg.r1' and
++             value.get('helper_uid')==10196 and value.get('uid')==10137 and value.get('outcome_unknown') is False and
++             value.get('held_binding_released') is True and value.get('flow_lock_released') is True and
++             value.get('final_Main_guard_passed') is True and value.get('Main_before_lock')==c['Main_before'] and
++             value.get('source_and_artifact_unchanged') is True and
++             value.get('build',{}).get('source_manifest_sha256')==QA_MANIFEST,'EXACT_CLOSED_IHG_PHASE_REQUIRED')
++    need(phase.get('action_attempted') is False and phase.get('action_lock_released') is True and
++         phase.get('inspection_completed') is True,'EXACT_ORIGINAL_NO_ACTION_PHASE_REQUIRED')
++    task=c['owned_task']
++    need(task.get('task')==1002 and task.get('prelaunch_task_ids')==[851] and task.get('prelaunch_absent') is True and
++         task.get('cleanup_allowed') is True and c.get('owned_task_absent_after_cleanup') is True and
++         cleanup.get('owned_task')==task and cleanup.get('owned_task_absent') is True and
++         cleanup.get('task_ids_after')==c.get('task_ids_after')==[851] and
++         cleanup.get('cleanup',{}).get('new_leaf_removed_and_verified') is True and
++         cleanup.get('cleanup',{}).get('other_tasks_preserved') is True,'EXACT_RETIRED_TASK_REQUIRED')
++    sequence=phase['sequence'];meta=phase['assessments']['inspect'];scope=sequence['foreground_after']
++    need(sequence.get('error') is None and sequence.get('secondary_errors')==[] and
++         sequence.get('owned_task')==task and sequence.get('foreground_before')==scope==c.get('foreground') and
++         sequence.get('installed_before')==sequence.get('installed_after')==phase['helper_before']==phase['helper_after'] and
++         sequence.get('after_state_completed') is True and sequence.get('restoration_qualified') is True and
++         sequence.get('post_state_matches_before') is True and
++         sequence['accessibility_restoration']==c['restoration'] and
++         sequence['accessibility_restoration']['state_before']==sequence['accessibility_restoration']['state_after']==sequence['post_termination_state']['state'] and
++         sequence['post_termination_state']['ui_automation_connected'] is False,
++         'EXACT_RESTORED_INDEPENDENT_NO_AUTOMATION_STATE_REQUIRED')
++    need(meta==c['assessments']['inspect'] and meta['nonce']==INSPECT_NONCE and
++         meta['wire_sha256']==sequence['inspection_wire_sha256']==INSPECT_WIRE and
++         meta['assessment_bytes']==PINS[STEP/(INSPECT_NONCE+'.assessment.json')][0] and
++         meta['assessment_sha256']==PINS[STEP/(INSPECT_NONCE+'.assessment.json')][1] and
++         meta.get('complete') is True and meta.get('node_count')==63,'EXACT_PRIVATE_ASSESSMENT_PIN_REQUIRED')
++    need(scope['activity']=='com.ihg.apps.android/com.ihg.apps.android.activity.MainActivity',
++         'EXACT_RETAINED_MAIN_ACTIVITY_REQUIRED')
++    return scope,meta,sequence['accessibility_restoration']['state_before']
++
++
++def public_role_counts(qa,inspection):
++    qa.inspect_record(inspection)
++    nodes=inspection['nodes'];by_path={n['path']:n for n in nodes}
++    def eligible(n):
++        return (isinstance(n,dict) and n.get('visible') is True and n.get('enabled') is True and
++            n.get('password') is False and n.get('class_truncated') is False and n.get('resource_id_truncated') is False)
++    def normalized(value):return ' '.join(value.split()).casefold()
++    result={}
++    for role,variants in PUBLIC_ROLES.items():
++        matches=[];via_text=via_description=0;self_targets=set();parent_targets=set();classes={}
++        for node in nodes:
++            if node.get('visible') is not True or node.get('password') is not False:continue
++            fields=[]
++            for field in ('text','content_desc'):
++                value=node.get(field)
++                if isinstance(value,str) and node.get(field+'_truncated') is False and normalized(value) in variants:
++                    need(node.get(field+'_sha256')==qa.sha(value.encode()),'PUBLIC_LABEL_DIGEST_MISMATCH')
++                    fields.append(field)
++            if not fields:continue
++            matches.append(node);via_text+='text' in fields;via_description+='content_desc' in fields
++            kind=node.get('class');kind=kind if kind in PUBLIC_CLASSES else 'other'
++            classes[kind]=classes.get(kind,0)+1
++            if eligible(node):
++                if node.get('clickable') is True:self_targets.add(node['path'])
++                if '/' in node['path']:
++                    parent=by_path.get(node['path'].rsplit('/',1)[0])
++                    if eligible(parent) and parent.get('clickable') is True:parent_targets.add(parent['path'])
++        result[role]={'fixed_public_variants':list(variants),'matching_visible_nonpassword_nodes':len(matches),
++            'via_complete_public_text_count':via_text,'via_complete_public_description_count':via_description,
++            'eligible_matching_nodes':sum(eligible(n) for n in matches),
++            'eligible_clickable_self_count':len(self_targets),
++            'eligible_direct_clickable_parent_count':len(parent_targets),
++            'distinct_self_or_direct_parent_candidates':len(self_targets|parent_targets),
++            'editable_matching_nodes':sum(eligible(n) and n.get('editable') is True for n in matches),
++            'known_class_counts':classes,'current_or_future_action_authority':False}
++    resources={}
++    for resource in PUBLIC_RESOURCES:
++        rows=[n for n in nodes if n.get('resource_id')==resource]
++        resources[resource]={'matching_nodes':len(rows),'eligible_nodes':sum(eligible(n) for n in rows),
++            'eligible_clickable_nodes':sum(eligible(n) and n.get('clickable') is True for n in rows),
++            'eligible_editable_nodes':sum(eligible(n) and n.get('editable') is True for n in rows)}
++    return {'fixed_public_role_queries':result,'fixed_public_resource_queries':resources,
++        'fixed_known_class_counts':{kind:sum(n.get('class')==kind for n in nodes) for kind in PUBLIC_CLASSES},
++        'other_class_count':sum(n.get('class') not in PUBLIC_CLASSES for n in nodes),
++        'unknown_labels_identifiers_paths_or_coordinates_exported':False,
++        'query_catalog_not_asserted_observed':True,'action_selection_performed':False}
+ 
+ 
+ def collect():
+     need(os.getuid()==os.geteuid()==0,'ROOT_READ_ONLY_REQUIRED')
+     reader=Reader()
+-    c=json.loads(reader.read(ROOT/'result.json',COORDINATOR_SHA,7406))
+-    s=json.loads(reader.read(ROOT/'stage-result.json',STAGE_SHA,1773))
+-    nav=json.loads(reader.read(STEP/'result.json',NAV_SHA,214331))
+-    cleanup=json.loads(reader.read(FLOW/'steps/cleanup-01/result.json',CLEANUP_SHA,448))
+-    scopes,last_metadata=validate_retained(c,s,nav,cleanup)
+-    qa=types.ModuleType('fixed_actual_r6_pure_contract');qa.__file__=str(QA_SOURCE)
+-    exec(compile(reader.read(QA_SOURCE,QA_SHA,39280),str(QA_SOURCE),'exec'),qa.__dict__)
+-    need(qa.PROTOCOL=='pocket4-owned-bili-qa-v6' and qa.SELF=='org.droidloom.qa.bili.r6' and
+-         qa.PACKAGE=='tv.danmaku.bili' and qa.UID==10117,'EXACT_R6_PURE_CONTRACT_REQUIRED')
+-    records=[]
+-    for label,nonce,wire,size,digest in CASES:
+-        scope=scopes[label];qa.scope(scope)
+-        need(scope['activity']==qa.REVEAL_ACTIVITY,'EXACT_RETAINED_COURSE_ACTIVITY_REQUIRED')
+-        raw=reader.read(STEP/(nonce+'.assessment.json'),digest,size)
+-        assessed=json.loads(raw)
+-        helper,inspection,window,counters=validated_assessment(qa,assessed,nonce,wire,scope)
+-        if label=='last_video_post':
+-            need(inspection['tree_sha256']==last_metadata['tree_sha256'] and
+-                 inspection['window_sha256']==last_metadata['window_sha256'] and
+-                 counters==last_metadata['tree_observations'] and
+-                 assessed['recorder_command_result_sha256']==last_metadata['recorder_command_result_sha256'],
+-                 'LAST_POST_NOT_ORIGINAL_SUMMARY_TREE')
+-        errors=predicate_errors(qa,inspection,scope)
+-        if label=='reveal_admission':need(errors['require_hidden']==FIRST_ERROR['message'],'ORIGINAL_REVEAL_ADMISSION_ERROR_NOT_REPRODUCED')
+-        if label=='failed_reveal_finally':need(errors['allow_shown']==SECONDARY_ERROR['message'],'ORIGINAL_FINALLY_PREDICATE_ERROR_NOT_REPRODUCED')
+-        records.append({'label':label,'nonce':nonce,'assessment_bytes':len(raw),'assessment_sha256':sha(raw),
+-            'external_assessment_file_hash_available':digest is not None,'external_canonical_helper_wire_hash_verified':True,
+-            'wire_sha256':wire,'tree_sha256':inspection['tree_sha256'],'window_sha256':inspection['window_sha256'],
+-            'node_count':len(inspection['nodes']),'scope':scope,'original_pure_predicate_errors':errors,
+-            'role_diagnostic':role_counts(qa,inspection),'window_ready':window['ready'],
+-            'window_samples':window['samples'],'cache_clears':window['cache_clears'],
+-            'capture_began_elapsed_ms':counters[0]['began_elapsed_ms'],
+-            'capture_last_elapsed_ms':counters[0]['last_elapsed_ms'],'complete_tree_verified':True})
+-    result={'schema':1,'state':'RETAINED_REVEAL_ROLE_DIAGNOSTIC_ONLY','flow_nonce':NONCE,
+-        'source_manifest_sha256':SOURCE_SHA,'original_failure':FIRST_ERROR,'original_secondary_error':SECONDARY_ERROR,
+-        'original_failed_attempt_preserved':True,'records':records,'input_file_pins':reader.records,
+-        'all_observations_from_retired_task':True,'current_runtime_or_future_action_authority':False,
+-        'UI_window_release_claimed_by_reader':False,'raw_commercial_tree_text_or_pixels_exported':False,
++    def read_json(path):
++        size,digest=PINS[path]
++        return json.loads(reader.read(path,digest,size))
++    c=read_json(ROOT/'result.json');s=read_json(ROOT/'stage-result.json')
++    phase=read_json(STEP/'result.json');cleanup=read_json(FLOW/'steps/cleanup-01/result.json')
++    scope,metadata,state_before=validate_retained(c,s,phase,cleanup)
++    qa=types.ModuleType('fixed_actual_ihg_r1_pure_contract');qa.__file__=str(QA_SOURCE)
++    exec(compile(reader.read(QA_SOURCE,QA_SHA,28150),str(QA_SOURCE),'exec'),qa.__dict__)
++    need(qa.PROTOCOL=='pocket4-owned-ihg-qa-v1' and qa.SELF=='org.droidloom.qa.ihg.r1' and
++         qa.PACKAGE=='com.ihg.apps.android' and qa.UID==10137,'EXACT_IHG_R1_PURE_CONTRACT_REQUIRED')
++    qa.scope(scope)
++    assessed=read_json(STEP/(INSPECT_NONCE+'.assessment.json'))
++    helper,inspection,window,counters=validated_assessment(qa,assessed,INSPECT_NONCE,INSPECT_WIRE,scope)
++    need(helper['accessibility_state_before_connection']==state_before and
++         inspection['tree_sha256']==metadata['tree_sha256'] and
++         inspection['window_sha256']==metadata['window_sha256'] and counters==metadata['tree_observations'] and
++         window==metadata['window_observation'] and
++         assessed['recorder_command_result_sha256']==metadata['recorder_command_result_sha256'],
++         'EXACT_ORIGINAL_SUMMARY_TREE_STATE_AND_COMMAND_BINDING_REQUIRED')
++    result={'schema':1,'state':'RETAINED_IHG_PUBLIC_ROLE_COUNTS_ONLY','flow_nonce':NONCE,
++        'source_manifest_sha256':SOURCE_SHA,'owned_task_retired':1002,'old_task_ids_preserved':[851],
++        'assessment_nonce':INSPECT_NONCE,'canonical_helper_wire_sha256':INSPECT_WIRE,
++        'tree_sha256':inspection['tree_sha256'],'window_sha256':inspection['window_sha256'],
++        'node_count':len(inspection['nodes']),'scope':scope,'complete_tree_verified':True,
++        'window_ready':window['ready'],'capture_began_elapsed_ms':counters[0]['began_elapsed_ms'],
++        'capture_last_elapsed_ms':counters[0]['last_elapsed_ms'],'public_role_counts':public_role_counts(qa,inspection),
++        'input_file_pins':reader.records,'all_observations_from_retired_task':True,
++        'current_runtime_or_future_action_authority':False,'raw_commercial_tree_or_user_text_or_pixels_exported':False,
+         'Android_or_process_actions':0,'runtime_qualification_asserted':False,
+-        'cause_inferred_from_node_count':False,'whole_app_production_ready':False}
++        'hotel_search_login_or_booking_verified':False,'whole_app_production_ready':False}
+     no_raw_ui(result)
+     raw=(json.dumps(result,ensure_ascii=False,sort_keys=True,separators=(',',':'))+'\n').encode()
+     need(len(raw)<=32768,'ROLE_DIAGNOSTIC_ONLY_OUTPUT_BOUND')
+@@ -285,8 +287,7 @@
+     a=p.parse_args(argv)
+     if not a.collect_once:
+         print(json.dumps({'state':'PLAN_ONLY','fixed_files':[str(x) for x in FILES],
+-            'file_count':len(FILES),'raw_UI_export':False,'Android_or_process_actions':0}))
+-        return 0
++            'file_count':len(FILES),'raw_UI_export':False,'Android_or_process_actions':0}));return 0
+     return collect()
+ 
+ 

@@ -1,0 +1,105 @@
+{
+  "actual_IHG_helper_UID_source": {
+    "bytes": 11213,
+    "path": "root-recovery-20261104-02/evidence/ihg-r1-install-read01/worker.json",
+    "sha256": "2e62018b086bb5484648d07867e73a3b11efbbd3490aeb3f190d1bb24afe4179"
+  },
+  "baseline_manifest_sha256": "ab971f5b361f1d97b8036c954a6b88734b7faedbeed6349b873ead85fa79d5f3",
+  "baseline_path": "/workspace/scratch/94990735b266/owned-ihg-qa-r1-build01/source",
+  "extra_helper_UID_exclusions": [
+    10137,
+    10196
+  ],
+  "literal_substitutions": [
+    [
+      "com\\\\.ihg\\\\.apps\\\\.android",
+      "com\\\\.bestbuy\\\\.android"
+    ],
+    [
+      "com\\.ihg\\.apps\\.android",
+      "com\\.bestbuy\\.android"
+    ],
+    [
+      "com.ihg.apps.android",
+      "com.bestbuy.android"
+    ],
+    [
+      "org/droidloom/qa/ihg/r1",
+      "org/droidloom/qa/bestbuy/r1"
+    ],
+    [
+      "org.droidloom.qa.ihg.r1",
+      "org.droidloom.qa.bestbuy.r1"
+    ],
+    [
+      "pocket4-owned-ihg-qa-v1",
+      "pocket4-owned-bestbuy-qa-v1"
+    ],
+    [
+      "owned-ihg-qa",
+      "owned-bestbuy-qa"
+    ],
+    [
+      "owned_ihg_qa",
+      "owned_bestbuy_qa"
+    ],
+    [
+      "Owned IHG QA",
+      "Owned BestBuy QA"
+    ],
+    [
+      "IHG",
+      "BESTBUY"
+    ],
+    [
+      "10137",
+      "10130"
+    ]
+  ],
+  "per_source_counts": {
+    "AndroidManifest.xml": {
+      "Owned IHG QA": 1,
+      "com.ihg.apps.android": 1,
+      "org.droidloom.qa.ihg.r1": 3
+    },
+    "build_candidate.py": {
+      "Owned IHG QA": 2,
+      "com.ihg.apps.android": 1,
+      "org.droidloom.qa.ihg.r1": 2,
+      "org/droidloom/qa/ihg/r1": 2,
+      "owned-ihg-qa": 11
+    },
+    "make_build_request.py": {
+      "owned-ihg-qa": 2
+    },
+    "qa_adapter.py": {
+      "10137": 1,
+      "IHG": 4,
+      "com\\.ihg\\.apps\\.android": 1,
+      "org.droidloom.qa.ihg.r1": 1,
+      "org/droidloom/qa/ihg/r1": 1
+    },
+    "qa_contract.py": {
+      "10137": 1,
+      "IHG": 2,
+      "com.ihg.apps.android": 1,
+      "com\\.ihg\\.apps\\.android": 3,
+      "org.droidloom.qa.ihg.r1": 1,
+      "pocket4-owned-ihg-qa-v1": 1
+    },
+    "src/org/droidloom/qa/bestbuy/r1/ActionRunner.java": {
+      "10137": 1,
+      "IHG": 1,
+      "com.ihg.apps.android": 1,
+      "com\\\\.ihg\\\\.apps\\\\.android": 2,
+      "org.droidloom.qa.ihg.r1": 2,
+      "pocket4-owned-ihg-qa-v1": 1
+    },
+    "stage_build.py": {
+      "owned-ihg-qa": 2,
+      "owned_ihg_qa": 1
+    }
+  },
+  "schema": 1,
+  "source_only_not_dispatched": true
+}

@@ -1,0 +1,11 @@
+{
+  "scope": "LOCAL_RESULT_PUBLICATION_FAILURE_ONLY",
+  "original_execution": {
+    "chunk_id": "c1084a",
+    "wall_time_seconds": 0.060370235,
+    "exit_code": 1,
+    "original_token_count": 212,
+    "output": "Traceback (most recent call last):\n  File \"/workspace/scratch/94990735b266/android-owner17-private-crash-log-work01/controls/run_controls.py\", line 359, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/workspace/scratch/94990735b266/android-owner17-private-crash-log-work01/controls/run_controls.py\", line 352, in main\n    (ROOT / 'controls/result.json').open('xb').write(body)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/pathlib.py\", line 1013, in open\n    return io.open(self, mode, buffering, encoding, errors, newline)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileExistsError: [Errno 17] File exists: '/workspace/scratch/94990735b266/android-owner17-private-crash-log-work01/controls/result.json'\n"
+  },
+  "decision": "No result was inferred from this create-exclusive output collision. The final source was subsequently checked in a new output leaf; its separate retained result is authoritative for those local controls."
+}

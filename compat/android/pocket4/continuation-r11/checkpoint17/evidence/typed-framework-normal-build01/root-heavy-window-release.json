@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "state": "released",
+  "previous_job": "1a1ad81164b-fc05-5a14",
+  "actual_terminal_status": {
+    "bytes": 728,
+    "sha256": "3073c455639fb2f8b12ed31c05903c39f39dda8590187752a8ceabba7366d584"
+  },
+  "actual_stdout": {
+    "bytes": 4581,
+    "sha256": "f8f89a09ebcfab99f07ff13e1ddbef5b3e01df52cb956b921152b37a229fc822"
+  },
+  "actual_inner_summary": {
+    "state": "FAILED",
+    "builder_returncode": -9,
+    "terminal_sha256": "139163acad47d9db707faa950e4b4dcecaf3e72b655bce8b6b3db089ce542bdf",
+    "cleanup_complete": true,
+    "error": "TimeoutExpired(['/home/alex/work/pocket4-native-typed-ingress-builder466-go5-compile-02-20261105/attempt01/cargo-target/debug/droidloom-update', '--source', '/home/alex/work/pocket4-native-typed-ingress-builder466-go5-compile-02-20261105/builder-source', '--jobs', '1', 'native-role-ingress-build', '--work', '/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-work-01-20261105', '--out', '/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/typed-ingress-framework-build-01-20261105/android-out'], 6100)"
+  },
+  "actual_outer_summary": {
+    "state": "FAILED",
+    "error": "RuntimeError('inner full build failed')",
+    "inner_returncode": 1,
+    "main_fence_assessment": {
+      "main_fence_pass": true,
+      "identity_or_limit_changes": [],
+      "main_memory_event_deltas": {
+        "low": 0,
+        "high": 1473,
+        "max": 0,
+        "oom": 0,
+        "oom_kill": 0,
+        "oom_group_kill": 0,
+        "sock_throttled": 4
+      },
+      "main_oom_delta_zero": true,
+      "main_current_resource_deltas": {
+        "memory.current": -1217929216,
+        "memory.swap.current": 41418752,
+        "pids.current": -27
+      },
+      "pressure_counter_increases_observed": {
+        "high": 1473,
+        "sock_throttled": 4
+      },
+      "unobserved_transient_effects_excluded": false,
+      "causal_attribution_of_counter_changes": false,
+      "scope": "Only the pinned pre/post invariants and OOM deltas are gated; full interval absence of interference is not claimed."
+    },
+    "terminal_sha256": "3626270e88e72c4e46d8beee09b5351e1f7d53bab18043241204ca314855e04d"
+  },
+  "scope": "Completed owned builder and reviewed producer cleanup_complete plus unchanged Main identity/limits; no independent full-interval interference exclusion",
+  "build_failure_preserved": true,
+  "Java_JNI_build_qualified": false,
+  "original_counter_increases_preserved": true,
+  "next_runtime_fresh_resource_gates_unchanged": true
+}

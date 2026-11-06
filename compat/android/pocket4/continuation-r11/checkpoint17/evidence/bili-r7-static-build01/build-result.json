@@ -1,0 +1,398 @@
+{
+  "APK": {
+    "bytes": 37008,
+    "path": "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/owned-bili-qa.apk",
+    "sha256": "f55b972a5ec968070ea0ea407f4a459913927c4693d0d9e949e6c472bcbcc641"
+  },
+  "Android_UI_actions": 0,
+  "Main_mutations": 0,
+  "android_installed": false,
+  "commands": [
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+        "-J-XX:ActiveProcessorCount=1",
+        "-J-XX:+UseSerialGC",
+        "-J-Xmx256m",
+        "-proc:none",
+        "-Xmaxerrs",
+        "20",
+        "-Xmaxwarns",
+        "20",
+        "-source",
+        "8",
+        "-target",
+        "8",
+        "-bootclasspath",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "-d",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-source-01/source/src/org/droidloom/qa/bili/r7/ActionRunner.java",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-source-01/source/src/org/droidloom/qa/bili/r7/TouchTransaction.java",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-source-01/source/src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java"
+      ],
+      "error": null,
+      "name": "javac",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "312e9bd919c699a2f8409f70240177012720c94095f0f4374d44152defc50f7e",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-cp",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+        "com.android.tools.r8.D8",
+        "--lib",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "--min-api",
+        "31",
+        "--output",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/dex",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/ActionRunner$1.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/ActionRunner$2.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/ActionRunner$3.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/ActionRunner$4.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/ActionRunner$Capture.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/ActionRunner$PlayerSelection.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/ActionRunner$Rejected.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/ActionRunner$SelectedWindows.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/ActionRunner.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/PlayerButtonTransaction$Backend.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/PlayerButtonTransaction$Fault.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/PlayerButtonTransaction.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/TouchTransaction$Backend.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/TouchTransaction$Fault.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/TouchTransaction$Observation.class",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/classes/org/droidloom/qa/bili/r7/TouchTransaction.class"
+      ],
+      "error": null,
+      "name": "d8",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "package",
+        "-f",
+        "-M",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-source-01/source/AndroidManifest.xml",
+        "-S",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/res",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "-F",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/unsigned.apk"
+      ],
+      "error": null,
+      "name": "aapt-package",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-f",
+        "4",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/unsigned.apk",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/aligned.apk"
+      ],
+      "error": null,
+      "name": "align",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-m",
+        "java.base/sun.security.tools.keytool.Main",
+        "-genkeypair",
+        "-noprompt",
+        "-storetype",
+        "PKCS12",
+        "-keystore",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/private-signing/owned.p12",
+        "-storepass:file",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/private-signing/password.txt",
+        "-alias",
+        "owned-bili-qa-r7",
+        "-keyalg",
+        "RSA",
+        "-keysize",
+        "3072",
+        "-validity",
+        "3650",
+        "-dname",
+        "CN=Pocket4 Owned Bili QA R7,O=Owned Test,C=US"
+      ],
+      "error": null,
+      "name": "create-owned-signing-key",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "47c8a22cd56c106f3f39dded430f4a1ef15c38c3c192864845ec5fed5ede1089",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/apksigner",
+        "sign",
+        "--ks",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/private-signing/owned.p12",
+        "--ks-pass",
+        "file:/home/alex/work/pocket4-owned-bili-qa-r7-build-01/private-signing/password.txt",
+        "--ks-key-alias",
+        "owned-bili-qa-r7",
+        "--min-sdk-version",
+        "31",
+        "--v1-signing-enabled",
+        "false",
+        "--v2-signing-enabled",
+        "true",
+        "--v3-signing-enabled",
+        "true",
+        "--out",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/owned-bili-qa.apk",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/aligned.apk"
+      ],
+      "error": null,
+      "name": "sign",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/apksigner",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "--min-sdk-version",
+        "31",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/owned-bili-qa.apk"
+      ],
+      "error": null,
+      "name": "signature",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "f8aabcb73f6358c12b0befd8789a16438ec67ffd0960bd9258295228fc9368fb"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-c",
+        "4",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/owned-bili-qa.apk"
+      ],
+      "error": null,
+      "name": "alignment",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "badging",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/owned-bili-qa.apk"
+      ],
+      "error": null,
+      "name": "badging",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "03fd3392785711afe28e9d6151d82a2a734b7a630627711e752fa8505b66fcc9"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "permissions",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/owned-bili-qa.apk"
+      ],
+      "error": null,
+      "name": "permissions",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "2761f4623a002171d53b50b537fed6cd5c52e4697c8ce8d976670b56d76878c3"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "xmltree",
+        "/home/alex/work/pocket4-owned-bili-qa-r7-build-01/owned-bili-qa.apk",
+        "AndroidManifest.xml"
+      ],
+      "error": null,
+      "name": "manifest",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "947bfe476fbad9c57527ca24806f1015d32b72efd3f2f5cd415d80b7402bf88a"
+    }
+  ],
+  "error": null,
+  "finished_utc": "2026-11-06T01:09:41.561001+00:00",
+  "manifest_contract": {
+    "activities": [],
+    "compile_sdk_api": 31,
+    "debuggable": false,
+    "instrumentation": "org.droidloom.qa.bili.r7.ActionRunner",
+    "min_sdk": 31,
+    "native_libraries": [],
+    "package": "org.droidloom.qa.bili.r7",
+    "permissions": [],
+    "providers": [],
+    "receivers": [],
+    "services": [],
+    "target_package": "org.droidloom.qa.bili.r7",
+    "target_sdk": 33,
+    "test_only": true
+  },
+  "package": "org.droidloom.qa.bili.r7",
+  "private_signing_material_not_public": [
+    "private-signing/password.txt",
+    "private-signing/owned.p12"
+  ],
+  "schema": 1,
+  "signer_certificate_sha256": "096152ac7ae183be9c713b61d8dac64eb789593b332fa8636536c2af80021391",
+  "source_manifest_sha256": "f6722f5163403c753a81912944e3390e424858795e2db059ea9a75cf8f56c310",
+  "source_or_permissions_gate_relaxed": false,
+  "source_sha256": {
+    "AndroidManifest.xml": "32ed35737f7f0c4c835cd2097a5134f6981255f69fc21777e672b29879e0047e",
+    "README.md": "7f2f364f9c44699f310005a69acf4f08bd84dfdeb7d3b35343e50fa118962777",
+    "build-input-reference.json": "3f893507d9f614d6726e074022b2dfd62d87f3c8438ff45efea1bd11c7e9523c",
+    "build_candidate.py": "8c9d94c7c4dd5c825ce39a4d386192a89c0746e7a18c788856dfeb7bea1ef13f",
+    "make_build_request.py": "fca8d4ec8df0a5a2b9eacc809652ed853139c0795d88cc970bbd02b60d7adab8",
+    "qa_adapter.py": "a52fbb92f203681390261c3b90327c46490d7cb4038d033d143667298a8dde85",
+    "qa_contract.py": "1f51c2cc9be74ff717d85660ecc567ef72dddf73fab6166efe2357bcec1502a5",
+    "src/org/droidloom/qa/bili/r7/ActionRunner.java": "23e570821e4c9271667792818ec98f563ef7b921dc969918ac445c33bdff9829",
+    "src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java": "aa382fea48ae184f95c674fff2abc60046300b7dc0148360087ef1ffbb76ee9a",
+    "src/org/droidloom/qa/bili/r7/TouchTransaction.java": "e83b46e2b0e482f15e7bbb8ae69055c6867616aceba1f8e1d07b8646ff1be2f6",
+    "stage_build.py": "d70fbcdb113356dd8136c3a7706be58e544b82f496e6c2abcc2c18d94ea0c157"
+  },
+  "source_unchanged": true,
+  "state": "BUILT_STATIC_VERIFIED_ANDROID_UNRUN",
+  "tools_after": {
+    "aapt": {
+      "bytes": 30680,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
+    },
+    "android_jar": {
+      "bytes": 21998949,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+    },
+    "apksigner": {
+      "bytes": 2964,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+    },
+    "java": {
+      "bytes": 8528,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    },
+    "javac": {
+      "bytes": 8824,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "sha256": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa"
+    },
+    "r8": {
+      "bytes": 18294711,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "sha256": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7"
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+    }
+  },
+  "tools_baseline_receipt_sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+  "tools_before": {
+    "aapt": {
+      "bytes": 30680,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
+    },
+    "android_jar": {
+      "bytes": 21998949,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+    },
+    "apksigner": {
+      "bytes": 2964,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+    },
+    "java": {
+      "bytes": 8528,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    },
+    "javac": {
+      "bytes": 8824,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "sha256": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa"
+    },
+    "r8": {
+      "bytes": 18294711,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "sha256": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7"
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+    }
+  },
+  "tools_unchanged": true,
+  "whole_app_production_ready": false
+}

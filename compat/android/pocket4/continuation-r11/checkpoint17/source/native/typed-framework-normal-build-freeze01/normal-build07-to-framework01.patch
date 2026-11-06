@@ -1,0 +1,89 @@
+--- a/build-function.py
++++ b/build-function.py
+@@ -2,7 +2,7 @@
+     require(os.getuid() == 1000 and os.geteuid() == 1000, "build requires original operator uid")
+     os.umask(0o077)
+     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+-    prepared, files, engine, builder_files, baseline, effective = verify_prepared(expected_sha)
++    context = verify_prepared(expected_sha)
+     no_alias(ATTEMPT)
+     no_alias(OUT)
+     require(not ATTEMPT.exists() and not OUT.exists(), "attempt and output must both be fresh")
+@@ -30,16 +30,23 @@
+     subreaper()
+     require(child_ids() == [], "controller has preexisting children or cannot enumerate its own children")
+     ATTEMPT.mkdir(mode=0o700)
+-    claim = {"schema": 1, "state": "STARTING_COMBINED07_GO5_STREAMING_FLAG0_COLD_BUILD",
++    claim = {"schema": 1, "state": "STARTING_TYPED_FRAMEWORK_NORMAL_STRICT_TWO_TARGET_BUILD",
+              "started_utc": utc(), "preparation_sha256": expected_sha, "plan": plan(),
+              "mem_available_before": memory["MemAvailable"], "swap_free_before": memory["SwapFree"],
+              "cpu_affinity_before": affinity,
+              "cpu_affinity": selected, "unit": unit, "normal_builder_lock_and_recovery": True,
+              "automatic_retry": False, "Main_resource_changes": False}
++    claim["filesystem_available_before"] = os.statvfs(WORK).f_bavail * os.statvfs(WORK).f_frsize
+     save(ATTEMPT / "claim.json", claim)
++    save(ATTEMPT / "input-bindings-before.json", {
++        "work_preparation": context["prepared_pin"], "actual_builder_compile": context["compiled_pin"],
++        "actual_builder_manifest": context["builder_map_pin"], "actual_content_manifests": context["manifest_pins"],
++        "reused_inventory_source": context["inventory_pin"], "observations": context["initial_observations"]})
+     print(json.dumps(claim), flush=True)
+     env = os.environ.copy()
+     env["DROIDLOOM_NATIVE_BRIDGE_SOURCE"] = str(ENGINE_SOURCE)
++    env["PATH"] = "/usr/bin:/usr/sbin:/bin:/sbin"
++    env["PYTHONDONTWRITEBYTECODE"] = "1"
+     argv = plan()["argv"]
+     start = time.monotonic()
+     child = None
+@@ -69,11 +76,7 @@
+         cleanup = cleanup_children()
+         require(cleanup["complete"], "owned build descendants remain")
+         require(code == 0, "normal builder returned " + str(code))
+-        artifact = artifact_gate(engine, effective, builder_files)
+-        require(source_contract()[0] == files, "frozen input changed during full build")
+-        require(inventory(BUILD_SOURCE) == builder_files and hashes(ENGINE_SOURCE, True) == engine,
+-                "owned input changed during full build")
+-        require(digest(BUILDER) == BUILDER_SHA, "builder binary changed during full build")
++        artifact = completion_gate(context)
+     except BaseException as error:
+         failure = repr(error)
+     finally:
+@@ -88,6 +91,15 @@
+                 cleanup = {"complete": False, "error": repr(error), "children": []}
+         if not cleanup["complete"] and failure is None:
+             failure = "owned descendants were not proven retired"
++        input_after = None
++        input_after_error = None
++        try:
++            input_after = verify_inputs_after(context)
++            save(ATTEMPT / "input-bindings-after.json", input_after)
++        except BaseException as error:
++            input_after_error = repr(error)
++            if failure is None:
++                failure = "post-build input qualification failed: " + repr(error)
+         observation_errors = []
+         def observe(label, operation):
+             try:
+@@ -95,7 +107,7 @@
+             except Exception as error:
+                 observation_errors.append({"observation": label, "error": repr(error)})
+                 return None
+-        terminal = {"schema": 1, "state": "ARTIFACTS_BUILT_QUALIFICATION_PENDING" if failure is None else "FAILED",
++        terminal = {"schema": 1, "state": "FRAMEWORK_COMMAND_COMPLETED_QUALIFICATION_PENDING" if failure is None else "FAILED",
+                     "builder_returncode": code, "error": failure, "seconds": time.monotonic() - start,
+                     "finished_utc": utc(), "cleanup": cleanup,
+                     "stdout_sha256": observe("stdout", lambda: digest(ATTEMPT / "build.stdout")),
+@@ -104,7 +116,13 @@
+                     "memory_peak": observe("memory_peak", lambda: (cgroup / "memory.peak").read_text().strip()),
+                     "memory_swap_peak": observe("memory_swap_peak", lambda: (cgroup / "memory.swap.peak").read_text().strip()),
+                     "source_projection_journal_present": (WORK / "source-projection.json").exists(),
+-                    "artifact_gate": artifact, "Main_actions": 0, "Android_actions": 0,
++                    "normal_command_completion_gate": artifact,
++                    "input_after_qualified": input_after is not None and input_after_error is None,
++                    "input_after_error": input_after_error,
++                    "work_preparation_sha256": PREPARATION_SHA, "builder_compile_sha256": BUILD_RESULT_SHA,
++                    "builder_sha256": BUILDER_SHA, "strict_targets": TARGETS,
++                    "complete_framework_Java_and_Android_TU_qualified": False,
++                    "runtime_authorization_enabled": False, "Main_actions": 0, "Android_actions": 0,
+                     "service_started": False, "all_apps_ready": False}
+         try:
+             terminal["owned_resource_gate"] = owned_resource_gate(terminal["memory_events"])

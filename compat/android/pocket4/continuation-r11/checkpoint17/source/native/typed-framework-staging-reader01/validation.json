@@ -1,0 +1,52 @@
+{
+  "compile_syntax_pass": true,
+  "controls": [
+    {
+      "name": "matching_HEAD_and_origin_remain_unqualified",
+      "pass": true
+    },
+    {
+      "name": "wrong_HEAD_is_not_match",
+      "pass": true
+    },
+    {
+      "name": "wrong_origin_is_hashed_without_credentials",
+      "pass": true
+    },
+    {
+      "name": "symbolic_unborn_HEAD_is_not_resolved_or_qualified",
+      "pass": true
+    },
+    {
+      "name": "missing_fixed_checkout_preserves_ENOENT",
+      "pass": true
+    },
+    {
+      "name": "HEAD_symlink_is_rejected_without_read",
+      "pass": true
+    },
+    {
+      "name": "project_symlink_is_rejected",
+      "pass": true
+    },
+    {
+      "name": "stale_index_lock_is_explicit_not_reuse",
+      "pass": true
+    },
+    {
+      "name": "present_file_disappearance_is_error_not_absence",
+      "pass": true
+    }
+  ],
+  "default_PLAN_rc": 0,
+  "fixture_limit": "scratch chown returned EINVAL; isolated test OS adapter maps only stat uid/gid to1000; production source unchanged, real operator UID check and actual remote ownership not exercised",
+  "no_Rust_compile_claim": true,
+  "no_remote_calls": true,
+  "schema": 1,
+  "source": {
+    "bytes": 13381,
+    "sha256": "842864e730db5c0c4543e76b5c1f1a764a99c84410a4949f9ee439d80082dbbb"
+  },
+  "state": "LOCAL_READER_CONTROLS_PASS_DEVICE_NOT_READ",
+  "wrapper_source_byte_exact": true
+}

@@ -1,0 +1,137 @@
+--- preimage/actor.py
++++ candidate/actor.py
+@@ -108,7 +108,7 @@
+         directory = os.open('fd', os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC, dir_fd=proc.proc)
+         try:
+             inherited = []
+-            for number in (198, 199, 200, 201):
++            for number in (198, 199, 200, 201, 202):
+                 try: inherited.append({'fd': number, 'target': os.readlink(str(number), dir_fd=directory)})
+                 except FileNotFoundError: pass
+             owned.need(not inherited, 'fixed init capabilities survived native LMKD exec')
+--- preimage/coordinator.py
++++ candidate/coordinator.py
+@@ -112,7 +112,7 @@
+         result['terminal'] = terminal
+         # Preserve the actual actor's first failure before qualifying its exit.
+         # A missing actor record remains a failure with the original terminal.
+-        actual, actual_sha = owned.read_json(Path(plan['state']) / 'actor-result.json')
++        actual, actual_sha = owned.read_actor_result(Path(plan['state']) / 'actor-result.json')
+         result['actor_result_sha256'] = actual_sha
+         result['actor_result'] = actual
+         if actual.get('first_error') is not None:
+--- preimage/owned.py
++++ candidate/owned.py
+@@ -5,6 +5,101 @@
+     dead, await_dead, identity, pidfd_pid, atomic_json, counters, NAMES)
+ 
+ MAX_RECORD = 1024 * 1024
++
++# Only this paired Owner16 consumer can receive the new diagnostic extension.
++# Ordinary responses and unrelated records retain their original limits.
++LEGACY_CONTROL_BYTES = 256 * 1024
++INIT_LOG_CAPACITY = 256 * 1024
++INIT_LOG_CONTROL_BYTES = 1024 * 1024
++INIT_LOG_ACTOR_BYTES = 4 * 1024 * 1024
++INIT_LOG_SCOPE = ('generation-private cached init logger; '
++                  'fork-before-exec writers not individually attributed')
++INIT_LOG_RESPONSE_FIELDS = ('start_response', 'latest_status', 'active_response',
++                           'stop_response', 'retained_status', 'failure_cleanup_stop')
++
++
++def init_log_hex_bytes(response):
++    """Validate bounded data, including failed capture; grant no lifecycle effect."""
++    need(isinstance(response, dict), 'lifecycle response is not an object')
++    audit = response.get('relay_lifecycle')
++    if not isinstance(audit, dict) or 'init_log' not in audit:
++        return 0
++    record = audit['init_log']
++    fields = {'schema', 'nonce', 'device', 'inode', 'capacity_bytes',
++              'marker_verified_after_held_init_hello', 'retirement_proven_before_capture',
++              'observed_writer_offset', 'captured_bytes', 'captured_sha256', 'captured_hex',
++              'capacity_reached', 'stream_completeness_claimed', 'exact_writer_per_line_proven',
++              'source_scope', 'first_error', 'secondary_errors', 'held_fds_closed'}
++    need(isinstance(record, dict) and set(record) == fields,
++         'init diagnostic schema fields differ')
++    nonce = record['nonce']
++    need(type(record['schema']) is int and record['schema'] == 1 and
++         type(audit.get('schema')) is int and audit['schema'] == 1 and
++         isinstance(nonce, str) and len(nonce) == 64 and
++         all(c in '0123456789abcdef' for c in nonce) and nonce == audit.get('nonce'),
++         'init diagnostic generation/schema differs')
++    need(type(record['capacity_bytes']) is int and record['capacity_bytes'] == INIT_LOG_CAPACITY and
++         type(record['captured_bytes']) is int and 0 <= record['captured_bytes'] <= INIT_LOG_CAPACITY,
++         'init diagnostic capacity/capture bound differs')
++    need(all(type(record[k]) is int and 0 <= record[k] < 2**64 for k in ('device', 'inode')) and
++         record['inode'] > 0, 'init diagnostic object identity malformed')
++    offset = record['observed_writer_offset']
++    need(offset is None or (type(offset) is int and 0 <= offset <= INIT_LOG_CAPACITY),
++         'init diagnostic writer offset malformed')
++    booleans = ('marker_verified_after_held_init_hello', 'retirement_proven_before_capture',
++                'capacity_reached', 'stream_completeness_claimed',
++                'exact_writer_per_line_proven', 'held_fds_closed')
++    need(all(type(record[k]) is bool for k in booleans) and
++         record['stream_completeness_claimed'] is False and
++         record['exact_writer_per_line_proven'] is False and record['source_scope'] == INIT_LOG_SCOPE,
++         'init diagnostic observation scope differs')
++    text = record['captured_hex']; digest = record['captured_sha256']
++    need(isinstance(text, str) and len(text) == 2 * record['captured_bytes'] and
++         all(c in '0123456789abcdef' for c in text) and isinstance(digest, str) and
++         len(digest) == 64 and hashlib.sha256(bytes.fromhex(text)).hexdigest() == digest,
++         'init diagnostic full prefix/sha256 differs')
++    error = record['first_error']; secondary = record['secondary_errors']
++    need(error is None or (isinstance(error, str) and len(error.encode('utf-8')) <= 512),
++         'init diagnostic first error bound differs')
++    need(isinstance(secondary, list) and len(secondary) <= 4 and
++         all(isinstance(x, str) and len(x.encode('utf-8')) <= 512 for x in secondary),
++         'init diagnostic secondary error bound differs')
++    # False marker/retirement/close or non-null errors stay visible as data.
++    # The original producer and lifecycle qualifier decide success separately.
++    return len(text)
++
++
++def decode_lifecycle_response(raw):
++    need(0 < len(raw) <= INIT_LOG_CONTROL_BYTES, 'lifecycle response exceeded paired bound')
++    value = json.loads(raw)
++    credit = init_log_hex_bytes(value)
++    need(len(raw) - credit <= LEGACY_CONTROL_BYTES,
++         'non-diagnostic lifecycle response exceeded original bound')
++    return value
++
++
++def receive_lifecycle_response(sock):
++    raw = bytearray()
++    while True:
++        part = sock.recv(65536)
++        if not part:
++            break
++        raw.extend(part)
++        need(len(raw) <= INIT_LOG_CONTROL_BYTES, 'lifecycle response exceeded paired bound')
++    return decode_lifecycle_response(raw)
++
++
++def read_actor_result(path):
++    value, digest = read_json(path, maximum=INIT_LOG_ACTOR_BYTES)
++    need(isinstance(value, dict), 'actor result is not an object')
++    # Match the original atomic_json writer exactly so whitespace cannot consume
++    # the dedicated diagnostic allowance without being counted.
++    raw = (json.dumps(value, sort_keys=True, indent=2) + '\n').encode()
++    need(hashlib.sha256(raw).hexdigest() == digest, 'actor result writer encoding differs')
++    credit = sum(init_log_hex_bytes(value[k]) for k in INIT_LOG_RESPONSE_FIELDS if k in value)
++    need(len(raw) - credit <= MAX_RECORD,
++         'non-diagnostic actor result exceeded original record bound')
++    return value, digest
+ 
+ 
+ def file_id(fd):
+@@ -270,9 +365,4 @@
+         process.live()
+         sock.sendall(json.dumps(request, separators=(',', ':')).encode())
+         sock.shutdown(socket.SHUT_WR)
+-        raw = bytearray()
+-        while True:
+-            part = sock.recv(65536)
+-            if not part: break
+-            raw.extend(part); need(len(raw) <= 256 * 1024, 'lifecycle response exceeded bound')
+-        return json.loads(raw)
++        return receive_lifecycle_response(sock)

@@ -1,0 +1,269 @@
+--- owner17/normalized-plan.json
++++ owner18/normalized-plan.json
+@@ -1026,121 +1026,139 @@
+             "earlier": {
+               "earlier": {
+                 "earlier": {
+-                  "earlier_runtime_failure": {
+-                    "attempt_nonce": "06ad67978c234fe35388a364f82523aadc8dc25755030cb61ee88128b9ca5979",
+-                    "log_collection_sha256": "e33d5669498e7f290b3003913646f888d0e866d40c47d1f13daf7f062656346a",
+-                    "observed_boundary": "init_hello,broker_ready,init_project_sent; failed before PROJECTED; exact cleanup passed",
++                  "earlier": {
++                    "earlier_runtime_failure": {
++                      "attempt_nonce": "06ad67978c234fe35388a364f82523aadc8dc25755030cb61ee88128b9ca5979",
++                      "log_collection_sha256": "e33d5669498e7f290b3003913646f888d0e866d40c47d1f13daf7f062656346a",
++                      "observed_boundary": "init_hello,broker_ready,init_project_sent; failed before PROJECTED; exact cleanup passed",
++                      "replayed": false,
++                      "runtime_sha256": "26f19099192d0bfd76740c535f30598c32e17718da58b9fbe63d134bfe5abd19"
++                    },
++                    "predecessor_failure": {
++                      "attempt_nonce": "021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
++                      "observed_boundary": "prepare fixed scope guard rejected before owned root creation",
++                      "reconstructed_report_sha256": "d3876c6061cfaa3c9d55b1e302dd432768f8e1268e609f79c06b63a7518107bc",
++                      "remote_prepared_file_written": false,
++                      "replayed": false,
++                      "runtime_executed": false,
++                      "stdout_sha256": "8921a665badde77731239e59c1a823ce27318d7ef42e6d8d204a6088dbad707e"
++                    }
++                  },
++                  "previous": {
++                    "attempt_nonce": "65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
++                    "exact_cleanup_passed": true,
++                    "log_collection_sha256": "3d03b77dc6b929974eb1e53452b4d6309db43c8d1045feb693ddfdded93281fc",
++                    "observed_boundary": "actual constructor project-bind-mount errno=22 after HELLO/READY/PROJECT; no ACTIVE",
+                     "replayed": false,
+-                    "runtime_sha256": "26f19099192d0bfd76740c535f30598c32e17718da58b9fbe63d134bfe5abd19"
+-                  },
+-                  "predecessor_failure": {
+-                    "attempt_nonce": "021a091a2dd3ec2c8c70282dd0b0f38d5a27c62d7b66ac236b20c12d11fe2f21",
+-                    "observed_boundary": "prepare fixed scope guard rejected before owned root creation",
+-                    "reconstructed_report_sha256": "d3876c6061cfaa3c9d55b1e302dd432768f8e1268e609f79c06b63a7518107bc",
+-                    "remote_prepared_file_written": false,
+-                    "replayed": false,
+-                    "runtime_executed": false,
+-                    "stdout_sha256": "8921a665badde77731239e59c1a823ce27318d7ef42e6d8d204a6088dbad707e"
++                    "runtime_sha256": "b836404cc5011662239706418921758a4380b9c21d41534783f7fa64c8dfda7e"
+                   }
+                 },
+                 "previous": {
+-                  "attempt_nonce": "65e87d2663a795cf303cfd76affd9e5a17213fb7eab0ae7f39beb26e17e92bbb",
++                  "attempt_nonce": "1263e33ed55e57b4ec42ead6afd051ed1b8265e9bead44653b8a87e70ca74498",
+                   "exact_cleanup_passed": true,
+-                  "log_collection_sha256": "3d03b77dc6b929974eb1e53452b4d6309db43c8d1045feb693ddfdded93281fc",
+-                  "observed_boundary": "actual constructor project-bind-mount errno=22 after HELLO/READY/PROJECT; no ACTIVE",
++                  "log_collection_sha256": "0d3a5ced4144310fed7650b4f31e14dcf1fd17df620e9c7b2b0c31fa408faef4",
++                  "observed_boundary": "actual ABI2 HELLO/PROJECTED/COMMIT/DONE completed; init exited SIGHUP before ACTIVE; old kernel journal sender/cause unproved",
+                   "replayed": false,
+-                  "runtime_sha256": "b836404cc5011662239706418921758a4380b9c21d41534783f7fa64c8dfda7e"
++                  "runtime_sha256": "027848bec17ae20259e3ab2ddd8637bc820608b7f62e580c06b019f0e9ff8f16"
+                 }
+               },
+               "previous": {
+-                "attempt_nonce": "1263e33ed55e57b4ec42ead6afd051ed1b8265e9bead44653b8a87e70ca74498",
+-                "exact_cleanup_passed": true,
+-                "log_collection_sha256": "0d3a5ced4144310fed7650b4f31e14dcf1fd17df620e9c7b2b0c31fa408faef4",
+-                "observed_boundary": "actual ABI2 HELLO/PROJECTED/COMMIT/DONE completed; init exited SIGHUP before ACTIVE; old kernel journal sender/cause unproved",
++                "attempt_nonce": "03f75dd099814dce95d8367beac8b10bdc03c90af3bbbc8e3af91986679c02f7",
++                "observed_boundary": "actual InitHello followed by lifecycle packet framing/ancillary rejection; no BrokerReady or ACTIVE",
++                "old_owner_original_retirement_passed": false,
++                "outer_exact_cleanup_passed": true,
+                 "replayed": false,
+-                "runtime_sha256": "027848bec17ae20259e3ab2ddd8637bc820608b7f62e580c06b019f0e9ff8f16"
++                "runtime_sha256": "20a20009beca9d9eb64b0973acfdd749f3b2a8cc8c6ef1c417d517378a518a05",
++                "separate_source_defect": "legacy broker bootstrap still required directly projected root and direct-root init membership",
++                "specific_old_transport_error_cause_not_inferred_from_source": true
+               }
+             },
+             "previous": {
+-              "attempt_nonce": "03f75dd099814dce95d8367beac8b10bdc03c90af3bbbc8e3af91986679c02f7",
+-              "observed_boundary": "actual InitHello followed by lifecycle packet framing/ancillary rejection; no BrokerReady or ACTIVE",
+-              "old_owner_original_retirement_passed": false,
++              "attempt_nonce": "085e9923695a33467c1093c2acb2812b762b8d6403fd578bd3f34d0a780d278f",
++              "diagnostic_gap": "joined RetirementReceipt.reason was consumed before only a generic lifecycle rejection reached stderr",
++              "observed_boundary": "actual InitHello, BrokerReady, PROJECTED, COMMIT and DONE; broker retired faulted before ACTIVE with no registration grant",
++              "old_broker_retirement_audit_incomplete": true,
++              "old_failure_cause_not_inferred_from_blkio_cpuset_or_SIGHUP": true,
++              "old_owner_original_resource_retirement_passed": true,
+               "outer_exact_cleanup_passed": true,
+               "replayed": false,
+-              "runtime_sha256": "20a20009beca9d9eb64b0973acfdd749f3b2a8cc8c6ef1c417d517378a518a05",
+-              "separate_source_defect": "legacy broker bootstrap still required directly projected root and direct-root init membership",
+-              "specific_old_transport_error_cause_not_inferred_from_source": true
++              "runtime_sha256": "019d04a084f1cc7f028cfefc3277eb51e9dea6a89efc663c52daeff3e14b8190",
++              "specific_retirement_reason_observed": false
+             }
+           },
+           "previous": {
+-            "attempt_nonce": "085e9923695a33467c1093c2acb2812b762b8d6403fd578bd3f34d0a780d278f",
+-            "diagnostic_gap": "joined RetirementReceipt.reason was consumed before only a generic lifecycle rejection reached stderr",
+-            "observed_boundary": "actual InitHello, BrokerReady, PROJECTED, COMMIT and DONE; broker retired faulted before ACTIVE with no registration grant",
+-            "old_broker_retirement_audit_incomplete": true,
++            "attempt_nonce": "7fab165bd5502ca32260616d1d4faaf3cd898703f6eceb839ba81f2e598a2389",
++            "diagnostic_gap": "exact relative name, held base and validated caller role were omitted; error/process-death ordering is not proved",
++            "generic_pinned_openat_ENOENT_observed": true,
++            "missing_public_projection_proved": false,
++            "observed_boundary": "actual InitHello, BrokerReady, PROJECTED, COMMIT and DONE; failed before ACTIVE; original retirement incomplete",
+             "old_failure_cause_not_inferred_from_blkio_cpuset_or_SIGHUP": true,
+-            "old_owner_original_resource_retirement_passed": true,
++            "old_owner_original_resource_retirement_passed": false,
++            "old_owner_retirement_error": "rejected: lifecycle bootstrap disconnected",
++            "original_daemon_stderr_sha256": "ba0e15b7b1b8992f9fd77169e3f4d17b2687a0aafca9b6d28d2344cfa39dd6c6",
+             "outer_exact_cleanup_passed": true,
+             "replayed": false,
+-            "runtime_sha256": "019d04a084f1cc7f028cfefc3277eb51e9dea6a89efc663c52daeff3e14b8190",
+-            "specific_retirement_reason_observed": false
++            "retirement_cause_review_sha256": "79b248d4313baab3843a92e87fa06b61a47f9f7381947b80ea6979c1e96a747d",
++            "runtime_sha256": "a04dbc0f1073c5ffb5f7fdbd549618af4b316a98688d3ecfe0622d05ef98303d",
++            "specific_relative_name_base_or_role_observed": false
+           }
+         },
+         "previous": {
+-          "attempt_nonce": "7fab165bd5502ca32260616d1d4faaf3cd898703f6eceb839ba81f2e598a2389",
+-          "diagnostic_gap": "exact relative name, held base and validated caller role were omitted; error/process-death ordering is not proved",
+-          "generic_pinned_openat_ENOENT_observed": true,
+-          "missing_public_projection_proved": false,
+-          "observed_boundary": "actual InitHello, BrokerReady, PROJECTED, COMMIT and DONE; failed before ACTIVE; original retirement incomplete",
+-          "old_failure_cause_not_inferred_from_blkio_cpuset_or_SIGHUP": true,
+-          "old_owner_original_resource_retirement_passed": false,
+-          "old_owner_retirement_error": "rejected: lifecycle bootstrap disconnected",
+-          "original_daemon_stderr_sha256": "ba0e15b7b1b8992f9fd77169e3f4d17b2687a0aafca9b6d28d2344cfa39dd6c6",
++          "attempt_nonce": "4b8b529f0b32b58c89a18cbc6adc43884b5c5cd3c5acde5d68c656a073aa0cf7",
++          "cause_loss_review_sha256": "e9897e2b82531f571bedef56feea7a54def0324071acbed845b28764c28adc96",
++          "guest_boot_first_cause_proved": false,
++          "namespace_open_failure_implies_init_death": false,
++          "observed_boundary": "actual HELLO/PROJECTED/COMMIT/DONE; namespace-owner Child exited SIGHUP before ACTIVE; original retirement and outer exact cleanup completed",
++          "old_failure_not_reclassified": true,
++          "old_owner_original_resource_retirement_passed": true,
++          "original_first_failure_null_does_not_prove_no_failure": true,
++          "original_latest_status": {
++            "cleanup_failure": null,
++            "first_failure": null,
++            "message": "Android cell exited with signal: 1 (SIGHUP)",
++            "ok": true,
++            "retirement_failure": null,
++            "state": "stopped"
++          },
+           "outer_exact_cleanup_passed": true,
+           "replayed": false,
+-          "retirement_cause_review_sha256": "79b248d4313baab3843a92e87fa06b61a47f9f7381947b80ea6979c1e96a747d",
+-          "runtime_sha256": "a04dbc0f1073c5ffb5f7fdbd549618af4b316a98688d3ecfe0622d05ef98303d",
+-          "specific_relative_name_base_or_role_observed": false
++          "runtime_sha256": "954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea",
++          "sighup_sender_proved": false,
++          "specific_relative_name_observed": "ns/pid_for_children"
+         }
+       },
+       "previous": {
+-        "attempt_nonce": "4b8b529f0b32b58c89a18cbc6adc43884b5c5cd3c5acde5d68c656a073aa0cf7",
+-        "cause_loss_review_sha256": "e9897e2b82531f571bedef56feea7a54def0324071acbed845b28764c28adc96",
++        "attempt_nonce": "7524a823ccabd18edd4bb65a6424a37362514dd7ec66ba913fc83a508b3be5ab",
++        "cause_review_sha256": "df2d3e37b94c47986f28fd457b96064bef780b8197eed341f432dea90fc6d5b7",
+         "guest_boot_first_cause_proved": false,
+         "namespace_open_failure_implies_init_death": false,
+-        "observed_boundary": "actual HELLO/PROJECTED/COMMIT/DONE; namespace-owner Child exited SIGHUP before ACTIVE; original retirement and outer exact cleanup completed",
++        "normal_owner_runtime_qualified": false,
++        "observed_boundary": "ABI3 HELLO/PROJECTED/COMMIT/DONE reached, namespace-owner wait SIGHUP before ACTIVE, failed broker receipt retained",
++        "old_broker_receipt_faulted_and_incomplete": true,
+         "old_failure_not_reclassified": true,
+-        "old_owner_original_resource_retirement_passed": true,
+-        "original_first_failure_null_does_not_prove_no_failure": true,
+-        "original_latest_status": {
+-          "cleanup_failure": null,
+-          "first_failure": null,
+-          "message": "Android cell exited with signal: 1 (SIGHUP)",
+-          "ok": true,
+-          "retirement_failure": null,
+-          "state": "stopped"
+-        },
+         "outer_exact_cleanup_passed": true,
++        "post_error_poll_zero_proves_healthy_init": false,
+         "replayed": false,
+-        "runtime_sha256": "954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea",
++        "runtime_sha256": "6d35b126c24604d373175479c9bc69e0246a45c05f2061bb8f8077399f0926d5",
+         "sighup_sender_proved": false,
+         "specific_relative_name_observed": "ns/pid_for_children"
+       }
+     },
+     "previous": {
+-      "attempt_nonce": "7524a823ccabd18edd4bb65a6424a37362514dd7ec66ba913fc83a508b3be5ab",
+-      "cause_review_sha256": "df2d3e37b94c47986f28fd457b96064bef780b8197eed341f432dea90fc6d5b7",
+-      "guest_boot_first_cause_proved": false,
+-      "namespace_open_failure_implies_init_death": false,
++      "HWS_abort_message_observed": false,
++      "HWS_fixed_by_directory_mode_change_claimed": false,
++      "LMKD_exec_permission_cause_complete": false,
++      "attempt_nonce": "48166604b7871ecfbea8800c9b6edcd1dd2a7fe6cd3b63777195a949521b541a",
++      "both_actual_init_logger_markers_passed": true,
++      "cause_review_sha256": "490240e3c22e6dead7f17d5b242f8554792d7426e5d6f9dd1165bbd5ea67970e",
+       "normal_owner_runtime_qualified": false,
+-      "observed_boundary": "ABI3 HELLO/PROJECTED/COMMIT/DONE reached, namespace-owner wait SIGHUP before ACTIVE, failed broker receipt retained",
++      "observed_boundary": "Actual generation markers and broker READY, ABI3 DONE; LMKD exec EACCES and repeated HWS SIGABRT followed by init fatal reboot before ACTIVE",
+       "old_broker_receipt_faulted_and_incomplete": true,
+       "old_failure_not_reclassified": true,
+       "outer_exact_cleanup_passed": true,
+-      "post_error_poll_zero_proves_healthy_init": false,
+       "replayed": false,
+-      "runtime_sha256": "6d35b126c24604d373175479c9bc69e0246a45c05f2061bb8f8077399f0926d5",
+-      "sighup_sender_proved": false,
+-      "specific_relative_name_observed": "ns/pid_for_children"
++      "runtime_sha256": "04ed56c29b388b381bfeb13110607a8ee25b9a4d5a903c5bb421ef002f0214cb",
++      "six_post_retiring_events_complete": true
+     }
+   },
+   "entry_abi": "droidloom-relay-entry-v3",
+@@ -1163,7 +1181,7 @@
+   "host_memory_full_avg10_max": 0.5,
+   "init_protocol_abi": 3,
+   "installed_owner_qualified": false,
+-  "kind": "owned-real-producer17-normal01-owned-bootstrap-modes01",
++  "kind": "owned-real-producer18-normal01-private-crash-buffer01",
+   "main": {
+     "artifacts": {
+       "/etc/droidloom/cell.json": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+@@ -1446,16 +1464,16 @@
+     "HWS_abort_message_observed": false,
+     "HWS_fixed_by_directory_mode_change_claimed": false,
+     "LMKD_exec_permission_cause_complete": false,
+-    "attempt_nonce": "48166604b7871ecfbea8800c9b6edcd1dd2a7fe6cd3b63777195a949521b541a",
++    "attempt_nonce": "822dfa28f800ad92dfd0c868ce2a44eb4c3e295aad3d0600f4dcc444128c77ab",
+     "both_actual_init_logger_markers_passed": true,
+-    "cause_review_sha256": "490240e3c22e6dead7f17d5b242f8554792d7426e5d6f9dd1165bbd5ea67970e",
++    "cause_review_sha256": "ea32c73db88a1b07ef9ff3052d0d4890b839e44e2fe8f8f54e7c9542ca65799b",
+     "normal_owner_runtime_qualified": false,
+-    "observed_boundary": "Actual generation markers and broker READY, ABI3 DONE; LMKD exec EACCES and repeated HWS SIGABRT followed by init fatal reboot before ACTIVE",
++    "observed_boundary": "Actual generation markers and broker READY, ABI3 DONE; no original LMKD exec EACCES in retained prefix, five LMKD SIGABRT and five HWS SIGABRT observations, HWS critical init reboot before ACTIVE",
+     "old_broker_receipt_faulted_and_incomplete": true,
+     "old_failure_not_reclassified": true,
+     "outer_exact_cleanup_passed": true,
+     "replayed": false,
+-    "runtime_sha256": "04ed56c29b388b381bfeb13110607a8ee25b9a4d5a903c5bb421ef002f0214cb",
++    "runtime_sha256": "701522531cd0166e02f90fe5f49da3d6f828cd65ea8c0bd8fb5df94617e91530",
+     "six_post_retiring_events_complete": true
+   },
+   "presenter": {
+@@ -1463,6 +1481,25 @@
+     "sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24"
+   },
+   "pressure_effect_qualified": false,
++  "private_crash_buffer_contract": {
++    "empty_capture_proves_HWS_health": false,
++    "existing_65s_startup_deadline_and_immediate_Stop_unchanged": true,
++    "final_nonblocking_drain_after_original_Stop_and_children_retired": true,
++    "fresh_HELLO_root_userns_UID0_and_peer_pidfd_required": true,
++    "local_control_result_sha256": "c8198cb3f83a92d3a00ae75be4506f4e5bebdaeed8e3bc66d98577dd6af88fd1",
++    "local_controls_passed": 12,
++    "maximum_packet_bytes": 5120,
++    "maximum_packets_per_poll": 32,
++    "maximum_private_prefix_bytes": 262144,
++    "maximum_records": 2048,
++    "module_sha256": "0cb46ca1ca813e162e7474a198f5c79dcf70fd68e3b20c5e499abf7def0f1bc3",
++    "native_LMKD_enrollment_qualified": false,
++    "one_connection_one_stream_lids4_no_reconnect": true,
++    "private_packet_file_relative": "evidence/generation-crash-buffer4.bin",
++    "raw_packets_in_general_actor_JSON_or_Git": false,
++    "real_peer_init_protocol_qualification": false,
++    "source_manifest_sha256": "c4c34d194586e98289c766bb8518230a81555068ebf7fb51c42698dec70a8810"
++  },
+   "production_ready": false,
+   "projection_build_receipt_sha256": "2c53bba3ab02b396d2698dfd6e04d870ce69cc55724c6077003dca81ae9a2e0b",
+   "rc_property_reload_qualified": false,

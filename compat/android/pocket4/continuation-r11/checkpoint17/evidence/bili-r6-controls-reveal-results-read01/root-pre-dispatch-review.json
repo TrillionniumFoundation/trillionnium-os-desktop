@@ -1,0 +1,39 @@
+{
+  "state": "REVIEWED_TWO_EXACT_BOUND_BILI_RESULT_READS_ONLY",
+  "original_job": {
+    "id": "1a1acd28c21-fc05-5723",
+    "exit_code": 0,
+    "complete": true,
+    "durable": true,
+    "terminal_confirmed": true,
+    "stdout_bytes": 692,
+    "stdout_sha256": "c9113a7c7f41cae7b8fd2f683753bcadde05f8de4b81d0db3dcd4ae38ff9cdee"
+  },
+  "read_targets": [
+    {
+      "path": "/home/alex/work/pocket4-bilibili-r6-controls-reveal-01/result.json",
+      "bytes": 198643,
+      "sha256": "acb1b45d1093c47fc38b5c8eb52c9587eb767ec4d1cc6bfdeb514af2c7bb2305"
+    },
+    {
+      "path": "/home/alex/work/pocket4-bilibili-r6-controls-reveal-01/stage-result.json",
+      "bytes": 1647,
+      "sha256": "62426a0c217286e11f8a8a3c458f3625d8446fd64546de3e5d3c922e2bd4ab2f"
+    }
+  ],
+  "source": {
+    "bytes": 6105,
+    "sha256": "bcf50e9f5b49de462fdc51e1a2bc9434a3a6dd3ee4d09b6edf91611d5b8b4228"
+  },
+  "review": "Root full6105-byte source and3985-byte delta read; all5 frozen members/exact stdin/request parameters and actual R6 source-manifest SHA verified; Owner independent full read/source delta/packet review found no blocker in limited read-only scope.",
+  "scope": "Two required files only; recursive raw-UI-key rejection, exact original result sizes/SHAs and flow/source binding; no screenshots, UI hierarchy, commercial journals, extra files, process/Android actions or writes.",
+  "limits": "Each file262144B, total2MiB,8s read deadline,3MiB encoded bundle bound; one CPU/128MiB/30s outer.",
+  "limitations": [
+    "Held file before/after9-field stat and exact content pins; no final named-path recheck or two-file atomic snapshot claim",
+    "Inherited close exception may replace read error but cannot qualify collection; not changed in this minimal readonly derivative",
+    "Collection success alone does not qualify runtime or business outcome"
+  ],
+  "Main_actions": 0,
+  "Android_UI_actions": 0,
+  "automatic_retry": false
+}

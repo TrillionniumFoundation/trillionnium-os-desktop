@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import hashlib,sys\nsrc=sys.stdin.buffer.read(65537)\nassert hashlib.sha256(src).hexdigest()=='0048b43a04dd9da6def48e82bee667d7ce09365f05f258e31686c71af8213600'\nns={'__name__':'ticket_state_fixed_reader'}\nexec(compile(src,'<pinned-ticket-state-reader>','exec'),ns)\nraise SystemExit(ns['main'](['--collect-once']))\n"
+    ],
+    "created_unix_ms": 1793917565238,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1add1b936-fc05-5af0",
+    "idempotency_key": "pocket4-owned-ihg-qa-r1-install-state-three-receipts-read01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1add1b936-fc05-5af0",
+    "request_digest": "dfa4403b1db7602e99652702cc2dc3d122c8ad5b5fef75a942f1916c0a9af132",
+    "request_fingerprint": 16115075989284282414,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1add1b936-fc05-5af0"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1add1b936-fc05-5af0"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

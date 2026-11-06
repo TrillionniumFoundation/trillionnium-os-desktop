@@ -1,0 +1,370 @@
+--- owner14-data-directories-freeze01/read_directories.py
++++ android-owner15-reboot-reason-reader-01/read_reason.py
+@@ -1,4 +1,4 @@
+-"""Two fixed debugfs directory reads from retired Owner14; no mount/write/replay."""
++"""One fixed reboot-reason file from retired Owner15 metadata.img; no mount/write/replay."""
+ import base64
+ import errno
+ import fcntl
+@@ -13,22 +13,22 @@
+ import sys
+ import time
+ import traceback
+-
+-STATE_NAME = 'p4-owner14-normal-20261105-01-state'
+-NONCE = '4b8b529f0b32b58c89a18cbc6adc43884b5c5cd3c5acde5d68c656a073aa0cf7'
+-UNIT = 'p4-owner14-normal-20261105-01.service'
+-INVOCATION = '5ccbffb9ae354e719c6ee2dbb49ec7dd'
+-ACTOR_PID = 2204107
+-SPEC_SHA256 = '527d9fc3582289341092e4219bee4c257353423d2830c3eba2fb7c64375913e5'
+-STATE_ID = {'device': 66306, 'inode': 44189296}
+-IMAGE_ID = {'device': 66306, 'inode': 44189317}
+-IMAGE_BYTES = 8589934592
+-IMAGE_UUID_HEX = 'cb90133d9e2c447785cca0636da228eb'
+-IMAGE_LABEL = 'p4owner07data'
+-IMAGE_PATH = '/opt/' + STATE_NAME + '/data/data.img'
++import re
++
++STATE_NAME = 'p4-owner15-normal-20261105-01-state'
++NONCE = '7524a823ccabd18edd4bb65a6424a37362514dd7ec66ba913fc83a508b3be5ab'
++UNIT = 'p4-owner15-normal-20261105-01.service'
++INVOCATION = '3390cef640ed48b597413bcbbcdf3bac'
++ACTOR_PID = 2875997
++SPEC_SHA256 = 'b408e9902e3670a41c51dbbde0d6223d5b3d111c074183879f1c8f6bb1c56833'
++STATE_ID = {'device': 66306, 'inode': 44574133}
++IMAGE_ID = {'device': 66306, 'inode': 44574155}
++IMAGE_BYTES = 134217728
++IMAGE_LABEL = 'p4owner07meta'
++IMAGE_PATH = '/opt/' + STATE_NAME + '/data/metadata.img'
+ RECORDS = {
+-    'prepared.json': (55139, '5771673f20af6833e070da267b0ad9bcbbf58c87e03542104ac57fb9a4466770'),
+-    'runtime-result.json': (57774, '954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea'),
++    'prepared.json': (55139, 'cdcf0db96db1c7100c17faa5c4b0926b544f8c41b8da8960e49788dee3926de8'),
++    'runtime-result.json': (59461, '6d35b126c24604d373175479c9bc69e0246a45c05f2061bb8f8077399f0926d5'),
+ }
+ DEBUGFS = {
+     'path': '/usr/sbin/debugfs', 'bytes': 231368,
+@@ -89,7 +89,7 @@
+ 
+ 
+ def regular(name, parent, held, maximum):
+-    need(name in ('prepared.json', 'runtime-result.json', 'data.img', 'debugfs'),
++    need(name in ('prepared.json', 'runtime-result.json', 'metadata.img', 'debugfs'),
+          'outside fixed file allowlist')
+     fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=parent)
+     try:
+@@ -163,12 +163,10 @@
+     need(events[-6:] == ['broker_retired', 'processes_dead', 'domain_empty', 'retired',
+                          'resources_removed', 'claim_released'] and 'active' not in events,
+          'original typed terminal sequence differs')
+-    images = [row for row in prepared['data_images'] if row['name'] == 'data.img']
++    images = [row for row in prepared['data_images'] if row['name'] == 'metadata.img']
+     need(len(images) == 1 and images[0]['identity'] == IMAGE_ID and images[0]['bytes'] == IMAGE_BYTES and
+          images[0]['fresh_sparse_created'] is True and images[0]['existing_userdata_copied'] is False and
+          images[0]['returncode'] == 0, 'image does not bind original fresh creation')
+-    need('cb90133d-9e2c-4477-85cc-a0636da228eb' in images[0]['stdout'],
+-         'original mkfs UUID absent')
+     return {'attempt_nonce': NONCE, 'unit': UNIT, 'invocation': INVOCATION,
+             'actor_pid': ACTOR_PID, 'original_runtime_success': False,
+             'original_cleanup_bound': True, 'main_before_after_equal': True,
+@@ -183,7 +181,7 @@
+     need(len(raw) == 4096 and raw[1080:1082] == bytes.fromhex('53ef'),
+          'image ext4 header absent/short')
+     superblock = raw[1024:2048]
+-    need(superblock[104:120].hex() == IMAGE_UUID_HEX, 'image UUID differs from original mkfs')
++    observed_uuid_hex = superblock[104:120].hex()
+     label = superblock[120:136].split(b'\0', 1)[0].decode('ascii')
+     need(label == IMAGE_LABEL, 'image volume label differs')
+     log_block_size = int.from_bytes(superblock[24:28], 'little')
+@@ -194,16 +192,16 @@
+     if incompat & 0x80:
+         blocks |= int.from_bytes(superblock[336:340], 'little') << 32
+     need(blocks * block_size == IMAGE_BYTES, 'ext4 geometry differs from fixed image')
+-    return raw, {'path': IMAGE_PATH, 'identity': before, 'uuid_hex': IMAGE_UUID_HEX,
++    return raw, {'path': IMAGE_PATH, 'identity': before, 'uuid_hex': observed_uuid_hex, 'prior_uuid_available': False,
++                 'uuid_bound_to_prior_observation': False,
+                  'volume_label': label, 'block_size': block_size, 'blocks': blocks,
+                  'ext4_state_bits': int.from_bytes(superblock[58:60], 'little'),
+                  'ext4_incompat_features': incompat,
+                  'ext4_needs_recovery': bool(incompat & 0x4),
+                  'first_4096_sha256': hashlib.sha256(raw).hexdigest(),
+                  'full_image_sha256_computed': False, 'image_contents_extracted': False,
+-                 'guest_mountpoint': '/data',
+-                 'future_fixed_image_paths': ['/tombstones', '/system/shutdown-checkpoints'],
+-                 'future_directories_observed': False}
++                 'guest_mountpoint': '/metadata', 'fixed_reason_path': IMAGE_REASON_PATH,
++                 'reason_presence_observed': False}
+ 
+ 
+ def tool_metadata(fd, before, deadline):
+@@ -232,15 +230,17 @@
+         need(describe(named) == before, 'named object changed: ' + name)
+ 
+ 
+-METADATA_RAW = '{"binding":{"actor_pid":2204107,"attempt_nonce":"4b8b529f0b32b58c89a18cbc6adc43884b5c5cd3c5acde5d68c656a073aa0cf7","continuous_main_claimed":false,"image_creation_identity":{"device":66306,"inode":44189317},"invocation":"5ccbffb9ae354e719c6ee2dbb49ec7dd","main_before_after_equal":true,"original_cleanup_bound":true,"original_runtime_success":false,"unit":"p4-owner14-normal-20261105-01.service"},"collection_complete":true,"debugfs":{"executed":false,"file_capabilities":null,"identity":{"bytes":231368,"ctime_ns":1791083649320555768,"device":66306,"gid":0,"inode":108006000,"mode":493,"mtime_ns":1770985020000000000,"nlink":1,"type":32768,"uid":0},"path":"/usr/sbin/debugfs","prior_observation_sha256":"04b8c44dce6b42cb3d9a9675db037bdf0ef7d2e37d5289a1c6cbb8ce98843599","sha256":"864e1d7b445e7b5bfc831da78330dbcafc590fa82b89ea9de60b7527f989954f"},"elapsed_seconds":0.0034498769091442227,"errors":[],"file_descriptors_opened":10,"first_error":null,"held_named_identity_unchanged":true,"image":{"block_size":4096,"blocks":2097152,"ext4_incompat_features":8898,"ext4_needs_recovery":false,"ext4_state_bits":1,"first_4096_sha256":"1724bbca3683f8716e9f777c2241f437e4e3d4327b95ef5a89f47828bd0f0d86","full_image_sha256_computed":false,"future_directories_observed":false,"future_fixed_image_paths":["/tombstones","/system/shutdown-checkpoints"],"guest_mountpoint":"/data","identity":{"bytes":8589934592,"ctime_ns":1793886475912307973,"device":66306,"gid":0,"inode":44189317,"mode":384,"mtime_ns":1793886475912307973,"nlink":1,"type":32768,"uid":0},"image_contents_extracted":false,"path":"/opt/p4-owner14-normal-20261105-01-state/data/data.img","uuid_hex":"cb90133d9e2c447785cca0636da228eb","volume_label":"p4owner07data"},"image_mounted":false,"image_written":false,"journal_replayed":false,"kernel_journal_read":false,"kind":"owner14-retired-data-image-metadata01","namespace_changes":false,"processes_started":false,"qualification":false,"records":{"prepared.json":{"bytes":55139,"identity":{"bytes":55139,"ctime_ns":1793885082669805450,"device":66306,"gid":0,"inode":44189319,"mode":292,"mtime_ns":1793885082669219970,"nlink":1,"type":32768,"uid":0},"sha256":"5771673f20af6833e070da267b0ad9bcbbf58c87e03542104ac57fb9a4466770"},"runtime-result.json":{"bytes":57774,"identity":{"bytes":57774,"ctime_ns":1793886476077312539,"device":66306,"gid":0,"inode":44189497,"mode":292,"mtime_ns":1793886476076312511,"nlink":1,"type":32768,"uid":0},"sha256":"954fa535427e79780cb3764d0eb28e2ab12b4a4af642c4bccf3244a4e1c97fea"}},"schema":1,"tools_executed":false}\n'
+-METADATA_SHA256 = '799040e1416d5acaef3ab14840a091775480e43bfb9b69edb67ce8f90c9677ff'
+-METADATA_JOB = "1a1ac4d3d61-fc05-537b"
+-DIRECTORIES = ("/tombstones", "/system/shutdown-checkpoints")
+-COMMAND_SECONDS = 10
++IMAGE_NAME = 'metadata.img'
++GUEST_REASON_PATH = '/metadata/bootstat/persist.sys.boot.reason'
++IMAGE_REASON_PATH = '/bootstat/persist.sys.boot.reason'
++STAT_PATHS = ('/', '/bootstat', IMAGE_REASON_PATH)
++COMMAND_SECONDS = 8
+ REAP_SECONDS = 3
+-STDOUT_LIMIT = 32768
++STDOUT_LIMIT = 4096
+ STDERR_LIMIT = 8192
+-WIRE_LIMIT = 262144
++WIRE_LIMIT = 131072
++REASON_LIMIT = 4096
++DEBUGFS_BANNER = b'debugfs 1.47.2 (1-Jan-2025)\n'
+ 
+ 
+ def remembered(row, phase, error):
+@@ -251,31 +251,14 @@
+     row['errors'].append(record)
+ 
+ 
+-def observation_pin(image, tool, binding, records):
+-    raw = METADATA_RAW.encode('utf-8')
+-    need(len(raw) == 2546 and hashlib.sha256(raw).hexdigest() == METADATA_SHA256,
+-         'actual metadata bytes differ')
+-    actual = json.loads(raw)
+-    need(actual['collection_complete'] is True and actual['errors'] == [] and
+-         actual['first_error'] is None and actual['qualification'] is False and
+-         actual['tools_executed'] is False and actual['held_named_identity_unchanged'] is True,
+-         'actual metadata collection contract differs')
+-    need(binding == actual['binding'], 'original retired ownership binding differs')
+-    need(records == actual['records'], 'original prepared/runtime inode or byte binding differs')
+-    need(image == actual['image'] and tool == actual['debugfs'],
+-         'current image/header or executable differs from actual metadata')
+-    need(image['ext4_needs_recovery'] is False and image['ext4_state_bits'] == 1,
+-         'fixed clean ext4 observation changed; no recovery is permitted')
+-    return {'job': METADATA_JOB, 'bytes': len(raw), 'sha256': METADATA_SHA256,
+-            'current_image_and_tool_match_actual': True}
+-
+-
+-def directory_argv(tool_fd, image_fd, path):
+-    need(path in DIRECTORIES and type(tool_fd) is type(image_fd) is int and
+-         tool_fd >= 3 and image_fd >= 3 and tool_fd != image_fd,
+-         'only two fixed directory requests and distinct held FDs are allowed')
+-    return [DEBUGFS['path'], '-R', 'ls -p ' + path, '/proc/self/fd/' + str(image_fd)], \
+-        '/proc/self/fd/' + str(tool_fd)
++def reason_argv(tool_fd, image_fd, operation, path):
++    need(type(tool_fd) is type(image_fd) is int and tool_fd >= 3 and image_fd >= 3 and
++         tool_fd != image_fd, 'distinct held image/tool FDs required')
++    need((operation == 'stat' and path in STAT_PATHS) or
++         (operation == 'cat' and path == IMAGE_REASON_PATH),
++         'only fixed metadata and one fixed reason body are allowed')
++    return [DEBUGFS['path'], '-R', operation + ' ' + path,
++            '/proc/self/fd/' + str(image_fd)], '/proc/self/fd/' + str(tool_fd)
+ 
+ 
+ def stream_record(body, eof, limit):
+@@ -369,35 +352,120 @@
+     return row
+ 
+ 
+-def query_directory(tool_fd, image_fd, path, deadline):
++def query_reason(tool_fd, image_fd, operation, path, deadline):
+     need((fcntl.fcntl(image_fd, fcntl.F_GETFL) & os.O_ACCMODE) == os.O_RDONLY and
+          (fcntl.fcntl(tool_fd, fcntl.F_GETFL) & os.O_ACCMODE) == os.O_RDONLY,
+          'image and tool must be held read-only')
+     need(fcntl.fcntl(image_fd, fcntl.F_GETFD) & fcntl.FD_CLOEXEC and
+          fcntl.fcntl(tool_fd, fcntl.F_GETFD) & fcntl.FD_CLOEXEC,
+          'parent authority FDs must be close-on-exec')
+-    argv, executable = directory_argv(tool_fd, image_fd, path)
+-    row = {'image_path': path, 'argv': argv, 'executable_held_path': executable,
+-           'executable_sha256': DEBUGFS['sha256'], 'default_read_only_mode': True,
+-           'write_option_present': False, 'journal_replay_requested': False,
+-           'directory_presence_inferred_from_returncode': False,
+-           'directory_contents_interpreted': False, 'file_bodies_read': False}
++    argv, executable = reason_argv(tool_fd, image_fd, operation, path)
++    row = {'image_path': path, 'operation': operation, 'argv': argv,
++           'executable_held_path': executable, 'executable_sha256': DEBUGFS['sha256'],
++           'default_read_only_mode': True, 'write_option_present': False,
++           'journal_replay_requested': False, 'presence_inferred_from_returncode': False}
+     child_deadline = min(deadline - REAP_SECONDS - 1, time.monotonic() + COMMAND_SECONDS)
+     need(child_deadline > time.monotonic(), 'insufficient remaining collection budget')
+     process = subprocess.Popen(argv, executable=executable, stdin=subprocess.DEVNULL,
+         stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True,
+         pass_fds=(tool_fd, image_fd), cwd='/',
+-        env={'PATH': '/usr/sbin:/usr/bin:/bin', 'LC_ALL': 'C', 'LANG': 'C',
++        env={'PATH': '/usr/sbin:/usr/bin:/bin', 'LC_ALL': 'C', 'LANG': 'C', 'TZ': 'UTC',
+              'DEBUGFS_PAGER': '__none__', 'PAGER': '__none__', 'E2FSPROGS_UNDO_DIR': 'none'})
+     row.update(collect_owned(process, child_deadline))
+     return row
++
++
++def command_bytes(row, name):
++    part = row[name]
++    raw = base64.b64decode(part['base64'], validate=True)
++    need(len(raw) == part['bytes'] and hashlib.sha256(raw).hexdigest() == part['sha256'],
++         'owned command stream binding differs')
++    return raw
++
++
++def parse_stat(row, expected_type):
++    need(row['operation'] == 'stat' and row['image_path'] in STAT_PATHS and
++         row['capture_complete'] is True, 'complete fixed stat required')
++    out = command_bytes(row, 'stdout')
++    err = command_bytes(row, 'stderr')
++    # Tool errors are preserved as observations, never converted into proof of absence.
++    if row['returncode'] != 0 or err != DEBUGFS_BANNER:
++        return None
++    first = re.findall(rb'^Inode: ([0-9]+) +Type: ([a-z]+) +Mode: +([0-7]+) +Flags: (0x[0-9a-fA-F]+)\n', out, re.M)
++    sizes = re.findall(rb'^User: +([0-9]+) +Group: +([0-9]+) +Project: +([0-9]+) +Size: ([0-9]+)\n', out, re.M)
++    links = re.findall(rb'^Links: ([0-9]+) +Blockcount: ([0-9]+)\n', out, re.M)
++    if len(first) != 1 or len(sizes) != 1 or len(links) != 1:
++        return None
++    inode, kind, mode, flags = first[0]
++    uid, gid, project, size = sizes[0]
++    if kind.decode('ascii') != expected_type or int(inode) <= 0 or int(links[0][0]) <= 0:
++        return None
++    value = {'inode': int(inode), 'type': expected_type, 'mode': int(mode, 8),
++             'flags': int(flags, 16), 'uid': int(uid), 'gid': int(gid),
++             'project': int(project), 'bytes': int(size), 'links': int(links[0][0]),
++             'complete_stat_stdout_sha256': row['stdout']['sha256']}
++    if row['image_path'] == '/' and value['inode'] != 2:
++        return None
++    return value
++
++
++def observed_reason(stats):
++    need(len(stats) == 3 and [r['image_path'] for r in stats] == list(STAT_PATHS),
++         'exact ordered parent and reason stats required')
++    parsed = [parse_stat(row, kind) for row, kind in zip(stats, ('directory', 'directory', 'regular'))]
++    eligible = (all(row is not None for row in parsed) and
++                len({row['inode'] for row in parsed}) == 3 and
++                parsed[2]['links'] == 1 and parsed[2]['bytes'] <= REASON_LIMIT)
++    return {'stat_observations': parsed, 'eligible_for_bounded_reason_read': eligible,
++            'reason_byte_limit': REASON_LIMIT, 'absence_inferred': False,
++            'upstream_reference_is_actual_init_source_proof': False}
++
++
++def collect_reason(tool, image, header, held, report, deadline):
++    def command(operation, path):
++        recheck(held)
++        need(os.pread(image, 4096, 0) == header, 'image header changed before fixed query')
++        row = query_reason(tool, image, operation, path, deadline)
++        report['commands'].append(row)
++        need(row['capture_complete'] is True, 'owned query capture/retirement incomplete')
++        need(os.pread(image, 4096, 0) == header, 'image header changed after fixed query')
++        recheck(held)
++        return row
++    before = [command('stat', path) for path in STAT_PATHS]
++    report['reason_observation'] = observed_reason(before)
++    if report['reason_observation']['eligible_for_bounded_reason_read']:
++        report['reason_read_attempted'] = True
++        row = command('cat', IMAGE_REASON_PATH)
++        need(row['returncode'] == 0 and command_bytes(row, 'stderr') == DEBUGFS_BANNER,
++             'fixed reason body command failed')
++        raw = command_bytes(row, 'stdout')
++        need(len(raw) == report['reason_observation']['stat_observations'][2]['bytes'],
++             'fixed reason body length differs from prior stat')
++        # Raw bytes are bounded and retained. No text interpretation or cause attribution here.
++        report['image']['image_contents_extracted'] = True
++        report['image']['reason_presence_observed'] = True
++        report['reason'] = {'guest_path': GUEST_REASON_PATH, 'image_path': IMAGE_REASON_PATH,
++                            'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
++                            'base64': base64.b64encode(raw).decode('ascii')}
++    after = [command('stat', path) for path in STAT_PATHS]
++    for original, final in zip(before, after):
++        need(original['returncode'] == final['returncode'] and
++             command_bytes(original, 'stdout') == command_bytes(final, 'stdout') and
++             command_bytes(original, 'stderr') == command_bytes(final, 'stderr'),
++             'fixed image path metadata changed during reason collection')
++    report['reason_stat_unchanged_before_after'] = True
++    report['reason_body_collected'] = report['reason_read_attempted'] and 'reason' in report
++    report['body_reads_attempted'] = sum(row['operation'] == 'cat' for row in report['commands'])
++    need(report['body_reads_attempted'] == int(report['reason_read_attempted']),
++         'only one fixed reason body attempt is permitted')
++    return len(report['commands']) == 6 + int(report['reason_read_attempted'])
+ 
+ 
+ def emit(report):
+     raw = (json.dumps(report, sort_keys=True, separators=(',', ':')) + '\n').encode('utf-8')
+     need(len(raw) <= OUTPUT_LIMIT, 'bounded directory report exceeds output limit')
+     compressed = gzip.compress(raw, compresslevel=6, mtime=0)
+-    envelope = {'schema': 1, 'kind': 'owner14-data-directory-read01-gzip',
++    envelope = {'schema': 1, 'kind': 'owner15-reboot-reason-read01-gzip',
+                 'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
+                 'gzip_bytes': len(compressed), 'gzip_sha256': hashlib.sha256(compressed).hexdigest(),
+                 'gzip_base64': base64.b64encode(compressed).decode('ascii')}
+@@ -407,18 +475,20 @@
+ 
+ 
+ def main():
+-    report = {'schema': 1, 'kind': 'owner14-retired-data-directory-read01',
++    report = {'schema': 1, 'kind': 'owner15-retired-reboot-reason-read01',
+               'collection_complete': False, 'first_error': None, 'errors': [], 'commands': [],
+               'qualification': False, 'owner_failure_cause_proved': False,
+               'image_written': False, 'image_mounted': False, 'journal_replayed': False,
+               'namespace_changes': False, 'kernel_journal_read': False,
+-              'live_Main_checked': False, 'file_bodies_read': False,
+-              'directory_absence_or_empty_inferred': False, 'full_image_digest_computed': False,
+-              'external_opener_exclusivity_proved': False}
++              'live_Main_checked': False, 'reason_read_attempted': False,
++              'reason_body_collected': False, 'absence_inferred': False,
++              'reason_read_validated_after_final_checks': False,
++              'full_image_digest_computed': False, 'external_opener_exclusivity_proved': False,
++              'atomic_image_snapshot_claimed': False}
+     held = []
+     deadline = time.monotonic() + DEADLINE_SECONDS
+     try:
+-        need(os.geteuid() == os.getegid() == 0, 'fixed protected directory read requires root')
++        need(os.geteuid() == os.getegid() == 0, 'fixed protected reason read requires root')
+         need(signal.getsignal(signal.SIGCHLD) == signal.SIG_DFL,
+              'own child must retain default waitable SIGCHLD semantics')
+         slash = directory('/', None, held)
+@@ -437,23 +507,16 @@
+                                        'identity': before}
+         report['binding'] = validate_records(records['prepared.json'], records['runtime-result.json'])
+         data = directory('data', state, held)
+-        image, image_stamp = regular('data.img', data, held, IMAGE_BYTES)
++        image, image_stamp = regular(IMAGE_NAME, data, held, IMAGE_BYTES)
+         header, report['image'] = image_metadata(image, image_stamp)
++        need(report['image']['ext4_needs_recovery'] is False and
++             report['image']['ext4_state_bits'] == 1,
++             'unclean fixed ext4 image; no replay, repair or content interpretation permitted')
+         usr = directory('usr', slash, held)
+         sbin = directory('sbin', usr, held)
+         tool, tool_stamp = regular('debugfs', sbin, held, TOOL_LIMIT)
+         tool_raw, report['debugfs'] = tool_metadata(tool, tool_stamp, deadline)
+-        report['metadata_origin'] = observation_pin(report['image'], report['debugfs'],
+-                                                   report['binding'], report['records'])
+-        for path in DIRECTORIES:
+-            recheck(held)
+-            need(os.pread(image, 4096, 0) == header, 'image header changed before directory read')
+-            row = query_directory(tool, image, path, deadline)
+-            report['commands'].append(row)
+-            # A completed command may report a missing directory or other tool error. Preserve it verbatim.
+-            need(row['capture_complete'] is True, 'owned directory command capture/retirement incomplete')
+-            need(os.pread(image, 4096, 0) == header, 'image header changed after directory read')
+-            recheck(held)
++        completed = collect_reason(tool, image, header, held, report, deadline)
+         need(read_exact(tool, tool_stamp['bytes'], deadline) == tool_raw, 'debugfs bytes changed')
+         for name, (fd, before, original) in record_fds.items():
+             raw, _ = read_record(fd, before, name, deadline)
+@@ -464,9 +527,9 @@
+         report['image_header_and_stat_unchanged'] = True
+         report['file_descriptors_opened'] = len(held)
+         report['all_command_returncodes_zero'] = all(row['returncode'] == 0 for row in report['commands'])
+-        report['collection_complete'] = len(report['commands']) == 2
++        report['collection_complete'] = completed
+     except BaseException as error:
+-        remembered(report, 'directory_collection', error)
++        remembered(report, 'fixed_reason_collection', error)
+     finally:
+         for fd, _, name, _, _ in reversed(held):
+             try:
+@@ -474,6 +537,8 @@
+             except OSError as error:
+                 remembered(report, 'held_' + name + '_close', error)
+         report['collection_complete'] = report['collection_complete'] and not report['errors']
++        report['reason_read_validated_after_final_checks'] = (report['collection_complete'] and
++                                                            report['reason_body_collected'])
+     report['processes_started'] = sum(row.get('spawned') is True for row in report['commands'])
+     if 'debugfs' in report:
+         report['debugfs']['executed'] = report['processes_started'] != 0

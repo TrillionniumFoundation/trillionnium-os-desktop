@@ -1,0 +1,3 @@
+# Ticket02 exact retained launch reader
+
+This reader rebinds the preserved Ticket01 reader to the actual Ticket02 terminal coordinator and stage pins. Its fixed launch body is read only if that exact coordinator supplies its path, size and SHA. No fixed launch hash is invented. The original Main and launch failure remain unchanged; the reader makes no task retirement or business qualification claim. No raw UI, pixels, stderr, private journal or Android action is collected. The held-descriptor metadata, nofollow traversal, 8-second/2-MiB input bounds, 3-MiB output bound and 128-MiB/one-CPU request are inherited unchanged. This package has not been dispatched.

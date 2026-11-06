@@ -1,0 +1,25 @@
+--- a/tools/droidloom-source/src/resume.rs
++++ b/tools/droidloom-source/src/resume.rs
+@@ -141,14 +141,19 @@
+     let stdout = thread::spawn(move || bounded_pipe(stdout));
+     let stderr = thread::spawn(move || bounded_pipe(stderr));
+     let status = child.wait().map_err(|error| io_error("wait for bounded source Git", error));
+-    let stdout = stdout.join().map_err(|_| invalid("source Git stdout reader panicked"))?
++    // Always join both readers before propagating any outcome. A reader panic
++    // or pipe error must not detach its peer or replace an earlier wait error.
++    let stdout = stdout.join();
++    let stderr = stderr.join();
++    let status = status?;
++    let stdout = stdout.map_err(|_| invalid("source Git stdout reader panicked"))?
+         .map_err(|error| io_error("read bounded source Git stdout", error))?;
+-    let stderr = stderr.join().map_err(|_| invalid("source Git stderr reader panicked"))?
++    let stderr = stderr.map_err(|_| invalid("source Git stderr reader panicked"))?
+         .map_err(|error| io_error("read bounded source Git stderr", error))?;
+     if stdout.len() > GIT_OUTPUT_LIMIT as usize || stderr.len() > GIT_OUTPUT_LIMIT as usize {
+         return Err(invalid("source Git output exceeded its fixed bound"));
+     }
+-    Ok(Output { status: status?, stdout, stderr })
++    Ok(Output { status, stdout, stderr })
+ }
+ 
+ fn arguments(values: &[&str]) -> Vec<OsString> {

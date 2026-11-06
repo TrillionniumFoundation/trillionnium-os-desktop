@@ -1,0 +1,89 @@
+{
+  "Hepta_calls_by_reviewer": 0,
+  "actual": {
+    "all_original_guards_and_inputs_match": true,
+    "all_owned_fds_closed": true,
+    "anonymous": {
+      "device": 28,
+      "errno": 0,
+      "inode": 1363250,
+      "nlink": 0,
+      "one_EX_NB": true,
+      "one_immediate_UN": true,
+      "own_close_confirmed": true
+    },
+    "elapsed_ms": 31,
+    "errors": [],
+    "flock_callable": {
+      "module": "fcntl",
+      "name": "flock",
+      "type": "builtin_function_or_method"
+    },
+    "kernel_release": "7.0.0-38-generic",
+    "parent_before_after_named_match": true,
+    "post_unlock_table": {
+      "matching_rows": 0,
+      "not_holder_evidence": true,
+      "rows": 444
+    },
+    "reported_pid_namespace": "pid:[4026531836]",
+    "selected_mount": {
+      "device": "0:28",
+      "filesystem": "tmpfs",
+      "mount_id": 32,
+      "mount_options": "rw,nosuid,nodev,noexec,relatime",
+      "mount_source": "tmpfs",
+      "mountpoint": "/run",
+      "optional_fields": [
+        "shared:5"
+      ],
+      "parent_id": 33,
+      "root": "/",
+      "super_options": "rw,size=2573956k,mode=755,inode64"
+    },
+    "target": {
+      "device": 28,
+      "errno": 0,
+      "inode": 8312,
+      "one_EX_NB": true,
+      "one_immediate_UN": true,
+      "own_close_confirmed": true
+    }
+  },
+  "boundaries": [
+    "Earlier Amazon03/Ticket/single-probe EAGAIN remains real and unexplained.",
+    "Neither empty post-unlock locks nor the success identifies any previous holder or historical cause.",
+    "PID namespace label is recorded metadata; no matching kernel source/binary provenance was established here.",
+    "The visible-PID predecessor has one aggregate visible_pid_fd_scan ENOENT gap; emitted data does not identify a PID, exact failure point, or process exit.",
+    "No prior FAIL was rewritten, no lock was deleted/replaced, and no runtime/UI authorization is granted by this observation."
+  ],
+  "conclusions": [
+    "The exact existing lock admitted this single operation and was released before adjacent sampling.",
+    "The independent unlinked same-filesystem control also admitted and released.",
+    "No present blocker was demonstrated for that one target admission; future App still needs its own original lock gate."
+  ],
+  "future_UI_requires_own_normal_lock_admission": true,
+  "original_status": {
+    "bytes": 733,
+    "complete": true,
+    "durable": true,
+    "exit_code": 0,
+    "job_id": "1a1ad73caef-fc05-59ef",
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/action-lock-differential02/status.tool-original.json",
+    "sha256": "5f85acdbbd756db40b0db06611ba630dfdbd5dd337c4bb946d4742fc63311328",
+    "terminal_confirmed": true
+  },
+  "original_stdout": {
+    "bytes": 12404,
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/action-lock-differential02/stdout.log",
+    "sha256": "a3deba8dd9b69b9184697c57d27b72d68ac8fc5fde71eeaf1f282e21d3743f8e"
+  },
+  "schema": 1,
+  "scope": "independent exact actual two-arm admission readback; no new runtime call",
+  "source": {
+    "bytes": 35329,
+    "immutable_tree": "0149aa1eaf6f003004ec2e73f1b00ca977d8b9e4",
+    "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/action-lock-differential-02/probe_lock.py",
+    "sha256": "caad07035d43dd0e76d8cb0af33b455b2e77eff2aceb90d90c80f0162ee9a49d"
+  }
+}

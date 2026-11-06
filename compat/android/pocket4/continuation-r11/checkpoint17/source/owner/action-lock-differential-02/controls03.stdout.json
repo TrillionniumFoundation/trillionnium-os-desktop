@@ -1,0 +1,116 @@
+{
+  "Hepta_calls": 0,
+  "Main_paths_read": false,
+  "collect_called": false,
+  "controls": [
+    {
+      "adjacent_sample_complete": true,
+      "anonymous_open_attempts": 1,
+      "calls": [
+        [
+          "target",
+          6
+        ],
+        [
+          "anonymous",
+          6
+        ],
+        [
+          "anonymous",
+          8
+        ]
+      ],
+      "control_errno": null,
+      "name": "busy_target_actual_adjacent_FLOCK_and_anonymous_PASS",
+      "passed": true,
+      "target_errno": 11
+    },
+    {
+      "adjacent_sample_complete": true,
+      "anonymous_open_attempts": 1,
+      "calls": [
+        [
+          "target",
+          6
+        ],
+        [
+          "target",
+          8
+        ],
+        [
+          "anonymous",
+          6
+        ],
+        [
+          "anonymous",
+          8
+        ]
+      ],
+      "control_errno": null,
+      "name": "free_target_and_anonymous_actual_release",
+      "passed": true,
+      "target_errno": null
+    },
+    {
+      "adjacent_sample_complete": true,
+      "anonymous_open_attempts": 1,
+      "calls": [
+        [
+          "target",
+          6
+        ],
+        [
+          "anonymous",
+          6
+        ]
+      ],
+      "control_errno": 11,
+      "name": "both_EAGAIN_preserved_with_no_failed_arm_unlock",
+      "passed": true,
+      "target_errno": 11
+    },
+    {
+      "adjacent_sample_complete": true,
+      "anonymous_open_attempts": 1,
+      "calls": [
+        [
+          "target",
+          6
+        ]
+      ],
+      "control_errno": 95,
+      "name": "O_TMPFILE_unsupported_preserved_no_named_fallback",
+      "passed": true,
+      "target_errno": 11
+    },
+    {
+      "adjacent_sample_complete": false,
+      "anonymous_open_attempts": 0,
+      "calls": [
+        [
+          "target",
+          6
+        ]
+      ],
+      "control_errno": null,
+      "name": "target_EAGAIN_survives_adjacent_read_failure",
+      "passed": true,
+      "target_errno": 11
+    },
+    {
+      "name": "only_selected_mount_decoded_and_wrong_fdinfo_inode_rejected",
+      "passed": true
+    }
+  ],
+  "device_holder_or_security_cause_qualified": false,
+  "local_PID_view_fixture": {
+    "getpid": 6,
+    "mapping_only_in_control": true,
+    "proc_self_pid": 1879028,
+    "production_gate_executed": false
+  },
+  "passed": 6,
+  "schema": 1,
+  "scope": "local owned files/O_TMPFILE and explicit failure seams",
+  "source_sha256": "caad07035d43dd0e76d8cb0af33b455b2e77eff2aceb90d90c80f0162ee9a49d"
+}

@@ -1,0 +1,568 @@
+--- main7/read_main_lock_fds.py
++++ visible/read_visible_lock_fds.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Read only exact action-lock FD metadata in seven fixed Main processes."""
++"""Read only exact action-lock FD metadata in one bounded visible PID scan."""
+ import argparse
+ import errno
+ import hashlib
+@@ -18,15 +18,8 @@
+ PRIOR_BYTES = 6053
+ PRIOR_NONCE = 'c398efeb8c07781670825f5ad68e13af'
+ PRIOR_SOURCE = '16f371bda457b830b11536f977a11f8dcce3347eded286605400a9162ba079a8'
+-EXPECTED_PID_BIRTH = {
+-    'daemon_process': (3588022, 80796995),
+-    'launcher_process': (3588089, 80797013),
+-    'presenter_process': (3588024, 80796995),
+-    'init': (3588093, 80797014),
+-    'surfaceflinger': (3588912, 80797155),
+-    'system_server': (3589120, 80797249),
+-    'zygote64': (3588887, 80797153),
+-}
++VISIBLE_PID_MAX = 4096
++PROC_ROOT_ENTRY_MAX = 8192
+ STAT_MAX = 16384
+ STATUS_MAX = 32768
+ CGROUP_MAX = 4096
+@@ -34,7 +27,7 @@
+ FDINFO_MAX = 16384
+ MOUNTINFO_MAX = 524288
+ FD_PER_PROCESS_MAX = 4096
+-FD_TOTAL_MAX = 16384
++FD_TOTAL_MAX = 131072
+ MATCH_FD_MAX = 64
+ LOCK_ROWS_MAX = 32
+ DEADLINE_SECONDS = 15.0
+@@ -233,18 +226,6 @@
+     return value
+ 
+ 
+-def expected_processes(activation, support):
+-    framework = activation['framework_epoch']['binding']['processes']
+-    need(set(framework) == set(support.FRAMEWORK_ROLES), 'EXACT_FOUR_FRAMEWORK_ROLES')
+-    expected = {name: framework[name] for name in support.FRAMEWORK_ROLES}
+-    expected.update({name: activation[name] for name in support.HOST_ROLES})
+-    need(set(expected) == set(EXPECTED_PID_BIRTH) and len(expected) == 7, 'EXACT_SEVEN_MAIN_ROLES')
+-    for name, value in expected.items():
+-        need(type(value['host_pid']) is int and type(value['start_ticks']) is int and
+-             (value['host_pid'], value['start_ticks']) == EXPECTED_PID_BIRTH[name], 'FIXED_PID_BIRTH:' + name)
+-        need(set(value['namespaces']) == {'pid', 'mnt'} and type(value['cgroup']) is list and
+-             type(value['executable']) is str and value['executable'].startswith('/'), 'ORIGINAL_IDENTITY_SCHEMA')
+-    return expected
+ 
+ 
+ def pidfd_alive(pidfd):
+@@ -253,6 +234,16 @@
+     events = poller.poll(0)
+     need(events == [], 'FIXED_PROCESS_PIDFD_NO_LONGER_LIVE')
+     return []
++
++
++def inode_identity(metadata):
++    # nsfs timestamps and proc-directory link counts are observations, not identity.
++    return {key: metadata[key] for key in ('device', 'inode', 'mode', 'uid', 'gid')}
++
++
++def namespace_identity(namespaces):
++    return {name: dict(label=row['label'], identity=inode_identity(row['metadata']))
++            for name, row in namespaces.items()}
+ 
+ 
+ def namespace_metadata(fds, support, procfd, deadline):
+@@ -267,21 +258,21 @@
+             need(re.fullmatch(name + r':\[[0-9]{1,20}\]', label), 'FIXED_NAMESPACE_LINK_SHAPE')
+             before = metadata_from_stat(os.stat(name, dir_fd=nsfd, follow_symlinks=True))
+             after = metadata_from_stat(os.stat(name, dir_fd=nsfd, follow_symlinks=True))
+-            need(before == after and label == os.readlink(name, dir_fd=nsfd) and
+-                 before['inode'] == int(label.split('[')[1][:-1]), 'NAMESPACE_METADATA_CHANGED')
+-            # The label is evidence only. It is never used as a pathname.
+-            result[name] = dict(label=label, metadata=before)
++            need(inode_identity(before) == inode_identity(after) and stat.S_ISREG(before['mode']) and
++                 label == os.readlink(name, dir_fd=nsfd) and
++                 before['inode'] == int(label.split('[')[1][:-1]), 'NAMESPACE_IDENTITY_CHANGED')
++            # Labels are never followed as external paths; times remain raw evidence.
++            result[name] = dict(label=label, metadata=before, named_after_metadata=after)
+         return result
+     finally:
+         fds.close(nsfd)
+ 
+ 
+-def process_sample(fds, support, procfd, pidfd, expected, deadline):
++def process_sample(fds, support, procfd, pidfd, pid, deadline):
++    """Read process details only after an exact lock-inode FD was observed."""
+     pidfd_alive(pidfd)
+-    pid = expected['host_pid']
+     first = parse_proc_stat(read_relative(fds, support, procfd, 'stat', STAT_MAX, deadline), pid)
+-    need(first['state'] not in ('Z', 'X', 'x') and first['start_ticks'] == expected['start_ticks'] and
+-         first['parent_pid'] == expected['parent_host_pid'], 'FIXED_PROCESS_BIRTH_PARENT_STATE')
++    need(first['state'] not in ('Z', 'X', 'x'), 'MATCHED_PROCESS_NOT_LIVE')
+     raw = read_relative(fds, support, procfd, 'status', STATUS_MAX, deadline)
+     fields = {}
+     for line in raw.decode('ascii', 'strict').splitlines():
+@@ -289,27 +280,26 @@
+             key, value = line.split(':', 1)
+             if key in ('Uid', 'NSpid'):
+                 need(key not in fields and value.split() and all(p.isdigit() for p in value.split()),
+-                     'FIXED_PROCESS_STATUS_FORMAT')
++                     'MATCHED_PROCESS_STATUS_FORMAT')
+                 fields[key] = [int(p) for p in value.split()]
+-    need(fields.get('Uid') == expected['uids'] and fields.get('NSpid') == expected['namespace_pids'],
+-         'FIXED_PROCESS_UID_OR_NAMESPACE_PIDS')
++    need(len(fields.get('Uid', [])) == 4 and 1 <= len(fields.get('NSpid', [])) <= 32 and
++         fields['NSpid'][0] == pid, 'MATCHED_PROCESS_UID_AND_NAMESPACE_PID_SHAPE')
+     ns = namespace_metadata(fds, support, procfd, deadline)
+-    need({name: row['label'] for name, row in ns.items()} == expected['namespaces'], 'FIXED_PROCESS_NAMESPACES')
+     cgroup = read_relative(fds, support, procfd, 'cgroup', CGROUP_MAX, deadline).decode('ascii').splitlines()
+-    need(cgroup == expected['cgroup'], 'FIXED_PROCESS_CGROUP')
++    need(cgroup and len(cgroup) <= 64, 'MATCHED_PROCESS_CGROUP_BOUND')
+     link = os.readlink('exe', dir_fd=procfd)
+-    need(link == expected['executable'] and len(os.fsencode(link)) <= LINK_MAX, 'FIXED_PROCESS_EXECUTABLE')
++    need(link.startswith('/') and len(os.fsencode(link)) <= LINK_MAX, 'MATCHED_PROCESS_EXECUTABLE_SHAPE')
+     exe = fds.take(os.open('exe', os.O_PATH | os.O_CLOEXEC, dir_fd=procfd))
+     try:
+         executable = support.metadata(exe)
+         named = metadata_from_stat(os.stat('exe', dir_fd=procfd, follow_symlinks=True))
+         need(stat.S_ISREG(executable['mode']) and executable == support.metadata(exe) == named and
+-             link == os.readlink('exe', dir_fd=procfd), 'FIXED_PROCESS_EXE_METADATA_CHANGED')
++             link == os.readlink('exe', dir_fd=procfd), 'MATCHED_PROCESS_EXE_METADATA_CHANGED')
+     finally:
+         fds.close(exe)
+     last = parse_proc_stat(read_relative(fds, support, procfd, 'stat', STAT_MAX, deadline), pid)
+     need(last['state'] not in ('Z', 'X', 'x') and all(first[k] == last[k]
+-         for k in ('pid', 'comm', 'parent_pid', 'start_ticks')), 'FIXED_PROCESS_STAT_CHANGED_DURING_SAMPLE')
++         for k in ('pid', 'comm', 'parent_pid', 'start_ticks')), 'MATCHED_PROCESS_STAT_CHANGED_DURING_SAMPLE')
+     pidfd_alive(pidfd)
+     return dict(stat=last, uids=fields['Uid'], namespace_pids=fields['NSpid'], namespaces=ns,
+                 executable=dict(path=link, metadata=executable), cgroup=cgroup,
+@@ -318,9 +308,10 @@
+ 
+ 
+ def stable_process_part(value):
+-    return {key: value[key] for key in ('uids', 'namespace_pids', 'namespaces', 'executable',
+-                                      'cgroup', 'process_directory')}, {
+-        key: value['stat'][key] for key in ('pid', 'parent_pid', 'start_ticks', 'comm')}
++    return dict(uids=value['uids'], namespace_pids=value['namespace_pids'],
++                namespaces=namespace_identity(value['namespaces']), executable=value['executable'],
++                cgroup=value['cgroup'], process_directory=inode_identity(value['process_directory']),
++                stat={key: value['stat'][key] for key in ('pid', 'parent_pid', 'start_ticks', 'comm')})
+ 
+ 
+ def parse_fd_name(name):
+@@ -424,80 +415,155 @@
+     try:
+         pid = os.getpid()
+         own = fds.take(os.open(str(pid), os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+-                               dir_fd=proc))
++                                dir_fd=proc))
+         sample = parse_proc_stat(read_relative(fds, support, own, 'stat', STAT_MAX, deadline), pid)
+         namespaces = namespace_metadata(fds, support, own, deadline)
+         mount = parse_proc_mount(read_relative(fds, support, own, 'mountinfo', MOUNTINFO_MAX, deadline))
+         need(parse_proc_stat(read_relative(fds, support, own, 'stat', STAT_MAX, deadline), pid)['start_ticks'] ==
+              sample['start_ticks'], 'SELF_BIRTH_CHANGED')
++        release = os.uname().release
++        need(type(release) is str and 0 < len(os.fsencode(release)) <= 256, 'KERNEL_RELEASE_BOUND')
+         return dict(pid=pid, parent_pid=sample['parent_pid'], start_ticks=sample['start_ticks'],
+                     namespaces=namespaces, proc_root=support.metadata(proc), proc_mount=mount,
+-                    namespace_links_are_never_followed_as_external_paths=True)
++                    kernel_release=release, namespace_links_are_never_followed_as_external_paths=True)
+     finally:
+         if own is not None:
+             fds.close(own)
+         fds.close(proc)
+ 
+ 
+-def scan_process(fds, support, procfd, pidfd, expected, lock_metadata, budget, deadline):
+-    row = dict(host_pid=expected['host_pid'], start_ticks=expected['start_ticks'],
+-               enumeration_complete=False, matched_fds=[], metadata_errors=[],
+-               fd_targets_stat_attempted=0, unrelated_fd_content_reads=0,
+-               matched_fdinfo_bytes=0, first_error=None, secondary_errors=[])
+-    dirs = []
++def stable_self_part(value):
++    return dict(pid=value['pid'], parent_pid=value['parent_pid'], start_ticks=value['start_ticks'],
++                namespaces=namespace_identity(value['namespaces']), proc_root=inode_identity(value['proc_root']),
++                proc_mount=value['proc_mount']['record'], kernel_release=value['kernel_release'])
++
++
++def numeric_pid_names(procfd, support, deadline):
++    iterator = None
++    primary = None
++    names = []
++    entries = 0
++    try:
++        iterator = os.scandir(procfd)
++        for entry in iterator:
++            support.check_time(deadline)
++            need(entries < PROC_ROOT_ENTRY_MAX, 'PROC_ROOT_DIRECTORY_ENTRY_BOUND')
++            entries += 1
++            if not entry.name.isascii() or not entry.name.isdigit():
++                continue
++            pid = parse_fd_name(entry.name)
++            need(pid > 0 and len(names) < VISIBLE_PID_MAX, 'VISIBLE_NUMERIC_PID_BOUND')
++            names.append(pid)
++        need(len(names) == len(set(names)), 'DUPLICATE_VISIBLE_PID_ENTRY')
++    except BaseException as error:
++        primary = error
++    finally:
++        if iterator is not None:
++            try:
++                iterator.close()
++            except BaseException as error:
++                if primary is None:
++                    primary = error
++                else:
++                    primary._lock_close_notes = tuple(getattr(primary, '_lock_close_notes', ())) + (
++                        'proc iterator close: ' + type(error).__name__ + ' errno=' + str(getattr(error, 'errno', None)),)
++    if primary is not None:
++        raise primary
++    return sorted(names), entries
++
++
++def coverage_gap(coverage, phase, error):
++    # No unmatched PID, FD number, name, path or exception message is exported.
++    row = next((item for item in coverage['gaps'] if item['phase'] == phase and
++                item['errno'] == getattr(error, 'errno', None) and item['type'] == type(error).__name__), None)
++    if row is None:
++        need(len(coverage['gaps']) < 64, 'AGGREGATE_COVERAGE_ERROR_BOUND')
++        row = dict(phase=phase, type=type(error).__name__, errno=getattr(error, 'errno', None), count=0)
++        coverage['gaps'].append(row)
++    row['count'] += 1
++
++
++def scan_process(fds, support, procroot, pid, lock_metadata, budget, coverage, deadline):
++    """Only exact lock-FD matches cause new process-content or fdinfo reads."""
++    procfd = fd_dir = info_dir = pidfd = None
++    row = None
++    enumerated = attempted = 0
++    enumeration_complete = False
+ 
+     def remember(phase, error):
+-        item = error_record(phase, error)
+-        if row['first_error'] is None:
+-            row['first_error'] = item
+-        else:
+-            row['secondary_errors'].append(item)
+-
+-    try:
+-        row['before'] = process_sample(fds, support, procfd, pidfd, expected, deadline)
++        if row is not None:
++            item = error_record(phase, error)
++            if row['first_error'] is None:
++                row['first_error'] = item
++            else:
++                row['secondary_errors'].append(item)
++        coverage_gap(coverage, phase, error)
++
++    def named_process_check():
++        named = fds.take(os.open(str(pid), os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
++                                 dir_fd=procroot))
++        try:
++            value = support.metadata(named)
++            need(inode_identity(value) == inode_identity(support.metadata(procfd)), 'MATCHED_NAMED_PROC_CHANGED')
++            pidfd_alive(pidfd)
++            return value
++        finally:
++            fds.close(named)
++
++    try:
++        support.check_time(deadline)
++        procfd = fds.take(os.open(str(pid), os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
++                                  dir_fd=procroot))
++        need(os.fstat(procfd).st_dev == os.fstat(procroot).st_dev, 'VISIBLE_PROC_DIRECTORY_DEVICE')
+         fd_dir = fds.take(os.open('fd', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+-                                  dir_fd=procfd)); dirs.append(fd_dir)
+-        info_dir = fds.take(os.open('fdinfo', os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+-                                    dir_fd=procfd)); dirs.append(info_dir)
+-        for fd in dirs:
+-            need(os.fstat(fd).st_dev == os.fstat(procfd).st_dev, 'FIXED_PROC_DIRECTORY_DEVICE')
++                                  dir_fd=procfd))
++        need(os.fstat(fd_dir).st_dev == os.fstat(procfd).st_dev, 'VISIBLE_FD_DIRECTORY_DEVICE')
+         names = directory_names(fd_dir, support, budget, deadline)
+-        row['enumerated_fd_count'] = len(names)
++        enumerated = len(names)
+         for number in names:
+             support.check_time(deadline)
+-            pidfd_alive(pidfd)
+-            name = str(number)
+-            row['fd_targets_stat_attempted'] += 1
+-            try:
+-                before = metadata_from_stat(os.stat(name, dir_fd=fd_dir, follow_symlinks=True))
++            attempted += 1
++            coverage['fd_stat_attempts'] += 1
++            try:
++                before = metadata_from_stat(os.stat(str(number), dir_fd=fd_dir, follow_symlinks=True))
+             except OSError as error:
+-                # No unrelated FD number, pathname or content is exported.
+-                key = dict(errno=error.errno, type=type(error).__name__)
+-                existing = next((x for x in row['metadata_errors'] if x['errno'] == key['errno'] and x['type'] == key['type']), None)
+-                if existing is None:
+-                    row['metadata_errors'].append(dict(**key, count=1))
+-                else:
+-                    existing['count'] += 1
++                coverage_gap(coverage, 'fd_target_stat', error)
+                 continue
+             if identity_key(before) != (LOCK_DEV, LOCK_INO):
+                 continue
+             need(budget['matches'] < MATCH_FD_MAX, 'MATCHING_FD_OUTPUT_BOUND')
+             budget['matches'] += 1
++            if row is None:
++                row = dict(pid=pid, matched_fds=[], first_error=None, secondary_errors=[], complete=False,
++                           observation_grants_signal_or_cleanup_authority=False)
+             match = dict(fd=number, target_before=before, complete=False, error=None)
+             row['matched_fds'].append(match)
+             info_fd = None
+             try:
+                 need(before == lock_metadata, 'MATCHED_FD_EXACT_LOCK_METADATA')
+-                info_fd = fds.take(os.open(name, os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC,
++                if pidfd is None:
++                    pidfd = fds.take(os.pidfd_open(pid, 0))
++                    need(not os.get_inheritable(pidfd), 'PIDFD_CLOEXEC_REQUIRED')
++                    pidfd_alive(pidfd)
++                    row['named_proc_before'] = named_process_check()
++                    row['before'] = process_sample(fds, support, procfd, pidfd, pid, deadline)
++                    row['named_proc_after_initial_sample'] = named_process_check()
++                need('before' in row and 'named_proc_after_initial_sample' in row,
++                     'MATCHED_PROCESS_INITIAL_IDENTITY_REQUIRED')
++                if info_dir is None:
++                    info_dir = fds.take(os.open('fdinfo', os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
++                                                dir_fd=procfd))
++                    need(os.fstat(info_dir).st_dev == os.fstat(procfd).st_dev, 'MATCHED_FDINFO_DIRECTORY_DEVICE')
++                info_fd = fds.take(os.open(str(number), os.O_RDONLY | os.O_NONBLOCK | os.O_NOFOLLOW | os.O_CLOEXEC,
+                                            dir_fd=info_dir))
+                 info_before = support.metadata(info_fd)
+                 need(stat.S_ISREG(info_before['mode']) and info_before['device'] == os.fstat(procfd).st_dev,
+                      'MATCHED_FDINFO_PROC_DEVICE')
+                 raw = support.read_bounded(info_fd, FDINFO_MAX, deadline)
+                 match['fdinfo'] = parse_fdinfo(raw)
+-                row['matched_fdinfo_bytes'] += len(raw)
++                coverage['matched_fdinfo_bytes'] += len(raw)
+                 need(info_before == support.metadata(info_fd), 'MATCHED_FDINFO_FILE_CHANGED')
+-                match['target_after'] = metadata_from_stat(os.stat(name, dir_fd=fd_dir, follow_symlinks=True))
++                match['target_after'] = metadata_from_stat(os.stat(str(number), dir_fd=fd_dir, follow_symlinks=True))
+                 need(before == match['target_after'], 'MATCHED_FD_TARGET_CHANGED')
+                 pidfd_alive(pidfd)
+                 match.update(complete=True, observed_monotonic_ns=time.monotonic_ns(),
+@@ -511,31 +577,31 @@
+                         fds.close(info_fd)
+                     except OSError as error:
+                         remember('matching_fdinfo_close', error)
+-        row['enumeration_complete'] = True
+-        if row['metadata_errors']:
+-            remember('fd_target_metadata', RuntimeError('ONE_OR_MORE_ENUMERATED_FD_TARGETS_UNAVAILABLE'))
++        enumeration_complete = True
++        coverage['pid_fd_enumerations_completed'] += 1
+     except Exception as error:
+-        remember('fixed_process_fd_scan', error)
+-    finally:
+-        for fd in reversed(dirs):
+-            try:
+-                fds.close(fd)
+-            except OSError as error:
+-                remember('fixed_process_directory_close', error)
+-        try:
+-            row['after'] = process_sample(fds, support, procfd, pidfd, expected, deadline)
+-            need('before' in row and stable_process_part(row['before']) == stable_process_part(row['after']),
+-                 'FIXED_PROCESS_BEFORE_AFTER_CHANGED')
+-            named = open_fixed(fds, support, '/proc/' + str(expected['host_pid']), os.O_PATH | os.O_DIRECTORY, deadline)
+-            try:
+-                row['named_proc_after'] = support.metadata(named)
+-                need(row['named_proc_after'] == row['after']['process_directory'], 'FIXED_NAMED_PROC_CHANGED')
+-            finally:
+-                fds.close(named)
+-        except Exception as error:
+-            remember('fixed_process_final_identity', error)
+-    row['complete'] = (row['enumeration_complete'] and row['first_error'] is None and
+-                       not row['secondary_errors'] and all(x['complete'] for x in row['matched_fds']))
++        remember('visible_pid_fd_scan', error)
++    finally:
++        if row is not None and pidfd is not None:
++            try:
++                row['after'] = process_sample(fds, support, procfd, pidfd, pid, deadline)
++                need('before' in row and stable_process_part(row['before']) == stable_process_part(row['after']),
++                     'MATCHED_PROCESS_BEFORE_AFTER_CHANGED')
++                row['named_proc_after'] = named_process_check()
++            except Exception as error:
++                remember('matched_process_final_identity', error)
++        for fd in (info_dir, fd_dir, pidfd, procfd):
++            if fd is not None:
++                try:
++                    fds.close(fd)
++                except OSError as error:
++                    remember('visible_process_owned_FD_close', error)
++    if row is not None:
++        row.update(enumerated_fd_count=enumerated, fd_stat_attempts=attempted,
++                   enumeration_complete=enumeration_complete)
++        row['complete'] = (enumeration_complete and row['first_error'] is None and
++                           not row['secondary_errors'] and 'named_proc_after' in row and
++                           all(item['complete'] for item in row['matched_fds']))
+     return row
+ 
+ 
+@@ -543,19 +609,27 @@
+     prior = validate_prior(prior_raw)
+     started = time.monotonic()
+     deadline = started + DEADLINE_SECONDS
+-    result = dict(schema=1, collection_complete=False, error=None, secondary_errors=[],
+-                  scope='exact action-lock FD metadata in seven unchanged fixed Main processes',
++    result = dict(schema=1, collection_complete=False, scan_completed=False, coverage_complete=False,
++                  error=None, secondary_errors=[],
++                  scope='one bounded visible numeric-PID FD metadata scan for the exact action-lock inode',
+                   prior_failure=dict(bytes=PRIOR_BYTES, sha256=PRIOR_SHA, nonce=PRIOR_NONCE),
+                   lock_path=LOCK, expected_lock=dict(device=LOCK_DEV, inode=LOCK_INO, mode=LOCK_MODE, uid=0, gid=0, nlink=1),
+-                  inputs={}, final_inputs={}, processes={}, main_guard_before=None, main_guard_after=None,
++                  inputs={}, final_inputs={}, matched_processes=[], main_guard_before=None, main_guard_after=None,
+                   original_Main_guard_unchanged=True, output_is_sequential_not_atomic=True,
+                   runtime_authorized=False, observation_grants_kill_or_cleanup_authority=False,
+                   no_match_proves_no_holder=False, same_open_file_description_proven=False,
+                   fdinfo_PID_is_not_birth_or_original_sender=True, historical_sender_proven=False,
+                   original_Main_guard_fixed_process_reads_retained=True,
++                  visible_PID_limit=VISIBLE_PID_MAX, proc_root_entry_limit=PROC_ROOT_ENTRY_MAX,
+                   per_process_fd_limit=FD_PER_PROCESS_MAX, total_fd_limit=FD_TOTAL_MAX,
+                   fdinfo_maximum_bytes=FDINFO_MAX, maximum_matching_fds=MATCH_FD_MAX,
+-                  deadline_seconds=DEADLINE_SECONDS, lock_table_reads=0, full_proc_scans=0,
++                  deadline_seconds=DEADLINE_SECONDS, lock_table_reads=0,
++                  only_numeric_proc_root_directories_scanned=True, task_subdirectories_scanned=False,
++                  initial_host_PID_namespace_visibility_proven=False,
++                  visibility_limits=['one current /proc view', 'numeric leader directories only',
++                                     'transient process/FD disappearance stays uncovered',
++                                     'nonleader private FD tables and kernel in-flight references not examined'],
++                  unmatched_PID_details_exported=0, unmatched_process_content_reads=0,
+                   unrelated_fd_content_reads=0, fd_target_readlink_calls=0,
+                   pidfd_getfd_calls=0, flock_calls=0, lock_content_reads=0, lock_writes=0,
+                   lock_replacement_or_deletion=0, process_signals=0, process_starts=0,
+@@ -564,8 +638,11 @@
+     fds = OwnedFDs()
+     anchors = {}
+     activation = reference = epoch = None
+-    lockfd = None
++    lockfd = procroot = None
+     budget = dict(enumerated=0, matches=0)
++    coverage = dict(visible_numeric_PID_count=0, root_directory_entries=0, excluded_collector_PID=None,
++                    pid_scans_attempted=0, pid_fd_enumerations_completed=0, fd_stat_attempts=0,
++                    matched_fdinfo_bytes=0, gaps=[])
+ 
+     def remember(phase, error):
+         row = error_record(phase, error)
+@@ -592,9 +669,8 @@
+             bodies[name], result['inputs'][name] = raw, record
+         activation = json.loads(bodies['activation'])
+         need(activation['framework_epoch']['sha256'] == support.EPOCH_SHA, 'ORIGINAL_MAIN_EPOCH')
+-        expected = expected_processes(activation, support)
+-        reference = support.load_exact_source(bodies['reference_source'], support.REFERENCE, 'original_fixed_fd_Main_reference')
+-        epoch = support.load_exact_source(bodies['epoch_source'], support.EPOCH_SOURCE, 'original_fixed_fd_Main_epoch')
++        reference = support.load_exact_source(bodies['reference_source'], support.REFERENCE, 'original_visible_fd_Main_reference')
++        epoch = support.load_exact_source(bodies['epoch_source'], support.EPOCH_SOURCE, 'original_visible_fd_Main_epoch')
+         need(str(reference.ACTIVATION) == support.ACTIVATION and str(reference.VERIFIED) == support.VERIFIED and
+              str(reference.EPOCH_SOURCE) == support.EPOCH_SOURCE and str(reference.MAIN_CGROUP) == support.CGROUP and
+              reference.EPOCH == support.EPOCH_SHA and reference.ACTIVATION_SHA == support.INPUTS[0][2] and
+@@ -606,39 +682,55 @@
+         lockfd, result['lock_before'] = open_lock_metadata(support, deadline)
+         fds.take(lockfd)
+         result['self_before'] = self_context(fds, support, deadline)
+-        for role in EXPECTED_PID_BIRTH:
++        procroot = open_fixed(fds, support, '/proc', os.O_RDONLY | os.O_DIRECTORY, deadline)
++        result['proc_root_before'] = support.metadata(procroot)
++        need(inode_identity(result['proc_root_before']) == inode_identity(result['self_before']['proc_root']),
++             'FIXED_PROC_ROOT_IDENTITY')
++        pids, entries = numeric_pid_names(procroot, support, deadline)
++        own_pid = os.getpid()
++        need(own_pid == result['self_before']['pid'] and own_pid in pids, 'COLLECTOR_VISIBLE_PID_CONTEXT')
++        coverage.update(visible_numeric_PID_count=len(pids), root_directory_entries=entries,
++                        excluded_collector_PID=own_pid)
++        for pid in pids:
+             support.check_time(deadline)
+-            value = expected[role]
+-            procfd = pidfd = None
+-            try:
+-                procfd = open_fixed(fds, support, '/proc/' + str(value['host_pid']), os.O_PATH | os.O_DIRECTORY, deadline)
+-                pidfd = fds.take(os.pidfd_open(value['host_pid'], 0))
+-                need(not os.get_inheritable(pidfd), 'PIDFD_CLOEXEC_REQUIRED')
+-                result['processes'][role] = scan_process(fds, support, procfd, pidfd, value,
+-                                                        result['lock_before'], budget, deadline)
+-                if not result['processes'][role]['complete']:
+-                    remember('fixed_process:' + role, RuntimeError('FIXED_PROCESS_OBSERVATION_INCOMPLETE'))
++            if pid == own_pid:
++                continue
++            coverage['pid_scans_attempted'] += 1
++            row = scan_process(fds, support, procroot, pid, result['lock_before'], budget, coverage, deadline)
++            if row is not None:
++                result['matched_processes'].append(row)
++        result['scan_completed'] = True
++        result['coverage_complete'] = (not coverage['gaps'] and
++            coverage['pid_fd_enumerations_completed'] == coverage['pid_scans_attempted'] == len(pids) - 1 and
++            coverage['fd_stat_attempts'] == budget['enumerated'] and
++            all(row['complete'] for row in result['matched_processes']))
++        if not result['coverage_complete']:
++            remember('visible_PID_FD_coverage', RuntimeError('ONE_OR_MORE_VISIBLE_PID_FD_OBSERVATIONS_INCOMPLETE'))
++    except Exception as error:
++        remember('visible_lock_FD_collection', error)
++    finally:
++        result['fd_counts'], result['coverage'] = budget, coverage
++        if procroot is not None:
++            named = None
++            try:
++                result['proc_root_after'] = support.metadata(procroot)
++                named = open_fixed(fds, support, '/proc', os.O_PATH | os.O_DIRECTORY, deadline)
++                result['proc_root_named_after'] = support.metadata(named)
++                need(inode_identity(result['proc_root_before']) == inode_identity(result['proc_root_after']) ==
++                     inode_identity(result['proc_root_named_after']), 'PROC_ROOT_HELD_NAMED_IDENTITY_CHANGED')
+             except Exception as error:
+-                result['processes'].setdefault(role, dict(host_pid=value['host_pid'], complete=False,
+-                                                          first_error=error_record('fixed_process_open', error)))
+-                remember('fixed_process:' + role, error)
++                remember('final_proc_root', error)
+             finally:
+-                for fd in (pidfd, procfd):
+-                    if fd is not None:
+-                        try:
+-                            fds.close(fd)
+-                        except OSError as error:
+-                            remember('fixed_process_anchor_close:' + role, error)
+-    except Exception as error:
+-        remember('fixed_main_lock_fd_collection', error)
+-    finally:
+-        result['fd_counts'] = budget
++                if named is not None:
++                    try:
++                        fds.close(named)
++                    except OSError as error:
++                        remember('final_named_proc_root_close', error)
+         if 'self_before' in result:
+             try:
+                 result['self_after'] = self_context(fds, support, deadline)
+-                a, b = result['self_before'], result['self_after']
+-                need(all(a[k] == b[k] for k in ('pid', 'parent_pid', 'start_ticks', 'namespaces', 'proc_root')) and
+-                     a['proc_mount']['record'] == b['proc_mount']['record'], 'SELF_OR_PROC_MOUNT_CONTEXT_CHANGED')
++                need(stable_self_part(result['self_before']) == stable_self_part(result['self_after']),
++                     'SELF_OR_PROC_IDENTITY_CHANGED')
+             except Exception as error:
+                 remember('final_self_proc_context', error)
+         if lockfd is not None:
+@@ -678,9 +770,9 @@
+         if fds.close_errors:
+             result['secondary_errors'].extend(fds.close_errors)
+         result['owned_fds_closed'] = not fds.values and not fds.close_errors
+-        result['collection_complete'] = (result['error'] is None and not result['secondary_errors'] and
+-            result['owned_fds_closed'] and len(result['processes']) == 7 and
+-            all(row['complete'] for row in result['processes'].values()) and len(result['final_inputs']) == 5 and
++        result['collection_complete'] = (result['scan_completed'] and result['coverage_complete'] and
++            result['error'] is None and not result['secondary_errors'] and result['owned_fds_closed'] and
++            len(result['final_inputs']) == 5 and
+             result['main_guard_before'] == result['main_guard_after'] == prior['Main_before_lock'])
+         result['elapsed_ms'] = int((time.monotonic() - started) * 1000)
+     return result
+@@ -693,11 +785,13 @@
+     if args.collect_once:
+         result = collect(support, prior_raw)
+     else:
+-        result = dict(state='PLAN_ONLY', fixed_PID_births=EXPECTED_PID_BIRTH,
++        result = dict(state='PLAN_ONLY', visible_numeric_PID_limit=VISIBLE_PID_MAX,
++                      proc_root_directory_entry_limit=PROC_ROOT_ENTRY_MAX,
+                       lock_path=LOCK, lock_device=LOCK_DEV, lock_inode=LOCK_INO,
+                       per_process_fd_limit=FD_PER_PROCESS_MAX, total_fd_limit=FD_TOTAL_MAX,
+                       maximum_matching_fds=MATCH_FD_MAX, fdinfo_maximum_bytes=FDINFO_MAX,
+                       deadline_seconds=DEADLINE_SECONDS, original_Main_guard_calls=2,
++                      collector_own_PID_excluded=True, only_matched_process_details=True,
+                       runtime_authorized=False, remote_actions=0)
+     raw = (json.dumps(result, ensure_ascii=True, sort_keys=True, separators=(',', ':')) + '\n').encode('ascii')
+     need(len(raw) <= OUTPUT_MAX, 'COMPLETE_OUTPUT_BOUND_NO_TRUNCATION')

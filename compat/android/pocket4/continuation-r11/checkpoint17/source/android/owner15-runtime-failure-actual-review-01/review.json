@@ -1,0 +1,176 @@
+{
+  "actual_outer_cleanup": {
+    "cgroup_absent": true,
+    "invocation": "3390cef640ed48b597413bcbbcdf3bac",
+    "original_actor_dead": true,
+    "unit": "p4-owner15-normal-20261105-01.service",
+    "unit_not_found": true
+  },
+  "actual_reader_job": "1a1ad474b02-fc05-594a",
+  "actual_runtime_job": "1a1ad424be2-fc05-593a",
+  "app_qualified": false,
+  "bound_actor_pid": 2875997,
+  "broker_receipt_boundaries": {
+    "cleanup_failure": null,
+    "faulted": true,
+    "granted": false,
+    "incomplete": true,
+    "normal_success_qualification": false,
+    "retirement_failure": null
+  },
+  "checks": {
+    "ABI3_128byte_hello_project_projected_commit_done_nonce_headers_match": true,
+    "ACTIVE_event_present": false,
+    "actual_plan_prepared_attempt_and_gate_hash_equal": true,
+    "all_four_direct_children_reaped_without_forced_kill": true,
+    "all_observed_memory_event_counters_zero": true,
+    "all_three_Main_maps_equal_preparation_original12288": true,
+    "compressed_envelope_original_bytes_full_SHA": true,
+    "embedded_actor_pretty_bytes_sha_matches_parent": true,
+    "original_first_errors_retained": true,
+    "original_unit_actor_generation_and_cgroup_held_identity_equal": true,
+    "outer_memory_peak_bytes": 561790976,
+    "recording_incomplete": false,
+    "swap_peak_zero": true
+  },
+  "direct_child_retirement": [
+    {
+      "forced_kill": false,
+      "pid": 2876054,
+      "reaped": true,
+      "returncode": 0,
+      "role": "daemon"
+    },
+    {
+      "forced_kill": false,
+      "pid": 2876040,
+      "reaped": true,
+      "returncode": -15,
+      "role": "presenter"
+    },
+    {
+      "forced_kill": false,
+      "pid": 2876005,
+      "reaped": true,
+      "returncode": 0,
+      "role": "sway"
+    },
+    {
+      "forced_kill": false,
+      "pid": 2876004,
+      "reaped": true,
+      "returncode": 0,
+      "role": "bus"
+    }
+  ],
+  "done_to_first_failure_ms": 37521.881826,
+  "init_identity": {
+    "birth": 93387846,
+    "pid": 2876109,
+    "pidfd": {
+      "device": 6,
+      "inode": 23817205
+    },
+    "proc_dir": {
+      "device": 26,
+      "inode": 522713814
+    }
+  },
+  "inputs": [
+    {
+      "bytes": 515,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-runtime01/stdout.log",
+      "sha256": "2d56347cac6d801dee7f29c48e51d5f3766d4812c77a526d9b1a3cd71585818e"
+    },
+    {
+      "bytes": 726,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-runtime01/terminal-status.tool-original.json",
+      "sha256": "43c6ae1c8fc81ded27a3cbe572eeafea14bab82f5c764995245ae950bfffe8f3"
+    },
+    {
+      "bytes": 10135,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-runtime-read01/stdout.log",
+      "sha256": "02db055b9085e55601c51e4e91290b40b3dd7b289a79a9369b819e296fb7b6a0"
+    },
+    {
+      "bytes": 65233,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-runtime-read01/reader-bundle.json",
+      "sha256": "d370badcd62170555208d0f3c1500448bc0be79bc45dbafefc1e3f9df4dc7a46"
+    },
+    {
+      "bytes": 59461,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-runtime-read01/runtime-result.json",
+      "sha256": "6d35b126c24604d373175479c9bc69e0246a45c05f2061bb8f8077399f0926d5"
+    },
+    {
+      "bytes": 733,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/owner15-normal01-runtime-read01/terminal-status.tool-original.json",
+      "sha256": "6a5ff649283f15675689a4fefa1c3fd43e27c5878fe91d0e26b757e47b256a12"
+    },
+    {
+      "bytes": 75683,
+      "path": "/workspace/scratch/94990735b266/lmkd-recovery-20261105-01/owner15-normal01-freeze-01/plan.json",
+      "sha256": "cf1d859b47518e356ca63663de1933f06aefe30aea1f130435aef4305aaa1c79"
+    },
+    {
+      "bytes": 55139,
+      "path": "/workspace/scratch/94990735b266/android-owner15-normal01-runtime-freeze-01/actual-prepared.json",
+      "sha256": "cdcf0db96db1c7100c17faa5c4b0926b544f8c41b8da8960e49788dee3926de8"
+    }
+  ],
+  "kind": "owner15-original-runtime-failure-independent-review",
+  "limits": [
+    "Four child roles are bus, sway, presenter and daemon. Presenter exited after SIGTERM during owned cleanup; this is not four zero-exit daemons.",
+    "Original lifecycle records reach retirement and resource/claim release, but the broker receipt remains incomplete and faulted. Cleanup completion is not ACTIVE or normal-runtime qualification.",
+    "The gate and actor hashes are linked inside the complete runtime result. The separate gate/actor/log files are to be collected by the existing fixed fifteen-member reader.",
+    "No new runtime, device action, process signal, source change or remote collection was executed by this review."
+  ],
+  "observed_events": [
+    "prepared",
+    "owner_attached",
+    "init_hello",
+    "broker_ready",
+    "init_project_sent",
+    "init_projected_accepted",
+    "init_commit_sent",
+    "init_done_accepted",
+    "retiring",
+    "broker_retired",
+    "processes_dead",
+    "domain_empty",
+    "retired",
+    "resources_removed",
+    "claim_released"
+  ],
+  "observed_namespace_owner_exit": {
+    "core_dumped": false,
+    "exit_code": null,
+    "explicit_stop_requested_before_observation": false,
+    "host_pid": 2876106,
+    "observed_monotonic_ns": 933918103549712,
+    "process": {
+      "birth": 93387846,
+      "pid": 2876106,
+      "pidfd": {
+        "device": 6,
+        "inode": 23764074
+      },
+      "proc_dir": {
+        "device": 26,
+        "inode": 522710394
+      }
+    },
+    "raw_status": 1,
+    "signal": 1,
+    "worker_retirement_started_before_observation": true
+  },
+  "original_actor_first_error": {
+    "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+    "stage": "normal"
+  },
+  "production_ready": false,
+  "root_cause_status": "Signal 1 is an observed wait status for the exact namespace-owner process. The sender or reboot/fatal origin is not established by this receipt; fixed original logs remain required. No external SIGHUP sender is inferred.",
+  "runtime_result": "FAIL_PRESERVED_BEFORE_ACTIVE",
+  "schema": 1,
+  "unit_invocation": "3390cef640ed48b597413bcbbcdf3bac"
+}

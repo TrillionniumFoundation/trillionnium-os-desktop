@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "source_read_complete": true,
+  "controller": {
+    "bytes": 38463,
+    "sha256": "12a86ce8fc03b281193a5942a5b7be0c1d7531f7f4e489f1eeca8db9688d1307"
+  },
+  "fence": {
+    "bytes": 9210,
+    "sha256": "a9340df260f62cc8bbcce598c5de03cfc7d0d8c1ecde6b1987941d2c50e33c3b"
+  },
+  "unchanged_snapshot": {
+    "bytes": 6778,
+    "sha256": "f909bdfcaedfef29fcc1ba6a994c49bc21e99850204bac7e0565548bcd7139cb"
+  },
+  "machine_check": {
+    "pass": true,
+    "payloads": 20,
+    "packet_members": 7,
+    "unchanged_original_helpers": [
+      "digest",
+      "utc",
+      "require",
+      "save",
+      "no_alias",
+      "memory_admission",
+      "owned_resource_gate",
+      "subreaper",
+      "child_ids",
+      "cleanup_children"
+    ],
+    "unchanged_fence_helpers": [
+      "capture",
+      "compare",
+      "require",
+      "save",
+      "sha"
+    ],
+    "actual_inputs_exact": true,
+    "stage_tail_AST_verified": true,
+    "earlier_checker_failure": "literal spacing assumption PACKET = versus actual PACKET=; source unchanged; corrected structural assertion",
+    "request": {
+      "bytes": 97668,
+      "sha256": "bf5304dcce8d846d628fcb0e90635278ecadf781688a1a6c9ae490af1210d9ed"
+    }
+  },
+  "scope": "Normal builder materialization/reconciliation and Strict framework-minus-apex/libandroid_runtime two-target build in fresh owned output, actual isolated prepared workspace; no runtime authorization or Main mutation.",
+  "actual_builder_sha256": "309e96393ab482c958a519b78a455a6c75d156a6edb805c840aa6d21f76fa96a",
+  "actual_compile_sha256": "2d6c80a29e957b1e97764d8785257eb47c3d0b899f301e64c9a9c418e96ea0ab",
+  "actual_workprep_sha256": "ab286f3939acfeb648a716ca15e5df348fef6b7007eb5651735fe8a7bda96b1c",
+  "main_five_limits_before_and_after": {
+    "memory_high": "5368709120",
+    "memory_max": "6442450944",
+    "memory_swap_max": "max",
+    "cpu_max": "200000 100000",
+    "pids_max": "12288"
+  },
+  "budget": {
+    "memory_max": 10737418240,
+    "own_swap_max": 1073741824,
+    "cpu_percent": 200,
+    "jobs": 1,
+    "mem_available_min": 13958643712,
+    "swap_free_min": 2147483648,
+    "timeout_seconds": 6400
+  },
+  "no_concurrent_owner_runtime": true,
+  "completion_is_qualification_pending": true,
+  "whole_app_qualification": false,
+  "no_automatic_retry": true
+}

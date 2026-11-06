@@ -1,0 +1,99 @@
+{
+  "allowlist": {
+    "cleanup.json": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-8f28dc51812add5280cb6b7ba411aad0/steps/cleanup-01/result.json",
+    "coordinator.json": "/home/alex/work/pocket4-bilibili-r6-pause-resume-02/result.json",
+    "navigation-command.json": "/home/alex/work/pocket4-bilibili-r6-pause-resume-02/evidence/03-navigate.result.json",
+    "navigation.json": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-8f28dc51812add5280cb6b7ba411aad0/steps/pause-resume-01/result.json",
+    "stage.json": "/home/alex/work/pocket4-bilibili-r6-pause-resume-02/stage-result.json"
+  },
+  "baseline_reader": {
+    "bytes": 10945,
+    "path": "/workspace/scratch/94990735b266/android-bili-r6-pause-resume-failure-reader-01/read_summary.py",
+    "sha256": "246876f828570aca16cb78e3368eb81c2b92ebc2c8f8aae8817e8008213e46b0"
+  },
+  "child_pins": {
+    "cleanup": {
+      "bytes": 448,
+      "path": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-8f28dc51812add5280cb6b7ba411aad0/steps/cleanup-01/result.json",
+      "sha256": "1f5bc45e0d60e3b94d9c2c2946bca5d3e969bede051fa5714f8987b1a6077a40"
+    },
+    "command": {
+      "bytes": 1162,
+      "path": "/home/alex/work/pocket4-bilibili-r6-pause-resume-02/evidence/03-navigate.result.json",
+      "sha256": "069896febd7904e2570f2b61df30c19b81b6f648096b027bfd18c77cf8707163"
+    },
+    "navigation": {
+      "bytes": 214331,
+      "path": "/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-8f28dc51812add5280cb6b7ba411aad0/steps/pause-resume-01/result.json",
+      "sha256": "e7403db0e2a65637281ed00489d2fa70e796881b06cf8d23720cce28fac834d6"
+    }
+  },
+  "default_PLAN_returncode": 0,
+  "literal_rebindings": [
+    [
+      "pocket4-bilibili-r6-pause-resume-01",
+      "pocket4-bilibili-r6-pause-resume-02"
+    ],
+    [
+      "f293d9ad6b688c72e7c98e76753a8c3f",
+      "8f28dc51812add5280cb6b7ba411aad0"
+    ],
+    [
+      "f4a73707341f1c78e28f41ca618f60f6350ae4803ccfc0e084be07f190d35463",
+      "0611a55350a19de18b14b1da7fe6342caed8f8e6082746e83b028b345abd8d97"
+    ],
+    [
+      "05ab6c8427b6994d4b21bc6a58a30cb9285d223ca3b6d78f1a704c49d16bb0c7",
+      "d04701a323982b972cdfde1dad4ae0e476f4f2a3b47efcdb973c762b0c9d1f00"
+    ],
+    [
+      "530923b0e302736a9897884264f12ec8397841b872b31e1e5d460e7bc17f754e",
+      "9ad3fdbd324dedd87bb4570bf0e09c7c5265f92b44f6133f63e1e29b409ad15b"
+    ],
+    [
+      "495ee282856887580c664c5d48f340331287bcc2b3a25aba4920ac8079d231bc",
+      "1f5bc45e0d60e3b94d9c2c2946bca5d3e969bede051fa5714f8987b1a6077a40"
+    ],
+    [
+      "'bytes':6359",
+      "'bytes':7406"
+    ],
+    [
+      "coordinator_sha,6359",
+      "coordinator_sha,7406"
+    ],
+    [
+      "'bytes':447",
+      "'bytes':448"
+    ],
+    [
+      "a6077a40',447",
+      "a6077a40',448"
+    ]
+  ],
+  "no_remote_or_UI_calls": true,
+  "parent_source_verified": true,
+  "reader_limits_unchanged": {
+    "command": 32768,
+    "envelope": 3145728,
+    "seconds": 8,
+    "single": 262144,
+    "total": 2097152
+  },
+  "runtime_logic_changes": [
+    "Require the actual parent retained navigation and command pins before reading children.",
+    "Read all five exact JSON files as mandatory. Remove the redundant navigation stdout read and equality check because the durable navigation worker itself now has an external parent pin.",
+    "Mark only verified child pin and scope bindings; retain sequential/non-atomic and no UI-window release claims."
+  ],
+  "schema": 1,
+  "specific_failed_navigation_step_not_inferred": true,
+  "terminal_job": "1a1adb38e00-fc05-5aa8",
+  "unchanged_AST_definitions": [
+    "Reader",
+    "need",
+    "sha",
+    "no_raw_ui",
+    "navigation_binding",
+    "main"
+  ]
+}

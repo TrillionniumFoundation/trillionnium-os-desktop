@@ -1,0 +1,77 @@
+{
+  "baseline_source_manifest": {
+    "bytes": 1134,
+    "sha256": "f4a73707341f1c78e28f41ca618f60f6350ae4803ccfc0e084be07f190d35463"
+  },
+  "business_success_verified": false,
+  "candidate_manifest": {
+    "bytes": 1133,
+    "sha256": "0611a55350a19de18b14b1da7fe6342caed8f8e6082746e83b028b345abd8d97"
+  },
+  "changed_runtime_functions_after_fresh_literal_normalization": {
+    "controls_reveal.py": [
+      "bind_pause_inspection",
+      "run"
+    ],
+    "make_request.py": [],
+    "owned_navigation.py": [
+      "execute"
+    ],
+    "playback_controls.py": [
+      "click_sequence",
+      "retain_phase_results",
+      "run"
+    ],
+    "stage_execute.py": [],
+    "video_navigation.py": []
+  },
+  "controls": {
+    "check_fresh_inspect": {
+      "passed": 20,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 7954,
+      "stdout_sha256": "359382042c56c9de17b283382ae8456354331500e303229c88b39e4c5513fd7b"
+    },
+    "check_retention": {
+      "passed": 7,
+      "returncode": 0,
+      "stderr_bytes": 0,
+      "stdout_bytes": 2856,
+      "stdout_sha256": "a0b82b4a520f98e4ca6b30f1042d255fe026ee965f62ac7b0d6f9735870288b5"
+    }
+  },
+  "failed_or_unknown_pause_never_resumes": true,
+  "failed_reveal_and_started_click_independent_finally_reads_retained": true,
+  "input_ACK_alone_never_qualifies_controls": true,
+  "maximum_source_bytes": 65325,
+  "original_Session_and_Java_full_tree_window_node_guards_unchanged": true,
+  "packet_bytes": 130927,
+  "packet_cap_unchanged": 131072,
+  "parent_fixed_worker_command_receipts_retained_after_cleanup_on_failure": true,
+  "reveal_original_after_state_retained": true,
+  "schema": 1,
+  "scope": "LOCAL_SOURCE_AND_PURE_CONTROLS_ONLY_NOT_DISPATCHED",
+  "source_cap_unchanged": 65536,
+  "successful_reveal_independent_observation_bound_to_pause_own_actual_inspect_before_click": true,
+  "unchanged_actual_helper_sources": {
+    "qa_adapter.py": {
+      "bytes": 25231,
+      "sha256": "1e939fb27aa4eaa9bb2fd79d7022ff4f48011fdf8824b0e7645bbc6f3308e1c8"
+    },
+    "qa_contract.py": {
+      "bytes": 39280,
+      "sha256": "871c784812063739a6ab976784fb38243af52266b0d9a95aa1244779ccd2c005"
+    },
+    "src/org/droidloom/qa/bili/r6/ActionRunner.java": {
+      "bytes": 60912,
+      "sha256": "c93b943bee94533fdeb31954879434f565227ed15e1315c5e697bfae8357c6f5"
+    },
+    "src/org/droidloom/qa/bili/r6/TouchTransaction.java": {
+      "bytes": 4979,
+      "sha256": "059c4a66d51b92931c626fd95283821dde21d1e311fb5a9f5d35e05342243803"
+    }
+  },
+  "whole_app_production_ready": false,
+  "zero_remote_or_UI_actions": true
+}

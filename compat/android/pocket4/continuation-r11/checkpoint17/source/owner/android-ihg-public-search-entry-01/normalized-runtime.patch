@@ -1,0 +1,613 @@
+--- original-IHG-launch01/owned_inspect.py
++++ new-public-search01/owned_inspect.py
+@@ -1,8 +1,9 @@
+ #!/usr/bin/env python3
+-"""One actual-bound IHG launch, read-only QA sequence and owned task cleanup.
+-
+-No click, text entry, old v2 helper, screenshot, audio, package change, permission
+-grant or settings write. Raw helper tree stays in the new root-private flow.
++"""One actual-bound IHG launch, fresh public Search entry and owned cleanup.
++
++At most one current semantically bound public Search click, followed by an
++independent inspection. No text entry, login, booking or purchase. Raw helper
++trees remain in the new root-private flow.
+ """
+ import argparse
+ import hashlib
+@@ -24,10 +25,9 @@
+ SELF='org.droidloom.qa.ihg.r1'
+ HELPER_UID=10196
+ COMPONENT=PACKAGE+'/.activity.MainActivity'
+-PLAN={'schema':1,'operation':'inspect','nonces':{
+-    'before':'9e983ea7bae44d6718c57da16f064267',
+-    'inspect':'212fb7088216fc6760d30b7224f245ee',
+-    'after':'f13e8804cb299d7152e0872070b2c43a'}}
++# The source label is inert; the exact selector is derived from the current complete inspection.
++PLAN={'schema': 1, 'operation': 'click', 'selector': {'text': 'Search'}, 'nonces': {'action': '1679bbc2952884723c5ce771608ad9bb', 'after': '86a49d6d6c0a7ce8dd9ece28041a5361', 'before': 'f70c8d573806dd953d0a8100549c8ce6', 'inspect': 'f4df2bd80baa518c6d51ced630c640a8'}}
++POST_PLAN={'schema': 1, 'operation': 'inspect', 'nonces': {'after': '9ada2583466df5228313dfc4f6fab995', 'before': 'cd6f15f50a69d0fb2ee6a8d624b22871', 'inspect': '2a1a045b9884b417390a9738ed6cadef'}}
+ INSTALL_ROOT=Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01')
+ INSTALL_SOURCE=INSTALL_ROOT/'source'
+ INSTALL_SOURCE_SHA='eec0bb01cbc2440918800026c2d1260bdc62fbab1f377776b9fccf7467596902'
+@@ -46,7 +46,7 @@
+ RESOLVER_BYTES=21052
+ RESOLVER_NONCE='70e82b2ce30be099f99c9e46431b2406'
+ RESOLVER_RECORDS={'worker': ('result.json', 8878, '153ddbfc8393570621b64a478675c2a0180826a7a6ecada0ade8a6aa4ed79722'), 'stage': ('stage-result.json', 1583, '72224eae94c82a258b1a49d5730363f5e3c62cd8db769f083d5b5ec149dd55a8')}
+-RUNTIME_FILES={'owned_inspect.py','ihg_task_context.py','INPUTS.json'}
++RUNTIME_FILES={'owned_inspect.py','ihg_task_context.py','public_search.py','INPUTS.json'}
+ PHASE_SECONDS={'launch':175,'inspect':175,'cleanup':115}
+ 
+ 
+@@ -182,16 +182,19 @@
+     records={k:json.loads(read(RESOLVER_ROOT/v[0],expected=v[2],size=v[1])) for k,v in RESOLVER_RECORDS.items()}
+     actual_component=actual_resolver(records,INSTALLED)
+     adapter,qa,proof,apk=util.qualified_inputs();del apk
+-    adapter.validate_plan(PLAN,qa)
++    adapter.validate_plan(PLAN,qa);adapter.validate_plan(POST_PLAN,qa)
+     need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF and adapter.SELF==SELF,
+          'DEDICATED_IHG_HELPER_SOURCE_REQUIRED')
+-    values=[NONCE,*PLAN['nonces'].values()]
+-    need(len(values)==len(set(values))==4 and all(re.fullmatch('[0-9a-f]{32}',v) for v in values),
+-         'EXACT_NEW_FLOW_AND_THREE_HELPER_NONCES')
++    values=[NONCE,*PLAN['nonces'].values(),*POST_PLAN['nonces'].values()]
++    need(len(values)==len(set(values))==8 and STATE_NONCE not in values and
++         all(re.fullmatch('[0-9a-f]{32}',v) for v in values),'EXACT_NEW_FLOW_AND_SEVEN_HELPER_NONCES')
+     inputs=json.loads(read(HERE/'INPUTS.json',65536))
+     need(inputs['nonce']==NONCE and inputs['component']==COMPONENT and inputs['installed_helper']==INSTALLED
+          and inputs['resolver_records']=={k:{'relative_path':v[0],'bytes':v[1],'sha256':v[2]} for k,v in RESOLVER_RECORDS.items()},
+          'EXACT_RUNTIME_INPUT_RECORD_REQUIRED')
++    need(inputs['public_search_click_plan']==PLAN and inputs['independent_post_plan']==POST_PLAN,
++         'EXACT_PUBLIC_SEARCH_PLANS_REQUIRED')
++    public_search=load(HERE/'public_search.py',manifest['files']['public_search.py']['sha256'],'fresh_public_search_entry')
+     # Interface-only binding for the unchanged phase body; no resolver action
+     # is run here and the prior five-command receipt has no helper assertion.
+     resolver=types.SimpleNamespace(INSTALL_SOURCE=INSTALL_SOURCE,INSTALL_SOURCE_SHA=INSTALL_SOURCE_SHA,
+@@ -199,7 +202,7 @@
+         INSTALLED=INSTALLED)
+     return types.SimpleNamespace(manifest=manifest,resolver=resolver,util=util,ref=util.references(),
+         install_manifest=install_manifest,install=install_observation,resolution=actual_component,
+-        adapter=adapter,qa=qa,proof=proof,installed=INSTALLED)
++        adapter=adapter,qa=qa,proof=proof,installed=INSTALLED,public_search=public_search)
+ 
+ 
+ def scope_record(q,expected):
+@@ -223,13 +226,13 @@
+     return value,{'path':str(FLOW/'launch-scope.json'),'bytes':len(raw),'sha256':sha(raw)}
+ 
+ 
+-def assessment_summary(q,step,sequence):
++def assessment_summary(q,step,sequence,plan):
+     """No raw UI text, node list, screenshots or recommendations in the result."""
+     result={}
+-    for phase,nonce in PLAN['nonces'].items():
++    for phase,nonce in plan['nonces'].items():
+         path=step/(nonce+'.assessment.json');raw=read(path);value=json.loads(raw);helper=value['helper']
+         need(helper['nonce']==nonce and helper['self_uid']==HELPER_UID and
+-             helper['op']==('inspect' if phase=='inspect' else 'state') and
++             helper['op']==('click' if phase=='action' else 'inspect' if phase=='inspect' else 'state') and
+              value['actual_command_returncode']==0 and value['actual_instrumentation_finish_code']==-1 and
+              value['held_transport_returned_after_post_guard'] is True and helper['ok'] is True and
+              helper['error'] is None and helper['secondary_errors']==[] and
+@@ -246,6 +249,17 @@
+                 connection_scoped_window_id=inspection['connection_scoped_window_id'],
+                 tree_observations=q.qa.tree_observations(helper['tree_observations'],'inspect',True),
+                 complete=True,raw_tree_private_only=True)
++        elif phase=='action':
++            need(helper['node_action']=='ACTION_CLICK' and helper['node_action_returned'] is True and
++                 helper['action_attempted'] is True and helper['outcome_unknown'] is True and
++                 helper['inspection_nonce']==plan['nonces']['inspect'] and
++                 helper['inspection_sha256']==sequence['inspection_wire_sha256'],'ACTUAL_CURRENT_SEARCH_CLICK_ACK_REQUIRED')
++            row.update(node_action='ACTION_CLICK',node_action_returned=True,action_attempted=True,outcome_unknown=True,
++                target_node_sha256=helper['target_node_sha256'],inspection_nonce=helper['inspection_nonce'],
++                inspection_sha256=helper['inspection_sha256'],
++                action_window={k:helper['action_window'][k] for k in ('package','display','type','focused')},
++                window_observation=q.qa.window_observation(helper['window_observation']),
++                tree_observations=q.qa.tree_observations(helper['tree_observations'],'click',True))
+         result[phase]=row
+     return result
+ 
+@@ -253,12 +267,14 @@
+ def worker(expected,phase):
+     need(os.getuid()==os.geteuid()==0 and HERE==SOURCE and phase in PHASE_SECONDS,'EXACT_ROOT_PHASE_REQUIRED')
+     q=qualified(expected);u,ref=q.util,q.ref
++    click_plan=json.loads(json.dumps(PLAN));post_plan=json.loads(json.dumps(POST_PLAN))
++    plans={'click':click_plan,'post':post_plan}
+     step=FLOW/'steps'/(phase+'-01')
+     result={'schema':1,'ok':False,'error':None,'secondary_errors':[],'phase':phase,'nonce':NONCE,
+         'source_manifest_sha256':expected,'package':PACKAGE,'uid':UID,'helper_package':SELF,'helper_uid':HELPER_UID,
+         'actual_install':q.install,'actual_resolution':q.resolution,'build':q.proof,
+         'automatic_retry':False,'Bili_Flow_instantiated':False,'old_v2_helper_called':False,
+-        'click_actions':0,'text_actions':0,'screenshots':0,'audio_actions':0,'permission_grants':0,'settings_writes':0,
++        'maximum_click_actions':1,'text_actions':0,'screenshots':0,'audio_actions':0,'permission_grants':0,'settings_writes':0,
+         'raw_UI_tree_private_only':True,'whole_app_production_ready':False,'business_success_verified':False,
+         'host_foreground_display_independently_verified':False,'required_helper_display':0}
+     flow=artifacts=session=guard=flow_lock=action_lock=None
+@@ -269,7 +285,7 @@
+         flow_lock=u.acquire_action_lock(FLOW/'flow.lock',result['flow_lock_admission'])
+         step.mkdir(mode=0o700)
+         ref.write_new(step/'intent.json',{'phase':phase,'nonce':NONCE,'source_manifest_sha256':expected,
+-            'automatic_retry':False,'mutation':phase in ('launch','cleanup'),'request':PLAN if phase=='inspect' else None})
++            'automatic_retry':False,'mutation':True,'request':plans if phase=='inspect' else None})
+         context=u.module(q.resolver.INSTALL_SOURCE/'ihg_context.py',q.resolver.CONTEXT_SHA,'amazon_exact_artifact_context')
+         transport=u.module(q.resolver.INSTALL_SOURCE/'ihg_transport.py',q.resolver.TRANSPORT_SHA,'amazon_exact_transport')
+         task_module=load(HERE/'ihg_task_context.py',q.manifest['files']['ihg_task_context.py']['sha256'],'amazon_task_context')
+@@ -293,13 +309,14 @@
+             verify_source(value);u.verify_source(q.resolver.INSTALL_SOURCE_SHA)
+             read(RESOLVER_SOURCE,32768,RESOLVER_SHA,RESOLVER_BYTES)
+         flow,recorder,guard=task_module.open_task_context(ref,u,context,expected,verify_runtime,FLOW,step,
+-            transport,result,began+PHASE_SECONDS[phase],phase,q.qa,PLAN,q.resolver.RESOLVE,scope_record(q,expected))
++            transport,result,began+PHASE_SECONDS[phase],phase,q.qa,plans,q.resolver.RESOLVE,scope_record(q,expected))
+         reference=json.loads(u.read(q.resolver.INSTALL_SOURCE/'target-artifact-reference.json',expected=
+             q.install_manifest['files']['target-artifact-reference.json']['sha256']))
+         reader=u.module(q.resolver.INSTALL_SOURCE/'references/read_ihg.py',u.READER_SHA,'amazon_artifact_parser')
+         artifacts=context.ArtifactSet(flow,reference,reader)
+         current='target_before';result['target_before']=artifacts.before()
+-        session=q.adapter.Session(flow,recorder,q.qa,q.proof,HELPER_UID)
++        session=(q.public_search.make_session(q.adapter,flow,recorder,q.qa,q.proof,HELPER_UID,click_plan,post_plan)
++                 if phase=='inspect' else q.adapter.Session(flow,recorder,q.qa,q.proof,HELPER_UID))
+         current='helper_before';result['helper_before']=session.installed()
+         need(result['helper_before']==q.installed,'ACTUAL_INSTALLED_HELPER_CHANGED')
+         if phase=='launch':
+@@ -312,13 +329,9 @@
+                  'EXACT_NEW_NATIVE_TASK_REQUIRED')
+             result['owned_task']=flow.selected_task()
+         elif phase=='inspect':
+-            current='state_inspect_state';result['sequence']=session.sequence(json.loads(json.dumps(PLAN)))
+-            seq=result['sequence']
+-            need(seq['installed_before']==seq['installed_after']==q.installed and
+-                 seq['after_state_completed'] is True and seq['restoration_qualified'] is True and
+-                 seq['foreground_before']==seq['foreground_after'],'EXACT_READ_ONLY_INSPECTION_SCOPE_REQUIRED')
+-            result['assessments']=assessment_summary(q,step,seq)
+-            result['inspection_completed']=True
++            current='public_search_sequences'
++            q.public_search.run_sequences(q.qa,session,q.installed,click_plan,post_plan,result,
++                lambda seq,plan:assessment_summary(q,step,seq,plan),lambda phase,error:u.remember(result,phase,error))
+         else:
+             current='exact_owned_cleanup';selected=flow.selected_task();result['owned_task']=selected
+             completed=flow.cleanup();result['cleanup']=completed
+@@ -337,12 +350,13 @@
+             need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':2,'helper_path':2,
+                 'resolve':1,'stacks':2} and flow.command_index==12 and flow.launch_claimed is True,
+                 'EXACT_LAUNCH_COMMAND_COUNTS_REQUIRED')
+-        if phase=='inspect':
+-            need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':4,'helper_path':4,
+-                'stacks':2,'instrument':3,'foreground':3} and flow.command_index==17 and
+-                flow.policy.used_nonces==set(PLAN['nonces'].values()) and flow.action_attempted is False,
+-                'EXACT_READ_ONLY_INSPECTION_COMMAND_COUNTS_REQUIRED')
+-        result['ok']=True
++        if phase=='inspect' and result['error'] is None:
++            need(flow.policy.counts=={'target_uid':2,'target_path':2,'helper_uid':6,'helper_path':6,
++                'stacks':4,'instrument':7,'foreground':6,'click':1} and flow.command_index==27 and
++                flow.policy.used_nonces==set(PLAN['nonces'].values())|set(POST_PLAN['nonces'].values()) and
++                flow.action_attempted is True and result.get('public_search_entry_completed') is True,
++                'EXACT_SINGLE_SEARCH_CLICK_AND_INDEPENDENT_READ_COUNTS_REQUIRED')
++        result['ok']=result['error'] is None and result['secondary_errors']==[]
+     except BaseException as error:
+         if session is not None and hasattr(session,'sequence_observation'):
+             result['failed_sequence_observation']=session.sequence_observation
+@@ -374,7 +388,8 @@
+         try:qualified(expected);result['source_and_artifact_unchanged']=True
+         except BaseException as error:u.remember(result,'final_source_and_artifact',error)
+     result['action_attempted']=bool(flow is not None and flow.action_attempted)
+-    result['outcome_unknown']=bool(result['action_attempted'] and not result['ok'])
++    result['outcome_unknown']=bool(result['action_attempted'] and (phase=='inspect' or not result['ok']))
++    result['click_requests_admitted']=0 if session is None else int(getattr(session,'action_request_admitted',False))
+     result['seconds']=time.monotonic()-began
+     try:ref.write_new(step/'result.json',result)
+     except BaseException as error:u.remember(result,'durable_phase_result_write',error)
+@@ -388,7 +403,7 @@
+          value['source_manifest_sha256']==expected and value['package']==PACKAGE and value['uid']==UID and
+          value['helper_package']==SELF and value['helper_uid']==HELPER_UID and
+          value['ok'] is True and value['error'] is None and value['secondary_errors']==[] and
+-         value['outcome_unknown'] is False and value['final_Main_guard_passed'] is True and
++         value['outcome_unknown'] is (phase=='inspect') and value['final_Main_guard_passed'] is True and
+          value['held_binding_released'] is True and value['flow_lock_released'] is True and
+          value['target_FD_cleanup']['held_APK_FDs_closed']==1 and value['target_before']==value['target_after'] and
+          value['helper_before']==value['helper_after'] and value['source_and_artifact_unchanged'] is True,
+@@ -396,8 +411,11 @@
+     if phase!='cleanup':need(value['action_lock_released'] is True,'PHASE_ACTION_LOCK_RELEASE')
+     if phase=='launch':need(value['launch']['native_launch_acknowledged'] is True,'ACTUAL_LAUNCH_ACK')
+     if phase=='inspect':
+-        need(value['inspection_completed'] is True and value['sequence']['restoration_qualified'] is True
+-             and value['sequence']['after_state_completed'] is True,'ACTUAL_INSPECT_AND_RESTORATION_REQUIRED')
++        need(value['inspection_completed'] is True and value['sequence']['restoration_qualified'] is True and
++             value['sequence']['after_state_completed'] is True and value['sequence']['click_acknowledged'] is True and
++             value['post_sequence']['after_state_completed'] is True and value['post_sequence']['restoration_qualified'] is True and
++             value['public_search_entry_completed'] is True and value['public_search_entry']['public_search_entry_selection_verified'] is True,
++             'ACTUAL_PUBLIC_SEARCH_ENTRY_AND_BOTH_RESTORATIONS_REQUIRED')
+     if phase=='cleanup':need(value['owned_task_absent'] is True,'ACTUAL_OWNED_TASK_ABSENT_REQUIRED')
+     return value,{'path':str(path),'bytes':len(raw),'sha256':sha(raw)}
+ 
+@@ -413,7 +431,7 @@
+         'source_manifest_sha256':expected,'package':PACKAGE,'uid':UID,'helper_package':SELF,'helper_uid':HELPER_UID,
+         'flow':str(FLOW),'component':COMPONENT,'actual_install':q.install,'actual_resolution':q.resolution,
+         'automatic_retry':False,'maximum_native_launches':1,'launch_worker_requested':False,
+-        'inspect_worker_requested':False,'cleanup_requested':False,'click_actions':0,'text_actions':0,
++        'inspect_worker_requested':False,'cleanup_requested':False,'maximum_click_actions':1,'text_actions':0,
+         'screenshots':0,'audio_actions':0,'package_mutations':0,'permission_grants':0,'settings_writes':0,
+         'Bili_Flow_instantiated':False,'old_v2_helper_called':False,'raw_UI_tree_private_only':True,
+         'business_success_verified':False,'whole_app_production_ready':False}
+@@ -439,9 +457,13 @@
+             '--worker-once','inspect','--source-manifest-sha256',expected],190,evidence,guard)
+         inspection,result['inspection_result']=durable(observed,'inspect',expected)
+         result['assessments']=inspection['assessments']
+-        result['foreground']=inspection['sequence']['foreground_after']
++        result['post_assessments']=inspection['post_assessments']
++        result['foreground']=inspection['post_sequence']['foreground_after']
+         result['restoration']=inspection['sequence']['accessibility_restoration']
+-        result['read_only_inspection_completed']=True
++        result['post_restoration']=inspection['post_sequence']['accessibility_restoration']
++        result['public_search_entry']=inspection['public_search_entry']
++        result['public_search_entry_completed']=True
++        result['business_outcome_unknown']=True
+         result['ok']=True
+     except BaseException as error:u.remember(result,'coordinator',error)
+     finally:
+@@ -500,8 +522,8 @@
+     if a.worker_once:return worker(a.source_manifest_sha256,a.worker_once)
+     if a.execute_once:return execute(a.source_manifest_sha256)
+     print(json.dumps({'state':'PLAN_ONLY','nonce':NONCE,'root':str(ROOT),'flow':str(FLOW),'component':COMPONENT,
+-        'helper_uid':HELPER_UID,'maximum_native_launches':1,'new_helper_operations':['state','inspect','state'],
+-        'clicks':0,'text_actions':0,'screenshots':0,'audio':0,'device_calls':0,'submitted':False}))
++        'helper_uid':HELPER_UID,'maximum_native_launches':1,'new_helper_operations':['state','inspect','click','state','state','inspect','state'],
++        'maximum_clicks':1,'text_actions':0,'screenshots':0,'audio':0,'device_calls':0,'submitted':False}))
+     return 0
+ 
+ 
+--- original-IHG-launch01/ihg_task_context.py
++++ new-public-search01/ihg_task_context.py
+@@ -2,8 +2,8 @@
+ 
+ This module has no CLI or standalone execution. A separate frozen coordinator
+ must bind actual resolve/install/source receipts, a new private flow and Main.
+-Only launch, one read-only QA inspection sequence, and exact task retirement
+-are described here. No click/set-text/media/screenshot opcode is admitted.
++Only launch, one current public Search click plus independent inspection,
++and exact task retirement are described here. No text/media/screenshot opcode.
+ """
+ import json
+ import math
+@@ -36,8 +36,12 @@
+     def __init__(self,phase,qa,resolve,inspect_plan,step,read,selected_task):
+         need(phase in ('launch','inspect','cleanup'),'EXACT_AMAZON_PHASE_REQUIRED')
+         need(qa.PACKAGE==PACKAGE and qa.UID==UID and qa.SELF==SELF,'EXACT_AMAZON_CONTRACT_REQUIRED')
+-        need(inspect_plan['operation']=='inspect' and set(inspect_plan['nonces'])=={'before','inspect','after'},
+-             'ONLY_FIXED_READ_ONLY_INSPECT_PLAN_REQUIRED')
++        need(set(inspect_plan)=={'click','post'} and inspect_plan['click']['operation']=='click' and
++             set(inspect_plan['click']['nonces'])=={'before','inspect','action','after'} and
++             inspect_plan['post']['operation']=='inspect' and set(inspect_plan['post']['nonces'])=={'before','inspect','after'},
++             'ONLY_FIXED_SEARCH_CLICK_AND_INDEPENDENT_POST_PLANS')
++        values=[n for plan in inspect_plan.values() for n in plan['nonces'].values()]
++        need(len(values)==len(set(values))==7,'SEVEN_DISTINCT_CURRENT_HELPER_NONCES')
+         self.phase,self.qa,self.resolve,self.plan=phase,qa,list(resolve),inspect_plan
+         self.step,self.read,self.selected_task=step,read,selected_task
+         self.counts={};self.used_nonces=set();self.remove_attempted=False
+@@ -57,9 +61,8 @@
+             return
+         if argv in (OWN_UID,OWN_PATH):
+             need(timeout==8 and not mutation and not private,'HELPER_METADATA_READ_ONLY')
+-            # Inspect phase has an outer current identity pair and the original
+-            # Session's own before/after pair. Other phases have only outer pair.
+-            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',4 if self.phase=='inspect' else 2)
++            # Two original Sessions each have before/after pairs, plus outer pair.
++            self.claim('helper_uid' if argv==OWN_UID else 'helper_path',6 if self.phase=='inspect' else 2)
+             return
+         if argv==self.resolve:
+             need(self.phase=='launch' and timeout==15 and not mutation and not private,
+@@ -67,11 +70,11 @@
+             self.claim('resolve',1);return
+         if argv==STACKS:
+             need(not mutation and not private and timeout<=20,'TASK_SNAPSHOT_READ_ONLY')
+-            self.claim('stacks',33 if self.phase=='cleanup' else 2);return
++            self.claim('stacks',33 if self.phase=='cleanup' else 4 if self.phase=='inspect' else 2);return
+         if argv==FOREGROUND:
+             need(self.phase=='inspect' and timeout==15 and not mutation and private,
+                  'ONLY_PRIVATE_CURRENT_FOREGROUND_READ')
+-            self.claim('foreground',3);return
++            self.claim('foreground',6);return
+         if self.phase=='cleanup' and argv[:4]==['/system/bin/cmd','activity','stack','remove']:
+             # Full equality below, not a prefix-based permission grant.
+             selected=self.selected_task()
+@@ -81,23 +84,28 @@
+                  'ONLY_EXACT_NEW_OWNED_LEAF_REMOVAL')
+             need(not self.remove_attempted,'REMOVAL_CANNOT_BE_REPLAYED')
+             self.remove_attempted=True;return
+-        need(self.phase=='inspect' and timeout==20 and not mutation and not private,
+-             'NO_OTHER_AMAZON_COMMAND_ADMITTED')
++        need(self.phase=='inspect' and timeout==20 and not private,
++             'NO_OTHER_IHG_COMMAND_ADMITTED')
+         matches=[]
+-        for phase,nonce in self.plan['nonces'].items():
+-            if nonce in self.used_nonces:
+-                continue
+-            path=self.step/(nonce+'.request.json')
+-            try:raw=self.read(path,65536)
+-            except FileNotFoundError:continue
+-            request=json.loads(raw)
+-            need(request.get('nonce')==nonce and request.get('op')==('inspect' if phase=='inspect' else 'state'),
+-                 'FIXED_PHASE_REQUEST_REQUIRED')
+-            self.qa.validate_request(request)
+-            if self.qa.instrumentation_argv(request)==argv:
+-                matches.append(nonce)
+-        need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_STATE_OR_INSPECT_REQUEST')
+-        self.used_nonces.add(matches[0]);self.claim('instrument',3)
++        for plan in self.plan.values():
++            for phase,nonce in plan['nonces'].items():
++                if nonce in self.used_nonces:continue
++                path=self.step/(nonce+'.request.json')
++                try:raw=self.read(path,65536)
++                except FileNotFoundError:continue
++                request=json.loads(raw)
++                operation='click' if phase=='action' else 'inspect' if phase=='inspect' else 'state'
++                need(request.get('nonce')==nonce and request.get('op')==operation,
++                     'FIXED_CURRENT_PHASE_REQUEST_REQUIRED')
++                self.qa.validate_request(request)
++                if self.qa.instrumentation_argv(request)==argv:
++                    need(mutation is (operation=='click'),'EXACT_CURRENT_OPERATION_MUTATION_FLAG')
++                    matches.append((nonce,operation))
++        need(len(matches)==1,'ONLY_ONE_CURRENT_SOURCE_BOUND_HELPER_REQUEST')
++        nonce,operation=matches[0]
++        self.used_nonces.add(nonce);self.claim('instrument',7)
++        if operation=='click':self.claim('click',1)
++
+ 
+ 
+ class Flow:
+--- original-IHG-launch01/stage_execute.py
++++ new-public-search01/stage_execute.py
+@@ -9,7 +9,7 @@
+ ROOT=Path('/home/alex/work/pocket4-ihg-owned-launch-inspect-01')
+ SOURCE=ROOT/'source'
+ NONCE='399444a5b72d53139b880a4afefdb31a'
+-FILES={'owned_inspect.py','ihg_task_context.py','INPUTS.json'}
++FILES={'owned_inspect.py','ihg_task_context.py','public_search.py','INPUTS.json'}
+ REFERENCE=Path('/home/alex/work/pocket4-owned-ihg-qa-r1-install-state-01/source/references/readonly_r3_coordinator.py')
+ REFERENCE_SHA='e2769eeeae2d620456a67959dfaff3b07545f2352cd9a60692450451004c39fd'
+ 
+@@ -38,7 +38,7 @@
+     os.umask(0o077);ROOT.mkdir(mode=0o700)
+     result={'schema':1,'ok':False,'nonce':NONCE,'package':entry.PACKAGE,'source_manifest_sha256':manifest_sha256,
+         'Main_before':before,'error':None,'secondary_errors':[],'automatic_retry':False,
+-        'maximum_native_launches':1,'click_actions':0,'text_actions':0,'screenshots':0,'audio_actions':0,
++        'maximum_native_launches':1,'maximum_click_actions':1,'text_actions':0,'screenshots':0,'audio_actions':0,
+         'raw_UI_tree_private_only':True,'business_success_verified':False,'whole_app_production_ready':False}
+     def remember(phase,error):
+         row={'phase':phase,'type':type(error).__name__,'message':str(error)}
+@@ -55,7 +55,7 @@
+         assert observed['nonce']==NONCE and observed['source_manifest_sha256']==manifest_sha256
+         assert observed['package']==entry.PACKAGE and observed['helper_uid']==10196
+         assert rc==0 and observed['ok'] is True and observed['error'] is None and observed['secondary_errors']==[]
+-        assert observed['read_only_inspection_completed'] is True and observed['owned_task_absent_after_cleanup'] is True
++        assert observed['public_search_entry_completed'] is True and observed['owned_task_absent_after_cleanup'] is True
+         assert observed['business_success_verified'] is False and observed['whole_app_production_ready'] is False
+         result['ok']=True
+     except BaseException as error:remember('stage_or_owned_launch_inspect',error)
+--- /dev/null
++++ new-public-search01/public_search.py
+@@ -0,0 +1,227 @@
++"""Fresh public Search role gate for one owned IHG entry click. No standalone action."""
++import copy
++
++
++def public_search_nodes(qa,inspection):
++    qa.inspect_record(inspection)
++    rows=[]
++    for node in inspection['nodes']:
++        if node.get('visible') is not True or node.get('password') is not False:
++            continue
++        fields=[]
++        for field in ('content_desc','text'):
++            value=node.get(field)
++            if (isinstance(value,str) and node.get(field+'_truncated') is False and
++                ' '.join(value.split()).casefold()=='search'):
++                need(node.get(field+'_sha256')==qa.sha(value.encode()),'PUBLIC_SEARCH_LABEL_DIGEST_REQUIRED')
++                fields.append(field)
++        if fields:
++            rows.append((node,fields))
++    return rows
++
++
++def search_selector(qa,inspection):
++    """A new complete inspection chooses one actual self-clickable public role."""
++    counts=public_role_counts(qa,inspection)
++    role=counts['fixed_public_role_queries']['search_tab']
++    need(role['matching_visible_nonpassword_nodes']==role['eligible_matching_nodes']==2 and
++         role['known_class_counts']=={'android.widget.FrameLayout':1,'android.widget.TextView':1} and
++         role['eligible_clickable_self_count']==role['distinct_self_or_direct_parent_candidates']==1 and
++         role['eligible_direct_clickable_parent_count']==role['editable_matching_nodes']==0,
++         'UNIQUE_CURRENT_PUBLIC_SEARCH_ROLE_REQUIRED')
++    rows=public_search_nodes(qa,inspection)
++    need(len(rows)==2 and all(type(node.get('selected')) is bool for node,_ in rows),
++         'CURRENT_PUBLIC_SEARCH_SELECTION_FLAGS_REQUIRED')
++    need(all(node['selected'] is False for node,_ in rows),'PUBLIC_SEARCH_ALREADY_SELECTED_NO_CLICK_REQUIRED')
++    candidates=[(n,fields) for n,fields in rows if n.get('clickable') is True and n.get('enabled') is True]
++    need(len(candidates)==1,'UNIQUE_CURRENT_SEARCH_SELF_TARGET_REQUIRED')
++    node,fields=candidates[0]
++    need(node.get('package')==qa.PACKAGE and node.get('editable') is False and
++         all(node.get(k+'_truncated') is False for k in ('class','resource_id','text','content_desc')),
++         'COMPLETE_NONEDITABLE_PUBLIC_SEARCH_SELF_TARGET_REQUIRED')
++    field=fields[0]
++    selector={'class':node['class'],field:node[field]}
++    selected=qa.select_unique_clickable(inspection,selector)
++    need(selected=={'node_path':node['path'],'node_sha256':node['node_sha256']},
++         'ORIGINAL_UNIQUE_CLICKABLE_PUBLIC_SEARCH_TARGET_REQUIRED')
++    safe={'role':'search_tab','selected_before':False,'self_candidate_count':1,
++        'matching_public_node_count':2,'parent_fallback_used':False,
++        'tree_sha256':inspection['tree_sha256'],'window_sha256':inspection['window_sha256'],
++        'node_count':len(inspection['nodes']),'complete_tree_verified':True,
++        'historical_node_or_task_used_as_authority':False}
++    return selector,selected,safe
++
++
++def make_session(adapter,flow,recorder,qa,proof,helper_uid,click_plan,post_plan):
++    """Keep original Session.sequence/finally and helper full-freshness checks."""
++    class PublicSearchSession(adapter.Session):
++        def __init__(self):
++            super().__init__(flow,recorder,qa,proof,helper_uid)
++            self.public_search_proof=None
++            self._action_binding=None
++            self.post_inspection=None
++            self.action_request_admitted=False
++
++        def instrument(self,request):
++            if request['op']=='click':
++                need(self._action_binding is not None and not self.action_request_admitted,
++                     'ONE_FRESH_PUBLIC_SEARCH_REQUEST_REQUIRED')
++                need(request==self._action_binding,'EXACT_FRESH_PUBLIC_SEARCH_NODE_REQUEST_REQUIRED')
++                self.action_request_admitted=True
++            assessed=super().instrument(request)
++            if request['nonce']==click_plan['nonces']['inspect']:
++                need(request['op']=='inspect' and self.public_search_proof is None,
++                     'ONE_CURRENT_PUBLIC_SEARCH_INSPECTION_REQUIRED')
++                selector,node,safe=search_selector(qa,assessed['helper']['inspection'])
++                click_plan['selector']=selector
++                adapter.validate_plan(click_plan,qa)
++                self._action_binding={'protocol':qa.PROTOCOL,'nonce':click_plan['nonces']['action'],
++                    'op':'click','scope':copy.deepcopy(request['scope']),
++                    'inspection_nonce':request['nonce'],'inspection_sha256':assessed['wire_sha256'],**node}
++                self.public_search_proof={**safe,'inspection_nonce':request['nonce'],
++                    'inspection_wire_sha256':assessed['wire_sha256']}
++            elif request['nonce']==post_plan['nonces']['inspect']:
++                need(request['op']=='inspect' and self.post_inspection is None,
++                     'ONE_INDEPENDENT_POST_INSPECTION_REQUIRED')
++                self.post_inspection=assessed['helper']['inspection']
++            return assessed
++    return PublicSearchSession()
++
++
++def run_sequences(qa,session,installed,click_plan,post_plan,result,summary,remember):
++    """One original click sequence and an independent read even after failure."""
++    result['click_sequence_started']=True
++    try:
++        if hasattr(session,'sequence_observation'):del session.sequence_observation
++        seq=session.sequence(click_plan)
++        result['sequence']=seq
++        need(seq['installed_before']==seq['installed_after']==installed and
++             seq.get('click_acknowledged') is True and seq['after_state_completed'] is True and
++             seq['restoration_qualified'] is True,'ORIGINAL_SEARCH_CLICK_AND_RESTORATION_REQUIRED')
++        result['assessments']=summary(seq,click_plan)
++        result['public_search_action_binding']=session.public_search_proof
++        result['click_acknowledged']=True
++    except BaseException as error:
++        if hasattr(session,'sequence_observation'):result['failed_click_sequence']=session.sequence_observation
++        remember('public_search_click',error)
++    finally:
++        result['post_inspection_attempted']=True
++        try:
++            if hasattr(session,'sequence_observation'):del session.sequence_observation
++            seq=session.sequence(post_plan)
++            result['post_sequence']=seq
++            need(seq['installed_before']==seq['installed_after']==installed and
++                 seq['after_state_completed'] is True and seq['restoration_qualified'] is True and
++                 seq['foreground_before']==seq['foreground_after'],'ORIGINAL_POST_READ_AND_RESTORATION_REQUIRED')
++            result['post_assessments']=summary(seq,post_plan)
++            result['post_public_roles']=public_role_counts(qa,session.post_inspection)
++            result['post_inspection_completed']=True
++        except BaseException as error:
++            if hasattr(session,'sequence_observation'):result['failed_post_sequence']=session.sequence_observation
++            remember('independent_search_post_inspection',error)
++    if result['error'] is not None:return
++    try:
++        need(result.get('click_acknowledged') is True and result.get('post_inspection_completed') is True and
++             result['sequence']['owned_task']==result['post_sequence']['owned_task'],
++             'ACK_AND_INDEPENDENT_SAME_OWNED_TASK_READ_REQUIRED')
++        result['public_search_entry']=entry_readback(qa,session.post_inspection,session.public_search_proof)
++        result['inspection_completed']=True
++        result['public_search_entry_completed']=True
++    except BaseException as error:remember('public_search_entry_readback',error)
++
++
++def entry_readback(qa,inspection,before_proof):
++    """Qualify only the public Search selection, never hotel results or booking."""
++    counts=public_role_counts(qa,inspection)
++    rows=public_search_nodes(qa,inspection)
++    need(before_proof is not None and before_proof['selected_before'] is False,
++         'ACTUAL_PRE_CLICK_PUBLIC_ROLE_PROOF_REQUIRED')
++    need(rows and all(type(node.get('selected')) is bool for node,_ in rows),
++         'POST_SEARCH_SELECTION_FLAGS_REQUIRED')
++    selected=[node for node,_ in rows if node['selected'] is True and node.get('enabled') is True and
++              node.get('class_truncated') is False and node.get('resource_id_truncated') is False]
++    need(1<=len(selected)<=2,'PUBLIC_SEARCH_SELECTION_NOT_OBSERVED')
++    need(inspection['tree_sha256']!=before_proof['tree_sha256'],'POST_SEARCH_SELECTION_TREE_UNCHANGED')
++    return {'public_search_entry_selection_verified':True,'selected_public_role_nodes':len(selected),
++        'independent_after_click_inspection':True,'tree_sha256':inspection['tree_sha256'],
++        'window_sha256':inspection['window_sha256'],'node_count':len(inspection['nodes']),
++        'public_role_counts':counts,'hotel_search_results_verified':False,
++        'login_or_booking_verified':False,'business_success_verified':False,'whole_app_production_ready':False}
++
++PUBLIC_ROLES={
++ 'find_hotel':('find a hotel','find hotels','search hotels','search for hotels','book a hotel','find and book','find & book'),
++ 'search_tab':('search',),'hotels_tab':('hotels',),'book_tab':('book',),'home_tab':('home',),
++ 'guest_continue':('continue as guest','continue without signing in','browse as guest'),
++ 'defer_signin':('not now','maybe later','skip'),
++ 'onboarding_continue':('get started','next','continue'),
++ 'destination':('destination','where are you going?','city, airport or hotel','search destinations'),
++ 'dates':('dates','check-in','check out','check-out','check in'),
++ 'rooms_guests':('rooms','guests','rooms and guests','rooms & guests'),
++ 'sign_in':('sign in','log in'),'join':('join','join now','create account','create an account'),
++ 'retry':('retry','try again'),'fixed_network_error':('no internet connection','something went wrong'),
++ 'find_hotel_zh':('查找酒店','搜索酒店','酒店搜索','预订酒店'),
++ 'guest_continue_zh':('以游客身份继续','游客访问','暂不登录','跳过'),
++ 'destination_zh':('目的地','城市、机场或酒店'),
++}
++
++PUBLIC_RESOURCES=(
++ 'android:id/button1','android:id/button2','android:id/button3','android:id/search_src_text',
++ 'com.ihg.apps.android:id/search_button','com.ihg.apps.android:id/btn_search',
++ 'com.ihg.apps.android:id/search','com.ihg.apps.android:id/destination',
++ 'com.ihg.apps.android:id/book','com.ihg.apps.android:id/skip',
++ 'com.ihg.apps.android:id/continue_as_guest','com.ihg.apps.android:id/bottom_navigation',
++)
++
++PUBLIC_CLASSES=('android.widget.TextView','android.widget.Button','android.widget.EditText',
++ 'android.widget.ImageButton','android.widget.ImageView','android.widget.FrameLayout',
++ 'android.widget.LinearLayout','android.view.ViewGroup','android.view.View','android.webkit.WebView')
++
++def need(value, reason):
++    if not value:raise RuntimeError(reason)
++
++def public_role_counts(qa,inspection):
++    qa.inspect_record(inspection)
++    nodes=inspection['nodes'];by_path={n['path']:n for n in nodes}
++    def eligible(n):
++        return (isinstance(n,dict) and n.get('visible') is True and n.get('enabled') is True and
++            n.get('password') is False and n.get('class_truncated') is False and n.get('resource_id_truncated') is False)
++    def normalized(value):return ' '.join(value.split()).casefold()
++    result={}
++    for role,variants in PUBLIC_ROLES.items():
++        matches=[];via_text=via_description=0;self_targets=set();parent_targets=set();classes={}
++        for node in nodes:
++            if node.get('visible') is not True or node.get('password') is not False:continue
++            fields=[]
++            for field in ('text','content_desc'):
++                value=node.get(field)
++                if isinstance(value,str) and node.get(field+'_truncated') is False and normalized(value) in variants:
++                    need(node.get(field+'_sha256')==qa.sha(value.encode()),'PUBLIC_LABEL_DIGEST_MISMATCH')
++                    fields.append(field)
++            if not fields:continue
++            matches.append(node);via_text+='text' in fields;via_description+='content_desc' in fields
++            kind=node.get('class');kind=kind if kind in PUBLIC_CLASSES else 'other'
++            classes[kind]=classes.get(kind,0)+1
++            if eligible(node):
++                if node.get('clickable') is True:self_targets.add(node['path'])
++                if '/' in node['path']:
++                    parent=by_path.get(node['path'].rsplit('/',1)[0])
++                    if eligible(parent) and parent.get('clickable') is True:parent_targets.add(parent['path'])
++        result[role]={'fixed_public_variants':list(variants),'matching_visible_nonpassword_nodes':len(matches),
++            'via_complete_public_text_count':via_text,'via_complete_public_description_count':via_description,
++            'eligible_matching_nodes':sum(eligible(n) for n in matches),
++            'eligible_clickable_self_count':len(self_targets),
++            'eligible_direct_clickable_parent_count':len(parent_targets),
++            'distinct_self_or_direct_parent_candidates':len(self_targets|parent_targets),
++            'editable_matching_nodes':sum(eligible(n) and n.get('editable') is True for n in matches),
++            'known_class_counts':classes,'current_or_future_action_authority':False}
++    resources={}
++    for resource in PUBLIC_RESOURCES:
++        rows=[n for n in nodes if n.get('resource_id')==resource]
++        resources[resource]={'matching_nodes':len(rows),'eligible_nodes':sum(eligible(n) for n in rows),
++            'eligible_clickable_nodes':sum(eligible(n) and n.get('clickable') is True for n in rows),
++            'eligible_editable_nodes':sum(eligible(n) and n.get('editable') is True for n in rows)}
++    return {'fixed_public_role_queries':result,'fixed_public_resource_queries':resources,
++        'fixed_known_class_counts':{kind:sum(n.get('class')==kind for n in nodes) for kind in PUBLIC_CLASSES},
++        'other_class_count':sum(n.get('class') not in PUBLIC_CLASSES for n in nodes),
++        'unknown_labels_identifiers_paths_or_coordinates_exported':False,
++        'query_catalog_not_asserted_observed':True,'action_selection_performed':False}

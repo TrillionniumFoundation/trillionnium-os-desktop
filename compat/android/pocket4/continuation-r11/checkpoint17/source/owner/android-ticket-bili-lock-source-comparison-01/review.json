@@ -1,0 +1,98 @@
+{
+  "Ticket_retry_requested": false,
+  "bili": {
+    "Flow_close_defers_private_flow_lock_to_process_exit": true,
+    "chain": [
+      "qualified pinned inputs",
+      "recorder.Flow constructor acquires private flow.lock",
+      "Flow.begin writes step intent and Main guard",
+      "one recorder.lock_file(global)",
+      "Main guard",
+      "new Session current installation (bind held context on first command)",
+      "launch or navigation"
+    ],
+    "flock_attempt_count": 1,
+    "global_fd_closed_in_worker_finally_after_held_release": true,
+    "inherited_lock_file_failed_opened_fd_has_no_exception_close_before_process_exit": true,
+    "no_wait_loop": true
+  },
+  "common": [
+    "one O_RDWR|O_CREAT|O_NOFOLLOW|O_CLOEXEC open with mode 0600",
+    "regular root-owned nlink1 file required",
+    "standard fcntl.flock LOCK_EX|LOCK_NB",
+    "private flow lock taken before global action lock",
+    "no enclosing same-global lock before launch/navigation worker acquisition in these entry paths",
+    "global lock acquired before first held Android command"
+  ],
+  "conclusion": "Both launch/navigation entry paths take one global flock after a separate private flow lock. The bounded Ticket wait failed on the actual opened inode; source differences do not identify the conflicting holder or establish a reentrant global acquisition. Later Bili/IHG success does not rewrite this failure.",
+  "global_path": "/run/lock/android-digitalis-actions.lock",
+  "lock_holder_or_cause_identified": false,
+  "lock_source_changed": false,
+  "remote_FD_scan_or_UI_action_count": 0,
+  "schema": 1,
+  "scope": "LOCAL_PINNED_SOURCE_COMPARISON_NO_DEVICE_CALLS",
+  "source_pins": {
+    "bili_R4_manifest": {
+      "bytes": 7565,
+      "path": "/workspace/scratch/94990735b266/android-qa-r6-install-state-01/r4/source-manifest.json",
+      "sha256": "52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1"
+    },
+    "bili_R4_recorder": {
+      "bytes": 40090,
+      "path": "/workspace/scratch/94990735b266/android-qa-install-state-01/review-inputs/recorder.py",
+      "sha256": "5f25f22db55ba94e6ac895c2ce274b6959a274b64c9aa82bbc30d8c3c860f511"
+    },
+    "bili_entry": {
+      "bytes": 65173,
+      "path": "/workspace/scratch/94990735b266/android-bili-r6-pause-resume-metadata02/owned_navigation.py",
+      "sha256": "7b6b686968a636b59d87b2ea08854a0cdeede5a0f3f79a020483a47d32e8b20d"
+    },
+    "ticket_entry": {
+      "bytes": 34450,
+      "path": "/workspace/scratch/94990735b266/android-ticket-launch-inspect-02/owned_inspect.py",
+      "sha256": "efcb409a68205c48899936541a5c06182216ed5e7027cc43b034255ba7e89cde"
+    },
+    "ticket_source_manifest": {
+      "bytes": 449,
+      "path": "/workspace/scratch/94990735b266/android-ticket-launch-inspect-02/SOURCE_PINS.json",
+      "sha256": "abb667a93f1e55b916da3b04bcebe05b28904655ff18cff1a1f1ef8b66a7b845"
+    },
+    "ticket_util": {
+      "bytes": 32582,
+      "path": "/workspace/scratch/94990735b266/android-12306-qa-r1-install-state-01/install_state.py",
+      "sha256": "a2e26701436053bf9bca03f7a22ab84c899ab1bbc6ec609ac49caedb53115fd8"
+    }
+  },
+  "ticket": {
+    "chain": [
+      "qualified pinned inputs",
+      "private flow.lock acquire",
+      "step intent and pinned modules",
+      "original Main guard",
+      "one acquire_action_lock(global)",
+      "held Main task context",
+      "current target/helper metadata and native launch"
+    ],
+    "cleanup_global_owner": "original Flow.cleanup; outer acquisition deliberately omitted",
+    "deadline_seconds": 5,
+    "failure_closes_fd_and_preserves_first_EAGAIN": true,
+    "poll_seconds": 0.05,
+    "success_rechecks_named_and_held_inode": true,
+    "waits_on_same_open_inode": true,
+    "worker_finally_closes_global_and_flow_fds": true
+  },
+  "ticket02_actual": {
+    "Android_command_count": 0,
+    "action_attempted": false,
+    "attempts": 100,
+    "before_held_Main_context": true,
+    "busy_attempts": 100,
+    "elapsed_seconds": 5.000091903028078,
+    "global_dev": 28,
+    "global_inode": 8312,
+    "launch_bytes": 6051,
+    "launch_sha256": "078e0dcc74ff7719a08f04df81463f30e1540992e547fcabd3f8feda24a0792a",
+    "outcome_unknown": false
+  },
+  "whole_app_production_ready": false
+}

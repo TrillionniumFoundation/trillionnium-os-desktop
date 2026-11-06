@@ -1,0 +1,210 @@
+{
+  "App_qualification": false,
+  "LMKD_exec_EACCES_lines": [
+    297,
+    679,
+    1250,
+    1691
+  ],
+  "LMKD_exec_permission_cause_complete": false,
+  "actor_result_sha256": "888153ae879fa551c073873f1a1f2418696c837b0a77ae3da5e42b6c9741e994",
+  "actual_kernel_logger_two_markers_passed": true,
+  "actual_logger_definition_object": "/system/lib64/libbase.so",
+  "broker_active_observed": false,
+  "broker_ready_observed": true,
+  "broker_retired_receipt": {
+    "authority_generation": "1c17d03b591b12ca56060bf3fda4413fd5a3e50aee9683abca727e99e2faebb6",
+    "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+    "cgroup": {
+      "device": 30,
+      "inode": 31942618
+    },
+    "event_overflow": false,
+    "event_records": 0,
+    "faulted": true,
+    "granted": false,
+    "incomplete": true,
+    "lease_generation": "0000000000000000000000000000000000000000000000000000000000000000",
+    "observations": 0,
+    "packets_queued": 0,
+    "registrations": [],
+    "retired_monotonic_ns": 944411715299865,
+    "status": {
+      "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+      "cgroup": {
+        "device": 30,
+        "inode": 31942618
+      },
+      "endpoint": {
+        "device": 1048673,
+        "inode": 66
+      },
+      "faulted": true,
+      "generation": "1c17d03b591b12ca56060bf3fda4413fd5a3e50aee9683abca727e99e2faebb6",
+      "granted": false,
+      "nonce": "104b1b9ae67b70da4b117184af3a431c1b50df774d04804b96242aaf4a872580",
+      "state": 3
+    },
+    "stop_reason": 0
+  },
+  "captured_prefix_bytes": 161943,
+  "captured_prefix_sha256": "5390a06ec64a6af36fef0432a629b79fa3cb9898ab47ff04ccfc6a260a3c646d",
+  "causal_boundary": "This run supports an init fatal reboot preceding the namespace SIGHUP status; no claim of external sender or the same historical Owner15 cause.",
+  "checks_passed": [
+    "exact retained owner16-runtime-read01/runtime-result.json",
+    "exact retained owner16-runtime-read01/stdout.log",
+    "complete compressed wire",
+    "complete envelope",
+    "fixed single original result",
+    "authoritative terminal 1a1ade6ff62-fc05-5b7a",
+    "authoritative terminal 1a1ade28666-fc05-5b5b",
+    "exact retained owner16-normal-runtime01/stdout.log",
+    "runtime summary binds failed original",
+    "exact retained owner16-prepared-read01/prepared.json",
+    "entire actor writer serialization",
+    "attempt and actual prepared binding",
+    "failure never promoted to product success",
+    "all original Main maps and pids max unchanged",
+    "same actual unit and actor invocation",
+    "outer resource identity and finite limits preserved",
+    "no reported outer OOM or swap",
+    "exact four children reaped without forced kill",
+    "outer exact cleanup",
+    "original audit first error and complete append-only prefix",
+    "exact ordered lifecycle, with no ACTIVE",
+    "canonical CellSpec and generation binding",
+    "audit producer externally held identity binding",
+    "held init and actual binary identity",
+    "exact ABI3 HELLO PROJECT PROJECTED COMMIT DONE framing",
+    "broker was READY but never granted or ACTIVE",
+    "six terminal retirement events complete",
+    "owned namespace child SIGHUP wait status preserved",
+    "full bounded prefix and same-generation logger",
+    "both actual logger markers and exact definition object",
+    "capture attribution limits not hidden",
+    "four exact LMKD exec denials",
+    "actual repeated critical service failure and init reboot",
+    "actual restrictive service mask retained"
+  ],
+  "count": 34,
+  "critical_init_fatal_reboot_observed": true,
+  "events": [
+    "prepared",
+    "owner_attached",
+    "init_hello",
+    "broker_ready",
+    "init_project_sent",
+    "init_projected_accepted",
+    "init_commit_sent",
+    "init_done_accepted",
+    "retiring",
+    "broker_retired",
+    "processes_dead",
+    "domain_empty",
+    "retired",
+    "resources_removed",
+    "claim_released"
+  ],
+  "exact_unit_cleanup": {
+    "cgroup_absent": true,
+    "invocation": "8675c1ae3e7746aab3483d78efcc9080",
+    "original_actor_dead": true,
+    "unit": "p4-owner16-normal-20261105-01.service",
+    "unit_not_found": true
+  },
+  "full_Owner_NORMAL_qualification": false,
+  "generation_nonce": "104b1b9ae67b70da4b117184af3a431c1b50df774d04804b96242aaf4a872580",
+  "hwservicemanager_SIGABRT_lines_and_guest_pids": [
+    [
+      371,
+      563
+    ],
+    [
+      753,
+      645
+    ],
+    [
+      1107,
+      706
+    ],
+    [
+      1511,
+      780
+    ],
+    [
+      1933,
+      846
+    ]
+  ],
+  "hwservicemanager_abort_message_observed": false,
+  "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+  "memory_peak_bytes": 570916864,
+  "namespace_owner_exit": {
+    "core_dumped": false,
+    "exit_code": null,
+    "explicit_stop_requested_before_observation": false,
+    "host_pid": 3345697,
+    "observed_monotonic_ns": 944411722897732,
+    "process": {
+      "birth": 94438244,
+      "pid": 3345697,
+      "pidfd": {
+        "device": 6,
+        "inode": 24198047
+      },
+      "proc_dir": {
+        "device": 26,
+        "inode": 528805244
+      }
+    },
+    "raw_status": 1,
+    "signal": 1,
+    "worker_retirement_started_before_observation": true
+  },
+  "original_Main_all_three_maps_equal": true,
+  "original_Main_pids_max": "12288",
+  "owned_children_reaped": [
+    {
+      "forced_kill": false,
+      "pid": 3345649,
+      "reaped": true,
+      "returncode": 0,
+      "role": "daemon"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3345635,
+      "reaped": true,
+      "returncode": -15,
+      "role": "presenter"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3345599,
+      "reaped": true,
+      "returncode": 0,
+      "role": "sway"
+    },
+    {
+      "forced_kill": false,
+      "pid": 3345594,
+      "reaped": true,
+      "returncode": 0,
+      "role": "bus"
+    }
+  ],
+  "per_line_writer_or_complete_stream_attribution": false,
+  "prepared_sha256": "6a7e5f8eb4532a019506c7f0f6077d0739fe51bf31c45455a53bab700ace73d9",
+  "production_ready": false,
+  "raw_prefix_copied_into_review_package": false,
+  "runtime_bytes": 382901,
+  "runtime_failed_preserved": true,
+  "runtime_job": "1a1ade28666-fc05-5b5b",
+  "runtime_sha256": "04ed56c29b388b381bfeb13110607a8ee25b9a4d5a903c5bb421ef002f0214cb",
+  "schema": 1,
+  "scope": "LOCAL_COMPLETE_RETAINED_OWNER16_RUNTIME_REVIEW",
+  "six_post_retiring_events_complete": true,
+  "source_or_runtime_mutation_by_review": false,
+  "source_umask_directory_gap": "Actual unit mask0077 and pinned mkdir0755 without fchmod admit0700. This source gap is being repaired only for owned guest tmpfs directories. RC also requests DAC_OVERRIDE; no claim that mode alone proves all exec EACCES causes.",
+  "swap_peak_bytes": 0
+}

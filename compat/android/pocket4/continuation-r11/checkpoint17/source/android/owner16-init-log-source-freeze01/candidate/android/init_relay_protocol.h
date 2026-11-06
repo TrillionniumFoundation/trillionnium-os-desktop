@@ -1,0 +1,43 @@
+/* Copyright 2026 Droidloom contributors; SPDX-License-Identifier: Apache-2.0 */
+#ifndef DROIDLOOM_INIT_RELAY_PROTOCOL_H
+#define DROIDLOOM_INIT_RELAY_PROTOCOL_H
+#include <stddef.h>
+#include <stdint.h>
+#define DIR_WIRE_SIZE 128u
+#define DIR_HELLO_RIGHTS 12u
+#define DIR_MAX_RIGHTS 16u
+#define DIR_HELLO 1u
+#define DIR_PROJECT 2u
+#define DIR_PROJECTED 3u
+#define DIR_COMMIT 4u
+#define DIR_DONE 5u
+/* ABI 3 HELLO proves the finite domain through a private holding mount.
+ * The real Android cgroup mount point stays untouched. PROJECT retains the
+ * detached mount contract and the one-shot init-owned held target. */
+#define DIR_ABI 3u
+#define DIR_ABI_TEXT "3"
+#define DIR_CGROUP_VIEW "/dev/.droidloom-cgroups/relay-v2"
+#define DIR_SOCKET_NAME "droidloom-lmkd-psi"
+#define DIR_ABI_ENV "DROIDLOOM_INIT_RELAY_ABI"
+#define DIR_REQUIRED_ENV "DROIDLOOM_INIT_RELAY_REQUIRED"
+#define DIR_FD_ENV "DROIDLOOM_INIT_RELAY_FD"
+#define DIR_NONCE_ENV "DROIDLOOM_INIT_RELAY_NONCE"
+#define DIR_TIMEOUT_ENV "DROIDLOOM_INIT_RELAY_TIMEOUT_MS"
+/* Optional diagnostic extension. The five ABI3 frames are unchanged. */
+#define DIR_LOG_ABI_ENV "DROIDLOOM_INIT_LOG_ABI"
+#define DIR_LOG_FD_ENV "DROIDLOOM_INIT_LOG_FD"
+#define DIR_LOG_FD 202u
+#define DIR_LOG_CAPACITY (256u * 1024u)
+#define DIR_LIBRARY_PATH "/droidloom/lmkd-bootstrap/libdroidloom_init_relay.so"
+struct dir_context {
+  int control, peer_pidfd;
+  uint64_t deadline, last_clock;
+  unsigned char nonce[32];
+};
+struct dir_operations {
+  int (*collect)(int rights[DIR_HELLO_RIGHTS], unsigned char hello[DIR_WIRE_SIZE], void *opaque);
+  int (*project)(int socket_fd, const unsigned char ready[DIR_WIRE_SIZE], void *opaque);
+  int (*finish)(void *opaque);
+  void *opaque;
+};
+#endif

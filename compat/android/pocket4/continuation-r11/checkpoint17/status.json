@@ -1,0 +1,563 @@
+{
+  "schema": 1,
+  "checkpoint": 17,
+  "current_status_key": "checkpoint17",
+  "state": "FIXED_EVIDENCE_SNAPSHOT_WITH_EXPLICIT_ROOT_ADDENDUM_WORK_CONTINUES",
+  "snapshot_utc": "2026-11-06T01:20:18+00:00",
+  "snapshot_unix_ns": 1793928018884074103,
+  "addendum_utc": "2026-11-06T01:27:34+00:00",
+  "base_commit": "f0bafe2a3a007b6e27f1062d7cb03a2e90de5791",
+  "base_repository_tree": "a6ab0219ecd457116c1a161488df602de05f885b",
+  "previous_manifest_sha256": "e7151e0aaa5f30da09499a6ed3d157ca19ba5df3668bf15041071faeeb948dfa",
+  "whole_apps_ready": 0,
+  "launcher_apps": 45,
+  "all_apps_production_ready": false,
+  "whole_app_production_ready": false,
+  "production_release_qualified": false,
+  "main_engine_supervisor_deployed": false,
+  "runtime_authorization_from_snapshot": false,
+  "publication_scope": {
+    "fixed_source_and_safe_evidence_payloads": 2554,
+    "fixed_source_and_safe_evidence_bytes": 45187041,
+    "section_counts": {
+      "evidence": 846,
+      "source/android": 500,
+      "source/native": 529,
+      "source/owner": 676,
+      "tools": 3
+    },
+    "fixed_payload_tree_without_documents": "f33406322d1b513bcdaf0267ade39c20db7fed12",
+    "candidate_payload_index_sha256": "9c4911b29dcd38392ad18843d0322d81b393657ffa77069d8123753d80becb05",
+    "new_documents": 4,
+    "inherited_payloads_unchanged": 9381,
+    "inherited_payload_bytes": 162958058,
+    "old_root_README_preserved": true,
+    "task_complete": false,
+    "source_exact_requests_and_stdin_are_reproducible_text_sources": true,
+    "private_UI_accounts_raw_captured_logs_packets_keys_binaries_caches_transport_parts_added": false,
+    "excluded_originals_retain_size_SHA256_and_safe_outcomes": true,
+    "original_FAIL_and_UNKNOWN_not_reclassified": true,
+    "subtree_has_no_branch_PR_commit_or_device_side_effect": true
+  },
+  "main_baseline": {
+    "engine_revision": "R16",
+    "engine_sha256": "c8b9bae4466d4f66525fdef6bcec140b29612581efeb6ceb621f96e17277d26d",
+    "presenter_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+    "new_deployment": false,
+    "unchanged_claim_scope": "Only the individual fences in included receipts; no continuous absence-of-interference claim."
+  },
+  "main_resource_baseline": {
+    "original_five_limits": {
+      "cpu.max": "200000 100000",
+      "memory.high": "5368709120",
+      "memory.max": "6442450944",
+      "memory.swap.max": "max",
+      "pids.max": "12288"
+    },
+    "pids_max": 12288,
+    "new_Main_engine_or_supervisor_deployment": false,
+    "original_Main_guard_not_rewritten": true,
+    "observations_are_per_receipt_before_after_not_continuous_noninterference": true,
+    "CP16_budget_restoration_remains_historical": true
+  },
+  "owner": {
+    "normal15": {
+      "state": "ACTUAL_FAILED_BEFORE_ACTIVE_EXACT_RETIREMENT_VERIFIED",
+      "SIGHUP_sender_and_death_causal_order_proven": false,
+      "runtime_and_installed_owner_qualified": false,
+      "review": {
+        "path": "checkpoint17/evidence/owner15-normal01-runtime-read01/root-actual-failure-retirement-review.json",
+        "bytes": 4105,
+        "sha256": "e233d8e99d1701454d86d5b13eb6f3931253090c4eab482e22c368f760b19e19",
+        "git_blob_sha1": "6fbfa15f68b3e3cd0cd31d2304c0dbe08a88cf89"
+      }
+    },
+    "normal16": {
+      "state": "ACTUAL_RUNTIME_FAILED_EXACT_RETIREMENT_VERIFIED",
+      "logger_Android_compile": "ACTUAL_PASS_19_COMMANDS",
+      "bounded_log_observations": [
+        "LMKD exec EACCES",
+        "hwservicemanager SIGABRT"
+      ],
+      "single_shared_root_cause_proven": false,
+      "raw_log_and_runtime_captured_hex_published": false,
+      "runtime_and_installed_owner_qualified": false,
+      "evidence": [
+        {
+          "path": "checkpoint17/evidence/owner16-android-log-build01/root-actual-review.json",
+          "bytes": 1656,
+          "sha256": "d2e067211f32b87681f2d702ec110baca076aab4d44697f6d0992c04ac5b011d",
+          "git_blob_sha1": "25c9695adb8e93a8d797efd8cab191387d475a2c"
+        },
+        {
+          "path": "checkpoint17/evidence/owner16-runtime-read01/root-actual-review.json",
+          "bytes": 4121,
+          "sha256": "9006c6527ab39307d594f264acbcdc9a12dd474f7af2c32678ec42fb586da1ea",
+          "git_blob_sha1": "e6d915d6de14969f0b092687c60669ae474a50eb"
+        }
+      ]
+    },
+    "normal17": {
+      "source_change": "Explicit held-descriptor 0755 search mode for two fixed owned guest bootstrap directories; host private modes and service umask retained.",
+      "compile": "ACTUAL_PASS",
+      "ordinary_controls": "ACTUAL_PASS",
+      "ordinary_tests": {
+        "pressure_relay": 39,
+        "supervisor": 139,
+        "IPC": 7
+      },
+      "runtime": "ACTUAL_FAILED_BEFORE_ACTIVE",
+      "bounded_prefix_lmkd_exec_permission_errors": 0,
+      "bounded_prefix_lmkd_SIGABRT": 5,
+      "bounded_prefix_hwservicemanager_SIGABRT": 5,
+      "absence_beyond_captured_prefix_or_abort_cause_proven": false,
+      "exact_unit_cleanup_verified": true,
+      "raw_log_or_captured_hex_published": false,
+      "evidence": [
+        {
+          "path": "checkpoint17/source/android/owner17-bootstrap-mode-source-freeze01/SOURCE_PINS.json",
+          "bytes": 1798,
+          "sha256": "dca55eadb80fe20905f4aadc2420ac89406fb9c019bea97a73e67526b408a845",
+          "git_blob_sha1": "ee892a1e938aa0e31a4938d31096f6aec71211a1"
+        },
+        {
+          "path": "checkpoint17/evidence/owner17-host-mode-compile01/root-actual-review.json",
+          "bytes": 2448,
+          "sha256": "65faa0403852840b09d9db07d9bb76635d713c96b7723ba68a600b4cea22e984",
+          "git_blob_sha1": "bbf23b75c2c69baaf8d141131e661e00102baf75"
+        },
+        {
+          "path": "checkpoint17/evidence/owner17-host-ordinary01/root-actual-review.json",
+          "bytes": 1698,
+          "sha256": "48c664ad160414743cd6cc4e2f96b276768cc378ca6de33d8414b47bf5ffc21d",
+          "git_blob_sha1": "6cac1e446aa2e963ae9ecd3ba754ebbc703224de"
+        },
+        {
+          "path": "checkpoint17/evidence/owner17-runtime-read01/root-actual-retirement-review.json",
+          "bytes": 2717,
+          "sha256": "ec727ac23a5f9dc6621e7d0b8dff297535df669aa45c827a23d0f79994516130",
+          "git_blob_sha1": "9ad501d4a3128938d3eab313f8398ad90b957c09"
+        }
+      ]
+    },
+    "normal18": {
+      "state": "ACTUAL_FAILED_BEFORE_ACTIVE_EXACT_RETIREMENT_VERIFIED",
+      "job": "1a1ae5cd8da-fc05-5f42",
+      "crash_buffer_state": "FAILED_BEFORE_CONNECT",
+      "crash_buffer_first_error": "fixed generation logd ELF metadata differs",
+      "connections": 0,
+      "read_requests": 0,
+      "records": 0,
+      "96_byte_packet_file_is_header_not_crash_record": true,
+      "logdr_protocol_service_health_or_abort_cause_qualified": false,
+      "actual_15_lifecycle_milestones_and_four_child_retirement_preserved": true,
+      "raw_runtime_captured_hex_and_packet_excluded": true,
+      "safe_original_pin": {
+        "bytes": 738082,
+        "sha256": "203a34725e179bfd738780aa8243aa4fe4f53fdd6b65fbf5179d4d38e2ba76d3"
+      },
+      "evidence": [
+        {
+          "path": "checkpoint17/evidence/owner18-runtime-read01/root-actual-review.json",
+          "bytes": 4008,
+          "sha256": "53f06d8ce8ac8de926253415ede437710916712ee9890aa9815f6fa440a42106",
+          "git_blob_sha1": "b4da275b3b0b12b86bd41621716586956b66a369"
+        },
+        {
+          "path": "checkpoint17/evidence/owner18-runtime-read01/root-heavy-window-release.json",
+          "bytes": 715,
+          "sha256": "192db6aa8f658086d9383820648192e77f02f1bd7a29df11ccd1155629258636",
+          "git_blob_sha1": "c0a8e14624bb8d92154aeb0c1ce73b26a0374f7f"
+        }
+      ]
+    }
+  },
+  "native": {
+    "original_normal_framework_build": {
+      "state": "ACTUAL_FAILED_INTERNAL_6100_SECOND_TIMEOUT",
+      "job": "1a1ad81164b-fc05-5a14",
+      "builder_returncode": -9,
+      "outer_timed_out_false_does_not_negate_inner_timeout": true,
+      "cleanup_children_reaped": 296,
+      "cleanup_complete": true,
+      "before_after_Main_fence_pass": true,
+      "full_interval_noninterference_claimed": false,
+      "network_or_source_causal_timeout_reason_proven": false,
+      "framework_Java_and_Android_JNI_qualified": false,
+      "collector_state": "FAILED_WITH_15_PRESENT_ORIGINAL_MEMBERS_AND_2_MISSING_RECORDS_RETAINED",
+      "missing_inputs_and_command_records_not_reclassified_as_carrier_corruption": true,
+      "evidence": [
+        {
+          "path": "checkpoint17/evidence/typed-framework-normal-build01/stdout.log",
+          "bytes": 4581,
+          "sha256": "f8f89a09ebcfab99f07ff13e1ddbef5b3e01df52cb956b921152b37a229fc822",
+          "git_blob_sha1": "dbd1091ea8076b4fc6664ff8a1dee781ad8467b6"
+        },
+        {
+          "path": "checkpoint17/evidence/typed-framework-results-read01/decoded01/originals/attempt-01/terminal.json",
+          "bytes": 28758,
+          "sha256": "139163acad47d9db707faa950e4b4dcecaf3e72b655bce8b6b3db089ce542bdf",
+          "git_blob_sha1": "9ae620ffeabd260e5a59f6e56cf0cff9ad10c59d"
+        },
+        {
+          "path": "checkpoint17/evidence/typed-framework-results-read01/decoded01/originals/build-fences-01/terminal.json",
+          "bytes": 1177,
+          "sha256": "3626270e88e72c4e46d8beee09b5351e1f7d53bab18043241204ca314855e04d",
+          "git_blob_sha1": "7840ed59c001f419f209be08be32f746b7c99465"
+        },
+        {
+          "path": "checkpoint17/evidence/typed-framework-results-read01/decoded01/member-index.json",
+          "bytes": 26473,
+          "sha256": "225323d7ad10ed75dc600beaba8c99049f987cb8ef90d846642573a44241d362",
+          "git_blob_sha1": "63e9638a8e0cb657e8ad9235a425944e80c3a424"
+        },
+        {
+          "path": "checkpoint17/evidence/typed-framework-results-read01/decoded01/decode-validation.json",
+          "bytes": 1196,
+          "sha256": "d97deec6a1b642862fcd4d4f6648530b8634fe1f29781f9086d6525be0487157",
+          "git_blob_sha1": "699095b0aee7354fe93ec7f7b502b507635168e6"
+        }
+      ]
+    },
+    "known_staging_read03": {
+      "state": "ACTUAL_READ_ONLY_PASS_REUSE_NOT_QUALIFIED",
+      "projects": 214,
+      "HEAD_origin_candidates": 145,
+      "project144_clang_expected_detached_HEAD_and_index_observed": true,
+      "project146_partial_branch_HEAD_and_empty_index_lock_retained": true,
+      "projects147_to214_absent_at_observation": true,
+      "fresh_clean_sparse_commit_origin_checks_required_by_resume": true,
+      "observation_is_not_reuse_authorization": true,
+      "evidence": [
+        {
+          "path": "checkpoint17/evidence/typed-framework-known-staging-read03/stdout.log",
+          "bytes": 211213,
+          "sha256": "c62f32b7002d043e4813eadd598f33d088a0f20cc9f562ddc19d35c2ccddf664",
+          "git_blob_sha1": "89a18f0d80a14c439f915ddc2caa6d0851a42121"
+        },
+        {
+          "path": "checkpoint17/evidence/typed-framework-known-staging-read01/stdout.log",
+          "bytes": 711,
+          "sha256": "894b19961df28cd6d243e431eccc2d093d0da228855d9df48206eb42ef5c0316",
+          "git_blob_sha1": "4671e38e51518167d4ba7fe14f4a4a1ecff625ce"
+        }
+      ]
+    },
+    "builder467_compile02": {
+      "state": "ACTUAL_STRICT_CHILD_GATE_FAILED",
+      "48_commands_returned_zero": true,
+      "error": "command left owned children: projection-test-9",
+      "reaped_children": 2,
+      "forced_cleanup": true,
+      "no_qualified_builder_ELF": true,
+      "historical_two_PIDs_not_retroactively_attributed_to_git_maintenance": true,
+      "local_two_Git_version_reproduction_is_not_device_PID_identity_proof": true,
+      "review": {
+        "path": "checkpoint17/evidence/typed-builder467-source-resume-compile02/root-actual-review.json",
+        "bytes": 2974,
+        "sha256": "eda8dcd17d55f2b5931b4140147af19c0df74c1049c438898c66f533c8b326c6",
+        "git_blob_sha1": "417e4007a1fd8110a0e221869df397517053ed7b"
+      }
+    },
+    "builder467_compile03": {
+      "state": "ACTUAL_COMPILE_AND_FOCUSED_CONTROLS_PASS",
+      "job": "1a1ae4fe7ab-fc05-5eed",
+      "commands": 56,
+      "updater_gates": 9,
+      "source_resume_gates": 9,
+      "registered_test_counts": [
+        199,
+        20
+      ],
+      "all_56_commands_zero": true,
+      "cleanup_forced": false,
+      "remaining_children": 0,
+      "ELF": {
+        "bytes": 34579760,
+        "sha256": "fd4ef1903fa506512f2605fa03b39b5af0712680ff26dfbebfb4683c1b9ec288"
+      },
+      "owned_swap_peak_observed": 0,
+      "swap_max_observed": "max",
+      "swap_limit_zero_claimed": false,
+      "source_tool_config_dependencies_unchanged": true,
+      "real_AOSP_staging_reuse_framework_Java_Android_JNI_and_runtime_qualified": false,
+      "per_command_git_autonomous_maintenance_disabled_without_global_config_change": true,
+      "evidence": [
+        {
+          "path": "checkpoint17/evidence/typed-builder467-source-resume-compile03/result.json",
+          "bytes": 140163,
+          "sha256": "cd9f61ca21dd83210299f24dd50b68f5aa7aeba7eab94ac9cada71271d660e28",
+          "git_blob_sha1": "9172a68cedb346a16f788a7a7c9c8edc80b99e77"
+        },
+        {
+          "path": "checkpoint17/evidence/typed-builder467-source-resume-compile03/root-actual-review.json",
+          "bytes": 1884,
+          "sha256": "3e1249a5eeddb454d5989f2dc551e576aec7ba68053c3fd8529e262759f35289",
+          "git_blob_sha1": "87f3c83e1ef2866d0a457d73c33d36044f6841e5"
+        },
+        {
+          "path": "checkpoint17/source/native/typed-source-resume-freeze03/SOURCE_PINS.json",
+          "bytes": 3323,
+          "sha256": "daa3cef53177eeb10e8c48b5cf5388a87d80e9cb8effcbfa3e80e62b5b9f66a8",
+          "git_blob_sha1": "d1aa72412d8b4fa0ff74f3a981bd20a40b1331ee"
+        }
+      ]
+    },
+    "normal_resume01": {
+      "state_at_primary_cut": "ACTUALLY_ADMITTED_NO_TERMINAL_OBSERVATION",
+      "job": "1a1ae6b5a97-fc05-5f81",
+      "reused": false,
+      "source_bound_to_actual_compile03_ELF_and_result": true,
+      "prior_failed_build_cleanup_and_actual_staging_identity_bound": true,
+      "both_original_normal_work_and_source_locks_preserved": true,
+      "fresh_all_project_commit_origin_sparse_clean_checks_required": true,
+      "normal_manifest_verifier_and_atomic_publication_preserved": true,
+      "partial_staging_never_complete": true,
+      "persistent_bounded_progress_added": true,
+      "CPU_quota_percent": 200,
+      "jobs": 1,
+      "memory_max_bytes": 10737418240,
+      "own_swap_max_bytes": 1073741824,
+      "child_wait_seconds": 6100,
+      "outer_timeout_seconds": 6400,
+      "original_environment_and_Main_five_limits_preserved_in_request": true,
+      "actual_reuse_or_build_PASS_inferred": false,
+      "evidence": [
+        {
+          "path": "checkpoint17/source/native/typed-framework-normal-resume-bound01/ACTUAL_BINDING.json",
+          "bytes": 2240,
+          "sha256": "10107058280e6f19a4cb5e1b442d9f3e11fae5c18d691a6b93ec81f11d54c9b1",
+          "git_blob_sha1": "5d0cbc150d5feac2ac8b341d4af39d4aaafd67b1"
+        },
+        {
+          "path": "checkpoint17/source/native/typed-framework-normal-resume-bound01/exact-request.json",
+          "bytes": 170102,
+          "sha256": "345a0051f819bf172b0aabaf2fdbc0795a4797ed5c4d881c5b0f020ff9572241",
+          "git_blob_sha1": "78c75cc3c2b038bd70d6e088ac23d3bce52f7cc7"
+        },
+        {
+          "path": "checkpoint17/evidence/typed-framework-normal-resume01/admission.tool-original.json",
+          "bytes": 2493,
+          "sha256": "539b367c60a6a988764492aa38dfe0e1621394a89d68ca0e1e9df7a075ff928e",
+          "git_blob_sha1": "b7a9002dce72f15d4e727583a85255fac4a3ce15"
+        },
+        {
+          "path": "checkpoint17/evidence/typed-framework-normal-resume01/root-admission-review.json",
+          "bytes": 1925,
+          "sha256": "5509e1665795535d8f294f24b1654c87ac974b9f451a3696074a50415f5e5121",
+          "git_blob_sha1": "57efeaf7ea392900383326f40db0038c0831ed1f"
+        }
+      ]
+    },
+    "local_binding_failures": {
+      "template02_initial_AST_target_selection_failure_retained": true,
+      "template03_wrong_environment_absence_assertion_failure_retained": true,
+      "template04_fixed_exact_AST_span_and_original_environment_equality_only": true,
+      "actual_normal_request_was_generated_only_after_real_compile_PASS": true
+    }
+  },
+  "applications": {
+    "all_45_whole_app_status": "NOT_PRODUCTION_READY",
+    "unmentioned_apps": "Prior CP16 per-app inventory/status is inherited unchanged; no new whole-app qualification.",
+    "Amazon": {
+      "state": "SEARCH03_PRE_ACTION_LOCK_ADMISSION_FAILED",
+      "errno": 11,
+      "outcome_unknown": false,
+      "whole_app_production_ready": false,
+      "shared_lock_owner_or_common_root_cause_proven": false,
+      "evidence": [
+        {
+          "path": "checkpoint17/evidence/amazon-search-entry03-results-read01/coordinator.json",
+          "bytes": 5837,
+          "sha256": "bbdad90e8e136a1005c995045427e81ea25fb55eb11694da8af8d9bbcd98a227",
+          "git_blob_sha1": "49e4b2a2020a75596ee331a1ffe21d7f8b94cf58"
+        },
+        {
+          "path": "checkpoint17/evidence/amazon-search-entry03-launch-read01/launch.json",
+          "bytes": 6043,
+          "sha256": "5b0c66f234675d9170652729a2cacc66a74d4bb76e2f151ade5280332e935029",
+          "git_blob_sha1": "7c3d33da7dcefc2db2138e6e8eba69de6cddc4ee"
+        }
+      ]
+    },
+    "Ticket12306": {
+      "state": "OWNED_LAUNCH02_PRE_ACTION_LOCK_ADMISSION_FAILED",
+      "errno": 11,
+      "native_launch_attempted": false,
+      "owned_task_created": false,
+      "100_busy_attempts_within_original_5_second_wait_retained": true,
+      "shared_lock_owner_or_common_root_cause_proven": false,
+      "whole_app_production_ready": false,
+      "review": {
+        "path": "checkpoint17/evidence/ticket-owned-launch-inspect02-parent-read01/root-actual-review.json",
+        "bytes": 2005,
+        "sha256": "405b8aebde0c72ada4543434df0041183850f1a2c2e2eff37721be6ac5b3cd91",
+        "git_blob_sha1": "5a52d146f4d11b31bcccaa7a91498f92f070615c"
+      }
+    },
+    "Bilibili": {
+      "R6_05": "ACTUAL_FAILED_PAUSE_PRE_ACTION_TREE_OR_WINDOW_CHANGED",
+      "pause_action_attempted": false,
+      "subsequent_resume_action_qualified": false,
+      "successful_after_state_does_not_override_failed_sequence_restoration_flag": true,
+      "baseline_task_851_preserved_and_owned1014_retired": true,
+      "R7_static_build": "ACTUAL_PASS_11_COMMANDS",
+      "R7_APK_bytes": 37008,
+      "R7_APK_sha256": "f55b972a5ec968070ea0ea407f4a459913927c4693d0d9e949e6c472bcbcc641",
+      "R7_install_at_primary_cut": "FROZEN_NOT_DISPATCHED",
+      "R7_install_addendum01": "ACTUALLY_ADMITTED_NO_INSTALL_RESULT_INCLUDED",
+      "R7_install_job": "1a1ae75c02c-fc05-5fb1",
+      "R7_installed_UID_qualified": false,
+      "R7_playback_or_whole_app_qualified": false,
+      "evidence": [
+        {
+          "path": "checkpoint17/evidence/bili-r6-first-search-foreground05-failure-read01/root-actual-review.json",
+          "bytes": 3455,
+          "sha256": "72eb9f91df73faaa8907682a549567bc862d10a6650c13e2062951e3d5f09ed2",
+          "git_blob_sha1": "78d62e2669d322a904db2441a6230620e1b656d7"
+        },
+        {
+          "path": "checkpoint17/evidence/bili-r7-static-build01/build-result.json",
+          "bytes": 18933,
+          "sha256": "eb5b84b424b951342c984ab42923da3d35252de816837405c60b4cca93f27090",
+          "git_blob_sha1": "17b93ef4cfcc01fbd88f4e6013dfd8d7f6610a65"
+        },
+        {
+          "path": "checkpoint17/evidence/bili-r7-static-build01/root-actual-review.json",
+          "bytes": 1663,
+          "sha256": "d38869bf1b324a8f371a31d69edc3ae2b833779de437faa6ec42d191594998af",
+          "git_blob_sha1": "69f7bc8fb1c88a412c09e611509d209c11a6e811"
+        },
+        {
+          "path": "checkpoint17/source/owner/android-qa-r7-install-state-01/FROZEN_FILES.json",
+          "bytes": 2467,
+          "sha256": "89c603e7f56b0d42f4f1f7c6719bfce68e753c20f5a4fabacb3161f7198d122c",
+          "git_blob_sha1": "f76d22fe9cb13ffded7ac85a5125bb64dbbd98c0"
+        },
+        {
+          "path": "checkpoint17/evidence/bili-r7-install-state01/admission.tool-original.json",
+          "bytes": 1640,
+          "sha256": "7ff32ec2aa7fbfb5041aa9a4fc45554e95d8efb42a6d2af98a251d2ba56a24cc",
+          "git_blob_sha1": "e252c0d3041aad101ea30c53d5a230edfccffcf2"
+        }
+      ]
+    },
+    "IHG": {
+      "state": "ACTUAL_PUBLIC_SEARCH_ENTRY_SELECTED_STATE_PASS",
+      "one_public_click_acknowledged": true,
+      "complete_nodes_before_after": [
+        64,
+        112
+      ],
+      "selected_search_after_count": 1,
+      "same_owned_task_retired": 1016,
+      "preexisting_task851_preserved": true,
+      "hotel_search_results_login_booking_or_business_qualified": false,
+      "inspect_outcome_unknown_preserved": true,
+      "whole_app_production_ready": false,
+      "review": {
+        "path": "checkpoint17/evidence/ihg-public-search-entry01-five-read01/root-actual-review.json",
+        "bytes": 2482,
+        "sha256": "a0280b2cab38410eebbcd3cab7e3b2363bada5286e3a8030ab06e821c1c04d27",
+        "git_blob_sha1": "815bd07c44c1e09108f2d62b11c02c097a61a650"
+      }
+    },
+    "BestBuy": {
+      "original_launch_inspection": "ACTUAL_PASS_SCOPED_LAUNCH_AND_READ_ONLY_INSPECT",
+      "original_task1012_retired": true,
+      "historical_complete_tree_nodes": 12,
+      "historical_public_role_queries": 17,
+      "historical_resource_queries": 14,
+      "historical_total_matches": 0,
+      "persistent_loading_or_page_type_inferred_from_empty_tree": false,
+      "readiness01_terminal_at_primary_cut": "ACTUAL_FAILED_EXIT1_NOT_TIMEOUT",
+      "readiness01_followup_in_addendum": "THIRD_INSPECT_TREE_DEPTH_BOUND",
+      "successful_first_two_rounds": 2,
+      "successful_rounds_complete_nodes": [
+        12,
+        12
+      ],
+      "all31queries_zero_both_rounds": true,
+      "third_round_attempted_depth": 33,
+      "helper_depth_bound": 32,
+      "third_round_attempted_nodes": 41,
+      "third_round_emitted_nodes": 40,
+      "partial_tree_complete": false,
+      "failure_after_state_completed_disconnected_equal": true,
+      "failed_restoration_qualification_remains_false": true,
+      "failed_read_retried": false,
+      "all13_original_Main_guard_maps_equal": true,
+      "owned_task1018_retired": true,
+      "preexisting_tasks_preserved": [
+        851,
+        1017
+      ],
+      "semantic_ready": false,
+      "business_success_verified": false,
+      "whole_app_production_ready": false,
+      "qualified_complete_depth_repair_not_yet_executed": true,
+      "evidence": [
+        {
+          "path": "checkpoint17/evidence/bestbuy-launch-five-results-read01/root-actual-review.json",
+          "bytes": 2911,
+          "sha256": "13c535eacc76c8f90390e069874f0d328438f91f65ef45543b8a93a60693f77f",
+          "git_blob_sha1": "0681fabb6d74272f90f03365c71322c793f74c0b"
+        },
+        {
+          "path": "checkpoint17/evidence/bestbuy-launch01-public-roles-read01/root-actual-review.json",
+          "bytes": 1676,
+          "sha256": "32f9c49851b9db964107edbf8b3a7efd6f284e76f7438fb210065850bd63255b",
+          "git_blob_sha1": "304a39e1bf2b46fcc666c4befbb72564778563f7"
+        },
+        {
+          "path": "checkpoint17/source/native/android-bestbuy-content-readiness-01/FROZEN_FILES.json",
+          "bytes": 3060,
+          "sha256": "684d85500f1f39357bdb808f86d6573c3321318ef35f7fa314f261767e699355",
+          "git_blob_sha1": "d26094167e829498c49f00c2ba76c105f114def1"
+        },
+        {
+          "path": "checkpoint17/evidence/bestbuy-content-readiness01/terminal-status.tool-original.json",
+          "bytes": 726,
+          "sha256": "4fec5abb6f873e872e31d989c99b51f4a6850a60e42303b2e1164a6ec827d65e",
+          "git_blob_sha1": "ab9d9f3be8aebe4e8acaf00acc883d504b102e00"
+        },
+        {
+          "path": "checkpoint17/evidence/bestbuy-content-readiness01-five-read01/root-actual-review.json",
+          "bytes": 3164,
+          "sha256": "b1aa3358b5b9efe4b4562d970554ba2fffd3d719b539ab6407cf90ec525545e2",
+          "git_blob_sha1": "b7255f30b445a7fc0cea78e46cffb0fdeb865091"
+        },
+        {
+          "path": "checkpoint17/evidence/bestbuy-content-readiness01-five-read01/inspect.json",
+          "bytes": 90075,
+          "sha256": "0396fc7a164485ef3e38a75346d8a474f0ea7f2f3dc41ca12e45d85a2e960707",
+          "git_blob_sha1": "1f9df4fda7aa1fb146d01f74e7843554bf754497"
+        }
+      ]
+    }
+  },
+  "cut_and_addendum_policy": {
+    "primary_cut": "2026-11-06T01:20:18+00:00",
+    "explicit_addendum": "2026-11-06T01:27:34+00:00",
+    "addendum_originals": [
+      "evidence/bestbuy-content-readiness01-five-read01/admission.tool-original.json",
+      "evidence/bestbuy-content-readiness01-five-read01/cleanup.json",
+      "evidence/bestbuy-content-readiness01-five-read01/coordinator.json",
+      "evidence/bestbuy-content-readiness01-five-read01/dispatch-intent.json",
+      "evidence/bestbuy-content-readiness01-five-read01/inspect.json",
+      "evidence/bestbuy-content-readiness01-five-read01/known-terminal-binary-read-verification.json",
+      "evidence/bestbuy-content-readiness01-five-read01/launch.json",
+      "evidence/bestbuy-content-readiness01-five-read01/root-actual-review.json",
+      "evidence/bestbuy-content-readiness01-five-read01/root-admission-review.json",
+      "evidence/bestbuy-content-readiness01-five-read01/root-ui-window-release.json",
+      "evidence/bestbuy-content-readiness01-five-read01/stage.json",
+      "evidence/bestbuy-content-readiness01-five-read01/terminal-status.tool-original.json",
+      "evidence/bili-r7-install-state01/admission.tool-original.json",
+      "evidence/bili-r7-install-state01/dispatch-intent.json",
+      "evidence/bili-r7-install-state01/root-admission-review.json",
+      "evidence/bili-r7-install-state01/root-app-window-reservation.json"
+    ],
+    "later_device_results_not_inferred_or_silently_overwritten": true,
+    "all_other_aftercut_source_and_actuals_require_separate_increment": true
+  }
+}

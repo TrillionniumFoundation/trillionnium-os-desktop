@@ -1,0 +1,108 @@
+{
+  "Hepta_executed": false,
+  "additional_boundaries": [
+    "sequential sampling",
+    "nonleader private FD tables not scanned",
+    "kernel in-flight references not examined",
+    "PID/FD disappearance and permissions remain coverage gaps",
+    "no same-open-file-description or historical sender proof"
+  ],
+  "bounds": {
+    "FDs_per_PID": 4096,
+    "cooperative_seconds": 15,
+    "coverage_error_groups": 64,
+    "cpu_quota_percent": 100,
+    "fdinfo_bytes": 16384,
+    "lock_records_per_fdinfo": 32,
+    "matching_FDs": 64,
+    "memory_max_bytes": 134217728,
+    "numeric_visible_PIDs": 4096,
+    "outer_seconds": 30,
+    "output_bytes": 2097152,
+    "raw_proc_root_entries": 8192,
+    "total_FD_entries": 131072
+  },
+  "changes": [
+    "replace dedicated seven-PID FD scan with one bounded numeric-leader scan",
+    "exclude collector PID",
+    "read process details only after exact lock-inode FD match",
+    "aggregate unmatched process/FD failures without their details",
+    "namespace label+device/inode/type/owner equality; record timestamps without using them as identity",
+    "proc-root metadata records nlink but compares identity fields",
+    "record os.uname().release only",
+    "retain partial coverage explicitly without runtime/cleanup authority"
+  ],
+  "exact_original_preserved": [
+    "Main support 18537/4b955afc",
+    "five original input SHA/held/named checks",
+    "before/after original Main guard including pids.max 12288",
+    "Ticket prior 6053/13179fb6",
+    "boot identity",
+    "exact full root0600 nlink1 lock metadata",
+    "close once and sticky first error"
+  ],
+  "independent_peer": {
+    "agent": "android_acceptance",
+    "collect_executed": false,
+    "controls_executed": false,
+    "message_result": "no new concrete blocker in scoped source review",
+    "scope": "41061-byte source selected changed functions plus FD/namespace/identity closure and 18 inherited AST comparison",
+    "wrapper_not_in_that_review": true
+  },
+  "local_controls": {
+    "actual_owned_directory_and_FD_seams": true,
+    "actual_retained_timestamp_replay": true,
+    "all_passed": true,
+    "collect_executed": false,
+    "count": 5,
+    "device_qualification": false,
+    "live_proc_read": false,
+    "receipt": {
+      "bytes": 794,
+      "encoding": "utf-8",
+      "git_blob_sha1": "6feff1580f61a6b12e73f328032d316309de54b0",
+      "mode": "100644",
+      "path": "controls01-receipt.json",
+      "sha256": "7fdecedf4c696ebbf9f0e61c641f68666801db2b0dabb7f327f8a1824f5c3bbc"
+    }
+  },
+  "local_finalization_note": "A first inline local review-generation script had a duplicate delta keyword SyntaxError before any code executed or file was written; this corrected metadata generation did not change source, packet or tests.",
+  "no_matches_semantics": "not proof of no holder, earlier holder identity, safe retry, or global PID-namespace coverage",
+  "previous_actual": {
+    "bytes": 28778,
+    "not_reclassified": true,
+    "original_outcome": "FAIL",
+    "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/action-lock-main-fds-readonly01/stdout.log",
+    "sha256": "44e2f3f48c5da236c3c9c292a306a6a38c7d926740165e1e753dacdd26f8681c"
+  },
+  "qualification": false,
+  "runtime_authorized": false,
+  "schema": 1,
+  "scope": "bounded visible numeric-PID lock FD collector; source, retained evidence and local controls only",
+  "signal_or_cleanup_authority": false,
+  "source": {
+    "bytes": 41061,
+    "encoding": "utf-8",
+    "git_blob_sha1": "1da2d16d6f7fd928a1c34e697fdb3dd002c26383",
+    "mode": "100644",
+    "path": "read_visible_lock_fds.py",
+    "sha256": "8fed4dffbfb67467571189895f6dc56e8bd13aba0fba094107260526a697200e"
+  },
+  "source_delta": {
+    "bytes": 32761,
+    "encoding": "utf-8",
+    "git_blob_sha1": "5b9ca77292a56ada8bbd8869a9dd79872ee1e521",
+    "mode": "100644",
+    "path": "main7-to-visible-PIDs.patch",
+    "sha256": "deabbdbd43c623ece9ec39f5d27fe34c9483dc4c9b479928891136e3cdfa2ea4"
+  },
+  "source_reason": "The first fixed seven-PID observation did not locate the inode; a bounded scan of other visible numeric leader FD metadata is needed to locate an observable holder candidate. It does not prove global absence.",
+  "validation": {
+    "bytes": 3325,
+    "encoding": "utf-8",
+    "git_blob_sha1": "371a8a1d9c517389511bcaeade7025119ad7724f",
+    "mode": "100644",
+    "path": "packet-validation.json",
+    "sha256": "3a7eaef51358825fb3067308145fe88280f730387e7a55d670bc4a1a9189bb21"
+  }
+}

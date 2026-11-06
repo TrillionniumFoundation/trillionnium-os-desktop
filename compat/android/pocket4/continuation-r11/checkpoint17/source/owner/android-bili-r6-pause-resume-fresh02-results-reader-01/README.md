@@ -1,0 +1,1 @@
+Two exact fresh02 terminal parent files only. Prior approved reader implementation unchanged after literal root/nonce/source/size rebinding. Root supplies actual terminal hashes. No child discovery, Android command, UI, retry or runtime qualification. Later child reads require actual retained parent pins.

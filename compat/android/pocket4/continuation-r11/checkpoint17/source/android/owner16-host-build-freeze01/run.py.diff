@@ -1,0 +1,83 @@
+--- producer15/run.py
++++ producer16/run.py
+@@ -10,24 +10,25 @@
+ import time
+ import traceback
+ 
+-CONTROL_REVISION = 'producer15-namespace-child-exit01'
+-BASE = Path('/home/alex/work/pocket4-supervisor-lmkd-fixture-r11-build-14-01')
++CONTROL_REVISION = 'producer16-bounded-init-log01'
++BASE = Path('/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01')
+ SOURCE = BASE / "candidate"
+-OUT = Path('/home/alex/work/pocket4-supervisor-lmkd-child-exit-r11-build-15-01')
++OUT = Path('/home/alex/work/pocket4-supervisor-lmkd-init-log-r11-build-16-01')
+ CANDIDATE = OUT / "candidate"
+ TARGET = OUT / "target"
+ CARGO = "/home/alex/.cargo/bin/cargo"
+ PRIOR_RECEIPT = BASE / "compile-result.json"
+-PRIOR_RECEIPT_SHA = 'a916592cc708dc76411b482a371214410bca4662f6ff72dccd5083d88872b6a6'
+-PRIOR_INVENTORY_SHA = '4660754a78ccc0f78272e1786e1395672af41b7fc30a7e259c21eaf3950b7314'
+-ORIGINAL_DIFF_SHA = 'a8cfacabc68aee46804aec438be5d498db798656c2f9385b61ca148264ff968d'
++PRIOR_RECEIPT_SHA = '3327495b8cc3302dcc18ac72a7495f88d3354788404d2b05d1194d1e6e89ee30'
++PRIOR_INVENTORY_SHA = 'acd7a623dc28f83363d67aec1d4befe64c85cf852fa564312783005abc7a05b8'
++ORIGINAL_DIFF_SHA = 'cf5ba26e0f3efe86b6eec6ed140c8688df4ebc24f043dbdee4a07b94239744ef'
+ EXACT_OVERLAY = {
+-    'runtime/droidloom-pressure-relay/src/lib.rs': (57311, 'e3d01d609ce7abff8f195209f62a8a622fd622ef09d676f8a72d953331fd5617'),
+-    'runtime/droidloom-supervisor/src/development.rs': (95905, 'b4a73b76934c79d32fe2a95f6a39829b66be33209ad46c872c14d8ef97d260b1'),
+-    'runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs': (31293, 'f3392bc50f99b558597f23d9fb2d5110f23cab65b514b999a637d931a29a91f1'),
+-    'runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs': (40406, 'ebc8c5fb93c45e87102ce76ffc1e597649d2dc949d079d07a38531972cb2ff9d'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/audit.rs': (34440, '7322b9a314d2431af687350dc133b40f25dc244931b2a28d25cf50a4bbcc32a4'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/entry.rs': (31106, 'c821e6c62906c9f4d4f27c22781f7521518f715588ca3be791055d32fbed174f'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/init_log.rs': (15994, 'bd376b6b334776c25ec1276acb4c0232d00baaf80c6051e10ec2da75f7100ac2'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/mod.rs': (357, '2807edf9538722a11909c2702770f24624343429e18fe53db70db82f6dfad1be'),
++    'runtime/droidloom-supervisor/src/relay_lifecycle/owner.rs': (41593, '5e00ba0a96de8c972663f6293e214f670b44699cdb6102c167e2508b2967fb32'),
+ }
+-NEW_SOURCE_FILES = set()
++NEW_SOURCE_FILES = {'runtime/droidloom-supervisor/src/relay_lifecycle/init_log.rs'}
+ BINARIES = ["droidloomd", "droidloom-supervisor", "droidloom-psi-owner", "owned-ipc-controls"]
+ EXPECTED_TEST_TARGETS = {
+     ("droidloom_pressure_relay", "lib"),
+@@ -234,12 +235,12 @@
+          "wrong recovery payload revision")
+     need(cfg["original_diff_sha256"] == ORIGINAL_DIFF_SHA and
+          cfg["source_manifest_sha256"] ==
+-         "a50606bd1352c885fe98a20733d340b565a87849413f579321e86e40fecc2634",
++         "c5afbb0a61653f5fa554ef42cd68f77e71a38893b229151d2b685b5e2d032050",
+          "wrong recovered source lineage")
+     need(len(cfg["preimage"]) == 32 and
+          set(cfg["overlays"]) == set(EXACT_OVERLAY) and
+          set(cfg["overlays"]) - set(cfg["preimage"]) == NEW_SOURCE_FILES and
+-         len(set(cfg["preimage"]) | set(cfg["overlays"])) == 32, "wrong input/overlay set")
++         len(set(cfg["preimage"]) | set(cfg["overlays"])) == 33, "wrong input/overlay set")
+     for name, (size, digest) in EXACT_OVERLAY.items():
+         row = cfg["overlays"][name]
+         data = row["text"].encode("utf-8")
+@@ -650,8 +651,8 @@
+         payload = read_regular(OUT / "payload.json", 512 * 1024)
+         need(sha(payload) == actual["payload_sha256"], "compiled payload digest differs")
+         cfg = validate_config(json.loads(payload))
+-        prior_raw = read_regular(OUT / "producer14-retirement-fixture-repair01-actual-compile-result.json", 128 * 1024)
+-        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "producer14 fixture repair01 lineage receipt differs")
++        prior_raw = read_regular(OUT / "producer15-namespace-child-exit01-actual-compile-result.json", 128 * 1024)
++        need(sha(prior_raw) == PRIOR_RECEIPT_SHA, "producer15 namespace child exit01 lineage receipt differs")
+         prior = json.loads(prior_raw)
+         need(prior["inputs_before"] == cfg["preimage"] == prior["inputs_after"],
+              "32 original source inputs differ")
+@@ -717,7 +718,7 @@
+             report["targeted_public_retirement_controls"].append(result)
+         counts = {}
+         for key in sorted(tests):
+-            expected_count = 39 if key == ("droidloom_pressure_relay", "lib") else 128
++            expected_count = 39 if key == ("droidloom_pressure_relay", "lib") else 136
+             limit = 30 if key[0] == "droidloom_pressure_relay" else 45 if key[0] == "droidloom_supervisor" else 5
+             out, _ = execute(tests[key], ["--test-threads=1"], limit)
+             result = test_summary(out, expected_count, 0)
+@@ -742,7 +743,7 @@
+         report.update(
+             success=True, all_source_inventory_after_sha256=sha(after),
+             rust_test_binary_counts=counts,
+-            rust_tests_passed={"droidloom-pressure-relay": 39, "droidloom-supervisor": 128},
++            rust_tests_passed={"droidloom-pressure-relay": 39, "droidloom-supervisor": 136},
+             rust_test_scope="selected library targets only; integration/bin test suites excluded",
+             ordinary_ipc_passed=7, worker_context_passed=True,
+             actual_compiled_entry_abi_passed=True,

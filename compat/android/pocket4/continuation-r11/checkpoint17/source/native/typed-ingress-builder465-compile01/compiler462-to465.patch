@@ -1,0 +1,187 @@
+--- a/compile_builder.py
++++ b/compile_builder.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Compile a fresh paired-generation builder462 and run 24 exact source tests; no platform execution."""
++"""Compile a fresh paired-generation builder465 and run 26 exact source tests; no platform execution."""
+ import ctypes
+ import datetime
+ import hashlib
+@@ -196,8 +196,8 @@
+             'memory_peak':int(after['fields']['memory.peak']), 'memory_swap_peak':int(after['fields']['memory.swap.peak']),
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+-BASE_SOURCE = Path('/home/alex/work/pocket4-native-generation-builder451-compile-02-20261105/builder-source')
+-ROOT = Path('/home/alex/work/pocket4-native-generation-builder462-compile-01-20261105')
++BASE_SOURCE = Path('/home/alex/work/pocket4-native-generation-builder462-compile-01-20261105/builder-source')
++ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder465-compile-01-20261105')
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+@@ -205,8 +205,8 @@
+ RUSTUP_HOME = Path('/home/alex/.rustup')
+ CARGO_HOME = Path('/home/alex/.cargo')
+ TOOLCHAIN = '1.93.0'
+-MANIFEST_PARENT = 'a5052accd9bb36231a3c59271f8bc35e464e5cf14d702787735feed0d86b7a13'
+-MANIFEST_462 = '7eaf421cc911a8fec13945099f8d3758bada44b2331e4698dbefd472f535c8da'
++MANIFEST_PARENT = '7eaf421cc911a8fec13945099f8d3758bada44b2331e4698dbefd472f535c8da'
++MANIFEST_465 = '6b15e35c79575f2da99fcaf383a29e1d0ddcfaa34f9bc9bb5ae070fb3367ee10'
+ GO_PATCH = '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307'
+ OBSERVATION = '45d3a3307cf40c57c1835f1a275be7cb2e920f0d2b703880756ce0bd89386cfd'
+ GO_CONTROL = '391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674'
+@@ -222,8 +222,9 @@
+ ORIGINAL_TESTS = list(TESTS)
+ PAIR_TESTS = ['native_generation::tests::legacy_and_disabled_preserve_the_disabled_mode', 'native_generation::tests::rejects_every_mixed_old_new_combination', 'native_generation::tests::enabled_triplet_requires_exact_contract', 'native_generation::tests::rejects_malformed_foreign_or_ambiguous_marker', 'native_generation::tests::rejects_foreign_elf_and_unrecognized_contract', 'native_generation::tests::rejects_symlinked_components', 'native_generation::tests::rejects_previous_protocol_for_each_role_and_mode', 'native_generation::tests::rejects_previous_protocol_inside_self_consistent_enabled_contract', 'native_generation::tests::rejects_previous_protocol_contract', 'native_generation::tests::real_ext4_apex_extraction_rejects_changed_nested_component', 'native_generation::tests::product_contract_generation_requires_enabled_triplet', 'native_generation::tests::product_contract_generation_is_create_only_and_binds_components', 'native_generation::tests::real_erofs_bundle_verifies_its_embedded_pair', 'native_generation::tests::staging_replaces_the_whole_apex_and_preserves_its_metadata', 'tests::native_generation_pair_cli_requires_one_explicit_product']
+ ART_PROJECTION_TESTS = ['native_generation_art::tests::output_rejects_source_overlap_alias_and_reuse', 'native_generation_art::tests::records_are_create_only_and_never_grant_runtime_readiness']
+-TESTS = ORIGINAL_TESTS + PAIR_TESTS + ART_PROJECTION_TESTS
+-FIXED_ART_DELTA = ['android/native-generation-art/source/art/libnativebridge/Android.bp', 'android/native-generation-art/source/art/libnativebridge/droidloom_generation.cc', 'android/native-generation-art/source/art/libnativebridge/droidloom_generation.h', 'android/native-generation-art/source/art/libnativebridge/include/nativebridge/droidloom_generation_protocol.h', 'android/native-generation-art/source/art/libnativebridge/include/nativebridge/native_bridge.h', 'android/native-generation-art/source/art/libnativebridge/libnativebridge.map.txt', 'android/native-generation-art/source/art/libnativebridge/native_bridge.cc', 'android/native-generation-art/source/art/runtime/Android.bp', 'android/native-generation-art/source/art/runtime/native_bridge_art_interface.cc', 'android/native-generation-art/source/art/runtime/runtime.cc', 'tools/droidloom-update/src/android.rs', 'tools/droidloom-update/src/main.rs', 'tools/droidloom-update/src/native_generation_art.rs']
++TYPED_INGRESS_TESTS = ['native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate', 'native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions']
++TESTS = ORIGINAL_TESTS + PAIR_TESTS + ART_PROJECTION_TESTS + TYPED_INGRESS_TESTS
++FIXED_TYPED_DELTA = ['android/manifest/m2-role-ingress-source-lock.json', 'android/native-role-ingress/typed-ingress02-framework.patch', 'tools/droidloom-update/src/android.rs', 'tools/droidloom-update/src/main.rs', 'tools/droidloom-update/src/native_role_ingress.rs']
+ DEADLINE = None
+ OBSERVED_SIGNALS = []
+ 
+@@ -798,7 +799,7 @@
+     allowed=sorted(os.sched_getaffinity(0))
+     require(len(allowed)>=3,'cannot leave two logical CPUs free')
+     os.sched_setaffinity(0,[allowed[-1]])
+-    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh paired-generation 462-file Rust builder and 24 exact tests; no Android/full-engine/service execution',
++    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh typed-ingress 465-file Rust builder and 26 exact tests; no Soong/Java/Android/full-engine/service execution',
+             'Main_actions':0,'Main_identity_observed':False,'install_actions':0,'network_downloads_permitted':False,
+             'commands':[],'allowed_cpus_before':allowed,'selected_cpus':[allowed[-1]],'expected_test_names':TESTS}
+     def interrupted(number,frame):
+@@ -820,10 +821,10 @@
+                 'actual complete-package comparison gate is not qualified')
+         report['actual_Go_comparison_gate']=go_control_pin
+         report['upstream_vet_pass_claimed']=False
+-        old_bytes,_=pinned_packet('compiled-parent451-manifest.json',MANIFEST_PARENT)
+-        new_bytes,_=pinned_packet('expected-builder462-manifest.json',MANIFEST_462)
++        old_bytes,_=pinned_packet('compiled-parent462-manifest.json',MANIFEST_PARENT)
++        new_bytes,_=pinned_packet('expected-builder465-manifest.json',MANIFEST_465)
+         expected=json.loads(old_bytes);copied_expected=json.loads(new_bytes)
+-        require(len(expected)==451 and len(copied_expected)==462,'source manifest count changed')
++        require(len(expected)==462 and len(copied_expected)==465,'source manifest count changed')
+         original_rows,copied_before=exact_source_copy(expected)
+         original_manifest=portable(original_rows,expected)
+         report['original_manifest']=write_new(OUT/'original-builder-source-manifest.json',(json.dumps(original_manifest,indent=2)+'\n').encode())
+@@ -832,22 +833,44 @@
+              'TMPDIR':str(OUT/'tmp'),'GIT_CONFIG_NOSYSTEM':'1','GIT_CONFIG_GLOBAL':'/dev/null'}
+         tools,tool_rows=toolchain(report,env)
+         report['tool_inputs']=write_new(OUT/'tool-inputs-before.json',tool_rows)
+-        parent_raw,parent_pin=pinned_packet('compiled-parent451-result.json',
+-            '8c72e771c9ed5bd440b36aa8c7c3379b31ce8acccdc2b222fadad9e64cb28096')
++        parent_raw,parent_pin=pinned_packet('compiled-parent462-result.json',
++            'f9a3dd01d9ebdb60a0e6a34ee99e3b1a2f646a30191eda3643cee5ca36ff544f')
+         parent=json.loads(parent_raw)
+-        require(parent['state']=='PASS' and parent['focused_tests_passed']==22 and
++        require(parent['state']=='PASS' and parent['focused_tests_passed']==24 and parent['actual_registered_test_count']==197 and
+                 parent['copied_manifest']['sha256']==MANIFEST_PARENT and
+-                parent['builder_elf']['sha256']=='34c04271f1a3095cedb0b57eece7749958622754a864202b17a54abb174e0e3e' and
++                parent['builder_elf']['sha256']=='8f19ac0deb472bf8c2a3a6befd689b76d67d619041fd6deb9c31df15c0056c12' and
+                 parent['owned_resource_gate']['pass'] is True and not parent['dependency_changes'] and
+-                not parent['tool_changes'] and not parent['cleanup']['errors'] and not parent['cleanup']['remaining'],
+-                'actual compiled parent451 qualification differs')
+-        report['actual_parent451_compile_authority']=parent_pin
++                not parent['tool_changes'] and not parent['cleanup']['errors'] and not parent['cleanup']['remaining'] and
++                not parent['cleanup']['forced_cleanup'] and parent['copied_source_unchanged_after'] is True and
++                parent['original_source_unchanged_after'] is True and parent['cargo_configs_unchanged_after'] is True,
++                'actual compiled parent462 qualification differs')
++        report['actual_parent462_compile_authority']=parent_pin
++        roots_raw,roots_pin=pinned_packet('typed-root-trees-result.json',
++            '0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8')
++        roots=json.loads(roots_raw)
++        require(roots['state']=='PASS_THREE_FIXED_COMMIT_ROOT_TREES' and
++                roots['all_started_children_joined'] is True and roots['first_error'] is None and
++                not roots['secondary_errors'] and roots['owned_resource_gate']['pass'] is True and
++                roots['source_lock_reference_sha256']==expected['android/manifest/m2-sparse-source-lock.json']['sha256'],
++                'actual fixed root-tree input authority differs')
++        derivation_raw,derivation_pin=pinned_packet('typed-lock-derivation.json',
++            'c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0')
++        derivation=json.loads(derivation_raw)
++        require(derivation['state']=='DERIVED_THREE_PROJECT_SOURCE_EXTENSION_NOT_COMPILED' and
++                derivation['actual_report_sha256']==roots_pin['sha256'] and
++                derivation['base_lock_sha256']==roots['source_lock_reference_sha256'] and
++                derivation['derived_lock_sha256']==copied_expected['android/manifest/m2-role-ingress-source-lock.json']['sha256'] and
++                derivation['derived_lock_bytes']==copied_expected['android/manifest/m2-role-ingress-source-lock.json']['bytes'] and
++                derivation['other_lock_fields_unchanged'] is True and derivation['original_lock_modified'] is False,
++                'derived lock authority does not bind the exact source delta')
++        report['actual_typed_root_tree_authority']=roots_pin
++        report['typed_lock_derivation_authority']=derivation_pin
+         changes=[name for name in copied_expected if copied_expected[name]!=expected.get(name)]
+-        wanted=FIXED_ART_DELTA
++        wanted=FIXED_TYPED_DELTA
+         require(sorted(changes)==wanted and set(expected)<=set(copied_expected) and
+-                sum(name not in expected for name in changes)==11 and
++                sum(name not in expected for name in changes)==3 and
+                 sum(name in expected for name in changes)==2,
+-                'paired462 source delta is not two edits and eleven additions')
++                'typed465 source delta is not two edits and three additions')
+         for name in changes:
+             wanted_row=copied_expected[name]
+             data,pin=pinned_packet('delta/'+name,wanted_row['sha256'])
+@@ -868,14 +891,16 @@
+         # Full held path/hash/bytes/mode equality is checked above. Retain the
+         # exact frozen manifest serialization, including its key order.
+         actual_bytes=new_bytes
+-        require(json.loads(actual_bytes)==actual_map and sha(actual_bytes)==MANIFEST_462,
+-                'actual copied 462 manifest differs')
++        require(json.loads(actual_bytes)==actual_map and sha(actual_bytes)==MANIFEST_465,
++                'actual copied 465 manifest differs')
+         report['copied_manifest']=write_new(OUT/'copied-builder-source-manifest.json',actual_bytes)
+         report['source_delta']={'changed_existing':[name for name in wanted if name in expected],
+                                 'added':[name for name in wanted if name not in expected],
+-                                'unchanged_existing':449,'engine_source_files_changed':0,'Go6_patch_changed':False,
++                                'unchanged_existing':460,'engine_source_files_changed':0,'Go6_patch_changed':False,
+                                 'Blueprint_streaming_patch_changed':False,
+-                                'ART_source_data_files':10,'ART_sources_executed_or_built':False}
++                                'ART_source_data_files_changed':0,'ART_sources_executed_or_built':False,
++                                'typed_ingress_framework_patch_files':5,'framework_sources_executed_or_built':False,
++                                'runtime_authorization_enabled':False}
+         env.update({'PATH':str(tools['cargo'].parent)+':/usr/bin:/bin','RUSTC':str(tools['rustc']),
+                     'RUSTC_WRAPPER':'','RUSTC_WORKSPACE_WRAPPER':'','RUSTFLAGS':'','CARGO_ENCODED_RUSTFLAGS':'',
+                     'CARGO_TARGET_DIR':str(OUT/'cargo-target'),'CARGO_BUILD_JOBS':'1',
+@@ -927,18 +952,19 @@
+             require(stream.read(4)==b'\x7fELF','builder artifact is not ELF')
+         help_output=command([str(builder),'--help'],COPIED,env,'builder-help',report['commands'],10)
+         require(b'Usage:' in help_output and b'native-engine-build' in help_output and
+-                b'native-generation-pair' in help_output and b'native-generation-art-build' in help_output,
+-                'normal builder or explicit paired-record/ART build-only CLI missing')
++                b'native-generation-pair' in help_output and b'native-generation-art-build' in help_output and
++                b'native-role-ingress-build' in help_output,
++                'normal builder or explicit paired-record/ART/typed-ingress build-only CLI missing')
+         test_build=command([common[0],'test',*common[1:],'--no-run','--message-format=json-render-diagnostics'],COPIED,env,'builder-test-compile',report['commands'],180)
+         report['actual_test_compile_packages']=qualify_compiler_inputs(test_build,packages,dependency_rows,candidate_rows)
+         test_binary=build_artifact(test_build,package_id,True)
+         test_pin=hash_held(test_binary)
+         test_list=command([str(test_binary),'--list'],COPIED,env,'builder-test-list',report['commands'],10).decode()
+-        require(len(ORIGINAL_TESTS)==7 and len(PAIR_TESTS)==15 and len(ART_PROJECTION_TESTS)==2 and len(TESTS)==len(set(TESTS))==24 and
++        require(len(ORIGINAL_TESTS)==7 and len(PAIR_TESTS)==15 and len(ART_PROJECTION_TESTS)==2 and len(TYPED_INGRESS_TESTS)==2 and len(TESTS)==len(set(TESTS))==26 and
+                 all(test_list.splitlines().count(name+': test')==1 for name in TESTS),
+-                'original seven, paired fifteen or new ART two exact tests absent/duplicated in actual test executable')
++                'original seven, paired fifteen, ART two or typed-ingress two exact tests absent/duplicated in actual test executable')
+         listed_names=[line[:-6] for line in test_list.splitlines() if line.endswith(': test')]
+-        require(len(listed_names)==197 and len(listed_names)==len(set(listed_names)) and
++        require(len(listed_names)==199 and len(listed_names)==len(set(listed_names)) and
+                 not any(line.endswith(': benchmark') for line in test_list.splitlines()),
+                 'actual registration list is duplicate/empty or contains unqualified benchmarks')
+         libtest_help=command([str(test_binary),'--help'],COPIED,env,'builder-test-help',report['commands'],10).decode()
+@@ -963,6 +989,10 @@
+         report['original_projection_tests_passed']=len(ORIGINAL_TESTS)
+         report['pairing_tests_passed']=len(PAIR_TESTS)
+         report['ART_projection_tests_passed']=len(ART_PROJECTION_TESTS)
++        report['typed_ingress_lock_tests_passed']=len(TYPED_INGRESS_TESTS)
++        report['framework_Java_and_Android_JNI_compiled']=False
++        report['transitive_framework_closure_qualified']=False
++        report['runtime_authorization_enabled']=False
+         report['real_image_test_count']=5
+         report['platform_APEX_signature_validated']=False
+         report['actual_enabled_ART_lifecycle_validated']=False
+@@ -1017,7 +1047,7 @@
+ 
+ if __name__=='__main__':
+     if sys.argv[1:]==[]:
+-        print(json.dumps({'mode':'PLAN','root':str(ROOT),'base_source':str(BASE_SOURCE),'source_files':462,
++        print(json.dumps({'mode':'PLAN','root':str(ROOT),'base_source':str(BASE_SOURCE),'source_files':465,
+                           'requires_explicit_execute_once':True,'Rust_toolchain':TOOLCHAIN,'Main_actions':0,
+                           'Android_and_full_engine_execution':False,'focused_existing_tests':TESTS}))
+     elif sys.argv[1:]==['--execute-once']:

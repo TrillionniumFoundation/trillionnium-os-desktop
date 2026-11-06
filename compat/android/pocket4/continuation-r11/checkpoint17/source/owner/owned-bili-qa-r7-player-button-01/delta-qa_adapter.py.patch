@@ -1,0 +1,108 @@
+--- R6/qa_adapter.py
++++ R7/qa_adapter.py
+@@ -18,7 +18,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ RECORDER_MANIFEST_SHA = '52b95328e2f07aaf4416b7f48c9046ffa465337cad7a410ea3a7027512720dc1'
+-SELF = 'org.droidloom.qa.bili.r6'
++SELF = 'org.droidloom.qa.bili.r7'
+ BUILD_COMMANDS = ['javac','d8','aapt-package','align','create-owned-signing-key','sign',
+                   'signature','alignment','badging','permissions','manifest']
+ 
+@@ -78,15 +78,16 @@
+                 'SOURCE_RELATIVE_PATH_REQUIRED')
+         require(len(pinned(HERE/name, row['sha256'])) == row['bytes'], 'SOURCE_SIZE_CHANGED')
+     require({'qa_adapter.py','qa_contract.py','build_candidate.py','AndroidManifest.xml',
+-             'src/org/droidloom/qa/bili/r6/ActionRunner.java',
+-             'src/org/droidloom/qa/bili/r6/TouchTransaction.java'} <= set(manifest['files']),
++             'src/org/droidloom/qa/bili/r7/ActionRunner.java',
++             'src/org/droidloom/qa/bili/r7/TouchTransaction.java',
++             'src/org/droidloom/qa/bili/r7/PlayerButtonTransaction.java'} <= set(manifest['files']),
+             'OWNED_SOURCE_CLOSURE_INCOMPLETE')
+     return manifest
+ 
+ 
+ def validate_plan(plan, qa):
+     require(isinstance(plan, dict) and plan.get('schema') == 1 and
+-            plan.get('operation') in ('state','inspect','click','set_text','reveal_controls'), 'OWNED_PLAN_REQUIRED')
++            plan.get('operation') in ('state','inspect','click','set_text','reveal_controls','player_button'), 'OWNED_PLAN_REQUIRED')
+     op = plan['operation']; keys = {'schema','operation','nonces'}
+     if op in ('click','set_text'):
+         keys.add('selector')
+@@ -101,8 +102,11 @@
+                 {'resource_id','class'}<=set(plan['selector']) and plan['selector']['class']=='android.widget.EditText' and
+                 re.fullmatch(r'tv\.danmaku\.bili:id/[A-Za-z0-9_]+',plan['selector']['resource_id']),
+                 'ONLY_OBSERVED_EXACT_EDIT_RESOURCE_AND_PUBLIC_QUERY')
++    if op == 'player_button':
++        keys.add('transition')
++        require(plan.get('transition') in ('pause','resume'),'FIXED_PLAYER_TRANSITION_REQUIRED')
+     require(set(plan) == keys and isinstance(plan['nonces'], dict), 'EXACT_PLAN_KEYS_REQUIRED')
+-    names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text','reveal_controls') else set())
++    names = {'state'} if op == 'state' else {'before','inspect','after'} | ({'action'} if op in ('click','set_text','reveal_controls','player_button') else set())
+     require(set(plan['nonces']) == names, 'EXACT_PHASE_NONCES_REQUIRED')
+     values = [qa.nonce(value) for value in plan['nonces'].values()]
+     require(len(set(values)) == len(values), 'DISTINCT_PHASE_NONCES_REQUIRED')
+@@ -147,7 +151,7 @@
+     def __init__(self, flow, recorder, qa, proof, helper_uid):
+         require(flow.contract.sha256 == RECORDER_MANIFEST_SHA and not flow._private_backend_transport,
+                 'FROZEN_PUBLIC_RECORDER_TRANSPORT_REQUIRED')
+-        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165,10166,10169,10170,10175),
++        require(type(helper_uid) is int and 10000 <= helper_uid < 100000 and helper_uid not in (10117,10125,10164,10165,10166,10169,10170,10175,10184),
+                 'EXACT_NEW_OWNED_HELPER_UID_REQUIRED')
+         self.flow, self.recorder, self.qa, self.proof, self.uid = flow, recorder, qa, proof, helper_uid
+         self.nonces = set()
+@@ -180,7 +184,7 @@
+         self.nonces.add(request['nonce'])
+         self.recorder.write_new(f.step/(request['nonce']+'.request.json'), request)
+         before = f.command_index
+-        out = f.android(qa.instrumentation_argv(request), 20, mutation=request['op'] in ('click','set_text','reveal_controls'))
++        out = f.android(qa.instrumentation_argv(request), 20, mutation=request['op'] in ('click','set_text','reveal_controls','player_button'))
+         require(f.command_index == before+1, 'ONE_ACTUAL_HELD_COMMAND_REQUIRED')
+         stem = f.step/('command-%03d' % f.command_index)
+         raw = bounded(str(stem)+'.result.json', 65536); row = json.loads(raw)
+@@ -299,6 +303,18 @@
+                 result['reveal_input_acknowledged']=True
+                 result['controls_revealed']=None
+                 result['post_input_inspection_sha256']=qa.sha(qa.canonical(middle['helper']['post_inspection']))
++            elif plan['operation']=='player_button':
++                fields=qa.player_button_request_fields(inspected['helper']['inspection'],scope,plan['transition'])
++                action=request('action','player_button',scope=scope,inspection_nonce=names['inspect'],
++                    inspection_sha256=inspected['wire_sha256'],**fields)
++                middle=None
++                middle=self.instrument(action)
++                require(middle['helper']['action_window']==inspected['helper']['inspection']['window'],
++                        'PLAYER_BUTTON_ACKNOWLEDGED_WINDOW_DIFFERS')
++                result['player_button_acknowledged']=True
++                result['player_transition_requested']=plan['transition']
++                result['player_current_inspection_sha256']=middle['helper']['player_inspection_sha256']
++                result['atomic_android_transaction']=False
+         except BaseException as error:
+             remember('state_inspection_or_action',error)
+         finally:
+@@ -325,7 +341,7 @@
+             if scope is not None:
+                 try:
+                     result['foreground_after'] = self.foreground()
+-                    if plan['operation'] in ('inspect','reveal_controls'):
++                    if plan['operation'] in ('inspect','reveal_controls','player_button'):
+                         require(result['foreground_after'] == scope,'READ_ONLY_INSPECT_FOREGROUND_CHANGED')
+                 except BaseException as error:
+                     remember('post_foreground',error)
+@@ -386,7 +402,7 @@
+ 
+     try:
+         flow = recorder.Flow(flow_args)
+-        flow.begin(flow_args, mutation=plan['operation'] in ('click','set_text','reveal_controls'))
++        flow.begin(flow_args, mutation=plan['operation'] in ('click','set_text','reveal_controls','player_button'))
+         action_lock = recorder.lock_file(recorder.ACTION_LOCK)
+         result.update(Session(flow, recorder, qa, proof, args.helper_uid).sequence(plan))
+         result['ok'] = True
+@@ -430,7 +446,7 @@
+     args = parser.parse_args()
+     if not args.execute_once:
+         print(json.dumps({'state':'PLAN_ONLY', 'package':SELF, 'recorder_manifest_sha256':RECORDER_MANIFEST_SHA,
+-            'operations':['state','inspect','click','set_text','reveal_controls'], 'install_launch_task_cleanup_or_UI_actions':0,
++            'operations':['state','inspect','click','set_text','reveal_controls','player_button'], 'install_launch_task_cleanup_or_UI_actions':0,
+             'actual_build_install_and_runtime_qualification_required':True}))
+         return 0
+     require(all(getattr(args, name) is not None for name in ('source_manifest_sha256','build_receipt_sha256',

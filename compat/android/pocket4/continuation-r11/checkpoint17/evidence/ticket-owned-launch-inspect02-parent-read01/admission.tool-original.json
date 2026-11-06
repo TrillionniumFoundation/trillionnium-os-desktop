@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import sys,hashlib;raw=sys.stdin.buffer.read(16385);assert 0<len(raw)<=16384 and hashlib.sha256(raw).hexdigest()=='8e46dd685a65098783dd6e8bb1db242f6e26a519fd6917c3488f5cfd640a1e95';scope={'__name__':'fixed_owned_summary_reader','__file__':'<verified-fixed-summary-reader>'};exec(compile(raw,'read_summary.py','exec'),scope);raise SystemExit(scope['main'](['--collect-once', '--coordinator-sha256', 'ed80537c681a04722817b1e2f8cb28d33ac04f5c645f84a4317d505bcea551e1', '--stage-sha256', '8a3823bbb69469462b19e3998ce5c78587b19cda49ac2a0d8f8a4deba8119814']))"
+    ],
+    "created_unix_ms": 1793913482767,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1ad936e0f-fc05-5a39",
+    "idempotency_key": "pocket4-ticket-launch-inspect02-parent-bound-launch-readonly-01-20261105",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1ad936e0f-fc05-5a39",
+    "request_digest": "b8abc773fd48332e1b42b48ad18814afbdee0615d0314d3f6aba51a012901c64",
+    "request_fingerprint": 13306948824980796206,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1ad936e0f-fc05-5a39"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1ad936e0f-fc05-5a39"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

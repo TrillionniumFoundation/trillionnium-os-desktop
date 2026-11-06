@@ -1,0 +1,66 @@
+{
+  "Hepta_calls": 0,
+  "Main_paths_read": false,
+  "collect_called": false,
+  "controls": [
+    {
+      "actual_calls": [
+        6,
+        8
+      ],
+      "close_errors": 0,
+      "name": "free_actual_once_unlock_close",
+      "passed": true,
+      "primary_errno": null
+    },
+    {
+      "actual_calls": [
+        6
+      ],
+      "close_errors": 0,
+      "name": "busy_actual_once_no_unlock_or_retry",
+      "passed": true,
+      "primary_errno": 11
+    },
+    {
+      "actual_calls": [
+        6
+      ],
+      "close_errors": 0,
+      "name": "non_EAGAIN_is_preserved_without_retry",
+      "passed": true,
+      "primary_errno": 1
+    },
+    {
+      "actual_calls": [],
+      "close_errors": 0,
+      "name": "exact_identity_rejected_before_flock",
+      "passed": true,
+      "primary_errno": null
+    },
+    {
+      "actual_calls": [
+        6,
+        8
+      ],
+      "close_errors": 0,
+      "name": "unlock_failure_preserved_owned_close_releases",
+      "passed": true,
+      "primary_errno": 5
+    },
+    {
+      "actual_calls": [
+        6
+      ],
+      "close_errors": 1,
+      "name": "busy_first_error_survives_close_diagnostic",
+      "passed": true,
+      "primary_errno": 11
+    }
+  ],
+  "device_lock_or_Android_qualification": false,
+  "passed": 6,
+  "schema": 1,
+  "scope": "local owned temporary file plus explicit syscall failure seams",
+  "source_sha256": "c98c6031edf12b7984c06553e429afcb4430f6e2dce7a10b143691b39a8a8368"
+}

@@ -1,0 +1,39 @@
+--- /workspace/scratch/94990735b266/android-bili-r6-pause-resume-fresh02-results-reader-01/read_summary.py
++++ /workspace/scratch/94990735b266/android-bili-r6-content-ready04-results-reader-01/read_summary.py
+@@ -11,10 +11,10 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r6-pause-resume-02')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-8f28dc51812add5280cb6b7ba411aad0')
+-NONCE='8f28dc51812add5280cb6b7ba411aad0'
+-SOURCE_SHA='0611a55350a19de18b14b1da7fe6342caed8f8e6082746e83b028b345abd8d97'
++ROOT=Path('/home/alex/work/pocket4-bilibili-r6-pause-resume-04')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-a14743fa3566f851b6724a54b0509744')
++NONCE='a14743fa3566f851b6724a54b0509744'
++SOURCE_SHA='a49770d55b487e4e172aa38ebc1a454220ec7e668c499f8c8d5b838962e9da42'
+ HELPER_UID=10184
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+@@ -98,7 +98,7 @@
+             missing.append({'name':name,'path':str(path)});continue
+         if name in expected:
+             need(sha(raw)==expected[name],'EXTERNAL_TERMINAL_SHA_CHANGED:'+name)
+-            need(len(raw)=={'coordinator.json':7406,'stage.json':1773}[name],
++            need(len(raw)=={'coordinator.json':7418,'stage.json':1773}[name],
+                  'EXTERNAL_TERMINAL_SIZE_CHANGED:'+name)
+         value=json.loads(raw);no_raw_ui(value)
+         if name in ('coordinator.json','stage.json','launch.json','navigation.json'):
+--- /workspace/scratch/94990735b266/android-bili-r6-pause-resume-fresh02-results-reader-01/make_summary_request.py
++++ /workspace/scratch/94990735b266/android-bili-r6-content-ready04-results-reader-01/make_summary_request.py
+@@ -8,8 +8,8 @@
+ import re
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='43bb495032f9ac59b00a910cd27d5ed2dd5d3e0e17026b25a868688769f2c044'
+-KEY='pocket4-bilibili-r6-pause-resume-fresh02-two-results-readonly-01-20261105'
++READER_SHA='4ed52103ed85220c4adb9fdd6c25a23e62937059dcd226bfd60c500abe848bea'
++KEY='pocket4-bilibili-r6-content-ready04-two-results-readonly-01-20261105'
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__)

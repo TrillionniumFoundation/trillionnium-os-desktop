@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "passed": 7,
+  "controls": [
+    {
+      "case": "actual_failed_worker",
+      "passed": true,
+      "read_count": 2,
+      "retained_worker_count": 1,
+      "retained_command_count": 1,
+      "first_error_preserved": true,
+      "secondary_errors": []
+    },
+    {
+      "case": "wrong_worker_nonce",
+      "passed": true,
+      "read_count": 2,
+      "retained_worker_count": 0,
+      "retained_command_count": 1,
+      "first_error_preserved": true,
+      "secondary_errors": [
+        {
+          "phase": "retain_navigate_results",
+          "type": "RuntimeError",
+          "message": "RETAINED_WORKER_SCOPE_CHANGED"
+        }
+      ]
+    },
+    {
+      "case": "wrong_command_argv",
+      "passed": true,
+      "read_count": 2,
+      "retained_worker_count": 1,
+      "retained_command_count": 0,
+      "first_error_preserved": true,
+      "secondary_errors": [
+        {
+          "phase": "retain_navigate_commands",
+          "type": "RuntimeError",
+          "message": "RETAINED_COMMAND_SCOPE_CHANGED"
+        }
+      ]
+    },
+    {
+      "case": "missing_worker",
+      "passed": true,
+      "read_count": 1,
+      "retained_worker_count": 0,
+      "retained_command_count": 1,
+      "first_error_preserved": true,
+      "secondary_errors": []
+    },
+    {
+      "case": "mismatching_prior_pin",
+      "passed": true,
+      "read_count": 2,
+      "retained_worker_count": 0,
+      "retained_command_count": 1,
+      "first_error_preserved": true,
+      "secondary_errors": [
+        {
+          "phase": "retain_navigate_results",
+          "type": "RuntimeError",
+          "message": "RETAINED_SUCCESSFUL_RECEIPT_CHANGED"
+        }
+      ]
+    },
+    {
+      "case": "unrequested_phase",
+      "passed": true,
+      "read_count": 0,
+      "retained_worker_count": 0,
+      "retained_command_count": 0,
+      "first_error_preserved": true,
+      "secondary_errors": []
+    },
+    {
+      "case": "bounded_read_error",
+      "passed": true,
+      "read_count": 2,
+      "retained_worker_count": 0,
+      "retained_command_count": 1,
+      "first_error_preserved": true,
+      "secondary_errors": [
+        {
+          "phase": "retain_navigate_results",
+          "type": "RuntimeError",
+          "message": "CONTROL_BOUNDED_FILE_ERROR"
+        }
+      ]
+    }
+  ],
+  "production_retention_function": true,
+  "local_fixed_path_IO_seam": true,
+  "raw_receipt_copied_to_report": false,
+  "device_or_UI_actions": 0,
+  "actual_failed_receipt_pins": {
+    "navigation.json": {
+      "bytes": 231265,
+      "sha256": "a1689217ec1484171f08fc4962a9fc42f1dfefa365b0b158c50f46aac271f1b6"
+    },
+    "navigation-command.json": {
+      "bytes": 1162,
+      "sha256": "bea6a022a7e7b6184efda5ded8184c4cfa15dfdf7de8e2122adf1328ed2d49b3"
+    }
+  },
+  "source_sha256": "a5cb6b3a9aebad1d0a994c9ff6323ac9e2b70e019028e3532340ce701e46e38a"
+}
+

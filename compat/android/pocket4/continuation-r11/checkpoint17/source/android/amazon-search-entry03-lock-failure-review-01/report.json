@@ -1,0 +1,71 @@
+{
+  "Main_all_parent_and_worker_observations_equal": true,
+  "actual_error": {
+    "errno": 11,
+    "message": "[Errno 11] Resource temporarily unavailable",
+    "phase": "action_lock",
+    "type": "BlockingIOError"
+  },
+  "actual_flow_lock_released": true,
+  "actual_global_lock": {
+    "Android_actions_attempted": 0,
+    "acquired": false,
+    "attempts": 100,
+    "busy_attempts": 100,
+    "elapsed_seconds": 5.000089030014351,
+    "errno": 11,
+    "error_type": "BlockingIOError",
+    "fd_closed_on_error": true,
+    "last_errno": 11,
+    "opened_identity": {
+      "device": 28,
+      "gid": 0,
+      "inode": 8312,
+      "mode": 33152,
+      "nlink": 1,
+      "uid": 0
+    },
+    "path": "/run/lock/android-digitalis-actions.lock",
+    "phase": "lock_deadline",
+    "wait_limit_seconds": 5.0
+  },
+  "inputs": {
+    "coordinator": {
+      "bytes": 5837,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/amazon-search-entry03-results-read01/coordinator.json",
+      "sha256": "bbdad90e8e136a1005c995045427e81ea25fb55eb11694da8af8d9bbcd98a227"
+    },
+    "launch": {
+      "bytes": 6043,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/amazon-search-entry03-launch-read01/launch.json",
+      "sha256": "5b0c66f234675d9170652729a2cacc66a74d4bb76e2f151ade5280332e935029"
+    },
+    "stage": {
+      "bytes": 1827,
+      "path": "/workspace/scratch/94990735b266/root-recovery-20261104-02/evidence/amazon-search-entry03-results-read01/stage.json",
+      "sha256": "e2da0985c363384f77ea87d730340c301633cf25320a5eada7269d2ce34d9ce8"
+    }
+  },
+  "lock_holder_or_cause_attribution": null,
+  "lock_mutation_or_retry": false,
+  "new_Android_actions": 0,
+  "parent_join": {
+    "direct_parent_command_result_read": false,
+    "fixed_optional_original_path": "/home/alex/work/pocket4-amazon-owned-search-entry-03/evidence/01-launch.result.json",
+    "source_inference": "run_cli writes its result after wait/finally; exact generic coordinator message is emitted only after primary is None. Ordinary worker return2 reaches this gate after process.wait and joined=True. This is source-path inference, not a separately read join receipt.",
+    "unknown_original_size_SHA_not_invented": true
+  },
+  "schema": 1,
+  "state": "ORIGINAL_FAILURE_PRESERVED_ACTION_LOCK_ADMISSION",
+  "whole_app_ready": false,
+  "zero_Android_boundary": {
+    "action_lock_acquisition_precedes_open_task_context": true,
+    "basis": "exact actual error phase plus frozen worker source control flow",
+    "cleanup_not_authorized_without_owned_scope": true,
+    "flow_session_artifacts_not_created_on_this_path": true,
+    "local_source_qualification_and_evidence_files_only_before_lock": true,
+    "reported_action_attempted": false,
+    "reported_outcome_unknown": false,
+    "target_APK_guest_reads_helper_installed_probe_current_resolve_native_launch_all_follow_that_context": true
+  }
+}

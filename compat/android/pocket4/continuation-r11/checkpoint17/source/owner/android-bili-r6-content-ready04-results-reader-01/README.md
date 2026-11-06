@@ -1,0 +1,1 @@
+Fixed original Bili content-ready04 failed-attempt parent collector. Reads only the two external terminal-pinned JSON files. No navigation child pin is guessed and no private tree/assessment is read. The original failure and cleanup uncertainty remain until actual child receipts are checked. No device dispatch occurred.

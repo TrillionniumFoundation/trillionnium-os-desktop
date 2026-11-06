@@ -1,0 +1,39 @@
+--- prior-2-parent/read_summary.py
++++ fresh02-2-parent/read_summary.py
+@@ -11,10 +11,10 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r6-pause-resume-01')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-f293d9ad6b688c72e7c98e76753a8c3f')
+-NONCE='f293d9ad6b688c72e7c98e76753a8c3f'
+-SOURCE_SHA='f4a73707341f1c78e28f41ca618f60f6350ae4803ccfc0e084be07f190d35463'
++ROOT=Path('/home/alex/work/pocket4-bilibili-r6-pause-resume-02')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-8f28dc51812add5280cb6b7ba411aad0')
++NONCE='8f28dc51812add5280cb6b7ba411aad0'
++SOURCE_SHA='0611a55350a19de18b14b1da7fe6342caed8f8e6082746e83b028b345abd8d97'
+ HELPER_UID=10184
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+@@ -98,7 +98,7 @@
+             missing.append({'name':name,'path':str(path)});continue
+         if name in expected:
+             need(sha(raw)==expected[name],'EXTERNAL_TERMINAL_SHA_CHANGED:'+name)
+-            need(len(raw)=={'coordinator.json':6359,'stage.json':1773}[name],
++            need(len(raw)=={'coordinator.json':7406,'stage.json':1773}[name],
+                  'EXTERNAL_TERMINAL_SIZE_CHANGED:'+name)
+         value=json.loads(raw);no_raw_ui(value)
+         if name in ('coordinator.json','stage.json','launch.json','navigation.json'):
+--- prior-2-parent/make_summary_request.py
++++ fresh02-2-parent/make_summary_request.py
+@@ -8,8 +8,8 @@
+ import re
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='ee775c1edca2a7e985d18d59913c54542b2705d4f8e1c7dd4556d4275da42dd3'
+-KEY='pocket4-bilibili-r6-pause-resume-two-results-readonly-01-20261105'
++READER_SHA='43bb495032f9ac59b00a910cd27d5ed2dd5d3e0e17026b25a868688769f2c044'
++KEY='pocket4-bilibili-r6-pause-resume-fresh02-two-results-readonly-01-20261105'
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__)

@@ -1,0 +1,93 @@
+--- a/bili-r6/read_install.py
++++ b/ticket-r1/read_install.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed read-only export of this owned r6 install and no-automation state."""
++"""Fixed read-only export of this owned 12306 R1 install and no-automation state."""
+ import argparse
+ import base64
+ import hashlib
+@@ -11,19 +11,19 @@
+ import time
+ import zlib
+ 
+-ROOT = Path('/home/alex/work/pocket4-owned-bili-qa-r6-install-state-01')
+-STEP = Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-2a1065bc6af8a39e6518bd61d8581978/steps/install-state-r6-01')
+-NONCE = '38224815112bbffd278ea0f29ab48c82'
+-PACKAGE = 'org.droidloom.qa.bili.r6'
+-PROTOCOL = 'pocket4-owned-bili-qa-v6'
+-PINS = {'coordinator.json':(3025,'31aa367cc9d33680af8e1f95b9f4e2a14624499321481704ab14cb3737f23279'), 'stage.json':(2032,'8cee9c51b1620965253baa4a2328a1ab358dd893b5891310dbc3810fe40a13e1')}
++ROOT = Path('/home/alex/work/pocket4-owned-ticket-qa-r1-install-state-01')
++STEP = ROOT/'worker/steps/install-state-01'
++NONCE = '3e666f36e9eb4a9a4260408c325b420d'
++PACKAGE = 'org.droidloom.qa.ticket.r1'
++PROTOCOL = 'pocket4-owned-ticket-qa-v1'
++PINS = {'coordinator.json': (3074, '68ffcc7972aeff8943f6b206d04d974ca80d73d8d4defa4d5028231b519cac97'), 'stage.json': (1617, 'c96402490ce14d783e999ddc18beaf7c3e29ffab783057291be72d59ab53fa94')}
+ BASE = {
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+-    'worker.json':STEP/'result.json',
+-    'worker-command-result.json':ROOT/'evidence/02-install-state.result.json',
+-    'worker.stdout':ROOT/'evidence/02-install-state.stdout',
+-    'worker.stderr':ROOT/'evidence/02-install-state.stderr',
++    'worker.json':ROOT/'worker/result.json',
++    'worker-command-result.json':ROOT/'evidence/01-install-state.result.json',
++    'worker.stdout':ROOT/'evidence/01-install-state.stdout',
++    'worker.stderr':ROOT/'evidence/01-install-state.stderr',
+ }
+ 
+ 
+@@ -108,7 +108,17 @@
+     r=Reader()
+     for name,path in BASE.items():
+         r.add(name,path)
++    coordinator=json.loads(r.records['coordinator.json']['text'])
++    stage=json.loads(r.records['stage.json']['text'])
+     worker=json.loads(r.records['worker.json']['text'])
++    def file_pin(name):
++        return {key:r.records[name][key] for key in ('path','bytes','sha256')}
++    require(coordinator.get('ok') is True and stage.get('ok') is True and
++            coordinator.get('source_manifest_sha256')==stage.get('source_manifest_sha256')==
++            '241b8d26caa2279001f32db3895efab87b07723c2b8fce61a971381c26f7cd69' and
++            coordinator.get('worker_result')==file_pin('worker.json') and
++            stage.get('coordinator_result')==file_pin('coordinator.json'),
++            'EXACT_ACTUAL_TICKET_PARENT_RECEIPT_CHAIN_REQUIRED')
+     require(worker.get('package')==PACKAGE and worker.get('state_nonce')==NONCE and
+             worker.get('UI_actions')==worker.get('audio_actions')==0 and
+             worker.get('UiAutomation_connection_requested') is False,'OWNED_NO_UI_WORKER_REQUIRED')
+@@ -122,12 +132,16 @@
+             helper.get('wire_codec')=='gzip-canonical-json-v1' and 'inspection' not in helper,
+             'ONLY_NO_AUTOMATION_STATE_CAN_BE_EXPORTED')
+     uid=worker.get('owned_package_uid')
+-    require(type(uid) is int and 10000<=uid<100000 and uid not in (10117,10125,10164,10165,10166,10169,10170,10175) and
+-            helper.get('self_uid')==uid,'ACTUAL_R6_UID_REQUIRED')
++    require(type(uid) is int and 10000<=uid<100000 and uid not in (10121,10129,10117,10125,10164,10165,10166,10169,10170,10175) and
++            helper.get('self_uid')==uid,'ACTUAL_TICKET_HELPER_UID_REQUIRED')
+     request=json.loads(r.add('state.request.json',STEP/(NONCE+'.request.json')))
+     require(request=={'protocol':PROTOCOL,'nonce':NONCE,'op':'state'},'FIXED_STATE_REQUEST_REQUIRED')
+     assessment=json.loads(r.add('state.assessment.json',STEP/(NONCE+'.assessment.json')))
+     require(assessment==state,'ACTUAL_WORKER_AND_ASSESSMENT_DIFFER')
++    require(worker.get('ok') is True and worker.get('exact_command_count')==13 and
++            worker.get('target_before')==worker.get('target_after') and
++            worker.get('target_package')=='com.MobileTicket',
++            'ACTUAL_TICKET_INSTALL_AND_TARGET_CHAIN_REQUIRED')
+     wanted=state.get('recorder_command_result_sha256')
+     require(isinstance(wanted,str) and re.fullmatch('[0-9a-f]{64}',wanted),'ACTUAL_STATE_COMMAND_PIN_REQUIRED')
+     matches=[]
+@@ -140,6 +154,7 @@
+             matches.append((index,path,raw))
+     require(len(matches)==1,'UNIQUE_ACTUAL_STATE_COMMAND_REQUIRED')
+     index,path,raw=matches[0]
++    require(index==8,'EXACT_TICKET_STATE_COMMAND_POSITION_REQUIRED')
+     command=json.loads(r.add('state-command.result.json',path,raw))
+     stem=STEP/('command-%03d'%index)
+     out=r.add('state-command.stdout',Path(str(stem)+'.stdout'))
+@@ -150,7 +165,7 @@
+     require(len(encoded)==1,'ONE_STATE_WIRE_REQUIRED')
+     wire=decode_state_wire(encoded[0])
+     require(sha(wire)==state['wire_sha256'] and json.loads(wire)==helper,'RAW_STATE_NOT_MATCHING_PARSED_NO_UI_RECEIPT')
+-    result={'schema':1,'scope':'exact-owned-r6-install-and-no-automation-state-readback',
++    result={'schema':1,'scope':'exact-owned-ticket-r1-install-and-no-automation-state-readback',
+         'files':r.records,'state_command_index':index,'state_nonce':NONCE,'actual_helper_uid':uid,
+         'total_read_bytes':r.total,'elapsed_seconds':time.monotonic()-r.started,
+         'Android_commands':0,'service_or_process_actions':0,'permission_or_original_file_changes':0,

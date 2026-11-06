@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "purpose": "prepare_only_isolated_owner16_candidate_no_runtime",
+  "source_manifest": {
+    "bytes": 4632,
+    "sha256": "b9a9cbdc3dcdd1a7c54f72c29eea762cd18d7f1b6e64a5e0a2d33c46d296913d",
+    "payloads": 28
+  },
+  "review_basis": {
+    "source_diff_full_read_bytes": 10805,
+    "source_diff_sha256": "3b369d444fb0a04f331c6a3b440ed24d84d400dff7fee9e3b6f1ee49b4c5b571",
+    "consumer_diff_full_read_bytes": 7219,
+    "consumer_diff_sha256": "bc406e62f9a43b488a3a32ea0c8b2db114981e2cb36ec97221730975ff7c8828",
+    "prepare_wrapper_full_read": true,
+    "whole_wrapper_packet_sources_actuals_machine_verified": true,
+    "plan_changes_machine_bounded": true,
+    "actual_compile_receipt_path_metadata_only": true
+  },
+  "actual_builds": {
+    "host_compile_report_sha256": "dad36fe9fd79aa782bcc255e74b8cc1b1ee241a341318e179ccaa9e7f1c785ea",
+    "host_ordinary_report_sha256": "5186036b7acab780f9f7d23ed6979773e1592532f896bab2679d33601f236095",
+    "android_log_report_sha256": "2c53bba3ab02b396d2698dfd6e04d870ce69cc55724c6077003dca81ae9a2e0b"
+  },
+  "packet": {
+    "bytes": 184069,
+    "sha256": "06bd8c21b1ff4490474070d01b0b8aa7f7a3baeb731ef0899a165c34509517ff"
+  },
+  "published_plan_sha256": "f78b204fd5fae9b193509bc66ad051f124848f706ce8f56c20f3edba21085a2b",
+  "serialized_plan_sha256": "73bb5269161d89892c1099b7cb122a808bd2e285474919fa1029f35c53574e87",
+  "spec_sha256": "5cd82c49598c73eefb2f5bd530daac75376f07211d10266018c59d41cf508d92",
+  "preserved": {
+    "Main_original": true,
+    "Main_pids_max": 12288,
+    "base86": true,
+    "data_images_bytes": [
+      8589934592,
+      134217728
+    ],
+    "prior_failure_chain": true,
+    "original_resource_and_preflight_gates": true
+  },
+  "limits": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912,
+    "timeout_seconds": 180,
+    "nice": 10
+  },
+  "heavy_window": "framework normal build still owns heavy window; this request does not execute Owner16 runtime",
+  "claims": {
+    "runtime_pass": false,
+    "KernelLogger_abi_qualified": false,
+    "whole_app_production_ready": 0
+  }
+}

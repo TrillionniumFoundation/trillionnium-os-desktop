@@ -1,0 +1,116 @@
+{
+  "Main_maps_exactly_equal": true,
+  "actual_copied_artifacts": 5,
+  "actual_fresh_ext4_images": 2,
+  "attempt_nonce": "48166604b7871ecfbea8800c9b6edcd1dd2a7fe6cd3b63777195a949521b541a",
+  "base_records": 86,
+  "canonical_spec_sha256": "5cd82c49598c73eefb2f5bd530daac75376f07211d10266018c59d41cf508d92",
+  "checks_passed": [
+    "exact original root-recovery-20261104-02/evidence/owner16-prepared-read01/prepared.json",
+    "exact original root-recovery-20261104-02/evidence/owner16-prepared-read01/stdout.log",
+    "complete compressed wire",
+    "complete envelope",
+    "single fixed member and exact original body",
+    "terminal 1a1adcd8120-fc05-5ae2",
+    "terminal 1a1adca5b04-fc05-5ad8",
+    "exact original root-recovery-20261104-02/evidence/owner16-normal-prepare01/stdout.log",
+    "post-close preparation summary",
+    "exact original android-owner16-normal01-freeze-01/manifest.json",
+    "28 frozen source payloads",
+    "every frozen payload whole size and SHA256",
+    "canonical CellSpec and actual pretty plan serialization",
+    "successful preparation only",
+    "all six source files",
+    "exact original root-recovery-20261104-02/evidence/owner16-host-log-compile02/compile-result.json",
+    "exact original root-recovery-20261104-02/evidence/owner16-android-log-build01/build-result.json",
+    "exact original root-recovery-20261104-02/evidence/owner16-host-log-ordinary02/run-result.json",
+    "actual compile and ordinary receipt pins",
+    "actual Host16 artifact droidloomd",
+    "actual Host16 artifact droidloom-supervisor",
+    "actual Host16 artifact droidloom-psi-owner",
+    "actual paired C16 artifact",
+    "exact original android-owner15-normal01-runtime-freeze-01/actual-prepared.json",
+    "old LMKD artifact remains bound",
+    "exact five copied artifacts",
+    "copied artifact droidloom-psi-owner",
+    "copied artifact droidloom-supervisor",
+    "copied artifact droidloomd",
+    "copied artifact init-barrier",
+    "copied artifact lmkd",
+    "all 86 base records before after and original identity",
+    "every base record equals frozen expected path size hash",
+    "all eight tools complete retained identity and SHA",
+    "presenter complete retained identity",
+    "Main three maps original identity and all limits",
+    "actual UID range absence observation no reservation",
+    "two fresh ext4 images exact sizes and successful mkfs",
+    "new package and state separate identities",
+    "helper groups unchanged",
+    "prepare resource observation only"
+  ],
+  "count": 41,
+  "data_images": [
+    {
+      "bytes": 8589934592,
+      "existing_userdata_copied": false,
+      "fresh_sparse_created": true,
+      "identity": {
+        "device": 66306,
+        "inode": 44745344
+      },
+      "name": "data.img",
+      "returncode": 0
+    },
+    {
+      "bytes": 134217728,
+      "existing_userdata_copied": false,
+      "fresh_sparse_created": true,
+      "identity": {
+        "device": 66306,
+        "inode": 44745345
+      },
+      "name": "metadata.img",
+      "returncode": 0
+    }
+  ],
+  "historical_prepare_available_memory_bytes": 13401272320,
+  "init_logger_actual_runtime_qualified": false,
+  "live_UID_observation": {
+    "available_at_observation": true,
+    "host_uid": 61288,
+    "processes_observed": 1153,
+    "reservation_created_in_passwd_or_subid_tables": false,
+    "subordinate_range": {
+      "count": 100000,
+      "start": 22000000
+    },
+    "tables": {
+      "/etc/subgid": {
+        "bytes": 18,
+        "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+      },
+      "/etc/subuid": {
+        "bytes": 18,
+        "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+      }
+    }
+  },
+  "plan_sha256": "73bb5269161d89892c1099b7cb122a808bd2e285474919fa1029f35c53574e87",
+  "prepared_bytes": 55140,
+  "prepared_fd_close_scope": "The exact source saves prepared.json before final data/package/state closes, but emits the matched 233-byte summary only after all normal closes; the actual successful terminal and summary complete that source path. This is not an independent post-exit FD inventory.",
+  "prepared_kind": "owner16-normal-preparation01",
+  "prepared_sha256": "6a7e5f8eb4532a019506c7f0f6077d0739fe51bf31c45455a53bab700ace73d9",
+  "prior_failures_reclassified": false,
+  "production_or_App_qualification": false,
+  "remote_action": false,
+  "runtime_dispatch_held_until_Root_releases_heavy_framework_window": true,
+  "runtime_dispatched_by_this_review": false,
+  "runtime_executed": false,
+  "runtime_resource_window_reserved": false,
+  "schema": 1,
+  "scope": "LOCAL_RETAINED_OWNER16_PREPARED_RECORD_FULL_BINDING",
+  "source_files": 6,
+  "source_manifest_members": 28,
+  "source_manifest_sha256": "b9a9cbdc3dcdd1a7c54f72c29eea762cd18d7f1b6e64a5e0a2d33c46d296913d",
+  "tools": 8
+}

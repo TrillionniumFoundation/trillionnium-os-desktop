@@ -1,0 +1,85 @@
+{
+  "Android_or_device_run": false,
+  "LMKD_UID_or_DAC_OVERRIDE_tested": false,
+  "actual_Rust_function_executed": false,
+  "checks": [
+    {
+      "details": {
+        "bootstrap_mode": "0o700",
+        "parent_mode": "0o700",
+        "world_search_bits": [
+          0,
+          0
+        ]
+      },
+      "name": "old0755_mkdir_under0077_yields_two0700_directories",
+      "pass": true
+    },
+    {
+      "details": {
+        "bootstrap_mode": "0o755",
+        "parent_mode": "0o755",
+        "payload_metadata_and_bytes_unchanged": true,
+        "payload_sha256": "f921e2ffd08829e55bc6d26d802dc659feeaec2ac036862d2fd83f0ee7bef126",
+        "payload_size": 32,
+        "private_host_parent_mode": "0o700",
+        "same_held_named_identities": true
+      },
+      "name": "explicit_held_fchmod_restores_only_two_guest_search_modes",
+      "pass": true
+    },
+    {
+      "details": {
+        "actual_mask": "0o77"
+      },
+      "name": "held_chmod_does_not_change_process_umask",
+      "pass": true
+    },
+    {
+      "details": {
+        "actual_parent_mode": "0o700"
+      },
+      "name": "create_dir_all_parent_has_same0077_counterexample",
+      "pass": true
+    },
+    {
+      "details": {
+        "actual_parent_mode": "0o755",
+        "same_identity": true
+      },
+      "name": "held_parent_mode_fix_keeps_inode_and_host_parent_private",
+      "pass": true
+    },
+    {
+      "details": {
+        "errno": 9,
+        "mode_unchanged": true
+      },
+      "name": "fchmod_on_path_only_descriptor_preserves_EBADF",
+      "pass": true
+    },
+    {
+      "details": {
+        "errno": 20
+      },
+      "name": "directory_open_NOFOLLOW_rejects_symlink",
+      "pass": true
+    },
+    {
+      "details": {
+        "errno": 17
+      },
+      "name": "bootstrap_create_only_returns_EEXIST",
+      "pass": true
+    }
+  ],
+  "checks_passed": 8,
+  "close_errors": [],
+  "first_error": null,
+  "held_fds_closed": true,
+  "ok": true,
+  "private_guest_mount_admission_executed": false,
+  "schema": 1,
+  "scope": "LOCAL_OWNED_KERNEL_MKDIR_UMASK_FCHMOD_MECHANISM",
+  "three_new_Rust_tests": "PENDING_MATCHED_HOST_BUILD_AND_ORDINARY_RUN"
+}

@@ -1,0 +1,103 @@
+--- amazon03/read_summary.py
++++ ticket01/read_summary.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed summary-only reader for the retained failed Amazon03 launch phase and two bound parents."""
++"""Fixed summary-only reader for the parent-bound Ticket01 launch phase and two exact terminal parents."""
+ import argparse
+ import base64
+ import gzip
+@@ -11,11 +11,11 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-amazon-owned-search-entry-03')
+-FLOW=Path('/home/alex/work/pocket4-amazon-owned-qa-r1-flow-ec46de5bfc594294a385a785deea3e9a')
+-NONCE='ec46de5bfc594294a385a785deea3e9a'
+-SOURCE_SHA='2242c0a160894629fedb9f97c0347fa2765af44ac9a57b69fe2fe6bd5c3f60fb'
+-HELPER_UID=10175
++ROOT=Path('/home/alex/work/pocket4-ticket-owned-launch-inspect-01')
++FLOW=Path('/home/alex/work/pocket4-ticket-owned-qa-r1-flow-c398efeb8c07781670825f5ad68e13af')
++NONCE='c398efeb8c07781670825f5ad68e13af'
++SOURCE_SHA='16f371bda457b830b11536f977a11f8dcce3347eded286605400a9162ba079a8'
++HELPER_UID=10190
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+     'stage.json':ROOT/'stage-result.json',
+@@ -86,38 +86,47 @@
+     need(os.getuid()==os.geteuid()==0,'ROOT_READ_ONLY_REQUIRED')
+     need(all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x) for x in (coordinator_sha,stage_sha)),
+          'EXTERNAL_EXACT_TERMINAL_PINS_REQUIRED')
+-    expected={'coordinator.json':coordinator_sha,'stage.json':stage_sha,
+-              'launch.json':'5b0c66f234675d9170652729a2cacc66a74d4bb76e2f151ade5280332e935029'}
+-    reader=Reader();files={};missing=[]
+-    for name,path in FILES.items():
+-        raw=reader.read(path,optional=name not in expected)
+-        if raw is None:
+-            missing.append({'name':name,'path':str(path)});continue
+-        if name in expected:
+-            need(sha(raw)==expected[name],'EXTERNAL_TERMINAL_SHA_CHANGED:'+name)
+-            need(len(raw)=={'coordinator.json':5837,'stage.json':1827,'launch.json':6043}[name],
+-                 'EXTERNAL_EXACT_SIZE_CHANGED:'+name)
++    expected={'coordinator.json':coordinator_sha,'stage.json':stage_sha}
++    sizes={'coordinator.json':5828,'stage.json':1804}
++    reader=Reader();files={};missing=[];values={}
++    for name in ('coordinator.json','stage.json'):
++        path=FILES[name];raw=reader.read(path)
++        need(sha(raw)==expected[name] and len(raw)==sizes[name],
++             'EXTERNAL_TERMINAL_BYTES_CHANGED:'+name)
+         value=json.loads(raw);no_raw_ui(value)
+-        if name in ('coordinator.json','stage.json','launch.json','inspection.json','cleanup.json'):
+-            need(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==NONCE,
+-                 'EXACT_FRESH_FLOW_SOURCE_BINDING_REQUIRED:'+name)
+-        if name in ('launch.json','inspection.json','cleanup.json'):
+-            need(value.get('helper_package')=='org.droidloom.qa.amazon.r1' and type(HELPER_UID) is int and value.get('helper_uid')==HELPER_UID and value.get('package')=='com.amazon.mShop.android.shopping' and value.get('uid')==10129,
+-                 'EXACT_AMAZON_HELPER_SCOPE_REQUIRED')
++        need(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==NONCE and
++             value.get('package')=='com.MobileTicket','EXACT_FRESH_FLOW_SOURCE_BINDING_REQUIRED:'+name)
++        values[name]=value
+         files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    coordinator=json.loads(files['coordinator.json']['text']);stage=json.loads(files['stage.json']['text'])
++    coordinator=values['coordinator.json'];stage=values['stage.json']
+     if 'coordinator_result' in stage:
+-        expected_pin=stage['coordinator_result'];observed=files['coordinator.json']
+-        need(expected_pin=={k:observed[k] for k in ('path','bytes','sha256')},'STAGE_COORDINATOR_LINK_REQUIRED')
+-    for phase,name,key in (('launch','launch.json','launch_result'),('inspect','inspection.json','inspection_result'),
+-                           ('cleanup','cleanup.json','cleanup_result')):
+-        pins=[]
+-        if key in coordinator:pins.append(coordinator[key])
+-        if phase in coordinator.get('retained_phase_results',{}):pins.append(coordinator['retained_phase_results'][phase])
+-        for expected_pin in pins:
+-            need(name in files,'PINNED_ORIGINAL_PHASE_IS_MISSING:'+phase)
+-            need(expected_pin=={k:files[name][k] for k in ('path','bytes','sha256')},'COORDINATOR_PHASE_LINK_REQUIRED:'+phase)
+-    bundle={'schema':1,'scope':'fixed-Amazon03-failed-launch-and-parent-results-only','files':files,'missing':missing,
++        observed=files['coordinator.json']
++        need(stage['coordinator_result']=={k:observed[k] for k in ('path','bytes','sha256')},
++             'STAGE_COORDINATOR_LINK_REQUIRED')
++    retained=coordinator.get('retained_phase_results')
++    need(type(retained) is dict,'RETAINED_PHASE_RESULT_MAP_REQUIRED')
++    if 'launch' not in retained:
++        need('launch_result' not in coordinator,'UNBOUND_SUCCESSFUL_LAUNCH_RESULT')
++        missing.append({'name':'launch.json','path':str(FILES['launch.json']),
++                        'reason':'exact pinned coordinator did not bind a retained launch result',
++                        'file_open_attempted':False})
++    else:
++        pin=retained['launch'];path=FILES['launch.json']
++        need(type(pin) is dict and set(pin)=={'path','bytes','sha256'} and pin['path']==str(path) and
++             type(pin['bytes']) is int and 0<pin['bytes']<=262144 and
++             isinstance(pin['sha256'],str) and re.fullmatch('[0-9a-f]{64}',pin['sha256']),
++             'ONLY_EXACT_PARENT_BOUND_LAUNCH_PATH_AND_BOUNDED_PIN')
++        if 'launch_result' in coordinator:
++            need(coordinator['launch_result']==pin,'TWO_PARENT_LAUNCH_PINS_DIFFER')
++        raw=reader.read(path)
++        need(len(raw)==pin['bytes'] and sha(raw)==pin['sha256'],'PARENT_BOUND_LAUNCH_BYTES_CHANGED')
++        value=json.loads(raw);no_raw_ui(value)
++        need(value.get('source_manifest_sha256')==SOURCE_SHA and value.get('nonce')==NONCE and
++             value.get('phase')=='launch' and value.get('helper_package')=='org.droidloom.qa.ticket.r1' and
++             value.get('helper_uid')==HELPER_UID and value.get('package')=='com.MobileTicket' and
++             value.get('uid')==10121,'EXACT_TICKET_LAUNCH_SCOPE_REQUIRED')
++        files['launch.json']={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
++    bundle={'schema':1,'scope':'fixed-Ticket01-terminal-parents-and-only-parent-bound-launch-result','files':files,'missing':missing,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}

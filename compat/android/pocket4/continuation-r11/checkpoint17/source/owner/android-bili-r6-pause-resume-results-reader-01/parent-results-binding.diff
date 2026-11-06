@@ -1,0 +1,64 @@
+--- controls-reveal-reader/read_summary.py
++++ pause-resume-reader/read_summary.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Fixed two-result reader for the actual r6 controls-reveal attempt."""
++"""Fixed two-result reader for the actual r6 pause-resume attempt."""
+ import argparse
+ import base64
+ import gzip
+@@ -11,10 +11,10 @@
+ import stat
+ import time
+ 
+-ROOT=Path('/home/alex/work/pocket4-bilibili-r6-controls-reveal-01')
+-FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-395ea60f6cff2da163672b2f660131a4')
+-NONCE='395ea60f6cff2da163672b2f660131a4'
+-SOURCE_SHA='59401749d76711faeb9e9bc0326039d34661c8e27d364d9c9cfdbf23cf63e795'
++ROOT=Path('/home/alex/work/pocket4-bilibili-r6-pause-resume-01')
++FLOW=Path('/home/alex/work/pocket4-bilibili-owned-qa-r6-flow-f293d9ad6b688c72e7c98e76753a8c3f')
++NONCE='f293d9ad6b688c72e7c98e76753a8c3f'
++SOURCE_SHA='f4a73707341f1c78e28f41ca618f60f6350ae4803ccfc0e084be07f190d35463'
+ HELPER_UID=10184
+ FILES={
+     'coordinator.json':ROOT/'result.json',
+@@ -98,7 +98,7 @@
+             missing.append({'name':name,'path':str(path)});continue
+         if name in expected:
+             need(sha(raw)==expected[name],'EXTERNAL_TERMINAL_SHA_CHANGED:'+name)
+-            need(len(raw)=={'coordinator.json':198643,'stage.json':1647}[name],
++            need(len(raw)=={'coordinator.json':6359,'stage.json':1773}[name],
+                  'EXTERNAL_TERMINAL_SIZE_CHANGED:'+name)
+         value=json.loads(raw);no_raw_ui(value)
+         if name in ('coordinator.json','stage.json','launch.json','navigation.json'):
+@@ -108,7 +108,7 @@
+             need(value.get('helper_package')=='org.droidloom.qa.bili.r6' and type(HELPER_UID) is int and value.get('helper_uid')==HELPER_UID,
+                  'EXACT_R6_HELPER_SCOPE_REQUIRED')
+         files[name]={'path':str(path),'bytes':len(raw),'sha256':sha(raw),'text':raw.decode('utf-8','strict')}
+-    bundle={'schema':1,'scope':'fixed-r6-controls-reveal-two-bound-results-only','files':files,'missing':missing,
++    bundle={'schema':1,'scope':'fixed-r6-pause-resume-two-bound-results-only','files':files,'missing':missing,
+         'source_manifest_sha256':SOURCE_SHA,'flow_nonce':NONCE,'bytes_read':reader.bytes,
+         'raw_UI_or_commercial_journal_exported':False,'Android_or_process_actions':0,
+         'runtime_qualification_asserted':False,'permission_or_original_file_changes':0}
+--- controls-reveal-reader/make_summary_request.py
++++ pause-resume-reader/make_summary_request.py
+@@ -8,8 +8,8 @@
+ import re
+ 
+ HERE=Path(__file__).resolve().parent
+-READER_SHA='bcf50e9f5b49de462fdc51e1a2bc9434a3a6dd3ee4d09b6edf91611d5b8b4228'
+-KEY='pocket4-bilibili-r6-controls-reveal-two-results-readonly-01-20261105'
++READER_SHA='ee775c1edca2a7e985d18d59913c54542b2705d4f8e1c7dd4556d4275da42dd3'
++KEY='pocket4-bilibili-r6-pause-resume-two-results-readonly-01-20261105'
+ 
+ def main():
+     p=argparse.ArgumentParser(description=__doc__)
+@@ -24,7 +24,7 @@
+     assert a.output is not None and all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x)
+                                        for x in (a.coordinator_sha256,a.stage_sha256))
+     raw=(HERE/'read_summary.py').read_bytes()
+-    assert len(raw)==6105 and hashlib.sha256(raw).hexdigest()==READER_SHA
++    assert len(raw)==6094 and hashlib.sha256(raw).hexdigest()==READER_SHA
+     args=['--collect-once','--coordinator-sha256',a.coordinator_sha256,'--stage-sha256',a.stage_sha256]
+     wrapper="import sys,hashlib;raw=sys.stdin.buffer.read(16385);assert 0<len(raw)<=16384 and hashlib.sha256(raw).hexdigest()=="+repr(READER_SHA)+";scope={'__name__':'fixed_owned_summary_reader','__file__':'<verified-fixed-summary-reader>'};exec(compile(raw,'read_summary.py','exec'),scope);raise SystemExit(scope['main']("+repr(args)+"))"
+     request={'host':'pocket4','executable':'/usr/bin/sudo','args':['-n','/usr/bin/python3','-I','-c',wrapper],

@@ -1,0 +1,272 @@
+{
+  "schema": 1,
+  "passed": 20,
+  "controls": [
+    {
+      "case": "success",
+      "passed": true,
+      "actual_click_IO_calls": 2,
+      "instrumentation_IO_calls": 18,
+      "transitions_attempted": 2,
+      "primary_error": null,
+      "secondary_error_count": 0
+    },
+    {
+      "case": "wrong_fresh_label",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "NODE_SELECTOR_NOT_UNIQUE_AND_ELIGIBLE"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "changed_foreground",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "ACTION_BOUND_FOREGROUND_AND_OWNED_TASK_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "translated_fresh_frame",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "ABSOLUTE_PLAYER_SCOPE_CHANGED_AFTER_REVEAL"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "duplicate_resource",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "UNIQUE_CURRENT_PLAYBACK_RESOURCE_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "wrong_parent",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "EXACT_CURRENT_PLAYER_DIRECT_CONTROL_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "ack_without_label_transition",
+      "passed": true,
+      "actual_click_IO_calls": 1,
+      "instrumentation_IO_calls": 11,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_independent_read",
+        "type": "ProtocolError",
+        "message": "NODE_SELECTOR_NOT_UNIQUE_AND_ELIGIBLE"
+      },
+      "secondary_error_count": 0
+    },
+    {
+      "case": "first_error",
+      "passed": true,
+      "actual_click_IO_calls": 1,
+      "instrumentation_IO_calls": 11,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "RuntimeError",
+        "message": "CONTROL_FIRST_INPUT_ERROR"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "first_and_post_errors",
+      "passed": true,
+      "actual_click_IO_calls": 1,
+      "instrumentation_IO_calls": 11,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "RuntimeError",
+        "message": "CONTROL_FIRST_INPUT_ERROR"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "after_state_failure",
+      "passed": true,
+      "actual_click_IO_calls": 1,
+      "instrumentation_IO_calls": 11,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "RuntimeError",
+        "message": "CONTROL_PAUSE_AFTER_STATE_ERROR"
+      },
+      "secondary_error_count": 0
+    },
+    {
+      "case": "ack_only_hidden_controls",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "INDEPENDENT_CURRENT_PLAYER_CONTROLS_NOT_OBSERVED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "missing_assessment",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "FileNotFoundError",
+        "message": "missing exact current assessment"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "wrong_assessment_wire",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "EXACT_CURRENT_REVEAL_ASSESSMENT_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "wrong_assessment_nonce",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "EXACT_CURRENT_REVEAL_ASSESSMENT_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "wrong_assessment_scope",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "EXACT_CURRENT_REVEAL_ASSESSMENT_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "assessment_action_attempted",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "ACTUAL_NO_ACTION_PAUSE_INSPECTION_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "assessment_restore_failed",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "ACTUAL_NO_ACTION_PAUSE_INSPECTION_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "assessment_inspection_mismatch",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 10,
+      "transitions_attempted": 1,
+      "primary_error": {
+        "phase": "pause_button",
+        "type": "ProtocolError",
+        "message": "ACTUAL_NO_ACTION_PAUSE_INSPECTION_REQUIRED"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "reveal_failure",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 7,
+      "transitions_attempted": 0,
+      "primary_error": {
+        "phase": "controls_reveal_input",
+        "type": "RuntimeError",
+        "message": "CONTROL_FIRST_INPUT_ERROR"
+      },
+      "secondary_error_count": 1
+    },
+    {
+      "case": "reveal_after_state_failure",
+      "passed": true,
+      "actual_click_IO_calls": 0,
+      "instrumentation_IO_calls": 7,
+      "transitions_attempted": 0,
+      "primary_error": {
+        "phase": "controls_reveal_input",
+        "type": "RuntimeError",
+        "message": "CONTROL_FIRST_INPUT_ERROR"
+      },
+      "secondary_error_count": 0
+    }
+  ],
+  "production_Session_and_selector_and_reveal_and_round_logic": true,
+  "synthetic_complete_public_course_trees": true,
+  "explicit_instrumentation_and_summary_IO_seams": true,
+  "Android_or_namespace_or_UI_execution": false,
+  "helper_Java_not_executed": true,
+  "source_pins": {
+    "playback_controls.py": "a5cb6b3a9aebad1d0a994c9ff6323ac9e2b70e019028e3532340ce701e46e38a",
+    "controls_reveal.py": "0d610aead186fe393b8e12013bc972f362fa7cf54f35912ef3e366872b58f77a"
+  },
+  "unmodified_Session_source_sha256": "1e939fb27aa4eaa9bb2fd79d7022ff4f48011fdf8824b0e7645bbc6f3308e1c8"
+}
