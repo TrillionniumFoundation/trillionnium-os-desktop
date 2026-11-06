@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "#!/usr/bin/env python3\n\"\"\"Stage only the new readonly runtime proof owner and actual host prerequisites.\"\"\"\nimport base64\nimport errno\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport stat\nimport sys\n\nROOT = Path('/home/alex/work/pocket4-beike-partial-case-runtime-20261106-r1')\nPINS = {'runtime_stage_a_once.py': {'bytes': 44063, 'sha256': '52784825ed50fc6178468ca80d05af7c060d48ca1da4dc2d38094b2778df02f1'}, 'request.json': {'bytes': 838, 'sha256': 'e21cf095aa8a72d95f04a7a3acea477675daeb0882d0919dcad27eb01daa1d9d'}, 'host.stdout.original.jsonl': {'bytes': 3405, 'sha256': '0033cfad5c04b9ed1b5ff8691c59a983ae790ed35a91282fc916a0c197240c4e'}, 'host.terminal.original.json': {'bytes': 731, 'sha256': '4c755da48c16bdca5c577ab528ca21e43f60cd776f378a5fbba09e1fd866a351'}}\nENTRY_SHA = '52784825ed50fc6178468ca80d05af7c060d48ca1da4dc2d38094b2778df02f1'\nPAYLOAD_SHA = '7914f01180c39a963d9cdc294f5323dc91ec620987d9a05e3ba8e581fc5c72e0'\nFIELDS = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')\n\n\ndef need(value, code):\n    if not value:\n        raise RuntimeError(code)\n\n\ndef sha(raw):\n    return hashlib.sha256(raw).hexdigest()\n\n\ndef census():\n    found = {}\n    for name in os.listdir('/proc/self/fd'):\n        try:\n            fd = int(name); row = os.fstat(fd)\n            found[name] = (os.readlink('/proc/self/fd/' + name), row.st_dev, row.st_ino,\n                           row.st_mode, row.st_uid, row.st_gid)\n        except OSError as failure:\n            if failure.errno not in (errno.EBADF, errno.ENOENT):\n                raise\n    return found\n\n\ndef main():\n    need(os.getuid() == os.geteuid() == 0, 'ACTUAL_ROOT_HOST_STAGE')\n    need(sys.argv[1:] == ['--payload-sha256', PAYLOAD_SHA], 'EXACT_STAGE_ARGUMENTS')\n    before = census()\n    raw = sys.stdin.buffer.read(524289)\n    need(len(raw) <= 524288 and sha(raw) == PAYLOAD_SHA, 'EXACT_BOUNDED_PAYLOAD')\n    payload = json.loads(raw)\n    need(set(payload) == {'schema', 'root', 'files'} and\n         payload['schema'] == 'pocket4-stage-a-runtime-proof-stage-payload-v1' and\n         payload['root'] == str(ROOT) and set(payload['files']) == set(PINS), 'CLOSED_FIXED_STAGE_PAYLOAD')\n    bodies = {}\n    for name, pin in PINS.items():\n        need('/' not in name and name not in ('', '.', '..'), 'FLAT_FIXED_STAGE_PATH')\n        row = payload['files'][name]\n        need(set(row) == {'bytes', 'sha256', 'base64'} and row['bytes'] == pin['bytes'] and\n             row['sha256'] == pin['sha256'], 'EXTERNAL_MEMBER_PIN')\n        body = base64.b64decode(row['base64'], validate=True)\n        need(len(body) == pin['bytes'] and sha(body) == pin['sha256'], 'EXACT_MEMBER_BYTES')\n        if name.endswith('.py'):\n            compile(body, str(ROOT / name), 'exec')\n        bodies[name] = body\n    need(ROOT.parent.resolve() == ROOT.parent and ROOT.name == 'pocket4-beike-partial-case-runtime-20261106-r1',\n         'EXACT_NEW_HOST_PRIVATE_ROOT')\n    os.umask(0o077)\n    ROOT.mkdir(mode=0o700)\n    directory = os.open(ROOT, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)\n    try:\n        info = os.fstat(directory)\n        need(info.st_uid == 0 and stat.S_IMODE(info.st_mode) == 0o700, 'ACTUAL_ROOT_PRIVATE_STAGE')\n        for name, body in bodies.items():\n            fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,\n                         0o400, dir_fd=directory)\n            try:\n                offset = 0\n                while offset < len(body):\n                    count = os.write(fd, body[offset:]); need(count > 0, 'MEMBER_WRITE_PROGRESS'); offset += count\n                os.fsync(fd)\n            finally:\n                os.close(fd)\n        os.fsync(directory)\n        need(set(os.listdir(directory)) == set(PINS), 'EXACT_STAGED_FILE_SET')\n        for name, pin in PINS.items():\n            fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory)\n            try:\n                first = os.fstat(fd)\n                need(stat.S_ISREG(first.st_mode) and first.st_uid == 0 and first.st_nlink == 1 and\n                     stat.S_IMODE(first.st_mode) == 0o400 and first.st_size == pin['bytes'], 'STAGED_FILE_METADATA')\n                data = bytearray()\n                while len(data) <= first.st_size:\n                    part = os.read(fd, min(65536, first.st_size + 1 - len(data)))\n                    if not part:\n                        break\n                    data.extend(part)\n                last = os.fstat(fd); current = os.stat(name, dir_fd=directory, follow_symlinks=False)\n                need(bytes(data) == bodies[name] and len(data) == pin['bytes'] and sha(data) == pin['sha256'] and\n                     all(getattr(first, k) == getattr(last, k) == getattr(current, k) for k in FIELDS),\n                     'STAGED_SOURCE_READBACK_CHANGED')\n            finally:\n                os.close(fd)\n    finally:\n        os.close(directory)\n    need(census() == before, 'STAGE_WHOLE_PROCESS_FD_IDENTITIES_CHANGED')\n    print(json.dumps({'schema': 'pocket4-stage-a-runtime-proof-stage-v1', 'root': str(ROOT),\n        'files': PINS, 'whole_process_fd_identities_unchanged': True, 'mode': 'readonly-runtime-candidate-not-yet-invoked',\n        'Main_commands': 0, 'namespace_entries': 0, 'Main_locks_or_guards': 0,\n        'private_bundle_copied': False, 'reconciliation_published': False}, sort_keys=True), flush=True)\n    entry = ROOT / 'runtime_stage_a_once.py'\n    sys.argv = [str(entry), '--execute-runtime-once', '--source-sha256', ENTRY_SHA, '--source-bytes', str(PINS['runtime_stage_a_once.py']['bytes']), '--request-sha256', 'e21cf095aa8a72d95f04a7a3acea477675daeb0882d0919dcad27eb01daa1d9d', '--request-bytes', '838']\n    exec(compile(bodies['runtime_stage_a_once.py'], str(entry), 'exec'),\n         {'__name__': '__main__', '__file__': str(entry)})\n\n\nif __name__ == '__main__':\n    main()\n",
+      "--payload-sha256",
+      "7914f01180c39a963d9cdc294f5323dc91ec620987d9a05e3ba8e581fc5c72e0"
+    ],
+    "created_unix_ms": 1794001418611,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2d13973-fc05-7fe2",
+    "idempotency_key": "pocket4-beike-task878-partial-case-runtime-stage-a-r1-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2d13973-fc05-7fe2",
+    "request_digest": "4eb07c49aa4f1cb4f7a09b4ae996a828202a21fa539d8febfd0d047317f6b6f8",
+    "request_fingerprint": 5670168586691222708,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2d13973-fc05-7fe2"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2d13973-fc05-7fe2"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

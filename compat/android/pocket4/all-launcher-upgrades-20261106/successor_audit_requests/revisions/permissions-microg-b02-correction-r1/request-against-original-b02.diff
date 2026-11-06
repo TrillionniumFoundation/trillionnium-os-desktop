@@ -1,0 +1,129 @@
+--- actual-failed-b02
++++ independent-microg-correction-r1
+@@ -6,16 +6,99 @@
+   },
+   "appops_help": {
+     "bytes": 1309,
+-    "path": "/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b02/inputs/cmd-appops-help.original.txt",
++    "path": "/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/inputs/cmd-appops-help.original.txt",
+     "sha256": "95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc"
+   },
+   "batch": 2,
++  "capture_policy": {
++    "Android_timeout_seconds": 25,
++    "automatic_retry": false,
++    "command_timeout_seconds": 30,
++    "commands": [
++      [
++        "/system/bin/cmd",
++        "package",
++        "help"
++      ],
++      [
++        "/system/bin/cmd",
++        "package",
++        "dump-package",
++        "com.google.android.gms"
++      ],
++      [
++        "/system/bin/cmd",
++        "appops",
++        "get",
++        "--user",
++        "0",
++        "com.google.android.gms"
++      ]
++    ],
++    "other_package_limits_changed": false,
++    "raw_output_private": true,
++    "scope": "exact_microG_second_command_stdout_only",
++    "stream_limits": [
++      {
++        "stderr": 262144,
++        "stdout": 262144
++      },
++      {
++        "stderr": 262144,
++        "stdout": 2097152
++      },
++      {
++        "stderr": 262144,
++        "stdout": 262144
++      }
++    ],
++    "total_worker_budget_seconds": 900
++  },
+   "guard": {
+     "bytes": 3213,
+     "path": "/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/current_baseline_guard.py",
+     "sha256": "d84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3"
+   },
+-  "output_root": "/home/alex/work/pocket4-launcher-permissions-observation-20261106-r1-b02",
++  "original_failure": {
++    "AppOps_query_executed": false,
++    "artifact": {
++      "bytes": 27164,
++      "sha256": "f86711fe87e7c4976dd61cdd5c53bbfeb5f4692af773990d89db088781758cf3"
++    },
++    "capture_limit_bytes": 262144,
++    "captured_stdout_prefix": {
++      "bytes": 262145,
++      "path": "/home/alex/work/pocket4-launcher-permissions-observation-20261106-r1-b02/android-02.stdout",
++      "sha256": "07a337b83a8fe84e25ebe608d49155ad294a9c5d83a8aa376f82353fb3914fad"
++    },
++    "command_returncode": -9,
++    "exit_code": 1,
++    "gate_stop": {
++      "bytes": 3152,
++      "sha256": "d2ab87f1aa7674003db63a588e650431d7b3c147b59852fd23c8f5a8790dabc8"
++    },
++    "inner_first_cause": "CHILD_OUTPUT_BOUND",
++    "job_id": "1a1b2be17ec-fc05-7f8b",
++    "original_capture_plan_sha256": "802c9616b99c0c753c7a31188ab7b594e5baba39d6940d963c2c1b9bd2cdb749",
++    "original_failure_reclassified": false,
++    "original_gate_state": "STOP_FAILED_OR_UNVERIFIED_BATCH",
++    "original_request_sha256": "f8913b60ae88b149f24b5bd1b5a1c4343082281ad656ea32b14c153efc6614ca",
++    "original_worker_error_label": "HOST_COMMAND_TIMEOUT",
++    "original_worker_sha256": "8c7d2ca5835f5cacb12f56430180fde88bac55c8cd6cfb219eece434bee19ba7",
++    "outer_stdout": {
++      "bytes": 18089,
++      "sha256": "ae37fe1743be6c1588d899e06e8b0ad42fa1fe625572826c9cb852ff554800f2"
++    },
++    "service_capture_complete": false,
++    "state": "failed",
++    "stderr_eof": false,
++    "stdout_eof": false,
++    "terminal": {
++      "bytes": 730,
++      "sha256": "bd1a4b5cc261490f0a18aeb55ce99eede71fd5a4882d174e5801a3ee00cb7ac4"
++    }
++  },
++  "output_root": "/home/alex/work/pocket4-microg-permission-correction-observation-20261106-r1",
+   "packages": [
+     "com.Hyatt.hyt",
+     "com.MobileTicket",
+@@ -65,19 +148,19 @@
+     "org.fcitx.fcitx5.android",
+     "tv.danmaku.bili"
+   ],
+-  "schema": "pocket4-fixed-launcher-permission-capture-request-v1",
++  "schema": "pocket4-microg-permission-correction-request-v1",
+   "target_packages": [
+     "com.google.android.gms"
+   ],
+   "target_user": 0,
+   "transport": {
+     "bytes": 16112,
+-    "path": "/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b02/readonly_services_transport.py",
++    "path": "/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/readonly_services_transport.py",
+     "sha256": "bdfc87c1321ef07bd50a429026fb41dd26be6785bf77e9b8e5d856fa3a075861"
+   },
+   "worker": {
+-    "bytes": 46455,
+-    "path": "/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b02/observe_current_services.py",
+-    "sha256": "8c7d2ca5835f5cacb12f56430180fde88bac55c8cd6cfb219eece434bee19ba7"
++    "bytes": 56665,
++    "path": "/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/observe_current_services.py",
++    "sha256": "a968ecab4f8b1837bd7f153c6c76517625b5f2ec89d5a157b19e494a5ab5f641"
+   }
+ }

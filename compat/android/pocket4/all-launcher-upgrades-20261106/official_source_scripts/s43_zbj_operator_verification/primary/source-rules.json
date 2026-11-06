@@ -1,0 +1,38 @@
+{
+  "schema": "pocket4-S43-primary-aapt-output-grammar-reference-v1",
+  "primary_url": "https://android.googlesource.com/platform/frameworks/base/+/master/tools/aapt/Command.cpp",
+  "observed_source_blob_sha1": "43a8b52f2766acd86dd6a6dd697f5738e8a40a73",
+  "source_reference_ids": ["turn126search0", "turn127view1", "turn127view2", "turn127view3", "turn128view0", "turn128view3"],
+  "full_raw_source_bytes_retrieved": false,
+  "binary_reproducible_source_provenance_claimed": false,
+  "source_scope": "Official upstream legacy aapt output grammar, corroborating exact observed S42 bytes. This does not claim the installed Debian binary was built from this upstream revision.",
+  "rules": [
+    {
+      "tag": "install-location",
+      "source_branch": "Immediately after the manifest package row, installLocation is switched among 0/1/2 for auto/internalOnly/preferExternal; other values emit stderr and bail.",
+      "bounded_parser_rule": "One whole-line enum row immediately following the package row; unknown values, suffixes, duplicates and other placement remain unrecognized.",
+      "actual_S42_line": 2
+    },
+    {
+      "tag": "uses-gl-es",
+      "source_branch": "printFeatureGroupImpl emits the group header, then one positive openGLESVersion in hexadecimal, then the feature and implied-feature rows.",
+      "bounded_parser_rule": "Exactly two spaces as in actual output; canonical positive lowercase hex fitting signed int32, inside the active group before its feature rows, at most once. It preserves the group for following recognized feature rows.",
+      "actual_S42_line": 71
+    },
+    {
+      "tag": "requires-smallest-width",
+      "source_branch": "The positive requiresSmallestWidthDp integer is emitted immediately after supports-any-density, before optional width limits and locales.",
+      "bounded_parser_rule": "One canonical positive decimal fitting signed int32 immediately after the exact boolean density row; unknown/malformed/out-of-context values remain unrecognized.",
+      "actual_S42_line": 90
+    }
+  ],
+  "retained_main_marker_rule": "The prior strict contextual bare-main rule is retained. Official hasMainActivity prints bare main after feature groups; no launchable component is inferred from that marker.",
+  "retrieval_limitations": [
+    "The web reader could not open android-10.0.0_r36 or its refs/tags form.",
+    "The main page linked commit 1cdfff555f4a21f71ccc978290e2e212e2f8b168, but a direct file read at that exact commit also returned a reader error; no raw commit source is claimed.",
+    "Rendered source excerpts can collapse whitespace. Exact two-space output indentation is bound to the actual S42 raw stdout; official printFeatureGroupImpl establishes the contextual order."
+  ],
+  "stderr_diagnostics_and_unknown_rows_still_block": true,
+  "APK_changes": 0,
+  "remote_execution": false
+}

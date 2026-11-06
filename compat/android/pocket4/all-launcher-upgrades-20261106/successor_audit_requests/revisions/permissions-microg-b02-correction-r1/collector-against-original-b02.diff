@@ -1,0 +1,230 @@
+--- actual-failed-b02
++++ independent-microg-correction-r1
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""New explicit47-bound fixed Launcher-batch raw permission-service observation.
++"""Independent microG-only correction after a precisely bounded incomplete dump.
+ 
+ This standalone source does not import or extend an existing per-App Flow or
+ its source contract. Frozen R5 entry/classpath primitives remain unchanged.
+@@ -47,12 +47,17 @@
+ BATCH_NUMBER = 2
+ ACTUAL45_COMPONENTS = ['com.Hyatt.hyt/com.hyt.auth.activities.SplashActivity', 'com.MobileTicket/com.MobileTicket.ui.activity.WelcomeGuideActivity', 'com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity', 'com.android.calendar/com.android.calendar.AllInOneActivity', 'com.android.camera2/com.android.camera.CameraLauncher', 'com.android.contacts/com.android.contacts.activities.PeopleActivity', 'com.android.deskclock/com.android.deskclock.DeskClock', 'com.android.dialer/com.android.dialer.main.impl.MainActivity', 'com.android.documentsui/com.android.documentsui.LauncherActivity', 'com.android.gallery3d/com.android.gallery3d.app.GalleryActivity', 'com.android.messaging/com.android.messaging.ui.conversationlist.ConversationListActivity', 'com.android.quicksearchbox/com.android.quicksearchbox.SearchActivity', 'com.android.settings/com.android.settings.Settings', 'com.android.threadnetwork.demoapp/com.android.threadnetwork.demoapp.MainActivity', 'com.bestbuy.android/com.bestbuy.android.activity.SplashActivity', 'com.ehi.national.mobile/com.ehi.national.mobile.MainActivity', 'com.enflick.android.TextNow/authorization.ui.AuthorizationActivity', 'com.google.android.gms/org.microg.gms.ui.SettingsActivity', 'com.hertz.android.digital/com.hertz.android.digital.MainActivity', 'com.hilton.android.hhonors/com.mofo.android.hilton.core.activity.BootActivity', 'com.ihg.apps.android/com.ihg.apps.android.activity.MainActivity', 'com.jingdong.app.mall/com.jingdong.app.mall.MainFrameActivity', 'com.lianjia.beike/com.lianjia.activity.MainActivity', 'com.marriott.mrt/com.marriott.mrt.v10.features.common.splash_screen.SplashScreenActivity', 'com.pinger.textfree/com.pinger.textfree.call.activities.TFSplash', 'com.rytong.airchina/com.rytong.airchina.unility.splash.activity.SplashActivity', 'com.rytong.ceair/com.rytong.ceair.main.ColdLaunchActivity', 'com.sankuai.meituan.takeoutnew/com.sankuai.meituan.takeoutnew.ui.page.boot.WelcomeActivity', 'com.sdu.didi.psnger/com.didi.sdk.app.launch.splash.SplashActivity', 'com.ss.android.ugc.aweme/com.ss.android.ugc.aweme.splash.SplashActivity', 'com.szzc/com.sz.ucar.rentcar.splash.activity.DefaultIcon', 'com.taobao.taobao/com.taobao.tao.welcome.Welcome', 'com.tencent.mm/com.tencent.mm.ui.LauncherUI', 'com.ubercab/com.ubercab.presidio.app.core.root.RootActivity', 'com.united.mobile.android/com.united.mobile.android.ui.splash.SplashActivity', 'com.xunmeng.pinduoduo/com.xunmeng.pinduoduo.ui.activity.MainFrameActivity', 'com.zhubajie.client/com.zhubajie.bundle_basic.home.LauncherActivity', 'com.zillow.android.streeteasy/com.zillow.android.streeteasy.home.HomeActivity', 'ctrip.android.view/ctrip.business.splash.CtripSplashActivity', 'jp.co.ana.android.tabidachi/jp.co.ana.android.tabidachi.home.SplashActivity', 'local.pocket4.fixture/local.pocket4.fixture.ProbeActivity', 'org.chromium.webview_shell/org.chromium.webview_shell.WebViewBrowserActivity', 'org.droidloom.qa.editorcontract/org.droidloom.qa.editorcontract.EditorContractActivity', 'org.fcitx.fcitx5.android/org.fcitx.fcitx5.android.ui.main.MainActivity', 'tv.danmaku.bili/tv.danmaku.bili.MainActivityV2']
+ TARGET_USER = 0
+-APP_OPS_HELP = {'path': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b02/inputs/cmd-appops-help.original.txt', 'bytes': 1309, 'sha256': '95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc'}
+-STAGE = '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b02'
+-OUTPUT = '/home/alex/work/pocket4-launcher-permissions-observation-20261106-r1-b02'
++APP_OPS_HELP = {'path': '/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/inputs/cmd-appops-help.original.txt', 'bytes': 1309, 'sha256': '95e3137d6acd3d920eb74f5d726a59232e6db9cb4efe8a4fedd6139074cb56cc'}
++STAGE = '/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1'
++OUTPUT = '/home/alex/work/pocket4-microg-permission-correction-observation-20261106-r1'
+ APP_SCOPE = {'path': '/home/alex/work/pocket4-current-explicit-47-app-observation-20261106-r2/app-scope.private.json', 'bytes': 58854, 'sha256': '44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f'}
+-TRANSPORT = {'path': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b02/readonly_services_transport.py', 'bytes': 16112, 'sha256': 'bdfc87c1321ef07bd50a429026fb41dd26be6785bf77e9b8e5d856fa3a075861'}
++TRANSPORT = {'path': '/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/readonly_services_transport.py', 'bytes': 16112, 'sha256': 'bdfc87c1321ef07bd50a429026fb41dd26be6785bf77e9b8e5d856fa3a075861'}
+ NATIVE_HELPERS = {'path': '/home/alex/work/pocket4-successor-install-audit-source-20261106-r1/install_successor_native.py', 'bytes': 31327, 'sha256': 'ad4227b4c63033018bd1147c3c589b2632168766306791696aabc53583229c96'}
++
++ORIGINAL_FAILURE = {'job_id': '1a1b2be17ec-fc05-7f8b', 'state': 'failed', 'exit_code': 1, 'original_capture_plan_sha256': '802c9616b99c0c753c7a31188ab7b594e5baba39d6940d963c2c1b9bd2cdb749', 'original_request_sha256': 'f8913b60ae88b149f24b5bd1b5a1c4343082281ad656ea32b14c153efc6614ca', 'original_worker_sha256': '8c7d2ca5835f5cacb12f56430180fde88bac55c8cd6cfb219eece434bee19ba7', 'artifact': {'bytes': 27164, 'sha256': 'f86711fe87e7c4976dd61cdd5c53bbfeb5f4692af773990d89db088781758cf3'}, 'outer_stdout': {'bytes': 18089, 'sha256': 'ae37fe1743be6c1588d899e06e8b0ad42fa1fe625572826c9cb852ff554800f2'}, 'terminal': {'bytes': 730, 'sha256': 'bd1a4b5cc261490f0a18aeb55ce99eede71fd5a4882d174e5801a3ee00cb7ac4'}, 'gate_stop': {'bytes': 3152, 'sha256': 'd2ab87f1aa7674003db63a588e650431d7b3c147b59852fd23c8f5a8790dabc8'}, 'inner_first_cause': 'CHILD_OUTPUT_BOUND', 'original_worker_error_label': 'HOST_COMMAND_TIMEOUT', 'command_returncode': -9, 'capture_limit_bytes': 262144, 'captured_stdout_prefix': {'bytes': 262145, 'path': '/home/alex/work/pocket4-launcher-permissions-observation-20261106-r1-b02/android-02.stdout', 'sha256': '07a337b83a8fe84e25ebe608d49155ad294a9c5d83a8aa376f82353fb3914fad'}, 'stdout_eof': False, 'stderr_eof': False, 'service_capture_complete': False, 'AppOps_query_executed': False, 'original_gate_state': 'STOP_FAILED_OR_UNVERIFIED_BATCH', 'original_failure_reclassified': False}
++FAILURE_INPUTS = {'artifact': {'path': '/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/inputs/original-b02-artifact.json', 'bytes': 27164, 'sha256': 'f86711fe87e7c4976dd61cdd5c53bbfeb5f4692af773990d89db088781758cf3'}, 'terminal': {'path': '/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/inputs/original-b02-terminal.json', 'bytes': 730, 'sha256': 'bd1a4b5cc261490f0a18aeb55ce99eede71fd5a4882d174e5801a3ee00cb7ac4'}, 'outer': {'path': '/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/inputs/original-b02-outer.json', 'bytes': 18089, 'sha256': 'ae37fe1743be6c1588d899e06e8b0ad42fa1fe625572826c9cb852ff554800f2'}, 'gate_stop': {'path': '/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/inputs/original-b02-gate-stop.json', 'bytes': 3152, 'sha256': 'd2ab87f1aa7674003db63a588e650431d7b3c147b59852fd23c8f5a8790dabc8'}}
++CORRECTION_COMMANDS = (('/system/bin/cmd', 'package', 'help'), ('/system/bin/cmd', 'package', 'dump-package', 'com.google.android.gms'), ('/system/bin/cmd', 'appops', 'get', '--user', '0', 'com.google.android.gms'))
++CAPTURE_POLICY = {'scope': 'exact_microG_second_command_stdout_only', 'commands': [['/system/bin/cmd', 'package', 'help'], ['/system/bin/cmd', 'package', 'dump-package', 'com.google.android.gms'], ['/system/bin/cmd', 'appops', 'get', '--user', '0', 'com.google.android.gms']], 'stream_limits': [{'stdout': 262144, 'stderr': 262144}, {'stdout': 2097152, 'stderr': 262144}, {'stdout': 262144, 'stderr': 262144}], 'command_timeout_seconds': 30, 'Android_timeout_seconds': 25, 'total_worker_budget_seconds': 900, 'other_package_limits_changed': False, 'raw_output_private': True, 'automatic_retry': False}
+ 
+ def need(value, code):
+     if not value:
+@@ -300,13 +305,18 @@
+         result["code"] = "UNEXPECTED_FAILURE_DETAILS_RETAINED_PRIVATELY"
+     return result
+ 
+-def held_bounded_child(argv, seconds, limit, pass_fds, host_env):
++def held_bounded_child(argv, seconds, limit, pass_fds, host_env, *, stdout_limit=None):
+     """No shell. Only the owned client process group may be killed on failure."""
+     need(0 < seconds <= 60 and 0 < limit <= 262144, "CHILD_BOUNDS_REQUIRED")
++    need(stdout_limit is None or type(stdout_limit) is int and stdout_limit in (limit, 2097152), "CLOSED_STDOUT_LIMIT")
++    need(stdout_limit != 2097152 or limit == 262144 and tuple(argv[-4:]) == CORRECTION_COMMANDS[1],
++         "ONLY_EXACT_MICROG_DUMP_STDOUT_MAY_USE_TWO_MIB")
++    stream_limits = {"stdout": limit if stdout_limit is None else stdout_limit, "stderr": limit}
+     end = time.monotonic() + seconds
+     buffers = {"stdout": bytearray(), "stderr": bytearray()}
+     record = {"argv": list(argv), "started_monotonic_ns": time.monotonic_ns(), "joined": False,
+-              "returncode": None, "stdout_eof": False, "stderr_eof": False, "errors": [], "termination_attempted": False}
++              "returncode": None, "stdout_eof": False, "stderr_eof": False, "errors": [], "termination_attempted": False,
++              "capture_limits": stream_limits}
+     child, pipes = None, []
+     selector = selectors.DefaultSelector()
+     try:
+@@ -321,7 +331,7 @@
+             need(time.monotonic() < end, "CHILD_TIMEOUT")
+             for key, _ in selector.select(min(.1, max(0, end - time.monotonic()))):
+                 try:
+-                    data = os.read(key.fileobj.fileno(), min(65536, limit + 1 - len(buffers[key.data])))
++                    data = os.read(key.fileobj.fileno(), min(65536, stream_limits[key.data] + 1 - len(buffers[key.data])))
+                 except BlockingIOError:
+                     continue
+                 if not data:
+@@ -329,7 +339,7 @@
+                     selector.unregister(key.fileobj)
+                     continue
+                 buffers[key.data].extend(data)
+-                need(len(buffers[key.data]) <= limit, "CHILD_OUTPUT_BOUND")
++                need(len(buffers[key.data]) <= stream_limits[key.data], "CHILD_OUTPUT_BOUND")
+         child.wait(timeout=max(.01, end - time.monotonic()))
+         record["joined"], record["returncode"] = True, child.returncode
+     except BaseException as error:
+@@ -399,16 +409,87 @@
+         raise
+ 
+ 
++def verify_original_failure(records):
++    """Preserve the exact failed observation; a saved prefix is never full output."""
++    need(set(records) == set(FAILURE_INPUTS), "ALL_ORIGINAL_FAILED_INPUTS_REQUIRED")
++    for key, raw in records.items():
++        pin = FAILURE_INPUTS[key]
++        need(type(raw) is bytes and len(raw) == pin["bytes"] and sha(raw) == pin["sha256"], "ORIGINAL_FAILURE_INPUT_PIN_CHANGED")
++    artifact, terminal, stop = (parse(records[key]) for key in ("artifact", "terminal", "gate_stop"))
++    need(terminal.get("job_id") == ORIGINAL_FAILURE["job_id"] and terminal.get("state") == "failed" and
++         type(terminal.get("exit_code")) is int and terminal["exit_code"] == 1 and
++         all(terminal.get(k) is True for k in ("output_complete", "output_durable", "terminal_publication_confirmed")) and
++         all(terminal.get(k) is False for k in ("timed_out", "automatic_retry", "cancelled")) and
++         terminal.get("log_truncated") == {"stdout": False, "stderr": False} and
++         terminal.get("log_errors") == {"stdout": None, "stderr": None} and
++         terminal.get("log_bytes") == {"stdout": {"seen": len(records["outer"]), "stored": len(records["outer"])},
++                                       "stderr": {"seen": 0, "stored": 0}}, "ORIGINAL_FAILED_DURABLE_TERMINAL_MUST_REMAIN")
++    need(stop.get("state") == "STOP_FAILED_OR_UNVERIFIED_BATCH" and stop.get("batch") == 2 and
++         stop.get("original_failure_must_remain") is True and stop.get("automatic_retry") is False,
++         "ORIGINAL_SERIAL_GATE_STOP_MUST_REMAIN")
++    lines = records["outer"].splitlines()
++    need(len(lines) == 2, "ORIGINAL_STAGE_AND_OWNED_OUTER_REQUIRED")
++    stage, outer = (parse(line) for line in lines)
++    need(stage.get("source_stage_ok") is True and outer.get("ok") is False and outer.get("kind") == "services" and
++         outer.get("status") == "READONLY_OBSERVATION_OR_LIFETIME_INCOMPLETE_NO_RETRY" and outer.get("automatic_retry") is False,
++         "ORIGINAL_FAILED_OUTER_NOT_RECLASSIFIED")
++    life, child = outer["child_lifecycle"], outer["child_result"]
++    need(type(life.get("returncode")) is int and life["returncode"] == 1 and
++         all(life.get(k) is True for k in ("pidfd_acquired", "pidfd_exit_observed", "pidfd_closed", "parent_descriptors_restored")) and
++         life.get("timeout") is False and life.get("owned_child_sigkill_count") == 0 and life.get("errors") == [] and
++         child.get("ok") is False and child.get("worker_returncode") == 1 and
++         child.get("frozen_descriptors_before_worker") == child.get("final_descriptors") and
++         "frozen_descriptors_after_worker" not in child and child.get("manual_library_FD_close") is False and child.get("unknown_FDs_closed") == 0,
++         "ORIGINAL_FAILED_WORKER_OWNED_RETIREMENT_REQUIRED")
++    encoded = child["worker_stdout_original"].encode("utf-8")
++    need(len(encoded) == child["worker_stdout_bytes"] and sha(encoded) == child["worker_stdout_sha256"], "ORIGINAL_WORKER_STREAM_PIN")
++    envelope = parse(encoded)
++    need(set(envelope) == {"encoding", "artifact_bytes", "artifact_sha256", "data"} and envelope["encoding"] == "zlib-base64" and
++         envelope["artifact_bytes"] == len(records["artifact"]) and envelope["artifact_sha256"] == sha(records["artifact"]),
++         "ORIGINAL_WORKER_ENVELOPE_PIN")
++    decoder = zlib.decompressobj()
++    decoded = decoder.decompress(base64.b64decode(envelope["data"], validate=True), 524289)
++    need(decoder.eof and not decoder.unconsumed_tail and not decoder.unused_data and decoded == records["artifact"],
++         "ORIGINAL_WORKER_ENVELOPE_MUST_DECODE_TO_SAME_FAILED_ARTIFACT")
++    need(artifact.get("ok") is False and artifact.get("status") == "FIXED_LAUNCHER_PERMISSION_CAPTURE_INCOMPLETE_NO_RETRY" and
++         artifact.get("errors") == [{"reason": "HOST_COMMAND_TIMEOUT", "type": "TransportTimeout"}] and
++         artifact.get("Android_namespace_commands") == 2 and len(artifact.get("android_commands", [])) == 2 and
++         artifact.get("scope_guard_after") is None, "ORIGINAL_FAILED_CAPTURE_AND_MISSING_FINAL_SCOPE_REQUIRED")
++    command = artifact["android_commands"][1]
++    need(tuple(command["argv"][-4:]) == CORRECTION_COMMANDS[1] and command.get("complete") is False and
++         command.get("errors") == [{"code": "CHILD_OUTPUT_BOUND", "type": "RuntimeError"}] and command.get("returncode") == -9 and
++         command.get("joined") is True and command.get("termination_attempted") is True and
++         command.get("stdout_eof") is False and command.get("stderr_eof") is False and
++         command.get("stdout_bytes") == 262145 and command.get("stdout") == ORIGINAL_FAILURE["captured_stdout_prefix"] and
++         command.get("stream_artifacts_complete") is True and
++         len(artifact.get("service_reports", [])) == 1 and artifact["service_reports"][0].get("complete") is False,
++         "ORIGINAL_CAP_PLUS_ONE_PREFIX_IS_INCOMPLETE_NOT_PERMISSION_PROOF")
++    for key in ("owned_descriptors_final", "observation_FDs_final", "lease_FDs_final"):
++        row = artifact[key]
++        need(type(row["acquired"]) is int and row["acquired"] > 0 and row["acquired"] == row["closed"] and
++             row["remaining"] == 0 and row["errors"] == [], "ORIGINAL_FAILED_RESOURCES_MUST_BE_RETIRED")
++    return ORIGINAL_FAILURE
++
++
++def capture_limits_for(index, argv):
++    """A 2 MiB stdout budget exists for only the second exact microG dump."""
++    need(type(index) is int and 1 <= index <= 3, "EXACT_THREE_READ_COMMANDS_ONLY")
++    command = CORRECTION_COMMANDS[index - 1]
++    need(tuple(argv[-len(command):]) == command, "EXACT_READ_COMMAND_SUFFIX_REQUIRED")
++    return dict(CAPTURE_POLICY["stream_limits"][index - 1])
++
++
+ def validate_request(request):
+     need(type(request) is dict and set(request) == {"schema", "guard", "app_scope", "packages", "worker", "transport", "output_root",
+-                                                       "target_packages", "target_user", "appops_help", "batch"},
++                                                       "target_packages", "target_user", "appops_help", "batch", "original_failure", "capture_policy"},
+          "CLOSED_SERVICE_OBSERVATION_REQUEST")
+-    need(request["schema"] == "pocket4-fixed-launcher-permission-capture-request-v1" and request["guard"] == GUARD and
++    need(request["schema"] == "pocket4-microg-permission-correction-request-v1" and request["guard"] == GUARD and
+          request["app_scope"] == APP_SCOPE and request["packages"] == PACKAGES and request["transport"] == TRANSPORT and
+          request["output_root"] == OUTPUT and request["target_packages"] == TARGET_PACKAGES and
+          type(request["batch"]) is int and request["batch"] == BATCH_NUMBER and
+          type(request["target_user"]) is int and request["target_user"] == TARGET_USER and
+-         request["appops_help"] == APP_OPS_HELP, "EXACT_SCOPE_AND_CLOSED_OPERATION_REQUEST")
++         request["appops_help"] == APP_OPS_HELP and request["original_failure"] == ORIGINAL_FAILURE and
++         request["capture_policy"] == CAPTURE_POLICY, "EXACT_SCOPE_AND_CLOSED_OPERATION_REQUEST")
+     need(request["worker"]["path"] == STAGE + "/observe_current_services.py" and str(Path(__file__).resolve()) == request["worker"]["path"],
+          "EXACT_REAL_SERVICE_SOURCE_REQUIRED")
+     read_root_pin(request["worker"])
+@@ -498,13 +579,14 @@
+ def run(request):
+     validate_request(request)
+     need(os.getuid() == os.geteuid() == 0, "EXISTING_HOST_ROOT_AUTHORITY_REQUIRED")
++    verify_original_failure({key: read_root_pin(pin) for key, pin in FAILURE_INPUTS.items()})
+     guard = load_source(GUARD, "new_readonly_services_successor_guard")
+     core = guard._core()
+     transport_module = load_source(TRANSPORT, "new_independent_readonly_services_transport")
+     native_helpers = load_source(NATIVE_HELPERS, "unchanged_native_identity_helpers_only")
+     pool, leases = core.FDs(), core.FDs()
+     held, target, directory, lock = None, None, None, None
+-    result = {"schema": "pocket4-fixed-launcher-permission-raw-capture-v1", "ok": False, "errors": [],
++    result = {"schema": "pocket4-independent-microg-permission-correction-v1", "ok": False, "errors": [],
+               "automatic_retry": False, "production_ready": False, "UI_actions": 0, "App_launches": 0,
+               "installs": 0, "permission_changes": 0, "lifecycle_commands": 0, "ADB_commands": 0,
+               "business_data_content_reads": 0, "Android_namespace_commands": 0, "native_command_count": 0,
+@@ -515,7 +597,8 @@
+               "service_output_capture_complete": False, "permission_name_normalization": "NONE_RAW_BYTES_PRESERVED",
+               "batch": BATCH_NUMBER, "target_packages": TARGET_PACKAGES, "target_user": TARGET_USER,
+               "service_target_packages": TARGET_PACKAGES, "package_dump_user_filter_applied": False,
+-              "packages": PACKAGES, "app_scope_reference": APP_SCOPE,
++              "packages": PACKAGES, "app_scope_reference": APP_SCOPE, "original_failure": ORIGINAL_FAILURE,
++              "capture_policy": CAPTURE_POLICY, "original_failed_capture_reclassified": False, "original_b02_ledger_advanced": False,
+               "old_Bili_unknown_reclassified": False,
+               "compiled_Beike_scope_modified": False, "UI_or_install_admitted": False}
+     deadline = time.monotonic() + 900
+@@ -579,9 +662,11 @@
+              "ORIGINAL_HELD_RUNNER_PROTOCOL_REQUIRED")
+         budget()
+         index = len(result["android_commands"]) + 1
++        capture_limits = capture_limits_for(index, argv)
+         write("android-%02d.intent.json" % index, canonical({"argv": list(argv), "authority_fds": list(options["pass_fds"]),
+-              "timeout_seconds": options["timeout"], "readonly": True, "automatic_retry": False})+b"\n")
+-        raw, stderr, row = held_bounded_child(argv, options["timeout"], 262144, tuple(options["pass_fds"]), options["env"])
++              "timeout_seconds": options["timeout"], "capture_limits": capture_limits, "readonly": True, "automatic_retry": False})+b"\n")
++        raw, stderr, row = held_bounded_child(argv, options["timeout"], 262144, tuple(options["pass_fds"]), options["env"],
++                                              stdout_limit=capture_limits["stdout"])
+         result["Android_namespace_commands"] += 1
+         try:
+             remember_child_streams(result["android_commands"], row, write, "android-%02d" % index, raw, stderr)
+@@ -679,6 +764,9 @@
+         need(result["guard_after"] == result["guard_before"], "FINAL_TYPED_RUNTIME_CHANGED")
+         for pin in (GUARD, APP_SCOPE, TRANSPORT, NATIVE_HELPERS, APP_OPS_HELP, request["worker"]):
+             read_root_pin(pin)
++        verify_original_failure({key: read_root_pin(pin) for key, pin in FAILURE_INPUTS.items()})
++        need([row["capture_limits"] for row in result["android_commands"]] == CAPTURE_POLICY["stream_limits"],
++             "ONLY_REVIEWED_THREE_STREAM_BUDGETS_USED")
+         need(len(result["android_commands"]) == 1 + 2 * len(TARGET_PACKAGES) and
+              all(row.get("stream_artifacts_complete") is True for row in result["android_commands"]),
+              "COMPLETE_FIXED_BATCH_SERVICE_STREAMS_REQUIRED")
+@@ -723,7 +811,8 @@
+         for index, service in ((1 + 2 * pi, "package-dump-package"), (2 + 2 * pi, "appops-get-user0"))
+         if len(result["android_commands"]) > index for row in (result["android_commands"][index],)]
+     result["permission_queries_executed"] = any("host_pid" in row for row in result["android_commands"][1:])
+-    result["status"] = "FIXED_LAUNCHER_PERMISSION_SERVICE_RAW_CAPTURE_COMPLETE" if result["ok"] else "FIXED_LAUNCHER_PERMISSION_CAPTURE_INCOMPLETE_NO_RETRY"
++    result["corrective_b02_capture_complete"] = result["ok"]
++    result["status"] = "MICROG_PERMISSION_RAW_CAPTURE_CORRECTION_VERIFIED" if result["ok"] else "MICROG_PERMISSION_CORRECTION_INCOMPLETE_NO_RETRY"
+     return result
+ 
+ 
+@@ -739,7 +828,7 @@
+         request = parse(read_root_pin({"path": args.request, "bytes": size, "sha256": args.request_sha256}))
+         result = run(request)
+     except BaseException as error:
+-        result = {"schema": "pocket4-fixed-launcher-permission-entry-rejection-v1", "ok": False, "type": type(error).__name__,
++        result = {"schema": "pocket4-microg-permission-correction-entry-rejection-v1", "ok": False, "type": type(error).__name__,
+                   "reason": str(error)[:512], "automatic_retry": False, "production_ready": False}
+     after = len(os.listdir("/proc/self/fd"))
+     result.update(process_FDs_before=before, process_FDs_after=after)

@@ -1,0 +1,39 @@
+--- actual-failed-b02
++++ independent-microg-correction-r1
+@@ -14,7 +14,7 @@
+ import zlib
+ 
+ sys.dont_write_bytecode = True
+-CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b02', 'worker': {'path': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b02/observe_current_services.py', 'bytes': 46455, 'sha256': '8c7d2ca5835f5cacb12f56430180fde88bac55c8cd6cfb219eece434bee19ba7'}, 'request': {'path': '/home/alex/work/pocket4-launcher-permissions-source-20261106-r1-b02/request.review-only.json', 'bytes': 2453, 'sha256': 'f8913b60ae88b149f24b5bd1b5a1c4343082281ad656ea32b14c153efc6614ca'}, 'prior_source': {'bytes': 16637, 'sha256': '1b6bca427c4a01cd1a5a8ea2526f9223e884658ef3a1784f3a8fad885f004ecc', 'preserved': True, 'actual_prior_execution_job': '1a1b1e97bb7-fc05-7b79', 'scope_authority_not_inherited': True}}
++CONFIG = {'schema': 'pocket4-owned-readonly-observation-config-v1', 'kind': 'services', 'stage_root': '/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1', 'worker': {'path': '/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/observe_current_services.py', 'bytes': 56665, 'sha256': 'a968ecab4f8b1837bd7f153c6c76517625b5f2ec89d5a157b19e494a5ab5f641'}, 'request': {'path': '/home/alex/work/pocket4-microg-permission-correction-source-20261106-r1/request.review-only.json', 'bytes': 4368, 'sha256': '94ca89b4b538b07b9b7598e0748138e793f1afa0ac887e6d17f53818d016a02e'}, 'prior_source': {'bytes': 19964, 'sha256': '00eb25ad44a9b8e030b670a67ca75043a0ac9870acbb9fadf6e0a51dde75c70d', 'preserved': True, 'actual_prior_failed_job': '1a1b2be17ec-fc05-7f8b', 'scope_authority_not_inherited': True}}
+ SELF_PIN = None
+ SUPPORT = {
+     "path": "/home/alex/work/pocket4-beike-owned-generation-20261106-b34f158f88bbebf112840fd88df25d03/prepare_beike_owned_lifetime.py",
+@@ -137,8 +137,8 @@
+              "ORIGINAL_FAILURE_MUST_REMAIN")
+         actions = ("UI_actions", "App_launches", "permission_changes", "installs", "Android_namespace_commands", "ADB_commands", "business_data_content_reads")
+     else:
+-        need(value.get("schema") == "pocket4-fixed-launcher-permission-raw-capture-v1" and value.get("ok") is True and
+-             value.get("status") == "FIXED_LAUNCHER_PERMISSION_SERVICE_RAW_CAPTURE_COMPLETE" and
++        need(value.get("schema") == "pocket4-independent-microg-permission-correction-v1" and value.get("ok") is True and
++             value.get("status") == "MICROG_PERMISSION_RAW_CAPTURE_CORRECTION_VERIFIED" and
+              value.get("current_scope_47_unchanged") is True and len(value.get("packages", [])) == 47 and
+              value.get("app_scope_reference", {}).get("sha256") == "44f9ce783000a672c270e98afdaeb74bd79654508bfacae6793316ff4252e52f" and
+              value.get("batch") == 2 and value.get("target_packages") == ['com.google.android.gms'] and
+@@ -164,6 +164,16 @@
+              value.get("compiled_Beike_scope_modified") is False and value.get("old_Bili_unknown_reclassified") is False and
+              value.get("meituan_saved_location_unchanged") is True and value.get("all_installed_APK_bytes_bound") is False,
+              "READONLY_QUERY_MUST_NOT_CLAIM_GRANTS_OR_EXPAND_UI_AUTHORITY")
++        need(value.get("original_failure") == {'job_id': '1a1b2be17ec-fc05-7f8b', 'state': 'failed', 'exit_code': 1, 'original_capture_plan_sha256': '802c9616b99c0c753c7a31188ab7b594e5baba39d6940d963c2c1b9bd2cdb749', 'original_request_sha256': 'f8913b60ae88b149f24b5bd1b5a1c4343082281ad656ea32b14c153efc6614ca', 'original_worker_sha256': '8c7d2ca5835f5cacb12f56430180fde88bac55c8cd6cfb219eece434bee19ba7', 'artifact': {'bytes': 27164, 'sha256': 'f86711fe87e7c4976dd61cdd5c53bbfeb5f4692af773990d89db088781758cf3'}, 'outer_stdout': {'bytes': 18089, 'sha256': 'ae37fe1743be6c1588d899e06e8b0ad42fa1fe625572826c9cb852ff554800f2'}, 'terminal': {'bytes': 730, 'sha256': 'bd1a4b5cc261490f0a18aeb55ce99eede71fd5a4882d174e5801a3ee00cb7ac4'}, 'gate_stop': {'bytes': 3152, 'sha256': 'd2ab87f1aa7674003db63a588e650431d7b3c147b59852fd23c8f5a8790dabc8'}, 'inner_first_cause': 'CHILD_OUTPUT_BOUND', 'original_worker_error_label': 'HOST_COMMAND_TIMEOUT', 'command_returncode': -9, 'capture_limit_bytes': 262144, 'captured_stdout_prefix': {'bytes': 262145, 'path': '/home/alex/work/pocket4-launcher-permissions-observation-20261106-r1-b02/android-02.stdout', 'sha256': '07a337b83a8fe84e25ebe608d49155ad294a9c5d83a8aa376f82353fb3914fad'}, 'stdout_eof': False, 'stderr_eof': False, 'service_capture_complete': False, 'AppOps_query_executed': False, 'original_gate_state': 'STOP_FAILED_OR_UNVERIFIED_BATCH', 'original_failure_reclassified': False} and
++             value.get("capture_policy") == {'scope': 'exact_microG_second_command_stdout_only', 'commands': [['/system/bin/cmd', 'package', 'help'], ['/system/bin/cmd', 'package', 'dump-package', 'com.google.android.gms'], ['/system/bin/cmd', 'appops', 'get', '--user', '0', 'com.google.android.gms']], 'stream_limits': [{'stdout': 262144, 'stderr': 262144}, {'stdout': 2097152, 'stderr': 262144}, {'stdout': 262144, 'stderr': 262144}], 'command_timeout_seconds': 30, 'Android_timeout_seconds': 25, 'total_worker_budget_seconds': 900, 'other_package_limits_changed': False, 'raw_output_private': True, 'automatic_retry': False} and
++             value.get("original_failed_capture_reclassified") is False and value.get("original_b02_ledger_advanced") is False and
++             value.get("corrective_b02_capture_complete") is True and
++             [row.get("capture_limits") for row in value["android_commands"]] == [{'stdout': 262144, 'stderr': 262144}, {'stdout': 2097152, 'stderr': 262144}, {'stdout': 262144, 'stderr': 262144}],
++             "EXACT_INDEPENDENT_MICROG_CORRECTION_REQUIRED")
++        for index, row in enumerate(value["android_commands"]):
++            need(tuple(row["argv"][-len([('/system/bin/cmd', 'package', 'help'), ('/system/bin/cmd', 'package', 'dump-package', 'com.google.android.gms'), ('/system/bin/cmd', 'appops', 'get', '--user', '0', 'com.google.android.gms')][index]):]) == tuple([('/system/bin/cmd', 'package', 'help'), ('/system/bin/cmd', 'package', 'dump-package', 'com.google.android.gms'), ('/system/bin/cmd', 'appops', 'get', '--user', '0', 'com.google.android.gms')][index]) and
++                 all(type(row[stream + "_bytes"]) is int and 0 <= row[stream + "_bytes"] <= row["capture_limits"][stream]
++                     for stream in ("stdout", "stderr")), "EXACT_MICROG_COMMAND_AND_STREAM_LIMITS")
+         actions = ("UI_actions", "App_launches", "installs", "permission_changes", "lifecycle_commands", "ADB_commands", "business_data_content_reads")
+     need(all(type(value.get(key)) is int and value[key] == 0 for key in actions), "READ_ONLY_ACTION_BOUNDARY_CHANGED")
+ 

@@ -1,0 +1,59 @@
+--- S42_actual/verify_complete_zbj_as_owner.py
++++ S43_candidate/verify_complete_zbj_as_owner.py
+@@ -14,7 +14,7 @@
+ import sys
+ import time
+ 
+-ROOT = Path('/home/alex/work/pocket4-zbj-operator-full-verification-20261106-s42')
++ROOT = Path('/home/alex/work/pocket4-zbj-operator-full-verification-20261106-s43')
+ FIELDS = ('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')
+ ENV = {"PATH": "/usr/bin:/bin", "LANG": "C", "LC_ALL": "C", "TZ": "UTC"}
+ MAX_TOOL_OUTPUT = 4 * 1024 * 1024
+@@ -292,11 +292,33 @@
+         lines = raw.decode('utf-8', 'strict').splitlines()
+         group_line = None
+         group_has_feature = False
++        group_gl_seen = False
+         main_seen = False
++        install_seen = False
++        width_seen = False
+         for number, line in enumerate(lines, 1):
++            install = re.fullmatch(r"install-location:'(auto|internalOnly|preferExternal)'", line)
++            width = re.fullmatch(r"requires-smallest-width:'([1-9][0-9]{0,9})'", line)
++            previous = lines[number - 2] if number > 1 else None
++            if install and not install_seen and previous is not None and previous.startswith('package: '):
++                accepted.append({'line_number': number, 'raw_line': line, 'tag': 'install-location',
++                                 'value': install[1], 'package_row': number - 1})
++                install_seen = True
++            elif width and not width_seen and int(width[1]) <= 2147483647 and previous in (
++                    "supports-any-density: 'true'", "supports-any-density: 'false'"):
++                accepted.append({'line_number': number, 'raw_line': line, 'tag': 'requires-smallest-width',
++                                 'value_dp': int(width[1]), 'density_row': number - 1})
++                width_seen = True
+             if re.fullmatch(r"feature-group: label='[^'\r\n]*'", line):
+                 group_line = number
+                 group_has_feature = False
++                group_gl_seen = False
++                continue
++            gl = re.fullmatch(r"  uses-gl-es: '0x([1-9a-f][0-9a-f]{0,7})'", line)
++            if group_line is not None and gl and not group_has_feature and not group_gl_seen and int(gl[1], 16) <= 2147483647:
++                accepted.append({'line_number': number, 'raw_line': line, 'feature_group_line': group_line,
++                                 'tag': 'uses-gl-es', 'value_hex': '0x' + gl[1]})
++                group_gl_seen = True
+                 continue
+             feature = re.fullmatch(
+                 r"  (uses-feature|uses-feature-not-required): name='([A-Za-z_][A-Za-z0-9_.]*)'", line)
+@@ -316,10 +338,11 @@
+                     'tag': 'legacy_bare_main_marker', 'feature_group_line': group_line,
+                     'launchable_component_inferred': False})
+                 main_seen = True
+-            # Whitespace, malformed rows and any other token end this contiguous
+-            # block. Their original unrecognized/diagnostic entries remain.
++            # An unrecognized or misplaced row ends the contiguous group.
++            # Its original diagnostic/unrecognized record is never discarded.
+             group_line = None
+             group_has_feature = False
++            group_gl_seen = False
+         accepted_keys = {(row['line_number'], row['raw_line']) for row in accepted}
+         result['unrecognized_badging_lines'] = [row for row in result['unrecognized_badging_lines']
+             if (row['line_number'], row['raw_line']) not in accepted_keys]

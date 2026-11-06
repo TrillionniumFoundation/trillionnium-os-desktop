@@ -1,0 +1,14 @@
+--- frozen-linked-r2.owned_gate
++++ independent-b13-linkage.repair_owned_gate
+@@ -1,9 +1,9 @@
+-def owned_gate(g, raw, terminal, job, wrapper, files, root):
++def repair_owned_gate(g, raw, terminal, job, wrapper, files, root):
+     terminal_gate(g, terminal, job, raw)
+     lines = raw.splitlines()
+     need(len(lines) == 2, "EXACT_STAGE_PLUS_OWNED_OUTER_PROTOCOL")
+     stage, outer = (g.parse(line) for line in lines)
+-    need(stage.get("schema") == "pocket4-calendar-official-comparison-source-stage-result-v1" and
++    need(stage.get("schema") == "pocket4-b13-version-repair-source-stage-result-v1" and
+          stage.get("source_stage_ok") is True and stage.get("source_root") == root and stage.get("files") == files and
+          type(stage.get("bootstrap_FDs_before")) is int and stage["bootstrap_FDs_before"] == stage.get("bootstrap_FDs_after") and
+          stage.get("worker_about_to_exec_once") is True and stage.get("automatic_retry") is False and

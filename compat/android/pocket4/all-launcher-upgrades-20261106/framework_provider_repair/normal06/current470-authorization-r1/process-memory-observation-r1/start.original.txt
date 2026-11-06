@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-e",
+      "-o",
+      "pid=,ppid=,uid=,comm=,rss=",
+      "--sort=-rss"
+    ],
+    "created_unix_ms": 1794000807128,
+    "cwd": null,
+    "env_keys": [],
+    "executable": "/usr/bin/ps",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b2c7e4d8-fc05-7fb9",
+    "idempotency_key": "pocket4-framework-host-memory-process-observation-20261106-r1",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b2c7e4d8-fc05-7fb9",
+    "request_digest": "8f7277019eb4f1dead920b1fac8cad4a8569a2b89b57e2cd3c46c6edbdaf0109",
+    "request_fingerprint": 10336454943610040798,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b2c7e4d8-fc05-7fb9"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b2c7e4d8-fc05-7fb9"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

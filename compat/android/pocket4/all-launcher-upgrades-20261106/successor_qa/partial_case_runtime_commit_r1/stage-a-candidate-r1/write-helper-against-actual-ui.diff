@@ -1,0 +1,10 @@
+--- actual-reusable-ui/write_once
++++ stage-a/write_once-root-only
+@@ -1,6 +1,6 @@
+ def write_once(base, path, raw):
+     path = Path(path)
+-    need(path.parent.as_posix() in (ROOT, FLOW) and path.name not in ('', '.', '..'), 'FIXED_OWNED_OUTPUT_DIRECTORY')
++    need(path.parent.as_posix() == ROOT and path.name not in ('', '.', '..'), 'FIXED_OWNED_OUTPUT_DIRECTORY')
+     directory = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+     try:
+         before = os.fstat(directory)

@@ -1,0 +1,77 @@
+{
+  "candidate": {
+    "actual_md5": "9b8bc092373e8f09d56861322b8ce1c9",
+    "bytes": 166873622,
+    "channel_version": "9.5.20",
+    "finished_utc": "2026-11-06T21:08:55.262124+00:00",
+    "local_path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-zbj-tail-s41-r2/com.zhubajie.client.apk",
+    "metadata_md5": null,
+    "package": "com.zhubajie.client",
+    "sha256": "1822af13f666fea9814a7e571d50cc7def3aad72426d2e3eaa9101dcd6eaefa0",
+    "started_utc": "2026-11-06T21:01:43.401208+00:00",
+    "total_bytes": 166873622,
+    "url": "https://s.shouji.qihucdn.com/261009/9b8bc092373e8f09d56861322b8ce1c9/com.zhubajie.client_370.apk?en=curpage%3Dopenbox_wap_detail%26exp%3D1794571897%26from%3Dopenbox_mintf_getAppInfoByIds%26m2%3D%26ts%3D1793967097%26tok%3Db64e944d9e3de8d16861a770d758bee5%26v%3D%26f%3Dz.apk"
+  },
+  "cleanup_eligible": false,
+  "current_archived_installed_reference": {
+    "path": "successor_audit_requests/actual/batches-final-r1/batch-12/artifact.original.json",
+    "scope": "actual most recently archived APK audit, not a new Main observation at verifier/install time",
+    "uid": 10144,
+    "vendor_signer": "556246aaaf05f61c8bbb9587dfc0660e01f6c3c6813ec038d18684d3ab378bbe",
+    "version_code": 369,
+    "version_name": "9.5.11"
+  },
+  "download_source": {
+    "bytes": 90411,
+    "path": "official_source_scripts/s41_zbj_finite_tail/candidate-r2/actual/stdout.original.jsonl",
+    "sha256": "87ff7fb49fe8ce2570dbba9c777fd1944c7fcc8fbdf09dc49ecd4a61e7e9cea8"
+  },
+  "expected_public_metadata": {
+    "actual_manifest_still_required": true,
+    "version_code": 370,
+    "version_name": "9.5.20"
+  },
+  "fixed_inputs": {
+    "Android_files": 0,
+    "candidate_APKs": 1,
+    "root_private_dependency_files": 0,
+    "tools": 12
+  },
+  "inheritance": {
+    "S38": "12 complete tool identity bindings, hold_exact, recheck_exact, census, now, run_tool unchanged; existing ordinary UID1000; new exact APK identity must be observed",
+    "S39": "strict aapt badging/permissions, raw streams, full identity recheck, complete child cleanup",
+    "faff_parser": "badging_manifest and parse_signature copied exactly",
+    "observed_feature_group_extension": "Recognize only the actually observed 2-space feature rows within a feature-group and contextual bare main marker; retain unknown/diagnostic rows. Adapt misleading local-only execution label separately for new remote call."
+  },
+  "no_ADB": true,
+  "no_Main": true,
+  "no_download": true,
+  "no_install": true,
+  "no_integrity_bypass": true,
+  "no_permissions_change": true,
+  "only_commands": [
+    "java -Xmx256m -jar pinned apksigner verify --verbose --print-certs /proc/self/fd/<held APK>",
+    "pinned legacy aapt dump badging /proc/self/fd/<same held APK>",
+    "pinned legacy aapt dump permissions /proc/self/fd/<same held APK>"
+  ],
+  "package": "com.zhubajie.client",
+  "pending_input": "Root-coordinated purpose-built file_info for exact complete APK size/SHA and full stat; do not infer inode or ns from old prefix.",
+  "process_profile": {
+    "cpu_quota_percent": 100,
+    "internal_deadline_seconds": 170,
+    "memory_max_bytes": 536870912,
+    "nice": 10,
+    "per_tool_cap_seconds": 90,
+    "timeout_seconds": 210
+  },
+  "production_ready": false,
+  "required_gates": [
+    "Normal verifier rc0, exact vendor signer equals latest archived installed APK, at least v2 or v3 verified; no min-sdk or signature override",
+    "Exact package/versionName/longVersionCode; code greater than archived 369; real min/target SDK and ABI recorded",
+    "Aapt rc0, complete raw output/stderr preserved; stderr, diagnostics, unknown syntax or incomplete required fields prevent healthy parser claim",
+    "All tools and APK full stat/SHA unchanged before and after; every child joined, pipes closed, no timeout/kill/truncation/error; all held FDs closed and baseline FD identities restored",
+    "Fresh current scope/signer/runtime compatibility still required before any installation"
+  ],
+  "schema": "pocket4-S42-candidate-design-v1",
+  "state": "SOURCE_PREPARATION_NO_REMOTE_EXECUTION"
+}
