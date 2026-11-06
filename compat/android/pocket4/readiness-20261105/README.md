@@ -1,6 +1,8 @@
 # Pocket4: all 45 tracked Apps, current evidence and unpassed gates
 
-## Current result
+> **Current status:** [Checkpoint 14](../continuation-r11/checkpoint-14/README.md) records a framework replacement after a native abort. This matrix is the preserved CP13 historical result. Its 1/45 acceptance has not been carried into the unadopted replacement framework; all 45 Apps retain their release gates.
+
+## Historical CP13 result
 
 Checkpoint13 covers reviewed device observations through **2026-11-06
 00:15:28 UTC** and their subsequent independent local reviews. Later continuation

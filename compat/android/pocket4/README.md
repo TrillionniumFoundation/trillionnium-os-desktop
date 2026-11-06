@@ -1,6 +1,12 @@
 # Pocket4 Android application repair snapshot
 
-## Current continuation — checkpoint13, 2026-11-06
+## Active continuation — checkpoint 14, 2026-11-06
+
+**All 45 Apps remain in scope. The CP13 1/45 result below is historical; the replacement framework has not been adopted or qualified.** The old system server aborted on a Binder weak-reference assertion at 04:42:33 UTC. Subsequent read-only binary analysis identified an installed SensorService duplicate-listener identity defect. Its [minimal patch and reproducible host regression](framework-stability/sensor-listener-identity/README.md) are now retained: the original reproduces four defects and the candidate passes all 17 contracts. Complete Android build, ABI, device lifetime and deployment gates remain open.
+
+[Checkpoint 14](continuation-r11/checkpoint-14/README.md) records the platform incident and later Calendar, WebView, Gallery and Clock work. App UI and install acceptance remain on hold during framework recovery. No old-epoch result is silently transferred to the new framework, and no whole-App readiness credit is added.
+
+## Historical continuation — checkpoint13, 2026-11-06
 
 **Whole-App production readiness is1/45 in the fixed tracked scope.** The accepted entry is the [Pocket4 local QA fixture](acceptance/local-apps-20261105/probe-completion04/README.md): its complete five-class, view-only contract passes all nine unchanged gates after actual three-round controls, ambiguity rejection, normal close/reopen, data isolation and independent runtime/resource/diagnostic review. The other44 Apps retain their outstanding gates. A QA-fixture acceptance does not qualify Android, the native action helper or an end-user business App.
 
