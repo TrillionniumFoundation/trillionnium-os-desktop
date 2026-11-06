@@ -1,0 +1,197 @@
+{
+  "batches": [
+    {
+      "batch": 1,
+      "output_root_suffix": "b01-r1",
+      "packages": [
+        "org.fcitx.fcitx5.android"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 2,
+      "output_root_suffix": "b02-r1",
+      "packages": [
+        "com.google.android.gms"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 3,
+      "output_root_suffix": "b03-r1",
+      "packages": [
+        "com.lianjia.beike",
+        "com.rytong.ceair",
+        "com.rytong.airchina",
+        "com.tencent.mm"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 4,
+      "output_root_suffix": "b04-r1",
+      "packages": [
+        "com.Hyatt.hyt",
+        "com.enflick.android.TextNow",
+        "com.szzc",
+        "tv.danmaku.bili"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 5,
+      "output_root_suffix": "b05-r1",
+      "packages": [
+        "com.MobileTicket",
+        "com.amazon.mShop.android.shopping",
+        "com.android.calendar",
+        "com.android.camera2"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 6,
+      "output_root_suffix": "b06-r1",
+      "packages": [
+        "com.android.contacts",
+        "com.android.deskclock",
+        "com.android.dialer",
+        "com.android.documentsui"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 7,
+      "output_root_suffix": "b07-r1",
+      "packages": [
+        "com.android.gallery3d",
+        "com.android.messaging",
+        "com.android.quicksearchbox",
+        "com.android.settings"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 8,
+      "output_root_suffix": "b08-r1",
+      "packages": [
+        "com.android.threadnetwork.demoapp",
+        "com.bestbuy.android",
+        "com.ehi.national.mobile",
+        "com.hertz.android.digital"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 9,
+      "output_root_suffix": "b09-r1",
+      "packages": [
+        "com.hilton.android.hhonors",
+        "com.ihg.apps.android",
+        "com.jingdong.app.mall",
+        "com.marriott.mrt"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 10,
+      "output_root_suffix": "b10-r1",
+      "packages": [
+        "com.pinger.textfree",
+        "com.sankuai.meituan.takeoutnew",
+        "com.sdu.didi.psnger",
+        "com.ss.android.ugc.aweme"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 11,
+      "output_root_suffix": "b11-r1",
+      "packages": [
+        "com.taobao.taobao",
+        "com.ubercab",
+        "com.united.mobile.android",
+        "com.xunmeng.pinduoduo"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 12,
+      "output_root_suffix": "b12-r1",
+      "packages": [
+        "com.zhubajie.client",
+        "com.zillow.android.streeteasy",
+        "ctrip.android.view",
+        "jp.co.ana.android.tabidachi"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    },
+    {
+      "batch": 13,
+      "output_root_suffix": "b13-r1",
+      "packages": [
+        "local.pocket4.fixture",
+        "org.chromium.webview_shell",
+        "org.droidloom.qa.editorcontract"
+      ],
+      "request_status": "UNBOUND_NO_ACTUAL_GUARD_OR_SCOPE"
+    }
+  ],
+  "collector": {
+    "bytes": 28920,
+    "local_path": "/dev/shm/pocket4-sidecar-next-20261106/audit_successor_apks.py",
+    "sha256": "f851b5b7fa88a291192ed44e8fc655fccb640d69a0771a3a0128434d1d4bf2cd"
+  },
+  "coordination": [
+    "never run concurrently with active UI/install/recovery action lock owner",
+    "first two single-package batches verify Fcitx and microG without reinstall or input-method mutation",
+    "do not automatically retry a failed process or unknown child retirement; preserve its raw evidence",
+    "guard failure or APK identity change stops current batch and requires actual updated scope or successor before continuing"
+  ],
+  "current_recovery_outcome": "UNKNOWN_OLD_CELL_OR_NATIVE_OWNER_STILL_ALIVE_NO_SUCCESSOR_GUARD_YET",
+  "existing_dependencies": {
+    "path": "/home/alex/work/pocket4-app-identities-20261105-r12-01/dependencies.json",
+    "sha256": "dfe1182d8e0da4d3d6e842736378539df33e03a87cf0ed9ab4bbe9ae1f26c041"
+  },
+  "interpretation": [
+    "manifest declared permissions are not effective Android grants",
+    "split absent SDK/versionName fields are absent, not invented or copied from base",
+    "raw XML permission names remain exact, including whitespace/noncanonical names",
+    "signature tool failure/unsupported format/API defaults remain explicit failure; no min-SDK override or integrity bypass",
+    "published official asset SHA match is additional byte identity evidence; it does not request reinstallation",
+    "business-ready/production-ready remain false; this audit performs no business operations"
+  ],
+  "limits": {
+    "logical_APK_set_bytes_per_batch_max": 4294967296,
+    "packages_per_batch_max": 4,
+    "raw_stream_bytes_max": 4194304,
+    "single_APK_bytes_max": 536870912,
+    "summary_artifact_bytes_max": 524288,
+    "tool_seconds_max": 90,
+    "whole_batch_seconds_max": 840
+  },
+  "old_epoch_execution_allowed": false,
+  "operation_order": [
+    "root settles recovery; supplies actual new guard and actual versioned all-45 App scope",
+    "root reviews collector and stages root-owned source, published-release comparison evidence, immutable per-batch requests",
+    "one batch holds existing global action lock; new guard checks current successor; scope checks all target APK paths, full stat, PM identities and top-level data directories",
+    "each APK opens through held android_init root; recompute full hash; inherit read-only fd into existing fixed host tools; retain exact raw stdout/stderr",
+    "rehash same held APK, verify full stat and current path, exact base/split set, App scope and new runtime guard",
+    "write durable result and compressed stdout; join all child tools, close all descriptors, release global lock",
+    "root checks durable terminal/readback; continue next explicit batch only while same runtime/App scope remains valid"
+  ],
+  "requires_actual_pins": [
+    "new typed guard path/bytes/SHA",
+    "versioned App scope path/bytes/SHA same runtime",
+    "root staged request path/SHA",
+    "fixed published-release comparison document path/SHA"
+  ],
+  "runtime_jobs_submitted": 0,
+  "schema": "pocket4-successor-apk-audit-preparation-plan-v1",
+  "status": "LOCAL_SOURCE_READY_AWAIT_ACTUAL_TYPED_SUCCESSOR_GUARD_AND_APP_SCOPE",
+  "tool_commands_per_APK": [
+    "existing JDK -Xmx256m -jar held-apksigner-jar verify --verbose --print-certs held-APK-fd",
+    "existing aapt dump badging held-APK-fd",
+    "existing aapt dump xmltree held-APK-fd AndroidManifest.xml"
+  ]
+}

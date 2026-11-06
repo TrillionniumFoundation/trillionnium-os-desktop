@@ -1,0 +1,215 @@
+--- successful install_airchina_bound_r1.py
++++ install_wechat_bound_r1.py
+@@ -1,11 +1,15 @@
+ #!/usr/bin/env python3
+-"""One independently bound, user-authorized AirChina upgrade through native install.
+-
+-Run only after reviewing this source, as root: python3 -B -I install_airchina_bound_r1.py
++"""One independently bound, user-authorized WeChat upgrade through native install.
++
++Run only after reviewing this source, as root: python3 -B -I install_wechat_bound_r1.py
+ The unchanged pinned collect_readonly.py must be adjacent. No arguments, target
+ overrides, retries, UI, grants, ADB, task removal, or lifecycle commands exist.
+-This deliberately creates a NEW AirChina-only install scope, not a Bili R5 scope.
++This deliberately creates a NEW WeChat-only install scope, not a Bili R5 scope.
+ The existing baseline's identity-only qualification is never modified.
++The read scope is explicitly the unchanged original eight plus WeChat; the
++original HISTORY stays unchanged and all eight identities are compared fresh.
++The old WeChat APK was hashed in job 1a1b097d4da-fc05-7192; its UID and
++CE/DE identities were observed without reading user data contents.
+ 
+ The native client transfers an APK descriptor to the existing daemon. Reviewed
+ denialwm/droidloom@246bae669a4d8f7dacc8824e927db144f4362347 apk.rs uses
+@@ -41,23 +45,23 @@
+ 
+ BASE_SHA = "04dcc9337aa61ed663e3ce3dea8ab13a963c4826588fcd1c25554466ed30acd1"
+ BASE_BYTES = 48526
+-PACKAGE = "com.rytong.airchina"
+-UID = 10132
++PACKAGE = "com.tencent.mm"
++UID = 10114
+ USER = 0
+-OLD_VERSION = 75201
+-OLD_BYTES = 206624542
+-OLD_SHA = "d654a0afdebacd9ece1aff7d732327dadd698bf2a3d05865938d6c6dd3bb5cd9"
+-OLD_CODE_PATH = "/data/app/~~dZxcRiho6k5asCfQJtzXrw==/com.rytong.airchina-ptgA2BZhDf2l_s9wwbfvWw=="
+-NEW_VERSION = 75300
+-NEW_NAME = "7.53.0"
+-NEW_BYTES = 207082090
+-NEW_SHA = "5c15462878b578d774f3a1e66c93329158791280c2a94237ac59224c019384e3"
+-SIGNER = "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
++OLD_VERSION = 3200
++OLD_BYTES = 285283432
++OLD_SHA = "5feb100337981467fd257c3ad66bb171f54a69d2579b2ecc70d5a628db8e7282"
++OLD_CODE_PATH = "/data/app/~~AppGWO0g6hOMmv6VEEQwZA==/com.tencent.mm-7bThwSg8z4H1bxQZAdrJYA=="
++NEW_VERSION = 3220
++NEW_NAME = "8.0.80"
++NEW_BYTES = 286319384
++NEW_SHA = "9d9b6c516e8e07e437c81485fde21fe13ce4f61b37d19e793fff40c71be39c0e"
++SIGNER = "0fe4ff85c215918396dadc7cd8ce6963339af33d37751a56e54c7206b63a3c7c"
+ STAGING = "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2"
+-CANDIDATE_PATH = "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.rytong.airchina.apk"
+-VERIFIER_DIR = "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.rytong.airchina-signature-verify-r1"
+-VERIFIER_CANONICAL_SHA = "2f6d7c4e46f23221f00bf985e25ccfca69732240c3ec55baaed87848494c1f09"
+-FLOW_NAME = "com.rytong.airchina-bound-install-r1"
++CANDIDATE_PATH = "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.tencent.mm.apk"
++VERIFIER_DIR = "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.tencent.mm-signature-verify-r1"
++VERIFIER_CANONICAL_SHA = "fcd355fdcb19f8276c304e050d350473e99298080f8a310762e935ff9793b5b9"
++FLOW_NAME = "com.tencent.mm-bound-install-r1"
+ FLOW_PATH = STAGING + "/" + FLOW_NAME
+ LOCK_PATH = "/run/lock/android-digitalis-actions.lock"
+ CLI_PATH = "/usr/bin/droidloomctl"
+@@ -112,6 +116,9 @@
+ SOCKET_PATH = "/run/droidloom/control.sock"
+ MAIN_HOST_PID = 3588089
+ MEITUAN = "com.sankuai.meituan.takeoutnew"
++ORIGINAL_EIGHT = ("com.Hyatt.hyt", "com.enflick.android.TextNow", "com.lianjia.beike",
++    "com.rytong.airchina", "com.rytong.ceair", "com.sankuai.meituan.takeoutnew", "com.szzc", "tv.danmaku.bili")
++READ_PACKAGES = ORIGINAL_EIGHT + (PACKAGE,)
+ PRIOR_BILI_FLOW = "/home/alex/work/pocket4-bilibili-owned-qa-r9-flow-474d7477074ea01fbc986e0d867924c1"
+ PRIOR_PINS = {
+     "scope.json": (1006, "ac6dea24873125a8ac322306786f9f5760fd20b0f1c8d06bc80a498e33eddc50"),
+@@ -173,7 +180,7 @@
+         need(all(getattr(before, k) == getattr(after, k) for k in fields), "PINNED_READER_CHANGED")
+     finally:
+         os.close(fd)
+-    module = types.ModuleType("pocket4_airchina_unchanged_readonly_primitives")
++    module = types.ModuleType("pocket4_wechat_unchanged_readonly_primitives")
+     module.__file__ = str(path)
+     exec(compile(raw, str(path), "exec"), module.__dict__)
+     return module
+@@ -310,8 +317,8 @@
+          value.get("signer_certificate_sha256") == [SIGNER] and
+          value.get("status") == "VERIFIED_OFFICIAL_CANDIDATE_NOT_INSTALLED" and
+          value.get("manifest") == {"package": PACKAGE, "version_code": NEW_VERSION,
+-             "version_name": NEW_NAME, "min_sdk": "24", "target_sdk": "36",
+-             "native_abis": ["arm64-v8a", "armeabi-v7a"]} and
++             "version_name": NEW_NAME, "min_sdk": "24", "target_sdk": "34",
++             "native_abis": ["arm64-v8a"]} and
+          value.get("apk", {}).get("path") == CANDIDATE_PATH and
+          value["apk"].get("bytes") == NEW_BYTES and value["apk"].get("sha256") == NEW_SHA,
+          "OFFICIAL_CANDIDATE_NOT_VERIFIED_FOR_EXACT_TARGET")
+@@ -348,9 +355,65 @@
+     return rows
+ 
+ 
++def nine_package_projection(c, root):
++    """Explicit fixed nine; original eight must equal the unchanged projection."""
++    c.need(root.tag == "packages", "PACKAGES_ROOT_REQUIRED")
++    certs, result = c.cert_digests(root), {}
++    for node in root.children:
++        package = node.attrs.get("name")
++        if node.tag != "package" or package not in READ_PACKAGES:
++            continue
++        c.need(package not in result, "DUPLICATE_TARGET_PACKAGE")
++        uid_keys = [key for key in ("userId", "sharedUserId") if key in node.attrs]
++        c.need(len(uid_keys) == 1, "PACKAGE_UID_AMBIGUOUS_OR_MISSING")
++        uid = c.integer(node.attrs[uid_keys[0]], "PACKAGE_UID_TYPE")
++        c.need(10000 <= uid < 100000, "PACKAGE_USER_ZERO_APPID_BOUND")
++        versions = [c.integer(node.attrs[key], "PACKAGE_VERSION_TYPE") for key in ("version", "versionCode") if key in node.attrs]
++        c.need(versions and len(set(versions)) == 1 and 0 <= versions[0] < (1 << 63), "PACKAGE_VERSION_AMBIGUOUS_OR_MISSING")
++        code_path = c.small_text(node.attrs.get("codePath"), "PACKAGE_CODE_PATH", 2048)
++        c.path_parts(code_path)
++        c.need(code_path.startswith("/data/app/"), "TARGET_CODE_PATH_OUTSIDE_DATA_APP")
++        signing = [child for child in node.children if child.tag == "sigs"]
++        c.need(len(signing) <= 1, "MULTIPLE_PACKAGE_SIGNATURE_RECORDS")
++        signing_value = {"status": "UNKNOWN_NO_PACKAGE_MANAGER_RECORD", "certificate_sha256": [], "cryptographic_verification_performed": False}
++        if signing:
++            items = [child for child in signing[0].children if child.tag == "cert"]
++            count = c.integer(signing[0].attrs.get("count"), "SIGNATURE_COUNT_TYPE")
++            c.need(0 < count <= 32 and len(items) == count, "SIGNATURE_COUNT_MISMATCH")
++            indices = [c.integer(item.attrs.get("index"), "SIGNATURE_INDEX_TYPE") for item in items]
++            c.need(len(indices) == len(set(indices)), "DUPLICATE_PACKAGE_CERT_INDEX")
++            if all(index in certs for index in indices):
++                signing_value.update(status="PACKAGE_MANAGER_CERTIFICATE_DIGESTS_ONLY", certificate_sha256=sorted(certs[index] for index in indices))
++        abi = {key: c.small_text(node.attrs[key], "PACKAGE_ABI_BOUND", 64) for key in ("primaryCpuAbi", "secondaryCpuAbi", "cpuAbiOverride") if key in node.attrs}
++        result[package] = {"package": package, "metadata_present": True, "android_user": 0, "uid": uid, "version_code": versions[0], "code_path": code_path, "package_manager_abi": abi, "package_manager_signing": signing_value}
++    c.need(set(result) == set(READ_PACKAGES), "ALL_NINE_EXPLICIT_PACKAGES_REQUIRED")
++    c.need({k: result[k] for k in ORIGINAL_EIGHT} == c.package_projection(root), "UNCHANGED_ORIGINAL_EIGHT_PROJECTION_REQUIRED")
++    return result
++
++def nine_restrictions_projection(c, root):
++    c.need(root.tag == "package-restrictions", "RESTRICTIONS_ROOT_REQUIRED")
++    result = {}
++    allowed = ("installed", "hidden", "suspended", "stopped", "enabled", "notLaunched")
++    for node in root.children:
++        package = node.attrs.get("name")
++        if node.tag != "pkg" or package not in READ_PACKAGES:
++            continue
++        c.need(package not in result, "DUPLICATE_RESTRICTION_PACKAGE")
++        values = {}
++        for key in allowed:
++            if key not in node.attrs:
++                continue
++            value = node.attrs[key]
++            c.need(type(value) in (str, int, bool) and (type(value) is not str or len(value) <= 64), "RESTRICTION_VALUE_TYPE")
++            values[key] = value
++        result[package] = {"coverage": True, "recorded_fields": values, "absent_fields_not_defaulted": True}
++    c.need({k: v for k, v in result.items() if k in ORIGINAL_EIGHT} == c.restrictions_projection(root), "UNCHANGED_ORIGINAL_EIGHT_RESTRICTIONS_REQUIRED")
++    return result
++
++
+ def snapshot(c, reader, budget):
+     raw, pm_source = reader.read(c.PACKAGES_PATH, c.MAX_METADATA)
+-    projected = c.package_projection(c.parse_xml(raw, budget.check))
++    projected = nine_package_projection(c, c.parse_xml(raw, budget.check))
+     need(PACKAGE in projected and MEITUAN in projected, "SCOPED_PACKAGES_NOT_PRESENT")
+     app = projected[PACKAGE]
+     need(app["uid"] == UID and app["android_user"] == USER and
+@@ -360,7 +423,7 @@
+     need(names == ["base.apk"], "STANDALONE_BASE_APK_SET_REQUIRED")
+     _, apk = reader.read(app["code_path"] + "/base.apk", c.MAX_APK, apk=True)
+     raw, restrictions_source = reader.read(c.RESTRICTIONS_PATH, c.MAX_METADATA)
+-    restrictions = c.restrictions_projection(c.parse_xml(raw, budget.check)).get(PACKAGE, {
++    restrictions = nine_restrictions_projection(c, c.parse_xml(raw, budget.check)).get(PACKAGE, {
+         "coverage": False, "recorded_fields": {}, "absent_fields_not_defaulted": True})
+     permissions, meituan_location, sources = [], [], []
+     for path in c.PERMISSION_PATHS:
+@@ -591,9 +654,9 @@
+ 
+ 
+ def main():
+-    result = {"schema": "pocket4-independent-airchina-bound-install-v1", "package": PACKAGE,
++    result = {"schema": "pocket4-independent-wechat-bound-install-v1", "package": PACKAGE,
+         "android_user": USER, "uid": UID, "flow": FLOW_PATH, "started_utc": now(),
+-        "user_authorized_operation": "upgrade_exact_official_AirChina_candidate_preserving_data",
++        "user_authorized_operation": "upgrade_exact_official_WeChat_candidate_preserving_data",
+         "automatic_retry": False, "action_attempted": False, "outcome_unknown": False,
+         "install_verified": False, "business_ready": False, "production_ready": False,
+         "UI_actions": 0, "permission_grant_commands": 0, "App_launches": 0,
+@@ -617,7 +680,7 @@
+         store.json("claim.json", {"schema": "pocket4-one-shot-install-claim-v1", "package": PACKAGE,
+             "started_utc": result["started_utc"], "pid": os.getpid(), "automatic_retry": False})
+         raw, result["guard_source"] = host.read(c.GUARD_PATH, 65536, pin=c.GUARD_SHA)
+-        guard = types.ModuleType("pocket4_airchina_pinned_current_guard")
++        guard = types.ModuleType("pocket4_wechat_pinned_current_guard")
+         guard.__file__ = c.GUARD_PATH
+         exec(compile(raw, c.GUARD_PATH, "exec"), guard.__dict__)
+         result["guard_before"] = c.validate_guard_result(guard.current_guard())
+@@ -660,7 +723,7 @@
+         result["guard_before_install"] = c.validate_guard_result(guard.current_guard())
+         need(result["guard_before_install"] == result["guard_before"], "PREINSTALL_MAIN_GUARD_CHANGED")
+         store.verify_path()
+-        scope = {"schema": "pocket4-explicit-AirChina-install-scope-v1", "epoch_sha256": c.EPOCH,
++        scope = {"schema": "pocket4-explicit-WeChat-install-scope-v1", "epoch_sha256": c.EPOCH,
+             "baseline_sha256": c.BASELINE_SHA, "qualification_sha256": c.QUALIFICATION_SHA,
+             "reader_sha256": BASE_SHA, "worker_source": result["worker_source"],
+             "package": PACKAGE, "android_user": USER, "uid": UID,
+@@ -668,7 +731,7 @@
+             "from_apk_sha256": OLD_SHA, "to_apk_sha256": NEW_SHA,
+             "signer_certificate_sha256": SIGNER, "data_directories": result["data_before"],
+             "native_artifacts": native_rows, "official_verifier": result["official_verifier"],
+-            "only_mutation": "native_install_of_held_official_AirChina_APK",
++            "only_mutation": "native_install_of_held_official_WeChat_APK",
+             "UI_admitted": False, "permission_grants_admitted": False,
+             "lifecycle_actions_admitted": False, "other_packages_admitted": False,
+             "Bili_scope_borrowed": False, "prior_Bili_unknown_retained": True,
+@@ -758,7 +821,7 @@
+             result.get("new_installed_bytes_readback_verified") and result.get("native_artifacts_unchanged") and
+             result.get("data_directory_identity_retained") and result.get("guard_after") and not result["errors"])
+         result["outcome_unknown"] = bool(result["action_attempted"] and not result["install_verified"])
+-        result["status"] = ("AIRCHINA_UPGRADE_VERIFIED_BUSINESS_QA_PENDING" if result["install_verified"] else
++        result["status"] = ("WECHAT_UPGRADE_VERIFIED_BUSINESS_QA_PENDING" if result["install_verified"] else
+             "INSTALL_OUTCOME_UNKNOWN_NO_AUTOMATIC_RETRY" if result["action_attempted"] else
+             "PREINSTALL_REJECTED_NO_INSTALL_REQUEST")
+         result["ended_utc"] = now()

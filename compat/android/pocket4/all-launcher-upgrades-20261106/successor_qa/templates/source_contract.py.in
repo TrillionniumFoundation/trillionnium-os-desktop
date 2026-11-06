@@ -1,0 +1,185 @@
+"""New per-package R5 source binding to an actual qualified successor.
+
+Generated only after the successor guard and this versioned App scope pass.
+This is source identity, not UI qualification or application readiness.
+"""
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import re
+import stat
+import time
+import types
+
+HERE = Path(__file__).resolve().parent
+ARTIFACT = "pocket4-successor-recorder-r5-v1"
+BINDING = __BINDING_LITERAL__
+PACKAGE = BINDING["package"]
+COMPONENT = BINDING["component"]
+UID = BINDING["uid"]
+MAIN_EPOCH = BINDING["framework_epoch"]["sha256"]
+BASELINE_SCHEMA = "pocket4-successor-runtime-baseline-v1"
+BASELINE_SHA = BINDING["baseline"]["sha256"]
+BASELINE_QUALIFICATION_SHA = BINDING["qualification"]["sha256"]
+CURRENT_GUARD_SHA = BINDING["runtime_guard"]["sha256"]
+REFERENCE_PINS = __REFERENCE_PINS_LITERAL__
+PRODUCTION_FILES = {"recorder.py", "source_contract.py", "main_binding.py",
+                    "existing_ui_entry.py", "bound_android_transport.py", "current_coordinator.py"}
+
+
+def require(ok, code):
+    if not ok:
+        raise RuntimeError(code)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def bounded_file(path, limit=131072):
+    path = str(path)
+    parts = path[1:].split("/")
+    require(path.startswith("/") and not any(x in ("", ".", "..") for x in parts), "CANONICAL_SOURCE_PATH")
+    fds = []
+    try:
+        d = os.open("/", os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC)
+        fds.append(d)
+        for part in parts[:-1]:
+            d = os.open(part, os.O_PATH | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=d)
+            fds.append(d)
+        fd = os.open(parts[-1], os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=d)
+        fds.append(fd)
+        def meta(f):
+            s = os.fstat(f)
+            return tuple(getattr(s, k) for k in ("st_dev", "st_ino", "st_size", "st_mode", "st_uid", "st_gid", "st_nlink", "st_mtime_ns", "st_ctime_ns"))
+        first = os.fstat(fd)
+        before = meta(fd)
+        require(stat.S_ISREG(first.st_mode) and first.st_nlink == 1 and 0 <= first.st_size <= limit, "BOUNDED_SINGLE_REGULAR_FILE")
+        data, deadline = bytearray(), time.monotonic() + 10
+        while len(data) <= limit:
+            require(time.monotonic() < deadline, "SOURCE_READ_DEADLINE")
+            chunk = os.read(fd, min(65536, limit + 1 - len(data)))
+            if not chunk:
+                break
+            data.extend(chunk)
+        require(len(data) == first.st_size and meta(fd) == before, "SOURCE_CHANGED_DURING_READ")
+        check = os.open(parts[-1], os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=d)
+        fds.append(check)
+        require(meta(check) == before, "SOURCE_PATH_REPLACED")
+        return bytes(data)
+    finally:
+        failures = []
+        for fd in reversed(fds):
+            try:
+                os.close(fd)
+            except OSError:
+                failures.append(fd)
+        require(not failures, "SOURCE_FD_CLOSE_FAILED")
+
+
+def pinned(reference, limit=4 * 1024 * 1024):
+    raw = bounded_file(reference["path"], limit)
+    require(len(raw) == reference["bytes"] and sha(raw) == reference["sha256"], "EXACT_PINNED_INPUT_CHANGED")
+    return raw
+
+
+class SourceContract:
+    def __init__(self, path, expected_sha256):
+        self.path = Path(path)
+        self.root = self.path.parent
+        require(self.path == HERE / "source-manifest.json", "EXACT_MANIFEST_LOCATION")
+        require(isinstance(expected_sha256, str) and re.fullmatch("[0-9a-f]{64}", expected_sha256), "EXTERNAL_MANIFEST_PIN")
+        self.sha256 = expected_sha256
+        raw = bounded_file(self.path)
+        require(sha(raw) == expected_sha256, "SOURCE_MANIFEST_CHANGED")
+        manifest = json.loads(raw)
+        require(set(manifest) == {"schema", "artifact", "binding_sha256", "files", "UI_admitted", "production_ready"}
+                and manifest["schema"] == 3 and manifest["artifact"] == ARTIFACT
+                and manifest["binding_sha256"] == sha(json.dumps(BINDING, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode())
+                and manifest["UI_admitted"] is False and manifest["production_ready"] is False, "NEW_SOURCE_IDENTITY_REQUIRED")
+        self.files = manifest["files"]
+        require(set(self.files) == PRODUCTION_FILES | set(REFERENCE_PINS), "EXACT_SOURCE_CLOSURE")
+        for name, row in self.files.items():
+            rel = PurePosixPath(name)
+            require(not rel.is_absolute() and str(rel) == name and ".." not in rel.parts and
+                    set(row) == {"bytes", "sha256"} and type(row["bytes"]) is int and 0 < row["bytes"] <= 131072
+                    and re.fullmatch("[0-9a-f]{64}", row["sha256"]), "SOURCE_ROW_INVALID")
+        for name, (length, digest) in REFERENCE_PINS.items():
+            require(self.files[name] == {"bytes": length, "sha256": digest}, "FROZEN_REFERENCE_CHANGED")
+        self.verify()
+
+    def verify(self):
+        require(sha(bounded_file(self.path)) == self.sha256, "MANIFEST_CHANGED_DURING_FLOW")
+        for name, row in self.files.items():
+            raw = bounded_file(self.root / name)
+            require(len(raw) == row["bytes"] and sha(raw) == row["sha256"], "SOURCE_CHANGED:" + name)
+
+    def load(self, name, module_name):
+        require(name in self.files, "UNPINNED_MODULE")
+        raw = bounded_file(self.root / name)
+        row = self.files[name]
+        require(len(raw) == row["bytes"] and sha(raw) == row["sha256"], "MODULE_CHANGED")
+        module = types.ModuleType(module_name)
+        module.__file__ = str(self.root / name)
+        exec(compile(raw, module.__file__, "exec"), module.__dict__)
+        return module
+
+
+def load_guard():
+    raw = pinned(BINDING["runtime_guard"], 65536)
+    module = types.ModuleType("actual_successor_guard")
+    module.__file__ = BINDING["runtime_guard"]["path"]
+    exec(compile(raw, module.__file__, "exec"), module.__dict__)
+    require(module.PINS["baseline"] == BINDING["baseline"] and
+            module.PINS["qualification"] == BINDING["qualification"], "ACTUAL_GUARD_DOCUMENT_PINS_CHANGED")
+    return module
+
+
+def activation():
+    """Explicit derived binding view. It never claims to be a runtime baseline."""
+    return json.loads(json.dumps(BINDING, sort_keys=True))
+
+
+def actual_documents():
+    return pinned(BINDING["baseline"]), pinned(BINDING["qualification"], 65536)
+
+
+def verify_saved_baseline(root):
+    for name, pin in (("baseline.json", BINDING["baseline"]), ("baseline-qualification.json", BINDING["qualification"])):
+        data = bounded_file(root / name, 4 * 1024 * 1024)
+        require(len(data) == pin["bytes"] and sha(data) == pin["sha256"], "SAVED_ACTUAL_BASELINE_CHANGED")
+
+
+def runtime_and_app_guard(guard, attempted=False):
+    result = guard.current_guard(action_attempted=attempted)
+    require(result["schema"] == "pocket4-successor-main-guard-v1" and
+            result["Main_epoch_sha256"] == MAIN_EPOCH and
+            result["runtime_epoch_sha256"] == BINDING["runtime_epoch_sha256"], "EXACT_SUCCESSOR_RUNTIME_REQUIRED")
+    try:
+        app = guard.check_app_scope(BINDING["app_scope"], sorted(BINDING["packages"]))
+        require(app["app_scope_sha256"] == BINDING["app_scope"]["sha256"], "EXACT_APP_VERSION_SCOPE_REQUIRED")
+        return result
+    except BaseException as error:
+        error.action_attempted = attempted
+        error.outcome_unknown = attempted
+        error.automatic_retry = False
+        raise
+
+
+def verify_scope(scope, observed_activation, contract):
+    require(observed_activation == activation(), "DERIVED_BINDING_VIEW_CHANGED")
+    expected = {"schema": "pocket4-successor-recorder-scope-v1", "current_baseline_schema": BASELINE_SCHEMA,
+                "package": PACKAGE, "component": COMPONENT, "uid": UID, "user": 0,
+                "current_baseline_sha256": BASELINE_SHA,
+                "current_baseline_qualification_sha256": BASELINE_QUALIFICATION_SHA,
+                "epoch_sha256": MAIN_EPOCH, "runtime_epoch_sha256": BINDING["runtime_epoch_sha256"],
+                "app_scope_sha256": BINDING["app_scope"]["sha256"],
+                "adapter_manifest_sha256": contract.sha256,
+                "recorder_sha256": contract.files["recorder.py"]["sha256"], "automatic_retry": False}
+    require(set(scope) == set(expected) | {"created_utc"} and
+            all(scope[k] == v for k, v in expected.items()) and isinstance(scope["created_utc"], str),
+            "EXACT_SUCCESSOR_PACKAGE_SCOPE_REQUIRED")
+
+
+__ORIGINAL_HELPER_CONSTANTS_AND_VERIFIER__

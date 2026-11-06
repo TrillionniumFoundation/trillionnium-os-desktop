@@ -1,0 +1,55 @@
+import sys
+sys.dont_write_bytecode=True
+import base64,hashlib,json,os,stat,types,zlib
+from pathlib import Path
+assert os.getuid()==os.geteuid()==0
+os.umask(0o077)
+STAT_KEYS=('st_dev','st_ino','st_mode','st_nlink','st_uid','st_gid','st_size','st_mtime_ns','st_ctime_ns')
+def read_pinned(path,limit,digest):
+ fd=os.open(path,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW|os.O_NONBLOCK)
+ try:
+  a=os.fstat(fd)
+  assert stat.S_ISREG(a.st_mode) and a.st_nlink==1 and a.st_uid==0 and a.st_size<=limit
+  chunks=[];count=0
+  while True:
+   b=os.read(fd,min(65536,limit+1-count))
+   if not b:break
+   chunks.append(b);count+=len(b);assert count<=limit
+  raw=b''.join(chunks);b=os.fstat(fd)
+  assert count==a.st_size and all(getattr(a,k)==getattr(b,k) for k in STAT_KEYS)
+  assert hashlib.sha256(raw).hexdigest()==digest
+  return raw
+ finally:os.close(fd)
+def write_new(directory,name,data):
+ fd=os.open(name,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_CLOEXEC|os.O_NOFOLLOW,0o600,dir_fd=directory)
+ try:
+  view=memoryview(data)
+  while view:
+   n=os.write(fd,view);assert n>0;view=view[n:]
+  os.fchmod(fd,0o400);os.fsync(fd)
+ finally:os.close(fd)
+ os.fsync(directory)
+GP='/home/alex/work/pocket4-main-current-baseline-01/current_baseline_guard.py'
+gr=read_pinned(GP,65536,'0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679')
+g=types.ModuleType('wechat_readonly_deployment_guard');g.__file__=GP;exec(compile(gr,GP,'exec'),g.__dict__)
+before=g.current_guard()
+prior=Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.rytong.airchina-bound-install-r1/result.json')
+value=json.loads(read_pinned(prior,262144,'0b1dbfa327d23753c5a028ef593d736f4b26cdafb08e7cfd84d2aaa20a98c1d8'))
+assert value['install_verified'] is True and value['outcome_unknown'] is False and value['errors']==[] and value['action_lock_released'] is True
+parent=Path('/home/alex/work/pocket4-launcher-upgrade-20261106-r1')
+worker=zlib.decompress(base64.b64decode('eNq9WltX40iSfvev0GgeVu42AmNwUUzxYLAKvEXZjC9dVevjkyctpbEaWfLqArh7+O8TEZmpi20oZubs1jmFpbxERkZGfHFJ/fUvh1kSH8798FCEj8Z6ky6jsFUzTXMouGdEYbAx0qUwxPM68F0/NaLYv/dDHhwI/36ZGr8a38TVkqdG4kZrYWShJ2Ka4GZxLMLUuM947Nm1Wj8yeHyfraAtaRid0Isj3zsMeeo/wuBoteKhB+3r9YHHUw4tYQpDG8ZaxCs/SfwoNNwlD+9FA1io+WGS8iAAtvwkTWxjDCuu/TAUXs6ggRsQ8eFNbzQeDH/A6sLwV+soTmFQFkpiwNl46SdGNE9E/Aisc8+Dt7C04ZVIObGUZPPfhQssLXmyFImUjdz9fyXGIguCWufui5EIGAKbMZZRALT8NDGunMOuY3h+DNOjeGP4HmzNT30g8uSDwLPUiIFZP7w3MuBDb97GY6hJno1kk9Tgv+1BH3uK/VSw+SYVbuQJ48IYx5nQI4FZkfqr/H3hhmmgX5D3wJ/r19+TKNTPUVJbxNHKWPMUhyhhGXfwmjOR8lQ/l5dIN2uR1GqXnZHD7jrjG+DIPFxGK3HIA/F8+BTFD4fryH0Q6clBwFH4Ij7I1vcxnNDB8dFxu9k8ah/EzcMkymJXHHA/dpdwiAfzCDTqQJ02DnCjIAApMpQXHoC93phy3dFNB5c9OvFc92Or9YHzdlN47XZLtFzR8gQ/4/Nmi39st9yTs+P26dnZwvWa7vHp6enJSbstvNYRhwZF7fLH2BkBvZOz0+N27a5z9aVz7SB9UFUbDsfF81mtzNqk14Xm5lGzeVL7zRmOeoM+vLeOj45qo9513xkSUwtxslicnbrHzdOPzbPWx7bHPfeD6525og0ctVof+aLV8lofPpw2+WlbnJ64H46P2vN2i7dgnFkbDHvXvX7nljm965sx0LSIk5sNT1N7uUnNhmRNhAtQ2webSwOzx+I57UdPujvwefi7z+258B+E2agZ8I864k0ahfe2Frwer5pdAR26LeHhQ8Z9eyX8NOOhnfIHASocinyV5I8/XHxOH22Phyv+kNlzP/DNem3odLpMSRPFu7WtXw1LdTbqta9Obzzp9LXQ31i2dju4+lIoXpyFhwFo26ESwoEHiAAK5CcH3E0BSRIbu83a1853Nhp3BxMUaPP4zPgFDvL4pFareWJhhNGTVT8nEcUizeIwtyw7f8Ax+Qv++QOww85St277SbSI4hVPrboiGETcY3OeCE124cG6UWIDcoZWbjwNbBqwYXfQv/1h/EO+Xd0OnO/OlX7tDz4Pbm8H34r3/iUKoU5003gjF8B/XK6xQNu1Fl696EgAa6RN2yPWGw2da4vbScpWgCl1gjB6zXxg88I4KlrCwA8fsK1ZtCX+HwKbCuvJF4r5k+QBjRZYaJQGwZE3d1gKQBwwqV6lR2uFUVqh1JSMKlizkyU/Pm3TZHspnuHgRQIHkBMCkMgXm/9EMIA41j2Af5rGFm8YD0RFN8ypAQ7YeDD8EKwRROCJR9R6ePLDSD2hLNUjSU09g0zV033+hBLUs1CVWJioV1e/1iWTC/RvQemMYRtuEIFi6W24sDcCZftr5GWBGMOzZSoIZk8CvF+BoUy7TGoRsalo2Iwt/EAwZijpoXZSl3gWrgVGuYZuFHbDKGmvib1mvUEEPB/AmkmCSq5ptoZZrq0cM4m1igNlm3O1NfqhYGvuPvB7+I0jdMVgypbbMOIoSpVFgcN0tONe+M/g6XHe34qgQEYtqyxJDfG/GTRgrJJHA0ZB2EbfK8UQCuFZuAhgzj1yayo+6Hw0mrHhYDBmQ+fvk97Q6WoZwoYh3IlFkgUpiNG1sYVJvUyIKAjqzxd5rKBNIfpzUChaDqA48CCKKg5aLQyUcKCNqpjYoJOWGfKVMAsd9hdyBHL8l4JjEySRE0FbgqUqmFwsRexDsOGHEFrkDVIYWxTk9kAW3cndbe+qM3bYuDO8dsaabIkx0Hz2IDYJbGEKv9KE4JeMCKOfnrSHJcRr3kS+13E7alCx79k2VwgbmjxpVbM4HgZ+mnW+XvauJ4PJiA2G7GtvNOr1r6us0RH5EH3di9gqlppqstOj2WyL6PjHXXl/ipfmEfwzPl0Q0U8GvR6VZ46cIfsfZzhgnbs7oHI5mPS7JTIQi2LMS2LayxFwU+ZEhR6Km6pUFS0Uq3q8QlR6p1RzThBnUcQQ4OaN9XrhBmi7ugMEBdu2msanT0a7Vd/D6U8OAwNbhqEoHUmyAsBjKQQz1rbi40CMUc3yIleDroQj2PTx0clZ+XyQKFAGw7TyRXbOL+8B34ZDMU63zENMBA75en1IqyklzxdjEEmMevDS7Yw7eLCl/ST+fYgBPp4nmjUdkXzS8tfmjudCzznewOTE3KvvimwdZY/q/nVyO+7d3Tra8hgGoZ3xZOgANF0Nht3RLk/skQcZYsqfJvrCLDHPDXPS/9IffOtDZJGT+trpw89QEaJgD8DMX/guREBMul6YOkW9dOPNOo0gwF8vfZeBVshhoBoMMjoMjIQHYz/zIBEvZdRSPFVxCLKdVfKK6NQEULg3BIiMlgQoFSwL04q9lyhV9AvG0XEXorwCax1vW37pZMAUFP1PmAvkpkP7IJOh3j00wRC+dsZXN1t0/RAcqdhCA6RW5hQGiectTnv9rvO9jAo4CcVGrMz2MU+MyvWIVW3zuq1eAfrc4pzhWK62zfqCIiliDhcmlyhZ0U2acvXQdzTUztYYa1tSSS/Mbb1EFnqfJVvdHjizMWALxNCgqbuKepFQJcAidqbEymw/V6XAcO6jlQBmnr+GSdu43LnsKWxvGO2TLWBex/6Kx5urddaZ++T1IJ8PvUqTS08DsKDYfxW0CwuSrniqHPSMjFr7/nPt+YGsrmpAKCUSyGWhE2sI0KOSJoa+GFrRaWG0eo6erPAgDAESGkt4T8mfQk3oyZ8befTBVjyEn5iBIGEE/N3Tp44c+iuH/1IOxlAd5U5JQ/G1EsWginZub1m/13eY8x11tZcHI6OdIE0S/fPhXIvvYVaE9tXQ9IWM194TiKpYDoDz6qbTv3a6rDqT3Q0H/+1cjdH3bTGgQl25eDnehZY09mXO+nrQ+0aEelCmgOo0BKsY9oiL/RFrHqqqoBR0PHoSHlUcVB1GUIS29D1PUFCRZAkksJ5QiUy0XstHEfK5GgyB4q2s+3hqnf/TYPfh/v8t0C0JdE+0S6qbFNLUO1cWrIR7vg2Y2K2WLLa+i447XOdLVmRGmLQP6TFDtGh8nQAJVKUBD7DBeRQFMrOuDkqILRiH4kXHoDrAzQG6VfWL/da5nTj7vKSUCrEFjNLbmwDmRgAzEsEUSMUAlDFoHCSoIvAwYJE0Eb/miGeqgwG7kJcvONCkgAPnv2xb/aM8kwY85Idsk4O0JN6+igOvGehPwaBqhz+Hg7x4zFTxeIMgAOm+KlBFTxTKaFgvCgEKMHWRp9sbAnNP07w2MZPHrNsQ6me4N0htgP9vDvA/lvEsTAX4goydQVwI7rbb+/wZYvkq0+gcQSorODHwLJCCU2XErJ/TCnTiFRf4StlkX32E2K2/KIGsuB/qOhqF6IRRVIdbRXDqUei71jakmQkg0IpjfKvL0brOf4CAeyArIwdzAUwieMoCycFjU/JAy7AsdYEClQcbud6aOJjRLQh0Bn6yzyXdfWFYqcqHTVUv+s5Jj6nqJHndgrC8I2HqjiRRPlndoDCEwgSsZXfAes1UrX2bYnGnwmThQ89RAF8mQUGCupCg+tA2MVWRj2JZLKKrCU2AZ2m0AvZdmJnGGx3wo9ePIy+j7RLRoqsgnIR8nSzBfmH1BOQpoxRNAOKhKE4o3XjJS14LD7F2nnngJeCB7p7gdxkl+LoERIAfFeDAE1aB4acfhRJ/6JoHQuzZnipqUZnEWxge3z+WUl9sWgc8xbymkjAGAM8QktOgiJwXaLasR8pXkb8fFb6HWMtrxYXj8ADf8s25dlckbuxDmhUDTmG57ZL6SjMQhhhVmWGuHT2Flq42m4emqjNT2VyVkXMT3yo7l2JgJUvXltdrllqiUeauGK0k7NKibC5CAQFhMSev2+c172/D7ZI2US5vaQvpcImd9L1S1H4L72RRdlYc5Q4Qoh7n4E0RU0e6N2J+C7rpmPC+zV4gX8RcQ7XQeOc77K/03r+sitZWN5HeNJcN+kDgKh/GdD1xasp6LZO3ZsiupEHV8VJFtn162mo38IL0QlfB6/vI6VvQ/QTB01lYaLF0WbiO7i8KHkFH62qRernoXxAmQ9xP1bWvJ51hd5dT3VFhVlv0+2vb8laY0URzi1C5wF3mIx+1W+euspuXujW5crm7FM0oAUi3QgJwbQhYfExnJWtMjrQkIXV5LrussvVJCHPtG3hQLmAI1rQ1D4EDFFsgLOy1yyyE9M5j6wh836ahXwUIEdK1hC8g9QCqGkJteXJoQCDvpAQwBZbmgIAs2m+jAklS0izwWKtDnqVJEbs23tJ9dcYdDEJ2JZsnspJeYlZyXnQQsqOIv1WYRvHCG7cKmOTFiWDPq0AevdwF5CkCAKckgvUaCOVEc5e+DUkwbmqWwyt5d4atlZyauvVNcj7ktSx5Nt1XhCMaU3n/PCvCuKvJcOj0MfiEwM3pXzlbMVxZruDEYLckTWBgpzu/MqILFaYVr/iyQZ4DBNeFZN7Iqn9GvzgaRtc2RJ0+etATKQ4qaVMeMEvBF5UJkEfAV3OP05Rz+mtD+qo8ts3XD2Z9x6FgRQ+dPy2j8h06HRNtjSZRtobdhcAx4Bs5453qvt4l9tMU2g897Rsju6cVQ9nelfGrAT4d/iIVbTYwtwHH93CBoqpPm/IAcETO7KySl1LBnQJzWerGItDhEdHVF/NGqQti92rvVgmvEnrksCKDAT+kly28kAWj1wOTejWTRE5A+Fh+sNDoqfKkik4LzPeQpqlTJnh/NY96eSc8VRK3fxei0HOX6jJ4urJvZ+7OuJ/VhX4CW1Q/yY+yklrryHo3t/7z5X159e7WS5mGDC642kmjJB36noNBqCTvBxIO4c/OcCU7Cs8b6v9e1QUP4gzpPokqMuObrVKPDrBKRxutcRkeWFJzXjtPVZzJCfgJpQ57qtaS19cUs7hk6VyOAI/Nl/r7SjtVxdR8VIaE8nuwt7Wg9gaz8rU65KenWexUxXh6r7/8ApwUs0qqiow2ClABf1jfEkOULkUs9/IGBfWVUKPkZ1TTTLnb/Xt5l9q9uq+y3RCf06IFHa5YLJBLSNvvYw5Wg0cuStdqsjwKNkwRyvSZNJhuHRQ13TlDjXueyornTOo3ZAYdWW/MFX00e3kf7hSiLMPOrtcpNlASvtwFTsuvB0ed3xyI0QeT4RWEbH3Ijm57vzmsMxnfgIsf/zArNorJm0/fUfHzfQXJ/ehMKdkCTxLDGnrLER2FfePcdtn+SpWqvm3f0qlvU/9F30Qr6xji3S6qUkZ4134Ve6/strxRunTev8edb4RKVQT1sZBeZ+fwSWk0bzqWm9L9CBbxZuXvnkgeZR9bf9k+6lklfbHpMnizm0SAhyV4srYy4t3malbFF6mI/5OkSt+f7Kd68UoSB3vW8bRMCXfPQU/cV8mqBLDi2RXr1LiEUNKhR/zcmScGFbnOd41T1r5K8IT5MAAJ1eqptw7JKGIGY3TZlyQSqzCHl/3Tc0gUNGrsKIu/kKUbVfDfdXN7tfrNysekv+vl9IZk4ROx+AHOLBAgB283xP8XJPVziQGWkUTMLKSPQfFz1deF+FK5bMIy46uSQeVf0JcJ8kM3tLcAgHTP7fZeIVZttPxd4r8pg3fKgdZ7vxgqydoTlli8ohzJSKHoBHErscCvxPcYMN0aUj2dQlusqO+OCcB4YJS8G5dYFONn4dZ2sd840DcBDaP9fivEuy7r7UH6y9NtMe5ZRMZ25COx/o/fH7BRv3M3ugHfCGl973MPMAK16O0lBQTjJRJDB++OYebWV7X4Ab/tZat1YunLSREmWSwYT1zfv5D3ZfitA32/pt8FhIccT+rCMht46OdYxaLrSDjq8IJygde+y4VsGRNPy6QlIFnGdLj4lrpUaPHDVIafiyBLljILLd8WHb1TDs1arQYjtRrSDTdjeAXEmKluwLgPA0cbmLdynv3UkhdE9do/AUzuwy8=',validate=True))
+assert len(worker)==13026 and hashlib.sha256(worker).hexdigest()=='3cddf8dacd65fcfecb64a5c29f013bfb418a90900c9a7b56a72990917d5b9949'
+source=parent/'source-wechat-before-readonly-r1'
+parentfd=os.open(parent,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
+try:
+ os.mkdir(source.name,0o700,dir_fd=parentfd)
+ sourcefd=os.open(source.name,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parentfd)
+ try:
+  assert os.fstat(sourcefd).st_uid==0 and stat.S_IMODE(os.fstat(sourcefd).st_mode)==0o700
+  write_new(sourcefd,'observe_wechat_before_r1.py',worker)
+ finally:os.close(sourcefd)
+ os.fsync(parentfd)
+finally:os.close(parentfd)
+assert g.current_guard()==before
+print(json.dumps({'deployment':{'source':str(source/'observe_wechat_before_r1.py'),'sha256':hashlib.sha256(worker).hexdigest(),'read_only':True},'guard_before_worker':before}),flush=True)
+os.execve('/usr/bin/python3',['/usr/bin/python3','-B','-I',str(source/'observe_wechat_before_r1.py')],{'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C'})

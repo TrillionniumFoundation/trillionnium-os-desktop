@@ -1,0 +1,20 @@
+--- r1/templates/install_owned_helper.py.in
++++ r2/templates/install_owned_helper.py.in
+@@ -79,7 +79,7 @@
+ 
+     def stage(self, data, expected):
+         need(sha(data) == expected and 0 < len(data) <= 2097152, 'ACTUAL_NEW_HELPER_APK')
+-        self.parent = target.open_root('/data/local/tmp', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
++        self.parent = self.target.open_root('/data/local/tmp', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+         self.fds.append(self.parent)
+         os.mkdir(self.name, 0o711, dir_fd=self.parent)
+         self.directory = os.open(self.name, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=self.parent)
+@@ -96,7 +96,7 @@
+         os.fsync(self.file)
+         os.fsync(self.directory)
+         os.fsync(self.parent)
+-        actual, metadata = target.read_file(self.path, len(data), single_link=True)
++        actual, metadata = self.target.read_file(self.path, len(data), single_link=True)
+         held = os.fstat(self.file)
+         need(sha(actual) == expected and held.st_uid == 0 and held.st_nlink == 1 and
+              (metadata['device'],metadata['inode'],metadata['bytes']) == (held.st_dev,held.st_ino,len(data)), 'OWNED_GUEST_APK_IDENTITY')

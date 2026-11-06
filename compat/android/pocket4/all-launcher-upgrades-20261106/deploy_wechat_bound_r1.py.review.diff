@@ -1,0 +1,51 @@
+--- deploy_airchina_bound_r1.py
++++ deploy_wechat_bound_r1.py (blob omitted; full SHA separately verified)
+@@ -31,37 +31,37 @@
+  os.fsync(directory)
+ GP='/home/alex/work/pocket4-main-current-baseline-01/current_baseline_guard.py'
+ gr=read_pinned(GP,65536,'0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679')
+-g=types.ModuleType('airchina_deployment_guard');g.__file__=GP;exec(compile(gr,GP,'exec'),g.__dict__)
++g=types.ModuleType('wechat_deployment_guard');g.__file__=GP;exec(compile(gr,GP,'exec'),g.__dict__)
+ before=g.current_guard()
+-prior_path=Path('/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.lianjia.beike-bound-install-r3/result.json')
+-prior_sha='9659f318870125a739d5fed3e31a8d3c070fb5e2f818ac8882a0f43947d30b91'
++prior_path=Path('/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.rytong.airchina-bound-install-r1/result.json')
++prior_sha='0b1dbfa327d23753c5a028ef593d736f4b26cdafb08e7cfd84d2aaa20a98c1d8'
+ prior=json.loads(read_pinned(prior_path,262144,prior_sha))
+ assert prior['install_verified'] is True and prior['outcome_unknown'] is False and prior['errors']==[]
+-assert prior['action_lock_released'] is True and prior['after']['target']['version_code']==3067100
+-assert prior['after']['base_apk']['sha256']=='c7985ed41b91c782af8acb04b1868419cca8bc1fc52862bf6c89fa86b65c81fb'
++assert prior['action_lock_released'] is True and prior['after']['target']['version_code']==75300
++assert prior['after']['base_apk']['sha256']=='5c15462878b578d774f3a1e66c93329158791280c2a94237ac59224c019384e3'
+ parent=Path('/home/alex/work/pocket4-launcher-upgrade-20261106-r1')
+ previous_source=parent/'source-beike-bound-install-r3'
+ read_pinned(previous_source/'install_beike_bound_r3.py',65536,'166a732bcd8af19277f3b51f6611581a16c98527e6ba9b7a927f23f2d6bf2837')
+ reader=read_pinned(previous_source/'collect_readonly.py',65536,'04dcc9337aa61ed663e3ce3dea8ab13a963c4826588fcd1c25554466ed30acd1')
+ assert len(reader)==48526
+ worker=<COMPRESSED_FULL_SOURCE_SHA_PINNED>
+-assert len(worker)==40295 and hashlib.sha256(worker).hexdigest()=='fa1327bed4b40096839e81e4b9cb7142f2ebc61b7d7e106d6e3f5d678ee447c2'
+-source=parent/'source-airchina-bound-install-r1'
++assert len(worker)==44618 and hashlib.sha256(worker).hexdigest()=='07cab137e56de37ffa512609edc5ff7ab5412fe04882b5ab50e344d35e1b388e'
++source=parent/'source-wechat-bound-install-r1'
+ parentfd=os.open(parent,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC)
+ try:
+  os.mkdir(source.name,0o700,dir_fd=parentfd)
+  sourcefd=os.open(source.name,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC,dir_fd=parentfd)
+  try:
+   assert os.fstat(sourcefd).st_uid==0 and stat.S_IMODE(os.fstat(sourcefd).st_mode)==0o700
+-  write_new(sourcefd,'install_airchina_bound_r1.py',worker)
++  write_new(sourcefd,'install_wechat_bound_r1.py',worker)
+   write_new(sourcefd,'collect_readonly.py',reader)
+-  manifest={'schema':'pocket4-airchina-r1-source-deployment-v1','worker':{'path':str(source/'install_airchina_bound_r1.py'),'bytes':len(worker),'sha256':hashlib.sha256(worker).hexdigest()},'reader':{'bytes':len(reader),'sha256':hashlib.sha256(reader).hexdigest()},'prior_Beike_upgrade':{'path':str(prior_path),'sha256':prior_sha,'install_verified':True,'outcome_unknown':False,'durable_terminal_job':'1a1b083d024-fc05-7115'},'epoch_sha256':before['Main_epoch_sha256'],'automatic_retry':False,'root_reviewed_source_sha256':'fa1327bed4b40096839e81e4b9cb7142f2ebc61b7d7e106d6e3f5d678ee447c2'}
++  manifest={'schema':'pocket4-wechat-r1-source-deployment-v1','worker':{'path':str(source/'install_wechat_bound_r1.py'),'bytes':len(worker),'sha256':hashlib.sha256(worker).hexdigest()},'reader':{'bytes':len(reader),'sha256':hashlib.sha256(reader).hexdigest()},'prior_AirChina_upgrade':{'path':str(prior_path),'sha256':prior_sha,'install_verified':True,'outcome_unknown':False,'durable_terminal_job':'1a1b0943dea-fc05-7179'},'epoch_sha256':before['Main_epoch_sha256'],'automatic_retry':False,'root_reviewed_source_sha256':'07cab137e56de37ffa512609edc5ff7ab5412fe04882b5ab50e344d35e1b388e'}
+   write_new(sourcefd,'deployment.json',(json.dumps(manifest,sort_keys=True,indent=2)+'\n').encode('ascii'))
+  finally:os.close(sourcefd)
+  os.fsync(parentfd)
+ finally:os.close(parentfd)
+ assert g.current_guard()==before
+ read_pinned(prior_path,262144,prior_sha)
+-read_pinned(source/'install_airchina_bound_r1.py',65536,'fa1327bed4b40096839e81e4b9cb7142f2ebc61b7d7e106d6e3f5d678ee447c2')
++read_pinned(source/'install_wechat_bound_r1.py',65536,'07cab137e56de37ffa512609edc5ff7ab5412fe04882b5ab50e344d35e1b388e')
+ print(json.dumps({'deployment':manifest,'guard_before_worker':before}),flush=True)
+-os.execve('/usr/bin/python3',['/usr/bin/python3','-B','-I',str(source/'install_airchina_bound_r1.py')],{'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C'})
++os.execve('/usr/bin/python3',['/usr/bin/python3','-B','-I',str(source/'install_wechat_bound_r1.py')],{'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C'})

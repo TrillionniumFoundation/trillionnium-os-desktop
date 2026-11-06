@@ -1,0 +1,66 @@
+class Flow:
+    def __init__(self, args):
+        self.source, self.contract = source_contract(args.adapter_manifest_sha256)
+        self.current_guard = self.source.load_guard()
+        self.source.runtime_and_app_guard(self.current_guard)
+        self.binding = self.transport = None
+        self._android_mutation = self._private_backend_transport = False
+        self.root = args.flow_dir
+        require(self.root.is_absolute() and self.root.resolve() == self.root, 'CANONICAL_NEW_FLOW_REQUIRED')
+        if args.operation == 'init':
+            self.root.mkdir(mode=0o700)
+        info = self.root.lstat()
+        require(stat.S_ISDIR(info.st_mode) and info.st_uid == 0 and not info.st_mode & 0o077,
+                'FLOW_DIRECTORY_MUST_BE_PRIVATE_AND_ROOT_OWNED')
+        self.lock = lock_file(self.root / 'flow.lock')
+        self.epoch = load_module(args.epoch_module, EPOCH_SHA, 'successor_flow_epoch')
+        self.app = load_module(APP, APP_SHA, 'successor_existing_android_app')
+        self.tasks = task_functions(args.task_source)
+        self.step = None
+        self.action_attempted = False
+        self.command_index = 0
+        self.activation = self.source.activation()
+        if args.operation == 'init':
+            require(str(args.current_baseline) == self.source.BINDING['baseline']['path'] and
+                    args.baseline_sha256 == self.source.BASELINE_SHA and args.package == self.source.PACKAGE
+                    and args.component == self.source.COMPONENT, 'EXACT_NEW_BASELINE_AND_PACKAGE_INPUT_REQUIRED')
+            raw, qualification_raw = self.source.actual_documents()
+            self.scope = {'schema':'pocket4-successor-recorder-scope-v1',
+                          'current_baseline_schema':self.source.BASELINE_SCHEMA,
+                          'package':self.source.PACKAGE, 'component':self.source.COMPONENT,
+                          'uid':self.source.UID, 'user':0,
+                          'current_baseline_sha256':self.source.BASELINE_SHA,
+                          'current_baseline_qualification_sha256':self.source.BASELINE_QUALIFICATION_SHA,
+                          'epoch_sha256':self.source.MAIN_EPOCH,
+                          'runtime_epoch_sha256':self.source.BINDING['runtime_epoch_sha256'],
+                          'app_scope_sha256':self.source.BINDING['app_scope']['sha256'],
+                          'created_utc':now(), 'adapter_manifest_sha256':self.contract.sha256,
+                          'recorder_sha256':digest(read_regular(__file__)), 'automatic_retry':False}
+            self.guard()
+            write_new(self.root / 'baseline.json', raw)
+            write_new(self.root / 'baseline-qualification.json', qualification_raw)
+            write_new(self.root / 'scope.json', self.scope)
+            (self.root / 'steps').mkdir(mode=0o700)
+            (self.root / 'reconciliations').mkdir(mode=0o700)
+        else:
+            self.scope = json.loads(read_regular(self.root / 'scope.json'))
+            self.source.verify_saved_baseline(self.root)
+            require(digest(read_regular(__file__)) == self.scope['recorder_sha256'], 'RECORDER_CHANGED_MID_FLOW')
+        self.source.verify_scope(self.scope, self.activation, self.contract)
+
+    def guard(self, attempted=False):
+        self.contract.verify()
+        self.source.verify_scope(self.scope, self.activation, self.contract)
+        self.source.runtime_and_app_guard(self.current_guard, attempted)
+        self.epoch.require_unchanged(self.activation['framework_epoch'], action_attempted=attempted)
+        for path, pin in ((APP, APP_SHA), (BACKEND, BACKEND_SHA)):
+            require(digest(read_regular(path)) == pin, 'EXISTING_SIDECAR_HELPER_CHANGED')
+        if self.binding is not None:
+            self.binding.verify()
+
+    def ui(self, request):
+        # Mutations use the separately built owned helper's fresh inspection,
+        # exact text policy and restore checks. Existing CLI observations remain.
+        require(request.get('op') in ('dump', 'find', 'observe'),
+                'MUTATION_REQUIRES_NEW_OWNED_HELPER_SCOPE')
+        return self._existing_ui_observation(request)

@@ -1,10 +1,15 @@
 {
-  "schema": "pocket4-all-launcher-progress-checkpoint-v1",
-  "generated_utc": "2026-11-06T11:19:02.361097+00:00",
+  "schema": "pocket4-all-launcher-progress-checkpoint-v2",
+  "generated_utc": "2026-11-06T12:02:58.757701+00:00",
   "scope": "ALL_45_OBSERVED_NATIVE_LAUNCHER_PACKAGES",
   "catalog_current_android_resolver_proven": false,
-  "observed_runtime": "Pocket4 DroidLoom Android 17, SDK 37, Android user 0",
-  "runtime_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+  "last_qualified_observed_runtime": "Pocket4 DroidLoom Android 17, SDK 37, Android user 0",
+  "runtime_epoch_sha256": null,
+  "last_qualified_runtime_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+  "current_runtime_identity_qualified": false,
+  "old_guard_runtime_usable": false,
+  "runtime_actions_frozen": true,
+  "current_runtime_repair_phase": "EXACT_OLD_ORPHAN_RETIRED_AWAITING_SUCCESSOR_QUALIFICATION",
   "redroid": "RETIRED_NO_CURRENT_TARGET_NO_NEW_TEST_COVERAGE",
   "inventory_source": {
     "path": "reference/current-all-launcher-metadata.json",
@@ -16,8 +21,15 @@
     "bytes": 624217,
     "sha256": "d16a51f06be2b4ba2b5a61991dd649d481d1fdf53ff1ccf570ea23367611cb19"
   },
-  "installed_and_verified_updates": 3,
+  "completed_upgrade_index": {
+    "path": "reference/completed-native-upgrades-20261106.json",
+    "bytes": 18026,
+    "sha256": "7b96af788177cff0f26948da9de6e99e613012faf0cbaf2795b568e1057f9d41"
+  },
+  "installed_and_verified_updates": 4,
   "whole_app_production_passes": 0,
+  "production_ready_app_count": 0,
+  "production_ready_app_denominator": 45,
   "test_cases_planned": 136,
   "framework": {
     "provider_builder_compiled_and_qualified": true,
@@ -27,8 +39,409 @@
     "required_bytes": 16106127360,
     "production_ready": false
   },
-  "native_recovery": "READONLY_PREFLIGHT_PASSED_EXECUTION_PENDING",
-  "qa_successor": "SOURCE_CANDIDATE_ONLY_NOT_BUILT_INSTALLED_OR_ADMITTED",
+  "native_recovery": {
+    "state": "RESTART_ATTEMPTED_UNKNOWN_OLD_CELL_OR_NATIVE_OWNER_STILL_ALIVE",
+    "job_id": "1a1b0a21e45-fc05-71db",
+    "evidence": {
+      "path": "recovery/execute-r1-result.json",
+      "bytes": 1010,
+      "sha256": "eaf9a964fc33b77e3a8841a51b5b2e4cb4f15fa4edd247f943a336f8bbdcac0f"
+    },
+    "terminal": {
+      "path": "recovery/execute-r1-terminal.json",
+      "bytes": 729,
+      "sha256": "f02b409f80900d9d142827250e2751db0877016ba2c1a30e139fa8383bd0b718"
+    },
+    "restart_attempted": true,
+    "restart_count": 1,
+    "preflight_passed": true,
+    "native_response": {
+      "ok": true,
+      "state": "running",
+      "message": "started cell u1000",
+      "host_pid": 2747275
+    },
+    "native_response_is_not_identity_qualification": true,
+    "failure": {
+      "code": "OLD_CELL_OR_NATIVE_OWNER_STILL_ALIVE",
+      "phase": "old_native_owner_pidfd_deaths",
+      "type": "Rejected"
+    },
+    "outcome_unknown": true,
+    "automatic_retry": false,
+    "historical_unknown_results_preserved": true,
+    "observation_fds": {
+      "acquired": 907,
+      "closed": 907,
+      "errors": [],
+      "remaining": 0
+    },
+    "lease_fds": {
+      "acquired": 104,
+      "closed": 104,
+      "errors": [],
+      "remaining": 0
+    },
+    "target_count": 46,
+    "extra_nonlauncher_target": "local.pocket4.actions.v2",
+    "old_guard_runtime_usable": false,
+    "successor_identity_qualified": false,
+    "successor_guard_published": false,
+    "runtime_actions_frozen": true,
+    "diagnostic": {
+      "evidence": {
+        "path": "recovery/failed-r1-diagnostic.stdout.raw.json",
+        "bytes": 42276,
+        "sha256": "bc9be10c98bc3a6ea9c4a027e8aafb68c1fa4de53462b9826c57bc54d0e11089"
+      },
+      "terminal": {
+        "path": "recovery/failed-r1-diagnostic-terminal.json",
+        "bytes": 734,
+        "sha256": "5220b3718db66c7214d1ee3cc34dfcbdc195b2ad22b4ebe783423169b31e6db7"
+      },
+      "current_native_status": {
+        "ok": true,
+        "state": "running",
+        "message": "cell u1000 is running from /etc/droidloom/cell.json; Android is ready",
+        "host_pid": 2747275
+      },
+      "current_status_is_not_qualified_identity": true,
+      "old_android_init": {
+        "host_pid": 3588093,
+        "start_ticks": 80797014,
+        "same_original_identity": true,
+        "process_state": "S",
+        "new_observation_not_original_pidfd_proof": true
+      },
+      "other_old_roles_absent_in_this_read": [
+        "composer",
+        "launcher",
+        "surfaceflinger",
+        "system_server",
+        "zygote64"
+      ],
+      "optional_successor_files_present": {
+        "baseline.private.json": false,
+        "current_baseline_guard.py": false,
+        "retired-lifecycle.private.json": false,
+        "successor-candidate.private.json": false
+      },
+      "original_unknown_preserved": true
+    },
+    "production_ready": false
+  },
+  "independent_orphan_retirement": {
+    "state": "EXACT_OLD_ORPHAN_RETIRED_SUCCESSOR_IDENTITY_STILL_UNQUALIFIED",
+    "job_id": "1a1b0b7efb4-fc05-7259",
+    "evidence": {
+      "path": "recovery/orphan-retirement-r1-result.json",
+      "bytes": 3043,
+      "sha256": "4c322a72ea61f3e7ff7e9c369c7996256beed8c74be1cd8c4b10524da285008d"
+    },
+    "raw_stdout": {
+      "path": "recovery/orphan-retirement-r1.stdout.raw.json",
+      "bytes": 3236,
+      "sha256": "a95fdabf268c530920468d987622565d346a4ebf5618cb12020d690d8013ade3"
+    },
+    "terminal": {
+      "path": "recovery/orphan-retirement-r1-terminal.json",
+      "bytes": 732,
+      "sha256": "552a0f5d9f07f8203431ef170a58e9c5cbb92ee742833711f19a923900ba97b6"
+    },
+    "source": {
+      "path": "recovery/retire_exact_orphan_r1.py",
+      "bytes": 17139,
+      "sha256": "bf9c4d0666cfe32b5025a52d4538faea4d46ddf7d338b05f7fb858944c85d40b"
+    },
+    "packet": {
+      "path": "recovery/retire-orphan-packet-r1.json",
+      "bytes": 50621,
+      "sha256": "c380a200f7e91bd509503fdde2d8ea1809c6769e44bb401f6fd87b56a4694ea5"
+    },
+    "remote_result": {
+      "bytes": 3043,
+      "path": "/home/alex/work/pocket4-orphan-cell-retirement-20261106-r1/result.json",
+      "sha256": "4c322a72ea61f3e7ff7e9c369c7996256beed8c74be1cd8c4b10524da285008d"
+    },
+    "verified": true,
+    "outcome_unknown": false,
+    "signal_target": "held_pidfd_for_old_android_init_only",
+    "signal": "SIGKILL",
+    "signal_calls": 1,
+    "restart_count": 0,
+    "retired_old_init_host_pid": 3588093,
+    "retired_old_parent_host_pid": 3588092,
+    "fresh_repair_pidfd_deaths": {
+      "orphan_init": true,
+      "orphan_parent": true
+    },
+    "old_pid_namespace_members_after": [],
+    "new_launcher_host_pid": 2747275,
+    "new_init_host_pid": 2747279,
+    "new_launcher_new_init_daemon_presenter_unchanged": true,
+    "observation_fds": {
+      "acquired": 6,
+      "closed": 6,
+      "errors": [],
+      "remaining": 0
+    },
+    "lease_fds": {
+      "acquired": 104,
+      "closed": 104,
+      "errors": [],
+      "remaining": 0
+    },
+    "original_restart_failed_unknown_unchanged": true,
+    "original_pre_restart_pidfd_evidence_recreated": false,
+    "new_guard_published": false,
+    "identity_qualified": false,
+    "production_ready": false
+  },
+  "current_cell_readonly_observation": {
+    "evidence": {
+      "path": "recovery/current-cell-after-retirement-r1.stdout.raw.json",
+      "bytes": 49955,
+      "sha256": "8939bf273b3feb6d5fb4360d2739e087ad42c1bb07ec692913eafee433a3d189"
+    },
+    "terminal": {
+      "path": "recovery/current-cell-after-retirement-r1-terminal.json",
+      "bytes": 734,
+      "sha256": "b35dd48af3c740beb89170d2b26b45a095a92c89dc0c2bb65469f6709cab5ed0"
+    },
+    "job_id": "1a1b0b9ff7a-fc05-7262",
+    "five_android_roles_same_in_two_samples": true,
+    "roles": [
+      {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service"
+        ],
+        "cmdline": [
+          "/init",
+          "second_stage"
+        ],
+        "executable": "/system/bin/init",
+        "host_pid": 2747279,
+        "namespace_pids": [
+          2747279,
+          1
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533828]",
+          "pid": "pid:[4026533853]"
+        },
+        "parent_host_pid": 2747278,
+        "start_ticks": 99050422,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service/system/uid_1000/pid_661"
+        ],
+        "cmdline": [
+          "/vendor/bin/hw/android.hardware.graphics.composer3-service.droidloom"
+        ],
+        "executable": "/vendor/bin/hw/android.hardware.graphics.composer3-service.droidloom",
+        "host_pid": 2748094,
+        "namespace_pids": [
+          2748094,
+          661
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533828]",
+          "pid": "pid:[4026533853]"
+        },
+        "parent_host_pid": 2747279,
+        "start_ticks": 99050555,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service/system/uid_0/pid_819"
+        ],
+        "cmdline": [
+          "zygote64"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 2748689,
+        "namespace_pids": [
+          2748689,
+          819
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533239]",
+          "pid": "pid:[4026533853]"
+        },
+        "parent_host_pid": 2747279,
+        "start_ticks": 99051055,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service/system/uid_1000/pid_838"
+        ],
+        "cmdline": [
+          "/system/bin/surfaceflinger"
+        ],
+        "executable": "/system/bin/surfaceflinger",
+        "host_pid": 2748708,
+        "namespace_pids": [
+          2748708,
+          838
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533828]",
+          "pid": "pid:[4026533853]"
+        },
+        "parent_host_pid": 2747279,
+        "start_ticks": 99051057,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      },
+      {
+        "cgroup": [
+          "0::/system.slice/droidloomd.service/system/uid_1000/pid_928"
+        ],
+        "cmdline": [
+          "system_server"
+        ],
+        "executable": "/system/bin/app_process64",
+        "host_pid": 2748837,
+        "namespace_pids": [
+          2748837,
+          928
+        ],
+        "namespaces": {
+          "mnt": "mnt:[4026533371]",
+          "pid": "pid:[4026533853]"
+        },
+        "parent_host_pid": 2748689,
+        "start_ticks": 99051107,
+        "uids": [
+          1000,
+          1000,
+          1000,
+          1000
+        ]
+      }
+    ],
+    "owner": {
+      "cgroup": [
+        "0::/system.slice/droidloomd.service"
+      ],
+      "cmdline": [
+        "/usr/bin/python3",
+        "-I",
+        "/usr/local/libexec/droidloom-compat/unshare",
+        "--mount",
+        "--pid",
+        "--mount-proc",
+        "--ipc",
+        "--uts",
+        "--fork",
+        "--kill-child=TERM",
+        "--forward-signals",
+        "--propagation=private",
+        "/usr/bin/droidloom-supervisor",
+        "development-enter",
+        "--spec",
+        "/etc/droidloom/cell.json"
+      ],
+      "executable": "/usr/bin/python3.14",
+      "host_pid": 2747275,
+      "namespace_pids": [
+        2747275
+      ],
+      "namespaces": {
+        "mnt": "mnt:[4026533826]",
+        "pid": "pid:[4026531836]"
+      },
+      "parent_host_pid": 3588022,
+      "start_ticks": 99050420,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    "identity_qualified": false,
+    "guard_publication": false
+  },
+  "qa_successor": {
+    "state": "R2_GENERATOR_SOURCE_DEPLOYED_HOST_STAGE_PASSED_NO_SUCCESSOR_BINDING_OR_HELPER_INSTALL",
+    "job_id": "1a1b09dad9f-fc05-71bb",
+    "evidence": {
+      "path": "successor_qa/actual/stage-r2.stdout.raw.jsonl",
+      "bytes": 3926,
+      "sha256": "ef8ab39b2f5ff6aecda106d5c4c3fb98a2a5dcca14b551bd1252901adaa03bf7"
+    },
+    "terminal": {
+      "path": "successor_qa/actual/stage-r2-terminal.json",
+      "bytes": 732,
+      "sha256": "1e4078bba153339ef592aad5ddbe4cd6015394fcd5d1b4a2cedffb39552b2d11"
+    },
+    "remote_source_root": "/home/alex/work/pocket4-successor-qa-generator-source-r2-20261106-01",
+    "remote_result": {
+      "bytes": 3735,
+      "path": "/home/alex/work/pocket4-successor-qa-generator-source-r2-20261106-01/result.json",
+      "sha256": "13624db702a3250db903975bc3d0b0ba395fad49feb956b6eff4e626eadf33a1"
+    },
+    "source_closure_readback_passed": true,
+    "generator_manifest_sha256": "ad32c98479cbb763c6c7728336f65a3e10dd1826de17ea43d0662599f7ce7436",
+    "payload_sha256": "d6307b441bc6ef03529c9297d8de8870f0a1638bb32c6088c86ae3f7e0808549",
+    "host_stage_tests_passed": 4,
+    "host_stage_tests_skipped": 0,
+    "host_stage_cases": [
+      {
+        "name": "root_positive_real_write_readback",
+        "passed": true,
+        "skipped": false
+      },
+      {
+        "name": "complete_or_owner_rejected_stage_all_three_fds_closed",
+        "passed": true,
+        "skipped": false
+      },
+      {
+        "name": "partial_write_real_files_all_three_fds_closed",
+        "passed": true,
+        "skipped": false
+      },
+      {
+        "name": "readback_real_files_all_three_fds_closed",
+        "passed": true,
+        "skipped": false
+      }
+    ],
+    "actual_host_root_file_tests": true,
+    "host_fd_count_unchanged": true,
+    "source_generation_executed": false,
+    "generated_successor_bindings": 0,
+    "helper_installs": 0,
+    "actual_android_paths_opened": 0,
+    "new_runtime_identity_qualified": false,
+    "UI_or_install_runtime_admitted": false,
+    "production_ready": false
+  },
   "cleanup": {
     "eligible": false,
     "performed": false,
@@ -52,6 +465,9 @@
         "e41d0b302b56ee0a44ab0fd9da6fa712b0d2a60344ef2e85459fd75396e34971"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -74,6 +490,9 @@
         "53a2508d2efcef95deadf8ff74ef41eadcd1e96fbcc49b53d741787806c01904"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -95,6 +514,9 @@
         "2f19adeb284eb36f7f07786152b9a1d14b21653203ad0b04ebbf9c73ab6d7625"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -116,6 +538,9 @@
         "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -137,6 +562,9 @@
         "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -158,6 +586,9 @@
         "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -179,6 +610,9 @@
         "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -200,6 +634,9 @@
         "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -221,6 +658,9 @@
         "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -242,6 +682,9 @@
         "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -263,6 +706,9 @@
         "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -284,6 +730,9 @@
         "28bbfe4a7b97e74681dc55c2fbb6ccb8d6c74963733f6af6ae74d8c3a6e879fd"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -305,6 +754,9 @@
         "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -326,6 +778,9 @@
         "c8a2e9bccf597c2fb6dc66bee293fc13f2fc47ec77bc6b2b0d52c11f51192ab8"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -347,6 +802,9 @@
         "83e0e906d7f06f4e2ed11f7fcf51962a72543d1af41899fead87f546afccce9b"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -368,6 +826,9 @@
         "bef72da965ea0b91d0d69aae9aae41bcc232fad8643adefcc85e5870db405cfa"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -389,6 +850,9 @@
         "1428a295a31d63d9e9361cf6c7b71a76b71bf5ff254f7549c7e6d9341e476354"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -411,6 +875,9 @@
         "9bd06727e62796c0130eb6dab39b73157451582cbd138e86c468acc395d14165"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -432,6 +899,9 @@
         "e9d15336458a6e042394a586276be5a1c1ddc77c2d70378662fd5e2c62910700"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -453,6 +923,9 @@
         "889135370ff205e8640a08c98c5b19c8a6855b1728f3b245459191db521374d7"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -474,6 +947,9 @@
         "1448dc9480a27e52b06c886b3f6386f2b122b115b1df1f156b81b9aebcc73163"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -495,22 +971,54 @@
         "a5fdbfa8a769a9f2041c7f6706a52b8d981c0f12a6f10e989a9f583a43ed217d"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
-      "upgrade_state": "CANDIDATE_REJECTED",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
+      "upgrade_state": "VERIFIED_NEW_CANDIDATE_AWAITING_NEW_RUNTIME_INSTALL",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
       "cleanup_eligible": false,
       "candidate": {
-        "manifest": null,
-        "status": "VERIFICATION_FAILED",
-        "signature_verified": false,
-        "signer_matches_historical_installed_reference": null,
-        "matches_latest_observed_store_version": null,
-        "evidence": {
-          "path": "reference/launcher-candidate-verifications-r2.json",
-          "bytes": 7591,
-          "sha256": "4c7d115102da373d43ae4955985c4c4ea4e9babea83cc37721ec65976470d4fb"
+        "manifest": {
+          "package": "com.jingdong.app.mall",
+          "version_code": 102918,
+          "version_name": "16.1.50",
+          "min_sdk": "21",
+          "target_sdk": "36",
+          "native_abis": [
+            "arm64-v8a"
+          ]
         },
-        "failure": "APK_PACKAGE_ID_MISMATCH"
+        "status": "VERIFIED_OFFICIAL_CANDIDATE_NOT_INSTALLED",
+        "signature_verified": true,
+        "signer_matches_historical_installed_reference": true,
+        "matches_latest_observed_store_version": true,
+        "evidence": {
+          "path": "reference/jd-source-s9-verification.stdout.raw.jsonl",
+          "bytes": 1994,
+          "sha256": "61b10bca992c2c9b5013e6964d024ff3694e1d72606a11373fbc4b226fbcbe4c"
+        },
+        "apk": {
+          "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-jd-resume-s9/com.jingdong.app.mall.apk",
+          "bytes": 85156480,
+          "sha256": "e15803c164eff715456d54e9b74547cd9c9f80fe851e505d9706aa48a439f4aa",
+          "stat": {
+            "st_dev": 66306,
+            "st_ino": 37388907,
+            "st_mode": 33152,
+            "st_uid": 1000,
+            "st_gid": 1000,
+            "st_nlink": 1,
+            "st_size": 85156480,
+            "st_mtime_ns": 1793964601398106498,
+            "st_ctime_ns": 1793964601485110772
+          }
+        },
+        "terminal": {
+          "path": "reference/jd-source-s9-verification-terminal.raw.json",
+          "bytes": 732,
+          "sha256": "dff2721f49535be017b0053874d015b100a6e5b561b006f5d771228e320f85e5"
+        }
       }
     },
     {
@@ -529,6 +1037,9 @@
         "0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "INSTALLED_AND_BYTE_VERIFIED_BUSINESS_QA_PENDING",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -553,7 +1064,24 @@
           "path": "reference/beike-official-verification.json",
           "bytes": 1931,
           "sha256": "f54eecd5ffca3ae31b5e8eb68d9a155a5159fb800e77a9e39976668d2b358306"
-        }
+        },
+        "apk": {
+          "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.lianjia.beike.apk",
+          "bytes": 228933721,
+          "sha256": "c7985ed41b91c782af8acb04b1868419cca8bc1fc52862bf6c89fa86b65c81fb",
+          "stat": {
+            "st_dev": 66306,
+            "st_ino": 34785242,
+            "st_mode": 33152,
+            "st_uid": 1000,
+            "st_gid": 1000,
+            "st_nlink": 1,
+            "st_size": 228933721,
+            "st_mtime_ns": 1793958953453465022,
+            "st_ctime_ns": 1793958953594469952
+          }
+        },
+        "terminal": null
       },
       "installed_apk": {
         "bytes": 228933721,
@@ -578,8 +1106,46 @@
         "bytes": 37861,
         "sha256": "323e82258b4feba4394885de7bccea3dd898ac175267882b2a3c3a5e787aa622"
       },
+      "install_terminal": {
+        "path": "reference/beike-install-r3-terminal.json",
+        "bytes": 734,
+        "sha256": "54c4dd507615576388d123bf082374ebfb52bf9532d3c4c741e7c539e0b2214e"
+      },
       "install_job_id": "1a1b083d024-fc05-7115",
-      "install_finished_utc": "2026-11-06T11:00:06.045434+00:00"
+      "install_finished_utc": "2026-11-06T11:00:06.045434+00:00",
+      "installed_observation_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "data_directories": [
+        {
+          "identity": {
+            "dev": 1811,
+            "gid": 10143,
+            "ino": 152786,
+            "mode": 16832,
+            "uid": 10143
+          },
+          "path": "/data/user/0/com.lianjia.beike"
+        },
+        {
+          "identity": {
+            "dev": 1811,
+            "gid": 10143,
+            "ino": 152789,
+            "mode": 16832,
+            "uid": 10143
+          },
+          "path": "/data/user_de/0/com.lianjia.beike"
+        }
+      ],
+      "install_outcome_unknown": false,
+      "install_descriptors": {
+        "acquired": 666,
+        "close_attempts": 666,
+        "closed": 666,
+        "errors": [],
+        "peak": 25,
+        "remaining": 0
+      },
+      "install_action_lock_released": true
     },
     {
       "package": "com.marriott.mrt",
@@ -597,6 +1163,9 @@
         "fdfc71760356174de3c1405a54b772efd2564a4dde91eae7eff3a02de0ffd059"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -618,6 +1187,9 @@
         "cf257fbcc5b17b162a2fb79a7d76f5aabd0e1c101b86838e14d0151f2ee7bcb0"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -639,6 +1211,9 @@
         "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "INSTALLED_AND_BYTE_VERIFIED_BUSINESS_QA_PENDING",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -664,7 +1239,24 @@
           "path": "reference/launcher-candidate-verifications-r2.json",
           "bytes": 7591,
           "sha256": "4c7d115102da373d43ae4955985c4c4ea4e9babea83cc37721ec65976470d4fb"
-        }
+        },
+        "apk": {
+          "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.rytong.airchina.apk",
+          "bytes": 207082090,
+          "sha256": "5c15462878b578d774f3a1e66c93329158791280c2a94237ac59224c019384e3",
+          "stat": {
+            "st_dev": 66306,
+            "st_ino": 53525968,
+            "st_mode": 33152,
+            "st_uid": 1000,
+            "st_gid": 1000,
+            "st_nlink": 1,
+            "st_size": 207082090,
+            "st_mtime_ns": 1793961812144593708,
+            "st_ctime_ns": 1793961812173594997
+          }
+        },
+        "terminal": null
       },
       "installed_apk": {
         "bytes": 207082090,
@@ -689,8 +1281,46 @@
         "bytes": 37895,
         "sha256": "dabbb1fbdf498779afa032f208355f9c33a107ca764b7e39b934caea78ce5987"
       },
+      "install_terminal": {
+        "path": "reference/airchina-install-r1-terminal.json",
+        "bytes": 734,
+        "sha256": "587dd1cacdf2942eead2dd5e227eb88bc4f38b23d40f3ed8b236e0b79479142b"
+      },
       "install_job_id": "1a1b0943dea-fc05-7179",
-      "install_finished_utc": "2026-11-06T11:17:53.712753+00:00"
+      "install_finished_utc": "2026-11-06T11:17:53.712753+00:00",
+      "installed_observation_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "data_directories": [
+        {
+          "identity": {
+            "dev": 1811,
+            "gid": 10132,
+            "ino": 142841,
+            "mode": 16832,
+            "uid": 10132
+          },
+          "path": "/data/user/0/com.rytong.airchina"
+        },
+        {
+          "identity": {
+            "dev": 1811,
+            "gid": 10132,
+            "ino": 142844,
+            "mode": 16832,
+            "uid": 10132
+          },
+          "path": "/data/user_de/0/com.rytong.airchina"
+        }
+      ],
+      "install_outcome_unknown": false,
+      "install_descriptors": {
+        "acquired": 666,
+        "close_attempts": 666,
+        "closed": 666,
+        "errors": [],
+        "peak": 25,
+        "remaining": 0
+      },
+      "install_action_lock_released": true
     },
     {
       "package": "com.rytong.ceair",
@@ -708,6 +1338,9 @@
         "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "INSTALLED_AND_BYTE_VERIFIED_BUSINESS_QA_PENDING",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -732,7 +1365,24 @@
           "path": "reference/ceair-official-verification.json",
           "bytes": 1934,
           "sha256": "10814fc51a4964ed3c1199d13522fc9f3b0ded34b5b5a6f5af570229631ded22"
-        }
+        },
+        "apk": {
+          "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.rytong.ceair.apk",
+          "bytes": 220804847,
+          "sha256": "a6da8d746f98cae884f6b0137b5c7e8412836adf75530b763dae1536c75522ce",
+          "stat": {
+            "st_dev": 66306,
+            "st_ino": 34784841,
+            "st_mode": 33152,
+            "st_uid": 1000,
+            "st_gid": 1000,
+            "st_nlink": 1,
+            "st_size": 220804847,
+            "st_mtime_ns": 1793958878082827252,
+            "st_ctime_ns": 1793958878252833207
+          }
+        },
+        "terminal": null
       },
       "installed_apk": {
         "bytes": 220804847,
@@ -757,8 +1407,46 @@
         "bytes": 37687,
         "sha256": "2474723bbe119c6e03646605e94f99ab9b000810ee74c983438fb7b2571e698c"
       },
+      "install_terminal": {
+        "path": "reference/ceair-install-r1-terminal.json",
+        "bytes": 734,
+        "sha256": "2a87d5a265bc44af6a2e36b821d855c27e82430c3f37eca58bd83cdb9703a837"
+      },
       "install_job_id": "1a1b092eb36-fc05-7170",
-      "install_finished_utc": "2026-11-06T11:16:24.596195+00:00"
+      "install_finished_utc": "2026-11-06T11:16:24.596195+00:00",
+      "installed_observation_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "data_directories": [
+        {
+          "identity": {
+            "dev": 1811,
+            "gid": 10145,
+            "ino": 152803,
+            "mode": 16832,
+            "uid": 10145
+          },
+          "path": "/data/user/0/com.rytong.ceair"
+        },
+        {
+          "identity": {
+            "dev": 1811,
+            "gid": 10145,
+            "ino": 152806,
+            "mode": 16832,
+            "uid": 10145
+          },
+          "path": "/data/user_de/0/com.rytong.ceair"
+        }
+      ],
+      "install_outcome_unknown": false,
+      "install_descriptors": {
+        "acquired": 666,
+        "close_attempts": 666,
+        "closed": 666,
+        "errors": [],
+        "peak": 25,
+        "remaining": 0
+      },
+      "install_action_lock_released": true
     },
     {
       "package": "com.sankuai.meituan.takeoutnew",
@@ -776,6 +1464,9 @@
         "8b6737279ed0a9839ec3c4b256256e68eb1e5f7e1386b0dc6c38eb7a04742bbd"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "BLOCKED_OFFICIAL_SIGNER_DIFFERS_FROM_CURRENT_RESIGNED_APP",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -800,7 +1491,24 @@
           "path": "reference/launcher-candidate-verifications-r2.json",
           "bytes": 7591,
           "sha256": "4c7d115102da373d43ae4955985c4c4ea4e9babea83cc37721ec65976470d4fb"
-        }
+        },
+        "apk": {
+          "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.sankuai.meituan.takeoutnew.apk",
+          "bytes": 66055667,
+          "sha256": "1fa4c8610d254a72cbd4f111f840d77466e3ed6c51a5f454cdb29bcc32eb6424",
+          "stat": {
+            "st_dev": 66306,
+            "st_ino": 53525970,
+            "st_mode": 33152,
+            "st_uid": 1000,
+            "st_gid": 1000,
+            "st_nlink": 1,
+            "st_size": 66055667,
+            "st_mtime_ns": 1793961881644619945,
+            "st_ctime_ns": 1793961881647620073
+          }
+        },
+        "terminal": null
       },
       "location_grants_authorized": false
     },
@@ -820,6 +1528,9 @@
         "613cc829902938fe4074bbc839f1fcdd332640df9217b95c602bd590e82a7551"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -841,6 +1552,9 @@
         "5182ae3b1b85337bb182cf24882449f84447ded18e296a747a9f6a0a2622512e"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -862,6 +1576,9 @@
         "d85bed4d2a7c08e1b6b5f0097d6c66a79a5b12b58d97e794d3b5c5bff2aeaf44"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -884,10 +1601,56 @@
         "c5e9bc4c5cc7a34482c627cb9a76b88e30b509d0da3ba54a66274200e19c2743"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
-      "upgrade_state": "LATEST_USABLE_UNPROVEN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
+      "upgrade_state": "VERIFIED_NEW_CANDIDATE_AWAITING_NEW_RUNTIME_INSTALL",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
-      "cleanup_eligible": false
+      "cleanup_eligible": false,
+      "candidate": {
+        "manifest": {
+          "package": "com.taobao.taobao",
+          "version_code": 866,
+          "version_name": "10.69.0",
+          "min_sdk": "21",
+          "target_sdk": "33",
+          "native_abis": [
+            "arm64-v8a",
+            "armeabi-v7a"
+          ]
+        },
+        "status": "VERIFIED_OFFICIAL_CANDIDATE_NOT_INSTALLED",
+        "signature_verified": true,
+        "signer_matches_historical_installed_reference": true,
+        "matches_latest_observed_store_version": true,
+        "evidence": {
+          "path": "reference/taobao-source-s10-verification.stdout.raw.jsonl",
+          "bytes": 2026,
+          "sha256": "0794be060e765468e23fd46cc2ff522669555c5492c37eab7eba1d9d4274c348"
+        },
+        "apk": {
+          "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-source-s10/com.taobao.taobao.apk",
+          "bytes": 95212303,
+          "sha256": "5cc547a213b27c5fd38ab39dda8aa46dd45abf4fe8f58829b3c5f82c98aa2cd3",
+          "stat": {
+            "st_dev": 66306,
+            "st_ino": 34915459,
+            "st_mode": 33152,
+            "st_uid": 1000,
+            "st_gid": 1000,
+            "st_nlink": 1,
+            "st_size": 95212303,
+            "st_mtime_ns": 1793966130724538309,
+            "st_ctime_ns": 1793966131078548636
+          }
+        },
+        "terminal": {
+          "path": "reference/taobao-source-s10-verification-terminal.raw.json",
+          "bytes": 732,
+          "sha256": "515eb939ccbed02a8a00c174309d99292cd4dc40af40d53757ff862e505b509b"
+        }
+      }
     },
     {
       "package": "com.tencent.mm",
@@ -896,16 +1659,19 @@
         "com.tencent.mm/com.tencent.mm.ui.LauncherUI"
       ],
       "uid": 10114,
-      "installed_version_code": 3200,
-      "installed_version_name": null,
+      "installed_version_code": 3220,
+      "installed_version_name": "8.0.80",
       "version_name_reference": "8.0.79",
-      "version_name_authority": "HISTORICAL_REFERENCE_ONLY_CURRENT_MANIFEST_NOT_READ",
-      "code_path": "/data/app/~~AppGWO0g6hOMmv6VEEQwZA==/com.tencent.mm-7bThwSg8z4H1bxQZAdrJYA==",
+      "version_name_authority": "EXACT_VERIFIED_APK_HASH_READ_BACK_AFTER_NATIVE_INSTALL",
+      "code_path": "/data/app/~~7Nr5uTXd_mo6DbORr7S2Mg==/com.tencent.mm-RXKT7zh0aRVlBRMB6I8lKA==",
       "package_manager_certificates": [
         "0fe4ff85c215918396dadc7cd8ce6963339af33d37751a56e54c7206b63a3c7c"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
-      "upgrade_state": "CANDIDATE_OBSERVED_NOT_INSTALLED",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
+      "upgrade_state": "INSTALLED_AND_BYTE_VERIFIED_BUSINESS_QA_PENDING",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
       "cleanup_eligible": false,
@@ -928,8 +1694,88 @@
           "path": "reference/launcher-candidate-verifications-r2.json",
           "bytes": 7591,
           "sha256": "4c7d115102da373d43ae4955985c4c4ea4e9babea83cc37721ec65976470d4fb"
+        },
+        "apk": {
+          "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-r2/com.tencent.mm.apk",
+          "bytes": 286319384,
+          "sha256": "9d9b6c516e8e07e437c81485fde21fe13ce4f61b37d19e793fff40c71be39c0e",
+          "stat": {
+            "st_dev": 66306,
+            "st_ino": 53525967,
+            "st_mode": 33152,
+            "st_uid": 1000,
+            "st_gid": 1000,
+            "st_nlink": 1,
+            "st_size": 286319384,
+            "st_mtime_ns": 1793961899814391132,
+            "st_ctime_ns": 1793961899817391259
+          }
+        },
+        "terminal": null
+      },
+      "installed_apk": {
+        "bytes": 286319384,
+        "held_and_path_unchanged": true,
+        "path": "/data/app/~~7Nr5uTXd_mo6DbORr7S2Mg==/com.tencent.mm-RXKT7zh0aRVlBRMB6I8lKA==/base.apk",
+        "sha256": "9d9b6c516e8e07e437c81485fde21fe13ce4f61b37d19e793fff40c71be39c0e",
+        "stat": {
+          "ctime_ns": 1793964305455834912,
+          "dev": 1811,
+          "gid": 1000,
+          "ino": 787590,
+          "mode": 33188,
+          "mtime_ns": 1793964305455834912,
+          "nlink": 1,
+          "size": 286319384,
+          "uid": 1000
         }
-      }
+      },
+      "data_directory_identity_retained": true,
+      "install_receipt": {
+        "path": "reference/wechat-install-attempt1.json",
+        "bytes": 43656,
+        "sha256": "78d8cd9caa4facf59a183ae2ff8ad36c42b4957d8f76e3ec1ce94acda2c4718b"
+      },
+      "install_terminal": {
+        "path": "reference/wechat-install-r1-terminal.json",
+        "bytes": 734,
+        "sha256": "61fb6a4ea98d32465d0b5ca3041450e4f7f5ab8b64a5afa8fc8e68c97f50fe4c"
+      },
+      "install_job_id": "1a1b09ac6ca-fc05-71a4",
+      "install_finished_utc": "2026-11-06T11:25:16.735865+00:00",
+      "installed_observation_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "data_directories": [
+        {
+          "identity": {
+            "dev": 1811,
+            "gid": 10114,
+            "ino": 132108,
+            "mode": 16832,
+            "uid": 10114
+          },
+          "path": "/data/user/0/com.tencent.mm"
+        },
+        {
+          "identity": {
+            "dev": 1811,
+            "gid": 10114,
+            "ino": 132223,
+            "mode": 16832,
+            "uid": 10114
+          },
+          "path": "/data/user_de/0/com.tencent.mm"
+        }
+      ],
+      "install_outcome_unknown": false,
+      "install_descriptors": {
+        "acquired": 666,
+        "close_attempts": 666,
+        "closed": 666,
+        "errors": [],
+        "peak": 25,
+        "remaining": 0
+      },
+      "install_action_lock_released": true
     },
     {
       "package": "com.ubercab",
@@ -947,6 +1793,9 @@
         "4003231ab42feb8d955e62fdfaa4fad59567054b9c6bbc3d950299ddfc268392"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -968,6 +1817,9 @@
         "e833171fd602255f030ed251c64a9989c7eabc4ebe1c3d7b097ae0f9aea8f946"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -989,10 +1841,55 @@
         "dd3923e78df33f08b0fb4a533ab1e860425ca7f6777fbe14f85a6cf5687143d6"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
-      "upgrade_state": "LATEST_USABLE_UNPROVEN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
+      "upgrade_state": "VERIFIED_NEW_CANDIDATE_AWAITING_NEW_RUNTIME_INSTALL",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
-      "cleanup_eligible": false
+      "cleanup_eligible": false,
+      "candidate": {
+        "manifest": {
+          "package": "com.xunmeng.pinduoduo",
+          "version_code": 83000,
+          "version_name": "8.30.0",
+          "min_sdk": "21",
+          "target_sdk": "36",
+          "native_abis": [
+            "arm64-v8a"
+          ]
+        },
+        "status": "VERIFIED_OFFICIAL_CANDIDATE_NOT_INSTALLED",
+        "signature_verified": true,
+        "signer_matches_historical_installed_reference": true,
+        "matches_latest_observed_store_version": true,
+        "evidence": {
+          "path": "reference/pdd-source-s6-verification.stdout.raw.jsonl",
+          "bytes": 1968,
+          "sha256": "ae6c8068bfb3e95dddbbe694ecad74a69764d605d18c8611a995f84ec127c30b"
+        },
+        "apk": {
+          "path": "/home/alex/work/pocket4-launcher-official-candidates-20261106-source-s6/com.xunmeng.pinduoduo.apk",
+          "bytes": 32690199,
+          "sha256": "3dbdcf5dcc94086dc0bc7d7f378fe1e328d9f32f30b82853fc8f440759d04ad4",
+          "stat": {
+            "st_dev": 66306,
+            "st_ino": 50514412,
+            "st_mode": 33152,
+            "st_uid": 1000,
+            "st_gid": 1000,
+            "st_nlink": 1,
+            "st_size": 32690199,
+            "st_mtime_ns": 1793964300991590867,
+            "st_ctime_ns": 1793964300996591141
+          }
+        },
+        "terminal": {
+          "path": "reference/pdd-source-s6-verification-terminal.raw.json",
+          "bytes": 732,
+          "sha256": "b8649b67f5359bcceefe11dd0d7f399845d6597c0c23908fdc25ca428c852e32"
+        }
+      }
     },
     {
       "package": "com.zhubajie.client",
@@ -1010,6 +1907,9 @@
         "556246aaaf05f61c8bbb9587dfc0660e01f6c3c6813ec038d18684d3ab378bbe"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -1031,6 +1931,9 @@
         "4013b8087b27ab0d941658f0f8ac37a5efda05689dbc65cab91460889a0d9bed"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -1052,6 +1955,9 @@
         "8155dc0644fed517e8ef6bef9718c363d0eb3eb2c22c06455044d88268bdcf0a"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -1073,6 +1979,9 @@
         "d8be425771a11f7a2b121cdb21a14710420f1caa1665eb554e9ff5ad337c91fd"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -1094,6 +2003,9 @@
         "df1baddab9b5bf8ec8581a35c5294519511e3bbeb709ce14dfee5e873afa3e1b"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -1115,6 +2027,9 @@
         "a40da80a59d170caa950cf15c18c454d47a39b26989d8b640ecd745ba71bf5dc"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -1136,6 +2051,9 @@
         "df1808318c5ed4932aee812962be781f4946692074c998b06fbbbd0d8a3fa322"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -1157,6 +2075,9 @@
         "e4db1e9edff13629d07de4bbf8165fe9bd8557ab55092672da8e40dbe484ecd7"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "LATEST_USABLE_UNPROVEN",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -1178,6 +2099,9 @@
         "93ba270f5521139ecafe4bb638ac5b1198bc548f62d9fd8f8580a079faf5910e"
       ],
       "permission_observation": "SAVED_STATE_COLLECTED_EFFECTIVE_RUNTIME_STATE_UNKNOWN",
+      "installed_observation_scope": "LAST_QUALIFIED_OBSERVATION_BEFORE_UNSETTLED_NATIVE_RESTART",
+      "current_runtime_revalidated": false,
+      "runtime_gate": "FROZEN_UNKNOWN_NATIVE_RESTART_NO_NEW_QUALIFIED_IDENTITY",
       "upgrade_state": "VERIFIED_CANDIDATE_PENDING_PRIOR_LAUNCH_UNKNOWN_SETTLEMENT",
       "business_qa": "UNKNOWN_NOT_RUN_IN_THIS_CHECKPOINT",
       "production_ready": false,
@@ -1202,7 +2126,24 @@
           "path": "reference/bilibili-official-verification.json",
           "bytes": 1866,
           "sha256": "2faaee44fd41ee86f4ef1105113d7a27f858109adf6d81bdebc0a592bb1e94bf"
-        }
+        },
+        "apk": {
+          "path": "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/tv.danmaku.bili.apk",
+          "bytes": 242067951,
+          "sha256": "33b302b285bdbb5ee1e3030c5d65a88b8229ff3d7bbf78df105600e968109bfc",
+          "stat": {
+            "st_dev": 66306,
+            "st_ino": 34785241,
+            "st_mode": 33152,
+            "st_uid": 1000,
+            "st_gid": 1000,
+            "st_nlink": 1,
+            "st_size": 242067951,
+            "st_mtime_ns": 1793958321567146539,
+            "st_ctime_ns": 1793958321800154892
+          }
+        },
+        "terminal": null
       },
       "guest_accept_in_current_cell_authorized": false
     }

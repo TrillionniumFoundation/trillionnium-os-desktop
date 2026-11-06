@@ -1,0 +1,134 @@
+--- install_beike_bound_r3.py
++++ install_ceair_bound_r1.py
+@@ -1,10 +1,10 @@
+ #!/usr/bin/env python3
+-"""One independently bound, user-authorized Beike upgrade through native install.
+-
+-Run only after reviewing this source, as root: python3 -B -I install_beike_bound_r3.py
++"""One independently bound, user-authorized CEAir upgrade through native install.
++
++Run only after reviewing this source, as root: python3 -B -I install_ceair_bound_r1.py
+ The unchanged pinned collect_readonly.py must be adjacent. No arguments, target
+ overrides, retries, UI, grants, ADB, task removal, or lifecycle commands exist.
+-This deliberately creates a NEW Beike-only install scope, not a Bili R5 scope.
++This deliberately creates a NEW CEAir-only install scope, not a Bili R5 scope.
+ The existing baseline's identity-only qualification is never modified.
+ 
+ The native client transfers an APK descriptor to the existing daemon. Reviewed
+@@ -15,8 +15,9 @@
+ unchanged Main are all required for success. Client timeout is UNKNOWN and
+ never implies that the independent daemon's package operation has stopped.
+ 
+-R3 binds the native files to the exact stat tuples observed in job
+-1a1b07a3192-fc05-70bb. R2's CLI uid==0 condition was an added assumption;
++Native binding is inherited from the successful Beike r3 worker and the
++exact stat tuples observed in job 1a1b07a3192-fc05-70bb. Beike r2's CLI
++uid==0 condition was an added assumption;
+ the existing current-baseline guard contains no such CLI ownership rule.
+ The measured CLI is UID/GID 1000:1000, mode 0755. The daemon remains
+ UID/GID 0:0 and matches the running daemon's executable and pinned baseline.
+@@ -40,23 +41,23 @@
+ 
+ BASE_SHA = "04dcc9337aa61ed663e3ce3dea8ab13a963c4826588fcd1c25554466ed30acd1"
+ BASE_BYTES = 48526
+-PACKAGE = "com.lianjia.beike"
+-UID = 10143
++PACKAGE = "com.rytong.ceair"
++UID = 10145
+ USER = 0
+-OLD_VERSION = 3066010
+-OLD_BYTES = 227573032
+-OLD_SHA = "4c90b9fc66644a721befd69339cf2e676c9e4bfbe46825811c64fc7cd4198b1f"
+-OLD_CODE_PATH = "/data/app/~~z85ZK_VVlMAJWa8980DS_g==/com.lianjia.beike-uM8lrS9-BCzwSuledhguMQ=="
+-NEW_VERSION = 3067100
+-NEW_NAME = "3.06.71"
+-NEW_BYTES = 228933721
+-NEW_SHA = "c7985ed41b91c782af8acb04b1868419cca8bc1fc52862bf6c89fa86b65c81fb"
+-SIGNER = "0b66624117621bb9bc3e7d12a1fe5436794cf8999b0253d9ff9bec71e0932178"
++OLD_VERSION = 238
++OLD_BYTES = 220958172
++OLD_SHA = "20774ddb560e94b91459606bdaadbafdba4194f85418ddeca991d20c5fe728c7"
++OLD_CODE_PATH = "/data/app/~~AKsOfEjEFKb2oq9Z48CtXg==/com.rytong.ceair-cPwRSiCUKdHQTxGHg9jw5g=="
++NEW_VERSION = 239
++NEW_NAME = "9.5.16"
++NEW_BYTES = 220804847
++NEW_SHA = "a6da8d746f98cae884f6b0137b5c7e8412836adf75530b763dae1536c75522ce"
++SIGNER = "b48f75514e956be6bd7d56f1701136c8d76f19459bd724ac52390a572bc0ecbf"
+ STAGING = "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1"
+-CANDIDATE_PATH = STAGING + "/com.lianjia.beike.apk"
+-VERIFIER_DIR = STAGING + "/com.lianjia.beike-signature-verify-r1"
+-VERIFIER_CANONICAL_SHA = "df0e24f57b035ca349f03a461c350afea3d891b99d0244e407696974e2411bfb"
+-FLOW_NAME = "com.lianjia.beike-bound-install-r3"
++CANDIDATE_PATH = "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.rytong.ceair.apk"
++VERIFIER_DIR = "/home/alex/work/pocket4-eight-apps-upgrade-20261106-r1/com.rytong.ceair-signature-verify-r1"
++VERIFIER_CANONICAL_SHA = "2d01623642a90464da7c2b5baea2ca1ff73b4e1683d8bc491d0c3b76c916c564"
++FLOW_NAME = "com.rytong.ceair-bound-install-r1"
+ FLOW_PATH = STAGING + "/" + FLOW_NAME
+ LOCK_PATH = "/run/lock/android-digitalis-actions.lock"
+ CLI_PATH = "/usr/bin/droidloomctl"
+@@ -172,7 +173,7 @@
+         need(all(getattr(before, k) == getattr(after, k) for k in fields), "PINNED_READER_CHANGED")
+     finally:
+         os.close(fd)
+-    module = types.ModuleType("pocket4_beike_unchanged_readonly_primitives")
++    module = types.ModuleType("pocket4_ceair_unchanged_readonly_primitives")
+     module.__file__ = str(path)
+     exec(compile(raw, str(path), "exec"), module.__dict__)
+     return module
+@@ -309,7 +310,7 @@
+          value.get("signer_certificate_sha256") == [SIGNER] and
+          value.get("status") == "VERIFIED_OFFICIAL_CANDIDATE_NOT_INSTALLED" and
+          value.get("manifest") == {"package": PACKAGE, "version_code": NEW_VERSION,
+-             "version_name": NEW_NAME, "min_sdk": "23", "target_sdk": "31",
++             "version_name": NEW_NAME, "min_sdk": "24", "target_sdk": "33",
+              "native_abis": ["arm64-v8a"]} and
+          value.get("apk", {}).get("path") == CANDIDATE_PATH and
+          value["apk"].get("bytes") == NEW_BYTES and value["apk"].get("sha256") == NEW_SHA,
+@@ -590,9 +591,9 @@
+ 
+ 
+ def main():
+-    result = {"schema": "pocket4-independent-beike-bound-install-v1", "package": PACKAGE,
++    result = {"schema": "pocket4-independent-ceair-bound-install-v1", "package": PACKAGE,
+         "android_user": USER, "uid": UID, "flow": FLOW_PATH, "started_utc": now(),
+-        "user_authorized_operation": "upgrade_exact_official_Beike_candidate_preserving_data",
++        "user_authorized_operation": "upgrade_exact_official_CEAir_candidate_preserving_data",
+         "automatic_retry": False, "action_attempted": False, "outcome_unknown": False,
+         "install_verified": False, "business_ready": False, "production_ready": False,
+         "UI_actions": 0, "permission_grant_commands": 0, "App_launches": 0,
+@@ -616,7 +617,7 @@
+         store.json("claim.json", {"schema": "pocket4-one-shot-install-claim-v1", "package": PACKAGE,
+             "started_utc": result["started_utc"], "pid": os.getpid(), "automatic_retry": False})
+         raw, result["guard_source"] = host.read(c.GUARD_PATH, 65536, pin=c.GUARD_SHA)
+-        guard = types.ModuleType("pocket4_beike_pinned_current_guard")
++        guard = types.ModuleType("pocket4_ceair_pinned_current_guard")
+         guard.__file__ = c.GUARD_PATH
+         exec(compile(raw, c.GUARD_PATH, "exec"), guard.__dict__)
+         result["guard_before"] = c.validate_guard_result(guard.current_guard())
+@@ -659,7 +660,7 @@
+         result["guard_before_install"] = c.validate_guard_result(guard.current_guard())
+         need(result["guard_before_install"] == result["guard_before"], "PREINSTALL_MAIN_GUARD_CHANGED")
+         store.verify_path()
+-        scope = {"schema": "pocket4-explicit-Beike-install-scope-v1", "epoch_sha256": c.EPOCH,
++        scope = {"schema": "pocket4-explicit-CEAir-install-scope-v1", "epoch_sha256": c.EPOCH,
+             "baseline_sha256": c.BASELINE_SHA, "qualification_sha256": c.QUALIFICATION_SHA,
+             "reader_sha256": BASE_SHA, "worker_source": result["worker_source"],
+             "package": PACKAGE, "android_user": USER, "uid": UID,
+@@ -667,7 +668,7 @@
+             "from_apk_sha256": OLD_SHA, "to_apk_sha256": NEW_SHA,
+             "signer_certificate_sha256": SIGNER, "data_directories": result["data_before"],
+             "native_artifacts": native_rows, "official_verifier": result["official_verifier"],
+-            "only_mutation": "native_install_of_held_official_Beike_APK",
++            "only_mutation": "native_install_of_held_official_CEAir_APK",
+             "UI_admitted": False, "permission_grants_admitted": False,
+             "lifecycle_actions_admitted": False, "other_packages_admitted": False,
+             "Bili_scope_borrowed": False, "prior_Bili_unknown_retained": True,
+@@ -757,7 +758,7 @@
+             result.get("new_installed_bytes_readback_verified") and result.get("native_artifacts_unchanged") and
+             result.get("data_directory_identity_retained") and result.get("guard_after") and not result["errors"])
+         result["outcome_unknown"] = bool(result["action_attempted"] and not result["install_verified"])
+-        result["status"] = ("BEIKE_UPGRADE_VERIFIED_BUSINESS_QA_PENDING" if result["install_verified"] else
++        result["status"] = ("CEAIR_UPGRADE_VERIFIED_BUSINESS_QA_PENDING" if result["install_verified"] else
+             "INSTALL_OUTCOME_UNKNOWN_NO_AUTOMATIC_RETRY" if result["action_attempted"] else
+             "PREINSTALL_REJECTED_NO_INSTALL_REQUEST")
+         result["ended_utc"] = now()

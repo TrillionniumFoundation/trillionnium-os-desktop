@@ -1,0 +1,73 @@
+class MainBinding:
+    def __init__(self, *, contract, source, scope, activation, epoch, app, guard):
+        source.verify_scope(scope, activation, contract)
+        self.target = None
+        self.contract, self.scope, self.activation, self.guard = contract, scope, activation, guard
+        self.held = contract.load('references/held_runtime_r5.py', 'successor_held_runtime_r5')
+        self.transport_module = contract.load('bound_android_transport.py', 'successor_transport')
+        self.helper_qualification = source.verify_shared_helper()
+        guard()
+        expected = activation['framework_epoch']['binding']['processes']['init']
+        init = expected['host_pid']
+        require(epoch.process_identity(init) == expected, 'EXACT_SUCCESSOR_INIT_CHANGED')
+        proc = os.open('/proc/' + str(init), os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
+        try:
+            raw_identity = self.held.proc_identity_at(proc, init, time.monotonic() + 3)
+            require(same_epoch_identity(raw_identity, expected) and raw_identity == activation['held_init_identity'],
+                    'HELD_INIT_DIFFERS_FROM_ACTUAL_SUCCESSOR_INPUT')
+        finally:
+            os.close(proc)
+        try:
+            self.target = self.held.HeldTarget(raw_identity, source.HELPER_PATH, source.HELPER_SHA)
+            require(epoch.process_identity(init) == expected, 'INIT_CHANGED_WHILE_ACQUIRING_FDS')
+            values, classpath, environment = main_classpaths(self.held, self.target,
+                    activation['framework_epoch'], epoch, guard)
+            require(values == activation['classpath_values'], 'FIXED_SUCCESSOR_CLASSPATH_DIFFERS')
+            self.environment = self.transport_module.environment_values(environment)
+            self.packages = dict(activation['packages'])
+            self.directories = dict(activation['app_directories'])
+            self.verify()
+            guard()
+            self.record = {'schema':'pocket4-successor-held-binding-r5-v1',
+                'runtime_epoch_sha256':activation['runtime_epoch_sha256'],
+                'framework_epoch_sha256':source.MAIN_EPOCH,
+                'app_scope_sha256':activation['app_scope']['sha256'], 'package':source.PACKAGE, 'uid':source.UID,
+                'held_runtime_r5_sha256':source.REFERENCE_PINS['references/held_runtime_r5.py'][1],
+                'target':self.target.record, 'classpath':classpath, 'helper_qualification':self.helper_qualification,
+                'package_uids':self.packages, 'app_directories':self.directories,
+                'ui_actions_performed_by_binding':False, 'owned_QA_helper_qualification_inherited':False,
+                'production_ready':False}
+        except BaseException as original:
+            if self.target is not None:
+                try:
+                    self.target.close()
+                except BaseException as cleanup:
+                    original.add_note('held binding cleanup: ' + type(cleanup).__name__)
+            raise
+
+    def verify(self):
+        self.target.verify()
+        raw, _ = self.target.read_file('/data/system/packages.list', 1024 * 1024)
+        package_uids(raw, self.packages)
+        del raw
+        for path, expected in self.directories.items():
+            fd = self.target.open_root(path, os.O_PATH | os.O_DIRECTORY)
+            try:
+                info = os.fstat(fd)
+                require(stat.S_ISDIR(info.st_mode) and
+                        (info.st_dev, info.st_ino, info.st_uid, info.st_gid) ==
+                        (expected['device'], expected['inode'], expected['uid'], expected['gid']),
+                        'BOUND_APP_DATA_DIRECTORY_CHANGED')
+            finally:
+                os.close(fd)
+        self.target.verify()
+
+    def transport(self, *, record, runner, guard):
+        return self.transport_module.BoundArun(target=self.target, environment=self.environment,
+            guard=guard, record=record, epoch_sha256=self.scope['epoch_sha256'],
+            init_pid=self.target.expected['pid'], package=self.scope['package'], uid=self.scope['uid'],
+            interactive_production=True, runner=runner)
+
+    def close(self):
+        if self.target is not None:
+            self.target.close()
