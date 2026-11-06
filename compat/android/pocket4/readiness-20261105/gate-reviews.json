@@ -1021,6 +1021,60 @@
         "Whole-App stability/data/release review remains open."
       ],
       "version_code": 37
+    },
+    {
+      "apk_sha256": "91e352c25e7c6ef54aa53ce652931e40ad1437dfcd0ebad2529bc662558a3dd6",
+      "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "observed_at_utc": "2026-11-05T23:55:23.344323+00:00",
+      "reviewed_at_utc": "2026-11-06T00:16:09.898464+00:00",
+      "reviewer": "root",
+      "scope": "whole_app_release",
+      "uid": 10115,
+      "version_code": 0,
+      "all_features_reviewed": true,
+      "retained_failures_reconciled": true,
+      "unresolved_findings": [],
+      "qualification_scope": "Exact installed five-class Pocket4 local QA fixture on the current Linux/DroidLoom Android17 epoch, for its complete declared view-only controls/isolation contract and predeclared bounded repeat/resource budget.",
+      "package": "local.pocket4.fixture",
+      "checks": {
+        "data_permissions": "passed",
+        "fixture.contract": "passed",
+        "fixture.controls": "passed",
+        "fixture.isolation": "passed",
+        "identity": "passed",
+        "lifecycle": "passed",
+        "release_scope": "passed",
+        "stability": "passed",
+        "ui_observation": "passed"
+      },
+      "id": "root_probe04_complete_declared_QA_release",
+      "evidence": [
+        {
+          "path": "inputs/probe-completion04/CLOCK_ACTUAL_FEATURE_REVIEW04.json",
+          "bytes": 18235,
+          "sha256": "6d9a0d7dc6202555e84e281e5a8aa8b787cdfe9b8b5d01d3b4cf5603cacac1e5"
+        },
+        {
+          "path": "inputs/probe-completion04/ROOT_RUNTIME_DIAGNOSTICS_REVIEW04.json",
+          "bytes": 14597,
+          "sha256": "955125dc87cb9961320fc0483e0d57c20b207a137fb264b39007d4a0a8a52851"
+        },
+        {
+          "path": "inputs/probe-completion04/SIGNATURE_IDENTITY_AUDIT_SELECTED.json",
+          "bytes": 3458,
+          "sha256": "2f1fb6e2357da6f18b96f7f47f5e65131756b7a2c94fe987649ae593eadef213"
+        },
+        {
+          "path": "inputs/probe-completion04/WHOLE_QA_RELEASE_REVIEW.json",
+          "bytes": 9113,
+          "sha256": "0f8390911c5e17d1432efeeb3032404a02462a4ad7807fed970510cde44041b1"
+        },
+        {
+          "path": "inputs/probe-completion04/result04-original.json",
+          "bytes": 41618,
+          "sha256": "3e94b99a354719380674a7115d8b202c613beee4e2d90fccc6d443c3d7664327"
+        }
+      ]
     }
   ],
   "schema": "pocket4-reviewed-app-gates-v1"

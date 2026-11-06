@@ -1,8 +1,10 @@
 # Pocket4 local App business acceptance — 2026-11-05
 
-Current checkpoint12 device cutoff: **22:42:42 UTC**. Earlier sections retain
-their chronological results and binary-specific limits. Current Clock is433ff;
-older e4ff timer results remain historical. No whole App is production ready.
+Current checkpoint13 device cutoff: **2026-11-06 00:15:28 UTC**. Earlier sections retain their chronological results and binary-specific limits. Current Clock is433ff; older e4ff timer results remain historical. One whole QA App is accepted: [Probe04](probe-completion04/README.md) passes its complete declared five-class contract and all nine fixed gates. The other44 tracked Apps remain open.
+
+Probe04 completed nine positive inputs, one actual ambiguity refusal and three owned normal closes with exact default-state reopen behavior. Independent reviews cover all declared controls, preserved model data/permissions, the actual three process generations and381 whole-hashed ELF objects, and the predeclared repeat/resource/diagnostic budget. Original false automatic fields are retained.
+
+Calendar17's actual picker discovery and Calendar18's clean pre-input failure add no date/timezone/recurrence gate. Gallery03's separate exact cleanup and Gallery04's clean album-title observation failure add no rotation credit. The WebView tracing callback candidate is built and signed with the original certificate, but not ART-qualified or installed. See the current45-App matrix for every remaining gate.
 
 Contacts completed an actual local UI create/edit/close/reopen/delete flow. WebView Shell completed an actual controlled local Unicode/JavaScript/storage/history/close/reopen/cleanup flow. These are scoped business results; neither is a whole-App release qualification.
 
@@ -52,7 +54,7 @@ preserved. Timer completion, alarm delivery/timezone and sound are separate gate
 and 14 inputs covering Unicode, field isolation, positive and empty confirmation,
 clear and normal close/reopen. Its five installed classes were reviewed. Neither
 of the two earlier adapter failures is relabeled an App fault or success. The
-ambiguous-selector negative case and full release gates remain open.
+earlier ambiguity and full-release gaps are superseded only by the separately linked Probe04 whole-QA acceptance above; this historical two-round run itself retains its original scoped status.
 
 ## Actual timer core flow
 

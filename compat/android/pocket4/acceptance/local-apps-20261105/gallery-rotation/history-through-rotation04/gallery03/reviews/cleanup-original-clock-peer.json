@@ -1,0 +1,100 @@
+{
+  "actual_permission_and_endpoint_evidence": {
+    "accepted_narrow_followup": "Root asked for a new independently frozen revision using /file/<exact id>, with full15/media_type=1/id/FD/unknown gates unchanged. No extra device probe or business input is needed for that source revision.",
+    "actual_readback": "Prior exact image92 row absent in both read-only rounds; pending and final file paths absent in FUSE/backing views; original cleanup02 failed/pending preserved.",
+    "independent_readback_sha256": "f8d4bd06994e4d5652ecb1665d2482d85530f7b377017e73ed7a2e4ba4c21764",
+    "saved_command": {
+      "guard_after": true,
+      "joined": true,
+      "name": "011-android.result.json",
+      "own_content_argv": [
+        "/system/bin/content",
+        "delete",
+        "--user",
+        "0",
+        "--uri",
+        "content://media/external_primary/file/92",
+        "--where",
+        "_data='/storage/emulated/0/DCIM/Pocket4_Rotate_Control_r12_d24b61ed8f7c9a03/.pending-1794515573-pocket4-control-d24b61ed8f7c9a03.png' AND _display_name='pocket4-control-d24b61ed8f7c9a03.png' AND _id=92 AND _size IS NULL AND bucket_display_name='Pocket4_Rotate_Control_r12_d24b61ed8f7c9a03' AND bucket_id='2096161818' AND height=480 AND is_pending=1 AND media_type=1 AND mime_type='image/png' AND orientation IS NULL AND owner_package_name='org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03' AND parent=91 AND relative_path='DCIM/Pocket4_Rotate_Control_r12_d24b61ed8f7c9a03/' AND width=640"
+      ],
+      "rc": 0,
+      "record_sha256": "e1da9de0c06ee241cd568a348607a7a29ea392a3b3c8f2209d3b535abe2f529f",
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "text": ""
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "text": ""
+      },
+      "timed_out": false
+    },
+    "transport": "Frozen b227 CameraSession.android executes /system/xbin/su 2000; not an assumption that host root is the Binder caller.",
+    "what_this_does_not_support": "The reviewed source uses /images/media/100 and /images/media/98. The saved direct delete used /file/92, so the exact new endpoint is not already exercised by that receipt. Actual deleteInternal has route-dependent enforceCallingPermission branches; this export does not include the entire permission/URI-matcher implementation. No assertion that all image endpoints or arbitrary media deletion are authorized.",
+    "what_this_supports": "The same original-profile shell content-delete /external_primary/file/<id> route actually deleted an owned image on this pinned MediaProvider. New IDs100/98 still need all fresh tuple/bytes/ownership/readback gates."
+  },
+  "artifacts": {
+    "gallery-rotation08/cleanup-route03/cleanup_route03.py": {
+      "bytes": 25321,
+      "sha256": "2d4101f196cc38a958f212e166c4a586f3fc15499468619b0455d8d24c05a614"
+    },
+    "gallery-rotation08/controller01/cleanup-seed02-result-original.json": {
+      "bytes": 1338,
+      "sha256": "1ed05eebfc606306a7f60b34980f288b98736985afde081c59a8a6f9116935c3"
+    },
+    "gallery-rotation08/controller01/cleanup-seed03-result-original.json": {
+      "bytes": 6106,
+      "sha256": "3b6a480a470d927bbe0dcd5d3873f7f91c70991146115d8c69dfdb68cb45263e"
+    },
+    "gallery-rotation08/controller01/read-cleanup02-state01-result-original.json": {
+      "bytes": 31351,
+      "sha256": "f8d4bd06994e4d5652ecb1665d2482d85530f7b377017e73ed7a2e4ba4c21764"
+    },
+    "gallery-rotation08/controller03/owned_media.py": {
+      "bytes": 20857,
+      "sha256": "95b6c90fbc9ac22c41ca2c35d9ba3a13ce140de9cc52f710f2b5fd080506ae9b"
+    },
+    "gallery-rotation08/controller03/rotation_package.py": {
+      "bytes": 10876,
+      "sha256": "44abbfe0193905a7b3a6137b4bb95dafc8d6cec4d795e8b258b97508cdd83dd4"
+    },
+    "gallery-rotation08/controller03/rotation_ui.py": {
+      "bytes": 28141,
+      "sha256": "ac885a393ff6b3e6cc477bb9c0acf55284fe3e4c92474fb82571884d07d9b650"
+    },
+    "gallery-rotation08/provider-delete-review02/REVIEW.json": {
+      "bytes": 10929,
+      "sha256": "86571e754e5f5afd4553dc65253483ab26428a3f8b07dffba123a8c6168921bc"
+    },
+    "gallery-rotation08/provider-source08/source-export-original.json": {
+      "bytes": 357952,
+      "sha256": "31a0951f0d958962cf918ab9f4acbbceb6076d23217d6e5262931818d82d20c0"
+    }
+  },
+  "limitations": [
+    "This is a source review, not an executed cleanup or Gallery business pass.",
+    "Provider full15 selection followed by per-ID deletion is not a cross-row or read+delete atomic transaction.",
+    "No extrapolation from prior image92 to arbitrary media or unrelated owners; new run verifies only its own exact retained fixtures."
+  ],
+  "performed_actions": {
+    "Android_commands": 0,
+    "UI_actions": 0,
+    "additional_tests": 0,
+    "remote_RPC": 0,
+    "source_mutations": 0
+  },
+  "result": "NO_NEW_UNKNOWN_OR_OWNERSHIP_BLOCKER; exact endpoint evidence distinction requires the accepted narrow file-route revision before treating its endpoint as previously exercised.",
+  "reviewer": "camera_runtime_review",
+  "schema": "gallery-retained-route-cleanup-independent-clock-review/v1",
+  "scope": "Only local source/saved evidence review; no code edits, RPC, UI, Provider, package or physical changes.",
+  "verified_source_boundaries": [
+    "Original failed route and failed read-only receipts remain byte-pinned; two fresh retained-route reads bind task1005, both ActivityRecord tokens, exact helper10197 caller/album URI and original Home851 before historical input is separately reconciled.",
+    "No Open, rotation, seed, helper method, old lease renewal or old native action is replayed. One new normal owned task removal precedes all media/package mutation; close_pending and native pending survive an unknown remove.",
+    "Image100 and image98 are separately bound to exact full15 tuple, immutable original media namespace/private bytes, original generated file bytes and held backing inode. Each pending_effect is set and journaled before its one Provider delete; ACK alone never clears it.",
+    "Image completion requires exact row absence, original held backing inode nlink0, both named views absent, exact directory empty/removed and original-media metadata unchanged. A failure throws before any next image/directory/uninstall.",
+    "Directory cleanup is unmodified 95b6 code: same original empty directory and parent FDs, backing nlink0 and double-path absence after a single rmdir, exact index deletion and no indexed children. Cross-row atomicity is not claimed.",
+    "Exact helper10197 uninstall occurs only after owned task/image/directory namespaces are empty and private bytes/installed identity still match. Outer context exit and descriptor cleanup finish before cleanup_verified success; exceptions force failed and retain evidence."
+  ]
+}

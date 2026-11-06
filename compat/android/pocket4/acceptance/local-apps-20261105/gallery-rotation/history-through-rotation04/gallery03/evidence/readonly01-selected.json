@@ -1,0 +1,143 @@
+{
+  "UI_actions": 0,
+  "business_scope_pass": false,
+  "error": "RuntimeError:RETAINED_STATE_CHANGED_DURING_READ_ONLY_RECONCILIATION",
+  "explicit_read_only_android_queries": 22,
+  "finished_utc": "2026-11-05T23:20:09.735369+00:00",
+  "guard_before": {
+    "epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+    "host_pid": 3588089,
+    "init_pid": 3588093,
+    "init_start_ticks": 80797014
+  },
+  "helper_invocations": 0,
+  "native_observations": 0,
+  "original_client_pending": "open-owned-album-1",
+  "original_pending_preserved": {
+    "open-owned-album-1": {
+      "input_acknowledged": true,
+      "kind": "tap",
+      "post_capture_outcome_unknown": true
+    }
+  },
+  "original_result_modified": false,
+  "original_schema": "gallery03-exact-retained-route-readonly-v1",
+  "projection_of_original": {
+    "activity_dump_bodies_omitted": true,
+    "aggregate_guard_after_present": false,
+    "byte_identical_to_original": false,
+    "bytes": 38390,
+    "sha256": "8f13efcbd0f8a3f80e11b648a9b2866c0d75b2d871c4ff329b36bd11b53e822d",
+    "state": "FAILED"
+  },
+  "provider_package_or_physical_mutations": 0,
+  "provider_sql_read_queries": 10,
+  "rounds": [
+    {
+      "activity_dump_sha256": "976d6d1e2a21a30197ddeecdfd393f1623705b2efb4090fdddbdfb1fc590a114",
+      "actual_activity_block_sha256": "37d36644d29aeb5a4864ffb01d00cb54e9b73a88563b27fabd0b533079f88a60",
+      "elapsed_clock_source": "held /proc/uptime, millisecond truncation",
+      "fixture_age_elapsed_ms": 1833990,
+      "lease_expired": true,
+      "lease_ms": 1200000,
+      "phase": "before",
+      "route": {
+        "actual_stack_component": [
+          "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+          "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03.RotationActivity"
+        ],
+        "album_uri": "content://media/external/images/media?bucketId=-1681480384",
+        "caller_package": "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+        "caller_uid": 10197,
+        "component": [
+          "com.android.gallery3d",
+          "com.android.gallery3d.app.GalleryActivity"
+        ],
+        "foreground": {
+          "activity": "com.android.gallery3d.app.GalleryActivity",
+          "package": "com.android.gallery3d",
+          "popup": false,
+          "task": 1005,
+          "window_token": "c4ad8a1"
+        },
+        "new_task": false,
+        "task": 1005
+      },
+      "stable_field_fingerprints": {
+        "backing_folder_birth": "126922f2f703766df2433491f6f0925029fbcafef65a1624ebf3329da90e8bc0",
+        "backing_parent_birth": "401582ca3a9b45ccaaea0bfb4a54d8521e3e652fbdef35725550b869915f4ff2",
+        "directory_rows": "d76f2c7b7da5104e0bac6001851627ba0075d6f611d7ffe5ccda3565544d4dc6",
+        "fuse_parent_birth": "a202739ebf1c38d73317912160274d39333641547a4c6658b4d4c5c6bf387ad5",
+        "gallery_identity": "efd3b369f1a2f24af86ecf6688ff02ba978026eeb46afce0776a67df0e82960f",
+        "helper_identity": "81235d7343bbc25adef0ed15dfe8bf983d92015fccc1cd7b61cda64d283e62cb",
+        "media": "57fa3d58cdcce05ccc336d89286d70a56ce342f89381d7f66ba421b8c4064f4b",
+        "private_state": "1a5c486f069ca3d20e57b3607374c46b7e724572de5f41fbce0fd143ba5f8c0d",
+        "provider": "ef0e62fdc6e5edfdd8653c058e12ae0bd179387e0cfd9834e5b47ef8a372771f"
+      }
+    },
+    {
+      "activity_dump_sha256": "0ad80221beb6292b345e4fa6879cc7593e991785fc99fc5f655eb70bbfa2dbae",
+      "actual_activity_block_sha256": "90fbd8838977a9f1ffcd7d242ef86abd56a07779ed57fdbceffaa3137b916bd7",
+      "elapsed_clock_source": "held /proc/uptime, millisecond truncation",
+      "fixture_age_elapsed_ms": 1834760,
+      "lease_expired": true,
+      "lease_ms": 1200000,
+      "phase": "after",
+      "route": {
+        "actual_stack_component": [
+          "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+          "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03.RotationActivity"
+        ],
+        "album_uri": "content://media/external/images/media?bucketId=-1681480384",
+        "caller_package": "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+        "caller_uid": 10197,
+        "component": [
+          "com.android.gallery3d",
+          "com.android.gallery3d.app.GalleryActivity"
+        ],
+        "foreground": {
+          "activity": "com.android.gallery3d.app.GalleryActivity",
+          "package": "com.android.gallery3d",
+          "popup": false,
+          "task": 1005,
+          "window_token": "c4ad8a1"
+        },
+        "new_task": false,
+        "task": 1005
+      },
+      "stable_field_fingerprints": {
+        "backing_folder_birth": "126922f2f703766df2433491f6f0925029fbcafef65a1624ebf3329da90e8bc0",
+        "backing_parent_birth": "401582ca3a9b45ccaaea0bfb4a54d8521e3e652fbdef35725550b869915f4ff2",
+        "directory_rows": "d76f2c7b7da5104e0bac6001851627ba0075d6f611d7ffe5ccda3565544d4dc6",
+        "fuse_parent_birth": "a202739ebf1c38d73317912160274d39333641547a4c6658b4d4c5c6bf387ad5",
+        "gallery_identity": "efd3b369f1a2f24af86ecf6688ff02ba978026eeb46afce0776a67df0e82960f",
+        "helper_identity": "81235d7343bbc25adef0ed15dfe8bf983d92015fccc1cd7b61cda64d283e62cb",
+        "media": "57fa3d58cdcce05ccc336d89286d70a56ce342f89381d7f66ba421b8c4064f4b",
+        "private_state": "1a5c486f069ca3d20e57b3607374c46b7e724572de5f41fbce0fd143ba5f8c0d",
+        "provider": "ef0e62fdc6e5edfdd8653c058e12ae0bd179387e0cfd9834e5b47ef8a372771f"
+      }
+    }
+  ],
+  "route_effect_independently_observed": false,
+  "saved_export_sha256": "027d94508fbd039b6e3b95481428774ec433a3f7276d1b2c755fa7c46ea361d8",
+  "saved_record_pins": {
+    "004-original-media-before.json": {
+      "bytes": 509,
+      "sha256": "5006da39abbc6d131d7233a2802ed00eb10fad4438faa7b0178400e314873e38"
+    },
+    "015-owned-two-images-seeded-namespace.json": {
+      "bytes": 2358,
+      "sha256": "05f8f10a3581c0fa70b477f68d4dd847bcb0c424a1b739bbb16f9842b80a324e"
+    },
+    "019-owned-two-images-seeded.json": {
+      "bytes": 3336,
+      "sha256": "a7e38a8162dd07af2398b76e5d784c93609de3b5afade4c9ae4f25a6a9c1faf3"
+    }
+  },
+  "schema": "gallery03-readonly01-selected-original-fields-v1",
+  "source_result_sha256": "41a2a9c45ab1e04fc70774f711384b701b7e495b8a46011f97cd18f0c0f0fb66",
+  "started_utc": "2026-11-05T23:20:08.102717+00:00",
+  "state": "FAILED",
+  "task_removals": 0,
+  "whole_app_production_ready": false
+}

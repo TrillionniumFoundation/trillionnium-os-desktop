@@ -1,0 +1,70 @@
+{
+  "conclusion": "NO_DEFINITE_SOURCE_BLOCKER_FOR_REVIEWED_ONE_METHOD_CHANGE",
+  "effects": {
+    "Android_commands": 0,
+    "UI_actions": 0,
+    "candidate_modifications": 0,
+    "installs": 0,
+    "remote_RPC": 0,
+    "trace_operations": 0
+  },
+  "independent_source_comparison": {
+    "all_non_method_source_byte_exact": true,
+    "changed_methods": [
+      {
+        "class": "org/chromium/webview_shell/WebViewBrowserActivity$TracingLogger$1.smali",
+        "method": "public run()V"
+      }
+    ],
+    "classes": 19,
+    "methods": 99,
+    "remaining_98_method_blocks_byte_exact": true
+  },
+  "inputs": [
+    {
+      "bytes": 1306,
+      "path": "webview-tracing-guard08/tracing-lifecycle01.patch",
+      "sha256": "c2c362deaa48a11b007e1762288d6c11de31116638a5244b1913f7605ffd38b8"
+    },
+    {
+      "bytes": 3301,
+      "path": "webview-tracing-guard08/REVIEW_PLAN01.json",
+      "sha256": "298dbf1d39ebd6aaf04cc986d56d88c0072a9fca2097caa3db3f93494d76af29"
+    },
+    {
+      "bytes": 2576,
+      "path": "webview-tracing-guard08/original-smali/org/chromium/webview_shell/WebViewBrowserActivity$TracingLogger$1.smali",
+      "sha256": "296055a1c4fa507805b0ce33ad23d7f7393aa928197c51ebf760315c3f367821"
+    },
+    {
+      "bytes": 2910,
+      "path": "webview-tracing-guard08/candidate-smali/org/chromium/webview_shell/WebViewBrowserActivity$TracingLogger$1.smali",
+      "sha256": "49fa8cc90e5f3763deaca580879d80e8e4db828c4a9f6e090c26b9b422a33fa5"
+    },
+    {
+      "bytes": 3517,
+      "path": "webview-tracing-guard08/original-smali/org/chromium/webview_shell/WebViewBrowserActivity$TracingLogger.smali",
+      "sha256": "550db9628fd87966bfe76b58904f0137e4c36c6262e4c97ad3bde4c3605124ba"
+    },
+    {
+      "bytes": 1710,
+      "path": "webview-tracing-guard08/HOST_TESTS01.json",
+      "sha256": "4f94bcb03a03772d1d812322c6732be6d432d42b5ee87c258c2a5bfad881df8a"
+    }
+  ],
+  "reviewer": "camera_runtime_review",
+  "schema": "webview-tracing-guard-clock-source-peer/v1",
+  "source_findings": [
+    "The parent TracingLogger.showDialog submits this actual Runnable with Activity.runOnUiThread; the patch does not change scheduling or FileOutputStream.close/write.",
+    "The final captured Activity is loaded once and checked for null, finishing, and destroyed before allocating the Builder; the live-Activity title/message/button/create/show instruction sequence is preserved.",
+    "Registers remain 3: v0 and v1 are local, p0 aliases v2. Guards branch to a return-void join that reads no merged register value; there is no new catch region or swallowed exception.",
+    "The change handles already finishing/destroyed Activity state at callback execution. It does not claim every possible window-token race or actual Android tracing behavior is proven.",
+    "The null-Activity host case is a method boundary only: the unchanged caller also dereferences Activity for runOnUiThread, so it is not an end-to-end null recovery claim."
+  ],
+  "validation_scope": {
+    "assembly_ART_and_real_trace_not_proven_by_peer": true,
+    "framework_calls_are_doubled": true,
+    "read_existing_six_host_cases": true,
+    "reran_or_modified_tests": false
+  }
+}

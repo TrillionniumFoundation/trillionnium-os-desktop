@@ -1,0 +1,78 @@
+{
+  "actual_binding": {
+    "album_uri": "content://media/external/images/media?bucketId=-1681480384",
+    "caller_package": "org.droidloom.qa.galleryrotation.r12.nd24b61ed8f7c9a03",
+    "caller_uid": 10197,
+    "gallery_activity_record": "24212890",
+    "helper_activity_record": "243553609",
+    "intent_action": "android.intent.action.VIEW",
+    "mime_type": "vnd.android.cursor.dir/image",
+    "new_task": false,
+    "preexisting_task": 851,
+    "task": 1005,
+    "wm_window_token": "c4ad8a1"
+  },
+  "actual_stdout": {
+    "bytes": 26812,
+    "header": "    * Hist  #1: ActivityRecord{24212890 u0 com.android.gallery3d/.app.GalleryActivity t1005}",
+    "path": "saved-artifacts/commands/060-android.stdout",
+    "sha256": "d0f40e33cd80274075545744b5f728c2674ed9f1ec444a2cfa9b5c1206bb538c"
+  },
+  "business_or_ready_credit": false,
+  "change": "Only two Hist header patterns accept one or more ASCII space/tab; leading indentation is space/tab only, never cross-line whitespace. Other actual Adapter code is byte-identical.",
+  "current_live_route_not_yet_observed": true,
+  "live_observer": {
+    "fixed_helper_uid": 10197,
+    "fixed_image_ids": [
+      98,
+      100
+    ],
+    "fixed_task": 1005,
+    "lease_expired_means_no_business_continuation": true,
+    "max_explicit_readonly_android_queries": 24,
+    "no_UI_or_helper_invocations": true,
+    "no_mutations": true,
+    "original_lease_not_extended": true,
+    "request": {
+      "bytes": 17802,
+      "path": "gallery-rotation08/reconcile03/read-live-route03-request.json",
+      "sha256": "fc8537ce5d53748fb26f7d597300493b20f6ee91613b70dacfd57e09e3a0df46"
+    },
+    "same_tokens_private_phase_and_two_exact_file_bytes_required": true,
+    "source_bytes": 16675,
+    "source_sha256": "4ac25b6cbb5ec5680a652e7ca1eda4655201f1bc5d732cf659060d3034632c61",
+    "submitted": false,
+    "two_bounded_media_read_rounds": true
+  },
+  "local_actual_method_validation": {
+    "cases": [
+      "old actual-method rejects actual double-space header",
+      "new actual-method binds same task and keeps original pending",
+      "single space and horizontal tab remain accepted",
+      "newline separator rejected",
+      "duplicate exact Gallery block rejected",
+      "different caller rejected",
+      "different album URI rejected",
+      "different focused task rejected"
+    ],
+    "command": "python -m unittest discover -s gallery-rotation08/reconcile03 -p test_hist_route03.py -v",
+    "exit_code": 0,
+    "test_source_sha256": "454f6ff107a1bfffac660bfe0a75dcc4f332a9c8cfa4aee5721264b66ed19644",
+    "tests": 8
+  },
+  "new_adapter_sha256": "2ad57b62514cd0cc45056c34d5c30a3df0240d800394701f408b02f212be4ccf",
+  "new_selected_records": 1,
+  "new_split_blocks": 4,
+  "old_adapter_sha256": "ac885a393ff6b3e6cc477bb9c0acf55284fe3e4c92474fb82571884d07d9b650",
+  "old_selected_records": 0,
+  "old_split_blocks": 1,
+  "original_FAILED_and_unknown_preserved": true,
+  "patch_sha256": "801dd3b64a365eee8a35a4bf4c7e16cab5c857bed49e07e2c260539751cbd1f2",
+  "saved_export_sha256": "027d94508fbd039b6e3b95481428774ec433a3f7276d1b2c755fa7c46ea361d8",
+  "schema": "gallery03-retained-activity-header-parser-review-v1",
+  "scope": "actual saved output and actual method-boundary local regression only",
+  "source_result": {
+    "path": "../controller03/result03-original.json",
+    "sha256": "41a2a9c45ab1e04fc70774f711384b701b7e495b8a46011f97cd18f0c0f0fb66"
+  }
+}

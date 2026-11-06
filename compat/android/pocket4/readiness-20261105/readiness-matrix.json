@@ -20,8 +20,8 @@
     },
     "progress": {
       "file": "progress.json",
-      "sha256": "46e9b3400d39b6670dc14d797b415c2c645bab2c639602cca531bcf8b28f6106",
-      "bytes": 95205
+      "sha256": "d95cd044c98a382b723ef067169e83913422228c280742c647bf716092ded463",
+      "bytes": 99326
     },
     "inventory": {
       "file": "current-installed-inventory-derived-20261105.json",
@@ -30,8 +30,8 @@
     },
     "gate_reviews": {
       "file": "gate-reviews.json",
-      "sha256": "4afbe5490713699dd7329d1750fde56bb4594191c91575ea34aff94ec3fa6d17",
-      "bytes": 48453
+      "sha256": "5975ecda40180feeeb23d3bc1e7a89f927313cda010153bb6773ff1cfb4a60e2",
+      "bytes": 50777
     },
     "package_identities": {
       "file": "package-identity-observations-20261105.json",
@@ -50,8 +50,8 @@
   "current_third_party_package_count": 44,
   "new_launcher_packages": [],
   "retained_baseline_packages_not_current_launchers": [],
-  "production_ready_count": 0,
-  "not_production_ready_count": 45,
+  "production_ready_count": 1,
+  "not_production_ready_count": 44,
   "all_apps_production_ready": false,
   "kind_counts": {
     "input_method": 1,
@@ -966,6 +966,24 @@
           "uid": 10061,
           "version_code": 37,
           "whole_app_production_ready": false
+        },
+        {
+          "id": "calendar17_18_picker_and_clean_preinput_history",
+          "package": "com.android.calendar",
+          "version_code": 37,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-06T00:15:28.272540+00:00",
+          "status": "PICKER_DISCOVERY17_AND_PREINPUT18_FAILURE_RETAINED_CLEAN",
+          "scoped_business_flow_completed": false,
+          "whole_app_production_ready": false,
+          "evidence": [
+            {
+              "path": "inputs/calendar17-18-summary.json",
+              "bytes": 2152,
+              "sha256": "1d5a0c7a6bd5fa08d1dc28e19863f8feba0b307caf7b5873ef84a9274a56d169"
+            }
+          ],
+          "limits": "No new date/timezone/recurrence, reminder, sync or whole-App credit; prior scoped persistence remains unchanged."
         }
       ],
       "gate_results": {
@@ -3154,6 +3172,24 @@
           "uid": 10064,
           "version_code": 40030,
           "whole_app_production_ready": false
+        },
+        {
+          "id": "gallery03_04_failed_routes_and_exact_cleanup",
+          "package": "com.android.gallery3d",
+          "version_code": 40030,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-06T00:07:13.767690+00:00",
+          "status": "FAILED_BUSINESS_TRIALS_EXACT_CLEANUP_AND_SAVED_DIAGNOSIS",
+          "scoped_business_flow_completed": false,
+          "whole_app_production_ready": false,
+          "evidence": [
+            {
+              "path": "inputs/gallery03-04-summary.json",
+              "bytes": 5264,
+              "sha256": "9157c684ead7794f802a00805f5f4903da31c766d7bbd4946b02252b4992a1d7"
+            }
+          ],
+          "limits": "No rotation or UI-delete/business gate credit; original failed/unknown receipts retained."
         }
       ],
       "gate_results": {
@@ -5621,34 +5657,72 @@
           "status": "TWO_ROUND_UNICODE_CONFIRM_REOPEN_CLEANUP_VERIFIED",
           "version_code": 0,
           "whole_app_production_ready": false
+        },
+        {
+          "id": "probe04_complete_declared_QA_release",
+          "package": "local.pocket4.fixture",
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "version_code": 0,
+          "observed_at_utc": "2026-11-05T23:55:23.344323+00:00",
+          "status": "COMPLETE_DECLARED_QA_APP_RELEASE_ACCEPTED",
+          "scoped_business_flow_completed": true,
+          "whole_app_production_ready": true,
+          "evidence": [
+            {
+              "path": "inputs/probe-completion04/CLOCK_ACTUAL_FEATURE_REVIEW04.json",
+              "bytes": 18235,
+              "sha256": "6d9a0d7dc6202555e84e281e5a8aa8b787cdfe9b8b5d01d3b4cf5603cacac1e5"
+            },
+            {
+              "path": "inputs/probe-completion04/ROOT_RUNTIME_DIAGNOSTICS_REVIEW04.json",
+              "bytes": 14597,
+              "sha256": "955125dc87cb9961320fc0483e0d57c20b207a137fb264b39007d4a0a8a52851"
+            },
+            {
+              "path": "inputs/probe-completion04/SIGNATURE_IDENTITY_AUDIT_SELECTED.json",
+              "bytes": 3458,
+              "sha256": "2f1fb6e2357da6f18b96f7f47f5e65131756b7a2c94fe987649ae593eadef213"
+            },
+            {
+              "path": "inputs/probe-completion04/WHOLE_QA_RELEASE_REVIEW.json",
+              "bytes": 9113,
+              "sha256": "0f8390911c5e17d1432efeeb3032404a02462a4ad7807fed970510cde44041b1"
+            },
+            {
+              "path": "inputs/probe-completion04/result04-original.json",
+              "bytes": 41618,
+              "sha256": "3e94b99a354719380674a7115d8b202c613beee4e2d90fccc6d443c3d7664327"
+            }
+          ],
+          "limits": "Complete five-class QA fixture contract and predeclared three-round repeat/resource budget only; other44App statuses remain independent."
         }
       ],
       "gate_results": {
-        "identity": "pending",
+        "identity": "passed",
         "lifecycle": "passed",
-        "stability": "pending",
-        "data_permissions": "pending",
-        "release_scope": "blocked",
+        "stability": "passed",
+        "data_permissions": "passed",
+        "release_scope": "passed",
         "ui_observation": "passed",
         "fixture.contract": "passed",
-        "fixture.controls": "pending",
-        "fixture.isolation": "pending"
+        "fixture.controls": "passed",
+        "fixture.isolation": "passed"
       },
-      "unpassed_gates": [
-        "identity",
-        "stability",
-        "data_permissions",
-        "release_scope",
-        "fixture.controls",
-        "fixture.isolation"
-      ],
+      "unpassed_gates": [],
       "gate_evidence": {
-        "fixture.contract": "root_probe03_two_round_scoped_contract_ui_lifecycle",
-        "lifecycle": "root_probe03_two_round_scoped_contract_ui_lifecycle",
-        "ui_observation": "root_probe03_two_round_scoped_contract_ui_lifecycle"
+        "fixture.contract": "root_probe04_complete_declared_QA_release",
+        "lifecycle": "root_probe04_complete_declared_QA_release",
+        "ui_observation": "root_probe04_complete_declared_QA_release",
+        "data_permissions": "root_probe04_complete_declared_QA_release",
+        "fixture.controls": "root_probe04_complete_declared_QA_release",
+        "fixture.isolation": "root_probe04_complete_declared_QA_release",
+        "identity": "root_probe04_complete_declared_QA_release",
+        "release_scope": "root_probe04_complete_declared_QA_release",
+        "stability": "root_probe04_complete_declared_QA_release"
       },
       "accepted_reviews": [
-        "root_probe03_two_round_scoped_contract_ui_lifecycle"
+        "root_probe03_two_round_scoped_contract_ui_lifecycle",
+        "root_probe04_complete_declared_QA_release"
       ],
       "reviewed_apk_sha256": "91e352c25e7c6ef54aa53ce652931e40ad1437dfcd0ebad2529bc662558a3dd6",
       "installed_apk_observation": {
@@ -5672,7 +5746,7 @@
         "earlier_review_cutoff_utc": null
       },
       "prerequisites": [],
-      "production_ready": false,
+      "production_ready": true,
       "installed_version_changed": false
     },
     {
@@ -5740,6 +5814,24 @@
           },
           "version_code": 1,
           "whole_app_production_ready": false
+        },
+        {
+          "id": "webview_tracing_candidate_build_and_context",
+          "package": "org.chromium.webview_shell",
+          "version_code": 1,
+          "framework_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+          "observed_at_utc": "2026-11-05T23:38:14.428969+00:00",
+          "status": "SIGNED_CANDIDATE_BUILT_CONTEXT_METADATA_REVIEWED_NOT_INSTALLED",
+          "scoped_business_flow_completed": false,
+          "whole_app_production_ready": false,
+          "evidence": [
+            {
+              "path": "inputs/webview-tracing-build-context-summary.json",
+              "bytes": 2207,
+              "sha256": "c0901f8686d97de5873f7ff67c3d31b89d025b0fc4862b3ab6e9ffd5896cc616"
+            }
+          ],
+          "limits": "Source-inferred lifecycle candidate only; no ART/install/tracing or current App gate credit."
         }
       ],
       "gate_results": {

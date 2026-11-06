@@ -1,0 +1,57 @@
+{
+  "schema": "calendar18-clean-ui-handoff/v1",
+  "to": "/root",
+  "state": "FAILED_RUN_CLEAN_HANDOFF_NO_BUSINESS_CREDIT",
+  "job_id": "1a1ae359485-fc05-5e30",
+  "authoritative_status": {
+    "state": "failed",
+    "exit_code": 1,
+    "output_complete": true,
+    "output_durable": true,
+    "timed_out": false
+  },
+  "original_result": {
+    "path": "actual-result18-original.json",
+    "bytes": 11131,
+    "sha256": "5ca54a3b11e8b09ce8c578ce6e92ea57ec241119153e0a68c4da9b2cd7308136"
+  },
+  "failure": "RuntimeError:FIRST_OPEN_COMPLETE_READINESS_NOT_OBSERVED_WITHIN_BOUND",
+  "started_utc": "2026-11-06T00:15:13.775179+00:00",
+  "finished_utc": "2026-11-06T00:15:28.272540+00:00",
+  "normal_close_tasks": [
+    1013
+  ],
+  "task_set_restored": true,
+  "baseline_task_ids": [
+    851
+  ],
+  "owned_tasks": {},
+  "ui_pending": {},
+  "business_pending": null,
+  "empty_calendar_cleanup_pending": false,
+  "all_eight_physical_tables": {
+    "Attendees": 0,
+    "CalendarAlerts": 0,
+    "Calendars": 0,
+    "Events": 0,
+    "EventsRawTimes": 0,
+    "ExtendedProperties": 0,
+    "Instances": 0,
+    "Reminders": 0
+  },
+  "owned_calendar": null,
+  "owned_event_id": null,
+  "native_control_inputs": 0,
+  "native_lifecycle_actions": 2,
+  "standard_intents": 0,
+  "provider_cleanup_calls": 0,
+  "Main_guard_before_after_equal": true,
+  "Calendar_Provider_native_identities_equal": true,
+  "new_crash_or_anr_exits": 0,
+  "new_exit_events": 1,
+  "original_failure_preserved": true,
+  "business_gates": {},
+  "no_inflight_UI_or_mutation": true,
+  "saved_journal_readonly_diagnosis_may_continue": true,
+  "whole_app_ready": false
+}

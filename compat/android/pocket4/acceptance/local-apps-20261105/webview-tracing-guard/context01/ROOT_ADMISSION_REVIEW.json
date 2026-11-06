@@ -1,0 +1,33 @@
+{
+  "schema": "webview-resolved-library-root-admission/v1",
+  "reviewed_at_utc": "2026-11-05T23:32:56.201219+00:00",
+  "reader": {
+    "bytes": 14985,
+    "sha256": "883832363dbffb3a2caccdfb3990e7cafce2a5f3b10e61306e794715f6a8ae6b"
+  },
+  "request": {
+    "bytes": 14361,
+    "sha256": "a4577563b6ddd2d613c1676af1fcea62cbb9b0851bb5b32d0d02ac511040c1c7"
+  },
+  "stage": {
+    "bytes": 14100,
+    "sha256": "7f9cfeef6eed8c56fd7e24a82172aa506111ce021271e1258b53670a815be283"
+  },
+  "manifest": {
+    "bytes": 662,
+    "sha256": "4458cfa8a3979df2964f002218bda26d49f778af29c98216886efdf08324faac"
+  },
+  "execution_authorized_once": true,
+  "idempotency_key": "pocket4-webview-art-context01-20261105-r12",
+  "scope": "Four read-only PM queries for exact WebView Shell10060/v1/0f9d plus bounded selected XML/resolvedJAR/existingOAT/tool file metadata, before and after in held Main generation.",
+  "reviewed_boundaries": [
+    "Root read full14985B observer and stage; independently decoded both exact payloads and request stdin.",
+    "Observed required android.test.runner forbids assuming an empty class-loader context. This reader does not invoke a compiler or oatdump and missing/unparseable OAT context remains explicit.",
+    "At most8 resolved library paths under fixed framework directories; selected platform/android.test XML only, at most3 exact Browser2 OAT paths. No user/account/private media content.",
+    "Original b227/12288 Main and held system_server identity; exact APK and library/tool/configuration closure checked before/after, success only outside held context.",
+    "Isolated CPU20/100%,512MiB,swap0,pids48,100s reader/120s unit/150s supervisor; no Main resource mutation."
+  ],
+  "ART_execution_authorized": false,
+  "install_or_App_UI_tracing_authorized": false,
+  "whole_app_ready": false
+}

@@ -1,0 +1,200 @@
+{
+  "actual_new_rotation_inputs": 0,
+  "complete_native_tree": {
+    "null_child_count": 0,
+    "snapshot_complete": true,
+    "truncated": false,
+    "visible_count": 20,
+    "visited_count": 20
+  },
+  "conclusion": "EXACT_OWNED_ALBUM_NAME_PRESENT_IN_NAVIGATION_CONTENT_DESCRIPTION",
+  "context_nodes": [
+    {
+      "bounds": "[320,45][1520,120]",
+      "bounds_array": [
+        320,
+        45,
+        1520,
+        120
+      ],
+      "checked": false,
+      "class": "android.view.ViewGroup",
+      "clickable": false,
+      "content-desc": "",
+      "editable": false,
+      "enabled": true,
+      "focused": false,
+      "hint": "",
+      "important_for_accessibility": true,
+      "package": "com.android.gallery3d",
+      "password": false,
+      "resource-id": "android:id/action_bar",
+      "scrollable": false,
+      "selected": false,
+      "showing-hint": false,
+      "source": "native_accessibility",
+      "supported_actions": [
+        4,
+        8,
+        64,
+        16908342
+      ],
+      "text": "",
+      "value": null,
+      "visible": true,
+      "window_id": 23783
+    },
+    {
+      "bounds": "[320,72][341,93]",
+      "bounds_array": [
+        320,
+        72,
+        341,
+        93
+      ],
+      "checked": false,
+      "class": "android.widget.ImageView",
+      "clickable": false,
+      "content-desc": "",
+      "editable": false,
+      "enabled": true,
+      "focused": false,
+      "hint": "",
+      "important_for_accessibility": false,
+      "package": "com.android.gallery3d",
+      "password": false,
+      "resource-id": "android:id/up",
+      "scrollable": false,
+      "selected": false,
+      "showing-hint": false,
+      "source": "native_accessibility",
+      "supported_actions": [
+        4,
+        8,
+        64,
+        16908342
+      ],
+      "text": "",
+      "value": null,
+      "visible": true,
+      "window_id": 23783
+    },
+    {
+      "bounds": "[336,50][401,115]",
+      "bounds_array": [
+        336,
+        50,
+        401,
+        115
+      ],
+      "checked": false,
+      "class": "android.widget.ImageView",
+      "clickable": false,
+      "content-desc": "",
+      "editable": false,
+      "enabled": true,
+      "focused": false,
+      "hint": "",
+      "important_for_accessibility": false,
+      "package": "com.android.gallery3d",
+      "password": false,
+      "resource-id": "android:id/home",
+      "scrollable": false,
+      "selected": false,
+      "showing-hint": false,
+      "source": "native_accessibility",
+      "supported_actions": [
+        4,
+        8,
+        64,
+        16908342
+      ],
+      "text": "",
+      "value": null,
+      "visible": true,
+      "window_id": 23783
+    }
+  ],
+  "diagnosis_is_async_missing_title": false,
+  "limitations": [
+    "Saved image recognition is independent offline evidence; the original executed gate dictionary remains empty.",
+    "No Navigate up action is issued; the node is only an exact album identity observation.",
+    "No new runtime Gallery05 execution occurred."
+  ],
+  "new_exact_navigation_match_count": 1,
+  "observed_album_navigation_node": {
+    "bounds": "[320,45][406,120]",
+    "bounds_array": [
+      320,
+      45,
+      406,
+      120
+    ],
+    "checked": false,
+    "class": "android.widget.LinearLayout",
+    "clickable": true,
+    "content-desc": "Pocket4_Rotate_Copy_r12_d24b61ed8f7c9a03, Navigate up",
+    "editable": false,
+    "enabled": true,
+    "focused": false,
+    "hint": "",
+    "important_for_accessibility": true,
+    "package": "com.android.gallery3d",
+    "password": false,
+    "resource-id": "",
+    "scrollable": false,
+    "selected": false,
+    "showing-hint": false,
+    "source": "native_accessibility",
+    "supported_actions": [
+      1,
+      4,
+      8,
+      16,
+      64,
+      256,
+      512,
+      131072,
+      16908342
+    ],
+    "text": "",
+    "value": null,
+    "visible": true,
+    "window_id": 23783
+  },
+  "observed_text_labels": [
+    "Gallery",
+    "Grid view"
+  ],
+  "old_predicate_match_count": 0,
+  "original_failure_unchanged": true,
+  "original_result": {
+    "bytes": 24793,
+    "sha256": "cdfddcb66b2ad720569d97943467f5180f45d5301174af494191daf76d972e66"
+  },
+  "saved_export": {
+    "bytes": 434434,
+    "sha256": "3a1866206e77f8050bf603b43da968386dd3a08badac11b0ba03fbcfdffa1a90"
+  },
+  "saved_native": {
+    "bytes": 21750,
+    "sha256": "0b4eaaec432b168f508dbb8022f24773255d0c0a919359dcd94ea6b2c883a7e9"
+  },
+  "saved_png": {
+    "bytes": 22562,
+    "sha256": "58f072be8eb331e3055f4b39cfe0f8e5c33bf4ed0a2a61555d0b69047051ee30"
+  },
+  "saved_thumbnail_review": {
+    "bytes": 1777,
+    "sha256": "83a2ce4c244d54ddafb8c8ed8093639a7bbc1201d78f04dc00893d547cf20717"
+  },
+  "schema": "gallery04-saved-title-source-review/v1",
+  "source_album_page": {
+    "finding": "Non-get-content branch calls mMediaSet.getName then GalleryActionBar.setTitle(String). Framework navigation accessibility description is established by the actual saved tree, not an uncaptured GalleryActionBar implementation.",
+    "method": "onCreateActionBar(Landroid/view/Menu;)Z",
+    "method_sha256": "eaa4aeb2a46d1ae90439fa60d4eba802b5a2dc23dced80602d0623fcf28b54e6",
+    "path": "gallery-video08/view-controls-source04/smali/com/android/gallery3d/app/AlbumPage.smali",
+    "sha256": "59e0f54d79b5ce8bcf01cb8d04edaaf8cce5cfb0dee2ea3dac789d130ca548e1"
+  },
+  "whole_app_or_rotation_credit": false
+}

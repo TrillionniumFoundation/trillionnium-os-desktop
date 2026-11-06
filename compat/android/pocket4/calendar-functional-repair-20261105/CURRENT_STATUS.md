@@ -1,4 +1,10 @@
-# Calendar status at checkpoint11 — installed candidate11
+# Calendar current status — checkpoint13
+
+Device-observation cutoff: **2026-11-06 00:15:28.272540 UTC**. Candidate11 remains installed with its prior persistence/UI/lifecycle credit. No date/timezone/recurrence, reminder, sync or whole-App gate is added by this checkpoint.
+
+[Discovery17 and recurrence18 history](discovery17-core18-history/README.md) preserves the actual picker structures and both complete terminal records. Discovery17 performed ten control inputs without Event Save, then removed its exact empty local calendar and task1007. Recurrence18 stopped before its first control because the frozen two-consecutive-complete condition did not hold within six readonly samples. Task1013 closed; no calendar/event was created, all eight physical tables remained zero, and pending effects were empty. No retry or new sampling budget is inferred from this failure. Later saved diagnosis is separate work.
+
+# Retained Calendar checkpoint11 — installed candidate11
 
 Device-observation cutoff: **2026-11-05 21:54:28 UTC**. Later continuation runs
 are outside this frozen checkpoint.
