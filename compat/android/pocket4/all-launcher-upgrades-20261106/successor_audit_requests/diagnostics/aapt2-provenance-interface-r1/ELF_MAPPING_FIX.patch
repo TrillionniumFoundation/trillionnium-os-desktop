@@ -1,0 +1,86 @@
+--- initial-single-segment/elf_static.py
++++ final-unique-piecewise/elf_static.py
+@@ -101,15 +101,25 @@
+         _need(type(address) is int and 0 <= address < U64_END and 0 < count <= U64_END - address,
+               "DYNAMIC_VIRTUAL_SPAN_OUT_OF_BOUNDS")
+         end = address + count
+-        intersecting = [p for p in loads if address < p["vaddr"] + p["memory_bytes"]
+-                        and p["vaddr"] < end]
+-        _need(len(intersecting) == 1, "VIRTUAL_MAPPING_NOT_UNIQUE")
+-        chosen = intersecting[0]
+-        _need(chosen["vaddr"] <= address and end <= chosen["vaddr"] + chosen["file_bytes"],
+-              "VIRTUAL_SPAN_NOT_FILE_BACKED")
+-        offset = chosen["offset"] + address - chosen["vaddr"]
+-        span(offset, count)
+-        return offset, chosen["index"]
++        cuts = {address, end}
++        for segment in loads:
++            for boundary in (segment["vaddr"], segment["vaddr"] + segment["memory_bytes"]):
++                if address < boundary < end:
++                    cuts.add(boundary)
++        ordered = sorted(cuts)
++        pieces = []
++        for start, stop in zip(ordered, ordered[1:]):
++            matches = [p for p in loads if p["vaddr"] <= start
++                       and stop <= p["vaddr"] + p["memory_bytes"]]
++            _need(len(matches) == 1, "VIRTUAL_MAPPING_NOT_UNIQUE")
++            chosen = matches[0]
++            _need(stop <= chosen["vaddr"] + chosen["file_bytes"], "VIRTUAL_SPAN_NOT_FILE_BACKED")
++            offset = chosen["offset"] + start - chosen["vaddr"]
++            span(offset, stop - start)
++            pieces.append({"vaddr": start, "offset": offset, "bytes": stop - start,
++                           "load_segment_index": chosen["index"]})
++        _need(sum(p["bytes"] for p in pieces) == count, "MAPPED_SPAN_NOT_COMPLETE")
++        return pieces
+ 
+     def text(raw, label):
+         _need(raw and len(raw) <= MAX_STRING_BYTES and b"\0" not in raw
+@@ -145,9 +155,10 @@
+     p = dynamics[0]
+     _need(16 <= p["file_bytes"] <= MAX_DYNAMIC_BYTES and p["file_bytes"] % 16 == 0
+           and p["file_bytes"] <= p["memory_bytes"], "DYNAMIC_TABLE_SIZE_BOUND")
+-    offset, load_index = map_unique(p["vaddr"], p["file_bytes"])
+-    _need(offset == p["offset"], "DYNAMIC_FILE_AND_VIRTUAL_MAPPING_DIFFER")
+-    raw = read_at(offset, p["file_bytes"])
++    dynamic_map = map_unique(p["vaddr"], p["file_bytes"])
++    _need(all(piece["offset"] == p["offset"] + piece["vaddr"] - p["vaddr"]
++              for piece in dynamic_map), "DYNAMIC_FILE_AND_VIRTUAL_MAPPING_DIFFER")
++    raw = read_at(p["offset"], p["file_bytes"])
+     singleton, needed_offsets, extra_offsets, other_tags = {}, [], [], set()
+     terminated = False
+     used_entries = 0
+@@ -172,8 +183,8 @@
+     _need(DT_STRTAB in singleton and DT_STRSZ in singleton, "DYNAMIC_STRING_TABLE_REQUIRED")
+     string_bytes = singleton[DT_STRSZ]
+     _need(0 < string_bytes <= MAX_STRTAB_BYTES, "STRING_TABLE_SIZE_BOUND")
+-    string_offset, string_load = map_unique(singleton[DT_STRTAB], string_bytes)
+-    strings = read_at(string_offset, string_bytes)
++    string_map = map_unique(singleton[DT_STRTAB], string_bytes)
++    strings = b"".join(read_at(piece["offset"], piece["bytes"]) for piece in string_map)
+     _need(strings[0] == 0 and strings[-1] == 0, "STRING_TABLE_EDGE_TERMINATORS_REQUIRED")
+ 
+     def string_at(offset, label, allow_empty=False):
+@@ -190,12 +201,20 @@
+     result["additional_loader_directives"] = [
+         {"tag": tag, "name": EXTRA_LOAD_STRINGS[tag], "value": string_at(o, EXTRA_LOAD_STRINGS[tag])}
+         for tag, o in extra_offsets]
++    dynamic_indexes = list(dict.fromkeys(piece["load_segment_index"] for piece in dynamic_map))
++    string_indexes = list(dict.fromkeys(piece["load_segment_index"] for piece in string_map))
++    string_contiguous = all(piece["offset"] == string_map[0]["offset"]
++                            + piece["vaddr"] - singleton[DT_STRTAB] for piece in string_map)
+     result["dynamic"] = {"offset": p["offset"], "vaddr": p["vaddr"],
+-                         "bytes": p["file_bytes"], "load_segment_index": load_index,
++                         "bytes": p["file_bytes"],
++                         "load_segment_index": dynamic_indexes[0] if len(dynamic_indexes) == 1 else None,
++                         "mappings": dynamic_map,
+                          "entries_through_null": used_entries,
+                          "other_tags_not_interpreted": sorted(other_tags)}
+-    result["string_table"] = {"offset": string_offset, "vaddr": singleton[DT_STRTAB],
+-                              "bytes": string_bytes, "load_segment_index": string_load}
++    result["string_table"] = {"offset": string_map[0]["offset"] if string_contiguous else None,
++                              "vaddr": singleton[DT_STRTAB], "bytes": string_bytes,
++                              "load_segment_index": string_indexes[0] if len(string_indexes) == 1 else None,
++                              "mappings": string_map}
+     result["read_bytes"] = read_total
+     return result
+ 

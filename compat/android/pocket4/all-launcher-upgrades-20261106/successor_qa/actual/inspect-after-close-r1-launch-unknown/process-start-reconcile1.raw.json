@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "#!/usr/bin/env python3\n\"\"\"Publish one fresh inspection plan and enter the exact existing owned adapter.\"\"\"\nimport hashlib,json,os,stat,sys\nfrom pathlib import Path\nROOT=Path(\"/home/alex/work/pocket4-successor-qa-flow-86d1a0aa167743a1842dc30487245feb\")\nADAPTER=Path(\"/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/qa_adapter.py\")\nPLAN=Path(\"/home/alex/work/pocket4-successor-qa-flow-86d1a0aa167743a1842dc30487245feb/qa-inspect-after-close-01.plan.json\")\nPLAN_RAW=\"{\\\"schema\\\":1,\\\"operation\\\":\\\"inspect\\\",\\\"nonces\\\":{\\\"before\\\":\\\"ac2c13161191ceb0b35bcab3c8ad0096\\\",\\\"inspect\\\":\\\"957ca519ee0cc100b8d13d5117942303\\\",\\\"after\\\":\\\"f13da08022e07f5ac9811246c561d11d\\\"}}\\n\".encode(\"utf-8\")\nPLAN_SHA=\"900a6afb59618edc18ded31479f918833e6a51f4d81f8301b6640f2df9d64831\"\nARGV=[\"/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/qa_adapter.py\",\"--execute-once\",\"--interactive-production\",\"--source-manifest-sha256\",\"dfb9b6a483f1069847433152b9b2e8b0f1b2cdd571a1dbde3068fc9393ad62c4\",\"--build-receipt\",\"/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/build-result.json\",\"--build-receipt-sha256\",\"c0dd8117cdb7fa8b551e2a59b466c91d48ee2f2d9a98908f69b3d3fb8807bf3d\",\"--apk-sha256\",\"006b3bdd64fcd8a03a4ceac0d036b3b99906140feadee61d198756cb6c55c8d9\",\"--signer-certificate-sha256\",\"d48d103342b42791ae4e927d70258062d0de11f9acb9f32b4426aff583f27d6f\",\"--plan\",\"/home/alex/work/pocket4-successor-qa-flow-86d1a0aa167743a1842dc30487245feb/qa-inspect-after-close-01.plan.json\",\"--plan-sha256\",\"900a6afb59618edc18ded31479f918833e6a51f4d81f8301b6640f2df9d64831\",\"--step\",\"inspect-after-close-01\",\"--recorder-root\",\"/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/recorder\",\"--flow-dir\",\"/home/alex/work/pocket4-successor-qa-flow-86d1a0aa167743a1842dc30487245feb\",\"--helper-uid\",\"10157\"]\nFIELDS=(\"st_dev\",\"st_ino\",\"st_mode\",\"st_uid\",\"st_gid\",\"st_nlink\",\"st_size\",\"st_mtime_ns\",\"st_ctime_ns\")\ndef need(ok,code):\n    if not ok:raise RuntimeError(code)\ndef meta(s):return tuple(getattr(s,k) for k in FIELDS)\nneed(os.getuid()==os.geteuid()==0,\"ROOT_EXISTING_FLOW_REQUIRED\")\nbefore=len(os.listdir(\"/proc/self/fd\"))\nneed(ROOT.resolve()==ROOT and PLAN.parent==ROOT and ADAPTER.resolve()==ADAPTER,\"EXACT_CANONICAL_PATHS\")\ninfo=ROOT.lstat()\nneed(stat.S_ISDIR(info.st_mode) and info.st_uid==0 and stat.S_IMODE(info.st_mode)==0o700,\"EXISTING_PRIVATE_FLOW_REQUIRED\")\nfd=os.open(ADAPTER,os.O_RDONLY|os.O_CLOEXEC|os.O_NOFOLLOW)\ntry:\n    first=os.fstat(fd)\n    need(stat.S_ISREG(first.st_mode) and first.st_uid==0 and first.st_nlink==1 and first.st_size==29378,\"EXACT_ROOT_ADAPTER_FILE\")\n    raw=bytearray()\n    while len(raw)<=29378:\n        part=os.read(fd,29379-len(raw))\n        if not part:break\n        raw.extend(part)\n    need(len(raw)==29378 and hashlib.sha256(raw).hexdigest()==\"ad54e8583ffb8b4ff186accde10199aee1ab063bd5dbbb5b9586c908ebebb10c\" and meta(first)==meta(os.fstat(fd))==meta(ADAPTER.lstat()),\"PINNED_ADAPTER_CHANGED\")\nfinally:os.close(fd)\nneed(hashlib.sha256(PLAN_RAW).hexdigest()==PLAN_SHA,\"PLAN_PIN\")\nparsed=json.loads(PLAN_RAW)\nneed(set(parsed)=={\"schema\",\"operation\",\"nonces\"} and parsed[\"schema\"]==1 and parsed[\"operation\"]==\"inspect\",\"INSPECTION_ONLY_PLAN\")\nneed(set(parsed[\"nonces\"])=={\"before\",\"inspect\",\"after\"} and len(set(parsed[\"nonces\"].values()))==3,\"FRESH_PHASE_NONCES\")\nos.umask(0o077)\nfd=os.open(PLAN,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_CLOEXEC|os.O_NOFOLLOW,0o600)\ntry:\n    view=memoryview(PLAN_RAW)\n    while view:\n        count=os.write(fd,view)\n        need(count>0,\"PLAN_WRITE_PROGRESS\")\n        view=view[count:]\n    os.fsync(fd)\nfinally:os.close(fd)\nfd=os.open(ROOT,os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC|os.O_NOFOLLOW)\ntry:os.fsync(fd)\nfinally:os.close(fd)\nneed(PLAN.read_bytes()==PLAN_RAW and len(os.listdir(\"/proc/self/fd\"))==before,\"PLAN_READBACK_AND_DESCRIPTOR_CLOSURE\")\nprint(json.dumps({\"schema\":\"pocket4-owned-inspection-plan-publication-v1\",\"plan\":str(PLAN),\"bytes\":len(PLAN_RAW),\"sha256\":PLAN_SHA,\"new_plan_only\":True,\"UI_actions_before_adapter\":0}),flush=True)\nsys.argv=ARGV\nexec(compile(bytes(raw),str(ADAPTER),\"exec\"),{\"__name__\":\"__main__\",\"__file__\":str(ADAPTER)})\n"
+    ],
+    "created_unix_ms": 1793983857001,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b1c54169-fc05-7abf",
+    "idempotency_key": "pocket4-beike-inspect-after-close-r1-20261106-86d1a0aa167743a1842dc30487245feb",
+    "launch_error": "Remote launch outcome unavailable",
+    "launch_state": "launch_unknown",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b1c54169-fc05-7abf",
+    "request_digest": "34e0a6ebb4d57013be0f616098fb6a2057109038890c7f35608f7c8c5a8ffb88",
+    "request_fingerprint": 3810228816036851731,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b1c54169-fc05-7abf"
+  },
+  "launch": null,
+  "retried_launch": false,
+  "reused": true,
+  "status": {
+    "automatic_retry": false,
+    "job_id": "1a1b1c54169-fc05-7abf",
+    "outcome": "unknown",
+    "state": "status_unavailable",
+    "status_authoritative": false
+  }
+}

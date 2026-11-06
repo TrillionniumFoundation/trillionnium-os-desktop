@@ -1,0 +1,89 @@
+{
+  "schema": "pocket4-builder470-r2-narrow-revision-controls-v1",
+  "r1_unchanged": true,
+  "r1_never_submitted_per_root": true,
+  "only_compiler_changes": [
+    "new owned root",
+    "persist actual focused list as independent_result_gates",
+    "require complete and empty cleanup children/errors for success"
+  ],
+  "unchanged_helper_bodies": 26,
+  "independent_result_gates_binds_actual_focused_list": true,
+  "selected_tests": 19,
+  "cleanup_controls": [
+    {
+      "name": "clean_empty_owned_children",
+      "synthetic_cleanup_fixture": {
+        "complete": true,
+        "children": [],
+        "errors": []
+      },
+      "observed_state": "RUST_BUILD_AND_19_INDEPENDENT_FOCUSED_TESTS_PASS",
+      "expected_state": "RUST_BUILD_AND_19_INDEPENDENT_FOCUSED_TESTS_PASS",
+      "check_passed": true
+    },
+    {
+      "name": "reaped_residual_child_still_rejects_pass",
+      "synthetic_cleanup_fixture": {
+        "complete": true,
+        "children": [
+          {
+            "synthetic_fixture": true,
+            "reaped": true
+          }
+        ],
+        "errors": []
+      },
+      "observed_state": "FAILED",
+      "expected_state": "FAILED",
+      "check_passed": true
+    },
+    {
+      "name": "cleanup_error_still_rejects_pass",
+      "synthetic_cleanup_fixture": {
+        "complete": true,
+        "children": [],
+        "errors": [
+          {
+            "synthetic_fixture": true,
+            "operation": "close_pidfd"
+          }
+        ]
+      },
+      "observed_state": "FAILED",
+      "expected_state": "FAILED",
+      "check_passed": true
+    },
+    {
+      "name": "incomplete_cleanup_rejects_pass",
+      "synthetic_cleanup_fixture": {
+        "complete": false,
+        "children": [],
+        "errors": []
+      },
+      "observed_state": "FAILED",
+      "expected_state": "FAILED",
+      "check_passed": true
+    }
+  ],
+  "packet_changed_inner_files": [
+    "compile_builder470.py"
+  ],
+  "candidate_source_inventory_unchanged": true,
+  "resources_and_other_request_parameters_unchanged": true,
+  "execution_plan_sha256": "526f8da2d08df232576f9c2696dd550732a67e8e736dbe11b4c4746922865637",
+  "diffs": {
+    "r1-to-r2-compile_builder470.py.diff": {
+      "bytes": 2609,
+      "sha256": "b0386bb3773ad743d3ded5dcd7732891211fb1af1fe4bd9923eed2bf02b516a2"
+    },
+    "r1-to-r2-stage_builder470.py.diff": {
+      "bytes": 4617,
+      "sha256": "e234ddccf9440b5e1b8d530ae487cc836585f5bf05d12cd212e8dcfb6424fa0e"
+    }
+  },
+  "remote_actions": 0,
+  "actual_owned_child_cleanup_performed": false,
+  "Rust_or_Soong_executed": false,
+  "production_ready": false
+}

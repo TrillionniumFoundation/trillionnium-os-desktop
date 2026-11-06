@@ -1,0 +1,31 @@
+--- candidate-r1/worker_body.py
++++ candidate-r2/worker_body.py
+@@ -29,7 +29,7 @@
+     "job_id": "1a1b194cd9b-fc05-79b1", "stdout_bytes": 9876,
+     "stdout_sha256": "60ee9c47cb1719343a1667d306e26086d66f2376d62b8c5251f4e64446887341",
+ }
+-OUTPUT = "/home/alex/work/pocket4-aapt2-provenance-interface-20261106-r1"
++OUTPUT = "/home/alex/work/pocket4-aapt2-provenance-interface-20261106-r2"
+ SYSTEM_LIBRARY_ROOTS = ("/usr/lib", "/lib", "/lib64")
+ SEARCH_DIRS = ("/usr/lib/x86_64-linux-gnu/android", "/usr/lib/x86_64-linux-gnu", "/lib/x86_64-linux-gnu", "/usr/lib64", "/lib64")
+ MAX_FILE = 64 * 1024 * 1024
+@@ -306,9 +306,11 @@
+         result["bounded_runner_source"] = collector_file.pin()
+         for name, tail in (("version", ["version"]), ("dump-badging-help", ["dump", "badging", "--help"])):
+             for item in files:
++                required(time.monotonic() < end, "HOST_TOTAL_DEADLINE_BEFORE_FILE_RECHECK")
+                 item.recheck()
+             command = {"name": name, "APK_input": False}
+             result["commands"].append(command)
++            required(time.monotonic() + 5 < end, "HOST_TOTAL_DEADLINE_BEFORE_CANDIDATE_SPAWN")
+             outputs = runner.run_tool([CANDIDATE["path"], *tail], (candidate.held.fd,), command, end)
+             result["candidate_executions"] += int(command.get("spawned") is True)
+             for stream, raw in outputs.items():
+@@ -317,6 +319,7 @@
+                     command[stream + "_original_hex"] = raw.hex()
+             required(command.get("joined") is True and command.get("pipes_closed") is True, "OWNED_TOOL_CHILD_RETIREMENT_NOT_PROVED")
+             for item in files:
++                required(time.monotonic() < end, "HOST_TOTAL_DEADLINE_BEFORE_FILE_RECHECK")
+                 item.recheck()
+         result["all_bound_host_files_unchanged"] = True
+         result["all_interface_commands_succeeded"] = len(result["commands"]) == 2 and all(

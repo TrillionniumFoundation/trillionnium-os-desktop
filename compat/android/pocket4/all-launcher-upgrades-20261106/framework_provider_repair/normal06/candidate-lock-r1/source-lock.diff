@@ -1,0 +1,225 @@
+--- provider2-original-225-project-lock.json
++++ m2-role-ingress-provider3-source-lock.draft.json
+@@ -95,7 +95,8 @@
+         "common/device-side/nativetesthelper/Android.bp",
+         "common/device-side/nativetesthelper/jni",
+         "common/device-side/nativetesthelper/src",
+-        "libs/json"
++        "libs/json",
++        "common/device-side/util-axt"
+       ]
+     },
+     {
+@@ -156,7 +157,8 @@
+         "service/annotations/src/main",
+         "service/processor",
+         "service/processor/src/main/java",
+-        "value/src/main"
++        "value/src/main",
++        "factory"
+       ]
+     },
+     {
+@@ -1575,7 +1577,8 @@
+       "commit": "c612e6ece389f21c40f8cb9cd9a4b44239f00009",
+       "purpose": "Launcher flags referenced by WindowManager services; launcher application is not built",
+       "sparse_paths": [
+-        "Android.bp"
++        "Android.bp",
++        "aconfig"
+       ]
+     },
+     {
+@@ -1584,7 +1587,8 @@
+       "commit": "213829fb67f5e070029e0513a088f31bc8f5c1ed",
+       "purpose": "Settings flag declarations referenced by services.core",
+       "sparse_paths": [
+-        "Android.bp"
++        "Android.bp",
++        "aconfig"
+       ]
+     },
+     {
+@@ -1784,7 +1788,14 @@
+         "libraries/collectors-helper/simpleperf/src",
+         "libraries/collectors-helper/system/src",
+         "libraries/collectors-helper/utilities/src",
+-        "libraries/junitxml/src"
++        "libraries/junitxml/src",
++        "libraries/flag-helpers/junit",
++        "libraries/health/rules",
++        "libraries/health/utils",
++        "libraries/metrics-helper",
++        "libraries/notes-role-test-helper",
++        "libraries/screenshot/utils/compose",
++        "libraries/uinput-device-test-helper"
+       ]
+     },
+     {
+@@ -1895,7 +1906,9 @@
+         "common/kxml2",
+         "common/ub-uiautomator",
+         "common/robolectric-native-prebuilt",
+-        "common/robolectric/android-all"
++        "common/robolectric/android-all",
++        "common/androidx-media3",
++        "common/androidx-test"
+       ]
+     },
+     {
+@@ -1974,7 +1987,9 @@
+         "current/multidex",
+         "current/test",
+         "current/support/v7/appcompat/res",
+-        "current/support/manifests/android-support-v7-appcompat"
++        "current/support/manifests/android-support-v7-appcompat",
++        "current/androidx-legacy",
++        "current/extras/material-design-x"
+       ]
+     },
+     {
+@@ -2082,7 +2097,8 @@
+         "common/m2/repository/org/mockito/mockito-inline/4.8.1",
+         "common/m2/repository/org/reactivestreams/reactive-streams/1.0.2",
+         "common/m2/repository/org/xerial/sqlite-jdbc/3.28.0",
+-        "common/m2/repository/ru/yole/jkid"
++        "common/m2/repository/ru/yole/jkid",
++        "linux-x86_64/perfetto"
+       ]
+     },
+     {
+@@ -2582,7 +2598,24 @@
+       "sparse_paths": [
+         "tracinglib/core/src",
+         "compilelib/src-release",
+-        "compilelib/src-debug"
++        "compilelib/src-debug",
++        "ace/src/com/android/personalcontext/ace/client",
++        "ace/src/com/android/personalcontext/ace/common",
++        "ace/src/com/android/personalcontext/ace/visualizer",
++        "aconfig",
++        "animationlib",
++        "contextualeducationlib",
++        "displaylib",
++        "dynamiccolors",
++        "iconloaderlib",
++        "mechanics",
++        "monet",
++        "msdllib",
++        "surfaceeffects/compose",
++        "surfaceeffects/core",
++        "surfaceeffects/view",
++        "usertypelib",
++        "viewcapturelib"
+       ]
+     },
+     {
+@@ -2686,6 +2719,108 @@
+         "common/types/operations/src",
+         "common/types/src"
+       ]
++    },
++    {
++      "path": "development",
++      "name": "platform/development",
++      "commit": "4dafd114fab3c3d9543a5aff0ad097f479915176",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/dagger2",
++      "name": "platform/external/dagger2",
++      "commit": "57aa7c004b11466c0154144865e937b9a46a4688",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/dexmaker",
++      "name": "platform/external/dexmaker",
++      "commit": "e476b06efb29b9a8e70a63ec23a3bb7f6208cfaa",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/jakarta.inject",
++      "name": "platform/external/jakarta.inject",
++      "commit": "75b5356ec832b8306d8706eb7fae46fef9cbb1d3",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/kotlinpoet",
++      "name": "platform/external/kotlinpoet",
++      "commit": "1f60e73215577a48f66542ec09456cdc7f12f3d1",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/ksp",
++      "name": "platform/external/ksp",
++      "commit": "aa08926470a7d3afc856a08b0f40057293b8f437",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/libmonet",
++      "name": "platform/external/libmonet",
++      "commit": "f56ffa0d810eb127200cded0895c412a907dfa6d",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/lottie",
++      "name": "platform/external/lottie",
++      "commit": "f21c8dba91039320eeb9d964d8272d9a22f38d72",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/mockito-kotlin",
++      "name": "platform/external/mockito-kotlin",
++      "commit": "709411a57d6b6d8aa7495d281e3f48b4f5f67796",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/perfetto",
++      "name": "platform/external/perfetto",
++      "commit": "ece66975738007dd0978b911d8a2077e49b8f31e",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/setupcompat",
++      "name": "platform/external/setupcompat",
++      "commit": "d4476639e7c7f9bda7bff68e810da2367b8626d2",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/setupdesign",
++      "name": "platform/external/setupdesign",
++      "commit": "79dbf5860322236cd02e74e2ca0855591d95195c",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "external/zxing",
++      "name": "platform/external/zxing",
++      "commit": "d89286b7d32c7860f796e95380b22e99618d00c1",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "frameworks/opt/net/wifi",
++      "name": "platform/frameworks/opt/net/wifi",
++      "commit": "12e5aa5f7224b05b6046613967c6d1de75aeaf26",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "frameworks/opt/telephony",
++      "name": "platform/frameworks/opt/telephony",
++      "commit": "aef289516bea6118d88cd45c63742cd4abe2c596",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "packages/apps/Traceur",
++      "name": "platform/packages/apps/Traceur",
++      "commit": "958957ee3011541f2622b93223abd38071147d3f",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
++    },
++    {
++      "path": "prebuilts/r8",
++      "name": "platform/prebuilts/r8",
++      "commit": "65fe8f9f5c6769d35f91fe67b786b767a2db5249",
++      "purpose": "Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"
+     }
+   ]
+ }

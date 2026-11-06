@@ -1,0 +1,56 @@
+{
+  "schema": "pocket4-static-elf-local-controls-v1",
+  "success": true,
+  "tests_run": 6,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "cases": [
+    {
+      "name": "actual_local_system_elf_not_executed",
+      "path": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3.12",
+      "bytes": 30894944,
+      "sha256": "fa67443527ed9647f760d807e2a38f26340757123e643c4639cf273ed15d5ea7",
+      "interpreter": "/lib64/ld-linux-x86-64.so.2",
+      "needed": [
+        "libpthread.so.0",
+        "libdl.so.2",
+        "libutil.so.1",
+        "libm.so.6",
+        "librt.so.1",
+        "libc.so.6"
+      ],
+      "offset_unchanged": true,
+      "fd_retained_by_caller": true,
+      "result": "PASS"
+    },
+    {
+      "name": "fixture_metadata_and_borrowed_fd_offset",
+      "result": "PASS"
+    },
+    {
+      "name": "malformed_class_machine_phnum_file_extent_and_short_pread",
+      "result": "PASS"
+    },
+    {
+      "name": "interpreter_rejected_and_extra_loader_or_empty_path_not_hidden",
+      "result": "PASS"
+    },
+    {
+      "name": "partial_overlap_missing_mapping_dynamic_bounds_duplicates_and_missing_null",
+      "result": "PASS"
+    },
+    {
+      "name": "unique_piecewise_file_backed_string_mapping",
+      "result": "PASS"
+    }
+  ],
+  "fd_before": 3,
+  "fd_after": 3,
+  "full_fd_identity_restored": true,
+  "Main_actions": 0,
+  "network_requests": 0,
+  "elf_executions": 0,
+  "APK_reads": 0,
+  "source_sha256": "f829cd8664dc5f7172274b4917f70c60114c3bfb43694422c1a5412718b432dd"
+}

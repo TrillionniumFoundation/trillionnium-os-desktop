@@ -1,0 +1,788 @@
+{
+  "APK": {
+    "bytes": 37008,
+    "path": "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/owned-bili-qa.apk",
+    "sha256": "006b3bdd64fcd8a03a4ceac0d036b3b99906140feadee61d198756cb6c55c8d9"
+  },
+  "Android_UI_actions": 0,
+  "Main_mutations": 0,
+  "android_installed": false,
+  "commands": [
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+        "-J-XX:ActiveProcessorCount=1",
+        "-J-XX:+UseSerialGC",
+        "-J-Xmx256m",
+        "-proc:none",
+        "-Xmaxerrs",
+        "20",
+        "-Xmaxwarns",
+        "20",
+        "--release",
+        "8",
+        "-d",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/idle-control-classes",
+        "/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate.java",
+        "/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/tests/InspectionIdleGateChecks.java"
+      ],
+      "error": null,
+      "name": "idle-gate-javac",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "312e9bd919c699a2f8409f70240177012720c94095f0f4374d44152defc50f7e",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-cp",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/idle-control-classes",
+        "org.droidloom.qa.successor.p8f89f253350ba2fa.r1.InspectionIdleGateChecks"
+      ],
+      "error": null,
+      "name": "idle-gate-java",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "da8a4e35a86a37dae64b7496d5477d523fda6cd6c34a8d33eed177218665b93c"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+        "-J-XX:ActiveProcessorCount=1",
+        "-J-XX:+UseSerialGC",
+        "-J-Xmx256m",
+        "-proc:none",
+        "-Xmaxerrs",
+        "20",
+        "-Xmaxwarns",
+        "20",
+        "-source",
+        "8",
+        "-target",
+        "8",
+        "-bootclasspath",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "-d",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes",
+        "/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner.java",
+        "/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/TouchTransaction.java",
+        "/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/PlayerButtonTransaction.java",
+        "/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate.java"
+      ],
+      "error": null,
+      "name": "javac",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "312e9bd919c699a2f8409f70240177012720c94095f0f4374d44152defc50f7e",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-cp",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+        "com.android.tools.r8.D8",
+        "--lib",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "--min-api",
+        "31",
+        "--output",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/dex",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner$1.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner$2.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner$3.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner$4.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner$5.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner$6.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner$Capture.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner$PlayerSelection.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner$Rejected.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner$SelectedWindows.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate$Clock.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate$Fault.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate$Observation.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate$Waiter.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/PlayerButtonTransaction$Backend.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/PlayerButtonTransaction$Fault.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/PlayerButtonTransaction.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/TouchTransaction$Backend.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/TouchTransaction$Fault.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/TouchTransaction$Observation.class",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/classes/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/TouchTransaction.class"
+      ],
+      "error": null,
+      "name": "d8",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "package",
+        "-f",
+        "-M",
+        "/home/alex/work/pocket4-successor-qa-build-source-b34f158f88bbebf112840fd88df25d03/AndroidManifest.xml",
+        "-S",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/res",
+        "-I",
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+        "-F",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/unsigned.apk"
+      ],
+      "error": null,
+      "name": "aapt-package",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-f",
+        "4",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/unsigned.apk",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/aligned.apk"
+      ],
+      "error": null,
+      "name": "align",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+        "-XX:ActiveProcessorCount=1",
+        "-XX:+UseSerialGC",
+        "-Xmx256m",
+        "-m",
+        "java.base/sun.security.tools.keytool.Main",
+        "-genkeypair",
+        "-noprompt",
+        "-storetype",
+        "PKCS12",
+        "-keystore",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/private-signing/owned.p12",
+        "-storepass:file",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/private-signing/password.txt",
+        "-alias",
+        "owned-successor-qa",
+        "-keyalg",
+        "RSA",
+        "-keysize",
+        "3072",
+        "-validity",
+        "3650",
+        "-dname",
+        "CN=Pocket4 Owned Scoped QA R8,O=Owned Test,C=US"
+      ],
+      "error": null,
+      "name": "create-owned-signing-key",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "3e393085a798c4f88900577ad7494a511f9ba220a9354101d1d42c7e565d3d2d",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/apksigner",
+        "sign",
+        "--ks",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/private-signing/owned.p12",
+        "--ks-pass",
+        "file:/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/private-signing/password.txt",
+        "--ks-key-alias",
+        "owned-successor-qa",
+        "--min-sdk-version",
+        "31",
+        "--v1-signing-enabled",
+        "false",
+        "--v2-signing-enabled",
+        "true",
+        "--v3-signing-enabled",
+        "true",
+        "--out",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/owned-bili-qa.apk",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/aligned.apk"
+      ],
+      "error": null,
+      "name": "sign",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/apksigner",
+        "verify",
+        "--verbose",
+        "--print-certs",
+        "--min-sdk-version",
+        "31",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/owned-bili-qa.apk"
+      ],
+      "error": null,
+      "name": "signature",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "943b71b2b8c294fd0bc66a2ad753c4e703c09ecad27a2444922913034571c260"
+    },
+    {
+      "argv": [
+        "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+        "-c",
+        "4",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/owned-bili-qa.apk"
+      ],
+      "error": null,
+      "name": "alignment",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "badging",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/owned-bili-qa.apk"
+      ],
+      "error": null,
+      "name": "badging",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "fe34f672cddc046d8b1142b01d328294df54553adb9297f1f342324fc92cf3dd"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "permissions",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/owned-bili-qa.apk"
+      ],
+      "error": null,
+      "name": "permissions",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "602d1b3d0d1fd5c457a58a0bf825bf9092a021f53bd53eb4a072fc008df7b573"
+    },
+    {
+      "argv": [
+        "/usr/lib/android-sdk/build-tools/debian/aapt",
+        "dump",
+        "xmltree",
+        "/home/alex/work/pocket4-successor-qa-build-b34f158f88bbebf112840fd88df25d03/owned-bili-qa.apk",
+        "AndroidManifest.xml"
+      ],
+      "error": null,
+      "name": "manifest",
+      "owned_child_joined": true,
+      "returncode": 0,
+      "secondary_errors": [],
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_sha256": "1b5602669024a83f74c95c3a996649bae22b403082fbd516917fdf3f14c9ce59"
+    }
+  ],
+  "compiled_python_sources": {
+    "build_candidate.py": "099332858773d43a74f349928431d7ac6c122d6b58be91516115ad416d558e34",
+    "check_current_baseline.py": "373ad8025afe95f5aeb6f082f304403dafe159ed94bf56ea169fbe9da063da14",
+    "check_idle_contract.py": "8e61711c2625c4979aa5c70cac0f6ad34f6b08981fb556d82b4457c200a165b9",
+    "install_owned_helper.py": "3cbe75467f96faf3af38788b8c2ebfd0f848469cde68aa5ad968bb1b7963525c",
+    "qa_adapter.py": "ad54e8583ffb8b4ff186accde10199aee1ab063bd5dbbb5b9586c908ebebb10c",
+    "qa_contract.py": "bfe1e781e254033ab5c5b7616a928d309998bde4cbc243bd542c3eb4805eda6e",
+    "run_case.py": "cea31bd9afd0ddc147224a441fab277e0b5d55e034008dc49295ff198a046f2b"
+  },
+  "current_baseline_scope_controls": {
+    "report": {
+      "Android_commands": 0,
+      "UI_actions": 0,
+      "all_passed": true,
+      "cases": [
+        {
+          "name": "exact_new_current_scope",
+          "passed": true
+        },
+        {
+          "name": "missing_main_baseline_schema",
+          "passed": true
+        },
+        {
+          "name": "missing_main_baseline_sha256",
+          "passed": true
+        },
+        {
+          "name": "missing_main_baseline_qualification_sha256",
+          "passed": true
+        },
+        {
+          "name": "old_epoch",
+          "passed": true
+        },
+        {
+          "name": "old_baseline_schema",
+          "passed": true
+        },
+        {
+          "name": "wrong_baseline_digest",
+          "passed": true
+        },
+        {
+          "name": "wrong_qualification_digest",
+          "passed": true
+        },
+        {
+          "name": "extra_scope_field",
+          "passed": true
+        },
+        {
+          "name": "wrong_target_uid",
+          "passed": true
+        },
+        {
+          "name": "foreign_package",
+          "passed": true
+        },
+        {
+          "name": "wrong_display",
+          "passed": true
+        },
+        {
+          "name": "missing_runtime_epoch_sha256",
+          "passed": true
+        },
+        {
+          "name": "wrong_runtime_epoch_sha256",
+          "passed": true
+        },
+        {
+          "name": "missing_app_scope_sha256",
+          "passed": true
+        },
+        {
+          "name": "wrong_app_scope_sha256",
+          "passed": true
+        }
+      ],
+      "count": 16,
+      "helper_installed_uid": null,
+      "main_baseline_qualification_sha256": "4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6",
+      "main_baseline_schema": "pocket4-successor-runtime-baseline-v1",
+      "main_baseline_sha256": "7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8",
+      "main_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+      "production_contract_sha256": "bfe1e781e254033ab5c5b7616a928d309998bde4cbc243bd542c3eb4805eda6e",
+      "schema": "pocket4-successor-app-scope-controls-v1"
+    },
+    "source_sha256": "373ad8025afe95f5aeb6f082f304403dafe159ed94bf56ea169fbe9da063da14"
+  },
+  "error": null,
+  "finished_utc": "2026-11-06T15:52:58.491271+00:00",
+  "inspection_idle_gate_controls": {
+    "control_source_sha256": "67646b520cba6648bc5fcbe3bcfdbef485dddff3f2df7f100cacb2f4ddc6ada0",
+    "gate_source_sha256": "bb4641ec091b20bce68776cb459bd103e2257312cbc25ab4a01201c65c978fae",
+    "report": {
+      "all_passed": true,
+      "android_calls": 0,
+      "cases": [
+        {
+          "name": "fixed_original_budgets",
+          "passed": true
+        },
+        {
+          "name": "one_successful_event_quiet_call",
+          "passed": true
+        },
+        {
+          "name": "already_quiet_immediate_return_allowed",
+          "passed": true
+        },
+        {
+          "name": "global_cap_exact_edge_allowed",
+          "passed": true
+        },
+        {
+          "name": "remaining_original_budget_clamps_global",
+          "passed": true
+        },
+        {
+          "name": "exact_quiet_budget_one_call",
+          "passed": true
+        },
+        {
+          "name": "insufficient_quiet_budget_no_call",
+          "passed": true
+        },
+        {
+          "name": "expired_original_deadline_no_call",
+          "passed": true
+        },
+        {
+          "name": "clock_before_operation_start_no_call",
+          "passed": true
+        },
+        {
+          "name": "negative_operation_start_no_call",
+          "passed": true
+        },
+        {
+          "name": "operation_deadline_overflow_no_call",
+          "passed": true
+        },
+        {
+          "name": "first_clock_failure_no_call",
+          "passed": true
+        },
+        {
+          "name": "timeout_preserves_original_cause_no_retry",
+          "passed": true
+        },
+        {
+          "name": "disconnected_api_preserves_original_cause",
+          "passed": true
+        },
+        {
+          "name": "timeout_and_clock_failure_keep_first_error",
+          "passed": true
+        },
+        {
+          "name": "successful_api_then_clock_failure_unqualified",
+          "passed": true
+        },
+        {
+          "name": "final_clock_regression_unqualified",
+          "passed": true
+        },
+        {
+          "name": "global_cap_overrun_unqualified",
+          "passed": true
+        },
+        {
+          "name": "owner_deadline_overrun_unqualified",
+          "passed": true
+        },
+        {
+          "name": "duplicate_after_success_cannot_call_again",
+          "passed": true
+        },
+        {
+          "name": "duplicate_after_timeout_cannot_call_again",
+          "passed": true
+        },
+        {
+          "name": "duplicate_after_budget_failure_cannot_call",
+          "passed": true
+        }
+      ],
+      "count": 22,
+      "input_actions": 0,
+      "schema": 1,
+      "tree_captures": 0
+    },
+    "stdout_sha256": "da8a4e35a86a37dae64b7496d5477d523fda6cd6c34a8d33eed177218665b93c"
+  },
+  "inspection_idle_protocol_controls": {
+    "control_source_sha256": "8e61711c2625c4979aa5c70cac0f6ad34f6b08981fb556d82b4457c200a165b9",
+    "report": {
+      "all_passed": true,
+      "android_calls": 0,
+      "cases": [
+        {
+          "name": "actual_parser_accepts_complete_inspection_after_idle",
+          "passed": true
+        },
+        {
+          "name": "actual_parser_accepts_already_quiet_immediate_return",
+          "passed": true
+        },
+        {
+          "name": "state_success_keeps_no_automation_idle_or_capture",
+          "passed": true
+        },
+        {
+          "name": "missing_idle_record_rejected",
+          "passed": true
+        },
+        {
+          "name": "empty_idle_cannot_qualify_inspect",
+          "passed": true
+        },
+        {
+          "name": "extra_idle_key_rejected",
+          "passed": true
+        },
+        {
+          "name": "non_boolean_qualified_rejected",
+          "passed": true
+        },
+        {
+          "name": "call_count_cannot_exceed_one",
+          "passed": true
+        },
+        {
+          "name": "quiet_budget_constant_cannot_change",
+          "passed": true
+        },
+        {
+          "name": "global_cap_cannot_change",
+          "passed": true
+        },
+        {
+          "name": "original_operation_budget_cannot_change",
+          "passed": true
+        },
+        {
+          "name": "effective_global_must_equal_remaining_budget",
+          "passed": true
+        },
+        {
+          "name": "operation_start_must_bind_same_helper",
+          "passed": true
+        },
+        {
+          "name": "boolean_time_rejected",
+          "passed": true
+        },
+        {
+          "name": "content_readiness_claim_rejected",
+          "passed": true
+        },
+        {
+          "name": "future_stability_claim_rejected",
+          "passed": true
+        },
+        {
+          "name": "event_quiet_scope_must_be_explicit",
+          "passed": true
+        },
+        {
+          "name": "api_ack_without_qualification_rejected",
+          "passed": true
+        },
+        {
+          "name": "no_api_return_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "gate_error_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "cause_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "secondary_clock_error_cannot_qualify",
+          "passed": true
+        },
+        {
+          "name": "actual_wait_duration_must_match_clocks",
+          "passed": true
+        },
+        {
+          "name": "returned_api_after_global_budget_rejected",
+          "passed": true
+        },
+        {
+          "name": "idle_observation_cannot_outlive_helper_result",
+          "passed": true
+        },
+        {
+          "name": "tree_capture_cannot_precede_idle_end",
+          "passed": true
+        },
+        {
+          "name": "event_idle_cannot_qualify_partial_tree",
+          "passed": true
+        },
+        {
+          "name": "later_null_child_retains_original_failure_and_idle_only_metadata",
+          "passed": true
+        },
+        {
+          "name": "timeout_remains_failed_without_capture_or_successful_finish",
+          "passed": true
+        },
+        {
+          "name": "failure_before_gate_can_only_have_empty_idle_metadata",
+          "passed": true
+        },
+        {
+          "name": "all_noninspect_operations_require_empty_idle_metadata",
+          "passed": true
+        },
+        {
+          "name": "old_r7_uid_rejected_even_when_wire_uid_matches_argument",
+          "passed": true
+        }
+      ],
+      "count": 32,
+      "input_actions": 0,
+      "production_contract_sha256": "bfe1e781e254033ab5c5b7616a928d309998bde4cbc243bd542c3eb4805eda6e",
+      "schema": 1,
+      "tree_captures": 0
+    }
+  },
+  "manifest_contract": {
+    "activities": [],
+    "compile_sdk_api": 31,
+    "debuggable": false,
+    "instrumentation": "org.droidloom.qa.successor.p8f89f253350ba2fa.r1.ActionRunner",
+    "min_sdk": 31,
+    "native_libraries": [],
+    "package": "org.droidloom.qa.successor.p8f89f253350ba2fa.r1",
+    "permissions": [],
+    "providers": [],
+    "receivers": [],
+    "services": [],
+    "target_package": "org.droidloom.qa.successor.p8f89f253350ba2fa.r1",
+    "target_sdk": 33,
+    "test_only": true
+  },
+  "package": "org.droidloom.qa.successor.p8f89f253350ba2fa.r1",
+  "private_signing_material_not_public": [
+    "private-signing/password.txt",
+    "private-signing/owned.p12"
+  ],
+  "schema": 1,
+  "signer_certificate_sha256": "d48d103342b42791ae4e927d70258062d0de11f9acb9f32b4426aff583f27d6f",
+  "source_manifest_sha256": "dfb9b6a483f1069847433152b9b2e8b0f1b2cdd571a1dbde3068fc9393ad62c4",
+  "source_or_permissions_gate_relaxed": false,
+  "source_sha256": {
+    "AndroidManifest.xml": "f647653334f5a3558db90e11455eb4f070aec504a39911617822f79891ba68b8",
+    "build_candidate.py": "099332858773d43a74f349928431d7ac6c122d6b58be91516115ad416d558e34",
+    "check_current_baseline.py": "373ad8025afe95f5aeb6f082f304403dafe159ed94bf56ea169fbe9da063da14",
+    "check_idle_contract.py": "8e61711c2625c4979aa5c70cac0f6ad34f6b08981fb556d82b4457c200a165b9",
+    "install_owned_helper.py": "3cbe75467f96faf3af38788b8c2ebfd0f848469cde68aa5ad968bb1b7963525c",
+    "qa_adapter.py": "ad54e8583ffb8b4ff186accde10199aee1ab063bd5dbbb5b9586c908ebebb10c",
+    "qa_contract.py": "bfe1e781e254033ab5c5b7616a928d309998bde4cbc243bd542c3eb4805eda6e",
+    "run_case.py": "cea31bd9afd0ddc147224a441fab277e0b5d55e034008dc49295ff198a046f2b",
+    "src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/ActionRunner.java": "c1df8cf13195150c938ff9db271d6234a90c42cda54e29aea743be0c1ad0cdfa",
+    "src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/InspectionIdleGate.java": "bb4641ec091b20bce68776cb459bd103e2257312cbc25ab4a01201c65c978fae",
+    "src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/PlayerButtonTransaction.java": "7b8a7f20fde792ef9f7e0857ac3d809f306ebd828ce40667a683aeb739379baf",
+    "src/org/droidloom/qa/successor/p8f89f253350ba2fa/r1/TouchTransaction.java": "832938af28f29ada9736a867d95436738cf090ae152319ef2c951d2a7dd991ba",
+    "tests/InspectionIdleGateChecks.java": "67646b520cba6648bc5fcbe3bcfdbef485dddff3f2df7f100cacb2f4ddc6ada0"
+  },
+  "source_unchanged": true,
+  "state": "BUILT_STATIC_VERIFIED_ANDROID_UNRUN",
+  "tools_after": {
+    "aapt": {
+      "bytes": 30680,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
+    },
+    "android_jar": {
+      "bytes": 21998949,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+    },
+    "apksigner": {
+      "bytes": 2964,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+    },
+    "java": {
+      "bytes": 8528,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    },
+    "javac": {
+      "bytes": 8824,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "sha256": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa"
+    },
+    "r8": {
+      "bytes": 18294711,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "sha256": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7"
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+    }
+  },
+  "tools_baseline_receipt_sha256": "2a8cb152f9dea378ffc180c95ee4cbab1eb2b527c0dc9e176fd89bcee46119c6",
+  "tools_before": {
+    "aapt": {
+      "bytes": 30680,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "path": "/usr/lib/android-sdk/build-tools/debian/aapt",
+      "sha256": "d9c0d90fc4bcf03d57cbf4fe19ca66c80280ac760c53245c8678b9837844b972"
+    },
+    "android_jar": {
+      "bytes": 21998949,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/sdk/31/public/android.jar",
+      "sha256": "2e71327d66d43cb85a6ac11029376c19067ccc0f15e73c90f2f6777f3be70fb5"
+    },
+    "apksigner": {
+      "bytes": 2964,
+      "declared_path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "path": "/usr/lib/android-sdk/build-tools/debian/apksigner",
+      "sha256": "52947059a664b85f0475bcdc3dbbe6089b50f8f59e3aa051e6e74cf0ba7db70f"
+    },
+    "java": {
+      "bytes": 8528,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/java",
+      "sha256": "cfa21aeadd00925925c9e1287f5c08f3e04ee7f26a9e23d9dbfb16149153d842"
+    },
+    "javac": {
+      "bytes": 8824,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/jdk/jdk21/linux-x86/bin/javac",
+      "sha256": "18351d7a271f6b8bd17f9e8fef6bb04baa7cf008cbc8a3a782a93a2f5c48ecfa"
+    },
+    "r8": {
+      "bytes": 18294711,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/cmdline-tools/tools/lib/r8.jar",
+      "sha256": "33cab360b273b46ad47c3356cf1fb2ac715870fd3eecc55cbd9d508a7f609ce7"
+    },
+    "zipalign": {
+      "bytes": 227416,
+      "declared_path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/build-tools/linux-x86/bin/zipalign",
+      "sha256": "fd9663d5f0ac858ccbd6a2aa414536dc878266748de2e6afa9a5146c72950758"
+    }
+  },
+  "tools_unchanged": true,
+  "whole_app_production_ready": false
+}

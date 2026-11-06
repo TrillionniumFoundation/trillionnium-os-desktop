@@ -1,0 +1,90 @@
+{
+  "schema": "pocket4-normal06-candidate-r3-independent-source-review-v1",
+  "reviewer": "sidecar_evidence",
+  "conclusion": "NO_STATIC_BLOCKER_FOUND_WITHIN_REVIEWED_CHANGE",
+  "inputs": [
+    {
+      "path": "framework_provider_repair/normal06/candidate-r3/SOURCE_CANDIDATE.json",
+      "bytes": 3176,
+      "sha256": "858edc8cc683de670711fed936c941e2631b3939423acacac4bd3dcadb498040"
+    },
+    {
+      "path": "framework_provider_repair/normal06/candidate-r3-builder.diff",
+      "bytes": 24369,
+      "sha256": "54c458ac77820bf83b3175d06d8f06094b02f17879e3dcbf2af30229108aef4d"
+    },
+    {
+      "path": "framework_provider_repair/normal06/reference/builder469-android.rs",
+      "bytes": 287737,
+      "sha256": "429b80b8fd9cd54c595e03f5551c906a398171732788636766db4eb1be42955f"
+    },
+    {
+      "path": "framework_provider_repair/normal06/reference/builder469-native_role_ingress.rs",
+      "bytes": 39643,
+      "sha256": "edcae861834d170a418084f1fe2d46c866180cf4e28da7da70417d99114372de"
+    },
+    {
+      "path": "framework_provider_repair/normal05/source-r2/actual-provider-source-lock.json",
+      "bytes": 96957,
+      "sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d"
+    },
+    {
+      "path": "framework_provider_repair/normal06/candidate-r3/android/manifest/m2-role-ingress-provider3-source-lock.json",
+      "bytes": 103409,
+      "sha256": "f5717d49fe0d4656b952bd397beab5d2fa70aa0992dd936ac31f81246c9e4772"
+    },
+    {
+      "path": "framework_provider_repair/normal06/candidate-lock-r1/source-lock-delta-evidence.json",
+      "bytes": 200199,
+      "sha256": "55d5d837c2549e160c29da0ab60b713a32d21a386b59d2b0bacde0c41ac10611"
+    },
+    {
+      "path": "framework_provider_repair/normal06/resolved-provider-findings.json",
+      "bytes": 3485,
+      "sha256": "aeac6b57b4e4d82db82372a6237fe1c4eae072cf0fc088790bdddf323e155662"
+    }
+  ],
+  "actual_local_checks": {
+    "candidate_seven_file_pins_match": true,
+    "complete_builder_diff_equals_actual_two_baseline_to_candidate_differences": true,
+    "old_project_count": 225,
+    "new_project_count": 242,
+    "original_project_order_and_revisions_preserved": true,
+    "only_nine_existing_sparse_lists_append": true,
+    "all_other_original_project_fields_preserved": true,
+    "links_preserved": 8,
+    "all_other_lock_root_fields_identical": true,
+    "new_projects_with_original_superproject_raw_gitlinks_verified": 17,
+    "superproject_commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+    "captured_provider_file_bytes_and_metadata_commits_verified": 51,
+    "systemui_whole_upstream_stanzas_verified": 19,
+    "shell_whole_upstream_stanzas_verified": 9,
+    "device_state_actual_bp_list_line": 3708,
+    "device_state_provider_bytes": 309,
+    "device_state_provider_sha256": "86da4565928371d61fec3d3f5d9a66a78267e6ebdc0961f491c45d5964a9eb5b",
+    "systemui_device_state_references_unchanged": 2,
+    "device_state_alias_created": false
+  },
+  "source_review_findings": [
+    "Exact immutable lock hashes guard the full original->typed->provider1->provider2->provider3 chain. SystemUI extension compares the full reconstructed expected JSON, including policy, links, order and all original fields.",
+    "A permitted previous typed manifest still invokes verify_materialized against its exact pinned old lock; unknown/shared original lock identities fail and no verification failure falls back to the successor.",
+    "SystemUI and Shell projections retain complete pinned upstream module bodies and dependency edges. The genuine device_state_flags_lib aconfig provider is already in the actual normal05 Blueprint input list; no rename or alias is introduced.",
+    "The complete diff does not change strict Soong selection, missing-dependency settings, targets or runtime authorization."
+  ],
+  "limits_and_risks": [
+    "All 17 added projects are full exact-revision checkouts. Child Blueprint coverage and storage/memory footprint can expand beyond the captured provider files.",
+    "Source graph coverage and exact module bodies do not establish successful variant/namespace resolution or complete dependency closure.",
+    "Rust compiler/unit tests and actual normal06 Soong materialization/build were not executed by this review.",
+    "Local source fidelity does not qualify Android runtime, app business behavior or cleanup."
+  ],
+  "execution": {
+    "local_source_reads_only": true,
+    "rust_compiler": false,
+    "soong": false,
+    "remote_jobs": 0,
+    "Main_reads_or_mutations": 0,
+    "APK_execution": 0
+  },
+  "production_ready": false,
+  "cleanup_eligible": false
+}

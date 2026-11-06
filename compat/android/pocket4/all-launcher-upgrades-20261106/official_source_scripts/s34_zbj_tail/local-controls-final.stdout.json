@@ -1,0 +1,58 @@
+{
+  "schema": "pocket4-zbj-s34-local-controls-v1",
+  "success": true,
+  "tests_run": 6,
+  "failures": 0,
+  "errors": 0,
+  "skips": 0,
+  "cases": [
+    {
+      "name": "actual_failed_147456_bytes_excluded_and_tail_exact",
+      "ranges": 41,
+      "tail_bytes": 42502678,
+      "result": "PASS"
+    },
+    {
+      "name": "owned_child_normal_exit",
+      "pid": 6,
+      "joined": true,
+      "pidfd_closed": true,
+      "signal_count": 0,
+      "result": "PASS"
+    },
+    {
+      "name": "same_bytes_replaced_path_rejected_without_closing_held_source",
+      "actual_uid": 1000,
+      "result": "PASS"
+    },
+    {
+      "name": "synthetic_http429_actual_owned_host_child_then_no_next_child",
+      "pid": 7,
+      "returncode": 22,
+      "pidfd_exit_observed": true,
+      "pidfd_closed": true,
+      "result": "PASS"
+    },
+    {
+      "name": "exact_range_tls_origin_retry_and_short_body_refusals",
+      "synthetic_response_fixture": true,
+      "result": "PASS"
+    },
+    {
+      "name": "owned_child_timeout_pidfd_signal_once_then_join",
+      "pid": 8,
+      "signal_count": 1,
+      "pidfd_exit_observed": true,
+      "pidfd_closed": true,
+      "result": "PASS"
+    }
+  ],
+  "fd_before": 3,
+  "fd_after": 3,
+  "full_fd_identity_restored": true,
+  "Main_actions": 0,
+  "network_requests": 0,
+  "curl_executions": 0,
+  "actual_download_status": "NOT_RUN",
+  "source_sha256": "f3801399b9791aa3cc325cd6e7d62a26415ee32d69046ac1d1ccd818fef45c82"
+}

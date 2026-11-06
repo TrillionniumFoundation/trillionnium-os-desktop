@@ -1,0 +1,61 @@
+{
+  "schema": "pocket4-normal06-resolved-provider-findings-v1",
+  "device_state_flags_lib": {
+    "status": "GENUINE_ALREADY_LISTED_SOURCE_PROVIDER",
+    "provider": {
+      "path": "reference/closure-providers/frameworks/base/services/foldables/devicestateprovider/src/com/android/server/policy/feature/Android.bp",
+      "bytes": 309,
+      "sha256": "86da4565928371d61fec3d3f5d9a66a78267e6ebdc0961f491c45d5964a9eb5b"
+    },
+    "provider_source": {
+      "path": "frameworks/base/services/foldables/devicestateprovider/src/com/android/server/policy/feature/Android.bp",
+      "repository": "platform/frameworks/base",
+      "commit": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+      "url": "https://android.googlesource.com/platform/frameworks/base/+/94b4c163b7dfe5ce3607f7bb8456f9573f7de57d/services/foldables/devicestateprovider/src/com/android/server/policy/feature/Android.bp?format=TEXT",
+      "status": 200,
+      "raw_bytes": 412,
+      "raw_sha256": "682489337acce3edcb17d16396973fc62c639d03beab90d685e4a62aa9b5b8cd",
+      "decoded_bytes": 309,
+      "decoded_sha256": "86da4565928371d61fec3d3f5d9a66a78267e6ebdc0961f491c45d5964a9eb5b",
+      "transport_TLS_verification": "urllib default verified"
+    },
+    "declarations_name": "device_state_flags",
+    "java_module_name": "device_state_flags_lib",
+    "package": "com.android.server.policy.feature.flags",
+    "container": "system_ext",
+    "flags": {
+      "path": "reference/closure-providers/frameworks/base/services/foldables/devicestateprovider/src/com/android/server/policy/feature/device_state_flags.aconfig",
+      "bytes": 349,
+      "sha256": "f77a89a0a3231bfb77df6aa301ddfb1d69e38c36f36fba6150ef7ecb6ea884ad"
+    },
+    "actual_normal05_bp_list": {
+      "path": "reference/normal05-actual-graph/Android.bp.list",
+      "bytes": 387689,
+      "sha256": "89fb2a791dbe2dde9b8425764dd0c455b69a8f3d3c34ba9a2038631bebd22ccc"
+    },
+    "actual_bp_list_line": 3708,
+    "consumer_action": "Preserve both original SystemUI references unchanged. No alias or rename.",
+    "not_equivalent_to": "android.hardware.devicestate.feature.flags-aconfig-java",
+    "additional_project_or_sparse_path_required": false,
+    "runtime_or_effective_variant_qualification": false
+  },
+  "namespace_lookup_correction": {
+    "source": {
+      "path": "reference/closure-providers/build/soong/android/namespace.go",
+      "bytes": 16435,
+      "sha256": "e6f655486ab52979d0b1bdcea31a983e95a6d4937064b46c8cfcf0f6d3d28346"
+    },
+    "semantics": "At exact Soong commit, ModuleFromName calls recursive findNamespace for a qualified //path:module. The path is not a requirement that the provider source file physically begins with that prefix.",
+    "r3_r4_limitation": "Physical-prefix filtering can report a coverage gap even when a real module exists in the ancestor namespace. Those unresolved counts are not confirmed missing projects.",
+    "bubbles_user_model": {
+      "captured_provider": "frameworks/base/libs/WindowManager/Shell/bubbles-user-model/Android.bp",
+      "actual_list_line": 3295,
+      "action": "No path-guessing checkout or consumer patch. Full namespace and variant resolution remains strict Soong responsibility."
+    }
+  },
+  "all_known_root_provider_gaps_repaired_by_candidate_r2": true,
+  "recursive_source_lock_candidate": "candidate-lock-r1/m2-role-ingress-provider3-source-lock.draft.json",
+  "full_dependency_closure_qualified": false,
+  "new_build_submitted": false,
+  "production_ready": false
+}

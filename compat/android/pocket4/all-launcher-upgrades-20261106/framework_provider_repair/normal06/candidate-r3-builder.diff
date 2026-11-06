@@ -1,0 +1,306 @@
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -404,7 +404,34 @@
+             "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3",
+             &[("soong_config_module_type", "systemui_optimized_java_defaults"),
+               ("systemui_optimized_java_defaults", "SystemUI_optimized_defaults"),
++              ("java_defaults", "systemui-non-platform-apis-defaults"),
++              ("java_defaults", "SystemUI_compile_dagger"),
++              ("filegroup", "DebugJavaFiles"),
++              ("filegroup", "ReleaseJavaFiles"),
++              ("android_library", "SystemUI-application"),
++              ("android_library", "SystemUI-core"),
++              ("java_library", "SystemUI-proto"),
++              ("android_library", "SystemUI-res"),
++              ("java_defaults", "SystemUI-srcs-defaults"),
++              ("java_library", "SystemUI-tags"),
++              ("android_library", "SystemUI-tests"),
++              ("android_library", "SystemUI-tests-base"),
++              ("filegroup", "SystemUI-tests-multivalent-monolith"),
++              ("filegroup", "SystemUI-tests-multivalent-pods"),
++              ("java_library", "kosmos"),
++              ("filegroup", "sysui_proguard_kotlin"),
+               ("filegroup", "sysui_proguard_common_and_kotlin")]),
++        "frameworks/base/libs/WindowManager/Shell/Android.bp" => (6272,
++            "fc3a3c4de8e8ffbfc4832125b6a7b448a50fea1e0b5c6bad8ceb767b55679738",
++            &[("filegroup", "wm_shell-sources"),
++              ("java_library", "WindowManager-Shell-aidls"),
++              ("filegroup", "wm_shell-sources-kt"),
++              ("java_genrule", "wm_shell_protolog_src"),
++              ("java_library", "WindowManager-Shell-lite-proto"),
++              ("android_library", "WindowManager-Shell"),
++              ("java_defaults", "wmshell_defaults"),
++              ("java_defaults", "WindowManager-Shell-defaults"),
++              ("android_library", "WindowManager-Shell-untransformed")]),
+         "platform_testing/libraries/motion/Android.bp" => (2098,
+             "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440",
+             &[("filegroup", "motion_test_template"),
+@@ -2946,7 +2973,10 @@
+     const SHARED_PROVIDER_FIXTURES: &[(&str, &str, &str)] = &[
+         ("frameworks/base/packages/SystemUI/Android.bp",
+          include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI.Android.bp"),
+-         "f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1"),
++         "0ea40e5e254afcf7e41b3f1b3bb91d2f78b1421b6dcb3a011c2b061a54c17263"),
++        ("frameworks/base/libs/WindowManager/Shell/Android.bp",
++         include_str!("../../../android/native-role-ingress/provider-fixtures/WindowManager-Shell.Android.bp"),
++         "34afb2da235c2e0fe4fb17dface5b19862a13eb691562c6a49addef24473a20a"),
+         ("platform_testing/libraries/motion/Android.bp",
+          include_str!("../../../android/native-role-ingress/provider-fixtures/motion.Android.bp"),
+          "23e1392f716fbf78efb7b0ea5281c3cf70b4547b6aa41af8cf79df495eace098"),
+@@ -3028,10 +3058,67 @@
+             let projected = typed_ingress_shared_blueprint(relative, original).unwrap();
+             assert!(projected.starts_with(metadata_only(original).unwrap().as_str()));
+             assert_eq!(&format!("{:x}", Sha256::digest(projected.as_bytes())), expected_sha);
+-            assert!(!projected.contains("name: \"SystemUI-core\""));
++            if *relative == "frameworks/base/packages/SystemUI/Android.bp" {
++                assert!(projected.contains("name: \"SystemUI-core\""));
++            } else {
++                assert!(!projected.contains("name: \"SystemUI-core\""));
++            }
+             assert!(!projected.contains("name: \"PlatformMotionTestingRoboApplication\""));
+             assert!(!projected.contains("name: \"platform-screenshot-diff-test\""));
+         }
++    }
++
++    #[test]
++    fn typed_systemui_defaults_preserve_real_consumers_and_dependency_edges() {
++        use sha2::{Digest, Sha256};
++        let original = SHARED_PROVIDER_FIXTURES[0].1;
++        let projected = typed_ingress_shared_blueprint(
++            "frameworks/base/packages/SystemUI/Android.bp", original).unwrap();
++        // Real same-commit consumers exposed the omission. Keep their full
++        // sources fixed and retain each complete upstream provider, including
++        // its flags library or Dagger annotation processor dependency.
++        for (consumer, expected_sha, name, dependency) in [
++            (include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp"),
++             "f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da", "systemui-non-platform-apis-defaults", "android.os.flags-aconfig-java"),
++            (include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI-pods-build.Android.bp"),
++             "45a406d917e55d45ad1ef0eafd27f2146a894dbcd309813e5c58b1a1b9e6400f", "SystemUI_compile_dagger", "dagger2-compiler"),
++            (include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI-pods-policy.Android.bp"),
++             "abdbfc9d78daa2785dd2cb953b4ec081f135df032e348fab78c2731262744533", "SystemUI_compile_dagger", "dagger2-compiler"),
++        ] {
++            assert_eq!(format!("{:x}", Sha256::digest(consumer.as_bytes())), expected_sha);
++            assert!(consumer.contains(&format!("\"{name}\"")));
++            let marker = format!("java_defaults {{\n    name: \"{name}\",");
++            let start = original.find(&marker).unwrap();
++            let end = start + original[start..].find("\n}\n").unwrap() + 3;
++            let upstream = &original[start..end];
++            assert!(upstream.contains(&format!("\"{dependency}\"")));
++            assert_eq!(projected.matches(upstream).count(), 1);
++        }
++    }
++
++    #[test]
++    fn typed_systemui_projection_preserves_loaded_ordinary_dependencies() {
++        let original = SHARED_PROVIDER_FIXTURES[0].1;
++        let projected = typed_ingress_shared_blueprint(
++            "frameworks/base/packages/SystemUI/Android.bp", original).unwrap();
++        let consumer = include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp");
++        // Already discovered child modules refer to these real root providers.
++        // Match full upstream stanzas, retaining every transitive dependency;
++        // this checks projection fidelity, not whole-graph build qualification.
++        for (kind, name) in [
++            ("android_library", "SystemUI-tests"),
++            ("android_library", "SystemUI-application"),
++            ("java_library", "kosmos"),
++        ] {
++            assert!(consumer.contains(&format!("\"{name}\"")));
++            let marker = format!("{kind} {{\n    name: \"{name}\",");
++            let start = original.find(&marker).unwrap();
++            let end = start + original[start..].find("\n}\n").unwrap() + 3;
++            assert_eq!(projected.matches(&original[start..end]).count(), 1);
++        }
++        assert!(projected.contains("name: \"SystemUI-res\""));
++        assert!(projected.contains("\"dagger2-compiler\""));
++        assert!(projected.contains("\"WindowManager-Shell\""));
+     }
+ 
+     #[test]
+--- a/tools/droidloom-update/src/native_role_ingress.rs
++++ b/tools/droidloom-update/src/native_role_ingress.rs
+@@ -17,7 +17,8 @@
+ const ORIGINAL_LOCK: &str = "android/manifest/m2-sparse-source-lock.json";
+ const PREVIOUS_SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-source-lock.json";
+ const PREVIOUS_PROVIDER_LOCK: &str = "android/manifest/m2-role-ingress-provider-source-lock.json";
+-const SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-provider2-source-lock.json";
++const PREVIOUS_NATIVE_PROVIDER_LOCK: &str = "android/manifest/m2-role-ingress-provider2-source-lock.json";
++const SOURCE_LOCK: &str = "android/manifest/m2-role-ingress-provider3-source-lock.json";
+ const ORIGINAL_LOCK_BYTES: usize = 84522;
+ const ORIGINAL_LOCK_SHA: &str =
+     "4d8f2d047254268305f4802d9dd67bebdfd162d836664c733ecc07e2f9ced178";
+@@ -30,8 +31,24 @@
+ // native providers as an exact monotonic successor at the same superproject.
+ const PREVIOUS_PROVIDER_LOCK_BYTES: usize = 96322;
+ const PREVIOUS_PROVIDER_LOCK_SHA: &str = "5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7";
+-const SOURCE_LOCK_BYTES: usize = 96957;
+-const SOURCE_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
++// Preserve the actual normal05 provider2 lock before the SystemUI successor.
++const PREVIOUS_NATIVE_PROVIDER_LOCK_BYTES: usize = 96957;
++const PREVIOUS_NATIVE_PROVIDER_LOCK_SHA: &str = "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d";
++const SOURCE_LOCK_BYTES: usize = 103409;
++const SOURCE_LOCK_SHA: &str = "f5717d49fe0d4656b952bd397beab5d2fa70aa0992dd936ac31f81246c9e4772";
++// Exact original-superproject providers observed for the retained SystemUI graph.
++const SYSTEMUI_PROVIDER_EXTENSIONS: &[(&str, &[&str])] = &[
++    ("cts", &["common/device-side/util-axt"]),
++    ("external/auto", &["factory"]),
++    ("packages/apps/Launcher3", &["aconfig"]),
++    ("packages/apps/Settings", &["aconfig"]),
++    ("platform_testing", &["libraries/flag-helpers/junit", "libraries/health/rules", "libraries/health/utils", "libraries/metrics-helper", "libraries/notes-role-test-helper", "libraries/screenshot/utils/compose", "libraries/uinput-device-test-helper"]),
++    ("prebuilts/misc", &["common/androidx-media3", "common/androidx-test"]),
++    ("prebuilts/sdk", &["current/androidx-legacy", "current/extras/material-design-x"]),
++    ("prebuilts/tools", &["linux-x86_64/perfetto"]),
++    ("frameworks/libs/systemui", &["ace/src/com/android/personalcontext/ace/client", "ace/src/com/android/personalcontext/ace/common", "ace/src/com/android/personalcontext/ace/visualizer", "aconfig", "animationlib", "contextualeducationlib", "displaylib", "dynamiccolors", "iconloaderlib", "mechanics", "monet", "msdllib", "surfaceeffects/compose", "surfaceeffects/core", "surfaceeffects/view", "usertypelib", "viewcapturelib"]),
++];
++const SYSTEMUI_PROVIDER_ADDITIONS_JSON: &str = r#"[{"path":"development","name":"platform/development","commit":"4dafd114fab3c3d9543a5aff0ad097f479915176","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/dagger2","name":"platform/external/dagger2","commit":"57aa7c004b11466c0154144865e937b9a46a4688","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/dexmaker","name":"platform/external/dexmaker","commit":"e476b06efb29b9a8e70a63ec23a3bb7f6208cfaa","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/jakarta.inject","name":"platform/external/jakarta.inject","commit":"75b5356ec832b8306d8706eb7fae46fef9cbb1d3","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/kotlinpoet","name":"platform/external/kotlinpoet","commit":"1f60e73215577a48f66542ec09456cdc7f12f3d1","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/ksp","name":"platform/external/ksp","commit":"aa08926470a7d3afc856a08b0f40057293b8f437","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/libmonet","name":"platform/external/libmonet","commit":"f56ffa0d810eb127200cded0895c412a907dfa6d","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/lottie","name":"platform/external/lottie","commit":"f21c8dba91039320eeb9d964d8272d9a22f38d72","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/mockito-kotlin","name":"platform/external/mockito-kotlin","commit":"709411a57d6b6d8aa7495d281e3f48b4f5f67796","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/perfetto","name":"platform/external/perfetto","commit":"ece66975738007dd0978b911d8a2077e49b8f31e","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/setupcompat","name":"platform/external/setupcompat","commit":"d4476639e7c7f9bda7bff68e810da2367b8626d2","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/setupdesign","name":"platform/external/setupdesign","commit":"79dbf5860322236cd02e74e2ca0855591d95195c","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"external/zxing","name":"platform/external/zxing","commit":"d89286b7d32c7860f796e95380b22e99618d00c1","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"frameworks/opt/net/wifi","name":"platform/frameworks/opt/net/wifi","commit":"12e5aa5f7224b05b6046613967c6d1de75aeaf26","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"frameworks/opt/telephony","name":"platform/frameworks/opt/telephony","commit":"aef289516bea6118d88cd45c63742cd4abe2c596","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"packages/apps/Traceur","name":"platform/packages/apps/Traceur","commit":"958957ee3011541f2622b93223abd38071147d3f","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"},{"path":"prebuilts/r8","name":"platform/prebuilts/r8","commit":"65fe8f9f5c6769d35f91fe67b786b767a2db5249","purpose":"Exact original Android 17 superproject gitlink for captured normal06 SystemUI dependency providers; source-only candidate, not build-qualified"}]"#;
+ const CAR_NATIVE_EXTENSIONS: &[&str] = &[
+     "cpp/vhal/client/include",
+     "cpp/vhal/client/src",
+@@ -288,9 +305,51 @@
+     Ok(())
+ }
+ 
++fn validate_systemui_provider_extension(previous: &Value, expanded: &Value) -> Result<()> {
++    let mut expected = previous.clone();
++    let projects = expected.get_mut("projects").and_then(Value::as_array_mut)
++        .ok_or("previous native provider lock lacks projects")?;
++    for (path, additions) in SYSTEMUI_PROVIDER_EXTENSIONS {
++        let indices: Vec<_> = projects.iter().enumerate()
++            .filter(|(_, project)| project.get("path").and_then(Value::as_str) == Some(*path))
++            .map(|(index, _)| index).collect();
++        if indices.len() != 1 || additions.is_empty() {
++            return fail("SystemUI extension requires one exact existing project");
++        }
++        let paths = projects[indices[0]].get_mut("sparse_paths").and_then(Value::as_array_mut)
++            .ok_or("SystemUI extension project lacks its original sparse selection")?;
++        for addition in *additions {
++            let value = Value::String((*addition).to_owned());
++            if paths.contains(&value) {
++                return fail("SystemUI extension repeats an existing sparse path");
++            }
++            paths.push(value);
++        }
++        if paths.len() > 256 {
++            return fail("SystemUI extension exceeds bounded sparse paths");
++        }
++    }
++    let additions: Vec<Value> = serde_json::from_str(SYSTEMUI_PROVIDER_ADDITIONS_JSON)?;
++    for addition in additions {
++        let path = addition.get("path").and_then(Value::as_str)
++            .ok_or("SystemUI provider addition lacks its exact path")?;
++        if projects.iter().any(|project| project.get("path").and_then(Value::as_str) == Some(path)) {
++            return fail("SystemUI extension replaces an existing project");
++        }
++        projects.push(addition);
++    }
++    if &expected != expanded {
++        return fail("SystemUI extension changed fixed commits, metadata, order or source paths");
++    }
++    Ok(())
++}
++
+ fn materialized_previous_lock(value: &Value) -> Result<Option<(&'static str, Pin)>> {
+     match value.get("source_lock_sha256").and_then(Value::as_str) {
+         Some(SOURCE_LOCK_SHA) => Ok(None),
++        Some(PREVIOUS_NATIVE_PROVIDER_LOCK_SHA) => Ok(Some(("m2-role-ingress-provider2-source-lock.json", Pin {
++            bytes: PREVIOUS_NATIVE_PROVIDER_LOCK_BYTES, sha256: PREVIOUS_NATIVE_PROVIDER_LOCK_SHA,
++        }))),
+         Some(PREVIOUS_PROVIDER_LOCK_SHA) => Ok(Some(("m2-role-ingress-provider-source-lock.json", Pin {
+             bytes: PREVIOUS_PROVIDER_LOCK_BYTES, sha256: PREVIOUS_PROVIDER_LOCK_SHA,
+         }))),
+@@ -319,7 +378,12 @@
+     })?;
+     let previous_provider_value: Value = serde_json::from_slice(&previous_provider)?;
+     validate_provider_lock_extension(&previous_value, &previous_provider_value)?;
+-    validate_native_provider_extension(&previous_provider_value, &serde_json::from_slice(&expanded)?)?;
++    let previous_native = fixed_file(&repo.join(PREVIOUS_NATIVE_PROVIDER_LOCK), Pin {
++        bytes: PREVIOUS_NATIVE_PROVIDER_LOCK_BYTES, sha256: PREVIOUS_NATIVE_PROVIDER_LOCK_SHA,
++    })?;
++    let previous_native_value: Value = serde_json::from_slice(&previous_native)?;
++    validate_native_provider_extension(&previous_provider_value, &previous_native_value)?;
++    validate_systemui_provider_extension(&previous_native_value, &serde_json::from_slice(&expanded)?)?;
+     // The normal source library validates the full lock schema, exact revisions,
+     // URL policy, path bounds and every materialized Git project separately.
+     droidloom_source::load_lock(&path)?;
+@@ -336,7 +400,7 @@
+         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+         Err(error) => Err(error.into()),
+         Ok(metadata) if metadata.is_dir() && !metadata.file_type().is_symlink() => {
+-            // Select the exact current, provider1 or earlier independent typed lock before
++            // Select the exact current, provider2, provider1 or earlier typed lock before
+             // running its complete verifier. A dirty/mismatched previous tree never
+             // falls back to the new lock; the original shared sparse lock stays blocked.
+             let manifest: Value = serde_json::from_slice(&bounded_file(
+@@ -442,6 +506,8 @@
+         "original_source_lock_sha256": ORIGINAL_LOCK_SHA,
+         "previous_typed_source_lock_sha256": PREVIOUS_SOURCE_LOCK_SHA,
+         "previous_provider_source_lock_sha256": PREVIOUS_PROVIDER_LOCK_SHA,
++        "previous_native_provider_source_lock_sha256": PREVIOUS_NATIVE_PROVIDER_LOCK_SHA,
++        "systemui_provider_extension_exact": true,
+         "provider_source_lock_extension_exact": true,
+         "native_provider_extension_exact": true,
+         "typed_ingress_sources": INPUTS, "unchanged_framework_module_definitions": BLUEPRINTS,
+@@ -553,7 +619,7 @@
+     fn native_provider_extension_rejects_missing_or_unpinned_providers() {
+         let repo = repository();
+         let previous: Value = serde_json::from_slice(&fs::read(repo.join(PREVIOUS_PROVIDER_LOCK)).unwrap()).unwrap();
+-        let expanded: Value = serde_json::from_slice(&fs::read(repo.join(SOURCE_LOCK)).unwrap()).unwrap();
++        let expanded: Value = serde_json::from_slice(&fs::read(repo.join(PREVIOUS_NATIVE_PROVIDER_LOCK)).unwrap()).unwrap();
+         validate_native_provider_extension(&previous, &expanded).unwrap();
+         let mut changed = expanded.clone();
+         changed["projects"].as_array_mut().unwrap().last_mut().unwrap()["commit"] =
+@@ -574,10 +640,44 @@
+     }
+ 
+     #[test]
++    fn systemui_extension_rejects_missing_provider_wrong_revision_or_scope() {
++        let repo = repository();
++        let previous: Value = serde_json::from_slice(&fs::read(repo.join(PREVIOUS_NATIVE_PROVIDER_LOCK)).unwrap()).unwrap();
++        let expanded: Value = serde_json::from_slice(&fs::read(repo.join(SOURCE_LOCK)).unwrap()).unwrap();
++        validate_systemui_provider_extension(&previous, &expanded).unwrap();
++        let mut changed = expanded.clone();
++        changed["projects"].as_array_mut().unwrap().last_mut().unwrap()["commit"] =
++            Value::String("0000000000000000000000000000000000000000".to_owned());
++        assert!(validate_systemui_provider_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        changed["projects"].as_array_mut().unwrap().pop();
++        assert!(validate_systemui_provider_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        let project = changed["projects"].as_array_mut().unwrap().iter_mut()
++            .find(|project| project["path"] == SYSTEMUI_PROVIDER_EXTENSIONS[0].0).unwrap();
++        project["sparse_paths"].as_array_mut().unwrap().pop();
++        assert!(validate_systemui_provider_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        changed["projects"].as_array_mut().unwrap().swap(0, 1);
++        assert!(validate_systemui_provider_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        changed["projects"][0]["commit"] =
++            Value::String("0000000000000000000000000000000000000000".to_owned());
++        assert!(validate_systemui_provider_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        changed["policy"]["allow_unrestricted_repo_sync"] = Value::Bool(true);
++        assert!(validate_systemui_provider_extension(&previous, &changed).is_err());
++        let mut changed = expanded.clone();
++        changed["links"].as_array_mut().unwrap().pop();
++        assert!(validate_systemui_provider_extension(&previous, &changed).is_err());
++    }
++
++    #[test]
+     fn published_workspace_selects_only_exact_current_or_previous_typed_lock() {
+         assert!(materialized_previous_lock(&serde_json::json!({"source_lock_sha256": SOURCE_LOCK_SHA})).unwrap().is_none());
+         for (sha, name) in [(PREVIOUS_SOURCE_LOCK_SHA, "m2-role-ingress-source-lock.json"),
+-                            (PREVIOUS_PROVIDER_LOCK_SHA, "m2-role-ingress-provider-source-lock.json")] {
++                            (PREVIOUS_PROVIDER_LOCK_SHA, "m2-role-ingress-provider-source-lock.json"),
++                            (PREVIOUS_NATIVE_PROVIDER_LOCK_SHA, "m2-role-ingress-provider2-source-lock.json")] {
+             assert_eq!(materialized_previous_lock(&serde_json::json!({"source_lock_sha256": sha})).unwrap().unwrap().0, name);
+         }
+         for value in [serde_json::json!({"source_lock_sha256": ORIGINAL_LOCK_SHA}),
+@@ -594,7 +694,8 @@
+         let current_path = source_lock_path(&repo).unwrap();
+         let current = droidloom_source::load_lock(&current_path).unwrap();
+         for (previous_name, previous_sha) in [(PREVIOUS_SOURCE_LOCK, PREVIOUS_SOURCE_LOCK_SHA),
+-                                             (PREVIOUS_PROVIDER_LOCK, PREVIOUS_PROVIDER_LOCK_SHA)] {
++                                             (PREVIOUS_PROVIDER_LOCK, PREVIOUS_PROVIDER_LOCK_SHA),
++                                             (PREVIOUS_NATIVE_PROVIDER_LOCK, PREVIOUS_NATIVE_PROVIDER_LOCK_SHA)] {
+             let previous = droidloom_source::load_lock(&repo.join(previous_name)).unwrap();
+             let scratch = tempfile::tempdir().unwrap();
+             let source = scratch.path().join("aosp-source");

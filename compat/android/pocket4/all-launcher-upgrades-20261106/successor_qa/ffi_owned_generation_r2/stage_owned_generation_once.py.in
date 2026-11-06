@@ -1,0 +1,132 @@
+#!/usr/bin/env python3
+"""One new private source stage, then the reviewed owned-lifetime entry once."""
+import hashlib
+import json
+import os
+from pathlib import Path
+import stat
+import sys
+
+ROOT = None
+FILES = None
+STAT_KEYS = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink",
+             "st_size", "st_mtime_ns", "st_ctime_ns")
+
+
+def require(value, code):
+    if not value:
+        raise RuntimeError(code)
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def write_new(directory, name, body):
+    fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                 0o600, dir_fd=directory)
+    try:
+        view = memoryview(body)
+        while view:
+            count = os.write(fd, view)
+            require(count > 0, "WRITE_PROGRESS")
+            view = view[count:]
+        os.fchmod(fd, 0o400)
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    os.fsync(directory)
+
+
+def readback(directory, name, expected):
+    fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK, dir_fd=directory)
+    try:
+        before = os.fstat(fd)
+        require(stat.S_ISREG(before.st_mode) and before.st_uid == 0 and before.st_nlink == 1 and
+                stat.S_IMODE(before.st_mode) == 0o400 and before.st_size == expected["bytes"],
+                "NEW_PRIVATE_FILE_IDENTITY")
+        raw = bytearray()
+        while len(raw) <= expected["bytes"]:
+            part = os.read(fd, min(65536, expected["bytes"] + 1 - len(raw)))
+            if not part:
+                break
+            raw.extend(part)
+        require(len(raw) == expected["bytes"] and sha(raw) == expected["sha256"], "STAGED_FILE_BYTES")
+        again = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory)
+        try:
+            require(all(getattr(before, key) == getattr(os.fstat(fd), key) ==
+                        getattr(os.fstat(again), key) for key in STAT_KEYS), "STAGED_FILE_REPLACED")
+        finally:
+            os.close(again)
+        return bytes(raw)
+    finally:
+        os.close(fd)
+
+
+def main():
+    require(type(ROOT) is str and type(FILES) is dict, "UNSEALED_NO_STAGE")
+    require(os.getuid() == os.geteuid() == 0, "ACTUAL_EXISTING_HOST_ROOT_REQUIRED")
+    os.umask(0o077)
+    before = len(os.listdir("/proc/self/fd"))
+    raw = sys.stdin.buffer.read(262145)
+    require(0 < len(raw) <= 262144, "CLOSED_STAGE_INPUT_BOUND")
+    payload = json.loads(raw)
+    require(set(payload) == {"schema", "files"} and
+            payload["schema"] == "pocket4-beike-owned-generation-stage-input-v1" and
+            type(payload["files"]) is list and len(payload["files"]) == len(FILES) == 4,
+            "CLOSED_STAGE_PROTOCOL")
+    bodies = {}
+    for row in payload["files"]:
+        require(type(row) is dict and set(row) == {"name", "text"} and
+                row["name"] in FILES and row["name"] not in bodies and type(row["text"]) is str,
+                "EXACT_FOUR_STAGE_MEMBERS")
+        body = row["text"].encode("utf-8")
+        require(len(body) == FILES[row["name"]]["bytes"] and
+                sha(body) == FILES[row["name"]]["sha256"], "EXACT_REVIEWED_STAGE_BYTES")
+        bodies[row["name"]] = body
+    source_name = "prepare_beike_owned_lifetime.py"
+    compile(bodies[source_name], ROOT + "/" + source_name, "exec")
+    owned = []
+    try:
+        parent = os.open("/", os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+        owned.append(parent)
+        for name in ("home", "alex", "work"):
+            parent = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=parent)
+            owned.append(parent)
+        leaf = Path(ROOT).name
+        os.mkdir(leaf, 0o700, dir_fd=parent)
+        os.fsync(parent)
+        directory = os.open(leaf, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=parent)
+        owned.append(directory)
+        root_stat = os.fstat(directory)
+        require(root_stat.st_uid == 0 and stat.S_IMODE(root_stat.st_mode) == 0o700,
+                "NEW_ROOT_PRIVATE_STAGE_REQUIRED")
+        for name in sorted(FILES):
+            write_new(directory, name, bodies[name])
+            bodies[name] = readback(directory, name, FILES[name])
+        again = os.open(leaf, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=parent)
+        owned.append(again)
+        require(all(getattr(root_stat, key) == getattr(os.fstat(again), key)
+                    for key in ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid")), "STAGE_PATH_REPLACED")
+    finally:
+        failures = []
+        for fd in reversed(owned):
+            try:
+                os.close(fd)
+            except OSError:
+                failures.append(fd)
+        require(not failures, "BOOTSTRAP_FD_CLOSE_FAILED")
+    require(len(os.listdir("/proc/self/fd")) == before, "BOOTSTRAP_FD_DIFFERENCE")
+    print(json.dumps({"schema": "pocket4-beike-owned-generation-stage-v1", "stage_root": ROOT,
+                      "files": FILES, "bootstrap_FDs_before": before, "bootstrap_FDs_after": before,
+                      "Main_actions_before_worker": 0, "worker_not_yet_invoked": True,
+                      "automatic_retry": False}, sort_keys=True), flush=True)
+    path = ROOT + "/" + source_name
+    self_pin = FILES[source_name]
+    sys.argv = [path, "--execute-new-source-preparation", "--source-sha256", self_pin["sha256"],
+                "--source-bytes", str(self_pin["bytes"])]
+    exec(compile(bodies[source_name], path, "exec"), {"__name__": "__main__", "__file__": path})
+
+
+if __name__ == "__main__":
+    main()

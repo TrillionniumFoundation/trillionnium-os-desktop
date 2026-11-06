@@ -1,0 +1,41 @@
+test_actual_local_system_elf_pread_only (__main__.Controls.test_actual_local_system_elf_pread_only) ... ERROR
+test_complete_fixture_raw_strings_and_borrowed_lifetime (__main__.Controls.test_complete_fixture_raw_strings_and_borrowed_lifetime) ... ok
+test_header_and_file_bounds (__main__.Controls.test_header_and_file_bounds) ... ok
+test_interpreter_and_loader_directives_remain_explicit (__main__.Controls.test_interpreter_and_loader_directives_remain_explicit) ... ok
+test_unique_mapping_and_dynamic_rejections (__main__.Controls.test_unique_mapping_and_dynamic_rejections) ... FAIL
+
+======================================================================
+ERROR: test_actual_local_system_elf_pread_only (__main__.Controls.test_actual_local_system_elf_pread_only)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/diagnostics/aapt2-provenance-interface-r1/test_elf_static.py", line 96, in test_actual_local_system_elf_pread_only
+    row = parser.inspect_elf_fd(fd, initial.st_size)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/diagnostics/aapt2-provenance-interface-r1/elf_static.py", line 175, in inspect_elf_fd
+    string_offset, string_load = map_unique(singleton[DT_STRTAB], string_bytes)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/diagnostics/aapt2-provenance-interface-r1/elf_static.py", line 106, in map_unique
+    _need(len(intersecting) == 1, "VIRTUAL_MAPPING_NOT_UNIQUE")
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/diagnostics/aapt2-provenance-interface-r1/elf_static.py", line 35, in _need
+    raise ELFError(reason)
+elf_static_local.ELFError: VIRTUAL_MAPPING_NOT_UNIQUE
+
+======================================================================
+FAIL: test_unique_mapping_and_dynamic_rejections (__main__.Controls.test_unique_mapping_and_dynamic_rejections)
+----------------------------------------------------------------------
+elf_static_local.ELFError: VIRTUAL_SPAN_NOT_FILE_BACKED
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/diagnostics/aapt2-provenance-interface-r1/test_elf_static.py", line 134, in test_unique_mapping_and_dynamic_rejections
+    self.reject(raw, "VIRTUAL_MAPPING_NOT_UNIQUE")
+  File "/workspace/scratch/265e5bca485a/pocket4_eight_apps/successor_audit_requests/diagnostics/aapt2-provenance-interface-r1/test_elf_static.py", line 75, in reject
+    with self.assertRaisesRegex(parser.ELFError, "^"+reason+"$"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "^VIRTUAL_MAPPING_NOT_UNIQUE$" does not match "VIRTUAL_SPAN_NOT_FILE_BACKED"
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.003s
+
+FAILED (failures=1, errors=1)

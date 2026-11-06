@@ -1,0 +1,97 @@
+{
+  "schema": "pocket4-normal06-candidate-r3-offline-controls-v1",
+  "candidate_manifest_sha256": "858edc8cc683de670711fed936c941e2631b3939423acacac4bd3dcadb498040",
+  "checks": [
+    {
+      "name": "candidate_file_identity_and_original_lock",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY"
+    },
+    {
+      "name": "source_delta_reconstructs_exact_successor",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY"
+    },
+    {
+      "name": "original_225_revisions_links_policy_and_17_exact_gitlinks",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY"
+    },
+    {
+      "name": "captured_provider_source_bytes_and_commit_evidence",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY"
+    },
+    {
+      "name": "nineteen_systemui_and_nine_shell_full_upstream_bodies",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY"
+    },
+    {
+      "name": "device_state_real_provider_and_original_consumers",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY"
+    },
+    {
+      "name": "wrong_vendor_project_commit_rejected",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY",
+      "rejection_observed": true
+    },
+    {
+      "name": "missing_added_project_rejected",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY",
+      "rejection_observed": true
+    },
+    {
+      "name": "original_project_revision_change_rejected",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY",
+      "rejection_observed": true
+    },
+    {
+      "name": "original_project_order_change_rejected",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY",
+      "rejection_observed": true
+    },
+    {
+      "name": "unrestricted_repo_sync_rejected",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY",
+      "rejection_observed": true
+    },
+    {
+      "name": "link_deletion_rejected",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY",
+      "rejection_observed": true
+    },
+    {
+      "name": "missing_required_sparse_path_rejected",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY",
+      "rejection_observed": true
+    },
+    {
+      "name": "unobserved_sparse_path_rejected",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY",
+      "rejection_observed": true
+    },
+    {
+      "name": "strict_target_and_previous_source_gate_chain_preserved",
+      "outcome": "PASS",
+      "scope": "OFFLINE_SOURCE_ONLY"
+    }
+  ],
+  "passed": 15,
+  "scope": "Local source/evidence consistency and fail-closed input checks only",
+  "rust_compiler_executed": false,
+  "rust_unit_tests_executed": false,
+  "soong_executed": false,
+  "host_or_android_actions": false,
+  "full_dependency_closure_qualified": false,
+  "production_ready": false
+}

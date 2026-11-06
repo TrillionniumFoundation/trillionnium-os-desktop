@@ -1,0 +1,30 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/sudo",
+  "args": [
+    "-n",
+    "/usr/bin/python3",
+    "-I",
+    "-B",
+    "/home/alex/work/pocket4-successor-qa-source-b34f158f88bbebf112840fd88df25d03/recorder/recorder.py",
+    "init",
+    "--adapter-manifest-sha256",
+    "646f6e4c7d931bf005ada01a84202a891c95e99e93bbde7a561f3307527008a4",
+    "--flow-dir",
+    "/home/alex/work/pocket4-successor-qa-flow-86d1a0aa167743a1842dc30487245feb",
+    "--current-baseline",
+    "/home/alex/work/pocket4-cell-successor-repaired-r2-20261106-execute-01/baseline.private.json",
+    "--baseline-sha256",
+    "7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8",
+    "--package",
+    "com.lianjia.beike",
+    "--component",
+    "com.lianjia.beike/com.lianjia.activity.MainActivity"
+  ],
+  "cwd": "/home/alex/work",
+  "idempotency_key": "pocket4-beike-r5-flow-init-r1-20261106-86d1a0aa167743a1842dc30487245feb",
+  "cpu_quota_percent": 100,
+  "memory_max_bytes": 536870912,
+  "nice": 10,
+  "timeout_seconds": 180
+}

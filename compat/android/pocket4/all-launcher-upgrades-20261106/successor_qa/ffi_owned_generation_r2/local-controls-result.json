@@ -1,0 +1,36 @@
+{
+  "Main_actions": 0,
+  "actual_probe_proof_parser_pass": true,
+  "actual_probe_raw_parsed": {
+    "bytes": 14135,
+    "sha256": "c590487759f7a0e2e32dec8cdb16a7c42b7f932ed88154f760fdde477770ef94"
+  },
+  "actual_probe_terminal": {
+    "bytes": 733,
+    "sha256": "86c28f1ff58512f7b8f3b42c59eb1a62e7bb20ce52edd0a043d54792e35d6762"
+  },
+  "negative_controls": [
+    {
+      "name": "durability_missing",
+      "rejected": "ACTUAL_PROBE_DURABLE_SUCCESS_REQUIRED"
+    },
+    {
+      "name": "child_timeout",
+      "rejected": "ACTUAL_PROBE_DURABLE_SUCCESS_REQUIRED"
+    },
+    {
+      "name": "job_identity_wrong",
+      "rejected": "ACTUAL_PROBE_DURABLE_SUCCESS_REQUIRED"
+    },
+    {
+      "name": "inner_probe_success_without_held_pidfd_death",
+      "rejected": "ACTUAL_PROBE_AND_OWNED_EXIT_REQUIRED"
+    }
+  ],
+  "root_stat_not_mocked": true,
+  "schema": "pocket4-owned-generation-template-local-controls-v1",
+  "sealed_worker_executed": false,
+  "source_worker_executed": false,
+  "unsealed_no_child_or_Main": true,
+  "unsealed_process_exit": 1
+}

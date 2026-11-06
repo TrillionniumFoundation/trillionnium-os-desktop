@@ -1,0 +1,201 @@
+"""Bounded ELF64LE/x86_64 static metadata from a caller-owned, already pinned FD.
+
+The only FD operation here is os.pread. This module never opens, closes, seeks,
+maps or executes a file and never searches a library path. The caller owns all
+identity/hash/stat checks and retains/then closes its FD. Results describe file
+metadata, not an actual loader resolution, ABI compatibility or execution proof.
+
+ELF layouts/constants follow Elf64_Ehdr/Phdr/Dyn in the system <elf.h>;
+unknown dynamic tags remain outside this narrow interpretation.
+"""
+import os
+import struct
+
+__all__ = ["ELFError", "inspect_elf_fd"]
+
+MAX_FILE_BYTES = 512 * 1024 * 1024
+MAX_PHNUM = 1024
+MAX_DYNAMIC_BYTES = 64 * 1024
+MAX_STRTAB_BYTES = 4 * 1024 * 1024
+MAX_READ_BYTES = 5 * 1024 * 1024
+MAX_STRING_BYTES = 4096
+MAX_NEEDED = 128
+U64_END = 1 << 64
+PT_LOAD, PT_DYNAMIC, PT_INTERP = 1, 2, 3
+DT_NULL, DT_NEEDED, DT_STRTAB, DT_STRSZ, DT_RPATH, DT_RUNPATH = 0, 1, 5, 10, 15, 29
+EXTRA_LOAD_STRINGS = {0x6ffffefa: "DT_CONFIG", 0x6ffffefb: "DT_DEPAUDIT",
+                      0x6ffffefc: "DT_AUDIT", 0x7ffffffd: "DT_AUXILIARY",
+                      0x7fffffff: "DT_FILTER"}
+
+class ELFError(ValueError):
+    """Unsupported shape, ambiguous mapping, malformed data or exceeded bound."""
+
+def _need(value, reason):
+    if not value:
+        raise ELFError(reason)
+
+def inspect_elf_fd(fd, size):
+    """Return static metadata; preserve the borrowed FD and its current offset.
+
+    Supports ET_EXEC/ET_DYN, normal (non-extended) program-header counts and
+    bounded, unique file-backed string-table mapping. Rejects unsupported or
+    malformed forms instead of inferring dependencies. Dynamic loader audit,
+    filter and configuration strings are reported separately so callers can
+    explicitly reject them. RPATH/RUNPATH are raw strings, including empty
+    strings; they are never expanded or normalized here.
+    """
+    _need(type(fd) is int and fd >= 0, "BORROWED_FD_REQUIRED")
+    _need(type(size) is int and 64 <= size <= MAX_FILE_BYTES, "ELF_FILE_SIZE_BOUND")
+    read_total = 0
+
+    def span(offset, count):
+        _need(type(offset) is int and type(count) is int and 0 <= offset <= size
+              and 0 <= count <= size - offset, "FILE_SPAN_OUT_OF_BOUNDS")
+
+    def read_at(offset, count):
+        nonlocal read_total
+        span(offset, count)
+        _need(count <= MAX_READ_BYTES - read_total, "PREAD_TOTAL_BOUND")
+        read_total += count
+        chunks = []
+        got = 0
+        while got < count:
+            block = os.pread(fd, count - got, offset + got)
+            _need(block, "SHORT_PREAD")
+            chunks.append(block)
+            got += len(block)
+        return b"".join(chunks)
+
+    head = read_at(0, 64)
+    fields = struct.unpack("<16sHHIQQQIHHHHHH", head)
+    ident, kind, machine, version, entry, phoff, shoff, flags, ehsize, phentsize, phnum, shentsize, shnum, shstrndx = fields
+    _need(ident[:4] == b"\x7fELF" and ident[4] == 2 and ident[5] == 1 and ident[6] == 1,
+          "ELF64_LITTLE_ENDIAN_VERSION1_REQUIRED")
+    _need(machine == 62 and version == 1 and kind in (2, 3), "X86_64_EXEC_OR_DYN_REQUIRED")
+    _need(ehsize == 64 and phentsize == 56, "EXACT_ELF64_HEADER_LAYOUT_REQUIRED")
+    _need(0 < phnum <= MAX_PHNUM and phnum != 0xffff, "NORMAL_BOUNDED_PHNUM_REQUIRED")
+    _need(phoff >= 64, "PROGRAM_HEADERS_OVERLAP_ELF_HEADER")
+    table = read_at(phoff, phnum * 56)
+    loads, dynamics, interps = [], [], []
+    for index in range(phnum):
+        values = struct.unpack_from("<IIQQQQQQ", table, index * 56)
+        ptype, pflags, offset, address, physical, file_bytes, memory_bytes, alignment = values
+        span(offset, file_bytes)
+        _need(address + memory_bytes <= U64_END, "VIRTUAL_SPAN_OVERFLOW")
+        _need(alignment in (0, 1) or alignment & (alignment - 1) == 0, "SEGMENT_ALIGNMENT_NOT_POWER_OF_TWO")
+        segment = {"index": index, "offset": offset, "vaddr": address,
+                   "file_bytes": file_bytes, "memory_bytes": memory_bytes,
+                   "flags": pflags, "alignment": alignment}
+        if ptype == PT_LOAD:
+            _need(file_bytes <= memory_bytes, "LOAD_FILE_EXCEEDS_MEMORY")
+            _need(alignment in (0, 1) or (address - offset) % alignment == 0, "LOAD_ALIGNMENT_CONGRUENCE")
+            loads.append(segment)
+        elif ptype == PT_DYNAMIC:
+            dynamics.append(segment)
+        elif ptype == PT_INTERP:
+            interps.append(segment)
+    _need(0 < len(loads) <= 128, "BOUNDED_LOAD_SEGMENTS_REQUIRED")
+    _need(len(dynamics) <= 1 and len(interps) <= 1, "DUPLICATE_DYNAMIC_OR_INTERPRETER")
+
+    def map_unique(address, count):
+        _need(type(address) is int and 0 <= address < U64_END and 0 < count <= U64_END - address,
+              "DYNAMIC_VIRTUAL_SPAN_OUT_OF_BOUNDS")
+        end = address + count
+        intersecting = [p for p in loads if address < p["vaddr"] + p["memory_bytes"]
+                        and p["vaddr"] < end]
+        _need(len(intersecting) == 1, "VIRTUAL_MAPPING_NOT_UNIQUE")
+        chosen = intersecting[0]
+        _need(chosen["vaddr"] <= address and end <= chosen["vaddr"] + chosen["file_bytes"],
+              "VIRTUAL_SPAN_NOT_FILE_BACKED")
+        offset = chosen["offset"] + address - chosen["vaddr"]
+        span(offset, count)
+        return offset, chosen["index"]
+
+    def text(raw, label):
+        _need(raw and len(raw) <= MAX_STRING_BYTES and b"\0" not in raw
+              and all(v >= 32 and v != 127 for v in raw), label + "_INVALID_STRING")
+        try:
+            return raw.decode("utf-8", "strict")
+        except UnicodeDecodeError as error:
+            raise ELFError(label + "_NOT_UTF8") from error
+
+    interpreter = None
+    if interps:
+        p = interps[0]
+        _need(1 < p["file_bytes"] <= MAX_STRING_BYTES, "INTERPRETER_LENGTH_BOUND")
+        raw = read_at(p["offset"], p["file_bytes"])
+        _need(raw.endswith(b"\0") and raw.count(b"\0") == 1, "INTERPRETER_TERMINATION")
+        interpreter = text(raw[:-1], "INTERPRETER")
+        _need(interpreter.startswith("/"), "ABSOLUTE_INTERPRETER_REQUIRED")
+
+    result = {"format": "ELF64LE", "type": "ET_EXEC" if kind == 2 else "ET_DYN",
+              "machine": "EM_X86_64", "machine_id": machine, "osabi": ident[7],
+              "abi_version": ident[8], "interpreter": interpreter,
+              "needed": [], "rpath": None, "runpath": None,
+              "additional_loader_directives": [], "load_segments": loads,
+              "program_header_count": phnum, "dynamic": None, "string_table": None,
+              "is_loader_resolution_proof": False,
+              "unknown_dynamic_tags_interpreted": False,
+              "fd_ownership": "borrowed_pread_only_caller_retains",
+              "read_bytes": None}
+    if not dynamics:
+        _need(interpreter is None, "INTERPRETER_WITHOUT_DYNAMIC_UNSUPPORTED")
+        result["read_bytes"] = read_total
+        return result
+    p = dynamics[0]
+    _need(16 <= p["file_bytes"] <= MAX_DYNAMIC_BYTES and p["file_bytes"] % 16 == 0
+          and p["file_bytes"] <= p["memory_bytes"], "DYNAMIC_TABLE_SIZE_BOUND")
+    offset, load_index = map_unique(p["vaddr"], p["file_bytes"])
+    _need(offset == p["offset"], "DYNAMIC_FILE_AND_VIRTUAL_MAPPING_DIFFER")
+    raw = read_at(offset, p["file_bytes"])
+    singleton, needed_offsets, extra_offsets, other_tags = {}, [], [], set()
+    terminated = False
+    used_entries = 0
+    for at in range(0, len(raw), 16):
+        tag, value = struct.unpack_from("<qQ", raw, at)
+        used_entries += 1
+        if tag == DT_NULL:
+            terminated = True
+            break
+        if tag in (DT_STRTAB, DT_STRSZ, DT_RPATH, DT_RUNPATH):
+            _need(tag not in singleton, "DUPLICATE_DYNAMIC_SINGLETON")
+            singleton[tag] = value
+        elif tag == DT_NEEDED:
+            needed_offsets.append(value)
+            _need(len(needed_offsets) <= MAX_NEEDED, "NEEDED_COUNT_BOUND")
+        elif tag in EXTRA_LOAD_STRINGS:
+            extra_offsets.append((tag, value))
+            _need(len(extra_offsets) <= 32, "EXTRA_LOADER_DIRECTIVE_BOUND")
+        else:
+            other_tags.add(tag)
+    _need(terminated, "DYNAMIC_TABLE_UNTERMINATED")
+    _need(DT_STRTAB in singleton and DT_STRSZ in singleton, "DYNAMIC_STRING_TABLE_REQUIRED")
+    string_bytes = singleton[DT_STRSZ]
+    _need(0 < string_bytes <= MAX_STRTAB_BYTES, "STRING_TABLE_SIZE_BOUND")
+    string_offset, string_load = map_unique(singleton[DT_STRTAB], string_bytes)
+    strings = read_at(string_offset, string_bytes)
+    _need(strings[0] == 0 and strings[-1] == 0, "STRING_TABLE_EDGE_TERMINATORS_REQUIRED")
+
+    def string_at(offset, label, allow_empty=False):
+        _need(type(offset) is int and 0 <= offset < string_bytes, label + "_OFFSET_OUT_OF_BOUNDS")
+        end = strings.find(b"\0", offset, min(offset + MAX_STRING_BYTES, string_bytes))
+        _need(end >= offset, label + "_UNTERMINATED_OR_TOO_LONG")
+        if end == offset and allow_empty:
+            return ""
+        return text(strings[offset:end], label)
+
+    result["needed"] = [string_at(o, "NEEDED") for o in needed_offsets]
+    result["rpath"] = string_at(singleton[DT_RPATH], "RPATH", True) if DT_RPATH in singleton else None
+    result["runpath"] = string_at(singleton[DT_RUNPATH], "RUNPATH", True) if DT_RUNPATH in singleton else None
+    result["additional_loader_directives"] = [
+        {"tag": tag, "name": EXTRA_LOAD_STRINGS[tag], "value": string_at(o, EXTRA_LOAD_STRINGS[tag])}
+        for tag, o in extra_offsets]
+    result["dynamic"] = {"offset": p["offset"], "vaddr": p["vaddr"],
+                         "bytes": p["file_bytes"], "load_segment_index": load_index,
+                         "entries_through_null": used_entries,
+                         "other_tags_not_interpreted": sorted(other_tags)}
+    result["string_table"] = {"offset": string_offset, "vaddr": singleton[DT_STRTAB],
+                              "bytes": string_bytes, "load_segment_index": string_load}
+    result["read_bytes"] = read_total
+    return result
+

@@ -1,0 +1,25 @@
+package {
+    default_applicable_licenses: ["external_jspecify_license"],
+}
+
+license {
+    name: "external_jspecify_license",
+    visibility: [":__subpackages__"],
+    license_kinds: ["SPDX-license-identifier-Apache-2.0"],
+    license_text: ["LICENSE"],
+}
+
+java_library {
+    name: "jspecify",
+    defaults: ["error_prone_dependency_defaults"],
+    host_supported: true,
+    srcs: ["src/main/**/*.java"],
+    sdk_version: "core_current",
+    min_sdk_version: "1",
+    // b/267831518: Pin tradefed and dependencies to Java 11.
+    java_version: "11",
+    apex_available: [
+        "//apex_available:anyapex",
+        "//apex_available:platform",
+    ],
+}

@@ -1,0 +1,25 @@
+--- builder470-hostprep-r1/compile_builder470.py
++++ builder470-hostprep-r2/compile_builder470.py
+@@ -1,6 +1,6 @@
+ import os,sys,json,hashlib,stat,pathlib,subprocess,time,signal,ctypes,resource,datetime,re
+ P=Path=pathlib.Path
+-ROOT=P('/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-01-20261106')
++ROOT=P('/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106')
+ SOURCE=COPIED=ROOT/'builder-source'
+ ATTEMPT=OUT=ROOT/'compile01'
+ BASE=P('/home/alex/work/pocket4-native-typed-ingress-builder469-native-provider-compile-01-20261106')
+@@ -423,12 +423,12 @@
+  require(len(names)==EXPECTED_REGISTERED_TESTS and len(set(names))==EXPECTED_REGISTERED_TESTS and set(TESTS)<=set(names),'actual registered test scope differs')
+  focused=[]
+  for index,name in enumerate(TESTS):focused.append(focused_test(test,name,index,len(names),environment,records))
+- result.update({'state':'RUST_BUILD_AND_19_INDEPENDENT_FOCUSED_TESTS_PASS','tests_passed':len(focused),'test_names':TESTS,'registered_tests':len(names),'builder':hash_pin(ATTEMPT/'cargo-target/debug/droidloom-update'),'test_executable':hash_pin(test),'build_environment':environment,'source_manifest_sha256':EXPECTED_MANIFEST_SHA,'source_files':498,'new_project_count':242,'full_Android_Java_JNI_compiled':False})
++ result.update({'state':'RUST_BUILD_AND_19_INDEPENDENT_FOCUSED_TESTS_PASS','tests_passed':len(focused),'independent_result_gates':focused,'test_names':TESTS,'registered_tests':len(names),'builder':hash_pin(ATTEMPT/'cargo-target/debug/droidloom-update'),'test_executable':hash_pin(test),'build_environment':environment,'source_manifest_sha256':EXPECTED_MANIFEST_SHA,'source_files':498,'new_project_count':242,'full_Android_Java_JNI_compiled':False})
+ except BaseException as error:
+  failure=repr(error);result['state']='FAILED';result['error']=failure
+ finally:
+  try:
+-  cleanup=cleanup_children();result['cleanup']=cleanup;require(cleanup.get('complete') is True,'owned child cleanup incomplete')
++  cleanup=cleanup_children();result['cleanup']=cleanup;require(cleanup.get('complete') is True and cleanup.get('children')==[] and cleanup.get('errors')==[],'owned child cleanup incomplete or residual child cleanup occurred')
+   if candidate is not None:require(inventory(SOURCE)==candidate,'candidate source changed after build');result['candidate_source_unchanged_after']=True
+   if baseline is not None:require(inventory(BASE/'builder-source')==baseline,'baseline source changed after build');result['baseline_source_unchanged_after']=True
+   if dependencies is not None:

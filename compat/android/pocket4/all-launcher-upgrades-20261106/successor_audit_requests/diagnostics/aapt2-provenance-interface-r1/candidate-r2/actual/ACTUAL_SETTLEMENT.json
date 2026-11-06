@@ -1,0 +1,37 @@
+{
+  "schema": "pocket4-aapt2-r2-actual-settlement-v1",
+  "job_id": "1a1b1cdd0e7-fc05-7ae1",
+  "idempotency_key": "sidecar-evidence-20261106-aapt2-dpkg-static-interface-r2",
+  "actual_state": "FAILED_DURABLE_COMPLETE_NOT_UNKNOWN",
+  "terminal_exit_code": 1,
+  "artifact_ok": false,
+  "candidate_executions": 2,
+  "actual_returncodes": [
+    0,
+    1
+  ],
+  "failure_reason": "Original success gate requires both interface commands to return zero; dump badging --help emitted complete help text and returned 1. Original result remains failed.",
+  "all_owned_children_joined": true,
+  "process_fds": {
+    "before": 4,
+    "after": 4
+  },
+  "new_Main_APK_UI_permission_actions": 0,
+  "old_b05_failure_reclassified": false,
+  "next_batch_claimed": false,
+  "window_returned_to_root": true,
+  "source_pin": {
+    "bytes": 42373,
+    "sha256": "4c1cbc31cd5d2a8ed26e13224d647de715bfced4fdafcf48865d40dd871267c2"
+  },
+  "packet_pin": {
+    "bytes": 44829,
+    "sha256": "6b8c99b26af0263ccdff117a00c12189cbe3d6a7d16cb74d431d44875605029f"
+  },
+  "limits": [
+    "The installed dpkg membership/checksum match is not distribution-signature re-verification.",
+    "The 19-file static dependency observation is not actual loader mapping proof.",
+    "No Calendar or other APK was read or passed to AAPT2.",
+    "Help text and version output do not establish APK compatibility."
+  ]
+}

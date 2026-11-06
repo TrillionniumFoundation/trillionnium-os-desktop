@@ -1,0 +1,79 @@
+{
+  "schema": "pocket4-normal06-actual-product-and-patched-source-proof-v1",
+  "observed_normal05_variables": {
+    "path": "reference/normal05-vars-and-patches/soong.droidloom_x86_64.variables",
+    "bytes": 111726,
+    "sha256": "3cbecee50fbfbe52483834f3396a04501f2f9a63422d9f77df6012434d848e65",
+    "selected_fields": {
+      "Debuggable": true,
+      "Eng": false,
+      "Allow_missing_dependencies": false,
+      "Platform_sdk_version": 37,
+      "DeviceName": "droidloom_x86_64",
+      "DeviceArch": "x86_64",
+      "HostArch": "x86_64",
+      "VendorVars.ANDROID.SYSTEMUI_OPTIMIZE_JAVA": "true",
+      "actual_root_partial_named_fields": {}
+    }
+  },
+  "memory_patches_applied_to_pinned_upstream": [
+    {
+      "canonical_path": "build/soong/ui/build/soong.go",
+      "source_file": "reference/upstream-go/ui-build-soong.go",
+      "before_bytes": 31627,
+      "before_sha256": "ab745182f4fba6ab4fbd1cea6fc4943b78e588b4187dfc735cd28826bbaa7027",
+      "patch": "0008-soong-leaf-go-memory-budget.patch",
+      "patch_sha256": "39211a784284ed319b6abbbe4b327a88896931d39c6bdb91fe727a9a7589325f",
+      "single_hunk_old_range": [
+        215,
+        5
+      ],
+      "single_hunk_new_range": [
+        215,
+        9
+      ],
+      "exact_context_actual_line": 216,
+      "context_offset_lines": 1,
+      "fuzz_lines": 0,
+      "applied_bytes": 31887,
+      "applied_sha256": "4e6fb778c1aee7bfc9b3206940364edbf3502912fe692fa91b612ab389ed07d9",
+      "equals_actual_normal05_source_projection_sha256": true
+    },
+    {
+      "canonical_path": "build/blueprint/context.go",
+      "source_file": "reference/upstream-go/blueprint-context.go",
+      "before_bytes": 199777,
+      "before_sha256": "e2b7bf50848ba9f9ac7078dae87c6b2e13ce7019ba997c71f90a04e602f1a9d4",
+      "patch": "0009-blueprint-stream-uncached-module-actions.patch",
+      "patch_sha256": "9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307",
+      "single_hunk_old_range": [
+        5623,
+        7
+      ],
+      "single_hunk_new_range": [
+        5623,
+        12
+      ],
+      "exact_context_actual_line": 5623,
+      "context_offset_lines": 0,
+      "fuzz_lines": 0,
+      "applied_bytes": 199966,
+      "applied_sha256": "1559969a55db1b682401c01264dd8ba96fa224781c3af277f0996a5050f7c9fa",
+      "equals_actual_normal05_source_projection_sha256": true
+    }
+  ],
+  "semantic_conclusions": [
+    "0008 adds GOMEMLIMIT=5GiB to the existing analyzer environment and changes no argument or dependency validation.",
+    "0009 only changes the Ninja action serialization branch after graph construction; missing-dependency and passive-module branches are byte-identical to pinned upstream.",
+    "SystemUI-core.srcs select(product_variable(debuggable)) takes DebugJavaFiles for the actual normal05 configuration. ReleaseJavaFiles remains independently referenced by SystemUI-tests.",
+    "SystemUI_optimized_defaults takes SYSTEMUI_OPTIMIZE_JAVA=true; its declared variable controls optimize properties only, no dependency fields."
+  ],
+  "partial_analysis_flag_evidence": "Actual complete normal05 soong_build argv has no --partial-analysis-targets. Empty root partial fields alone are not used as proof.",
+  "limits": [
+    "No normal06 build or host compile executed.",
+    "New provider external select/target/config branches still require individual mapping to this product configuration.",
+    "Static source fidelity does not establish runtime or production readiness."
+  ],
+  "new_build_submitted": false,
+  "production_ready": false
+}

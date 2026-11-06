@@ -1,0 +1,16 @@
+{
+  "host": "pocket4",
+  "executable": "/usr/bin/python3",
+  "args": [
+    "-B",
+    "-I",
+    "-c",
+    "import hashlib,os,stat,sys\nfrom pathlib import Path\nif sys.argv[1:] != ['--execute-once']:raise SystemExit('PLAN_ONLY: compiler not invoked')\np=Path('/home/alex/work/pocket4-native-typed-ingress-builder470-systemui-provider-compile-02-20261106/compile_builder470.py')\nfor q in [p.parent,*p.parent.parents]:\n if not stat.S_ISDIR(q.lstat().st_mode):raise RuntimeError('compile source parent differs')\nfd=os.open(p,os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC)\ntry:\n before=os.fstat(fd)\n if not stat.S_ISREG(before.st_mode) or before.st_nlink!=1 or before.st_size!=32863:raise RuntimeError('compile source type/bound differs')\n with os.fdopen(fd,'rb',closefd=False) as f:raw=f.read(32864)\n identity=lambda s:(s.st_dev,s.st_ino,s.st_mode,s.st_uid,s.st_gid,s.st_nlink,s.st_size,s.st_mtime_ns,s.st_ctime_ns)\n if identity(before)!=identity(os.fstat(fd)) or identity(before)!=identity(p.lstat()) or len(raw)!=32863 or hashlib.sha256(raw).hexdigest()!='5d66d26127cfb01ec09a83536ff4f4fdfb0782500cbcbfb2ec0a7b0288ea89d7':raise RuntimeError('compile source changed')\nfinally:os.close(fd)\nscope={'__name__':'__main__','__file__':str(p)};exec(compile(raw,str(p),'exec'),scope,scope)\n",
+    "--execute-once"
+  ],
+  "idempotency_key": "pocket4-builder470-systemui-provider-rust-compile-02-20261106",
+  "timeout_seconds": 1500,
+  "cpu_quota_percent": 100,
+  "memory_max_bytes": 1073741824,
+  "nice": 10
+}
