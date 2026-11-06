@@ -1,0 +1,363 @@
+#!/usr/bin/env python3
+"""Pinned read-only Main and held-process helpers from actual prefix02, plus owned helpers."""
+import ctypes, errno, hashlib, json, os, select, signal, socket, stat, struct, subprocess, sys, time, types
+from pathlib import Path
+sys.dont_write_bytecode = True
+ENV = {"PATH": "/usr/bin:/bin", "LANG": "C", "LC_ALL": "C", "PYTHONDONTWRITEBYTECODE": "1"}
+PROPERTIES = ("LoadState", "ActiveState", "SubState", "Description", "InvocationID", "ControlGroup", "MainPID", "ExecMainPID", "ExecMainCode", "ExecMainStatus", "Result", "Transient", "ExecMainStartTimestampMonotonic", "ExecMainExitTimestampMonotonic", "MemoryPeak", "MemorySwapPeak")
+NAMES = ("pid", "pid_for_children", "mnt", "cgroup", "user", "net", "ipc", "uts", "time", "time_for_children")
+def need(value, message):
+    if not value:
+        raise RuntimeError(message)
+
+
+def stamp(value):
+    return (value.st_dev, value.st_ino, value.st_mode, value.st_uid, value.st_gid,
+            value.st_size, value.st_mtime_ns, value.st_ctime_ns, value.st_nlink)
+
+
+def require_cgroup2(fd):
+    need(os.uname().machine == "x86_64", "prefix control filesystem ABI is qualified only for x86_64")
+    libc = ctypes.CDLL(None, use_errno=True)
+    buffer = ctypes.create_string_buffer(512)
+    libc.fstatfs.argtypes = (ctypes.c_int, ctypes.c_void_p)
+    libc.fstatfs.restype = ctypes.c_int
+    need(libc.fstatfs(fd, buffer) == 0 and ctypes.c_long.from_buffer(buffer).value == 0x63677270,
+         "unit directory is not cgroup2")
+
+
+def bounded(fd, name, limit=16384):
+    current = os.open(name, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW, dir_fd=fd)
+    try:
+        result = bytearray()
+        while True:
+            part = os.read(current, min(8192, limit + 1 - len(result)))
+            if not part:
+                break
+            result.extend(part)
+            need(len(result) <= limit, "bounded read exceeded: " + name)
+        return bytes(result)
+    finally:
+        os.close(current)
+
+
+def verify_fd(fd, digest, executable=False):
+    need(len(digest) == 64 and all(c in "0123456789abcdef" for c in digest), "invalid artifact digest")
+    before = os.fstat(fd)
+    need(stat.S_ISREG(before.st_mode) and before.st_uid == 0 and before.st_nlink == 1
+         and before.st_mode & 0o6022 == 0 and 0 < before.st_size <= 128 * 1024 * 1024,
+         "artifact ownership/type/size/privilege differs")
+    if executable:
+        need(before.st_mode & 0o111, "artifact is not executable")
+        try:
+            value = os.getxattr(fd, "security.capability")
+        except OSError as error:
+            need(error.errno in (errno.ENODATA, errno.ENOTSUP), "file capability inspection failed")
+        else:
+            need(not value, "privileged file capability can clear parent-death")
+    h = hashlib.sha256()
+    offset = 0
+    while True:
+        part = os.pread(fd, 65536, offset)
+        if not part:
+            break
+        h.update(part)
+        offset += len(part)
+        need(offset <= 128 * 1024 * 1024, "artifact grew beyond limit")
+    need(h.hexdigest() == digest and stamp(os.fstat(fd)) == stamp(before), "artifact content changed")
+    return before
+
+
+def pinned(path, digest, executable=False):
+    path = Path(path)
+    need(path.is_absolute() and ".." not in path.parts, "invalid artifact authority path")
+    fd = os.open(path, os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW)
+    try:
+        verify_fd(fd, digest, executable)
+        return fd
+    except BaseException:
+        os.close(fd)
+        raise
+
+
+def current_interpreter(digest):
+    # /usr/bin/python3 may be a packaging symlink. The current process's
+    # kernel-owned exe link pins the actual interpreter rather than guessing
+    # a versioned pathname or treating a symlink as a regular artifact.
+    fd = os.open("/proc/self/exe", os.O_RDONLY | os.O_CLOEXEC)
+    try:
+        verify_fd(fd, digest, True)
+        return fd
+    except BaseException:
+        os.close(fd)
+        raise
+
+
+def dead(fd):
+    poller = select.poll()
+    poller.register(fd, select.POLLIN)
+    result = poller.poll(0)
+    need(not any(flags & (select.POLLERR | select.POLLNVAL) for _, flags in result), "pidfd poll fault")
+    return bool(result)
+
+
+def await_dead(fd, seconds=4):
+    end = time.monotonic() + seconds
+    while not dead(fd):
+        need(time.monotonic() < end, "original pidfd remains alive")
+        time.sleep(0.01)
+
+
+def pidfd_pid(fd):
+    data = Path(f"/proc/self/fdinfo/{fd}").read_text()
+    fields = [line.split(":", 1)[1].strip() for line in data.splitlines() if line.startswith("Pid:")]
+    need(len(fields) == 1 and fields[0].isdigit() and int(fields[0]) > 0, "pidfd has no live host PID")
+    return int(fields[0])
+
+
+def identity(fd):
+    need(not dead(fd), "process dead before identity")
+    pid = pidfd_pid(fd)
+    proc = os.open(f"/proc/{pid}", os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
+    try:
+        first = bounded(proc, "stat").decode().rsplit(")", 1)[1].split()[19]
+        fields = dict(line.split(":", 1) for line in bounded(proc, "status").decode().splitlines() if ":" in line)
+        value = {"pid": pid, "birth": int(first), "parent": int(fields["PPid"]),
+                 "uids": [int(x) for x in fields["Uid"].split()],
+                 "gids": [int(x) for x in fields["Gid"].split()],
+                 "nspid": [int(x) for x in fields["NSpid"].split()],
+                 "cmdline": bounded(proc, "cmdline").decode().split("\0")[:-1],
+                 "cgroup": bounded(proc, "cgroup").decode().splitlines()}
+        second = bounded(proc, "stat").decode().rsplit(")", 1)[1].split()[19]
+        need(first == second and not dead(fd) and pidfd_pid(fd) == pid, "process identity changed")
+        return value, proc
+    except BaseException:
+        os.close(proc)
+        raise
+
+
+def sha(raw):
+    return hashlib.sha256(raw).hexdigest()
+
+
+def hex_value(value, length):
+    return isinstance(value, str) and len(value) == length and set(value) <= set("0123456789abcdef") and set(value) != {"0"}
+
+
+def counters(text):
+    values = {}
+    for line in text.splitlines():
+        fields = line.split()
+        need(len(fields) == 2 and fields[0] not in values and fields[1].isdigit(), "malformed/duplicate numeric counter")
+        values[fields[0]] = fields[1]
+    return values
+
+
+def read_pinned(path, digest, maximum=65536):
+    need(hex_value(digest, 64), "external file digest malformed")
+    path = Path(path)
+    need(path.is_absolute() and ".." not in path.parts, "external authority path malformed")
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        before = os.fstat(fd)
+        need(stat.S_ISREG(before.st_mode) and before.st_uid == 0 and before.st_nlink == 1
+             and before.st_mode & 0o6022 == 0 and 0 < before.st_size <= maximum,
+             "external artifact owner/type/size/privilege differs")
+        raw = bytearray()
+        while True:
+            part = os.read(fd, min(65536, maximum + 1 - len(raw)))
+            if not part: break
+            raw.extend(part); need(len(raw) <= maximum, "external file grew beyond bound")
+        after = os.fstat(fd)
+        fields = lambda s: (s.st_dev, s.st_ino, s.st_size, s.st_mode, s.st_uid, s.st_gid, s.st_nlink, s.st_mtime_ns, s.st_ctime_ns)
+        need(fields(before) == fields(after) and sha(raw) == digest, "external pinned bytes changed")
+        return bytes(raw)
+    finally:
+        os.close(fd)
+
+
+def read_json_at(directory, name, maximum=65536):
+    need(name and "/" not in name and name not in (".", ".."), "not a single owned filename")
+    fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC, dir_fd=directory)
+    try:
+        info = os.fstat(fd)
+        need(stat.S_ISREG(info.st_mode) and info.st_uid == 0 and info.st_nlink == 1
+             and info.st_mode & 0o6022 == 0 and 0 < info.st_size <= maximum,
+             "owned record metadata differs")
+        raw = os.read(fd, maximum + 1)
+        need(len(raw) == info.st_size and len(raw) <= maximum, "owned record length changed")
+        after = os.fstat(fd)
+        need((info.st_size, info.st_mtime_ns, info.st_ctime_ns) ==
+             (after.st_size, after.st_mtime_ns, after.st_ctime_ns), "owned record changed while read")
+        return json.loads(raw), sha(raw)
+    finally:
+        os.close(fd)
+
+
+def atomic_json(directory, name, value):
+    """Create-only atomic publication; never truncate an old claim or receipt."""
+    need(os.uname().machine == "x86_64" and "/" not in name, "atomic record ABI/name differs")
+    temporary = "." + name + ".pending"
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW | os.O_CLOEXEC,
+                 0o600, dir_fd=directory)
+    raw = (json.dumps(value, sort_keys=True, indent=2) + "\n").encode()
+    with os.fdopen(fd, "wb") as stream:
+        stream.write(raw); stream.flush(); os.fsync(stream.fileno())
+    libc = ctypes.CDLL(None, use_errno=True)
+    method = libc.renameat2
+    method.argtypes = (ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint)
+    method.restype = ctypes.c_int
+    if method(directory, temporary.encode(), directory, name.encode(), 1):
+        error = ctypes.get_errno()
+        raise OSError(error, os.strerror(error), name)
+    os.fsync(directory)
+    return sha(raw)
+
+
+def call(argv, timeout=5, allowed=(0,)):
+    value = subprocess.run(argv, env=ENV, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=timeout)
+    need(len(value.stdout) <= 65536 and len(value.stderr) <= 65536, "bounded owned command output exceeded")
+    need(value.returncode in allowed, "owned command failed: " + repr(argv) + " : " + value.stderr.decode(errors="replace")[-1000:])
+    return value
+
+
+def props(unit):
+    result = call(["/usr/bin/systemctl", "show", unit, *["--property=" + key for key in PROPERTIES]], allowed=(0, 1))
+    value = dict(line.split("=", 1) for line in result.stdout.decode().splitlines() if "=" in line)
+    need(result.returncode == 0 or value.get("LoadState") == "not-found", "unit observation failed")
+    return value
+
+
+CURRENT_MAIN_AUTHORITY = json.loads("{\"schema\":\"pocket4-owner20-current-main-authority-v1\",\"guard\":{\"path\":\"/home/alex/work/pocket4-main-current-baseline-01/current_baseline_guard.py\",\"bytes\":9408,\"sha256\":\"0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679\"},\"baseline\":{\"path\":\"/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json\",\"bytes\":41844,\"sha256\":\"163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266\"},\"qualification\":{\"path\":\"/home/alex/work/pocket4-main-current-baseline-01/qualification.json\",\"bytes\":1365,\"sha256\":\"f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6\"},\"current_epoch_sha256\":\"734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2\",\"source_manifest_sha256\":\"9bc710444bff9d90cb3375fd5acb155e0438e2a71a65348b23d4483cf81d00f9\",\"historical_epoch_sha256\":\"48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f\",\"historical_main_canonical_sha256\":\"90c61236553cee087605abe5bf852e94ac489305a4989881e3cf6a4be34e35ab\",\"baseline_actual_stdout\":{\"bytes\":7986,\"sha256\":\"4abe5092fe075e78602928d231987ac4a8394a72024dd2a535d8cff80d1ca066\"},\"private_baseline_body_exported\":false,\"historical_epoch_reauthorized\":false,\"current_identity_does_not_resolve_framework_exit_cause\":true,\"independent_owned_runtime_admission_required\":true}")
+
+
+class MainFence:
+    """Current seven-role read-only fence; old deployment remains lineage only."""
+    def __init__(self, plan, actor):
+        self.expected = plan["main"]; self.actor = actor
+        self.processes = {}; self.group = None; self.current = None
+        self.guard = None; self.guard_source = None; self.rows = None
+        self.close_errors = []
+        try:
+            need(plan.get("current_main") == CURRENT_MAIN_AUTHORITY,
+                 "exact current Main authority is required; historical epoch is not current")
+            need(sha(json.dumps(self.expected, sort_keys=True, separators=(",", ":")).encode()) ==
+                 CURRENT_MAIN_AUTHORITY["historical_main_canonical_sha256"],
+                 "historical Main deployment lineage changed")
+            self.guard_source = self.read_guard()
+            self.guard = types.ModuleType("owner20_current_baseline_guard")
+            self.guard.__file__ = CURRENT_MAIN_AUTHORITY["guard"]["path"]
+            exec(compile(self.guard_source, self.guard.__file__, "exec"), self.guard.__dict__)
+            need(self.guard.MAIN_EPOCH == CURRENT_MAIN_AUTHORITY["current_epoch_sha256"] and
+                 self.guard.BASELINE_SHA == CURRENT_MAIN_AUTHORITY["baseline"]["sha256"] and
+                 self.guard.QUALIFICATION_SHA == CURRENT_MAIN_AUTHORITY["qualification"]["sha256"] and
+                 self.guard.SOURCE_MANIFEST_SHA == CURRENT_MAIN_AUTHORITY["source_manifest_sha256"],
+                 "current guard constants differ from explicit authority")
+            self.current = self.guard.current_baseline()
+            need(self.current["schema"] == "pocket4-main-current-baseline-v1" and
+                 self.current["kind"] == "current-framework-generation" and
+                 self.current["deployment_performed"] is False and
+                 "main_deployed" not in self.current and
+                 self.current["old_epoch_sha256"] == self.expected["framework_sha256"] ==
+                 CURRENT_MAIN_AUTHORITY["historical_epoch_sha256"] and
+                 self.current["framework_epoch"]["sha256"] == CURRENT_MAIN_AUTHORITY["current_epoch_sha256"] and
+                 self.current["limits"] == self.expected["resources"],
+                 "current baseline must remain distinct from historical deployment")
+            self.rows = self.current["all_seven_processes"]["binding"]["processes"]
+            need(set(self.rows) == {"android_init", "daemon", "launcher", "presenter",
+                                   "surfaceflinger", "system_server", "zygote64"},
+                 "exact current seven-role set required")
+            for role, value in self.rows.items():
+                fd = os.pidfd_open(value["host_pid"])
+                self.processes[role] = fd
+            self.group = os.open("/sys/fs/cgroup/system.slice/droidloomd.service",
+                                 os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
+            actor["require_cgroup2"](self.group)
+            s = os.fstat(self.group); self.identity = (s.st_dev, s.st_ino)
+            self.check()
+        except BaseException as primary:
+            try: self.close()
+            except BaseException as closing:
+                primary.add_note("current Main fence constructor close failed: " + type(closing).__name__)
+            raise
+
+    @staticmethod
+    def read_guard():
+        pin = CURRENT_MAIN_AUTHORITY["guard"]
+        raw = read_pinned(pin["path"], pin["sha256"], 16384)
+        need(len(raw) == pin["bytes"], "current guard length differs")
+        return raw
+
+    def capture(self, fd):
+        value, directory = self.actor["identity"](fd)
+        try:
+            return {"host_pid": value["pid"], "parent_host_pid": value["parent"], "start_ticks": value["birth"],
+                    "uids": value["uids"], "namespace_pids": value["nspid"],
+                    # Keep the original epoch representation of argv padding.
+                    "cmdline": [argument for argument in value["cmdline"] if argument],
+                    "cgroup": value["cgroup"], "executable": os.readlink("exe", dir_fd=directory),
+                    "namespaces": {name: os.readlink("ns/" + name, dir_fd=directory) for name in ("mnt", "pid")}}
+        finally:
+            os.close(directory)
+
+    def check(self):
+        need(not self.close_errors and self.group is not None and len(self.processes) == 7,
+             "current Main fence is not fully held")
+        need(self.read_guard() == self.guard_source, "published current guard changed")
+        proof = self.guard.current_guard(self.current, action_attempted=False)
+        need(proof["schema"] == "pocket4-current-main-guard-v1" and
+             proof["Main_epoch_sha256"] == CURRENT_MAIN_AUTHORITY["current_epoch_sha256"] and
+             proof["current_baseline_sha256"] == CURRENT_MAIN_AUTHORITY["baseline"]["sha256"] and
+             proof["current_baseline_qualification_sha256"] == CURRENT_MAIN_AUTHORITY["qualification"]["sha256"] and
+             all(proof[name] is True for name in
+                 ("seven_processes_match", "three_host_processes_match", "resource_limits_match",
+                  "current_executable_and_root_backing_match")) and
+             proof["framework_exit_cause_resolved"] is False and proof["production_ready"] is False,
+             "current Main full guard did not preserve its exact qualification")
+        e = self.expected
+        current = props("droidloomd.service")
+        need(current.get("ActiveState") == "active" and all(current.get(k) == v for k, v in e["daemon"].items()),
+             "original Main unit generation changed")
+        need(Path("/proc/sys/kernel/random/boot_id").read_text().strip() ==
+             self.current["all_seven_processes"]["binding"]["boot_id"] ==
+             e["framework_binding"]["boot_id"], "boot identity changed")
+        for role, value in self.rows.items():
+            need(self.capture(self.processes[role]) == value, "current Main held process changed: " + role)
+        held = os.fstat(self.group)
+        path = os.stat("/sys/fs/cgroup/system.slice/droidloomd.service", follow_symlinks=False)
+        need((held.st_dev, held.st_ino) == (path.st_dev, path.st_ino) == self.identity,
+             "Main cgroup generation changed")
+        for key, value in e["resources"].items():
+            need(self.actor["bounded"](self.group, key, 128).decode().strip() == value, "Main resource changed: " + key)
+        for path, digest in e["artifacts"].items():
+            os.close(self.actor["pinned"](path, digest, path.startswith("/usr/bin/")))
+        # A process death during the original artifact checks cannot qualify.
+        for role, value in self.rows.items():
+            need(self.capture(self.processes[role]) == value, "current Main process changed at fence end: " + role)
+        need(self.guard.current_guard(self.current, action_attempted=False) == proof,
+             "current Main guard changed during held checks")
+        return {"schema": "pocket4-owner20-current-main-fence-v1",
+                "framework_sha256": CURRENT_MAIN_AUTHORITY["current_epoch_sha256"],
+                "current_baseline_sha256": CURRENT_MAIN_AUTHORITY["baseline"]["sha256"],
+                "current_qualification_sha256": CURRENT_MAIN_AUTHORITY["qualification"]["sha256"],
+                "current_guard_sha256": CURRENT_MAIN_AUTHORITY["guard"]["sha256"],
+                "historical_framework_sha256": e["framework_sha256"],
+                "historical_main_canonical_sha256": CURRENT_MAIN_AUTHORITY["historical_main_canonical_sha256"],
+                "daemon": e["daemon"], "held_cgroup_identity": list(self.identity), "resources": e["resources"],
+                "current_seven_processes_alive_and_unchanged": True, "installed_contract_unchanged": True,
+                "old_epoch_reauthorized": False, "new_deployment_performed": False,
+                "framework_exit_cause_resolved": False, "production_ready": False,
+                "private_baseline_body_exported": False, "current_guard": proof}
+
+    def close(self):
+        # Remove each descriptor from ownership before one close attempt. A
+        # failed close remains failure; it is never retried against a reused fd.
+        descriptors = list(self.processes.values()); self.processes.clear()
+        if self.group is not None:
+            descriptors.append(self.group); self.group = None
+        for fd in descriptors:
+            try: os.close(fd)
+            except BaseException as error: self.close_errors.append(type(error).__name__)
+        if self.close_errors:
+            raise RuntimeError("current Main fence descriptor close failed: " + ",".join(self.close_errors))
+

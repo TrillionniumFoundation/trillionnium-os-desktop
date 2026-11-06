@@ -1,0 +1,303 @@
+{
+  "schema": "pocket4-r11-checkpoint21-reviewable",
+  "checkpoint": 21,
+  "cut_utc": "2026-11-06 12:54:53 UTC",
+  "parent_head": "df9465b6a899fbbd9f8e40294f14185f70880c4f",
+  "publication_state": "IMMUTABLE_CANDIDATE_FOR_CAS_PUBLICATION",
+  "whole_apps_ready": 0,
+  "launcher_apps": 45,
+  "all_apps_production_ready": false,
+  "task_complete": false,
+  "current_gate": "MAIN_FRAMEWORK_EPOCH_INVALID_CONTINUE_HOST_REPAIRS_AND_READONLY_CELL_QUALIFICATION",
+  "inherited_ledger": {
+    "manifest": {
+      "bytes": 4832700,
+      "sha256": "5958680d7dc754b41c7c0caf609b28f44c239c54e86065c90d47084faa1a946f",
+      "git_blob_sha1": "7c48ccab53a8093a18a939391c63ff593a4786df"
+    },
+    "payload_rows_preserved": 14692,
+    "payload_bytes_preserved": 272256560,
+    "all_prior_FAIL_UNKNOWN_and_per_app_ledgers_retained": true,
+    "old_file_rows_preserved_in_exact_order": true,
+    "historical_raw_root_values_preserved_without_numeric_reserialization": true
+  },
+  "evidence_scope": {
+    "unique_original_archive_roots": 183,
+    "normalized_package_tree": "a356813080c6f54691025deb7f1188db02b63c6c",
+    "package_files": 1495,
+    "package_bytes": 35725927,
+    "canonical_prior_checkpoint_roots": 210,
+    "dependency_normalization": "Original public source and evidence bodies remain byte-identical. Canonical dependency mounts and independently verified Merkle maps reconstruct every original archive tree. V2 metadata explicitly does not claim to be original API response bytes.",
+    "private_baseline_and_raw_Owner_runtime_excluded": true,
+    "source_and_fixture_tests_are_not_whole_app_acceptance": true,
+    "after_cut_results_included": false
+  },
+  "Main": {
+    "last_qualified_framework_epoch": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "last_qualified_framework_epoch_currently_valid": false,
+    "current_framework_epoch": null,
+    "current_baseline_qualified": false,
+    "trigger": {
+      "original_tree": "c9b6c678f4f26efc6681cc680b2d375fbcd6521c",
+      "job_id": "1a1b0d1d2b3-fc05-7330"
+    },
+    "trigger_error": "FRAMEWORK_EPOCH_CHANGED_OR_UNAVAILABLE",
+    "trigger_Android_commands": 0,
+    "trigger_current_task_tables_observed": 0,
+    "readonly_epoch_diagnostic": {
+      "original_tree": "3974b974a363d65cd7d22964d107b2d38ae669a2",
+      "job_id": "1a1b0e8db48-fc05-73e5"
+    },
+    "diagnostic_scope": "Both exact original inputs pinned; all four fixed old framework roles returned PROCESS_IDENTITY_UNAVAILABLE with FileNotFoundError errno2; old init not proven so discovery was not called.",
+    "diagnostic_controls": 10,
+    "tracked_input_FDs_closed": 13,
+    "service_status": {
+      "system_unit": "droidloomd.service",
+      "active": "active",
+      "sub_state": "running",
+      "MainPID": 3588022,
+      "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+      "scope": "Earlier built-in observation; does not prove framework processes remained alive."
+    },
+    "framework_exit_cause_proved": false,
+    "new_baseline_created": false,
+    "Main_deployment_or_restart_performed": false,
+    "UI_acceptance_held": true
+  },
+  "Bilibili": {
+    "whole_app_production_ready": false,
+    "original_player02_launch_outcome": "UNKNOWN_RETAINED",
+    "historical_child_error": "different_registration_ownership",
+    "historical_task_id": 873,
+    "independent_task_retirement": {
+      "actual_tree": "ebfe54e3151d3d688ad01a6c50ba0f64e94a68a1",
+      "job_id": "1a1b09bb778-fc05-71ab",
+      "state": "PASS_AT_THEN_QUALIFIED_EPOCH",
+      "controls": 22,
+      "commands": 6,
+      "remove_commands": 1,
+      "owned_task_removed": 873,
+      "prior_task_preserved": 870,
+      "original_launch_success_not_forged": true,
+      "remote_composer_retirement_qualified": false
+    },
+    "fresh_UI_unrun": true,
+    "all_146_player02_nonces_retired": true
+  },
+  "Amazon": {
+    "whole_app_production_ready": false,
+    "helper_UID_at_install": 10154,
+    "target_APK_count_at_install": 3,
+    "current_ui_job": "1a1b09dd3e0-fc05-71bf",
+    "current_ui_state": "FAILED_AT_NATIVE_LAUNCH_WITH_OUTCOME_UNKNOWN",
+    "all_32_UI_nonces_committed_not_reusable": true,
+    "search_clicks": 0,
+    "original_launch_safe_read": {
+      "original_tree": "e2a2b647b722680d758029736b7c3e30c7d87bfc"
+    },
+    "native007_reader": {
+      "original_tree": "27b98b43a9b0e961ac9d381bb350f1750b77cc4e",
+      "job_id": "1a1b0c2a75b-fc05-72ae"
+    },
+    "native007_controls": 12,
+    "historical_child_error": "different_registration_ownership",
+    "historical_task_id": 874,
+    "native007_child_returncode": 1,
+    "installed_native_source_provenance_qualified": false,
+    "fresh_task_tables": {
+      "original_tree": "c9b6c678f4f26efc6681cc680b2d375fbcd6521c",
+      "job_id": "1a1b0d1d2b3-fc05-7330"
+    },
+    "fresh_task_table_state": "FAILED_BEFORE_ALL_ANDROID_COMMANDS_AT_EPOCH_GUARD",
+    "current_task_state": "UNKNOWN",
+    "independent_task_cleanup_performed": false,
+    "retirement_source_only_WIP": "1d167f5ee628389460e41a141c0391487ec32495"
+  },
+  "BestBuy": {
+    "whole_app_production_ready": false,
+    "pure_controls_pass": 59,
+    "current_UI": "HELD_UNRUN_AT_INVALID_EPOCH",
+    "three_readiness_rounds_unrun": true,
+    "fresh_nonce_count": 10,
+    "helper_UID_at_install": 10155,
+    "helper_install_is_not_current_cell_qualification": true
+  },
+  "IHG": {
+    "whole_app_production_ready": false,
+    "prior_R2_Search_Destination_flow": "SPECIFIC_HISTORICAL_FLOW_PASS_NOT_WHOLE_APP",
+    "R3_build": {
+      "original_tree": "4e6e4e71dd6dc2a8d00b9a7a3eeec83ca6604cf6",
+      "old_controls": 21,
+      "new_London_controls": 45
+    },
+    "R3_install": {
+      "original_tree": "445c0b27c4db288c201dc99c3a801c1807d11571",
+      "UID": 10156,
+      "mtime_ns": "1793963793187449749",
+      "commands": 13,
+      "controls": 40
+    },
+    "fresh_London_nonces": {
+      "original_tree": "a42186a8a9a00f4b6513fdff61f01f2493e3a041",
+      "count": 40,
+      "prior_excluded": 609,
+      "flow_nonce": "af8bcdbe1fdb1fa9d8af91a7ca26b53f"
+    },
+    "London_pure_controls": {
+      "original_tree": "2ef011af87e0a8646c9d724047cbf94267508007",
+      "job_id": "1a1b0d267e4-fc05-7334",
+      "passed": 157,
+      "bound_source_count": 7,
+      "Android_or_Java_execution": false,
+      "Main_live_qualification": false
+    },
+    "London_UI": "NOT_GENERATED_OR_EXECUTED_EPOCH_HOLD",
+    "hotel_results_login_booking_qualified": false
+  },
+  "Owner20": {
+    "whole_app_production_ready": false,
+    "normal01": "FAIL_RETAINED_CONSTRUCTOR_FIELD_AND_PRODUCER_BEFORE_ACTIVE",
+    "constructor_fix_controls_pass": 11,
+    "constructor_dependency_controls_pass": 8,
+    "normal02": {
+      "job_id": "1a1b0831ea7-fc05-710c",
+      "safe_actual_tree": "a8edc45333e61318b219db12a27ce756ec617fcc",
+      "state": "FAIL",
+      "observer_constructed_before_init_DONE": true,
+      "one_owned_helper_exec_failed_errno": 2,
+      "helper_exit_code": 127,
+      "helper_retired": true,
+      "producer_failed_independently_before_ACTIVE": true,
+      "real_init_or_bionic_visibility_qualified": false,
+      "private_raw_runtime_exported": false
+    },
+    "DONE_fix_host_controls": {
+      "original_tree": "e6050a681c9e73a80f366fd445957c272879e824",
+      "job_id": "1a1b0d36759-fc05-733a",
+      "actor_child_cases": 31,
+      "dependency_ledger_cases": 8,
+      "all_pass": true,
+      "explicit_OS_clock_constructor_seams": true,
+      "original_global_FD_equality": false,
+      "original_all_owned_files_and_fds_closed": false,
+      "declared_libffi_descriptor_live_at_emission": 4,
+      "actual_terminal_exit0_independently_observed": true
+    },
+    "ENOENT_root_cause_proved": false,
+    "normal03_created": false
+  },
+  "Native": {
+    "whole_app_production_ready": false,
+    "compiler469": {
+      "original_tree": "6e88fb103e553ddf09a482b14c18796aae151a85",
+      "source_files": 499,
+      "source_projects": 225,
+      "commands": 65,
+      "focused_tests": 27,
+      "state": "HOST_COMPILE_PASS"
+    },
+    "normal03_time_correction": {
+      "previous_checkpoint": "checkpoint20.Native.normal03.state",
+      "previous_label": "RUNNING_AT_CUT",
+      "correct_reading": "Last observed running at CP20 cut; actual terminal timestamp preceded that cut and was learned later.",
+      "actual_finished_utc": "2026-11-06T09:00:38.640489Z",
+      "checkpoint20_cut_utc": "2026-11-06 09:09:22 UTC",
+      "state": "FAIL_SOONG_MISSING_PROVIDER_DEFAULTS",
+      "actual_original_retained": true,
+      "previous_checkpoint_bytes_rewritten": false
+    },
+    "normal04": {
+      "state": "FAILED_RESOURCE_ADMISSION",
+      "normal_Soong_executed": false
+    },
+    "normal05": {
+      "original_tree": "5d6cfbe633d1af6a9ed4bea8a9a764300b39ecf7",
+      "state": "FAILED_FRESH_RESOURCE_ADMISSION",
+      "observed_MemAvailable_bytes": 16036601856,
+      "required_MemAvailable_bytes": 16106127360,
+      "shortfall_bytes": 69525504,
+      "normal_Soong_executed": false
+    },
+    "registration_host01": {
+      "original_tree": "3a1d8b8c4c07276f32475b4d043caac60aff6e10",
+      "job_id": "1a1b0c06bde-fc05-7296",
+      "state": "FAIL_BEFORE_RUST_COMPILE",
+      "cause": "Fresh offline generate-lockfile selected cached versions outside immutable original lock",
+      "focused_tests_passed": 0
+    },
+    "registration_host02": {
+      "original_tree": "234bfebcce532462add7b5c8fac0b3bba36192c4",
+      "job_id": "1a1b0e218e9-fc05-7399",
+      "state": "PASS",
+      "commands": 42,
+      "focused_tests_passed": 27,
+      "actual_registered_tests": 27,
+      "child_lifecycle_controls": 3,
+      "original_and_candidate_499_source_maps_unchanged": true,
+      "dependencies_and_toolchain_unchanged": true,
+      "all_owned_children_reaped": true,
+      "own_memory_peak_bytes": 867061760,
+      "own_swap_peak_bytes": 0,
+      "own_OOM_events": 0,
+      "Android_Binder_provider_compiled": false
+    },
+    "protocol_source_reads": [
+      {
+        "original_tree": "242b214860a7e6689e3e4e3e3404e5c09872125f",
+        "job_id": "1a1b0c508a9-fc05-72bb"
+      },
+      {
+        "original_tree": "54d2c0367745056b6b6f5f5845c71f4310ab30b6",
+        "job_id": "1a1b0e36909-fc05-73ac"
+      },
+      {
+        "original_tree": "2af1e4554a8b810f25abad1a1526ae50afbc9b19",
+        "job_id": "1a1b0ea79d5-fc05-73f6"
+      }
+    ],
+    "real_provider_expected_object_and_remote_ACK": "SOURCE_WORK_IN_PROGRESS_NOT_QUALIFIED",
+    "framework_Java_Android_JNI_artifacts_qualified": false,
+    "normal06_created": false,
+    "Main_install_or_restart_performed": false
+  },
+  "Marriott": {
+    "whole_app_production_ready": false,
+    "readlink_generated_ARM64_to_real_adapter_source_chain_verified": true,
+    "JNI_test_source_wiring_fixed": true,
+    "source_delta_files": 4,
+    "total_proc_maps_test_bodies": 12,
+    "new_test_bodies": 9,
+    "source_and_original_JNI_chain": {
+      "source_tree": "5ea1127d6971c3e0693c9cf0d177cedc0b065b59",
+      "actual_source_read_tree": "82d09f4d0b0eee437385ef458d14d6f298db9dc6"
+    },
+    "compile01": {
+      "original_tree": "a708c0b8ff8323b60146c8c586f44bdfe0957b33",
+      "job_id": "1a1b0e711f8-fc05-73d6",
+      "state": "FAILED_PRE_COMPILER_PERMISSION_ASSUMPTION",
+      "compiler_commands": 0,
+      "objects": 0,
+      "tracked_input_FDs_closed": true
+    },
+    "default_raw_metadata_owner": 0,
+    "ARM64_test_runtime_pass": false,
+    "APK_linked": false,
+    "full_engine_or_ART_built": false,
+    "historical_crash_cause_proved": false
+  },
+  "pending": [
+    "Qualify the current daemon/cell using fresh read-only evidence before any new App UI flow.",
+    "Finish expected-object provider cleanup and object/nonce remote retirement acknowledgement after actual engine completion; compile and test the complete code.",
+    "Finish Marriott ARM64 JNI/test compilation, then actual linked APK registration and runtime tests without changing default feature gates prematurely.",
+    "Complete Owner20 actual init/property visibility and producer health qualification; existing host seam checks do not establish the ENOENT cause.",
+    "Resume independently bound IHG destination flow, Amazon state reconciliation and BestBuy readiness only under a qualified current cell.",
+    "Complete all 45 whole-app acceptance gates; historical narrow passes and helper installations remain insufficient."
+  ],
+  "cut_policy": {
+    "fixed_cut_immutable": true,
+    "subsequent_results_require_later_checkpoint": true,
+    "unknowns_and_failures_preserved": true,
+    "original_unknown_actions_not_replayed": true,
+    "old_task_ids_do_not_authorize_new_cell_cleanup": true
+  }
+}

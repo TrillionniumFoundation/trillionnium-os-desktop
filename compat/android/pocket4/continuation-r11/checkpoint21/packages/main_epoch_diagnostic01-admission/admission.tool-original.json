@@ -1,0 +1,39 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "import signal,sys\nclass BudgetExpired(BaseException):\n def __str__(self):return \"READ_BUDGET_EXHAUSTED\"\ndef alarm_handler(signum,frame):raise BudgetExpired()\ndef stop_watchdog():\n signal.setitimer(signal.ITIMER_REAL,0)\n return True\nold_handler=signal.signal(signal.SIGALRM,alarm_handler)\nsignal.setitimer(signal.ITIMER_REAL,8.0)\ntry:\n import hashlib\n raw=sys.stdin.buffer.read(32769)\n assert len(raw)==15853 and hashlib.sha256(raw).hexdigest()==\"671ff139b74a1fa6c18c09df7ba708aa333763fe188c815f586c458148fa6b44\"\n scope={\"__name__\":\"fixed_current_epoch_halt02_diagnostic\",\"__file__\":\"<fixed-current-epoch-readonly>\",\"SOURCE_SHA256\":\"671ff139b74a1fa6c18c09df7ba708aa333763fe188c815f586c458148fa6b44\",\"BudgetExpired\":BudgetExpired,\"STOP_WATCHDOG\":stop_watchdog}\n exec(compile(raw,scope[\"__file__\"],\"exec\"),scope)\n code=scope[\"main\"]()\nfinally:\n stop_watchdog()\n signal.signal(signal.SIGALRM,old_handler)\nraise SystemExit(code)\n"
+    ],
+    "created_unix_ms": 1793969412936,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b0e8db48-fc05-73e5",
+    "idempotency_key": "pocket4-current-epoch-halt02-fixed-diagnostic01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b0e8db48-fc05-73e5",
+    "request_digest": "4ed5161e05c66bff0c733f8a40f4a1708893e3a4805f38573e26d9a2685941b1",
+    "request_fingerprint": 5680470823199468543,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b0e8db48-fc05-73e5"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b0e8db48-fc05-73e5"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

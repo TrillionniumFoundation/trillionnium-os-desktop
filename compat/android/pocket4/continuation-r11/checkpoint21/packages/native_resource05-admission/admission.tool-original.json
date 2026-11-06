@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,sys\nraw=sys.stdin.buffer.read(6268)\nif len(raw)!=6267 or hashlib.sha256(raw).hexdigest()!=\"6dee89953c17e7823717360d2dde0f2f85e99a0a6d3ee7e65dba7afccc6e43d3\":\n    raise RuntimeError('fixed resource observation source differs')\nif sys.argv[1:] != ['--execute-once']:\n    raise RuntimeError('explicit one-time observation required')\nexec(compile(raw,'<normal05-fixed-resource-observation01>','exec'),{'__name__':'__main__'})\n",
+      "--execute-once"
+    ],
+    "created_unix_ms": 1793961632375,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b0722277-fc05-708f",
+    "idempotency_key": "pocket4-native-normal05-fixed-resource-observation-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b0722277-fc05-708f",
+    "request_digest": "a1b3a3a6deb8cb9f85650a64127b09fb964e0c785e60efe4898b61bc89e58660",
+    "request_fingerprint": 11651836598034156447,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b0722277-fc05-708f"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b0722277-fc05-708f"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

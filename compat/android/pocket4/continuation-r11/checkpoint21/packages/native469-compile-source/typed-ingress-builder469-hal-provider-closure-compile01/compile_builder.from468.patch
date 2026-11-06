@@ -1,0 +1,206 @@
+--- a/compile_builder.py
++++ b/compile_builder.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Compile builder468 real-provider closure with 15 updater and 9 source controls; no platform execution."""
++"""Compile builder469 exact HAL provider closure with 18 updater and 9 source controls; no platform execution."""
+ import ctypes
+ import datetime
+ import hashlib
+@@ -196,16 +196,16 @@
+             'memory_peak':int(after['fields']['memory.peak']), 'memory_swap_peak':int(after['fields']['memory.swap.peak']),
+             'resource_settings_changed':False, 'swap_max_observed_only':after['fields']['memory.swap.max']}
+ 
+-BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/builder-source')
+-ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106')
++BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/builder-source')
++ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106')
+ HERE = ROOT/'control-source'
+ OUT = ROOT/'attempt01'
+ COPIED = ROOT/'builder-source'
+ RUST_SYSROOT = Path('/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu')
+ CARGO_HOME = Path('/home/alex/.cargo')
+ TOOLCHAIN = '1.93.0'
+-MANIFEST_PARENT = '71768da388021a870ef5f5516cc3efbfd956288a8fa74cb9b176b312f68d7605'
+-MANIFEST_468 = 'e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee'
++MANIFEST_PARENT = 'e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee'
++MANIFEST_469 = '88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701'
+ GO_PATCH = '9df4688903dc7ba07dad4fae54abc21faa2a0abe9f37f72178668d5e6e9ff307'
+ OBSERVATION = '60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb'
+ GO_CONTROL = '391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674'
+@@ -224,9 +224,10 @@
+ TYPED_INGRESS_TESTS = ['native_role_ingress::tests::observed_lock_passes_normal_schema_and_exact_extension_gate', 'native_role_ingress::tests::structurally_valid_unobserved_root_is_rejected_before_source_actions']
+ PARENT_TESTS = ORIGINAL_TESTS + PAIR_TESTS + ART_PROJECTION_TESTS + TYPED_INGRESS_TESTS
+ PROVIDER_CLOSURE_TESTS = ["android::tests::typed_shared_provider_projection_keeps_exact_upstream_bodies_and_metadata","android::tests::typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas","android::tests::typed_shared_provider_projection_keeps_other_root_projection_unchanged","native_role_ingress::tests::provider_extension_rejects_unlisted_path_commit_metadata_or_project_change","native_role_ingress::tests::published_workspace_selects_only_exact_current_or_previous_typed_lock","native_role_ingress::tests::previous_typed_manifest_does_not_bypass_fresh_project_verification"]
+-TESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS
+-FIXED_PROVIDER_DELTA = ["android/manifest/m2-role-ingress-provider-source-lock.json","android/native-role-ingress/provider-fixtures/SystemUI.Android.bp","android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp","android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp","android/native-role-ingress/provider-fixtures/car-builtin.Android.bp","android/native-role-ingress/provider-fixtures/car-jni.Android.bp","android/native-role-ingress/provider-fixtures/car-lib.Android.bp","android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp","android/native-role-ingress/provider-fixtures/icu4j.Android.bp","android/native-role-ingress/provider-fixtures/motion.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp","android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp","android/native-role-ingress/provider-fixtures/runner.Android.bp","android/native-role-ingress/provider-fixtures/screenshot.Android.bp","android/native-role-ingress/provider-fixtures/test-parameter.Android.bp","tools/droidloom-update/src/android.rs","tools/droidloom-update/src/native_role_ingress.rs"]
+-CLOSURE_PROOF_SHA = '841de1878aecbf5235d4c8068b4ac5bbf7351131c17245c725782e4d66f01384'
++HAL_PROVIDER_TESTS = ["android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers","android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections","native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes"]
++TESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS + HAL_PROVIDER_TESTS
++FIXED_PROVIDER_DELTA = ["android/manifest/m2-role-ingress-hal-provider-source-lock.json","android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp","android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp","android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp","android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp","android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp","android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp","android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp","tools/droidloom-update/src/android.rs","tools/droidloom-update/src/native_role_ingress.rs"]
++CLOSURE_PROOF_SHA = '45d47c45524c3f3bbc8bf4c8d5c28fcbbd7ba0acbeea0c4d25fcb37e8de0690c'
+ SOURCE_RESUME_TESTS = ['resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
+ SOURCE_REGISTERED_TESTS = ['tests::project_bound_admits_superproject_gitlink_extensions_but_not_unbounded_sync', 'tests::source_lock_accepts_bounded_133_sparse_paths_but_rejects_257', 'tests::plan_uses_only_exact_official_projects', 'tests::platform_compat_uses_its_official_tools_namespace', 'tests::traversal_and_full_sync_policy_are_rejected_together', 'tests::duplicate_projects_and_moving_refs_are_rejected', 'tests::root_links_are_relative_to_their_parent', 'tests::exact_local_git_fetch_and_manifest_link_are_verified', 'tests::reconciliation_accepts_only_monotonic_plan_expansion', 'tests::reconciliation_accepts_bounded_sparse_path_expansion', 'tests::materialized_verification_rejects_dirty_projects', 'resume::tests::completed_project_reuse_has_no_fetch_or_checkout_and_publishes_only_after_verify', 'resume::tests::initial_checkout_reuses_cached_commit_and_preserves_interrupted_index_lock', 'resume::tests::nonempty_interrupted_index_lock_is_preserved_in_place_and_rejected', 'resume::tests::dirty_completed_project_keeps_original_bytes_and_never_gets_manifest', 'resume::tests::conflicting_untracked_partial_file_is_not_forced_or_removed', 'resume::tests::wrong_origin_is_rejected_before_any_fetch_or_checkout', 'resume::tests::recovered_parent_symlink_cannot_create_a_project_outside_staging', 'resume::tests::mismatched_staging_manifest_is_preserved_and_not_published', 'resume::tests::sparse_parent_normalization_keeps_exact_locked_selection']
+ DEADLINE = None
+@@ -856,7 +857,7 @@
+     allowed=sorted(os.sched_getaffinity(0))
+     require(len(allowed)>=3,'cannot leave two logical CPUs free')
+     os.sched_setaffinity(0,[allowed[-1]])
+-    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh builder468 provider closure compile03, 491 source files, 15 exact updater and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution',
++    report={'schema':1,'state':'RUNNING','started_utc':utc(),'scope':'fresh builder469 HAL provider closure compile01, 499 source files, 18 exact updater and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution',
+             'Main_actions':0,'Main_identity_observed':False,'install_actions':0,'network_downloads_permitted':False,
+             'commands':[],'allowed_cpus_before':allowed,'selected_cpus':[allowed[-1]],'expected_test_names':TESTS,'expected_source_resume_test_names':SOURCE_RESUME_TESTS}
+     def interrupted(number,frame):
+@@ -878,10 +879,10 @@
+                 'actual complete-package comparison gate is not qualified')
+         report['actual_Go_comparison_gate']=go_control_pin
+         report['upstream_vet_pass_claimed']=False
+-        old_bytes,_=pinned_packet('compiled-parent467-manifest.json',MANIFEST_PARENT)
+-        new_bytes,_=pinned_packet('expected-builder468-manifest.json',MANIFEST_468)
++        old_bytes,_=pinned_packet('compiled-parent468-manifest.json',MANIFEST_PARENT)
++        new_bytes,_=pinned_packet('expected-builder469-manifest.json',MANIFEST_469)
+         expected=json.loads(old_bytes);copied_expected=json.loads(new_bytes)
+-        require(len(expected)==466 and len(copied_expected)==491,'source manifest count changed')
++        require(len(expected)==491 and len(copied_expected)==499,'source manifest count changed')
+         original_rows,copied_before=exact_source_copy(expected)
+         original_manifest=portable(original_rows,expected)
+         report['original_manifest']=write_new(OUT/'original-builder-source-manifest.json',(json.dumps(original_manifest,indent=2)+'\n').encode())
+@@ -891,23 +892,26 @@
+              'TMPDIR':str(OUT/'tmp'),'GIT_CONFIG_NOSYSTEM':'1','GIT_CONFIG_GLOBAL':'/dev/null'}
+         tools,tool_rows=toolchain(report,env)
+         report['tool_inputs']=write_new(OUT/'tool-inputs-before.json',tool_rows)
+-        parent_raw,parent_pin=pinned_packet('compiled-parent467-result.json',
+-            'cd9f61ca21dd83210299f24dd50b68f5aa7aeba7eab94ac9cada71271d660e28')
++        parent_raw,parent_pin=pinned_packet('compiled-parent468-result.json',
++            '871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8')
+         parent=json.loads(parent_raw)
+-        require(parent_pin['bytes']==140163 and parent['state']=='PASS' and
+-                parent['focused_tests_passed']==18 and parent['updater_focused_tests_passed']==9 and
+-                parent['source_resume_tests_passed']==9 and parent['actual_registered_test_count']==199 and
+-                parent['source_actual_registered_test_count']==20 and
+-                len(parent['commands'])==56 and all(row['returncode']==0 and not row['timed_out'] for row in parent['commands']) and
+-                parent['copied_manifest']['bytes']==91945 and parent['copied_manifest']['sha256']==MANIFEST_PARENT and
+-                parent['builder_elf']['bytes']==34579760 and
+-                parent['builder_elf']['sha256']=='fd4ef1903fa506512f2605fa03b39b5af0712680ff26dfbebfb4683c1b9ec288' and
++        require(parent_pin['bytes']==161423 and parent['state']=='PASS' and
++                parent['focused_tests_passed']==24 and parent['updater_focused_tests_passed']==15 and
++                parent['source_resume_tests_passed']==9 and parent['provider_closure_tests_passed']==6 and
++                parent['actual_registered_test_count']==205 and parent['source_actual_registered_test_count']==20 and
++                len(parent['commands'])==62 and all(row['returncode']==0 and not row['timed_out'] for row in parent['commands']) and
++                parent['copied_manifest']['bytes']==97525 and parent['copied_manifest']['sha256']==MANIFEST_PARENT and
++                parent['builder_elf']['bytes']==34722200 and
++                parent['builder_elf']['sha256']=='8bf78794705a62f0a60d00af64cdd25e2b798739e445575c3d3cca5e566f4cf6' and
+                 parent['owned_resource_gate']['pass'] is True and not parent['dependency_changes'] and
+                 not parent['tool_changes'] and not parent['cleanup']['errors'] and not parent['cleanup']['remaining'] and
+                 not parent['cleanup']['forced_cleanup'] and parent['copied_source_unchanged_after'] is True and
+-                parent['original_source_unchanged_after'] is True and parent['cargo_configs_unchanged_after'] is True,
+-                'actual compiled parent467 qualification differs')
+-        report['actual_parent467_compile_authority']=parent_pin
++                parent['original_source_unchanged_after'] is True and parent['cargo_configs_unchanged_after'] is True and
++                parent['source_delta']['actual_source_file_count']==491 and
++                parent['framework_Java_and_Android_JNI_compiled'] is False and
++                parent['runtime_authorization_enabled'] is False,
++                'actual compiled parent468 qualification differs')
++        report['actual_parent468_compile_authority']=parent_pin
+         roots_raw,roots_pin=pinned_packet('typed-root-trees-result.json',
+             '0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8')
+         roots=json.loads(roots_raw)
+@@ -933,10 +937,14 @@
+         require(closure['state']=='SOURCE_CANDIDATE_NOT_COMPILED_OR_SOONG_QUALIFIED' and
+                 closure['baseline']['manifest']['sha256']==MANIFEST_PARENT and
+                 closure['baseline']['compile_result']['sha256']==parent_pin['sha256'] and
+-                closure['source_delta']['expected_manifest']['sha256']==MANIFEST_468 and
++                closure['source_delta']['expected_manifest']['sha256']==MANIFEST_469 and
+                 closure['source_locks']['previous_typed_unchanged']==expected['android/manifest/m2-role-ingress-source-lock.json']['sha256'] and
+-                closure['source_locks']['candidate']['sha256']==copied_expected['android/manifest/m2-role-ingress-provider-source-lock.json']['sha256'] and
+-                closure['source_locks']['candidate']['bytes']==copied_expected['android/manifest/m2-role-ingress-provider-source-lock.json']['bytes'] and
++                closure['source_locks']['previous_provider']['sha256']==expected['android/manifest/m2-role-ingress-provider-source-lock.json']['sha256'] and
++                closure['source_locks']['candidate']['sha256']==copied_expected['android/manifest/m2-role-ingress-hal-provider-source-lock.json']['sha256'] and
++                closure['source_locks']['candidate']['bytes']==copied_expected['android/manifest/m2-role-ingress-hal-provider-source-lock.json']['bytes'] and
++                closure['provider_projection']['prior_provider_count']==59 and
++                closure['provider_projection']['new_provider_count']==12 and
++                closure['source_locks']['old_projects']==224 and closure['source_locks']['new_projects']==225 and
+                 closure['validation']['remote_compile_pending'] is True and
+                 closure['strictness']['ALLOW_MISSING_DEPENDENCIES']=='false' and
+                 closure['strictness']['targets']==['framework-minus-apex','libandroid_runtime'],
+@@ -945,11 +953,11 @@
+         changes=[name for name in copied_expected if copied_expected[name]!=expected.get(name)]
+         wanted=FIXED_PROVIDER_DELTA
+         require(sorted(changes)==wanted and set(expected).issubset(copied_expected) and
+-                sum(name not in expected for name in changes)==25 and
++                sum(name not in expected for name in changes)==8 and
+                 sum(name in expected for name in changes)==2 and
+                 set(copied_expected)-set(expected)==set(closure['source_delta']['added']) and
+                 all(copied_expected[name]==expected[name] for name in expected if name not in wanted),
+-                'provider delta is not exactly two replacements and twenty-five additions')
++                'provider delta is not exactly two replacements and eight additions')
+         for name in changes:
+             wanted_row=copied_expected[name]
+             data,pin=pinned_packet('delta/'+name,wanted_row['sha256'])
+@@ -967,17 +975,17 @@
+             os.chmod(target,wanted_row['mode'],follow_symlinks=False)
+         candidate_rows=regular_tree(COPIED)
+         actual_map=portable(candidate_rows,copied_expected)
+-        require(json.loads(new_bytes)==actual_map and sha(new_bytes)==MANIFEST_468,
+-                'actual copied 491-file builder468 manifest differs')
++        require(json.loads(new_bytes)==actual_map and sha(new_bytes)==MANIFEST_469,
++                'actual copied 499-file builder469 manifest differs')
+         report['copied_manifest']=write_new(OUT/'copied-builder-source-manifest.json',new_bytes)
+         report['source_delta']={'changed_existing':[name for name in wanted if name in expected],
+                                 'added':[name for name in wanted if name not in expected],
+-                                'unchanged_existing':464,'actual_source_file_count':491,
+-                                'builder_revision_name':'468-provider-closure','Rust_source_files_changed':2,
++                                'unchanged_existing':489,'actual_source_file_count':499,
++                                'builder_revision_name':'469-hal-provider-closure','Rust_source_files_changed':2,
+                                 'Cargo_lock_or_dependency_manifest_changed':False,
+                                 'Go5_or_Blueprint_patch_changed':False,'engine_source_files_changed':0,
+                                 'typed_ingress_framework_patch_changed':False,'previous_source_locks_changed':False,
+-                                'new_exact_provider_source_lock_added':True,
++                                'new_exact_provider_source_lock_added':False,'new_exact_hal_provider_source_lock_added':True,
+                                 'source_resume_library_changed':False,'real_published_source_accessed':False,
+                                 'real_source_staging_accessed':False,'framework_sources_executed_or_built':False,
+                                 'runtime_authorization_enabled':False}
+@@ -1050,11 +1058,11 @@
+         test_pin=hash_held(test_binary)
+         test_list=command([str(test_binary),'--list'],COPIED,env,'builder-test-list',report['commands'],10).decode()
+         require(len(ORIGINAL_TESTS)==7 and len(PAIR_TESTS)==15 and len(ART_PROJECTION_TESTS)==2 and len(TYPED_INGRESS_TESTS)==2 and len(PARENT_TESTS)==len(set(PARENT_TESTS))==26 and
+-                len(PROVIDER_CLOSURE_TESTS)==6 and len(TESTS)==len(set(TESTS))==15 and
+-                all(test_list.splitlines().count(name+': test')==1 for name in PARENT_TESTS+PROVIDER_CLOSURE_TESTS),
+-                'original 26 registrations or six provider controls absent/duplicated in actual test executable')
++                len(PROVIDER_CLOSURE_TESTS)==6 and len(HAL_PROVIDER_TESTS)==3 and len(TESTS)==len(set(TESTS))==18 and
++                all(test_list.splitlines().count(name+': test')==1 for name in PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS),
++                'original 26 registrations or nine provider controls absent/duplicated in actual test executable')
+         listed_names=[line[:-6] for line in test_list.splitlines() if line.endswith(': test')]
+-        require(len(listed_names)==205 and len(listed_names)==len(set(listed_names)) and
++        require(len(listed_names)==208 and len(listed_names)==len(set(listed_names)) and
+                 not any(line.endswith(': benchmark') for line in test_list.splitlines()),
+                 'actual registration list is duplicate/empty or contains unqualified benchmarks')
+         libtest_help=command([str(test_binary),'--help'],COPIED,env,'builder-test-help',report['commands'],10).decode()
+@@ -1137,15 +1145,16 @@
+         report['ART_projection_tests_passed']=0
+         report['typed_ingress_lock_tests_passed']=len(TYPED_INGRESS_TESTS)
+         report['provider_closure_tests_passed']=len(PROVIDER_CLOSURE_TESTS)
++        report['hal_provider_tests_passed']=len(HAL_PROVIDER_TESTS)
+         report['framework_Java_and_Android_JNI_compiled']=False
+         report['transitive_framework_closure_qualified']=False
+         report['runtime_authorization_enabled']=False
+         report['real_image_test_count']=0
+-        report['parent_targeted_tests_passed_historically']=18
++        report['parent_targeted_tests_passed_historically']=24
+         report['parent_only_test_names_not_rerun']=PAIR_TESTS+ART_PROJECTION_TESTS
+         report['platform_APEX_signature_validated']=False
+         report['actual_enabled_ART_lifecycle_validated']=False
+-        require(len(report['commands'])==62 and all(row['returncode']==0 and not row['timed_out'] for row in report['commands']),
++        require(len(report['commands'])==65 and all(row['returncode']==0 and not row['timed_out'] for row in report['commands']),
+                 'fixed provider compiler command sequence differs')
+         report['state']='PASS'
+     except Exception as error:
+@@ -1198,7 +1207,7 @@
+ 
+ if __name__=='__main__':
+     if sys.argv[1:]==[]:
+-        print(json.dumps({'mode':'PLAN','root':str(ROOT),'base_source':str(BASE_SOURCE),'source_files':491,
++        print(json.dumps({'mode':'PLAN','root':str(ROOT),'base_source':str(BASE_SOURCE),'source_files':499,
+                           'requires_explicit_execute_once':True,'Rust_toolchain':TOOLCHAIN,'Main_actions':0,
+                           'Android_and_full_engine_execution':False,'focused_existing_tests':TESTS,'source_resume_tests':SOURCE_RESUME_TESTS}))
+     elif sys.argv[1:]==['--execute-once']:

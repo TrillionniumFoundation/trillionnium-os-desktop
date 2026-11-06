@@ -1,0 +1,55 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "ccf4d8d6ea9e6fa9ff0f6a7e714e43282ebd3deb",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 71347,
+    "sha256": "c75a8fdddaf857bb8f81da5a871b3d5e6eb7d3f75878a9472a19d4ecdf44995b",
+    "git_blob_sha1": "208b7b3285ab67574800c55e8c96305f98f85fdc",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "actual_IHG",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1b4679923eb02c9d8b52b06880a13eb97a06d383"
+    },
+    {
+      "path": "request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b85f4f614a6ec021f1ecc91864ca42c5703836d8",
+      "bytes": 27039
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "58843cd1a54f1307f8ebdc608d2e8d0768ae27ac",
+      "bytes": 1359
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fd8e11c4c3586c0d7709a6dcd27e20df599fea6f"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "actual_IHG",
+      "original_tree": "1b4679923eb02c9d8b52b06880a13eb97a06d383",
+      "checkpoint": 20,
+      "canonical_package": "ihg-current-ui01-actual"
+    },
+    {
+      "path": "source",
+      "original_tree": "fd8e11c4c3586c0d7709a6dcd27e20df599fea6f",
+      "checkpoint": 21,
+      "canonical_package": "ihg-edit-read02-source"
+    }
+  ],
+  "original_recursive_leaf_count": 178
+}

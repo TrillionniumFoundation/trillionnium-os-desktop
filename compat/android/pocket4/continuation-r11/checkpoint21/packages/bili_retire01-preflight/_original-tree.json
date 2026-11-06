@@ -1,0 +1,79 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "b5f2ba5a335ff43240acecb6c528ebfe429d3c0a",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1833305,
+    "sha256": "7c48d0998462a2905898aaaa687382201d492b9771e44b4c02efbb4f1e6d2616",
+    "git_blob_sha1": "ecc60a9a9eaf0c5cd38c3fe9dfcdb9fa8ae09453",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "error_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0f004bb567015c359969a158e47c32033615c44f"
+    },
+    {
+      "path": "native_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "de1cdb5138b1392345f87bfb89304306d5c372a6"
+    },
+    {
+      "path": "request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9ecd87cb7ca444e0b456498db345e01c231d4af1",
+      "bytes": 66846
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "739993899668ab2cdcfff7588bf82bf5f1006ea9",
+      "bytes": 1130
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "877913b602e46d94e7a71ac5d4ea8c4a21d7962b"
+    },
+    {
+      "path": "task_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "40244f6b432f3f52587d5319114135b151253006"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "error_actual",
+      "original_tree": "0f004bb567015c359969a158e47c32033615c44f",
+      "checkpoint": 21,
+      "canonical_package": "bili_error04-actual"
+    },
+    {
+      "path": "native_actual",
+      "original_tree": "de1cdb5138b1392345f87bfb89304306d5c372a6",
+      "checkpoint": 21,
+      "canonical_package": "bili02_native_read01-actual"
+    },
+    {
+      "path": "source",
+      "original_tree": "877913b602e46d94e7a71ac5d4ea8c4a21d7962b",
+      "checkpoint": 21,
+      "canonical_package": "bili-retirement01-source"
+    },
+    {
+      "path": "task_actual",
+      "original_tree": "40244f6b432f3f52587d5319114135b151253006",
+      "checkpoint": 21,
+      "canonical_package": "bili02_tasks_read01-actual"
+    }
+  ],
+  "original_recursive_leaf_count": 3188
+}

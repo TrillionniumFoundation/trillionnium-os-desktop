@@ -1,0 +1,275 @@
+--- original-bestbuy-controls.py
++++ current-bestbuy-controls.py
+@@ -1,33 +1,39 @@
+-#!/usr/bin/env python3
+-"""Local synthetic readiness/original-Session controls; no device or private UI reads."""
++"""Current BestBuy R3 complete-tree readiness, original Session, and typed constructor controls.
++
++All source and historical metadata fixtures are exact in-memory payload strings.
++No live Main, private tree, filesystem, process, or Android entry is called.
++"""
+ import ast
+ import copy
+ import hashlib
+ import json
+-from pathlib import Path
++from pathlib import PurePosixPath
+ import types
+ 
+-HERE=Path(__file__).resolve().parent
+-BASE=HERE.parent
+-CANDIDATE=HERE/'candidate' if (HERE/'candidate').is_dir() else HERE
+-
+-
+-def load(path,name):
+-    module=types.ModuleType(name);module.__file__=str(path)
+-    exec(compile(path.read_bytes(),str(path),'exec'),module.__dict__)
+-    return module
+-
++def module(source,name):
++    tree=ast.parse(source)
++    tree.body=[n for n in tree.body if not(isinstance(n,ast.Assign) and
++        any(isinstance(t,ast.Name) and t.id=='HERE' for t in n.targets))]
++    value=types.ModuleType(name);value.__file__='/pure-control/'+name+'.py'
++    value.HERE=PurePosixPath('/pure-control')
++    exec(compile(tree,'<pure-module-'+name+'>','exec'),value.__dict__)
++    return value
+ 
+-def main():
+-    r=load(CANDIDATE/'bestbuy_readiness.py','candidate_readiness_controls')
+-    context=load(CANDIDATE/'bestbuy_task_context.py','candidate_policy_controls')
+-    worker=load(CANDIDATE/'owned_inspect.py','candidate_worker_plan_controls')
+-    qa_path=BASE/'owned-bestbuy-qa-r1-build01/source/qa_contract.py'
+-    adapter_path=BASE/'owned-bestbuy-qa-r1-build01/source/qa_adapter.py'
+-    assert hashlib.sha256(qa_path.read_bytes()).hexdigest()=='e751f26cba0e02258427216fdc69fb8cbfdd673623148c3700ea2dbe35364195'
+-    assert hashlib.sha256(adapter_path.read_bytes()).hexdigest()=='ba7b2a87301c9753a5d23b7aa384f918488e4943002ed682552ce8e9ddd2283f'
+-    qa=load(qa_path,'original_bestbuy_pure_contract')
+-    adapter=load(adapter_path,'original_bestbuy_session')
++def run_controls(p):
++    sources=p['sources']
++    r=module(sources['business'],'bestbuy_r3_readiness')
++    context=module(sources['context'],'bestbuy_current_task_context')
++    worker=module(sources['coordinator'],'bestbuy_current_coordinator')
++    qa=module(sources['contract'],'actual_bestbuy_r3_contract')
++    adapter=module(sources['adapter'],'actual_bestbuy_r3_adapter')
++    transport=module(sources['transport'],'actual_bestbuy_current_bound_arun')
++    assert qa.PROTOCOL=='pocket4-owned-bestbuy-qa-v3' and qa.SELF=='org.droidloom.qa.bestbuy.r3'
++    assert type(worker.HELPER_UID) is int and worker.HELPER_UID==context.HELPER_UID==10155
++    assert worker.INSTALLED['uid']==worker.HELPER_UID and worker.INSTALLED['package']==qa.SELF
++    assert worker.CURRENT_EPOCH==context.CURRENT_EPOCH==qa.MAIN_EPOCH==transport.FRAMEWORK_EPOCH_SHA256
++    assert worker.CURRENT_BASELINE_SHA==context.CURRENT_BASELINE_SHA==qa.MAIN_BASELINE_SHA
++    assert worker.CURRENT_QUALIFICATION_SHA==context.CURRENT_QUALIFICATION_SHA==qa.MAIN_BASELINE_QUALIFICATION_SHA
++    assert worker.CURRENT_HOST_MANIFEST==context.CURRENT_HOST_MANIFEST==adapter.RECORDER_MANIFEST_SHA
+     cases=[]
+     def passed(name):cases.append({'case':name,'passed':True})
+     def rejected(name,call,reason=None):
+@@ -36,17 +42,44 @@
+             if reason is not None:assert str(error)==reason,(name,str(error))
+             passed(name);return error
+         raise AssertionError(name+' accepted')
+-    def defs(path):
+-        return {x.name:ast.dump(x,include_attributes=False) for x in ast.parse(path.read_text()).body
++    def defs(source):
++        return {x.name:ast.dump(x,include_attributes=False) for x in ast.parse(source).body
+                 if isinstance(x,(ast.FunctionDef,ast.ClassDef))}
+-    old=defs(BASE/'android-bestbuy-launch-inspect-01/bestbuy_task_context.py')
+-    new=defs(CANDIDATE/'bestbuy_task_context.py')
+-    assert old['Flow']==new['Flow'] and old['open_task_context']==new['open_task_context']
+-    original=defs(BASE/'android-bestbuy-launch01-public-roles-reader-01/read_roles.py')
+-    current=defs(CANDIDATE/'bestbuy_readiness.py')
++    restored=sources['context']
++    for row in reversed(p['context_edits']):
++        assert restored.count(row['next'])==row['count']
++        restored=restored.replace(row['next'],row['old'])
++    assert restored==p['prior_context']
++    old=defs(p['prior_context']);new=defs(sources['context'])
++    assert old['Policy']==new['Policy']
++    current_business=sources['business']
++    assert current_business.count('=='+str(worker.HELPER_UID))==2
++    restored_business=current_business.replace('=='+str(worker.HELPER_UID),'==10198')
++    assert restored_business==p['prior_business']
++    original=defs(p['prior_business']);current=defs(restored_business)
+     for name in ('need','sha','no_raw_ui','validated_assessment','public_role_counts'):
+         assert original[name]==current[name],name
+-    passed('Flow_open_context_and_original_public_count_validators_AST_unchanged')
++    passed('exact_declared_typed_context_inverse_and_original_public_count_guards')
++    assert len(sources)==7
++    for name,source in sources.items():
++        data=source.encode()
++        assert p['bound_source_pins'][name]=={'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}
++        compile(source,'<all-seven-bound-'+name+'>','exec')
++    passed('exact_current_R3_helper_and_seven_source_bindings_compile')
++    values=[worker.NONCE]
++    for plan in worker.PLANS:
++        adapter.validate_plan(plan,qa)
++        values.extend(plan['nonces'][name] for name in ('before','inspect','after'))
++    assert values==p['fresh_nonce_values'] and len(values)==len(set(values))==10
++    passed('production_adapter_validates_all_three_plans_and_actual_ten_nonce_order')
++    install_docs={name:json.loads(p['actual_install'][name]) for name in ('coordinator','stage','worker')}
++    observed=worker.actual_install(install_docs)
++    assert observed['installed']==worker.INSTALLED and observed['actual_state_wire_sha256']==worker.STATE_WIRE
++    passed('production_actual_install_validator_accepts_exact_current_parent_worker_receipts')
++    old_protocol_docs=copy.deepcopy(install_docs)
++    old_protocol_docs['worker']['state']['helper']['protocol']='pocket4-owned-bestbuy-qa-v1'
++    rejected('production_actual_install_validator_rejects_old_helper_protocol',
++        lambda:worker.actual_install(old_protocol_docs),'ACTUAL_NO_AUTOMATION_STATE_REQUIRED')
+     def node(path='0',label='',clickable=False,resource='',kind='android.widget.FrameLayout'):
+         return {'path':path,'package':qa.PACKAGE,'class':kind,'class_truncated':False,
+             'resource_id':resource,'resource_id_truncated':False,'visible':True,'enabled':True,
+@@ -148,20 +181,29 @@
+     passed('nested_raw_UI_export_rejected_before_qualification')
+ 
+     # Use only the five safe metadata originals, never their private assessment.
+-    meta_path=BASE/'root-recovery-20261104-02/evidence/bestbuy-launch-five-results-read01/inspect.json'
+-    raw=meta_path.read_bytes()
++    raw=p['historical_inspect'].encode()
+     assert len(raw)==21067 and hashlib.sha256(raw).hexdigest()=='95b15ea5f365c7a672cffa446ddb39faed675388ed7b123c84db8f55f818fd14'
+     safe=json.loads(raw);plan=worker.PLANS[0]
+     inspection=copy.deepcopy(ready)
+     inspection['connection_scoped_window_id']=safe['assessments']['inspect']['connection_scoped_window_id']
+     refresh(inspection)
+     sequence=copy.deepcopy(safe['sequence'])
++    # This is an explicitly synthetic protocol fixture, never current task authority.
++    for key in ('foreground_before','foreground_after'):
++        sequence[key].update(main_epoch_sha256=qa.MAIN_EPOCH,main_baseline_schema=qa.MAIN_BASELINE_SCHEMA,
++            main_baseline_sha256=qa.MAIN_BASELINE_SHA,
++            main_baseline_qualification_sha256=qa.MAIN_BASELINE_QUALIFICATION_SHA)
++    sequence['installed_before']=copy.deepcopy(worker.INSTALLED)
++    sequence['installed_after']=copy.deepcopy(worker.INSTALLED)
++    sequence['post_termination_state']['helper_uid']=worker.HELPER_UID
+     metadata=copy.deepcopy(safe['assessments'])
+     counters=copy.deepcopy(metadata['inspect']['tree_observations'])
++    # Synthetic current-protocol limit, not a claim about the historical capture.
++    counters[0]['depth_limit']=qa.MAX_DEPTH
+     counters[0]['attempted_nodes']=counters[0]['emitted_nodes']=len(inspection['nodes'])
+     counters[0]['serialized_bytes']=len(qa.canonical(inspection))
+     before_state=sequence['accessibility_restoration']['state_before']
+-    helper={'protocol':qa.PROTOCOL,'nonce':plan['nonces']['inspect'],'op':'inspect','self_uid':10198,
++    helper={'protocol':qa.PROTOCOL,'nonce':plan['nonces']['inspect'],'op':'inspect','self_uid':worker.HELPER_UID,
+         'ok':True,'error':None,'secondary_errors':[],'action_attempted':False,'outcome_unknown':False,
+         'claim_persistence_completed':True,'helper_work_completed':True,'automatic_retry':False,
+         'business_success_verified':False,'request_sha256':qa.sha(qa.validate_request({
+@@ -205,7 +247,7 @@
+         lambda:r.qualify_current(qa,changed,sequence,plan,metadata,expected_task,installed),
+         'ACTUAL_SUCCESSFUL_NO_ACTION_INSPECTION_REQUIRED')
+ 
+-    step=Path('/synthetic-bestbuy-control-step')
++    step=PurePosixPath('/synthetic-bestbuy-control-step')
+     request_bytes={}
+     scope=sequence['foreground_after']
+     requests=[]
+@@ -278,7 +320,7 @@
+             if op=='inspect' and self.mode=='inspect':raise RuntimeError('synthetic_inspect_failure')
+             if op=='state' and self.events.count('state')==2 and self.mode=='after-state':
+                 raise RuntimeError('synthetic_after_state_failure')
+-            h={'op':op,'nonce':request['nonce'],'self_uid':10198}
++            h={'op':op,'nonce':request['nonce'],'self_uid':worker.HELPER_UID}
+             if op=='state':h.update(state=before_state,ui_automation_connected=False)
+             else:h.update(accessibility_state_before_connection=before_state,restoration={'service_info_verified':True})
+             return {'helper':h,'wire_sha256':qa.sha(qa.canonical(h))}
+@@ -302,20 +344,98 @@
+     assert isinstance(error,RuntimeError) and len(calls)==2 and out['completed_rounds']==1
+     assert len(sessions)==1 and not hasattr(sessions[0],'sequence_observation')
+     passed('fresh_second_Session_before_installed_failure_cannot_reuse_old_sequence_observation')
+-    worker_tree=ast.parse((CANDIDATE/'owned_inspect.py').read_text())
++    worker_tree=ast.parse(sources['coordinator'])
+     collect=next(x for x in ast.walk(worker_tree) if isinstance(x,ast.FunctionDef) and x.name=='collect_round')
+     body=ast.unparse(collect)
+     assert body.index('session = None')<body.index('session = q.adapter.Session')<body.index('flow.policy.begin_round')
+-    assert "'semantic_ready'" in (CANDIDATE/'owned_inspect.py').read_text()
++    assert "'semantic_ready'" in sources['coordinator']
+     assert worker.PHASE_SECONDS=={'launch':175,'inspect':175,'cleanup':115}
+     passed('production_round_constructor_clears_stale_reference_and_original_phase_deadlines_remain')
++    # Exercise the production Flow and BoundArun constructors, with only in-memory
++    # target/callback fixtures. No command, held entry, file operation or Main read
++    # is allowed by these fixtures.
++    class SyntheticPrivatePath(PurePosixPath):
++        def is_dir(self):return True
++
++    def typed_scope_fixture():
++        baseline={'schema':qa.MAIN_BASELINE_SCHEMA,'framework_epoch':{'sha256':qa.MAIN_EPOCH},
++            'packages':{qa.PACKAGE:qa.UID}}
++        ref=types.SimpleNamespace(current_baseline=lambda:baseline,EPOCH=qa.MAIN_EPOCH,
++            BASELINE_SHA=qa.MAIN_BASELINE_SHA,QUALIFICATION_SHA=qa.MAIN_BASELINE_QUALIFICATION_SHA)
++        return worker.scope_record(types.SimpleNamespace(ref=ref,adapter=adapter),'a'*64)
++
++
++    def construct_flow(scope):
++        accesses=[]
++        def forbidden(*args,**kwargs):
++            accesses.append('FORBIDDEN_IO')
++            raise AssertionError('pure constructor reached command/file/entry')
++        root=SyntheticPrivatePath('/synthetic/current-BESTBUY-flow')
++        step=root/'steps'/'inspect-01'
++        target=types.SimpleNamespace(expected={'pid':42},
++            helper_sha256=transport.HELD_HELPER_SHA256,
++            verify=lambda:accesses.append('target'),entry=forbidden,close=forbidden)
++        recorder=types.SimpleNamespace(write_new=forbidden,
++            Flow=types.SimpleNamespace(command=forbidden))
++        flow=context.Flow(recorder=recorder,
++            contract=types.SimpleNamespace(sha256=adapter.RECORDER_MANIFEST_SHA),
++            target=target,environment={key:'/synthetic/non-authority' for key in transport.REQUIRED_ENV},
++            transport=transport,main_guard=lambda:accesses.append('Main'),
++            root=root,step=step,phase='inspect',scope=scope,
++            activation={'framework_epoch':{'binding':{'processes':{'init':{'host_pid':42}}}}},
++            tasks={},qa=qa,inspect_plan=worker.PLANS,
++            resolve=['synthetic-resolve'],read=forbidden,deadline=context.time.monotonic()+60)
++        return flow,accesses
++
++    flow,accesses=construct_flow(typed_scope_fixture())
++    assert not accesses and type(flow.transport) is transport.BoundArun
++    assert flow.transport.target is flow.target and flow.transport.environment=={
++        key:'/synthetic/non-authority' for key in transport.REQUIRED_ENV}
++    assert flow.current_qualified_scope==flow.scope and flow.current_qualified_scope is not flow.scope
++    session=adapter.Session(flow,None,qa,{},worker.HELPER_UID)
++    flow.guard()
++    assert accesses==['Main','target'] and session.uid==worker.HELPER_UID
++    passed('production_typed_Flow_BoundArun_and_R3_Session_positive_without_IO')
++
++    for name,mutate,expected in [
++        ('old_scope_schema',lambda v:v.update(schema='old-recorder-scope'),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('wrong_baseline_schema',lambda v:v.update(current_baseline_schema='old-deployment'),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('foreign_package',lambda v:v.update(package='com.bilibili.app'),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('foreign_target_uid',lambda v:v.update(uid=10117),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('boolean_uid',lambda v:v.update(uid=True),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('boolean_user',lambda v:v.update(user=False),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('wrong_epoch',lambda v:v.update(epoch_sha256='e'*64),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('wrong_baseline_sha',lambda v:v.update(current_baseline_sha256='e'*64),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('wrong_qualification_sha',lambda v:v.update(current_baseline_qualification_sha256='e'*64),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('old_recorder_manifest',lambda v:v.update(original_recorder_manifest_sha256='e'*64),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('legacy_activation_extra',lambda v:v.update(activation_sha256='e'*64),'EXACT_TYPED_CURRENT_BESTBUY_TASK_SCOPE'),
++        ('foreign_component',lambda v:v.update(component='com.synthetic.foreign/.Main'),'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT'),
++        ('invalid_nonce',lambda v:v.update(nonce='not-a-nonce'),'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT'),
++        ('invalid_task_manifest',lambda v:v.update(bestbuy_task_source_manifest_sha256='bad'),'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT'),
++        ('invalid_resolver_pin',lambda v:v.update(actual_resolution_result_sha256='bad'),'EXACT_CURRENT_TASK_SOURCE_NONCE_AND_COMPONENT')]:
++        value=typed_scope_fixture();mutate(value)
++        try:construct_flow(value)
++        except RuntimeError as error:assert str(error)==expected,(name,str(error))
++        else:raise AssertionError(name+' accepted by production Flow')
++        passed('production_Flow_'+name+'_rejected_before_transport')
++
++    flow,accesses=construct_flow(typed_scope_fixture())
++    flow.scope['component']=qa.PACKAGE+'/.activity.OtherActivity'
++    try:flow.guard()
++    except RuntimeError as error:assert str(error)=='CURRENT_BESTBUY_TASK_SCOPE_CHANGED'
++    else:raise AssertionError('mutated constructed scope admitted')
++    assert accesses==[]
++    passed('constructed_current_scope_mutation_stops_before_Main_target_or_IO')
++
++
++    assert len(cases)==59 and len({x['case'] for x in cases})==59
+     report={'schema':1,'ok':True,'count':len(cases),'cases':cases,
+         'original_BestBuy_contract_functions_executed':True,
+         'original_Session_sequence_executed_with_local_IO_subclass_only':True,
+-        'production_Flow_open_task_context_and_shared_helper_sources_unchanged':True,
++        'typed_context_declared_inverse_verified':True,
++        'production_Flow_BoundArun_Session_constructors_executed':True,
++        'production_typed_constructor_controls':17,
++        'production_actual_install_and_adapter_plan_validators_executed':True,
+         'private_retained_assessment_or_raw_commercial_UI_read':False,
+         'Android_Hepta_process_or_UI_calls':0,'remote_qualification_performed':False}
+-    print(json.dumps(report,indent=2,sort_keys=True))
+-
+-
+-if __name__=='__main__':main()
++    return report

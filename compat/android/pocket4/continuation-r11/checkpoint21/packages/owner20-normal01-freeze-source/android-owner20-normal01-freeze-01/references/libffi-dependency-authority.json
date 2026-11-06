@@ -1,0 +1,59 @@
+{
+  "schema": "owner20-actual-ctypes-import-dependency-v1",
+  "actual_stdout": {
+    "bytes": 6285,
+    "sha256": "f3363229acb906a9bb6ae16850afec3c4fd24a484f923774e5964b216ab0febc",
+    "git_blob_sha": "e060ebe906b767f258207203be80b642aae2679e",
+    "job": "1a1b00175bd-fc05-6d62"
+  },
+  "actual_original_result_success": false,
+  "source_sha256": "8aa61f8a7a0e79511dc3bb49e4f4f857d7dc40b68a26e431cda0af0629bf56b2",
+  "source_line": 9,
+  "source_import": "ctypes",
+  "target": {
+    "bytes": 64184,
+    "ctime_ns": 1791083436303902806,
+    "device": 66306,
+    "gid": 0,
+    "inode": 108020388,
+    "mode": 33188,
+    "mtime_ns": 1774599998000000000,
+    "nlink": 1,
+    "rdev": 0,
+    "uid": 0
+  },
+  "target_link": "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0",
+  "fd_inheritable": false,
+  "fdinfo_fields": {
+    "flags": "02100000",
+    "ino": "108020388",
+    "mnt_id": "33",
+    "pos": "0"
+  },
+  "python": {
+    "cache_tag": "cpython-314",
+    "executable": "/usr/bin/python3",
+    "implementation": "cpython",
+    "version": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+    "version_info": [
+      3,
+      14,
+      4,
+      "final",
+      0
+    ]
+  },
+  "modules": {
+    "_ctypes": {
+      "file": "/usr/lib/python3.14/lib-dynload/_ctypes.cpython-314-x86_64-linux-gnu.so",
+      "file_body_read": false
+    },
+    "ctypes": {
+      "file": "/usr/lib/python3.14/ctypes/__init__.py",
+      "file_body_read": false
+    }
+  },
+  "target_body_read": false,
+  "matching_installed_libffi_source_proven": false,
+  "resource_scope": "one actual-observed retained read-only CLOEXEC descriptor created during exact ctypes import; process exit owns final release"
+}

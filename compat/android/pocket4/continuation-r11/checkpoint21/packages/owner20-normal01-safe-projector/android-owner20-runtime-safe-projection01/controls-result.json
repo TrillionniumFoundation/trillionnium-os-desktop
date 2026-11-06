@@ -1,0 +1,73 @@
+{
+  "controls": [
+    {
+      "name": "pre_action_failure_no_capture",
+      "passed": true
+    },
+    {
+      "name": "two_generation_captures_removed_with_exact_hash",
+      "passed": true
+    },
+    {
+      "name": "wrong_original_pin_rejected",
+      "passed": true,
+      "rejected_with": "OWNER20_RAW_PIN"
+    },
+    {
+      "name": "unknown_capture_path_rejected",
+      "passed": true,
+      "rejected_with": "OWNER20_UNEXPECTED_CAPTURE_PATH"
+    },
+    {
+      "name": "malformed_hex_rejected",
+      "passed": true,
+      "rejected_with": "OWNER20_HEX_SHAPE"
+    },
+    {
+      "name": "capture_size_mismatch_rejected",
+      "passed": true,
+      "rejected_with": "OWNER20_INIT_CAPTURE_PIN"
+    },
+    {
+      "name": "capture_hash_mismatch_rejected",
+      "passed": true,
+      "rejected_with": "OWNER20_INIT_CAPTURE_PIN"
+    },
+    {
+      "name": "public_numeric_sdk_and_empty_only_literal",
+      "passed": true
+    },
+    {
+      "name": "nonnumeric_property_bytes_hash_only",
+      "passed": true
+    },
+    {
+      "name": "unapproved_property_key_rejected",
+      "passed": true,
+      "rejected_with": "OWNER20_UNEXPECTED_PROPERTY_PATH"
+    },
+    {
+      "name": "unapproved_payload_hex_rejected",
+      "passed": true,
+      "rejected_with": "OWNER20_UNEXPECTED_HEX_FIELD"
+    },
+    {
+      "name": "large_metadata_integer_token_preserved",
+      "passed": true
+    }
+  ],
+  "controls_source": {
+    "bytes": 3601,
+    "git_blob_sha": "d837a6c3e938bfc5a1e5a55347c614ef666bf777",
+    "sha256": "5f6cdad9c8c5f979c106ec2a51b37827372a1e38a42563051f26e68e394e0b2e"
+  },
+  "count": 12,
+  "passed": true,
+  "schema": 1,
+  "scope": "Pure V8 projection fixtures; no Python/process/device/Main/runtime evidence.",
+  "source": {
+    "bytes": 5816,
+    "git_blob_sha": "6c8225892296f6966360610a7ccb1a06a93166b5",
+    "sha256": "4b6a5552dfe7a3034635555180414a882eca3020c383e8cdad39ff1e0582ae83"
+  }
+}

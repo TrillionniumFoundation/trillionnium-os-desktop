@@ -1,0 +1,126 @@
+{
+  "schema": 1,
+  "scope": "exact retained native command and prelaunch task baseline; read only",
+  "actual_worker": {
+    "bytes": 5202,
+    "sha256": "037076b15c27611f83815ad243280a1ec8eae82416616c928c9106e17f7a12ca",
+    "git_blob": "38eda8eedd7b93d239f930f62f15a7add1d37576"
+  },
+  "actual_failure": {
+    "native_command_was_spawned": true,
+    "native_returncode": 1,
+    "native_timed_out": false,
+    "native_direct_child_joined": true,
+    "action_attempted": true,
+    "outcome_unknown": true,
+    "launch_scope_absent_in_prior_actual_read": true,
+    "cleanup_absent_in_prior_actual_read": true,
+    "launch_attempted_bytes": 1126
+  },
+  "source_sequence": {
+    "installed_package_and_path": 2,
+    "prelaunch_stacks_command_index": 3,
+    "native_launch_command_index": 4,
+    "sequence_is_source_derived_until_exact_actual_equality_passes": true
+  },
+  "original_inputs": {
+    "R5_manifest": {
+      "bytes": 3605,
+      "sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e"
+    },
+    "R5_recorder": {
+      "bytes": 41689,
+      "sha256": "7101d2ab2cd4b73bf96cab1117c8d0177c2b290255c6946af52ec834115a7f44"
+    },
+    "R5_transport": {
+      "bytes": 15601,
+      "sha256": "99bc2c4fc2e909ec5b821853a985b7472b0e9ef69abd18425b5d1c7f5c8e45dd"
+    },
+    "original_task_parser": {
+      "bytes": 17281,
+      "sha256": "a16e347abb0de2ccbff24f6d7990f6dab1be600675054b45203e907fa8eef528"
+    },
+    "owned_navigation": {
+      "bytes": 60370,
+      "sha256": "088f9b38c663a05bba442eb03f331055c1ef47d21ed00733d559b2df7661bae1"
+    },
+    "session_binding": {
+      "bytes": 842,
+      "sha256": "aa6f468fa8e058882e681362aeb7fb4ba5b726d3d34c8dcfdc2b947aa6fb8b7e"
+    },
+    "qa_adapter": {
+      "bytes": 28878,
+      "sha256": "393a5464fe0d54626c3805b032d821a6ff3310fa89c1b012b8d416724ace0bb1"
+    }
+  },
+  "original_method_pins": {
+    "Flow_command": {
+      "bytes": 5633,
+      "sha256": "38abf58fd0e1cb4890b8fe24898974d4281fc287e16c0a07849c255d340f3365"
+    },
+    "Flow_stacks": {
+      "bytes": 231,
+      "sha256": "b22d861185203234e4cfd42180c7ce0a285815c9045590b671e39521d4d2d2c1"
+    },
+    "Flow_launch_locked": {
+      "bytes": 2320,
+      "sha256": "86c8f9578f0f1a66a5400891d5efa4a54a86d857ad6e0453c9f2eb4a0d346700"
+    },
+    "Session_installed": {
+      "bytes": 1384,
+      "sha256": "93ab0d7fe7d64f5a71b64434a35bd28f9752b233de363b927a5eda2a7dc4a01e"
+    },
+    "parse_stacks_embedded": {
+      "bytes": 1073,
+      "sha256": "5c1a62afeecc18e6458fccedee71bc62a8ecc67fad59fb0bed44c8161824b4e5"
+    }
+  },
+  "fixed_paths": 14,
+  "files_maximum": 262144,
+  "total_bytes_maximum": 1048576,
+  "reader_seconds": 8,
+  "output_json_maximum": 65536,
+  "source_guards": {
+    "worker_exact_external_bytes_sha": true,
+    "command_result_equals_exact_worker_observation": true,
+    "native_intent_exact_argv": true,
+    "native_stdout_stderr_exact_hash": true,
+    "scope_all_fixed_fields_equal": true,
+    "attempted_size_1126_and_scope_equal": true,
+    "timestamps_ordered": true,
+    "stack_transport_exact_command_hash_and_scope": true,
+    "prelaunch_text_equals_bound_stack_stdout": true,
+    "original_parse_stacks_copied_byte_exact": true,
+    "baseline_target_tasks_must_be_absent": true
+  },
+  "projection": {
+    "private_raw_platform_text_exported": false,
+    "private_raw_stack_text_exported": false,
+    "unknown_JSON_keys_exported": false,
+    "unknown_text_exported": false,
+    "numeric_only_exact_receipt_or_labelled_errno_or_fixed_JSON_fields": true,
+    "closed_feature_flags_are_not_cause_attribution": true
+  },
+  "limits": {
+    "current_task_state_not_observed": true,
+    "no_device_or_process_actions": true,
+    "no_original_file_writes": true,
+    "no_launch_replay": true,
+    "no_cleanup": true,
+    "no_cleanup_authority_minted": true,
+    "old_outcome_unknown_preserved": true,
+    "UI_window_release_not_claimed": true,
+    "not_atomic_snapshot": true,
+    "new_source_bound_records_report_new_observation_hashes_not_previous_external_pins": true
+  },
+  "validation": {
+    "V8_source_binding_checks": true,
+    "Python_compilation": "NOT_EXECUTED",
+    "Python_controls": "16 PLANNED; run once by exact reader before fixed file reads",
+    "device_execution": "NOT_DISPATCHED"
+  },
+  "latest_source": {
+    "bytes": 26498,
+    "sha256": "5d26f04e67e966bc11d0683d77aba8a8b69b541bd38c820de850636dfea1ab94"
+  }
+}

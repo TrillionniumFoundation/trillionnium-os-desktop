@@ -1,0 +1,69 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "b178a4696a84af5e95e76cb91ec5e725a2386efc",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 23984,
+    "sha256": "8f3c57d2a4eebafb225b2f450d6b117c9669fdbe609f60d61a625c7f4725279e",
+    "git_blob_sha1": "5f4dc593cf59d3b034255845d32626754e045865",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "exact-request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "252c52d77388426c5d34054186a07d06fd0862c4",
+      "bytes": 23447
+    },
+    {
+      "path": "exclusions.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3198ab567c64fb02a633ee4a82fc04a32df9c256",
+      "bytes": 23069
+    },
+    {
+      "path": "generate.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "03a1bd01d3b0ebcb6a69c74de41d79373883677d",
+      "bytes": 21854
+    },
+    {
+      "path": "ihg_exclusion_source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "785310e63f1957be0a35776516d8f944ff65a9e7"
+    },
+    {
+      "path": "ihg_r3_build_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4e6e4e71dd6dc2a8d00b9a7a3eeec83ca6604cf6"
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aaf70bc80f197f2529ccbc347e747495ffb9ed7d",
+      "bytes": 3358
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "ihg_exclusion_source",
+      "original_tree": "785310e63f1957be0a35776516d8f944ff65a9e7",
+      "checkpoint": 21,
+      "canonical_package": "ihg-r3-install-exclusion-source"
+    },
+    {
+      "path": "ihg_r3_build_actual",
+      "original_tree": "4e6e4e71dd6dc2a8d00b9a7a3eeec83ca6604cf6",
+      "checkpoint": 21,
+      "canonical_package": "ihg_r3_build01-actual"
+    }
+  ],
+  "original_recursive_leaf_count": 56
+}

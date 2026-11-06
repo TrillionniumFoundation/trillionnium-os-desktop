@@ -1,0 +1,25 @@
+--- a/owned-lifecycle-controls.py
++++ b/owned-lifecycle-controls.py
+@@ -29,7 +29,7 @@
+ """
+ 
+ 
+-def run_child_lifecycle_controls(report, root):
++def run_child_lifecycle_controls(report, root, environment):
+     control_root = root / 'host-child-lifecycle-controls'
+     control_root.mkdir(mode=0o700)
+     report['host_child_lifecycle_controls'] = []
+@@ -47,10 +47,10 @@
+             raise OSError(errno.EMFILE, 'explicit owned-child pidfd-open control seam')
+ 
+         try:
+-            command(case, case_root,
+-                    [CFG['host_python'], '-I', '-B', '-c', HOST_LIFECYCLE_FIXTURE, mode],
++            owned_command(case, case_root,
++                    [sys.executable, '-I', '-B', '-c', HOST_LIFECYCLE_FIXTURE, mode],
+                     timeout=1 if mode == 'timeout-descendant' else 5,
+-                    pidfd_factory=denied_pidfd if mode == 'pidfd-failure' else None)
++                    pidfd_factory=denied_pidfd if mode == 'pidfd-failure' else None, environment=environment)
+         except Exception as error:
+             first = error
+         require(first is not None and len(case['commands']) == 1,

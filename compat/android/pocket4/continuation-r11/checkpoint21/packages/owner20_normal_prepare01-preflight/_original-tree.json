@@ -1,0 +1,67 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "0e37106e595e2d11ac9e255fa8904908c5d201ca",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 61969,
+    "sha256": "c489dd457e0429007c6ed9bfd9e9fe8934f24ca0bba92e0f223b3a57345c6f41",
+    "git_blob_sha1": "88e77fd9f09f10c93bbe6cb4466b1d1f94d68a9d",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "collector_host",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "057bbb169390a8e1054c26caf99a1724292dfe09"
+    },
+    {
+      "path": "current_main",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "709e452b5a9391add22ef2684e782830cb027210"
+    },
+    {
+      "path": "exact-request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "660f3872812c6cc2c7c6de58996a453417f15244",
+      "bytes": 430317
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "360876b386a30234fbbaeb11af9195a102895a17",
+      "bytes": 3560
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "eef453897f751c690ea1e2e26ec9602fb9572269"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "collector_host",
+      "original_tree": "057bbb169390a8e1054c26caf99a1724292dfe09",
+      "checkpoint": 20,
+      "canonical_package": "owner20_collector_host_controls06-actual_tree"
+    },
+    {
+      "path": "current_main",
+      "original_tree": "709e452b5a9391add22ef2684e782830cb027210",
+      "checkpoint": 20,
+      "canonical_package": "owner20_current_main_controls01-actual_tree"
+    },
+    {
+      "path": "source",
+      "original_tree": "eef453897f751c690ea1e2e26ec9602fb9572269",
+      "checkpoint": 21,
+      "canonical_package": "owner20-normal01-freeze-source"
+    }
+  ],
+  "original_recursive_leaf_count": 143
+}

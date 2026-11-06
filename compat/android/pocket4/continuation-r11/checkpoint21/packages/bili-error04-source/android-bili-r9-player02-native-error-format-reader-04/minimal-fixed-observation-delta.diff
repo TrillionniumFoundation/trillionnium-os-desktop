@@ -1,0 +1,113 @@
+--- format03/read.py
++++ format04/read.py
+@@ -143,6 +143,7 @@
+ 
+ STAGES=('control','policy','wake','snapshot','permission_resolver','activity','alias','discovery','registration')
+ NUMBER=r'(0|[1-9][0-9]{0,12})'
++OPAQUE_PREFIX_PIN={'position':3,'bytes':22,'sha256':'5a4785013842061d851060668456459d7ba7263cee3dc1f933d03b10d2b59148'}
+ CLOSED_CHILD_PATTERNS=(('backend_different_registration_ownership',
+  r'task-control request failed: Backend: Android task (?P<task>[1-9][0-9]{0,9}) is already registered with different ownership'),)
+ def classify_closed_child(error):
+@@ -192,6 +193,8 @@
+  base={'bytes':len(message.encode()),'sha256':sha(message.encode()),
+        'raw_message_exported':False,'installed_binary_source_match':False,
+        'source_format_reference_only':True,'semantic_cause_inferred':False,
++       'reference_source_format_match':False,'opaque_prefix_semantics_known':False,
++       'installed_source_version_verified':False,'fixed_opaque_prefix':None,
+        'complete_closed_error_shape':False,'task_cleanup_authority_created':False,
+        'public_timing_diagnostic':public_timing_diagnostic(message),'first_rejection':None}
+  def reject(stage):return {**base,'complete_wrapper_match':False,'first_rejection':stage}
+@@ -201,15 +204,24 @@
+  parts=timing.split(' ')
+  if len(parts)<5 or parts[0]!='droidloom-launch-timing' or parts[1]!='ok=false' or parts[2] not in ('policy_cached=false','policy_cached=true'):
+   return reject('TIMING_HEADER_FIELDS')
++ fixed_opaque=False
++ start=3
++ if re.fullmatch(r'control_us='+NUMBER,parts[3]) is None:
++  token=parts[3].encode('utf-8')
++  if len(parts)!=14 or len(token)!=OPAQUE_PREFIX_PIN['bytes'] or sha(token)!=OPAQUE_PREFIX_PIN['sha256']:
++   return reject('FIXED_OPAQUE_PREFIX_POSITION_SIZE_OR_HASH')
++  if base['bytes']!=MESSAGE_PIN['bytes'] or base['sha256']!=MESSAGE_PIN['sha256']:
++   return reject('OPAQUE_PREFIX_ONLY_FOR_EXACT_ACTUAL_MESSAGE')
++  fixed_opaque=True;start=4
+  parsed=[]
+- for token in parts[3:]:
++ for token in parts[start:]:
+   match=re.fullmatch(r'([a-z_]+)_us='+NUMBER,token)
+   if match is None:return reject('TIMING_FIELD_FORMAT')
+   parsed.append((match[1],int(match[2])))
+  if len(parsed)<2 or tuple(k for k,v in parsed[-2:])!=('pending','total'):
+   return reject('TIMING_TRAILER_FIELDS')
+  stages=parsed[:-2];names=tuple(k for k,v in stages)
+- if names!=STAGES[:len(names)] or not 1<=len(names)<=8:
++ if names!=STAGES[:len(names)] or not 1<=len(names)<=8 or (fixed_opaque and names!=STAGES[:8]):
+   return reject('TIMING_STAGE_PREFIX')
+  pending,total=parsed[-2][1],parsed[-1][1]
+  # record() floors each stage separately; finish() obtains pending then total later.
+@@ -231,6 +243,8 @@
+  for match in re.finditer(r'(?<![A-Za-z0-9_])task(?:_id| id)?(?:=|: | )([1-9][0-9]{0,9})(?![A-Za-z0-9_])',payload):
+   if int(match[1])<=2147483647:labelled.append(int(match[1]))
+  return {**base,'complete_wrapper_match':True,'native_exit_status':1,
++  'reference_source_format_match':not fixed_opaque,
++  'fixed_opaque_prefix':dict(OPAQUE_PREFIX_PIN) if fixed_opaque else None,
+   'timing':{'ok':False,'policy_cached':parts[2]=='policy_cached=true',
+     'recorded_stages':list(names),'stage_us':dict(stages),'pending_us':pending,'total_us':total,
+     'recording_is_not_success_attestation':True},
+@@ -301,6 +315,40 @@
+  yes('producer_task_is_parsed_not_assumed',classify_closed_child(exact_child.replace('task 873','task 874'))['labelled_fields']=={'task':874})
+  need(len(rows)==22,'CONTROL_COUNT_CHANGED')
+  return rows
++def actual_format_controls(message):
++ # The one pinned historical message stays private. Mutations are in-memory
++ # negative fixtures; no actual receipt is modified or reclassified.
++ rows=[]
++ def yes(name,condition):
++  need(condition,'ACTUAL_FORMAT_CONTROL_'+name.upper());rows.append({'name':name,'passed':True})
++ actual=project_message(message)
++ yes('actual_fixed_opaque_prefix_and_complete_error',
++     actual['complete_wrapper_match'] is True and actual['complete_closed_error_shape'] is True and
++     actual['reference_source_format_match'] is False and actual['opaque_prefix_semantics_known'] is False and
++     actual['installed_source_version_verified'] is False and actual['fixed_opaque_prefix']==OPAQUE_PREFIX_PIN and
++     actual['timing']['recorded_stages']==list(STAGES[:8]) and
++     actual['closed_error']=={'shape':'backend_different_registration_ownership','labelled_fields':{'task':873}})
++ first,second=message.split('\n')
++ prefix='Android task launch failed (exit status: 1): '
++ need(first.startswith(prefix),'ACTUAL_FORMAT_FIXTURE_PREFIX')
++ parts=first[len(prefix):].split(' ')
++ def mutated(tokens):return prefix+' '.join(tokens)+'\n'+second
++ moved=list(parts);moved[3],moved[4]=moved[4],moved[3]
++ changed=list(parts);changed[3]=('x' if changed[3][0]!='x' else 'y')+changed[3][1:]
++ extra=list(parts);extra.insert(4,parts[3])
++ other=list(parts)
++ need(other[-2]=='pending_us=66','FIXED_ACTUAL_PENDING_FIELD')
++ other[-2]='pending_us=67'
++ for name,tokens in (
++  ('opaque_token_wrong_position_rejected',moved),
++  ('opaque_token_wrong_hash_same_size_rejected',changed),
++  ('second_opaque_token_rejected',extra),
++  ('same_opaque_token_other_message_rejected',other)):
++  value=project_message(mutated(tokens))
++  yes(name,value['complete_wrapper_match'] is False and value['complete_closed_error_shape'] is False)
++ need(len(rows)==5,'EXACT_FIVE_ACTUAL_FORMAT_CONTROLS')
++ return rows
++
+ def safe_error(error):
+  value=str(error);kind=type(error).__name__
+  out={'type':kind if kind in ('RuntimeError','OSError','FileNotFoundError','PermissionError',
+@@ -329,6 +377,8 @@
+   need(len(child_line)==126 and sha(child_line)=='557a6cb23e42b9f540c083e98bf7b4548205cb72ad3e4f39fbc4ad705d03fe87',
+        'EXACT_PRIOR_ACTUAL_CHILD_ERROR_LINE')
+   projection=pair_projection(raw['native_stdout'],raw['native_stderr'])
++  controls.extend(actual_format_controls(message))
++  need(len(controls)==27,'EXACT_22_PLUS_FIVE_CONTROLS')
+   bindings={'worker_exact':True,'native_command_equals_worker':True,
+             'stdout_and_stderr_pins_exact':True,'exact_message_pin':True,
+             'stdout_and_stderr_complete_agreement':True}
+@@ -346,6 +396,7 @@
+   'raw_message_or_unknown_text_exported':False,'private_UI_read':False,
+   'Android_commands':0,'UI_actions':0,'processes_spawned':0,'task_cleanup_authorized':False,
+   'current_task_state_observed':False,'current_installed_source_version_verified':False,
++  'reference_source_format_match':False,'opaque_prefix_semantics_known':False,
+   'whole_app_production_ready':False}
+  data=(json.dumps(result,ensure_ascii=False,sort_keys=True,separators=(',',':'))+'\n').encode()
+  need(len(data)<=32768,'SAFE_SUMMARY_BOUND')

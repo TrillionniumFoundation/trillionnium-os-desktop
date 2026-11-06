@@ -1,0 +1,97 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "e2a2b647b722680d758029736b7c3e30c7d87bfc",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 2802,
+    "sha256": "166d98d3caf4a004979524298b2c8b35c6b09175fbd4641a01bcff3b315c371c",
+    "git_blob_sha1": "44e633230c43a6f557afad4d5548b6cf295d8936",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "coordinator.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "71f10d157a10e20fef449c4bc6d7c4679e413b58",
+      "bytes": 6731
+    },
+    {
+      "path": "failure_snapshot",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "44fceca6268eaab9ab667c6378ae6cd71bbe25a6"
+    },
+    {
+      "path": "launch-command.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "396a0806157fa43cd98205354c57f2eb9082cba8",
+      "bytes": 1606
+    },
+    {
+      "path": "launch-stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1e9300d8bbbf5fe21073d3f24ec7af3fd4e67a17",
+      "bytes": 11559
+    },
+    {
+      "path": "launch.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "befdd65ddc4885f01750970ce06ea4e382d936d3",
+      "bytes": 14255
+    },
+    {
+      "path": "reader_admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "33f242676f33e6a27e3cef752bcf7a2db2f3cade"
+    },
+    {
+      "path": "safe-bundle.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b72f153061abcbaf3af0903e0abcff1729a9f83b",
+      "bytes": 42829
+    },
+    {
+      "path": "stage.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0207de545f8be703048bf85dda86b23922ab17df",
+      "bytes": 2724
+    },
+    {
+      "path": "stdout-carrier.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9084b89669c4563081ffa8f49aea9eb3577d9ff8",
+      "bytes": 48471
+    },
+    {
+      "path": "terminal.tool-original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "82a21612a3c93e6d0c0ac6b71a3462efc13a17b8",
+      "bytes": 733
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "failure_snapshot",
+      "original_tree": "44fceca6268eaab9ab667c6378ae6cd71bbe25a6",
+      "checkpoint": 21,
+      "canonical_package": "amazon-ui-terminal-failed"
+    },
+    {
+      "path": "reader_admission",
+      "original_tree": "33f242676f33e6a27e3cef752bcf7a2db2f3cade",
+      "checkpoint": 21,
+      "canonical_package": "amazon_launch_read01-admission"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

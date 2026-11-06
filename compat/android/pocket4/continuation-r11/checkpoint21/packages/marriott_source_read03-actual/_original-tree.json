@@ -1,0 +1,76 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "82d09f4d0b0eee437385ef458d14d6f298db9dc6",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 2048,
+    "sha256": "62849321acd75ba143db71f5e0c0b3606a4ed72c96a12f63e276bdf0efe5a9e0",
+    "git_blob_sha1": "1af5abafa7af07373b3d06e2946350c629496fb3",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c6ec9434565620e1370b552ea871023aeb8648f1"
+    },
+    {
+      "path": "kernel_api--arm64--gen_syscall_emulation_arm64_to_x86_64-inl.h",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "11f7cd6ea5c78a578ed9452936c092d8f6269cac",
+      "bytes": 29100
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "324653de103ce57938c4995d57f161db96674702"
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e649d1be46367c7efb4fbddc30305d452b534ee1",
+      "bytes": 48482
+    },
+    {
+      "path": "terminal-status.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "29fe1a6ef6aee851f51441b6a03daa9a54a832c2",
+      "bytes": 733
+    },
+    {
+      "path": "tests--tests_apk--Android.bp",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "10b4ddcfcb0ed57d4c0a20c75474ce5a97265d33",
+      "bytes": 2027
+    },
+    {
+      "path": "tests--tests_apk--jni--jni_test_main.cc",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "928b1e22129eefed9d3cb1c2cb82e711d18f5538",
+      "bytes": 5337
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "c6ec9434565620e1370b552ea871023aeb8648f1",
+      "checkpoint": 21,
+      "canonical_package": "marriott_source_read03-admission"
+    },
+    {
+      "path": "source",
+      "original_tree": "324653de103ce57938c4995d57f161db96674702",
+      "checkpoint": 21,
+      "canonical_package": "marriott_source_read03-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

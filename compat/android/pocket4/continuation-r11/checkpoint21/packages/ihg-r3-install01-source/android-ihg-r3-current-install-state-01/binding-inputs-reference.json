@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "compiler": "bind_actual.js",
+  "input_contract": "buildIHGR3Install(material, h)",
+  "parent": {
+    "tree": "bede3598ce35e6751f7b2d47d0063d5e8517fc40",
+    "prefix": "android-ihg-r2-current-install-state-02",
+    "exact_request": {
+      "bytes": 144409,
+      "sha256": "a37b91135eec125e68c7c9dd9cef4e0e1980499f28d56c45f86ce9d88d4716f2",
+      "git_blob": "2f092fb4c73c3d36cd1f13c0d275c1bf7c406abf"
+    },
+    "manifest_sha256": "e8cf9d4c04025bb092663519a01624fa40e552600dc5643a50ebf9bace915103"
+  },
+  "helper": {
+    "tree": "d121dfd5e11369590df51fa771cdf019bd0fa0b1",
+    "prefix": "owned-ihg-qa-r3-london-build01",
+    "source_manifest_sha256": "8d96686f9e6937548e0295679ae6ecdfd3c3a1bf4e48c5feff7def949e81789a"
+  },
+  "actual_build": {
+    "bytes": 25686,
+    "sha256": "40a7f7865a962b3bdaee3242cfa1fb7d84d860a3fc973ebb344cbc01fe088505",
+    "git_blob": "a2ca4792d184ec0e18738f478dfae3fea4ea6140"
+  },
+  "actual_stage": {
+    "bytes": 1935,
+    "sha256": "764ca6cb3d3b6ea21f1f0425c5d1028352a5db9450925935b42085bb9460df30",
+    "git_blob": "741fa5e05773e9c0c860bea368e1938ad71d180d"
+  },
+  "actual_nonce": {
+    "bytes": 424,
+    "sha256": "2d49095b886a2d1c9862ef3e8b7d34e0a685e3049244dc260c7783d83cd87d74",
+    "git_blob": "684563437b7b9fc04a978d5913677e6f240b9ef3",
+    "job_id": "1a1b07d886a-fc05-70dc",
+    "global_excluded_count": 607
+  },
+  "old_38_exclusions": {
+    "bytes": 5321,
+    "sha256": "e9e881469c3b5e5730bdee524a4b316b76865c31d1b88c742f4fc5a14ce643f1",
+    "git_blob": "5d143f4d33a92fd8478b388b0480c894aae3401a"
+  },
+  "reconstruction": "Restore parent and helper source text from their exact requests/trees. Pass actual build_raw/stage_raw; nonce_source is original parsed fresh2 plus actual=true, stdout exact pin. Pass original exclusions object. Execute only pure JS compiler; compare every output payload and request."
+}

@@ -1,0 +1,2828 @@
+{
+  "schema": "owner20-runtime-safe-projection-v1",
+  "scope": "Pure in-memory projection of one externally pinned Owner20 original runtime; no runtime qualification.",
+  "original_runtime": {
+    "bytes": 774912,
+    "sha256": "f3f8afc6f8783b69fe5db48913586dc3f16bda63a4f8820aa1251cffb635bda1"
+  },
+  "original_full_hash_and_bytes_verified": true,
+  "not_original_report_bytes": true,
+  "lossless_number_representation": "Original JSON numeric tokens preserved; no floating-point rounding of metadata.",
+  "omitted_private_fields": [
+    {
+      "path": "actor_result.failure_cleanup_stop.relay_lifecycle.init_log.captured_hex",
+      "private_capture_omitted": true,
+      "decoded_bytes": 172467,
+      "decoded_sha256": "97f3d4c7a4d2095fe2130dbc41443700190c6d18f446639ed4601a5d48454dde"
+    },
+    {
+      "path": "actor_result.latest_status.relay_lifecycle.init_log.captured_hex",
+      "private_capture_omitted": true,
+      "decoded_bytes": 172467,
+      "decoded_sha256": "97f3d4c7a4d2095fe2130dbc41443700190c6d18f446639ed4601a5d48454dde"
+    }
+  ],
+  "public_sdk_value_projections": [],
+  "raw_init_log_or_crash_packet_exported": false,
+  "root_warmed_cache_limitation_preserved": true,
+  "new_runtime_qualification_granted": false,
+  "runtime": {
+    "actor_result": {
+      "actor_initial": {
+        "executable": {
+          "device": 66306,
+          "inode": 108009763
+        },
+        "executable_sha256": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+        "identity": {
+          "birth": 98454550,
+          "cgroup": [
+            "0::/system.slice/p4-owner20-normal-20261106-01.service"
+          ],
+          "cmdline": [
+            "/usr/bin/python3",
+            "-I",
+            "-B",
+            "/opt/p4-owner20-normal-20261106-01/source/actor.py",
+            "--prepared",
+            "/opt/p4-owner20-normal-20261106-01-state/prepared.json",
+            "--prepared-sha256",
+            "ee857bb187cd27821fc441a2234da9bb16e4457ff64b0b986d5a02e13e95606f"
+          ],
+          "gids": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nspid": [
+            2280069
+          ],
+          "parent": 1,
+          "pid": 2280069,
+          "uids": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "namespaces": [
+          {
+            "device": 5,
+            "inode": 4026531836
+          },
+          {
+            "device": 5,
+            "inode": 4026531836
+          },
+          {
+            "device": 5,
+            "inode": 4026531832
+          },
+          {
+            "device": 5,
+            "inode": 4026531835
+          },
+          {
+            "device": 5,
+            "inode": 4026531837
+          },
+          {
+            "device": 5,
+            "inode": 4026531833
+          },
+          {
+            "device": 5,
+            "inode": 4026531839
+          },
+          {
+            "device": 5,
+            "inode": 4026531838
+          },
+          {
+            "device": 5,
+            "inode": 4026531834
+          },
+          {
+            "device": 5,
+            "inode": 4026531834
+          }
+        ],
+        "process": {
+          "birth": 98454550,
+          "pid": 2280069,
+          "pidfd": {
+            "device": 6,
+            "inode": 27467822
+          },
+          "proc_dir": {
+            "device": 26,
+            "inode": 555557243
+          }
+        }
+      },
+      "actor_pid": 2280069,
+      "attempt_nonce": "eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+      "child_retirement": [
+        {
+          "forced_kill": false,
+          "pid": 2280135,
+          "reaped": true,
+          "returncode": 0,
+          "role": "daemon"
+        },
+        {
+          "forced_kill": false,
+          "pid": 2280117,
+          "reaped": true,
+          "returncode": -15,
+          "role": "presenter"
+        },
+        {
+          "forced_kill": false,
+          "pid": 2280078,
+          "reaped": true,
+          "returncode": 0,
+          "role": "sway"
+        },
+        {
+          "forced_kill": false,
+          "pid": 2280076,
+          "reaped": true,
+          "returncode": 0,
+          "role": "bus"
+        }
+      ],
+      "children": [
+        {
+          "argv": [
+            "/usr/bin/dbus-daemon",
+            "--nofork",
+            "--nopidfile",
+            "--config-file=/run/p4-owner07-user/bus.conf"
+          ],
+          "initial": {
+            "executable": {
+              "device": 66306,
+              "inode": 108005584
+            },
+            "executable_sha256": "bd0a019f1c4ed911eeb974f6e396d1eae9777ebac19a773361c1291a90addc5c",
+            "identity": {
+              "birth": 98454566,
+              "cgroup": [
+                "0::/system.slice/p4-owner20-normal-20261106-01.service/host"
+              ],
+              "cmdline": [
+                "/usr/bin/dbus-daemon",
+                "--nofork",
+                "--nopidfile",
+                "--config-file=/run/p4-owner07-user/bus.conf"
+              ],
+              "gids": [
+                1000,
+                1000,
+                1000,
+                1000
+              ],
+              "nspid": [
+                2280076
+              ],
+              "parent": 2280069,
+              "pid": 2280076,
+              "uids": [
+                1000,
+                1000,
+                1000,
+                1000
+              ]
+            },
+            "namespaces": [
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026533762
+              },
+              {
+                "device": 5,
+                "inode": 4026531835
+              },
+              {
+                "device": 5,
+                "inode": 4026531837
+              },
+              {
+                "device": 5,
+                "inode": 4026533763
+              },
+              {
+                "device": 5,
+                "inode": 4026531839
+              },
+              {
+                "device": 5,
+                "inode": 4026531838
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              }
+            ],
+            "process": {
+              "birth": 98454566,
+              "pid": 2280076,
+              "pidfd": {
+                "device": 6,
+                "inode": 27447911
+              },
+              "proc_dir": {
+                "device": 26,
+                "inode": 555552422
+              }
+            }
+          },
+          "role": "bus",
+          "user": 1000
+        },
+        {
+          "argv": [
+            "/usr/bin/sway",
+            "--config",
+            "/run/p4-owner07-user/sway.conf"
+          ],
+          "initial": {
+            "executable": {
+              "device": 66306,
+              "inode": 108004753
+            },
+            "executable_sha256": "5a4c54c1bfbb2fb6fc190e817222c2b10bbec71e030c717f22608a2fae91bdd4",
+            "identity": {
+              "birth": 98454572,
+              "cgroup": [
+                "0::/system.slice/p4-owner20-normal-20261106-01.service/host"
+              ],
+              "cmdline": [
+                "/usr/bin/sway",
+                "--config",
+                "/run/p4-owner07-user/sway.conf"
+              ],
+              "gids": [
+                1000,
+                1000,
+                1000,
+                1000
+              ],
+              "nspid": [
+                2280078
+              ],
+              "parent": 2280069,
+              "pid": 2280078,
+              "uids": [
+                1000,
+                1000,
+                1000,
+                1000
+              ]
+            },
+            "namespaces": [
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026533762
+              },
+              {
+                "device": 5,
+                "inode": 4026531835
+              },
+              {
+                "device": 5,
+                "inode": 4026531837
+              },
+              {
+                "device": 5,
+                "inode": 4026533763
+              },
+              {
+                "device": 5,
+                "inode": 4026531839
+              },
+              {
+                "device": 5,
+                "inode": 4026531838
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              }
+            ],
+            "process": {
+              "birth": 98454572,
+              "pid": 2280078,
+              "pidfd": {
+                "device": 6,
+                "inode": 27213346
+              },
+              "proc_dir": {
+                "device": 26,
+                "inode": 555558411
+              }
+            }
+          },
+          "role": "sway",
+          "user": 1000
+        },
+        {
+          "argv": [
+            "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland"
+          ],
+          "initial": {
+            "executable": {
+              "device": 66306,
+              "inode": 43947863
+            },
+            "executable_sha256": "47f34d5f68783a372283cb63a42034d5899e270524cca40122bf28fd5e903f24",
+            "identity": {
+              "birth": 98454592,
+              "cgroup": [
+                "0::/system.slice/p4-owner20-normal-20261106-01.service/host"
+              ],
+              "cmdline": [
+                "/opt/pocket4-presenter-timing-20261104-r10/payload/droidloom-wayland"
+              ],
+              "gids": [
+                1000,
+                1000,
+                1000,
+                1000
+              ],
+              "nspid": [
+                2280117
+              ],
+              "parent": 2280069,
+              "pid": 2280117,
+              "uids": [
+                1000,
+                1000,
+                1000,
+                1000
+              ]
+            },
+            "namespaces": [
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026533762
+              },
+              {
+                "device": 5,
+                "inode": 4026531835
+              },
+              {
+                "device": 5,
+                "inode": 4026531837
+              },
+              {
+                "device": 5,
+                "inode": 4026533763
+              },
+              {
+                "device": 5,
+                "inode": 4026531839
+              },
+              {
+                "device": 5,
+                "inode": 4026531838
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              }
+            ],
+            "process": {
+              "birth": 98454592,
+              "pid": 2280117,
+              "pidfd": {
+                "device": 6,
+                "inode": 27370652
+              },
+              "proc_dir": {
+                "device": 26,
+                "inode": 555563281
+              }
+            }
+          },
+          "role": "presenter",
+          "user": 1000
+        },
+        {
+          "argv": [
+            "/opt/p4-owner20-normal-20261106-01/bin/droidloomd",
+            "--socket",
+            "/run/p4-owner07-control.sock",
+            "--supervisor",
+            "/opt/p4-owner20-normal-20261106-01/bin/droidloom-supervisor",
+            "--spec-directory",
+            "/opt/p4-owner20-normal-20261106-01"
+          ],
+          "initial": {
+            "executable": {
+              "device": 66306,
+              "inode": 45664491
+            },
+            "executable_sha256": "b625080e77d9ae0c2ed375c5a4fcfe27eb918766dd2b59e3df19e9a10606c9b3",
+            "identity": {
+              "birth": 98454598,
+              "cgroup": [
+                "0::/system.slice/p4-owner20-normal-20261106-01.service/host"
+              ],
+              "cmdline": [
+                "/opt/p4-owner20-normal-20261106-01/bin/droidloomd",
+                "--socket",
+                "/run/p4-owner07-control.sock",
+                "--supervisor",
+                "/opt/p4-owner20-normal-20261106-01/bin/droidloom-supervisor",
+                "--spec-directory",
+                "/opt/p4-owner20-normal-20261106-01"
+              ],
+              "gids": [
+                0,
+                0,
+                0,
+                0
+              ],
+              "nspid": [
+                2280135
+              ],
+              "parent": 2280069,
+              "pid": 2280135,
+              "uids": [
+                0,
+                0,
+                0,
+                0
+              ]
+            },
+            "namespaces": [
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026533762
+              },
+              {
+                "device": 5,
+                "inode": 4026531835
+              },
+              {
+                "device": 5,
+                "inode": 4026531837
+              },
+              {
+                "device": 5,
+                "inode": 4026533763
+              },
+              {
+                "device": 5,
+                "inode": 4026531839
+              },
+              {
+                "device": 5,
+                "inode": 4026531838
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              }
+            ],
+            "process": {
+              "birth": 98454598,
+              "pid": 2280135,
+              "pidfd": {
+                "device": 6,
+                "inode": 27370653
+              },
+              "proc_dir": {
+                "device": 26,
+                "inode": 555557261
+              }
+            }
+          },
+          "role": "daemon",
+          "user": null
+        }
+      ],
+      "crash_buffer_HWS_health_qualified": false,
+      "crash_buffer_capture_attempted": true,
+      "crash_buffer_observation": {
+        "Main_logs_read": false,
+        "actor_pid_namespace": {
+          "device": 5,
+          "inode": 4026531836
+        },
+        "actor_user_namespace": {
+          "device": 5,
+          "inode": 4026531837
+        },
+        "capacity_bytes": 262144,
+        "capacity_reached": false,
+        "complete_log_stream_claimed": false,
+        "connection_attempts": 1,
+        "empty_proves_hws_health": false,
+        "eof_observed": true,
+        "finish_reason": "after original Stop and owned child retirement",
+        "finished_monotonic_ns": 984582746263109,
+        "first_error": null,
+        "first_header": {
+          "buffer": 4,
+          "nanoseconds": 930181308,
+          "packet_bytes": 113,
+          "pid": 557,
+          "priority": 7,
+          "public_tag": "libc",
+          "seconds": 1793958839,
+          "tag_sha256": "16c8c6eb85e05438f5d6c60ff9869072a3a3b1618aa1481ac7a0cb049f06f51d",
+          "tid": 557,
+          "uid": 1069
+        },
+        "fixed_logd_elf": {
+          "bytes": 801680,
+          "device": 1855,
+          "external_individual_ELF_pin_previously_observed": true,
+          "gid": 1036,
+          "guest_path": "/system/bin/logd",
+          "image_observation_sha256": "68fece28d8264afba6e123a2e02f4a2a75c05ffa969f975de5ff6dd46df6f5ae",
+          "inode": 11788570,
+          "live_special_permission_bits": 0,
+          "mode": 360,
+          "nlink": 1,
+          "prior_image_complete_mode_observed": false,
+          "sha256": "00b71cfeea17a2fa6b2fa4047fb320bdd9d7b64ce16366bbbd2abdbda09d0905",
+          "type": 32768,
+          "uid": 1036
+        },
+        "fixed_logd_elf_observed": {
+          "access_0777": 360,
+          "bytes": 801680,
+          "ctime_ns": 1230768000000000000,
+          "device": 1855,
+          "first_four_bytes_hex": "7f454c46",
+          "full_st_mode": 33128,
+          "gid": 1036,
+          "image_observation_sha256": "68fece28d8264afba6e123a2e02f4a2a75c05ffa969f975de5ff6dd46df6f5ae",
+          "inode": 11788570,
+          "live_special_bits_required": 0,
+          "mode": 360,
+          "mtime_ns": 1230768000000000000,
+          "nlink": 1,
+          "prior_image_complete_mode_observed": false,
+          "read_only_view": true,
+          "sha256": "00b71cfeea17a2fa6b2fa4047fb320bdd9d7b64ce16366bbbd2abdbda09d0905",
+          "special_permission_bits": 0,
+          "type": 32768,
+          "uid": 1036
+        },
+        "generation_domain": {
+          "device": 30,
+          "inode": 33783952,
+          "path": "/sys/fs/cgroup/system.slice/p4-owner20-normal-20261106-01.service/domains/g-fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873/android"
+        },
+        "generation_nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+        "held_fds_closed": true,
+        "hws_attribution_qualified": false,
+        "init_dead_at_finish": true,
+        "init_root": {
+          "bytes": 760,
+          "device": 1048688,
+          "gid": 0,
+          "inode": 1,
+          "mode": 493,
+          "nlink": 28,
+          "type": 16384,
+          "uid": 0
+        },
+        "init_snapshot": {
+          "executable": {
+            "device": 66306,
+            "inode": 39370856
+          },
+          "executable_sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73",
+          "identity": {
+            "birth": 98454669,
+            "cgroup": [
+              "0::/system.slice/p4-owner20-normal-20261106-01.service/domains/g-fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873/android/init-bootstrap"
+            ],
+            "cmdline": [
+              "/init",
+              "second_stage"
+            ],
+            "gids": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nspid": [
+              2280212,
+              1
+            ],
+            "parent": 2280208,
+            "pid": 2280212,
+            "uids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "namespaces": [
+            {
+              "device": 5,
+              "inode": 4026533918
+            },
+            {
+              "device": 5,
+              "inode": 4026533918
+            },
+            {
+              "device": 5,
+              "inode": 4026533915
+            },
+            {
+              "device": 5,
+              "inode": 4026533943
+            },
+            {
+              "device": 5,
+              "inode": 4026531837
+            },
+            {
+              "device": 5,
+              "inode": 4026533828
+            },
+            {
+              "device": 5,
+              "inode": 4026533917
+            },
+            {
+              "device": 5,
+              "inode": 4026533916
+            },
+            {
+              "device": 5,
+              "inode": 4026531834
+            },
+            {
+              "device": 5,
+              "inode": 4026531834
+            }
+          ],
+          "process": {
+            "birth": 98454669,
+            "pid": 2280212,
+            "pidfd": {
+              "device": 6,
+              "inode": 27456465
+            },
+            "proc_dir": {
+              "device": 26,
+              "inode": 555552464
+            }
+          }
+        },
+        "initial_user_namespace_root_verified": true,
+        "last_header": {
+          "buffer": 4,
+          "nanoseconds": 880987908,
+          "packet_bytes": 85,
+          "pid": 868,
+          "priority": 7,
+          "public_tag": "DEBUG",
+          "seconds": 1793958866,
+          "tag_sha256": "0ffd43f5886b9b10e2f78407fb0dcf3c9d5be727078e89c00b5418b9c0de154d",
+          "tid": 868,
+          "uid": 1069
+        },
+        "live_init_endpoint_rechecked": false,
+        "live_peer_identity_rechecked": false,
+        "log_mutation_requested": false,
+        "namespace_or_UID_change_requested": false,
+        "new_child_started": false,
+        "original_stop_delayed_for_logs": false,
+        "packet_bytes": 30830,
+        "packet_file": {
+          "bytes": 32006,
+          "complete_packets_only": true,
+          "device": 66306,
+          "gid": 0,
+          "inode": 45664557,
+          "mode": 256,
+          "nlink": 1,
+          "relative": "evidence/generation-crash-buffer4.bin",
+          "sha256": "f872cccf93dc4f1fb333cefed7e0a0f8bfdae4cf0ce078af320aaca91cf4f9a4",
+          "type": 32768,
+          "uid": 0
+        },
+        "peer_cgroup": {
+          "device": 30,
+          "inode": 33784612,
+          "membership": "/system.slice/p4-owner20-normal-20261106-01.service/domains/g-fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873/android/system/uid_1036/pid_556"
+        },
+        "peer_credentials": {
+          "gid": 1036,
+          "pid": 2281104,
+          "uid": 1036
+        },
+        "peer_dead_at_finish": true,
+        "peer_root": {
+          "device": 1048688,
+          "inode": 1
+        },
+        "peer_snapshot": {
+          "cgroup": [
+            "0::/system.slice/p4-owner20-normal-20261106-01.service/domains/g-fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873/android/system/uid_1036/pid_556"
+          ],
+          "executable": {
+            "device": 1855,
+            "inode": 11788570
+          },
+          "executable_sha256": "00b71cfeea17a2fa6b2fa4047fb320bdd9d7b64ce16366bbbd2abdbda09d0905",
+          "identity": {
+            "birth": 98454920,
+            "gids": [
+              1036,
+              1036,
+              1036,
+              1036
+            ],
+            "nspid": [
+              2281104,
+              556
+            ],
+            "parent": 2280212,
+            "pid": 2281104,
+            "uids": [
+              1036,
+              1036,
+              1036,
+              1036
+            ]
+          },
+          "namespaces": {
+            "pid": {
+              "device": 5,
+              "inode": 4026533918
+            },
+            "user": {
+              "device": 5,
+              "inode": 4026531837
+            }
+          },
+          "process": {
+            "birth": 98454920,
+            "pid": 2281104,
+            "pidfd": {
+              "device": 6,
+              "inode": 27456481
+            },
+            "proc_dir": {
+              "device": 26,
+              "inode": 555568363
+            }
+          },
+          "root": {
+            "device": 1048688,
+            "inode": 1
+          }
+        },
+        "protocol_observed": true,
+        "public_tag_counts": {
+          "DEBUG": 256,
+          "hwservicemanager": 0,
+          "libc": 14,
+          "other": 0
+        },
+        "read_request_attempts": 1,
+        "read_request_completed": true,
+        "received_packets": 270,
+        "record_bound_reached": false,
+        "records": 270,
+        "request_sha256": "9a6963d57df9b276fcf867fa5abfad624553392ccdf67ad179e27999ec245ac6",
+        "schema": 1,
+        "scope": "one generation-private logdr crash buffer 4",
+        "secondary_errors": [],
+        "socket_directory": {
+          "bytes": 60,
+          "device": 1048691,
+          "gid": 0,
+          "inode": 6,
+          "mode": 448,
+          "nlink": 3,
+          "type": 16384,
+          "uid": 0
+        },
+        "socket_identity": {
+          "device": 1048691,
+          "inode": 1102
+        },
+        "source_qualified_before_request": true,
+        "started_monotonic_ns": 984548569872183,
+        "state": "BOUNDED_PREFIX_CLOSED"
+      },
+      "errors": [
+        {
+          "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+          "stage": "normal"
+        }
+      ],
+      "failure_cleanup_stop": {
+        "message": "cell is already stopped",
+        "ok": true,
+        "relay_lifecycle": {
+          "canonical_spec_sha256": "9cd4939bae7a31ef04ec941be337f5f0d837fbb09f4db89e461c2835ef70a760",
+          "cleanup_failure": null,
+          "cpu_period_us": 100000,
+          "cpu_quota_us": 100000,
+          "first_failure": {
+            "message": "owned process generation is dead or changed",
+            "observed_monotonic_ns": 984582618273309,
+            "origin": "runtime"
+          },
+          "host_uid": 61288,
+          "init_log": {
+            "capacity_bytes": 262144,
+            "capacity_reached": false,
+            "captured_bytes": 172467,
+            "captured_hex": {
+              "private_capture_omitted": true,
+              "decoded_bytes": 172467,
+              "decoded_sha256": "97f3d4c7a4d2095fe2130dbc41443700190c6d18f446639ed4601a5d48454dde"
+            },
+            "captured_sha256": "97f3d4c7a4d2095fe2130dbc41443700190c6d18f446639ed4601a5d48454dde",
+            "device": 1,
+            "exact_writer_per_line_proven": false,
+            "first_error": null,
+            "held_fds_closed": true,
+            "inode": 3079797,
+            "marker_verified_after_held_init_hello": true,
+            "nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+            "observed_writer_offset": 172467,
+            "retirement_proven_before_capture": true,
+            "schema": 1,
+            "secondary_errors": [],
+            "source_scope": "generation-private cached init logger; fork-before-exec writers not individually attributed",
+            "stream_completeness_claimed": false
+          },
+          "memory_high_bytes": 3758096384,
+          "memory_max_bytes": 4294967296,
+          "memory_swap_max_bytes": 0,
+          "namespace_owner_exit": {
+            "core_dumped": false,
+            "exit_code": null,
+            "explicit_stop_requested_before_observation": false,
+            "host_pid": 2280208,
+            "observed_monotonic_ns": 984582619736196,
+            "process": {
+              "birth": 98454668,
+              "pid": 2280208,
+              "pidfd": {
+                "device": 6,
+                "inode": 27475991
+              },
+              "proc_dir": {
+                "device": 26,
+                "inode": 555555039
+              }
+            },
+            "raw_status": 1,
+            "signal": 1,
+            "worker_retirement_started_before_observation": true
+          },
+          "nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+          "producer": {
+            "executable": {
+              "device": 66306,
+              "inode": 45664491
+            },
+            "executable_sha256": "b625080e77d9ae0c2ed375c5a4fcfe27eb918766dd2b59e3df19e9a10606c9b3",
+            "namespaces": [
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026533762
+              },
+              {
+                "device": 5,
+                "inode": 4026531835
+              },
+              {
+                "device": 5,
+                "inode": 4026531837
+              },
+              {
+                "device": 5,
+                "inode": 4026533763
+              },
+              {
+                "device": 5,
+                "inode": 4026531839
+              },
+              {
+                "device": 5,
+                "inode": 4026531838
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              }
+            ],
+            "process": {
+              "birth": 98454598,
+              "pid": 2280135,
+              "pidfd": {
+                "device": 6,
+                "inode": 27370653
+              },
+              "proc_dir": {
+                "device": 26,
+                "inode": 555557261
+              }
+            }
+          },
+          "recording_error": null,
+          "recording_incomplete": false,
+          "records": [
+            {
+              "detail": {
+                "domain": {
+                  "device": 30,
+                  "inode": 33783952
+                },
+                "event": "prepared"
+              },
+              "observed_monotonic_ns": 984546537482956,
+              "sequence": 1
+            },
+            {
+              "detail": {
+                "event": "owner_attached",
+                "process": {
+                  "birth": 98454668,
+                  "pid": 2280208,
+                  "pidfd": {
+                    "device": 6,
+                    "inode": 27475991
+                  },
+                  "proc_dir": {
+                    "device": 26,
+                    "inode": 555555039
+                  }
+                }
+              },
+              "observed_monotonic_ns": 984546689130460,
+              "sequence": 2
+            },
+            {
+              "detail": {
+                "event": "init_hello",
+                "init": {
+                  "cgroup": {
+                    "device": 30,
+                    "inode": 33783952
+                  },
+                  "compat": {
+                    "device": 66306,
+                    "inode": 39736818
+                  },
+                  "compat_sha256": "b4da6c85703e5f0dac88c039438d8836a4123c97655d14130e68828295d3fb50",
+                  "executable": {
+                    "device": 66306,
+                    "inode": 39370856
+                  },
+                  "executable_sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73",
+                  "hello_wire_hex": "50344942563321210300000001000000fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d8731e0000000000000090800302000000000000000001000000000000e00000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                  "linker": {
+                    "device": 1855,
+                    "inode": 11847168
+                  },
+                  "linker_sha256": "b8f4ca47cfc88a815554d2c37cb9f56c91c715491493b2b48a8fd781fa625a9f",
+                  "namespaces": [
+                    {
+                      "device": 5,
+                      "inode": 4026533918
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533918
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533915
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533943
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026531837
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533828
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533917
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533916
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026531834
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026531834
+                    }
+                  ],
+                  "process": {
+                    "birth": 98454669,
+                    "pid": 2280212,
+                    "pidfd": {
+                      "device": 6,
+                      "inode": 27456465
+                    },
+                    "proc_dir": {
+                      "device": 26,
+                      "inode": 555552464
+                    }
+                  },
+                  "root": {
+                    "device": 1048688,
+                    "inode": 1
+                  }
+                }
+              },
+              "observed_monotonic_ns": 984548524149238,
+              "sequence": 3
+            },
+            {
+              "detail": {
+                "event": "broker_ready",
+                "process": {
+                  "birth": 98454859,
+                  "pid": 2280842,
+                  "pidfd": {
+                    "device": 6,
+                    "inode": 27301713
+                  },
+                  "proc_dir": {
+                    "device": 26,
+                    "inode": 555568250
+                  }
+                },
+                "status": {
+                  "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+                  "cgroup": {
+                    "device": 30,
+                    "inode": 33783952
+                  },
+                  "endpoint": {
+                    "device": 1048683,
+                    "inode": 66
+                  },
+                  "faulted": false,
+                  "generation": "65beb8fab0570e5a605de5fe11f5f598de3129cc330aa6f4b20ecfac9e968291",
+                  "granted": false,
+                  "nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+                  "state": 1
+                }
+              },
+              "observed_monotonic_ns": 984548741882848,
+              "sequence": 4
+            },
+            {
+              "detail": {
+                "event": "init_project_sent",
+                "wire_hex": "50344942563321210300000002000000fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d8736b0010000000000042000000000000002d0400002d0400008001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "observed_monotonic_ns": 984548742541593,
+              "sequence": 5
+            },
+            {
+              "detail": {
+                "event": "init_projected_accepted",
+                "wire_hex": "50344942563321210300000003000000fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d8736b0010000000000042000000000000002d0400002d0400008001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "observed_monotonic_ns": 984548742909685,
+              "sequence": 6
+            },
+            {
+              "detail": {
+                "event": "init_commit_sent",
+                "wire_hex": "50344942563321210300000004000000fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d8736b0010000000000042000000000000002d0400002d0400008001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "observed_monotonic_ns": 984548743020626,
+              "sequence": 7
+            },
+            {
+              "detail": {
+                "event": "init_done_accepted",
+                "wire_hex": "50344942563321210300000005000000fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d8736b0010000000000042000000000000002d0400002d0400008001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "observed_monotonic_ns": 984548743232570,
+              "sequence": 8
+            },
+            {
+              "detail": {
+                "event": "retiring"
+              },
+              "observed_monotonic_ns": 984582618286434,
+              "sequence": 9
+            },
+            {
+              "detail": {
+                "event": "broker_retired",
+                "receipt": {
+                  "authority_generation": "65beb8fab0570e5a605de5fe11f5f598de3129cc330aa6f4b20ecfac9e968291",
+                  "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+                  "cgroup": {
+                    "device": 30,
+                    "inode": 33783952
+                  },
+                  "event_overflow": false,
+                  "event_records": 0,
+                  "faulted": true,
+                  "granted": false,
+                  "incomplete": true,
+                  "lease_generation": "0000000000000000000000000000000000000000000000000000000000000000",
+                  "observations": 0,
+                  "packets_queued": 0,
+                  "registrations": [],
+                  "retired_monotonic_ns": 984582568980573,
+                  "status": {
+                    "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+                    "cgroup": {
+                      "device": 30,
+                      "inode": 33783952
+                    },
+                    "endpoint": {
+                      "device": 1048683,
+                      "inode": 66
+                    },
+                    "faulted": true,
+                    "generation": "65beb8fab0570e5a605de5fe11f5f598de3129cc330aa6f4b20ecfac9e968291",
+                    "granted": false,
+                    "nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+                    "state": 3
+                  },
+                  "stop_reason": 0
+                }
+              },
+              "observed_monotonic_ns": 984582618484952,
+              "sequence": 10
+            },
+            {
+              "detail": {
+                "event": "processes_dead"
+              },
+              "observed_monotonic_ns": 984582618504870,
+              "sequence": 11
+            },
+            {
+              "detail": {
+                "event": "domain_empty"
+              },
+              "observed_monotonic_ns": 984582618687227,
+              "sequence": 12
+            },
+            {
+              "detail": {
+                "event": "retired"
+              },
+              "observed_monotonic_ns": 984582625894039,
+              "sequence": 13
+            },
+            {
+              "detail": {
+                "event": "resources_removed"
+              },
+              "observed_monotonic_ns": 984582633319388,
+              "sequence": 14
+            },
+            {
+              "detail": {
+                "event": "claim_released"
+              },
+              "observed_monotonic_ns": 984582697871460,
+              "sequence": 15
+            }
+          ],
+          "retained_after_exit": true,
+          "retirement_failure": null,
+          "schema": 1,
+          "tasks_max": 3072
+        },
+        "state": "stopped"
+      },
+      "finished_monotonic_ns": 984582810305970,
+      "first_error": {
+        "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+        "stage": "normal"
+      },
+      "gate_sha256": "1c6960beabc4ea236ddf359a4e20d651509f927ae9addba3f4f21959b5dfaf28",
+      "id_availability": {
+        "available_at_observation": true,
+        "host_uid": 61288,
+        "processes_observed": 879,
+        "reservation_created_in_passwd_or_subid_tables": false,
+        "subordinate_range": {
+          "count": 100000,
+          "start": 22000000
+        },
+        "tables": {
+          "/etc/subgid": {
+            "bytes": 18,
+            "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+          },
+          "/etc/subuid": {
+            "bytes": 18,
+            "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+          }
+        }
+      },
+      "init_identity_clock_observation": {
+        "atomic_clock_sample": false,
+        "audit_observed_monotonic_ns": 984548524149238,
+        "audit_sequence": 3,
+        "boottime_ns": 984548569739380,
+        "generation_nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+        "global_kernel_lines_attributed": false,
+        "monotonic_after_ns": 984548569809273,
+        "monotonic_before_ns": 984548569737567,
+        "realtime_ns": 1793958839281169480,
+        "schema": 1,
+        "snapshot": {
+          "executable": {
+            "device": 66306,
+            "inode": 39370856
+          },
+          "executable_sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73",
+          "identity": {
+            "birth": 98454669,
+            "cgroup": [
+              "0::/system.slice/p4-owner20-normal-20261106-01.service/domains/g-fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873/android/init-bootstrap"
+            ],
+            "cmdline": [
+              "/init",
+              "second_stage"
+            ],
+            "gids": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "nspid": [
+              2280212,
+              1
+            ],
+            "parent": 2280208,
+            "pid": 2280212,
+            "uids": [
+              0,
+              0,
+              0,
+              0
+            ]
+          },
+          "namespaces": [
+            {
+              "device": 5,
+              "inode": 4026533918
+            },
+            {
+              "device": 5,
+              "inode": 4026533918
+            },
+            {
+              "device": 5,
+              "inode": 4026533915
+            },
+            {
+              "device": 5,
+              "inode": 4026533943
+            },
+            {
+              "device": 5,
+              "inode": 4026531837
+            },
+            {
+              "device": 5,
+              "inode": 4026533828
+            },
+            {
+              "device": 5,
+              "inode": 4026533917
+            },
+            {
+              "device": 5,
+              "inode": 4026533916
+            },
+            {
+              "device": 5,
+              "inode": 4026531834
+            },
+            {
+              "device": 5,
+              "inode": 4026531834
+            }
+          ],
+          "process": {
+            "birth": 98454669,
+            "pid": 2280212,
+            "pidfd": {
+              "device": 6,
+              "inode": 27456465
+            },
+            "proc_dir": {
+              "device": 26,
+              "inode": 555552464
+            }
+          }
+        }
+      },
+      "installed_owner_qualified": false,
+      "invocation": "68dec4af15c04c04814ee3589afd96b2",
+      "isolation": {
+        "after": {
+          "cgroup": {
+            "device": 5,
+            "inode": 4026531835
+          },
+          "ipc": {
+            "device": 5,
+            "inode": 4026531839
+          },
+          "mnt": {
+            "device": 5,
+            "inode": 4026533762
+          },
+          "net": {
+            "device": 5,
+            "inode": 4026533763
+          },
+          "pid": {
+            "device": 5,
+            "inode": 4026531836
+          },
+          "pid_for_children": {
+            "device": 5,
+            "inode": 4026531836
+          },
+          "time": {
+            "device": 5,
+            "inode": 4026531834
+          },
+          "time_for_children": {
+            "device": 5,
+            "inode": 4026531834
+          },
+          "user": {
+            "device": 5,
+            "inode": 4026531837
+          },
+          "uts": {
+            "device": 5,
+            "inode": 4026531838
+          }
+        },
+        "before": {
+          "cgroup": {
+            "device": 5,
+            "inode": 4026531835
+          },
+          "ipc": {
+            "device": 5,
+            "inode": 4026531839
+          },
+          "mnt": {
+            "device": 5,
+            "inode": 4026531832
+          },
+          "net": {
+            "device": 5,
+            "inode": 4026531833
+          },
+          "pid": {
+            "device": 5,
+            "inode": 4026531836
+          },
+          "pid_for_children": {
+            "device": 5,
+            "inode": 4026531836
+          },
+          "time": {
+            "device": 5,
+            "inode": 4026531834
+          },
+          "time_for_children": {
+            "device": 5,
+            "inode": 4026531834
+          },
+          "user": {
+            "device": 5,
+            "inode": 4026531837
+          },
+          "uts": {
+            "device": 5,
+            "inode": 4026531838
+          }
+        },
+        "persistent_claim_backing": "/opt/p4-owner20-normal-20261106-01-state/claims",
+        "private_run_identity": {
+          "device": 1048683,
+          "inode": 1
+        },
+        "private_var_lib_identity": {
+          "device": 1048684,
+          "inode": 1
+        }
+      },
+      "kind": "owner17-real-normal01",
+      "latest_status": {
+        "message": "Android cell failed and exited with signal: 1 (SIGHUP): owned process generation is dead or changed",
+        "ok": false,
+        "relay_lifecycle": {
+          "canonical_spec_sha256": "9cd4939bae7a31ef04ec941be337f5f0d837fbb09f4db89e461c2835ef70a760",
+          "cleanup_failure": null,
+          "cpu_period_us": 100000,
+          "cpu_quota_us": 100000,
+          "first_failure": {
+            "message": "owned process generation is dead or changed",
+            "observed_monotonic_ns": 984582618273309,
+            "origin": "runtime"
+          },
+          "host_uid": 61288,
+          "init_log": {
+            "capacity_bytes": 262144,
+            "capacity_reached": false,
+            "captured_bytes": 172467,
+            "captured_hex": {
+              "private_capture_omitted": true,
+              "decoded_bytes": 172467,
+              "decoded_sha256": "97f3d4c7a4d2095fe2130dbc41443700190c6d18f446639ed4601a5d48454dde"
+            },
+            "captured_sha256": "97f3d4c7a4d2095fe2130dbc41443700190c6d18f446639ed4601a5d48454dde",
+            "device": 1,
+            "exact_writer_per_line_proven": false,
+            "first_error": null,
+            "held_fds_closed": true,
+            "inode": 3079797,
+            "marker_verified_after_held_init_hello": true,
+            "nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+            "observed_writer_offset": 172467,
+            "retirement_proven_before_capture": true,
+            "schema": 1,
+            "secondary_errors": [],
+            "source_scope": "generation-private cached init logger; fork-before-exec writers not individually attributed",
+            "stream_completeness_claimed": false
+          },
+          "memory_high_bytes": 3758096384,
+          "memory_max_bytes": 4294967296,
+          "memory_swap_max_bytes": 0,
+          "namespace_owner_exit": {
+            "core_dumped": false,
+            "exit_code": null,
+            "explicit_stop_requested_before_observation": false,
+            "host_pid": 2280208,
+            "observed_monotonic_ns": 984582619736196,
+            "process": {
+              "birth": 98454668,
+              "pid": 2280208,
+              "pidfd": {
+                "device": 6,
+                "inode": 27475991
+              },
+              "proc_dir": {
+                "device": 26,
+                "inode": 555555039
+              }
+            },
+            "raw_status": 1,
+            "signal": 1,
+            "worker_retirement_started_before_observation": true
+          },
+          "nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+          "producer": {
+            "executable": {
+              "device": 66306,
+              "inode": 45664491
+            },
+            "executable_sha256": "b625080e77d9ae0c2ed375c5a4fcfe27eb918766dd2b59e3df19e9a10606c9b3",
+            "namespaces": [
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026531836
+              },
+              {
+                "device": 5,
+                "inode": 4026533762
+              },
+              {
+                "device": 5,
+                "inode": 4026531835
+              },
+              {
+                "device": 5,
+                "inode": 4026531837
+              },
+              {
+                "device": 5,
+                "inode": 4026533763
+              },
+              {
+                "device": 5,
+                "inode": 4026531839
+              },
+              {
+                "device": 5,
+                "inode": 4026531838
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              },
+              {
+                "device": 5,
+                "inode": 4026531834
+              }
+            ],
+            "process": {
+              "birth": 98454598,
+              "pid": 2280135,
+              "pidfd": {
+                "device": 6,
+                "inode": 27370653
+              },
+              "proc_dir": {
+                "device": 26,
+                "inode": 555557261
+              }
+            }
+          },
+          "recording_error": null,
+          "recording_incomplete": false,
+          "records": [
+            {
+              "detail": {
+                "domain": {
+                  "device": 30,
+                  "inode": 33783952
+                },
+                "event": "prepared"
+              },
+              "observed_monotonic_ns": 984546537482956,
+              "sequence": 1
+            },
+            {
+              "detail": {
+                "event": "owner_attached",
+                "process": {
+                  "birth": 98454668,
+                  "pid": 2280208,
+                  "pidfd": {
+                    "device": 6,
+                    "inode": 27475991
+                  },
+                  "proc_dir": {
+                    "device": 26,
+                    "inode": 555555039
+                  }
+                }
+              },
+              "observed_monotonic_ns": 984546689130460,
+              "sequence": 2
+            },
+            {
+              "detail": {
+                "event": "init_hello",
+                "init": {
+                  "cgroup": {
+                    "device": 30,
+                    "inode": 33783952
+                  },
+                  "compat": {
+                    "device": 66306,
+                    "inode": 39736818
+                  },
+                  "compat_sha256": "b4da6c85703e5f0dac88c039438d8836a4123c97655d14130e68828295d3fb50",
+                  "executable": {
+                    "device": 66306,
+                    "inode": 39370856
+                  },
+                  "executable_sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73",
+                  "hello_wire_hex": "50344942563321210300000001000000fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d8731e0000000000000090800302000000000000000001000000000000e00000000000000000000000000c000000000000000000000000000000000000000000000000000000000000000000000000000000",
+                  "linker": {
+                    "device": 1855,
+                    "inode": 11847168
+                  },
+                  "linker_sha256": "b8f4ca47cfc88a815554d2c37cb9f56c91c715491493b2b48a8fd781fa625a9f",
+                  "namespaces": [
+                    {
+                      "device": 5,
+                      "inode": 4026533918
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533918
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533915
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533943
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026531837
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533828
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533917
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026533916
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026531834
+                    },
+                    {
+                      "device": 5,
+                      "inode": 4026531834
+                    }
+                  ],
+                  "process": {
+                    "birth": 98454669,
+                    "pid": 2280212,
+                    "pidfd": {
+                      "device": 6,
+                      "inode": 27456465
+                    },
+                    "proc_dir": {
+                      "device": 26,
+                      "inode": 555552464
+                    }
+                  },
+                  "root": {
+                    "device": 1048688,
+                    "inode": 1
+                  }
+                }
+              },
+              "observed_monotonic_ns": 984548524149238,
+              "sequence": 3
+            },
+            {
+              "detail": {
+                "event": "broker_ready",
+                "process": {
+                  "birth": 98454859,
+                  "pid": 2280842,
+                  "pidfd": {
+                    "device": 6,
+                    "inode": 27301713
+                  },
+                  "proc_dir": {
+                    "device": 26,
+                    "inode": 555568250
+                  }
+                },
+                "status": {
+                  "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+                  "cgroup": {
+                    "device": 30,
+                    "inode": 33783952
+                  },
+                  "endpoint": {
+                    "device": 1048683,
+                    "inode": 66
+                  },
+                  "faulted": false,
+                  "generation": "65beb8fab0570e5a605de5fe11f5f598de3129cc330aa6f4b20ecfac9e968291",
+                  "granted": false,
+                  "nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+                  "state": 1
+                }
+              },
+              "observed_monotonic_ns": 984548741882848,
+              "sequence": 4
+            },
+            {
+              "detail": {
+                "event": "init_project_sent",
+                "wire_hex": "50344942563321210300000002000000fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d8736b0010000000000042000000000000002d0400002d0400008001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "observed_monotonic_ns": 984548742541593,
+              "sequence": 5
+            },
+            {
+              "detail": {
+                "event": "init_projected_accepted",
+                "wire_hex": "50344942563321210300000003000000fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d8736b0010000000000042000000000000002d0400002d0400008001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "observed_monotonic_ns": 984548742909685,
+              "sequence": 6
+            },
+            {
+              "detail": {
+                "event": "init_commit_sent",
+                "wire_hex": "50344942563321210300000004000000fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d8736b0010000000000042000000000000002d0400002d0400008001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "observed_monotonic_ns": 984548743020626,
+              "sequence": 7
+            },
+            {
+              "detail": {
+                "event": "init_done_accepted",
+                "wire_hex": "50344942563321210300000005000000fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d8736b0010000000000042000000000000002d0400002d0400008001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+              },
+              "observed_monotonic_ns": 984548743232570,
+              "sequence": 8
+            },
+            {
+              "detail": {
+                "event": "retiring"
+              },
+              "observed_monotonic_ns": 984582618286434,
+              "sequence": 9
+            },
+            {
+              "detail": {
+                "event": "broker_retired",
+                "receipt": {
+                  "authority_generation": "65beb8fab0570e5a605de5fe11f5f598de3129cc330aa6f4b20ecfac9e968291",
+                  "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+                  "cgroup": {
+                    "device": 30,
+                    "inode": 33783952
+                  },
+                  "event_overflow": false,
+                  "event_records": 0,
+                  "faulted": true,
+                  "granted": false,
+                  "incomplete": true,
+                  "lease_generation": "0000000000000000000000000000000000000000000000000000000000000000",
+                  "observations": 0,
+                  "packets_queued": 0,
+                  "registrations": [],
+                  "retired_monotonic_ns": 984582568980573,
+                  "status": {
+                    "budget": "0000000001000000000000e00000000000000000000000000000000001000000",
+                    "cgroup": {
+                      "device": 30,
+                      "inode": 33783952
+                    },
+                    "endpoint": {
+                      "device": 1048683,
+                      "inode": 66
+                    },
+                    "faulted": true,
+                    "generation": "65beb8fab0570e5a605de5fe11f5f598de3129cc330aa6f4b20ecfac9e968291",
+                    "granted": false,
+                    "nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+                    "state": 3
+                  },
+                  "stop_reason": 0
+                }
+              },
+              "observed_monotonic_ns": 984582618484952,
+              "sequence": 10
+            },
+            {
+              "detail": {
+                "event": "processes_dead"
+              },
+              "observed_monotonic_ns": 984582618504870,
+              "sequence": 11
+            },
+            {
+              "detail": {
+                "event": "domain_empty"
+              },
+              "observed_monotonic_ns": 984582618687227,
+              "sequence": 12
+            },
+            {
+              "detail": {
+                "event": "retired"
+              },
+              "observed_monotonic_ns": 984582625894039,
+              "sequence": 13
+            },
+            {
+              "detail": {
+                "event": "resources_removed"
+              },
+              "observed_monotonic_ns": 984582633319388,
+              "sequence": 14
+            },
+            {
+              "detail": {
+                "event": "claim_released"
+              },
+              "observed_monotonic_ns": 984582697871460,
+              "sequence": 15
+            }
+          ],
+          "retained_after_exit": true,
+          "retirement_failure": null,
+          "schema": 1,
+          "tasks_max": 3072
+        },
+        "state": "stopped"
+      },
+      "outer_before": {
+        "identity": {
+          "device": 30,
+          "inode": 33783737
+        },
+        "values": {
+          "cgroup.events": "populated 1\nfrozen 0",
+          "cgroup.procs": "2280069",
+          "cpu.max": "100000 100000",
+          "memory.current": "18563072",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "memory.high": "4831838208",
+          "memory.max": "5368709120",
+          "memory.peak": "19034112",
+          "memory.swap.current": "0",
+          "memory.swap.max": "0",
+          "memory.swap.peak": "0",
+          "pids.current": "1",
+          "pids.max": "4096"
+        }
+      },
+      "outer_final": {
+        "actor_pid": 2280069,
+        "attempt_nonce": "eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+        "invocation": "68dec4af15c04c04814ee3589afd96b2",
+        "observed_monotonic_ns": 984582810302063,
+        "sample": {
+          "identity": {
+            "device": 30,
+            "inode": 33783737
+          },
+          "values": {
+            "cgroup.events": "populated 1\nfrozen 0",
+            "cgroup.procs": "",
+            "cpu.max": "100000 100000",
+            "memory.current": "243597312",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+            "memory.high": "4831838208",
+            "memory.max": "5368709120",
+            "memory.peak": "602820608",
+            "memory.swap.current": "0",
+            "memory.swap.max": "0",
+            "memory.swap.peak": "0",
+            "pids.current": "1",
+            "pids.max": "4096"
+          }
+        },
+        "unit": "p4-owner20-normal-20261106-01.service"
+      },
+      "prepared_sha256": "ee857bb187cd27821fc441a2234da9bb16e4457ff64b0b986d5a02e13e95606f",
+      "pressure_effect_qualified": false,
+      "producer": {
+        "executable": {
+          "device": 66306,
+          "inode": 45664491
+        },
+        "executable_sha256": "b625080e77d9ae0c2ed375c5a4fcfe27eb918766dd2b59e3df19e9a10606c9b3",
+        "identity": {
+          "birth": 98454598,
+          "cgroup": [
+            "0::/system.slice/p4-owner20-normal-20261106-01.service/host"
+          ],
+          "cmdline": [
+            "/opt/p4-owner20-normal-20261106-01/bin/droidloomd",
+            "--socket",
+            "/run/p4-owner07-control.sock",
+            "--supervisor",
+            "/opt/p4-owner20-normal-20261106-01/bin/droidloom-supervisor",
+            "--spec-directory",
+            "/opt/p4-owner20-normal-20261106-01"
+          ],
+          "gids": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "nspid": [
+            2280135
+          ],
+          "parent": 2280069,
+          "pid": 2280135,
+          "uids": [
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "namespaces": [
+          {
+            "device": 5,
+            "inode": 4026531836
+          },
+          {
+            "device": 5,
+            "inode": 4026531836
+          },
+          {
+            "device": 5,
+            "inode": 4026533762
+          },
+          {
+            "device": 5,
+            "inode": 4026531835
+          },
+          {
+            "device": 5,
+            "inode": 4026531837
+          },
+          {
+            "device": 5,
+            "inode": 4026533763
+          },
+          {
+            "device": 5,
+            "inode": 4026531839
+          },
+          {
+            "device": 5,
+            "inode": 4026531838
+          },
+          {
+            "device": 5,
+            "inode": 4026531834
+          },
+          {
+            "device": 5,
+            "inode": 4026531834
+          }
+        ],
+        "process": {
+          "birth": 98454598,
+          "pid": 2280135,
+          "pidfd": {
+            "device": 6,
+            "inode": 27370653
+          },
+          "proc_dir": {
+            "device": 26,
+            "inode": 555557261
+          }
+        }
+      },
+      "production_ready": false,
+      "property_visibility_capture_attempted": true,
+      "property_visibility_diagnostic_qualified": false,
+      "property_visibility_is_actual_LMKD_or_cold_cache": false,
+      "property_visibility_observation": {
+        "Main_actions": 0,
+        "PID_namespace_join_requested": false,
+        "actor_namespaces_after": {
+          "cgroup": {
+            "device": 5,
+            "inode": 4026531835
+          },
+          "ipc": {
+            "device": 5,
+            "inode": 4026531839
+          },
+          "mnt": {
+            "device": 5,
+            "inode": 4026533762
+          },
+          "net": {
+            "device": 5,
+            "inode": 4026533763
+          },
+          "pid": {
+            "device": 5,
+            "inode": 4026531836
+          },
+          "pid_for_children": {
+            "device": 5,
+            "inode": 4026531836
+          },
+          "time": {
+            "device": 5,
+            "inode": 4026531834
+          },
+          "time_for_children": {
+            "device": 5,
+            "inode": 4026531834
+          },
+          "user": {
+            "device": 5,
+            "inode": 4026531837
+          },
+          "uts": {
+            "device": 5,
+            "inode": 4026531838
+          }
+        },
+        "actor_namespaces_unchanged": true,
+        "actual_LMKD_capability_simulation": false,
+        "attempt_nonce": "eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+        "build_result_sha256": "5cc813715a261701cad3be931b9e53145229dec7c803d828a1097e4fe4ad166b",
+        "channel_close_records": [],
+        "child_reaped": false,
+        "child_started": false,
+        "cold_cache_observation": false,
+        "deadline_monotonic_ns": 984550570467407,
+        "fd_close_records": [
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_recheck_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_recheck_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_recheck_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_recheck_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_recheck_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_recheck_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_recheck_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_recheck_walk"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain_recheck"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "helper"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "init_ns_pid"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "init_ns_pid_for_children"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "init_ns_mnt"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "init_ns_cgroup"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "init_ns_user"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "init_ns_net"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "init_ns_ipc"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "init_ns_uts"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "init_ns_time"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "init_ns_time_for_children"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "root"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "domain"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "child_domain_procs"
+          },
+          {
+            "close_attempted_once": true,
+            "closed": true,
+            "name": "helper_final_name"
+          }
+        ],
+        "fd_registration_events": 34,
+        "finish_reason": "after original Stop and owned child retirement",
+        "finish_token_attempts": 0,
+        "finish_token_sent": false,
+        "finished_monotonic_ns": 984582746396082,
+        "first_error": {
+          "errno": null,
+          "error": "KeyError('init_current_checks')",
+          "notes": [],
+          "stage": "initialization",
+          "type": "KeyError"
+        },
+        "generation_nonce": "fcbc3154686575b1ace8760ab4bdabc7ef619026560a9a007388a86e31e6d873",
+        "held_fds_closed": true,
+        "helper": {
+          "bytes": 22688,
+          "elf": {
+            "build_id": "3b1c179a593c6fcbf370cefcd70919f6",
+            "class": 64,
+            "interpreter": "/system/bin/linker64",
+            "loads": [
+              {
+                "filesz": 4976,
+                "flags": 4,
+                "memsz": 4976,
+                "offset": 0,
+                "vaddr": 0
+              },
+              {
+                "filesz": 9024,
+                "flags": 5,
+                "memsz": 9024,
+                "offset": 4976,
+                "vaddr": 21360
+              },
+              {
+                "filesz": 688,
+                "flags": 6,
+                "memsz": 2384,
+                "offset": 14000,
+                "vaddr": 46768
+              },
+              {
+                "filesz": 24,
+                "flags": 6,
+                "memsz": 24,
+                "offset": 14688,
+                "vaddr": 63840
+              }
+            ],
+            "machine": 62,
+            "type": 3
+          },
+          "metadata": {
+            "bytes": 22688,
+            "ctime_ns": 1793957360462369700,
+            "device": 66306,
+            "gid": 0,
+            "inode": 45664496,
+            "mode": 33133,
+            "mtime_ns": 1793957360462369700,
+            "nlink": 1,
+            "uid": 0
+          },
+          "prepared_identity": {
+            "device": 66306,
+            "inode": 45664496
+          },
+          "sha256": "d58b2492120aed1c96e0a0006ba9d61edd04fbc047e5faf1c13def572aba4036"
+        },
+        "helper_PID_namespace_equals_init": false,
+        "helper_final": {
+          "bytes": 22688,
+          "metadata": {
+            "bytes": 22688,
+            "ctime_ns": 1793957360462369700,
+            "device": 66306,
+            "gid": 0,
+            "inode": 45664496,
+            "mode": 33133,
+            "mtime_ns": 1793957360462369700,
+            "nlink": 1,
+            "uid": 0
+          },
+          "sha256": "d58b2492120aed1c96e0a0006ba9d61edd04fbc047e5faf1c13def572aba4036"
+        },
+        "init_source": {
+          "bytes": 2967000,
+          "metadata": {
+            "bytes": 2967000,
+            "ctime_ns": 1793634277276391650,
+            "device": 66306,
+            "gid": 0,
+            "inode": 39370856,
+            "mode": 33133,
+            "mtime_ns": 1793634277276391650,
+            "nlink": 1,
+            "uid": 0
+          },
+          "sha256": "d6905d43a0dad5219b61c9759ab32352262558e1109762eec1a24be153181c73"
+        },
+        "namespace_changes_in_actor": false,
+        "observation_closed_monotonic_ns": 984548575460612,
+        "observation_completed": false,
+        "observation_limit_ms": 2000,
+        "original_Stop_delayed": false,
+        "property_visibility_qualified": false,
+        "property_writes": false,
+        "protocol_packets": 0,
+        "retirement_deadline_met": true,
+        "retirement_deadline_monotonic_ns": 984583746268839,
+        "retirement_elapsed_ns": 124237,
+        "retirement_finished_monotonic_ns": 984582746393076,
+        "retirement_limit_ms": 1000,
+        "retirement_started_monotonic_ns": 984582746268839,
+        "retirement_wait_limit_ms": 1000,
+        "same_process_root_warmed_cache": true,
+        "schema": 1,
+        "scope": "one owned-generation four-key Android accessor",
+        "secondary_errors": [],
+        "source_manifest_sha256": "481f4ca861403f493e3192c8086b1b6a9c0e70312431b9d0354c664baf9ce7ba",
+        "source_qualified_before_reads": false,
+        "spawn_attempts": 0,
+        "start_token_attempts": 0,
+        "started_monotonic_ns": 984548570467407,
+        "state": "FAILED",
+        "wire_records": []
+      },
+      "rc_property_reload_qualified": false,
+      "schema": 1,
+      "start_requested_monotonic_ns": 984545997098415,
+      "start_response": {
+        "host_pid": 2280208,
+        "message": "started cell u61288",
+        "ok": true,
+        "state": "running"
+      },
+      "started_monotonic_ns": 984545589747039,
+      "success": false,
+      "traceback": "Traceback (most recent call last):\n  File \"/opt/p4-owner20-normal-20261106-01/source/actor.py\", line 262, in run\n    owned.need(response['ok'] and response['state'] == 'running', 'actual producer stopped or failed before ACTIVE')\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/p4-owner20-normal-20261106-01/source/pinned_support.py\", line 11, in need\n    raise RuntimeError(message)\nRuntimeError: actual producer stopped or failed before ACTIVE\n"
+    },
+    "actor_result_sha256": "457a36e3453ac597f7e3db1f14b814f20326723b3e7fa7e9b0029456b0c32e20",
+    "app_qualified": false,
+    "attempt_nonce": "eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+    "cleanup_before": {
+      "ActiveState": "failed",
+      "ControlGroup": "",
+      "Description": "Pocket4 Owner20 four public SDK visibility NORMAL01 eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+      "ExecMainCode": "1",
+      "ExecMainExitTimestampMonotonic": "984582837561",
+      "ExecMainPID": "2280069",
+      "ExecMainStartTimestampMonotonic": "984545501581",
+      "ExecMainStatus": "1",
+      "InvocationID": "68dec4af15c04c04814ee3589afd96b2",
+      "LoadState": "loaded",
+      "MainPID": "0",
+      "MemoryPeak": "602820608",
+      "MemorySwapPeak": "0",
+      "Result": "exit-code",
+      "SubState": "failed",
+      "Transient": "yes"
+    },
+    "cleanup_stop_returncode": 0,
+    "errors": [
+      {
+        "error": "RuntimeError('owned unit authoritative terminal failed; actor first error={\\'error\\': \"RuntimeError(\\'actual producer stopped or failed before ACTIVE\\')\", \\'stage\\': \\'normal\\'}')",
+        "stage": "normal_coordinator"
+      }
+    ],
+    "exact_unit_cleanup": {
+      "cgroup_absent": true,
+      "invocation": "68dec4af15c04c04814ee3589afd96b2",
+      "original_actor_dead": true,
+      "unit": "p4-owner20-normal-20261106-01.service",
+      "unit_not_found": true
+    },
+    "finished_monotonic_ns": 984582934485359,
+    "first_actor": {
+      "executable": {
+        "device": 66306,
+        "inode": 108009763
+      },
+      "executable_sha256": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+      "identity": {
+        "birth": 98454550,
+        "cgroup": [
+          "0::/system.slice/p4-owner20-normal-20261106-01.service"
+        ],
+        "cmdline": [
+          "/usr/bin/python3",
+          "-I",
+          "-B",
+          "/opt/p4-owner20-normal-20261106-01/source/actor.py",
+          "--prepared",
+          "/opt/p4-owner20-normal-20261106-01-state/prepared.json",
+          "--prepared-sha256",
+          "ee857bb187cd27821fc441a2234da9bb16e4457ff64b0b986d5a02e13e95606f"
+        ],
+        "gids": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "nspid": [
+          2280069
+        ],
+        "parent": 1,
+        "pid": 2280069,
+        "uids": [
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "namespaces": [
+        {
+          "device": 5,
+          "inode": 4026531836
+        },
+        {
+          "device": 5,
+          "inode": 4026531836
+        },
+        {
+          "device": 5,
+          "inode": 4026531832
+        },
+        {
+          "device": 5,
+          "inode": 4026531835
+        },
+        {
+          "device": 5,
+          "inode": 4026531837
+        },
+        {
+          "device": 5,
+          "inode": 4026531833
+        },
+        {
+          "device": 5,
+          "inode": 4026531839
+        },
+        {
+          "device": 5,
+          "inode": 4026531838
+        },
+        {
+          "device": 5,
+          "inode": 4026531834
+        },
+        {
+          "device": 5,
+          "inode": 4026531834
+        }
+      ],
+      "process": {
+        "birth": 98454550,
+        "pid": 2280069,
+        "pidfd": {
+          "device": 6,
+          "inode": 27467822
+        },
+        "proc_dir": {
+          "device": 26,
+          "inode": 555557243
+        }
+      }
+    },
+    "first_actor_error": {
+      "error": "RuntimeError('actual producer stopped or failed before ACTIVE')",
+      "stage": "normal"
+    },
+    "first_cgroup": {
+      "identity": {
+        "device": 30,
+        "inode": 33783737
+      },
+      "values": {
+        "cgroup.events": "populated 1\nfrozen 0",
+        "cgroup.procs": "2280069",
+        "cpu.max": "100000 100000",
+        "memory.current": "6451200",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.high": "4831838208",
+        "memory.max": "5368709120",
+        "memory.peak": "6754304",
+        "memory.swap.current": "0",
+        "memory.swap.max": "0",
+        "memory.swap.peak": "0",
+        "pids.current": "1",
+        "pids.max": "4096"
+      }
+    },
+    "first_error": {
+      "error": "RuntimeError('owned unit authoritative terminal failed; actor first error={\\'error\\': \"RuntimeError(\\'actual producer stopped or failed before ACTIVE\\')\", \\'stage\\': \\'normal\\'}')",
+      "stage": "normal_coordinator"
+    },
+    "first_unit": {
+      "ActiveState": "active",
+      "ControlGroup": "/system.slice/p4-owner20-normal-20261106-01.service",
+      "Description": "Pocket4 Owner20 four public SDK visibility NORMAL01 eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+      "ExecMainCode": "0",
+      "ExecMainExitTimestampMonotonic": "0",
+      "ExecMainPID": "2280069",
+      "ExecMainStartTimestampMonotonic": "984545501581",
+      "ExecMainStatus": "0",
+      "InvocationID": "68dec4af15c04c04814ee3589afd96b2",
+      "LoadState": "loaded",
+      "MainPID": "2280069",
+      "MemoryPeak": "3084288",
+      "MemorySwapPeak": "0",
+      "Result": "success",
+      "SubState": "running",
+      "Transient": "yes"
+    },
+    "gate_sha256": "1c6960beabc4ea236ddf359a4e20d651509f927ae9addba3f4f21959b5dfaf28",
+    "ids_before": {
+      "available_at_observation": true,
+      "host_uid": 61288,
+      "processes_observed": 878,
+      "reservation_created_in_passwd_or_subid_tables": false,
+      "subordinate_range": {
+        "count": 100000,
+        "start": 22000000
+      },
+      "tables": {
+        "/etc/subgid": {
+          "bytes": 18,
+          "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+        },
+        "/etc/subuid": {
+          "bytes": 18,
+          "sha256": "dc6b239ceac4d0d3f5739daa348847f11f729fb01db535ab05c2458f8e551464"
+        }
+      }
+    },
+    "installed_owner_qualified": false,
+    "kind": "owner07-normal-external-coordinator01",
+    "launch": {
+      "returncode": 0,
+      "stderr": "Running as unit: p4-owner20-normal-20261106-01.service; invocation ID: 68dec4af15c04c04814ee3589afd96b2\n",
+      "stdout": ""
+    },
+    "launch_command": [
+      "/usr/bin/systemd-run",
+      "--unit=p4-owner20-normal-20261106-01.service",
+      "--slice=system.slice",
+      "--property=Type=exec",
+      "--property=RemainAfterExit=yes",
+      "--property=Restart=no",
+      "--property=KillMode=control-group",
+      "--property=OOMPolicy=stop",
+      "--property=TimeoutStopSec=10",
+      "--property=RuntimeMaxSec=180",
+      "--property=Nice=10",
+      "--property=UMask=0077",
+      "--property=CPUQuota=100%",
+      "--property=CPUQuotaPeriodSec=100ms",
+      "--property=MemoryMax=5368709120",
+      "--property=MemoryHigh=4831838208",
+      "--property=MemorySwapMax=0",
+      "--property=TasksMax=4096",
+      "--property=Delegate=cpu memory pids",
+      "--property=Description=Pocket4 Owner20 four public SDK visibility NORMAL01 eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+      "--",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "/opt/p4-owner20-normal-20261106-01/source/actor.py",
+      "--prepared",
+      "/opt/p4-owner20-normal-20261106-01-state/prepared.json",
+      "--prepared-sha256",
+      "ee857bb187cd27821fc441a2234da9bb16e4457ff64b0b986d5a02e13e95606f"
+    ],
+    "main_after": {
+      "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+      "current_guard": {
+        "Main_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+        "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+        "current_baseline_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+        "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+        "current_executable_and_root_backing_match": true,
+        "framework_exit_cause_resolved": false,
+        "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+        "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+        "production_ready": false,
+        "resource_limits_match": true,
+        "schema": "pocket4-current-main-guard-v1",
+        "seven_processes_match": true,
+        "three_host_processes_match": true
+      },
+      "current_guard_sha256": "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679",
+      "current_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+      "current_seven_processes_alive_and_unchanged": true,
+      "daemon": {
+        "ControlGroup": "/system.slice/droidloomd.service",
+        "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+        "MainPID": "3588022"
+      },
+      "framework_exit_cause_resolved": false,
+      "framework_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "held_cgroup_identity": [
+        30,
+        26651611
+      ],
+      "historical_framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "historical_main_canonical_sha256": "90c61236553cee087605abe5bf852e94ac489305a4989881e3cf6a4be34e35ab",
+      "installed_contract_unchanged": true,
+      "new_deployment_performed": false,
+      "old_epoch_reauthorized": false,
+      "private_baseline_body_exported": false,
+      "production_ready": false,
+      "resources": {
+        "cpu.max": "200000 100000",
+        "memory.high": "5368709120",
+        "memory.max": "6442450944",
+        "memory.swap.max": "max",
+        "pids.max": "12288"
+      },
+      "schema": "pocket4-owner20-current-main-fence-v1"
+    },
+    "main_before": {
+      "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+      "current_guard": {
+        "Main_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+        "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+        "current_baseline_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+        "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+        "current_executable_and_root_backing_match": true,
+        "framework_exit_cause_resolved": false,
+        "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+        "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+        "production_ready": false,
+        "resource_limits_match": true,
+        "schema": "pocket4-current-main-guard-v1",
+        "seven_processes_match": true,
+        "three_host_processes_match": true
+      },
+      "current_guard_sha256": "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679",
+      "current_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+      "current_seven_processes_alive_and_unchanged": true,
+      "daemon": {
+        "ControlGroup": "/system.slice/droidloomd.service",
+        "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+        "MainPID": "3588022"
+      },
+      "framework_exit_cause_resolved": false,
+      "framework_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "held_cgroup_identity": [
+        30,
+        26651611
+      ],
+      "historical_framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "historical_main_canonical_sha256": "90c61236553cee087605abe5bf852e94ac489305a4989881e3cf6a4be34e35ab",
+      "installed_contract_unchanged": true,
+      "new_deployment_performed": false,
+      "old_epoch_reauthorized": false,
+      "private_baseline_body_exported": false,
+      "production_ready": false,
+      "resources": {
+        "cpu.max": "200000 100000",
+        "memory.high": "5368709120",
+        "memory.max": "6442450944",
+        "memory.swap.max": "max",
+        "pids.max": "12288"
+      },
+      "schema": "pocket4-owner20-current-main-fence-v1"
+    },
+    "main_before_gate": {
+      "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+      "current_guard": {
+        "Main_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+        "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+        "current_baseline_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+        "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+        "current_executable_and_root_backing_match": true,
+        "framework_exit_cause_resolved": false,
+        "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+        "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+        "production_ready": false,
+        "resource_limits_match": true,
+        "schema": "pocket4-current-main-guard-v1",
+        "seven_processes_match": true,
+        "three_host_processes_match": true
+      },
+      "current_guard_sha256": "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679",
+      "current_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+      "current_seven_processes_alive_and_unchanged": true,
+      "daemon": {
+        "ControlGroup": "/system.slice/droidloomd.service",
+        "InvocationID": "67cdc2375f394012ad9d7f39b0d77426",
+        "MainPID": "3588022"
+      },
+      "framework_exit_cause_resolved": false,
+      "framework_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+      "held_cgroup_identity": [
+        30,
+        26651611
+      ],
+      "historical_framework_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+      "historical_main_canonical_sha256": "90c61236553cee087605abe5bf852e94ac489305a4989881e3cf6a4be34e35ab",
+      "installed_contract_unchanged": true,
+      "new_deployment_performed": false,
+      "old_epoch_reauthorized": false,
+      "private_baseline_body_exported": false,
+      "production_ready": false,
+      "resources": {
+        "cpu.max": "200000 100000",
+        "memory.high": "5368709120",
+        "memory.max": "6442450944",
+        "memory.swap.max": "max",
+        "pids.max": "12288"
+      },
+      "schema": "pocket4-owner20-current-main-fence-v1"
+    },
+    "main_fence_fds_closed": true,
+    "prepared_sha256": "ee857bb187cd27821fc441a2234da9bb16e4457ff64b0b986d5a02e13e95606f",
+    "pressure_effect_qualified": false,
+    "production_ready": false,
+    "rc_property_reload_qualified": false,
+    "resources_before": {
+      "MemAvailable_bytes": 15367020544,
+      "disk_available_bytes": 54156849152,
+      "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=5223451808\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=5011903599\n"
+    },
+    "schema": 1,
+    "started_monotonic_ns": 984545358109264,
+    "success": false,
+    "terminal": {
+      "ActiveState": "failed",
+      "ControlGroup": "",
+      "Description": "Pocket4 Owner20 four public SDK visibility NORMAL01 eae6a2c3c00117d2a6a0f0f08949342de6a14cf8c2dbf695071e7a96b494661c",
+      "ExecMainCode": "1",
+      "ExecMainExitTimestampMonotonic": "984582837561",
+      "ExecMainPID": "2280069",
+      "ExecMainStartTimestampMonotonic": "984545501581",
+      "ExecMainStatus": "1",
+      "InvocationID": "68dec4af15c04c04814ee3589afd96b2",
+      "LoadState": "loaded",
+      "MainPID": "0",
+      "MemoryPeak": "602820608",
+      "MemorySwapPeak": "0",
+      "Result": "exit-code",
+      "SubState": "failed",
+      "Transient": "yes"
+    },
+    "traceback": "Traceback (most recent call last):\n  File \"/opt/p4-owner20-normal-20261106-01/source/coordinator.py\", line 120, in run\n    owned.need(terminal.get('ExecMainPID') == str(actor.value['pid']) and terminal.get('ExecMainCode') == '1' and\n    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n               terminal.get('ExecMainStatus') == '0' and terminal.get('Result') == 'success',\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n               'owned unit authoritative terminal failed; actor first error=' + repr(actual.get('first_error')))\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/p4-owner20-normal-20261106-01/source/pinned_support.py\", line 11, in need\n    raise RuntimeError(message)\nRuntimeError: owned unit authoritative terminal failed; actor first error={'error': \"RuntimeError('actual producer stopped or failed before ACTIVE')\", 'stage': 'normal'}\n"
+  }
+}

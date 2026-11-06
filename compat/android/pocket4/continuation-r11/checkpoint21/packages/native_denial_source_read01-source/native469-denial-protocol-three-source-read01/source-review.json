@@ -1,0 +1,92 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_UNRUN",
+  "scope": "exact public Rust source read from completed builder469; not installed Main proof",
+  "input_authority": {
+    "source_root": "/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/builder-source",
+    "manifest": {
+      "role": "manifest",
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/attempt01/copied-builder-source-manifest.json",
+      "bytes": 99327,
+      "sha256": "88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701",
+      "mode": 384,
+      "git_blob": "d2a3b1303336aeb7e8849ebb1bbf459a321ced8a"
+    },
+    "producer": {
+      "role": "producer",
+      "path": "/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/attempt01/result.json",
+      "bytes": 170316,
+      "sha256": "3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5",
+      "mode": 384,
+      "git_blob": "c3967c039a9e450b36cf597cd3a1fc5823b0508c"
+    }
+  },
+  "fixed_files": [
+    {
+      "path": "graphics/droidloom-denial-protocol/src/lib.rs",
+      "bytes": 97476,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "abac4785ca16eccd330da0f5d928e5a6a1a11d9f5ac4306bc7c63121c4a84a27"
+    },
+    {
+      "path": "graphics/droidloom-denial-ipc/src/lib.rs",
+      "bytes": 42737,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "7724a0778185bfec08c8e2fe23a3168a757a62413ac5403e369a747c59b26a8f"
+    },
+    {
+      "path": "graphics/droidloom-denial-endpoint/src/lib.rs",
+      "bytes": 44175,
+      "kind": "file",
+      "mode": 436,
+      "sha256": "4d79ae81810aab3784c0e265fd861cb9fcbacab9160854553d56584b2751ebe6"
+    }
+  ],
+  "operation_boundary": {
+    "filesystem_reads": "exact five selected regular leaves plus direct ancestors held with dirfd/O_NOFOLLOW; no enumeration",
+    "output": "plain JSON; full UTF-8 text only for three pinned public Rust sources; authorities emit identity and hash only",
+    "source_bytes": 184388,
+    "authority_bytes": 269643,
+    "explicit_FD_limit": 40,
+    "selected_leaf_uid": 1000,
+    "selected_leaf_gid": 1000,
+    "selected_leaf_nlink": 1,
+    "selected_source_mode": "0664",
+    "selected_authority_mode": "0600",
+    "directory_binding": "device/inode/type+mode/uid/gid equal; full metadata recorded but unrelated sibling directory timestamp/link-count changes are not source replacement",
+    "selected_leaf_binding": "full metadata, EOF, bytes, SHA256, held/named final equality",
+    "self_deadline_seconds_after_stdlib_imports": 8,
+    "tool_timeout_seconds": 15,
+    "cpu_percent": 25,
+    "memory_bytes": 134217728,
+    "output_bytes": 2097152,
+    "filesystem_mutations": false,
+    "children": false,
+    "signals": false,
+    "network": false,
+    "Main": false,
+    "source_execution": false,
+    "raw_UI": false
+  },
+  "checks": {
+    "manifest_matches": true,
+    "manifest_499": true,
+    "producer_matches": true,
+    "producer_PASS": true,
+    "all_three_row_equal": true,
+    "no_source_NUL": true,
+    "request_source_exact": true,
+    "request_under_1MiB": true,
+    "python_executed": false,
+    "device_read": false
+  },
+  "completion": "PASS only after both pinned authorities, all three original bodies, final held/named bindings, and every explicit acquired FD closed. Any source/hash/deadline/close failure remains FAIL and no retry.",
+  "protocol_gap": "The caller will read actual message enum/transport/endpoint handlers before deciding whether a Destroy completion acknowledgement exists. No current claim that send Ok or UnknownDisplay is remote completion.",
+  "limits": [
+    "No Python syntax/control execution performed in unavailable local environment.",
+    "The stdlib interpreter/runtime owns additional descriptors outside the explicit read journal; no process-wide FD closure claim.",
+    "This reader is source collection only and makes no native library, protocol runtime, Main, Soong, or app readiness claim."
+  ]
+}

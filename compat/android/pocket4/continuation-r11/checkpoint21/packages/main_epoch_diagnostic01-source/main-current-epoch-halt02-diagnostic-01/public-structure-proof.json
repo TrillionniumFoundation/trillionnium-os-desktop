@@ -1,0 +1,77 @@
+{
+  "schema": "pocket4-fixed-epoch-diagnostic-public-structure-proof-v1",
+  "references": {
+    "epoch_source": {
+      "path": "/home/alex/work/pocket4-current-host-r5-source-01/references/framework_epoch.py",
+      "bytes": 8658,
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "git_blob_sha": "ee85b38842efa8d935bbdc5b422c7804f059da92"
+    },
+    "generated_guard": {
+      "bytes": 9408,
+      "sha256": "0ee54ef97c073857609aedb4670395db084ceacc7d28558315647ab2ffbef679",
+      "git_blob_sha": "258acc1fbb8e22ecf26ce975b775291c01760be5"
+    },
+    "R5_source_manifest": {
+      "bytes": 3605,
+      "sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+      "git_blob_sha": "9f93c96bd666ecc70ffdba909c1c036b3ed86b20"
+    }
+  },
+  "baseline_schema_and_path": {
+    "source": "R5 source-manifest.json/current_baseline/private and current_baseline_guard.py/load_current",
+    "schema": "pocket4-main-current-baseline-v1",
+    "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+    "bytes": 41844,
+    "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266"
+  },
+  "baseline_epoch_field": {
+    "source": "current_baseline_guard.py/load_current/current_guard",
+    "field": "framework_epoch"
+  },
+  "epoch_schema": {
+    "source": "framework_epoch.py/SCHEMA",
+    "value": "pocket4-framework-epoch-v1"
+  },
+  "process_fields": {
+    "source": "framework_epoch.py/process_identity",
+    "exact": [
+      "host_pid",
+      "parent_host_pid",
+      "start_ticks",
+      "namespace_pids",
+      "uids",
+      "cmdline",
+      "executable",
+      "namespaces",
+      "cgroup"
+    ]
+  },
+  "four_roles": {
+    "source": "framework_epoch.py/capture_android/capture_processes",
+    "exact": [
+      "init",
+      "zygote64",
+      "system_server",
+      "surfaceflinger"
+    ],
+    "requested_historical_host_pids": {
+      "init": 3588093,
+      "zygote64": 90360,
+      "system_server": 90516,
+      "surfaceflinger": 3588912
+    }
+  },
+  "original_capture_android_scope": {
+    "module_unchanged": true,
+    "conditional_full_old_init_equality": true,
+    "original_function_enumerates_proc": true,
+    "cmdline_read_in_process_only": true,
+    "same_pid_namespace_and_unique_role_filters": true,
+    "original_parent_executable_uid_cgroup_guards_retained": true,
+    "double_capture_and_original_require_unchanged_retained": true,
+    "new_epoch_is_diagnostic_only": true
+  },
+  "private_baseline_content_observed_by_agent": false,
+  "private_baseline_exported": false
+}

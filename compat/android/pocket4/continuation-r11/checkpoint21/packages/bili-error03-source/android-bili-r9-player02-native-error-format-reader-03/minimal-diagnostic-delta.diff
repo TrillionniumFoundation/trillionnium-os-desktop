@@ -1,0 +1,85 @@
+--- reader02/read.py
++++ reader03/read.py
+@@ -157,41 +157,73 @@
+    matches.append({'shape':name,'labelled_fields':fields})
+  need(len(matches)<=1,'AMBIGUOUS_CLOSED_ERROR_SHAPE')
+  return matches[0] if matches else None
++def public_timing_diagnostic(message):
++ lines=message.split('\n')
++ first=lines[0]
++ marker='droidloom-launch-timing'
++ out={'line_count':len(lines),'line_metadata':[{'bytes':len(x.encode()),'sha256':sha(x.encode())} for x in lines],
++      'first_line_has_exact_outer_prefix':first.startswith('Android task launch failed (exit status: 1): '),
++      'known_timing_marker_count_in_first_line':first.count(marker),'tokens':[],
++      'unknown_token_text_exported':False,'numeric_values_are_label_bound':True}
++ if first.count(marker)!=1:return out
++ offset=first.index(marker);out['prefix_before_timing']={'bytes':len(first[:offset].encode()),'sha256':sha(first[:offset].encode())}
++ tokens=first[offset:].split(' ')
++ if len(tokens)>64:
++  out['token_bound_exceeded']=True;return out
++ known={'droidloom-launch-timing','ok=false','ok=true','policy_cached=false','policy_cached=true'}
++ labels=set(STAGES)|{'pending','total'}
++ fields=[]
++ for token in tokens:
++  item={'bytes':len(token.encode()),'sha256':sha(token.encode())}
++  if token in known:item['known_marker']=token
++  else:
++   part=re.fullmatch(r'([a-z_]+)_us=(.*)',token)
++   if part is not None and part[1] in labels:
++    item['known_time_label']=part[1]
++    item['unsigned_bounded_decimal']=re.fullmatch(NUMBER,part[2]) is not None
++    if item['unsigned_bounded_decimal']:
++     item['value_us']=int(part[2]);fields.append((part[1],int(part[2])))
++  out['tokens'].append(item)
++ out['known_numeric_fields']=[{'label':k,'value_us':v} for k,v in fields]
++ out['known_stage_sum_us']=sum(v for k,v in fields if k in STAGES)
++ return out
+ def project_message(message):
+  need(type(message) is str and 0<len(message.encode('utf-8'))<=512,'MESSAGE_BOUND')
+  base={'bytes':len(message.encode()),'sha256':sha(message.encode()),
+        'raw_message_exported':False,'installed_binary_source_match':False,
+        'source_format_reference_only':True,'semantic_cause_inferred':False,
+-       'complete_closed_error_shape':False,'task_cleanup_authority_created':False}
++       'complete_closed_error_shape':False,'task_cleanup_authority_created':False,
++       'public_timing_diagnostic':public_timing_diagnostic(message),'first_rejection':None}
++ def reject(stage):return {**base,'complete_wrapper_match':False,'first_rejection':stage}
+  outer=re.fullmatch(r'Android task launch failed \(exit status: 1\): ([^\r\n]{1,384})\n([^\r\n]{1,256})',message)
+- if outer is None:return {**base,'complete_wrapper_match':False}
++ if outer is None:return reject('OUTER_TWO_LINE_WRAPPER')
+  timing,error=outer.groups()
+  parts=timing.split(' ')
+  if len(parts)<5 or parts[0]!='droidloom-launch-timing' or parts[1]!='ok=false' or parts[2] not in ('policy_cached=false','policy_cached=true'):
+-  return {**base,'complete_wrapper_match':False}
++  return reject('TIMING_HEADER_FIELDS')
+  parsed=[]
+  for token in parts[3:]:
+   match=re.fullmatch(r'([a-z_]+)_us='+NUMBER,token)
+-  if match is None:return {**base,'complete_wrapper_match':False}
++  if match is None:return reject('TIMING_FIELD_FORMAT')
+   parsed.append((match[1],int(match[2])))
+  if len(parsed)<2 or tuple(k for k,v in parsed[-2:])!=('pending','total'):
+-  return {**base,'complete_wrapper_match':False}
++  return reject('TIMING_TRAILER_FIELDS')
+  stages=parsed[:-2];names=tuple(k for k,v in stages)
+  if names!=STAGES[:len(names)] or not 1<=len(names)<=8:
+-  return {**base,'complete_wrapper_match':False}
++  return reject('TIMING_STAGE_PREFIX')
+  pending,total=parsed[-2][1],parsed[-1][1]
+  # record() floors each stage separately; finish() obtains pending then total later.
+  if total<sum(v for k,v in stages)+pending:
+-  return {**base,'complete_wrapper_match':False}
++  return reject('TIMING_TOTAL_BELOW_SUM')
+  prefix='droidloom-task-launcher: '
+- if not error.startswith(prefix):return {**base,'complete_wrapper_match':False}
++ if not error.startswith(prefix):return reject('TASK_LAUNCHER_PREFIX')
+  child=error[len(prefix):]
+  known_prefixes={'control':'task-control request failed: ',
+  'io':'process operation failed: ','transport':'task-control transport failed: ',
+  'codec':'task-control codec failed: ','activity':'Android activity launch failed: ',
+  'discovery':'Android task discovery failed: ','request':'invalid launch request: '}
+  found=[k for k,v in known_prefixes.items() if child.startswith(v)]
+- if len(found)!=1:return {**base,'complete_wrapper_match':False}
++ if len(found)!=1:return reject('CHILD_ERROR_CLASS')
+  payload=child[len(known_prefixes[found[0]]):]
+  need(0<len(payload.encode())<=256,'CHILD_PAYLOAD_BOUND')
+  closed=classify_closed_child(child)

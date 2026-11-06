@@ -1,0 +1,43 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "739e767deb914a62d12542c9a67434c4c76d38e9",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 3092,
+    "sha256": "6f590d03c2fc23b8935d202eee504a08c80631d188b60fc6c46aa6ea879f6efc",
+    "git_blob_sha1": "af3c77e9970926b28adf575c648353c231da3e34",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "prior_projector",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b92ee4032645b726ce3360081082a69e6a44ffb2"
+    },
+    {
+      "path": "project.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ee3b1e7ca7f815aacf861002322f418ec86736a",
+      "bytes": 5816
+    },
+    {
+      "path": "review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8fb006aa4f1b6269cc3aeef73346d74844dd1e84",
+      "bytes": 386
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "prior_projector",
+      "original_tree": "b92ee4032645b726ce3360081082a69e6a44ffb2",
+      "checkpoint": 21,
+      "canonical_package": "owner20-normal01-safe-projector"
+    }
+  ],
+  "original_recursive_leaf_count": 8
+}

@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys\nEXPECTED={\"bytes\":739868,\"sha256\":\"471483ca011e8002f4799cee6a275c6cd8dc0271db1a1d4db87d0dc1503a5de2\"}\nSTAGE={\"bytes\":13448,\"sha256\":\"64f273299e21ec6b1c2861fd62c3efa3153c19c0d49f3963d5355439f4823682\"}\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\n    raise RuntimeError('fixed provider compiler transport length/hash mismatch')\nvalue=json.loads(wire)\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\n    raise RuntimeError('fixed provider compiler envelope differs')\nstage=value['stage'].encode('utf-8')\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\n    raise RuntimeError('fixed provider compiler stage pin differs')\nscope={'__name__':'__stage__','__file__':'<fixed-provider-stage>'}\nexec(compile(stage,'<fixed-provider-stage>','exec'),scope,scope)\nscope['main'](value['packet'])\n"
+    ],
+    "created_unix_ms": 1793959838353,
+    "cwd": "/",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b056c291-fc05-6fcf",
+    "idempotency_key": "pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b056c291-fc05-6fcf",
+    "request_digest": "d8255b955f156950eaf2bb00777545dede1b484f974ab562c234626df057d308",
+    "request_fingerprint": 15574955583434221904,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b056c291-fc05-6fcf"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b056c291-fc05-6fcf"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

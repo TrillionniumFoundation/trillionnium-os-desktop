@@ -1,0 +1,69 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "3a1d8b8c4c07276f32475b4d043caac60aff6e10",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1727,
+    "sha256": "8e65927e13e0e4848411c4acb25ba1a0ff68981bada2d63c7793a418ebdd1496",
+    "git_blob_sha1": "c03818f7b61dba686d5987eed0388fb48603ae17",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1c086826eb0ecb10c1ec77c5eed58ece5e766d1d"
+    },
+    {
+      "path": "result-read-0.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "40fe12df5488150e104995ea5c9ae135c40d388f",
+      "bytes": 80669
+    },
+    {
+      "path": "result.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "44e881a288cc6223498f33811b48bfcacc4aaa6e",
+      "bytes": 60246
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a9829273e86834806b5a341741a8750a659ab22f"
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5b1bd6304b6a9f13c6e18f3b48ebcb315db7dd7",
+      "bytes": 345
+    },
+    {
+      "path": "terminal-status.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3348c466a0a96d6e063c3b1b082eff01bbcc1e7c",
+      "bytes": 726
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "1c086826eb0ecb10c1ec77c5eed58ece5e766d1d",
+      "checkpoint": 21,
+      "canonical_package": "native_registration_host01-admission"
+    },
+    {
+      "path": "source",
+      "original_tree": "a9829273e86834806b5a341741a8750a659ab22f",
+      "checkpoint": 21,
+      "canonical_package": "native_registration_host01-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

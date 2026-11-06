@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "state": "ROOT_REVIEW_PASS_CREATE_ONLY_OWNER20_PREPARE",
+  "source_tree": "eef453897f751c690ea1e2e26ec9602fb9572269",
+  "tree_proof": {
+    "tree": "eef453897f751c690ea1e2e26ec9602fb9572269",
+    "leaf_count": 41,
+    "logical_bytes": 1913229,
+    "directory_count_including_root": 6,
+    "recursive_entries": 46,
+    "truncated": false,
+    "all_paths_modes_sizes_blob_sha1_match": true,
+    "all_directory_tree_sha1_recomputed": true
+  },
+  "request": {
+    "bytes": 430317,
+    "sha256": "b8d93c0766f9ed98d5c2bd8dbd0a6741e8ada298dbfebb44af9cf5ce6b4f9260",
+    "git_blob_sha1": "660f3872812c6cc2c7c6de58996a453417f15244"
+  },
+  "stdin": {
+    "bytes": 429956,
+    "sha256": "b0c72b26a1b5c0d5117db9d012f755d101e7dea88499709764e55756beb33904",
+    "git_blob_sha1": "e6b5989a183833dd2f62b961ff4e75b5b3c7bcaa"
+  },
+  "exact_packet_carrier_roundtrip": true,
+  "eight_runtime_sources_exact": true,
+  "manifest_all_leaves_verified": true,
+  "strict_inverse": {
+    "sources": [
+      {
+        "name": "actor.py",
+        "hunks": 4,
+        "parent": {
+          "bytes": 28108,
+          "sha256": "59c4892b95159fc29751b847c36375febc80e72f3051d5880920490e7450bc63",
+          "git_blob_sha1": "aec8351eed1942c0af336815efe86f714156f157"
+        }
+      },
+      {
+        "name": "coordinator.py",
+        "hunks": 2,
+        "parent": {
+          "bytes": 14404,
+          "sha256": "fa8a77414a892bdede02dfa7ecf065a9376ee04c5dd7fe4a7630f6d3f9e9c12a",
+          "git_blob_sha1": "6b86b2c32254f23b0a90715c387e2ef54e8fee3a"
+        }
+      },
+      {
+        "name": "prepare.py",
+        "hunks": 5,
+        "parent": {
+          "bytes": 15280,
+          "sha256": "1c0f7dd9916b3aa406ed4d5bee0d7d53283aee2c6e25dbaf04addc0b24420124",
+          "git_blob_sha1": "b022fbf8b6f4217228492596604d0ec8e9aa1c44"
+        }
+      },
+      {
+        "name": "pinned_support.py",
+        "hunks": 4,
+        "parent": {
+          "bytes": 13377,
+          "sha256": "31e80cbcfb1b330b5daed3aefb1f4d29bbd10d94e703ce8cd1a1f42207deb40e",
+          "git_blob_sha1": "64ae215395933d6894515e4ab25c882c266c0b48"
+        }
+      }
+    ],
+    "plan": {
+      "hunks": 9,
+      "parent": {
+        "bytes": 85165,
+        "sha256": "be2bb696239d438552b1971f4fbe889ee9f66d08717e3559648ea14720579569",
+        "git_blob_sha1": "929175d15350d9c9b415aa3e924c203ddf958375"
+      }
+    }
+  },
+  "base86_unchanged": true,
+  "original_five_artifacts_unchanged": true,
+  "sixth_helper_matches_actual_build_full_identity_and_raw_ns": true,
+  "current_Main_guard_equals_actual12_control_source": true,
+  "actual_host38_plus8_and_external_exit0_bound": true,
+  "actual_Main12_and_external_exit0_bound": true,
+  "prepare_source_full_review": true,
+  "coordinator_change_scope": "Fresh fixed package/unit/state literals and sticky fence.close reporting only; strict inverse preserves original other behavior",
+  "syntax_execution_scope": "Prepare wrapper compiles pinned_support,owned,prepare before use. Collector/actor and MainFence were compiled by actual control jobs. Other modules are copied; coordinator syntax is only source reviewed until actual runtime.",
+  "side_effects": "Create-only fresh /opt package/state and fresh sparse ext4 data images; no namespace, services, Main write or Android execution",
+  "resources": {
+    "timeout_seconds": 180,
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 536870912,
+    "nice": 10
+  },
+  "runtime_request_ready": false,
+  "runtime_requires_actual_prepared_original": true,
+  "production_ready": false,
+  "no_replay": true
+}

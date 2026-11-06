@@ -1,0 +1,125 @@
+{
+  "Android_actions": 0,
+  "Main_actions": 0,
+  "actual_adapter_receipt": {
+    "bytes": 29100,
+    "git_blob_sha": "0c417debe3fc42c98cfffafe99150118ed5f9155",
+    "job": "1a1b06121cb-fc05-7018",
+    "scope": "two fixed candidate07 adapter files only",
+    "sha256": "f2d3373595c45fafff0b404ba85f91a741c37dc34e49ad74daba9fb8d9f50a49"
+  },
+  "complete_949_source_manifest_verified": false,
+  "current_device_reproduction_asserted": false,
+  "findings": [
+    {
+      "id": "outer_open",
+      "result": "ARM64 guest + x86_64 host + explicit owner macro selects TryOpenSelfMaps and CreateSnapshot; the adapter is already wired in candidate07. Default branch remains the original memfd/integer registry path.",
+      "source": "engine/kernel_api/open_emulation.cc"
+    },
+    {
+      "id": "outer_readlink",
+      "result": "Same explicit macro selects caller-safe path copy, canonical executable handling and V2 provenance Readlinkat. It preserves kernel truncation/no-NUL and EFAULT handling through CopyToCaller; no memfd-name-only grant is proposed.",
+      "source": "engine/kernel_api/unistd_emulation.cc"
+    },
+    {
+      "id": "v2_protocol",
+      "result": "Existing V2 client binds root peer credentials, peer pidfd/user namespace, held source, two rights and one authenticated immutable reply. This is not the later role-session dispatch protocol.",
+      "source": "engine/kernel_api/proc_maps_provenance.cc"
+    },
+    {
+      "id": "default_gate",
+      "result": "BERBERIS_PROCMAPS_RAW_METADATA_OWNER defaults to 0; the source explicitly requires paired generation/transition qualification before enablement. No feature flag changed.",
+      "source": "engine/kernel_api/include/berberis/kernel_api/proc_maps_raw_metadata_owner.h"
+    },
+    {
+      "id": "lifecycle_callers",
+      "result": "Exact manifest clone/exec/ARM64 syscall source verifies pre-clone admission, private-child reset only after actual child return, explicit before/failed-exec lifecycle, and admission before translated syscall fast paths. Reading these callers does not qualify live generation behavior."
+    },
+    {
+      "exact_two_marker_replacement": true,
+      "id": "marker_lineage",
+      "original": {
+        "bytes": 5919,
+        "git_blob_sha": "63f9f0b8fb9d73c6810e1a47ce0e72551b2df078",
+        "sha256": "228f09d60bbcf1f82520ecfea2a6532f7bd66d6fb451d8a86c1ee75ccc08bc41"
+      },
+      "result": "Candidate07 ART runtime interface emits PROCMET1 while its engine/private bridge emits PROCMET2. Existing paired-v2-next01 changes exactly the two marker string literals; kept as a distinct historical successor, not silently substituted.",
+      "successor": {
+        "bytes": 5919,
+        "git_blob_sha": "7348cb6cd15425493817073dd9ad3749b995c21e",
+        "sha256": "d71e569e0f782ed461bdc167c6228e35414a02b209072b8cba9b7534bc8b3a5a"
+      }
+    },
+    {
+      "id": "prefork_lineage",
+      "patch": {
+        "bytes": 1001,
+        "git_blob_sha": "206f01c833d9b5fca284128f56ed403b4e3ee5de",
+        "sha256": "c32c7d7e0dbd2b3fd4c6282e1b523c57531c8c197f458dd9bbb1dcbaffb1631b"
+      },
+      "result": "Existing art-prefork-quiesce-next02 has a bounded enabled-only callback move before ART's kernel single-thread wait. Original and successor remain distinct. No new assertion of its build/runtime qualification is made here."
+    },
+    {
+      "checks": {
+        "bytes": 2986,
+        "git_blob_sha": "c66d6abe3e4d1f0cdb9f59725f3c66724db7e4c3",
+        "sha256": "0f5a7ec6bb35f5073d3406cf838b5014aa0a1fb9f02f6076710e44fbdc225338"
+      },
+      "id": "five_tu_limit",
+      "result": "Actual historical 13 commands include an expected preimage negative and five complete metadata TUs; all ten derived dependency/compile argv equal the pinned original transformation. Neither outer adapter, generation nor bridge TU is covered; no linking or Android qualification and no macro opt-in in these argv."
+    }
+  ],
+  "manifest": {
+    "bytes": 370622,
+    "git_blob_sha": "6b663fdea78c999bce12e055e3b0559a70829f53",
+    "sha256": "e10024548a5b2b5a391ecc9ddb3ea2f19b95a6fea3437f40207a0f4721745a93"
+  },
+  "new_factory_protocol_authorized": false,
+  "next_exact_inputs": [
+    {
+      "path": "engine/kernel_api/include/berberis/kernel_api/syscall_emulation_common.h",
+      "reason": "verify final translated readlinkat dispatch",
+      "sha256": "b579494c39f3777671654791845cbf853c8b2d3c73093ceda2aa311cac98f82a",
+      "state": "Root fixed source read planned; no substitute accepted"
+    },
+    {
+      "path": "engine/tests/ndk_program_tests/Android.bp",
+      "reason": "bind nine cases to the actual NDK test build target and platform headers",
+      "sha256": "d21a1c0d0c04032bd8cc18f45c3e47bd3107b1d1795378d13a13f9f76b7cbf44",
+      "state": "Root fixed source read planned; no substitute accepted"
+    }
+  ],
+  "outer_test": {
+    "boundaries": [
+      "canonical absolute and dirfd maps target",
+      "dup/F_DUPFD_CLOEXEC after original close",
+      "dup2 replacement",
+      "closed FD-number reuse without clobbering another allocation",
+      "single owned-FD close_range",
+      "sealed memfd lookalikes are ordinary",
+      "truncation/no terminator/zero length",
+      "closed FD and bad dirfd errors",
+      "unwritable output EFAULT"
+    ],
+    "bytes": 12127,
+    "compiled": false,
+    "executed": false,
+    "git_blob_sha": "1bafdb01dee180902352672a57f9340e4b32e1cb",
+    "new_cases": 9,
+    "original_cases": 3,
+    "path": "android-marriott-r16-proc-readlink-contract-source01/tests/ndk_program_tests/proc_self_maps_test.cc",
+    "sha256": "45365a2595c5fb3e05b5b4a5792f64bd176621df5de8da763d7905e01b4415fa",
+    "tree": "cd3c487bc412b62890ee8fdfafbd49b529c85000"
+  },
+  "proposed_next_action": "Complete these two exact source joins, then prepare the smallest real outer test build/owned execution qualification using the existing paired protocol and unchanged default gates. No replay of historical App failure or arbitrary enablement.",
+  "repo": "TrillionniumFoundation/trillionnium-os-desktop",
+  "schema": 1,
+  "scope": "Historical R16 to candidate07 exact client source closure and outer ABI test preparation",
+  "source_map": {
+    "bytes": 4849,
+    "git_blob_sha": "35268d0e50ac72da3d33e8d96c2c4626320e0753",
+    "sha256": "3e898cd9a525073d9f65f5e3fa85e039b7be865946a58f38cfe15435a1fb49b3"
+  },
+  "status": "SOURCE_ONLY_NO_NEW_BUILD_OR_RUNTIME",
+  "verified_source_count": 18
+}

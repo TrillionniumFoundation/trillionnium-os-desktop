@@ -1,0 +1,67 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "a50404e09920c680fbeec492f1a97354cd380a30",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1434,
+    "sha256": "90e8d4e0e9ae0dc6696cd12bbcc6c626abd6ca91f0d6d21a9653035d82c7d86a",
+    "git_blob_sha1": "3bc9b3ba2bf7c024d160cfc44d96a724cd1bce40",
+    "retrieval": "shallow_complete_root_with_catalogued_dependencies",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "actual_prepared",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b4a16d18fff808cbeebd22e05a6483ea52491a86"
+    },
+    {
+      "path": "exact-request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0ff55f71038cbe0387a0bea2ed0e1f0da811d845",
+      "bytes": 1529
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b39b3e832a504a30bcc12dcdf68b5f225eab2daf",
+      "bytes": 1837
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "9738ec30403f59a301bd82ce010d1190d50e1166"
+    },
+    {
+      "path": "source_bundle",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bd92000732c8a35f24dbf432b2263940c88a3015"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "actual_prepared",
+      "original_tree": "b4a16d18fff808cbeebd22e05a6483ea52491a86",
+      "checkpoint": 21,
+      "canonical_package": "owner20_normal_prepare02-actual"
+    },
+    {
+      "path": "source",
+      "original_tree": "9738ec30403f59a301bd82ce010d1190d50e1166",
+      "checkpoint": 21,
+      "canonical_package": "owner20-normal02-runtime-source"
+    },
+    {
+      "path": "source_bundle",
+      "original_tree": "bd92000732c8a35f24dbf432b2263940c88a3015",
+      "checkpoint": 21,
+      "canonical_package": "owner20-normal02-freeze-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "state": "ACTUAL_HISTORICAL_NATIVE_FAILURE_BOUND_CURRENT_READ_UNRUN",
+  "actual_native_reader": {
+    "job_id": "1a1b03beb74-fc05-6f41",
+    "tree": "de1cdb5138b1392345f87bfb89304306d5c372a6",
+    "stdout": {
+      "bytes": 20094,
+      "sha256": "ae37d9b93d94cd367aad404652d18519a1c279b2a1087840949e3e3670abce2d"
+    },
+    "bundle": {
+      "bytes": 14924,
+      "sha256": "bcf94b903d33875c05ce18613eba42bdc90c7a1554403b83eeedf8897e0d8ca0"
+    }
+  },
+  "source": {
+    "bytes": 14332,
+    "sha256": "1611155a61f0bf9be3d71bd12b66ecde5ec718f51a868373788b2922416c500e"
+  },
+  "request": {
+    "bytes": 15590,
+    "sha256": "ad43ec64763ab2e79c8e5e7d7166ea957119186773c142161e9c1dae6d6f02b1"
+  },
+  "exact_actual_prelaunch_task_ids": [
+    870
+  ],
+  "exact_original_current_host_manifest": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+  "no_original_shared_source_changed": true,
+  "existing_unknown_launch_preserved": true,
+  "actual_current_tasks_not_yet_read": true,
+  "runtime": {
+    "fixed_current_commands": [
+      [
+        "/system/bin/cmd",
+        "activity",
+        "stack",
+        "list"
+      ],
+      [
+        "/system/bin/cmd",
+        "activity",
+        "stack",
+        "list"
+      ]
+    ],
+    "each_timeout_seconds": 20,
+    "max_commands": 2,
+    "partial_or_failed_command_stops_next_read": true,
+    "new_step": "native-reconciliation-stacks-read-01",
+    "step_created_only_once": true,
+    "full_Flow_scope_guard_and_held_target": true,
+    "original_flow_lock_and_global_action_lock": true,
+    "Main_before_after_maps_must_equal": true,
+    "no_new_helper_nonce_required": true,
+    "no_helper_calls": true,
+    "UI_input_count": 0,
+    "no_launch_scope_created": true,
+    "no_cleanup_authorized": true
+  },
+  "additional_retention": "Retain fixed new command001/002 original metadata before failure/final Main checks, including direct-child joined and actual stream hashes. No raw stack/command stderr export.",
+  "file_changes": "Only new readonly step files from original R5 Flow; original failed phase/scope/attempted records are exact pinned and unchanged.",
+  "cleanup_claims": {
+    "held_binding_and_action_lock_checked": true,
+    "flow_lock_held_until_process_exit": true,
+    "whole_process_tree_cleanup_qualified": false
+  },
+  "source_only_verification": {
+    "pure_JS_binder_executed_with_exact_actual_reader_original": true,
+    "Python_compile": "NOT_EXECUTED",
+    "Python_runtime": "NOT_EXECUTED",
+    "device_dispatch": false
+  },
+  "old_outcome_unknown_not_reclassified": true,
+  "stable_samples_are_only_sampled_observations": true,
+  "UI_window_release_not_claimed": true
+}

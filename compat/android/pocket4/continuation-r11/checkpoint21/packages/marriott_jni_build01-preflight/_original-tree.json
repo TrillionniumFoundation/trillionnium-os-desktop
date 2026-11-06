@@ -1,0 +1,55 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "c1615b250ff0cce81dfcb5d6a3af201a2d32f697",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1200,
+    "sha256": "fd7c6143b1bd88fb0c476d68cc8b599378b38b92f5b18b75704df1d20ab649b6",
+    "git_blob_sha1": "809406c545c2821701e236f3c8649087fbc2cf79",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "actual_source_read",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "82d09f4d0b0eee437385ef458d14d6f298db9dc6"
+    },
+    {
+      "path": "exact-request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "73999d04609de795a3dab3d96735705b003c177c",
+      "bytes": 107348
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b92686882ee212919d5e17728c13357d5b0291c3",
+      "bytes": 5702
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5ea1127d6971c3e0693c9cf0d177cedc0b065b59"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "actual_source_read",
+      "original_tree": "82d09f4d0b0eee437385ef458d14d6f298db9dc6",
+      "checkpoint": 21,
+      "canonical_package": "marriott_source_read03-actual"
+    },
+    {
+      "path": "source",
+      "original_tree": "5ea1127d6971c3e0693c9cf0d177cedc0b065b59",
+      "checkpoint": 21,
+      "canonical_package": "marriott_jni_build01-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

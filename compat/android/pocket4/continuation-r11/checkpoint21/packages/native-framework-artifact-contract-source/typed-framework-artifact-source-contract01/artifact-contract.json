@@ -1,0 +1,257 @@
+{
+  "schema": 1,
+  "state": "SOURCE_CONTRACT_ONLY_NO_ARTIFACT_OBSERVED",
+  "fixed_patch": {
+    "path": "android/native-role-ingress/typed-ingress02-framework.patch",
+    "bytes": 17019,
+    "sha256": "5a6258c4e60446956cb164ef6796a302e2fb9d48e7f41263572ed51f44015493",
+    "git_blob_sha1": "afb84c73f59df2259ece61293d1b2a032767e39f",
+    "full_original_read": true
+  },
+  "locked_builder": {
+    "source_files": 499,
+    "manifest_sha256": "88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701",
+    "actual_ELF_bytes": 34767856,
+    "actual_ELF_sha256": "c758a1e12bbc1925cc36f8cde3b369ab8449ad1cf460a9854b42d627575627d8",
+    "normal_targets": [
+      "framework-minus-apex",
+      "libandroid_runtime"
+    ],
+    "dependency_mode": "Strict",
+    "ALLOW_MISSING_DEPENDENCIES": "false"
+  },
+  "classes": [
+    {
+      "name": "com/android/internal/os/Zygote",
+      "required_methods": [
+        {
+          "name": "requireDroidloomAppZygoteRoleV1",
+          "descriptor": "(Lcom/android/internal/os/ZygoteArguments$AppZygoteForkSpec;IIZ)V",
+          "static": true,
+          "native": false,
+          "Code_required": true
+        },
+        {
+          "name": "nativeRequireDroidloomAppZygoteRoleV1",
+          "descriptor": "(IIZIIIIIIII)V",
+          "private": true,
+          "static": true,
+          "native": true,
+          "Code_required": false
+        }
+      ],
+      "required_Code_member_references": [
+        {
+          "in_method": "requireDroidloomAppZygoteRoleV1",
+          "owner": "com/android/internal/os/ZygoteArguments$AppZygoteForkSpec",
+          "name": "requireMatches",
+          "descriptor": "(IIZ)V"
+        },
+        {
+          "in_method": "requireDroidloomAppZygoteRoleV1",
+          "owner": "com/android/internal/os/Zygote",
+          "name": "nativeRequireDroidloomAppZygoteRoleV1",
+          "descriptor": "(IIZIIIIIIII)V"
+        }
+      ]
+    },
+    {
+      "name": "com/android/internal/os/ZygoteArguments",
+      "required_fields": [
+        {
+          "name": "mRequireDroidloomAppZygoteRoleV1",
+          "descriptor": "Z"
+        },
+        {
+          "name": "mDroidloomUidParsed",
+          "descriptor": "Z",
+          "private": true
+        },
+        {
+          "name": "mDroidloomGidParsed",
+          "descriptor": "Z",
+          "private": true
+        }
+      ],
+      "required_methods": [
+        {
+          "name": "appZygoteForkSpec",
+          "descriptor": "(Landroid/net/Credentials;)Lcom/android/internal/os/ZygoteArguments$AppZygoteForkSpec;",
+          "native": false,
+          "Code_required": true
+        },
+        {
+          "name": "nonemptyAppZygoteValue",
+          "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+          "private": true,
+          "static": true,
+          "Code_required": true
+        },
+        {
+          "name": "canonicalAppZygoteId",
+          "descriptor": "(Ljava/lang/String;Ljava/lang/String;)I",
+          "private": true,
+          "static": true,
+          "Code_required": true
+        }
+      ],
+      "required_Code_member_references": [
+        {
+          "in_method": "appZygoteForkSpec",
+          "owner": "android/net/Credentials",
+          "name": "getUid",
+          "descriptor": "()I"
+        },
+        {
+          "in_method": "appZygoteForkSpec",
+          "owner": "com/android/internal/os/ZygoteArguments$AppZygoteForkSpec",
+          "name": "requireMatches",
+          "descriptor": "(IIZ)V"
+        }
+      ]
+    },
+    {
+      "name": "com/android/internal/os/ZygoteArguments$AppZygoteForkSpec",
+      "final": true,
+      "required_fields": [
+        {
+          "name": "version",
+          "descriptor": "I",
+          "final": true,
+          "static": false
+        },
+        {
+          "name": "kind",
+          "descriptor": "I",
+          "final": true,
+          "static": false
+        },
+        {
+          "name": "initialUid",
+          "descriptor": "I",
+          "final": true,
+          "static": false
+        },
+        {
+          "name": "initialGid",
+          "descriptor": "I",
+          "final": true,
+          "static": false
+        },
+        {
+          "name": "uidMin",
+          "descriptor": "I",
+          "final": true,
+          "static": false
+        },
+        {
+          "name": "uidMax",
+          "descriptor": "I",
+          "final": true,
+          "static": false
+        },
+        {
+          "name": "gidMin",
+          "descriptor": "I",
+          "final": true,
+          "static": false
+        },
+        {
+          "name": "gidMax",
+          "descriptor": "I",
+          "final": true,
+          "static": false
+        },
+        {
+          "name": "socketName",
+          "descriptor": "Ljava/lang/String;",
+          "private": true,
+          "final": true
+        },
+        {
+          "name": "abiList",
+          "descriptor": "Ljava/lang/String;",
+          "private": true,
+          "final": true
+        }
+      ],
+      "required_methods": [
+        {
+          "name": "<init>",
+          "descriptor": "(IIIILjava/lang/String;Ljava/lang/String;)V",
+          "private": true,
+          "Code_required": true
+        },
+        {
+          "name": "requireMatches",
+          "descriptor": "(IIZ)V",
+          "Code_required": true
+        },
+        {
+          "name": "copyRuntimeArguments",
+          "descriptor": "()[Ljava/lang/String;",
+          "Code_required": true
+        }
+      ]
+    },
+    {
+      "name": "com/android/internal/os/ZygoteConnection",
+      "required_complete_Code_method_containing_in_order": [
+        {
+          "owner": "com/android/internal/os/ZygoteArguments",
+          "name": "appZygoteForkSpec",
+          "descriptor": "(Landroid/net/Credentials;)Lcom/android/internal/os/ZygoteArguments$AppZygoteForkSpec;"
+        },
+        {
+          "owner": "com/android/internal/os/ZygoteArguments$AppZygoteForkSpec",
+          "name": "copyRuntimeArguments",
+          "descriptor": "()[Ljava/lang/String;"
+        },
+        {
+          "owner": "com/android/internal/os/Zygote",
+          "name": "requireDroidloomAppZygoteRoleV1",
+          "descriptor": "(Lcom/android/internal/os/ZygoteArguments$AppZygoteForkSpec;IIZ)V"
+        }
+      ],
+      "enclosing_method_name_not_inferred_from_patch_hunk": true
+    }
+  ],
+  "java_evidence_requirements": [
+    "Bind the exact implementation JAR path and complete size/SHA to this successful normal build graph. A header/turbine/stub JAR is insufficient even if names/descriptors match.",
+    "Read all four exact class entries completely with unique ZIP member names, bounded declared/decompressed sizes, full class size/SHA and full Code structure.",
+    "Require the specified executable bodies and direct Code references; constant-pool presence alone is insufficient.",
+    "Do not infer full bytecode semantics, verifier acceptance, runtime policy or source equivalence from Code presence alone. Preserve normal compiler and actual graph provenance."
+  ],
+  "android_JNI": {
+    "source": "frameworks/base/core/jni/com_android_internal_os_Zygote.cpp",
+    "projected_source": {
+      "bytes": 132241,
+      "sha256": "72d8cf730e8e3ec4ff4b88106e73e076eab7e761a405a5d854e62e7a5fadc095"
+    },
+    "header": "frameworks/base/core/jni/droidloom_app_zygote_spec.h",
+    "projected_header": {
+      "bytes": 1647,
+      "sha256": "a73c497e4979fcb23b996b8d8d98c63eb48fe1eebe65d7ff9ec87d7d4ab8d1ca"
+    },
+    "method": "nativeRequireDroidloomAppZygoteRoleV1",
+    "JNI_descriptor": "(IIZIIIIIIII)V",
+    "native_function": "com_android_internal_os_Zygote_nativeRequireDroidloomAppZygoteRoleV1",
+    "required_original_header_constant": "kAppZygoteRoleAuthorizationEnabled = false",
+    "requirements": [
+      "Use the actual compile rule/command for this Android variant TU, including target/sysroot and the exact typed header dependency. A host object does not qualify.",
+      "Record the actual object format; do not assume ELF if the actual compiler emits LTO bitcode.",
+      "Bind this TU output to the actual Android libandroid_runtime link input, and bind the complete final library size/SHA to the selected build output.",
+      "A string occurrence or host-linked libandroid_runtime cannot replace the compile/header/link proof."
+    ]
+  },
+  "outputs": {
+    "implementation_JAR": null,
+    "Android_TU_object": null,
+    "header_dependency_record": null,
+    "Android_libandroid_runtime": null
+  },
+  "normal_success_and_Java_JNI_artifacts_qualified": false,
+  "runtime_authorization_enabled": false,
+  "installation_performed": false,
+  "all_apps_production_ready": false
+}

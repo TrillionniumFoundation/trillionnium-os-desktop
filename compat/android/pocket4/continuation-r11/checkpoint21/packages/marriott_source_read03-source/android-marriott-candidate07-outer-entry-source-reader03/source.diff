@@ -1,0 +1,50 @@
+--- baseline/read.py
++++ read.py
+@@ -1,4 +1,4 @@
+-"""Two fixed candidate07 adapter sources, exact whole SHA; collection only.
++"""Three fixed candidate07 outer-entry sources, exact whole SHA; collection only.
+ No source execution, process creation, namespace entry, Main or Android access.
+ """
+ import hashlib
+@@ -9,10 +9,11 @@
+ import sys
+ import time
+ 
+-ROOT = '/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-11/candidate-07/engine/kernel_api/'
++ROOT = '/home/alex/work/pocket4-metadata-generation-r8-20261104/native-owned-01/overlay-reconstruction-11/candidate-07/engine/'
+ TARGETS = (
+-    ('open_emulation.cc', 'defb5fc77b870c36e6db0269179ffc14f17dce3896d069b552e6e4bd54ec9404'),
+-    ('unistd_emulation.cc', '7c1571f126fddabdb36272fbbc81e2a7fbd27cba6d286cecfb90b56dc4be0445'),
++    ('kernel_api/arm64/gen_syscall_emulation_arm64_to_x86_64-inl.h', '06f5e1ee8ea48449d5be5027ea76dbbba509721c7d4ae621049d81a616c025ee'),
++    ('tests/tests_apk/Android.bp', 'e7b5ca968da9969df0e8fa3d60d225342e7a7adb58f44abb57ab87254a4b1295'),
++    ('tests/tests_apk/jni/jni_test_main.cc', 'eb879a062d5dcaac416a68a188036aa05934f3d9edae8909bc54bcb8c287fc55'),
+ )
+ FILE_BOUND = 65536
+ OUTPUT_BOUND = 262144
+@@ -28,7 +29,7 @@
+             'bytes': s.st_size, 'mtime_ns': s.st_mtime_ns, 'ctime_ns': s.st_ctime_ns}
+ 
+ def collect():
+-    result = {'schema': 'marriott-fixed-candidate07-adapter-source-read01',
++    result = {'schema': 'marriott-fixed-candidate07-outer-entry-source-read03',
+               'collection_complete': False, 'source_execution': False,
+               'Main_actions': 0, 'Android_actions': 0, 'children_started': 0,
+               'first_error': None, 'secondary_errors': [], 'files': [], 'fd_close_records': [],
+@@ -54,7 +55,7 @@
+     def take(label, fd):
+         row = {'label': label, 'fd': fd, 'close_attempted_once': False, 'closed': False}
+         owned.append(row)
+-        need(len(owned) <= 64, 'FIXED_FD_BOUND')
++        need(len(owned) <= 74, 'FIXED_FD_BOUND')
+         return fd
+     def close_all():
+         for row in reversed(owned):
+@@ -131,7 +132,7 @@
+         result['all_owned_FDs_closed'] = all(x['closed'] for x in owned)
+     result['elapsed_ns'] = time.monotonic_ns() - started
+     result['collection_complete'] = (result['first_error'] is None and
+-        len(result['files']) == 2 and result['all_owned_FDs_closed'])
++        len(result['files']) == 3 and result['all_owned_FDs_closed'])
+     if not result['collection_complete']:
+         for row in result['files']:
+             row.pop('utf8', None)

@@ -1,0 +1,76 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "d380197249b6657afec999c2eee95980717bf85a",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 94083,
+    "sha256": "c6d508d78b632f3adf6f09a453fb1ebd66c61d709553bb28f4ee9209df4dc4a8",
+    "git_blob_sha1": "2e4923ff5ae3bd50b8cdb05399f95bead4d6539e",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "install-stdout.original.jsonl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d4a70658f39a9b7bf2a0d2ba69b62338e6c0124",
+      "bytes": 672
+    },
+    {
+      "path": "install-terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b2db6fb80506f6dde98b1fba20c8a03bda6e4edd",
+      "bytes": 729
+    },
+    {
+      "path": "install_admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c44eb9a781b1c33ac428ce504367dc57fce6c278"
+    },
+    {
+      "path": "old_reader",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b2772d8f11e0a604e39b758ad0c1a3d6a0f60d79"
+    },
+    {
+      "path": "read.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e94cf730c735552910f42912e5ac639c3c48f77a",
+      "bytes": 12881
+    },
+    {
+      "path": "request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3cab8266652dcf2f7bf082fa5378f4265f00222b",
+      "bytes": 13558
+    },
+    {
+      "path": "review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "57c4995e6d397ec512e29f5f6dfdd41fd5b9facb",
+      "bytes": 2964
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "install_admission",
+      "original_tree": "c44eb9a781b1c33ac428ce504367dc57fce6c278",
+      "checkpoint": 21,
+      "canonical_package": "ihg_r3_install01-admission"
+    },
+    {
+      "path": "old_reader",
+      "original_tree": "b2772d8f11e0a604e39b758ad0c1a3d6a0f60d79",
+      "checkpoint": 20,
+      "canonical_package": "app_ihg_install_six_read03-preflight_tree"
+    }
+  ],
+  "original_recursive_leaf_count": 200
+}

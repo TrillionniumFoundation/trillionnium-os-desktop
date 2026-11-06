@@ -1,0 +1,72 @@
+{
+  "schema": 1,
+  "kind": "native-registration-transaction-host02-root-preflight",
+  "state": "ROOT_REVIEWED_SOURCE_ONLY_UNRUN",
+  "source_tree": "1e7fb4d6fc4a158fc64599fe951b46986347ed64",
+  "source_proof": {
+    "tree": "1e7fb4d6fc4a158fc64599fe951b46986347ed64",
+    "leaf_count": 40,
+    "logical_bytes": 1443136,
+    "directory_count_including_root": 4,
+    "recursive_entries": 43,
+    "truncated": false,
+    "all_paths_modes_sizes_blob_sha1_match": true,
+    "all_directory_tree_sha1_recomputed": true
+  },
+  "controller": {
+    "bytes": 82034,
+    "sha256": "b21d6e05ee67ac138b277dba6b74463fd75088d55dadaa445eee5ec2cd1ce11b",
+    "git_blob_sha1": "72e81b0d79927abe895d90cf04c60272d4c107a8"
+  },
+  "controller_inverse_exact": true,
+  "hunks": 7,
+  "independent_request_reproduction": true,
+  "unchanged_five_packet_bodies": [
+    "candidate-source-manifest.json",
+    "candidate-control.rs",
+    "fixture-lib.rs",
+    "transaction_tests.rs",
+    "fixture-Cargo.toml"
+  ],
+  "strict_dependency_and_compiler_qualification_unchanged": [
+    "selected_dependencies",
+    "qualify_fixture_compile"
+  ],
+  "prior_actual_failure_tree": "3a1d8b8c4c07276f32475b4d043caac60aff6e10",
+  "dependency_actual_tree": "b7a74eab3394a0dfc106055bb2ff1cbdb7001b06",
+  "request": {
+    "bytes": 302743,
+    "sha256": "dc683e9e14369b435d124df45250b1f4954a83b31036d6d7332effe622ad7563",
+    "git_blob_sha1": "3ca2eeb50a2d0353898ad4419b7d24d623b95826"
+  },
+  "stdin": {
+    "bytes": 279647,
+    "sha256": "b1068b8058bd96f2c5f7d03e1feeaca4c2fd5c58bf4df44804c44dd98fac6fbb",
+    "git_blob_sha1": "950080a76dc9b4d7013f7006e89a4b75ef12069a"
+  },
+  "changes": [
+    "create-only exact original lock seed in new fixture",
+    "ordinary offline metadata reconciliation, then unchanged locked metadata/original versions/checksums/45 archive gate",
+    "distinguish absent baseline from source drift; PASS requires full source baseline equality"
+  ],
+  "ordinary_commands_expected": 42,
+  "lifecycle_controls_expected": 3,
+  "focused_tests_expected": 27,
+  "resource_profile": {
+    "cpu_quota_percent": 100,
+    "memory_max_bytes": 1073741824,
+    "nice": 15,
+    "tool_seconds": 600,
+    "work_seconds": 450
+  },
+  "Main_access": false,
+  "Android_access": false,
+  "framework_baseline_required": false,
+  "deployment_qualified": false,
+  "whole_apps_ready": 0,
+  "remaining_blockers": [
+    "real-provider expected-object cleanup",
+    "wire retirement ACK after actual engine completion",
+    "Android build and actual app acceptance"
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "a8edc45333e61318b219db12a27ce756ec617fcc",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 2265,
+    "sha256": "279cfdd646fe3391e697a493c834bbf5596dd7b153ef8af0e45aab28f5e39c05",
+    "git_blob_sha1": "d036aa62d77340d71ba20ecb089ec9d6d85c8294",
+    "retrieval": "shallow_complete_root_with_catalogued_dependencies",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "projection-source.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ee3b1e7ca7f815aacf861002322f418ec86736a",
+      "bytes": 5816
+    },
+    {
+      "path": "projector_source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "739e767deb914a62d12542c9a67434c4c76d38e9"
+    },
+    {
+      "path": "reader-terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7c2e0fa55147778e21c0117e2bda4e02624dcc4",
+      "bytes": 735
+    },
+    {
+      "path": "reader_admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "add0260b52f42089472a6a1d5b237a1676b85ec1"
+    },
+    {
+      "path": "runtime-coordinator-stdout.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "87262c489f2f79ed0f1adf36db6cd183770d171e",
+      "bytes": 516
+    },
+    {
+      "path": "runtime-terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d18728ddf27445a131d4e1ed372b691e3908c3f3",
+      "bytes": 726
+    },
+    {
+      "path": "runtime_admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "649d42321bf01f9b068e2d46818385206b07b6f0"
+    },
+    {
+      "path": "safe-runtime-projection.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "286d5fa67ff5fadf671ad57ba4c4a764f03aad8f",
+      "bytes": 100499
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "projector_source",
+      "original_tree": "739e767deb914a62d12542c9a67434c4c76d38e9",
+      "checkpoint": 21,
+      "canonical_package": "owner20-normal02-safe-projector"
+    },
+    {
+      "path": "reader_admission",
+      "original_tree": "add0260b52f42089472a6a1d5b237a1676b85ec1",
+      "checkpoint": 21,
+      "canonical_package": "owner20_runtime_read02-admission"
+    },
+    {
+      "path": "runtime_admission",
+      "original_tree": "649d42321bf01f9b068e2d46818385206b07b6f0",
+      "checkpoint": 21,
+      "canonical_package": "owner20_normal_runtime02-admission"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

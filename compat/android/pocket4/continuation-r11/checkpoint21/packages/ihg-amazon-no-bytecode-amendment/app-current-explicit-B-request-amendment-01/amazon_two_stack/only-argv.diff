@@ -1,0 +1,10 @@
+--- original-unrun-exact-request.json
++++ explicit-B-exact-request.json
+@@ -3,6 +3,7 @@
+     "-n",
+     "/usr/bin/python3",
+     "-I",
++    "-B",
+     "-c",
+     "import hashlib,sys\nraw=sys.stdin.buffer.read(32769)\nassert len(raw)==22612 and hashlib.sha256(raw).hexdigest()==\"57b4ce695df3e1e6b58e80ec11a7895759cdb5ffa9d6fac6846a6e34297acea6\"\nscope={\"__name__\":\"fixed_amazon_current_two_stack_read\",\"__file__\":\"<fixed-current-Amazon-reader>\",\"SOURCE_SHA256\":\"57b4ce695df3e1e6b58e80ec11a7895759cdb5ffa9d6fac6846a6e34297acea6\"}\nexec(compile(raw,\"current_two_stack.py\",\"exec\"),scope)\nraise SystemExit(scope[\"main\"]())\n"
+   ],

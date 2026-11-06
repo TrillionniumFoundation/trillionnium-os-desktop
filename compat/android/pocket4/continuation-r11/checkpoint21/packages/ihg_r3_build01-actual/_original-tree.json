@@ -1,0 +1,76 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "4e6e4e71dd6dc2a8d00b9a7a3eeec83ca6604cf6",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 20510,
+    "sha256": "59145bd6f45c6f372a0c0face9014054141d5501d6188dcbc7b61a87e6a036f5",
+    "git_blob_sha1": "285b21720b5f15bfa36557c6457d7cdf43e1527b",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8097e8f6e6511fcfe33ca09925204a1fa644d156"
+    },
+    {
+      "path": "build-result.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a2ca4792d184ec0e18738f478dfae3fea4ea6140",
+      "bytes": 25686
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "37785a656df5d46604ba0aa3fe3de5a6d80f6bab",
+      "bytes": 796
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d121dfd5e11369590df51fa771cdf019bd0fa0b1"
+    },
+    {
+      "path": "stage-result.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "741fa5e05773e9c0c860bea368e1938ad71d180d",
+      "bytes": 1935
+    },
+    {
+      "path": "status.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4765f63be330beef18a224b9e41372a374ccd174",
+      "bytes": 729
+    },
+    {
+      "path": "stdout.original.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5fbf9350dc7f500b37d420bdb924e5992b1abf4a",
+      "bytes": 482
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "8097e8f6e6511fcfe33ca09925204a1fa644d156",
+      "checkpoint": 21,
+      "canonical_package": "ihg_r3_build01-admission"
+    },
+    {
+      "path": "source",
+      "original_tree": "d121dfd5e11369590df51fa771cdf019bd0fa0b1",
+      "checkpoint": 21,
+      "canonical_package": "ihg-r3-build01-source"
+    }
+  ],
+  "original_recursive_leaf_count": 51
+}

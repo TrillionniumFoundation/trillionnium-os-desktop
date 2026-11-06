@@ -1,0 +1,83 @@
+{
+  "compiler_authority": {
+    "bytes": 728003,
+    "git_blob": "65b73e78dbc48d7e62e2c9ca6276909b8b8efd16",
+    "sha256": "5cc813715a261701cad3be931b9e53145229dec7c803d828a1097e4fe4ad166b"
+  },
+  "current_App_reproduction": false,
+  "new_GTest_and_ARM64_headers": {
+    "fixed_roots": [
+      "external/googletest/googletest/include",
+      "bionic/libc/include",
+      "bionic/libc/kernel",
+      "libnativehelper/include_jni",
+      "prebuilts/clang/host/linux-x86/clang-r584948b/include/c++/v1",
+      "prebuilts/clang/host/linux-x86/clang-r584948b/lib/clang/22/include"
+    ],
+    "old_795_host_headers_do_not_qualify_new_inputs": true,
+    "status": "FIRST_OBSERVED_IN_PROPOSED_PREPROCESS"
+  },
+  "original_candidate": "candidate-07",
+  "original_compile_scope": {
+    "bytes": 636576,
+    "git_blob": "c26917a55bf7d362457a9ce6ffbcffd9c9882b10",
+    "sha256": "5a09aa094c960a2bcc2d357fa732aac0cdb95203d25d3b690ced62497bb1c1d1"
+  },
+  "original_manifest": {
+    "bytes": 370622,
+    "file_count": 949,
+    "git_blob": "6b663fdea78c999bce12e055e3b0559a70829f53",
+    "sha256": "e10024548a5b2b5a391ecc9ddb3ea2f19b95a6fea3437f40207a0f4721745a93"
+  },
+  "original_three_source_read": {
+    "all_74_FDs_closed": true,
+    "carrier": {
+      "bytes": 48482,
+      "git_blob_sha": "e649d1be46367c7efb4fbddc30305d452b534ee1",
+      "sha256": "b253b72301b324cd4f52a6c9516347ad91f49e76f3d6f25743890623f6f57194"
+    },
+    "collection_complete": true,
+    "job_id": "1a1b0c5a881-fc05-72c6",
+    "tree": "82d09f4d0b0eee437385ef458d14d6f298db9dc6"
+  },
+  "public_source_full_byte_matches": [
+    {
+      "bytes": 4020,
+      "expected_manifest_sha256": "49ca601e9bb1785a891d88fbc670c61eedde764e7055c994bde218cc1905094a",
+      "git_blob_sha": "b152ff24cb99dcb7ec7f3f209576881b370d6c37",
+      "path": "engine/tests/tests_apk/jni/jni_test.cc",
+      "root_body_observation_claimed": false,
+      "sha256": "49ca601e9bb1785a891d88fbc670c61eedde764e7055c994bde218cc1905094a",
+      "source": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_frameworks_libs_binary_translation/main/tests/tests_apk/jni/jni_test.cc"
+    },
+    {
+      "bytes": 928,
+      "expected_manifest_sha256": "aaf95c61b8cce2b46f7b5d27e46fe18a550d04f9e8f54cc71566576cae5fb751",
+      "git_blob_sha": "8c99422f153ca6ce7ff41b82caeb259fb7aa99b3",
+      "path": "engine/tests/tests_apk/jni/jni_test_main.h",
+      "root_body_observation_claimed": false,
+      "sha256": "aaf95c61b8cce2b46f7b5d27e46fe18a550d04f9e8f54cc71566576cae5fb751",
+      "source": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_frameworks_libs_binary_translation/main/tests/tests_apk/jni/jni_test_main.h"
+    },
+    {
+      "bytes": 2508,
+      "expected_manifest_sha256": "8cafdf7b40f3adb041018ac6a0edf95e692ab0069b4e0f1918ae78171db28799",
+      "git_blob_sha": "3c4cfe21d51c89815bbdcb2f3748b65b9e54d8fe",
+      "path": "engine/tests/tests_apk/src/com/example/ndk_tests/NdkTests.java",
+      "root_body_observation_claimed": false,
+      "sha256": "8cafdf7b40f3adb041018ac6a0edf95e692ab0069b4e0f1918ae78171db28799",
+      "source": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_frameworks_libs_binary_translation/main/tests/tests_apk/src/com/example/ndk_tests/NdkTests.java"
+    },
+    {
+      "bytes": 1234,
+      "expected_manifest_sha256": "947ed215ecb0daf9dc76b91d50e73d15b52acb5a33fcf77530885642e0c834ac",
+      "git_blob_sha": "f9a28ef0542e00541a98b2e334435f09540cd3c4",
+      "path": "engine/tests/tests_apk/src/com/example/ndk_tests/NdkTestsActivity.java",
+      "root_body_observation_claimed": false,
+      "sha256": "947ed215ecb0daf9dc76b91d50e73d15b52acb5a33fcf77530885642e0c834ac",
+      "source": "https://raw.githubusercontent.com/aosp-mirror-neo/platform_frameworks_libs_binary_translation/main/tests/tests_apk/src/com/example/ndk_tests/NdkTestsActivity.java"
+    }
+  ],
+  "schema": 1,
+  "source_only": true
+}

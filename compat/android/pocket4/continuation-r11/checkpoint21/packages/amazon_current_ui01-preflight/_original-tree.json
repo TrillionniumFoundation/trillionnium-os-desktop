@@ -1,0 +1,73 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "53e17209720b27f0eccb673cd07a8f89d27cfc5c",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 2030075,
+    "sha256": "da266e7e872ee7ecae1c65d3a96bcc92f2ecd1a188fef097664999354cdbbaea",
+    "git_blob_sha1": "b65d44137c4c9d0f16fd717c8bc2056ad081689f",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "decision.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "af4b94b903a6a129f30fd9d7c1dbdd58633b9789",
+      "bytes": 504
+    },
+    {
+      "path": "retirement_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ebfe54e3151d3d688ad01a6c50ba0f64e94a68a1"
+    },
+    {
+      "path": "reviewed_source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f0212e73ca4f8e12030d3c00c7ec61ada8390e59"
+    },
+    {
+      "path": "reviewed_source/actual_controls",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5875cf02fdd24713fc971a738be051e188aa7569"
+    },
+    {
+      "path": "reviewed_source/root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "081daa0976682cbe8f166e71ddc52e030f0f5aae",
+      "bytes": 1650
+    },
+    {
+      "path": "reviewed_source/source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "75c20528df61f9956f535723149b4dce4b57c0d0"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "retirement_actual",
+      "original_tree": "ebfe54e3151d3d688ad01a6c50ba0f64e94a68a1",
+      "checkpoint": 21,
+      "canonical_package": "bili_retire01-actual"
+    },
+    {
+      "path": "reviewed_source/actual_controls",
+      "original_tree": "5875cf02fdd24713fc971a738be051e188aa7569",
+      "checkpoint": 21,
+      "canonical_package": "amazon_current_controls01-actual"
+    },
+    {
+      "path": "reviewed_source/source",
+      "original_tree": "75c20528df61f9956f535723149b4dce4b57c0d0",
+      "checkpoint": 21,
+      "canonical_package": "amazon-current-ui01-source"
+    }
+  ],
+  "original_recursive_leaf_count": 3296
+}

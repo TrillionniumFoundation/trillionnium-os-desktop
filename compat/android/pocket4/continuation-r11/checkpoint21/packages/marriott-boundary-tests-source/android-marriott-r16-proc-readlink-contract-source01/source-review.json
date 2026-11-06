@@ -1,0 +1,111 @@
+{
+  "Hertz_shared_cause_asserted": false,
+  "Main_modified": false,
+  "current_reproduction_asserted": false,
+  "defect": {
+    "causal_limit": "Historical Marriott metadata supports an immediate compatibility defect. No corrected-runtime A/B, current-epoch reproduction, or business success is asserted.",
+    "observed_source": "Maps bytes are returned in the named guest memfd; integer FD bookkeeping is not origin authentication. The readlink adapter redirects only the main executable and otherwise calls kernel readlinkat.",
+    "open_entry": "OpenatProcSelfMapsForGuest",
+    "readlink_entry": "ReadLinkAtForGuest"
+  },
+  "device_actions": 0,
+  "factory_review": {
+    "factory_or_outer_ARM64_runtime_qualified": false,
+    "guest_client_supplied": false,
+    "pins": {
+      "bytes": 7698,
+      "git_blob_sha": "270357da49978e45cd74acf03b89dbc6f6750d7c",
+      "sha256": "072315957a20bd8fdd83efccbea0ca633a3815f867bb07d6091bc42b07762db5"
+    },
+    "protocol": {
+      "bytes": 5051,
+      "git_blob_sha": "a8fed08ab5e0b7a2f1ff891de7944580672639bb",
+      "sha256": "b942f4c76fc34d8a124ecc8bb1af8503e4bc93a58f87b654771b3793072f2df9"
+    },
+    "scope": "Full pins/README/input bindings/role_snapshot.cc/protocol, not a new complete Registry or Session audit.",
+    "snapshot": {
+      "bytes": 11168,
+      "git_blob_sha": "7b0ecb0365f62076193a12b617fbeec968556b25",
+      "sha256": "f234d00e9823411c9cd55a7e3c6ea52cac505b08c7dbf96894e5b8487dd3e335"
+    }
+  },
+  "historical_date_utc": "2026-11-04",
+  "historical_diagnostic": {
+    "bytes": 4793,
+    "git_blob_sha": "9fa78b47279db6bc55a12a1eb213dfba85bf00e8",
+    "sha256": "0a30f2f0f28a92e9cd69b06bdb69a08de8d594ef09a0b57ac6fe757ffcca9fc1"
+  },
+  "historical_epoch": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "matched_sources": [
+    {
+      "bytes": 17474,
+      "git_blob_sha": "26866a5ebc12a640e1a88fe6b3688f072179cb56",
+      "path": "kernel_api/open_emulation.cc",
+      "sha256": "90515622bd3837d34c70b92a122fa77ae119e36237ff2226c1df2e6dbc03543c"
+    },
+    {
+      "bytes": 1747,
+      "git_blob_sha": "8af31a036830ff157bf67f35d79b090c90d41395",
+      "path": "kernel_api/unistd_emulation.cc",
+      "sha256": "de0398e847a5e1010de27f788d47e19558524f5236fdab34d09088e4ad5e3b88"
+    },
+    {
+      "bytes": 4762,
+      "git_blob_sha": "5352f561184c89f3f761e38cc4ec7aca25c1f80f",
+      "path": "tests/ndk_program_tests/proc_self_maps_test.cc",
+      "sha256": "38f5426868690ca5fcb8d2109408c4ef5950e53aa46e5d7bf554620c1b0bf935"
+    }
+  ],
+  "minimal_missing_source": {
+    "description": "Exact existing guest-facing provenance client/readlink implementation and its current source manifest, including the authenticated Lookup-to-Origin API.",
+    "known_older_client_sha256": "e9e7cd78b2c1386a96d3fbee13a479d0e7b35e858195b9997c84f84e19cfc5fa",
+    "receipt": {
+      "bytes": 6667,
+      "git_blob_sha": "587942c01d7fe2554ef2b73329a254968d024d24",
+      "sha256": "bc7241c9a8abd9fff763051bfb784d41795392cf1ded71a26848ea3761f2524e"
+    }
+  },
+  "production_source_changed": false,
+  "r16_manifest": {
+    "bytes": 151542,
+    "git_blob_sha": "3f10272dd012b5393001377fb622cbd7cc66619e",
+    "sha256": "c6f3d4e1dfb3fde119b7e2fc0b7801043ccece54c8b99140c9cbe32e7452be3b"
+  },
+  "r16_source_commit": "a9496d886a85752ba407b76509952c06cd79ddb8",
+  "runtime_request_created": false,
+  "safe_repair_contract": [
+    "Reuse authenticated root-owned sealed kernel object and complete origin tag; no positive name or integer-FD shortcut.",
+    "Use the existing producer handoff and guest client together; server snapshot code alone is not App integration.",
+    "Preserve ordinary readlink return values, errno, truncation/no-NUL, EINVAL and EFAULT, as well as temporary FD headroom.",
+    "Support dup aliases and reject attribution after replacement, reuse or unauthenticated lookalike creation."
+  ],
+  "schema": 1,
+  "state": "SOURCE_ONLY_UNCOMPILED_UNRUN",
+  "tests": {
+    "F_GETFD_error_checked_before_bit_test": true,
+    "close_range_only_one_owned_fd": true,
+    "closed_slot_reuse_does_not_overwrite_unowned_fd": true,
+    "compiled": false,
+    "executed": false,
+    "names": [
+      "ExecutableFromMmap",
+      "ExecutableFromMprotect",
+      "ExecutableFromFileBackedMmap",
+      "ReadlinkHasCanonicalOwnerPath",
+      "DuplicatedAliasesKeepOriginAfterOriginalClose",
+      "Dup2ReplacementDoesNotKeepMapsAttribution",
+      "ReusedClosedNumberDoesNotKeepMapsAttribution",
+      "CloseRangeOfOnlyOwnedFdDoesNotKeepMapsAttribution",
+      "SealedLookalikeMemfdIsNotTrustedMaps",
+      "ReadlinkLengthAndNoTerminatorSemantics",
+      "ClosedFdAndBadDirfdKeepKernelErrors",
+      "UnwritableBufferReturnsEfaultWithoutAProcessFault"
+    ],
+    "new_count": 9,
+    "original_three_unchanged": true,
+    "required_next": "Qualify actual toolchain/headers, then isolated native and exact candidate translator tests. No tests have been skipped or counted as PASS.",
+    "target_syscall_macro_and_kernel_support_qualified": false,
+    "total_count": 12,
+    "two_lookalike_names": true
+  }
+}

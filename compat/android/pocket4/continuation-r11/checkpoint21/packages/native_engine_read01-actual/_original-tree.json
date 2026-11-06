@@ -1,0 +1,95 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "54d2c0367745056b6b6f5f5845c71f4310ab30b6",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 2474,
+    "sha256": "c89b5fd1ed6b2fc7dfb9e4519b15ef268ff0c6724be25025a8e71dbf92b76cac",
+    "git_blob_sha1": "0b0ccb6d810b285c4208c139f53c4f66594eca88",
+    "retrieval": "shallow roots and complete uncropped descendant trees until canonical dependency cuts",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b84bd04fdb77e527a0695de9d98a34e3e5958c9e"
+    },
+    {
+      "path": "preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2404df9f9a43e481eb7432219265200e7e3416f7"
+    },
+    {
+      "path": "public-source-0-main.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "59c762e5f3cbac018f8643f1f6e6158c364240b8",
+      "bytes": 106816
+    },
+    {
+      "path": "public-source-1-main.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "508958966ce69b50443f6d99c1bceab047d396af",
+      "bytes": 17437
+    },
+    {
+      "path": "public-source-2-Cargo.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "55ac823fa7ccb3ca7a6e672ccba21df641462dd5",
+      "bytes": 1766
+    },
+    {
+      "path": "read-proof.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f99ebbc157332850b8546f9fef5808b40e18e391",
+      "bytes": 804
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f521c42721979ff617d8a2eda0f8c39d095bd72b"
+    },
+    {
+      "path": "stdout.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6621f1dbd68353a3af66e4d952c316d0a638a302",
+      "bytes": 149789
+    },
+    {
+      "path": "terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2eb46c0dc5a4b681edbb5d5198665806ceeb2afc",
+      "bytes": 735
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "b84bd04fdb77e527a0695de9d98a34e3e5958c9e",
+      "checkpoint": 21,
+      "canonical_package": "native_engine_read01-admission"
+    },
+    {
+      "path": "preflight",
+      "original_tree": "2404df9f9a43e481eb7432219265200e7e3416f7",
+      "checkpoint": 21,
+      "canonical_package": "native_engine_read01-preflight"
+    },
+    {
+      "path": "source",
+      "original_tree": "f521c42721979ff617d8a2eda0f8c39d095bd72b",
+      "checkpoint": 21,
+      "canonical_package": "native_engine_read01-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

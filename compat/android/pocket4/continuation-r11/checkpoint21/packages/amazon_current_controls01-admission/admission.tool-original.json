@@ -1,0 +1,35 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-I",
+      "-B",
+      "-c",
+      "import hashlib,json,sys,types\nraw=sys.stdin.buffer.read(524289)\nassert 0<len(raw)<=524288 and hashlib.sha256(raw).hexdigest()=='228650e76ef5214902bacce84cead29276cee2f4b1e7bbdbe795df0c8dfdeae6'\np=json.loads(raw);assert p['schema']==1 and set(p)=={'schema','control_source','control_pin','payload'}\nsrc=p['control_source'].encode();assert p['control_pin']=={'bytes':len(src),'sha256':hashlib.sha256(src).hexdigest()}\nassert hashlib.sha256(src).hexdigest()=='0f856f943d2d52e09cd01aa68cd0c21ff76eec3336224253045f01006658645d'\nmodule=types.ModuleType('amazon_current_pure_controls');module.__file__='<amazon-pure-controls>'\nexec(compile(src,module.__file__,'exec'),module.__dict__);out=module.run_controls(p['payload'])\nassert out['ok'] is True and out['count']==30 and len(out['cases'])==30 and all(v['passed'] is True for v in out['cases'])\nout.update(control_source_sha256=p['control_pin']['sha256'],control_stdin_sha256=hashlib.sha256(raw).hexdigest(),\n    bound_source_pins=p['payload']['bound_source_pins'],nonce_actual=p['payload']['nonce_actual'],\n    actual_helper_uid=10154,fresh_nonce_count=32,scope='PURE_CURRENT_AMAZON_ATTRIBUTION_BINDING_AND_PLAN_CONTROLS',\n    actual_Main_and_target_callbacks=False,real_Java_helper_executed=False,UI_flow_dispatched=False,\n    whole_app_production_ready=False)\nencoded=json.dumps(out,sort_keys=True,separators=(',',':'));assert len(encoded.encode())<=32768;print(encoded,flush=True)\n"
+    ],
+    "created_unix_ms": 1793957659254,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/python3",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b0358276-fc05-6f12",
+    "idempotency_key": "pocket4-current-amazon-r3-search-entry30-controls01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b0358276-fc05-6f12",
+    "request_digest": "b001a5dad6bbb0fbc01475ceaf51b7468c26168e56fa44a446da9ec43371f4ed",
+    "request_fingerprint": 12682600384976105723,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b0358276-fc05-6f12"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b0358276-fc05-6f12"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

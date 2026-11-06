@@ -1,0 +1,76 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "6fffdfd894a19647ae0d1ce6023b2c0ad1ed1668",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 261624,
+    "sha256": "7b0307bde7a3f8576355ed7a12da6de3abc6b318f5207be1e856b486c4573a9f",
+    "git_blob_sha1": "72fca94c87a13132f4b911cf18a11109a8167229",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "actual_install",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "445c0b27c4db288c201dc99c3a801c1807d11571"
+    },
+    {
+      "path": "exclusions.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "566b1e20469301908d8c4adf8ded5777742b05cd",
+      "bytes": 23145
+    },
+    {
+      "path": "generate.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2ea22c1f4418780a2ae7d8d0d09ec085522926b9",
+      "bytes": 22680
+    },
+    {
+      "path": "prior_nonce_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b71dc7e64289da86af0d7969ee27fc676d5feb11"
+    },
+    {
+      "path": "request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6f08506cfe0aae34350991caaac94c1c70a85d55",
+      "bytes": 24357
+    },
+    {
+      "path": "review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "569092d7c90a55bac4f4a62356aa733328d32d05",
+      "bytes": 303
+    },
+    {
+      "path": "specification.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "787ee7d550c0416f9ec4b02109b57a3a3627aee1",
+      "bytes": 3000
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "actual_install",
+      "original_tree": "445c0b27c4db288c201dc99c3a801c1807d11571",
+      "checkpoint": 21,
+      "canonical_package": "ihg_r3_install01-actual"
+    },
+    {
+      "path": "prior_nonce_actual",
+      "original_tree": "b71dc7e64289da86af0d7969ee27fc676d5feb11",
+      "checkpoint": 21,
+      "canonical_package": "ihg_r3_install_nonce01-actual"
+    }
+  ],
+  "original_recursive_leaf_count": 526
+}

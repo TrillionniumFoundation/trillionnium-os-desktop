@@ -1,0 +1,124 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_FROZEN_NOT_EXECUTED",
+  "purpose": "independent exact Android leaf retirement after one unknown native launch",
+  "actual_error_reader": {
+    "bytes": 9670,
+    "sha256": "6cbb272c3c7849724d5e2fa48001d00505c8a52155fec27adda92ba24e2c30ec",
+    "git_blob": "c98c4f6f1740b893abc2930b7fa308bd79e43b47",
+    "git_tree": "0f004bb567015c359969a158e47c32033615c44f",
+    "job_id": "1a1b08805b3-fc05-7134",
+    "controls_passed": 27
+  },
+  "actual_native_chain": {
+    "bytes": 14924,
+    "sha256": "bcf94b903d33875c05ce18613eba42bdc90c7a1554403b83eeedf8897e0d8ca0",
+    "git_blob": "d0ec31c757eba754d82362424d528f1d77aa1b1d",
+    "git_tree": "de1cdb5138b1392345f87bfb89304306d5c372a6"
+  },
+  "actual_current_double_read": {
+    "bytes": 5313,
+    "sha256": "59f3ffa181514451496e43dfc9929e80aef21f6a2fe4cb6db745e452388d69a1",
+    "git_blob": "a03bfccf64914128be87f14b99d1416412e0679b"
+  },
+  "attribution": {
+    "entire_message_bytes": 414,
+    "entire_message_sha256": "06a69fd403766d93148369a9dc947283dc96f27be71e26e8295d510b2f4c62a3",
+    "closed_child_bytes": 126,
+    "closed_child_sha256": "557a6cb23e42b9f540c083e98bf7b4548205cb72ad3e4f39fbc4ad705d03fe87",
+    "parsed_task": 873,
+    "reference_source_format_match": false,
+    "opaque_prefix_semantics_known": false,
+    "installed_source_version_verified": false,
+    "historical_launch_unknown_retained": true
+  },
+  "guard_correspondence": {
+    "R5_manifest_sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+    "recorder": "41689/7101d2ab2cd4b73bf96cab1117c8d0177c2b290255c6946af52ec834115a7f44",
+    "original_Flow_constructor_guard_bind_begin_android_command_close_unchanged": true,
+    "original_parse_stacks_exact_leaf_wait_for_removal_unchanged": true,
+    "original_cleanup_begin_exception_used_only_for_new_independent_retirement": true,
+    "no_old_launch_scope_or_original_reconciliation_created": true,
+    "no_replay_checked_before_and_after_original_flow_lock": true,
+    "fresh_reads": 2,
+    "full_root_and_task_structure_compared_to_exact_prelaunch": true,
+    "before_samples_must_equal": true,
+    "target_uid": 10117,
+    "target_component": "tv.danmaku.bili/tv.danmaku.bili.MainActivityV2",
+    "sole_remove_argv": [
+      "/system/bin/cmd",
+      "activity",
+      "stack",
+      "remove",
+      "873"
+    ],
+    "maximum_remove_commands": 1,
+    "preexisting_task_ids": [
+      870
+    ],
+    "target_must_not_be_preexisting": true,
+    "already_absent_is_zero_input": true,
+    "every_command_requires_joined_rc0_no_timeout_no_errors_exact_stdout_hash_empty_stderr": true,
+    "completion_wait_seconds": 8,
+    "completion_max_reads": 32,
+    "independent_after_always_after_qualified_before": true,
+    "original_global_action_lock_and_held_binding_released_before_success": true,
+    "original_flow_lock_held_until_process_exit": true,
+    "maximum_total_commands": 36,
+    "first_error_and_independent_after_errors_retained": true,
+    "whole_process_tree_cleanup_qualified": false
+  },
+  "pure_controls": {
+    "new_task_gate": 12,
+    "new_command_completion_gate": 10,
+    "run_before_begin_and_any_Android_command": true,
+    "Python_executed_by_this_agent": false,
+    "not_equivalent_to_actual_runtime": true
+  },
+  "source": {
+    "bytes": 63163,
+    "sha256": "cae8f55089cd70ba8e59b1cb7e4be2ef6e64eeda19ab9d34e288a167087c297c",
+    "git_blob": "b5f7ef7b199f953f38fc4fe7a2261b2be7b2d7c6"
+  },
+  "controller": {
+    "bytes": 26370,
+    "sha256": "07277c9b0eae58cb5fa052b0c3ce2df9a1d866bce3381add18e81e97c9767ceb",
+    "git_blob": "45128c84224d90a2121a5181cf7345aaaa7933d2"
+  },
+  "parser": {
+    "bytes": 26065,
+    "sha256": "ba9e2350304b87e35168ee19166bece041930693ea4feedbab47624dd03ce9af",
+    "git_blob": "5578a5572acbf0c787f2c90f464de7651ab2f530"
+  },
+  "request": {
+    "bytes": 66846,
+    "sha256": "24b3735654e7f9d111410cc92222ca328d676321571a4977c369ff17460c983a",
+    "git_blob": "9ecd87cb7ca444e0b456498db345e01c231d4af1"
+  },
+  "safety_limits": {
+    "request_timeout_seconds": 180,
+    "memory_max_bytes": 268435456,
+    "source_max_bytes": 131072,
+    "safe_output_max_bytes": 65536,
+    "raw_native_message_exported": false,
+    "raw_stack_exported": false,
+    "unknown_components_exported": false,
+    "Composer_query_or_remove": false,
+    "RegisterDirect_replay": false,
+    "package_force_stop": false,
+    "UI_automation": false
+  },
+  "remaining_boundaries": {
+    "old_launch_unknown_retained": true,
+    "original_native_registration_conflict_cause_known": false,
+    "registry_rollback_or_recovery_claimed": false,
+    "App_business_verified": false,
+    "whole_App_production_ready": false
+  },
+  "audit_notes": [
+    "The new receipt has a distinct schema and path, and cannot satisfy the original launch-01 action-replay reconciliation contract.",
+    "Parser04 source is unchanged from its actual 27-control run; no inference about the fixed opaque prefix is added.",
+    "All fresh reads and the possible single removal use the original held R5 Android transport; no shared source is modified.",
+    "No Python compile or control execution was performed in this V8 environment. Root remains the sole actual dispatcher."
+  ]
+}

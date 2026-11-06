@@ -1,0 +1,333 @@
+--- R2-install02/install_state.py
++++ R3-install01/install_state.py
+@@ -21,25 +21,25 @@
+ import types
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-02')
++ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-install-state-01')
+ SOURCE = ROOT/'source'
+ WORKER_ROOT = ROOT/'worker'
+ STEP = WORKER_ROOT/'steps/install-state-01'
+-NONCE = 'd7f36b0afc9a26c79639aca6f21e37f2'
+-STATE_NONCE = '6c71a5c324a1c669572981cc38e4f82b'
+-SELF = 'org.droidloom.qa.ihg.r2'
+-QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-02/source')
+-QA_MANIFEST = 'aac50aec5289c542268c8cff29a07d91ef1be68eb57acb4474c6196850836d38'
+-BUILD = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02/build-result.json')
+-BUILD_SHA = 'cb13d895c16840ac88835105b31523de7449b26071b535e1e623c8adc97feefd'
+-BUILD_BYTES = 20396
+-STAGE = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-source-02/stage-result.json')
+-STAGE_SHA = '3c42dfef6ac80cce7bb4a0e37ae2836e70f7bb4ac9f1d836bb56af40a09e6260'
+-STAGE_BYTES = 1930
+-APK = Path('/home/alex/work/pocket4-owned-ihg-qa-r2-build-02/owned-ihg-qa.apk')
+-APK_SHA = 'db7012b9a66f4177f8b4ac57ac3d39e77b8c9871a8b2c364343c420fb9d42f41'
++NONCE = '5c5dc9eed1b260e1004116390c716cef'
++STATE_NONCE = 'a8c37991b3fdd2f6b40d8f6fd6354bf0'
++SELF = 'org.droidloom.qa.ihg.r3'
++QA_ROOT = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-source-01/source')
++QA_MANIFEST = '8d96686f9e6937548e0295679ae6ecdfd3c3a1bf4e48c5feff7def949e81789a'
++BUILD = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/build-result.json')
++BUILD_SHA = '40a7f7865a962b3bdaee3242cfa1fb7d84d860a3fc973ebb344cbc01fe088505'
++BUILD_BYTES = 25686
++STAGE = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-source-01/stage-result.json')
++STAGE_SHA = '764ca6cb3d3b6ea21f1f0425c5d1028352a5db9450925935b42085bb9460df30'
++STAGE_BYTES = 1935
++APK = Path('/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/owned-ihg-qa.apk')
++APK_SHA = '58a24079a59c998d35a7233ccadd2a1d3b90480aa9a66d2c4fc7905ca1d51342'
+ APK_BYTES = 24720
+-SIGNER_SHA = 'a2ae584189d8faa5f3705b9278b29b38f2f32e6ca97b1224e80f9b1dfc0d1e5a'
++SIGNER_SHA = 'df8c2febe4feff3e65d7dc096cad9753bfb2e97b57a65044b314c2a51c7c3f01'
+ REFERENCE_SHA = 'fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'
+ BASE_HOST_ROOT = Path('/home/alex/work/pocket4-current-host-r5-source-01')
+ RECORDER_MANIFEST = '6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e'
+@@ -48,7 +48,7 @@
+ CURRENT_EPOCH = '734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2'
+ BASELINE_SHA = '163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266'
+ QUALIFICATION_SHA = 'f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6'
+-PREVIOUS_HELPER_UID = 10196
++PREVIOUS_HELPER_UID = 10153
+ READER_SHA = '51ecf1c0a12d8bfa9ed721265e14c4f06ef3eff72cbf5840de9569eb09797d40'
+ GUEST_DIR_NAME = 'pocket4-owned-ihg-qa-'+NONCE
+ GUEST_DIR = '/data/local/tmp/'+GUEST_DIR_NAME
+@@ -201,7 +201,7 @@
+     match = re.fullmatch(re.escape('package:'+SELF+' uid:') + r'([0-9]+)\n', text)
+     require(match is not None, 'ONE_EXACT_NEW_PACKAGE_UID_REQUIRED')
+     uid = int(match[1])
+-    require(10000 <= uid < 100000 and uid != PREVIOUS_HELPER_UID and uid not in (10137,10129,10117,10125,10164,10165,10166,10169,10170,10175), 'NEW_APP_UID_REQUIRED')
++    require(10000 <= uid < 100000 and uid != PREVIOUS_HELPER_UID and uid not in (10137,10129,10117,10125,10164,10165,10166,10169,10170,10175,10196), 'NEW_APP_UID_REQUIRED')
+     return uid
+ 
+ class OwnedApk:
+--- R2-install02/ihg_context.py
++++ R3-install01/ihg_context.py
+@@ -47,7 +47,7 @@
+ 
+ def ordered_commands(qa, self_package, guest_apk, state_nonce):
+     require(qa.PACKAGE == PACKAGE and qa.UID == UID and
+-            qa.SELF == self_package == 'org.droidloom.qa.ihg.r2', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
++            qa.SELF == self_package == 'org.droidloom.qa.ihg.r3', 'EXACT_AMAZON_QA_SOURCE_REQUIRED')
+     state = {'protocol':qa.PROTOCOL,'nonce':state_nonce,'op':'state'}
+     qa.validate_request(state)
+     own_uid = ['/system/bin/cmd','package','list','packages','-U','--user','0',self_package]
+--- R2-install02/stage_execute.py
++++ R3-install01/stage_execute.py
+@@ -2,9 +2,9 @@
+ """Exact ihg current-baseline install/state staging with its own target context."""
+ import hashlib,json,os,stat,sys,types
+ from pathlib import Path,PurePosixPath
+-ROOT=Path('/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-02')
++ROOT=Path('/home/alex/work/pocket4-owned-ihg-qa-r3-install-state-01')
+ SOURCE=ROOT/'source'
+-NONCE='d7f36b0afc9a26c79639aca6f21e37f2'
++NONCE='5c5dc9eed1b260e1004116390c716cef'
+ REFERENCE_SHA='fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2'
+ FILES={'install_state.py','ihg_context.py','ihg_transport.py','stage_execute.py',
+        'make_request.py','INPUTS.json','README.md','host/source-manifest.json','host-stage-actual.json',
+@@ -99,8 +99,8 @@
+     transport=load_text(files['ihg_transport.py'],SOURCE/'ihg_transport.py','current_target_transport_controls')
+     controls_module=load_text(files['check_install_binding.py'],SOURCE/'check_install_binding.py','current_install_pure_controls')
+     controls=controls_module.run_controls(entry,actual_host,host_manifest,context,transport,baseline,ref,files,packet['source_manifest_sha256'])
+-    require(controls['all_passed'] is True and controls['count']==38 and
+-            len(controls['cases'])==38 and all(x['passed'] is True for x in controls['cases']),
++    require(controls['all_passed'] is True and controls['count']==40 and
++            len(controls['cases'])==40 and all(x['passed'] is True for x in controls['cases']),
+             'ACTUAL_CURRENT_APP_CONTEXT_CONTROLS_REQUIRED')
+     epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'current_install_stage_epoch')
+     before=ref.main_guard(baseline,epoch)
+--- R2-install02/make_request.py
++++ R3-install01/make_request.py
+@@ -7,9 +7,9 @@
+ from pathlib import Path
+ 
+ HERE=Path(__file__).resolve().parent
+-KEY='pocket4-owned-ihg-qa-r2-current-r5-install-state-02-20261106'
+-ROOT='/home/alex/work/pocket4-owned-ihg-qa-r2-install-state-02'
+-NONCE='d7f36b0afc9a26c79639aca6f21e37f2'
++KEY='pocket4-owned-ihg-qa-r3-current-r5-install-state-01-20261106'
++ROOT='/home/alex/work/pocket4-owned-ihg-qa-r3-install-state-01'
++NONCE='5c5dc9eed1b260e1004116390c716cef'
+ 
+ 
+ def sha(raw):
+--- R2-install02/check_install_binding.py
++++ R3-install01/check_install_binding.py
+@@ -3,7 +3,7 @@
+ import types
+ import json
+ 
+-CONTROL_COUNT = 38
++CONTROL_COUNT = 40
+ 
+ def run_controls(entry, actual_host, manifest, context, transport, baseline, ref, files, source_manifest_sha256):
+     rows = []
+@@ -93,6 +93,23 @@
+     ctx.scope['package']='tv.danmaku.bili'
+     rejected('guard_rejects_tampered_target_before_callbacks',lambda:ctx.guard())
+     entry.require(calls=={'Main':0,'target':0,'command':0},'PURE_CONTROL_CALLBACK_OR_COMMAND_ATTEMPTED')
++
++    qa_manifest=json.loads(entry.read(entry.QA_ROOT/'SOURCE_PINS.json',131072,entry.QA_MANIFEST))
++    qa=entry.module(entry.QA_ROOT/'qa_contract.py',qa_manifest['files']['qa_contract.py']['sha256'],'ihg_r3_install_plan_contract')
++    entry.require(qa.SELF==entry.SELF=='org.droidloom.qa.ihg.r3' and
++                  qa.PROTOCOL=='pocket4-owned-ihg-qa-v3','EXACT_R3_PLAN_CONTRACT')
++    actual_plan=context.ordered_commands(qa,entry.SELF,entry.GUEST_APK,entry.STATE_NONCE)
++    state_request={'protocol':qa.PROTOCOL,'nonce':entry.STATE_NONCE,'op':'state'}
++    qa.validate_request(state_request)
++    entry.require(len(actual_plan)==13 and actual_plan[0]==(context.LIST,15,False) and
++                  actual_plan[1]==(context.PATHS,15,False) and
++                  actual_plan[3]==(entry.INSTALL,40,True) and
++                  actual_plan[7]==(qa.instrumentation_argv(state_request),20,False) and
++                  sum(item[2] is True for item in actual_plan)==1,
++                  'ACTUAL_R3_ORDERED_INSTALL_STATE_PLAN')
++    yes('production_ordered_commands_actual_R3_contract_positive')
++    rejected('production_ordered_commands_old_R2_package_rejected',lambda:context.ordered_commands(
++        qa,'org.droidloom.qa.ihg.r2',entry.GUEST_APK,entry.STATE_NONCE))
+     rows.extend(run_source_controls(entry,files,source_manifest_sha256))
+     entry.require(len(rows)==CONTROL_COUNT and len({x['name'] for x in rows})==CONTROL_COUNT,
+                   'EXACT_CURRENT_CONTEXT_CONTROL_COUNT')
+--- R2-install02/INPUTS.json
++++ R3-install01/INPUTS.json
+@@ -1,7 +1,7 @@
+ {
+   "schema": 2,
+   "state": "ACTUAL_CURRENT_BUILD_AND_HOST_BOUND_INSTALL_UNRUN",
+-  "helper_package": "org.droidloom.qa.ihg.r2",
++  "helper_package": "org.droidloom.qa.ihg.r3",
+   "helper_uid": null,
+   "target": {
+     "package": "com.ihg.apps.android",
+@@ -13,22 +13,22 @@
+     "sha256": "12ea3d26347180a6a25961a3f72105d56461d51fc6892283fdaac81fc0fffcff"
+   },
+   "build": {
+-    "path": "/home/alex/work/pocket4-owned-ihg-qa-r2-build-02/build-result.json",
+-    "bytes": 20396,
+-    "sha256": "cb13d895c16840ac88835105b31523de7449b26071b535e1e623c8adc97feefd"
++    "path": "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/build-result.json",
++    "bytes": 25686,
++    "sha256": "40a7f7865a962b3bdaee3242cfa1fb7d84d860a3fc973ebb344cbc01fe088505"
+   },
+   "build_stage": {
+-    "path": "/home/alex/work/pocket4-owned-ihg-qa-r2-source-02/stage-result.json",
+-    "bytes": 1930,
+-    "sha256": "3c42dfef6ac80cce7bb4a0e37ae2836e70f7bb4ac9f1d836bb56af40a09e6260"
++    "path": "/home/alex/work/pocket4-owned-ihg-qa-r3-source-01/stage-result.json",
++    "bytes": 1935,
++    "sha256": "764ca6cb3d3b6ea21f1f0425c5d1028352a5db9450925935b42085bb9460df30"
+   },
+   "APK": {
+     "bytes": 24720,
+-    "path": "/home/alex/work/pocket4-owned-ihg-qa-r2-build-02/owned-ihg-qa.apk",
+-    "sha256": "db7012b9a66f4177f8b4ac57ac3d39e77b8c9871a8b2c364343c420fb9d42f41"
++    "path": "/home/alex/work/pocket4-owned-ihg-qa-r3-build-01/owned-ihg-qa.apk",
++    "sha256": "58a24079a59c998d35a7233ccadd2a1d3b90480aa9a66d2c4fc7905ca1d51342"
+   },
+-  "signer_certificate_sha256": "a2ae584189d8faa5f3705b9278b29b38f2f32e6ca97b1224e80f9b1dfc0d1e5a",
+-  "qa_source_manifest_sha256": "aac50aec5289c542268c8cff29a07d91ef1be68eb57acb4474c6196850836d38",
++  "signer_certificate_sha256": "df8c2febe4feff3e65d7dc096cad9753bfb2e97b57a65044b314c2a51c7c3f01",
++  "qa_source_manifest_sha256": "8d96686f9e6937548e0295679ae6ecdfd3c3a1bf4e48c5feff7def949e81789a",
+   "current_host_source_root": "/home/alex/work/pocket4-current-host-r5-source-01",
+   "current_host_source_manifest_sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+   "current_host_stage": {
+@@ -45,25 +45,25 @@
+     "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387"
+   },
+   "nonces": {
+-    "flow": "d7f36b0afc9a26c79639aca6f21e37f2",
+-    "state": "6c71a5c324a1c669572981cc38e4f82b"
++    "flow": "5c5dc9eed1b260e1004116390c716cef",
++    "state": "a8c37991b3fdd2f6b40d8f6fd6354bf0"
+   },
+   "actual_nonce_source": {
+-    "bytes": 767,
+-    "sha256": "0850251476f521a051a3f4c21a3150b0d368065e4f71a8981d9d9525ba1dddce",
++    "bytes": 424,
++    "sha256": "2d49095b886a2d1c9862ef3e8b7d34e0a685e3049244dc260c7783d83cd87d74",
+     "fields": [
+-      "ihg_flow",
+-      "ihg_state"
++      "ihg_r3_install_flow",
++      "ihg_r3_install_state"
+     ],
+     "generator": "secrets.token_hex(16)"
+   },
+   "previous_helper_uid_exclusion": {
+-    "uid": 10196,
++    "uid": 10153,
+     "actual_worker_result": {
+-      "bytes": 11213,
+-      "sha256": "2e62018b086bb5484648d07867e73a3b11efbbd3490aeb3f190d1bb24afe4179"
++      "bytes": 12552,
++      "sha256": "81f25ba7fcced82ecc0534ce41f70b7b98ce1f152aa1e5e6c132db825d65fb58"
+     },
+-    "source": "Root actual IHG R1 installation receipt"
++    "source": "Root actual IHG R2 install02 receipt"
+   },
+   "ordered_worker_Android_commands": 13,
+   "target_APK_count": 1,
+@@ -72,9 +72,19 @@
+   "own_package_absence_required_all_users_including_uninstalled": true,
+   "install_replace_existing": false,
+   "UiAutomation_requested": false,
+-  "source_qualification_controls": 38,
++  "source_qualification_controls": 40,
+   "Bili_Flow_or_MainBinding_instantiated": false,
+   "whole_process_tree_cleanup_qualified": false,
+   "framework_exit_cause_resolved": false,
+-  "whole_app_production_ready": false
++  "whole_app_production_ready": false,
++  "retained_older_helper_uid_exclusions": [
++    10196
++  ],
++  "actual_static_controls": {
++    "baseline_scope": 21,
++    "public_destination_input": 45,
++    "fixed_public_value": "London",
++    "Android_action_runtime_executed": false
++  },
++  "new_helper_business_input_authorized_by_installation": false
+ }
+--- R2-install02/README.md
++++ R3-install01/README.md
+@@ -2,4 +2,6 @@
+ 
+ The exact newly built signed helper is installed once with -R/-t after all-users absence checks. The target-specific Context preserves its 13-command plan, commercial APK streaming hashes, held namespace/classpath checks and cleanup. Its new scope comes only from the actual typed current baseline, with independent target UID and both user/user_de directory identities checked through the held root. The shared R5 source contract is a byte-verified source closure; no Bili Flow or Bili MainBinding is instantiated.
+ 
+-38 source controls run before persistent root staging or any Android command: 33 existing source/context cases and five production verify_source cases using owned temporary source directories. Those temporary directories are removed before installation begins. The helper UID remains unknown until actual installation. State does not connect UiAutomation. No launch, inspect, click, text, permission or settings action is requested. Failure is not automatically retried or uninstalled. Historical failed and unknown outcomes remain unchanged. The unresolved framework exit cause and business acceptance remain production gates. Only direct owned process join is inherited; whole-process-tree cleanup qualification remains false.
++40 source controls run before persistent root staging or any Android command: 33 existing source/context cases, five production verify_source cases, and two direct production R3 ordered-plan cases using owned temporary source directories. Those temporary directories are removed before installation begins. The helper UID remains unknown until actual installation. State does not connect UiAutomation. No launch, inspect, click, text, permission or settings action is requested. Failure is not automatically retried or uninstalled. Historical failed and unknown outcomes remain unchanged. The unresolved framework exit cause and business acceptance remain production gates. Only direct owned process join is inherited; whole-process-tree cleanup qualification remains false.
++
++This R3 successor binds the actual London-capable static build and new installation nonces. The prior R2 helper UID 10153 and older R1 UID 10196 are rejected. All 38 prior cases remain, with the actual R3 ordered_commands positive and old R2 package negative added before persistent staging. The same 13-command no-UiAutomation installation plan remains. Installation does not authorize an App input; a future current-tree qualified flow requires separate admission.
+--- R2-install02/SOURCE_PINS.json
++++ R3-install01/SOURCE_PINS.json
+@@ -1,11 +1,11 @@
+ {
+   "schema": 2,
+-  "artifact": "pocket4-owned-ihg-qa-r2-current-install-source-v1",
++  "artifact": "pocket4-owned-ihg-qa-r3-current-install-source-v1",
+   "host_recorder_manifest_sha256": "6d99374e1580083fd0f30b7f9b3c520306680760c97ad0d5400798fda427fb6e",
+-  "qa_source_manifest_sha256": "aac50aec5289c542268c8cff29a07d91ef1be68eb57acb4474c6196850836d38",
++  "qa_source_manifest_sha256": "8d96686f9e6937548e0295679ae6ecdfd3c3a1bf4e48c5feff7def949e81789a",
+   "actual_build": {
+-    "bytes": 20396,
+-    "sha256": "cb13d895c16840ac88835105b31523de7449b26071b535e1e623c8adc97feefd"
++    "bytes": 25686,
++    "sha256": "40a7f7865a962b3bdaee3242cfa1fb7d84d860a3fc973ebb344cbc01fe088505"
+   },
+   "actual_host_stage": {
+     "bytes": 6851,
+@@ -13,16 +13,16 @@
+   },
+   "files": {
+     "INPUTS.json": {
+-      "bytes": 3308,
+-      "sha256": "c7c81c6ac685fa5d4817f324ec931fdae0f0a574805153ee2aac897053428ea3"
++      "bytes": 3629,
++      "sha256": "a1b0779a1c53685107687be7a6e7223f91e2829747b376475c5208d0992e93e9"
+     },
+     "README.md": {
+-      "bytes": 1301,
+-      "sha256": "53d08acc7009fcda1e3569a1a56fcac8c2a8a71c79782d7881f3a0ec9d061e2a"
++      "bytes": 1815,
++      "sha256": "6565bc00a589bddf88802d5180899657551b22fce4a081661dbad009c2479dc4"
+     },
+     "check_install_binding.py": {
+-      "bytes": 9999,
+-      "sha256": "1da142b38dd5c55d6616a9145acdf700934b3a2975bae6fa5e63be876048c9cb"
++      "bytes": 11258,
++      "sha256": "12c07019324c83bf3481613ceea00a96cb5d36f3f205e6161e201c8cb5580a2f"
+     },
+     "host-stage-actual.json": {
+       "bytes": 6851,
+@@ -34,19 +34,19 @@
+     },
+     "ihg_context.py": {
+       "bytes": 17222,
+-      "sha256": "a62cebdc4fa1249dbbdfa28f87f0547e529ef9886f8b6bb247c811f96f673768"
++      "sha256": "160cd78357d22897505b0d2b5351bea4106088303dd54cab6b87e5e7f5ab0364"
+     },
+     "ihg_transport.py": {
+       "bytes": 15606,
+       "sha256": "27e07fbaaccca4e5113e1750a3b7baa9d05048a1e8588f09cdc8f9ed5cf44089"
+     },
+     "install_state.py": {
+-      "bytes": 38130,
+-      "sha256": "b76a9a81e7c7c2ac11a880c9f8a82cb2209a2abc44468edf5c76bd13af798db3"
++      "bytes": 38136,
++      "sha256": "2d45dc7b1527dbff0353c6d6b7687acdfaf415e430beebbb0fa5b290f1bda234"
+     },
+     "make_request.py": {
+       "bytes": 3048,
+-      "sha256": "6046fb1fea1b675caa75f335685bd35a7ef4ece7ac74eec0ce265aa0d06df0a8"
++      "sha256": "37e0cf762fc9dd3ee94bea2baa0ea4c623bfd804d1fec227becb6813149c676c"
+     },
+     "references/read_ihg.py": {
+       "bytes": 21052,
+@@ -54,7 +54,7 @@
+     },
+     "stage_execute.py": {
+       "bytes": 9331,
+-      "sha256": "a866fbb89bbff805449ef6a32ea8cf1faa68dd74ae126e406b88a23fef8c8ded"
++      "sha256": "7481eef37c7a782de1fd79a892b1656ecb69e0895cb9b63ca47d56c8c0d4fe21"
+     },
+     "target-artifact-reference.json": {
+       "bytes": 1846,

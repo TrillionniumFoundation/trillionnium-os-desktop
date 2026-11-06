@@ -1,0 +1,79 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "45ee0ec3153d651d518ff81409c393e8993e1f83",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 2080448,
+    "sha256": "49a69ddad527b9ce66158349d392cdd850029bc5532f4b58890deb2fbe806f11",
+    "git_blob_sha1": "380dd433978a04e0165de4e4ba25d505051efec7",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "constructor_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0c41eefaaacdd038aeaa477c5b53dd6df4bb2c2e"
+    },
+    {
+      "path": "exact-request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ae34a767ff7cf672168a6a3615dd7246f673e20d",
+      "bytes": 437973
+    },
+    {
+      "path": "fresh_nonce_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "51d32e62406032e7a77814f14f19e6d3fbb6d692"
+    },
+    {
+      "path": "previous_prepare_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "240aba5866e75737410326783dc0bed3ad99c291"
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3bd05d7b4e35cb207eae0d8cabbc19677837eb3c",
+      "bytes": 1380
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "bd92000732c8a35f24dbf432b2263940c88a3015"
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "constructor_actual",
+      "original_tree": "0c41eefaaacdd038aeaa477c5b53dd6df4bb2c2e",
+      "checkpoint": 21,
+      "canonical_package": "owner20_constructor_controls07-actual"
+    },
+    {
+      "path": "fresh_nonce_actual",
+      "original_tree": "51d32e62406032e7a77814f14f19e6d3fbb6d692",
+      "checkpoint": 21,
+      "canonical_package": "owner20_normal02_nonce01-actual"
+    },
+    {
+      "path": "previous_prepare_actual",
+      "original_tree": "240aba5866e75737410326783dc0bed3ad99c291",
+      "checkpoint": 21,
+      "canonical_package": "owner20_normal_prepare01-actual"
+    },
+    {
+      "path": "source",
+      "original_tree": "bd92000732c8a35f24dbf432b2263940c88a3015",
+      "checkpoint": 21,
+      "canonical_package": "owner20-normal02-freeze-source"
+    }
+  ],
+  "original_recursive_leaf_count": 3539
+}

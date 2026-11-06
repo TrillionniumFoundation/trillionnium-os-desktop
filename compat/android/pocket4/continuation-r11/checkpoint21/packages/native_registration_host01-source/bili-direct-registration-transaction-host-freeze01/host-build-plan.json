@@ -1,0 +1,133 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_UNRUN",
+  "scope": "real production TaskCoordinator and TaskControlRegistry method regressions with explicit host-only I/O adapter fixtures",
+  "original_control": {
+    "bytes": 30368,
+    "sha256": "f2314f92862bab1d5354220ecb24954acdbbc536529daf36818b0a8974e1499c",
+    "git_blob_sha1": "5ff38e3b531a6cbe48aa92c45f581ff8e7bcdb17"
+  },
+  "candidate_control": {
+    "bytes": 42483,
+    "sha256": "7375c45596193c3458d9dcbd3b14c41f87930fbece3bae5e7bf2800934676273",
+    "git_blob_sha1": "b314f159c5e3d8f021e8efb7caac1e9741b0dfb2"
+  },
+  "provenance": {
+    "source_authority": "actual builder469 499-file source map",
+    "installed_Main_same_source": false,
+    "actual_Bili_cause_proven": false,
+    "baseline_tree": "1bdbb07f072e0ff46ccd997b8efc7d463f1e84bc"
+  },
+  "production_file_changes": [
+    "graphics/droidloom-composer-service/src/control.rs"
+  ],
+  "fixed_primary_source_root": "/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106/builder-source",
+  "planned_owned_root": "/home/alex/work/pocket4-composer-direct-registration-transaction-host-01-20261106",
+  "source_copy": {
+    "count": 499,
+    "manifest_sha256": "88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701",
+    "before_after_all_files": true,
+    "baseline_write": false
+  },
+  "fixture": {
+    "cargo": {
+      "bytes": 574,
+      "sha256": "49dad84ffccc546f8c4889b87c85ff68143376d7ebebcf92be08259a4296da97",
+      "git_blob_sha1": "ad041fae37d97cc86814c101762d2149da285593"
+    },
+    "lib": {
+      "bytes": 9274,
+      "sha256": "84659a797076f73904e7437916f3a885902f06ae87282716c8142b51464df60f",
+      "git_blob_sha1": "158a7f5ecabbf171ed75439c9c166eaf388442e0"
+    },
+    "tests": {
+      "bytes": 23472,
+      "sha256": "c87d314841ac50f00943ae9181505755e8f262f538144e6979a9b63e15ecf298",
+      "git_blob_sha1": "2c34e17b1f1eb16a0d4f9d297d6af8ad8a8179cc"
+    },
+    "exact_test_names": [
+      "control::transaction_regressions::complete_direct_bind_commits_exact_registry_and_endpoints",
+      "control::transaction_regressions::complete_bound_reuse_performs_no_new_backend_calls",
+      "control::transaction_regressions::bound_reuse_rejects_different_package_or_android_display",
+      "control::transaction_regressions::pending_direct_marker_is_visible_before_denial_register",
+      "control::transaction_regressions::sink_bind_after_effect_error_rolls_back_exact_owned_object",
+      "control::transaction_regressions::composer_bind_after_effect_error_rolls_back_both_endpoints",
+      "control::transaction_regressions::real_registry_duplicate_failure_preserves_foreign_registration",
+      "control::transaction_regressions::denial_cleanup_error_preserves_primary_and_pending_progress",
+      "control::transaction_regressions::composer_cleanup_retry_skips_already_destroyed_denial_channel",
+      "control::transaction_regressions::repeated_composer_cleanup_error_keeps_success_checkpoint",
+      "control::transaction_regressions::activation_error_keeps_complete_bound_and_allows_reuse",
+      "control::transaction_regressions::reserved_without_endpoint_calls_cancels_without_backend_cleanup",
+      "control::transaction_regressions::composer_stage_after_effect_error_cleans_only_invoked_endpoint",
+      "control::transaction_regressions::composer_stage_error_without_effect_does_not_infer_absence_from_error",
+      "control::transaction_regressions::denial_register_after_effect_error_cleans_both_owned_endpoints",
+      "control::transaction_regressions::denial_register_error_missing_local_channel_stays_unresolved",
+      "control::transaction_regressions::configure_timeout_preserves_cleanup_error_and_explicit_retirement",
+      "control::transaction_regressions::rollback_refuses_complete_bound_registration",
+      "control::transaction_regressions::rollback_refuses_changed_reservation_identity_before_backend_calls",
+      "control::transaction_regressions::retirement_rejects_progress_for_another_display",
+      "control::transaction_regressions::retired_object_with_residual_mapping_is_not_accepted_as_clean",
+      "control::transaction_regressions::backend_calls_hold_operation_gate_but_never_state_mutex",
+      "control::transaction_regressions::invalid_task_identity_does_not_allocate_or_call_backends",
+      "control::transaction_regressions::completed_retirement_is_idempotent_without_repeating_backend_calls",
+      "control::transaction_regressions::after_destroy_error_is_not_promoted_to_a_success_checkpoint",
+      "control::transaction_regressions::endpoint_call_record_is_required_for_bound_reuse",
+      "control::transaction_regressions::removal_checkpoint_cannot_be_reversed"
+    ],
+    "count": 27,
+    "coordinator_compilation": "exact candidate control.rs bytes followed by exact transaction_tests.rs; full module",
+    "real_path_crates": [
+      "droidloom-composer",
+      "droidloom-task-control",
+      "droidloom-denial-protocol",
+      "droidloom-denial-ipc",
+      "droidloom-transport"
+    ],
+    "substitutions": [
+      "droidloom_composer_aidl::denial::DenialPresentationSink: explicit host fixture",
+      "droidloom_composer_aidl::service::ComposerLifecycle: explicit host fixture"
+    ],
+    "no_real_Binder_Denial_graphics_or_Main": true,
+    "production_registry_mocked": false,
+    "production_coordinator_methods_mocked": false,
+    "callbacks_hold_no_fixture_mutex": true,
+    "network_or_service_methods_requested": false,
+    "partial_backend_effects": "Before/After error seams exercise API failure boundary; not proof every injected point is reachable on installed providers"
+  },
+  "build_plan": {
+    "rust_toolchain": "/home/alex/.rustup/toolchains/1.93.0-x86_64-unknown-linux-gnu",
+    "input_authorities": "retain exact previous toolchain observation and registry archive/source comparison; fresh hash all used inputs",
+    "resolve": "generate owned fixture lock offline only; every registry source/version/checksum must equal one original locked package and qualified archive; every path package must be exact copied manifest; reject extras before any Rust compile",
+    "compile": "cargo test --offline --locked -j 1 --lib --no-run --message-format=json-render-diagnostics",
+    "actual_artifact": "one fresh test ELF from exact fixture manifest/src, validated through Cargo JSON; all compiled package sources prequalified",
+    "execute": "actual libtest list must equal 27 exact names; each selected by --exact --test-threads=1 --nocapture with independent held --logfile",
+    "tests_deadline_seconds": 30,
+    "configure_timeout_case_expected_minimum_seconds": 5,
+    "overall_deadline_seconds": 450,
+    "tool_wait_seconds": 600,
+    "resources": "ordinary UID1000; cpu.max 100000 100000 and memory.max 1073741824 actually gated; one allowed logical CPU; nice15; preserve existing OOM0/stable-limit gate; memory.swap.max/peak/current recorded, no zero-swap-limit claim; no Main/Android/Soong",
+    "cleanup": "owned subreaper, each command strict child join, no remaining adopted children, complete FD and immutable source/tool/config post-checks",
+    "compile_request_created": true,
+    "actual_compilation_performed": false,
+    "actual_tests_performed": false,
+    "lifecycle_controls": {
+      "required_before_Rust": 3,
+      "source": "exact Owner20 build02 OwnChildReaper class; timeout-descendant, escaped-descendant, pidfd-failure",
+      "execution_this_candidate": false
+    },
+    "normal_command_count": 42,
+    "request_pin": {
+      "bytes": 299448,
+      "sha256": "dda4287f5fd952192490f927bbbb2fab100f9f8b685370825b8b8156d6f3aa96",
+      "git_blob_sha1": "c5e5f34010fd3c69c185b867fe6771ca4141b45f"
+    }
+  },
+  "explicit_limits": [
+    "Denial register Err before a local channel exists may leave remote outcome unknown; UnknownDisplay is preserved as unresolved cleanup and never inferred remote absence.",
+    "Composer stage Err can likewise be unresolved when remove_display returns BadDisplay; no false retired marker or automatic reuse.",
+    "Activation Err after complete Bound retains that binding; returned request failure is not reclassified.",
+    "Host fixture validates coordinator/Core methods, not Android Binder adapters or installed Main source provenance.",
+    "No production readiness or app semantic readiness established."
+  ],
+  "original_native_normal05": "held for fresh MemAvailable >=15 GiB; no resource gate lowered and no request replay"
+}

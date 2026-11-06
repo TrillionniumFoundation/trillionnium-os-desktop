@@ -1,0 +1,73 @@
+{
+  "schema": 1,
+  "state": "ACTUAL469_BOUND_NORMAL05_SOURCE_ONLY_UNRUN",
+  "actual_builder": {
+    "result": {
+      "bytes": 170316,
+      "sha256": "3636057b9a20fc895657064da3fb66d8ded7e69ebfa5a5b92072a51b33f29fd5",
+      "git_blob_sha1": "c3967c039a9e450b36cf597cd3a1fc5823b0508c"
+    },
+    "ELF": {
+      "bytes": 34767856,
+      "sha256": "c758a1e12bbc1925cc36f8cde3b369ab8449ad1cf460a9854b42d627575627d8"
+    },
+    "source_files": 499,
+    "exact_focused_controls": 27,
+    "commands": 65
+  },
+  "normal04_failure": {
+    "job_id": "1a1b0622030-fc05-701e",
+    "tree": "03e147797bd01399bf0e3fc8b73da351c47a6e8e",
+    "error": "less than 15 GiB MemAvailable for independent zero-swap profile; no automatic retry",
+    "MemAvailable_bytes": 15968137216,
+    "minimum_bytes": 16106127360,
+    "shortfall_bytes": 137990144,
+    "inner_returncode": null,
+    "build_started": false,
+    "original_failure_retained": true
+  },
+  "changes": "Only fresh owned ROOT and idempotency key, with deterministic SHA propagation. Fifteen staged files unchanged; two runtime files normalize byte-for-byte to dispatched NORMAL04.",
+  "existing_source_reuse_authority": "NORMAL03 performed the last actual Soong attempt and remains the exact prior inner/outer/source manifest authority. NORMAL04 stopped before attempt mkdir or builder Popen, so its resource failure cannot replace NORMAL03's actual source and 27-child cleanup proof.",
+  "normal04_history_is_archive_only_not_staged_runtime_authority": true,
+  "unchanged_profile": {
+    "owned_RAM_bytes": 10737418240,
+    "minimum_fresh_MemAvailable_bytes": 16106127360,
+    "admission_difference_bytes": 5368709120,
+    "owned_swap_max_bytes": 0,
+    "owned_swap_current_required": 0,
+    "global_SwapFree_is_owned_budget": false,
+    "cpu_quota_percent": 200,
+    "jobs": 1,
+    "nice": 10,
+    "inner_wait_seconds": 6100,
+    "tool_timeout_seconds": 6400
+  },
+  "unchanged_safety": [
+    "45 pure controls and 4 real capture lifecycle controls before build",
+    "Existing current-seven Main before/after fence and original five limits",
+    "Original work/source locks and full previous224 verification before225 reconciliation",
+    "Pinned actual469 ELF, 499-source map, 29 BP/71 exact upstream providers, unchanged strict two targets",
+    "Original owned child/session/subreaper and root snapshot retirement",
+    "Complete original source projection restoration and normal completion records"
+  ],
+  "scheduling": "A new one-time fixed meminfo observation may inform Root scheduling. It does not reserve memory or authorize a build. NORMAL05 independently records and gates exact fresh meminfo and owned RAM/CPU/zero-swap before builder launch; no automatic retry and no threshold reduction.",
+  "limitations": [
+    "NORMAL03's 8141615104-byte peak covers failed Soong analysis, not full Java/JNI compilation.",
+    "The 5GiB admission difference is an observed margin, not a host memory reservation or proof against all transient Main effects.",
+    "Current implementation JAR, Android JNI object/header dependency and actual link are still unqualified; no runtime installation or App production acceptance follows from this source candidate."
+  ],
+  "request": {
+    "bytes": 880329,
+    "sha256": "21bb4053bea941ae32efb01c560180e241dd546e4d2f5007142a8720649794e2",
+    "git_blob_sha1": "470a0f699a18fc2d7e0823aee2298f73163c7a40"
+  },
+  "stdin": {
+    "bytes": 797035,
+    "sha256": "7f27c692b0e27282fd88ad1ba0ba8463049828550340e24eab065d50428c7b6c",
+    "git_blob_sha1": "aa000cf496773fb80ac622f1613f9ce46977e00b"
+  },
+  "source_only": true,
+  "normal05_executed": false,
+  "all_apps_ready": false,
+  "independent_device_checks_rerun": false
+}

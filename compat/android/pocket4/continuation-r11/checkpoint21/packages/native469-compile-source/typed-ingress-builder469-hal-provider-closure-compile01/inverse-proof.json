@@ -1,0 +1,252 @@
+{
+  "schema": 1,
+  "base": {
+    "compiler": {
+      "bytes": 83254,
+      "sha256": "f4ce813255765107e82a8e1f2f6806f09e9decbf26fb8da5b1cefc44515e0adb",
+      "git_blob_sha1": "f600c698867feb5ce8f3e25ee1b87c22e74a9ab5"
+    },
+    "stage": {
+      "bytes": 19294,
+      "sha256": "a180e9d01fc2e026b1a30c18529a6ce2141ff398526fa8cbe63e7f6dc231ed02",
+      "git_blob_sha1": "7b54251cbb1e9303c9e04ffb1d70b05bb7abc0be"
+    },
+    "transport": {
+      "bytes": 1013,
+      "sha256": "3ea670d6cb02deaaed767b0004a086cf5723ef5875a488b0bb68cc0adabd5655",
+      "git_blob_sha1": "0763f34215acbf8fe65ead9fc984cd3f5d55cfa0"
+    }
+  },
+  "candidate": {
+    "compiler": {
+      "bytes": 83194,
+      "sha256": "6e4b18a1116bdc709e5bda2084e79967699be918770731795806d1bc8634bec2",
+      "git_blob_sha1": "3345ba9845175b7b47761b3829e51727dad52304"
+    },
+    "stage": {
+      "bytes": 13448,
+      "sha256": "64f273299e21ec6b1c2861fd62c3efa3153c19c0d49f3963d5355439f4823682",
+      "git_blob_sha1": "435f8c7fe491204d3b1c9539838e016189b40c67"
+    },
+    "transport": {
+      "bytes": 1013,
+      "sha256": "a3d2cad4a5fbb55233ce07825fc171b4fd053376831fc2243b423a30afd5bd53",
+      "git_blob_sha1": "ca8ee02b99560e874ec0b7f4d1d5fa32b8134387"
+    }
+  },
+  "edits": {
+    "compiler": [
+      {
+        "label": "docstring",
+        "old": "Compile builder468 real-provider closure with 15 updater and 9 source controls; no platform execution.",
+        "new": "Compile builder469 exact HAL provider closure with 18 updater and 9 source controls; no platform execution.",
+        "count": 1
+      },
+      {
+        "label": "actual compiled parent source",
+        "old": "BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/builder-source')",
+        "new": "BASE_SOURCE = Path('/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/builder-source')",
+        "count": 1
+      },
+      {
+        "label": "fresh owned root",
+        "old": "ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106')",
+        "new": "ROOT = Path('/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106')",
+        "count": 1
+      },
+      {
+        "label": "actual 491 source parent manifest",
+        "old": "MANIFEST_PARENT = '71768da388021a870ef5f5516cc3efbfd956288a8fa74cb9b176b312f68d7605'",
+        "new": "MANIFEST_PARENT = 'e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee'",
+        "count": 1
+      },
+      {
+        "label": "candidate constant token",
+        "old": "MANIFEST_468",
+        "new": "MANIFEST_469",
+        "count": 4
+      },
+      {
+        "label": "candidate 499 manifest pin",
+        "old": "MANIFEST_469 = 'e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee'",
+        "new": "MANIFEST_469 = '88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701'",
+        "count": 1
+      },
+      {
+        "label": "three real HAL controls",
+        "old": "TESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS",
+        "new": "HAL_PROVIDER_TESTS = [\"android::tests::typed_hal_provider_projection_restores_real_sources_and_keeps_consumers\",\"android::tests::typed_hal_provider_late_source_drift_restores_earlier_projections\",\"native_role_ingress::tests::hal_provider_extension_preserves_all_prior_projects_and_rejects_unlisted_changes\"]\nTESTS = ORIGINAL_TESTS + TYPED_INGRESS_TESTS + PROVIDER_CLOSURE_TESTS + HAL_PROVIDER_TESTS",
+        "count": 1
+      },
+      {
+        "label": "fixed two replacements eight additions",
+        "old": "FIXED_PROVIDER_DELTA = [\"android/manifest/m2-role-ingress-provider-source-lock.json\",\"android/native-role-ingress/provider-fixtures/SystemUI.Android.bp\",\"android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp\",\"android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp\",\"android/native-role-ingress/provider-fixtures/car-builtin.Android.bp\",\"android/native-role-ingress/provider-fixtures/car-jni.Android.bp\",\"android/native-role-ingress/provider-fixtures/car-lib.Android.bp\",\"android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp\",\"android/native-role-ingress/provider-fixtures/icu4j.Android.bp\",\"android/native-role-ingress/provider-fixtures/motion.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp\",\"android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp\",\"android/native-role-ingress/provider-fixtures/runner.Android.bp\",\"android/native-role-ingress/provider-fixtures/screenshot.Android.bp\",\"android/native-role-ingress/provider-fixtures/test-parameter.Android.bp\",\"tools/droidloom-update/src/android.rs\",\"tools/droidloom-update/src/native_role_ingress.rs\"]",
+        "new": "FIXED_PROVIDER_DELTA = [\"android/manifest/m2-role-ingress-hal-provider-source-lock.json\",\"android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp\",\"android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp\",\"android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp\",\"android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp\",\"android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp\",\"android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp\",\"android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp\",\"tools/droidloom-update/src/android.rs\",\"tools/droidloom-update/src/native_role_ingress.rs\"]",
+        "count": 1
+      },
+      {
+        "label": "closure proof pin",
+        "old": "CLOSURE_PROOF_SHA = '841de1878aecbf5235d4c8068b4ac5bbf7351131c17245c725782e4d66f01384'",
+        "new": "CLOSURE_PROOF_SHA = '45d47c45524c3f3bbc8bf4c8d5c28fcbbd7ba0acbeea0c4d25fcb37e8de0690c'",
+        "count": 1
+      },
+      {
+        "label": "scope",
+        "old": "fresh builder468 provider closure compile03, 491 source files, 15 exact updater and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution",
+        "new": "fresh builder469 HAL provider closure compile01, 499 source files, 18 exact updater and 9 unchanged source-resume controls; no real published source/staging/Soong/Java/Android/service execution",
+        "count": 1
+      },
+      {
+        "label": "parent staged map",
+        "old": "pinned_packet('compiled-parent467-manifest.json',MANIFEST_PARENT)",
+        "new": "pinned_packet('compiled-parent468-manifest.json',MANIFEST_PARENT)",
+        "count": 1
+      },
+      {
+        "label": "candidate staged map",
+        "old": "pinned_packet('expected-builder468-manifest.json',MANIFEST_469)",
+        "new": "pinned_packet('expected-builder469-manifest.json',MANIFEST_469)",
+        "count": 1
+      },
+      {
+        "label": "map counts",
+        "old": "require(len(expected)==466 and len(copied_expected)==491,'source manifest count changed')",
+        "new": "require(len(expected)==491 and len(copied_expected)==499,'source manifest count changed')",
+        "count": 1
+      },
+      {
+        "label": "actual parent468 full qualification",
+        "old": "        parent_raw,parent_pin=pinned_packet('compiled-parent467-result.json',\n            'cd9f61ca21dd83210299f24dd50b68f5aa7aeba7eab94ac9cada71271d660e28')\n        parent=json.loads(parent_raw)\n        require(parent_pin['bytes']==140163 and parent['state']=='PASS' and\n                parent['focused_tests_passed']==18 and parent['updater_focused_tests_passed']==9 and\n                parent['source_resume_tests_passed']==9 and parent['actual_registered_test_count']==199 and\n                parent['source_actual_registered_test_count']==20 and\n                len(parent['commands'])==56 and all(row['returncode']==0 and not row['timed_out'] for row in parent['commands']) and\n                parent['copied_manifest']['bytes']==91945 and parent['copied_manifest']['sha256']==MANIFEST_PARENT and\n                parent['builder_elf']['bytes']==34579760 and\n                parent['builder_elf']['sha256']=='fd4ef1903fa506512f2605fa03b39b5af0712680ff26dfbebfb4683c1b9ec288' and\n                parent['owned_resource_gate']['pass'] is True and not parent['dependency_changes'] and\n                not parent['tool_changes'] and not parent['cleanup']['errors'] and not parent['cleanup']['remaining'] and\n                not parent['cleanup']['forced_cleanup'] and parent['copied_source_unchanged_after'] is True and\n                parent['original_source_unchanged_after'] is True and parent['cargo_configs_unchanged_after'] is True,\n                'actual compiled parent467 qualification differs')\n        report['actual_parent467_compile_authority']=parent_pin\n",
+        "new": "        parent_raw,parent_pin=pinned_packet('compiled-parent468-result.json',\n            '871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8')\n        parent=json.loads(parent_raw)\n        require(parent_pin['bytes']==161423 and parent['state']=='PASS' and\n                parent['focused_tests_passed']==24 and parent['updater_focused_tests_passed']==15 and\n                parent['source_resume_tests_passed']==9 and parent['provider_closure_tests_passed']==6 and\n                parent['actual_registered_test_count']==205 and parent['source_actual_registered_test_count']==20 and\n                len(parent['commands'])==62 and all(row['returncode']==0 and not row['timed_out'] for row in parent['commands']) and\n                parent['copied_manifest']['bytes']==97525 and parent['copied_manifest']['sha256']==MANIFEST_PARENT and\n                parent['builder_elf']['bytes']==34722200 and\n                parent['builder_elf']['sha256']=='8bf78794705a62f0a60d00af64cdd25e2b798739e445575c3d3cca5e566f4cf6' and\n                parent['owned_resource_gate']['pass'] is True and not parent['dependency_changes'] and\n                not parent['tool_changes'] and not parent['cleanup']['errors'] and not parent['cleanup']['remaining'] and\n                not parent['cleanup']['forced_cleanup'] and parent['copied_source_unchanged_after'] is True and\n                parent['original_source_unchanged_after'] is True and parent['cargo_configs_unchanged_after'] is True and\n                parent['source_delta']['actual_source_file_count']==491 and\n                parent['framework_Java_and_Android_JNI_compiled'] is False and\n                parent['runtime_authorization_enabled'] is False,\n                'actual compiled parent468 qualification differs')\n        report['actual_parent468_compile_authority']=parent_pin\n",
+        "count": 1
+      },
+      {
+        "label": "old candidate lock in closure proof",
+        "old": "                closure['source_locks']['candidate']['sha256']==copied_expected['android/manifest/m2-role-ingress-provider-source-lock.json']['sha256'] and\n                closure['source_locks']['candidate']['bytes']==copied_expected['android/manifest/m2-role-ingress-provider-source-lock.json']['bytes'] and",
+        "new": "                closure['source_locks']['previous_provider']['sha256']==expected['android/manifest/m2-role-ingress-provider-source-lock.json']['sha256'] and\n                closure['source_locks']['candidate']['sha256']==copied_expected['android/manifest/m2-role-ingress-hal-provider-source-lock.json']['sha256'] and\n                closure['source_locks']['candidate']['bytes']==copied_expected['android/manifest/m2-role-ingress-hal-provider-source-lock.json']['bytes'] and\n                closure['provider_projection']['prior_provider_count']==59 and\n                closure['provider_projection']['new_provider_count']==12 and\n                closure['source_locks']['old_projects']==224 and closure['source_locks']['new_projects']==225 and",
+        "count": 1
+      },
+      {
+        "label": "additions count",
+        "old": "sum(name not in expected for name in changes)==25",
+        "new": "sum(name not in expected for name in changes)==8",
+        "count": 1
+      },
+      {
+        "label": "additions diagnostic",
+        "old": "provider delta is not exactly two replacements and twenty-five additions",
+        "new": "provider delta is not exactly two replacements and eight additions",
+        "count": 1
+      },
+      {
+        "label": "manifest diagnostic",
+        "old": "actual copied 491-file builder468 manifest differs",
+        "new": "actual copied 499-file builder469 manifest differs",
+        "count": 1
+      },
+      {
+        "label": "source delta counts",
+        "old": "'unchanged_existing':464,'actual_source_file_count':491,",
+        "new": "'unchanged_existing':489,'actual_source_file_count':499,",
+        "count": 1
+      },
+      {
+        "label": "source delta revision",
+        "old": "'builder_revision_name':'468-provider-closure'",
+        "new": "'builder_revision_name':'469-hal-provider-closure'",
+        "count": 1
+      },
+      {
+        "label": "new lock scope",
+        "old": "'new_exact_provider_source_lock_added':True,",
+        "new": "'new_exact_provider_source_lock_added':False,'new_exact_hal_provider_source_lock_added':True,",
+        "count": 1
+      },
+      {
+        "label": "registered focused gate",
+        "old": "                len(PROVIDER_CLOSURE_TESTS)==6 and len(TESTS)==len(set(TESTS))==15 and\n                all(test_list.splitlines().count(name+': test')==1 for name in PARENT_TESTS+PROVIDER_CLOSURE_TESTS),\n                'original 26 registrations or six provider controls absent/duplicated in actual test executable')",
+        "new": "                len(PROVIDER_CLOSURE_TESTS)==6 and len(HAL_PROVIDER_TESTS)==3 and len(TESTS)==len(set(TESTS))==18 and\n                all(test_list.splitlines().count(name+': test')==1 for name in PARENT_TESTS+PROVIDER_CLOSURE_TESTS+HAL_PROVIDER_TESTS),\n                'original 26 registrations or nine provider controls absent/duplicated in actual test executable')",
+        "count": 1
+      },
+      {
+        "label": "registered updater total",
+        "old": "require(len(listed_names)==205 and len(listed_names)==len(set(listed_names)) and",
+        "new": "require(len(listed_names)==208 and len(listed_names)==len(set(listed_names)) and",
+        "count": 1
+      },
+      {
+        "label": "HAL actual result counter",
+        "old": "        report['provider_closure_tests_passed']=len(PROVIDER_CLOSURE_TESTS)",
+        "new": "        report['provider_closure_tests_passed']=len(PROVIDER_CLOSURE_TESTS)\n        report['hal_provider_tests_passed']=len(HAL_PROVIDER_TESTS)",
+        "count": 1
+      },
+      {
+        "label": "historical parent controls",
+        "old": "report['parent_targeted_tests_passed_historically']=18",
+        "new": "report['parent_targeted_tests_passed_historically']=24",
+        "count": 1
+      },
+      {
+        "label": "actual fixed command total",
+        "old": "require(len(report['commands'])==62 and",
+        "new": "require(len(report['commands'])==65 and",
+        "count": 1
+      },
+      {
+        "label": "plan source count",
+        "old": "'base_source':str(BASE_SOURCE),'source_files':491,",
+        "new": "'base_source':str(BASE_SOURCE),'source_files':499,",
+        "count": 1
+      }
+    ],
+    "stage": [
+      {
+        "label": "fresh owned root",
+        "old": "ROOT=Path(\"/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106\")",
+        "new": "ROOT=Path(\"/home/alex/work/pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106\")",
+        "count": 1
+      },
+      {
+        "label": "TRANSFERRED",
+        "old": "TRANSFERRED={\"compile_builder.py\":{\"bytes\":83254,\"sha256\":\"f4ce813255765107e82a8e1f2f6806f09e9decbf26fb8da5b1cefc44515e0adb\"},\"expected-builder468-manifest.json\":{\"bytes\":97525,\"sha256\":\"e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee\"},\"provider-closure-proof.json\":{\"bytes\":94161,\"sha256\":\"841de1878aecbf5235d4c8068b4ac5bbf7351131c17245c725782e4d66f01384\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":286971,\"sha256\":\"e493f5f877e038e283672cadaffe7e7b672d51737edc2d7863a13fd3530d7239\"},\"delta/tools/droidloom-update/src/native_role_ingress.rs\":{\"bytes\":34533,\"sha256\":\"8eefc5e665a6cd9470ce1643542eadfce1445fe2f5992c64547fe40eef7d8dbb\"},\"delta/android/manifest/m2-role-ingress-provider-source-lock.json\":{\"bytes\":96322,\"sha256\":\"5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7\"},\"delta/android/native-role-ingress/provider-fixtures/SystemUI.Android.bp\":{\"bytes\":49535,\"sha256\":\"fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3\"},\"delta/android/native-role-ingress/provider-fixtures/motion.Android.bp\":{\"bytes\":2098,\"sha256\":\"a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440\"},\"delta/android/native-role-ingress/provider-fixtures/screenshot.Android.bp\":{\"bytes\":2403,\"sha256\":\"53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032\"},\"delta/android/native-role-ingress/provider-fixtures/runner.Android.bp\":{\"bytes\":2088,\"sha256\":\"e3b51cb5bc9ca15951a4da4b2ab711bfedd084eba95e2434060126accca8f5aa\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp\":{\"bytes\":12618,\"sha256\":\"5491a0f3918f8c5e89276ce13437b29bbd9b64aa2334e81717566e446bb6e1a4\"},\"delta/android/native-role-ingress/provider-fixtures/test-parameter.Android.bp\":{\"bytes\":2832,\"sha256\":\"3c39d19867e60e6f45ae39b3ee910b986de4cc158042519facaca18720d4ecf8\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp\":{\"bytes\":1751,\"sha256\":\"cfbff8817cd8eb06cbd02bffa253ce0a2eb266e93fec6c8ab1894316e8ca6ab8\"},\"delta/android/native-role-ingress/provider-fixtures/car-lib.Android.bp\":{\"bytes\":12547,\"sha256\":\"e88e92f8113c3c05f71999adfde6c50612d9d15d6454fbb0db9b98aba26fc6a2\"},\"delta/android/native-role-ingress/provider-fixtures/car-builtin.Android.bp\":{\"bytes\":3748,\"sha256\":\"b7e38fdc5a873a7cd2607759d4eff2b560db218ea14c6a137da5bde70b4e9ceb\"},\"delta/android/native-role-ingress/provider-fixtures/car-jni.Android.bp\":{\"bytes\":1590,\"sha256\":\"7f20480832afc1c33d54c846c2cab1a8cd6598278cd30f00b2a96b75932cbdb9\"},\"delta/android/native-role-ingress/provider-fixtures/icu4j.Android.bp\":{\"bytes\":5919,\"sha256\":\"e5a8137f19dbb133bdfa451c42493dbb481b1745a390817876b4636028a6014b\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp\":{\"bytes\":1131,\"sha256\":\"b85704354df39ea533d97c8d6a2d51ef148889668d2c08d89fb59dd703e4aa15\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp\":{\"bytes\":1395,\"sha256\":\"83e1f8f513e4c8dc9d3e9896e832cf6d5044f64a950dbb40b3d0ad8da9831bef\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp\":{\"bytes\":3390,\"sha256\":\"c9ae9050c080977591fa239ef37623826a5c7ffc125c78055059e375573feba4\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp\":{\"bytes\":1820,\"sha256\":\"0f35d9e221672dc164bd38e9c262fa5b38e892679f659e7e82b7dc5b50cd5e74\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp\":{\"bytes\":1218,\"sha256\":\"36f67c55ad95f649e8a17a0770b8141d653c96c15f5213721b027154f9a21e69\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp\":{\"bytes\":1491,\"sha256\":\"582130b938654da15b073bd6c8a616ad366358d125a0a53d14cc9d30e020b323\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp\":{\"bytes\":2446,\"sha256\":\"c1d4d324a0e0218c175e2f2e85806ccbeb398d797da57baf5221cf542f3d1268\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp\":{\"bytes\":1647,\"sha256\":\"71262635df4c0b9aff77b4b8d5b3f80587d3a5d3d30a2941867c4e15dd398485\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp\":{\"bytes\":1169,\"sha256\":\"82ed73680ad4eda143f6a38bb62198565e9b3a3b8211d9d3c5da6b5703ddae25\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp\":{\"bytes\":2723,\"sha256\":\"557bec83e3e684a6d9b6466827466043b0b1a1d61605aafaf35e581e974bea00\"},\"delta/android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp\":{\"bytes\":1132,\"sha256\":\"703b73b507250735b532c3c5f9eb4a0662606110e9a499632804136c0047c941\"},\"delta/android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp\":{\"bytes\":1960,\"sha256\":\"04118667724a0433770f8d913207c510b5103a41d44600da62c337434ed2c5ae\"},\"delta/android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp\":{\"bytes\":4006,\"sha256\":\"c38865f4312919d6452897db8e2e9341919ccb659c7a537ae20690a866e891e1\"}}",
+        "new": "TRANSFERRED={\"compile_builder.py\":{\"bytes\":83194,\"sha256\":\"6e4b18a1116bdc709e5bda2084e79967699be918770731795806d1bc8634bec2\"},\"expected-builder469-manifest.json\":{\"bytes\":99327,\"sha256\":\"88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701\"},\"provider-closure-proof.json\":{\"bytes\":44747,\"sha256\":\"45d47c45524c3f3bbc8bf4c8d5c28fcbbd7ba0acbeea0c4d25fcb37e8de0690c\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":294614,\"sha256\":\"eeea9718e16a40692dd4849fdfbc907bb65e5f7c6e205568034f408fe0803d39\"},\"delta/tools/droidloom-update/src/native_role_ingress.rs\":{\"bytes\":39625,\"sha256\":\"d7b69e7c032a9fe7e184f57eaa2063d6e54c294c94168325aefe99c1b317f869\"},\"delta/android/manifest/m2-role-ingress-hal-provider-source-lock.json\":{\"bytes\":96934,\"sha256\":\"c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd\"},\"delta/android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp\":{\"bytes\":1705,\"sha256\":\"d27df8040413d7575e066bded28bf04c72a62436dab9659b553eb1ae88819098\"},\"delta/android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp\":{\"bytes\":1355,\"sha256\":\"66b33bf0a2234c0f301dfabed4e5ab7e69562d4bed111cedc6cd81ffa68ecfb8\"},\"delta/android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp\":{\"bytes\":1726,\"sha256\":\"f408846ebf2fcbf1fc3075a312b2c388888bedd5bd7be96efb07301a9085ad08\"},\"delta/android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp\":{\"bytes\":13060,\"sha256\":\"4153fd69cfeabb40bcefa51456a6b3747d835e96698150ed4e8bb950eba1f265\"},\"delta/android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp\":{\"bytes\":3279,\"sha256\":\"f3a14a68f3d0c918f44099b318fc22c8ff0067b4ddbc55b6c8e29177dff6487d\"},\"delta/android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp\":{\"bytes\":3400,\"sha256\":\"fc163b9fd4bf32871e600e2dfea89fd3223b82e4445053a69db316ea6d5683e3\"},\"delta/android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp\":{\"bytes\":1757,\"sha256\":\"03d240c5d70281ce23758c4a87bda16d99138433926778b6493f7d59dafba053\"}}",
+        "count": 1
+      },
+      {
+        "label": "REUSED_AUTHORITY",
+        "old": "REUSED_AUTHORITY={\"go-control-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/go-control-result.json\",\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\",\"mode\":256},\"image-tools-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/image-tools-result.json\",\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\",\"mode\":256},\"prior-compile01-failure.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/prior-compile01-failure.json\",\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\",\"mode\":256},\"registry-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/registry-result.json\",\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\",\"mode\":256},\"rust193-tools-recheck-read03-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/rust193-tools-recheck-read03-result.json\",\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\",\"mode\":256},\"selected-build.stdout\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selected-build.stdout\",\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\",\"mode\":256},\"selection-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selection-result.json\",\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\",\"mode\":256},\"typed-lock-derivation.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-lock-derivation.json\",\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\",\"mode\":256},\"typed-root-trees-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-root-trees-result.json\",\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\",\"mode\":256},\"compiled-parent467-manifest.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/attempt01/copied-builder-source-manifest.json\",\"bytes\":91945,\"sha256\":\"71768da388021a870ef5f5516cc3efbfd956288a8fa74cb9b176b312f68d7605\",\"mode\":384},\"compiled-parent467-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/attempt01/result.json\",\"bytes\":140163,\"sha256\":\"cd9f61ca21dd83210299f24dd50b68f5aa7aeba7eab94ac9cada71271d660e28\",\"mode\":384}}",
+        "new": "REUSED_AUTHORITY={\"go-control-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/go-control-result.json\",\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\",\"mode\":256},\"image-tools-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/image-tools-result.json\",\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\",\"mode\":256},\"prior-compile01-failure.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/prior-compile01-failure.json\",\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\",\"mode\":256},\"registry-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/registry-result.json\",\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\",\"mode\":256},\"rust193-tools-recheck-read03-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/rust193-tools-recheck-read03-result.json\",\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\",\"mode\":256},\"selected-build.stdout\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selected-build.stdout\",\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\",\"mode\":256},\"selection-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/selection-result.json\",\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\",\"mode\":256},\"typed-lock-derivation.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-lock-derivation.json\",\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\",\"mode\":256},\"typed-root-trees-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder467-source-resume-compile-03-20261106/control-source/typed-root-trees-result.json\",\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\",\"mode\":256},\"compiled-parent468-manifest.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/copied-builder-source-manifest.json\",\"bytes\":97525,\"sha256\":\"e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee\",\"mode\":384},\"compiled-parent468-result.json\":{\"path\":\"/home/alex/work/pocket4-native-typed-ingress-builder468-provider-closure-compile-03-20261106/attempt01/result.json\",\"bytes\":161423,\"sha256\":\"871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8\",\"mode\":384}}",
+        "count": 1
+      },
+      {
+        "label": "EXPECTED",
+        "old": "EXPECTED={\"compile_builder.py\":{\"bytes\":83254,\"sha256\":\"f4ce813255765107e82a8e1f2f6806f09e9decbf26fb8da5b1cefc44515e0adb\"},\"expected-builder468-manifest.json\":{\"bytes\":97525,\"sha256\":\"e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee\"},\"provider-closure-proof.json\":{\"bytes\":94161,\"sha256\":\"841de1878aecbf5235d4c8068b4ac5bbf7351131c17245c725782e4d66f01384\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":286971,\"sha256\":\"e493f5f877e038e283672cadaffe7e7b672d51737edc2d7863a13fd3530d7239\"},\"delta/tools/droidloom-update/src/native_role_ingress.rs\":{\"bytes\":34533,\"sha256\":\"8eefc5e665a6cd9470ce1643542eadfce1445fe2f5992c64547fe40eef7d8dbb\"},\"delta/android/manifest/m2-role-ingress-provider-source-lock.json\":{\"bytes\":96322,\"sha256\":\"5c28f77e998cb75fd04de121e43a36fc3d8515c18249930268a2ffb6e5e372f7\"},\"delta/android/native-role-ingress/provider-fixtures/SystemUI.Android.bp\":{\"bytes\":49535,\"sha256\":\"fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3\"},\"delta/android/native-role-ingress/provider-fixtures/motion.Android.bp\":{\"bytes\":2098,\"sha256\":\"a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440\"},\"delta/android/native-role-ingress/provider-fixtures/screenshot.Android.bp\":{\"bytes\":2403,\"sha256\":\"53ba33c12075d68266d9c90620b2a0e04934e7d0b9eb73c1faf6c06cde689032\"},\"delta/android/native-role-ingress/provider-fixtures/runner.Android.bp\":{\"bytes\":2088,\"sha256\":\"e3b51cb5bc9ca15951a4da4b2ab711bfedd084eba95e2434060126accca8f5aa\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-root.Android.bp\":{\"bytes\":12618,\"sha256\":\"5491a0f3918f8c5e89276ce13437b29bbd9b64aa2334e81717566e446bb6e1a4\"},\"delta/android/native-role-ingress/provider-fixtures/test-parameter.Android.bp\":{\"bytes\":2832,\"sha256\":\"3c39d19867e60e6f45ae39b3ee910b986de4cc158042519facaca18720d4ecf8\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-aosp-plugins.Android.bp\":{\"bytes\":1751,\"sha256\":\"cfbff8817cd8eb06cbd02bffa253ce0a2eb266e93fec6c8ab1894316e8ca6ab8\"},\"delta/android/native-role-ingress/provider-fixtures/car-lib.Android.bp\":{\"bytes\":12547,\"sha256\":\"e88e92f8113c3c05f71999adfde6c50612d9d15d6454fbb0db9b98aba26fc6a2\"},\"delta/android/native-role-ingress/provider-fixtures/car-builtin.Android.bp\":{\"bytes\":3748,\"sha256\":\"b7e38fdc5a873a7cd2607759d4eff2b560db218ea14c6a137da5bde70b4e9ceb\"},\"delta/android/native-role-ingress/provider-fixtures/car-jni.Android.bp\":{\"bytes\":1590,\"sha256\":\"7f20480832afc1c33d54c846c2cab1a8cd6598278cd30f00b2a96b75932cbdb9\"},\"delta/android/native-role-ingress/provider-fixtures/icu4j.Android.bp\":{\"bytes\":5919,\"sha256\":\"e5a8137f19dbb133bdfa451c42493dbb481b1745a390817876b4636028a6014b\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-pluginapi.Android.bp\":{\"bytes\":1131,\"sha256\":\"b85704354df39ea533d97c8d6a2d51ef148889668d2c08d89fb59dd703e4aa15\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-resources.Android.bp\":{\"bytes\":1395,\"sha256\":\"83e1f8f513e4c8dc9d3e9896e832cf6d5044f64a950dbb40b3d0ad8da9831bef\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-robolectric.Android.bp\":{\"bytes\":3390,\"sha256\":\"c9ae9050c080977591fa239ef37623826a5c7ffc125c78055059e375573feba4\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-sandbox.Android.bp\":{\"bytes\":1820,\"sha256\":\"0f35d9e221672dc164bd38e9c262fa5b38e892679f659e7e82b7dc5b50cd5e74\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-shadowapi.Android.bp\":{\"bytes\":1218,\"sha256\":\"36f67c55ad95f649e8a17a0770b8141d653c96c15f5213721b027154f9a21e69\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-utils.Android.bp\":{\"bytes\":1491,\"sha256\":\"582130b938654da15b073bd6c8a616ad366358d125a0a53d14cc9d30e020b323\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-shadows-httpclient.Android.bp\":{\"bytes\":2446,\"sha256\":\"c1d4d324a0e0218c175e2f2e85806ccbeb398d797da57baf5221cf542f3d1268\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-shadows-versioning.Android.bp\":{\"bytes\":1647,\"sha256\":\"71262635df4c0b9aff77b4b8d5b3f80587d3a5d3d30a2941867c4e15dd398485\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-utils-reflector.Android.bp\":{\"bytes\":1169,\"sha256\":\"82ed73680ad4eda143f6a38bb62198565e9b3a3b8211d9d3c5da6b5703ddae25\"},\"delta/android/native-role-ingress/provider-fixtures/robolectric-processor.Android.bp\":{\"bytes\":2723,\"sha256\":\"557bec83e3e684a6d9b6466827466043b0b1a1d61605aafaf35e581e974bea00\"},\"delta/android/native-role-ingress/provider-fixtures/clearcut-junit-listener.Android.bp\":{\"bytes\":1132,\"sha256\":\"703b73b507250735b532c3c5f9eb4a0662606110e9a499632804136c0047c941\"},\"delta/android/native-role-ingress/provider-fixtures/asuite-proto.Android.bp\":{\"bytes\":1960,\"sha256\":\"04118667724a0433770f8d913207c510b5103a41d44600da62c337434ed2c5ae\"},\"delta/android/native-role-ingress/provider-fixtures/asuite-atest-metadata.Android.bp\":{\"bytes\":4006,\"sha256\":\"c38865f4312919d6452897db8e2e9341919ccb659c7a537ae20690a866e891e1\"},\"go-control-result.json\":{\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\"},\"image-tools-result.json\":{\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\"},\"prior-compile01-failure.json\":{\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\"},\"registry-result.json\":{\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\"},\"rust193-tools-recheck-read03-result.json\":{\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\"},\"selected-build.stdout\":{\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\"},\"selection-result.json\":{\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\"},\"typed-lock-derivation.json\":{\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\"},\"typed-root-trees-result.json\":{\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\"},\"compiled-parent467-manifest.json\":{\"bytes\":91945,\"sha256\":\"71768da388021a870ef5f5516cc3efbfd956288a8fa74cb9b176b312f68d7605\"},\"compiled-parent467-result.json\":{\"bytes\":140163,\"sha256\":\"cd9f61ca21dd83210299f24dd50b68f5aa7aeba7eab94ac9cada71271d660e28\"}}",
+        "new": "EXPECTED={\"compile_builder.py\":{\"bytes\":83194,\"sha256\":\"6e4b18a1116bdc709e5bda2084e79967699be918770731795806d1bc8634bec2\"},\"expected-builder469-manifest.json\":{\"bytes\":99327,\"sha256\":\"88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701\"},\"provider-closure-proof.json\":{\"bytes\":44747,\"sha256\":\"45d47c45524c3f3bbc8bf4c8d5c28fcbbd7ba0acbeea0c4d25fcb37e8de0690c\"},\"delta/tools/droidloom-update/src/android.rs\":{\"bytes\":294614,\"sha256\":\"eeea9718e16a40692dd4849fdfbc907bb65e5f7c6e205568034f408fe0803d39\"},\"delta/tools/droidloom-update/src/native_role_ingress.rs\":{\"bytes\":39625,\"sha256\":\"d7b69e7c032a9fe7e184f57eaa2063d6e54c294c94168325aefe99c1b317f869\"},\"delta/android/manifest/m2-role-ingress-hal-provider-source-lock.json\":{\"bytes\":96934,\"sha256\":\"c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd\"},\"delta/android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp\":{\"bytes\":1705,\"sha256\":\"d27df8040413d7575e066bded28bf04c72a62436dab9659b553eb1ae88819098\"},\"delta/android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp\":{\"bytes\":1355,\"sha256\":\"66b33bf0a2234c0f301dfabed4e5ab7e69562d4bed111cedc6cd81ffa68ecfb8\"},\"delta/android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp\":{\"bytes\":1726,\"sha256\":\"f408846ebf2fcbf1fc3075a312b2c388888bedd5bd7be96efb07301a9085ad08\"},\"delta/android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp\":{\"bytes\":13060,\"sha256\":\"4153fd69cfeabb40bcefa51456a6b3747d835e96698150ed4e8bb950eba1f265\"},\"delta/android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp\":{\"bytes\":3279,\"sha256\":\"f3a14a68f3d0c918f44099b318fc22c8ff0067b4ddbc55b6c8e29177dff6487d\"},\"delta/android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp\":{\"bytes\":3400,\"sha256\":\"fc163b9fd4bf32871e600e2dfea89fd3223b82e4445053a69db316ea6d5683e3\"},\"delta/android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp\":{\"bytes\":1757,\"sha256\":\"03d240c5d70281ce23758c4a87bda16d99138433926778b6493f7d59dafba053\"},\"go-control-result.json\":{\"bytes\":44083,\"sha256\":\"391ed7920bdc8a0a7ff3797237a8425d51aaa88cd37f29214baca6a7061d8674\"},\"image-tools-result.json\":{\"bytes\":34633,\"sha256\":\"b7129a849481537bd9a6e8124ab43c639d22712b0ce732488f132186ee1b7292\"},\"prior-compile01-failure.json\":{\"bytes\":7681,\"sha256\":\"44da2c2f9f2df67bc1c32fe25f003442378b19e341da4add8869b77488e7fee3\"},\"registry-result.json\":{\"bytes\":211021,\"sha256\":\"b7f723a9898e6db5abd181cafb02afc3d9a6e2e2c2ec0119b7c20c82ebd62993\"},\"rust193-tools-recheck-read03-result.json\":{\"bytes\":31452,\"sha256\":\"60f543d7a5fc552add6824160794c2c2e8b1a5f908401aab9b176a0a737789fb\"},\"selected-build.stdout\":{\"bytes\":2121,\"sha256\":\"82ad8aefece0dedb3a992db45b5de4097ebbb2c0fd02ed00ffe50c401bd4dd0d\"},\"selection-result.json\":{\"bytes\":14132,\"sha256\":\"185fce9a8eba4c8edb9879da1eef282404e890ec013a8c4c41c61ccbea7023bf\"},\"typed-lock-derivation.json\":{\"bytes\":6051,\"sha256\":\"c5cd3f0efd5519b8e724a42b7fc27850e20dc5a5ea55fff868366e902b56c3e0\"},\"typed-root-trees-result.json\":{\"bytes\":51842,\"sha256\":\"0088aaea045f1c0e048db1a65184e536495f3d0d8a9721cd668bdfa0016b43e8\"},\"compiled-parent468-manifest.json\":{\"bytes\":97525,\"sha256\":\"e06522400f746b62016f82dfd3ec913b39cd9a8f33f9bca4f61a19a2787684ee\"},\"compiled-parent468-result.json\":{\"bytes\":161423,\"sha256\":\"871e78f7ad8f3f3a12c165297e4fe566d96cfe3a2ce64a0d0010cffdb647b6b8\"}}",
+        "count": 1
+      },
+      {
+        "label": "fixed source partition",
+        "old": "len(TRANSFERRED)==30 and len(REUSED_AUTHORITY)==11 and len(EXPECTED)==41",
+        "new": "len(TRANSFERRED)==13 and len(REUSED_AUTHORITY)==11 and len(EXPECTED)==24",
+        "count": 1
+      }
+    ],
+    "transport": [
+      {
+        "label": "EXPECTED",
+        "old": "EXPECTED={\"bytes\":886361,\"sha256\":\"9870cbec3436c245726dd193ffdc84d7850cdad80e083c9d03033ffb80c3598a\"}",
+        "new": "EXPECTED={\"bytes\":739868,\"sha256\":\"471483ca011e8002f4799cee6a275c6cd8dc0271db1a1d4db87d0dc1503a5de2\"}",
+        "count": 1
+      },
+      {
+        "label": "STAGE",
+        "old": "STAGE={\"bytes\":19294,\"sha256\":\"a180e9d01fc2e026b1a30c18529a6ce2141ff398526fa8cbe63e7f6dc231ed02\"}",
+        "new": "STAGE={\"bytes\":13448,\"sha256\":\"64f273299e21ec6b1c2861fd62c3efa3153c19c0d49f3963d5355439f4823682\"}",
+        "count": 1
+      }
+    ]
+  },
+  "all_inverse_exact": true,
+  "Python_execution": "NOT_PERFORMED",
+  "Rust_execution": "NOT_PERFORMED"
+}

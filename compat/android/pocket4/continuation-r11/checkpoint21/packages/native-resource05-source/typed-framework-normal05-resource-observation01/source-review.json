@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_UNRUN",
+  "scope": "one fixed public /proc/meminfo read; scheduling evidence only",
+  "source": {
+    "bytes": 6267,
+    "sha256": "6dee89953c17e7823717360d2dde0f2f85e99a0a6d3ee7e65dba7afccc6e43d3",
+    "git_blob_sha1": "35aace80efc18f94ca120b93a606f995cf547abb"
+  },
+  "request": {
+    "bytes": 7519,
+    "sha256": "c2c726ca51145fa90c20efec539094a576ad8153bd2c76ff2dfded24a0721cbd",
+    "git_blob_sha1": "6178b4b352e3e28af80267094fcb46e0b60ed3a7"
+  },
+  "baseline_parser": {
+    "controller": {
+      "bytes": 62492,
+      "sha256": "73184ded80fbc33238713a47f4a4fa81e442b1e72d1cb464bd716529c410d227",
+      "git_blob_sha1": "cb53d5b28ef1fcb0d3b26687d7fe08614fdb65bb"
+    },
+    "function": "parse_admission_meminfo",
+    "body_exact": true
+  },
+  "actual_failure": {
+    "job_id": "1a1b0622030-fc05-701e",
+    "tree": "03e147797bd01399bf0e3fc8b73da351c47a6e8e",
+    "stdout_sha256": "21a0d4097d01b1674eeeef96bdc2e6f057b0c9fc60cfda2ef24e7bf2aee455d1",
+    "outer_terminal_sha256": "539e0485f9787367ddf1e3c3224851a72fce9d6132941d1ce892a7e4629bf7b6",
+    "resource_receipt_sha256": "3ae8a164fd6b83340308ce1d4e2656808ddb77cbfc411872c6d06b21ef10d098",
+    "MemAvailable_bytes": 15968137216,
+    "threshold_bytes": 16106127360,
+    "shortfall_bytes": 137990144,
+    "inner_returncode": null,
+    "Soong_started": false,
+    "all_six_outer_lifecycle_receipts_reaped_empty_FD_closed": true,
+    "main_pre_post_gate": true,
+    "full_interval_noninterference_proven": false,
+    "pressure_cause_proven": false
+  },
+  "preserved_build_profile": {
+    "memory_max_bytes": 10737418240,
+    "memory_swap_max_bytes": 0,
+    "minimum_fresh_MemAvailable_bytes": 16106127360,
+    "admission_difference_bytes": 5368709120,
+    "cpus": 2,
+    "jobs": 1
+  },
+  "reader": {
+    "fixed_paths": [
+      "/proc/meminfo"
+    ],
+    "maximum_bytes": 16384,
+    "complete_EOF_required": true,
+    "held_named_identity_before_after_required": true,
+    "close_error_fails": true,
+    "qualification_seconds": 2,
+    "tool_timeout_seconds": 3,
+    "cpu_quota_percent": 25,
+    "memory_max_bytes": 67108864,
+    "nice": 19,
+    "filesystem_writes": 0,
+    "process_children": 0,
+    "Main_actions": 0,
+    "Android_actions": 0,
+    "signals": 0
+  },
+  "limitations": [
+    "The observation is not an admission for a later build; NORMAL05 must independently re-read its own limits and fresh MemAvailable.",
+    "Global SwapFree is observed only and is not available owned swap budget.",
+    "Identity equality guards the fixed procfs leaf; it does not claim a host-wide atomic memory snapshot or a reserved memory floor.",
+    "Three-second process timeout is external to the two-second qualification deadline; failure or deadline never emits a qualified observation.",
+    "The earlier NORMAL03 8141615104-byte peak covered a failed Soong analysis, not the full Java/JNI compile peak."
+  ],
+  "validation": {
+    "request_reproduced_exactly_in_V8": true,
+    "parser_copied_exactly_from_dispatched_NORMAL04": true,
+    "Python_executed": false,
+    "device_executed": false,
+    "normal05_request_created": false,
+    "automatic_retry": false
+  }
+}

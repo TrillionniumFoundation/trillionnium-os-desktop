@@ -1,0 +1,74 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "7ca9357b5e7097e1713ec9c4021702baa4684d81",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 1672,
+    "sha256": "a6f667c7dad0d6eb465053344c97adec29f7e3190e55adcd2567b5b10fcbd7b5",
+    "git_blob_sha1": "5a02a1c5bc591105e79063cbb532d50b91adb4dc",
+    "retrieval": "shallow_complete_root_with_catalogued_dependencies",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "owner02_cleanup",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a8edc45333e61318b219db12a27ce756ec617fcc"
+    },
+    {
+      "path": "prior_actual",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b3eb48a54507a59aaa5b06d9b9b95478815269d8"
+    },
+    {
+      "path": "prior_source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6e7802d7d7dfb11b4197183f73206b2168f849d2"
+    },
+    {
+      "path": "read.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c44a2ca86383d4241b4e02f6e52d6e2c37b8ef6",
+      "bytes": 6267
+    },
+    {
+      "path": "request.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5ffe1167acc1edc668d23cb9c8f24870e125f296",
+      "bytes": 7519
+    },
+    {
+      "path": "review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "35bb4e40bd3ccfb9171ca9dfd4e72eaad661cb9b",
+      "bytes": 785
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "owner02_cleanup",
+      "original_tree": "a8edc45333e61318b219db12a27ce756ec617fcc",
+      "checkpoint": 21,
+      "canonical_package": "owner20-normal02-safe-actual"
+    },
+    {
+      "path": "prior_actual",
+      "original_tree": "b3eb48a54507a59aaa5b06d9b9b95478815269d8",
+      "checkpoint": 21,
+      "canonical_package": "native_resource05-actual"
+    },
+    {
+      "path": "prior_source",
+      "original_tree": "6e7802d7d7dfb11b4197183f73206b2168f849d2",
+      "checkpoint": 21,
+      "canonical_package": "native-resource05-source"
+    }
+  ],
+  "original_recursive_leaf_count": null
+}

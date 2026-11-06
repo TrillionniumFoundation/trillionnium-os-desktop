@@ -1,0 +1,158 @@
+{
+  "Bili_Flow_instantiated": false,
+  "Main_after": {
+    "Main_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "current_baseline_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+    "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+    "current_executable_and_root_backing_match": true,
+    "framework_exit_cause_resolved": false,
+    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "production_ready": false,
+    "resource_limits_match": true,
+    "schema": "pocket4-current-main-guard-v1",
+    "seven_processes_match": true,
+    "three_host_processes_match": true
+  },
+  "Main_before": {
+    "Main_epoch_sha256": "734fab42fa57e7289a5a88c24d3d4e00e9326d74fefbe523d1c280e0e6d38bc2",
+    "config_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+    "current_baseline_qualification_sha256": "f37b2eb00db80c398c9a4f9fd895628b6c7ecc827ccf9699c2242fa5ba862ed6",
+    "current_baseline_sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266",
+    "current_executable_and_root_backing_match": true,
+    "framework_exit_cause_resolved": false,
+    "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+    "historical_verified_sha256": "2d6f2ef7953b98109044f823da56694111bd9f8ff14fff5e746afb7bd42b0387",
+    "production_ready": false,
+    "resource_limits_match": true,
+    "schema": "pocket4-current-main-guard-v1",
+    "seven_processes_match": true,
+    "three_host_processes_match": true
+  },
+  "actual_install": {
+    "actual_state_wire_sha256": "bfc01867b96be6fc2d352b032fc473cd19857082de9a679f91d906b4ff93e979",
+    "installed": {
+      "apk_sha256": "4c27df6ed982408763f94527592623b9d6312190a786a1bbd3d25e1f004bbd20",
+      "base_apk": "/data/app/~~PQZkPeLxY9e5rFxMqyKPyg==/org.droidloom.qa.amazon.r3-aOY4t7GlqgZ6SsbNmADbdQ==/base.apk",
+      "bytes": 24720,
+      "held_file": {
+        "bytes": 24720,
+        "device": 1811,
+        "gid": 1000,
+        "inode": 789394,
+        "mode": 33188,
+        "mtime_ns": 1793952227914463155,
+        "nlink": 1,
+        "uid": 1000
+      },
+      "package": "org.droidloom.qa.amazon.r3",
+      "signer_bound_by_exact_signed_apk_bytes": "801ad669c2075067b58ee7d277531e9eed7cd612a74f404a722c061cac66bf6d",
+      "uid": 10154
+    },
+    "no_prior_install_or_state_replayed": true,
+    "prior_install_source_sha256": "0240a8bae8d0881cb802f7fa7c9e1670b6fbf19b3444d6bc7a504d31e962f9f6",
+    "prior_receipts": {
+      "coordinator": {
+        "bytes": 3983,
+        "sha256": "56ac1b83c39627e9e74617cafbcd51659dc1b7e07f69cb8f7e50a1be4d03ac9e"
+      },
+      "stage": {
+        "bytes": 6872,
+        "sha256": "bf2d6359241fab1d79e18c01fe30b9d82619a25ebd265f6460010ea134aaa6bb"
+      },
+      "worker": {
+        "bytes": 14840,
+        "sha256": "ee4b59514a2c0a94fb2d8bb1b8eadddf4da6bb58a25c775ee1fb640dbf35eced"
+      }
+    }
+  },
+  "actual_resolution": {
+    "actual_resolve_stdout_sha256": "59af12533664c47eb798f9141cb66151cb8478d878c86f843a559e4c553852e5",
+    "component": "com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity",
+    "historical_resolution_not_launch_authority": true,
+    "new_prelaunch_resolution_required": true,
+    "prior_receipts": {
+      "stage": {
+        "bytes": 1599,
+        "path": "/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01/stage-result.json",
+        "sha256": "9dfa012752b241b1c881514089684d13b56bcaa0250fb7fcb3d2c72633fdb29d"
+      },
+      "worker": {
+        "bytes": 12204,
+        "path": "/home/alex/work/pocket4-amazon-launcher-resolve-readonly-01/result.json",
+        "sha256": "ebeaecf791eba4906502cd3167c08e735d826ffd565f7fdd45d66775c016c534"
+      }
+    }
+  },
+  "audio_actions": 0,
+  "automatic_retry": false,
+  "business_success_verified": false,
+  "cleanup_not_authorized_without_exact_owned_scope": true,
+  "cleanup_requested": false,
+  "click_actions": 0,
+  "component": "com.amazon.mShop.android.shopping/com.amazon.mShop.home.HomeActivity",
+  "error": {
+    "message": "01-launch did not complete exactly once with a preserved Main fence",
+    "phase": "coordinator",
+    "type": "RuntimeError"
+  },
+  "flow": "/home/alex/work/pocket4-amazon-owned-qa-r3-flow-42ee4dd8ab30f563567ba353deff430c",
+  "helper_package": "org.droidloom.qa.amazon.r3",
+  "helper_uid": 10154,
+  "inspect_worker_requested": false,
+  "launch_worker_requested": true,
+  "maximum_native_launches": 1,
+  "nonce": "42ee4dd8ab30f563567ba353deff430c",
+  "ok": false,
+  "old_v2_helper_called": false,
+  "owned_after": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 34059341,
+    "memory.current": "230510592",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "265474048",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1b09dd3e0-fc05-71bf.service",
+    "pids.max": "128"
+  },
+  "owned_before": {
+    "cpu.max": "100000 100000",
+    "device": 30,
+    "inode": 34059341,
+    "memory.current": "27901952",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "27901952",
+    "memory.swap.current": "0",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "path": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/hepta-runtime-job-1a1b09dd3e0-fc05-71bf.service",
+    "pids.max": "128"
+  },
+  "package": "com.amazon.mShop.android.shopping",
+  "package_mutations": 0,
+  "permission_grants": 0,
+  "possible_native_launch_outcome_requires_reconciliation": true,
+  "raw_UI_tree_private_only": true,
+  "retained_phase_results": {
+    "launch": {
+      "bytes": 14255,
+      "path": "/home/alex/work/pocket4-amazon-owned-qa-r3-flow-42ee4dd8ab30f563567ba353deff430c/steps/launch-01/result.json",
+      "sha256": "471fd0060d935a14af74a30206607d58267c96982769cb24e442fa5c92ecf95c"
+    }
+  },
+  "schema": 1,
+  "screenshots": 0,
+  "secondary_errors": [],
+  "settings_writes": 0,
+  "source_and_artifact_unchanged": true,
+  "source_manifest_sha256": "452b2c85207d60d5e47efbeafc05f49ecae416fabf6988fb7362100d55d6e46c",
+  "text_actions": 0,
+  "uid": 10129,
+  "whole_app_production_ready": false
+}

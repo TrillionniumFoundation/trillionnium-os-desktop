@@ -1,0 +1,81 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "03e147797bd01399bf0e3fc8b73da351c47a6e8e",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 195604,
+    "sha256": "f235e3b944f7f96f0d6418e5c75384e474a420010ff34e98c7ef30f54de869ea",
+    "git_blob_sha1": "4ea6a4cd401d7eb3b0463a4e3cb29313ba0042d8",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "admission",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "3b3e9040cb676b6e1b229f3e84a7d5bdeb6f56c9"
+    },
+    {
+      "path": "outer-terminal.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "762066b53dc341d879a60dd0a640b7fd5e1aeb88",
+      "bytes": 24742
+    },
+    {
+      "path": "preflight",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "319d1d0d9d9a1e674c51d3c59c56f43ff588924e"
+    },
+    {
+      "path": "resource-admission.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c5d5750fff913be9223387a69eaeb42284c440ca",
+      "bytes": 2749
+    },
+    {
+      "path": "source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b83f7c41d72df00c644584e2db3eb0e24e9898a2"
+    },
+    {
+      "path": "status.original.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc7c791cbd7bc1a4c4cb5c6cef6df93b3df9bf84",
+      "bytes": 728
+    },
+    {
+      "path": "stdout.original.log",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c513487d0ac592c03cb137995e7a1ceac926c61a",
+      "bytes": 1321
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "admission",
+      "original_tree": "3b3e9040cb676b6e1b229f3e84a7d5bdeb6f56c9",
+      "checkpoint": 21,
+      "canonical_package": "native_normal04-admission"
+    },
+    {
+      "path": "preflight",
+      "original_tree": "319d1d0d9d9a1e674c51d3c59c56f43ff588924e",
+      "checkpoint": 21,
+      "canonical_package": "native_normal04-preflight"
+    },
+    {
+      "path": "source",
+      "original_tree": "b83f7c41d72df00c644584e2db3eb0e24e9898a2",
+      "checkpoint": 21,
+      "canonical_package": "native-normal04-source"
+    }
+  ],
+  "original_recursive_leaf_count": 483
+}

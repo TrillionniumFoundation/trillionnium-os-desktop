@@ -1,0 +1,30 @@
+"use strict";
+// Exact frozen host compiler source carrier. Pure function: no I/O or dispatch.
+// H is the independently verified UTF-8/SHA256 helper; it is not fetched or executed here.
+const FILE_ORDER = ["compile_builder.py","expected-builder469-manifest.json","provider-closure-proof.json","delta/tools/droidloom-update/src/android.rs","delta/tools/droidloom-update/src/native_role_ingress.rs","delta/android/manifest/m2-role-ingress-hal-provider-source-lock.json","delta/android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp","delta/android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp","delta/android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp","delta/android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp","delta/android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp","delta/android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp","delta/android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp"];
+const EXPECTED = {"compile_builder.py":{"bytes":83194,"sha256":"6e4b18a1116bdc709e5bda2084e79967699be918770731795806d1bc8634bec2"},"expected-builder469-manifest.json":{"bytes":99327,"sha256":"88dc3c8020c436009862800ffdc5af97f50f6ae7efff832562c2784d66794701"},"provider-closure-proof.json":{"bytes":44747,"sha256":"45d47c45524c3f3bbc8bf4c8d5c28fcbbd7ba0acbeea0c4d25fcb37e8de0690c"},"delta/tools/droidloom-update/src/android.rs":{"bytes":294614,"sha256":"eeea9718e16a40692dd4849fdfbc907bb65e5f7c6e205568034f408fe0803d39"},"delta/tools/droidloom-update/src/native_role_ingress.rs":{"bytes":39625,"sha256":"d7b69e7c032a9fe7e184f57eaa2063d6e54c294c94168325aefe99c1b317f869"},"delta/android/manifest/m2-role-ingress-hal-provider-source-lock.json":{"bytes":96934,"sha256":"c7154e445c2bf1a4539418c68a04731538f9ac11050132571b911e706084f8fd"},"delta/android/native-role-ingress/provider-fixtures/car-vhal-client.Android.bp":{"bytes":1705,"sha256":"d27df8040413d7575e066bded28bf04c72a62436dab9659b553eb1ae88819098"},"delta/android/native-role-ingress/provider-fixtures/car-large-parcelable.Android.bp":{"bytes":1355,"sha256":"66b33bf0a2234c0f301dfabed4e5ab7e69562d4bed111cedc6cd81ffa68ecfb8"},"delta/android/native-role-ingress/provider-fixtures/neuralnetworks-root.Android.bp":{"bytes":1726,"sha256":"f408846ebf2fcbf1fc3075a312b2c388888bedd5bd7be96efb07301a9085ad08"},"delta/android/native-role-ingress/provider-fixtures/neuralnetworks-common.Android.bp":{"bytes":13060,"sha256":"4153fd69cfeabb40bcefa51456a6b3747d835e96698150ed4e8bb950eba1f265"},"delta/android/native-role-ingress/provider-fixtures/neuralnetworks-types.Android.bp":{"bytes":3279,"sha256":"f3a14a68f3d0c918f44099b318fc22c8ff0067b4ddbc55b6c8e29177dff6487d"},"delta/android/native-role-ingress/provider-fixtures/hardware-remote-access.Android.bp":{"bytes":3400,"sha256":"fc163b9fd4bf32871e600e2dfea89fd3223b82e4445053a69db316ea6d5683e3"},"delta/android/native-role-ingress/provider-fixtures/hardware-neural-common.Android.bp":{"bytes":1757,"sha256":"03d240c5d70281ce23758c4a87bda16d99138433926778b6493f7d59dafba053"}};
+const STAGE = {"bytes":13448,"sha256":"64f273299e21ec6b1c2861fd62c3efa3153c19c0d49f3963d5355439f4823682"};
+const WIRE = {"bytes":739868,"sha256":"471483ca011e8002f4799cee6a275c6cd8dc0271db1a1d4db87d0dc1503a5de2"};
+const REQUEST = {"bytes":807415,"sha256":"5ee2b1f83e905ff46841860e58e750738f8788d6182300fc1bda46efbff46610"};
+const BOUNDARY = "import hashlib,json,sys\nEXPECTED={\"bytes\":739868,\"sha256\":\"471483ca011e8002f4799cee6a275c6cd8dc0271db1a1d4db87d0dc1503a5de2\"}\nSTAGE={\"bytes\":13448,\"sha256\":\"64f273299e21ec6b1c2861fd62c3efa3153c19c0d49f3963d5355439f4823682\"}\nwire=sys.stdin.buffer.read(EXPECTED['bytes']+1)\nif len(wire)!=EXPECTED['bytes'] or hashlib.sha256(wire).hexdigest()!=EXPECTED['sha256']:\n    raise RuntimeError('fixed provider compiler transport length/hash mismatch')\nvalue=json.loads(wire)\nif type(value) is not dict or set(value)!={'schema','stage','packet'} or value['schema']!=1 or type(value['stage']) is not str:\n    raise RuntimeError('fixed provider compiler envelope differs')\nstage=value['stage'].encode('utf-8')\nif len(stage)!=STAGE['bytes'] or hashlib.sha256(stage).hexdigest()!=STAGE['sha256']:\n    raise RuntimeError('fixed provider compiler stage pin differs')\nscope={'__name__':'__stage__','__file__':'<fixed-provider-stage>'}\nexec(compile(stage,'<fixed-provider-stage>','exec'),scope,scope)\nscope['main'](value['packet'])\n";
+const BASE = {"host":"pocket4","executable":"/usr/bin/python3","cwd":"/","cpu_quota_percent":100,"memory_max_bytes":1073741824,"nice":15,"timeout_seconds":600,"idempotency_key":"pocket4-native-typed-ingress-builder469-hal-provider-closure-compile-01-20261106"};
+const REQUEST_ORDER = ["host","executable","args","stdin","cwd","cpu_quota_percent","memory_max_bytes","nice","timeout_seconds","idempotency_key"];
+function generate(inputFiles, stage, H) {
+  function require(value, reason) { if (!value) throw new Error(reason); }
+  function pin(value) {const b=H.utf8(value); return {bytes:b.length,sha256:H.sha256(b)};}
+  function equal(a,b) {return JSON.stringify(a)===JSON.stringify(b);}
+  require(equal(Object.keys(inputFiles).sort(), [...FILE_ORDER].sort()), "exact compiler source set");
+  const packet={};
+  for(const name of FILE_ORDER) {
+    require(typeof inputFiles[name]==="string" && equal(pin(inputFiles[name]),EXPECTED[name]), "compiler source pin: "+name);
+    packet[name]=inputFiles[name];
+  }
+  require(typeof stage==="string" && equal(pin(stage),STAGE), "compiler stage pin");
+  const wire=JSON.stringify({schema:1,stage,packet});
+  require(equal(pin(wire),WIRE) && WIRE.bytes<=1024*1024, "wire pin or actual one MiB tool bound");
+  const req={...BASE,args:["-I","-B","-c",BOUNDARY],stdin:wire};
+  const ordered={};for(const name of REQUEST_ORDER)ordered[name]=req[name];
+  const raw=JSON.stringify(ordered,null,2)+"\n";
+  require(equal(pin(raw),REQUEST), "compiler request pin");
+  return {request:raw,stdin:wire,request_object:ordered};
+}

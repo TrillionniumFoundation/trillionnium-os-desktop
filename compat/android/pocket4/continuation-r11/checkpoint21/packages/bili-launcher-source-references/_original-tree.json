@@ -1,0 +1,57 @@
+{
+  "schema": "pocket4-git-tree-reconstruction-v2",
+  "original_tree": "c03f76742055fe9b280e9cc7a3bbb739249d2777",
+  "scope": "Merkle reconstruction map; not original API response bytes",
+  "readback": {
+    "bytes": 3712,
+    "sha256": "5fdffd85346eaf12f43151de250b81bb0b519b469758de4b9d6dbf2a8722cd32",
+    "git_blob_sha1": "f8f5558edd75b3365456218db369ebece8751f38",
+    "retrieval": "recursive",
+    "full_API_response_materialized": false
+  },
+  "entries": [
+    {
+      "path": "actual_source",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "48335a3cb953c26fd90266d9221312186b90de60"
+    },
+    {
+      "path": "control.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2bed3026cc4f00c819de2ba7fd253165d29bebbb",
+      "bytes": 70656
+    },
+    {
+      "path": "droidloomctl.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6f523958b64d22b481f77595fae7ab9842a6085a",
+      "bytes": 20413
+    },
+    {
+      "path": "root-review.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "12bce22e9c681d51bb06cbfcd89e56c0223338fe",
+      "bytes": 3350
+    },
+    {
+      "path": "task-launcher-lib.rs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ada531e16c2ebd29c6d83bbfa1261673f29bff57",
+      "bytes": 56199
+    }
+  ],
+  "dependency_mounts": [
+    {
+      "path": "actual_source",
+      "original_tree": "48335a3cb953c26fd90266d9221312186b90de60",
+      "checkpoint": 20,
+      "canonical_package": "native_compile03-actual_tree"
+    }
+  ],
+  "original_recursive_leaf_count": 12
+}

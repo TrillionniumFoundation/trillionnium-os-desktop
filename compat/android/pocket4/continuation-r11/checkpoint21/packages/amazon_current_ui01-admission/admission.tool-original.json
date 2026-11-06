@@ -1,0 +1,38 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-c",
+      "import hashlib,json,sys;raw=sys.stdin.buffer.read(131073);assert len(raw)==84501 and hashlib.sha256(raw).hexdigest()=='2c8b4682f4f33b619d8098d68b2e197eadfe0fc630b09dffdf25764e20021924';stage=\"#!/usr/bin/env python3\\n\\\"\\\"\\\"Stage exactly one new Amazon task source and execute its reviewed coordinator.\\\"\\\"\\\"\\nimport hashlib\\nimport json\\nimport os\\nfrom pathlib import Path\\nimport types\\n\\nROOT=Path(\\\"/home/alex/work/pocket4-amazon-r3-current-search-entry-01\\\")\\nSOURCE=ROOT/'source'\\nNONCE='42ee4dd8ab30f563567ba353deff430c'\\nFILES={'owned_inspect.py','amazon_task_context.py','search_navigation.py','INPUTS.json'}\\nREFERENCE=Path('/home/alex/work/pocket4-current-host-r5-source-01/current_coordinator.py')\\nREFERENCE_SHA=\\\"fa153c308cc629c16ce2a6b649ebdbb6c38c083cc9b00644df679211ede862f2\\\"\\n\\n\\ndef main(packet,manifest_sha256):\\n    assert type(packet) is dict and set(packet)=={'schema','nonce','files'}\\n    assert packet['schema']==1 and packet['nonce']==NONCE and type(packet['files']) is dict\\n    assert set(packet['files'])==FILES|{'SOURCE_PINS.json'}\\n    data={name:content.encode('utf-8') for name,content in packet['files'].items() if type(content) is str}\\n    assert set(data)==set(packet['files']) and all(0<len(raw)<=65536 for raw in data.values())\\n    assert sum(map(len,data.values()))<=131072\\n    assert hashlib.sha256(data['SOURCE_PINS.json']).hexdigest()==manifest_sha256\\n    manifest=json.loads(data['SOURCE_PINS.json'])\\n    assert manifest['schema']==1 and set(manifest['files'])==FILES\\n    for name,pin in manifest['files'].items():\\n        assert pin=={'bytes':len(data[name]),'sha256':hashlib.sha256(data[name]).hexdigest()}\\n    assert os.getuid()==os.geteuid()==0\\n    assert ROOT.parent.resolve()==ROOT.parent and not os.path.lexists(ROOT)\\n    entry=types.ModuleType('amazon_owned_inspect_entry');entry.__file__=str(SOURCE/'owned_inspect.py')\\n    exec(compile(data['owned_inspect.py'],entry.__file__,'exec'),entry.__dict__)\\n    assert entry.ROOT==ROOT and entry.SOURCE==SOURCE and entry.HERE==SOURCE and entry.NONCE==NONCE\\n    ref=entry.load(REFERENCE,REFERENCE_SHA,'amazon_task_stage_reference')\\n    activation=ref.current_baseline()\\n    epoch=ref.module(ref.read(ref.EPOCH_SOURCE,expected=ref.EPOCH_SOURCE_SHA),ref.EPOCH_SOURCE,'amazon_task_stage_epoch')\\n    before=ref.main_guard(activation,epoch)\\n    os.umask(0o077);ROOT.mkdir(mode=0o700)\\n    result={'schema':1,'ok':False,'nonce':NONCE,'package':entry.PACKAGE,'source_manifest_sha256':manifest_sha256,\\n        'Main_before':before,'error':None,'secondary_errors':[],'automatic_retry':False,\\n        'maximum_native_launches':1,'maximum_click_actions':1,'text_actions':0,'screenshots':0,'audio_actions':0,\\n        'raw_UI_tree_private_only':True,'business_success_verified':False,'whole_app_production_ready':False}\\n    def remember(phase,error):\\n        row={'phase':phase,'type':type(error).__name__,'message':str(error)}\\n        if result['error'] is None:result['error']=row\\n        else:result['secondary_errors'].append(row)\\n        result['ok']=False\\n    try:\\n        ref.write_new(ROOT/'once.claim.json',{'nonce':NONCE,'source_manifest_sha256':manifest_sha256,'automatic_retry':False})\\n        SOURCE.mkdir(mode=0o700)\\n        for name,raw in sorted(data.items()):ref.write_new(SOURCE/name,raw,mode=0o444)\\n        rc=entry.execute(manifest_sha256);result['coordinator_returncode']=rc\\n        durable=entry.read(ROOT/'result.json');observed=json.loads(durable)\\n        result['coordinator_result']={'path':str(ROOT/'result.json'),'bytes':len(durable),'sha256':hashlib.sha256(durable).hexdigest()}\\n        assert observed['nonce']==NONCE and observed['source_manifest_sha256']==manifest_sha256\\n        assert observed['package']==entry.PACKAGE and observed['helper_uid']==entry.HELPER_UID\\n        assert rc==0 and observed['ok'] is True and observed['error'] is None and observed['secondary_errors']==[]\\n        assert observed['post_entry_inspection_completed'] is True and observed['search_entry_click_completed'] is True\\n        assert observed['owned_task_absent_after_cleanup'] is True and observed['click_actions']==1\\n        assert observed['business_success_verified'] is False and observed['whole_app_production_ready'] is False\\n        result['ok']=True\\n    except BaseException as error:remember('stage_or_owned_launch_inspect',error)\\n    finally:\\n        try:\\n            result['Main_after']=ref.main_guard(activation,epoch)\\n            assert result['Main_after']==before,'STAGE_MAIN_CHANGED'\\n        except BaseException as error:remember('stage_final_Main',error)\\n        try:\\n            for name,raw in data.items():entry.read(SOURCE/name,65536,hashlib.sha256(raw).hexdigest(),len(raw))\\n            result['source_unchanged']=True\\n        except BaseException as error:remember('stage_final_source',error)\\n        try:pin=ref.write_new(ROOT/'stage-result.json',result)\\n        except BaseException as error:remember('stage_result_write',error);pin=None\\n        print(json.dumps({'ok':result['ok'],'stage_result':pin,'error':result['error'],\\n            'secondary_errors':result['secondary_errors'],'whole_app_production_ready':False},sort_keys=True),flush=True)\\n    return 0 if result['ok'] else 1\\n\";assert hashlib.sha256(stage.encode()).hexdigest()=='8c8721a43f01de71fd405904854e33d1a08439bc933accd5c8b0b465b99eeba6';scope={\"__name__\":\"amazon_fixed_task_stage\",\"__file__\":\"<verified-amazon-task-stage>\"};exec(compile(stage,\"stage_execute.py\",\"exec\"),scope);raise SystemExit(scope[\"main\"](json.loads(raw),'452b2c85207d60d5e47efbeafc05f49ecae416fabf6988fb7362100d55d6e46c'))"
+    ],
+    "created_unix_ms": 1793964495840,
+    "cwd": "/home/alex/work",
+    "env_keys": [
+      "PYTHONDONTWRITEBYTECODE"
+    ],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b09dd3e0-fc05-71bf",
+    "idempotency_key": "pocket4-amazon-r3-current-search-entry01-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b09dd3e0-fc05-71bf",
+    "request_digest": "9abb32049e991c50476355610117703741c38ca88faf15fd91b5d506699702d9",
+    "request_fingerprint": 11149560297907887184,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b09dd3e0-fc05-71bf"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b09dd3e0-fc05-71bf"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

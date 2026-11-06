@@ -1,0 +1,148 @@
+{
+  "schema": 1,
+  "state": "SOURCE_ONLY_UNRUN",
+  "root": "/home/alex/work/pocket4-composer-direct-registration-transaction-host-02-20261106",
+  "key": "pocket4-composer-direct-registration-transaction-host-02-20261106",
+  "supersedes_attempt_for_execution": false,
+  "prior_host01": {
+    "source_tree": "a9829273e86834806b5a341741a8750a659ab22f",
+    "actual_result_tree": "3a1d8b8c4c07276f32475b4d043caac60aff6e10",
+    "actual_lock_metadata_tree": "b7a74eab3394a0dfc106055bb2ff1cbdb7001b06",
+    "state": "FAIL_PRESERVED",
+    "failure": "offline resolver selected five registry versions outside immutable original lock"
+  },
+  "scope": "Same production control.rs and same 27 coordinator methods regressions. Fix only host fixture lock seeding and truthful fixture baseline accounting.",
+  "inherited_fixed_contract": {
+    "host01_plan": {
+      "bytes": 8455,
+      "sha256": "98679657c9f17448db6bcf9f4336b3d5602a94c2b68ab3366723462e0463d22a",
+      "git_blob_sha1": "681ec001d439c90b6a40c54f8eae33390cef08d9"
+    },
+    "source_files": 499,
+    "source_delta": "one exact control.rs replacement, 498 byte-identical source leaves",
+    "exact_same_packet_payloads": [
+      {
+        "path": "candidate-source-manifest.json",
+        "bytes": 99327,
+        "sha256": "3e9992c984a2eadd817b4ebde4f1643070f6c1c9aee3b236bf885c63b70f05e2",
+        "git_blob_sha1": "7be7c49c642b26e553267ea78e6a477244c30824",
+        "equals_host01": true
+      },
+      {
+        "path": "candidate-control.rs",
+        "bytes": 42483,
+        "sha256": "7375c45596193c3458d9dcbd3b14c41f87930fbece3bae5e7bf2800934676273",
+        "git_blob_sha1": "b314f159c5e3d8f021e8efb7caac1e9741b0dfb2",
+        "equals_host01": true
+      },
+      {
+        "path": "fixture-lib.rs",
+        "bytes": 9274,
+        "sha256": "84659a797076f73904e7437916f3a885902f06ae87282716c8142b51464df60f",
+        "git_blob_sha1": "158a7f5ecabbf171ed75439c9c166eaf388442e0",
+        "equals_host01": true
+      },
+      {
+        "path": "transaction_tests.rs",
+        "bytes": 23472,
+        "sha256": "c87d314841ac50f00943ae9181505755e8f262f538144e6979a9b63e15ecf298",
+        "git_blob_sha1": "2c34e17b1f1eb16a0d4f9d297d6af8ad8a8179cc",
+        "equals_host01": true
+      },
+      {
+        "path": "fixture-Cargo.toml",
+        "bytes": 574,
+        "sha256": "49dad84ffccc546f8c4889b87c85ff68143376d7ebebcf92be08259a4296da97",
+        "git_blob_sha1": "ad041fae37d97cc86814c101762d2149da285593",
+        "equals_host01": true
+      }
+    ],
+    "expected_test_names": [
+      "complete_direct_bind_commits_exact_registry_and_endpoints",
+      "complete_bound_reuse_performs_no_new_backend_calls",
+      "bound_reuse_rejects_different_package_or_android_display",
+      "pending_direct_marker_is_visible_before_denial_register",
+      "sink_bind_after_effect_error_rolls_back_exact_owned_object",
+      "composer_bind_after_effect_error_rolls_back_both_endpoints",
+      "real_registry_duplicate_failure_preserves_foreign_registration",
+      "denial_cleanup_error_preserves_primary_and_pending_progress",
+      "composer_cleanup_retry_skips_already_destroyed_denial_channel",
+      "repeated_composer_cleanup_error_keeps_success_checkpoint",
+      "activation_error_keeps_complete_bound_and_allows_reuse",
+      "reserved_without_endpoint_calls_cancels_without_backend_cleanup",
+      "composer_stage_after_effect_error_cleans_only_invoked_endpoint",
+      "composer_stage_error_without_effect_does_not_infer_absence_from_error",
+      "denial_register_after_effect_error_cleans_both_owned_endpoints",
+      "denial_register_error_missing_local_channel_stays_unresolved",
+      "configure_timeout_preserves_cleanup_error_and_explicit_retirement",
+      "rollback_refuses_complete_bound_registration",
+      "rollback_refuses_changed_reservation_identity_before_backend_calls",
+      "retirement_rejects_progress_for_another_display",
+      "retired_object_with_residual_mapping_is_not_accepted_as_clean",
+      "backend_calls_hold_operation_gate_but_never_state_mutex",
+      "invalid_task_identity_does_not_allocate_or_call_backends",
+      "completed_retirement_is_idempotent_without_repeating_backend_calls",
+      "after_destroy_error_is_not_promoted_to_a_success_checkpoint",
+      "endpoint_call_record_is_required_for_bound_reuse",
+      "removal_checkpoint_cannot_be_reversed"
+    ],
+    "ordinary_command_count": 42,
+    "host_lifecycle_controls": 3
+  },
+  "lock_resolution": {
+    "seed": "Full held original 51836-byte Cargo.lock copied create-only to fresh fixture; no mutation of parent/copy source lock",
+    "first_command": [
+      "cargo",
+      "metadata",
+      "--offline",
+      "--format-version",
+      "1"
+    ],
+    "first_command_scope": "Only the new owned fixture lock graph may reconcile; no Rust compilation",
+    "second_command": [
+      "cargo",
+      "metadata",
+      "--offline",
+      "--locked",
+      "--format-version",
+      "1"
+    ],
+    "admission": "Existing selected_dependencies function stays byte-identical: every registry name/version/source/checksum must be in exact original lock and actual45 archive/source authority before compile",
+    "compile": [
+      "cargo",
+      "test",
+      "--offline",
+      "--locked",
+      "-j",
+      "1",
+      "--lib",
+      "--no-run",
+      "--message-format=json-render-diagnostics"
+    ]
+  },
+  "baseline_states": [
+    "NOT_ESTABLISHED",
+    "STATIC_SOURCE_ONLY_LOCK_NOT_QUALIFIED",
+    "FULL_FOUR_LEAF_BASELINE"
+  ],
+  "lifecycle_and_resources": {
+    "reaper_byte_identical_to_host01": true,
+    "command_and_three_controls_byte_identical": true,
+    "cpu_percent": 100,
+    "memory_max_bytes": 1073741824,
+    "nice": 15,
+    "work_qualification_seconds": 450,
+    "tool_timeout_seconds": 600,
+    "owned_swap_setting": "observed only; not a zero-swap claim",
+    "Main_access": false,
+    "network_downloads": false,
+    "Android_Binder_provider_compile": false,
+    "Android_or_Soong": false
+  },
+  "remaining_production_blockers": [
+    "Provider cleanup currently accepts only display, without expected TaskObjectId; a separate real-method negative test and repair remain required.",
+    "The exact Denial protocol has no Destroy completion wire acknowledgement. A socket send result does not prove engine/window cleanup.",
+    "Installed Main source provenance and both Bili/Amazon native failure causality remain unqualified."
+  ],
+  "actual_tests_status": "The 27 Rust tests were not reached by host01 and are UNRUN for host02."
+}

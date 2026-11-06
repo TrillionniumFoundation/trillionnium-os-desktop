@@ -1,0 +1,28 @@
+--- original-Amazon-open-task-context
++++ owned-reconciliation-context
+@@ -1,5 +1,5 @@
+-def open_task_context(ref,util,context,source_manifest,source_verify,flow_root,step,
+-                      transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope):
++def open_reconciliation_context(ref,util,context,source_manifest,source_verify,flow_root,step,
++                      transport,result,deadline,phase,qa,inspect_plan,resolve,expected_scope,task,flow_class):
+     """Same held Main/classpath primitives as the qualified Amazon install.
+ 
+     The only newly constructed object is the phase-restricted task Flow above.
+@@ -17,7 +17,7 @@
+                      'amazon_task_fixed_epoch')
+     scope_raw=util.read(flow_root/'scope.json',65536)
+     scope=json.loads(scope_raw)
+-    current_task_scope(scope,qa,contract)
++    task.current_task_scope(scope,qa,contract)
+     need(scope==expected_scope and all(scope[key]==value for key,value in own_scope.items()),
+          'EXACT_NEW_CURRENT_AMAZON_FLOW_SCOPE_REQUIRED')
+     need(util.read(flow_root/'baseline.json',expected=ref.BASELINE_SHA)==ref.read(ref.BASELINE,expected=ref.BASELINE_SHA)
+@@ -52,7 +52,7 @@
+         need(all(discovered.get(k)==v for k,v in values.items()),'CLASSPATH_DISCOVERY_CHANGED')
+         environment=transport.environment_values(discovered)
+         tasks=recorder.task_functions(context.INSTALLED_SHARED/'references/task_scope_baseline.py')
+-        flow=Flow(recorder=recorder,contract=contract,target=target,environment=environment,
++        flow=flow_class(recorder=recorder,contract=contract,target=target,environment=environment,
+             transport=transport,main_guard=guard,root=flow_root,step=step,phase=phase,
+             scope=scope,activation=activation,tasks=tasks,qa=qa,inspect_plan=inspect_plan,
+             resolve=resolve,read=util.read,deadline=deadline)

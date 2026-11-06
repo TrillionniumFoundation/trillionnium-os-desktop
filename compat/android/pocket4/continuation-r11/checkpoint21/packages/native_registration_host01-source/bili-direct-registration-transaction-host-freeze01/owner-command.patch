@@ -1,0 +1,55 @@
+--- a/owned-command.py
++++ b/owned-command.py
+@@ -1,8 +1,8 @@
+-def command(report, root, argv, timeout=25, pidfd_factory=None):
++def owned_command(report, root, argv, timeout=25, pidfd_factory=None, environment=None, cwd=None, label=None):
+     index = len(report['commands'])
+     output = root / ('command%02d.stdout' % index)
+     error_path = root / ('command%02d.stderr' % index)
+-    record = {'argv': argv, 'cwd': str(root), 'timeout_seconds': timeout,
++    record = {'argv': argv, 'cwd': str(cwd or root), 'label': label, 'timeout_seconds': timeout,
+               'timed_out': False, 'child_started': False, 'child_reaped': False,
+               'kill_attempted': False, 'pidfd_closed': True, 'output_fds_closed': False,
+               'first_error': None, 'secondary_errors': [],
+@@ -24,15 +24,13 @@
+ 
+     try:
+         CHILD_REAPER.before_command()
+-        remaining = CFG['controller_work_seconds'] - (time.monotonic() - BUILD_STARTED)
++        remaining = DEADLINE - time.monotonic()
+         require(remaining > 0, 'controller work deadline expired before child admission')
+         for path in (output, error_path):
+             streams.append(path.open('xb'))
+-        environment = {'PATH': '/usr/bin:/bin', 'LC_ALL': 'C', 'LANG': 'C',
+-                       'TMPDIR': str(root / 'tmp'), 'PYTHONDONTWRITEBYTECODE': '1'}
+-        if 'HOME' in os.environ:
+-            environment['HOME'] = os.environ['HOME']  # Inherit exactly; never repurpose/reset HOME.
+-        process = subprocess.Popen(argv, cwd=root, stdin=subprocess.DEVNULL,
++        require(type(environment) is dict and environment.get('CARGO_NET_OFFLINE') == 'true',
++                'fixed offline child environment missing')
++        process = subprocess.Popen(argv, cwd=cwd or root, stdin=subprocess.DEVNULL,
+             stdout=streams[0], stderr=streams[1], close_fds=True, start_new_session=True,
+             preexec_fn=limit_child_outputs, env=environment)
+         record['pid'] = process.pid
+@@ -93,18 +91,10 @@
+     # earlier child failure or prevent the other stream from being checked.
+     for key, path in [('stdout', output), ('stderr', error_path)]:
+         try:
+-            with path.open('rb') as stream:
+-                before = os.fstat(stream.fileno())
+-                require(stat.S_ISREG(before.st_mode) and before.st_size <= 262144,
+-                        'command output exceeds bound')
+-                data = stream.read(262145)
+-                after = os.fstat(stream.fileno())
+-            require(len(data) == before.st_size and
+-                    (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns, before.st_ctime_ns) ==
+-                    (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns, after.st_ctime_ns),
+-                    'command output changed during complete capture')
++            data, pin = held(path, 32*1024*1024 if key == 'stdout' else 4*1024*1024)
+             record[key + '_bytes'] = len(data)
+-            record[key + '_sha256'] = digest(data)
++            record[key + '_sha256'] = pin['sha256']
++            record[key + '_pin'] = pin
+             record[key] = data.decode('utf-8')
+             record[key + '_complete'] = True
+         except Exception as error:

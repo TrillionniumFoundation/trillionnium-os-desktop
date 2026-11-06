@@ -1,0 +1,665 @@
+--- a/graphics/droidloom-composer-service/src/control.rs
++++ b/graphics/droidloom-composer-service/src/control.rs
+@@ -1,10 +1,10 @@
+ //! Privileged two-phase Android task lifecycle service.
+ 
+ use std::collections::{BTreeMap, BTreeSet};
+-use std::sync::{Arc, Condvar, Mutex};
++use std::sync::{Arc, Condvar, Mutex, MutexGuard};
+ use std::time::{Duration, SystemTime, UNIX_EPOCH};
+ 
+-use droidloom_composer::task_control::{TaskControlRegistry, TaskRegistrationPhase};
++use droidloom_composer::task_control::{TaskControlRegistry, TaskRegistration, TaskRegistrationPhase};
+ use droidloom_composer::{DisplayId, TaskId};
+ use droidloom_composer_aidl::denial::DenialPresentationSink;
+ use droidloom_composer_aidl::service::ComposerLifecycle;
+@@ -28,8 +28,47 @@
+     input_scales: BTreeMap<TaskObjectId, (u32, u32)>,
+     direct_tasks: BTreeMap<TaskId, TaskObjectId>,
+     direct_android_displays: BTreeMap<TaskObjectId, u32>,
++    removals: BTreeMap<TaskObjectId, RemovalProgress>,
++    endpoint_calls: BTreeMap<TaskObjectId, EndpointCalls>,
+ }
+ 
++/// Calls made for one never-reused object/display. Record each invocation
++/// before crossing the backend boundary: Err cannot prove it had no effects.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++struct EndpointCalls {
++    display: DisplayId,
++    composer: bool,
++    denial: bool,
++}
++
++/// Retirement completion for this exact object/display. An endpoint is
++/// complete only if it was never invoked or its cleanup returned Ok.
++/// An error never upgrades either fact.
++#[derive(Clone, Copy, Debug, Eq, PartialEq)]
++struct RemovalProgress {
++    display: DisplayId,
++    denial_complete: bool,
++    composer_complete: bool,
++}
++
++struct DirectReservation {
++    object: TaskObjectId,
++    display: DisplayId,
++    task: TaskId,
++    android_display: u32,
++    package: String,
++}
++
++impl DirectReservation {
++    fn matches(&self, state: &State, registration: &TaskRegistration) -> bool {
++        registration.object == self.object
++            && registration.reservation.display == self.display
++            && registration.reservation.package == self.package
++            && state.direct_tasks.get(&self.task) == Some(&self.object)
++            && state.direct_android_displays.get(&self.object) == Some(&self.android_display)
++    }
++}
++
+ /// Cloneable coordinator shared by the control listener and Denial event pump.
+ #[derive(Clone)]
+ pub struct TaskCoordinator {
+@@ -60,6 +99,8 @@
+                     input_scales: BTreeMap::new(),
+                     direct_tasks: BTreeMap::new(),
+                     direct_android_displays: BTreeMap::new(),
++                    removals: BTreeMap::new(),
++                    endpoint_calls: BTreeMap::new(),
+                 }),
+                 Condvar::new(),
+             )),
+@@ -165,70 +206,164 @@
+         package: String,
+         android_display: u32,
+     ) -> Result<(TaskObjectId, DisplayId), String> {
+-        // Explicit host launches and the Android task observer can discover
+-        // the same task together. Wait for its complete binding before reuse.
++        // Lock order is registration -> operation -> state. Do not hold the
++        // operation/state guards while reserve waits for the configure event.
+         let _registration = self.direct_registration_gate.lock()
+             .map_err(|_| "direct registration lock is poisoned".to_owned())?;
+         if task.0 == 0 || task.0 > i32::MAX as u64 {
+             return Err(format!("invalid Android task identity {}", task.0));
+         }
+         {
+-            // Keep one guard for both lookups. An if-let scrutinee guard
+-            // lives through its body; locking again there deadlocks on reopen.
+-            let state = self
+-                .state
+-                .0
+-                .lock()
++            let _operation = self.operation_gate.lock()
++                .map_err(|_| "task-control operation lock is poisoned".to_owned())?;
++            let state = self.state.0.lock()
+                 .map_err(|_| "task-control state lock is poisoned".to_owned())?;
+             if let Some(existing) = state.direct_tasks.get(&task).copied() {
+-                let registration = state
+-                    .registry
+-                    .get(existing)
++                let registration = state.registry.get(existing)
+                     .map_err(|error| error.to_string())?;
+                 if registration.reservation.package != package
+-                    || registration.android_display != Some(android_display)
++                    || state.direct_android_displays.get(&existing) != Some(&android_display)
+                 {
+                     return Err(format!(
+                         "Android task {} is already registered with different ownership",
+                         task.0
+                     ));
+                 }
++                // A Removing entry still carries its old task/display fields.
++                // Those fields alone must never qualify it for reuse.
++                if registration.phase != TaskRegistrationPhase::Bound
++                    || registration.task != Some(task)
++                    || registration.android_display != Some(android_display)
++                    || state.removals.contains_key(&existing)
++                    || state.endpoint_calls.get(&existing) != Some(&EndpointCalls {
++                        display: registration.reservation.display,
++                        composer: true,
++                        denial: true,
++                    })
++                {
++                    return Err(format!(
++                        "Android task {} direct registration is not fully Bound ({:?})",
++                        task.0, registration.phase
++                    ));
++                }
+                 return Ok((existing, registration.reservation.display));
+             }
+         }
+ 
+         let response = self
+-            .reserve_with_kind(0, package, Some((task, android_display)))
++            .reserve_with_kind(0, package.clone(), Some((task, android_display)))
+             .map_err(|(code, message)| {
+                 format!("direct task reserve failed ({code:?}): {message}")
+             })?;
+-        let ControlResponse::Reserved {
+-            object, display, ..
+-        } = response
+-        else {
++        let ControlResponse::Reserved { object, display, .. } = response else {
+             return Err("direct task reservation returned an unexpected response".to_owned());
+         };
+-        let object = TaskObjectId(object);
+-        let display = DisplayId(display);
++        let reservation = DirectReservation {
++            object: TaskObjectId(object),
++            display: DisplayId(display),
++            task,
++            android_display,
++            package,
++        };
++        let operation = self.operation_gate.lock().map_err(|_| {
++            format!("task-control operation lock is poisoned after reserving direct object {}; cleanup is unqualified",
++                    reservation.object.0)
++        })?;
++        let binding: Result<(), String> = (|| {
++            // A retire request may have run during the configure wait. Recheck
++            // this exact reservation under the same gate as binding/teardown.
++            let already_bound = {
++                let state = self.state.0.lock()
++                    .map_err(|_| "task-control state lock is poisoned".to_owned())?;
++                let registration = state.registry.get(reservation.object)
++                    .map_err(|error| error.to_string())?;
++                if !reservation.matches(&state, registration)
++                    || state.endpoint_calls.get(&reservation.object) != Some(&EndpointCalls {
++                        display: reservation.display,
++                        composer: true,
++                        denial: true,
++                    })
++                {
++                    return Err("direct reservation ownership or endpoint calls changed before binding".to_owned());
++                }
++                if registration.phase == TaskRegistrationPhase::Bound
++                    && registration.task == Some(task)
++                    && registration.android_display == Some(android_display)
++                    && !state.removals.contains_key(&reservation.object)
++                {
++                    true
++                } else if registration.phase == TaskRegistrationPhase::Connected
++                    && registration.task.is_none()
++                    && registration.android_display.is_none()
++                    && !state.removals.contains_key(&reservation.object)
++                {
++                    false
++                } else {
++                    return Err(format!(
++                        "direct object {} is not awaiting complete binding ({:?})",
++                        reservation.object.0, registration.phase
++                    ));
++                }
++            };
++            if already_bound {
++                return Ok(());
++            }
++            self.sink.bind_task(reservation.display, task)
++                .map_err(|error| format!("bind direct Denial task identity: {error}"))?;
++            self.lifecycle.bind_direct_task(reservation.display, task)
++                .map_err(|error| format!("bind direct Composer task identity: {error:?}"))?;
++            // Return an owned Result from this scope. Its state guard is gone
++            // before a failure reaches rollback, which locks state itself.
++            let result = {
++                let mut state = self.state.0.lock()
++                    .map_err(|_| "task-control state lock is poisoned".to_owned())?;
++                let registration = state.registry.get(reservation.object)
++                    .map_err(|error| error.to_string())?;
++                if !reservation.matches(&state, registration) {
++                    return Err("direct reservation ownership changed before registry commit".to_owned());
++                }
++                state.registry.bind_task(reservation.object, task, android_display)
++                    .map(|_| ())
++                    .map_err(|error| error.to_string())
++            };
++            result
++        })();
++        if let Err(primary) = binding {
++            return match self.rollback_direct_locked(&reservation, &operation) {
++                Ok(()) => Err(primary),
++                Err((code, cleanup)) => Err(format!(
++                    "{primary}; cleanup of direct object {} failed ({code:?}): {cleanup}",
++                    reservation.object.0
++                )),
++            };
++        }
++        Ok((reservation.object, reservation.display))
++    }
+ 
+-        let _operation = self
+-            .operation_gate
+-            .lock()
+-            .map_err(|_| "task-control operation lock is poisoned".to_owned())?;
+-        self.sink
+-            .bind_task(display, task)
+-            .map_err(|error| format!("bind direct Denial task identity: {error}"))?;
+-        self.lifecycle
+-            .bind_direct_task(display, task)
+-            .map_err(|error| format!("bind direct Composer task identity: {error:?}"))?;
+-        self.state
+-            .0
+-            .lock()
+-            .map_err(|_| "task-control state lock is poisoned".to_owned())?
+-            .registry
+-            .bind_task(object, task, android_display)
+-            .map_err(|error| error.to_string())?;
+-        Ok((object, display))
++    fn rollback_direct_locked(
++        &self,
++        reservation: &DirectReservation,
++        operation: &MutexGuard<'_, ()>,
++    ) -> Result<(), ControlFailure> {
++        {
++            let state = self.state.0.lock()
++                .map_err(|_| backend("task-control state lock is poisoned"))?;
++            if !state.retired.contains(&reservation.object) {
++                let registration = state.registry.get(reservation.object)
++                    .map_err(control_error)?;
++                if !reservation.matches(&state, registration) {
++                    return Err((ControlErrorCode::Conflict,
++                        "refusing cleanup of a changed direct reservation".to_owned()));
++                }
++                if registration.phase == TaskRegistrationPhase::Bound {
++                    return Err((ControlErrorCode::Conflict,
++                        "refusing rollback of a complete Bound direct registration".to_owned()));
++                }
++            }
++        }
++        // This gate is already held. Calling remove()/retire_direct_task()
++        // here would recursively lock it; remove_internal_locked never does.
++        self.remove_internal_locked(reservation.object, operation)
+     }
+ 
+     /// Resolve a previously authorized direct task without creating anything.
+@@ -271,7 +406,7 @@
+             .get(&task)
+             .copied()
+             .ok_or_else(|| format!("Android task {} is not authorized for export", task.0))?;
+-        self.remove_internal(object)
++        self.remove_internal_locked(object, &_operation)
+             .map_err(|(code, message)| format!("retire direct task failed ({code:?}): {message}"))
+     }
+ 
+@@ -422,77 +557,58 @@
+         direct_task: Option<(TaskId, u32)>,
+     ) -> Result<ControlResponse, ControlFailure> {
+         let registration = {
+-            let _operation = self
+-                .operation_gate
+-                .lock()
++            let operation = self.operation_gate.lock()
+                 .map_err(|_| backend("task-control operation lock is poisoned"))?;
+             let registration = {
+-                let mut state = self
+-                    .state
+-                    .0
+-                    .lock()
++                let mut state = self.state.0.lock()
+                     .map_err(|_| backend("task-control state lock is poisoned"))?;
+-                let registration = state.registry.reserve(package).map_err(control_error)?;
+-                if let Some((task, android_display)) = direct_task {
++                if let Some((task, _)) = direct_task {
+                     if state.direct_tasks.contains_key(&task) {
+-                        let _ = state.registry.cancel_reservation(registration.object);
+-                        return Err((
+-                            ControlErrorCode::Conflict,
+-                            format!("Android task {} already has a direct channel", task.0),
+-                        ));
++                        return Err((ControlErrorCode::Conflict,
++                            format!("Android task {} already has a direct channel", task.0)));
+                     }
++                }
++                let registration = state.registry.reserve(package).map_err(control_error)?;
++                state.endpoint_calls.insert(registration.object, EndpointCalls {
++                    display: registration.reservation.display,
++                    composer: false,
++                    denial: false,
++                });
++                if let Some((task, android_display)) = direct_task {
+                     state.direct_tasks.insert(task, registration.object);
+-                    state
+-                        .direct_android_displays
+-                        .insert(registration.object, android_display);
++                    state.direct_android_displays.insert(registration.object, android_display);
+                 }
+                 registration
+             };
+ 
+-            if let Err(error) = self.lifecycle.stage_task(registration.reservation.clone()) {
+-                let mut state = self
+-                    .state
+-                    .0
+-                    .lock()
+-                    .map_err(|_| backend("task-control state lock is poisoned"))?;
+-                let _ = state.registry.cancel_reservation(registration.object);
+-                if let Some((task, _)) = direct_task {
+-                    state.direct_tasks.remove(&task);
+-                    state.direct_android_displays.remove(&registration.object);
+-                }
+-                return Err(backend(format!("stage Composer display: {error:?}")));
+-            }
+-            {
+-                let mut state = self
+-                    .state
+-                    .0
+-                    .lock()
+-                    .map_err(|_| backend("task-control state lock is poisoned"))?;
+-                state
+-                    .registry
+-                    .mark_staged(registration.object)
+-                    .map_err(control_error)?;
+-            }
+-            if let Err(error) = self
+-                .sink
+-                .register_task(registration.object, &registration.reservation)
+-            {
+-                let _ = self
+-                    .lifecycle
+-                    .remove_display(registration.reservation.display);
+-                let mut state = self
+-                    .state
+-                    .0
+-                    .lock()
+-                    .map_err(|_| backend("task-control state lock is poisoned"))?;
+-                let _ = state.registry.begin_removal(registration.object);
+-                let _ = state.registry.finish_removal(registration.object);
+-                state.retired.insert(registration.object);
+-                if let Some((task, _)) = direct_task {
+-                    state.direct_tasks.remove(&task);
+-                    state.direct_android_displays.remove(&registration.object);
++            // Every failure after reserve leaves this closure before cleanup.
++            // No state guard crosses a backend call or recursive state lock.
++            let staging: Result<(), ControlFailure> = (|| {
++                self.record_endpoint_call_locked(
++                    registration.object, registration.reservation.display, false, &operation,
++                )?;
++                self.lifecycle.stage_task(registration.reservation.clone())
++                    .map_err(|error| backend(format!("stage Composer display: {error:?}")))?;
++                {
++                    let mut state = self.state.0.lock()
++                        .map_err(|_| backend("task-control state lock is poisoned"))?;
++                    state.registry.mark_staged(registration.object).map_err(control_error)?;
+                 }
+-                return Err(backend(format!("stage Denial task: {error}")));
++                self.record_endpoint_call_locked(
++                    registration.object, registration.reservation.display, true, &operation,
++                )?;
++                self.sink.register_task(registration.object, &registration.reservation)
++                    .map_err(|error| backend(format!("stage Denial task: {error}")))?;
++                Ok(())
++            })();
++            if let Err((code, primary)) = staging {
++                let message = match self.remove_internal_locked(registration.object, &operation) {
++                    Ok(()) => primary,
++                    Err((cleanup_code, cleanup)) => format!(
++                        "{primary}; reservation cleanup failed ({cleanup_code:?}): {cleanup}"
++                    ),
++                };
++                return Err((code, message));
+             }
+             registration
+         };
+@@ -520,15 +636,18 @@
+             });
+         drop(state);
+         if !connected {
+-            let _ = self.remove_internal(registration.object);
+-            return Err((
+-                ControlErrorCode::ConfigureTimeout,
+-                format!(
+-                    "request {request_id}: Denial did not configure object {} within {} ms",
+-                    registration.object.0,
+-                    CONFIGURE_TIMEOUT.as_millis()
++            let primary = format!(
++                "request {request_id}: Denial did not configure object {} within {} ms",
++                registration.object.0,
++                CONFIGURE_TIMEOUT.as_millis()
++            );
++            let message = match self.remove_internal(registration.object) {
++                Ok(()) => primary,
++                Err((code, cleanup)) => format!(
++                    "{primary}; reservation cleanup failed ({code:?}): {cleanup}"
+                 ),
+-            ));
++            };
++            return Err((ControlErrorCode::ConfigureTimeout, message));
+         }
+         Ok(ControlResponse::Reserved {
+             request_id,
+@@ -668,24 +787,9 @@
+         request_id: u64,
+         object: TaskObjectId,
+     ) -> Result<ControlResponse, ControlFailure> {
+-        let _operation = self
+-            .operation_gate
+-            .lock()
++        let operation = self.operation_gate.lock()
+             .map_err(|_| backend("task-control operation lock is poisoned"))?;
+-        if self
+-            .state
+-            .0
+-            .lock()
+-            .map_err(|_| backend("task-control state lock is poisoned"))?
+-            .retired
+-            .contains(&object)
+-        {
+-            return Ok(ControlResponse::Removed {
+-                request_id,
+-                object: object.0,
+-            });
+-        }
+-        self.remove_internal(object)?;
++        self.remove_internal_locked(object, &operation)?;
+         Ok(ControlResponse::Removed {
+             request_id,
+             object: object.0,
+@@ -693,52 +797,170 @@
+     }
+ 
+     fn remove_internal(&self, object: TaskObjectId) -> Result<(), ControlFailure> {
+-        let registration = {
+-            let mut state = self
+-                .state
+-                .0
+-                .lock()
++        let operation = self.operation_gate.lock()
++            .map_err(|_| backend("task-control operation lock is poisoned"))?;
++        self.remove_internal_locked(object, &operation)
++    }
++
++    fn forget_direct_object(state: &mut State, object: TaskObjectId) {
++        state.direct_android_displays.remove(&object);
++        state.direct_tasks.retain(|_, owned_object| *owned_object != object);
++    }
++
++    fn record_endpoint_call_locked(
++        &self,
++        object: TaskObjectId,
++        display: DisplayId,
++        denial: bool,
++        _operation: &MutexGuard<'_, ()>,
++    ) -> Result<(), ControlFailure> {
++        let mut state = self.state.0.lock()
++            .map_err(|_| backend("task-control state lock is poisoned"))?;
++        let registration = state.registry.get(object).map_err(control_error)?;
++        let expected_phase = if denial {
++            TaskRegistrationPhase::Staged
++        } else {
++            TaskRegistrationPhase::Reserved
++        };
++        if registration.phase != expected_phase
++            || registration.reservation.display != display
++            || state.removals.contains_key(&object)
++        {
++            return Err((ControlErrorCode::Conflict,
++                "endpoint invocation is not for this pending reservation".to_owned()));
++        }
++        let calls = state.endpoint_calls.get_mut(&object).ok_or_else(|| {
++            backend("reservation endpoint-call record is missing")
++        })?;
++        if calls.display != display || calls.denial || (calls.composer != denial) {
++            return Err((ControlErrorCode::Conflict,
++                "reservation endpoint invocation order changed".to_owned()));
++        }
++        if denial {
++            calls.denial = true;
++        } else {
++            calls.composer = true;
++        }
++        Ok(())
++    }
++
++    fn record_removal_locked(
++        &self,
++        object: TaskObjectId,
++        progress: RemovalProgress,
++        _operation: &MutexGuard<'_, ()>,
++    ) -> Result<(), ControlFailure> {
++        let mut state = self.state.0.lock()
++            .map_err(|_| backend("task-control state lock is poisoned"))?;
++        let registration = state.registry.get(object).map_err(control_error)?;
++        let previous = state.removals.get(&object).copied().ok_or_else(|| {
++            backend("task retirement progress is missing")
++        })?;
++        if !matches!(registration.phase,
++                TaskRegistrationPhase::Reserved | TaskRegistrationPhase::Removing)
++            || registration.reservation.display != progress.display
++            || previous.display != progress.display
++            || (previous.denial_complete && !progress.denial_complete)
++            || (previous.composer_complete && !progress.composer_complete)
++            || (progress.composer_complete && !progress.denial_complete)
++        {
++            return Err((ControlErrorCode::Conflict,
++                "task retirement identity or progress changed".to_owned()));
++        }
++        state.removals.insert(object, progress);
++        Ok(())
++    }
++
++    fn remove_internal_locked(
++        &self,
++        object: TaskObjectId,
++        operation: &MutexGuard<'_, ()>,
++    ) -> Result<(), ControlFailure> {
++        let (registration, mut progress) = {
++            let mut state = self.state.0.lock()
+                 .map_err(|_| backend("task-control state lock is poisoned"))?;
+-            let registration = state.registry.get(object).map_err(control_error)?.clone();
+-            if registration.phase == TaskRegistrationPhase::Reserved {
+-                state
+-                    .registry
+-                    .cancel_reservation(object)
+-                    .map_err(control_error)?;
+-                state.input_scales.remove(&object);
+-                state.retired.insert(object);
++            if state.retired.contains(&object) {
++                if state.registry.get(object).is_ok()
++                    || state.direct_android_displays.contains_key(&object)
++                    || state.direct_tasks.values().any(|owned| *owned == object)
++                    || state.input_scales.contains_key(&object)
++                    || state.removals.contains_key(&object)
++                    || state.endpoint_calls.contains_key(&object)
++                {
++                    return Err((ControlErrorCode::Conflict,
++                        "retired object still has live coordinator state".to_owned()));
++                }
+                 return Ok(());
+             }
+-            if registration.phase != TaskRegistrationPhase::Removing {
+-                state
+-                    .registry
+-                    .begin_removal(object)
+-                    .map_err(control_error)?;
++            let registration = state.registry.get(object).map_err(control_error)?.clone();
++            let calls = state.endpoint_calls.get(&object).copied().ok_or_else(|| {
++                backend("reservation endpoint-call record is missing")
++            })?;
++            if calls.display != registration.reservation.display
++                || (calls.denial && !calls.composer)
++            {
++                return Err((ControlErrorCode::Conflict,
++                    "reservation endpoint calls are not for this display".to_owned()));
+             }
+-            registration
++            if registration.phase != TaskRegistrationPhase::Reserved
++                && registration.phase != TaskRegistrationPhase::Removing
++            {
++                state.registry.begin_removal(object).map_err(control_error)?;
++            }
++            let progress = *state.removals.entry(object).or_insert(RemovalProgress {
++                display: registration.reservation.display,
++                denial_complete: !calls.denial,
++                composer_complete: !calls.composer,
++            });
++            if progress.display != registration.reservation.display
++                || (!calls.denial && !progress.denial_complete)
++                || (!calls.composer && !progress.composer_complete)
++                || (progress.composer_complete && !progress.denial_complete)
++            {
++                return Err((ControlErrorCode::Conflict,
++                    "task retirement progress is not for this display".to_owned()));
++            }
++            (registration, progress)
+         };
+ 
+-        self.sink
+-            .unregister_task(registration.reservation.display)
+-            .map_err(|error| backend(format!("destroy Denial task: {error}")))?;
+-        self.lifecycle
+-            .remove_display(registration.reservation.display)
+-            .map_err(|error| backend(format!("remove Composer display: {error:?}")))?;
+-        let mut state = self
+-            .state
+-            .0
+-            .lock()
++        // A Reserved entry can already have an attempted Composer call. It
++        // must not be cancelled until every invoked endpoint is qualified.
++        // Denial register Err may leave no local channel: UnknownDisplay then
++        // remains an unresolved cleanup error, never evidence of remote absence.
++        // Preserve ordering and each completed step. If Composer fails after
++        // Denial succeeds, a later explicit retirement skips Denial; it must
++        // not get stuck on the now-absent Denial channel. UnknownDisplay and
++        // BadDisplay are never treated as successful cleanup.
++        if !progress.denial_complete {
++            self.sink.unregister_task(registration.reservation.display)
++                .map_err(|error| backend(format!("destroy Denial task: {error}")))?;
++            progress.denial_complete = true;
++            self.record_removal_locked(object, progress, operation)?;
++        }
++        if !progress.composer_complete {
++            self.lifecycle.remove_display(registration.reservation.display)
++                .map_err(|error| backend(format!("remove Composer display: {error:?}")))?;
++            progress.composer_complete = true;
++            self.record_removal_locked(object, progress, operation)?;
++        }
++        let mut state = self.state.0.lock()
+             .map_err(|_| backend("task-control state lock is poisoned"))?;
+-        state
+-            .registry
+-            .finish_removal(object)
+-            .map_err(control_error)?;
+-        state.input_scales.remove(&object);
+-        if state.direct_android_displays.remove(&object).is_some() {
+-            state
+-                .direct_tasks
+-                .retain(|_, owned_object| *owned_object != object);
++        if state.removals.get(&object) != Some(&progress)
++            || !progress.denial_complete || !progress.composer_complete
++        {
++            return Err((ControlErrorCode::Conflict,
++                "both backend retirement successes were not retained".to_owned()));
+         }
++        let phase = state.registry.get(object).map_err(control_error)?.phase;
++        if phase == TaskRegistrationPhase::Reserved {
++            state.registry.cancel_reservation(object).map_err(control_error)?;
++        } else {
++            state.registry.finish_removal(object).map_err(control_error)?;
++        }
++        state.input_scales.remove(&object);
++        Self::forget_direct_object(&mut state, object);
++        state.removals.remove(&object);
++        state.endpoint_calls.remove(&object);
+         state.retired.insert(object);
+         self.state.1.notify_all();
+         Ok(())

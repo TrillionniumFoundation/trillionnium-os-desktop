@@ -1,0 +1,78 @@
+--- baseline/runner-template07.py
++++ controls/runner-template08.py
+@@ -15,7 +15,7 @@
+ PACKET_BYTES = __PACKET_BYTES__
+ PACKET_SHA = '__PACKET_SHA__'
+ PACKET_B64 = '__PACKET_B64__'
+-TEMP_ROOT = '/tmp/p4-owner20-property-constructor-controls-07'
++TEMP_ROOT = '/tmp/p4-owner20-property-done-controls-08'
+ NAMES = ('pid', 'pid_for_children', 'mnt', 'cgroup', 'user', 'net',
+          'ipc', 'uts', 'time', 'time_for_children')
+ 
+@@ -387,7 +387,7 @@
+ 
+ 
+ def main():
+-    result = {'schema': 1, 'kind': 'owner20-property-constructor-controls07-run',
++    result = {'schema': 1, 'kind': 'owner20-property-DONE-controls08-run',
+         'success': False, 'errors': [], 'first_error': None,
+         'Android_executed': False, 'Android_property_reads_or_writes': False,
+         'namespace_entry_or_UID_changes': False, 'Main_access': False,
+@@ -449,7 +449,8 @@
+         packet = json.loads(raw.decode('utf-8', 'strict'))
+         need(set(packet) == {'schema', 'members'} and packet['schema'] == 1 and
+              set(packet['members']) == {'property_visibility.py', 'baseline_property_visibility.py',
+-                                       'constructor_controls.py', 'actual-safe.json'}, 'EXACT_CONTROL_MEMBERS')
++                                       'import_authority_property.py', 'actor.py', 'baseline_actor.py',
++                                       'qualify.py', 'admission_controls.py', 'actual-safe.json'}, 'EXACT_CONTROL_MEMBERS')
+         source = {}
+         pins = {}
+         for name, row in packet['members'].items():
+@@ -473,10 +474,17 @@
+         tempfile.tempdir = TEMP_ROOT
+         need('ctypes' not in sys.modules and '_ctypes' not in sys.modules,
+              'EXACT_FRESH_IMPORT_DEPENDENCY_BOUNDARY')
+-        need(pins['baseline_property_visibility.py']['sha256'] == DEPENDENCY_AUTHORITY['source_sha256'] and
+-             pins['property_visibility.py']['sha256'] ==
+-             'e5d993f3bc05cebb4c61c44c84976fca491c10714799a684fed16ef85cd87f8d',
++        need(pins['import_authority_property.py']['sha256'] == DEPENDENCY_AUTHORITY['source_sha256'] and
++             pins['baseline_property_visibility.py']['sha256'] ==
++             'e5d993f3bc05cebb4c61c44c84976fca491c10714799a684fed16ef85cd87f8d' and
++             pins['property_visibility.py']['sha256'] == '5b6c693f2ace7a873bb5edf62b54ac4ffd2993399989b4091b91a3fab80dd13a',
+              'ACTUAL_BASELINE_AND_MINIMAL_CANDIDATE_IMPORT_SOURCE_REQUIRED')
++        imports = []
++        for name in ('import_authority_property.py', 'baseline_property_visibility.py', 'property_visibility.py'):
++            nodes = [node for node in ast.parse(source[name]).body
++                     if isinstance(node, (ast.Import, ast.ImportFrom))]
++            imports.append(ast.dump(ast.Module(body=nodes, type_ignores=[]), include_attributes=False))
++        need(imports[0] == imports[1] == imports[2], 'EXACT_ORIGINAL_IMPORT_LIFECYCLE_REQUIRED')
+         modules_before = observed.sample('before_production_module')
+         subject = types.ModuleType('owner20_property_control_subject')
+         exec(compile(source['property_visibility.py'], 'property_visibility.py', 'exec'), subject.__dict__)
+@@ -502,13 +510,13 @@
+             observed.equal(modules_before, modules_after, 'unqualified_module_imports')
+             raise
+         controls = types.ModuleType('owner20_property_controls')
+-        exec(compile(source['constructor_controls.py'], 'constructor_controls.py', 'exec'), controls.__dict__)
++        exec(compile(source['admission_controls.py'], 'admission_controls.py', 'exec'), controls.__dict__)
+         controls_imported = observed.sample('after_controls_module')
+         need(observed.equal(modules_after, controls_imported, 'controls_module_import'),
+              'UNACCOUNTED_CONTROL_MODULE_LIVE_FD_IDENTITY_CHANGED')
+-        result['controls'] = controls.run(subject, source['baseline_property_visibility.py'], source['actual-safe.json'],
+-            observed.observe_case, None, control_diagnostics, source['property_visibility.py'])
+-        need(result['controls']['success'] is True and result['controls']['count'] == 11,
++        result['controls'] = controls.run(subject, source,
++            observed.observe_case, None, control_diagnostics)
++        need(result['controls']['success'] is True and result['controls']['count'] == 31,
+              'ALL_PINNED_HOST_CONTROLS_REQUIRED')
+     except BaseException as e:
+         error('host_controls', e)
+@@ -593,7 +601,7 @@
+                          result['all_fixture_children_reaped'] and result['all_fixture_files_and_fds_closed'] and
+                          result['all_process_lifetime_dependencies_accounted'])
+     result['state'] = ('HOST_CONTROLS_COMPLETE_PROCESS_EXIT_PENDING' if result['success'] else 'FAILED')
+-    result['success_scope'] = '11 actual-shape constructor controls plus the unchanged 8 dependency-accounting controls; OS/hash/spawn are explicit seams; original baseline and process-lifetime dependency remain visible; actual process exit is external evidence'
++    result['success_scope'] = '31 actual actor-loop/child-view controls plus the unchanged 8 dependency-accounting controls; OS/clock/process/file/constructor are explicit seams; original baseline and process-lifetime dependency remain visible; actual process exit is external evidence'
+     body = (json.dumps(result, sort_keys=True, separators=(',', ':')) + '\n').encode()
+     need(len(body) <= 131072, 'HOST_CONTROL_RESULT_BOUND')
+     sys.stdout.buffer.write(body); sys.stdout.buffer.flush()

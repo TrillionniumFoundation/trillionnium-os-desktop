@@ -1,0 +1,118 @@
+{
+  "schema": "pocket4-fixed-current-epoch-diagnostic-source-review-v1",
+  "status": "SOURCE_ONLY_NOT_EXECUTED",
+  "source": {
+    "bytes": 15853,
+    "sha256": "671ff139b74a1fa6c18c09df7ba708aa333763fe188c815f586c458148fa6b44",
+    "git_blob_sha": "8298f1eff823d9d28c86cf5688b2ebf46db1f22f"
+  },
+  "request": {
+    "bytes": 17494,
+    "sha256": "b9295c774aaa41b0f24566f1d3e7acf2ba54fea890cdf8bf54bfeb05b36672d0",
+    "git_blob_sha": "7143816e1bcf770fd31d61b7a74768bd789c9d0a"
+  },
+  "actual_trigger": {
+    "job_id": "1a1b0d1d2b3-fc05-7330",
+    "stdout": {
+      "bytes": 2317,
+      "sha256": "ab72a4e88d71c5f0f594681b1215bf5f9e34c2237c166e353d79fbbb12f214b3",
+      "git_blob_sha": "1cf01219ad3051b56e2a34428ad2224e4ab1fd51"
+    },
+    "first_error": "FRAMEWORK_EPOCH_CHANGED_OR_UNAVAILABLE",
+    "command_records": 0,
+    "observations": 0
+  },
+  "purpose": "Diagnose fixed historical framework identities and conditionally discover the same init cell. A process mismatch is a diagnostic finding, not authorization.",
+  "inputs": [
+    {
+      "source": "R5 source-manifest.json/current_baseline/private and current_baseline_guard.py/load_current",
+      "schema": "pocket4-main-current-baseline-v1",
+      "path": "/home/alex/work/pocket4-main-current-baseline-01/baseline.private.json",
+      "bytes": 41844,
+      "sha256": "163e3e3914f4ccbb103f50ee83e15588d5c6e962fe8d14176ed48b2dd77c3266"
+    },
+    {
+      "path": "/home/alex/work/pocket4-current-host-r5-source-01/references/framework_epoch.py",
+      "bytes": 8658,
+      "sha256": "f43f766f19a151d7d33ecd0c99c2e81f832fce7dcb1804e5c774e833066a6288",
+      "git_blob_sha": "ee85b38842efa8d935bbdc5b422c7804f059da92"
+    }
+  ],
+  "execution": {
+    "uid": 0,
+    "read_budget_seconds": 8,
+    "self_alarm_seconds": 8,
+    "request_timeout_seconds": 30,
+    "memory_max_bytes": 134217728,
+    "cpu_quota_percent": 100,
+    "nice": 10,
+    "python_argv": [
+      "-I",
+      "-B",
+      "-c"
+    ],
+    "source_limit_bytes": 32768,
+    "stdout_limit_bytes": 32768
+  },
+  "controls": {
+    "planned": 10,
+    "Python_executed": false,
+    "cases": [
+      "exact_identity_numeric_projection",
+      "cmdline_and_cgroup_private",
+      "complete_init_equality_required",
+      "same_pid_changed_birth_denied",
+      "same_pid_changed_private_cmdline_denied",
+      "closed_difference_field",
+      "unknown_executable_hash_only",
+      "malformed_namespace_not_exported",
+      "closed_error_and_errno_without_raw",
+      "unknown_error_text_hidden"
+    ]
+  },
+  "mechanics": {
+    "fixed_input_nofollow_ancestor_chain": true,
+    "root_regular_single_link_exact_pin": true,
+    "read_stat_before_after_equal": true,
+    "private_json_duplicate_and_nonfinite_rejected": true,
+    "original_epoch_source_full_pin_before_exec": true,
+    "original_module_unchanged": true,
+    "read_original_process_identity_for_four_fixed_pids": true,
+    "only_complete_init_identity_equality_allows_original_capture_android": true,
+    "discovered_init_and_boot_must_equal_baseline": true,
+    "own_input_fds_counted": true,
+    "original_epoch_internal_fds_independently_counted": false
+  },
+  "output": {
+    "private_baseline": false,
+    "raw_cmdline": false,
+    "raw_cgroup": false,
+    "unknown_executable_text": false,
+    "unknown_exception_text": false,
+    "unknown_classes": false,
+    "closed_numeric_and_hash_metadata": true,
+    "known_public_executable_literals": true,
+    "closed_error_codes_and_errno": true,
+    "old_field_difference_names": true,
+    "new_epoch_hash_observation_only": true
+  },
+  "no_actions": {
+    "Android_commands": 0,
+    "UI_actions": 0,
+    "children": 0,
+    "files_written": 0,
+    "other_process_signals": 0,
+    "namespace_entry": false,
+    "baseline_rebind": false,
+    "Main_restart_inferred": false,
+    "current_task_observed": false,
+    "cleanup_authority": false,
+    "production_qualification": false
+  },
+  "limits": [
+    "The original capture_android implementation enumerates /proc and reads cmdline privately; it is called only after complete old-init identity equality.",
+    "A successful diagnostic protocol may report absent or changed roles. It does not qualify a replacement epoch.",
+    "The self alarm is installed before stdin/source imports; it interrupts the read phase after eight seconds. No claim is made that Python executed in this source-only review.",
+    "Tracked FD counts cover this reader's two fixed input chains; the unchanged original module owns and closes its own internal file reads, without a separately measured FD count."
+  ]
+}

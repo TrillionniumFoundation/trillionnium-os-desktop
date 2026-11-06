@@ -1,0 +1,114 @@
+{
+  "Android_actions": 0,
+  "Main_actions": 0,
+  "actual_read_scope": {
+    "all_closed": true,
+    "carrier": {
+      "bytes": 48482,
+      "git_blob_sha": "e649d1be46367c7efb4fbddc30305d452b534ee1",
+      "sha256": "b253b72301b324cd4f52a6c9516347ad91f49e76f3d6f25743890623f6f57194"
+    },
+    "collection_complete": true,
+    "fd_count": 74,
+    "three_source_job": "1a1b0c5a881-fc05-72c6"
+  },
+  "default_feature_enabled": false,
+  "install_actions": 0,
+  "limits": [
+    "This isolated compile does not prove translator generation readiness, the raw metadata owner lifecycle, factory client integration at runtime, or Marriott's historical crash cause.",
+    "Original owned build root parent is operator writable. Full source hashes and repeated held/name equality are checks, not an atomic filesystem snapshot.",
+    "Source-level public AOSP Java/JNI matches are proved by the actual candidate07 manifest SHA, not by assuming the current public branch is the deployed revision.",
+    "All historical R16/current-App reproduction and Main deployment qualifications remain false. Default raw-owner and ART runtime feature gates remain unchanged.",
+    "Python compilation and actual six compiler commands have not run in this agent. V8 checks only.",
+    "Future original JNI VerifyTestList remains strict; a nine-case filter is separate from the complete registered-test list."
+  ],
+  "reason": "The actual candidate07 APK shared-library source list omitted proc_self_maps_test.cc. Updating the original NDK test source alone would not include these checks in the APK JNI runner.",
+  "schema": 1,
+  "scope": "Four-file integration delta, twelve real proc-maps test bodies (nine added), and original JNI entry compile-only",
+  "source_changes": [
+    {
+      "change": "Retain original three tests; add the nine earlier frozen real-libc FD/readlink boundary tests unchanged.",
+      "path": "engine/tests/ndk_program_tests/proc_self_maps_test.cc"
+    },
+    {
+      "change": "Add exactly one filegroup containing only proc_self_maps_test.cc; existing consumers unchanged.",
+      "path": "engine/tests/ndk_program_tests/Android.bp"
+    },
+    {
+      "change": "Add exactly that one filegroup to existing libberberis_ndk_tests srcs; JNI symbols, Java API, flags, and existing libraries unchanged.",
+      "path": "engine/tests/tests_apk/Android.bp"
+    },
+    {
+      "change": "Reuse the already preserved CP12 interface successor: two PROCMET1 marker strings become PROCMET2, matching actual engine/protocol and ART bridge. Runtime code and opt-in defaults unchanged; this TU is not built by the proposed narrow test compilation.",
+      "path": "platform/art/runtime/native_bridge_art_interface.cc"
+    }
+  ],
+  "state": "SOURCE_AND_STATIC_COMPILE_REQUEST_FROZEN_UNRUN",
+  "static_compile": {
+    "ART_built": false,
+    "Soong_target_executed": false,
+    "artifact_checks": "ELF64 little-endian AArch64 REL, exact 12 defined TestBody symbols, real JNI export plus matching unresolved/defined RunAllTests symbol",
+    "child_retirement_seconds": 5,
+    "child_timeout_seconds": 25,
+    "commands": 6,
+    "cpu": 1,
+    "full_engine_built": false,
+    "job_timeout_seconds": 210,
+    "link_performed": false,
+    "memory_max": 1073741824,
+    "new_GTest_bionic_ARM64_JNI_dependencies": "first observed under fixed roots; recorded completely before compilation and compared against compiler MD and final reads",
+    "objects": [
+      "proc_self_maps_test.cc",
+      "jni_test.cc",
+      "jni_test_main.cc"
+    ],
+    "objects_executed": false,
+    "original_C16_C20_clang": {
+      "bytes": 3805269,
+      "path": "/home/alex/Documents/Codex/2026-10-23/new-chat-2/work/audio-target-build-r1/aosp-source/prebuilts/clang/host/linux-x86/clang-r584948b/bin/clang++",
+      "sha256": "15261046b6ea9504da0ae57b9d65ebc869ab1942aecb1af2819762b9b5251957"
+    },
+    "original_reaper_real_controls_reused_without_rerun": true,
+    "own_child_reaper_and_command_byte_identical_to": {
+      "bytes": 38732,
+      "git_blob": "ef59ee980316a2317ba86a99c47572fb9afb0c12",
+      "sha256": "d12077133b1a974f82cc088f02f0f4fe9a573c93a1679f00f003d3d103aebe58"
+    },
+    "per_TU": "fixed -M dependency discovery -> bounded full hash and metadata -> compile with -MD -> exact dependency equality",
+    "prior_795_host_headers_and_151_C_inputs_do_not_qualify_new_CXX_inputs": true,
+    "request_kind": "p4-marriott-proc-readlink-outer-tu-build01",
+    "resource_guard": {
+      "bytes": 13535,
+      "git_blob_sha": "9f249a689ddce09ec78093833c72246bb64a5960",
+      "sha256": "4192389de077c41dc395d9f5b083d10372272c45aacb053697d3c24e94a25961"
+    },
+    "root": "/home/alex/work/pocket4-marriott-proc-readlink-outer-tu-01-20261106",
+    "target": "aarch64-linux-android10000",
+    "work_deadline_seconds": 150
+  },
+  "test_execution_contract": {
+    "Android_runtime_request_generated": false,
+    "current_full_linked_registration_list": "NOT_OBSERVED",
+    "empty_list_or_zero_selected_tests_must_not_qualify_the_new_contract": true,
+    "expected_new_test_count": 9,
+    "gtest_filter": "ProcSelfMaps.ReadlinkHasCanonicalOwnerPath:ProcSelfMaps.DuplicatedAliasesKeepOriginAfterOriginalClose:ProcSelfMaps.Dup2ReplacementDoesNotKeepMapsAttribution:ProcSelfMaps.ReusedClosedNumberDoesNotKeepMapsAttribution:ProcSelfMaps.CloseRangeOfOnlyOwnedFdDoesNotKeepMapsAttribution:ProcSelfMaps.SealedLookalikeMemfdIsNotTrustedMaps:ProcSelfMaps.ReadlinkLengthAndNoTerminatorSemantics:ProcSelfMaps.ClosedFdAndBadDirfdKeepKernelErrors:ProcSelfMaps.UnwritableBufferReturnsEfaultWithoutAProcessFault",
+    "new_names": [
+      "ProcSelfMaps.ReadlinkHasCanonicalOwnerPath",
+      "ProcSelfMaps.DuplicatedAliasesKeepOriginAfterOriginalClose",
+      "ProcSelfMaps.Dup2ReplacementDoesNotKeepMapsAttribution",
+      "ProcSelfMaps.ReusedClosedNumberDoesNotKeepMapsAttribution",
+      "ProcSelfMaps.CloseRangeOfOnlyOwnedFdDoesNotKeepMapsAttribution",
+      "ProcSelfMaps.SealedLookalikeMemfdIsNotTrustedMaps",
+      "ProcSelfMaps.ReadlinkLengthAndNoTerminatorSemantics",
+      "ProcSelfMaps.ClosedFdAndBadDirfdKeepKernelErrors",
+      "ProcSelfMaps.UnwritableBufferReturnsEfaultWithoutAProcessFault"
+    ],
+    "nonempty_full_registration_list_must_come_from_actual_linked_APK": true
+  },
+  "verified_source_chain": [
+    "ARM64 generated case78 -> RunGuestSyscall___NR_readlinkat -> actual ReadLinkAtForGuest",
+    "enabled raw-owner branch -> candidate07 provenance::Readlinkat; default remains disabled and old path remains",
+    "APK libberberis_ndk_tests -> new one-file filegroup -> original three plus nine real TEST declarations",
+    "Java NdkTests.runTests -> actual exported Java_com_example_ndk_1tests_NdkTests_runTests -> ndk_test::RunAllTests -> original VerifyTestList -> RUN_ALL_TESTS"
+  ]
+}
