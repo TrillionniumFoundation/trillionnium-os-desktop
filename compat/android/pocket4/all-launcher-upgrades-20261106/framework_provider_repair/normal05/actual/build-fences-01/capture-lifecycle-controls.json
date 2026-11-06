@@ -1,0 +1,94 @@
+{
+  "schema": 1,
+  "kind": "real-fixed-capture-lifecycle-controls02",
+  "state": "PASS",
+  "qualification_seconds_limit": 30,
+  "elapsed_seconds": 1.1517380829900503,
+  "hard_execution_deadline_claimed": false,
+  "passed": 4,
+  "rows": [
+    {
+      "name": "control-root-timeout",
+      "passed": true,
+      "actor_uids": [
+        0,
+        0,
+        0
+      ],
+      "owned_children_empty": true,
+      "Main_read_performed": false,
+      "original_expected_failure": {
+        "stage": "start_or_wait",
+        "type": "TimeoutError",
+        "errno": null,
+        "message": "owned child exit deadline"
+      },
+      "outer_lifecycle_sha256": "52d796af2125928e51edabf3c14e98c69c09846d743c9aea772641a350ee2d53",
+      "root_stdout_sha256": "d06338dfa738984e3778530dc15c4b78cc56cff059ab54223619ae40e8f20181"
+    },
+    {
+      "name": "control-root-escaped",
+      "passed": true,
+      "actor_uids": [
+        0,
+        0,
+        0
+      ],
+      "owned_children_empty": true,
+      "Main_read_performed": false,
+      "original_expected_failure": {
+        "stage": "driver_left_descendants",
+        "type": "RuntimeError",
+        "errno": null,
+        "message": "driver left descendant processes after its exit"
+      },
+      "outer_lifecycle_sha256": "87b5125b48001fb192fbf23f2e77bdbe1eb9b77524a99cf126c6687d5489d890",
+      "root_stdout_sha256": "322a917c27420b75c26955abcb519f822add1724cc83e057da0d5823d9cca718"
+    },
+    {
+      "name": "control-root-pidfd",
+      "passed": true,
+      "actor_uids": [
+        0,
+        0,
+        0
+      ],
+      "owned_children_empty": true,
+      "Main_read_performed": false,
+      "original_expected_failure": {
+        "stage": "start_or_wait",
+        "type": "OSError",
+        "errno": 24,
+        "message": "[Errno 24] explicit fixed-root pidfd allocation control seam"
+      },
+      "outer_lifecycle_sha256": "da5866ce539e3777e9de5cfa4687c7199c1ec9adad80b3a5ea610715ce52cfb8",
+      "root_stdout_sha256": "12c44d189a347270e8b570baa43348d6aeac0b56fc3e85b6dc6bdd599ca38d32"
+    },
+    {
+      "name": "control-outer-pidfd",
+      "passed": true,
+      "actor_uids": [
+        1000,
+        1000,
+        1000
+      ],
+      "owned_children_empty": true,
+      "Main_read_performed": false,
+      "root_startup_required_for_control": false,
+      "original_expected_failure": {
+        "stage": "start_or_wait",
+        "type": "OSError",
+        "errno": 24,
+        "message": "[Errno 24] explicit outer owned-child pidfd allocation control seam"
+      },
+      "secondary_failures_retained": [],
+      "outer_lifecycle_sha256": "99c68d960b58d472209f7534d35a28015b0190529ce0624c61213f1ada211269"
+    }
+  ],
+  "Python_processes_actually_run": true,
+  "privileged_commands_limited_to_pinned_supervisor": true,
+  "Main_read_performed": false,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "new_QA_epoch_qualified": false
+}

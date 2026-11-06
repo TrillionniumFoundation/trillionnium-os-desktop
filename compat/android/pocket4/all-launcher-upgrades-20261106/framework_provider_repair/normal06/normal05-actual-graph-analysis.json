@@ -1,0 +1,208 @@
+{
+  "schema": "pocket4-normal05-loaded-blueprint-analysis-v1",
+  "state": "ACTUAL_FILE_LIST_AND_LOCK_BINDING_VERIFIED_NOT_A_COMPLETE_TARGET_GRAPH",
+  "inputs": [
+    {
+      "path": "/workspace/scratch/265e5bca485a/pocket4_eight_apps/framework_provider_repair/normal06/reference/normal05-actual-graph/Android.bp.list",
+      "bytes": 387689,
+      "sha256": "89fb2a791dbe2dde9b8425764dd0c455b69a8f3d3c34ba9a2038631bebd22ccc"
+    },
+    {
+      "path": "/workspace/scratch/265e5bca485a/pocket4_eight_apps/framework_provider_repair/normal06/reference/normal05-actual-graph/droidloom-role-ingress-inputs.json",
+      "bytes": 29082,
+      "sha256": "b9c159301d0db045536b8e987e86070a7dcdc4f9aacc67738e8aa2078e69a10e"
+    },
+    {
+      "path": "/workspace/scratch/265e5bca485a/pocket4_eight_apps/framework_provider_repair/normal06/reference/normal05-actual-graph/droidloom-source-manifest.json",
+      "bytes": 109252,
+      "sha256": "5ae96f8d2bc32986fdbf8fea12f54dbcb02b1ed1601894b2b23998f61aba0d7d"
+    },
+    {
+      "path": "/workspace/scratch/265e5bca485a/pocket4_eight_apps/framework_provider_repair/normal06/reference/normal05-actual-graph/retrieval-index.json",
+      "bytes": 5146,
+      "sha256": "5b6103063b870d3bf58b78f2345c610a583525f9b7ba4a8d88882d7ea716c13f"
+    },
+    {
+      "path": "/workspace/scratch/265e5bca485a/pocket4_eight_apps/framework_provider_repair/normal05/source-r2/actual-provider-source-lock.json",
+      "bytes": 96957,
+      "sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d"
+    },
+    {
+      "path": "/workspace/scratch/265e5bca485a/pocket4_eight_apps/framework_provider_repair/normal06/source-candidate.json",
+      "bytes": 3149,
+      "sha256": "d7d39e923a71e23df7536ac8e7f08a433c98cae9ff25b33cb5b2bd7e3870e7a5"
+    },
+    {
+      "path": "/workspace/scratch/265e5bca485a/pocket4_eight_apps/framework_provider_repair/normal06/systemui-static-projection-audit.json",
+      "bytes": 4171,
+      "sha256": "e132ac18a9806caa14c41c95c1ba2dbe85be48d3821420fe98aba183ac149cc2"
+    }
+  ],
+  "actual_blueprint_list_entries": 6472,
+  "actual_systemui_blueprint_files": 68,
+  "all_68_upstream_systemui_BP_paths_listed": true,
+  "all_225_project_plan_fields_match_locked_projects": true,
+  "all_8_links_match_source_lock": true,
+  "source_lock_sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d",
+  "superproject_commit": "28f0bbddc24d56c8ec5a8df5342ac7a292184039",
+  "frameworks_base_commit": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+  "actual_dependency_mode": "Strict",
+  "actual_targets": [
+    "framework-minus-apex",
+    "libandroid_runtime"
+  ],
+  "actual_ingress_transitive_build_closure_qualified": false,
+  "actual_systemui_projected_root_sha256": "f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1",
+  "referenced_consumer_edges": [
+    {
+      "consumer": "SystemUITests_defaults",
+      "path": "tests/Android.bp",
+      "line": 22,
+      "property": "defaults",
+      "dependency": "systemui-non-platform-apis-defaults",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": true,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "SystemUITests_defaults",
+      "path": "tests/Android.bp",
+      "line": 22,
+      "property": "static_libs",
+      "dependency": "SystemUI-tests",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": false,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "SystemUI_test_fixtures",
+      "path": "tests/Android.bp",
+      "line": 81,
+      "property": "libs",
+      "dependency": "SystemUI-application",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": false,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "SystemUI_test_fixtures",
+      "path": "tests/Android.bp",
+      "line": 81,
+      "property": "libs",
+      "dependency": "kosmos",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": false,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "sysui_main",
+      "path": "pods/build/Android.bp",
+      "line": 21,
+      "property": "defaults",
+      "dependency": "SystemUI_compile_dagger",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": true,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "sysui_dagger",
+      "path": "pods/build/Android.bp",
+      "line": 54,
+      "property": "defaults",
+      "dependency": "SystemUI_compile_dagger",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": true,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "sysui_testlib",
+      "path": "pods/build/Android.bp",
+      "line": 75,
+      "property": "libs",
+      "dependency": "kosmos",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": false,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "com.android.systemui.common.ui.compose_api",
+      "path": "pods/common/ui/compose/Android.bp",
+      "line": 21,
+      "property": "libs",
+      "dependency": "SystemUI-res",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": false,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "com.android.systemui.headline.ui_preview",
+      "path": "pods/headline/ui/Android.bp",
+      "line": 61,
+      "property": "static_libs",
+      "dependency": "SystemUI-res",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": false,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "com.android.systemui.notifications.intelligence.rules.ui_main",
+      "path": "pods/notifications/intelligence/rules/ui/Android.bp",
+      "line": 33,
+      "property": "static_libs",
+      "dependency": "SystemUI-res",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": false,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "com.android.systemui.qs.panels.ui_api",
+      "path": "pods/qs/panels/ui/Android.bp",
+      "line": 21,
+      "property": "libs",
+      "dependency": "SystemUI-res",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": false,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "com.android.systemui.statusbar.chips.ui_api",
+      "path": "pods/statusbar/chips/ui/Android.bp",
+      "line": 21,
+      "property": "libs",
+      "dependency": "SystemUI-res",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": false,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "com.android.systemui.statusbar.chips.ui_testlib",
+      "path": "pods/statusbar/chips/ui/Android.bp",
+      "line": 38,
+      "property": "static_libs",
+      "dependency": "SystemUI-res",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": false,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    },
+    {
+      "consumer": "com.android.systemui.util.policy-impl",
+      "path": "pods/util/policy/Android.bp",
+      "line": 33,
+      "property": "defaults",
+      "dependency": "SystemUI_compile_dagger",
+      "consumer_file_listed_in_actual_normal05_BP_list": true,
+      "normal06_source_candidate_preserves_provider": true,
+      "actual_soong_variant_and_dependency_resolution": "UNKNOWN_NOT_COMPLETED"
+    }
+  ],
+  "normal06_rust_focused_tests": "NOT_RUN",
+  "normal06_soong_build": "NOT_SUBMITTED",
+  "full_actual_git_HEAD_and_dirty_state_audit": "NOT_ESTABLISHED_BY_PLAN_MANIFEST",
+  "ordinary_edges_resolution": "UNKNOWN_10_EDGES_REQUIRE_ACTUAL_VARIANTS_AND_DEPENDENCY_RESOLUTION",
+  "source_candidate_changed_by_this_analysis": false,
+  "inference": "The remaining ordinary edges cannot be dismissed as absent from the actual Blueprint input list. Presence in that list does not establish enabled variants, target reachability, or successful dependency resolution.",
+  "runtime_actions_performed": false,
+  "host_build_performed": false,
+  "production_ready": false,
+  "cleanup_eligible": false
+}

@@ -1,0 +1,78 @@
+package {
+    default_team: "trendy_team_system_ui_please_use_a_more_specific_subteam_if_possible_",
+    default_applicable_licenses: ["frameworks_base_packages_SystemUI_license"],
+}
+license {
+    name: "frameworks_base_packages_SystemUI_license",
+    visibility: [
+        ":__subpackages__",
+        "//development/samples/SceneTransitionLayoutDemo:__subpackages__",
+    ],
+    license_kinds: [
+        "SPDX-license-identifier-Apache-2.0",
+    ],
+    license_text: [
+        "NOTICE",
+    ],
+}
+
+soong_config_module_type {
+    name: "systemui_optimized_java_defaults",
+    module_type: "java_defaults",
+    config_namespace: "ANDROID",
+    bool_variables: ["SYSTEMUI_OPTIMIZE_JAVA"],
+    properties: ["optimize"],
+}
+
+systemui_optimized_java_defaults {
+    name: "SystemUI_optimized_defaults",
+    soong_config_variables: {
+        SYSTEMUI_OPTIMIZE_JAVA: {
+            optimize: {
+                enabled: true,
+                optimize: true,
+                shrink: true,
+                shrink_resources: true,
+                optimized_shrink_resources: true,
+                ignore_warnings: false,
+                proguard_compatibility: false,
+                d8_on_eng: true,
+            },
+            conditions_default: {
+                optimize: {
+                    ignore_warnings: false,
+                    proguard_compatibility: false,
+                },
+            },
+        },
+    },
+}
+
+java_defaults {
+    name: "systemui-non-platform-apis-defaults",
+    static_libs: [
+        "android.os.flags-aconfig-java",
+    ],
+}
+
+java_defaults {
+    name: "SystemUI_compile_dagger",
+
+    plugins: ["dagger2-compiler"],
+
+    annotation_processor_flags: [
+        "dagger.fastInit=ENABLED",
+        "dagger.explicitBindingConflictsWithInject=ERROR",
+        "dagger.useBindingGraphFix=ENABLED",
+    ],
+
+    defaults_visibility: ["//visibility:public"],
+}
+
+filegroup {
+    name: "sysui_proguard_common_and_kotlin",
+    srcs: [
+        "proguard_common.flags",
+        "proguard_kotlin.flags",
+    ],
+}

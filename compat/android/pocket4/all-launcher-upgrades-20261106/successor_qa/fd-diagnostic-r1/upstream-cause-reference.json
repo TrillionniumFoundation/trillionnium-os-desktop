@@ -1,0 +1,31 @@
+{
+  "schema": "pocket4-python-libffi-upstream-cause-reference-v1",
+  "observed_diagnostic": {
+    "job_id": "1a1b155cac9-fc05-77d4",
+    "state": "failed",
+    "exit_code": 1,
+    "stdout_sha256": "046b39cd66008d65c6cddcf9ed2e89a2d117ffaa8702b4c9628d875ca627c4b8",
+    "first_descriptor_problem_phase": "load_and_configure_frozen_core",
+    "descriptor_link": "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0"
+  },
+  "interpretation": "The observed new read-only CLOEXEC descriptor is consistent with CPython import-time closure allocator initialization and libffi's process-lifetime static-trampoline backing descriptor. The deployed package/build identities still require the separate actual host probe; upstream tags are references, not a claim of deployed versions.",
+  "references": [
+    {
+      "role": "python",
+      "url": "https://github.com/python/cpython/blob/v3.14.0/Modules/_ctypes/_ctypes.c",
+      "git_blob_sha": "08e00adfd0c3e6d7ae0a2ce6d22cbd986631d5ed",
+      "source_sha256": "4cf2befe853cab6b128b0387dfb95a114cc8560acbafc02ee4172a456e017a94",
+      "source_utf8_bytes": 188430
+    },
+    {
+      "role": "libffi",
+      "url": "https://github.com/libffi/libffi/blob/v3.5.2/src/tramp.c",
+      "git_blob_sha": "76a9dfe75c2c3b407a8b168d249f1b1be1ecf8ba",
+      "source_sha256": "72bd974d4db3b9aa440f762d8728feb3e9cd41ad1ea252294ca433a5e0da76f5",
+      "source_utf8_bytes": 17107
+    }
+  ],
+  "unknown_FDs_closed": 0,
+  "Main_actions": 0,
+  "sourcegen_failure_reclassified": false
+}

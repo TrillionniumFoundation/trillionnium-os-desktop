@@ -1,0 +1,90 @@
+{
+  "schema": "pocket4-systemui-two-real-defaults-source-candidate-v1",
+  "state": "SOURCE_PREPARED_RUST_AND_SOONG_NOT_RUN",
+  "baseline_android_rs_sha256": "429b80b8fd9cd54c595e03f5551c906a398171732788636766db4eb1be42955f",
+  "source_lock_changed": false,
+  "source_lock_sha256": "72848909e4931d712a3d59f344904ae8642b32c35a01cf520a51afce4c56b50d",
+  "projects": 225,
+  "project_commits_changed": false,
+  "candidate": [
+    {
+      "path": "tools/droidloom-update/src/android.rs",
+      "bytes": 289809,
+      "sha256": "9357aa8c0e0ab511278dcb24df57e5cb29f1570811019c501703fa387229c9e3"
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp",
+      "bytes": 3392,
+      "sha256": "f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da"
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/SystemUI-pods-build.Android.bp",
+      "bytes": 4218,
+      "sha256": "45a406d917e55d45ad1ef0eafd27f2146a894dbcd309813e5c58b1a1b9e6400f"
+    },
+    {
+      "path": "android/native-role-ingress/provider-fixtures/SystemUI-pods-policy.Android.bp",
+      "bytes": 1278,
+      "sha256": "abdbfc9d78daa2785dd2cb953b4ec081f135df032e348fab78c2731262744533"
+    }
+  ],
+  "patch": {
+    "path": "builder470-systemui-defaults.patch",
+    "bytes": 13118,
+    "sha256": "d2b2e6d8e32185526f56864f3c9414d8859eea1cb3ce994e85354f36d193e660"
+  },
+  "projection_before": {
+    "bytes": 1558,
+    "sha256": "f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1"
+  },
+  "projection_after": {
+    "bytes": 2017,
+    "sha256": "025d58f766940a96ab6557b523456162201f393c9277abde86ad5030b52448cc"
+  },
+  "retained_upstream_modules": [
+    {
+      "kind": "soong_config_module_type",
+      "name": "systemui_optimized_java_defaults"
+    },
+    {
+      "kind": "systemui_optimized_java_defaults",
+      "name": "SystemUI_optimized_defaults"
+    },
+    {
+      "kind": "java_defaults",
+      "name": "systemui-non-platform-apis-defaults"
+    },
+    {
+      "kind": "java_defaults",
+      "name": "SystemUI_compile_dagger"
+    },
+    {
+      "kind": "filegroup",
+      "name": "sysui_proguard_common_and_kotlin"
+    }
+  ],
+  "new_defaults_body_sha256": {
+    "systemui-non-platform-apis-defaults": "b3b6be921e5d7bfb8a5abd00646da593575cabb0a26cfefb0c5b42cdf1a82900",
+    "SystemUI_compile_dagger": "d11ffc446400e758a20d700ef9453a685bbc0cddb7abf19a26bc9456797ead9d"
+  },
+  "source_only_validation": {
+    "baseline_full_SHA256": true,
+    "68_upstream_Blueprint_git_blobs": true,
+    "old_projected_golden_SHA256": true,
+    "real_dependency_edges_preserved": true,
+    "no_AOSP_file_or_test_consumer_changes": true
+  },
+  "actual_Rust_build": null,
+  "actual_Rust_tests": null,
+  "actual_Soong": null,
+  "new_default_consumer_test_added": "typed_systemui_defaults_preserve_real_consumers_and_dependency_edges",
+  "static_ordinary_edges": {
+    "count": 10,
+    "state": "REQUIRES_ACTUAL_LOADED_GRAPH_AND_TARGET_CLOSURE_CHECK",
+    "evidence": "systemui-static-projection-audit.json"
+  },
+  "host_commands_submitted": 0,
+  "Main_actions": 0,
+  "production_ready": false,
+  "cleanup_eligible": false
+}

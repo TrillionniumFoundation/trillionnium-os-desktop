@@ -1,0 +1,196 @@
+{
+  "schema": "pocket4-all-launcher-checkpoint04-progress-v1",
+  "recorded_utc": "2026-11-06T15:17:19.280607+00:00",
+  "parent_git_commit": "15e7060bbc199630d43e862ad8f548cbb8613e2a",
+  "task_complete": false,
+  "launcher_packages": 45,
+  "installed_and_byte_verified_upgrades": 11,
+  "installed_identical_to_current_official_assets": 2,
+  "actual_APK_audited_packages": 10,
+  "actual_APK_audit_pending_packages": 35,
+  "whole_app_production_ready": 0,
+  "cleanup_performed": false,
+  "cleanup_reclaimed_bytes": 0,
+  "original_eight": [
+    "com.Hyatt.hyt",
+    "com.enflick.android.TextNow",
+    "com.lianjia.beike",
+    "com.rytong.airchina",
+    "com.rytong.ceair",
+    "com.sankuai.meituan.takeoutnew",
+    "com.szzc",
+    "tv.danmaku.bili"
+  ],
+  "effective_permission_grants": "UNKNOWN_NOT_QUERIED",
+  "actual_native_catalog_packages": 45,
+  "complete_Android_MAIN_LAUNCHER_resolver": "NOT_YET_QUERIED",
+  "sourcegen_r1": {
+    "job_id": "1a1b13a09dc-fc05-7718",
+    "state": "failed",
+    "errors": [
+      {
+        "stage": "process_fd_count",
+        "type": "DescriptorDifference"
+      }
+    ],
+    "generated_source_build_install_UI_qualified": false,
+    "evidence": {
+      "path": "successor_qa/actual/source-generation-r1/stdout.raw.jsonl",
+      "bytes": 29247,
+      "sha256": "327e27fa98b5ef54efdf879827d4ab064a5f4f432c283512ec20f00d4f1e2485"
+    }
+  },
+  "fd_diagnostic_r1": {
+    "job_id": "1a1b155cac9-fc05-77d4",
+    "state": "failed",
+    "first_descriptor_problem": {
+      "changed": [],
+      "missing_expected": [],
+      "phase": "load_and_configure_frozen_core",
+      "unexpected": [
+        {
+          "descriptor_flags": 1,
+          "fd": 3,
+          "fstat": {
+            "st_ctime_ns": 1791083436303902806,
+            "st_dev": 66306,
+            "st_gid": 0,
+            "st_ino": 108020388,
+            "st_mode": 33188,
+            "st_mtime_ns": 1774599998000000000,
+            "st_nlink": 1,
+            "st_rdev": 0,
+            "st_size": 64184,
+            "st_uid": 0
+          },
+          "link": "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0"
+        }
+      ]
+    },
+    "commands": [],
+    "generated_source_publications": 0,
+    "evidence": {
+      "path": "successor_qa/actual/fd-diagnostic-r1/stdout.raw.jsonl",
+      "bytes": 9093,
+      "sha256": "046b39cd66008d65c6cddcf9ed2e89a2d117ffaa8702b4c9628d875ca627c4b8"
+    },
+    "deployed_library_initialization_cause": "ACTUAL_FRESH_HOST_CHILD_IMPORT_CONFIRMED"
+  },
+  "framework_normal05": {
+    "job_id": "1a1b1389c2d-fc05-7704",
+    "state": "failed",
+    "phase": "Soong graph analysis",
+    "reason": "SystemUITests_defaults depends on undefined systemui-non-platform-apis-defaults",
+    "deployed": false,
+    "evidence": {
+      "path": "framework_provider_repair/normal05/actual/index.json",
+      "bytes": 3177,
+      "sha256": "004085b629abb644c786e34832a261d93ac66cf0b81d000ed139b40dafac6db5"
+    }
+  },
+  "framework_normal06": {
+    "state": "SOURCE_CANDIDATE_ONLY_NOT_BUILT",
+    "evidence": {
+      "path": "framework_provider_repair/normal06/source-candidate.json",
+      "bytes": 3149,
+      "sha256": "d7d39e923a71e23df7536ac8e7f08a433c98cae9ff25b33cb5b2bd7e3870e7a5"
+    },
+    "ordinary_dependency_graph": "AWAIT_ACTUAL_LOADED_GRAPH_REVIEW",
+    "actual_loaded_Blueprints": 6472,
+    "actual_loaded_SystemUI_Blueprints": 68,
+    "actual_graph_analysis": {
+      "path": "framework_provider_repair/normal06/normal05-actual-graph-analysis.json",
+      "bytes": 9134,
+      "sha256": "eb1b588a560b70016d0c70916ea40169edbfdd30ea60eab070eb14efdcbd5e5e"
+    }
+  },
+  "audit_index": {
+    "path": "successor_audit_requests/actual/index-through-b04-20261106-r1/index.json",
+    "bytes": 94493,
+    "sha256": "9271173840f1245c0de69f9fecd501d99a866e029384d867601fc2327e696849"
+  },
+  "permission_declarations": {
+    "path": "successor_audit_requests/actual/index-through-b04-20261106-r1/declared-permissions.json",
+    "bytes": 281020,
+    "sha256": "781829b612f5a4e1334a4ba8fc1515746811272e7644387472dea389418d5b3b"
+  },
+  "official_asset_match": {
+    "path": "successor_audit_requests/actual/current-official-asset-matches.json",
+    "bytes": 4065,
+    "sha256": "a5c203fdbb3b1da1b963bbf430bd961842fa825ca1d3758014d1538bedc57afa"
+  },
+  "base_all_45_records": {
+    "path": "current_status.json",
+    "bytes": 228687,
+    "sha256": "f138dfcb2f36736e0f9ccdf93885166a92ac8f68de788d888924834ea6cde7ec"
+  },
+  "boundaries": {
+    "new_ADB_dependency": false,
+    "Bilibili_guest_Accept_on_Main_authorized": false,
+    "historical_Bilibili_UNKNOWN_unchanged": true,
+    "Meituan_location_proactively_granted": false,
+    "integrity_or_signing_bypassed": false
+  },
+  "cleanup_condition": "After actual whole-App and final-framework qualification, retain working source/configuration/source-lock and reproduction evidence, then remove old frameworks/APKs/intermediates. No path deletion is authorized merely by this report.",
+  "remaining_34_source_actions": {
+    "path": "reference/remaining34-source-actions.json",
+    "bytes": 259476,
+    "sha256": "7523031c7a1ef2e17d32d786512f8e06cfc39777f350a35b7987eededdfde6b4"
+  },
+  "ffi_bootstrap_probe_r1": {
+    "job_id": "1a1b16bbf10-fc05-7891",
+    "state": "succeeded",
+    "evidence": {
+      "path": "successor_qa/actual/ffi-bootstrap-probe-r1/stdout.raw.jsonl",
+      "bytes": 14135,
+      "sha256": "c590487759f7a0e2e32dec8cdb16a7c42b7f932ed88154f760fdde477770ef94"
+    },
+    "terminal": {
+      "path": "successor_qa/actual/ffi-bootstrap-probe-r1/terminal.raw.json",
+      "bytes": 733,
+      "sha256": "86c28f1ff58512f7b8f3b42c59eb1a62e7bb20ce52edd0a043d54792e35d6762"
+    },
+    "python": {
+      "executable": "/usr/bin/python3.14",
+      "version": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]",
+      "version_info": [
+        3,
+        14,
+        4,
+        "final",
+        0
+      ]
+    },
+    "library_file": {
+      "path": "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0",
+      "bytes": 64184,
+      "sha256": "1a0dc86f787f73e025a6e521056360afcbe70f2a82cd808132fefc2b4ee95daa",
+      "file": {
+        "st_ctime_ns": 1791083436303902806,
+        "st_dev": 66306,
+        "st_gid": 0,
+        "st_ino": 108020388,
+        "st_mode": 33188,
+        "st_mtime_ns": 1774599998000000000,
+        "st_nlink": 1,
+        "st_rdev": 0,
+        "st_size": 64184,
+        "st_uid": 0
+      }
+    },
+    "child_lifecycle": {
+      "child_pid": 4047972,
+      "errors": [],
+      "owned_child_sigkill_count": 0,
+      "parent_descriptors_restored": true,
+      "pidfd_acquired": true,
+      "pidfd_closed": true,
+      "pidfd_exit_observed": true,
+      "returncode": 0,
+      "timeout": false
+    },
+    "library_fd_retired_by_owned_process_exit": true,
+    "Main_actions": 0,
+    "UI_or_install_admission": false
+  }
+}

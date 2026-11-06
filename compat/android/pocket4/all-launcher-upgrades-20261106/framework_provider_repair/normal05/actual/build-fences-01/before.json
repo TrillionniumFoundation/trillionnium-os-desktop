@@ -1,0 +1,380 @@
+{
+  "schema": 2,
+  "ok": true,
+  "historical_activation_sha256": "7e490c14586d891f6b121341f879f41c955414c9122e3a68053f04665c12e615",
+  "old_invalid_QA_epoch_sha256": "48cb65c93ff81edbf160455af6506f5c703f0958363f15de4a80ece57c37e93f",
+  "old_QA_epoch_invalid": true,
+  "new_QA_epoch_qualified": false,
+  "protected_boot_id": "981ff371-cd72-4f81-9be3-a862111afdb1",
+  "protected_identity_source_sha256": "7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8",
+  "current_qualification_sha256": "4bdfe7dd1e275bc4727f37c630dc2498b3dc31c528b03a4028e42c1cf8fc4fc6",
+  "protected_processes": {
+    "android_init": {
+      "pid": 3268779,
+      "start_ticks": 99615082,
+      "ppid": 3268775,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3268779,
+        1
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533280]",
+        "pid": "pid:[4026533285]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "composer": {
+      "pid": 3270341,
+      "start_ticks": 99615244,
+      "ppid": 3268779,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "namespace_pids": [
+        3270341,
+        652
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service/system/uid_1000/pid_652\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533280]",
+        "pid": "pid:[4026533285]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "daemon": {
+      "pid": 3588022,
+      "start_ticks": 80796995,
+      "ppid": 1,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3588022
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026531832]",
+        "pid": "pid:[4026531836]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 66306,
+        "inode": 2
+      }
+    },
+    "launcher": {
+      "pid": 3268774,
+      "start_ticks": 99615080,
+      "ppid": 3588022,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3268774
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533279]",
+        "pid": "pid:[4026531836]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 66306,
+        "inode": 2
+      }
+    },
+    "presenter": {
+      "pid": 3588024,
+      "start_ticks": 80796995,
+      "ppid": 2472,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "namespace_pids": [
+        3588024
+      ],
+      "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/droidloom.service\n",
+      "namespaces": {
+        "mnt": "mnt:[4026531832]",
+        "pid": "pid:[4026531836]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 66306,
+        "inode": 2
+      }
+    },
+    "surfaceflinger": {
+      "pid": 3270350,
+      "start_ticks": 99615245,
+      "ppid": 3268779,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "namespace_pids": [
+        3270350,
+        661
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service/system/uid_1000/pid_661\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533280]",
+        "pid": "pid:[4026533285]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "system_server": {
+      "pid": 3270611,
+      "start_ticks": 99615342,
+      "ppid": 3270325,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ],
+      "namespace_pids": [
+        3270611,
+        808
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service/system/uid_1000/pid_808\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533719]",
+        "pid": "pid:[4026533285]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    },
+    "zygote64": {
+      "pid": 3270325,
+      "start_ticks": 99615242,
+      "ppid": 3268779,
+      "uids": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "namespace_pids": [
+        3270325,
+        638
+      ],
+      "cgroup": "0::/system.slice/droidloomd.service/system/uid_0/pid_638\n",
+      "namespaces": {
+        "mnt": "mnt:[4026533718]",
+        "pid": "pid:[4026533285]",
+        "user": "user:[4026531837]"
+      },
+      "root_identity": {
+        "device": 106,
+        "inode": 1
+      }
+    }
+  },
+  "runtime_epoch_sha256": "a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9",
+  "framework_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+  "current_guard_source_sha256": "d84df98d55352ef9ae66753ee15f3746d9d9a64c35fddf392a08f10ba4105cb3",
+  "app_scope_sha256": "489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4",
+  "app_scope_packages": [
+    "com.Hyatt.hyt",
+    "com.MobileTicket",
+    "com.amazon.mShop.android.shopping",
+    "com.android.calendar",
+    "com.android.camera2",
+    "com.android.contacts",
+    "com.android.deskclock",
+    "com.android.dialer",
+    "com.android.documentsui",
+    "com.android.gallery3d",
+    "com.android.messaging",
+    "com.android.quicksearchbox",
+    "com.android.settings",
+    "com.android.threadnetwork.demoapp",
+    "com.bestbuy.android",
+    "com.ehi.national.mobile",
+    "com.enflick.android.TextNow",
+    "com.google.android.gms",
+    "com.hertz.android.digital",
+    "com.hilton.android.hhonors",
+    "com.ihg.apps.android",
+    "com.jingdong.app.mall",
+    "com.lianjia.beike",
+    "com.marriott.mrt",
+    "com.pinger.textfree",
+    "com.rytong.airchina",
+    "com.rytong.ceair",
+    "com.sankuai.meituan.takeoutnew",
+    "com.sdu.didi.psnger",
+    "com.ss.android.ugc.aweme",
+    "com.szzc",
+    "com.taobao.taobao",
+    "com.tencent.mm",
+    "com.ubercab",
+    "com.united.mobile.android",
+    "com.xunmeng.pinduoduo",
+    "com.zhubajie.client",
+    "com.zillow.android.streeteasy",
+    "ctrip.android.view",
+    "jp.co.ana.android.tabidachi",
+    "local.pocket4.actions.v2",
+    "local.pocket4.fixture",
+    "org.chromium.webview_shell",
+    "org.droidloom.qa.editorcontract",
+    "org.fcitx.fcitx5.android",
+    "tv.danmaku.bili"
+  ],
+  "typed_guard_receipt": {
+    "schema": "pocket4-successor-main-guard-v1",
+    "Main_epoch_sha256": "7d927812392d30ab8cca43da87c0785e24695ca724da93b3b465122502b8045c",
+    "runtime_epoch_sha256": "a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9",
+    "baseline_sha256": "7c52723c372b9f486067456e720709ef401bcebe1a7aad158f6b8c099f67fcc8",
+    "eight_roles_including_composer_match": true,
+    "complete_paired_classpath_matches": true,
+    "resource_limits_match": true,
+    "runtime_only_app_scopes_checked_separately": true,
+    "UI_or_install_runtime_admitted": false,
+    "production_ready": false
+  },
+  "app_scope_guard_receipt": {
+    "schema": "pocket4-app-scope-guard-v1",
+    "runtime_epoch_sha256": "a7c7091a9e57eb6b373aa8a9225bb2f17b4ec0f1248679b56aaadc78eb0faca9",
+    "app_scope_sha256": "489129d6e39a5aebc410ebcf74706279a99ff6751a15bd0a6b324ddd007e01a4",
+    "packages": [
+      "com.Hyatt.hyt",
+      "com.MobileTicket",
+      "com.amazon.mShop.android.shopping",
+      "com.android.calendar",
+      "com.android.camera2",
+      "com.android.contacts",
+      "com.android.deskclock",
+      "com.android.dialer",
+      "com.android.documentsui",
+      "com.android.gallery3d",
+      "com.android.messaging",
+      "com.android.quicksearchbox",
+      "com.android.settings",
+      "com.android.threadnetwork.demoapp",
+      "com.bestbuy.android",
+      "com.ehi.national.mobile",
+      "com.enflick.android.TextNow",
+      "com.google.android.gms",
+      "com.hertz.android.digital",
+      "com.hilton.android.hhonors",
+      "com.ihg.apps.android",
+      "com.jingdong.app.mall",
+      "com.lianjia.beike",
+      "com.marriott.mrt",
+      "com.pinger.textfree",
+      "com.rytong.airchina",
+      "com.rytong.ceair",
+      "com.sankuai.meituan.takeoutnew",
+      "com.sdu.didi.psnger",
+      "com.ss.android.ugc.aweme",
+      "com.szzc",
+      "com.taobao.taobao",
+      "com.tencent.mm",
+      "com.ubercab",
+      "com.united.mobile.android",
+      "com.xunmeng.pinduoduo",
+      "com.zhubajie.client",
+      "com.zillow.android.streeteasy",
+      "ctrip.android.view",
+      "jp.co.ana.android.tabidachi",
+      "local.pocket4.actions.v2",
+      "local.pocket4.fixture",
+      "org.chromium.webview_shell",
+      "org.droidloom.qa.editorcontract",
+      "org.fcitx.fcitx5.android",
+      "tv.danmaku.bili"
+    ],
+    "current_apk_paths_and_file_identities_match": true,
+    "new_signature_verification_performed": false,
+    "UI_or_install_runtime_admitted": false
+  },
+  "cell_sha256": "f64a9f9a63e76ac2bf765e8f98bb2f9a91a326b38f86b6e3c4ac512d60303bdc",
+  "limits": {
+    "cpu.max": "200000 100000",
+    "memory.high": "5368709120",
+    "memory.max": "6442450944",
+    "memory.swap.max": "max",
+    "pids.max": "12288"
+  },
+  "main_cgroup": "/sys/fs/cgroup/system.slice/droidloomd.service",
+  "main_cgroup_identity": {
+    "device": 30,
+    "inode": 26651611
+  },
+  "memory_events": {
+    "low": 0,
+    "high": 49897,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "sock_throttled": 5143
+  },
+  "current_resources": {
+    "memory.current": 1308848128,
+    "memory.swap.current": 2540298240,
+    "pids.current": 2006
+  },
+  "cpu_stat": {
+    "usage_usec": 221533948543,
+    "user_usec": 198881345898,
+    "system_usec": 22652602644,
+    "nice_usec": 51696562000,
+    "core_sched.force_idle_usec": 0,
+    "nr_periods": 1919822,
+    "nr_throttled": 214009,
+    "throttled_usec": 14646522771,
+    "nr_bursts": 0,
+    "burst_usec": 0
+  },
+  "memory_pressure": "some avg10=0.00 avg60=0.00 avg300=0.00 total=21721804\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=19639510",
+  "started_monotonic_ns": 1000357698119807,
+  "Main_actions": 0,
+  "Android_actions": 0,
+  "subprocesses_started": null,
+  "readonly_guard_service_queries_possible": true,
+  "runtime_authorization_enabled": false,
+  "installed_engine_hash_observed": false,
+  "scope": "Only the typedguard-bound eight process identities, current baseline/app scope, boot, historical activation pin, config, original Main limits and counters. No new QA epoch or full-interval noninterference qualification.",
+  "finished_monotonic_ns": 1000357944314374,
+  "cleanup_errors": []
+}

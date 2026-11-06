@@ -1,0 +1,22 @@
+--- r1/audit_serial_gate.py
++++ r2/audit_serial_gate.py
+@@ -117,12 +117,18 @@
+     return parse(artifact), artifact
+ 
+ 
++def exact_stream_values(value, expected):
++    return type(value) is dict and set(value) == {"stdout", "stderr"} and all(
++        item is expected for item in value.values())
++
++
+ def check_success(plan, row, request, terminal, submitted, raw_stdout):
+     need(terminal.get("job_id") == submitted["job_id"] and terminal.get("state") == "succeeded" and
+          terminal.get("exit_code") == 0 and all(terminal.get(k) is True for k in
+              ("output_complete", "output_durable", "terminal_publication_confirmed")) and
+          all(terminal.get(k) is False for k in ("timed_out", "automatic_retry", "cancelled")) and
+-         terminal.get("log_truncated") is False and not terminal.get("log_errors"),
++         exact_stream_values(terminal.get("log_truncated"), False) and
++         exact_stream_values(terminal.get("log_errors"), None),
+          "AUTHORITATIVE_SUCCESSFUL_DURABLE_TERMINAL_REQUIRED")
+     result, artifact = decode_artifact(raw_stdout)
+     need(result.get("schema") == "pocket4-successor-installed-apk-audit-v1" and

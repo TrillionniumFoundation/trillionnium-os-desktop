@@ -1,0 +1,146 @@
+{
+  "schema": "pocket4-systemui-static-projection-audit-v1",
+  "upstream_commit": "94b4c163b7dfe5ce3607f7bb8456f9573f7de57d",
+  "tree": "983108d6188efdc1e0dd1cbecb16bb2fc98ecfaf",
+  "files": 68,
+  "modules": 186,
+  "source_files_and_git_blobs_verified": true,
+  "current_projected_root_names": [
+    "SystemUI_optimized_defaults",
+    "systemui_optimized_java_defaults",
+    "sysui_proguard_common_and_kotlin"
+  ],
+  "references_to_omitted_same_commit_root_modules": [
+    {
+      "consumer": "SystemUITests_defaults",
+      "path": "tests/Android.bp",
+      "line": 22,
+      "property": "defaults",
+      "dependency": "systemui-non-platform-apis-defaults"
+    },
+    {
+      "consumer": "SystemUITests_defaults",
+      "path": "tests/Android.bp",
+      "line": 22,
+      "property": "static_libs",
+      "dependency": "SystemUI-tests"
+    },
+    {
+      "consumer": "SystemUI_test_fixtures",
+      "path": "tests/Android.bp",
+      "line": 81,
+      "property": "libs",
+      "dependency": "SystemUI-application"
+    },
+    {
+      "consumer": "SystemUI_test_fixtures",
+      "path": "tests/Android.bp",
+      "line": 81,
+      "property": "libs",
+      "dependency": "kosmos"
+    },
+    {
+      "consumer": "sysui_main",
+      "path": "pods/build/Android.bp",
+      "line": 21,
+      "property": "defaults",
+      "dependency": "SystemUI_compile_dagger"
+    },
+    {
+      "consumer": "sysui_dagger",
+      "path": "pods/build/Android.bp",
+      "line": 54,
+      "property": "defaults",
+      "dependency": "SystemUI_compile_dagger"
+    },
+    {
+      "consumer": "sysui_testlib",
+      "path": "pods/build/Android.bp",
+      "line": 75,
+      "property": "libs",
+      "dependency": "kosmos"
+    },
+    {
+      "consumer": "com.android.systemui.common.ui.compose_api",
+      "path": "pods/common/ui/compose/Android.bp",
+      "line": 21,
+      "property": "libs",
+      "dependency": "SystemUI-res"
+    },
+    {
+      "consumer": "com.android.systemui.headline.ui_preview",
+      "path": "pods/headline/ui/Android.bp",
+      "line": 61,
+      "property": "static_libs",
+      "dependency": "SystemUI-res"
+    },
+    {
+      "consumer": "com.android.systemui.notifications.intelligence.rules.ui_main",
+      "path": "pods/notifications/intelligence/rules/ui/Android.bp",
+      "line": 33,
+      "property": "static_libs",
+      "dependency": "SystemUI-res"
+    },
+    {
+      "consumer": "com.android.systemui.qs.panels.ui_api",
+      "path": "pods/qs/panels/ui/Android.bp",
+      "line": 21,
+      "property": "libs",
+      "dependency": "SystemUI-res"
+    },
+    {
+      "consumer": "com.android.systemui.statusbar.chips.ui_api",
+      "path": "pods/statusbar/chips/ui/Android.bp",
+      "line": 21,
+      "property": "libs",
+      "dependency": "SystemUI-res"
+    },
+    {
+      "consumer": "com.android.systemui.statusbar.chips.ui_testlib",
+      "path": "pods/statusbar/chips/ui/Android.bp",
+      "line": 38,
+      "property": "static_libs",
+      "dependency": "SystemUI-res"
+    },
+    {
+      "consumer": "com.android.systemui.util.policy-impl",
+      "path": "pods/util/policy/Android.bp",
+      "line": 33,
+      "property": "defaults",
+      "dependency": "SystemUI_compile_dagger"
+    }
+  ],
+  "external_defaults_to_resolve": [
+    {
+      "consumer": "PlatformAnimationLibCoreTests",
+      "path": "animation/lib/tests/Android.bp",
+      "line": 20,
+      "property": "defaults",
+      "dependency": "platform_app_defaults"
+    },
+    {
+      "consumer": "SystemUILintCheckerTest",
+      "path": "checks/Android.bp",
+      "line": 36,
+      "property": "defaults",
+      "dependency": "AndroidLintCheckerTestDefaults"
+    },
+    {
+      "consumer": "SceneTransitionLayoutDebugger",
+      "path": "compose/scene/debugger/Android.bp",
+      "line": 53,
+      "property": "defaults",
+      "dependency": "platform_app_defaults"
+    },
+    {
+      "consumer": "PlatformComposeSceneTransitionLayoutTests",
+      "path": "compose/scene/tests/Android.bp",
+      "line": 25,
+      "property": "defaults",
+      "dependency": "MotionTestDefaults"
+    }
+  ],
+  "Soong_executed": false,
+  "full_dependency_closure_qualified": false,
+  "production_ready": false
+}

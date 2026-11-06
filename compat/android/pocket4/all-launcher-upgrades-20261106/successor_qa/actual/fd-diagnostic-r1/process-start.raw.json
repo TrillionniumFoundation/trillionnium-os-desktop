@@ -1,0 +1,37 @@
+{
+  "audit_recorded": true,
+  "job": {
+    "args": [
+      "-n",
+      "/usr/bin/python3",
+      "-I",
+      "-B",
+      "-c",
+      "#!/usr/bin/env python3\n\"\"\"Use the existing sudo/Python host channel to stage two pinned files once.\n\nNo subprocess or namespace path is added. After bootstrap FDs are closed, the\nreviewed worker is invoked once in this process with its real staged __file__.\n\"\"\"\nimport hashlib\nimport json\nimport os\nfrom pathlib import Path\nimport stat\nimport sys\n\nSOURCE_BYTES = 25924\nSOURCE_SHA = '371a09e6e6f22381d487ae7defd37114d56acd497b026fc2282ae26051669b4a'\nREQUEST_BYTES = 1250\nREQUEST_SHA = 'de235d97209119761a1f7e12e1b9df969315f11269bf776e5aa277001991a81a'\nNONCE = '8c6331bd1f53d2f507751089723e7418'\nROOT = '/home/alex/work/pocket4-beike-fd-diagnostic-source-20261106-r1'\nSTAT_KEYS = ('st_dev','st_ino','st_mode','st_uid','st_gid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')\n\n\ndef need(value, code):\n    if not value:\n        raise RuntimeError(code)\n\n\ndef sha(raw):\n    return hashlib.sha256(raw).hexdigest()\n\n\ndef write_new(directory, name, data):\n    # Same O_EXCL/root0400/fsync publication used by the reviewed upgrade stagers.\n    fd = os.open(name, os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_CLOEXEC|os.O_NOFOLLOW, 0o600, dir_fd=directory)\n    try:\n        view = memoryview(data)\n        while view:\n            count = os.write(fd, view); need(count > 0, 'WRITE_PROGRESS'); view = view[count:]\n        os.fchmod(fd, 0o400); os.fsync(fd)\n    finally:\n        os.close(fd)\n    os.fsync(directory)\n\n\ndef readback(directory, name, size, digest):\n    fd = os.open(name, os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC|os.O_NONBLOCK, dir_fd=directory)\n    try:\n        before = os.fstat(fd)\n        need(stat.S_ISREG(before.st_mode) and before.st_uid == 0 and before.st_nlink == 1 and\n             stat.S_IMODE(before.st_mode) == 0o400 and before.st_size == size, 'STAGED_ROOT_FILE_IDENTITY')\n        raw = bytearray()\n        while len(raw) <= size:\n            block = os.read(fd, min(65536, size+1-len(raw)))\n            if not block:\n                break\n            raw.extend(block)\n        again = os.open(name, os.O_RDONLY|os.O_NOFOLLOW|os.O_CLOEXEC, dir_fd=directory)\n        try:\n            need(len(raw) == size and sha(raw) == digest and\n                 all(getattr(before, key) == getattr(os.fstat(fd), key) == getattr(os.fstat(again), key) for key in STAT_KEYS),\n                 'STAGED_SOURCE_OR_PATH_CHANGED')\n        finally:\n            os.close(again)\n        return bytes(raw)\n    finally:\n        os.close(fd)\n\n\ndef main():\n    need(os.getuid() == os.geteuid() == 0, 'ACTUAL_EXISTING_HOST_ROOT_REQUIRED')\n    os.umask(0o077)\n    start_fds = len(os.listdir('/proc/self/fd'))\n    payload_raw = sys.stdin.buffer.read(262145)\n    need(0 < len(payload_raw) <= 262144, 'BOUNDED_SOURCE_PAYLOAD')\n    payload = json.loads(payload_raw)\n    need(set(payload) == {'schema', 'source_text', 'request_text'} and\n         payload['schema'] == 'pocket4-beike-source-fd-diagnostic-stage-input-v1', 'CLOSED_STAGE_PAYLOAD')\n    source, request = payload['source_text'].encode('utf-8'), payload['request_text'].encode('utf-8')\n    need(len(source) == SOURCE_BYTES and sha(source) == SOURCE_SHA and\n         len(request) == REQUEST_BYTES and sha(request) == REQUEST_SHA, 'EXACT_REVIEWED_SOURCE_AND_REQUEST')\n    compile(source, ROOT+'/diagnose_beike_source_fds.py', 'exec')\n    descriptors = []\n    try:\n        parent = os.open('/', os.O_RDONLY|os.O_DIRECTORY|os.O_CLOEXEC); descriptors.append(parent)\n        for name in ('home', 'alex', 'work'):\n            parent = os.open(name, os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC, dir_fd=parent)\n            descriptors.append(parent)\n        leaf = Path(ROOT).name\n        os.mkdir(leaf, 0o700, dir_fd=parent)  # Existing stage is never resumed or overwritten.\n        os.fsync(parent)\n        directory = os.open(leaf, os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC, dir_fd=parent)\n        descriptors.append(directory)\n        meta = os.fstat(directory)\n        need(meta.st_uid == 0 and stat.S_IMODE(meta.st_mode) == 0o700, 'NEW_ROOT_PRIVATE_STAGE_REQUIRED')\n        write_new(directory, 'diagnose_beike_source_fds.py', source)\n        write_new(directory, 'request.json', request)\n        source = readback(directory, 'diagnose_beike_source_fds.py', SOURCE_BYTES, SOURCE_SHA)\n        readback(directory, 'request.json', REQUEST_BYTES, REQUEST_SHA)\n        current = os.open(leaf, os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW|os.O_CLOEXEC, dir_fd=parent)\n        descriptors.append(current)\n        need(all(getattr(meta, key) == getattr(os.fstat(current), key) for key in\n                 ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid')), 'STAGE_PATH_IDENTITY_CHANGED')\n    finally:\n        errors = []\n        for fd in reversed(descriptors):\n            try:\n                os.close(fd)\n            except OSError:\n                errors.append(fd)\n        need(not errors, 'BOOTSTRAP_FD_CLOSE_FAILED')\n    need(len(os.listdir('/proc/self/fd')) == start_fds, 'BOOTSTRAP_DESCRIPTOR_DIFFERENCE')\n    print(json.dumps({'schema': 'pocket4-beike-source-fd-diagnostic-bootstrap-v1',\n        'source': {'path': ROOT+'/diagnose_beike_source_fds.py', 'bytes': SOURCE_BYTES, 'sha256': SOURCE_SHA},\n        'request': {'path': ROOT+'/request.json', 'bytes': REQUEST_BYTES, 'sha256': REQUEST_SHA},\n        'bootstrap_FDs_before': start_fds, 'bootstrap_FDs_after': start_fds,\n        'bootstrap_Main_actions': 0, 'worker_not_yet_invoked': True, 'automatic_retry': False}, sort_keys=True), flush=True)\n    path = ROOT+'/diagnose_beike_source_fds.py'\n    sys.argv = [path, '--diagnose-readonly-once', '--request', ROOT+'/request.json', '--request-sha256', REQUEST_SHA, '--request-bytes', str(REQUEST_BYTES)]\n    exec(compile(source, path, 'exec'), {'__name__': '__main__', '__file__': path})\n\n\nif __name__ == '__main__':\n    main()\n"
+    ],
+    "created_unix_ms": 1793976552137,
+    "cwd": "/home/alex/work",
+    "env_keys": [],
+    "executable": "/usr/bin/sudo",
+    "execution_mode": "operator",
+    "host": "pocket4",
+    "id": "1a1b155cac9-fc05-77d4",
+    "idempotency_key": "pocket4-beike-source-fd-diagnostic-r1-20261106",
+    "launch_error": null,
+    "launch_state": "launched",
+    "remote_job_dir": "/home/alex/.local/state/hepta-runtime-mac-worker/jobs/1a1b155cac9-fc05-77d4",
+    "request_digest": "1171a4e4a26563ecbc363035da16f94c9e1f73f241f95865143abb7c8a8d1f9d",
+    "request_fingerprint": 1256967072897131500,
+    "ssh_target": "hepta-pocket4",
+    "system_jobctl": false,
+    "unit": "hepta-runtime-job-1a1b155cac9-fc05-77d4"
+  },
+  "launch": {
+    "backend": "systemd",
+    "launcher_pid": null,
+    "ok": true,
+    "unit": "hepta-runtime-job-1a1b155cac9-fc05-77d4"
+  },
+  "local_record_pending": false,
+  "reused": false
+}

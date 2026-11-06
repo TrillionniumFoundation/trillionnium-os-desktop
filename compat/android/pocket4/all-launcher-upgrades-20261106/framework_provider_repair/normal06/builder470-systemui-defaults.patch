@@ -1,0 +1,368 @@
+--- a/tools/droidloom-update/src/android.rs
++++ b/tools/droidloom-update/src/android.rs
+@@ -404,6 +404,8 @@
+             "fa1aaf330d580d6cefb74dc0ef1b52fcebbdd9b6bced5497a3bd29f9fb3647a3",
+             &[("soong_config_module_type", "systemui_optimized_java_defaults"),
+               ("systemui_optimized_java_defaults", "SystemUI_optimized_defaults"),
++              ("java_defaults", "systemui-non-platform-apis-defaults"),
++              ("java_defaults", "SystemUI_compile_dagger"),
+               ("filegroup", "sysui_proguard_common_and_kotlin")]),
+         "platform_testing/libraries/motion/Android.bp" => (2098,
+             "a29bc25117f71e6acac6722f98950831a16a00f382c3ee0f9e991a36ecba5440",
+@@ -2946,7 +2948,7 @@
+     const SHARED_PROVIDER_FIXTURES: &[(&str, &str, &str)] = &[
+         ("frameworks/base/packages/SystemUI/Android.bp",
+          include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI.Android.bp"),
+-         "f5e81cc5342f8c2d50799c437df0e258e697b560e16052bbfa5cec9385523ce1"),
++         "025d58f766940a96ab6557b523456162201f393c9277abde86ad5030b52448cc"),
+         ("platform_testing/libraries/motion/Android.bp",
+          include_str!("../../../android/native-role-ingress/provider-fixtures/motion.Android.bp"),
+          "23e1392f716fbf78efb7b0ea5281c3cf70b4547b6aa41af8cf79df495eace098"),
+@@ -3035,6 +3037,34 @@
+     }
+ 
+     #[test]
++    fn typed_systemui_defaults_preserve_real_consumers_and_dependency_edges() {
++        use sha2::{Digest, Sha256};
++        let original = SHARED_PROVIDER_FIXTURES[0].1;
++        let projected = typed_ingress_shared_blueprint(
++            "frameworks/base/packages/SystemUI/Android.bp", original).unwrap();
++        // Real same-commit consumers exposed the omission. Keep their full
++        // sources fixed and retain each complete upstream provider, including
++        // its flags library or Dagger annotation processor dependency.
++        for (consumer, expected_sha, name, dependency) in [
++            (include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp"),
++             "f1b2422c693a8f8c52034369ded585a3a93ac861f9dd6dd73f0801a77e6be4da", "systemui-non-platform-apis-defaults", "android.os.flags-aconfig-java"),
++            (include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI-pods-build.Android.bp"),
++             "45a406d917e55d45ad1ef0eafd27f2146a894dbcd309813e5c58b1a1b9e6400f", "SystemUI_compile_dagger", "dagger2-compiler"),
++            (include_str!("../../../android/native-role-ingress/provider-fixtures/SystemUI-pods-policy.Android.bp"),
++             "abdbfc9d78daa2785dd2cb953b4ec081f135df032e348fab78c2731262744533", "SystemUI_compile_dagger", "dagger2-compiler"),
++        ] {
++            assert_eq!(format!("{:x}", Sha256::digest(consumer.as_bytes())), expected_sha);
++            assert!(consumer.contains(&format!("\"{name}\"")));
++            let marker = format!("java_defaults {{\n    name: \"{name}\",");
++            let start = original.find(&marker).unwrap();
++            let end = start + original[start..].find("\n}\n").unwrap() + 3;
++            let upstream = &original[start..end];
++            assert!(upstream.contains(&format!("\"{dependency}\"")));
++            assert_eq!(projected.matches(upstream).count(), 1);
++        }
++    }
++
++    #[test]
+     fn typed_shared_provider_projection_rejects_changed_missing_or_duplicate_stanzas() {
+         for (relative, original, _) in SHARED_PROVIDER_FIXTURES {
+             for changed in [original.replacen("name:", "renamed:", 1),
+--- /dev/null
++++ b/android/native-role-ingress/provider-fixtures/SystemUI-tests.Android.bp
+@@ -0,0 +1,117 @@
++//
++// Copyright (C) 2022 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++package {
++    default_team: "trendy_team_system_ui_please_use_a_more_specific_subteam_if_possible_",
++    default_applicable_licenses: ["frameworks_base_packages_SystemUI_license"],
++}
++
++java_defaults {
++    name: "SystemUITests_defaults",
++    use_resource_processor: true,
++    defaults: ["systemui-non-platform-apis-defaults"],
++    dxflags: ["--multi-dex"],
++    platform_apis: true,
++    test_suites: ["device-tests"],
++    static_libs: ["SystemUI-tests"],
++    compile_multilib: "both",
++
++    jni_libs: [
++        "libdexmakerjvmtiagent",
++        "libmultiplejvmtiagentsinterferenceagent",
++        "libstaticjvmtiagent",
++    ],
++    libs: [
++        "android.test.runner.stubs.system",
++        "telephony-common",
++        "android.test.base.stubs.system",
++    ],
++    aaptflags: [
++        "--extra-packages com.android.systemui",
++    ],
++
++    // sign this with platform cert, so this test is allowed to inject key events into
++    // UI it doesn't own. This is necessary to allow screenshots to be taken
++    certificate: "platform",
++
++    manifest: "AndroidManifest.xml",
++}
++
++android_test {
++    name: "SystemUITests",
++    defaults: ["SystemUITests_defaults"],
++}
++
++test_module_config {
++    name: "SystemUITests_systemui_accessibility",
++    base: "SystemUITests",
++    test_suites: ["device-tests"],
++    include_filters: ["com.android.systemui.accessibility"],
++    exclude_annotations: [
++        "android.platform.test.annotations.Postsubmit",
++        "android.platform.test.annotations.FlakyTest",
++    ],
++}
++
++test_module_config {
++    name: "SystemUITests_presubmit",
++    base: "SystemUITests",
++    test_suites: ["device-tests"],
++    exclude_annotations: [
++        "android.platform.test.annotations.Ignore",
++        "android.platform.test.annotations.FlakyTest",
++        "androidx.test.filters.FlakyTest",
++        "org.junit.Ignore",
++    ],
++}
++
++android_library {
++    name: "SystemUI_test_fixtures",
++    package_name: "com.android.systemui.tests.fixtures",
++    resource_dirs: [],
++
++    use_resource_processor: true,
++
++    srcs: [
++        "utils/src/**/*.java",
++        "utils/src/**/*.kt",
++        ":SystemUI_pod_fixtureFiles",
++    ],
++
++    static_libs: [
++        "androidx.compose.ui_ui-test-junit4",
++    ],
++
++    libs: [
++        // go/keep-sorted start
++        "PlatformMotionTestingCompose",
++        "SystemUI-application",
++        "SystemUICustomizationTestUtils",
++        "android.test.mock.stubs.system",
++        "androidx.compose.ui_ui-test",
++        "androidx.compose.ui_ui-test-junit4",
++        "androidx.core_core-animation-testing",
++        "flag-junit",
++        "flag-junit-base",
++        "kosmos",
++        "mockito-kotlin-nodeps",
++        "mockito-target-extended-minus-junit4",
++        "ravenwood-junit",
++        "testables",
++        "truth",
++        // go/keep-sorted end
++    ],
++}
+--- /dev/null
++++ b/android/native-role-ingress/provider-fixtures/SystemUI-pods-build.Android.bp
+@@ -0,0 +1,140 @@
++// Copyright (C) 2025 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++/**
++ * Rule defaults for sysui pod build rules
++ */
++
++// Represents code in the "main" folder of a pod
++java_defaults {
++    name: "sysui_main",
++    defaults: [
++        "sysui_pod_defaults",
++        "SystemUI_compile_dagger",
++    ],
++    srcs: [
++        "src/main/**/*.kt",
++        "src/main/**/*.java",
++    ],
++    libs: [
++        "jsr330", // javax.inject.*
++        "dagger2", // Dagger-specific annotations
++    ],
++    defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
++}
++
++// Represents code in the "api" folder of a pod
++java_defaults {
++    name: "sysui_api",
++    defaults: ["sysui_pod_defaults"],
++    srcs: [
++        "src/api/**/*.kt",
++        "src/api/**/*.java",
++    ],
++    libs: [
++        "jsr330", // javax.inject.*
++    ],
++    visibility: ["//visibility:public"],
++    defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
++}
++
++// Represents code in the "dagger" folder of a pod
++java_defaults {
++    name: "sysui_dagger",
++    defaults: [
++        "sysui_pod_defaults",
++        "SystemUI_compile_dagger",
++    ],
++    srcs: [
++        "src/dagger/**/*.kt",
++        "src/dagger/**/*.java",
++    ],
++    libs: [
++        "jsr330", // javax.inject.*
++        "dagger2", // Dagger-specific annotations
++    ],
++    visibility: [
++        "//frameworks/base/packages/SystemUI/pods/bundle:__subpackages__",
++    ],
++    defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
++}
++
++// Represents code in the "test" folder of a pod
++java_defaults {
++    name: "sysui_testlib",
++    defaults: ["sysui_pod_defaults"],
++    srcs: [
++        "src/test/**/*.kt",
++        "src/test/**/*.java",
++    ],
++    libs: [
++        "kosmos",
++
++        // TODO (b/475532791): This dependency is unfortunate, as it means that we must effectively
++        // recompile all text fixtures before running any tests. We should try to remove it (by
++        // extracting all fixtures that pod tests require into their own fixture pods).
++        "SystemUI_test_fixtures",
++
++        "androidx.test.ext.junit",
++        "androidx.test.ext.truth",
++        "androidx.test.rules",
++        "hamcrest-library",
++        "kotlinx_coroutines_test",
++        "mockito-kotlin-nodeps",
++        "mockito-target-extended-minus-junit4",
++        "platform-test-annotations",
++        "truth",
++    ],
++    visibility: ["//visibility:public"],
++    defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
++}
++
++// Represents code in the "testFixtures" folder (unlike other targets, this should be a
++// filegroup
++filegroup_defaults {
++    name: "sysui_fixtureFiles",
++    srcs: [
++        "src/testFixtures/**/*.kt",
++    ],
++    visibility: ["//frameworks/base/packages/SystemUI/pods"],
++    defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
++}
++
++// Represents code in the "preview" folder of a pod
++java_defaults {
++    name: "sysui_preview",
++    defaults: ["sysui_pod_defaults"],
++    srcs: [
++        "src/preview/**/*.kt",
++    ],
++    libs: [
++        "androidx.compose.ui_ui-tooling-preview",
++    ],
++    defaults_visibility: ["//frameworks/base/packages/SystemUI/pods:__subpackages__"],
++}
++
++java_defaults {
++    name: "sysui_pod_defaults",
++    lint: {
++        extra_check_modules: ["SystemUILintChecker"],
++        warning_checks: ["MissingApacheLicenseDetector"],
++    },
++    kotlincflags: [
++        // Annotations on constructor fields apply to both the param and class field.
++        // See https://youtrack.jetbrains.com/issue/KT-73255
++        "-Xannotation-default-target=param-property",
++    ],
++    defaults_visibility: ["//visibility:private"],
++}
+--- /dev/null
++++ b/android/native-role-ingress/provider-fixtures/SystemUI-pods-policy.Android.bp
+@@ -0,0 +1,47 @@
++// Copyright (C) 2025 The Android Open Source Project
++//
++// Licensed under the Apache License, Version 2.0 (the "License");
++// you may not use this file except in compliance with the License.
++// You may obtain a copy of the License at
++//
++//      http://www.apache.org/licenses/LICENSE-2.0
++//
++// Unless required by applicable law or agreed to in writing, software
++// distributed under the License is distributed on an "AS IS" BASIS,
++// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++// See the License for the specific language governing permissions and
++// limitations under the License.
++//
++
++package {
++    default_applicable_licenses: ["frameworks_base_packages_SystemUI_license"],
++}
++
++java_library {
++    name: "com.android.systemui.util.policy-api",
++    srcs: [
++        "src/api/**/*.kt",
++    ],
++    static_libs: [
++        "SettingsLibRestrictedLockUtils",
++    ],
++    defaults: [
++        "SystemUI_pod_defaults_api",
++    ],
++}
++
++java_library {
++    name: "com.android.systemui.util.policy-impl",
++    srcs: [
++        "src/main/**/*.kt",
++    ],
++    static_libs: [
++        "dagger2",
++        "SettingsLib",
++        "com.android.systemui.util.policy-api",
++    ],
++    defaults: [
++        "SystemUI_pod_defaults_api",
++        "SystemUI_compile_dagger",
++    ],
++}
